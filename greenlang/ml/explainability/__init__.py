@@ -112,6 +112,20 @@ from greenlang.ml.explainability.explanation_generator import (
     ExplanationType as StandaloneExplanationType,
 )
 
+# Import from Natural Language Explainer module
+from greenlang.ml.explainability.natural_language_explainer import (
+    # Main class
+    NaturalLanguageExplainer,
+    # Enums
+    Audience,
+    OutputFormat,
+    DecisionType,
+    # Data model
+    ExplanationOutput,
+    # Factory
+    create_natural_language_explainer,
+)
+
 # Import from Process Heat SHAP integration module
 from greenlang.ml.explainability.process_heat_shap import (
     # Enums
@@ -139,6 +153,46 @@ from greenlang.ml.explainability.process_heat_shap import (
     create_process_heat_explainer,
     # Feature mappings
     INDUSTRIAL_FEATURE_NAMES,
+)
+
+# Import from Attention Visualizer module
+from greenlang.ml.explainability.attention_visualizer import (
+    # Main class
+    AttentionVisualizer,
+    # Data models
+    AttentionWeights,
+    AttentionSummary,
+    # Enums
+    VisualizationType,
+    ExportFormat,
+)
+
+# Import from Dashboard module (TASK-030)
+from greenlang.ml.explainability.dashboard import (
+    # Enums
+    ChartType,
+    ExportFormat as DashboardExportFormat,
+    TimeRange,
+    DashboardViewMode,
+    # Data Models
+    FeatureContributionData,
+    FeatureContributionChart,
+    GlobalImportanceChart,
+    CounterfactualChange,
+    CounterfactualComparisonView,
+    PredictionHistoryEntry,
+    PredictionHistoryView,
+    ModelSummary,
+    ExplanationDashboardData,
+    DashboardSummary,
+    # Visualization Generator
+    VisualizationDataGenerator,
+    # State Management
+    DashboardStateManager,
+    dashboard_state,
+    get_dashboard_state,
+    # Router
+    dashboard_router,
 )
 
 __version__ = "1.0.0"
@@ -203,6 +257,13 @@ __all__ = [
     "FeatureExplanation",
     "StandaloneAudienceLevel",
     "StandaloneExplanationType",
+    # === Natural Language Explainer (natural_language_explainer.py) ===
+    "NaturalLanguageExplainer",
+    "Audience",
+    "OutputFormat",
+    "DecisionType",
+    "ExplanationOutput",
+    "create_natural_language_explainer",
     # === Process Heat SHAP Integration (process_heat_shap.py) ===
     # Enums
     "ProcessHeatAgentType",
@@ -229,4 +290,35 @@ __all__ = [
     "create_process_heat_explainer",
     # Feature mappings
     "INDUSTRIAL_FEATURE_NAMES",
+    # === Attention Visualizer (attention_visualizer.py) ===
+    "AttentionVisualizer",
+    "AttentionWeights",
+    "AttentionSummary",
+    "VisualizationType",
+    "ExportFormat",
+    # === Dashboard (dashboard.py) TASK-030 ===
+    # Enums
+    "ChartType",
+    "DashboardExportFormat",
+    "TimeRange",
+    "DashboardViewMode",
+    # Data Models
+    "FeatureContributionData",
+    "FeatureContributionChart",
+    "GlobalImportanceChart",
+    "CounterfactualChange",
+    "CounterfactualComparisonView",
+    "PredictionHistoryEntry",
+    "PredictionHistoryView",
+    "ModelSummary",
+    "ExplanationDashboardData",
+    "DashboardSummary",
+    # Visualization Generator
+    "VisualizationDataGenerator",
+    # State Management
+    "DashboardStateManager",
+    "dashboard_state",
+    "get_dashboard_state",
+    # Router
+    "dashboard_router",
 ]

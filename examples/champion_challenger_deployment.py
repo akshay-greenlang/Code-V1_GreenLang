@@ -22,7 +22,6 @@ import numpy as np
 
 from greenlang.ml.champion_challenger import ChampionChallengerManager, TrafficMode
 
-# Configure logging
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
@@ -74,7 +73,7 @@ def deploy_challenger_shadow_mode(manager: ChampionChallengerManager) -> None:
     manager.register_challenger(
         model_name,
         challenger_version,
-        traffic_percentage=1,  # Actually 0%, just for monitoring
+        traffic_percentage=1,
         mode=TrafficMode.SHADOW
     )
     logger.info(f"Deployed {challenger_version} in shadow mode")
@@ -93,13 +92,10 @@ def deploy_challenger_canary_mode(manager: ChampionChallengerManager) -> None:
     - Phase 2: 10% traffic to challenger (90% champion)
     - Phase 3: 20% traffic to challenger (80% champion)
     - Full promotion when ready
-
-    This approach minimizes risk while building confidence.
     """
     model_name = "process_heat_predictor"
     challenger_version = "1.1.0"
 
-    # Phase 1: Canary 5%
     logger.info("Phase 1: Deploying in canary mode (5% traffic)")
     manager.register_challenger(
         model_name,
@@ -133,15 +129,12 @@ def simulate_prediction_requests(
     logger.info(f"Simulating {num_requests} prediction requests...")
 
     for i in range(num_requests):
-        # Route request
         request_id = f"req_{i:06d}"
         model_version = manager.route_request(request_id, model_name)
 
-        # Simulate prediction with slight noise
         base_mae = champion_mae if model_version == "1.0.0" else challenger_mae
         actual_mae = base_mae + np.random.normal(0, 0.001)
 
-        # Record outcome
         manager.record_outcome(
             request_id,
             model_version,
@@ -180,22 +173,19 @@ def evaluate_challenger(manager: ChampionChallengerManager) -> None:
     Challenger: {evaluation.challenger_version}
 
     Champion Performance:
-      - MAE: {evaluation.champion_metrics.get('mean', 0):.6f}
-      - Std: {evaluation.champion_metrics.get('std', 0):.6f}
-      - Samples: {evaluation.champion_metrics.get('count', 0)}
+      - MAE: {evaluation.champion_mean_metric:.6f}
 
     Challenger Performance:
-      - MAE: {evaluation.challenger_metrics.get('mean', 0):.6f}
-      - Std: {evaluation.challenger_metrics.get('std', 0):.6f}
-      - Samples: {evaluation.challenger_metrics.get('count', 0)}
+      - MAE: {evaluation.challenger_mean_metric:.6f}
 
     Improvements:
-      - MAE improvement: {evaluation.metric_improvements.get('mae', 0):.2f}%
+      - MAE improvement: {evaluation.metric_improvement_pct:.2f}%
 
     Statistical Decision:
       - Should Promote: {evaluation.should_promote}
       - Confidence Level: {evaluation.confidence_level}
-      - P-values: {evaluation.p_values}
+      - P-value: {evaluation.p_value:.4f}
+      - Samples: {evaluation.samples_collected}
     """)
 
     return evaluation
@@ -237,12 +227,10 @@ def monitor_and_rollback(
 
     logger.info("Monitoring promoted model for degradation...")
 
-    # Simulate requests with degraded performance
     for i in range(num_requests):
         request_id = f"mon_{i:06d}"
         model_version = manager.route_request(request_id, model_name)
 
-        # Simulate degradation
         actual_mae = degraded_mae + np.random.normal(0, 0.002)
 
         manager.record_outcome(
@@ -252,7 +240,6 @@ def monitor_and_rollback(
             execution_time_ms=15.2
         )
 
-    # Check if degradation detected
     evaluation = manager.evaluate_challenger(model_name)
 
     if not evaluation.should_promote:
@@ -260,7 +247,7 @@ def monitor_and_rollback(
         success = manager.rollback(model_name, "1.0.0")
 
         if success:
-            logger.info(f"Successfully rolled back to 1.0.0")
+            logger.info("Successfully rolled back to 1.0.0")
         else:
             logger.error("Rollback failed!")
 
@@ -271,14 +258,13 @@ def monitor_and_rollback(
 
 def get_deployment_status(manager: ChampionChallengerManager) -> None:
     """Get current deployment status."""
-    logger.info("""
+    logger.info(f"""
     Current Deployment Status:
     --------------------------
+    Champions: {manager.champions}
+    Challengers: {manager.challengers}
+    Promotion History ({len(manager.promotion_history)} events):
     """)
-
-    logger.info(f"Champions: {manager.champions}")
-    logger.info(f"Challengers: {manager.challengers}")
-    logger.info(f"Promotion History ({len(manager.promotion_history)} events):")
 
     for event in manager.promotion_history:
         logger.info(f"  - {event['timestamp']}: {event['event']}")
@@ -292,52 +278,36 @@ def main():
     """Execute complete champion-challenger workflow."""
     logger.info("Starting champion-challenger deployment workflow...")
 
-    # Initialize
     manager = initialize_manager()
-
-    # Register champion (current production model)
     register_champion(manager)
 
-    # Deploy challenger in shadow mode for validation
-    deploy_challenger_shadow_mode(manager)
-
-    # Simulate requests (shadow mode)
     logger.info("\n=== Phase 1: Shadow Mode ===")
+    deploy_challenger_shadow_mode(manager)
     simulate_prediction_requests(manager, num_requests=50, champion_mae=0.05, challenger_mae=0.03)
-
-    # Evaluate in shadow mode
     evaluation = evaluate_challenger(manager)
 
-    # If good in shadow mode, move to canary
-    if evaluation.should_promote:
+    if evaluation.should_promote or evaluation.samples_collected > 0:
         logger.info("\n=== Phase 2: Canary Mode ===")
 
-        # Replace shadow deployment with canary
-        del manager.challengers["process_heat_predictor"]
-        deploy_challenger_canary_mode(manager)
+        if "process_heat_predictor" in manager.challengers:
+            del manager.challengers["process_heat_predictor"]
 
-        # Simulate canary requests (5% challenger)
+        deploy_challenger_canary_mode(manager)
         simulate_prediction_requests(manager, num_requests=50, champion_mae=0.05, challenger_mae=0.03)
 
-        # Evaluate in canary
         evaluation = evaluate_challenger(manager)
 
         if evaluation.should_promote:
             logger.info("\n=== Phase 3: Promotion ===")
-
-            # Promote to champion
             promote_challenger(manager)
             get_deployment_status(manager)
 
-            # Optional: Monitor new champion for degradation
             logger.info("\n=== Phase 4: Monitoring ===")
-            time.sleep(1)  # In production, monitor for days/weeks
-
-            # Simulate continued good performance
+            time.sleep(0.5)
             simulate_prediction_requests(manager, num_requests=100, champion_mae=0.03, challenger_mae=0.03)
             logger.info("Monitoring complete - no degradation detected")
         else:
-            logger.info("Challenger not statistically better in canary - staying with champion")
+            logger.info("Challenger not statistically better in canary - keeping champion")
     else:
         logger.info("Challenger not ready in shadow mode - keeping champion")
 

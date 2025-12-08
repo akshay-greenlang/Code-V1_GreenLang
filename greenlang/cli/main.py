@@ -245,7 +245,7 @@ def doctor(
     console.print("\n[green]Environment check completed![/green]")
 
 
-# Add sub-applications for pack, init, rag, sbom, generate, decarbonization, and rbac commands
+# Add sub-applications for pack, init, rag, sbom, generate, decarbonization, rbac, and agent commands
 from .cmd_pack_new import app as pack_app
 from .cmd_init import app as init_app
 from .rag_commands import app as rag_app
@@ -253,6 +253,7 @@ from .cmd_sbom import app as sbom_app
 from .cmd_generate import app as generate_app
 from .cmd_decarbonization import app as decarbonization_app
 from .cmd_rbac import app as rbac_app
+from .cmd_agent import app as agent_app
 
 app.add_typer(pack_app, name="pack", help="Pack management commands")
 app.add_typer(init_app, name="init", help="Initialize new projects, packs, and agents")
@@ -261,6 +262,7 @@ app.add_typer(sbom_app, name="sbom", help="SBOM generation and verification")
 app.add_typer(generate_app, name="generate", help="Generate agents using LLM-powered code generation")
 app.add_typer(decarbonization_app, name="decarbonization", help="Generate industrial decarbonization roadmaps (Agent #12)")
 app.add_typer(rbac_app, name="rbac", help="Agent-level Role-Based Access Control management")
+app.add_typer(agent_app, name="agent", help="Agent Factory: Create, test, and publish GreenLang agents")
 
 
 # Add run command

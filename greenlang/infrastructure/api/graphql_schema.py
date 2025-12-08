@@ -958,6 +958,109 @@ if STRAWBERRY_AVAILABLE and strawberry is not None:
     # STRAWBERRY QUERY TYPE
     # ========================================================================
 
+    # ========================================================================
+    # SERVICE LAYER IMPORTS AND HELPERS
+    # ========================================================================
+
+    def _get_agent_service():
+        """Get the global AgentService instance."""
+        from greenlang.infrastructure.api.services.agent_service import get_agent_service
+        return get_agent_service()
+
+    def _get_calculation_service():
+        """Get the global CalculationService instance."""
+        from greenlang.infrastructure.api.services.calculation_service import get_calculation_service
+        return get_calculation_service()
+
+    def _get_compliance_service():
+        """Get the global ComplianceService instance."""
+        from greenlang.infrastructure.api.services.compliance_service import get_compliance_service
+        return get_compliance_service()
+
+    def _convert_agent_to_graphql(agent_record) -> ProcessHeatAgent:
+        """Convert AgentRecord to ProcessHeatAgent GraphQL type."""
+        return ProcessHeatAgent(
+            id=agent_record.id,
+            name=agent_record.name,
+            agent_type=agent_record.agent_type,
+            status=agent_record.status.value if hasattr(agent_record.status, 'value') else str(agent_record.status),
+            enabled=agent_record.enabled,
+            version=agent_record.version,
+            last_run=agent_record.last_run,
+            next_run=agent_record.next_run,
+            metrics=AgentMetricsType(
+                execution_time_ms=agent_record.metrics.execution_time_ms,
+                memory_usage_mb=agent_record.metrics.memory_usage_mb,
+                records_processed=agent_record.metrics.records_processed,
+                processing_rate=agent_record.metrics.processing_rate,
+                cache_hit_ratio=agent_record.metrics.cache_hit_ratio,
+                error_count=agent_record.metrics.error_count
+            ),
+            error_message=agent_record.error_message,
+            created_at=agent_record.created_at,
+            updated_at=agent_record.updated_at,
+        )
+
+    def _convert_job_to_graphql(job_record) -> CalculationJob:
+        """Convert CalculationJob record to GraphQL type."""
+        results = None
+        if job_record.results:
+            results = [
+                EmissionResult(
+                    id=r.id,
+                    facility_id=r.facility_id,
+                    co2_tonnes=r.co2_tonnes,
+                    ch4_tonnes=r.ch4_tonnes,
+                    n2o_tonnes=r.n2o_tonnes,
+                    total_co2e_tonnes=r.total_co2e_tonnes,
+                    provenance_hash=r.provenance_hash,
+                    calculation_method=r.calculation_method,
+                    timestamp=r.timestamp,
+                    confidence_score=r.confidence_score
+                )
+                for r in job_record.results
+            ]
+
+        return CalculationJob(
+            id=job_record.id,
+            status=job_record.status.value if hasattr(job_record.status, 'value') else str(job_record.status),
+            progress_percent=job_record.progress_percent,
+            agent_id=job_record.agent_id,
+            input_summary=job_record.input_summary,
+            results=results,
+            error_details=job_record.error_details,
+            execution_time_ms=job_record.execution_time_ms,
+            created_at=job_record.created_at,
+            started_at=job_record.started_at,
+            completed_at=job_record.completed_at,
+        )
+
+    def _convert_report_to_graphql(report_record) -> ComplianceReport:
+        """Convert ComplianceReport record to GraphQL type."""
+        findings = [
+            ComplianceFinding(
+                id=f.id,
+                category=f.category.value if hasattr(f.category, 'value') else str(f.category),
+                severity=f.severity.value if hasattr(f.severity, 'value') else str(f.severity),
+                description=f.description,
+                remediation_action=f.remediation_action,
+                deadline=f.deadline
+            )
+            for f in report_record.findings
+        ]
+
+        return ComplianceReport(
+            id=report_record.id,
+            report_type=report_record.report_type.value if hasattr(report_record.report_type, 'value') else str(report_record.report_type),
+            status=report_record.status.value if hasattr(report_record.status, 'value') else str(report_record.status),
+            period_start=report_record.period_start,
+            period_end=report_record.period_end,
+            findings=findings,
+            summary=report_record.summary,
+            action_items_count=report_record.action_items_count,
+            generated_at=report_record.generated_at,
+        )
+
     @strawberry.type
     class Query:
         """GraphQL Query root type for Process Heat operations."""
@@ -975,35 +1078,13 @@ if STRAWBERRY_AVAILABLE and strawberry is not None:
             Returns:
                 List of process heat agents
             """
-            # Mock implementation - replace with actual agent registry
-            agents_list = [
-                ProcessHeatAgent(
-                    id="agent-001",
-                    name="Thermal Command",
-                    agent_type="GL-001",
-                    status=status or "idle",
-                    enabled=True,
-                    version="1.0.0",
-                    last_run=datetime.now(),
-                    next_run=None,
-                    metrics=AgentMetricsType(
-                        execution_time_ms=1234.5,
-                        memory_usage_mb=256.2,
-                        records_processed=15000,
-                        processing_rate=1250.0,
-                        cache_hit_ratio=0.85,
-                        error_count=0
-                    ),
-                    error_message=None,
-                    created_at=datetime.now(),
-                    updated_at=datetime.now(),
-                )
-            ]
-
-            if status:
-                agents_list = [a for a in agents_list if a.status == status]
-
-            return agents_list
+            try:
+                agent_service = _get_agent_service()
+                agent_records = await agent_service.get_all_agents(status=status)
+                return [_convert_agent_to_graphql(a) for a in agent_records]
+            except Exception as e:
+                logger.error(f"Error querying agents: {e}", exc_info=True)
+                return []
 
         @strawberry.field
         async def agent(self, id: str) -> Optional[ProcessHeatAgent]:
@@ -1015,30 +1096,15 @@ if STRAWBERRY_AVAILABLE and strawberry is not None:
             Returns:
                 ProcessHeatAgent or None
             """
-            # Mock implementation
-            if id == "agent-001":
-                return ProcessHeatAgent(
-                    id=id,
-                    name="Thermal Command",
-                    agent_type="GL-001",
-                    status="idle",
-                    enabled=True,
-                    version="1.0.0",
-                    last_run=datetime.now(),
-                    next_run=None,
-                    metrics=AgentMetricsType(
-                        execution_time_ms=1234.5,
-                        memory_usage_mb=256.2,
-                        records_processed=15000,
-                        processing_rate=1250.0,
-                        cache_hit_ratio=0.85,
-                        error_count=0
-                    ),
-                    error_message=None,
-                    created_at=datetime.now(),
-                    updated_at=datetime.now(),
-                )
-            return None
+            try:
+                agent_service = _get_agent_service()
+                agent_record = await agent_service.get_agent(id)
+                if agent_record:
+                    return _convert_agent_to_graphql(agent_record)
+                return None
+            except Exception as e:
+                logger.error(f"Error querying agent {id}: {e}", exc_info=True)
+                return None
 
         @strawberry.field
         async def emissions(
@@ -1055,22 +1121,42 @@ if STRAWBERRY_AVAILABLE and strawberry is not None:
             Returns:
                 List of emission results
             """
-            # Mock implementation
-            return [
-                EmissionResult(
-                    id=f"emission-{i}",
-                    facility_id=facility_id,
-                    co2_tonnes=1250.0 + i * 10,
-                    ch4_tonnes=5.2 + i * 0.1,
-                    n2o_tonnes=0.8 + i * 0.02,
-                    total_co2e_tonnes=1256.5 + i * 10.2,
-                    provenance_hash="sha256_hash_" + str(i).zfill(64),
-                    calculation_method="IPCC AR6",
-                    timestamp=datetime.now(),
-                    confidence_score=0.95
+            try:
+                # Get emissions from completed calculation jobs
+                calc_service = _get_calculation_service()
+                jobs = await calc_service.list_jobs(
+                    status="completed",
+                    facility_id=facility_id
                 )
-                for i in range(3)
-            ]
+
+                emissions = []
+                for job in jobs:
+                    if job.results:
+                        for r in job.results:
+                            # Apply date filter if provided
+                            if date_range:
+                                if r.timestamp.date() < date_range.start_date:
+                                    continue
+                                if r.timestamp.date() > date_range.end_date:
+                                    continue
+
+                            emissions.append(EmissionResult(
+                                id=r.id,
+                                facility_id=r.facility_id,
+                                co2_tonnes=r.co2_tonnes,
+                                ch4_tonnes=r.ch4_tonnes,
+                                n2o_tonnes=r.n2o_tonnes,
+                                total_co2e_tonnes=r.total_co2e_tonnes,
+                                provenance_hash=r.provenance_hash,
+                                calculation_method=r.calculation_method,
+                                timestamp=r.timestamp,
+                                confidence_score=r.confidence_score
+                            ))
+
+                return emissions
+            except Exception as e:
+                logger.error(f"Error querying emissions: {e}", exc_info=True)
+                return []
 
         @strawberry.field
         async def jobs(
@@ -1085,41 +1171,13 @@ if STRAWBERRY_AVAILABLE and strawberry is not None:
             Returns:
                 List of calculation jobs
             """
-            # Mock implementation
-            jobs_list = [
-                CalculationJob(
-                    id=f"job-{i}",
-                    status=status or "completed",
-                    progress_percent=100 if status != "running" else 75,
-                    agent_id="agent-001",
-                    input_summary="1 facility, 30 days",
-                    results=[
-                        EmissionResult(
-                            id=f"result-{i}",
-                            facility_id="facility-1",
-                            co2_tonnes=1250.0,
-                            ch4_tonnes=5.2,
-                            n2o_tonnes=0.8,
-                            total_co2e_tonnes=1256.5,
-                            provenance_hash="hash_" + str(i).zfill(64),
-                            calculation_method="IPCC",
-                            timestamp=datetime.now(),
-                            confidence_score=0.95
-                        )
-                    ],
-                    error_details=None,
-                    execution_time_ms=5432.1,
-                    created_at=datetime.now(),
-                    started_at=datetime.now(),
-                    completed_at=datetime.now(),
-                )
-                for i in range(3)
-            ]
-
-            if status:
-                jobs_list = [j for j in jobs_list if j.status == status]
-
-            return jobs_list
+            try:
+                calc_service = _get_calculation_service()
+                job_records = await calc_service.list_jobs(status=status)
+                return [_convert_job_to_graphql(j) for j in job_records]
+            except Exception as e:
+                logger.error(f"Error querying jobs: {e}", exc_info=True)
+                return []
 
         @strawberry.field
         async def compliance_reports(
@@ -1134,36 +1192,15 @@ if STRAWBERRY_AVAILABLE and strawberry is not None:
             Returns:
                 List of compliance reports
             """
-            from datetime import date as date_class
-            # Mock implementation
-            reports = [
-                ComplianceReport(
-                    id=f"report-{i}",
-                    report_type=report_type or "ghg_emissions",
-                    status="compliant",
-                    period_start=date_class(2025, 1, 1),
-                    period_end=date_class(2025, 3, 31),
-                    findings=[
-                        ComplianceFinding(
-                            id="finding-1",
-                            category="emissions_tracking",
-                            severity="low",
-                            description="Minor tracking deviation",
-                            remediation_action="Update measurement method",
-                            deadline=date_class(2025, 6, 30)
-                        )
-                    ],
-                    summary="Facility is 98% compliant",
-                    action_items_count=1,
-                    generated_at=datetime.now(),
+            try:
+                compliance_service = _get_compliance_service()
+                report_records = await compliance_service.list_reports(
+                    report_type=report_type
                 )
-                for i in range(2)
-            ]
-
-            if report_type:
-                reports = [r for r in reports if r.report_type == report_type]
-
-            return reports
+                return [_convert_report_to_graphql(r) for r in report_records]
+            except Exception as e:
+                logger.error(f"Error querying compliance reports: {e}", exc_info=True)
+                return []
 
     # ========================================================================
     # STRAWBERRY MUTATION TYPE
@@ -1186,23 +1223,57 @@ if STRAWBERRY_AVAILABLE and strawberry is not None:
             Returns:
                 CalculationJob instance
             """
-            from uuid import uuid4
+            try:
+                from greenlang.infrastructure.api.services.calculation_service import (
+                    CalculationInput as CalcInput,
+                    JobPriorityEnum,
+                )
 
-            job_id = str(uuid4())
+                calc_service = _get_calculation_service()
 
-            return CalculationJob(
-                id=job_id,
-                status="pending",
-                progress_percent=0,
-                agent_id=input.agent_id,
-                input_summary=f"Facility {input.facility_id}, date range provided",
-                results=None,
-                error_details=None,
-                execution_time_ms=0.0,
-                created_at=datetime.now(),
-                started_at=None,
-                completed_at=None,
-            )
+                # Map priority string to enum
+                try:
+                    priority = JobPriorityEnum(input.priority.lower())
+                except ValueError:
+                    priority = JobPriorityEnum.NORMAL
+
+                # Parse parameters JSON if provided
+                params = None
+                if input.parameters:
+                    import json
+                    try:
+                        params = json.loads(input.parameters)
+                    except json.JSONDecodeError:
+                        params = {}
+
+                calc_input = CalcInput(
+                    agent_id=input.agent_id,
+                    facility_id=input.facility_id,
+                    start_date=input.date_range.start_date,
+                    end_date=input.date_range.end_date,
+                    parameters=params,
+                    priority=priority
+                )
+
+                job_record = await calc_service.run_calculation(calc_input)
+                return _convert_job_to_graphql(job_record)
+
+            except Exception as e:
+                logger.error(f"Error running calculation: {e}", exc_info=True)
+                # Return a failed job instead of raising
+                return CalculationJob(
+                    id="error",
+                    status="failed",
+                    progress_percent=0,
+                    agent_id=input.agent_id,
+                    input_summary=f"Error: {str(e)}",
+                    results=None,
+                    error_details=str(e),
+                    execution_time_ms=0.0,
+                    created_at=datetime.now(),
+                    started_at=None,
+                    completed_at=None,
+                )
 
         @strawberry.mutation
         async def update_agent_config(
@@ -1219,27 +1290,61 @@ if STRAWBERRY_AVAILABLE and strawberry is not None:
             Returns:
                 Updated ProcessHeatAgent
             """
-            return ProcessHeatAgent(
-                id=id,
-                name="Thermal Command",
-                agent_type="GL-001",
-                status="idle",
-                enabled=config.enabled if config.enabled is not None else True,
-                version="1.0.0",
-                last_run=datetime.now(),
-                next_run=None,
-                metrics=AgentMetricsType(
-                    execution_time_ms=1234.5,
-                    memory_usage_mb=256.2,
-                    records_processed=15000,
-                    processing_rate=1250.0,
-                    cache_hit_ratio=0.85,
-                    error_count=0
-                ),
-                error_message=None,
-                created_at=datetime.now(),
-                updated_at=datetime.now(),
-            )
+            try:
+                from greenlang.infrastructure.api.services.agent_service import (
+                    AgentConfigUpdate,
+                )
+
+                agent_service = _get_agent_service()
+
+                # Parse parameters JSON if provided
+                params = None
+                if config.parameters:
+                    import json
+                    try:
+                        params = json.loads(config.parameters)
+                    except json.JSONDecodeError:
+                        params = {}
+
+                update = AgentConfigUpdate(
+                    enabled=config.enabled,
+                    execution_interval_minutes=config.execution_interval_minutes,
+                    parameters=params
+                )
+
+                agent_record = await agent_service.update_agent_config(id, update)
+                return _convert_agent_to_graphql(agent_record)
+
+            except Exception as e:
+                logger.error(f"Error updating agent config: {e}", exc_info=True)
+                # Return the existing agent or a placeholder
+                agent_service = _get_agent_service()
+                agent_record = await agent_service.get_agent(id)
+                if agent_record:
+                    return _convert_agent_to_graphql(agent_record)
+
+                # Return placeholder if agent not found
+                return ProcessHeatAgent(
+                    id=id,
+                    name="Unknown",
+                    agent_type="GL-000",
+                    status="failed",
+                    enabled=False,
+                    version="0.0.0",
+                    last_run=None,
+                    next_run=None,
+                    metrics=AgentMetricsType(
+                        execution_time_ms=0.0,
+                        memory_usage_mb=0.0,
+                        records_processed=0,
+                        processing_rate=0.0,
+                        cache_hit_ratio=0.0,
+                        error_count=1
+                    ),
+                    error_message=str(e),
+                    created_at=datetime.now(),
+                    updated_at=datetime.now(),
+                )
 
         @strawberry.mutation
         async def generate_report(
@@ -1256,21 +1361,39 @@ if STRAWBERRY_AVAILABLE and strawberry is not None:
             Returns:
                 ComplianceReport instance
             """
-            from uuid import uuid4
+            try:
+                from greenlang.infrastructure.api.services.compliance_service import (
+                    ReportParams,
+                )
 
-            report_id = str(uuid4())
+                compliance_service = _get_compliance_service()
 
-            return ComplianceReport(
-                id=report_id,
-                report_type=report_type,
-                status="compliant",
-                period_start=params.date_range.start_date,
-                period_end=params.date_range.end_date,
-                findings=[],
-                summary="Report generated successfully",
-                action_items_count=0,
-                generated_at=datetime.now(),
-            )
+                report_params = ReportParams(
+                    facility_ids=params.facility_ids,
+                    start_date=params.date_range.start_date,
+                    end_date=params.date_range.end_date,
+                    include_recommendations=params.include_recommendations
+                )
+
+                report_record = await compliance_service.generate_report(
+                    report_type, report_params
+                )
+                return _convert_report_to_graphql(report_record)
+
+            except Exception as e:
+                logger.error(f"Error generating report: {e}", exc_info=True)
+                # Return an error report
+                return ComplianceReport(
+                    id="error",
+                    report_type=report_type,
+                    status="failed",
+                    period_start=params.date_range.start_date,
+                    period_end=params.date_range.end_date,
+                    findings=[],
+                    summary=f"Error generating report: {str(e)}",
+                    action_items_count=0,
+                    generated_at=datetime.now(),
+                )
 
     # ========================================================================
     # STRAWBERRY SUBSCRIPTION TYPE

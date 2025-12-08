@@ -689,6 +689,246 @@ class CausalInference:
         return self._causal_graph
 
 
+    def get_confounders(self) -> List[str]:
+        """
+        Get identified confounders for the treatment-outcome relationship.
+
+        Returns:
+            List of confounder variable names
+
+        Example:
+            >>> confounders = ci.get_confounders()
+            >>> print(f"Confounders: {confounders}")
+        """
+        if self.config.common_causes:
+            return self.config.common_causes.copy()
+        return []
+
+
+class ProcessHeatCausalModels:
+    """
+    Predefined causal models for Process Heat agents.
+
+    This class provides factory methods to create causal inference engines
+    for common process heat scenarios with properly specified causal graphs.
+
+    Models:
+    - excess_air_efficiency: How excess air affects boiler efficiency
+    - maintenance_failure: Maintenance impact on failure probability
+    - load_changes_emissions: Load variability and emissions
+    - fouling_heat_transfer: Fouling effect on heat transfer coefficient
+    """
+
+    @staticmethod
+    def excess_air_efficiency_model(
+        data: pd.DataFrame,
+        confidence_level: float = 0.95
+    ) -> CausalInference:
+        """
+        Create causal model for excess air impact on efficiency.
+
+        Causal graph:
+            fuel_type -> excess_air_ratio
+            fuel_type -> efficiency (confounder)
+            burner_age -> excess_air_ratio
+            burner_age -> efficiency (confounder)
+            excess_air_ratio -> efficiency (treatment effect)
+
+        Args:
+            data: DataFrame with columns: excess_air_ratio, efficiency,
+                  fuel_type, burner_age
+            confidence_level: Confidence level for intervals (default 0.95)
+
+        Returns:
+            CausalInference engine for excess air -> efficiency
+
+        Example:
+            >>> model = ProcessHeatCausalModels.excess_air_efficiency_model(data)
+            >>> result = model.estimate_causal_effect()
+            >>> print(f"1% increase in O2 reduces efficiency by {result.average_treatment_effect:.2%}")
+        """
+        config = CausalInferenceConfig(
+            treatment="excess_air_ratio",
+            outcome="efficiency",
+            common_causes=["fuel_type", "burner_age", "ambient_temp"],
+            identification_method=IdentificationMethod.BACKDOOR,
+            estimation_method=EstimationMethod.LINEAR_REGRESSION,
+            confidence_level=confidence_level
+        )
+
+        logger.info("Created excess_air_efficiency causal model")
+        return CausalInference(data, config)
+
+    @staticmethod
+    def maintenance_failure_model(
+        data: pd.DataFrame,
+        confidence_level: float = 0.95
+    ) -> CausalInference:
+        """
+        Create causal model for maintenance impact on failure probability.
+
+        Causal graph:
+            equipment_age -> maintenance_frequency
+            equipment_age -> failure_probability (confounder)
+            utilization -> maintenance_frequency
+            utilization -> failure_probability (confounder)
+            maintenance_frequency -> failure_probability (treatment effect)
+
+        Args:
+            data: DataFrame with columns: maintenance_frequency, failure_prob,
+                  equipment_age, utilization
+            confidence_level: Confidence level for intervals (default 0.95)
+
+        Returns:
+            CausalInference engine for maintenance -> failure
+
+        Example:
+            >>> model = ProcessHeatCausalModels.maintenance_failure_model(data)
+            >>> result = model.estimate_causal_effect()
+            >>> print(f"Effect of additional maintenance visit: {result.average_treatment_effect:.4f}")
+        """
+        config = CausalInferenceConfig(
+            treatment="maintenance_frequency",
+            outcome="failure_probability",
+            common_causes=["equipment_age", "utilization", "maintenance_cost"],
+            identification_method=IdentificationMethod.BACKDOOR,
+            estimation_method=EstimationMethod.PROPENSITY_SCORE_MATCHING,
+            confidence_level=confidence_level
+        )
+
+        logger.info("Created maintenance_failure causal model")
+        return CausalInference(data, config)
+
+    @staticmethod
+    def load_changes_emissions_model(
+        data: pd.DataFrame,
+        confidence_level: float = 0.95
+    ) -> CausalInference:
+        """
+        Create causal model for load changes impact on emissions.
+
+        Causal graph:
+            demand_pattern -> steam_load_change
+            demand_pattern -> emissions (confounder)
+            weather -> steam_load_change
+            weather -> emissions (confounder)
+            fuel_type -> emissions (confounder)
+            steam_load_change -> emissions (treatment effect)
+
+        Args:
+            data: DataFrame with columns: steam_load_change, co2_emissions,
+                  demand_pattern, weather, fuel_type
+            confidence_level: Confidence level for intervals (default 0.95)
+
+        Returns:
+            CausalInference engine for load changes -> emissions
+
+        Example:
+            >>> model = ProcessHeatCausalModels.load_changes_emissions_model(data)
+            >>> result = model.estimate_causal_effect()
+            >>> print(f"Emissions per unit load change: {result.average_treatment_effect:.4f}")
+        """
+        config = CausalInferenceConfig(
+            treatment="steam_load_change",
+            outcome="co2_emissions",
+            common_causes=[
+                "demand_pattern",
+                "weather_temp",
+                "fuel_type",
+                "boiler_efficiency"
+            ],
+            identification_method=IdentificationMethod.BACKDOOR,
+            estimation_method=EstimationMethod.LINEAR_REGRESSION,
+            confidence_level=confidence_level
+        )
+
+        logger.info("Created load_changes_emissions causal model")
+        return CausalInference(data, config)
+
+    @staticmethod
+    def fouling_heat_transfer_model(
+        data: pd.DataFrame,
+        confidence_level: float = 0.95
+    ) -> CausalInference:
+        """
+        Create causal model for fouling impact on heat transfer coefficient.
+
+        Causal graph:
+            water_quality -> fouling_level
+            water_quality -> heat_transfer_coef (confounder)
+            operating_hours -> fouling_level
+            operating_hours -> heat_transfer_coef (confounder)
+            temperature -> fouling_level
+            temperature -> heat_transfer_coef (confounder)
+            fouling_level -> heat_transfer_coef (treatment effect)
+
+        Args:
+            data: DataFrame with columns: fouling_mm, heat_transfer_coef,
+                  water_quality, operating_hours, temperature
+            confidence_level: Confidence level for intervals (default 0.95)
+
+        Returns:
+            CausalInference engine for fouling -> heat transfer
+
+        Example:
+            >>> model = ProcessHeatCausalModels.fouling_heat_transfer_model(data)
+            >>> result = model.estimate_causal_effect()
+            >>> print(f"Each mm of fouling reduces U by {result.average_treatment_effect:.2f}")
+        """
+        config = CausalInferenceConfig(
+            treatment="fouling_mm",
+            outcome="heat_transfer_coef",
+            common_causes=[
+                "water_quality",
+                "operating_hours",
+                "temperature",
+                "fluid_velocity"
+            ],
+            identification_method=IdentificationMethod.BACKDOOR,
+            estimation_method=EstimationMethod.LINEAR_REGRESSION,
+            confidence_level=confidence_level
+        )
+
+        logger.info("Created fouling_heat_transfer causal model")
+        return CausalInference(data, config)
+
+    @staticmethod
+    def temperature_corrosion_model(
+        data: pd.DataFrame,
+        confidence_level: float = 0.95
+    ) -> CausalInference:
+        """
+        Create causal model for temperature impact on corrosion rate.
+
+        Causal graph:
+            pressure -> temperature
+            pressure -> corrosion_rate (confounder)
+            steam_quality -> temperature
+            steam_quality -> corrosion_rate (confounder)
+            water_ph -> corrosion_rate (confounder)
+            temperature -> corrosion_rate (treatment effect)
+
+        Args:
+            data: DataFrame with columns: outlet_temp_c, corrosion_rate,
+                  pressure_bar, steam_quality, water_ph
+            confidence_level: Confidence level for intervals (default 0.95)
+
+        Returns:
+            CausalInference engine for temperature -> corrosion
+        """
+        config = CausalInferenceConfig(
+            treatment="outlet_temp_c",
+            outcome="corrosion_rate",
+            common_causes=["pressure_bar", "steam_quality", "water_ph"],
+            identification_method=IdentificationMethod.BACKDOOR,
+            estimation_method=EstimationMethod.LINEAR_REGRESSION,
+            confidence_level=confidence_level
+        )
+
+        logger.info("Created temperature_corrosion causal model")
+        return CausalInference(data, config)
+
+
 # Unit test stubs
 class TestCausalInference:
     """Unit tests for CausalInference."""
@@ -769,3 +1009,82 @@ class TestCausalInference:
         hash2 = ci._calculate_provenance(0.5, "linear_regression")
 
         assert hash1 == hash2
+
+    def test_excess_air_efficiency_model(self):
+        """Test process heat excess air model creation."""
+        data = pd.DataFrame({
+            "excess_air_ratio": [0.15, 0.20, 0.25, 0.30],
+            "efficiency": [0.82, 0.80, 0.78, 0.76],
+            "fuel_type": ["gas", "gas", "oil", "oil"],
+            "burner_age": [2, 5, 3, 8],
+            "ambient_temp": [15, 20, 18, 22]
+        })
+
+        model = ProcessHeatCausalModels.excess_air_efficiency_model(data)
+        assert model.config.treatment == "excess_air_ratio"
+        assert model.config.outcome == "efficiency"
+        assert "fuel_type" in model.config.common_causes
+
+    def test_maintenance_failure_model(self):
+        """Test process heat maintenance model creation."""
+        data = pd.DataFrame({
+            "maintenance_frequency": [2, 3, 4, 5],
+            "failure_probability": [0.1, 0.08, 0.05, 0.03],
+            "equipment_age": [5, 10, 15, 20],
+            "utilization": [0.6, 0.7, 0.8, 0.9]
+        })
+
+        model = ProcessHeatCausalModels.maintenance_failure_model(data)
+        assert model.config.treatment == "maintenance_frequency"
+        assert model.config.outcome == "failure_probability"
+
+    def test_load_changes_emissions_model(self):
+        """Test process heat load model creation."""
+        data = pd.DataFrame({
+            "steam_load_change": [0, 10, 20, -10],
+            "co2_emissions": [100, 110, 120, 95],
+            "demand_pattern": ["peak", "peak", "peak", "low"],
+            "weather_temp": [15, 16, 17, 18],
+            "fuel_type": ["gas", "gas", "gas", "gas"],
+            "boiler_efficiency": [0.8, 0.8, 0.8, 0.8]
+        })
+
+        model = ProcessHeatCausalModels.load_changes_emissions_model(data)
+        assert model.config.treatment == "steam_load_change"
+        assert model.config.outcome == "co2_emissions"
+
+    def test_fouling_heat_transfer_model(self):
+        """Test process heat fouling model creation."""
+        data = pd.DataFrame({
+            "fouling_mm": [0.5, 1.0, 1.5, 2.0],
+            "heat_transfer_coef": [1500, 1450, 1400, 1350],
+            "water_quality": ["good", "good", "fair", "fair"],
+            "operating_hours": [1000, 2000, 3000, 4000],
+            "temperature": [80, 85, 90, 95],
+            "fluid_velocity": [1.5, 1.5, 1.5, 1.5]
+        })
+
+        model = ProcessHeatCausalModels.fouling_heat_transfer_model(data)
+        assert model.config.treatment == "fouling_mm"
+        assert model.config.outcome == "heat_transfer_coef"
+
+    def test_get_confounders(self):
+        """Test getting confounders from model."""
+        data = pd.DataFrame({
+            "T": [0, 1, 0, 1],
+            "Y": [1, 2, 1, 2],
+            "X1": [1, 2, 1, 2],
+            "X2": [3, 4, 3, 4]
+        })
+
+        config = CausalInferenceConfig(
+            treatment="T",
+            outcome="Y",
+            common_causes=["X1", "X2"]
+        )
+
+        ci = CausalInference(data, config)
+        confounders = ci.get_confounders()
+
+        assert "X1" in confounders
+        assert "X2" in confounders

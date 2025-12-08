@@ -1,0 +1,1208 @@
+# ==============================================================================
+# GL-021 BURNERSENTRY - Burner Maintenance Predictor Pack Manifest
+# ==============================================================================
+#
+# Agent: GL-021 BURNERSENTRY
+# Domain: Process Heat / Industrial Energy
+# Purpose: Predicts burner maintenance needs based on operating conditions
+#
+# Zero-Hallucination Compliance:
+#   - All calculations use deterministic engineering formulas
+#   - Weibull survival analysis with MLE parameter estimation
+#   - Cox Proportional Hazards Model for covariate effects
+#   - SHA-256 provenance tracking for complete audit trail
+#
+# Standards Compliance:
+#   - API 535: Burners for Fired Heaters in General Refinery Services
+#   - API 560: Fired Heaters for General Refinery Service
+#   - NFPA 85: Boiler and Combustion Systems Hazards Code
+#   - NFPA 86: Standard for Ovens and Furnaces
+#   - IEC 61511: Functional Safety for Process Industry
+#
+# Version: 1.0.0
+# Date: 2025-12-08
+# ==============================================================================
+
+pack_id: gl-021-burner-maintenance
+name: "GL-021 BURNERSENTRY - Burner Maintenance Predictor"
+version: "1.0.0"
+description: |
+  Predicts burner maintenance needs based on operating conditions, flame
+  characteristics, fuel quality, and component degradation models.
+
+  Key Capabilities:
+    - Burner health scoring (0-100 scale per API 535)
+    - Remaining Useful Life (RUL) prediction via Weibull analysis
+    - Failure mode prediction with probability scoring
+    - Operating condition impact assessment (Cox Proportional Hazards)
+    - Combustion efficiency tracking and anomaly detection
+    - Emissions monitoring (NOx/CO/CO2) for compliance
+    - CMMS work order generation for maintenance scheduling
+
+  Zero-Hallucination Guarantee:
+    All calculations are deterministic using documented engineering formulas.
+    No LLM/AI is used in the calculation path. Full provenance tracking
+    with SHA-256 hashes for regulatory audit compliance.
+
+author: GreenLang Process Heat Team
+license: Proprietary
+min_greenlang_version: "0.5.0"
+
+# ==============================================================================
+# METADATA
+# ==============================================================================
+
+metadata:
+  agent_id: "GL-021"
+  unique_name: "BURNERSENTRY"
+  category: "Maintenance"
+  type: "Predictor"
+  domain: "Process Heat / Industrial Energy"
+  complexity: "Medium"
+  priority: "P2"
+  market_size_usd: "$4B"
+  timeline: "Q3 2026"
+  implementation_status: "Implemented"
+
+  homepage: "https://greenlang.ai/agents/GL-021"
+  repository: "https://github.com/greenlang/GL-021"
+  documentation: "https://docs.greenlang.ai/agents/GL-021"
+  support: "process-heat@greenlang.ai"
+
+  tags:
+    - burner-maintenance
+    - predictive-maintenance
+    - weibull-analysis
+    - rul-prediction
+    - combustion
+    - process-heat
+    - zero-hallucination
+    - api-535
+    - nfpa-85
+    - nfpa-86
+
+  keywords:
+    - burner
+    - maintenance prediction
+    - flame analysis
+    - combustion efficiency
+    - emissions monitoring
+    - health scoring
+    - remaining useful life
+    - Weibull
+    - Cox hazards
+
+# ==============================================================================
+# REGULATORY CONTEXT
+# ==============================================================================
+
+regulatory_context:
+  standards:
+    - name: "API 535"
+      description: "Burners for Fired Heaters in General Refinery Services"
+      compliance_level: "full"
+    - name: "API 560"
+      description: "Fired Heaters for General Refinery Service"
+      compliance_level: "full"
+    - name: "NFPA 85"
+      description: "Boiler and Combustion Systems Hazards Code"
+      compliance_level: "full"
+    - name: "NFPA 86"
+      description: "Standard for Ovens and Furnaces"
+      compliance_level: "full"
+    - name: "IEC 61511"
+      description: "Functional Safety for Process Industry"
+      compliance_level: "partial"
+    - name: "EPA 40 CFR Part 60"
+      description: "CEMS - Continuous Emissions Monitoring"
+      compliance_level: "monitoring"
+
+  health_scoring_scale:
+    description: "API 535 Severity Classification"
+    excellent:
+      range: "90-100"
+      action: "No action required"
+    good:
+      range: "70-89"
+      action: "Monitor"
+    fair:
+      range: "50-69"
+      action: "Plan maintenance"
+    poor:
+      range: "25-49"
+      action: "Schedule maintenance"
+    critical:
+      range: "0-24"
+      action: "Immediate action required"
+
+# ==============================================================================
+# DEPENDENCIES
+# ==============================================================================
+
+dependencies:
+  python: ">=3.11,<4.0"
+
+  greenlang:
+    core: ">=0.5.0"
+    agents: ">=0.5.0"
+    ml-explainability: ">=0.5.0"
+    provenance: ">=0.5.0"
+
+  external:
+    - numpy>=1.24,<3.0
+    - pandas>=2.0,<3.0
+    - scipy>=1.10,<2.0
+    - scikit-learn>=1.3,<2.0
+    - pydantic>=2.0,<3.0
+
+# ==============================================================================
+# RUNTIME REQUIREMENTS
+# ==============================================================================
+
+runtime:
+  memory_mb: 512
+  cpu_cores: 1
+  cpu_millicores: 500
+  disk_space_gb: 5
+  gpu_required: false
+
+  environment:
+    - name: "GL_AGENT_ID"
+      value: "GL-021"
+      required: true
+    - name: "GL_LOG_LEVEL"
+      value: "INFO"
+      required: false
+    - name: "GL_PROVENANCE_ENABLED"
+      value: "true"
+      required: false
+
+# ==============================================================================
+# AGENT INPUTS
+# ==============================================================================
+
+inputs:
+  - name: operating_hours
+    type: float
+    required: true
+    description: "Total operating hours since last maintenance"
+    unit: "hours"
+    constraints:
+      minimum: 0
+      maximum: 100000
+    example: 15000.0
+
+  - name: start_stop_cycles
+    type: integer
+    required: true
+    description: "Number of start/stop cycles since last maintenance"
+    unit: "cycles"
+    constraints:
+      minimum: 0
+    example: 450
+
+  - name: flame_stability_metrics
+    type: object
+    required: true
+    description: "Flame characteristic measurements"
+    schema:
+      flame_temperature_c:
+        type: float
+        description: "Measured flame temperature (deg C)"
+        constraints:
+          minimum: 500
+          maximum: 2500
+      flame_stability_index:
+        type: float
+        description: "Stability index (0-1, 1=perfectly stable)"
+        constraints:
+          minimum: 0.0
+          maximum: 1.0
+      flame_shape_score:
+        type: float
+        description: "Shape conformance score (0-1)"
+        constraints:
+          minimum: 0.0
+          maximum: 1.0
+      color_index:
+        type: float
+        description: "Color index based on blackbody radiation"
+        constraints:
+          minimum: 0.0
+          maximum: 1.0
+    example:
+      flame_temperature_c: 1650.0
+      flame_stability_index: 0.92
+      flame_shape_score: 0.88
+      color_index: 0.85
+
+  - name: combustion_efficiency_trends
+    type: object
+    required: true
+    description: "Combustion efficiency metrics over time"
+    schema:
+      current_efficiency_pct:
+        type: float
+        description: "Current combustion efficiency (%)"
+        constraints:
+          minimum: 50
+          maximum: 100
+      efficiency_7d_avg_pct:
+        type: float
+        description: "7-day average efficiency (%)"
+      efficiency_30d_avg_pct:
+        type: float
+        description: "30-day average efficiency (%)"
+      efficiency_trend:
+        type: string
+        enum: ["improving", "stable", "degrading"]
+      excess_air_pct:
+        type: float
+        description: "Current excess air (%)"
+        constraints:
+          minimum: 0
+          maximum: 100
+    example:
+      current_efficiency_pct: 87.5
+      efficiency_7d_avg_pct: 88.2
+      efficiency_30d_avg_pct: 89.0
+      efficiency_trend: "degrading"
+      excess_air_pct: 15.0
+
+  - name: emissions_levels
+    type: object
+    required: true
+    description: "Current emission readings from CEMS"
+    schema:
+      nox_ppm:
+        type: float
+        description: "NOx emissions (ppm)"
+        constraints:
+          minimum: 0
+      co_ppm:
+        type: float
+        description: "CO emissions (ppm)"
+        constraints:
+          minimum: 0
+      co2_pct:
+        type: float
+        description: "CO2 concentration (%)"
+        constraints:
+          minimum: 0
+          maximum: 25
+      o2_pct:
+        type: float
+        description: "O2 concentration (%)"
+        constraints:
+          minimum: 0
+          maximum: 21
+    example:
+      nox_ppm: 45.0
+      co_ppm: 25.0
+      co2_pct: 9.5
+      o2_pct: 3.5
+
+  - name: temperature_differentials
+    type: object
+    required: false
+    description: "Temperature differential measurements"
+    schema:
+      firebox_temp_c:
+        type: float
+        description: "Firebox temperature (deg C)"
+      stack_temp_c:
+        type: float
+        description: "Stack temperature (deg C)"
+      combustion_air_temp_c:
+        type: float
+        description: "Combustion air temperature (deg C)"
+      delta_t_design_c:
+        type: float
+        description: "Design delta T (deg C)"
+      delta_t_actual_c:
+        type: float
+        description: "Actual delta T (deg C)"
+    example:
+      firebox_temp_c: 1100.0
+      stack_temp_c: 350.0
+      combustion_air_temp_c: 25.0
+      delta_t_design_c: 750.0
+      delta_t_actual_c: 775.0
+
+  - name: fuel_consumption_patterns
+    type: object
+    required: false
+    description: "Fuel consumption data and patterns"
+    schema:
+      current_rate_mmbtu_hr:
+        type: float
+        description: "Current fuel consumption rate (MMBtu/hr)"
+        constraints:
+          minimum: 0
+      firing_rate_pct:
+        type: float
+        description: "Current firing rate (% of capacity)"
+        constraints:
+          minimum: 0
+          maximum: 110
+      fuel_type:
+        type: string
+        description: "Primary fuel type"
+        enum: ["natural_gas", "no2_fuel_oil", "no6_fuel_oil", "propane", "hydrogen_blend"]
+      higher_heating_value:
+        type: float
+        description: "Fuel HHV (BTU/SCF or BTU/gallon)"
+      fuel_sulfur_pct:
+        type: float
+        description: "Fuel sulfur content (%)"
+        constraints:
+          minimum: 0
+          maximum: 10
+    example:
+      current_rate_mmbtu_hr: 45.0
+      firing_rate_pct: 85.0
+      fuel_type: "natural_gas"
+      higher_heating_value: 1020.0
+      fuel_sulfur_pct: 0.0
+
+  - name: maintenance_history
+    type: array
+    required: false
+    description: "Historical maintenance records for pattern analysis"
+    items:
+      type: object
+      properties:
+        maintenance_date:
+          type: string
+          format: date-time
+        maintenance_type:
+          type: string
+          enum: ["inspection", "cleaning", "repair", "replacement", "calibration", "overhaul"]
+        components_replaced:
+          type: array
+          items:
+            type: string
+        operating_hours_at_maintenance:
+          type: float
+        failure_mode:
+          type: string
+        downtime_hours:
+          type: float
+    example:
+      - maintenance_date: "2024-06-15T08:00:00Z"
+        maintenance_type: "repair"
+        components_replaced: ["nozzle"]
+        operating_hours_at_maintenance: 12500.0
+        failure_mode: "nozzle_degradation"
+        downtime_hours: 4.0
+
+# ==============================================================================
+# AGENT OUTPUTS
+# ==============================================================================
+
+outputs:
+  - name: burner_health_score
+    type: object
+    description: "Overall burner health assessment (0-100 scale)"
+    schema:
+      overall_score:
+        type: float
+        description: "Overall health score (0-100)"
+      health_status:
+        type: string
+        enum: ["excellent", "good", "fair", "poor", "critical"]
+      component_scores:
+        type: object
+        description: "Individual component health scores"
+      limiting_component:
+        type: string
+        description: "Component with lowest health score"
+      trend:
+        type: string
+        enum: ["improving", "stable", "degrading", "rapid_degradation"]
+      provenance_hash:
+        type: string
+        description: "SHA-256 provenance hash for audit trail"
+
+  - name: maintenance_prediction
+    type: object
+    description: "Predicted maintenance needs with timing"
+    schema:
+      days_until_maintenance:
+        type: float
+        description: "Predicted days until maintenance needed"
+      rul_hours:
+        type: float
+        description: "Remaining Useful Life in operating hours"
+      rul_p10_hours:
+        type: float
+        description: "RUL at 10% failure probability (optimistic)"
+      rul_p50_hours:
+        type: float
+        description: "RUL at 50% failure probability (median)"
+      rul_p90_hours:
+        type: float
+        description: "RUL at 90% failure probability (conservative)"
+      confidence:
+        type: string
+        enum: ["very_high", "high", "medium", "low", "uncertain"]
+      maintenance_type_recommended:
+        type: string
+        enum: ["inspection", "cleaning", "repair", "replacement", "overhaul"]
+      priority:
+        type: string
+        enum: ["emergency", "critical", "high", "medium", "low", "routine"]
+
+  - name: anomaly_detection
+    type: object
+    description: "Detected abnormal operating patterns"
+    schema:
+      anomalies_detected:
+        type: array
+        items:
+          type: object
+          properties:
+            anomaly_type:
+              type: string
+            severity:
+              type: string
+              enum: ["info", "warning", "alarm", "critical"]
+            description:
+              type: string
+            contributing_factors:
+              type: array
+              items:
+                type: string
+      overall_anomaly_score:
+        type: float
+        description: "Overall anomaly score (0-1)"
+      is_normal_operation:
+        type: boolean
+
+  - name: efficiency_metrics
+    type: object
+    description: "Calculated combustion efficiency metrics"
+    schema:
+      combustion_efficiency_pct:
+        type: float
+        description: "Calculated combustion efficiency (%)"
+      thermal_efficiency_pct:
+        type: float
+        description: "Thermal efficiency (%)"
+      efficiency_loss_breakdown:
+        type: object
+        description: "Breakdown of efficiency losses"
+      improvement_potential_pct:
+        type: float
+        description: "Potential efficiency improvement (%)"
+
+  - name: emissions_status
+    type: object
+    description: "Emissions compliance and tracking"
+    schema:
+      nox_status:
+        type: string
+        enum: ["compliant", "warning", "violation"]
+      co_status:
+        type: string
+        enum: ["compliant", "warning", "violation"]
+      combustion_quality_index:
+        type: float
+        description: "CQI score (0-100)"
+      regulatory_compliance:
+        type: boolean
+
+  - name: work_orders
+    type: array
+    description: "Generated CMMS work orders"
+    items:
+      type: object
+      properties:
+        work_order_id:
+          type: string
+        title:
+          type: string
+        priority:
+          type: string
+        due_date:
+          type: string
+          format: date
+        components:
+          type: array
+          items:
+            type: string
+        estimated_duration_hours:
+          type: float
+        estimated_cost_usd:
+          type: float
+
+# ==============================================================================
+# TOOLS
+# ==============================================================================
+
+tools:
+  - id: burner_health_scorer
+    name: "Burner Health Scorer"
+    type: deterministic-calculator
+    source: "greenlang.agents.process_heat.gl_021_burner_maintenance.burner_health"
+    description: |
+      Calculate overall burner health score (0-100) per API 535 severity
+      classification. Analyzes nozzle, refractory, igniter, scanner,
+      air register, and fuel valve health using degradation models.
+
+    inputs:
+      - name: operating_data
+        type: BurnerOperatingData
+        required: true
+      - name: flame_characteristics
+        type: FlameCharacteristics
+        required: false
+      - name: fuel_quality
+        type: FuelQualityData
+        required: false
+      - name: component_data
+        type: object
+        required: false
+        description: "Individual component condition data"
+
+    outputs:
+      - name: overall_score
+        type: float
+        description: "Overall health score (0-100)"
+      - name: component_scores
+        type: object
+        description: "Per-component health breakdown"
+      - name: severity_classification
+        type: string
+        description: "API 535 severity classification"
+      - name: provenance_hash
+        type: string
+        description: "SHA-256 hash for audit"
+
+    methodology:
+      formula: "Component_Score = 100 * exp(-lambda * hours / design_life)"
+      overall: "Overall_Health = sum(weight_i * component_score_i)"
+      weights:
+        nozzle: 0.20
+        refractory_tile: 0.15
+        igniter: 0.15
+        scanner: 0.15
+        air_register: 0.15
+        fuel_valve: 0.20
+
+    zero_hallucination: true
+
+  - id: maintenance_predictor
+    name: "Maintenance Predictor"
+    type: deterministic-calculator
+    source: "greenlang.agents.process_heat.gl_021_burner_maintenance.maintenance_prediction"
+    description: |
+      Predict days until maintenance needed using Weibull survival analysis
+      with MLE parameter estimation and Cox Proportional Hazards adjustment
+      for operating conditions.
+
+    inputs:
+      - name: current_age_hours
+        type: float
+        required: true
+      - name: failure_history
+        type: array
+        required: false
+      - name: operating_conditions
+        type: OperatingConditions
+        required: false
+
+    outputs:
+      - name: rul_p10_hours
+        type: float
+        description: "RUL at 10% failure probability"
+      - name: rul_p50_hours
+        type: float
+        description: "RUL at 50% failure probability (median)"
+      - name: rul_p90_hours
+        type: float
+        description: "RUL at 90% failure probability"
+      - name: days_until_maintenance
+        type: float
+        description: "Predicted days until maintenance"
+      - name: maintenance_urgency
+        type: string
+        description: "Urgency classification"
+      - name: provenance_hash
+        type: string
+
+    methodology:
+      weibull: "F(t) = 1 - exp(-((t - gamma) / eta)^beta)"
+      rul: "RUL_P = gamma + eta * (-ln(1-P))^(1/beta) - current_age"
+      cox: "h(t|X) = h_0(t) * exp(beta_1*X_1 + beta_2*X_2 + ...)"
+
+    zero_hallucination: true
+
+  - id: anomaly_detector
+    name: "Anomaly Detector"
+    type: deterministic-calculator
+    source: "greenlang.agents.process_heat.gl_021_burner_maintenance.flame_analysis"
+    description: |
+      Detect abnormal operating patterns in flame characteristics,
+      combustion parameters, and emissions. Uses deterministic
+      threshold-based detection with configurable limits.
+
+    inputs:
+      - name: flame_characteristics
+        type: FlameCharacteristics
+        required: true
+      - name: sensor_data
+        type: BurnerSensorData
+        required: false
+      - name: baseline_profiles
+        type: object
+        required: false
+
+    outputs:
+      - name: anomalies
+        type: array
+        description: "List of detected anomalies"
+      - name: anomaly_score
+        type: float
+        description: "Overall anomaly score (0-1)"
+      - name: flame_status
+        type: string
+        description: "Flame condition status"
+      - name: alerts
+        type: array
+        description: "Generated alerts"
+
+    thresholds:
+      flame_stability_warning: 0.80
+      flame_stability_critical: 0.60
+      temperature_deviation_warning: 0.10
+      temperature_deviation_critical: 0.20
+      impingement_detection: true
+
+    zero_hallucination: true
+
+  - id: efficiency_calculator
+    name: "Efficiency Calculator"
+    type: deterministic-calculator
+    source: "greenlang.agents.process_heat.gl_021_burner_maintenance.fuel_impact"
+    description: |
+      Calculate combustion efficiency using direct method (heat balance)
+      and indirect method (loss analysis). Zero-hallucination compliance
+      with documented thermodynamic formulas.
+
+    inputs:
+      - name: fuel_data
+        type: FuelQualityData
+        required: true
+      - name: combustion_data
+        type: object
+        required: true
+        properties:
+          flue_gas_temp_c:
+            type: float
+          combustion_air_temp_c:
+            type: float
+          excess_air_pct:
+            type: float
+          o2_pct:
+            type: float
+          co_ppm:
+            type: float
+
+    outputs:
+      - name: combustion_efficiency_pct
+        type: float
+        description: "Combustion efficiency (%)"
+      - name: thermal_efficiency_pct
+        type: float
+        description: "Thermal efficiency (%)"
+      - name: loss_breakdown
+        type: object
+        description: "Efficiency loss breakdown"
+      - name: provenance_hash
+        type: string
+
+    methodology:
+      direct: "eta = Q_useful / Q_input * 100"
+      indirect: "eta = 100 - (L_flue + L_unburned + L_radiation + L_other)"
+      excess_air: "EA = (O2 / (21 - O2)) * 100"
+
+    zero_hallucination: true
+
+  - id: emissions_monitor
+    name: "Emissions Monitor"
+    type: deterministic-calculator
+    source: "greenlang.agents.process_heat.gl_021_burner_maintenance.monitoring_interface"
+    description: |
+      Track NOx, CO, and CO2 emission levels against regulatory limits.
+      Calculate Combustion Quality Index (CQI) for overall assessment.
+
+    inputs:
+      - name: emissions_data
+        type: object
+        required: true
+        properties:
+          nox_ppm:
+            type: float
+          co_ppm:
+            type: float
+          co2_pct:
+            type: float
+          o2_pct:
+            type: float
+      - name: regulatory_limits
+        type: object
+        required: false
+
+    outputs:
+      - name: compliance_status
+        type: object
+        description: "Per-pollutant compliance status"
+      - name: cqi_score
+        type: float
+        description: "Combustion Quality Index (0-100)"
+      - name: corrected_values
+        type: object
+        description: "O2-corrected emission values"
+      - name: trend_analysis
+        type: object
+        description: "Emission trend analysis"
+
+    default_limits:
+      nox_ppm_limit: 100
+      co_ppm_limit: 400
+      o2_reference_pct: 3.0
+
+    zero_hallucination: true
+
+# ==============================================================================
+# DATA MODELS
+# ==============================================================================
+
+data_models:
+  component_design_lives_hours:
+    nozzle: 25000
+    refractory_tile: 40000
+    igniter: 15000
+    scanner: 30000
+    air_register: 50000
+    fuel_valve: 35000
+    burner_tip: 35000
+    pilot_assembly: 30000
+    combustion_blower: 45000
+    flame_rod: 20000
+
+  weibull_beta_defaults:
+    nozzle: 2.8
+    refractory_tile: 3.5
+    igniter: 2.2
+    scanner: 1.8
+    air_register: 3.0
+    fuel_valve: 2.5
+    burner_tip: 2.8
+
+  fuel_degradation_factors:
+    natural_gas:
+      nozzle_erosion: 1.0
+      nozzle_coking: 0.5
+      tile_thermal_stress: 1.0
+      scanner_fouling: 0.8
+    no2_fuel_oil:
+      nozzle_erosion: 1.5
+      nozzle_coking: 2.0
+      tile_thermal_stress: 1.2
+      scanner_fouling: 1.5
+    no6_fuel_oil:
+      nozzle_erosion: 2.0
+      nozzle_coking: 3.0
+      tile_thermal_stress: 1.4
+      scanner_fouling: 2.0
+
+# ==============================================================================
+# INTEGRATION POINTS
+# ==============================================================================
+
+integrations:
+  - name: "DCS/PLC"
+    protocol: "OPC UA"
+    required: true
+    description: "Real-time sensor data from distributed control system"
+  - name: "CEMS"
+    protocol: "Modbus TCP / OPC UA"
+    required: true
+    description: "Continuous Emissions Monitoring System"
+  - name: "CMMS"
+    protocol: "REST API"
+    required: false
+    description: "Computerized Maintenance Management System (SAP PM, Maximo)"
+  - name: "Historian"
+    protocol: "OPC HDA / REST API"
+    required: false
+    description: "Process data historian for trend analysis"
+  - name: "SCADA"
+    protocol: "OPC UA"
+    required: false
+    description: "Supervisory control and data acquisition"
+
+# ==============================================================================
+# GOLDEN TESTS
+# ==============================================================================
+
+golden_tests:
+  total_count: 100
+
+  categories:
+    - name: healthy_burner_tests
+      tests: 25
+      description: "Healthy burner scenarios (score > 80, no maintenance needed)"
+      test_cases:
+        - id: "GT-001"
+          name: "New burner nominal operation"
+          inputs:
+            operating_hours: 1000
+            start_stop_cycles: 50
+            flame_stability_index: 0.95
+            combustion_efficiency_pct: 92.0
+            nox_ppm: 30
+            co_ppm: 15
+          expected:
+            health_score_min: 90
+            health_status: "excellent"
+            maintenance_needed: false
+            rul_hours_min: 20000
+
+        - id: "GT-002"
+          name: "Mid-life burner good condition"
+          inputs:
+            operating_hours: 12000
+            start_stop_cycles: 300
+            flame_stability_index: 0.90
+            combustion_efficiency_pct: 89.0
+            nox_ppm: 40
+            co_ppm: 20
+          expected:
+            health_score_min: 80
+            health_score_max: 90
+            health_status: "good"
+            maintenance_needed: false
+
+        - id: "GT-003"
+          name: "Low firing rate operation"
+          inputs:
+            operating_hours: 8000
+            firing_rate_pct: 50
+            flame_stability_index: 0.92
+            excess_air_pct: 20
+          expected:
+            health_score_min: 85
+            efficiency_penalty: false
+
+    - name: degraded_burner_tests
+      tests: 25
+      description: "Degraded burner scenarios (score 50-80, maintenance soon)"
+      test_cases:
+        - id: "GT-020"
+          name: "Aging burner with efficiency loss"
+          inputs:
+            operating_hours: 22000
+            start_stop_cycles: 600
+            flame_stability_index: 0.78
+            combustion_efficiency_pct: 82.0
+            nox_ppm: 65
+            co_ppm: 80
+          expected:
+            health_score_min: 50
+            health_score_max: 80
+            health_status: "fair"
+            maintenance_needed: true
+            days_until_maintenance_max: 90
+
+        - id: "GT-021"
+          name: "Nozzle degradation detected"
+          inputs:
+            operating_hours: 18000
+            pressure_drop_increase_pct: 15
+            spray_pattern_quality_pct: 78
+            flame_shape_score: 0.72
+          expected:
+            health_score_max: 75
+            limiting_component: "nozzle"
+            maintenance_type: "cleaning"
+
+        - id: "GT-022"
+          name: "Scanner signal degradation"
+          inputs:
+            operating_hours: 25000
+            scanner_signal_strength_pct: 65
+            scanner_baseline_pct: 100
+          expected:
+            component_health_scanner_max: 70
+            recommendation_contains: "scanner"
+
+    - name: critical_burner_tests
+      tests: 25
+      description: "Critical burner scenarios (score < 50, immediate maintenance)"
+      test_cases:
+        - id: "GT-040"
+          name: "Flame instability critical"
+          inputs:
+            operating_hours: 30000
+            flame_stability_index: 0.55
+            flame_failures_30d: 5
+            combustion_efficiency_pct: 75.0
+            co_ppm: 250
+          expected:
+            health_score_max: 50
+            health_status: "critical"
+            maintenance_priority: "emergency"
+            anomaly_detected: true
+
+        - id: "GT-041"
+          name: "Multiple component failures"
+          inputs:
+            operating_hours: 35000
+            nozzle_health_pct: 30
+            scanner_health_pct: 40
+            igniter_failures: 3
+          expected:
+            health_score_max: 40
+            health_status: "poor"
+            work_orders_generated: true
+
+        - id: "GT-042"
+          name: "Refractory hot spot detected"
+          inputs:
+            operating_hours: 28000
+            hot_spot_detected: true
+            crack_count: 3
+            spalling_area_pct: 8
+          expected:
+            health_score_max: 45
+            limiting_component: "refractory_tile"
+            maintenance_priority: "urgent"
+
+    - name: edge_cases_boundary_tests
+      tests: 25
+      description: "Edge cases and boundary conditions"
+      test_cases:
+        - id: "GT-060"
+          name: "Zero operating hours"
+          inputs:
+            operating_hours: 0
+            start_stop_cycles: 0
+          expected:
+            health_score: 100
+            health_status: "excellent"
+            rul_hours_min: 25000
+
+        - id: "GT-061"
+          name: "At design life boundary"
+          inputs:
+            operating_hours: 25000
+            design_life_hours: 25000
+          expected:
+            health_score_max: 60
+            maintenance_needed: true
+
+        - id: "GT-062"
+          name: "Beyond design life"
+          inputs:
+            operating_hours: 40000
+            design_life_hours: 25000
+          expected:
+            health_score_max: 40
+            maintenance_priority: "high"
+
+        - id: "GT-063"
+          name: "High sulfur fuel impact"
+          inputs:
+            operating_hours: 15000
+            fuel_sulfur_pct: 3.5
+            fuel_type: "no6_fuel_oil"
+          expected:
+            degradation_factor_min: 2.0
+            health_score_penalty: true
+
+        - id: "GT-064"
+          name: "Extreme cycling stress"
+          inputs:
+            operating_hours: 10000
+            start_stop_cycles: 2000
+            thermal_cycles: 2000
+          expected:
+            refractory_fatigue_damage: true
+            health_score_reduction: true
+
+        - id: "GT-065"
+          name: "Missing optional inputs"
+          inputs:
+            operating_hours: 15000
+            flame_stability_index: 0.85
+          expected:
+            status: "success"
+            uses_defaults: true
+            health_score_calculated: true
+
+  accuracy_thresholds:
+    health_score: 0.02
+    rul_prediction: 0.10
+    efficiency_calculation: 0.01
+    emissions_correction: 0.02
+
+# ==============================================================================
+# EVALUATION REQUIREMENTS
+# ==============================================================================
+
+evaluation:
+  benchmarks:
+    latency_p95_ms: 500
+    latency_p99_ms: 1000
+    cost_per_analysis_usd: 0.05
+    throughput_requests_per_second: 20
+
+  accuracy_validation:
+    health_score_mae_max: 2.0
+    rul_mape_max: 15.0
+    efficiency_mae_max: 0.5
+
+  domain_validation:
+    validator: "BurnerMaintenanceValidator"
+    compliance_checks:
+      - api_535_health_scoring
+      - weibull_parameter_bounds
+      - provenance_completeness
+      - zero_hallucination_audit
+
+# ==============================================================================
+# CERTIFICATION REQUIREMENTS
+# ==============================================================================
+
+certification:
+  required_approvals:
+    - process_heat_engineering_team
+    - reliability_engineering_team
+    - safety_team
+
+  compliance_checks:
+    - api_535_compliance
+    - nfpa_85_compliance
+    - zero_hallucination_verification
+    - provenance_tracking_audit
+    - golden_test_pass_rate
+
+  deployment_gates:
+    - golden_test_pass_rate: 100%
+    - security_scan: "no_critical_issues"
+    - performance_benchmark: "meets_targets"
+    - documentation: "complete"
+    - code_coverage: ">85%"
+
+# ==============================================================================
+# PROVENANCE CONFIGURATION
+# ==============================================================================
+
+provenance:
+  enabled: true
+  hash_algorithm: "SHA-256"
+  tracked_elements:
+    - inputs
+    - outputs
+    - methodology
+    - model_parameters
+    - calculation_trace
+  audit_trail: true
+  retention_days: 2555
+
+# ==============================================================================
+# FILES
+# ==============================================================================
+
+files:
+  include:
+    - "__init__.py"
+    - "predictor.py"
+    - "burner_health.py"
+    - "maintenance_prediction.py"
+    - "flame_analysis.py"
+    - "fuel_impact.py"
+    - "cmms_integration.py"
+    - "monitoring_interface.py"
+    - "replacement_planner.py"
+    - "explainability.py"
+    - "schemas.py"
+    - "config.py"
+    - "pack.yaml"
+
+  exclude:
+    - "__pycache__"
+    - "*.pyc"
+    - ".git"
+    - ".env"
+    - "*.log"
+    - "*.tmp"
+
+# ==============================================================================
+# PERFORMANCE
+# ==============================================================================
+
+performance:
+  max_latency_ms:
+    health_scoring: 200
+    rul_prediction: 300
+    anomaly_detection: 150
+    efficiency_calculation: 100
+    full_analysis: 500
+
+  max_cost_usd_per_execution: 0.05
+  throughput_requests_per_second: 20
+  memory_limit_mb: 512
+
+# ==============================================================================
+# TESTING
+# ==============================================================================
+
+testing:
+  test_coverage_target: 0.85
+  test_suite: "tests/unit/test_gl021_burner_maintenance.py"
+  test_command: "pytest tests/unit/test_gl021_burner_maintenance.py -v --cov=greenlang/agents/process_heat/gl_021_burner_maintenance"
+
+  test_categories:
+    - unit_tests
+    - integration_tests
+    - golden_tests
+    - performance_tests
+    - provenance_tests
+
+# ==============================================================================
+# DEPLOYMENT
+# ==============================================================================
+
+deployment:
+  container_registry: "gcr.io/greenlang/gl-021"
+  kubernetes_namespace: "process-heat-agents"
+  replicas_min: 2
+  replicas_max: 10
+  auto_scaling: true
+
+  resources:
+    requests:
+      cpu: "250m"
+      memory: "256Mi"
+    limits:
+      cpu: "1000m"
+      memory: "512Mi"
+
+  health_check:
+    path: "/health"
+    port: 8080
+    interval_seconds: 30
+
+# ==============================================================================
+# DOCUMENTATION
+# ==============================================================================
+
+documentation:
+  api_docs: "/docs/api/gl-021"
+  user_guide: "/docs/guides/burner-maintenance"
+  technical_spec: "/docs/specs/gl-021-burner-maintenance"
+  changelog: "/docs/changelog/gl-021"

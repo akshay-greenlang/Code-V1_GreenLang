@@ -27,7 +27,7 @@ from dataclasses import dataclass, field
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-from greenlang.generator.spec_parser import (
+from core.greenlang.generator.spec_parser import (
     ParsedAgentSpec,
     InputField,
     OutputField,

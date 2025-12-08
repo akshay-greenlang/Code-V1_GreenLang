@@ -1,0 +1,1501 @@
+# EU Green Claims Directive Verification Agent Pack Specification
+# Proposal COM/2023/166 - Environmental Claims Substantiation
+# Version: 1.0.0
+# Deadline: September 27, 2026
+
+pack:
+  id: gl-green-claims-v1
+  name: Green Claims Verification Agent
+  description: |
+    Automated environmental claim verification and substantiation agent for EU Green Claims
+    Directive compliance. Analyzes marketing claims, assesses evidence quality, detects
+    greenwashing, validates Product Environmental Footprint (PEF) studies, and generates
+    verification reports for regulatory compliance. Supports all 16 regulated claim types
+    including carbon neutrality, eco-friendly, sustainable, recycled content, and comparative claims.
+  version: "1.0.0"
+  author: GreenLang
+  license: Proprietary
+  category: regulatory-compliance
+  priority: P2-MEDIUM
+  deadline: "2026-09-27"
+
+metadata:
+  regulation:
+    name: EU Green Claims Directive
+    reference: "COM/2023/166"
+    official_journal: "Proposal - awaiting final adoption"
+    expected_adoption: "2024-Q4"
+    transposition_deadline: "2026-09-27"
+    application_date: "2026-09-27"
+    sme_enforcement_date: "2028-09-27"
+
+  scope:
+    applicability: "All B2C environmental claims in EU market"
+    jurisdiction: "European Union (27 member states)"
+    covered_claims:
+      - "Environmental claims (explicit and implicit)"
+      - "Comparative environmental claims"
+      - "Environmental labeling schemes"
+      - "Carbon neutrality/net-zero claims"
+      - "Climate-related claims"
+    exclusions:
+      - "Claims regulated by other EU legislation"
+      - "Mandatory labeling (EU Energy Label, etc.)"
+      - "Financial products (separate SFDR regime)"
+    estimated_impact: "~200,000 companies making green claims in EU"
+
+  claim_types:
+    carbon_climate:
+      - code: carbon_neutral
+        aliases: ["climate neutral", "CO2 neutral", "net zero carbon"]
+        evidence_level: HIGH
+        verification: MANDATORY_THIRD_PARTY
+      - code: climate_positive
+        aliases: ["carbon negative", "net negative"]
+        evidence_level: HIGHEST
+        verification: MANDATORY_THIRD_PARTY
+      - code: net_zero
+        aliases: ["zero emissions", "decarbonized"]
+        evidence_level: HIGHEST
+        verification: MANDATORY_THIRD_PARTY
+      - code: low_carbon
+        aliases: ["reduced carbon", "carbon light"]
+        evidence_level: HIGH
+        verification: RECOMMENDED_THIRD_PARTY
+
+    general_environmental:
+      - code: eco_friendly
+        aliases: ["environmentally friendly", "green", "ecological"]
+        evidence_level: HIGHEST
+        verification: MANDATORY_THIRD_PARTY
+      - code: sustainable
+        aliases: ["sustainability", "sustainably made"]
+        evidence_level: HIGHEST
+        verification: MANDATORY_THIRD_PARTY
+      - code: natural
+        aliases: ["100% natural", "all natural", "nature-based"]
+        evidence_level: MEDIUM
+        verification: DOCUMENTARY
+      - code: organic
+        aliases: ["bio", "biologically produced"]
+        evidence_level: HIGH
+        verification: CERTIFICATION_BASED
+
+    material_resource:
+      - code: recycled
+        aliases: ["made from recycled", "contains recycled"]
+        evidence_level: MEDIUM
+        verification: CHAIN_OF_CUSTODY
+      - code: recyclable
+        aliases: ["can be recycled", "recyclable packaging"]
+        evidence_level: MEDIUM
+        verification: INFRASTRUCTURE_EVIDENCE
+      - code: biodegradable
+        aliases: ["compostable", "breaks down naturally"]
+        evidence_level: HIGH
+        verification: CERTIFICATION_BASED
+      - code: plastic_free
+        aliases: ["no plastic", "zero plastic"]
+        evidence_level: LOW
+        verification: DOCUMENTARY
+
+    comparative:
+      - code: comparative_better
+        aliases: ["X% better", "improved vs", "outperforms"]
+        evidence_level: HIGH
+        verification: MANDATORY_THIRD_PARTY
+      - code: comparative_reduced
+        aliases: ["X% less", "reduced by", "lower than"]
+        evidence_level: MEDIUM
+        verification: DOCUMENTARY
+
+    future_offset:
+      - code: commitment
+        aliases: ["committed to", "on track to", "working towards"]
+        evidence_level: MEDIUM
+        verification: PROGRESS_TRACKING
+      - code: offset_based
+        aliases: ["offset", "compensated", "neutralized via credits"]
+        evidence_level: HIGH
+        verification: MANDATORY_THIRD_PARTY
+
+  pef_impact_categories:
+    - { id: 1, name: "Climate change", unit: "kg CO2 eq", weight: 0.2106 }
+    - { id: 2, name: "Ozone depletion", unit: "kg CFC-11 eq", weight: 0.0631 }
+    - { id: 3, name: "Human toxicity, cancer", unit: "CTUh", weight: 0.0213 }
+    - { id: 4, name: "Human toxicity, non-cancer", unit: "CTUh", weight: 0.0184 }
+    - { id: 5, name: "Particulate matter", unit: "Disease incidence", weight: 0.0896 }
+    - { id: 6, name: "Ionising radiation", unit: "kBq U235 eq", weight: 0.0501 }
+    - { id: 7, name: "Photochemical ozone formation", unit: "kg NMVOC eq", weight: 0.0478 }
+    - { id: 8, name: "Acidification", unit: "mol H+ eq", weight: 0.0620 }
+    - { id: 9, name: "Eutrophication, terrestrial", unit: "mol N eq", weight: 0.0371 }
+    - { id: 10, name: "Eutrophication, freshwater", unit: "kg P eq", weight: 0.0280 }
+    - { id: 11, name: "Eutrophication, marine", unit: "kg N eq", weight: 0.0296 }
+    - { id: 12, name: "Ecotoxicity, freshwater", unit: "CTUe", weight: 0.0192 }
+    - { id: 13, name: "Land use", unit: "Pt", weight: 0.0794 }
+    - { id: 14, name: "Water use", unit: "m3 world eq", weight: 0.0851 }
+    - { id: 15, name: "Resource use, minerals and metals", unit: "kg Sb eq", weight: 0.0755 }
+    - { id: 16, name: "Resource use, fossils", unit: "MJ", weight: 0.0832 }
+
+  penalties:
+    administrative_fines:
+      maximum: "4% of annual EU turnover"
+      minimum: "EUR 50,000"
+    other_penalties:
+      - "Confiscation of revenues from non-compliant products"
+      - "Exclusion from public procurement for up to 3 years"
+      - "Prohibition of marketing claim for up to 12 months"
+      - "Order to publish corrective statement"
+    enforcement:
+      - "National consumer protection authorities"
+      - "Cross-border coordination via CPC Network"
+      - "Consumer right of action for damages"
+
+# Agent Definitions
+agents:
+  # Main Green Claims Verification Agent
+  - id: green-claims-verifier
+    name: Green Claims Verification Agent
+    type: claim-substantiation
+    description: |
+      Core verification engine for EU Green Claims Directive compliance. Analyzes
+      environmental claims, assesses evidence quality, detects greenwashing patterns,
+      and generates verification reports with complete audit trails.
+
+    inputs:
+      - name: claim_submission
+        type: ClaimSubmission
+        required: true
+        description: "Environmental claim to be verified"
+        properties:
+          claim_id:
+            type: string
+            format: uuid
+            description: "Unique identifier for the claim"
+          claim_text:
+            type: string
+            maxLength: 2000
+            required: true
+            description: "The environmental claim text to verify"
+          claim_context:
+            type: object
+            properties:
+              product_name:
+                type: string
+                description: "Name of product/service"
+              product_category:
+                type: string
+                description: "Product category (e.g., apparel, electronics, food)"
+              target_market:
+                type: array
+                items:
+                  type: string
+                  enum: ["EU", "DE", "FR", "IT", "ES", "NL", "BE", "AT", "PL", "SE", "DK", "FI", "IE", "PT", "GR", "CZ", "RO", "HU", "BG", "SK", "HR", "SI", "LT", "LV", "EE", "CY", "LU", "MT"]
+              marketing_channel:
+                type: string
+                enum: ["product_packaging", "website", "advertising", "social_media", "press_release"]
+              publication_date:
+                type: string
+                format: date
+
+      - name: company_profile
+        type: CompanyProfile
+        required: true
+        description: "Company identification and registration details"
+        properties:
+          company_name:
+            type: string
+            required: true
+          registration_country:
+            type: string
+            required: true
+          eu_vat_number:
+            type: string
+            pattern: "^[A-Z]{2}[0-9A-Z]{8,12}$"
+          annual_revenue_eur:
+            type: number
+            minimum: 0
+
+      - name: supporting_evidence
+        type: SupportingEvidence
+        required: false
+        description: "Evidence supporting the environmental claim"
+        properties:
+          lca_study:
+            type: object
+            properties:
+              study_id: { type: string }
+              methodology: { type: string, enum: ["PEF", "ISO_14044", "GHG_Protocol", "Custom"] }
+              scope: { type: string, enum: ["cradle_to_gate", "cradle_to_grave", "gate_to_gate"] }
+              verifier: { type: string }
+              verification_date: { type: string, format: date }
+              study_url: { type: string, format: uri }
+              impact_categories_covered: { type: integer, minimum: 1, maximum: 16 }
+
+          carbon_footprint:
+            type: object
+            properties:
+              total_kg_co2e: { type: number, minimum: 0 }
+              scope_1_kg_co2e: { type: number }
+              scope_2_kg_co2e: { type: number }
+              scope_3_kg_co2e: { type: number }
+              methodology: { type: string }
+              boundary: { type: string }
+              data_year: { type: integer }
+              historical_emissions: { type: array }
+
+          offset_credits:
+            type: array
+            items:
+              type: object
+              properties:
+                registry: { type: string, enum: ["Verra_VCS", "Gold_Standard", "ACR", "CAR", "Plan_Vivo", "Puro_Earth"] }
+                project_id: { type: string }
+                project_type: { type: string, enum: ["forestry", "renewable_energy", "methane_capture", "cookstoves", "DACCS", "BECCS", "biochar", "enhanced_weathering"] }
+                vintage_year: { type: integer, minimum: 2015 }
+                quantity_tco2e: { type: number, minimum: 0 }
+                serial_numbers: { type: array, items: { type: string } }
+                retirement_date: { type: string, format: date }
+                corresponding_adjustment: { type: boolean }
+
+          certifications:
+            type: array
+            items:
+              type: object
+              properties:
+                scheme_name: { type: string, enum: ["EU_Ecolabel", "FSC", "PEFC", "Fairtrade", "Rainforest_Alliance", "Cradle_to_Cradle", "GOTS", "OEKO_TEX", "Bluesign", "B_Corp", "ISO_14001", "EU_Organic", "OK_Compost_HOME", "EN_13432"] }
+                certificate_number: { type: string }
+                issue_date: { type: string, format: date }
+                expiry_date: { type: string, format: date }
+                scope: { type: string }
+                accreditation_body: { type: string }
+
+          recycled_content:
+            type: object
+            properties:
+              total_percentage: { type: number, minimum: 0, maximum: 100 }
+              pre_consumer_percentage: { type: number }
+              post_consumer_percentage: { type: number }
+              material_type: { type: string }
+              chain_of_custody_cert: { type: string }
+
+          third_party_verification:
+            type: object
+            properties:
+              verifier_name: { type: string }
+              verifier_accreditation: { type: string }
+              verification_standard: { type: string, enum: ["ISO_14064", "ISAE_3000", "ISAE_3410", "AA1000AS"] }
+              verification_date: { type: string, format: date }
+              verification_statement_url: { type: string, format: uri }
+
+      - name: claim_type_hint
+        type: string
+        required: false
+        description: "Optional hint for claim type classification"
+        enum: ["carbon_neutral", "climate_positive", "net_zero", "low_carbon", "eco_friendly", "sustainable", "natural", "organic", "recycled", "recyclable", "biodegradable", "plastic_free", "comparative_better", "comparative_reduced", "commitment", "offset_based"]
+
+    outputs:
+      - name: claim_assessment
+        type: ClaimAssessment
+        description: "Complete assessment of the environmental claim"
+
+      - name: substantiation_result
+        type: SubstantiationResult
+        description: "Substantiation scoring and verdict"
+
+      - name: greenwashing_assessment
+        type: GreenwashingAssessment
+        description: "Greenwashing risk analysis"
+
+      - name: compliance_status
+        type: ComplianceStatus
+        description: "GCD compliance determination"
+
+      - name: verification_report
+        type: VerificationReport
+        description: "Complete verification report for regulators"
+
+      - name: provenance_chain
+        type: ProvenanceChain
+        description: "Complete audit trail with SHA-256 hashes"
+
+    tools:
+      - claim_analyzer
+      - evidence_validator
+      - pef_calculator
+      - greenwashing_detector
+      - substantiation_scorer
+      - offset_verifier
+      - comparison_validator
+      - certification_checker
+      - report_generator
+      - provenance_tracker
+
+  # Claim Classification Agent
+  - id: green-claims-classifier
+    name: Green Claims Classifier
+    type: nlp-classifier
+    description: "Classifies environmental claims into 16 regulated types using NLP"
+
+    inputs:
+      - name: claim_text
+        type: string
+        required: true
+        description: "Environmental claim text to classify"
+      - name: claim_context
+        type: object
+        required: false
+        description: "Additional context for classification"
+
+    outputs:
+      - name: claim_type
+        type: string
+        description: "Classified claim type"
+      - name: confidence
+        type: number
+        description: "Classification confidence (0-1)"
+      - name: detected_keywords
+        type: array
+        description: "Keywords that triggered classification"
+      - name: sub_classifications
+        type: array
+        description: "Secondary claim types detected"
+
+    tools:
+      - claim_analyzer
+      - keyword_extractor
+
+  # PEF Validation Agent
+  - id: green-claims-pef-validator
+    name: PEF Study Validator
+    type: deterministic-calculator
+    description: "Validates Product Environmental Footprint studies against EU PEF methodology"
+
+    inputs:
+      - name: lca_data
+        type: object
+        required: true
+        description: "LCA study data and impact results"
+      - name: pefcr_category
+        type: string
+        required: false
+        description: "Applicable PEF Category Rules"
+
+    outputs:
+      - name: pef_valid
+        type: boolean
+        description: "Whether study meets PEF requirements"
+      - name: normalized_results
+        type: object
+        description: "Normalized impact results"
+      - name: weighted_score
+        type: number
+        description: "Single weighted PEF score"
+      - name: validation_issues
+        type: array
+        description: "Issues found in PEF study"
+
+    tools:
+      - pef_calculator
+      - impact_normalizer
+      - pefcr_lookup
+
+# Tool Definitions
+tools:
+  # Claim Analysis Tool
+  - id: claim_analyzer
+    name: Claim Analyzer
+    description: |
+      Analyzes environmental claim text to identify claim type, keywords, and
+      required evidence. Uses NLP pattern matching for 16 regulated claim types.
+      Detects explicit and implicit environmental claims.
+    type: nlp
+    impl: greenlang.agents.green_claims.tools.claim_analyzer.analyze
+    safe: true
+    deterministic: false
+
+    input_schema:
+      type: object
+      properties:
+        claim_text:
+          type: string
+          maxLength: 2000
+          description: "Environmental claim text"
+        claim_context:
+          type: object
+          properties:
+            product_category: { type: string }
+            marketing_channel: { type: string }
+        confidence_threshold:
+          type: number
+          default: 0.70
+          minimum: 0.30
+          maximum: 1.0
+      required: ["claim_text"]
+
+    output_schema:
+      type: object
+      properties:
+        claim_type:
+          type: string
+          enum: ["carbon_neutral", "climate_positive", "net_zero", "low_carbon", "eco_friendly", "sustainable", "natural", "organic", "recycled", "recyclable", "biodegradable", "plastic_free", "comparative_better", "comparative_reduced", "commitment", "offset_based", "unknown"]
+        confidence:
+          type: number
+          minimum: 0
+          maximum: 1
+        detected_keywords:
+          type: array
+          items: { type: string }
+        evidence_requirements:
+          type: array
+          items: { type: string }
+        verification_type:
+          type: string
+          enum: ["MANDATORY_THIRD_PARTY", "RECOMMENDED_THIRD_PARTY", "DOCUMENTARY", "CERTIFICATION_BASED", "CHAIN_OF_CUSTODY", "INFRASTRUCTURE_EVIDENCE", "PROGRESS_TRACKING"]
+
+  # Evidence Validator Tool
+  - id: evidence_validator
+    name: Evidence Validator
+    description: |
+      Validates supporting evidence quality and completeness against EU Green Claims
+      Directive requirements. Assesses scientific validity, data quality, scope
+      completeness, independence, and transparency dimensions.
+    type: validator
+    impl: greenlang.agents.green_claims.tools.evidence_validator.validate
+    safe: true
+    deterministic: true
+
+    input_schema:
+      type: object
+      properties:
+        supporting_evidence:
+          type: object
+          description: "All supporting evidence for the claim"
+        claim_type:
+          type: string
+          description: "Type of claim being substantiated"
+        required_evidence:
+          type: array
+          description: "List of required evidence types"
+      required: ["supporting_evidence", "claim_type"]
+
+    output_schema:
+      type: object
+      properties:
+        evidence_complete:
+          type: boolean
+        evidence_score:
+          type: number
+          minimum: 0
+          maximum: 1
+        dimension_scores:
+          type: object
+          properties:
+            scientific_validity: { type: number }
+            data_quality: { type: number }
+            scope_completeness: { type: number }
+            independence: { type: number }
+            transparency: { type: number }
+        evidence_gaps:
+          type: array
+          items:
+            type: object
+            properties:
+              gap_type: { type: string }
+              severity: { type: string, enum: ["CRITICAL", "HIGH", "MEDIUM", "LOW"] }
+              remediation: { type: string }
+        recommendations:
+          type: array
+          items: { type: string }
+
+  # PEF Calculator Tool
+  - id: pef_calculator
+    name: PEF Calculator
+    description: |
+      Calculates and validates Product Environmental Footprint scores.
+      Applies EU PEF 3.0 methodology with 16 impact categories.
+      Normalizes and weights results per JRC reference values.
+    type: calculator
+    impl: greenlang.agents.green_claims.tools.pef_calculator.calculate
+    safe: true
+    deterministic: true
+
+    input_schema:
+      type: object
+      properties:
+        lca_data:
+          type: object
+          description: "LCA impact assessment results"
+        impact_categories:
+          type: array
+          description: "Impact category values"
+          items:
+            type: object
+            properties:
+              category_id: { type: integer, minimum: 1, maximum: 16 }
+              value: { type: number }
+              unit: { type: string }
+        pefcr_category:
+          type: string
+          description: "Applicable PEFCR if available"
+        normalization_year:
+          type: integer
+          default: 2023
+      required: ["lca_data"]
+
+    output_schema:
+      type: object
+      properties:
+        pef_single_score:
+          type: number
+          description: "Weighted single PEF score"
+        normalized_results:
+          type: array
+          items:
+            type: object
+            properties:
+              category_id: { type: integer }
+              category_name: { type: string }
+              normalized_value: { type: number }
+              weighted_value: { type: number }
+        hotspot_categories:
+          type: array
+          description: "Categories with highest impact contribution"
+        methodology_compliant:
+          type: boolean
+        compliance_issues:
+          type: array
+
+  # Greenwashing Detector Tool
+  - id: greenwashing_detector
+    name: Greenwashing Detector
+    description: |
+      Detects greenwashing patterns and red flags in environmental claims.
+      Identifies vagueness, hidden trade-offs, no proof, irrelevance,
+      false labels, and misleading comparisons per TerraChoice sins.
+    type: analyzer
+    impl: greenlang.agents.green_claims.tools.greenwashing_detector.detect
+    safe: true
+    deterministic: true
+
+    input_schema:
+      type: object
+      properties:
+        claim_text:
+          type: string
+          description: "Claim text to analyze"
+        evidence:
+          type: object
+          description: "Supporting evidence provided"
+        context:
+          type: object
+          properties:
+            product_category: { type: string }
+            full_lifecycle_data: { type: object }
+            certifications: { type: array }
+      required: ["claim_text"]
+
+    output_schema:
+      type: object
+      properties:
+        risk_score:
+          type: number
+          minimum: 0
+          maximum: 1
+          description: "Overall greenwashing risk (0=low, 1=critical)"
+        risk_level:
+          type: string
+          enum: ["LOW", "MEDIUM", "HIGH", "CRITICAL"]
+        dimension_scores:
+          type: object
+          properties:
+            vagueness: { type: number }
+            hidden_tradeoffs: { type: number }
+            proof_quality_inverse: { type: number }
+            irrelevance: { type: number }
+            label_legitimacy_inverse: { type: number }
+        red_flags:
+          type: array
+          items:
+            type: object
+            properties:
+              flag_type:
+                type: string
+                enum: ["VAGUENESS", "HIDDEN_TRADEOFFS", "NO_PROOF", "IRRELEVANCE", "LESSER_EVIL", "FIBBING", "FALSE_LABELS", "CHERRY_PICKING", "OUTDATED_BASELINE", "UNFAIR_COMPARISON", "ASPIRATIONAL_AS_FACT", "SELECTIVE_DISCLOSURE", "MISLEADING_IMAGERY", "EXPIRED_CERTIFICATION", "IMPOSSIBLE_CLAIM", "DOUBLE_COUNTING_RISK", "NO_REDUCTION_FIRST", "INFRASTRUCTURE_GAP"]
+              description: { type: string }
+              severity: { type: string, enum: ["CRITICAL", "HIGH", "MEDIUM", "LOW"] }
+              location: { type: string }
+        recommendations:
+          type: array
+          items: { type: string }
+
+  # Substantiation Scorer Tool
+  - id: substantiation_scorer
+    name: Substantiation Scorer
+    description: |
+      Calculates overall substantiation score for environmental claims.
+      Applies weighted scoring across scientific validity, data quality,
+      scope completeness, independence, and transparency dimensions.
+    type: calculator
+    impl: greenlang.agents.green_claims.tools.substantiation_scorer.score
+    safe: true
+    deterministic: true
+
+    input_schema:
+      type: object
+      properties:
+        evidence_scores:
+          type: object
+          properties:
+            scientific_validity: { type: number, minimum: 0, maximum: 1 }
+            data_quality: { type: number, minimum: 0, maximum: 1 }
+            scope_completeness: { type: number, minimum: 0, maximum: 1 }
+            independence: { type: number, minimum: 0, maximum: 1 }
+            transparency: { type: number, minimum: 0, maximum: 1 }
+        claim_type:
+          type: string
+          description: "Type of claim for threshold selection"
+        greenwashing_risk:
+          type: number
+          description: "Greenwashing risk score for adjustment"
+      required: ["evidence_scores", "claim_type"]
+
+    output_schema:
+      type: object
+      properties:
+        substantiation_score:
+          type: number
+          minimum: 0
+          maximum: 1
+          description: "Weighted overall score"
+        verdict:
+          type: string
+          enum: ["APPROVED", "CONDITIONAL", "REJECTED"]
+        score_breakdown:
+          type: object
+          properties:
+            scientific_validity_weighted: { type: number }
+            data_quality_weighted: { type: number }
+            scope_completeness_weighted: { type: number }
+            independence_weighted: { type: number }
+            transparency_weighted: { type: number }
+        threshold_applied:
+          type: object
+          properties:
+            approved: { type: number }
+            conditional: { type: number }
+        gaps:
+          type: array
+          items: { type: string }
+
+  # Offset Verifier Tool
+  - id: offset_verifier
+    name: Offset Verifier
+    description: |
+      Verifies carbon offset quality for carbon neutrality claims.
+      Checks registry validity, vintage year, additionality, permanence,
+      and corresponding adjustments per GCD Article 8 requirements.
+    type: validator
+    impl: greenlang.agents.green_claims.tools.offset_verifier.verify
+    safe: true
+    deterministic: true
+
+    input_schema:
+      type: object
+      properties:
+        offset_credits:
+          type: array
+          items:
+            type: object
+            properties:
+              registry: { type: string }
+              project_id: { type: string }
+              project_type: { type: string }
+              vintage_year: { type: integer }
+              quantity_tco2e: { type: number }
+              serial_numbers: { type: array }
+              retirement_date: { type: string }
+              corresponding_adjustment: { type: boolean }
+        carbon_footprint:
+          type: object
+          properties:
+            total_kg_co2e: { type: number }
+            scope_1_kg_co2e: { type: number }
+            scope_2_kg_co2e: { type: number }
+            scope_3_kg_co2e: { type: number }
+        historical_emissions:
+          type: array
+          description: "Historical emissions for reduction-first check"
+      required: ["offset_credits"]
+
+    output_schema:
+      type: object
+      properties:
+        offsets_valid:
+          type: boolean
+        offset_quality_score:
+          type: number
+          minimum: 0
+          maximum: 1
+        total_offsets_tco2e:
+          type: number
+        coverage_ratio:
+          type: number
+          description: "Offsets / Total Emissions"
+        is_neutral:
+          type: boolean
+        reduction_first_check:
+          type: object
+          properties:
+            passed: { type: boolean }
+            reduction_trend: { type: string, enum: ["increasing", "stable", "decreasing"] }
+        issues:
+          type: array
+          items: { type: string }
+        additionality_assessment:
+          type: string
+        permanence_risk:
+          type: string
+          enum: ["LOW", "MEDIUM", "HIGH"]
+
+  # Comparison Validator Tool
+  - id: comparison_validator
+    name: Comparison Validator
+    description: |
+      Validates comparative environmental claims per GCD requirements.
+      Checks methodology alignment, functional unit matching, system
+      boundaries, and statistical significance.
+    type: validator
+    impl: greenlang.agents.green_claims.tools.comparison_validator.validate
+    safe: true
+    deterministic: true
+
+    input_schema:
+      type: object
+      properties:
+        claim_data:
+          type: object
+          properties:
+            claim_text: { type: string }
+            own_product: { type: object }
+            comparator: { type: object }
+            comparison_type: { type: string, enum: ["product_vs_product", "vs_baseline", "vs_industry_average", "vs_previous_version"] }
+      required: ["claim_data"]
+
+    output_schema:
+      type: object
+      properties:
+        comparison_valid:
+          type: boolean
+        methodology_alignment:
+          type: object
+          properties:
+            aligned: { type: boolean }
+            own_methodology: { type: string }
+            comparator_methodology: { type: string }
+        functional_unit_match:
+          type: boolean
+        system_boundary_match:
+          type: boolean
+        statistical_significance:
+          type: object
+          properties:
+            significant: { type: boolean }
+            p_value: { type: number }
+            confidence_interval: { type: array }
+        issues:
+          type: array
+          items: { type: string }
+
+  # Certification Checker Tool
+  - id: certification_checker
+    name: Certification Checker
+    description: |
+      Verifies environmental certification validity and scope.
+      Checks accreditation status, expiry dates, scope coverage,
+      and identifies self-created or unrecognized schemes.
+    type: lookup
+    impl: greenlang.agents.green_claims.tools.certification_checker.check
+    safe: true
+    deterministic: true
+
+    input_schema:
+      type: object
+      properties:
+        certifications:
+          type: array
+          items:
+            type: object
+            properties:
+              scheme_name: { type: string }
+              certificate_number: { type: string }
+              expiry_date: { type: string, format: date }
+              scope: { type: string }
+        check_date:
+          type: string
+          format: date
+          default: "today"
+      required: ["certifications"]
+
+    output_schema:
+      type: object
+      properties:
+        all_valid:
+          type: boolean
+        certification_results:
+          type: array
+          items:
+            type: object
+            properties:
+              scheme_name: { type: string }
+              status: { type: string, enum: ["VALID", "EXPIRED", "NOT_FOUND", "UNRECOGNIZED", "SELF_CREATED"] }
+              is_accredited: { type: boolean }
+              accreditation_body: { type: string }
+              scope_coverage: { type: string }
+              expiry_status: { type: string }
+              issues: { type: array }
+
+  # Report Generator Tool
+  - id: report_generator
+    name: Report Generator
+    description: |
+      Generates verification reports for regulators and stakeholders.
+      Creates GCD-compliant documentation with claim assessment,
+      evidence summary, and remediation recommendations.
+    type: generator
+    impl: greenlang.agents.green_claims.tools.report_generator.generate
+    safe: true
+    deterministic: true
+
+    input_schema:
+      type: object
+      properties:
+        claim_assessment:
+          type: object
+          required: true
+        company_profile:
+          type: object
+          required: true
+        report_type:
+          type: string
+          enum: ["full_verification", "summary", "compliance_certificate"]
+          default: "full_verification"
+      required: ["claim_assessment", "company_profile"]
+
+    output_schema:
+      type: object
+      properties:
+        report_id:
+          type: string
+          format: uuid
+        report_date:
+          type: string
+          format: date
+        claim_summary:
+          type: string
+        evidence_summary:
+          type: string
+        substantiation_conclusion:
+          type: string
+        greenwashing_assessment:
+          type: string
+        recommended_claim_text:
+          type: string
+        required_actions:
+          type: array
+          items: { type: string }
+        compliance_certificate:
+          type: object
+        pdf_report:
+          type: string
+          description: "Base64-encoded PDF"
+
+  # Provenance Tracker Tool
+  - id: provenance_tracker
+    name: Provenance Tracker
+    description: |
+      Tracks complete provenance chain for audit trails.
+      Generates SHA-256 hashes for all inputs, outputs, and
+      transformations for regulatory compliance.
+    type: utility
+    impl: greenlang.agents.green_claims.tools.provenance_tracker.track
+    safe: true
+    deterministic: true
+
+    input_schema:
+      type: object
+      properties:
+        operation:
+          type: string
+          description: "Operation being tracked"
+        inputs:
+          type: object
+          description: "Input data"
+        outputs:
+          type: object
+          description: "Output data"
+        tool_name:
+          type: string
+          description: "Tool that performed the operation"
+        agent_version:
+          type: string
+          default: "1.0.0"
+      required: ["operation", "inputs", "outputs"]
+
+    output_schema:
+      type: object
+      properties:
+        provenance_record:
+          type: object
+        input_hash:
+          type: string
+          description: "SHA-256 hash of inputs"
+        output_hash:
+          type: string
+          description: "SHA-256 hash of outputs"
+        chain_hash:
+          type: string
+          description: "Cumulative chain hash"
+        timestamp:
+          type: string
+          format: date-time
+        methodology_version:
+          type: string
+
+# Validation Rules
+validation:
+  rules:
+    - id: claim_text_required
+      description: "Claim text is required for verification"
+      condition: "input.claim_submission.claim_text != null"
+      severity: error
+
+    - id: evidence_for_high_claims
+      description: "High evidence level claims require third-party verification"
+      condition: |
+        IF claim_type IN [carbon_neutral, climate_positive, net_zero, eco_friendly, sustainable]
+        THEN supporting_evidence.third_party_verification != null
+      severity: error
+
+    - id: pef_for_eco_claims
+      description: "Eco-friendly claims require PEF study covering all 16 categories"
+      condition: |
+        IF claim_type == eco_friendly
+        THEN supporting_evidence.lca_study.impact_categories_covered == 16
+      severity: error
+
+    - id: offset_registry_valid
+      description: "Carbon offset claims require recognized registry"
+      condition: |
+        IF offset_credits != null
+        THEN offset_credits[*].registry IN [Verra_VCS, Gold_Standard, ACR, CAR, Plan_Vivo, Puro_Earth]
+      severity: error
+
+    - id: certification_not_expired
+      description: "Certifications must not be expired"
+      condition: "certifications[*].expiry_date >= today"
+      severity: error
+
+    - id: comparative_same_methodology
+      description: "Comparative claims require same methodology"
+      condition: |
+        IF claim_type IN [comparative_better, comparative_reduced]
+        THEN own_product.methodology == comparator.methodology
+      severity: error
+
+    - id: recycled_content_max_100
+      description: "Recycled content cannot exceed 100%"
+      condition: "recycled_content.total_percentage <= 100"
+      severity: error
+
+    - id: scope3_for_carbon_neutral
+      description: "Carbon neutral claims require Scope 3 emissions"
+      condition: |
+        IF claim_type == carbon_neutral
+        THEN carbon_footprint.scope_3_kg_co2e != null
+      severity: warning
+
+# Golden Tests (200 total)
+golden_tests:
+  count: 200
+  categories:
+    # Carbon/Climate Claims (50 tests)
+    - name: carbon_neutral_claims
+      tests: 15
+      description: "Carbon neutral claim validation with various evidence levels"
+      examples:
+        - test_id: GC-CARBON-001
+          name: "Valid carbon neutral claim with full offsets"
+          claim_text: "This product is carbon neutral, certified by Climate Partner"
+          input:
+            carbon_footprint:
+              scope_1_kg_co2e: 100
+              scope_2_kg_co2e: 50
+              scope_3_kg_co2e: 850
+              total_kg_co2e: 1000
+            offset_credits:
+              - registry: "Gold_Standard"
+                project_id: "GS1234"
+                quantity_tco2e: 1.0
+                vintage_year: 2024
+            third_party_verification:
+              verifier_name: "Climate Partner"
+              verification_standard: "ISO_14064"
+          expected:
+            claim_classification:
+              claim_type: "carbon_neutral"
+              confidence: 0.95
+            substantiation_assessment:
+              verdict: "APPROVED"
+              overall_score: 0.85
+            greenwashing_assessment:
+              risk_level: "LOW"
+            compliance_status:
+              gcd_compliant: true
+
+        - test_id: GC-CARBON-002
+          name: "Carbon neutral claim without Scope 3"
+          claim_text: "We are carbon neutral in our operations"
+          input:
+            carbon_footprint:
+              scope_1_kg_co2e: 100
+              scope_2_kg_co2e: 50
+              scope_3_kg_co2e: null
+            offset_credits:
+              - registry: "Verra_VCS"
+                quantity_tco2e: 0.15
+          expected:
+            substantiation_assessment:
+              verdict: "CONDITIONAL"
+            greenwashing_assessment:
+              risk_level: "MEDIUM"
+              red_flags:
+                - flag_type: "HIDDEN_TRADEOFFS"
+            compliance_status:
+              gcd_compliant: false
+
+        - test_id: GC-CARBON-003
+          name: "Carbon neutral with unverified offsets"
+          claim_text: "Carbon neutral product"
+          input:
+            carbon_footprint:
+              total_kg_co2e: 500
+            offset_credits:
+              - registry: "Unknown_Registry"
+                quantity_tco2e: 0.5
+          expected:
+            substantiation_assessment:
+              verdict: "REJECTED"
+            greenwashing_assessment:
+              risk_level: "HIGH"
+              red_flags:
+                - flag_type: "FALSE_LABELS"
+            compliance_status:
+              gcd_compliant: false
+
+    - name: climate_positive_claims
+      tests: 10
+      description: "Climate positive and net-zero claim tests"
+
+    - name: low_carbon_claims
+      tests: 10
+      description: "Low carbon and reduced emissions claims"
+
+    - name: offset_based_claims
+      tests: 15
+      description: "Offset quality and reduction-first validation"
+
+    # General Environmental Claims (40 tests)
+    - name: eco_friendly_claims
+      tests: 15
+      description: "Eco-friendly and sustainable claim tests requiring PEF"
+      examples:
+        - test_id: GC-ENV-001
+          name: "Eco-friendly claim without LCA"
+          claim_text: "Eco-friendly packaging"
+          input:
+            supporting_evidence:
+              lca_study: null
+          expected:
+            substantiation_assessment:
+              verdict: "REJECTED"
+            greenwashing_assessment:
+              risk_level: "HIGH"
+              red_flags:
+                - flag_type: "VAGUENESS"
+                - flag_type: "NO_PROOF"
+            compliance_status:
+              gcd_compliant: false
+              required_actions:
+                - "Eco-friendly claims require full PEF study"
+
+        - test_id: GC-ENV-002
+          name: "Sustainable claim with multi-dimensional assessment"
+          claim_text: "Sustainably made clothing"
+          input:
+            lca_study:
+              methodology: "PEF"
+              scope: "cradle_to_grave"
+              impact_categories_covered: 16
+            social_assessment:
+              conducted: true
+              standard: "SA8000"
+            circular_assessment:
+              recyclability: 0.85
+              recycled_content: 0.40
+          expected:
+            substantiation_assessment:
+              verdict: "APPROVED"
+              overall_score: 0.82
+            compliance_status:
+              gcd_compliant: true
+
+    - name: natural_organic_claims
+      tests: 10
+      description: "Natural and organic claim certification tests"
+
+    - name: vague_green_claims
+      tests: 15
+      description: "Vague environmental claims requiring specificity"
+
+    # Material/Resource Claims (35 tests)
+    - name: recycled_content_claims
+      tests: 12
+      description: "Recycled content with chain of custody tests"
+      examples:
+        - test_id: GC-MAT-001
+          name: "Valid recycled content claim"
+          claim_text: "Made with 80% recycled plastic"
+          input:
+            recycled_content:
+              total_percentage: 80
+              post_consumer_percentage: 60
+              pre_consumer_percentage: 20
+              chain_of_custody_cert: "SCS-COC-12345"
+          expected:
+            substantiation_assessment:
+              verdict: "APPROVED"
+            compliance_status:
+              gcd_compliant: true
+
+    - name: recyclable_claims
+      tests: 8
+      description: "Recyclable claims with infrastructure verification"
+
+    - name: biodegradable_claims
+      tests: 8
+      description: "Biodegradable and compostable claim tests"
+
+    - name: plastic_free_claims
+      tests: 7
+      description: "Plastic-free and material composition tests"
+
+    # Comparative Claims (30 tests)
+    - name: product_comparisons
+      tests: 15
+      description: "Product-to-product comparative claim tests"
+      examples:
+        - test_id: GC-COMP-001
+          name: "Valid comparative claim with same methodology"
+          claim_text: "50% lower carbon footprint than Product X"
+          input:
+            own_product:
+              carbon_footprint_kg: 500
+              methodology: "PEF"
+              functional_unit: "1 kg product"
+            comparator:
+              product_name: "Product X"
+              carbon_footprint_kg: 1000
+              methodology: "PEF"
+              functional_unit: "1 kg product"
+          expected:
+            comparison_valid: true
+            substantiation_assessment:
+              verdict: "APPROVED"
+
+        - test_id: GC-COMP-002
+          name: "Comparative claim with different methodologies"
+          claim_text: "Better for the environment than competitors"
+          input:
+            own_product:
+              methodology: "PEF"
+            comparator:
+              methodology: "ISO_14044"
+          expected:
+            comparison_valid: false
+            greenwashing_assessment:
+              risk_level: "HIGH"
+            compliance_status:
+              required_actions:
+                - "Comparative claims require same methodology"
+
+    - name: baseline_comparisons
+      tests: 10
+      description: "Historical baseline and reduction claim tests"
+
+    - name: industry_benchmark_comparisons
+      tests: 5
+      description: "Industry benchmark comparison tests"
+
+    # Greenwashing Detection (45 tests)
+    - name: vagueness_detection
+      tests: 10
+      description: "Vague and unsubstantiated claim detection"
+      examples:
+        - test_id: GC-GW-001
+          name: "Classic vague green claim"
+          claim_text: "Environmentally conscious choice"
+          input:
+            supporting_evidence: {}
+          expected:
+            greenwashing_assessment:
+              risk_level: "CRITICAL"
+              red_flags:
+                - flag_type: "VAGUENESS"
+                - flag_type: "NO_PROOF"
+              recommendations:
+                - "Replace with specific, measurable environmental benefit"
+                - "Provide supporting evidence for any claim made"
+
+    - name: hidden_tradeoffs_detection
+      tests: 10
+      description: "Hidden trade-off and selective disclosure tests"
+
+    - name: false_labels_detection
+      tests: 10
+      description: "Self-created labels and expired certifications"
+      examples:
+        - test_id: GC-GW-004
+          name: "Self-created eco-label"
+          claim_text: "EcoSmart Certified [proprietary logo]"
+          input:
+            certification:
+              scheme_name: "EcoSmart"
+              self_created: true
+              third_party_audit: false
+              accreditation: null
+          expected:
+            greenwashing_assessment:
+              risk_level: "CRITICAL"
+              red_flags:
+                - flag_type: "FALSE_LABELS"
+                  description: "Self-created certification without third-party accreditation"
+
+    - name: misleading_comparisons
+      tests: 8
+      description: "Unfair and cherry-picked comparisons"
+
+    - name: impossible_claims
+      tests: 7
+      description: "Mathematically impossible and contradictory claims"
+
+# Scoring Formulas
+formulas:
+  substantiation_score:
+    description: |
+      Calculates overall substantiation score for environmental claims.
+      Source: EU Green Claims Directive requirements mapping
+    formula: |
+      substantiation_score =
+        (scientific_validity * 0.30) +
+        (data_quality * 0.25) +
+        (scope_completeness * 0.20) +
+        (independence * 0.15) +
+        (transparency * 0.10)
+    thresholds:
+      approved: 0.80
+      conditional: 0.60
+      rejected: 0.00
+
+  greenwashing_risk:
+    description: |
+      Calculates greenwashing risk score based on TerraChoice sins.
+      Source: TerraChoice Seven Sins of Greenwashing + GCD requirements
+    formula: |
+      greenwashing_risk =
+        (vagueness_score * 0.25) +
+        (hidden_tradeoffs_score * 0.20) +
+        (proof_quality_inverse * 0.25) +
+        (irrelevance_score * 0.15) +
+        (label_legitimacy_inverse * 0.15)
+    interpretation:
+      low_risk: "0.00 - 0.30"
+      medium_risk: "0.31 - 0.60"
+      high_risk: "0.61 - 0.80"
+      critical_risk: "0.81 - 1.00"
+
+  offset_quality:
+    description: |
+      Calculates carbon offset quality score for neutrality claims.
+      Source: EU Green Claims Directive Article 8
+    factors:
+      - registry_recognized: 0.25
+      - vintage_recent: 0.15
+      - additionality_proven: 0.25
+      - permanence_risk_low: 0.20
+      - corresponding_adjustment: 0.15
+
+# Provenance Configuration
+provenance:
+  hash_algorithm: SHA-256
+  track_all_operations: true
+  citation_required: true
+  immutable_audit_trail: true
+  methodology_version: "GCD-2023-166-v1"
+
+# AI Configuration
+ai:
+  model: claude-3-5-sonnet
+  temperature: 0
+  max_tokens: 4096
+  system_prompt: |
+    You are an expert environmental claim verification agent for EU Green Claims Directive compliance.
+
+    CRITICAL: Zero-Hallucination Requirements
+    - NEVER estimate substantiation scores - use substantiation_scorer tool
+    - NEVER guess claim classifications - use claim_analyzer tool
+    - NEVER approximate greenwashing risk - use greenwashing_detector tool
+    - ALWAYS use deterministic tools for all assessments
+    - ALWAYS cite the regulatory basis for compliance decisions
+    - ALWAYS generate provenance records for audit trails
+
+    Your Role:
+    1. Classify environmental claims into 16 regulated types
+    2. Validate evidence quality against GCD requirements
+    3. Calculate substantiation scores deterministically
+    4. Detect greenwashing patterns systematically
+    5. Generate verification reports with complete audit trails
+
+    Key Principles:
+    - Claims must be specific, accurate, and verifiable
+    - Evidence must be scientifically valid and up-to-date
+    - Carbon neutrality claims require full Scope 1, 2, 3 inventory
+    - Comparative claims require identical methodology
+    - All claims require third-party verification where mandated
+
+# System Prompt
+system_prompt: |
+  You are the Green Claims Verification Agent, a specialized AI system for verifying
+  environmental marketing claims under the EU Green Claims Directive (COM/2023/166).
+
+  ## Your Core Responsibilities
+
+  1. **Classify Claims** - Identify claim type from 16 regulated categories
+  2. **Validate Evidence** - Assess evidence quality across 5 dimensions
+  3. **Calculate Scores** - Apply deterministic substantiation scoring
+  4. **Detect Greenwashing** - Identify red flags and misleading patterns
+  5. **Generate Reports** - Create verification reports with audit trails
+
+  ## CRITICAL: Zero-Hallucination Requirements
+
+  - NEVER estimate or guess compliance status
+  - ALWAYS use deterministic calculation tools
+  - ALWAYS cite regulatory basis for decisions
+  - ALWAYS track provenance with SHA-256 hashes
+
+  ## Claim Classification (16 Types)
+
+  Carbon/Climate: carbon_neutral, climate_positive, net_zero, low_carbon
+  Environmental: eco_friendly, sustainable, natural, organic
+  Material: recycled, recyclable, biodegradable, plastic_free
+  Comparative: comparative_better, comparative_reduced
+  Future/Offset: commitment, offset_based
+
+  ## Evidence Assessment Dimensions
+
+  1. Scientific Validity (30%) - Peer-reviewed, recognized standards
+  2. Data Quality (25%) - Primary data, temporal/geographic representativeness
+  3. Scope Completeness (20%) - Full lifecycle, all impact categories
+  4. Independence (15%) - Third-party verification, accredited verifier
+  5. Transparency (10%) - Methodology disclosed, limitations acknowledged
+
+  ## Greenwashing Detection
+
+  Detect and flag:
+  - VAGUENESS: Generic terms without quantification
+  - HIDDEN_TRADEOFFS: Selective impact disclosure
+  - NO_PROOF: Claims without supporting evidence
+  - FALSE_LABELS: Self-created or expired certifications
+  - IRRELEVANCE: Highlighting mandatory/banned substances
+  - LESSER_EVIL: Green claims for inherently harmful products
+
+# Data Dependencies
+data_dependencies:
+  pef_database:
+    name: "EU PEF Database"
+    source: "European Commission JRC"
+    content:
+      - "PEF impact category characterization factors"
+      - "PEF normalization factors"
+      - "PEF weighting factors"
+      - "PEFCR (Product Environmental Footprint Category Rules)"
+    update_frequency: "Per EU publication"
+
+  offset_registries:
+    verra:
+      name: "Verra VCS Registry"
+      url: "https://registry.verra.org/"
+      api: "REST API"
+    gold_standard:
+      name: "Gold Standard Registry"
+      url: "https://registry.goldstandard.org/"
+      api: "REST API"
+
+  certification_databases:
+    eu_ecolabel:
+      name: "EU Ecolabel Product Catalogue"
+      url: "https://ec.europa.eu/ecat/"
+    fsc:
+      name: "FSC Certificate Database"
+      url: "https://info.fsc.org/"
+
+# Deployment Configuration
+deployment:
+  kubernetes:
+    namespace: green-claims-production
+    replicas:
+      min: 2
+      max: 8
+    resources:
+      requests:
+        cpu: "500m"
+        memory: "1Gi"
+      limits:
+        cpu: "2"
+        memory: "4Gi"
+    autoscaling:
+      target_cpu: 70
+      target_memory: 80
+
+  monitoring:
+    prometheus:
+      enabled: true
+      path: /metrics
+      port: 9090
+    grafana:
+      dashboard: green-claims-verification
+    alerts:
+      - name: high_error_rate
+        condition: "error_rate > 0.05"
+        severity: critical
+      - name: high_latency
+        condition: "p99_latency > 5s"
+        severity: warning
+      - name: greenwashing_critical
+        condition: "critical_risk_claims > 10/hour"
+        severity: warning
+
+  performance_benchmarks:
+    latency_p95_seconds: 5
+    cost_per_analysis_usd: 0.25
+    accuracy_thresholds:
+      claim_classification: 0.95
+      substantiation_scoring: 0.90
+      greenwashing_detection: 0.92
+
+documentation:
+  api_docs: /docs/api/green-claims
+  user_guide: /docs/guides/green-claims-verification
+  integration_guide: /docs/integration/green-claims
+  regulatory_reference: /docs/regulatory/eu-green-claims-directive
+  changelog: /docs/changelog/green-claims

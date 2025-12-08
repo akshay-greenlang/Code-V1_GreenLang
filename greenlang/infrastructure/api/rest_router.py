@@ -43,6 +43,7 @@ except ImportError:
     Query = None
     Request = None
     Response = None
+    JSONResponse = None
 
 logger = logging.getLogger(__name__)
 

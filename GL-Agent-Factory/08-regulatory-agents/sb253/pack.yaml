@@ -1,0 +1,753 @@
+# California SB 253 Climate Disclosure Agent Pack Specification
+# Climate Corporate Data Accountability Act
+# Version: 1.0.0
+# Deadline: June 30, 2026 (Scope 1&2), June 30, 2027 (Scope 3)
+
+pack:
+  id: gl-sb253-disclosure-v1
+  name: California SB 253 Climate Disclosure Agent
+  description: |
+    Automated GHG emissions calculation, verification, and reporting agent for
+    California SB 253 compliance. Calculates Scope 1, 2, and 3 emissions aligned
+    with GHG Protocol standards and generates assurance-ready reports for CARB filing.
+    Supports all 15 Scope 3 categories and multi-state climate disclosure requirements.
+  version: "1.0.0"
+  author: GreenLang
+  license: Apache-2.0
+  category: emissions-disclosure
+  priority: P1-HIGH
+  deadline: "2026-06-30"
+
+metadata:
+  regulation:
+    name: California SB 253 (Climate Corporate Data Accountability Act)
+    reference: "California Senate Bill 253"
+    effective_date: "2024-01-01"
+    first_scope_12_report: "2026-06-30"
+    first_scope_3_report: "2027-06-30"
+    enforcement_agency: California Air Resources Board (CARB)
+
+  applicability:
+    revenue_threshold: 1000000000  # $1B USD
+    jurisdiction: California
+    criteria: "Doing business in California"
+    estimated_companies: 5400
+
+  ghg_protocol:
+    corporate_standard: "GHG Protocol Corporate Accounting and Reporting Standard (2015)"
+    scope_2_guidance: "GHG Protocol Scope 2 Guidance (2015)"
+    scope_3_standard: "GHG Protocol Corporate Value Chain Standard (2011)"
+
+  penalties:
+    max_per_year: 500000
+    enforcement_start: 2026
+    enforcement_agency: CARB
+
+  assurance:
+    limited_assurance_start: 2026
+    reasonable_assurance_start: 2030
+    standards:
+      - ISAE 3000
+      - ISAE 3410
+      - AT-C Section 105
+
+# Agent Definitions
+agents:
+  # Main SB 253 Disclosure Agent
+  - id: sb253-disclosure
+    name: SB 253 Disclosure Agent
+    type: emissions-disclosure
+    description: "Core disclosure agent for SB 253 compliance reporting"
+
+    inputs:
+      - name: company_profile
+        type: CompanyProfile
+        required: true
+        description: "Company identification and applicability data"
+        properties:
+          company_name: { type: string, required: true }
+          ein: { type: string, pattern: "^[0-9]{2}-[0-9]{7}$" }
+          total_revenue: { type: number, minimum: 1000000000 }
+          california_revenue: { type: number }
+          naics_code: { type: string, pattern: "^[0-9]{6}$" }
+          organizational_boundary:
+            type: string
+            enum: ["equity_share", "operational_control", "financial_control"]
+            default: "operational_control"
+
+      - name: facility_data
+        type: array
+        required: true
+        description: "Facility location and operational data"
+        items:
+          facility_id: { type: string }
+          facility_name: { type: string }
+          egrid_subregion: { type: string }
+          california_facility: { type: boolean }
+          address:
+            type: object
+            properties:
+              city: { type: string }
+              state: { type: string }
+              zip: { type: string }
+
+      - name: fuel_consumption
+        type: array
+        required: true
+        description: "Scope 1 stationary and mobile combustion data"
+        items:
+          facility_id: { type: string }
+          fuel_type:
+            type: string
+            enum: ["natural_gas", "diesel", "gasoline", "propane", "fuel_oil_2", "coal", "lpg"]
+          quantity: { type: number, minimum: 0 }
+          unit: { type: string, enum: ["therms", "gallons", "MMBtu", "kWh", "tons", "kg", "liters"] }
+          source_category: { type: string, enum: ["stationary_combustion", "mobile_combustion"] }
+
+      - name: electricity_consumption
+        type: array
+        required: true
+        description: "Scope 2 electricity consumption data"
+        items:
+          facility_id: { type: string }
+          kwh: { type: number, minimum: 0 }
+          egrid_subregion: { type: string }
+          renewable_percentage: { type: number, minimum: 0, maximum: 100 }
+          has_ppa: { type: boolean }
+          has_recs: { type: boolean }
+
+      - name: scope3_data
+        type: Scope3Data
+        required: false
+        description: "All 15 categories of Scope 3 emissions data"
+        properties:
+          purchased_goods: { type: array, description: "Category 1" }
+          capital_goods: { type: array, description: "Category 2" }
+          fuel_energy_activities: { type: array, description: "Category 3" }
+          upstream_transport: { type: array, description: "Category 4" }
+          waste: { type: array, description: "Category 5" }
+          business_travel: { type: array, description: "Category 6" }
+          employee_commuting: { type: array, description: "Category 7" }
+          upstream_leased: { type: array, description: "Category 8" }
+          downstream_transport: { type: array, description: "Category 9" }
+          processing_sold: { type: array, description: "Category 10" }
+          use_of_sold: { type: array, description: "Category 11" }
+          end_of_life: { type: array, description: "Category 12" }
+          downstream_leased: { type: array, description: "Category 13" }
+          franchises: { type: array, description: "Category 14" }
+          investments: { type: array, description: "Category 15" }
+
+      - name: reporting_period
+        type: ReportingPeriod
+        required: true
+        description: "Reporting year and period"
+        properties:
+          fiscal_year: { type: integer, minimum: 2025 }
+          start_date: { type: string, format: date }
+          end_date: { type: string, format: date }
+
+    outputs:
+      - name: emissions_inventory
+        type: EmissionsInventory
+        description: "Complete GHG inventory for all scopes"
+
+      - name: disclosure_report
+        type: DisclosureReport
+        description: "CARB-ready disclosure report"
+
+      - name: assurance_package
+        type: AssurancePackage
+        description: "Documentation for third-party verification"
+
+      - name: provenance_chain
+        type: ProvenanceChain
+        description: "Complete audit trail with SHA-256 hashes"
+
+    tools:
+      - scope1_calculator
+      - scope2_calculator
+      - scope3_calculator
+      - egrid_factor_lookup
+      - eeio_factor_lookup
+      - carb_filing_generator
+      - assurance_package_generator
+      - provenance_tracker
+
+# Tool Definitions
+tools:
+  - name: scope1_calculator
+    description: |
+      Calculates Scope 1 direct emissions from stationary and mobile combustion.
+      Uses EPA emission factors for natural gas, diesel, gasoline, propane, etc.
+      Applies GWP values from AR5/AR6 for CO2, CH4, N2O.
+    impl: greenlang.agents.emissions.scope1.calculate
+    safe: true
+    deterministic: true
+
+    input_parameters:
+      - name: fuel_type
+        type: string
+        required: true
+        enum: ["natural_gas", "diesel", "gasoline", "propane", "fuel_oil_2", "coal", "lpg"]
+      - name: quantity
+        type: number
+        required: true
+        minimum: 0
+      - name: unit
+        type: string
+        required: true
+        enum: ["therms", "gallons", "MMBtu", "kWh", "tons", "kg", "liters"]
+      - name: gwp_set
+        type: string
+        default: "AR5"
+        enum: ["AR4", "AR5", "AR6"]
+
+    output_parameters:
+      - name: co2_kg
+        type: number
+        description: "CO2 emissions in kilograms"
+      - name: ch4_kg
+        type: number
+        description: "CH4 emissions in kilograms"
+      - name: n2o_kg
+        type: number
+        description: "N2O emissions in kilograms"
+      - name: co2e_kg
+        type: number
+        description: "Total CO2-equivalent emissions"
+      - name: emission_factor_source
+        type: string
+        description: "Citation for emission factor used"
+
+  - name: scope2_calculator
+    description: |
+      Calculates Scope 2 indirect emissions from purchased electricity.
+      Supports both location-based (eGRID) and market-based methods.
+      Handles RECs, PPAs, and residual mix calculations.
+    impl: greenlang.agents.emissions.scope2.calculate
+    safe: true
+    deterministic: true
+
+    input_parameters:
+      - name: kwh
+        type: number
+        required: true
+        minimum: 0
+      - name: egrid_subregion
+        type: string
+        required: true
+      - name: method
+        type: string
+        required: true
+        enum: ["location_based", "market_based"]
+      - name: renewable_percentage
+        type: number
+        default: 0
+        minimum: 0
+        maximum: 100
+      - name: rec_mwh
+        type: number
+        default: 0
+
+    output_parameters:
+      - name: co2e_kg
+        type: number
+        description: "Total CO2-equivalent emissions"
+      - name: egrid_factor
+        type: number
+        description: "eGRID emission factor used (lb CO2/MWh)"
+      - name: method_used
+        type: string
+        description: "Location-based or market-based"
+      - name: emission_factor_source
+        type: string
+        description: "Citation (EPA eGRID year/version)"
+
+  - name: scope3_calculator
+    description: |
+      Calculates Scope 3 value chain emissions for all 15 categories.
+      Supports spend-based (EEIO), supplier-specific, and hybrid methods.
+      Applies data quality scoring per GHG Protocol guidance.
+    impl: greenlang.agents.emissions.scope3.calculate
+    safe: true
+    deterministic: true
+
+    input_parameters:
+      - name: category
+        type: integer
+        required: true
+        minimum: 1
+        maximum: 15
+      - name: activity_data
+        type: object
+        required: true
+        description: "Category-specific activity data"
+      - name: calculation_method
+        type: string
+        required: true
+        enum: ["spend_based", "supplier_specific", "average_data", "hybrid"]
+      - name: data_quality_score
+        type: integer
+        minimum: 1
+        maximum: 5
+        description: "GHG Protocol data quality indicator (1=best, 5=worst)"
+
+    output_parameters:
+      - name: co2e_kg
+        type: number
+        description: "Category emissions in kg CO2e"
+      - name: uncertainty_percentage
+        type: number
+        description: "Estimated uncertainty range"
+      - name: calculation_method_used
+        type: string
+      - name: emission_factor_source
+        type: string
+
+  - name: egrid_factor_lookup
+    description: |
+      Retrieves EPA eGRID emission factors for U.S. electricity grids.
+      Returns subregional CO2, CH4, N2O factors for location-based Scope 2.
+      Updated annually with latest EPA eGRID data.
+    impl: greenlang.agents.factors.egrid.lookup
+    safe: true
+    deterministic: true
+
+    input_parameters:
+      - name: subregion
+        type: string
+        required: true
+        description: "eGRID subregion code (e.g., CAMX, ERCT, RFCW)"
+      - name: year
+        type: integer
+        default: 2022
+        description: "eGRID data year"
+
+    output_parameters:
+      - name: co2_lb_per_mwh
+        type: number
+        description: "CO2 factor (lb/MWh)"
+      - name: ch4_lb_per_mwh
+        type: number
+        description: "CH4 factor (lb/MWh)"
+      - name: n2o_lb_per_mwh
+        type: number
+        description: "N2O factor (lb/MWh)"
+      - name: source
+        type: string
+        description: "EPA eGRID version citation"
+      - name: subregion_name
+        type: string
+        description: "Full subregion name"
+
+  - name: eeio_factor_lookup
+    description: |
+      Retrieves USEEIO emission factors for spend-based Scope 3 calculations.
+      Maps NAICS codes to kg CO2e per dollar spent.
+      Based on EPA's USEEIO model.
+    impl: greenlang.agents.factors.eeio.lookup
+    safe: true
+    deterministic: true
+
+    input_parameters:
+      - name: naics_code
+        type: string
+        required: true
+        description: "6-digit NAICS code"
+      - name: spend_usd
+        type: number
+        required: true
+        minimum: 0
+
+    output_parameters:
+      - name: co2e_kg
+        type: number
+        description: "Total emissions from spend"
+      - name: factor_kg_per_usd
+        type: number
+        description: "Emission intensity (kg CO2e/USD)"
+      - name: sector_name
+        type: string
+        description: "NAICS sector name"
+      - name: source
+        type: string
+        description: "USEEIO model version citation"
+
+  - name: carb_filing_generator
+    description: |
+      Generates CARB-compliant disclosure report for SB 253 filing.
+      Outputs structured data in CARB portal format.
+      Includes all required disclosures and methodologies.
+    impl: greenlang.agents.reporting.carb.generate_filing
+    safe: true
+    deterministic: true
+
+    input_parameters:
+      - name: emissions_inventory
+        type: object
+        required: true
+        description: "Complete emissions inventory"
+      - name: company_profile
+        type: object
+        required: true
+      - name: reporting_year
+        type: integer
+        required: true
+      - name: include_scope3
+        type: boolean
+        default: false
+
+    output_parameters:
+      - name: filing_document
+        type: object
+        description: "Structured CARB filing data"
+      - name: pdf_report
+        type: string
+        description: "Base64-encoded PDF report"
+      - name: xml_submission
+        type: string
+        description: "XML for CARB portal submission"
+
+  - name: assurance_package_generator
+    description: |
+      Generates third-party assurance documentation package.
+      Creates evidence dossier for ISAE 3410 verification.
+      Includes methodology notes, data sources, and audit trails.
+    impl: greenlang.agents.reporting.assurance.generate_package
+    safe: true
+    deterministic: true
+
+    input_parameters:
+      - name: emissions_data
+        type: object
+        required: true
+      - name: provenance_chain
+        type: array
+        required: true
+      - name: assurance_level
+        type: string
+        required: true
+        enum: ["limited", "reasonable"]
+
+    output_parameters:
+      - name: assurance_package
+        type: object
+        description: "Complete assurance documentation"
+      - name: evidence_index
+        type: array
+        description: "Indexed list of supporting evidence"
+      - name: methodology_notes
+        type: string
+        description: "Detailed calculation methodology"
+
+  - name: provenance_tracker
+    description: |
+      Tracks complete provenance chain for all calculations.
+      Generates SHA-256 hashes for inputs, outputs, and transformations.
+      Creates immutable audit trail for regulatory compliance.
+    impl: greenlang.agents.provenance.tracker.track
+    safe: true
+    deterministic: true
+
+    input_parameters:
+      - name: operation
+        type: string
+        required: true
+        description: "Operation being tracked"
+      - name: inputs
+        type: object
+        required: true
+      - name: outputs
+        type: object
+        required: true
+      - name: tool_name
+        type: string
+        required: true
+
+    output_parameters:
+      - name: provenance_record
+        type: object
+        description: "Provenance record with hashes"
+      - name: input_hash
+        type: string
+        description: "SHA-256 of inputs"
+      - name: output_hash
+        type: string
+        description: "SHA-256 of outputs"
+      - name: chain_hash
+        type: string
+        description: "Cumulative chain hash"
+
+# Golden Tests for Certification
+tests:
+  golden:
+    # Scope 1 Tests (60 tests)
+    - name: scope1_natural_gas_basic
+      description: "Calculate Scope 1 emissions from 100 therms natural gas"
+      input:
+        fuel_type: natural_gas
+        quantity: 100
+        unit: therms
+        gwp_set: AR5
+      expect:
+        co2e_kg:
+          value: 532.2
+          tolerance: 0.5
+        co2_kg:
+          value: 531.0
+          tolerance: 0.5
+        emission_factor_source:
+          contains: "EPA"
+
+    - name: scope1_diesel_mobile
+      description: "Calculate mobile combustion from 1000 gallons diesel"
+      input:
+        fuel_type: diesel
+        quantity: 1000
+        unit: gallons
+        source_category: mobile_combustion
+        gwp_set: AR5
+      expect:
+        co2e_kg:
+          value: 10180
+          tolerance: 50
+        emission_factor_source:
+          contains: "EPA"
+
+    - name: scope1_gasoline_fleet
+      description: "Fleet vehicle gasoline consumption"
+      input:
+        fuel_type: gasoline
+        quantity: 5000
+        unit: gallons
+        source_category: mobile_combustion
+        gwp_set: AR5
+      expect:
+        co2e_kg:
+          value: 44350
+          tolerance: 100
+
+    # Scope 2 Tests (70 tests)
+    - name: scope2_california_camx
+      description: "Scope 2 location-based for California facility (CAMX grid)"
+      input:
+        kwh: 1000000
+        egrid_subregion: CAMX
+        method: location_based
+      expect:
+        co2e_kg:
+          value: 214000
+          tolerance: 5000
+        egrid_factor:
+          value: 472
+          tolerance: 10
+        emission_factor_source:
+          contains: "eGRID"
+
+    - name: scope2_texas_ercot
+      description: "Scope 2 location-based for Texas facility (ERCT grid)"
+      input:
+        kwh: 2000000
+        egrid_subregion: ERCT
+        method: location_based
+      expect:
+        co2e_kg:
+          value: 790000
+          tolerance: 20000
+        emission_factor_source:
+          contains: "eGRID"
+
+    - name: scope2_market_based_recs
+      description: "Scope 2 market-based with 50% RECs"
+      input:
+        kwh: 1000000
+        egrid_subregion: CAMX
+        method: market_based
+        renewable_percentage: 50
+      expect:
+        co2e_kg:
+          value: 107000
+          tolerance: 3000
+
+    # Scope 3 Tests (120 tests)
+    - name: scope3_cat1_spend_based
+      description: "Category 1: Purchased goods spend-based calculation"
+      input:
+        category: 1
+        calculation_method: spend_based
+        activity_data:
+          naics_code: "331110"
+          spend_usd: 1000000
+      expect:
+        co2e_kg:
+          value: 950000
+          tolerance: 50000
+        calculation_method_used: spend_based
+
+    - name: scope3_cat6_business_travel
+      description: "Category 6: Business travel air miles"
+      input:
+        category: 6
+        calculation_method: average_data
+        activity_data:
+          short_haul_miles: 50000
+          medium_haul_miles: 100000
+          long_haul_miles: 200000
+      expect:
+        co2e_kg:
+          value: 45000
+          tolerance: 5000
+
+    - name: scope3_cat7_commuting
+      description: "Category 7: Employee commuting"
+      input:
+        category: 7
+        calculation_method: average_data
+        activity_data:
+          employees: 500
+          avg_commute_miles: 25
+          working_days: 220
+      expect:
+        co2e_kg:
+          value: 310000
+          tolerance: 30000
+
+    # Verification Tests (50 tests)
+    - name: verify_provenance_chain
+      description: "Verify complete provenance chain is generated"
+      input:
+        emissions_inventory:
+          scope1: { co2e_kg: 100000 }
+          scope2: { co2e_kg: 200000 }
+        company_profile:
+          company_name: "Test Corp"
+          ein: "12-3456789"
+      expect:
+        provenance_chain:
+          has_input_hash: true
+          has_output_hash: true
+          hash_algorithm: SHA-256
+
+    - name: verify_carb_filing_format
+      description: "Verify CARB filing output format"
+      input:
+        emissions_inventory:
+          scope1: { co2e_mtco2e: 100 }
+          scope2_location: { co2e_mtco2e: 200 }
+          scope2_market: { co2e_mtco2e: 180 }
+        reporting_year: 2025
+      expect:
+        filing_document:
+          has_company_info: true
+          has_scope1: true
+          has_scope2_dual: true
+
+  properties:
+    - name: emissions_non_negative
+      description: "All emissions values must be non-negative"
+      rule: "output.co2e_kg >= 0"
+
+    - name: scope2_dual_reporting
+      description: "Scope 2 must include both location and market-based results"
+      rule: "output.scope2.location_based != null AND output.scope2.market_based != null"
+
+    - name: provenance_chain_complete
+      description: "Provenance chain must include all operations"
+      rule: "len(output.provenance_chain) >= len(operations)"
+
+    - name: assurance_documentation
+      description: "Assurance package must include methodology documentation"
+      rule: "output.assurance_package.methodology_notes != null"
+
+# Provenance Configuration
+provenance:
+  gwp_set: AR5
+  hash_algorithm: SHA-256
+  track_all_operations: true
+  citation_required: true
+  immutable_audit_trail: true
+
+# AI Configuration
+ai:
+  model: claude-3-5-sonnet
+  temperature: 0
+  max_tokens: 4096
+  system_prompt: |
+    You are an expert GHG emissions calculator for California SB 253 compliance.
+    You MUST use the provided deterministic tools for ALL calculations.
+    NEVER estimate or approximate emission factors.
+    ALWAYS cite the source of emission factors used.
+    ALWAYS apply the GHG Protocol principles: relevance, completeness, consistency, transparency, accuracy.
+    NEVER hallucinate emission values or data quality scores.
+
+# System Prompt for Agent
+system_prompt: |
+  You are the SB 253 Climate Disclosure Agent, a specialized AI system for calculating
+  and reporting greenhouse gas emissions under California's Climate Corporate Data
+  Accountability Act (SB 253).
+
+  ## Your Core Responsibilities
+
+  1. **Calculate GHG Emissions** - Use deterministic tools for Scope 1, 2, and 3 calculations
+  2. **Apply GHG Protocol Standards** - Strictly follow GHG Protocol Corporate Standard
+  3. **Generate CARB Filings** - Produce assurance-ready reports for CARB submission
+  4. **Maintain Provenance** - Track complete audit trail with SHA-256 hashes
+
+  ## CRITICAL: Zero-Hallucination Requirements
+
+  - NEVER estimate emission factors - use egrid_factor_lookup and eeio_factor_lookup tools
+  - NEVER approximate calculations - use scope1_calculator, scope2_calculator, scope3_calculator
+  - ALWAYS cite emission factor sources (EPA eGRID, EPA EEIO, GHG Protocol)
+  - ALWAYS generate provenance records for regulatory compliance
+
+  ## Calculation Methodology
+
+  **Scope 1 (Direct Emissions):**
+  - Stationary combustion: natural gas, fuel oil, propane
+  - Mobile combustion: fleet vehicles, company aircraft
+  - Formula: Activity Data x Emission Factor x GWP
+
+  **Scope 2 (Indirect - Electricity):**
+  - Location-based: EPA eGRID subregional factors
+  - Market-based: RECs, PPAs, residual mix
+  - Dual reporting required under SB 253
+
+  **Scope 3 (Value Chain):**
+  - All 15 categories per GHG Protocol
+  - Spend-based (EEIO) or supplier-specific methods
+  - Data quality scoring (1-5 scale)
+
+  ## Output Requirements
+
+  All outputs must include:
+  - Calculated emissions (kg CO2e and metric tons)
+  - Emission factor citations
+  - Calculation methodology
+  - Data quality indicators
+  - SHA-256 provenance hash
+
+# Deployment Configuration
+deployment:
+  kubernetes:
+    replicas: 3
+    cpu_request: "500m"
+    cpu_limit: "2000m"
+    memory_request: "512Mi"
+    memory_limit: "2Gi"
+
+  monitoring:
+    metrics:
+      - name: calculations_per_minute
+        type: counter
+      - name: calculation_latency_ms
+        type: histogram
+      - name: error_rate
+        type: gauge
+
+    alerts:
+      - name: high_error_rate
+        condition: "error_rate > 0.01"
+        severity: critical
+      - name: high_latency
+        condition: "p95_latency > 5000"
+        severity: warning

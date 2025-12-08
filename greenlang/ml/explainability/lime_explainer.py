@@ -691,8 +691,7 @@ th {{background-color: #007bff; color: white;}}
 |---------|-----------|
 """
             for feature, importance in sorted(explanation.aggregate_importance.items(), key=lambda x: x[1], reverse=True)[:20]:
-                md += f"| {feature} | {importance:.4f} |
-"
+                md += f"| {feature} | {importance:.4f} |\n"
         else:
             md = f"""# LIME Explanation Report
 
@@ -706,8 +705,7 @@ th {{background-color: #007bff; color: white;}}
 |---------|--------|
 """
             for feature, weight in explanation.feature_weights[:20]:
-                md += f"| {feature} | {weight:+.4f} |
-"
+                md += f"| {feature} | {weight:+.4f} |\n"
 
         return md
 

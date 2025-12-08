@@ -595,6 +595,372 @@ class Calibrator:
         )
 
 
+class ReliabilityDiagramData(BaseModel):
+    """Data for generating reliability diagrams."""
+
+    bin_centers: List[float] = Field(
+        ...,
+        description="Center of each confidence bin"
+    )
+    bin_accuracies: List[float] = Field(
+        ...,
+        description="Accuracy in each bin"
+    )
+    bin_confidences: List[float] = Field(
+        ...,
+        description="Mean confidence in each bin"
+    )
+    bin_counts: List[int] = Field(
+        ...,
+        description="Number of samples in each bin"
+    )
+    ece: float = Field(
+        ...,
+        description="Expected Calibration Error"
+    )
+    mce: float = Field(
+        ...,
+        description="Maximum Calibration Error"
+    )
+    n_bins: int = Field(
+        ...,
+        description="Number of bins"
+    )
+    n_samples: int = Field(
+        ...,
+        description="Total number of samples"
+    )
+    is_well_calibrated: bool = Field(
+        ...,
+        description="Whether ECE is below threshold"
+    )
+    calibration_gap: List[float] = Field(
+        ...,
+        description="Gap between accuracy and confidence per bin"
+    )
+
+
+class CalibrationDiagnostics:
+    """
+    Calibration Diagnostics for comprehensive analysis.
+
+    Provides detailed diagnostic information about model calibration,
+    including reliability diagrams, calibration gaps, and statistical tests.
+
+    Example:
+        >>> diagnostics = CalibrationDiagnostics()
+        >>> diagram_data = diagnostics.compute_reliability_diagram(probas, labels)
+        >>> print(f"ECE: {diagram_data.ece:.4f}")
+    """
+
+    def __init__(self, n_bins: int = 15, threshold: float = 0.05):
+        """
+        Initialize calibration diagnostics.
+
+        Args:
+            n_bins: Number of bins for reliability diagram
+            threshold: ECE threshold for good calibration
+        """
+        self.n_bins = n_bins
+        self.threshold = threshold
+
+    def compute_reliability_diagram(
+        self,
+        probabilities: np.ndarray,
+        labels: np.ndarray
+    ) -> ReliabilityDiagramData:
+        """
+        Compute data for reliability diagram.
+
+        Args:
+            probabilities: Predicted probabilities
+            labels: True labels
+
+        Returns:
+            ReliabilityDiagramData for plotting
+        """
+        # Handle multi-class vs binary
+        if len(probabilities.shape) > 1:
+            confidences = np.max(probabilities, axis=1)
+            predictions = np.argmax(probabilities, axis=1)
+        else:
+            confidences = np.maximum(probabilities, 1 - probabilities)
+            predictions = (probabilities > 0.5).astype(int)
+
+        accuracies = (predictions == labels).astype(float)
+
+        bin_boundaries = np.linspace(0, 1, self.n_bins + 1)
+        bin_centers = []
+        bin_accuracies = []
+        bin_confidences = []
+        bin_counts = []
+        calibration_gaps = []
+
+        ece = 0.0
+        mce = 0.0
+
+        for i in range(self.n_bins):
+            in_bin = (confidences > bin_boundaries[i]) & (confidences <= bin_boundaries[i + 1])
+            bin_center = (bin_boundaries[i] + bin_boundaries[i + 1]) / 2
+            bin_centers.append(float(bin_center))
+
+            if np.sum(in_bin) > 0:
+                bin_acc = float(np.mean(accuracies[in_bin]))
+                bin_conf = float(np.mean(confidences[in_bin]))
+                bin_count = int(np.sum(in_bin))
+                gap = abs(bin_acc - bin_conf)
+
+                ece += gap * bin_count / len(probabilities)
+                mce = max(mce, gap)
+
+                bin_accuracies.append(bin_acc)
+                bin_confidences.append(bin_conf)
+                bin_counts.append(bin_count)
+                calibration_gaps.append(float(bin_acc - bin_conf))
+            else:
+                bin_accuracies.append(0.0)
+                bin_confidences.append(bin_center)
+                bin_counts.append(0)
+                calibration_gaps.append(0.0)
+
+        return ReliabilityDiagramData(
+            bin_centers=bin_centers,
+            bin_accuracies=bin_accuracies,
+            bin_confidences=bin_confidences,
+            bin_counts=bin_counts,
+            ece=float(ece),
+            mce=float(mce),
+            n_bins=self.n_bins,
+            n_samples=len(probabilities),
+            is_well_calibrated=ece < self.threshold,
+            calibration_gap=calibration_gaps
+        )
+
+    def compute_calibration_curve(
+        self,
+        probabilities: np.ndarray,
+        labels: np.ndarray,
+        n_points: int = 100
+    ) -> Dict[str, List[float]]:
+        """
+        Compute smooth calibration curve using kernel smoothing.
+
+        Args:
+            probabilities: Predicted probabilities
+            labels: True labels
+            n_points: Number of points in curve
+
+        Returns:
+            Dictionary with x and y values for curve
+        """
+        if len(probabilities.shape) > 1:
+            probs = np.max(probabilities, axis=1)
+            preds = np.argmax(probabilities, axis=1)
+        else:
+            probs = probabilities
+            preds = (probabilities > 0.5).astype(int)
+
+        accuracies = (preds == labels).astype(float)
+
+        # Sort by probability
+        sorted_indices = np.argsort(probs)
+        sorted_probs = probs[sorted_indices]
+        sorted_accs = accuracies[sorted_indices]
+
+        # Compute cumulative statistics
+        x_points = np.linspace(0, 1, n_points)
+        y_points = []
+
+        for x in x_points:
+            # Use samples near this probability
+            window = 0.1
+            mask = (sorted_probs >= x - window) & (sorted_probs <= x + window)
+            if np.sum(mask) > 0:
+                y_points.append(float(np.mean(sorted_accs[mask])))
+            else:
+                y_points.append(float(x))  # Default to perfect calibration
+
+        return {
+            "predicted_probability": x_points.tolist(),
+            "empirical_accuracy": y_points,
+            "perfect_calibration": x_points.tolist()
+        }
+
+    def compute_class_calibration(
+        self,
+        probabilities: np.ndarray,
+        labels: np.ndarray
+    ) -> Dict[int, Dict[str, float]]:
+        """
+        Compute calibration metrics per class.
+
+        Args:
+            probabilities: Predicted probabilities (n_samples x n_classes)
+            labels: True labels
+
+        Returns:
+            Per-class calibration metrics
+        """
+        if len(probabilities.shape) == 1:
+            # Binary case
+            return {
+                0: self._compute_class_metrics(1 - probabilities, (labels == 0).astype(int)),
+                1: self._compute_class_metrics(probabilities, (labels == 1).astype(int))
+            }
+
+        n_classes = probabilities.shape[1]
+        class_metrics = {}
+
+        for c in range(n_classes):
+            class_probs = probabilities[:, c]
+            class_labels = (labels == c).astype(int)
+            class_metrics[c] = self._compute_class_metrics(class_probs, class_labels)
+
+        return class_metrics
+
+    def _compute_class_metrics(
+        self,
+        probs: np.ndarray,
+        labels: np.ndarray
+    ) -> Dict[str, float]:
+        """Compute calibration metrics for single class."""
+        # Binary cross-entropy
+        eps = 1e-15
+        probs_clipped = np.clip(probs, eps, 1 - eps)
+        bce = -np.mean(
+            labels * np.log(probs_clipped) +
+            (1 - labels) * np.log(1 - probs_clipped)
+        )
+
+        # Brier score for this class
+        brier = float(np.mean((probs - labels) ** 2))
+
+        # ECE for this class
+        diagram = self.compute_reliability_diagram(probs, labels)
+
+        return {
+            "ece": diagram.ece,
+            "brier_score": brier,
+            "binary_cross_entropy": float(bce),
+            "mean_predicted_prob": float(np.mean(probs)),
+            "actual_frequency": float(np.mean(labels))
+        }
+
+
+class BinaryCalibrator:
+    """
+    Specialized calibrator for binary classification.
+
+    Optimized for binary classification with Platt scaling
+    and isotonic regression.
+
+    Example:
+        >>> calibrator = BinaryCalibrator(method="platt")
+        >>> calibrator.fit(probas, labels)
+        >>> calibrated = calibrator.calibrate(new_probas)
+    """
+
+    def __init__(self, method: str = "platt"):
+        """
+        Initialize binary calibrator.
+
+        Args:
+            method: "platt" or "isotonic"
+        """
+        self.method = method
+        self._platt_a: float = 1.0
+        self._platt_b: float = 0.0
+        self._isotonic_model = None
+        self._is_fitted = False
+
+    def fit(
+        self,
+        probabilities: np.ndarray,
+        labels: np.ndarray
+    ) -> "BinaryCalibrator":
+        """
+        Fit the calibrator.
+
+        Args:
+            probabilities: Predicted probabilities for positive class
+            labels: True binary labels
+
+        Returns:
+            self
+        """
+        if self.method == "platt":
+            self._fit_platt(probabilities, labels)
+        else:
+            self._fit_isotonic(probabilities, labels)
+
+        self._is_fitted = True
+        return self
+
+    def _fit_platt(
+        self,
+        probabilities: np.ndarray,
+        labels: np.ndarray
+    ) -> None:
+        """Fit Platt scaling for binary classification."""
+        # Convert probabilities to logits
+        eps = 1e-15
+        probs_clipped = np.clip(probabilities, eps, 1 - eps)
+        logits = np.log(probs_clipped / (1 - probs_clipped))
+
+        def platt_loss(params):
+            a, b = params
+            scaled = 1 / (1 + np.exp(-a * logits - b))
+            scaled = np.clip(scaled, eps, 1 - eps)
+            return -np.mean(
+                labels * np.log(scaled) +
+                (1 - labels) * np.log(1 - scaled)
+            )
+
+        result = minimize(
+            platt_loss,
+            x0=[1.0, 0.0],
+            method="L-BFGS-B",
+            options={"maxiter": 1000}
+        )
+
+        self._platt_a, self._platt_b = result.x
+
+    def _fit_isotonic(
+        self,
+        probabilities: np.ndarray,
+        labels: np.ndarray
+    ) -> None:
+        """Fit isotonic regression."""
+        try:
+            from sklearn.isotonic import IsotonicRegression
+        except ImportError:
+            raise ImportError("sklearn required for isotonic calibration")
+
+        self._isotonic_model = IsotonicRegression(out_of_bounds="clip")
+        self._isotonic_model.fit(probabilities, labels)
+
+    def calibrate(self, probabilities: np.ndarray) -> np.ndarray:
+        """
+        Calibrate probabilities.
+
+        Args:
+            probabilities: Uncalibrated probabilities
+
+        Returns:
+            Calibrated probabilities
+        """
+        if not self._is_fitted:
+            raise ValueError("Calibrator not fitted.")
+
+        if self.method == "platt":
+            eps = 1e-15
+            probs_clipped = np.clip(probabilities, eps, 1 - eps)
+            logits = np.log(probs_clipped / (1 - probs_clipped))
+            return 1 / (1 + np.exp(-self._platt_a * logits - self._platt_b))
+        else:
+            return self._isotonic_model.transform(probabilities)
+
+
 # Unit test stubs
 class TestCalibrator:
     """Unit tests for Calibrator."""

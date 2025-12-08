@@ -17,7 +17,7 @@ Example:
     >>> generator.generate(spec, output_dir="./generated")
 """
 
-from greenlang.generator.spec_parser import (
+from core.greenlang.generator.spec_parser import (
     AgentSpecParser,
     ParsedAgentSpec,
     InputField,
@@ -27,7 +27,7 @@ from greenlang.generator.spec_parser import (
     ValidationError,
 )
 
-from greenlang.generator.code_generator import (
+from core.greenlang.generator.code_generator import (
     CodeGenerator,
     GeneratedCode,
     GenerationOptions,

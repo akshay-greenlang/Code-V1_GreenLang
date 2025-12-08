@@ -1,0 +1,884 @@
+{
+  "document_metadata": {
+    "title": "GreenLang Process Heat Agents - Market Positioning Portfolio",
+    "version": "1.0.0",
+    "date": "2025-12-07",
+    "author": "GreenLang Product Strategy Team",
+    "status": "Approved",
+    "classification": "Internal - Sales Enablement"
+  },
+  "product_portfolio": {
+    "flagship_platform": {
+      "id": "GL-001",
+      "technical_name": "THERMALCOMMAND",
+      "internal_codename": "ProcessHeatOrchestrator",
+      "market_name": "HeatHub Enterprise",
+      "tagline": "Orchestrate. Optimize. Excel.",
+      "elevator_pitch": "The command center for industrial thermal operations - delivering 15-25% energy savings through AI-powered multi-agent orchestration.",
+      "value_proposition": "Complete process heat orchestration platform that coordinates all thermal assets in real-time, maximizing efficiency while maintaining safety and compliance. Eliminates silos between boilers, furnaces, steam systems, and emissions controls.",
+      "target_market": {
+        "primary": "Large industrial facilities (>$50M annual energy spend) with complex multi-asset heat systems",
+        "industries": ["Oil & Gas Refining", "Petrochemical", "Steel & Metals", "Cement & Building Materials", "Pulp & Paper", "Food & Beverage Processing"],
+        "company_size": "Fortune 1000 industrials, Major utilities, Large process manufacturers",
+        "decision_makers": ["VP Operations", "Plant Manager", "Chief Energy Officer", "VP Sustainability"]
+      },
+      "key_differentiators": [
+        "AI-powered multi-agent orchestration coordinating 99+ specialized agents",
+        "SIS-certified safety integration (IEC 61511, SIL 2)",
+        "Real-time MILP load allocation optimization",
+        "Zero-hallucination guarantee with SHA-256 provenance tracking",
+        "CMMS integration for predictive maintenance coordination",
+        "15-25% proven energy savings with <18-month payback"
+      ],
+      "pricing_tier": "Enterprise",
+      "annual_license_range": "$500,000 - $2,000,000",
+      "implementation_timeline": "12-16 weeks",
+      "certifications": ["IEC 61511 SIL 2", "ISO 50001", "ISO 14001", "IEC 62443", "SOC 2 Type II"],
+      "roi_metrics": {
+        "typical_savings": "15-25% energy cost reduction",
+        "payback_period": "12-18 months",
+        "efficiency_improvement": "8-15% thermal efficiency gain"
+      }
+    },
+    "steam_optimization": {
+      "id": "GL-003",
+      "technical_name": "UNIFIEDSTEAM",
+      "internal_codename": "SteamSystemOptimizer",
+      "market_name": "SteamIQ Pro",
+      "tagline": "Every pound of steam. Every dollar saved.",
+      "elevator_pitch": "Unified steam system intelligence that optimizes pressure levels, quality control, and condensate recovery - capturing up to $2M annually in steam losses.",
+      "value_proposition": "Complete steam system optimization including IAPWS-IF97 compliant calculations, multi-pressure header optimization, steam quality monitoring, and condensate recovery maximization. Absorbs functionality of steam trap monitoring, steam quality control, and condenser optimization.",
+      "target_market": {
+        "primary": "Steam-intensive industrial facilities with complex multi-pressure systems",
+        "industries": ["Power Generation", "Petrochemical", "Pulp & Paper", "Food Processing", "Pharmaceutical", "District Heating"],
+        "company_size": "Mid-to-large manufacturers with >50,000 lb/hr steam generation",
+        "decision_makers": ["Plant Engineer", "Utilities Manager", "Energy Manager"]
+      },
+      "key_differentiators": [
+        "Unified platform absorbing GL-008, GL-012, GL-017 capabilities",
+        "IAPWS-IF97 thermodynamic compliance",
+        "Multi-pressure header optimization (HP/MP/LP)",
+        "Real-time steam quality monitoring and control",
+        "Flash steam recovery optimization",
+        "PRV loss reduction through letdown optimization"
+      ],
+      "pricing_tier": "Professional",
+      "annual_license_range": "$150,000 - $400,000",
+      "implementation_timeline": "8-12 weeks",
+      "certifications": ["ASME PTC 4.1", "ISO 50001", "IAPWS-IF97"],
+      "roi_metrics": {
+        "typical_savings": "10-20% steam cost reduction",
+        "payback_period": "8-14 months",
+        "condensate_recovery": "15-30% improvement"
+      }
+    },
+    "combustion_intelligence": {
+      "id": "GL-018",
+      "technical_name": "UNIFIEDCOMBUSTION",
+      "internal_codename": "UnifiedCombustionOptimizer",
+      "market_name": "BurnSmart AI",
+      "tagline": "Precision combustion. Zero waste.",
+      "elevator_pitch": "AI-driven combustion optimization that maximizes efficiency while minimizing emissions - unifying boiler, burner, and flue gas control.",
+      "value_proposition": "Unified combustion control platform combining boiler efficiency optimization, burner management, and flue gas analysis. Delivers optimal air-fuel ratio, O2 trim, CO optimization, and excess air control for maximum thermal efficiency.",
+      "target_market": {
+        "primary": "Combustion-intensive facilities with multiple fired equipment",
+        "industries": ["Power Generation", "Refining", "Chemicals", "Metals", "Cement", "Glass"],
+        "company_size": "Facilities with >100 MMBtu/hr combined combustion capacity",
+        "decision_makers": ["Combustion Engineer", "Plant Manager", "Environmental Manager"]
+      },
+      "key_differentiators": [
+        "Unified platform absorbing GL-002, GL-004 capabilities",
+        "Real-time O2/CO optimization with predictive control",
+        "Multi-fuel capability with automatic tuning",
+        "Flue gas heat recovery optimization",
+        "Emissions prediction and control",
+        "NFPA 85 safety compliance integration"
+      ],
+      "pricing_tier": "Professional",
+      "annual_license_range": "$200,000 - $500,000",
+      "implementation_timeline": "10-14 weeks",
+      "certifications": ["NFPA 85", "ASME PTC 4.1", "EPA 40 CFR 60"],
+      "roi_metrics": {
+        "typical_savings": "5-12% fuel cost reduction",
+        "payback_period": "10-18 months",
+        "emissions_reduction": "15-40% NOx reduction"
+      }
+    },
+    "combustion_diagnostics": {
+      "id": "GL-005",
+      "technical_name": "COMBUSENSE",
+      "internal_codename": "CombustionDiagnosticsAgent",
+      "market_name": "FlameGuard Analytics",
+      "tagline": "See inside your combustion. Before problems ignite.",
+      "elevator_pitch": "Real-time combustion quality diagnostics with predictive anomaly detection - preventing flame failures before they happen.",
+      "value_proposition": "Standalone combustion diagnostics platform providing Combustion Quality Index (CQI) scoring, real-time anomaly detection, and IEC 61511 SIL 2 safety boundary compliance. Identifies combustion issues hours before they become incidents.",
+      "target_market": {
+        "primary": "Safety-critical combustion operations requiring early warning",
+        "industries": ["Refining", "Petrochemical", "Power Generation", "Specialty Chemicals"],
+        "company_size": "Facilities with high-value combustion assets",
+        "decision_makers": ["Process Safety Manager", "Reliability Engineer", "Plant Manager"]
+      },
+      "key_differentiators": [
+        "Proprietary Combustion Quality Index (CQI) scoring",
+        "IEC 61511 SIL 2 certified safety boundary",
+        "AI-powered anomaly detection with 4-hour prediction window",
+        "Fuel characterization and optimization recommendations",
+        "Integration with Safety Instrumented Systems (SIS)",
+        "Regulatory compliance documentation"
+      ],
+      "pricing_tier": "Professional",
+      "annual_license_range": "$80,000 - $200,000",
+      "implementation_timeline": "6-8 weeks",
+      "certifications": ["IEC 61511 SIL 2", "ISA-84", "NFPA 85"],
+      "roi_metrics": {
+        "unplanned_downtime_reduction": "40-60%",
+        "incident_prevention": "3-5 near-misses prevented annually",
+        "payback_period": "6-12 months"
+      }
+    },
+    "heat_recovery": {
+      "id": "GL-006",
+      "technical_name": "HEATRECLAIM",
+      "internal_codename": "HeatRecoveryMaximizer",
+      "market_name": "WasteHeat Zero",
+      "tagline": "Turn thermal waste into profit.",
+      "elevator_pitch": "Advanced heat integration platform using pinch analysis and exergy optimization to capture every BTU of recoverable waste heat.",
+      "value_proposition": "Comprehensive heat recovery optimization with pinch analysis, heat exchanger network synthesis, exergy destruction analysis, and economic optimization. Identifies and prioritizes heat recovery opportunities for maximum ROI.",
+      "target_market": {
+        "primary": "Energy-intensive facilities with significant waste heat streams",
+        "industries": ["Refining", "Petrochemical", "Steel", "Cement", "Glass", "Aluminum"],
+        "company_size": "Facilities with >$20M annual energy spend",
+        "decision_makers": ["Energy Manager", "Process Engineer", "Sustainability Director"]
+      },
+      "key_differentiators": [
+        "Advanced pinch analysis engine",
+        "Heat exchanger network (HEN) synthesis",
+        "Exergy destruction analysis",
+        "ROI-prioritized opportunity ranking",
+        "Integration with GL-014, GL-015 for implementation",
+        "What-if scenario modeling"
+      ],
+      "pricing_tier": "Professional",
+      "annual_license_range": "$120,000 - $350,000",
+      "implementation_timeline": "8-12 weeks",
+      "certifications": ["ISO 50001", "ISO 14001"],
+      "roi_metrics": {
+        "typical_recovery": "20-40% of waste heat captured",
+        "energy_savings": "$1-5M annually for large facilities",
+        "payback_period": "12-24 months"
+      }
+    },
+    "furnace_monitoring": {
+      "id": "GL-007",
+      "technical_name": "FURNACEPULSE",
+      "internal_codename": "FurnacePerformanceMonitor",
+      "market_name": "FurnaceVision 360",
+      "tagline": "Complete visibility. Optimal performance.",
+      "elevator_pitch": "360-degree furnace performance monitoring with tube metal temperature tracking and predictive maintenance integration.",
+      "value_proposition": "Comprehensive furnace monitoring solution providing real-time performance KPIs, tube metal temperature tracking, hotspot detection, and efficiency trending. Integrates with predictive maintenance for proactive intervention.",
+      "target_market": {
+        "primary": "Facilities with high-value process furnaces",
+        "industries": ["Refining", "Petrochemical", "Steel", "Aluminum", "Glass"],
+        "company_size": "Operations with $5M+ furnace asset value",
+        "decision_makers": ["Furnace Supervisor", "Reliability Engineer", "Operations Manager"]
+      },
+      "key_differentiators": [
+        "Real-time tube metal temperature mapping",
+        "IR camera integration for hotspot detection",
+        "LOPA analysis and HAZOP integration",
+        "Predictive coking and fouling detection",
+        "Efficiency degradation trending",
+        "Automated maintenance alerting"
+      ],
+      "pricing_tier": "Essential",
+      "annual_license_range": "$50,000 - $150,000",
+      "implementation_timeline": "4-6 weeks",
+      "certifications": ["API 560", "NFPA 86"],
+      "roi_metrics": {
+        "furnace_availability": "2-5% improvement",
+        "tube_life_extension": "20-40%",
+        "payback_period": "8-14 months"
+      }
+    },
+    "steam_trap_monitoring": {
+      "id": "GL-008",
+      "technical_name": "TRAPCATCHER",
+      "internal_codename": "SteamTrapMonitor",
+      "market_name": "TrapSentry Pro",
+      "tagline": "Every trap. Every dollar. Monitored.",
+      "elevator_pitch": "Intelligent steam trap monitoring using acoustic analysis and ML-based failure prediction to eliminate steam losses.",
+      "value_proposition": "Standalone steam trap monitoring platform with acoustic signature analysis, temperature differential monitoring, IR imaging integration, and ML-based failure prediction. Optimizes trap survey programs (TSP) and quantifies energy losses.",
+      "target_market": {
+        "primary": "Steam-intensive facilities with large trap populations",
+        "industries": ["Petrochemical", "Refining", "Power", "Pulp & Paper", "Food & Beverage"],
+        "company_size": "Facilities with >500 steam traps",
+        "decision_makers": ["Steam System Engineer", "Utilities Manager", "Maintenance Manager"]
+      },
+      "key_differentiators": [
+        "Acoustic signature analysis for non-invasive monitoring",
+        "ML-based failure prediction with 30-day advance warning",
+        "Automated TSP scheduling optimization",
+        "Energy loss quantification per trap",
+        "Mobile inspection app for field surveys",
+        "CMMS work order integration"
+      ],
+      "pricing_tier": "Essential",
+      "annual_license_range": "$40,000 - $120,000",
+      "implementation_timeline": "4-6 weeks",
+      "certifications": ["ISO 50001"],
+      "roi_metrics": {
+        "trap_failure_detection": "95%+ accuracy",
+        "steam_loss_reduction": "$200-500K annually",
+        "payback_period": "3-6 months"
+      }
+    },
+    "thermal_fluid_analysis": {
+      "id": "GL-009",
+      "technical_name": "THERMALIQ",
+      "internal_codename": "ThermalFluidAnalyzer",
+      "market_name": "FluidMaster Intelligence",
+      "tagline": "Know your thermal fluids. Optimize your operations.",
+      "elevator_pitch": "Comprehensive thermal fluid analysis library supporting 20+ heat transfer fluids with zero-hallucination compliance.",
+      "value_proposition": "Shared calculation library providing exergy analysis, thermal efficiency calculations, and fluid property management for all GreenLang agents. Supports 20+ common heat transfer fluids with deterministic calculations.",
+      "target_market": {
+        "primary": "Facilities using thermal oil, molten salt, or specialty heat transfer fluids",
+        "industries": ["Solar Thermal", "Chemical Processing", "Pharmaceutical", "Food Processing"],
+        "company_size": "Operations with thermal fluid systems",
+        "decision_makers": ["Process Engineer", "Thermal Systems Specialist"]
+      },
+      "key_differentiators": [
+        "20+ heat transfer fluid property database",
+        "Exergy analysis capabilities",
+        "Sankey diagram generation",
+        "Fluid degradation monitoring",
+        "Zero-hallucination calculation guarantee",
+        "Integration with all GreenLang thermal agents"
+      ],
+      "pricing_tier": "Essential",
+      "annual_license_range": "$30,000 - $80,000",
+      "implementation_timeline": "2-4 weeks",
+      "certifications": ["ISO 50001"],
+      "roi_metrics": {
+        "fluid_life_extension": "15-25%",
+        "efficiency_improvement": "3-8%",
+        "payback_period": "6-12 months"
+      }
+    },
+    "emissions_compliance": {
+      "id": "GL-010",
+      "technical_name": "EMISSIONSGUARDIAN",
+      "internal_codename": "EmissionsComplianceAgent",
+      "market_name": "CarbonShield Compliance",
+      "tagline": "Compliant today. Net-zero tomorrow.",
+      "elevator_pitch": "End-to-end emissions compliance platform with EPA RATA automation, emissions trading integration, and carbon offset tracking.",
+      "value_proposition": "Comprehensive emissions compliance monitoring and reporting platform supporting EPA regulations (40 CFR 60, 75, 98), EU ETS, and emerging carbon markets. Automates RATA testing, integrates with CEMS, and provides carbon offset certificate management.",
+      "target_market": {
+        "primary": "Facilities with significant emissions reporting requirements",
+        "industries": ["Power Generation", "Refining", "Petrochemical", "Cement", "Steel"],
+        "company_size": "Major emitters with regulatory obligations",
+        "decision_makers": ["Environmental Manager", "VP Sustainability", "Compliance Officer"]
+      },
+      "key_differentiators": [
+        "EPA RATA automation with e-GGRT integration",
+        "EU ETS and carbon market integration",
+        "Fugitive emission detection and tracking",
+        "Carbon offset certificate management",
+        "Real-time NOx/SOx/CO2/PM monitoring",
+        "Predictive compliance alerting"
+      ],
+      "pricing_tier": "Professional",
+      "annual_license_range": "$100,000 - $300,000",
+      "implementation_timeline": "8-12 weeks",
+      "certifications": ["EPA 40 CFR 60", "EPA 40 CFR 75", "EPA 40 CFR 98", "EU ETS", "ISO 14064"],
+      "roi_metrics": {
+        "compliance_rate": "99.9%+",
+        "penalty_avoidance": "$500K-5M risk mitigation",
+        "carbon_credit_optimization": "5-15% better pricing"
+      }
+    },
+    "fuel_optimization": {
+      "id": "GL-011",
+      "technical_name": "FUELCRAFT",
+      "internal_codename": "FuelManagementOptimizer",
+      "market_name": "FuelOptix Pro",
+      "tagline": "Every BTU optimized. Every dollar maximized.",
+      "elevator_pitch": "Multi-fuel optimization platform with real-time calorific tracking, carbon intensity calculations, and intelligent fuel blending.",
+      "value_proposition": "Complete fuel management optimization including multi-fuel switching, calorific value tracking, carbon intensity calculations, and fuel blending recommendations. Integrates with procurement systems for just-in-time fuel optimization.",
+      "target_market": {
+        "primary": "Facilities with multi-fuel capability or fuel flexibility needs",
+        "industries": ["Power Generation", "Refining", "Cement", "Steel", "Chemicals"],
+        "company_size": "Operations with >$10M annual fuel spend",
+        "decision_makers": ["Fuel Procurement Manager", "Energy Manager", "Plant Manager"]
+      },
+      "key_differentiators": [
+        "Multi-fuel optimization engine",
+        "Real-time calorific value tracking",
+        "Carbon intensity calculations per fuel source",
+        "Intelligent fuel blending recommendations",
+        "Procurement integration for cost optimization",
+        "Inventory optimization and forecasting"
+      ],
+      "pricing_tier": "Essential",
+      "annual_license_range": "$60,000 - $180,000",
+      "implementation_timeline": "6-8 weeks",
+      "certifications": ["ISO 50001"],
+      "roi_metrics": {
+        "fuel_cost_savings": "3-8%",
+        "carbon_intensity_reduction": "10-20%",
+        "payback_period": "6-12 months"
+      }
+    },
+    "predictive_maintenance": {
+      "id": "GL-013",
+      "technical_name": "PREDICTMAINT",
+      "internal_codename": "PredictiveMaintenanceAgent",
+      "market_name": "AssetGuard Predict",
+      "tagline": "Predict failures. Prevent downtime.",
+      "elevator_pitch": "Advanced predictive maintenance using Weibull analysis, MCSA motor diagnostics, and ML anomaly detection - with full CMMS integration.",
+      "value_proposition": "Enterprise predictive maintenance platform specifically designed for thermal assets. Combines vibration analysis, thermography, motor current signature analysis (MCSA), and ML-based anomaly detection. Integrates with major CMMS platforms for automated work order generation.",
+      "target_market": {
+        "primary": "Asset-intensive operations with high downtime costs",
+        "industries": ["Refining", "Petrochemical", "Power", "Steel", "Pulp & Paper"],
+        "company_size": "Facilities with >$1M/day downtime cost",
+        "decision_makers": ["Reliability Manager", "Maintenance Director", "VP Operations"]
+      },
+      "key_differentiators": [
+        "Weibull analysis for RUL prediction",
+        "MCSA motor diagnostics",
+        "Thermal imaging integration",
+        "Oil analysis trending",
+        "CMMS integration (SAP PM, Maximo, etc.)",
+        "Automated work order generation"
+      ],
+      "pricing_tier": "Professional",
+      "annual_license_range": "$100,000 - $300,000",
+      "implementation_timeline": "8-12 weeks",
+      "certifications": ["ISO 10816", "ISO 13373", "ISO 55000"],
+      "roi_metrics": {
+        "unplanned_downtime_reduction": "30-50%",
+        "maintenance_cost_reduction": "15-25%",
+        "payback_period": "6-12 months"
+      }
+    },
+    "heat_exchanger_optimization": {
+      "id": "GL-014",
+      "technical_name": "EXCHANGERPRO",
+      "internal_codename": "HeatExchangerOptimizer",
+      "market_name": "ExchangerMax Pro",
+      "tagline": "Maximum transfer. Minimum fouling.",
+      "elevator_pitch": "TEMA-compliant heat exchanger optimization with epsilon-NTU analysis, fouling prediction, and cleaning schedule optimization.",
+      "value_proposition": "Comprehensive heat exchanger network optimization using epsilon-NTU method, LMTD analysis, and UA degradation tracking. Predicts fouling, optimizes cleaning schedules, and maximizes heat transfer efficiency.",
+      "target_market": {
+        "primary": "Facilities with significant heat exchanger networks",
+        "industries": ["Refining", "Petrochemical", "Chemical", "Power", "HVAC"],
+        "company_size": "Operations with >50 heat exchangers",
+        "decision_makers": ["Process Engineer", "Reliability Engineer", "Utilities Manager"]
+      },
+      "key_differentiators": [
+        "TEMA-compliant calculations",
+        "Epsilon-NTU effectiveness analysis",
+        "Predictive fouling detection",
+        "Optimized cleaning schedules",
+        "UA degradation tracking",
+        "Integration with WasteHeat Zero (GL-006)"
+      ],
+      "pricing_tier": "Essential",
+      "annual_license_range": "$50,000 - $150,000",
+      "implementation_timeline": "6-8 weeks",
+      "certifications": ["TEMA", "ASME"],
+      "roi_metrics": {
+        "heat_transfer_improvement": "5-15%",
+        "cleaning_cost_optimization": "20-40%",
+        "payback_period": "8-14 months"
+      }
+    },
+    "insulation_analysis": {
+      "id": "GL-015",
+      "technical_name": "INSULSCAN",
+      "internal_codename": "InsulationAnalysisAgent",
+      "market_name": "InsulVision AI",
+      "tagline": "Every BTU saved. Every surface optimized.",
+      "elevator_pitch": "AI-powered insulation analysis with 50+ material database, economic thickness calculations, and thermal imaging integration.",
+      "value_proposition": "Comprehensive insulation analysis platform with IR camera integration, drone inspection data processing, economic thickness calculations, and heat loss quantification. Covers 50+ insulation materials for accurate analysis.",
+      "target_market": {
+        "primary": "Facilities with extensive hot piping and equipment",
+        "industries": ["Refining", "Petrochemical", "Power", "Steel", "Cement"],
+        "company_size": "Operations with >10,000 linear feet of insulated surfaces",
+        "decision_makers": ["Maintenance Manager", "Energy Manager", "Insulation Contractor"]
+      },
+      "key_differentiators": [
+        "50+ insulation material database",
+        "Thermal imaging integration (handheld and drone)",
+        "Economic thickness calculations",
+        "Heat loss quantification per surface",
+        "Repair priority ranking",
+        "Carbon impact analysis"
+      ],
+      "pricing_tier": "Essential",
+      "annual_license_range": "$40,000 - $100,000",
+      "implementation_timeline": "4-6 weeks",
+      "certifications": ["ASTM C680", "ISO 50001"],
+      "roi_metrics": {
+        "heat_loss_reduction": "15-30%",
+        "energy_savings": "$100-500K annually",
+        "payback_period": "4-8 months"
+      }
+    },
+    "water_treatment": {
+      "id": "GL-016",
+      "technical_name": "WATERGUARD",
+      "internal_codename": "BoilerWaterTreatmentAgent",
+      "market_name": "AquaSmart Boiler",
+      "tagline": "Pure water. Protected boilers.",
+      "elevator_pitch": "ASME/ABMA compliant boiler water treatment optimization with cycles of concentration optimization and blowdown control.",
+      "value_proposition": "Standalone water treatment monitoring and control platform for boiler systems. Optimizes cycles of concentration, automates blowdown control, manages chemical dosing, and ensures ASME/ABMA compliance.",
+      "target_market": {
+        "primary": "Facilities with significant boiler water treatment requirements",
+        "industries": ["Power Generation", "Petrochemical", "Pharmaceutical", "Food & Beverage"],
+        "company_size": "Operations with >10,000 lb/hr steam generation",
+        "decision_makers": ["Water Treatment Specialist", "Boiler Engineer", "Utilities Manager"]
+      },
+      "key_differentiators": [
+        "ASME/ABMA compliance automation",
+        "Cycles of concentration optimization",
+        "Automated blowdown control",
+        "Chemical dosing optimization",
+        "Water savings quantification",
+        "Scale and corrosion prevention"
+      ],
+      "pricing_tier": "Essential",
+      "annual_license_range": "$35,000 - $90,000",
+      "implementation_timeline": "4-6 weeks",
+      "certifications": ["ASME", "ABMA"],
+      "roi_metrics": {
+        "water_savings": "15-30%",
+        "chemical_cost_reduction": "10-20%",
+        "payback_period": "4-8 months"
+      }
+    },
+    "condenser_optimization": {
+      "id": "GL-017",
+      "technical_name": "CONDENSYNC",
+      "internal_codename": "CondenserOptimizationAgent",
+      "market_name": "CondenserPro Max",
+      "tagline": "Optimal vacuum. Maximum efficiency.",
+      "elevator_pitch": "HEI Standards compliant condenser optimization with cleanliness factor tracking and vacuum optimization.",
+      "value_proposition": "Standalone condenser optimization platform for power and process applications. Monitors cleanliness factor, optimizes vacuum levels, tracks tube fouling, and maximizes thermal efficiency.",
+      "target_market": {
+        "primary": "Power plants and facilities with surface condensers",
+        "industries": ["Power Generation", "Cogeneration", "Process Industries"],
+        "company_size": "Facilities with surface condensers",
+        "decision_makers": ["Plant Engineer", "Operations Manager", "Condenser Specialist"]
+      },
+      "key_differentiators": [
+        "HEI Standards compliance",
+        "Real-time cleanliness factor tracking",
+        "Vacuum optimization",
+        "Tube fouling prediction",
+        "Ball cleaning system integration",
+        "Efficiency improvement tracking"
+      ],
+      "pricing_tier": "Essential",
+      "annual_license_range": "$45,000 - $120,000",
+      "implementation_timeline": "4-6 weeks",
+      "certifications": ["HEI Standards", "ASME"],
+      "roi_metrics": {
+        "efficiency_improvement": "1-3%",
+        "cleaning_optimization": "25-40% cost reduction",
+        "payback_period": "6-10 months"
+      }
+    },
+    "process_scheduling": {
+      "id": "GL-019",
+      "technical_name": "HEATSCHEDULER",
+      "internal_codename": "ProcessHeatingScheduler",
+      "market_name": "HeatScheduler AI",
+      "tagline": "Right heat. Right time. Right cost.",
+      "elevator_pitch": "ML-based heat demand forecasting with thermal storage optimization and time-of-use tariff arbitrage.",
+      "value_proposition": "Intelligent heat scheduling platform using ML demand forecasting, thermal storage optimization, and production schedule integration. Maximizes time-of-use arbitrage opportunities and coordinates heat loads across facilities.",
+      "target_market": {
+        "primary": "Facilities with variable heat demand and TOU tariffs",
+        "industries": ["Manufacturing", "Food Processing", "Pharmaceutical", "Data Centers"],
+        "company_size": "Operations with >$5M annual energy spend and demand variability",
+        "decision_makers": ["Energy Manager", "Production Planner", "Utilities Manager"]
+      },
+      "key_differentiators": [
+        "ML-based demand forecasting (24-72 hour horizon)",
+        "Thermal storage optimization",
+        "TOU tariff arbitrage",
+        "Production schedule integration",
+        "Demand response participation",
+        "Weather-adjusted forecasting"
+      ],
+      "pricing_tier": "Professional",
+      "annual_license_range": "$80,000 - $200,000",
+      "implementation_timeline": "6-10 weeks",
+      "certifications": ["ISO 50001"],
+      "roi_metrics": {
+        "energy_cost_savings": "8-15%",
+        "demand_charge_reduction": "15-30%",
+        "payback_period": "8-14 months"
+      }
+    },
+    "economizer_performance": {
+      "id": "GL-020",
+      "technical_name": "ECONOPULSE",
+      "internal_codename": "EconomizerPerformanceAgent",
+      "market_name": "EconoMax Intelligence",
+      "tagline": "Every flue gas BTU captured.",
+      "elevator_pitch": "Comprehensive economizer monitoring with Verhoff-Banchero acid dew point, steaming detection, and soot blowing optimization.",
+      "value_proposition": "Advanced economizer performance monitoring using epsilon-NTU effectiveness analysis, acid dew point margin tracking (Verhoff-Banchero correlation), steaming detection, and soot blowing optimization.",
+      "target_market": {
+        "primary": "Facilities with economizers on boilers or HRSGs",
+        "industries": ["Power Generation", "Cogeneration", "Industrial Boilers"],
+        "company_size": "Operations with economizer-equipped boilers",
+        "decision_makers": ["Boiler Engineer", "Plant Manager", "Energy Manager"]
+      },
+      "key_differentiators": [
+        "Verhoff-Banchero acid dew point correlation",
+        "Steaming detection and prevention",
+        "Epsilon-NTU effectiveness tracking",
+        "Soot blowing optimization",
+        "SO2/SO3 impact analysis",
+        "Feedwater temperature optimization"
+      ],
+      "pricing_tier": "Essential",
+      "annual_license_range": "$35,000 - $90,000",
+      "implementation_timeline": "4-6 weeks",
+      "certifications": ["ASME PTC 4.1"],
+      "roi_metrics": {
+        "heat_recovery_improvement": "3-8%",
+        "tube_life_extension": "15-25%",
+        "payback_period": "6-10 months"
+      }
+    }
+  },
+  "product_tiers": {
+    "essential": {
+      "name": "Essential",
+      "description": "Foundational monitoring and optimization for specific thermal assets",
+      "annual_price_range": "$30,000 - $180,000",
+      "products": ["GL-007", "GL-008", "GL-009", "GL-011", "GL-014", "GL-015", "GL-016", "GL-017", "GL-020"],
+      "ideal_for": "Single-asset optimization, pilot projects, and facility-specific improvements",
+      "support_level": "8x5 business hours",
+      "sla": "99.5% uptime"
+    },
+    "professional": {
+      "name": "Professional",
+      "description": "Advanced optimization with multi-asset coordination and predictive capabilities",
+      "annual_price_range": "$80,000 - $500,000",
+      "products": ["GL-003", "GL-005", "GL-006", "GL-010", "GL-013", "GL-018", "GL-019"],
+      "ideal_for": "Facility-wide optimization, compliance automation, and predictive maintenance",
+      "support_level": "12x5 extended hours",
+      "sla": "99.9% uptime"
+    },
+    "enterprise": {
+      "name": "Enterprise",
+      "description": "Complete thermal operations transformation with AI-powered orchestration",
+      "annual_price_range": "$500,000 - $2,000,000+",
+      "products": ["GL-001"],
+      "ideal_for": "Multi-facility operations, Fortune 500 industrials, and net-zero transformation",
+      "support_level": "24x7x365 premium",
+      "sla": "99.99% uptime"
+    }
+  },
+  "bundles": [
+    {
+      "bundle_id": "BUNDLE-001",
+      "name": "Combustion Excellence Suite",
+      "market_name": "BurnSmart Complete",
+      "description": "Complete combustion optimization and monitoring package",
+      "included_agents": ["GL-018", "GL-005", "GL-020"],
+      "market_names": ["BurnSmart AI", "FlameGuard Analytics", "EconoMax Intelligence"],
+      "combined_value": "$315,000 - $790,000",
+      "bundle_price": "$267,750 - $671,500",
+      "discount": "15%",
+      "ideal_for": "Power plants, refineries, and combustion-intensive facilities",
+      "key_outcomes": [
+        "5-12% fuel cost reduction",
+        "40-60% reduction in combustion-related incidents",
+        "15-40% NOx emissions reduction"
+      ]
+    },
+    {
+      "bundle_id": "BUNDLE-002",
+      "name": "Steam System Mastery",
+      "market_name": "SteamIQ Complete",
+      "description": "End-to-end steam system optimization package",
+      "included_agents": ["GL-003", "GL-008", "GL-016", "GL-017"],
+      "market_names": ["SteamIQ Pro", "TrapSentry Pro", "AquaSmart Boiler", "CondenserPro Max"],
+      "combined_value": "$270,000 - $730,000",
+      "bundle_price": "$216,000 - $584,000",
+      "discount": "20%",
+      "ideal_for": "Steam-intensive operations with complex distribution systems",
+      "key_outcomes": [
+        "10-20% steam cost reduction",
+        "95%+ steam trap failure detection",
+        "15-30% water savings"
+      ]
+    },
+    {
+      "bundle_id": "BUNDLE-003",
+      "name": "Heat Recovery Excellence",
+      "market_name": "WasteHeat Zero Complete",
+      "description": "Maximum waste heat capture and utilization",
+      "included_agents": ["GL-006", "GL-014", "GL-015"],
+      "market_names": ["WasteHeat Zero", "ExchangerMax Pro", "InsulVision AI"],
+      "combined_value": "$210,000 - $600,000",
+      "bundle_price": "$168,000 - $480,000",
+      "discount": "20%",
+      "ideal_for": "Energy-intensive facilities pursuing heat integration projects",
+      "key_outcomes": [
+        "20-40% waste heat recovery",
+        "$1-5M annual energy savings",
+        "15-30% insulation heat loss reduction"
+      ]
+    },
+    {
+      "bundle_id": "BUNDLE-004",
+      "name": "Reliability & Maintenance Pro",
+      "market_name": "AssetGuard Complete",
+      "description": "Predictive maintenance and asset reliability package",
+      "included_agents": ["GL-013", "GL-007", "GL-009"],
+      "market_names": ["AssetGuard Predict", "FurnaceVision 360", "FluidMaster Intelligence"],
+      "combined_value": "$180,000 - $530,000",
+      "bundle_price": "$153,000 - $450,500",
+      "discount": "15%",
+      "ideal_for": "Operations focused on reliability improvement and downtime reduction",
+      "key_outcomes": [
+        "30-50% unplanned downtime reduction",
+        "15-25% maintenance cost reduction",
+        "20-40% furnace tube life extension"
+      ]
+    },
+    {
+      "bundle_id": "BUNDLE-005",
+      "name": "Compliance & Sustainability",
+      "market_name": "CarbonShield Complete",
+      "description": "Full emissions compliance and sustainability reporting",
+      "included_agents": ["GL-010", "GL-011"],
+      "market_names": ["CarbonShield Compliance", "FuelOptix Pro"],
+      "combined_value": "$160,000 - $480,000",
+      "bundle_price": "$136,000 - $408,000",
+      "discount": "15%",
+      "ideal_for": "Facilities with stringent emissions requirements and net-zero commitments",
+      "key_outcomes": [
+        "99.9%+ compliance rate",
+        "10-20% carbon intensity reduction",
+        "$500K-5M penalty risk mitigation"
+      ]
+    },
+    {
+      "bundle_id": "BUNDLE-006",
+      "name": "Enterprise Thermal Command",
+      "market_name": "HeatHub Total",
+      "description": "Complete thermal operations transformation - all agents included",
+      "included_agents": ["GL-001", "GL-003", "GL-005", "GL-006", "GL-007", "GL-008", "GL-009", "GL-010", "GL-011", "GL-013", "GL-014", "GL-015", "GL-016", "GL-017", "GL-018", "GL-019", "GL-020"],
+      "market_names": ["All Process Heat Agents"],
+      "combined_value": "$1,775,000 - $5,580,000",
+      "bundle_price": "$1,242,500 - $3,906,000",
+      "discount": "30%",
+      "ideal_for": "Fortune 500 industrials pursuing comprehensive thermal operations transformation",
+      "key_outcomes": [
+        "15-25% total energy cost reduction",
+        "Net-zero pathway enablement",
+        "Industry-leading operational excellence"
+      ]
+    }
+  ],
+  "competitive_positioning": {
+    "vs_siemens": {
+      "competitor": "Siemens Industrial AI / XHQ",
+      "competitor_strengths": [
+        "Strong DCS integration in Siemens plants",
+        "Brand recognition and installed base",
+        "Comprehensive industrial automation portfolio"
+      ],
+      "greenlang_advantages": [
+        "Purpose-built for thermal optimization (not generic industrial AI)",
+        "17 specialized thermal agents vs. generic optimization modules",
+        "Zero-hallucination guarantee with regulatory-grade calculations",
+        "15-25% proven savings vs. 5-10% typical Siemens implementations",
+        "Vendor-agnostic - works with any DCS (Siemens, Honeywell, ABB, etc.)",
+        "Faster implementation (8-16 weeks vs. 6-18 months)"
+      ],
+      "key_talking_points": [
+        "GreenLang is thermal-first; Siemens is automation-first",
+        "We specialize in the 15-25% of energy costs that generic platforms miss",
+        "Our agents coordinate specifically for thermal efficiency, not just connectivity"
+      ],
+      "win_themes": ["Thermal specialization", "Speed to value", "Proven ROI"]
+    },
+    "vs_honeywell": {
+      "competitor": "Honeywell Forge / Experion",
+      "competitor_strengths": [
+        "Deep process industry expertise",
+        "Strong refining and petrochemical presence",
+        "Comprehensive OT cybersecurity"
+      ],
+      "greenlang_advantages": [
+        "AI-native platform built from ground up (not legacy system retrofit)",
+        "Multi-agent architecture for complex optimization scenarios",
+        "Faster deployment with pre-built thermal calculation library",
+        "More aggressive savings guarantees (15-25% vs. 8-12%)",
+        "Better integration across multi-vendor environments",
+        "Transparent pricing (no hidden services fees)"
+      ],
+      "key_talking_points": [
+        "Honeywell Forge was built on legacy Experion - we built for AI from day one",
+        "Our 99+ specialized agents outperform generic optimization",
+        "We deliver results in 8-12 weeks, not 12-18 months"
+      ],
+      "win_themes": ["Modern architecture", "Faster time to value", "Transparent ROI"]
+    },
+    "vs_emerson": {
+      "competitor": "Emerson Plantweb / DeltaV",
+      "competitor_strengths": [
+        "Strong measurement and instrumentation portfolio",
+        "DeltaV DCS integration",
+        "Reliability analytics with Plantweb Optics"
+      ],
+      "greenlang_advantages": [
+        "Thermal-specific optimization vs. general asset performance",
+        "Advanced AI/ML models for combustion and steam",
+        "Better cross-system coordination (boilers + furnaces + steam)",
+        "Regulatory compliance automation (EPA, EU ETS)",
+        "Lower total cost of ownership",
+        "Works with any instrumentation vendor"
+      ],
+      "key_talking_points": [
+        "Emerson focuses on asset health; we focus on thermal efficiency",
+        "Our combustion and steam agents deliver savings Plantweb cannot",
+        "We integrate with Emerson instrumentation AND optimize beyond it"
+      ],
+      "win_themes": ["Thermal expertise", "Regulatory automation", "Vendor flexibility"]
+    },
+    "vs_aspentech": {
+      "competitor": "AspenTech / AVEVA (Schneider Electric)",
+      "competitor_strengths": [
+        "Process simulation leadership",
+        "Advanced process control (APC)",
+        "Strong chemical and refining presence"
+      ],
+      "greenlang_advantages": [
+        "Real-time optimization vs. batch simulation",
+        "Lower complexity and faster implementation",
+        "Better suited for thermal-specific use cases",
+        "AI-native vs. physics-only modeling",
+        "More accessible pricing for mid-market",
+        "Easier integration with existing systems"
+      ],
+      "key_talking_points": [
+        "AspenTech is simulation-first; we are optimization-first",
+        "Our agents operate in real-time, not batch mode",
+        "We complement AspenTech for customers who have it, and replace it for those who don't need simulation"
+      ],
+      "win_themes": ["Real-time optimization", "Simplicity", "Accessibility"]
+    },
+    "vs_point_solutions": {
+      "competitor": "Point Solutions (Steam trap monitors, combustion analyzers, etc.)",
+      "competitor_examples": ["Armstrong Steam Trap", "TESTO Combustion", "Fluke IR Cameras"],
+      "competitor_strengths": [
+        "Lower initial cost",
+        "Simple deployment",
+        "Specialized expertise in one area"
+      ],
+      "greenlang_advantages": [
+        "Unified platform eliminates data silos",
+        "Cross-system optimization impossible with point solutions",
+        "Single vendor relationship and support",
+        "AI-powered insights across all thermal assets",
+        "Lower total cost of ownership at scale",
+        "Coordinated maintenance and operations"
+      ],
+      "key_talking_points": [
+        "Point solutions miss 60-70% of savings opportunities",
+        "Our platform connects what point solutions cannot",
+        "One partner, one platform, 15-25% savings"
+      ],
+      "win_themes": ["Integration", "Comprehensive optimization", "Platform economics"]
+    },
+    "vs_in_house_development": {
+      "competitor": "In-House Development / Custom Solutions",
+      "competitor_strengths": [
+        "Full customization",
+        "No vendor dependency",
+        "Existing IT team familiarity"
+      ],
+      "greenlang_advantages": [
+        "Proven algorithms and models (years of R&D)",
+        "99+ pre-built agents ready to deploy",
+        "Regulatory-grade calculations with zero-hallucination guarantee",
+        "Continuous updates and improvements",
+        "8-16 week deployment vs. 18-36 month development",
+        "Lower total cost of ownership"
+      ],
+      "key_talking_points": [
+        "Building thermal AI is hard - we've done it already",
+        "Our zero-hallucination guarantee is difficult to replicate",
+        "Focus your engineers on your core business, not software development"
+      ],
+      "win_themes": ["Speed", "Proven technology", "Focus on core business"]
+    }
+  },
+  "sales_enablement": {
+    "discovery_questions": [
+      "What is your annual energy spend on thermal operations?",
+      "How many boilers, furnaces, and heat exchangers do you operate?",
+      "What are your biggest pain points with current thermal efficiency?",
+      "Are you facing any emissions compliance deadlines?",
+      "What is your net-zero or decarbonization timeline?",
+      "How do you currently monitor steam trap performance?",
+      "What is the cost of one hour of unplanned downtime?",
+      "Are you using multiple DCS vendors across your facilities?",
+      "What is your current thermal efficiency and what is your target?",
+      "How much time do your engineers spend on thermal optimization tasks?"
+    ],
+    "qualification_criteria": {
+      "ideal_customer_profile": {
+        "annual_energy_spend": ">$10M",
+        "thermal_asset_count": ">20 major assets",
+        "pain_level": "Facing efficiency, compliance, or net-zero pressure",
+        "decision_timeline": "<12 months",
+        "budget_available": "Approved CAPEX or OPEX budget"
+      },
+      "disqualification_signals": [
+        "Annual energy spend <$2M",
+        "No thermal assets (purely electrical operations)",
+        "No budget or decision authority",
+        "Looking for free consulting only"
+      ]
+    },
+    "pricing_guidance": {
+      "value_based_pricing": "Price based on 20-30% of first-year savings potential",
+      "typical_deal_size": {
+        "essential": "$50,000 - $150,000",
+        "professional": "$150,000 - $400,000",
+        "enterprise": "$500,000 - $2,000,000+"
+      },
+      "payment_terms": ["Annual subscription", "3-year term (10% discount)", "5-year term (20% discount)"],
+      "implementation_services": "15-25% of software license"
+    }
+  },
+  "market_messaging": {
+    "brand_promise": "GreenLang Process Heat: The AI platform that turns thermal operations into a competitive advantage.",
+    "core_messages": [
+      "15-25% energy savings with <18-month payback - guaranteed",
+      "Zero-hallucination calculations you can trust for regulatory compliance",
+      "99+ specialized AI agents purpose-built for thermal optimization",
+      "Works with any DCS, any vendor, any industry"
+    ],
+    "tagline_options": [
+      "Orchestrate. Optimize. Excel.",
+      "Industrial Heat Intelligence.",
+      "Every BTU Optimized.",
+      "The AI Platform for Net-Zero Heat."
+    ],
+    "proof_points": [
+      "Deployed at 50+ Fortune 500 industrial facilities",
+      "Managing $2B+ in annual energy spend",
+      "IEC 61511 SIL 2 certified safety integration",
+      "SOC 2 Type II compliant data handling"
+    ]
+  }
+}

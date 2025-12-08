@@ -2,11 +2,13 @@
 Token Bucket Rate Limiter for GreenLang
 
 This module provides rate limiting functionality using
-the token bucket algorithm.
+multiple rate limiting algorithms.
 
 Features:
-- Token bucket algorithm
-- Sliding window rate limiting
+- Token bucket algorithm (burst-friendly)
+- Sliding window rate limiting (accurate boundary behavior)
+- Fixed window rate limiting (simple, memory-efficient)
+- Leaky bucket rate limiting (smooth output rate)
 - Per-client/per-route limits
 - Redis-backed distributed limiting
 - Rate limit headers
@@ -19,12 +21,13 @@ Example:
 """
 
 import asyncio
+import collections
 import logging
 import time
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Any, Callable, Deque, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field
 
@@ -60,26 +63,59 @@ class RateLimitScope(str, Enum):
 
 @dataclass
 class RateLimiterConfig:
-    """Configuration for rate limiter."""
+    """
+    Configuration for rate limiter.
+
+    Attributes:
+        strategy: Rate limiting algorithm to use
+        scope: Scope for rate limiting (global, per-client, per-route, etc.)
+        tokens_per_second: Token fill rate for token bucket and leak rate for leaky bucket
+        bucket_size: Maximum capacity for token bucket and leaky bucket
+        window_size_seconds: Window size for sliding and fixed window strategies
+        max_requests: Maximum requests per window for sliding/fixed window strategies
+        enable_headers: Whether to add rate limit headers to responses
+        limit_header: Name of the limit header
+        remaining_header: Name of the remaining header
+        reset_header: Name of the reset header
+        client_id_header: Header to extract client ID from
+        use_ip_fallback: Whether to fall back to IP address for client ID
+        redis_url: Redis URL for distributed rate limiting (enables Redis backend)
+        redis_prefix: Prefix for Redis keys
+        redis_db: Redis database number
+        redis_pool_size: Maximum Redis connection pool size
+        redis_timeout: Redis operation timeout in seconds
+        redis_key_ttl: TTL for Redis keys in seconds
+        fallback_to_memory: Whether to fall back to in-memory on Redis failure
+    """
     strategy: RateLimitStrategy = RateLimitStrategy.TOKEN_BUCKET
     scope: RateLimitScope = RateLimitScope.PER_CLIENT
-    # Token bucket settings
+
+    # Token bucket / Leaky bucket settings
     tokens_per_second: float = 10.0
     bucket_size: int = 100
-    # Sliding window settings
+
+    # Window settings (sliding and fixed)
     window_size_seconds: int = 60
     max_requests: int = 100
+
     # Headers
     enable_headers: bool = True
     limit_header: str = "X-RateLimit-Limit"
     remaining_header: str = "X-RateLimit-Remaining"
     reset_header: str = "X-RateLimit-Reset"
+
     # Client identification
     client_id_header: str = "X-API-Key"
     use_ip_fallback: bool = True
-    # Redis (for distributed limiting)
+
+    # Redis settings (for distributed limiting)
     redis_url: Optional[str] = None
     redis_prefix: str = "ratelimit:"
+    redis_db: int = 0
+    redis_pool_size: int = 10
+    redis_timeout: float = 5.0
+    redis_key_ttl: int = 3600
+    fallback_to_memory: bool = True
 
 
 class RateLimitInfo(BaseModel):
@@ -225,6 +261,319 @@ class SlidingWindowCounter:
         return self._requests[0] + self.window_size
 
 
+class FixedWindowCounter:
+    """
+    Fixed window rate limiter.
+
+    Implements a simple fixed time window rate limiting algorithm.
+    Windows are aligned to time boundaries (e.g., every minute, every hour).
+
+    Advantages:
+    - Memory efficient (single counter per window)
+    - Simple to understand and implement
+    - Predictable reset times
+
+    Disadvantages:
+    - Burst at window boundaries (up to 2x rate momentarily)
+
+    Attributes:
+        window_size: Window size in seconds
+        max_requests: Maximum requests allowed per window
+    """
+
+    def __init__(
+        self,
+        window_size: int,
+        max_requests: int
+    ):
+        """
+        Initialize fixed window counter.
+
+        Args:
+            window_size: Window size in seconds (e.g., 60 for 1 minute)
+            max_requests: Maximum requests per window
+        """
+        self.window_size = window_size
+        self.max_requests = max_requests
+        self._counter: int = 0
+        self._window_start: float = self._get_window_start(time.monotonic())
+        self._lock = asyncio.Lock()
+
+    def _get_window_start(self, timestamp: float) -> float:
+        """
+        Get the start time of the window containing the timestamp.
+
+        Args:
+            timestamp: Monotonic timestamp
+
+        Returns:
+            Window start timestamp (aligned to window boundary)
+        """
+        return (timestamp // self.window_size) * self.window_size
+
+    async def acquire(self, count: int = 1) -> bool:
+        """
+        Try to acquire request slots.
+
+        Args:
+            count: Number of request slots to acquire
+
+        Returns:
+            True if slots acquired, False if limit exceeded
+        """
+        async with self._lock:
+            now = time.monotonic()
+            current_window = self._get_window_start(now)
+
+            # Check if we've moved to a new window
+            if current_window != self._window_start:
+                # Reset counter for new window
+                self._window_start = current_window
+                self._counter = 0
+
+            # Check if we have capacity
+            if self._counter + count <= self.max_requests:
+                self._counter += count
+                return True
+
+            return False
+
+    @property
+    def remaining(self) -> int:
+        """
+        Get remaining request slots in current window.
+
+        Returns:
+            Number of remaining slots
+        """
+        now = time.monotonic()
+        current_window = self._get_window_start(now)
+
+        # If we're in a new window, full capacity available
+        if current_window != self._window_start:
+            return self.max_requests
+
+        return max(0, self.max_requests - self._counter)
+
+    @property
+    def current_count(self) -> int:
+        """
+        Get current request count in window.
+
+        Returns:
+            Current count
+        """
+        now = time.monotonic()
+        current_window = self._get_window_start(now)
+
+        if current_window != self._window_start:
+            return 0
+
+        return self._counter
+
+    @property
+    def reset_at(self) -> float:
+        """
+        Get timestamp when current window resets.
+
+        Returns:
+            Monotonic timestamp of window reset
+        """
+        now = time.monotonic()
+        current_window = self._get_window_start(now)
+        return current_window + self.window_size
+
+    @property
+    def time_until_reset(self) -> float:
+        """
+        Get seconds until window reset.
+
+        Returns:
+            Seconds until reset
+        """
+        return max(0.0, self.reset_at - time.monotonic())
+
+
+class LeakyBucket:
+    """
+    Leaky bucket rate limiter.
+
+    Implements the leaky bucket algorithm for smooth, constant-rate
+    request processing. Requests are queued and "leak" out at a
+    constant rate.
+
+    Advantages:
+    - Smooth, constant output rate
+    - Good for downstream systems with fixed processing capacity
+    - Prevents bursts
+
+    Disadvantages:
+    - Adds latency (requests may wait in queue)
+    - Queue can fill up during sustained high traffic
+
+    Attributes:
+        capacity: Maximum bucket (queue) capacity
+        leak_rate: Requests leaked (processed) per second
+    """
+
+    def __init__(
+        self,
+        capacity: int,
+        leak_rate: float
+    ):
+        """
+        Initialize leaky bucket.
+
+        Args:
+            capacity: Maximum queue size (bucket capacity)
+            leak_rate: Requests processed per second (leak rate)
+        """
+        if leak_rate <= 0:
+            raise ValueError("leak_rate must be positive")
+        if capacity <= 0:
+            raise ValueError("capacity must be positive")
+
+        self.capacity = capacity
+        self.leak_rate = leak_rate
+        self._water_level: float = 0.0  # Current "water" in bucket
+        self._last_leak: float = time.monotonic()
+        self._lock = asyncio.Lock()
+
+    def _leak(self) -> None:
+        """
+        Drain water from bucket based on elapsed time.
+
+        Called internally before any bucket operation.
+        """
+        now = time.monotonic()
+        elapsed = now - self._last_leak
+
+        # Calculate how much water has leaked
+        leaked = elapsed * self.leak_rate
+        self._water_level = max(0.0, self._water_level - leaked)
+        self._last_leak = now
+
+    async def acquire(self, amount: float = 1.0) -> bool:
+        """
+        Try to add a request to the bucket.
+
+        If there's room in the bucket, the request is accepted.
+        If the bucket is full (overflow), the request is rejected.
+
+        Args:
+            amount: Amount of "water" to add (default 1.0 per request)
+
+        Returns:
+            True if request accepted, False if bucket overflowed
+        """
+        async with self._lock:
+            self._leak()
+
+            # Check if adding this request would overflow
+            if self._water_level + amount <= self.capacity:
+                self._water_level += amount
+                return True
+
+            return False
+
+    @property
+    def current_level(self) -> float:
+        """
+        Get current water level in bucket.
+
+        Returns:
+            Current level (0 to capacity)
+        """
+        # Calculate current level without modifying state
+        now = time.monotonic()
+        elapsed = now - self._last_leak
+        leaked = elapsed * self.leak_rate
+        return max(0.0, self._water_level - leaked)
+
+    @property
+    def available_capacity(self) -> float:
+        """
+        Get available capacity in bucket.
+
+        Returns:
+            Available capacity
+        """
+        return max(0.0, self.capacity - self.current_level)
+
+    @property
+    def remaining(self) -> int:
+        """
+        Get remaining request slots (integer).
+
+        Returns:
+            Number of remaining slots
+        """
+        return int(self.available_capacity)
+
+    @property
+    def time_until_available(self) -> float:
+        """
+        Get seconds until at least one slot is available.
+
+        Returns:
+            Seconds until a request can be accepted
+        """
+        current = self.current_level
+        if current < self.capacity:
+            return 0.0
+
+        # Calculate time to drain enough for 1 request
+        excess = current - (self.capacity - 1)
+        return excess / self.leak_rate
+
+    @property
+    def queue_depth(self) -> int:
+        """
+        Get approximate queue depth (pending requests).
+
+        Returns:
+            Number of pending requests
+        """
+        return int(self.current_level)
+
+    async def wait_and_acquire(
+        self,
+        amount: float = 1.0,
+        timeout: Optional[float] = None
+    ) -> bool:
+        """
+        Wait for capacity and then acquire.
+
+        This method will wait until there's room in the bucket,
+        providing backpressure instead of immediate rejection.
+
+        Args:
+            amount: Amount to acquire
+            timeout: Maximum seconds to wait (None for no timeout)
+
+        Returns:
+            True if acquired, False if timeout
+        """
+        start = time.monotonic()
+
+        while True:
+            if await self.acquire(amount):
+                return True
+
+            # Calculate wait time
+            wait_time = self.time_until_available
+
+            # Check timeout
+            if timeout is not None:
+                elapsed = time.monotonic() - start
+                if elapsed + wait_time > timeout:
+                    return False
+                wait_time = min(wait_time, timeout - elapsed)
+
+            # Wait for some water to leak
+            await asyncio.sleep(min(wait_time, 0.1))  # Max 100ms between checks
+
+
 class RateLimiter:
     """
     Production-ready rate limiter.
@@ -255,9 +604,15 @@ class RateLimiter:
             config: Rate limiter configuration
         """
         self.config = config or RateLimiterConfig()
-        self._buckets: Dict[str, TokenBucket] = {}
-        self._windows: Dict[str, SlidingWindowCounter] = {}
+        self._token_buckets: Dict[str, TokenBucket] = {}
+        self._sliding_windows: Dict[str, SlidingWindowCounter] = {}
+        self._fixed_windows: Dict[str, FixedWindowCounter] = {}
+        self._leaky_buckets: Dict[str, LeakyBucket] = {}
         self._lock = asyncio.Lock()
+
+        # For backwards compatibility
+        self._buckets = self._token_buckets
+        self._windows = self._sliding_windows
 
         logger.info(
             f"RateLimiter initialized: {self.config.strategy.value}, "
@@ -281,25 +636,47 @@ class RateLimiter:
 
     async def _get_or_create_bucket(self, key: str) -> TokenBucket:
         """Get or create a token bucket for a key."""
-        if key not in self._buckets:
+        if key not in self._token_buckets:
             async with self._lock:
-                if key not in self._buckets:
-                    self._buckets[key] = TokenBucket(
+                if key not in self._token_buckets:
+                    self._token_buckets[key] = TokenBucket(
                         capacity=self.config.bucket_size,
                         fill_rate=self.config.tokens_per_second
                     )
-        return self._buckets[key]
+        return self._token_buckets[key]
 
     async def _get_or_create_window(self, key: str) -> SlidingWindowCounter:
         """Get or create a sliding window for a key."""
-        if key not in self._windows:
+        if key not in self._sliding_windows:
             async with self._lock:
-                if key not in self._windows:
-                    self._windows[key] = SlidingWindowCounter(
+                if key not in self._sliding_windows:
+                    self._sliding_windows[key] = SlidingWindowCounter(
                         window_size=self.config.window_size_seconds,
                         max_requests=self.config.max_requests
                     )
-        return self._windows[key]
+        return self._sliding_windows[key]
+
+    async def _get_or_create_fixed_window(self, key: str) -> FixedWindowCounter:
+        """Get or create a fixed window counter for a key."""
+        if key not in self._fixed_windows:
+            async with self._lock:
+                if key not in self._fixed_windows:
+                    self._fixed_windows[key] = FixedWindowCounter(
+                        window_size=self.config.window_size_seconds,
+                        max_requests=self.config.max_requests
+                    )
+        return self._fixed_windows[key]
+
+    async def _get_or_create_leaky_bucket(self, key: str) -> LeakyBucket:
+        """Get or create a leaky bucket for a key."""
+        if key not in self._leaky_buckets:
+            async with self._lock:
+                if key not in self._leaky_buckets:
+                    self._leaky_buckets[key] = LeakyBucket(
+                        capacity=self.config.bucket_size,
+                        leak_rate=self.config.tokens_per_second
+                    )
+        return self._leaky_buckets[key]
 
     async def acquire(
         self,
@@ -326,9 +703,19 @@ class RateLimiter:
 
         elif self.config.strategy == RateLimitStrategy.SLIDING_WINDOW:
             window = await self._get_or_create_window(key)
-            # For sliding window, ignore tokens count
+            # For sliding window, each request counts as one
             return await window.acquire()
 
+        elif self.config.strategy == RateLimitStrategy.FIXED_WINDOW:
+            fixed_window = await self._get_or_create_fixed_window(key)
+            return await fixed_window.acquire(tokens)
+
+        elif self.config.strategy == RateLimitStrategy.LEAKY_BUCKET:
+            leaky_bucket = await self._get_or_create_leaky_bucket(key)
+            return await leaky_bucket.acquire(float(tokens))
+
+        # Unknown strategy - allow (fail open)
+        logger.warning(f"Unknown rate limit strategy: {self.config.strategy}")
         return True
 
     async def check(
@@ -361,12 +748,40 @@ class RateLimiter:
 
         elif self.config.strategy == RateLimitStrategy.SLIDING_WINDOW:
             window = await self._get_or_create_window(key)
+            reset_timestamp = window.reset_at
+            # Handle monotonic time by converting to wall clock
+            now_monotonic = time.monotonic()
+            seconds_until_reset = max(0, reset_timestamp - now_monotonic)
             return RateLimitInfo(
                 limit=window.max_requests,
                 remaining=window.remaining,
-                reset_at=datetime.utcfromtimestamp(window.reset_at),
+                reset_at=datetime.utcnow() + timedelta(seconds=seconds_until_reset),
             )
 
+        elif self.config.strategy == RateLimitStrategy.FIXED_WINDOW:
+            fixed_window = await self._get_or_create_fixed_window(key)
+            return RateLimitInfo(
+                limit=fixed_window.max_requests,
+                remaining=fixed_window.remaining,
+                reset_at=datetime.utcnow() + timedelta(
+                    seconds=fixed_window.time_until_reset
+                ),
+                retry_after=int(fixed_window.time_until_reset) + 1 if fixed_window.remaining <= 0 else None
+            )
+
+        elif self.config.strategy == RateLimitStrategy.LEAKY_BUCKET:
+            leaky_bucket = await self._get_or_create_leaky_bucket(key)
+            time_until_avail = leaky_bucket.time_until_available
+            return RateLimitInfo(
+                limit=leaky_bucket.capacity,
+                remaining=leaky_bucket.remaining,
+                reset_at=datetime.utcnow() + timedelta(
+                    seconds=time_until_avail
+                ),
+                retry_after=int(time_until_avail) + 1 if leaky_bucket.remaining <= 0 else None
+            )
+
+        # Default fallback
         return RateLimitInfo(
             limit=self.config.max_requests,
             remaining=self.config.max_requests,
@@ -388,15 +803,32 @@ class RateLimiter:
         key = self._get_key(client_id, route)
 
         async with self._lock:
-            if key in self._buckets:
-                self._buckets[key] = TokenBucket(
+            # Reset token bucket if exists
+            if key in self._token_buckets:
+                self._token_buckets[key] = TokenBucket(
                     capacity=self.config.bucket_size,
                     fill_rate=self.config.tokens_per_second
                 )
-            if key in self._windows:
-                self._windows[key] = SlidingWindowCounter(
+
+            # Reset sliding window if exists
+            if key in self._sliding_windows:
+                self._sliding_windows[key] = SlidingWindowCounter(
                     window_size=self.config.window_size_seconds,
                     max_requests=self.config.max_requests
+                )
+
+            # Reset fixed window if exists
+            if key in self._fixed_windows:
+                self._fixed_windows[key] = FixedWindowCounter(
+                    window_size=self.config.window_size_seconds,
+                    max_requests=self.config.max_requests
+                )
+
+            # Reset leaky bucket if exists
+            if key in self._leaky_buckets:
+                self._leaky_buckets[key] = LeakyBucket(
+                    capacity=self.config.bucket_size,
+                    leak_rate=self.config.tokens_per_second
                 )
 
         logger.info(f"Reset rate limit for key: {key}")
@@ -456,8 +888,13 @@ class RateLimiter:
         return {
             "strategy": self.config.strategy.value,
             "scope": self.config.scope.value,
-            "active_buckets": len(self._buckets),
-            "active_windows": len(self._windows),
+            "active_token_buckets": len(self._token_buckets),
+            "active_sliding_windows": len(self._sliding_windows),
+            "active_fixed_windows": len(self._fixed_windows),
+            "active_leaky_buckets": len(self._leaky_buckets),
+            # Backwards compatibility
+            "active_buckets": len(self._token_buckets),
+            "active_windows": len(self._sliding_windows),
         }
 
 

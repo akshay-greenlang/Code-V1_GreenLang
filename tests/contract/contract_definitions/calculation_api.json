@@ -1,0 +1,153 @@
+{
+  "name": "calculation-api-contract",
+  "version": "2.0.0",
+  "contract_type": "rest_api",
+  "provider": "calculation_service",
+  "consumer": "dashboard_frontend",
+  "schema": {
+    "endpoints": [
+      {
+        "path": "/api/v1/calculations",
+        "method": "POST",
+        "description": "Create a new calculation",
+        "request": {
+          "content_type": "application/json",
+          "schema": {
+            "type": "object",
+            "required": ["fuel_type", "quantity", "unit"],
+            "properties": {
+              "fuel_type": {
+                "type": "string",
+                "enum": ["natural_gas", "diesel", "gasoline", "coal", "electricity"]
+              },
+              "quantity": {
+                "type": "number",
+                "minimum": 0
+              },
+              "unit": {
+                "type": "string",
+                "enum": ["therms", "gallons", "liters", "kg", "kWh", "MWh"]
+              },
+              "region": {
+                "type": "string",
+                "default": "US"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Calculation created",
+            "schema": {
+              "type": "object",
+              "required": ["calculation_id", "status", "created_at"],
+              "properties": {
+                "calculation_id": {"type": "string"},
+                "status": {"type": "string", "enum": ["pending", "processing", "completed", "failed"]},
+                "created_at": {"type": "string", "format": "date-time"}
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "schema": {
+              "$ref": "#/definitions/ValidationError"
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "schema": {
+              "$ref": "#/definitions/RateLimitError"
+            }
+          }
+        }
+      },
+      {
+        "path": "/api/v1/calculations/{calculation_id}",
+        "method": "GET",
+        "description": "Get calculation result",
+        "parameters": {
+          "calculation_id": {
+            "type": "string",
+            "required": true,
+            "in": "path"
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Calculation result",
+            "schema": {
+              "type": "object",
+              "required": ["calculation_id", "status"],
+              "properties": {
+                "calculation_id": {"type": "string"},
+                "status": {"type": "string"},
+                "result": {
+                  "type": "object",
+                  "properties": {
+                    "emissions_kg_co2e": {"type": "number"},
+                    "emissions_tonnes_co2e": {"type": "number"}
+                  }
+                },
+                "provenance": {
+                  "type": "object",
+                  "properties": {
+                    "hash": {"type": "string"},
+                    "emission_factor_source": {"type": "string"},
+                    "calculation_method": {"type": "string"}
+                  }
+                },
+                "completed_at": {"type": "string", "format": "date-time"}
+              }
+            }
+          },
+          "404": {
+            "description": "Calculation not found",
+            "schema": {
+              "$ref": "#/definitions/NotFoundError"
+            }
+          }
+        }
+      }
+    ],
+    "definitions": {
+      "ValidationError": {
+        "type": "object",
+        "required": ["error", "message", "details"],
+        "properties": {
+          "error": {"type": "string", "const": "validation_error"},
+          "message": {"type": "string"},
+          "details": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "field": {"type": "string"},
+                "error": {"type": "string"}
+              }
+            }
+          },
+          "request_id": {"type": "string"}
+        }
+      },
+      "RateLimitError": {
+        "type": "object",
+        "required": ["error", "message", "retry_after_seconds"],
+        "properties": {
+          "error": {"type": "string", "const": "rate_limit_exceeded"},
+          "message": {"type": "string"},
+          "retry_after_seconds": {"type": "integer"}
+        }
+      },
+      "NotFoundError": {
+        "type": "object",
+        "required": ["error", "message"],
+        "properties": {
+          "error": {"type": "string", "const": "not_found"},
+          "message": {"type": "string"},
+          "calculation_id": {"type": "string"}
+        }
+      }
+    }
+  }
+}
