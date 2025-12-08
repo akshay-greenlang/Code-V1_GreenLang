@@ -1,7 +1,7 @@
 # Optimized runner image - Target: <300MB
 # NOTE: Python 3.11 is the standardized version for GreenLang core infrastructure.
 # See pyproject.toml for supported versions (3.10, 3.11, 3.12).
-FROM python:3.11-slim AS builder
+FROM python:3.14-slim AS builder
 
 # Build stage - compile dependencies
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -30,7 +30,7 @@ RUN find /opt/venv -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || tr
     find /opt/venv -type f -name "*.pyo" -delete
 
 # Final stage - minimal runtime
-FROM python:3.11-slim
+FROM python:3.14-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
