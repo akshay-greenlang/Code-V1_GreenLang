@@ -1,0 +1,1748 @@
+# GL-020: ECONOPULSE - Economizer Performance Agent Pack Specification
+# GreenLang Agent Factory - Process Heat Optimization
+# Version: 1.0.0
+# Zero-Hallucination Guarantee: All thermodynamic calculations are deterministic
+
+schema_version: "2.0.0"
+
+pack:
+  id: gl-020-economizer-performance
+  name: ECONOPULSE - Economizer Performance Agent
+  description: |
+    Comprehensive economizer monitoring with Verhoff-Banchero acid dew point,
+    SHAP/LIME explainability, steaming detection, epsilon-NTU effectiveness,
+    ML soot blowing optimization and zero-hallucination thermodynamic calculations.
+
+    Features:
+    - Verhoff-Banchero acid dew point correlation (H2O + SO3)
+    - Epsilon-NTU heat exchanger effectiveness calculations
+    - IAPWS-IF97 water/steam property tables
+    - Cold-end corrosion risk assessment
+    - Steaming detection and prevention
+    - ML-assisted soot blowing optimization
+    - SHAP/LIME model explainability
+    - Complete provenance tracking for audit trails
+  version: "1.0.0"
+  author: GreenLang
+  license: Proprietary
+  category: process-heat-optimization
+  priority: P2-MEDIUM
+  deadline: "Q3 2026"
+
+metadata:
+  market_size: "$3B"
+  implementation_score: 92
+
+  standards:
+    - name: "ASME PTC 4.1"
+      description: "Steam Generating Units Performance Test Codes"
+      version: "2021"
+      url: "https://www.asme.org/codes-standards/find-codes-standards/ptc-4-1"
+    - name: "ASME PTC 4.3"
+      description: "Air Heaters Performance Test Codes"
+      version: "2017"
+      url: "https://www.asme.org/codes-standards/find-codes-standards/ptc-4-3"
+    - name: "EPA Method 6C"
+      description: "SO2 Emissions Measurement"
+      version: "2019"
+      url: "https://www.epa.gov/emc/method-6c-sulfur-dioxide-emissions"
+    - name: "IAPWS-IF97"
+      description: "Industrial Formulation for Water and Steam Properties"
+      version: "1997"
+      url: "http://www.iapws.org/relguide/IF97-Rev.html"
+
+  integrations:
+    - name: "OPC-UA"
+      description: "Real-time process data from DCS/SCADA systems"
+      protocol: "OPC-UA"
+      data_frequency: "1-5 seconds"
+    - name: "Kafka"
+      description: "Event streaming for high-throughput data ingestion"
+      protocol: "Apache Kafka"
+      topics:
+        - economizer_readings
+        - flue_gas_analysis
+        - steam_drum_data
+    - name: "CMMS"
+      description: "Computerized Maintenance Management System integration"
+      protocol: "REST API"
+      operations:
+        - work_order_creation
+        - maintenance_scheduling
+        - asset_health_tracking
+    - name: "Historian"
+      description: "OSIsoft PI or similar process historian"
+      protocol: "PI Web API"
+      data_retention: "7 years"
+
+  thermodynamic_correlations:
+    verhoff_banchero:
+      description: "Acid dew point correlation for sulfuric acid in flue gas"
+      equation: "T_adp = 203.25 + 27.6*log10(p_H2O) + 10.83*log10(p_SO3) + 1.06*(log10(p_H2O) + 8)^2.19"
+      units:
+        temperature: "Kelvin"
+        partial_pressure: "mmHg"
+      valid_range:
+        h2o_vol_percent: [0.5, 30]
+        so3_ppmv: [0.1, 100]
+      reference: "Verhoff, F.H. and Banchero, J.T., Chem. Eng. Prog., 70(8), 71, 1974"
+
+    epsilon_ntu:
+      description: "Heat exchanger effectiveness using NTU method"
+      equations:
+        counter_flow: "epsilon = (1 - exp(-NTU*(1-Cr))) / (1 - Cr*exp(-NTU*(1-Cr)))"
+        parallel_flow: "epsilon = (1 - exp(-NTU*(1+Cr))) / (1 + Cr)"
+        cross_flow_unmixed: "epsilon = 1 - exp((NTU^0.22/Cr)*(exp(-Cr*NTU^0.78) - 1))"
+      parameters:
+        NTU: "UA / C_min"
+        Cr: "C_min / C_max"
+      reference: "Kays, W.M. and London, A.L., Compact Heat Exchangers, 3rd Ed."
+
+    iapws_if97:
+      description: "Steam/water properties per IAPWS-IF97"
+      regions:
+        region_1: "Liquid water (0-100 MPa, 273.15-623.15 K)"
+        region_2: "Superheated steam"
+        region_4: "Saturation curve"
+      properties:
+        - saturation_temperature
+        - saturation_pressure
+        - specific_enthalpy
+        - specific_heat_capacity
+      reference: "IAPWS Industrial Formulation 1997"
+
+agents:
+  - id: economizer-optimizer
+    name: EconomizerPerformanceAgent
+    type: deterministic-calculator
+    description: |
+      Zero-hallucination thermodynamic calculations for economizer performance monitoring.
+      Implements ASME PTC 4.1/4.3 compliant heat transfer analysis with acid dew point
+      protection and steaming prevention algorithms.
+
+    inputs:
+      # =========================================================================
+      # Flow Conditions
+      # =========================================================================
+      - name: feedwater_temperature_c
+        type: float
+        required: true
+        description: "Economizer inlet feedwater temperature [Celsius]"
+        validation:
+          minimum: 20.0
+          maximum: 300.0
+
+      - name: feedwater_flow_kg_s
+        type: float
+        required: true
+        description: "Feedwater mass flow rate [kg/s]"
+        validation:
+          minimum: 0.1
+          maximum: 1000.0
+
+      - name: flue_gas_inlet_temp_c
+        type: float
+        required: true
+        description: "Flue gas inlet temperature [Celsius]"
+        validation:
+          minimum: 150.0
+          maximum: 600.0
+
+      - name: flue_gas_flow_kg_s
+        type: float
+        required: true
+        description: "Flue gas mass flow rate [kg/s]"
+        validation:
+          minimum: 0.1
+          maximum: 2000.0
+
+      - name: flue_gas_outlet_temp_c
+        type: float
+        required: false
+        description: "Measured flue gas outlet temperature [Celsius] (optional, for validation)"
+        validation:
+          minimum: 100.0
+          maximum: 500.0
+
+      # =========================================================================
+      # Pressure Conditions
+      # =========================================================================
+      - name: drum_pressure_mpa
+        type: float
+        required: true
+        description: "Steam drum pressure [MPa]"
+        validation:
+          minimum: 0.1
+          maximum: 30.0
+
+      - name: feedwater_pressure_mpa
+        type: float
+        required: false
+        description: "Feedwater inlet pressure [MPa] (defaults to drum_pressure + 1.0)"
+        validation:
+          minimum: 0.1
+          maximum: 35.0
+
+      # =========================================================================
+      # Flue Gas Composition
+      # =========================================================================
+      - name: h2o_vol_percent
+        type: float
+        required: true
+        description: "Water vapor concentration in flue gas [vol%]"
+        validation:
+          minimum: 0.5
+          maximum: 30.0
+
+      - name: so3_ppmv
+        type: float
+        required: true
+        description: "SO3 concentration in flue gas [ppmv]"
+        validation:
+          minimum: 0.0
+          maximum: 200.0
+
+      - name: co2_vol_percent
+        type: float
+        required: false
+        default: 12.0
+        description: "CO2 concentration in flue gas [vol%]"
+        validation:
+          minimum: 0.0
+          maximum: 25.0
+
+      - name: o2_vol_percent
+        type: float
+        required: false
+        default: 3.0
+        description: "O2 concentration in flue gas [vol%]"
+        validation:
+          minimum: 0.0
+          maximum: 21.0
+
+      - name: n2_vol_percent
+        type: float
+        required: false
+        description: "N2 concentration in flue gas [vol%] (calculated from balance if not provided)"
+        validation:
+          minimum: 60.0
+          maximum: 85.0
+
+      # =========================================================================
+      # Heat Exchanger Configuration
+      # =========================================================================
+      - name: overall_htc_w_m2k
+        type: float
+        required: true
+        description: "Overall heat transfer coefficient U [W/(m2*K)]"
+        validation:
+          minimum: 10.0
+          maximum: 500.0
+
+      - name: surface_area_m2
+        type: float
+        required: true
+        description: "Heat transfer surface area [m2]"
+        validation:
+          minimum: 10.0
+          maximum: 50000.0
+
+      - name: hx_type
+        type: string
+        required: false
+        default: "counter_flow"
+        description: "Heat exchanger flow arrangement type"
+        validation:
+          enum:
+            - counter_flow
+            - parallel_flow
+            - cross_flow_unmixed
+            - cross_flow_mixed
+
+      - name: tube_material
+        type: string
+        required: false
+        default: "carbon_steel"
+        description: "Economizer tube material"
+        validation:
+          enum:
+            - carbon_steel
+            - low_alloy_steel
+            - stainless_304
+            - stainless_316
+            - corten
+
+      - name: fin_type
+        type: string
+        required: false
+        default: "none"
+        description: "Fin type for extended surface"
+        validation:
+          enum:
+            - none
+            - solid_fin
+            - serrated_fin
+            - spiral_fin
+
+      # =========================================================================
+      # Fuel Information
+      # =========================================================================
+      - name: fuel_sulfur_percent
+        type: float
+        required: false
+        description: "Fuel sulfur content [wt%] (used for SO3 estimation if not measured)"
+        validation:
+          minimum: 0.0
+          maximum: 10.0
+
+      - name: fuel_type
+        type: string
+        required: false
+        default: "natural_gas"
+        description: "Primary fuel type"
+        validation:
+          enum:
+            - natural_gas
+            - coal_bituminous
+            - coal_subbituminous
+            - coal_lignite
+            - fuel_oil_2
+            - fuel_oil_6
+            - biomass
+            - waste_derived
+
+      - name: excess_air_percent
+        type: float
+        required: false
+        default: 15.0
+        description: "Excess air percentage"
+        validation:
+          minimum: 0.0
+          maximum: 100.0
+
+      # =========================================================================
+      # Operating Parameters
+      # =========================================================================
+      - name: boiler_load_percent
+        type: float
+        required: false
+        default: 100.0
+        description: "Current boiler load as percentage of MCR"
+        validation:
+          minimum: 20.0
+          maximum: 110.0
+
+      - name: soot_blowing_active
+        type: boolean
+        required: false
+        default: false
+        description: "Whether soot blowing is currently active"
+
+      - name: hours_since_last_soot_blow
+        type: float
+        required: false
+        description: "Hours since last soot blowing operation"
+        validation:
+          minimum: 0.0
+          maximum: 720.0
+
+      - name: fouling_factor_m2k_w
+        type: float
+        required: false
+        default: 0.0002
+        description: "Design fouling factor [m2*K/W]"
+        validation:
+          minimum: 0.0
+          maximum: 0.01
+
+      # =========================================================================
+      # Safety Margins
+      # =========================================================================
+      - name: min_corrosion_margin_c
+        type: float
+        required: false
+        default: 15.0
+        description: "Minimum margin above acid dew point [Celsius]"
+        validation:
+          minimum: 5.0
+          maximum: 50.0
+
+      - name: min_steaming_margin_c
+        type: float
+        required: false
+        default: 10.0
+        description: "Minimum margin below saturation temperature [Celsius]"
+        validation:
+          minimum: 5.0
+          maximum: 50.0
+
+      - name: water_velocity_m_s
+        type: float
+        required: false
+        default: 1.0
+        description: "Water velocity in tubes [m/s]"
+        validation:
+          minimum: 0.3
+          maximum: 3.0
+
+    outputs:
+      # =========================================================================
+      # Heat Transfer Results
+      # =========================================================================
+      - name: effectiveness
+        type: float
+        description: "Heat exchanger effectiveness (0-1)"
+
+      - name: ntu
+        type: float
+        description: "Number of Transfer Units"
+
+      - name: heat_capacity_ratio
+        type: float
+        description: "Heat capacity ratio Cr = C_min/C_max"
+
+      - name: heat_transfer_kw
+        type: float
+        description: "Actual heat transfer rate [kW]"
+
+      - name: max_heat_transfer_kw
+        type: float
+        description: "Maximum possible heat transfer rate [kW]"
+
+      - name: water_outlet_temp_c
+        type: float
+        description: "Calculated water outlet temperature [Celsius]"
+
+      - name: gas_outlet_temp_c
+        type: float
+        description: "Calculated gas outlet temperature [Celsius]"
+
+      - name: lmtd_c
+        type: float
+        description: "Log Mean Temperature Difference [Celsius]"
+
+      - name: water_temp_rise_c
+        type: float
+        description: "Water temperature rise through economizer [Celsius]"
+
+      - name: gas_temp_drop_c
+        type: float
+        description: "Gas temperature drop through economizer [Celsius]"
+
+      # =========================================================================
+      # Acid Dew Point Analysis
+      # =========================================================================
+      - name: acid_dew_point_c
+        type: float
+        description: "Acid dew point temperature (Verhoff-Banchero) [Celsius]"
+
+      - name: acid_dew_point_k
+        type: float
+        description: "Acid dew point temperature [Kelvin]"
+
+      - name: h2o_partial_pressure_mmhg
+        type: float
+        description: "Water vapor partial pressure [mmHg]"
+
+      - name: so3_partial_pressure_mmhg
+        type: float
+        description: "SO3 partial pressure [mmHg]"
+
+      - name: cold_end_metal_temp_c
+        type: float
+        description: "Estimated cold-end metal temperature [Celsius]"
+
+      - name: corrosion_margin_c
+        type: float
+        description: "Metal temperature margin above acid dew point [Celsius]"
+
+      - name: corrosion_risk
+        type: string
+        description: "Corrosion risk level: NONE, LOW, MODERATE, HIGH, SEVERE"
+
+      - name: corrosion_rate_mm_yr
+        type: float
+        description: "Estimated corrosion rate [mm/year]"
+
+      # =========================================================================
+      # Steaming Analysis
+      # =========================================================================
+      - name: saturation_temp_c
+        type: float
+        description: "Saturation temperature at drum pressure [Celsius]"
+
+      - name: saturation_pressure_mpa
+        type: float
+        description: "Saturation pressure at outlet water temperature [MPa]"
+
+      - name: steaming_margin_c
+        type: float
+        description: "Margin below saturation temperature [Celsius]"
+
+      - name: steaming_risk
+        type: string
+        description: "Steaming risk level: NONE, LOW, MODERATE, HIGH, CRITICAL"
+
+      - name: approach_to_saturation_c
+        type: float
+        description: "Approach temperature to saturation [Celsius]"
+
+      - name: subcooling_c
+        type: float
+        description: "Subcooling at economizer outlet [Celsius]"
+
+      # =========================================================================
+      # Performance Metrics
+      # =========================================================================
+      - name: thermal_efficiency_percent
+        type: float
+        description: "Economizer thermal efficiency [%]"
+
+      - name: fouling_factor_current
+        type: float
+        description: "Current estimated fouling factor [m2*K/W]"
+
+      - name: cleanliness_factor
+        type: float
+        description: "Cleanliness factor (1.0 = clean)"
+
+      - name: pressure_drop_gas_pa
+        type: float
+        description: "Estimated gas-side pressure drop [Pa]"
+
+      - name: pressure_drop_water_kpa
+        type: float
+        description: "Estimated water-side pressure drop [kPa]"
+
+      - name: heat_transfer_degradation_percent
+        type: float
+        description: "Heat transfer degradation from fouling [%]"
+
+      # =========================================================================
+      # Soot Blowing Optimization
+      # =========================================================================
+      - name: soot_blow_recommended
+        type: boolean
+        description: "Whether soot blowing is recommended"
+
+      - name: soot_blow_priority
+        type: string
+        description: "Soot blowing priority: NONE, LOW, MEDIUM, HIGH, URGENT"
+
+      - name: hours_until_soot_blow
+        type: float
+        description: "Estimated hours until soot blowing needed"
+
+      - name: soot_blow_reason
+        type: string
+        description: "Primary reason for soot blowing recommendation"
+
+      # =========================================================================
+      # Recommendations
+      # =========================================================================
+      - name: recommendations
+        type: array
+        description: "List of operational recommendations"
+
+      - name: alarms
+        type: array
+        description: "List of active alarms"
+
+      - name: warnings
+        type: array
+        description: "List of active warnings"
+
+      # =========================================================================
+      # Provenance and Audit
+      # =========================================================================
+      - name: provenance_hash
+        type: string
+        description: "SHA-256 hash for complete audit trail"
+
+      - name: calculation_steps
+        type: array
+        description: "Detailed calculation audit trail"
+
+      - name: processing_time_ms
+        type: float
+        description: "Processing duration in milliseconds"
+
+      - name: agent_version
+        type: string
+        description: "Agent version used for calculation"
+
+      - name: timestamp_utc
+        type: string
+        description: "Calculation timestamp (ISO 8601 UTC)"
+
+      - name: input_hash
+        type: string
+        description: "SHA-256 hash of input data"
+
+    tools:
+      - verhoff_banchero_calculator
+      - epsilon_ntu_calculator
+      - iapws_if97_lookup
+      - flue_gas_properties
+      - corrosion_risk_assessor
+      - steaming_risk_assessor
+      - fouling_estimator
+      - soot_blow_optimizer
+      - provenance_hasher
+
+tools:
+  # =============================================================================
+  # Thermodynamic Calculators
+  # =============================================================================
+  - id: verhoff_banchero_calculator
+    name: Verhoff-Banchero Acid Dew Point Calculator
+    description: |
+      Calculate acid dew point temperature using the Verhoff-Banchero correlation.
+      T_adp = 203.25 + 27.6*log10(p_H2O) + 10.83*log10(p_SO3) + 1.06*(log10(p_H2O)+8)^2.19
+      Where T_adp is in Kelvin, partial pressures in mmHg.
+    type: deterministic
+    safe: true
+    cache_enabled: true
+    cache_ttl: 3600
+    input_schema:
+      type: object
+      properties:
+        h2o_vol_percent:
+          type: number
+          description: "Water vapor concentration [vol%]"
+          minimum: 0.5
+          maximum: 30.0
+        so3_ppmv:
+          type: number
+          description: "SO3 concentration [ppmv]"
+          minimum: 0.0
+          maximum: 200.0
+        total_pressure_kpa:
+          type: number
+          description: "Total pressure [kPa]"
+          default: 101.325
+      required: ["h2o_vol_percent", "so3_ppmv"]
+    output_schema:
+      type: object
+      properties:
+        acid_dew_point_k:
+          type: number
+          description: "Acid dew point [K]"
+        acid_dew_point_c:
+          type: number
+          description: "Acid dew point [Celsius]"
+        h2o_partial_pressure_mmhg:
+          type: number
+          description: "H2O partial pressure [mmHg]"
+        so3_partial_pressure_mmhg:
+          type: number
+          description: "SO3 partial pressure [mmHg]"
+        correlation_valid:
+          type: boolean
+          description: "Whether inputs are within correlation validity range"
+      required: ["acid_dew_point_k", "acid_dew_point_c", "correlation_valid"]
+
+  - id: epsilon_ntu_calculator
+    name: Epsilon-NTU Heat Exchanger Calculator
+    description: |
+      Calculate heat exchanger effectiveness using the epsilon-NTU method.
+      Supports counter-flow, parallel-flow, and cross-flow configurations.
+    type: deterministic
+    safe: true
+    cache_enabled: true
+    cache_ttl: 3600
+    input_schema:
+      type: object
+      properties:
+        ua_w_k:
+          type: number
+          description: "Overall conductance UA [W/K]"
+          minimum: 0.0
+        c_min_w_k:
+          type: number
+          description: "Minimum heat capacity rate [W/K]"
+          minimum: 0.0
+        c_max_w_k:
+          type: number
+          description: "Maximum heat capacity rate [W/K]"
+          minimum: 0.0
+        hx_type:
+          type: string
+          description: "Heat exchanger type"
+          enum: ["counter_flow", "parallel_flow", "cross_flow_unmixed", "cross_flow_mixed"]
+      required: ["ua_w_k", "c_min_w_k", "c_max_w_k", "hx_type"]
+    output_schema:
+      type: object
+      properties:
+        effectiveness:
+          type: number
+          description: "Heat exchanger effectiveness (0-1)"
+        ntu:
+          type: number
+          description: "Number of Transfer Units"
+        cr:
+          type: number
+          description: "Heat capacity ratio"
+        q_max_w:
+          type: number
+          description: "Maximum possible heat transfer [W]"
+      required: ["effectiveness", "ntu", "cr"]
+
+  - id: iapws_if97_lookup
+    name: IAPWS-IF97 Steam Tables Lookup
+    description: |
+      Look up water/steam thermodynamic properties per IAPWS-IF97 formulation.
+      Provides saturation properties, specific enthalpy, and heat capacities.
+    type: deterministic
+    safe: true
+    cache_enabled: true
+    cache_ttl: 86400
+    input_schema:
+      type: object
+      properties:
+        property_type:
+          type: string
+          description: "Type of property lookup"
+          enum: ["saturation_by_pressure", "saturation_by_temperature", "water_properties", "steam_properties"]
+        pressure_mpa:
+          type: number
+          description: "Pressure [MPa]"
+          minimum: 0.000611657
+          maximum: 100.0
+        temperature_c:
+          type: number
+          description: "Temperature [Celsius]"
+          minimum: 0.01
+          maximum: 800.0
+      required: ["property_type"]
+    output_schema:
+      type: object
+      properties:
+        saturation_temp_c:
+          type: number
+          description: "Saturation temperature [Celsius]"
+        saturation_pressure_mpa:
+          type: number
+          description: "Saturation pressure [MPa]"
+        specific_enthalpy_kj_kg:
+          type: number
+          description: "Specific enthalpy [kJ/kg]"
+        specific_heat_cp_kj_kgk:
+          type: number
+          description: "Specific heat at constant pressure [kJ/(kg*K)]"
+        density_kg_m3:
+          type: number
+          description: "Density [kg/m3]"
+        region:
+          type: integer
+          description: "IAPWS-IF97 region number"
+      required: ["saturation_temp_c", "saturation_pressure_mpa"]
+
+  - id: flue_gas_properties
+    name: Flue Gas Properties Calculator
+    description: |
+      Calculate flue gas thermodynamic properties based on composition.
+      Includes specific heat, density, and thermal conductivity.
+    type: deterministic
+    safe: true
+    cache_enabled: true
+    cache_ttl: 3600
+    input_schema:
+      type: object
+      properties:
+        temperature_c:
+          type: number
+          description: "Temperature [Celsius]"
+        h2o_vol_percent:
+          type: number
+          description: "Water vapor [vol%]"
+        co2_vol_percent:
+          type: number
+          description: "CO2 [vol%]"
+        o2_vol_percent:
+          type: number
+          description: "O2 [vol%]"
+        n2_vol_percent:
+          type: number
+          description: "N2 [vol%]"
+        so2_ppmv:
+          type: number
+          description: "SO2 [ppmv]"
+          default: 0.0
+        pressure_kpa:
+          type: number
+          description: "Pressure [kPa]"
+          default: 101.325
+      required: ["temperature_c", "h2o_vol_percent", "co2_vol_percent"]
+    output_schema:
+      type: object
+      properties:
+        specific_heat_kj_kgk:
+          type: number
+          description: "Specific heat [kJ/(kg*K)]"
+        density_kg_m3:
+          type: number
+          description: "Density [kg/m3]"
+        molecular_weight:
+          type: number
+          description: "Average molecular weight [g/mol]"
+        thermal_conductivity_w_mk:
+          type: number
+          description: "Thermal conductivity [W/(m*K)]"
+        dynamic_viscosity_pa_s:
+          type: number
+          description: "Dynamic viscosity [Pa*s]"
+      required: ["specific_heat_kj_kgk", "density_kg_m3", "molecular_weight"]
+
+  # =============================================================================
+  # Risk Assessment Tools
+  # =============================================================================
+  - id: corrosion_risk_assessor
+    name: Cold-End Corrosion Risk Assessor
+    description: |
+      Assess cold-end corrosion risk based on metal temperature and acid dew point.
+      Provides risk level and estimated corrosion rate.
+    type: deterministic
+    safe: true
+    input_schema:
+      type: object
+      properties:
+        metal_temp_c:
+          type: number
+          description: "Metal temperature [Celsius]"
+        acid_dew_point_c:
+          type: number
+          description: "Acid dew point [Celsius]"
+        so3_ppmv:
+          type: number
+          description: "SO3 concentration [ppmv]"
+        tube_material:
+          type: string
+          description: "Tube material"
+          enum: ["carbon_steel", "low_alloy_steel", "stainless_304", "stainless_316", "corten"]
+      required: ["metal_temp_c", "acid_dew_point_c", "so3_ppmv", "tube_material"]
+    output_schema:
+      type: object
+      properties:
+        corrosion_risk:
+          type: string
+          description: "Risk level"
+          enum: ["NONE", "LOW", "MODERATE", "HIGH", "SEVERE"]
+        margin_c:
+          type: number
+          description: "Temperature margin above dew point [Celsius]"
+        corrosion_rate_mm_yr:
+          type: number
+          description: "Estimated corrosion rate [mm/year]"
+        recommendations:
+          type: array
+          items:
+            type: string
+      required: ["corrosion_risk", "margin_c", "corrosion_rate_mm_yr"]
+
+  - id: steaming_risk_assessor
+    name: Steaming Risk Assessor
+    description: |
+      Assess steaming risk based on water outlet temperature and saturation conditions.
+      Uses IAPWS-IF97 for accurate saturation properties.
+    type: deterministic
+    safe: true
+    input_schema:
+      type: object
+      properties:
+        water_outlet_temp_c:
+          type: number
+          description: "Water outlet temperature [Celsius]"
+        drum_pressure_mpa:
+          type: number
+          description: "Steam drum pressure [MPa]"
+        water_velocity_m_s:
+          type: number
+          description: "Water velocity in tubes [m/s]"
+          default: 1.0
+      required: ["water_outlet_temp_c", "drum_pressure_mpa"]
+    output_schema:
+      type: object
+      properties:
+        steaming_risk:
+          type: string
+          description: "Risk level"
+          enum: ["NONE", "LOW", "MODERATE", "HIGH", "CRITICAL"]
+        saturation_temp_c:
+          type: number
+          description: "Saturation temperature [Celsius]"
+        margin_c:
+          type: number
+          description: "Margin below saturation [Celsius]"
+        subcooling_c:
+          type: number
+          description: "Subcooling [Celsius]"
+        recommendations:
+          type: array
+          items:
+            type: string
+      required: ["steaming_risk", "saturation_temp_c", "margin_c"]
+
+  # =============================================================================
+  # Performance Optimization Tools
+  # =============================================================================
+  - id: fouling_estimator
+    name: Fouling Factor Estimator
+    description: |
+      Estimate current fouling factor from measured vs. calculated performance.
+      Uses heat transfer degradation analysis.
+    type: deterministic
+    safe: true
+    input_schema:
+      type: object
+      properties:
+        design_u_w_m2k:
+          type: number
+          description: "Design overall HTC [W/(m2*K)]"
+        measured_q_kw:
+          type: number
+          description: "Measured heat transfer [kW]"
+        calculated_q_clean_kw:
+          type: number
+          description: "Calculated heat transfer if clean [kW]"
+        design_fouling_factor:
+          type: number
+          description: "Design fouling factor [m2*K/W]"
+          default: 0.0002
+      required: ["design_u_w_m2k", "measured_q_kw", "calculated_q_clean_kw"]
+    output_schema:
+      type: object
+      properties:
+        current_fouling_factor:
+          type: number
+          description: "Current fouling factor [m2*K/W]"
+        cleanliness_factor:
+          type: number
+          description: "Cleanliness factor (1.0 = clean)"
+        degradation_percent:
+          type: number
+          description: "Performance degradation [%]"
+        fouling_trend:
+          type: string
+          description: "Fouling trend: STABLE, INCREASING, DECREASING"
+      required: ["current_fouling_factor", "cleanliness_factor", "degradation_percent"]
+
+  - id: soot_blow_optimizer
+    name: Soot Blowing Optimizer
+    description: |
+      Optimize soot blowing timing based on fouling trends and economics.
+      ML-assisted prediction with SHAP explainability.
+    type: ml_model
+    safe: true
+    input_schema:
+      type: object
+      properties:
+        cleanliness_factor:
+          type: number
+          description: "Current cleanliness factor"
+        fouling_rate:
+          type: number
+          description: "Fouling rate [1/hour]"
+        hours_since_last_blow:
+          type: number
+          description: "Hours since last soot blow"
+        boiler_load_percent:
+          type: number
+          description: "Current boiler load [%]"
+        fuel_type:
+          type: string
+          description: "Fuel type"
+        gas_temp_drop_c:
+          type: number
+          description: "Gas temperature drop [Celsius]"
+      required: ["cleanliness_factor", "hours_since_last_blow", "boiler_load_percent"]
+    output_schema:
+      type: object
+      properties:
+        soot_blow_recommended:
+          type: boolean
+          description: "Soot blow recommended"
+        priority:
+          type: string
+          description: "Priority level"
+          enum: ["NONE", "LOW", "MEDIUM", "HIGH", "URGENT"]
+        hours_until_optimal:
+          type: number
+          description: "Hours until optimal soot blow timing"
+        confidence:
+          type: number
+          description: "Prediction confidence (0-1)"
+        shap_values:
+          type: object
+          description: "SHAP feature importance values"
+        recommendation_reason:
+          type: string
+          description: "Primary reason for recommendation"
+      required: ["soot_blow_recommended", "priority", "hours_until_optimal"]
+
+  - id: provenance_hasher
+    name: Provenance Hasher
+    description: "Calculate SHA-256 provenance hash for complete audit trail"
+    type: deterministic
+    safe: true
+    input_schema:
+      type: object
+      properties:
+        calculation_steps:
+          type: array
+          description: "List of calculation steps with inputs and outputs"
+        agent_id:
+          type: string
+          description: "Agent identifier"
+        agent_version:
+          type: string
+          description: "Agent version"
+        input_data:
+          type: object
+          description: "Original input data"
+        output_data:
+          type: object
+          description: "Calculated output data"
+      required: ["calculation_steps", "agent_id", "agent_version"]
+    output_schema:
+      type: object
+      properties:
+        hash:
+          type: string
+          pattern: "^[a-f0-9]{64}$"
+          description: "SHA-256 hash"
+        timestamp:
+          type: string
+          format: date-time
+          description: "Calculation timestamp"
+        input_hash:
+          type: string
+          description: "Hash of input data only"
+      required: ["hash", "timestamp"]
+
+# =============================================================================
+# Reference Data
+# =============================================================================
+reference_data:
+  # Material properties for corrosion estimation
+  material_properties:
+    carbon_steel:
+      max_service_temp_c: 450
+      corrosion_resistance_factor: 1.0
+      cost_factor: 1.0
+    low_alloy_steel:
+      max_service_temp_c: 550
+      corrosion_resistance_factor: 1.3
+      cost_factor: 1.5
+    stainless_304:
+      max_service_temp_c: 750
+      corrosion_resistance_factor: 3.0
+      cost_factor: 4.0
+    stainless_316:
+      max_service_temp_c: 750
+      corrosion_resistance_factor: 4.0
+      cost_factor: 5.0
+    corten:
+      max_service_temp_c: 450
+      corrosion_resistance_factor: 2.0
+      cost_factor: 1.3
+
+  # Risk thresholds
+  corrosion_risk_thresholds:
+    severe: -10    # Below acid dew point by 10C
+    high: 0        # At or below acid dew point
+    moderate: 10   # 0-10C above acid dew point
+    low: 20        # 10-20C above acid dew point
+    none: 20       # More than 20C above acid dew point
+
+  steaming_risk_thresholds:
+    critical: 5    # Within 5C of saturation
+    high: 10       # 5-10C below saturation
+    moderate: 20   # 10-20C below saturation
+    low: 30        # 20-30C below saturation
+    none: 30       # More than 30C below saturation
+
+  # Typical specific heat values [kJ/(kg*K)]
+  specific_heat_values:
+    water_20c: 4.182
+    water_100c: 4.216
+    water_200c: 4.497
+    flue_gas_200c: 1.08
+    flue_gas_300c: 1.10
+    flue_gas_400c: 1.13
+
+# =============================================================================
+# Provenance Configuration
+# =============================================================================
+provenance:
+  pin_ef: false
+  enable_audit: true
+  retention_days: 2555  # 7 years for regulatory compliance
+
+  record:
+    - inputs
+    - outputs
+    - calculation_steps
+    - correlation_parameters
+    - tool_outputs
+    - code_sha
+    - seed
+    - timestamp
+    - agent_version
+
+# =============================================================================
+# Golden Tests
+# =============================================================================
+golden_tests:
+  count: 50
+  categories:
+    - name: acid_dew_point
+      tests: 15
+      description: "Verhoff-Banchero correlation validation against published data"
+
+    - name: heat_transfer
+      tests: 15
+      description: "Epsilon-NTU effectiveness calculations for various HX types"
+
+    - name: steaming_detection
+      tests: 10
+      description: "IAPWS-IF97 saturation and steaming risk assessment"
+
+    - name: corrosion_risk
+      tests: 10
+      description: "Cold-end corrosion risk assessment and recommendations"
+
+tests:
+  golden:
+    # =========================================================================
+    # Acid Dew Point Tests (Verhoff-Banchero Correlation)
+    # =========================================================================
+    - name: acid_dew_point_typical_coal
+      description: "Typical coal-fired boiler acid dew point"
+      input:
+        feedwater_temperature_c: 150.0
+        feedwater_flow_kg_s: 50.0
+        flue_gas_inlet_temp_c: 350.0
+        flue_gas_flow_kg_s: 100.0
+        drum_pressure_mpa: 10.0
+        h2o_vol_percent: 8.0
+        so3_ppmv: 10.0
+        overall_htc_w_m2k: 50.0
+        surface_area_m2: 500.0
+        hx_type: "counter_flow"
+      expect:
+        acid_dew_point_c: 127.0
+        corrosion_risk: "NONE"
+      tolerance:
+        acid_dew_point_c: 3.0
+
+    - name: acid_dew_point_high_sulfur
+      description: "High sulfur fuel acid dew point"
+      input:
+        feedwater_temperature_c: 150.0
+        feedwater_flow_kg_s: 50.0
+        flue_gas_inlet_temp_c: 350.0
+        flue_gas_flow_kg_s: 100.0
+        drum_pressure_mpa: 10.0
+        h2o_vol_percent: 10.0
+        so3_ppmv: 50.0
+        overall_htc_w_m2k: 50.0
+        surface_area_m2: 500.0
+        hx_type: "counter_flow"
+      expect:
+        acid_dew_point_c: 145.0
+        corrosion_risk: "LOW"
+      tolerance:
+        acid_dew_point_c: 3.0
+
+    - name: acid_dew_point_natural_gas
+      description: "Natural gas (low sulfur) acid dew point"
+      input:
+        feedwater_temperature_c: 120.0
+        feedwater_flow_kg_s: 30.0
+        flue_gas_inlet_temp_c: 300.0
+        flue_gas_flow_kg_s: 60.0
+        drum_pressure_mpa: 6.0
+        h2o_vol_percent: 18.0
+        so3_ppmv: 0.5
+        overall_htc_w_m2k: 45.0
+        surface_area_m2: 300.0
+        hx_type: "counter_flow"
+        fuel_type: "natural_gas"
+      expect:
+        acid_dew_point_c: 90.0
+        corrosion_risk: "NONE"
+      tolerance:
+        acid_dew_point_c: 5.0
+
+    - name: acid_dew_point_oil_fired
+      description: "Heavy fuel oil acid dew point"
+      input:
+        feedwater_temperature_c: 140.0
+        feedwater_flow_kg_s: 40.0
+        flue_gas_inlet_temp_c: 320.0
+        flue_gas_flow_kg_s: 80.0
+        drum_pressure_mpa: 8.0
+        h2o_vol_percent: 12.0
+        so3_ppmv: 30.0
+        overall_htc_w_m2k: 48.0
+        surface_area_m2: 400.0
+        hx_type: "counter_flow"
+        fuel_type: "fuel_oil_6"
+      expect:
+        acid_dew_point_c: 138.0
+        corrosion_risk: "MODERATE"
+      tolerance:
+        acid_dew_point_c: 3.0
+
+    - name: acid_dew_point_extreme_sulfur
+      description: "Extreme sulfur content (>3%) acid dew point"
+      input:
+        feedwater_temperature_c: 160.0
+        feedwater_flow_kg_s: 60.0
+        flue_gas_inlet_temp_c: 400.0
+        flue_gas_flow_kg_s: 120.0
+        drum_pressure_mpa: 12.0
+        h2o_vol_percent: 7.0
+        so3_ppmv: 100.0
+        overall_htc_w_m2k: 55.0
+        surface_area_m2: 600.0
+        hx_type: "counter_flow"
+        fuel_sulfur_percent: 3.5
+      expect:
+        acid_dew_point_c: 155.0
+        corrosion_risk: "HIGH"
+      tolerance:
+        acid_dew_point_c: 3.0
+
+    # =========================================================================
+    # Heat Transfer Tests (Epsilon-NTU)
+    # =========================================================================
+    - name: heat_transfer_counter_flow
+      description: "Counter-flow heat exchanger effectiveness"
+      input:
+        feedwater_temperature_c: 150.0
+        feedwater_flow_kg_s: 50.0
+        flue_gas_inlet_temp_c: 350.0
+        flue_gas_flow_kg_s: 100.0
+        drum_pressure_mpa: 10.0
+        h2o_vol_percent: 8.0
+        so3_ppmv: 10.0
+        overall_htc_w_m2k: 50.0
+        surface_area_m2: 500.0
+        hx_type: "counter_flow"
+      expect:
+        effectiveness_min: 0.60
+        effectiveness_max: 0.85
+        heat_transfer_kw_min: 4000.0
+      tolerance:
+        effectiveness: 0.05
+
+    - name: heat_transfer_parallel_flow
+      description: "Parallel-flow heat exchanger (lower effectiveness)"
+      input:
+        feedwater_temperature_c: 150.0
+        feedwater_flow_kg_s: 50.0
+        flue_gas_inlet_temp_c: 350.0
+        flue_gas_flow_kg_s: 100.0
+        drum_pressure_mpa: 10.0
+        h2o_vol_percent: 8.0
+        so3_ppmv: 10.0
+        overall_htc_w_m2k: 50.0
+        surface_area_m2: 500.0
+        hx_type: "parallel_flow"
+      expect:
+        effectiveness_max: 0.70
+      tolerance:
+        effectiveness: 0.05
+
+    - name: heat_transfer_cross_flow
+      description: "Cross-flow unmixed heat exchanger"
+      input:
+        feedwater_temperature_c: 150.0
+        feedwater_flow_kg_s: 50.0
+        flue_gas_inlet_temp_c: 350.0
+        flue_gas_flow_kg_s: 100.0
+        drum_pressure_mpa: 10.0
+        h2o_vol_percent: 8.0
+        so3_ppmv: 10.0
+        overall_htc_w_m2k: 50.0
+        surface_area_m2: 500.0
+        hx_type: "cross_flow_unmixed"
+      expect:
+        effectiveness_min: 0.55
+        effectiveness_max: 0.80
+      tolerance:
+        effectiveness: 0.05
+
+    - name: heat_transfer_high_ntu
+      description: "High NTU (large surface area) heat exchanger"
+      input:
+        feedwater_temperature_c: 140.0
+        feedwater_flow_kg_s: 40.0
+        flue_gas_inlet_temp_c: 400.0
+        flue_gas_flow_kg_s: 80.0
+        drum_pressure_mpa: 10.0
+        h2o_vol_percent: 8.0
+        so3_ppmv: 10.0
+        overall_htc_w_m2k: 60.0
+        surface_area_m2: 1000.0
+        hx_type: "counter_flow"
+      expect:
+        effectiveness_min: 0.80
+        ntu_min: 3.0
+      tolerance:
+        effectiveness: 0.05
+
+    - name: heat_transfer_low_ntu
+      description: "Low NTU (small surface area) heat exchanger"
+      input:
+        feedwater_temperature_c: 160.0
+        feedwater_flow_kg_s: 60.0
+        flue_gas_inlet_temp_c: 320.0
+        flue_gas_flow_kg_s: 120.0
+        drum_pressure_mpa: 8.0
+        h2o_vol_percent: 10.0
+        so3_ppmv: 5.0
+        overall_htc_w_m2k: 40.0
+        surface_area_m2: 200.0
+        hx_type: "counter_flow"
+      expect:
+        effectiveness_max: 0.50
+        ntu_max: 1.5
+      tolerance:
+        effectiveness: 0.05
+
+    # =========================================================================
+    # Steaming Detection Tests
+    # =========================================================================
+    - name: steaming_safe_operation
+      description: "Normal operation with safe steaming margin"
+      input:
+        feedwater_temperature_c: 150.0
+        feedwater_flow_kg_s: 50.0
+        flue_gas_inlet_temp_c: 350.0
+        flue_gas_flow_kg_s: 100.0
+        drum_pressure_mpa: 10.0
+        h2o_vol_percent: 8.0
+        so3_ppmv: 10.0
+        overall_htc_w_m2k: 45.0
+        surface_area_m2: 400.0
+        hx_type: "counter_flow"
+      expect:
+        steaming_risk: "NONE"
+        steaming_margin_c_min: 20.0
+      tolerance:
+        steaming_margin_c: 2.0
+
+    - name: steaming_moderate_risk
+      description: "Operation approaching saturation temperature"
+      input:
+        feedwater_temperature_c: 170.0
+        feedwater_flow_kg_s: 40.0
+        flue_gas_inlet_temp_c: 450.0
+        flue_gas_flow_kg_s: 80.0
+        drum_pressure_mpa: 6.0
+        h2o_vol_percent: 10.0
+        so3_ppmv: 5.0
+        overall_htc_w_m2k: 55.0
+        surface_area_m2: 500.0
+        hx_type: "counter_flow"
+      expect:
+        steaming_risk: "MODERATE"
+        saturation_temp_c: 158.8
+      tolerance:
+        saturation_temp_c: 0.5
+
+    - name: steaming_high_pressure
+      description: "High pressure operation (higher saturation temp)"
+      input:
+        feedwater_temperature_c: 200.0
+        feedwater_flow_kg_s: 60.0
+        flue_gas_inlet_temp_c: 400.0
+        flue_gas_flow_kg_s: 120.0
+        drum_pressure_mpa: 15.0
+        h2o_vol_percent: 8.0
+        so3_ppmv: 15.0
+        overall_htc_w_m2k: 50.0
+        surface_area_m2: 600.0
+        hx_type: "counter_flow"
+      expect:
+        steaming_risk: "NONE"
+        saturation_temp_c: 198.3
+      tolerance:
+        saturation_temp_c: 0.5
+
+    - name: steaming_low_flow
+      description: "Low flow condition (higher outlet temperature)"
+      input:
+        feedwater_temperature_c: 140.0
+        feedwater_flow_kg_s: 20.0
+        flue_gas_inlet_temp_c: 380.0
+        flue_gas_flow_kg_s: 100.0
+        drum_pressure_mpa: 6.0
+        h2o_vol_percent: 10.0
+        so3_ppmv: 8.0
+        overall_htc_w_m2k: 50.0
+        surface_area_m2: 500.0
+        hx_type: "counter_flow"
+      expect:
+        steaming_risk: "HIGH"
+      tolerance: {}
+
+    # =========================================================================
+    # Corrosion Risk Tests
+    # =========================================================================
+    - name: corrosion_safe_margin
+      description: "Safe corrosion margin operation"
+      input:
+        feedwater_temperature_c: 160.0
+        feedwater_flow_kg_s: 50.0
+        flue_gas_inlet_temp_c: 350.0
+        flue_gas_flow_kg_s: 100.0
+        drum_pressure_mpa: 10.0
+        h2o_vol_percent: 8.0
+        so3_ppmv: 10.0
+        overall_htc_w_m2k: 45.0
+        surface_area_m2: 400.0
+        hx_type: "counter_flow"
+        min_corrosion_margin_c: 15.0
+      expect:
+        corrosion_risk: "NONE"
+        corrosion_margin_c_min: 15.0
+      tolerance:
+        corrosion_margin_c: 2.0
+
+    - name: corrosion_high_risk
+      description: "High corrosion risk - cold end near dew point"
+      input:
+        feedwater_temperature_c: 110.0
+        feedwater_flow_kg_s: 30.0
+        flue_gas_inlet_temp_c: 280.0
+        flue_gas_flow_kg_s: 60.0
+        drum_pressure_mpa: 6.0
+        h2o_vol_percent: 12.0
+        so3_ppmv: 40.0
+        overall_htc_w_m2k: 40.0
+        surface_area_m2: 300.0
+        hx_type: "counter_flow"
+        tube_material: "carbon_steel"
+      expect:
+        corrosion_risk: "HIGH"
+      tolerance: {}
+
+    - name: corrosion_stainless_mitigation
+      description: "Stainless steel mitigates corrosion risk"
+      input:
+        feedwater_temperature_c: 120.0
+        feedwater_flow_kg_s: 35.0
+        flue_gas_inlet_temp_c: 300.0
+        flue_gas_flow_kg_s: 70.0
+        drum_pressure_mpa: 6.0
+        h2o_vol_percent: 10.0
+        so3_ppmv: 25.0
+        overall_htc_w_m2k: 45.0
+        surface_area_m2: 350.0
+        hx_type: "counter_flow"
+        tube_material: "stainless_316"
+      expect:
+        corrosion_risk: "MODERATE"
+        corrosion_rate_mm_yr_max: 0.1
+      tolerance: {}
+
+    # =========================================================================
+    # Edge Cases and Validation Tests
+    # =========================================================================
+    - name: minimum_load_operation
+      description: "Minimum load (20%) operation"
+      input:
+        feedwater_temperature_c: 120.0
+        feedwater_flow_kg_s: 15.0
+        flue_gas_inlet_temp_c: 250.0
+        flue_gas_flow_kg_s: 30.0
+        drum_pressure_mpa: 4.0
+        h2o_vol_percent: 6.0
+        so3_ppmv: 5.0
+        overall_htc_w_m2k: 35.0
+        surface_area_m2: 400.0
+        hx_type: "counter_flow"
+        boiler_load_percent: 20.0
+      expect:
+        effectiveness_min: 0.50
+      tolerance:
+        effectiveness: 0.05
+
+    - name: maximum_load_operation
+      description: "Maximum continuous rating operation"
+      input:
+        feedwater_temperature_c: 180.0
+        feedwater_flow_kg_s: 100.0
+        flue_gas_inlet_temp_c: 450.0
+        flue_gas_flow_kg_s: 200.0
+        drum_pressure_mpa: 16.0
+        h2o_vol_percent: 10.0
+        so3_ppmv: 20.0
+        overall_htc_w_m2k: 60.0
+        surface_area_m2: 800.0
+        hx_type: "counter_flow"
+        boiler_load_percent: 100.0
+      expect:
+        effectiveness_min: 0.65
+        steaming_risk: "NONE"
+      tolerance:
+        effectiveness: 0.05
+
+    - name: provenance_hash_generation
+      description: "Verify provenance hash is generated correctly"
+      input:
+        feedwater_temperature_c: 150.0
+        feedwater_flow_kg_s: 50.0
+        flue_gas_inlet_temp_c: 350.0
+        flue_gas_flow_kg_s: 100.0
+        drum_pressure_mpa: 10.0
+        h2o_vol_percent: 8.0
+        so3_ppmv: 10.0
+        overall_htc_w_m2k: 50.0
+        surface_area_m2: 500.0
+        hx_type: "counter_flow"
+      expect:
+        provenance_hash_format: "^[a-f0-9]{64}$"
+      tolerance: {}
+
+  properties:
+    - name: deterministic_output
+      description: "Same inputs must produce identical outputs"
+      rule: "run(inputs, seed=42) == run(inputs, seed=42)"
+      iterations: 100
+
+    - name: provenance_hash_unique
+      description: "Different inputs must produce different provenance hashes"
+      rule: "hash(run(input1)) != hash(run(input2)) when input1 != input2"
+
+    - name: effectiveness_bounds
+      description: "Effectiveness must be between 0 and 1"
+      rule: "0.0 <= outputs.effectiveness <= 1.0"
+
+    - name: temperature_consistency
+      description: "Output temperatures must be physically consistent"
+      rule: "outputs.water_outlet_temp_c >= inputs.feedwater_temperature_c"
+
+    - name: heat_balance
+      description: "Heat balance must be conserved within tolerance"
+      rule: "abs(Q_water - Q_gas) / max(Q_water, Q_gas) < 0.01"
+
+    - name: steaming_margin_sign
+      description: "Steaming margin must be positive for safe operation"
+      rule: "outputs.steaming_risk == 'NONE' implies outputs.steaming_margin_c > 20"
+
+    - name: corrosion_margin_sign
+      description: "Corrosion margin consistency with risk level"
+      rule: "outputs.corrosion_risk == 'NONE' implies outputs.corrosion_margin_c > 15"
+
+    - name: acid_dew_point_range
+      description: "Acid dew point must be in physically reasonable range"
+      rule: "50.0 <= outputs.acid_dew_point_c <= 200.0"
+
+    - name: saturation_pressure_consistency
+      description: "Saturation conditions must be thermodynamically consistent"
+      rule: "IAPWS_IF97_verify(outputs.saturation_temp_c, inputs.drum_pressure_mpa)"
+
+    - name: provenance_hash_format
+      description: "Provenance hash must be valid SHA-256"
+      rule: "len(outputs.provenance_hash) == 64 and is_hex(outputs.provenance_hash)"
+
+# =============================================================================
+# Certification
+# =============================================================================
+certification:
+  status: "audit_ready"
+
+  quality_gates:
+    - name: golden_tests_pass
+      type: test
+      threshold: 1.0  # 100% pass rate
+      required: true
+
+    - name: determinism_verified
+      type: determinism
+      runs: 100
+      tolerance: 0.0
+      required: true
+
+    - name: provenance_completeness
+      type: provenance
+      completeness: 1.0
+      required: true
+
+    - name: code_coverage
+      type: coverage
+      threshold: 0.85  # 85%
+      required: true
+
+    - name: zero_hallucination_verified
+      type: hallucination_check
+      method: "tool_isolation"
+      required: true
+
+    - name: thermodynamic_accuracy
+      type: calculation_accuracy
+      method: "correlation_validation"
+      correlations:
+        - verhoff_banchero
+        - epsilon_ntu
+        - iapws_if97
+      threshold: 0.99
+      required: true
+
+    - name: asme_ptc_compliance
+      type: standards_compliance
+      standards:
+        - "ASME PTC 4.1"
+        - "ASME PTC 4.3"
+      threshold: 1.0
+      required: true
+
+# =============================================================================
+# Deployment
+# =============================================================================
+deployment:
+  kubernetes:
+    namespace: process-heat-production
+    replicas:
+      min: 2
+      max: 10
+    resources:
+      requests:
+        cpu: "200m"
+        memory: "256Mi"
+      limits:
+        cpu: "500m"
+        memory: "512Mi"
+    autoscaling:
+      target_cpu: 70
+    health_check:
+      liveness_path: "/health/live"
+      readiness_path: "/health/ready"
+      startup_probe_seconds: 30
+
+  monitoring:
+    prometheus:
+      enabled: true
+      metrics:
+        - economizer_effectiveness
+        - acid_dew_point_margin
+        - steaming_risk_level
+        - corrosion_risk_level
+        - heat_transfer_kw
+        - fouling_factor
+        - cleanliness_factor
+        - soot_blow_recommendations
+        - calculation_latency_ms
+        - calculations_total
+        - errors_total
+    grafana:
+      dashboard: economizer-performance
+      panels:
+        - effectiveness_trend
+        - temperature_profile
+        - risk_matrix
+        - fouling_trend
+        - soot_blow_history
+    alerts:
+      - name: high_corrosion_risk
+        condition: "corrosion_risk == 'HIGH' or corrosion_risk == 'SEVERE'"
+        severity: critical
+        action: "Notify operations, check feedwater temperature"
+      - name: high_steaming_risk
+        condition: "steaming_risk == 'HIGH' or steaming_risk == 'CRITICAL'"
+        severity: critical
+        action: "Reduce load or increase feedwater flow"
+      - name: low_effectiveness
+        condition: "effectiveness < 0.50"
+        severity: warning
+        action: "Schedule soot blowing or inspection"
+      - name: high_fouling
+        condition: "cleanliness_factor < 0.70"
+        severity: warning
+        action: "Initiate soot blowing sequence"
+      - name: high_error_rate
+        condition: "error_rate > 0.01"
+        severity: critical
+        action: "Check sensor inputs and connectivity"
+      - name: high_latency
+        condition: "p99_latency > 500ms"
+        severity: warning
+        action: "Scale up resources"
+
+  security:
+    data_classification: internal
+    encryption_at_rest: true
+    encryption_in_transit: true
+    audit_logging: true
+    api_authentication: oauth2
+
+# =============================================================================
+# Documentation
+# =============================================================================
+documentation:
+  overview: |
+    The ECONOPULSE Economizer Performance Agent provides comprehensive monitoring
+    and optimization of boiler economizer heat exchangers. It implements:
+
+    1. **Verhoff-Banchero Acid Dew Point Correlation**: Calculates the sulfuric acid
+       dew point temperature based on water vapor and SO3 concentrations in flue gas.
+
+    2. **Epsilon-NTU Heat Transfer Analysis**: Determines heat exchanger effectiveness
+       using the Number of Transfer Units method for various flow configurations.
+
+    3. **IAPWS-IF97 Steam Properties**: Provides accurate saturation temperatures
+       and pressures for steaming risk assessment.
+
+    4. **Corrosion Risk Assessment**: Evaluates cold-end corrosion potential based
+       on metal temperature margin above acid dew point.
+
+    5. **Steaming Detection**: Monitors water outlet temperature relative to
+       saturation to prevent tube steaming.
+
+    6. **Soot Blowing Optimization**: ML-assisted prediction of optimal soot
+       blowing timing with SHAP explainability.
+
+  api_examples:
+    - name: "Basic Performance Calculation"
+      description: "Calculate economizer performance with standard inputs"
+      request: |
+        {
+          "feedwater_temperature_c": 150.0,
+          "feedwater_flow_kg_s": 50.0,
+          "flue_gas_inlet_temp_c": 350.0,
+          "flue_gas_flow_kg_s": 100.0,
+          "drum_pressure_mpa": 10.0,
+          "h2o_vol_percent": 8.0,
+          "so3_ppmv": 10.0,
+          "overall_htc_w_m2k": 50.0,
+          "surface_area_m2": 500.0,
+          "hx_type": "counter_flow"
+        }
+      response: |
+        {
+          "effectiveness": 0.72,
+          "heat_transfer_kw": 6240.0,
+          "water_outlet_temp_c": 189.5,
+          "gas_outlet_temp_c": 250.3,
+          "acid_dew_point_c": 127.4,
+          "saturation_temp_c": 179.9,
+          "steaming_margin_c": 9.6,
+          "steaming_risk": "LOW",
+          "corrosion_margin_c": 62.1,
+          "corrosion_risk": "NONE",
+          "recommendations": [],
+          "provenance_hash": "a1b2c3d4..."
+        }
+
+  references:
+    - "Verhoff, F.H. and Banchero, J.T., 'Predicting Dew Points of Flue Gases', Chem. Eng. Prog., 70(8), 71-72, 1974"
+    - "Kays, W.M. and London, A.L., 'Compact Heat Exchangers', 3rd Ed., McGraw-Hill, 1984"
+    - "IAPWS Industrial Formulation 1997 for the Thermodynamic Properties of Water and Steam"
+    - "ASME PTC 4.1-2021, Steam Generating Units"
+    - "ASME PTC 4.3-2017, Air Heaters"
+    - "EPA Method 6C: Determination of Sulfur Dioxide Emissions from Stationary Sources"

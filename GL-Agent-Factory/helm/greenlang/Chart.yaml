@@ -1,0 +1,61 @@
+# GreenLang Helm Chart
+apiVersion: v2
+name: greenlang
+description: GreenLang Agent Factory - Zero-hallucination AI agents for sustainability and carbon accounting
+
+# Chart version (incremented each time you make changes to the chart)
+version: 1.0.0
+
+# Application version (version of the app being deployed)
+appVersion: "1.0.0"
+
+# Chart type
+type: application
+
+# Keywords for search
+keywords:
+  - greenlang
+  - carbon-accounting
+  - sustainability
+  - ai-agents
+  - ghg-protocol
+  - compliance
+  - cbam
+  - csrd
+  - eudr
+
+# Home page
+home: https://greenlang.ai
+
+# Sources
+sources:
+  - https://github.com/greenlang/agent-factory
+
+# Maintainers
+maintainers:
+  - name: GreenLang DevOps
+    email: devops@greenlang.ai
+    url: https://greenlang.ai
+
+# Icon
+icon: https://greenlang.ai/logo.png
+
+# Annotations
+annotations:
+  category: Sustainability
+  licenses: Apache-2.0
+
+# Dependencies
+dependencies:
+  - name: postgresql
+    version: "13.2.0"
+    repository: "https://charts.bitnami.com/bitnami"
+    condition: postgresql.enabled
+  - name: redis
+    version: "18.4.0"
+    repository: "https://charts.bitnami.com/bitnami"
+    condition: redis.enabled
+  - name: prometheus
+    version: "25.8.0"
+    repository: "https://prometheus-community.github.io/helm-charts"
+    condition: prometheus.enabled

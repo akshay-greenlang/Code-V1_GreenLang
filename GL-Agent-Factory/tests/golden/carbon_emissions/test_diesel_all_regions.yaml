@@ -1,0 +1,772 @@
+# Golden Tests: Diesel All Regions - Carbon Emissions Agent (GL-001)
+# Test Count: 50 tests
+# Emission Factors:
+#   - US: 2.68 kgCO2e/L (EPA 2024)
+#   - EU: 2.62 kgCO2e/L (DEFRA 2024)
+# Formula: emissions = quantity * emission_factor
+
+test_suite:
+  name: "Diesel All Regions Golden Tests"
+  agent_id: "emissions/carbon_calculator_v1"
+  version: "1.0.0"
+  description: "Validates diesel emission calculations across all supported regions"
+
+tests:
+  # US Region Tests (1-20)
+  - test_id: "diesel_us_001"
+    test_name: "Diesel 1 L US"
+    description: "Minimum US diesel calculation"
+    tags: ["diesel", "us", "scope1", "basic"]
+    input:
+      fuel_type: "diesel"
+      quantity: 1
+      unit: "L"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 2.68
+      emission_factor_used: 2.68
+      emission_factor_unit: "kgCO2e/L"
+      emission_factor_source: "EPA"
+      scope: 1
+
+  - test_id: "diesel_us_002"
+    test_name: "Diesel 10 L US"
+    description: "Small quantity diesel US"
+    tags: ["diesel", "us", "scope1", "basic"]
+    input:
+      fuel_type: "diesel"
+      quantity: 10
+      unit: "L"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 26.8
+      emission_factor_used: 2.68
+      scope: 1
+
+  - test_id: "diesel_us_003"
+    test_name: "Diesel 50 L US (Vehicle Tank)"
+    description: "Typical vehicle tank fill"
+    tags: ["diesel", "us", "scope1", "vehicle"]
+    input:
+      fuel_type: "diesel"
+      quantity: 50
+      unit: "L"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 134.0
+      emission_factor_used: 2.68
+      scope: 1
+
+  - test_id: "diesel_us_004"
+    test_name: "Diesel 100 L US"
+    description: "Standard quantity diesel"
+    tags: ["diesel", "us", "scope1", "basic"]
+    input:
+      fuel_type: "diesel"
+      quantity: 100
+      unit: "L"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 268.0
+      emission_factor_used: 2.68
+      scope: 1
+
+  - test_id: "diesel_us_005"
+    test_name: "Diesel 500 L US (Fleet Vehicle)"
+    description: "Fleet vehicle monthly usage"
+    tags: ["diesel", "us", "scope1", "fleet"]
+    input:
+      fuel_type: "diesel"
+      quantity: 500
+      unit: "L"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 1340.0
+      emission_factor_used: 2.68
+      scope: 1
+
+  - test_id: "diesel_us_006"
+    test_name: "Diesel 1000 L US (Reference)"
+    description: "Reference calculation - 1 kiloliter"
+    tags: ["diesel", "us", "scope1", "reference"]
+    input:
+      fuel_type: "diesel"
+      quantity: 1000
+      unit: "L"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 2680.0
+      emission_factor_used: 2.68
+      scope: 1
+
+  - test_id: "diesel_us_007"
+    test_name: "Diesel 2500 L US"
+    description: "Medium fleet quantity"
+    tags: ["diesel", "us", "scope1", "fleet"]
+    input:
+      fuel_type: "diesel"
+      quantity: 2500
+      unit: "L"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 6700.0
+      emission_factor_used: 2.68
+      scope: 1
+
+  - test_id: "diesel_us_008"
+    test_name: "Diesel 5000 L US"
+    description: "Large fleet monthly"
+    tags: ["diesel", "us", "scope1", "fleet"]
+    input:
+      fuel_type: "diesel"
+      quantity: 5000
+      unit: "L"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 13400.0
+      emission_factor_used: 2.68
+      scope: 1
+
+  - test_id: "diesel_us_009"
+    test_name: "Diesel 10000 L US"
+    description: "Major fleet operation"
+    tags: ["diesel", "us", "scope1", "industrial"]
+    input:
+      fuel_type: "diesel"
+      quantity: 10000
+      unit: "L"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 26800.0
+      emission_factor_used: 2.68
+      scope: 1
+
+  - test_id: "diesel_us_010"
+    test_name: "Diesel 25000 L US"
+    description: "Industrial diesel usage"
+    tags: ["diesel", "us", "scope1", "industrial"]
+    input:
+      fuel_type: "diesel"
+      quantity: 25000
+      unit: "L"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 67000.0
+      emission_factor_used: 2.68
+      scope: 1
+
+  # Gallon conversion tests US (11-15)
+  - test_id: "diesel_us_011"
+    test_name: "Diesel 100 gal US"
+    description: "Gallon conversion (100 gal = 378.541 L)"
+    tags: ["diesel", "us", "scope1", "conversion"]
+    input:
+      fuel_type: "diesel"
+      quantity: 100
+      unit: "gal"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 1014.489880
+      emission_factor_used: 2.68
+      scope: 1
+
+  - test_id: "diesel_us_012"
+    test_name: "Diesel 500 gal US"
+    description: "Medium gallon quantity"
+    tags: ["diesel", "us", "scope1", "conversion"]
+    input:
+      fuel_type: "diesel"
+      quantity: 500
+      unit: "gal"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 5072.4494
+      emission_factor_used: 2.68
+      scope: 1
+
+  - test_id: "diesel_us_013"
+    test_name: "Diesel 1000 gal US"
+    description: "Large gallon quantity"
+    tags: ["diesel", "us", "scope1", "conversion"]
+    input:
+      fuel_type: "diesel"
+      quantity: 1000
+      unit: "gal"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 10144.8988
+      emission_factor_used: 2.68
+      scope: 1
+
+  - test_id: "diesel_us_014"
+    test_name: "Diesel 5000 gal US"
+    description: "Bulk delivery quantity"
+    tags: ["diesel", "us", "scope1", "conversion", "bulk"]
+    input:
+      fuel_type: "diesel"
+      quantity: 5000
+      unit: "gal"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 50724.494
+      emission_factor_used: 2.68
+      scope: 1
+
+  - test_id: "diesel_us_015"
+    test_name: "Diesel 10000 gal US"
+    description: "Large bulk delivery"
+    tags: ["diesel", "us", "scope1", "conversion", "bulk"]
+    input:
+      fuel_type: "diesel"
+      quantity: 10000
+      unit: "gal"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 101448.988
+      emission_factor_used: 2.68
+      scope: 1
+
+  # EU Region Tests (16-30)
+  - test_id: "diesel_eu_016"
+    test_name: "Diesel 1 L EU"
+    description: "Minimum EU diesel calculation"
+    tags: ["diesel", "eu", "scope1", "basic"]
+    input:
+      fuel_type: "diesel"
+      quantity: 1
+      unit: "L"
+      region: "EU"
+      scope: 1
+    expected:
+      emissions_kgco2e: 2.62
+      emission_factor_used: 2.62
+      emission_factor_unit: "kgCO2e/L"
+      emission_factor_source: "DEFRA"
+      scope: 1
+
+  - test_id: "diesel_eu_017"
+    test_name: "Diesel 50 L EU (Vehicle Tank)"
+    description: "Typical EU vehicle tank"
+    tags: ["diesel", "eu", "scope1", "vehicle"]
+    input:
+      fuel_type: "diesel"
+      quantity: 50
+      unit: "L"
+      region: "EU"
+      scope: 1
+    expected:
+      emissions_kgco2e: 131.0
+      emission_factor_used: 2.62
+      scope: 1
+
+  - test_id: "diesel_eu_018"
+    test_name: "Diesel 100 L EU"
+    description: "Standard EU diesel quantity"
+    tags: ["diesel", "eu", "scope1", "basic"]
+    input:
+      fuel_type: "diesel"
+      quantity: 100
+      unit: "L"
+      region: "EU"
+      scope: 1
+    expected:
+      emissions_kgco2e: 262.0
+      emission_factor_used: 2.62
+      scope: 1
+
+  - test_id: "diesel_eu_019"
+    test_name: "Diesel 500 L EU"
+    description: "EU fleet vehicle monthly"
+    tags: ["diesel", "eu", "scope1", "fleet"]
+    input:
+      fuel_type: "diesel"
+      quantity: 500
+      unit: "L"
+      region: "EU"
+      scope: 1
+    expected:
+      emissions_kgco2e: 1310.0
+      emission_factor_used: 2.62
+      scope: 1
+
+  - test_id: "diesel_eu_020"
+    test_name: "Diesel 1000 L EU (Reference)"
+    description: "Reference EU calculation"
+    tags: ["diesel", "eu", "scope1", "reference"]
+    input:
+      fuel_type: "diesel"
+      quantity: 1000
+      unit: "L"
+      region: "EU"
+      scope: 1
+    expected:
+      emissions_kgco2e: 2620.0
+      emission_factor_used: 2.62
+      scope: 1
+
+  - test_id: "diesel_eu_021"
+    test_name: "Diesel 2500 L EU"
+    description: "Medium EU fleet"
+    tags: ["diesel", "eu", "scope1", "fleet"]
+    input:
+      fuel_type: "diesel"
+      quantity: 2500
+      unit: "L"
+      region: "EU"
+      scope: 1
+    expected:
+      emissions_kgco2e: 6550.0
+      emission_factor_used: 2.62
+      scope: 1
+
+  - test_id: "diesel_eu_022"
+    test_name: "Diesel 5000 L EU"
+    description: "Large EU fleet"
+    tags: ["diesel", "eu", "scope1", "fleet"]
+    input:
+      fuel_type: "diesel"
+      quantity: 5000
+      unit: "L"
+      region: "EU"
+      scope: 1
+    expected:
+      emissions_kgco2e: 13100.0
+      emission_factor_used: 2.62
+      scope: 1
+
+  - test_id: "diesel_eu_023"
+    test_name: "Diesel 10000 L EU"
+    description: "EU industrial quantity"
+    tags: ["diesel", "eu", "scope1", "industrial"]
+    input:
+      fuel_type: "diesel"
+      quantity: 10000
+      unit: "L"
+      region: "EU"
+      scope: 1
+    expected:
+      emissions_kgco2e: 26200.0
+      emission_factor_used: 2.62
+      scope: 1
+
+  - test_id: "diesel_eu_024"
+    test_name: "Diesel 25000 L EU"
+    description: "Large EU industrial"
+    tags: ["diesel", "eu", "scope1", "industrial"]
+    input:
+      fuel_type: "diesel"
+      quantity: 25000
+      unit: "L"
+      region: "EU"
+      scope: 1
+    expected:
+      emissions_kgco2e: 65500.0
+      emission_factor_used: 2.62
+      scope: 1
+
+  - test_id: "diesel_eu_025"
+    test_name: "Diesel 50000 L EU"
+    description: "Major EU industrial operation"
+    tags: ["diesel", "eu", "scope1", "industrial"]
+    input:
+      fuel_type: "diesel"
+      quantity: 50000
+      unit: "L"
+      region: "EU"
+      scope: 1
+    expected:
+      emissions_kgco2e: 131000.0
+      emission_factor_used: 2.62
+      scope: 1
+
+  # Country-specific tests using EU fallback (26-35)
+  - test_id: "diesel_de_026"
+    test_name: "Diesel 1000 L Germany"
+    description: "Germany uses EU factors"
+    tags: ["diesel", "de", "scope1", "region_fallback"]
+    input:
+      fuel_type: "diesel"
+      quantity: 1000
+      unit: "L"
+      region: "DE"
+      scope: 1
+    expected:
+      emissions_kgco2e: 2620.0
+      emission_factor_used: 2.62
+      scope: 1
+
+  - test_id: "diesel_fr_027"
+    test_name: "Diesel 1000 L France"
+    description: "France uses EU factors"
+    tags: ["diesel", "fr", "scope1", "region_fallback"]
+    input:
+      fuel_type: "diesel"
+      quantity: 1000
+      unit: "L"
+      region: "FR"
+      scope: 1
+    expected:
+      emissions_kgco2e: 2620.0
+      emission_factor_used: 2.62
+      scope: 1
+
+  - test_id: "diesel_it_028"
+    test_name: "Diesel 1000 L Italy"
+    description: "Italy uses EU factors"
+    tags: ["diesel", "it", "scope1", "region_fallback"]
+    input:
+      fuel_type: "diesel"
+      quantity: 1000
+      unit: "L"
+      region: "IT"
+      scope: 1
+    expected:
+      emissions_kgco2e: 2620.0
+      emission_factor_used: 2.62
+      scope: 1
+
+  - test_id: "diesel_es_029"
+    test_name: "Diesel 1000 L Spain"
+    description: "Spain uses EU factors"
+    tags: ["diesel", "es", "scope1", "region_fallback"]
+    input:
+      fuel_type: "diesel"
+      quantity: 1000
+      unit: "L"
+      region: "ES"
+      scope: 1
+    expected:
+      emissions_kgco2e: 2620.0
+      emission_factor_used: 2.62
+      scope: 1
+
+  - test_id: "diesel_uk_030"
+    test_name: "Diesel 1000 L UK"
+    description: "UK uses EU/DEFRA factors"
+    tags: ["diesel", "uk", "scope1", "region_fallback"]
+    input:
+      fuel_type: "diesel"
+      quantity: 1000
+      unit: "L"
+      region: "UK"
+      scope: 1
+    expected:
+      emissions_kgco2e: 2620.0
+      emission_factor_used: 2.62
+      scope: 1
+
+  - test_id: "diesel_de_031"
+    test_name: "Diesel 5000 L Germany Fleet"
+    description: "German fleet operation"
+    tags: ["diesel", "de", "scope1", "fleet"]
+    input:
+      fuel_type: "diesel"
+      quantity: 5000
+      unit: "L"
+      region: "DE"
+      scope: 1
+    expected:
+      emissions_kgco2e: 13100.0
+      emission_factor_used: 2.62
+      scope: 1
+
+  - test_id: "diesel_fr_032"
+    test_name: "Diesel 5000 L France Fleet"
+    description: "French fleet operation"
+    tags: ["diesel", "fr", "scope1", "fleet"]
+    input:
+      fuel_type: "diesel"
+      quantity: 5000
+      unit: "L"
+      region: "FR"
+      scope: 1
+    expected:
+      emissions_kgco2e: 13100.0
+      emission_factor_used: 2.62
+      scope: 1
+
+  - test_id: "diesel_it_033"
+    test_name: "Diesel 2500 L Italy Logistics"
+    description: "Italian logistics operation"
+    tags: ["diesel", "it", "scope1", "logistics"]
+    input:
+      fuel_type: "diesel"
+      quantity: 2500
+      unit: "L"
+      region: "IT"
+      scope: 1
+    expected:
+      emissions_kgco2e: 6550.0
+      emission_factor_used: 2.62
+      scope: 1
+
+  - test_id: "diesel_es_034"
+    test_name: "Diesel 7500 L Spain Transport"
+    description: "Spanish transport company"
+    tags: ["diesel", "es", "scope1", "transport"]
+    input:
+      fuel_type: "diesel"
+      quantity: 7500
+      unit: "L"
+      region: "ES"
+      scope: 1
+    expected:
+      emissions_kgco2e: 19650.0
+      emission_factor_used: 2.62
+      scope: 1
+
+  - test_id: "diesel_uk_035"
+    test_name: "Diesel 15000 L UK Distribution"
+    description: "UK distribution center"
+    tags: ["diesel", "uk", "scope1", "distribution"]
+    input:
+      fuel_type: "diesel"
+      quantity: 15000
+      unit: "L"
+      region: "UK"
+      scope: 1
+    expected:
+      emissions_kgco2e: 39300.0
+      emission_factor_used: 2.62
+      scope: 1
+
+  # Real-world scenario tests (36-50)
+  - test_id: "diesel_scenario_036"
+    test_name: "Single Truck Monthly US"
+    description: "Long-haul truck monthly usage (4000 L)"
+    tags: ["diesel", "us", "scope1", "scenario", "trucking"]
+    input:
+      fuel_type: "diesel"
+      quantity: 4000
+      unit: "L"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 10720.0
+      emission_factor_used: 2.68
+      scope: 1
+
+  - test_id: "diesel_scenario_037"
+    test_name: "Delivery Fleet Daily EU"
+    description: "Urban delivery fleet daily (250 L)"
+    tags: ["diesel", "eu", "scope1", "scenario", "delivery"]
+    input:
+      fuel_type: "diesel"
+      quantity: 250
+      unit: "L"
+      region: "EU"
+      scope: 1
+    expected:
+      emissions_kgco2e: 655.0
+      emission_factor_used: 2.62
+      scope: 1
+
+  - test_id: "diesel_scenario_038"
+    test_name: "Construction Equipment Daily"
+    description: "Heavy equipment daily diesel (300 L)"
+    tags: ["diesel", "us", "scope1", "scenario", "construction"]
+    input:
+      fuel_type: "diesel"
+      quantity: 300
+      unit: "L"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 804.0
+      emission_factor_used: 2.68
+      scope: 1
+
+  - test_id: "diesel_scenario_039"
+    test_name: "Agricultural Tractor Season"
+    description: "Tractor seasonal usage (8000 L)"
+    tags: ["diesel", "us", "scope1", "scenario", "agriculture"]
+    input:
+      fuel_type: "diesel"
+      quantity: 8000
+      unit: "L"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 21440.0
+      emission_factor_used: 2.68
+      scope: 1
+
+  - test_id: "diesel_scenario_040"
+    test_name: "Marine Vessel Port Operations"
+    description: "Ship in port operations (15000 L)"
+    tags: ["diesel", "eu", "scope1", "scenario", "marine"]
+    input:
+      fuel_type: "diesel"
+      quantity: 15000
+      unit: "L"
+      region: "EU"
+      scope: 1
+    expected:
+      emissions_kgco2e: 39300.0
+      emission_factor_used: 2.62
+      scope: 1
+
+  - test_id: "diesel_scenario_041"
+    test_name: "Generator Backup Monthly"
+    description: "Backup generator monthly (200 L)"
+    tags: ["diesel", "us", "scope1", "scenario", "generator"]
+    input:
+      fuel_type: "diesel"
+      quantity: 200
+      unit: "L"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 536.0
+      emission_factor_used: 2.68
+      scope: 1
+
+  - test_id: "diesel_scenario_042"
+    test_name: "Mining Operations Daily"
+    description: "Mining site daily diesel (12000 L)"
+    tags: ["diesel", "us", "scope1", "scenario", "mining"]
+    input:
+      fuel_type: "diesel"
+      quantity: 12000
+      unit: "L"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 32160.0
+      emission_factor_used: 2.68
+      scope: 1
+
+  - test_id: "diesel_scenario_043"
+    test_name: "Rail Maintenance Equipment"
+    description: "Rail maintenance annual (45000 L)"
+    tags: ["diesel", "eu", "scope1", "scenario", "rail"]
+    input:
+      fuel_type: "diesel"
+      quantity: 45000
+      unit: "L"
+      region: "EU"
+      scope: 1
+    expected:
+      emissions_kgco2e: 117900.0
+      emission_factor_used: 2.62
+      scope: 1
+
+  - test_id: "diesel_scenario_044"
+    test_name: "Airport Ground Support"
+    description: "Airport GSE monthly (6500 L)"
+    tags: ["diesel", "us", "scope1", "scenario", "aviation"]
+    input:
+      fuel_type: "diesel"
+      quantity: 6500
+      unit: "L"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 17420.0
+      emission_factor_used: 2.68
+      scope: 1
+
+  - test_id: "diesel_scenario_045"
+    test_name: "Bus Fleet Daily EU"
+    description: "City bus fleet daily (1800 L)"
+    tags: ["diesel", "eu", "scope1", "scenario", "transit"]
+    input:
+      fuel_type: "diesel"
+      quantity: 1800
+      unit: "L"
+      region: "EU"
+      scope: 1
+    expected:
+      emissions_kgco2e: 4716.0
+      emission_factor_used: 2.62
+      scope: 1
+
+  - test_id: "diesel_scenario_046"
+    test_name: "Forestry Equipment Season"
+    description: "Logging season usage (22000 L)"
+    tags: ["diesel", "us", "scope1", "scenario", "forestry"]
+    input:
+      fuel_type: "diesel"
+      quantity: 22000
+      unit: "L"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 58960.0
+      emission_factor_used: 2.68
+      scope: 1
+
+  - test_id: "diesel_scenario_047"
+    test_name: "Fishing Vessel Trip"
+    description: "Commercial fishing trip (3500 L)"
+    tags: ["diesel", "eu", "scope1", "scenario", "fishing"]
+    input:
+      fuel_type: "diesel"
+      quantity: 3500
+      unit: "L"
+      region: "EU"
+      scope: 1
+    expected:
+      emissions_kgco2e: 9170.0
+      emission_factor_used: 2.62
+      scope: 1
+
+  - test_id: "diesel_scenario_048"
+    test_name: "Emergency Services Monthly"
+    description: "Fire/ambulance fleet (2800 L)"
+    tags: ["diesel", "us", "scope1", "scenario", "emergency"]
+    input:
+      fuel_type: "diesel"
+      quantity: 2800
+      unit: "L"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 7504.0
+      emission_factor_used: 2.68
+      scope: 1
+
+  - test_id: "diesel_scenario_049"
+    test_name: "Cold Chain Logistics"
+    description: "Refrigerated transport (5500 L)"
+    tags: ["diesel", "eu", "scope1", "scenario", "coldchain"]
+    input:
+      fuel_type: "diesel"
+      quantity: 5500
+      unit: "L"
+      region: "EU"
+      scope: 1
+    expected:
+      emissions_kgco2e: 14410.0
+      emission_factor_used: 2.62
+      scope: 1
+
+  - test_id: "diesel_scenario_050"
+    test_name: "Waste Collection Fleet"
+    description: "Municipal waste collection (9000 L)"
+    tags: ["diesel", "us", "scope1", "scenario", "waste"]
+    input:
+      fuel_type: "diesel"
+      quantity: 9000
+      unit: "L"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 24120.0
+      emission_factor_used: 2.68
+      scope: 1

@@ -1,0 +1,696 @@
+# Golden Tests: GeoJSON Validation - EUDR Compliance Agent (GL-004)
+# Test Count: 40 tests
+# Description: Validates geolocation parsing and validation for production plots
+
+test_suite:
+  name: "GeoJSON Validation Golden Tests"
+  agent_id: "regulatory/eudr_compliance_v1"
+  version: "1.0.0"
+  description: "Validates geolocation handling for EUDR compliance"
+  regulation: "EU 2023/1115"
+  cutoff_date: "2020-12-31"
+
+tests:
+  # Valid Point geometry tests (1-12)
+  - test_id: "eudr_geo_point_001"
+    test_name: "Valid Point Brazil Coffee"
+    description: "Valid point coordinates for Brazilian coffee farm"
+    tags: ["geojson", "point", "brazil", "coffee", "valid"]
+    input:
+      commodity_type: "coffee"
+      cn_code: "09011100"
+      quantity_kg: 50000
+      country_of_origin: "BR"
+      geolocation:
+        type: "Point"
+        coordinates: [-47.5, -15.5]
+      production_date: "2024-06-01"
+    expected:
+      commodity_type: "coffee"
+      compliance_status: "pending_verification"
+      geolocation_valid: true
+      cutoff_date_compliant: true
+      risk_level: "high"
+      country_risk_score: 75.0
+
+  - test_id: "eudr_geo_point_002"
+    test_name: "Valid Point Indonesia Palm Oil"
+    description: "Valid point for Indonesian palm oil plantation"
+    tags: ["geojson", "point", "indonesia", "palm_oil", "valid"]
+    input:
+      commodity_type: "palm_oil"
+      cn_code: "15111000"
+      quantity_kg: 100000
+      country_of_origin: "ID"
+      geolocation:
+        type: "Point"
+        coordinates: [107.5, -6.2]
+      production_date: "2024-03-15"
+    expected:
+      commodity_type: "palm_oil"
+      geolocation_valid: true
+      cutoff_date_compliant: true
+      risk_level: "high"
+      country_risk_score: 72.0
+
+  - test_id: "eudr_geo_point_003"
+    test_name: "Valid Point Ghana Cocoa"
+    description: "Valid point for Ghanaian cocoa farm"
+    tags: ["geojson", "point", "ghana", "cocoa", "valid"]
+    input:
+      commodity_type: "cocoa"
+      cn_code: "18010000"
+      quantity_kg: 25000
+      country_of_origin: "GH"
+      geolocation:
+        type: "Point"
+        coordinates: [-1.5, 6.5]
+      production_date: "2024-01-10"
+    expected:
+      commodity_type: "cocoa"
+      geolocation_valid: true
+      cutoff_date_compliant: true
+      risk_level: "standard"
+      country_risk_score: 45.0
+
+  - test_id: "eudr_geo_point_004"
+    test_name: "Valid Point Colombia Coffee"
+    description: "Valid Colombian coffee origin"
+    tags: ["geojson", "point", "colombia", "coffee", "valid"]
+    input:
+      commodity_type: "coffee"
+      cn_code: "09011100"
+      quantity_kg: 30000
+      country_of_origin: "CO"
+      geolocation:
+        type: "Point"
+        coordinates: [-75.5, 4.6]
+      production_date: "2024-07-20"
+    expected:
+      commodity_type: "coffee"
+      geolocation_valid: true
+      risk_level: "standard"
+      country_risk_score: 55.0
+
+  - test_id: "eudr_geo_point_005"
+    test_name: "Valid Point Malaysia Rubber"
+    description: "Valid Malaysian rubber plantation"
+    tags: ["geojson", "point", "malaysia", "rubber", "valid"]
+    input:
+      commodity_type: "rubber"
+      cn_code: "40011000"
+      quantity_kg: 75000
+      country_of_origin: "MY"
+      geolocation:
+        type: "Point"
+        coordinates: [101.5, 3.1]
+      production_date: "2024-05-05"
+    expected:
+      commodity_type: "rubber"
+      geolocation_valid: true
+      risk_level: "high"
+      country_risk_score: 68.0
+
+  - test_id: "eudr_geo_point_006"
+    test_name: "Valid Point Brazil Soya"
+    description: "Valid Brazilian soya farm"
+    tags: ["geojson", "point", "brazil", "soya", "valid"]
+    input:
+      commodity_type: "soya"
+      cn_code: "12010000"
+      quantity_kg: 200000
+      country_of_origin: "BR"
+      geolocation:
+        type: "Point"
+        coordinates: [-54.5, -12.5]
+      production_date: "2024-02-28"
+    expected:
+      commodity_type: "soya"
+      geolocation_valid: true
+      risk_level: "high"
+      country_risk_score: 75.0
+
+  - test_id: "eudr_geo_point_007"
+    test_name: "Valid Point Peru Wood"
+    description: "Valid Peruvian wood source"
+    tags: ["geojson", "point", "peru", "wood", "valid"]
+    input:
+      commodity_type: "wood"
+      cn_code: "44011200"
+      quantity_kg: 150000
+      country_of_origin: "PE"
+      geolocation:
+        type: "Point"
+        coordinates: [-73.5, -4.0]
+      production_date: "2024-04-12"
+    expected:
+      commodity_type: "wood"
+      geolocation_valid: true
+      risk_level: "standard"
+      country_risk_score: 50.0
+
+  - test_id: "eudr_geo_point_008"
+    test_name: "Valid Point Boundary Coordinates"
+    description: "Valid coordinates at boundary values"
+    tags: ["geojson", "point", "boundary", "valid"]
+    input:
+      commodity_type: "cocoa"
+      cn_code: "18010000"
+      quantity_kg: 10000
+      country_of_origin: "CI"
+      geolocation:
+        type: "Point"
+        coordinates: [-5.5, 7.5]
+      production_date: "2024-08-01"
+    expected:
+      geolocation_valid: true
+      risk_level: "standard"
+      country_risk_score: 48.0
+
+  - test_id: "eudr_geo_point_009"
+    test_name: "Valid Point Near Equator"
+    description: "Point coordinates near equator"
+    tags: ["geojson", "point", "equator", "valid"]
+    input:
+      commodity_type: "palm_oil"
+      cn_code: "15111000"
+      quantity_kg: 80000
+      country_of_origin: "ID"
+      geolocation:
+        type: "Point"
+        coordinates: [105.0, 0.5]
+      production_date: "2024-09-15"
+    expected:
+      geolocation_valid: true
+      cutoff_date_compliant: true
+
+  - test_id: "eudr_geo_point_010"
+    test_name: "Valid Point International Date Line"
+    description: "Point near international date line"
+    tags: ["geojson", "point", "edge", "valid"]
+    input:
+      commodity_type: "wood"
+      cn_code: "44011200"
+      quantity_kg: 50000
+      country_of_origin: "ID"
+      geolocation:
+        type: "Point"
+        coordinates: [140.0, -5.0]
+      production_date: "2024-10-01"
+    expected:
+      geolocation_valid: true
+
+  - test_id: "eudr_geo_point_011"
+    test_name: "Valid Point 3D Coordinates"
+    description: "Point with altitude (third coordinate)"
+    tags: ["geojson", "point", "3d", "valid"]
+    input:
+      commodity_type: "coffee"
+      cn_code: "09011100"
+      quantity_kg: 20000
+      country_of_origin: "CO"
+      geolocation:
+        type: "Point"
+        coordinates: [-75.5, 4.6, 1500]
+      production_date: "2024-06-15"
+    expected:
+      geolocation_valid: true
+
+  - test_id: "eudr_geo_point_012"
+    test_name: "Valid Point South America"
+    description: "Southern hemisphere point"
+    tags: ["geojson", "point", "southern", "valid"]
+    input:
+      commodity_type: "soya"
+      cn_code: "12010000"
+      quantity_kg: 100000
+      country_of_origin: "BR"
+      geolocation:
+        type: "Point"
+        coordinates: [-51.0, -23.5]
+      production_date: "2024-03-01"
+    expected:
+      geolocation_valid: true
+
+  # Valid Polygon geometry tests (13-22)
+  - test_id: "eudr_geo_poly_013"
+    test_name: "Valid Polygon Small Farm"
+    description: "Valid polygon for small production plot (4 hectares)"
+    tags: ["geojson", "polygon", "small", "valid"]
+    input:
+      commodity_type: "cocoa"
+      cn_code: "18010000"
+      quantity_kg: 5000
+      country_of_origin: "GH"
+      geolocation:
+        type: "Polygon"
+        coordinates: [[[-1.5, 6.5], [-1.49, 6.5], [-1.49, 6.51], [-1.5, 6.51], [-1.5, 6.5]]]
+      production_date: "2024-02-01"
+    expected:
+      geolocation_valid: true
+      risk_level: "standard"
+
+  - test_id: "eudr_geo_poly_014"
+    test_name: "Valid Polygon Large Plantation"
+    description: "Valid polygon for large palm oil plantation"
+    tags: ["geojson", "polygon", "large", "palm_oil", "valid"]
+    input:
+      commodity_type: "palm_oil"
+      cn_code: "15111000"
+      quantity_kg: 500000
+      country_of_origin: "ID"
+      geolocation:
+        type: "Polygon"
+        coordinates: [[[107.0, -6.0], [107.1, -6.0], [107.1, -6.1], [107.0, -6.1], [107.0, -6.0]]]
+      production_date: "2024-04-01"
+    expected:
+      geolocation_valid: true
+      risk_level: "high"
+
+  - test_id: "eudr_geo_poly_015"
+    test_name: "Valid Polygon Coffee Estate"
+    description: "Valid polygon for Colombian coffee estate"
+    tags: ["geojson", "polygon", "coffee", "valid"]
+    input:
+      commodity_type: "coffee"
+      cn_code: "09011100"
+      quantity_kg: 100000
+      country_of_origin: "CO"
+      geolocation:
+        type: "Polygon"
+        coordinates: [[[-75.5, 4.5], [-75.4, 4.5], [-75.4, 4.6], [-75.5, 4.6], [-75.5, 4.5]]]
+      production_date: "2024-05-15"
+    expected:
+      geolocation_valid: true
+
+  - test_id: "eudr_geo_poly_016"
+    test_name: "Valid Polygon Rubber Estate"
+    description: "Valid polygon for rubber plantation"
+    tags: ["geojson", "polygon", "rubber", "valid"]
+    input:
+      commodity_type: "rubber"
+      cn_code: "40011000"
+      quantity_kg: 200000
+      country_of_origin: "MY"
+      geolocation:
+        type: "Polygon"
+        coordinates: [[[101.0, 3.0], [101.2, 3.0], [101.2, 3.2], [101.0, 3.2], [101.0, 3.0]]]
+      production_date: "2024-06-01"
+    expected:
+      geolocation_valid: true
+
+  - test_id: "eudr_geo_poly_017"
+    test_name: "Valid Polygon Soya Field"
+    description: "Valid polygon for Brazilian soya field"
+    tags: ["geojson", "polygon", "soya", "valid"]
+    input:
+      commodity_type: "soya"
+      cn_code: "12010000"
+      quantity_kg: 1000000
+      country_of_origin: "BR"
+      geolocation:
+        type: "Polygon"
+        coordinates: [[[-54.0, -12.0], [-53.5, -12.0], [-53.5, -12.5], [-54.0, -12.5], [-54.0, -12.0]]]
+      production_date: "2024-03-15"
+    expected:
+      geolocation_valid: true
+
+  - test_id: "eudr_geo_poly_018"
+    test_name: "Valid Polygon Wood Concession"
+    description: "Valid polygon for forestry concession"
+    tags: ["geojson", "polygon", "wood", "valid"]
+    input:
+      commodity_type: "wood"
+      cn_code: "44011200"
+      quantity_kg: 500000
+      country_of_origin: "PE"
+      geolocation:
+        type: "Polygon"
+        coordinates: [[[-73.0, -4.0], [-72.5, -4.0], [-72.5, -4.5], [-73.0, -4.5], [-73.0, -4.0]]]
+      production_date: "2024-07-01"
+    expected:
+      geolocation_valid: true
+
+  - test_id: "eudr_geo_poly_019"
+    test_name: "Valid Polygon Triangle"
+    description: "Minimum valid polygon (triangle)"
+    tags: ["geojson", "polygon", "minimum", "valid"]
+    input:
+      commodity_type: "cocoa"
+      cn_code: "18010000"
+      quantity_kg: 2000
+      country_of_origin: "CI"
+      geolocation:
+        type: "Polygon"
+        coordinates: [[[-5.5, 7.5], [-5.4, 7.5], [-5.45, 7.6], [-5.5, 7.5]]]
+      production_date: "2024-08-15"
+    expected:
+      geolocation_valid: true
+
+  - test_id: "eudr_geo_poly_020"
+    test_name: "Valid Polygon Complex Shape"
+    description: "Valid polygon with many vertices"
+    tags: ["geojson", "polygon", "complex", "valid"]
+    input:
+      commodity_type: "palm_oil"
+      cn_code: "15111000"
+      quantity_kg: 150000
+      country_of_origin: "ID"
+      geolocation:
+        type: "Polygon"
+        coordinates: [[[107.0, -6.0], [107.05, -6.0], [107.1, -6.02], [107.1, -6.08], [107.05, -6.1], [107.0, -6.1], [106.95, -6.05], [107.0, -6.0]]]
+      production_date: "2024-09-01"
+    expected:
+      geolocation_valid: true
+
+  - test_id: "eudr_geo_poly_021"
+    test_name: "Valid Polygon with Hole"
+    description: "Polygon with interior ring (hole)"
+    tags: ["geojson", "polygon", "hole", "valid"]
+    input:
+      commodity_type: "rubber"
+      cn_code: "40011000"
+      quantity_kg: 75000
+      country_of_origin: "MY"
+      geolocation:
+        type: "Polygon"
+        coordinates: [
+          [[101.0, 3.0], [101.2, 3.0], [101.2, 3.2], [101.0, 3.2], [101.0, 3.0]],
+          [[101.05, 3.05], [101.15, 3.05], [101.15, 3.15], [101.05, 3.15], [101.05, 3.05]]
+        ]
+      production_date: "2024-10-15"
+    expected:
+      geolocation_valid: true
+
+  - test_id: "eudr_geo_poly_022"
+    test_name: "Valid MultiPolygon"
+    description: "Multiple separate production plots"
+    tags: ["geojson", "multipolygon", "valid"]
+    input:
+      commodity_type: "coffee"
+      cn_code: "09011100"
+      quantity_kg: 80000
+      country_of_origin: "CO"
+      geolocation:
+        type: "MultiPolygon"
+        coordinates: [
+          [[[-75.5, 4.5], [-75.4, 4.5], [-75.4, 4.6], [-75.5, 4.6], [-75.5, 4.5]]],
+          [[[-75.6, 4.7], [-75.5, 4.7], [-75.5, 4.8], [-75.6, 4.8], [-75.6, 4.7]]]
+        ]
+      production_date: "2024-11-01"
+    expected:
+      geolocation_valid: true
+
+  # Invalid geometry tests (23-32)
+  - test_id: "eudr_geo_invalid_023"
+    test_name: "Invalid Longitude Out of Range"
+    description: "Longitude exceeds +180"
+    tags: ["geojson", "invalid", "longitude"]
+    input:
+      commodity_type: "coffee"
+      cn_code: "09011100"
+      quantity_kg: 10000
+      country_of_origin: "BR"
+      geolocation:
+        type: "Point"
+        coordinates: [200.0, -15.0]
+      production_date: "2024-01-01"
+    expected:
+      geolocation_valid: false
+      compliance_status: "non_compliant"
+
+  - test_id: "eudr_geo_invalid_024"
+    test_name: "Invalid Latitude Out of Range"
+    description: "Latitude exceeds +90"
+    tags: ["geojson", "invalid", "latitude"]
+    input:
+      commodity_type: "cocoa"
+      cn_code: "18010000"
+      quantity_kg: 5000
+      country_of_origin: "GH"
+      geolocation:
+        type: "Point"
+        coordinates: [-1.5, 100.0]
+      production_date: "2024-02-01"
+    expected:
+      geolocation_valid: false
+      compliance_status: "non_compliant"
+
+  - test_id: "eudr_geo_invalid_025"
+    test_name: "Invalid Negative Longitude"
+    description: "Longitude below -180"
+    tags: ["geojson", "invalid", "longitude"]
+    input:
+      commodity_type: "palm_oil"
+      cn_code: "15111000"
+      quantity_kg: 50000
+      country_of_origin: "ID"
+      geolocation:
+        type: "Point"
+        coordinates: [-200.0, -5.0]
+      production_date: "2024-03-01"
+    expected:
+      geolocation_valid: false
+
+  - test_id: "eudr_geo_invalid_026"
+    test_name: "Invalid Negative Latitude"
+    description: "Latitude below -90"
+    tags: ["geojson", "invalid", "latitude"]
+    input:
+      commodity_type: "soya"
+      cn_code: "12010000"
+      quantity_kg: 100000
+      country_of_origin: "BR"
+      geolocation:
+        type: "Point"
+        coordinates: [-50.0, -100.0]
+      production_date: "2024-04-01"
+    expected:
+      geolocation_valid: false
+
+  - test_id: "eudr_geo_invalid_027"
+    test_name: "Invalid Empty Coordinates"
+    description: "Empty coordinates array"
+    tags: ["geojson", "invalid", "empty"]
+    input:
+      commodity_type: "rubber"
+      cn_code: "40011000"
+      quantity_kg: 25000
+      country_of_origin: "MY"
+      geolocation:
+        type: "Point"
+        coordinates: []
+      production_date: "2024-05-01"
+    expected:
+      geolocation_valid: false
+
+  - test_id: "eudr_geo_invalid_028"
+    test_name: "Invalid Single Coordinate"
+    description: "Only one coordinate value"
+    tags: ["geojson", "invalid", "incomplete"]
+    input:
+      commodity_type: "wood"
+      cn_code: "44011200"
+      quantity_kg: 75000
+      country_of_origin: "PE"
+      geolocation:
+        type: "Point"
+        coordinates: [-73.5]
+      production_date: "2024-06-01"
+    expected:
+      geolocation_valid: false
+
+  - test_id: "eudr_geo_invalid_029"
+    test_name: "Invalid Polygon Not Closed"
+    description: "Polygon ring not closed"
+    tags: ["geojson", "invalid", "polygon", "unclosed"]
+    input:
+      commodity_type: "cocoa"
+      cn_code: "18010000"
+      quantity_kg: 15000
+      country_of_origin: "CI"
+      geolocation:
+        type: "Polygon"
+        coordinates: [[[-5.5, 7.5], [-5.4, 7.5], [-5.4, 7.6], [-5.5, 7.6]]]
+      production_date: "2024-07-01"
+    expected:
+      geolocation_valid: false
+
+  - test_id: "eudr_geo_invalid_030"
+    test_name: "Invalid Polygon Too Few Points"
+    description: "Polygon with only 2 points"
+    tags: ["geojson", "invalid", "polygon", "insufficient"]
+    input:
+      commodity_type: "palm_oil"
+      cn_code: "15111000"
+      quantity_kg: 80000
+      country_of_origin: "ID"
+      geolocation:
+        type: "Polygon"
+        coordinates: [[[107.0, -6.0], [107.1, -6.1]]]
+      production_date: "2024-08-01"
+    expected:
+      geolocation_valid: false
+
+  - test_id: "eudr_geo_invalid_031"
+    test_name: "Invalid Polygon Empty Ring"
+    description: "Polygon with empty outer ring"
+    tags: ["geojson", "invalid", "polygon", "empty"]
+    input:
+      commodity_type: "coffee"
+      cn_code: "09011100"
+      quantity_kg: 30000
+      country_of_origin: "CO"
+      geolocation:
+        type: "Polygon"
+        coordinates: [[]]
+      production_date: "2024-09-01"
+    expected:
+      geolocation_valid: false
+
+  - test_id: "eudr_geo_invalid_032"
+    test_name: "Invalid MultiPolygon Empty"
+    description: "MultiPolygon with no polygons"
+    tags: ["geojson", "invalid", "multipolygon", "empty"]
+    input:
+      commodity_type: "soya"
+      cn_code: "12010000"
+      quantity_kg: 200000
+      country_of_origin: "BR"
+      geolocation:
+        type: "MultiPolygon"
+        coordinates: []
+      production_date: "2024-10-01"
+    expected:
+      geolocation_valid: false
+
+  # Cutoff date tests (33-40)
+  - test_id: "eudr_geo_cutoff_033"
+    test_name: "Production After Cutoff Valid"
+    description: "Production date after Dec 31, 2020"
+    tags: ["cutoff", "valid", "compliant"]
+    input:
+      commodity_type: "coffee"
+      cn_code: "09011100"
+      quantity_kg: 50000
+      country_of_origin: "BR"
+      geolocation:
+        type: "Point"
+        coordinates: [-47.5, -15.5]
+      production_date: "2021-01-01"
+    expected:
+      geolocation_valid: true
+      cutoff_date_compliant: true
+
+  - test_id: "eudr_geo_cutoff_034"
+    test_name: "Production Before Cutoff Invalid"
+    description: "Production date before Dec 31, 2020"
+    tags: ["cutoff", "invalid", "non_compliant"]
+    input:
+      commodity_type: "cocoa"
+      cn_code: "18010000"
+      quantity_kg: 25000
+      country_of_origin: "GH"
+      geolocation:
+        type: "Point"
+        coordinates: [-1.5, 6.5]
+      production_date: "2020-12-30"
+    expected:
+      cutoff_date_compliant: false
+      compliance_status: "non_compliant"
+
+  - test_id: "eudr_geo_cutoff_035"
+    test_name: "Production On Cutoff Date"
+    description: "Production exactly on Dec 31, 2020"
+    tags: ["cutoff", "boundary"]
+    input:
+      commodity_type: "palm_oil"
+      cn_code: "15111000"
+      quantity_kg: 100000
+      country_of_origin: "ID"
+      geolocation:
+        type: "Point"
+        coordinates: [107.5, -6.2]
+      production_date: "2020-12-31"
+    expected:
+      cutoff_date_compliant: false
+
+  - test_id: "eudr_geo_cutoff_036"
+    test_name: "Production Day After Cutoff"
+    description: "Production on Jan 1, 2021"
+    tags: ["cutoff", "boundary", "compliant"]
+    input:
+      commodity_type: "rubber"
+      cn_code: "40011000"
+      quantity_kg: 75000
+      country_of_origin: "MY"
+      geolocation:
+        type: "Point"
+        coordinates: [101.5, 3.1]
+      production_date: "2021-01-01"
+    expected:
+      cutoff_date_compliant: true
+
+  - test_id: "eudr_geo_cutoff_037"
+    test_name: "Recent Production 2024"
+    description: "Recent 2024 production"
+    tags: ["cutoff", "recent", "compliant"]
+    input:
+      commodity_type: "soya"
+      cn_code: "12010000"
+      quantity_kg: 500000
+      country_of_origin: "BR"
+      geolocation:
+        type: "Point"
+        coordinates: [-54.5, -12.5]
+      production_date: "2024-06-15"
+    expected:
+      cutoff_date_compliant: true
+
+  - test_id: "eudr_geo_cutoff_038"
+    test_name: "Old Production 2019"
+    description: "Production from 2019"
+    tags: ["cutoff", "old", "non_compliant"]
+    input:
+      commodity_type: "wood"
+      cn_code: "44011200"
+      quantity_kg: 200000
+      country_of_origin: "PE"
+      geolocation:
+        type: "Point"
+        coordinates: [-73.5, -4.0]
+      production_date: "2019-05-01"
+    expected:
+      cutoff_date_compliant: false
+
+  - test_id: "eudr_geo_cutoff_039"
+    test_name: "Mid 2020 Production"
+    description: "Production in mid 2020"
+    tags: ["cutoff", "2020", "non_compliant"]
+    input:
+      commodity_type: "cocoa"
+      cn_code: "18010000"
+      quantity_kg: 40000
+      country_of_origin: "CI"
+      geolocation:
+        type: "Point"
+        coordinates: [-5.5, 7.5]
+      production_date: "2020-06-15"
+    expected:
+      cutoff_date_compliant: false
+
+  - test_id: "eudr_geo_cutoff_040"
+    test_name: "Future Production Date"
+    description: "Future production date"
+    tags: ["cutoff", "future", "compliant"]
+    input:
+      commodity_type: "coffee"
+      cn_code: "09011100"
+      quantity_kg: 60000
+      country_of_origin: "CO"
+      geolocation:
+        type: "Point"
+        coordinates: [-75.5, 4.6]
+      production_date: "2025-03-01"
+    expected:
+      cutoff_date_compliant: true

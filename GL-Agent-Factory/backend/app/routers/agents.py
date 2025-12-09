@@ -14,9 +14,17 @@ This module provides REST API endpoints for agent management:
 import logging
 from datetime import datetime
 from typing import Any, Dict, List, Optional
+from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from pydantic import BaseModel, Field
+
+# Import dependencies and registry service
+import sys
+import os
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+from registry.service import AgentRegistryService
+from app.dependencies import get_registry_service, get_tenant_id, get_user_id
 
 logger = logging.getLogger(__name__)
 
@@ -109,7 +117,8 @@ class StateTransitionRequest(BaseModel):
 )
 async def create_agent(
     request: AgentCreateRequest,
-    # current_user: User = Depends(get_current_user),
+    http_request: Request,
+    service: AgentRegistryService = Depends(get_registry_service),
 ) -> AgentResponse:
     """
     Create a new agent.
@@ -121,25 +130,41 @@ async def create_agent(
     """
     logger.info(f"Creating agent: {request.agent_id}")
 
-    # TODO: Call registry service
-    # agent = await registry_service.register_agent(spec, tenant_id)
+    tenant_id = get_tenant_id(http_request)
+    user_id = get_user_id(http_request)
 
-    # Placeholder response
-    return AgentResponse(
-        id="agent-000001",
-        agent_id=request.agent_id,
-        name=request.name,
-        version=request.version,
-        state="DRAFT",
-        category=request.category,
-        tags=request.tags,
-        description=request.description,
-        tenant_id="tenant-1",
-        created_at=datetime.utcnow(),
-        updated_at=datetime.utcnow(),
-        invocation_count=0,
-        success_rate=1.0,
-    )
+    try:
+        agent = await service.create_agent(
+            name=request.agent_id,
+            version=request.version,
+            category=request.category,
+            author=user_id or "anonymous",
+            description=request.description or "",
+            tags=request.tags,
+            regulatory_frameworks=request.regulatory_frameworks,
+            tenant_id=tenant_id,
+        )
+
+        return AgentResponse(
+            id=str(agent.id),
+            agent_id=request.agent_id,
+            name=request.name,
+            version=agent.version,
+            state=agent.status.upper(),
+            category=agent.category,
+            tags=agent.tags or [],
+            description=agent.description,
+            tenant_id=str(agent.tenant_id) if agent.tenant_id else "default",
+            created_at=agent.created_at,
+            updated_at=agent.updated_at,
+            invocation_count=0,
+            success_rate=1.0,
+        )
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )
 
 
 @router.get(
@@ -149,6 +174,7 @@ async def create_agent(
     description="Get a paginated list of agents with optional filtering.",
 )
 async def list_agents(
+    http_request: Request,
     category: Optional[str] = Query(None, description="Filter by category"),
     state: Optional[str] = Query(None, description="Filter by state"),
     tags: Optional[str] = Query(None, description="Filter by tags (comma-separated)"),
@@ -157,7 +183,7 @@ async def list_agents(
     offset: int = Query(0, ge=0, description="Offset for pagination"),
     sort_by: str = Query("created_at", description="Sort field"),
     sort_order: str = Query("desc", description="Sort order (asc/desc)"),
-    # current_user: User = Depends(get_current_user),
+    service: AgentRegistryService = Depends(get_registry_service),
 ) -> AgentListResponse:
     """
     List agents with filtering and pagination.
@@ -170,17 +196,63 @@ async def list_agents(
     """
     logger.info(f"Listing agents: category={category}, state={state}, limit={limit}")
 
-    # TODO: Call registry service
-    # agents = await registry_service.list_agents(filters, pagination, tenant_id)
+    tenant_id = get_tenant_id(http_request)
+    tag_list = tags.split(",") if tags else None
 
-    # Placeholder response
+    # Map state to status
+    status_filter = state.lower() if state else None
+
+    if search:
+        # Use search endpoint
+        agents, total = await service.search_agents(
+            query=search,
+            category=category,
+            status=status_filter,
+            tags=tag_list,
+            tenant_id=tenant_id,
+            limit=limit,
+            offset=offset,
+        )
+    else:
+        # Use list endpoint
+        agents, total = await service.list_agents(
+            category=category,
+            status=status_filter,
+            tags=tag_list,
+            tenant_id=tenant_id,
+            limit=limit,
+            offset=offset,
+            sort_by=sort_by,
+            sort_order=sort_order,
+        )
+
+    # Convert to response format
+    agent_responses = [
+        AgentResponse(
+            id=str(a.id),
+            agent_id=a.name,
+            name=a.name,
+            version=a.version,
+            state=a.status.upper(),
+            category=a.category,
+            tags=a.tags or [],
+            description=a.description,
+            tenant_id=str(a.tenant_id) if a.tenant_id else "default",
+            created_at=a.created_at,
+            updated_at=a.updated_at,
+            invocation_count=a.downloads,
+            success_rate=1.0,
+        )
+        for a in agents
+    ]
+
     return AgentListResponse(
-        data=[],
+        data=agent_responses,
         meta={
-            "total": 0,
+            "total": total,
             "limit": limit,
             "offset": offset,
-            "has_more": False,
+            "has_more": offset + len(agents) < total,
         },
     )
 
@@ -193,7 +265,8 @@ async def list_agents(
 )
 async def get_agent(
     agent_id: str,
-    # current_user: User = Depends(get_current_user),
+    http_request: Request,
+    service: AgentRegistryService = Depends(get_registry_service),
 ) -> AgentResponse:
     """
     Get agent by ID.
@@ -202,12 +275,39 @@ async def get_agent(
     """
     logger.info(f"Getting agent: {agent_id}")
 
-    # TODO: Call registry service
-    # agent = await registry_service.get_agent(agent_id, tenant_id)
+    tenant_id = get_tenant_id(http_request)
 
-    raise HTTPException(
-        status_code=status.HTTP_404_NOT_FOUND,
-        detail=f"Agent {agent_id} not found",
+    # Try to get by name first (agent_id is typically the name)
+    agent = await service.get_agent_by_name(agent_id, tenant_id)
+
+    # If not found by name, try by UUID
+    if not agent:
+        try:
+            agent_uuid = UUID(agent_id)
+            agent = await service.get_agent(agent_uuid, tenant_id)
+        except (ValueError, TypeError):
+            pass
+
+    if not agent:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Agent {agent_id} not found",
+        )
+
+    return AgentResponse(
+        id=str(agent.id),
+        agent_id=agent.name,
+        name=agent.name,
+        version=agent.version,
+        state=agent.status.upper(),
+        category=agent.category,
+        tags=agent.tags or [],
+        description=agent.description,
+        tenant_id=str(agent.tenant_id) if agent.tenant_id else "default",
+        created_at=agent.created_at,
+        updated_at=agent.updated_at,
+        invocation_count=agent.downloads,
+        success_rate=1.0,
     )
 
 
@@ -220,7 +320,8 @@ async def get_agent(
 async def update_agent(
     agent_id: str,
     request: AgentUpdateRequest,
-    # current_user: User = Depends(get_current_user),
+    http_request: Request,
+    service: AgentRegistryService = Depends(get_registry_service),
 ) -> AgentResponse:
     """
     Update agent metadata.
@@ -230,12 +331,66 @@ async def update_agent(
     """
     logger.info(f"Updating agent: {agent_id}")
 
-    # TODO: Call registry service
-    # agent = await registry_service.update_agent(agent_id, updates, tenant_id)
+    tenant_id = get_tenant_id(http_request)
+    user_id = get_user_id(http_request)
 
-    raise HTTPException(
-        status_code=status.HTTP_404_NOT_FOUND,
-        detail=f"Agent {agent_id} not found",
+    # Get agent by name first
+    agent = await service.get_agent_by_name(agent_id, tenant_id)
+    if not agent:
+        try:
+            agent_uuid = UUID(agent_id)
+            agent = await service.get_agent(agent_uuid, tenant_id)
+        except (ValueError, TypeError):
+            pass
+
+    if not agent:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Agent {agent_id} not found",
+        )
+
+    # Build updates dict
+    updates = {}
+    if request.name is not None:
+        updates["name"] = request.name
+    if request.description is not None:
+        updates["description"] = request.description
+    if request.tags is not None:
+        updates["tags"] = request.tags
+
+    try:
+        updated_agent = await service.update_agent(
+            agent_id=agent.id,
+            updates=updates,
+            tenant_id=tenant_id,
+            user_id=user_id,
+        )
+    except PermissionError as e:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=str(e),
+        )
+
+    if not updated_agent:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Agent {agent_id} not found",
+        )
+
+    return AgentResponse(
+        id=str(updated_agent.id),
+        agent_id=updated_agent.name,
+        name=updated_agent.name,
+        version=updated_agent.version,
+        state=updated_agent.status.upper(),
+        category=updated_agent.category,
+        tags=updated_agent.tags or [],
+        description=updated_agent.description,
+        tenant_id=str(updated_agent.tenant_id) if updated_agent.tenant_id else "default",
+        created_at=updated_agent.created_at,
+        updated_at=updated_agent.updated_at,
+        invocation_count=updated_agent.downloads,
+        success_rate=1.0,
     )
 
 
@@ -247,7 +402,8 @@ async def update_agent(
 )
 async def delete_agent(
     agent_id: str,
-    # current_user: User = Depends(get_current_user),
+    http_request: Request,
+    service: AgentRegistryService = Depends(get_registry_service),
 ) -> None:
     """
     Delete an agent (soft delete).
@@ -258,8 +414,40 @@ async def delete_agent(
     """
     logger.info(f"Deleting agent: {agent_id}")
 
-    # TODO: Call registry service
-    # await registry_service.delete_agent(agent_id, tenant_id)
+    tenant_id = get_tenant_id(http_request)
+    user_id = get_user_id(http_request)
+
+    # Get agent by name first
+    agent = await service.get_agent_by_name(agent_id, tenant_id)
+    if not agent:
+        try:
+            agent_uuid = UUID(agent_id)
+            agent = await service.get_agent(agent_uuid, tenant_id)
+        except (ValueError, TypeError):
+            pass
+
+    if not agent:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Agent {agent_id} not found",
+        )
+
+    try:
+        deleted = await service.delete_agent(
+            agent_id=agent.id,
+            tenant_id=tenant_id,
+            user_id=user_id,
+        )
+        if not deleted:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Agent {agent_id} not found",
+            )
+    except PermissionError as e:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=str(e),
+        )
 
 
 @router.post(
@@ -272,7 +460,8 @@ async def delete_agent(
 async def create_version(
     agent_id: str,
     request: VersionCreateRequest,
-    # current_user: User = Depends(get_current_user),
+    http_request: Request,
+    service: AgentRegistryService = Depends(get_registry_service),
 ) -> VersionResponse:
     """
     Create a new version.
@@ -283,16 +472,44 @@ async def create_version(
     """
     logger.info(f"Creating version {request.version} for agent {agent_id}")
 
-    # TODO: Call version manager
-    # version = await version_manager.create_version(agent_id, request.version)
+    tenant_id = get_tenant_id(http_request)
+    user_id = get_user_id(http_request)
 
-    return VersionResponse(
-        version=request.version,
-        agent_id=agent_id,
-        created_at=datetime.utcnow(),
-        artifact_url=None,
-        is_latest=True,
-    )
+    # Get agent
+    agent = await service.get_agent_by_name(agent_id, tenant_id)
+    if not agent:
+        try:
+            agent_uuid = UUID(agent_id)
+            agent = await service.get_agent(agent_uuid, tenant_id)
+        except (ValueError, TypeError):
+            pass
+
+    if not agent:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Agent {agent_id} not found",
+        )
+
+    try:
+        version = await service.create_version(
+            agent_id=agent.id,
+            version=request.version,
+            changelog=request.changelog or "",
+            user_id=user_id,
+        )
+
+        return VersionResponse(
+            version=version.version,
+            agent_id=str(version.agent_id),
+            created_at=version.created_at,
+            artifact_url=version.artifact_path,
+            is_latest=version.is_latest,
+        )
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )
 
 
 @router.get(
@@ -303,7 +520,8 @@ async def create_version(
 )
 async def list_versions(
     agent_id: str,
-    # current_user: User = Depends(get_current_user),
+    http_request: Request,
+    service: AgentRegistryService = Depends(get_registry_service),
 ) -> List[VersionResponse]:
     """
     List all versions of an agent.
@@ -312,10 +530,35 @@ async def list_versions(
     """
     logger.info(f"Listing versions for agent {agent_id}")
 
-    # TODO: Call version manager
-    # versions = await version_manager.list_versions(agent_id)
+    tenant_id = get_tenant_id(http_request)
 
-    return []
+    # Get agent
+    agent = await service.get_agent_by_name(agent_id, tenant_id)
+    if not agent:
+        try:
+            agent_uuid = UUID(agent_id)
+            agent = await service.get_agent(agent_uuid, tenant_id)
+        except (ValueError, TypeError):
+            pass
+
+    if not agent:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Agent {agent_id} not found",
+        )
+
+    versions = await service.list_versions(agent.id)
+
+    return [
+        VersionResponse(
+            version=v.version,
+            agent_id=str(v.agent_id),
+            created_at=v.created_at,
+            artifact_url=v.artifact_path,
+            is_latest=v.is_latest,
+        )
+        for v in versions
+    ]
 
 
 @router.post(
@@ -327,7 +570,8 @@ async def list_versions(
 async def transition_state(
     agent_id: str,
     request: StateTransitionRequest,
-    # current_user: User = Depends(get_current_user),
+    http_request: Request,
+    service: AgentRegistryService = Depends(get_registry_service),
 ) -> AgentResponse:
     """
     Transition agent state.
@@ -340,12 +584,75 @@ async def transition_state(
     """
     logger.info(f"Transitioning agent {agent_id} to {request.target_state}")
 
-    # TODO: Call registry service
-    # agent = await registry_service.transition_state(
-    #     agent_id, target_state, current_user.id, tenant_id
-    # )
+    tenant_id = get_tenant_id(http_request)
+    user_id = get_user_id(http_request)
 
-    raise HTTPException(
-        status_code=status.HTTP_404_NOT_FOUND,
-        detail=f"Agent {agent_id} not found",
+    # Get agent
+    agent = await service.get_agent_by_name(agent_id, tenant_id)
+    if not agent:
+        try:
+            agent_uuid = UUID(agent_id)
+            agent = await service.get_agent(agent_uuid, tenant_id)
+        except (ValueError, TypeError):
+            pass
+
+    if not agent:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Agent {agent_id} not found",
+        )
+
+    # Map target state to service methods
+    target = request.target_state.lower()
+
+    try:
+        if target == "published" or target == "certified":
+            # Publish the agent
+            await service.publish_agent(
+                agent_id=agent.id,
+                version=agent.version,
+                release_notes=request.reason,
+                user_id=user_id,
+            )
+            # Refresh agent data
+            agent = await service.get_agent(agent.id, tenant_id)
+        elif target == "deprecated":
+            agent = await service.deprecate_agent(
+                agent_id=agent.id,
+                user_id=user_id,
+            )
+        else:
+            # For other transitions, update status directly
+            agent = await service.update_agent(
+                agent_id=agent.id,
+                updates={"status": target},
+                tenant_id=tenant_id,
+                user_id=user_id,
+            )
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )
+
+    if not agent:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Agent {agent_id} not found",
+        )
+
+    return AgentResponse(
+        id=str(agent.id),
+        agent_id=agent.name,
+        name=agent.name,
+        version=agent.version,
+        state=agent.status.upper(),
+        category=agent.category,
+        tags=agent.tags or [],
+        description=agent.description,
+        tenant_id=str(agent.tenant_id) if agent.tenant_id else "default",
+        created_at=agent.created_at,
+        updated_at=agent.updated_at,
+        invocation_count=agent.downloads,
+        success_rate=1.0,
     )

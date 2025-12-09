@@ -1,0 +1,188 @@
+# GreenLang Agent Factory - Coverage Configuration
+# Documentation: https://coverage.readthedocs.io/en/latest/config.html
+
+[run]
+# =============================================================================
+# Source Configuration
+# =============================================================================
+# Directories to measure
+source =
+    .
+    greenlang
+    backend
+    agents
+    core
+
+# Files/directories to omit from measurement
+omit =
+    # Test files
+    tests/*
+    test_*.py
+    *_test.py
+    conftest.py
+
+    # Virtual environments
+    .venv/*
+    venv/*
+    env/*
+    .env/*
+
+    # Build artifacts
+    dist/*
+    build/*
+    *.egg-info/*
+    .eggs/*
+
+    # Cache directories
+    __pycache__/*
+    .pytest_cache/*
+    .mypy_cache/*
+    .ruff_cache/*
+
+    # Migrations
+    */migrations/*
+
+    # Configuration files
+    setup.py
+    conftest.py
+
+    # Generated files
+    *_pb2.py
+    *_pb2_grpc.py
+
+# Branch coverage
+branch = True
+
+# Parallel mode for pytest-xdist
+parallel = True
+
+# Data file location
+data_file = .coverage
+
+# Context for distinguishing test runs
+# context = ${GITHUB_RUN_ID:-local}
+
+# =============================================================================
+# Report Configuration
+# =============================================================================
+[report]
+# Minimum coverage percentage
+fail_under = 85
+
+# Precision for coverage percentage
+precision = 2
+
+# Show missing lines
+show_missing = True
+
+# Skip files with 100% coverage
+skip_covered = False
+
+# Skip empty files
+skip_empty = True
+
+# Exclude lines from coverage
+exclude_lines =
+    # Standard pragma
+    pragma: no cover
+
+    # Debug-only code
+    def __repr__
+    def __str__
+
+    # Defensive assertions
+    raise AssertionError
+    raise NotImplementedError
+
+    # Abstract methods
+    @abstractmethod
+    @abc.abstractmethod
+
+    # Type checking blocks
+    if TYPE_CHECKING:
+    if typing.TYPE_CHECKING:
+
+    # Unreachable code
+    if False:
+    if 0:
+
+    # Main blocks
+    if __name__ == .__main__.:
+
+    # Protocol definitions
+    class .*\bProtocol\):
+
+    # Ellipsis (for type stubs)
+    \.\.\.
+
+    # Pass statements
+    ^[ \t]*pass$
+
+    # Continue/break
+    continue
+    break
+
+# Partial branches to exclude
+partial_branches =
+    pragma: no branch
+    if TYPE_CHECKING:
+    if typing.TYPE_CHECKING:
+
+# =============================================================================
+# HTML Report Configuration
+# =============================================================================
+[html]
+# Output directory
+directory = htmlcov
+
+# Title for HTML report
+title = GreenLang Agent Factory Coverage Report
+
+# Show contexts in HTML report
+show_contexts = True
+
+# Skip files with 100% coverage in index
+skip_covered = False
+
+# Extra CSS file
+# extra_css =
+
+# =============================================================================
+# XML Report Configuration
+# =============================================================================
+[xml]
+# Output file
+output = coverage.xml
+
+# Package depth for XML report
+# package_depth = 99
+
+# =============================================================================
+# JSON Report Configuration
+# =============================================================================
+[json]
+# Output file
+output = coverage.json
+
+# Pretty-print JSON
+pretty_print = True
+
+# Show contexts
+show_contexts = True
+
+# =============================================================================
+# LCOV Report Configuration
+# =============================================================================
+[lcov]
+# Output file
+output = coverage.lcov
+
+# =============================================================================
+# Paths Configuration
+# =============================================================================
+[paths]
+# Map paths from different machines
+source =
+    .
+    /app
+    /home/runner/work/greenlang-agent-factory/greenlang-agent-factory

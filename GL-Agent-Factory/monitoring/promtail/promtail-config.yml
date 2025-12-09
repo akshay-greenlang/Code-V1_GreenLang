@@ -1,0 +1,127 @@
+# Promtail Configuration for GreenLang
+# Log collection agent for Loki
+
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+    tenant_id: greenlang
+    batchwait: 1s
+    batchsize: 1048576
+    timeout: 10s
+    backoff_config:
+      min_period: 500ms
+      max_period: 5m
+      max_retries: 10
+
+scrape_configs:
+  # Docker container logs
+  - job_name: containers
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: containerlogs
+          __path__: /var/lib/docker/containers/*/*log
+
+    pipeline_stages:
+      # Parse Docker JSON logs
+      - json:
+          expressions:
+            output: log
+            stream: stream
+            attrs: attrs
+            tag: attrs.tag
+            time: time
+
+      # Extract container information
+      - regex:
+          expression: '^/var/lib/docker/containers/(?P<container_id>[^/]+)/.*$'
+          source: filename
+
+      # Set labels from parsed data
+      - labels:
+          stream:
+          container_id:
+
+      # Parse the actual log content
+      - output:
+          source: output
+
+      # Add timestamp
+      - timestamp:
+          source: time
+          format: RFC3339Nano
+
+  # GreenLang application logs
+  - job_name: greenlang-api
+    docker_sd_configs:
+      - host: unix:///var/run/docker.sock
+        refresh_interval: 5s
+        filters:
+          - name: label
+            values: ["com.docker.compose.service=greenlang-api"]
+
+    relabel_configs:
+      - source_labels: ['__meta_docker_container_name']
+        regex: '/(.*)'
+        target_label: 'container'
+      - source_labels: ['__meta_docker_container_log_stream']
+        target_label: 'logstream'
+      - source_labels: ['__meta_docker_container_label_com_docker_compose_service']
+        target_label: 'service'
+
+    pipeline_stages:
+      # Parse JSON logs from application
+      - json:
+          expressions:
+            level: level
+            message: message
+            logger: logger
+            timestamp: timestamp
+            trace_id: trace_id
+            span_id: span_id
+            request_id: request_id
+
+      # Set labels
+      - labels:
+          level:
+          logger:
+          trace_id:
+          span_id:
+          request_id:
+
+      # Drop debug logs in production
+      - match:
+          selector: '{level="DEBUG"}'
+          action: drop
+
+      # Add log level colors (for Grafana)
+      - labeldrop:
+          - filename
+
+  # System logs
+  - job_name: system
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: varlogs
+          __path__: /var/log/*.log
+
+    pipeline_stages:
+      - regex:
+          expression: '^(?P<timestamp>\S+\s+\S+)\s+(?P<hostname>\S+)\s+(?P<service>\S+):\s+(?P<message>.*)$'
+
+      - labels:
+          hostname:
+          service:
+
+      - timestamp:
+          source: timestamp
+          format: 'Jan _2 15:04:05'

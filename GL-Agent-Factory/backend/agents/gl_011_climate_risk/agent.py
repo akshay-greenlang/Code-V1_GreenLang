@@ -320,7 +320,7 @@ class ClimateRiskInput(BaseModel):
             logger.warning(f"Time horizon {v} years is very long, uncertainty increases significantly")
         return v
 
-    @root_validator
+    @root_validator(skip_on_failure=True)
     def validate_inputs(cls, values: Dict) -> Dict:
         """Validate input consistency."""
         assets = values.get("assets", [])

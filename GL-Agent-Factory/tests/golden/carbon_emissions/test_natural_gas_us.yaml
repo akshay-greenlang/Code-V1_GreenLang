@@ -1,0 +1,769 @@
+# Golden Tests: Natural Gas US - Carbon Emissions Agent (GL-001)
+# Test Count: 50 tests
+# Emission Factor: 1.93 kgCO2e/m3 (EPA 2024)
+# Formula: emissions = quantity * emission_factor
+
+test_suite:
+  name: "Natural Gas US Golden Tests"
+  agent_id: "emissions/carbon_calculator_v1"
+  version: "1.0.0"
+  description: "Validates natural gas emission calculations for US region using EPA emission factors"
+  emission_factor_source: "EPA"
+  emission_factor_year: 2024
+
+tests:
+  # Basic quantity tests (1-20)
+  - test_id: "ng_us_001"
+    test_name: "Natural Gas 1 m3 US"
+    description: "Minimum viable calculation"
+    tags: ["natural_gas", "us", "scope1", "basic"]
+    input:
+      fuel_type: "natural_gas"
+      quantity: 1
+      unit: "m3"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 1.93
+      emission_factor_used: 1.93
+      emission_factor_unit: "kgCO2e/m3"
+      emission_factor_source: "EPA"
+      scope: 1
+
+  - test_id: "ng_us_002"
+    test_name: "Natural Gas 10 m3 US"
+    description: "Small quantity calculation"
+    tags: ["natural_gas", "us", "scope1", "basic"]
+    input:
+      fuel_type: "natural_gas"
+      quantity: 10
+      unit: "m3"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 19.3
+      emission_factor_used: 1.93
+      scope: 1
+
+  - test_id: "ng_us_003"
+    test_name: "Natural Gas 100 m3 US"
+    description: "Standard small quantity"
+    tags: ["natural_gas", "us", "scope1", "basic"]
+    input:
+      fuel_type: "natural_gas"
+      quantity: 100
+      unit: "m3"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 193.0
+      emission_factor_used: 1.93
+      scope: 1
+
+  - test_id: "ng_us_004"
+    test_name: "Natural Gas 500 m3 US"
+    description: "Medium-small quantity"
+    tags: ["natural_gas", "us", "scope1", "basic"]
+    input:
+      fuel_type: "natural_gas"
+      quantity: 500
+      unit: "m3"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 965.0
+      emission_factor_used: 1.93
+      scope: 1
+
+  - test_id: "ng_us_005"
+    test_name: "Natural Gas 1000 m3 US"
+    description: "Standard reference quantity"
+    tags: ["natural_gas", "us", "scope1", "basic", "reference"]
+    input:
+      fuel_type: "natural_gas"
+      quantity: 1000
+      unit: "m3"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 1930.0
+      emission_factor_used: 1.93
+      scope: 1
+
+  - test_id: "ng_us_006"
+    test_name: "Natural Gas 2500 m3 US"
+    description: "Medium quantity"
+    tags: ["natural_gas", "us", "scope1", "basic"]
+    input:
+      fuel_type: "natural_gas"
+      quantity: 2500
+      unit: "m3"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 4825.0
+      emission_factor_used: 1.93
+      scope: 1
+
+  - test_id: "ng_us_007"
+    test_name: "Natural Gas 5000 m3 US"
+    description: "Large quantity"
+    tags: ["natural_gas", "us", "scope1", "basic"]
+    input:
+      fuel_type: "natural_gas"
+      quantity: 5000
+      unit: "m3"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 9650.0
+      emission_factor_used: 1.93
+      scope: 1
+
+  - test_id: "ng_us_008"
+    test_name: "Natural Gas 10000 m3 US"
+    description: "Very large quantity"
+    tags: ["natural_gas", "us", "scope1", "basic"]
+    input:
+      fuel_type: "natural_gas"
+      quantity: 10000
+      unit: "m3"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 19300.0
+      emission_factor_used: 1.93
+      scope: 1
+
+  - test_id: "ng_us_009"
+    test_name: "Natural Gas 25000 m3 US"
+    description: "Industrial scale quantity"
+    tags: ["natural_gas", "us", "scope1", "industrial"]
+    input:
+      fuel_type: "natural_gas"
+      quantity: 25000
+      unit: "m3"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 48250.0
+      emission_factor_used: 1.93
+      scope: 1
+
+  - test_id: "ng_us_010"
+    test_name: "Natural Gas 50000 m3 US"
+    description: "Large industrial quantity"
+    tags: ["natural_gas", "us", "scope1", "industrial"]
+    input:
+      fuel_type: "natural_gas"
+      quantity: 50000
+      unit: "m3"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 96500.0
+      emission_factor_used: 1.93
+      scope: 1
+
+  - test_id: "ng_us_011"
+    test_name: "Natural Gas 75000 m3 US"
+    description: "Major industrial quantity"
+    tags: ["natural_gas", "us", "scope1", "industrial"]
+    input:
+      fuel_type: "natural_gas"
+      quantity: 75000
+      unit: "m3"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 144750.0
+      emission_factor_used: 1.93
+      scope: 1
+
+  - test_id: "ng_us_012"
+    test_name: "Natural Gas 100000 m3 US"
+    description: "Facility-scale quantity"
+    tags: ["natural_gas", "us", "scope1", "facility"]
+    input:
+      fuel_type: "natural_gas"
+      quantity: 100000
+      unit: "m3"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 193000.0
+      emission_factor_used: 1.93
+      scope: 1
+
+  - test_id: "ng_us_013"
+    test_name: "Natural Gas 250000 m3 US"
+    description: "Large facility quantity"
+    tags: ["natural_gas", "us", "scope1", "facility"]
+    input:
+      fuel_type: "natural_gas"
+      quantity: 250000
+      unit: "m3"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 482500.0
+      emission_factor_used: 1.93
+      scope: 1
+
+  - test_id: "ng_us_014"
+    test_name: "Natural Gas 500000 m3 US"
+    description: "Corporate-scale quantity"
+    tags: ["natural_gas", "us", "scope1", "corporate"]
+    input:
+      fuel_type: "natural_gas"
+      quantity: 500000
+      unit: "m3"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 965000.0
+      emission_factor_used: 1.93
+      scope: 1
+
+  - test_id: "ng_us_015"
+    test_name: "Natural Gas 1000000 m3 US"
+    description: "Enterprise-scale quantity"
+    tags: ["natural_gas", "us", "scope1", "enterprise"]
+    input:
+      fuel_type: "natural_gas"
+      quantity: 1000000
+      unit: "m3"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 1930000.0
+      emission_factor_used: 1.93
+      scope: 1
+
+  # Decimal precision tests (16-25)
+  - test_id: "ng_us_016"
+    test_name: "Natural Gas 0.5 m3 US"
+    description: "Sub-unit quantity"
+    tags: ["natural_gas", "us", "scope1", "precision"]
+    input:
+      fuel_type: "natural_gas"
+      quantity: 0.5
+      unit: "m3"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 0.965
+      emission_factor_used: 1.93
+      scope: 1
+
+  - test_id: "ng_us_017"
+    test_name: "Natural Gas 0.1 m3 US"
+    description: "Small decimal quantity"
+    tags: ["natural_gas", "us", "scope1", "precision"]
+    input:
+      fuel_type: "natural_gas"
+      quantity: 0.1
+      unit: "m3"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 0.193
+      emission_factor_used: 1.93
+      scope: 1
+
+  - test_id: "ng_us_018"
+    test_name: "Natural Gas 0.01 m3 US"
+    description: "Very small decimal quantity"
+    tags: ["natural_gas", "us", "scope1", "precision"]
+    input:
+      fuel_type: "natural_gas"
+      quantity: 0.01
+      unit: "m3"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 0.0193
+      emission_factor_used: 1.93
+      scope: 1
+
+  - test_id: "ng_us_019"
+    test_name: "Natural Gas 123.456 m3 US"
+    description: "Arbitrary decimal quantity"
+    tags: ["natural_gas", "us", "scope1", "precision"]
+    input:
+      fuel_type: "natural_gas"
+      quantity: 123.456
+      unit: "m3"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 238.270080
+      emission_factor_used: 1.93
+      scope: 1
+
+  - test_id: "ng_us_020"
+    test_name: "Natural Gas 999.999 m3 US"
+    description: "Near-boundary quantity"
+    tags: ["natural_gas", "us", "scope1", "precision"]
+    input:
+      fuel_type: "natural_gas"
+      quantity: 999.999
+      unit: "m3"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 1929.998070
+      emission_factor_used: 1.93
+      scope: 1
+
+  - test_id: "ng_us_021"
+    test_name: "Natural Gas 1234.5678 m3 US"
+    description: "Four decimal places"
+    tags: ["natural_gas", "us", "scope1", "precision"]
+    input:
+      fuel_type: "natural_gas"
+      quantity: 1234.5678
+      unit: "m3"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 2382.715854
+      emission_factor_used: 1.93
+      scope: 1
+
+  - test_id: "ng_us_022"
+    test_name: "Natural Gas 7777.77 m3 US"
+    description: "Repeating decimal quantity"
+    tags: ["natural_gas", "us", "scope1", "precision"]
+    input:
+      fuel_type: "natural_gas"
+      quantity: 7777.77
+      unit: "m3"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 15011.0961
+      emission_factor_used: 1.93
+      scope: 1
+
+  - test_id: "ng_us_023"
+    test_name: "Natural Gas 3141.59 m3 US (Pi x 1000)"
+    description: "Pi-based quantity"
+    tags: ["natural_gas", "us", "scope1", "precision"]
+    input:
+      fuel_type: "natural_gas"
+      quantity: 3141.59
+      unit: "m3"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 6063.2687
+      emission_factor_used: 1.93
+      scope: 1
+
+  - test_id: "ng_us_024"
+    test_name: "Natural Gas 2718.28 m3 US (e x 1000)"
+    description: "Euler's number based quantity"
+    tags: ["natural_gas", "us", "scope1", "precision"]
+    input:
+      fuel_type: "natural_gas"
+      quantity: 2718.28
+      unit: "m3"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 5246.2804
+      emission_factor_used: 1.93
+      scope: 1
+
+  - test_id: "ng_us_025"
+    test_name: "Natural Gas 1618.03 m3 US (Phi x 1000)"
+    description: "Golden ratio based quantity"
+    tags: ["natural_gas", "us", "scope1", "precision"]
+    input:
+      fuel_type: "natural_gas"
+      quantity: 1618.03
+      unit: "m3"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 3122.7979
+      emission_factor_used: 1.93
+      scope: 1
+
+  # Unit conversion tests (26-35)
+  - test_id: "ng_us_026"
+    test_name: "Natural Gas 1000 cf US"
+    description: "Cubic feet conversion (1000 cf = 28.3168 m3)"
+    tags: ["natural_gas", "us", "scope1", "conversion"]
+    input:
+      fuel_type: "natural_gas"
+      quantity: 1000
+      unit: "cf"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 54.651424
+      emission_factor_used: 1.93
+      scope: 1
+
+  - test_id: "ng_us_027"
+    test_name: "Natural Gas 10000 cf US"
+    description: "Large cubic feet quantity"
+    tags: ["natural_gas", "us", "scope1", "conversion"]
+    input:
+      fuel_type: "natural_gas"
+      quantity: 10000
+      unit: "cf"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 546.51424
+      emission_factor_used: 1.93
+      scope: 1
+
+  - test_id: "ng_us_028"
+    test_name: "Natural Gas 100 therm US"
+    description: "Therm conversion (100 therm = 283.2 m3)"
+    tags: ["natural_gas", "us", "scope1", "conversion"]
+    input:
+      fuel_type: "natural_gas"
+      quantity: 100
+      unit: "therm"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 546.576
+      emission_factor_used: 1.93
+      scope: 1
+
+  - test_id: "ng_us_029"
+    test_name: "Natural Gas 1000 therm US"
+    description: "Large therm quantity"
+    tags: ["natural_gas", "us", "scope1", "conversion"]
+    input:
+      fuel_type: "natural_gas"
+      quantity: 1000
+      unit: "therm"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 5465.76
+      emission_factor_used: 1.93
+      scope: 1
+
+  - test_id: "ng_us_030"
+    test_name: "Natural Gas 10 GJ US"
+    description: "Gigajoule conversion (10 GJ = 261.37 m3)"
+    tags: ["natural_gas", "us", "scope1", "conversion"]
+    input:
+      fuel_type: "natural_gas"
+      quantity: 10
+      unit: "GJ"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 504.4441
+      emission_factor_used: 1.93
+      scope: 1
+
+  - test_id: "ng_us_031"
+    test_name: "Natural Gas 100 GJ US"
+    description: "Large GJ quantity"
+    tags: ["natural_gas", "us", "scope1", "conversion"]
+    input:
+      fuel_type: "natural_gas"
+      quantity: 100
+      unit: "GJ"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 5044.441
+      emission_factor_used: 1.93
+      scope: 1
+
+  - test_id: "ng_us_032"
+    test_name: "Natural Gas 500 cf US"
+    description: "Medium cubic feet"
+    tags: ["natural_gas", "us", "scope1", "conversion"]
+    input:
+      fuel_type: "natural_gas"
+      quantity: 500
+      unit: "cf"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 27.325712
+      emission_factor_used: 1.93
+      scope: 1
+
+  - test_id: "ng_us_033"
+    test_name: "Natural Gas 50 therm US"
+    description: "Medium therm quantity"
+    tags: ["natural_gas", "us", "scope1", "conversion"]
+    input:
+      fuel_type: "natural_gas"
+      quantity: 50
+      unit: "therm"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 273.288
+      emission_factor_used: 1.93
+      scope: 1
+
+  - test_id: "ng_us_034"
+    test_name: "Natural Gas 5 GJ US"
+    description: "Small GJ quantity"
+    tags: ["natural_gas", "us", "scope1", "conversion"]
+    input:
+      fuel_type: "natural_gas"
+      quantity: 5
+      unit: "GJ"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 252.22205
+      emission_factor_used: 1.93
+      scope: 1
+
+  - test_id: "ng_us_035"
+    test_name: "Natural Gas 250 therm US"
+    description: "Quarterly residential usage"
+    tags: ["natural_gas", "us", "scope1", "conversion", "residential"]
+    input:
+      fuel_type: "natural_gas"
+      quantity: 250
+      unit: "therm"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 1366.44
+      emission_factor_used: 1.93
+      scope: 1
+
+  # Real-world scenario tests (36-50)
+  - test_id: "ng_us_036"
+    test_name: "Small Office Monthly Usage"
+    description: "Typical small office monthly natural gas (50 m3)"
+    tags: ["natural_gas", "us", "scope1", "scenario", "office"]
+    input:
+      fuel_type: "natural_gas"
+      quantity: 50
+      unit: "m3"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 96.5
+      emission_factor_used: 1.93
+      scope: 1
+
+  - test_id: "ng_us_037"
+    test_name: "Medium Office Annual Usage"
+    description: "Medium office annual natural gas (2400 m3)"
+    tags: ["natural_gas", "us", "scope1", "scenario", "office"]
+    input:
+      fuel_type: "natural_gas"
+      quantity: 2400
+      unit: "m3"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 4632.0
+      emission_factor_used: 1.93
+      scope: 1
+
+  - test_id: "ng_us_038"
+    test_name: "Large Office Building Annual"
+    description: "Large commercial building annual usage (15000 m3)"
+    tags: ["natural_gas", "us", "scope1", "scenario", "commercial"]
+    input:
+      fuel_type: "natural_gas"
+      quantity: 15000
+      unit: "m3"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 28950.0
+      emission_factor_used: 1.93
+      scope: 1
+
+  - test_id: "ng_us_039"
+    test_name: "Manufacturing Plant Daily"
+    description: "Manufacturing facility daily usage (800 m3)"
+    tags: ["natural_gas", "us", "scope1", "scenario", "manufacturing"]
+    input:
+      fuel_type: "natural_gas"
+      quantity: 800
+      unit: "m3"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 1544.0
+      emission_factor_used: 1.93
+      scope: 1
+
+  - test_id: "ng_us_040"
+    test_name: "Manufacturing Plant Monthly"
+    description: "Manufacturing facility monthly usage (24000 m3)"
+    tags: ["natural_gas", "us", "scope1", "scenario", "manufacturing"]
+    input:
+      fuel_type: "natural_gas"
+      quantity: 24000
+      unit: "m3"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 46320.0
+      emission_factor_used: 1.93
+      scope: 1
+
+  - test_id: "ng_us_041"
+    test_name: "Restaurant Monthly Usage"
+    description: "Restaurant monthly natural gas for cooking (350 m3)"
+    tags: ["natural_gas", "us", "scope1", "scenario", "restaurant"]
+    input:
+      fuel_type: "natural_gas"
+      quantity: 350
+      unit: "m3"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 675.5
+      emission_factor_used: 1.93
+      scope: 1
+
+  - test_id: "ng_us_042"
+    test_name: "Hospital Monthly Usage"
+    description: "Hospital monthly natural gas (5500 m3)"
+    tags: ["natural_gas", "us", "scope1", "scenario", "healthcare"]
+    input:
+      fuel_type: "natural_gas"
+      quantity: 5500
+      unit: "m3"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 10615.0
+      emission_factor_used: 1.93
+      scope: 1
+
+  - test_id: "ng_us_043"
+    test_name: "Data Center Monthly Usage"
+    description: "Data center backup heating (1200 m3)"
+    tags: ["natural_gas", "us", "scope1", "scenario", "datacenter"]
+    input:
+      fuel_type: "natural_gas"
+      quantity: 1200
+      unit: "m3"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 2316.0
+      emission_factor_used: 1.93
+      scope: 1
+
+  - test_id: "ng_us_044"
+    test_name: "University Campus Annual"
+    description: "University campus annual natural gas (180000 m3)"
+    tags: ["natural_gas", "us", "scope1", "scenario", "education"]
+    input:
+      fuel_type: "natural_gas"
+      quantity: 180000
+      unit: "m3"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 347400.0
+      emission_factor_used: 1.93
+      scope: 1
+
+  - test_id: "ng_us_045"
+    test_name: "Shopping Mall Annual"
+    description: "Shopping mall annual natural gas (45000 m3)"
+    tags: ["natural_gas", "us", "scope1", "scenario", "retail"]
+    input:
+      fuel_type: "natural_gas"
+      quantity: 45000
+      unit: "m3"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 86850.0
+      emission_factor_used: 1.93
+      scope: 1
+
+  - test_id: "ng_us_046"
+    test_name: "Residential Home Annual"
+    description: "Average US home annual natural gas (1100 m3)"
+    tags: ["natural_gas", "us", "scope1", "scenario", "residential"]
+    input:
+      fuel_type: "natural_gas"
+      quantity: 1100
+      unit: "m3"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 2123.0
+      emission_factor_used: 1.93
+      scope: 1
+
+  - test_id: "ng_us_047"
+    test_name: "Hotel Monthly Winter"
+    description: "Hotel winter month usage (3800 m3)"
+    tags: ["natural_gas", "us", "scope1", "scenario", "hospitality"]
+    input:
+      fuel_type: "natural_gas"
+      quantity: 3800
+      unit: "m3"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 7334.0
+      emission_factor_used: 1.93
+      scope: 1
+
+  - test_id: "ng_us_048"
+    test_name: "Warehouse Annual"
+    description: "Warehouse annual heating (8500 m3)"
+    tags: ["natural_gas", "us", "scope1", "scenario", "warehouse"]
+    input:
+      fuel_type: "natural_gas"
+      quantity: 8500
+      unit: "m3"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 16405.0
+      emission_factor_used: 1.93
+      scope: 1
+
+  - test_id: "ng_us_049"
+    test_name: "Chemical Plant Daily"
+    description: "Chemical plant daily process heat (2200 m3)"
+    tags: ["natural_gas", "us", "scope1", "scenario", "chemical"]
+    input:
+      fuel_type: "natural_gas"
+      quantity: 2200
+      unit: "m3"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 4246.0
+      emission_factor_used: 1.93
+      scope: 1
+
+  - test_id: "ng_us_050"
+    test_name: "Food Processing Annual"
+    description: "Food processing facility annual (95000 m3)"
+    tags: ["natural_gas", "us", "scope1", "scenario", "food_processing"]
+    input:
+      fuel_type: "natural_gas"
+      quantity: 95000
+      unit: "m3"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 183350.0
+      emission_factor_used: 1.93
+      scope: 1

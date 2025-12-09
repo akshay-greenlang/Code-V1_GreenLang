@@ -1,0 +1,273 @@
+# OpenTelemetry Collector Configuration
+# GreenLang Agent Factory - Telemetry Pipeline
+#
+# This collector receives traces, metrics, and logs from applications
+# and forwards them to appropriate backends (Tempo, Prometheus, Loki)
+
+# =============================================================================
+# Receivers - Ingest telemetry data
+# =============================================================================
+receivers:
+  # OTLP receiver for traces, metrics, and logs
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+        max_recv_msg_size_mib: 16
+      http:
+        endpoint: 0.0.0.0:4318
+        cors:
+          allowed_origins:
+            - "http://localhost:*"
+            - "https://*.greenlang.io"
+          allowed_headers:
+            - "*"
+
+  # Prometheus receiver for scraping metrics
+  prometheus:
+    config:
+      scrape_configs:
+        - job_name: 'otel-collector'
+          scrape_interval: 15s
+          static_configs:
+            - targets: ['localhost:8888']
+
+  # Jaeger receiver for backward compatibility
+  jaeger:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:14250
+      thrift_http:
+        endpoint: 0.0.0.0:14268
+
+  # Zipkin receiver for backward compatibility
+  zipkin:
+    endpoint: 0.0.0.0:9411
+
+# =============================================================================
+# Processors - Transform and enrich telemetry data
+# =============================================================================
+processors:
+  # Batch processor for efficient exports
+  batch:
+    send_batch_size: 1024
+    send_batch_max_size: 2048
+    timeout: 5s
+
+  # Memory limiter to prevent OOM
+  memory_limiter:
+    check_interval: 1s
+    limit_mib: 2048
+    spike_limit_mib: 512
+
+  # Resource processor to add metadata
+  resource:
+    attributes:
+      - key: service.namespace
+        value: greenlang
+        action: upsert
+      - key: deployment.environment
+        from_attribute: GREENLANG_APP_ENV
+        action: insert
+
+  # Attributes processor for span enrichment
+  attributes:
+    actions:
+      # Add correlation IDs
+      - key: correlation.id
+        from_attribute: http.request.header.x-correlation-id
+        action: insert
+      # Add tenant context
+      - key: tenant.id
+        from_attribute: http.request.header.x-tenant-id
+        action: insert
+
+  # Span processor for trace manipulation
+  span:
+    name:
+      # Rename database spans for clarity
+      from_attributes:
+        - db.operation
+        - db.name
+      separator: " "
+
+  # Probabilistic sampler for high-volume environments
+  probabilistic_sampler:
+    sampling_percentage: 100  # 100% for dev, reduce for production
+
+  # Tail-based sampler for intelligent sampling
+  # Keeps error traces and slow traces
+  tail_sampling:
+    decision_wait: 10s
+    num_traces: 100000
+    expected_new_traces_per_sec: 100
+    policies:
+      # Always keep error traces
+      - name: errors
+        type: status_code
+        status_code:
+          status_codes:
+            - ERROR
+      # Keep slow traces (>2s)
+      - name: slow-traces
+        type: latency
+        latency:
+          threshold_ms: 2000
+      # Sample agent execution traces
+      - name: agent-execution
+        type: string_attribute
+        string_attribute:
+          key: agent.id
+          values:
+            - "*"
+          enabled_regex_matching: true
+      # Default probabilistic sampling
+      - name: default
+        type: probabilistic
+        probabilistic:
+          sampling_percentage: 10
+
+  # Filter processor to drop unwanted telemetry
+  filter:
+    spans:
+      exclude:
+        match_type: regexp
+        span_names:
+          - "health.*"
+          - "ready.*"
+          - "metrics.*"
+
+# =============================================================================
+# Exporters - Send telemetry to backends
+# =============================================================================
+exporters:
+  # Debug exporter for troubleshooting
+  debug:
+    verbosity: basic
+
+  # OTLP exporter to Tempo for traces
+  otlp/tempo:
+    endpoint: tempo:4317
+    tls:
+      insecure: true
+    sending_queue:
+      enabled: true
+      queue_size: 5000
+    retry_on_failure:
+      enabled: true
+      initial_interval: 5s
+      max_interval: 30s
+      max_elapsed_time: 300s
+
+  # Prometheus remote write for metrics
+  prometheusremotewrite:
+    endpoint: http://prometheus:9090/api/v1/write
+    tls:
+      insecure: true
+    external_labels:
+      source: otel-collector
+    resource_to_telemetry_conversion:
+      enabled: true
+
+  # Prometheus exporter for collector metrics
+  prometheus:
+    endpoint: 0.0.0.0:8889
+    resource_to_telemetry_conversion:
+      enabled: true
+
+  # Loki exporter for logs
+  loki:
+    endpoint: http://loki:3100/loki/api/v1/push
+    labels:
+      resource:
+        service.name: "service_name"
+        service.namespace: "service_namespace"
+      attributes:
+        severity: ""
+        level: ""
+
+# =============================================================================
+# Extensions - Additional capabilities
+# =============================================================================
+extensions:
+  # Health check extension
+  health_check:
+    endpoint: 0.0.0.0:13133
+    path: "/"
+    check_collector_pipeline:
+      enabled: true
+      interval: 30s
+      exporter_failure_threshold: 5
+
+  # pprof extension for profiling
+  pprof:
+    endpoint: 0.0.0.0:1777
+
+  # zpages extension for debug UI
+  zpages:
+    endpoint: 0.0.0.0:55679
+
+  # Memory ballast for GC optimization
+  memory_ballast:
+    size_mib: 512
+
+# =============================================================================
+# Service - Pipeline configuration
+# =============================================================================
+service:
+  extensions:
+    - health_check
+    - pprof
+    - zpages
+    - memory_ballast
+
+  pipelines:
+    # Traces pipeline
+    traces:
+      receivers:
+        - otlp
+        - jaeger
+        - zipkin
+      processors:
+        - memory_limiter
+        - resource
+        - attributes
+        - span
+        - filter
+        - batch
+      exporters:
+        - otlp/tempo
+        - debug
+
+    # Metrics pipeline
+    metrics:
+      receivers:
+        - otlp
+        - prometheus
+      processors:
+        - memory_limiter
+        - resource
+        - batch
+      exporters:
+        - prometheusremotewrite
+        - prometheus
+
+    # Logs pipeline
+    logs:
+      receivers:
+        - otlp
+      processors:
+        - memory_limiter
+        - resource
+        - batch
+      exporters:
+        - loki
+
+  telemetry:
+    logs:
+      level: info
+      initial_fields:
+        service: otel-collector
+    metrics:
+      level: detailed
+      address: 0.0.0.0:8888

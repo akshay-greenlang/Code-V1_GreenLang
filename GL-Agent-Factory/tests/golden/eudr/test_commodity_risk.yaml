@@ -1,0 +1,605 @@
+# Golden Tests: Commodity Risk Assessment - EUDR Compliance Agent (GL-004)
+# Test Count: 35 tests
+# Description: Validates commodity classification and country risk assessment
+
+test_suite:
+  name: "Commodity Risk Assessment Golden Tests"
+  agent_id: "regulatory/eudr_compliance_v1"
+  version: "1.0.0"
+  description: "Validates commodity risk assessment for EUDR compliance"
+
+tests:
+  # Coffee commodity tests (1-7)
+  - test_id: "eudr_risk_coffee_001"
+    test_name: "Coffee Brazil High Risk"
+    description: "Coffee from Brazil (high-risk country)"
+    tags: ["coffee", "brazil", "high_risk"]
+    input:
+      commodity_type: "coffee"
+      cn_code: "09011100"
+      quantity_kg: 50000
+      country_of_origin: "BR"
+      geolocation:
+        type: "Point"
+        coordinates: [-47.5, -15.5]
+      production_date: "2024-01-15"
+    expected:
+      commodity_type: "coffee"
+      risk_level: "high"
+      country_risk_score: 75.0
+
+  - test_id: "eudr_risk_coffee_002"
+    test_name: "Coffee Colombia Standard Risk"
+    description: "Coffee from Colombia (standard-risk country)"
+    tags: ["coffee", "colombia", "standard_risk"]
+    input:
+      commodity_type: "coffee"
+      cn_code: "09011100"
+      quantity_kg: 30000
+      country_of_origin: "CO"
+      geolocation:
+        type: "Point"
+        coordinates: [-75.5, 4.6]
+      production_date: "2024-02-20"
+    expected:
+      commodity_type: "coffee"
+      risk_level: "standard"
+      country_risk_score: 55.0
+
+  - test_id: "eudr_risk_coffee_003"
+    test_name: "Coffee Peru Standard Risk"
+    description: "Coffee from Peru"
+    tags: ["coffee", "peru", "standard_risk"]
+    input:
+      commodity_type: "coffee"
+      cn_code: "09011200"
+      quantity_kg: 25000
+      country_of_origin: "PE"
+      geolocation:
+        type: "Point"
+        coordinates: [-73.5, -6.0]
+      production_date: "2024-03-10"
+    expected:
+      risk_level: "standard"
+      country_risk_score: 50.0
+
+  - test_id: "eudr_risk_coffee_004"
+    test_name: "Coffee Extracts"
+    description: "Coffee extract products (CN 2101)"
+    tags: ["coffee", "extract"]
+    input:
+      commodity_type: "coffee"
+      cn_code: "21011100"
+      quantity_kg: 10000
+      country_of_origin: "BR"
+      geolocation:
+        type: "Point"
+        coordinates: [-46.6, -23.5]
+      production_date: "2024-04-01"
+    expected:
+      commodity_type: "coffee"
+      risk_level: "high"
+
+  - test_id: "eudr_risk_coffee_005"
+    test_name: "Coffee Roasted"
+    description: "Roasted coffee beans"
+    tags: ["coffee", "roasted"]
+    input:
+      commodity_type: "coffee"
+      cn_code: "09012100"
+      quantity_kg: 15000
+      country_of_origin: "CO"
+      geolocation:
+        type: "Point"
+        coordinates: [-74.1, 4.7]
+      production_date: "2024-05-15"
+    expected:
+      commodity_type: "coffee"
+      risk_level: "standard"
+
+  - test_id: "eudr_risk_coffee_006"
+    test_name: "Coffee Large Quantity"
+    description: "Large coffee shipment"
+    tags: ["coffee", "large"]
+    input:
+      commodity_type: "coffee"
+      cn_code: "09011100"
+      quantity_kg: 500000
+      country_of_origin: "BR"
+      geolocation:
+        type: "Point"
+        coordinates: [-48.0, -16.0]
+      production_date: "2024-06-01"
+    expected:
+      risk_level: "high"
+      country_risk_score: 75.0
+
+  - test_id: "eudr_risk_coffee_007"
+    test_name: "Coffee Unknown Country"
+    description: "Coffee from unlisted country (default risk)"
+    tags: ["coffee", "default_risk"]
+    input:
+      commodity_type: "coffee"
+      cn_code: "09011100"
+      quantity_kg: 20000
+      country_of_origin: "ET"
+      geolocation:
+        type: "Point"
+        coordinates: [38.7, 9.0]
+      production_date: "2024-07-01"
+    expected:
+      risk_level: "standard"
+      country_risk_score: 50.0
+
+  # Cocoa commodity tests (8-14)
+  - test_id: "eudr_risk_cocoa_008"
+    test_name: "Cocoa Ghana Standard Risk"
+    description: "Cocoa beans from Ghana"
+    tags: ["cocoa", "ghana", "standard_risk"]
+    input:
+      commodity_type: "cocoa"
+      cn_code: "18010000"
+      quantity_kg: 40000
+      country_of_origin: "GH"
+      geolocation:
+        type: "Point"
+        coordinates: [-1.5, 6.5]
+      production_date: "2024-01-20"
+    expected:
+      commodity_type: "cocoa"
+      risk_level: "standard"
+      country_risk_score: 45.0
+
+  - test_id: "eudr_risk_cocoa_009"
+    test_name: "Cocoa Ivory Coast"
+    description: "Cocoa from Cote d'Ivoire"
+    tags: ["cocoa", "ivory_coast", "standard_risk"]
+    input:
+      commodity_type: "cocoa"
+      cn_code: "18010000"
+      quantity_kg: 60000
+      country_of_origin: "CI"
+      geolocation:
+        type: "Point"
+        coordinates: [-5.5, 7.5]
+      production_date: "2024-02-15"
+    expected:
+      risk_level: "standard"
+      country_risk_score: 48.0
+
+  - test_id: "eudr_risk_cocoa_010"
+    test_name: "Cocoa Paste"
+    description: "Cocoa paste (CN 1803)"
+    tags: ["cocoa", "paste"]
+    input:
+      commodity_type: "cocoa"
+      cn_code: "18031000"
+      quantity_kg: 25000
+      country_of_origin: "GH"
+      geolocation:
+        type: "Point"
+        coordinates: [-1.6, 6.6]
+      production_date: "2024-03-01"
+    expected:
+      commodity_type: "cocoa"
+
+  - test_id: "eudr_risk_cocoa_011"
+    test_name: "Cocoa Butter"
+    description: "Cocoa butter (CN 1804)"
+    tags: ["cocoa", "butter"]
+    input:
+      commodity_type: "cocoa"
+      cn_code: "18040000"
+      quantity_kg: 15000
+      country_of_origin: "CI"
+      geolocation:
+        type: "Point"
+        coordinates: [-5.4, 7.4]
+      production_date: "2024-04-15"
+    expected:
+      commodity_type: "cocoa"
+
+  - test_id: "eudr_risk_cocoa_012"
+    test_name: "Chocolate Products"
+    description: "Chocolate containing cocoa (CN 1806)"
+    tags: ["cocoa", "chocolate"]
+    input:
+      commodity_type: "cocoa"
+      cn_code: "18063100"
+      quantity_kg: 30000
+      country_of_origin: "GH"
+      geolocation:
+        type: "Point"
+        coordinates: [-1.4, 6.4]
+      production_date: "2024-05-01"
+    expected:
+      commodity_type: "cocoa"
+
+  - test_id: "eudr_risk_cocoa_013"
+    test_name: "Cocoa Powder"
+    description: "Cocoa powder (CN 1805)"
+    tags: ["cocoa", "powder"]
+    input:
+      commodity_type: "cocoa"
+      cn_code: "18050000"
+      quantity_kg: 20000
+      country_of_origin: "CI"
+      geolocation:
+        type: "Point"
+        coordinates: [-5.3, 7.3]
+      production_date: "2024-06-15"
+    expected:
+      commodity_type: "cocoa"
+
+  - test_id: "eudr_risk_cocoa_014"
+    test_name: "Cocoa Shells"
+    description: "Cocoa shells and husks (CN 1802)"
+    tags: ["cocoa", "shells"]
+    input:
+      commodity_type: "cocoa"
+      cn_code: "18020000"
+      quantity_kg: 5000
+      country_of_origin: "GH"
+      geolocation:
+        type: "Point"
+        coordinates: [-1.3, 6.3]
+      production_date: "2024-07-01"
+    expected:
+      commodity_type: "cocoa"
+
+  # Palm oil commodity tests (15-21)
+  - test_id: "eudr_risk_palm_015"
+    test_name: "Palm Oil Indonesia High Risk"
+    description: "Palm oil from Indonesia"
+    tags: ["palm_oil", "indonesia", "high_risk"]
+    input:
+      commodity_type: "palm_oil"
+      cn_code: "15111000"
+      quantity_kg: 200000
+      country_of_origin: "ID"
+      geolocation:
+        type: "Point"
+        coordinates: [107.5, -6.2]
+      production_date: "2024-01-10"
+    expected:
+      commodity_type: "palm_oil"
+      risk_level: "high"
+      country_risk_score: 72.0
+
+  - test_id: "eudr_risk_palm_016"
+    test_name: "Palm Oil Malaysia High Risk"
+    description: "Palm oil from Malaysia"
+    tags: ["palm_oil", "malaysia", "high_risk"]
+    input:
+      commodity_type: "palm_oil"
+      cn_code: "15111000"
+      quantity_kg: 150000
+      country_of_origin: "MY"
+      geolocation:
+        type: "Point"
+        coordinates: [101.5, 3.1]
+      production_date: "2024-02-20"
+    expected:
+      risk_level: "high"
+      country_risk_score: 68.0
+
+  - test_id: "eudr_risk_palm_017"
+    test_name: "Palm Kernel Oil"
+    description: "Palm kernel oil (CN 1513)"
+    tags: ["palm_oil", "kernel"]
+    input:
+      commodity_type: "palm_oil"
+      cn_code: "15132100"
+      quantity_kg: 75000
+      country_of_origin: "ID"
+      geolocation:
+        type: "Point"
+        coordinates: [108.0, -6.5]
+      production_date: "2024-03-15"
+    expected:
+      commodity_type: "palm_oil"
+
+  - test_id: "eudr_risk_palm_018"
+    test_name: "Crude Palm Oil"
+    description: "Crude palm oil"
+    tags: ["palm_oil", "crude"]
+    input:
+      commodity_type: "palm_oil"
+      cn_code: "15111000"
+      quantity_kg: 500000
+      country_of_origin: "MY"
+      geolocation:
+        type: "Point"
+        coordinates: [102.0, 3.5]
+      production_date: "2024-04-01"
+    expected:
+      commodity_type: "palm_oil"
+      risk_level: "high"
+
+  - test_id: "eudr_risk_palm_019"
+    test_name: "Refined Palm Oil"
+    description: "Refined palm oil"
+    tags: ["palm_oil", "refined"]
+    input:
+      commodity_type: "palm_oil"
+      cn_code: "15119000"
+      quantity_kg: 100000
+      country_of_origin: "ID"
+      geolocation:
+        type: "Point"
+        coordinates: [106.8, -6.1]
+      production_date: "2024-05-15"
+    expected:
+      commodity_type: "palm_oil"
+
+  - test_id: "eudr_risk_palm_020"
+    test_name: "Palm Oil Certified"
+    description: "RSPO certified palm oil"
+    tags: ["palm_oil", "certified", "rspo"]
+    input:
+      commodity_type: "palm_oil"
+      cn_code: "15111000"
+      quantity_kg: 80000
+      country_of_origin: "MY"
+      geolocation:
+        type: "Point"
+        coordinates: [103.0, 4.0]
+      production_date: "2024-06-01"
+      certifications: ["RSPO"]
+    expected:
+      commodity_type: "palm_oil"
+      risk_level: "high"
+
+  - test_id: "eudr_risk_palm_021"
+    test_name: "Palm Oil Small Quantity"
+    description: "Small palm oil shipment"
+    tags: ["palm_oil", "small"]
+    input:
+      commodity_type: "palm_oil"
+      cn_code: "15111000"
+      quantity_kg: 5000
+      country_of_origin: "ID"
+      geolocation:
+        type: "Point"
+        coordinates: [107.2, -6.3]
+      production_date: "2024-07-15"
+    expected:
+      commodity_type: "palm_oil"
+
+  # Rubber commodity tests (22-25)
+  - test_id: "eudr_risk_rubber_022"
+    test_name: "Natural Rubber Malaysia"
+    description: "Natural rubber from Malaysia"
+    tags: ["rubber", "malaysia", "high_risk"]
+    input:
+      commodity_type: "rubber"
+      cn_code: "40011000"
+      quantity_kg: 100000
+      country_of_origin: "MY"
+      geolocation:
+        type: "Point"
+        coordinates: [101.5, 3.1]
+      production_date: "2024-01-25"
+    expected:
+      commodity_type: "rubber"
+      risk_level: "high"
+      country_risk_score: 68.0
+
+  - test_id: "eudr_risk_rubber_023"
+    test_name: "Natural Rubber Indonesia"
+    description: "Natural rubber from Indonesia"
+    tags: ["rubber", "indonesia", "high_risk"]
+    input:
+      commodity_type: "rubber"
+      cn_code: "40011000"
+      quantity_kg: 80000
+      country_of_origin: "ID"
+      geolocation:
+        type: "Point"
+        coordinates: [104.0, -2.0]
+      production_date: "2024-02-15"
+    expected:
+      risk_level: "high"
+      country_risk_score: 72.0
+
+  - test_id: "eudr_risk_rubber_024"
+    test_name: "Compounded Rubber"
+    description: "Compounded rubber (CN 4005)"
+    tags: ["rubber", "compounded"]
+    input:
+      commodity_type: "rubber"
+      cn_code: "40051000"
+      quantity_kg: 50000
+      country_of_origin: "MY"
+      geolocation:
+        type: "Point"
+        coordinates: [100.5, 2.5]
+      production_date: "2024-03-20"
+    expected:
+      commodity_type: "rubber"
+
+  - test_id: "eudr_risk_rubber_025"
+    test_name: "Vulcanized Rubber"
+    description: "Vulcanized rubber products"
+    tags: ["rubber", "vulcanized"]
+    input:
+      commodity_type: "rubber"
+      cn_code: "40081100"
+      quantity_kg: 30000
+      country_of_origin: "ID"
+      geolocation:
+        type: "Point"
+        coordinates: [105.0, -1.5]
+      production_date: "2024-04-10"
+    expected:
+      commodity_type: "rubber"
+
+  # Soya commodity tests (26-29)
+  - test_id: "eudr_risk_soya_026"
+    test_name: "Soya Beans Brazil"
+    description: "Soya beans from Brazil"
+    tags: ["soya", "brazil", "high_risk"]
+    input:
+      commodity_type: "soya"
+      cn_code: "12010000"
+      quantity_kg: 1000000
+      country_of_origin: "BR"
+      geolocation:
+        type: "Point"
+        coordinates: [-54.5, -12.5]
+      production_date: "2024-03-01"
+    expected:
+      commodity_type: "soya"
+      risk_level: "high"
+      country_risk_score: 75.0
+
+  - test_id: "eudr_risk_soya_027"
+    test_name: "Soya Bean Oil"
+    description: "Soya-bean oil (CN 1507)"
+    tags: ["soya", "oil"]
+    input:
+      commodity_type: "soya"
+      cn_code: "15071000"
+      quantity_kg: 200000
+      country_of_origin: "BR"
+      geolocation:
+        type: "Point"
+        coordinates: [-53.0, -11.0]
+      production_date: "2024-04-15"
+    expected:
+      commodity_type: "soya"
+
+  - test_id: "eudr_risk_soya_028"
+    test_name: "Soya Cake/Meal"
+    description: "Soya-bean oilcake (CN 2304)"
+    tags: ["soya", "meal"]
+    input:
+      commodity_type: "soya"
+      cn_code: "23040000"
+      quantity_kg: 500000
+      country_of_origin: "BR"
+      geolocation:
+        type: "Point"
+        coordinates: [-52.5, -13.0]
+      production_date: "2024-05-01"
+    expected:
+      commodity_type: "soya"
+
+  - test_id: "eudr_risk_soya_029"
+    test_name: "Soya Large Export"
+    description: "Major soya shipment"
+    tags: ["soya", "large"]
+    input:
+      commodity_type: "soya"
+      cn_code: "12010000"
+      quantity_kg: 5000000
+      country_of_origin: "BR"
+      geolocation:
+        type: "Polygon"
+        coordinates: [[[-55.0, -12.0], [-54.0, -12.0], [-54.0, -13.0], [-55.0, -13.0], [-55.0, -12.0]]]
+      production_date: "2024-06-15"
+    expected:
+      commodity_type: "soya"
+
+  # Wood/Timber commodity tests (30-35)
+  - test_id: "eudr_risk_wood_030"
+    test_name: "Wood Brazil High Risk"
+    description: "Timber from Brazil (Amazon)"
+    tags: ["wood", "brazil", "high_risk"]
+    input:
+      commodity_type: "wood"
+      cn_code: "44011200"
+      quantity_kg: 300000
+      country_of_origin: "BR"
+      geolocation:
+        type: "Point"
+        coordinates: [-60.0, -3.0]
+      production_date: "2024-01-30"
+    expected:
+      commodity_type: "wood"
+      risk_level: "high"
+      country_risk_score: 75.0
+
+  - test_id: "eudr_risk_wood_031"
+    test_name: "Wood Peru Standard Risk"
+    description: "Timber from Peru"
+    tags: ["wood", "peru", "standard_risk"]
+    input:
+      commodity_type: "wood"
+      cn_code: "44011200"
+      quantity_kg: 150000
+      country_of_origin: "PE"
+      geolocation:
+        type: "Point"
+        coordinates: [-73.5, -4.0]
+      production_date: "2024-02-28"
+    expected:
+      risk_level: "standard"
+      country_risk_score: 50.0
+
+  - test_id: "eudr_risk_wood_032"
+    test_name: "Wood Pulp"
+    description: "Wood pulp (CN 47)"
+    tags: ["wood", "pulp"]
+    input:
+      commodity_type: "wood"
+      cn_code: "47010000"
+      quantity_kg: 500000
+      country_of_origin: "BR"
+      geolocation:
+        type: "Point"
+        coordinates: [-49.0, -25.0]
+      production_date: "2024-03-15"
+    expected:
+      commodity_type: "wood"
+
+  - test_id: "eudr_risk_wood_033"
+    test_name: "Paper Products"
+    description: "Paper products (CN 48)"
+    tags: ["wood", "paper"]
+    input:
+      commodity_type: "wood"
+      cn_code: "48010000"
+      quantity_kg: 100000
+      country_of_origin: "BR"
+      geolocation:
+        type: "Point"
+        coordinates: [-48.5, -24.0]
+      production_date: "2024-04-01"
+    expected:
+      commodity_type: "wood"
+
+  - test_id: "eudr_risk_wood_034"
+    test_name: "Wood Furniture"
+    description: "Wooden furniture (CN 94)"
+    tags: ["wood", "furniture"]
+    input:
+      commodity_type: "wood"
+      cn_code: "94036000"
+      quantity_kg: 50000
+      country_of_origin: "ID"
+      geolocation:
+        type: "Point"
+        coordinates: [110.0, -7.0]
+      production_date: "2024-05-15"
+    expected:
+      commodity_type: "wood"
+      risk_level: "high"
+
+  - test_id: "eudr_risk_wood_035"
+    test_name: "Wood FSC Certified"
+    description: "FSC certified timber"
+    tags: ["wood", "certified", "fsc"]
+    input:
+      commodity_type: "wood"
+      cn_code: "44011200"
+      quantity_kg: 200000
+      country_of_origin: "BR"
+      geolocation:
+        type: "Point"
+        coordinates: [-59.0, -2.5]
+      production_date: "2024-06-01"
+      certifications: ["FSC"]
+    expected:
+      commodity_type: "wood"
+      risk_level: "high"

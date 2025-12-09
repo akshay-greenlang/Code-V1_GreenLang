@@ -1,0 +1,198 @@
+# Regulatory Compliance Agent Specification Template
+# Use this template for creating regulatory compliance agents
+
+metadata:
+  id: "my-regulatory-agent"
+  name: "My Regulatory Compliance Agent"
+  version: "0.1.0"
+  type: "regulatory"
+  description: "A regulatory compliance agent for code validation"
+  author: "Your Name"
+  email: "your.email@example.com"
+  tags:
+    - "regulatory"
+    - "compliance"
+    - "validation"
+
+# Regulatory capabilities
+capabilities:
+  - "code-compliance-validation"
+  - "safety-analysis"
+  - "documentation-generation"
+  - "reporting"
+  - "audit-trail"
+
+# Architecture with regulatory components
+architecture:
+  framework: "greenlang"
+
+  components:
+    - name: "standards-loader"
+      type: "data"
+      description: "Loads and parses regulatory standards"
+
+    - name: "compliance-validator"
+      type: "validation"
+      description: "Validates designs against standards"
+
+    - name: "safety-analyzer"
+      type: "analysis"
+      description: "Performs safety analysis"
+
+    - name: "report-generator"
+      type: "reporting"
+      description: "Generates compliance reports"
+
+    - name: "audit-logger"
+      type: "logging"
+      description: "Maintains audit trail"
+
+# Dependencies for regulatory agents
+dependencies:
+  - "greenlang-sdk>=1.0.0"
+  - "pydantic>=2.5.0"
+  - "pyyaml>=6.0.1"
+  - "reportlab>=4.0.0"  # For PDF reports
+  - "jinja2>=3.1.2"     # For report templates
+
+# Regulatory configuration
+configuration:
+  # Standards to validate against
+  standards:
+    - name: "NFPA 86"
+      version: "2023"
+      sections:
+        - "Chapter 5: General Requirements"
+        - "Chapter 6: Safety Equipment"
+        - "Chapter 7: Controls"
+
+    - name: "OSHA"
+      version: "current"
+      sections:
+        - "1910.106: Flammable Liquids"
+        - "1910.119: Process Safety Management"
+
+  # Validation settings
+  validation:
+    level: "strict"              # strict, moderate, lenient
+    fail_on_warnings: false
+    generate_waivers: true
+
+  # Safety analysis
+  safety:
+    perform_hazard_analysis: true
+    risk_assessment_method: "quantitative"
+    minimum_safety_level: "SIL-2"
+
+  # Reporting
+  reporting:
+    format: "pdf"                # pdf, html, markdown
+    include_recommendations: true
+    include_references: true
+    language: "en"
+
+  # Audit trail
+  audit:
+    enabled: true
+    retention_days: 2555         # 7 years
+    sign_reports: true
+
+# Testing for regulatory agents
+testing:
+  types:
+    - "unit"
+    - "integration"
+    - "compliance"              # Test against known compliant/non-compliant designs
+
+  coverage:
+    minimum: 90                  # Higher coverage for regulatory
+
+  fixtures:
+    - "compliant_designs.yaml"
+    - "non_compliant_designs.yaml"
+    - "edge_cases.yaml"
+
+  # Validation test cases
+  validation_tests:
+    - name: "full-compliance"
+      description: "Test fully compliant design"
+      expected_result: "pass"
+
+    - name: "partial-compliance"
+      description: "Test partially compliant design"
+      expected_result: "warnings"
+
+    - name: "non-compliance"
+      description: "Test non-compliant design"
+      expected_result: "fail"
+
+# Comprehensive documentation
+documentation:
+  api_docs: true
+  user_guide: true
+  deployment_guide: true
+  compliance_guide: true        # Regulatory-specific
+
+  # Standards documentation
+  standards_mapping: true
+  validation_rules: true
+  safety_criteria: true
+
+# Deployment with enhanced security
+deployment:
+  container:
+    base_image: "python:3.11-slim"
+    port: 8000
+
+    # Security hardening
+    security:
+      run_as_nonroot: true
+      readonly_rootfs: true
+      drop_capabilities:
+        - "ALL"
+
+  resources:
+    cpu_limit: "1000m"
+    memory_limit: "1Gi"
+
+  health_check:
+    path: "/health"
+    interval: 30
+    timeout: 10
+
+  # Regulatory-specific deployment
+  compliance:
+    data_encryption: true
+    audit_logging: true
+    access_control: "rbac"
+    backup_enabled: true
+    backup_retention_days: 2555
+
+# Data retention and privacy
+data_governance:
+  # Data classification
+  classification: "confidential"
+
+  # Retention policy
+  retention:
+    design_data: 2555            # 7 years (days)
+    audit_logs: 2555
+    reports: 3650                # 10 years
+
+  # Privacy settings
+  privacy:
+    anonymize_personal_data: true
+    gdpr_compliant: true
+    data_location: "US"
+
+# Change management
+versioning:
+  # Semantic versioning required
+  scheme: "semver"
+
+  # Changelog required
+  changelog_required: true
+
+  # Backward compatibility
+  maintain_compatibility: true
+  deprecation_notice_days: 90

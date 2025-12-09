@@ -1,0 +1,162 @@
+# GreenLang API Ingress
+# NGINX Ingress Controller configuration with TLS
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: greenlang-api-ingress
+  namespace: greenlang-production
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/instance: production
+    app.kubernetes.io/component: ingress
+    app.kubernetes.io/part-of: greenlang-platform
+  annotations:
+    # Ingress class
+    kubernetes.io/ingress.class: "nginx"
+
+    # TLS/SSL
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+
+    # Rate limiting
+    nginx.ingress.kubernetes.io/limit-rps: "100"
+    nginx.ingress.kubernetes.io/limit-rpm: "1000"
+    nginx.ingress.kubernetes.io/limit-burst-multiplier: "5"
+    nginx.ingress.kubernetes.io/limit-whitelist: "10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"
+
+    # Request size limits
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/client-body-buffer-size: "1m"
+    nginx.ingress.kubernetes.io/proxy-buffer-size: "16k"
+
+    # Timeouts
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+
+    # CORS configuration
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "https://app.greenlang.ai,https://admin.greenlang.ai"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, DELETE, PATCH, OPTIONS"
+    nginx.ingress.kubernetes.io/cors-allow-headers: "DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization,X-API-Key,X-Tenant-ID"
+    nginx.ingress.kubernetes.io/cors-allow-credentials: "true"
+    nginx.ingress.kubernetes.io/cors-max-age: "1728000"
+
+    # Security headers
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      more_set_headers "X-Frame-Options: DENY";
+      more_set_headers "X-Content-Type-Options: nosniff";
+      more_set_headers "X-XSS-Protection: 1; mode=block";
+      more_set_headers "Referrer-Policy: strict-origin-when-cross-origin";
+      more_set_headers "Permissions-Policy: geolocation=(), microphone=(), camera=()";
+
+    # WebSocket support
+    nginx.ingress.kubernetes.io/proxy-http-version: "1.1"
+    nginx.ingress.kubernetes.io/upstream-hash-by: "$remote_addr"
+
+    # Load balancing
+    nginx.ingress.kubernetes.io/load-balance: "ewma"
+    nginx.ingress.kubernetes.io/upstream-vhost: "$host"
+
+    # Circuit breaker / retry
+    nginx.ingress.kubernetes.io/proxy-next-upstream: "error timeout http_502 http_503 http_504"
+    nginx.ingress.kubernetes.io/proxy-next-upstream-tries: "3"
+
+    # Observability
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "10254"
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - api.greenlang.ai
+    - app.greenlang.ai
+    secretName: greenlang-tls-secret
+  rules:
+  # Main API endpoint
+  - host: api.greenlang.ai
+    http:
+      paths:
+      # API Server (main gateway)
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: api-server-service
+            port:
+              number: 80
+      # Agent Runtime direct access (for specific use cases)
+      - path: /v1/runtime
+        pathType: Prefix
+        backend:
+          service:
+            name: agent-runtime-service
+            port:
+              number: 80
+      # Registry direct access
+      - path: /v1/registry
+        pathType: Prefix
+        backend:
+          service:
+            name: registry-service
+            port:
+              number: 80
+      # Health check endpoint
+      - path: /health
+        pathType: Exact
+        backend:
+          service:
+            name: api-server-service
+            port:
+              number: 80
+---
+# Internal Ingress for monitoring/metrics (optional)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: greenlang-internal-ingress
+  namespace: greenlang-production
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/instance: production
+    app.kubernetes.io/component: internal-ingress
+  annotations:
+    kubernetes.io/ingress.class: "nginx-internal"
+    nginx.ingress.kubernetes.io/whitelist-source-range: "10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"
+spec:
+  ingressClassName: nginx-internal
+  rules:
+  - host: internal.greenlang.local
+    http:
+      paths:
+      - path: /metrics
+        pathType: Prefix
+        backend:
+          service:
+            name: api-server-service
+            port:
+              number: 9090
+---
+# TLS Certificate (for cert-manager)
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: greenlang-tls-cert
+  namespace: greenlang-production
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: certificate
+spec:
+  secretName: greenlang-tls-secret
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  commonName: api.greenlang.ai
+  dnsNames:
+  - api.greenlang.ai
+  - app.greenlang.ai
+  - "*.greenlang.ai"
+  privateKey:
+    algorithm: RSA
+    size: 4096

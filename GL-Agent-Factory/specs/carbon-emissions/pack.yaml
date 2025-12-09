@@ -1,0 +1,542 @@
+# GL-001: Carbon Emissions Calculator Agent Pack Specification
+# GreenLang Agent Factory - First Generated Agent
+# Version: 1.0.0
+# Zero-Hallucination Guarantee: All calculations are deterministic
+
+schema_version: "2.0.0"
+
+pack:
+  id: gl-carbon-emissions-v1
+  name: Carbon Emissions Calculator Agent
+  description: |
+    Calculate GHG emissions with zero-hallucination deterministic calculations.
+    Supports Scope 1, 2, and 3 emissions for multiple fuel types and regions.
+
+    Features:
+    - EPA, DEFRA, IPCC emission factor support
+    - Multi-region calculations (US, EU, UK, DE, FR, etc.)
+    - GHG Protocol compliant
+    - Complete provenance tracking
+    - Regulatory audit trail
+  version: "1.0.0"
+  author: GreenLang
+  license: Proprietary
+  category: emissions-calculator
+  priority: P1-HIGH
+
+agents:
+  - id: carbon-emissions-calculator
+    name: Carbon Emissions Calculator
+    type: deterministic-calculator
+    description: |
+      Calculate GHG emissions with zero-hallucination deterministic calculations.
+      Supports Scope 1, 2, and 3 emissions for multiple fuel types and regions.
+    inputs:
+      - name: fuel_type
+        type: string
+        required: true
+        description: Type of fuel consumed
+        validation:
+          enum:
+            - natural_gas
+            - diesel
+            - gasoline
+            - coal
+            - fuel_oil
+            - propane
+            - electricity_grid
+      - name: quantity
+        type: float
+        required: true
+        description: Amount of fuel consumed
+        validation:
+          minimum: 0.0
+      - name: unit
+        type: string
+        required: true
+        description: Unit of measurement for quantity
+        validation:
+          enum: [m3, cf, therm, GJ, L, gal, kg, t, short_ton, kWh, MWh]
+      - name: region
+        type: string
+        required: false
+        default: US
+        description: Geographic region (ISO 3166-1 alpha-2)
+        validation:
+          enum: [US, EU, UK, DE, FR, IT, ES, CN, JP, KR, AU, CA, BR, IN, MX, GLOBAL]
+      - name: scope
+        type: integer
+        required: false
+        default: 1
+        description: GHG Protocol emission scope
+        validation:
+          enum: [1, 2, 3]
+      - name: calculation_method
+        type: string
+        required: false
+        default: location
+        description: Calculation method (for Scope 2)
+        validation:
+          enum: [location, market]
+    outputs:
+      - name: emissions_kgco2e
+        type: float
+        description: Total emissions in kilograms CO2 equivalent
+      - name: emission_factor_used
+        type: float
+        description: Emission factor value used
+      - name: emission_factor_source
+        type: string
+        description: Source of emission factor (EPA, DEFRA, etc.)
+      - name: scope
+        type: integer
+        description: GHG Protocol scope
+      - name: provenance_hash
+        type: string
+        description: SHA-256 hash of complete provenance chain
+    tools:
+      - emission_factor_lookup
+      - unit_converter
+      - provenance_hasher
+
+metadata:
+  regulatory:
+    standards:
+      - "GHG Protocol Corporate Standard"
+      - "ISO 14064-1:2018"
+      - "EPA GHG Reporting"
+    scopes: [1, 2, 3]
+
+  emission_factor_sources:
+    - name: EPA
+      description: "US Environmental Protection Agency"
+      version: "2024-Q4"
+      url: "https://www.epa.gov/ghgemissions"
+    - name: DEFRA
+      description: "UK Department for Environment"
+      version: "2024"
+      url: "https://www.gov.uk/government/collections/government-conversion-factors-for-company-reporting"
+    - name: IPCC
+      description: "Intergovernmental Panel on Climate Change"
+      version: "AR6"
+      url: "https://www.ipcc.ch/"
+    - name: IEA
+      description: "International Energy Agency"
+      version: "2024"
+      url: "https://www.iea.org/"
+
+tools:
+  - id: emission_factor_lookup
+    name: Emission Factor Lookup
+    description: "Look up validated emission factor from database"
+    type: deterministic
+    safe: true
+    cache_enabled: true
+    cache_ttl: 86400  # 24 hours
+    input_schema:
+      type: object
+      properties:
+        fuel_type:
+          type: string
+          description: "Fuel type identifier"
+        region:
+          type: string
+          description: "Geographic region code"
+      required: ["fuel_type", "region"]
+    output_schema:
+      type: object
+      properties:
+        value:
+          type: number
+          description: "Emission factor value"
+        unit:
+          type: string
+          description: "Emission factor unit"
+        source:
+          type: string
+          description: "Data source"
+        year:
+          type: integer
+          description: "Reference year"
+        uncertainty_lower:
+          type: number
+          nullable: true
+        uncertainty_upper:
+          type: number
+          nullable: true
+      required: ["value", "unit", "source", "year"]
+
+  - id: unit_converter
+    name: Unit Converter
+    description: "Convert between measurement units"
+    type: deterministic
+    safe: true
+    input_schema:
+      type: object
+      properties:
+        value:
+          type: number
+          description: "Value to convert"
+        from_unit:
+          type: string
+          description: "Source unit"
+        to_unit:
+          type: string
+          description: "Target unit"
+      required: ["value", "from_unit", "to_unit"]
+    output_schema:
+      type: object
+      properties:
+        value:
+          type: number
+          description: "Converted value"
+        conversion_factor:
+          type: number
+          description: "Conversion factor used"
+      required: ["value", "conversion_factor"]
+
+  - id: provenance_hasher
+    name: Provenance Hasher
+    description: "Calculate SHA-256 provenance hash"
+    type: deterministic
+    safe: true
+    input_schema:
+      type: object
+      properties:
+        calculation_steps:
+          type: array
+          description: "List of calculation steps"
+        agent_id:
+          type: string
+        agent_version:
+          type: string
+      required: ["calculation_steps", "agent_id", "agent_version"]
+    output_schema:
+      type: object
+      properties:
+        hash:
+          type: string
+          pattern: "^[a-f0-9]{64}$"
+        timestamp:
+          type: string
+          format: date-time
+      required: ["hash", "timestamp"]
+
+factors:
+  # Emission factor references (pinned versions for reproducibility)
+  - ref: "ef://epa/stationary-combustion/natural-gas/2024"
+    value: 1.93
+    unit: "kgCO2e/m3"
+    region: "US"
+
+  - ref: "ef://defra/stationary-combustion/natural-gas/2024"
+    value: 2.02
+    unit: "kgCO2e/m3"
+    region: "EU"
+
+  - ref: "ef://epa/stationary-combustion/diesel/2024"
+    value: 2.68
+    unit: "kgCO2e/L"
+    region: "US"
+
+  - ref: "ef://defra/stationary-combustion/diesel/2024"
+    value: 2.62
+    unit: "kgCO2e/L"
+    region: "EU"
+
+  - ref: "ef://epa/stationary-combustion/gasoline/2024"
+    value: 2.31
+    unit: "kgCO2e/L"
+    region: "US"
+
+  - ref: "ef://defra/stationary-combustion/gasoline/2024"
+    value: 2.19
+    unit: "kgCO2e/L"
+    region: "EU"
+
+  - ref: "ef://epa/electricity/grid-average/2024"
+    value: 0.417
+    unit: "kgCO2e/kWh"
+    region: "US"
+
+  - ref: "ef://iea/electricity/grid-average/2024"
+    value: 0.276
+    unit: "kgCO2e/kWh"
+    region: "EU"
+
+  - ref: "ef://iea/electricity/grid-average/2024"
+    value: 0.366
+    unit: "kgCO2e/kWh"
+    region: "DE"
+
+  - ref: "ef://iea/electricity/grid-average/2024"
+    value: 0.052
+    unit: "kgCO2e/kWh"
+    region: "FR"
+
+provenance:
+  pin_ef: true
+  ef_version: "2024-Q4"
+  gwp_set: "AR6GWP100"
+  enable_audit: true
+  retention_days: 2555  # 7 years for regulatory compliance
+
+  record:
+    - inputs
+    - outputs
+    - factors
+    - ef_uri
+    - ef_cid
+    - code_sha
+    - seed
+    - timestamp
+    - agent_version
+
+tests:
+  golden:
+    # Natural Gas Tests
+    - name: natural_gas_us_scope1_m3
+      description: "Natural gas combustion in US, 1000 m3"
+      input:
+        fuel_type: "natural_gas"
+        quantity: 1000.0
+        unit: "m3"
+        region: "US"
+        scope: 1
+      expect:
+        emissions_kgco2e: 1930.0
+        emission_factor_source: "EPA"
+        scope: 1
+      tolerance:
+        emissions_kgco2e: 0.01
+
+    - name: natural_gas_eu_scope1_m3
+      description: "Natural gas combustion in EU, 500 m3"
+      input:
+        fuel_type: "natural_gas"
+        quantity: 500.0
+        unit: "m3"
+        region: "EU"
+        scope: 1
+      expect:
+        emissions_kgco2e: 1010.0
+        emission_factor_source: "DEFRA"
+        scope: 1
+      tolerance:
+        emissions_kgco2e: 0.01
+
+    # Diesel Tests
+    - name: diesel_us_scope1_liters
+      description: "Diesel combustion in US, 100 liters"
+      input:
+        fuel_type: "diesel"
+        quantity: 100.0
+        unit: "L"
+        region: "US"
+        scope: 1
+      expect:
+        emissions_kgco2e: 268.0
+        emission_factor_source: "EPA"
+        scope: 1
+      tolerance:
+        emissions_kgco2e: 0.01
+
+    - name: diesel_us_scope1_gallons
+      description: "Diesel combustion in US, 100 gallons"
+      input:
+        fuel_type: "diesel"
+        quantity: 100.0
+        unit: "gal"
+        region: "US"
+        scope: 1
+      expect:
+        emissions_kgco2e: 1014.57  # 100 * 3.78541 * 2.68
+        emission_factor_source: "EPA"
+        scope: 1
+      tolerance:
+        emissions_kgco2e: 0.1
+
+    # Gasoline Tests
+    - name: gasoline_us_scope1_liters
+      description: "Gasoline combustion in US, 200 liters"
+      input:
+        fuel_type: "gasoline"
+        quantity: 200.0
+        unit: "L"
+        region: "US"
+        scope: 1
+      expect:
+        emissions_kgco2e: 462.0
+        emission_factor_source: "EPA"
+        scope: 1
+      tolerance:
+        emissions_kgco2e: 0.01
+
+    # Electricity Tests (Scope 2)
+    - name: electricity_us_scope2_location
+      description: "Grid electricity in US, 10000 kWh (location-based)"
+      input:
+        fuel_type: "electricity_grid"
+        quantity: 10000.0
+        unit: "kWh"
+        region: "US"
+        scope: 2
+        calculation_method: "location"
+      expect:
+        emissions_kgco2e: 4170.0
+        emission_factor_source: "EPA eGRID"
+        scope: 2
+        calculation_method: "location"
+      tolerance:
+        emissions_kgco2e: 0.1
+
+    - name: electricity_france_scope2_low_carbon
+      description: "Grid electricity in France, 10000 kWh (nuclear dominant)"
+      input:
+        fuel_type: "electricity_grid"
+        quantity: 10000.0
+        unit: "kWh"
+        region: "FR"
+        scope: 2
+      expect:
+        emissions_kgco2e: 520.0  # France has low carbon grid
+        scope: 2
+      tolerance:
+        emissions_kgco2e: 0.1
+
+    # Unit Conversion Tests
+    - name: natural_gas_unit_conversion_therm
+      description: "Natural gas in therms (unit conversion)"
+      input:
+        fuel_type: "natural_gas"
+        quantity: 100.0
+        unit: "therm"
+        region: "US"
+        scope: 1
+      expect:
+        emissions_kgco2e: 546.576  # 100 * 2.832 * 1.93
+        emission_factor_source: "EPA"
+      tolerance:
+        emissions_kgco2e: 0.1
+
+    # Edge Cases
+    - name: zero_quantity
+      description: "Zero quantity should return zero emissions"
+      input:
+        fuel_type: "natural_gas"
+        quantity: 0.0
+        unit: "m3"
+        region: "US"
+        scope: 1
+      expect:
+        emissions_kgco2e: 0.0
+      tolerance:
+        emissions_kgco2e: 0.0
+
+    - name: small_quantity_precision
+      description: "Small quantity precision test"
+      input:
+        fuel_type: "diesel"
+        quantity: 0.001
+        unit: "L"
+        region: "US"
+        scope: 1
+      expect:
+        emissions_kgco2e: 0.00268
+      tolerance:
+        emissions_kgco2e: 0.00001
+
+    - name: large_quantity
+      description: "Large quantity (industrial scale)"
+      input:
+        fuel_type: "natural_gas"
+        quantity: 1000000.0
+        unit: "m3"
+        region: "US"
+        scope: 1
+      expect:
+        emissions_kgco2e: 1930000.0
+      tolerance:
+        emissions_kgco2e: 1.0
+
+  properties:
+    - name: deterministic_output
+      description: "Same inputs must produce identical outputs"
+      rule: "run(inputs, seed=42) == run(inputs, seed=42)"
+      iterations: 100
+
+    - name: provenance_hash_unique
+      description: "Different inputs must produce different provenance hashes"
+      rule: "hash(run(input1)) != hash(run(input2)) when input1 != input2"
+
+    - name: non_negative_emissions
+      description: "Emissions must never be negative"
+      rule: "outputs.emissions_kgco2e >= 0"
+
+    - name: provenance_hash_format
+      description: "Provenance hash must be valid SHA-256"
+      rule: "len(outputs.provenance_hash) == 64 and is_hex(outputs.provenance_hash)"
+
+certification:
+  status: "audit_ready"
+
+  quality_gates:
+    - name: golden_tests_pass
+      type: test
+      threshold: 1.0  # 100% pass rate
+      required: true
+
+    - name: determinism_verified
+      type: determinism
+      runs: 100
+      tolerance: 0.0
+      required: true
+
+    - name: provenance_completeness
+      type: provenance
+      completeness: 1.0
+      required: true
+
+    - name: code_coverage
+      type: coverage
+      threshold: 0.90  # 90%
+      required: true
+
+    - name: zero_hallucination_verified
+      type: hallucination_check
+      method: "tool_isolation"
+      required: true
+
+deployment:
+  kubernetes:
+    namespace: emissions-production
+    replicas:
+      min: 2
+      max: 10
+    resources:
+      requests:
+        cpu: "100m"
+        memory: "256Mi"
+      limits:
+        cpu: "500m"
+        memory: "512Mi"
+    autoscaling:
+      target_cpu: 70
+
+  monitoring:
+    prometheus:
+      enabled: true
+      metrics:
+        - calculations_total
+        - calculation_duration_seconds
+        - emission_factor_lookups_total
+        - errors_total
+    grafana:
+      dashboard: carbon-emissions
+    alerts:
+      - name: high_error_rate
+        condition: "error_rate > 0.01"
+        severity: critical
+      - name: high_latency
+        condition: "p99_latency > 1s"
+        severity: warning

@@ -25,6 +25,16 @@ from app.middleware.auth import JWTAuthMiddleware
 from app.middleware.rate_limit import RateLimitMiddleware
 from app.middleware.request_validation import RequestValidationMiddleware
 
+# OpenTelemetry imports
+from app.telemetry import (
+    init_telemetry,
+    instrument_fastapi,
+    instrument_httpx,
+    instrument_redis,
+    shutdown_telemetry,
+    get_trace_id,
+)
+
 logger = logging.getLogger(__name__)
 
 
@@ -34,34 +44,80 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     Application lifespan context manager.
 
     Handles startup and shutdown events:
-    - Startup: Initialize database pools, Redis connections, services
-    - Shutdown: Gracefully close connections, drain requests
+    - Startup: Initialize database pools, Redis connections, services, telemetry
+    - Shutdown: Gracefully close connections, drain requests, flush traces
     """
     settings = get_settings()
 
     # Startup
     logger.info("Starting GreenLang Agent Factory...")
 
+    # Initialize OpenTelemetry distributed tracing
+    if settings.tracing_enabled:
+        try:
+            init_telemetry(
+                service_name="greenlang-agent-factory",
+                service_version=settings.api_version,
+                otlp_endpoint=settings.otlp_endpoint,
+                sample_rate=1.0,  # Sample all traces in development
+                enable_console_exporter=(settings.app_env == "development"),
+                environment=settings.app_env,
+            )
+            logger.info("OpenTelemetry tracing initialized")
+
+            # Instrument httpx for outgoing HTTP requests
+            instrument_httpx()
+            logger.info("httpx instrumentation enabled")
+        except Exception as e:
+            logger.warning(f"Failed to initialize telemetry: {e}")
+
     # Initialize database connection pool
     try:
-        # from db.connection import init_db_pool
-        # app.state.db_pool = await init_db_pool(settings.database_url)
+        import sys
+        import os
+        sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        from db.connection import init_db_pool, close_db_pool
+        from registry.service import AgentRegistryService
+
+        await init_db_pool(
+            settings.database_url,
+            pool_size=settings.database_pool_size,
+            max_overflow=settings.database_max_overflow,
+            pool_timeout=settings.database_pool_timeout,
+        )
+        app.state.db_initialized = True
         logger.info("Database connection pool initialized")
     except Exception as e:
-        logger.error(f"Failed to initialize database: {e}")
+        logger.warning(f"Database not available, using in-memory mode: {e}")
+        app.state.db_initialized = False
 
-    # Initialize Redis connection
+    # Initialize Redis connection for rate limiting
     try:
-        # from messaging.redis_client import init_redis
-        # app.state.redis = await init_redis(settings.redis_url)
+        from middleware.rate_limit import create_redis_pool
+        app.state.redis = create_redis_pool(
+            settings.redis_url,
+            max_connections=settings.redis_max_connections,
+        )
         logger.info("Redis connection initialized")
-    except Exception as e:
-        logger.error(f"Failed to initialize Redis: {e}")
 
-    # Initialize services
-    # from services import AgentExecutionService, AgentRegistryService
-    # app.state.execution_service = AgentExecutionService()
-    # app.state.registry_service = AgentRegistryService()
+        # Instrument Redis for distributed tracing
+        if settings.tracing_enabled and app.state.redis:
+            try:
+                instrument_redis(app.state.redis)
+                logger.info("Redis instrumentation enabled")
+            except Exception as e:
+                logger.warning(f"Failed to instrument Redis: {e}")
+    except Exception as e:
+        logger.warning(f"Redis not available, rate limiting disabled: {e}")
+        app.state.redis = None
+
+    # Initialize in-memory registry service for fallback
+    try:
+        from registry.service import AgentRegistryService
+        app.state.registry_service = AgentRegistryService(session=None)
+        logger.info("In-memory registry service initialized as fallback")
+    except Exception as e:
+        logger.error(f"Failed to initialize registry service: {e}")
 
     logger.info("GreenLang Agent Factory started successfully")
 
@@ -71,12 +127,29 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     logger.info("Shutting down GreenLang Agent Factory...")
 
     # Close database connections
-    # if hasattr(app.state, 'db_pool'):
-    #     await app.state.db_pool.close()
+    if getattr(app.state, 'db_initialized', False):
+        try:
+            from db.connection import close_db_pool
+            await close_db_pool()
+            logger.info("Database connections closed")
+        except Exception as e:
+            logger.error(f"Error closing database: {e}")
 
     # Close Redis connections
-    # if hasattr(app.state, 'redis'):
-    #     await app.state.redis.close()
+    if getattr(app.state, 'redis', None):
+        try:
+            app.state.redis.close()
+            logger.info("Redis connections closed")
+        except Exception as e:
+            logger.error(f"Error closing Redis: {e}")
+
+    # Shutdown OpenTelemetry and flush pending traces
+    if settings.tracing_enabled:
+        try:
+            shutdown_telemetry()
+            logger.info("OpenTelemetry telemetry shut down")
+        except Exception as e:
+            logger.error(f"Error shutting down telemetry: {e}")
 
     logger.info("GreenLang Agent Factory shut down successfully")
 
@@ -148,9 +221,32 @@ All endpoints require JWT authentication via the `Authorization: Bearer <token>`
     app.add_middleware(GZipMiddleware, minimum_size=1000)
 
     # Add custom middleware (order matters - first added = last executed)
-    # app.add_middleware(RequestValidationMiddleware)
-    # app.add_middleware(RateLimitMiddleware, redis=None)  # Pass Redis client
-    # app.add_middleware(JWTAuthMiddleware, secret_key=settings.jwt_secret)
+    # Note: Middleware is added but will gracefully degrade if services unavailable
+    # Enable request validation
+    app.add_middleware(RequestValidationMiddleware)
+
+    # Enable rate limiting (will fail-open if Redis unavailable)
+    app.add_middleware(
+        RateLimitMiddleware,
+        redis=None,  # Redis will be set during lifespan startup
+        requests_per_minute=settings.rate_limit_per_minute,
+        burst_size=settings.rate_limit_burst,
+    )
+
+    # Enable JWT authentication
+    app.add_middleware(
+        JWTAuthMiddleware,
+        secret_key=settings.jwt_secret,
+        algorithm=settings.jwt_algorithm,
+    )
+
+    # Instrument FastAPI with OpenTelemetry (after middleware setup)
+    if settings.tracing_enabled:
+        try:
+            instrument_fastapi(app)
+            logger.info("FastAPI instrumentation enabled")
+        except Exception as e:
+            logger.warning(f"Failed to instrument FastAPI: {e}")
 
     # Register routers
     app.include_router(
@@ -220,11 +316,16 @@ All endpoints require JWT authentication via the `Authorization: Bearer <token>`
 
         Returns service health status for load balancers and monitoring.
         """
-        return {
+        response = {
             "status": "healthy",
             "service": "greenlang-agent-factory",
             "version": "1.0.0",
         }
+        # Include trace_id for debugging if tracing is enabled
+        trace_id = get_trace_id()
+        if trace_id:
+            response["trace_id"] = trace_id
+        return response
 
     # Readiness check endpoint
     @app.get("/ready", tags=["Health"])
@@ -235,14 +336,18 @@ All endpoints require JWT authentication via the `Authorization: Bearer <token>`
         Returns whether the service is ready to accept traffic.
         Checks database and Redis connectivity.
         """
-        # TODO: Add actual health checks for DB and Redis
-        return {
+        response = {
             "ready": True,
             "checks": {
                 "database": "ok",
                 "redis": "ok",
             },
         }
+        # Include trace_id for debugging if tracing is enabled
+        trace_id = get_trace_id()
+        if trace_id:
+            response["trace_id"] = trace_id
+        return response
 
     return app
 

@@ -1,0 +1,437 @@
+# GreenLang Agent Factory - Continuous Deployment Pipeline
+# Deploys to staging automatically, production requires manual approval
+# Includes integration tests and rollback mechanisms
+
+name: CD
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+      skip-tests:
+        description: 'Skip integration tests'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  KUBE_NAMESPACE_STAGING: greenlang-staging
+  KUBE_NAMESPACE_PROD: greenlang-production
+
+jobs:
+  # =============================================================================
+  # Build & Push
+  # =============================================================================
+  build:
+    name: Build Production Image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      image-tag: ${{ steps.meta.outputs.version }}
+      image-digest: ${{ steps.build.outputs.digest }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=sha,prefix=,format=short
+            type=raw,value=${{ github.run_number }}
+            type=raw,value=latest
+
+      - name: Build and push
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            VERSION=${{ github.sha }}
+            BUILD_DATE=${{ github.event.head_commit.timestamp }}
+
+  # =============================================================================
+  # Deploy to Staging
+  # =============================================================================
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: build
+    environment:
+      name: staging
+      url: https://staging.greenlang.io
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure kubectl
+        uses: azure/k8s-set-context@v4
+        with:
+          kubeconfig: ${{ secrets.KUBE_CONFIG_STAGING }}
+
+      - name: Create namespace if not exists
+        run: |
+          kubectl create namespace ${{ env.KUBE_NAMESPACE_STAGING }} --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Deploy to Kubernetes
+        run: |
+          # Update image tag in deployment
+          kubectl set image deployment/greenlang-app \
+            greenlang-app=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.build.outputs.image-tag }} \
+            -n ${{ env.KUBE_NAMESPACE_STAGING }} \
+            || kubectl apply -f kubernetes/staging/ -n ${{ env.KUBE_NAMESPACE_STAGING }}
+
+      - name: Wait for rollout
+        run: |
+          kubectl rollout status deployment/greenlang-app \
+            -n ${{ env.KUBE_NAMESPACE_STAGING }} \
+            --timeout=300s
+
+      - name: Verify deployment health
+        run: |
+          # Wait for pods to be ready
+          kubectl wait --for=condition=ready pod \
+            -l app=greenlang-app \
+            -n ${{ env.KUBE_NAMESPACE_STAGING }} \
+            --timeout=120s
+
+          # Check pod status
+          kubectl get pods -n ${{ env.KUBE_NAMESPACE_STAGING }} -l app=greenlang-app
+
+          # Check service endpoints
+          kubectl get endpoints greenlang-app-service -n ${{ env.KUBE_NAMESPACE_STAGING }}
+
+      - name: Run smoke tests
+        run: |
+          # Get staging service URL
+          STAGING_URL=$(kubectl get svc greenlang-app-service -n ${{ env.KUBE_NAMESPACE_STAGING }} -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+
+          # Health check
+          curl -sf http://${STAGING_URL}/api/v1/health || echo "Health check endpoint not available"
+
+          # Ready check
+          curl -sf http://${STAGING_URL}/api/v1/ready || echo "Ready check endpoint not available"
+
+      - name: Deployment summary
+        run: |
+          echo "## Staging Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "**Image:** ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.build.outputs.image-tag }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Namespace:** ${{ env.KUBE_NAMESPACE_STAGING }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+
+  # =============================================================================
+  # Integration Tests
+  # =============================================================================
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: deploy-staging
+    if: ${{ !inputs.skip-tests }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest pytest-asyncio httpx aiohttp
+          if [ -f requirements-test.txt ]; then pip install -r requirements-test.txt; fi
+
+      - name: Run integration tests
+        env:
+          STAGING_URL: ${{ secrets.STAGING_URL }}
+          API_KEY: ${{ secrets.STAGING_API_KEY }}
+        run: |
+          pytest tests/integration/ \
+            -v \
+            --tb=short \
+            --junitxml=integration-results.xml \
+            || true
+
+      - name: Run E2E tests
+        env:
+          STAGING_URL: ${{ secrets.STAGING_URL }}
+          API_KEY: ${{ secrets.STAGING_API_KEY }}
+        run: |
+          pytest tests/e2e/ \
+            -v \
+            --tb=short \
+            --junitxml=e2e-results.xml \
+            || true
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: integration-test-results
+          path: |
+            integration-results.xml
+            e2e-results.xml
+          retention-days: 30
+
+      - name: Test results summary
+        if: always()
+        run: |
+          echo "## Integration Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "Integration and E2E tests completed against staging environment." >> $GITHUB_STEP_SUMMARY
+
+  # =============================================================================
+  # Performance Tests
+  # =============================================================================
+  performance-tests:
+    name: Performance Tests
+    runs-on: ubuntu-latest
+    needs: deploy-staging
+    if: ${{ !inputs.skip-tests }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up k6
+        uses: grafana/k6-action@v0.3.1
+
+      - name: Run load tests
+        env:
+          STAGING_URL: ${{ secrets.STAGING_URL }}
+        run: |
+          k6 run tests/performance/load-test.js \
+            --out json=k6-results.json \
+            || true
+
+      - name: Upload performance results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: performance-test-results
+          path: k6-results.json
+          retention-days: 30
+
+  # =============================================================================
+  # Production Approval Gate
+  # =============================================================================
+  production-approval:
+    name: Production Approval
+    runs-on: ubuntu-latest
+    needs: [integration-tests, performance-tests]
+    environment:
+      name: production-approval
+    steps:
+      - name: Approval checkpoint
+        run: |
+          echo "## Production Deployment Approved" >> $GITHUB_STEP_SUMMARY
+          echo "Approved by: ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+          echo "Time: $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_STEP_SUMMARY
+
+  # =============================================================================
+  # Deploy to Production
+  # =============================================================================
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [build, production-approval]
+    environment:
+      name: production
+      url: https://api.greenlang.io
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure kubectl
+        uses: azure/k8s-set-context@v4
+        with:
+          kubeconfig: ${{ secrets.KUBE_CONFIG_PRODUCTION }}
+
+      - name: Create namespace if not exists
+        run: |
+          kubectl create namespace ${{ env.KUBE_NAMESPACE_PROD }} --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Backup current deployment
+        id: backup
+        run: |
+          # Save current deployment spec for rollback
+          kubectl get deployment greenlang-app \
+            -n ${{ env.KUBE_NAMESPACE_PROD }} \
+            -o yaml > deployment-backup.yaml \
+            || echo "No existing deployment to backup"
+
+          # Get current image tag
+          CURRENT_IMAGE=$(kubectl get deployment greenlang-app \
+            -n ${{ env.KUBE_NAMESPACE_PROD }} \
+            -o jsonpath='{.spec.template.spec.containers[0].image}' \
+            || echo "none")
+          echo "current-image=${CURRENT_IMAGE}" >> $GITHUB_OUTPUT
+
+      - name: Deploy with blue-green strategy
+        run: |
+          # Deploy new version
+          kubectl set image deployment/greenlang-app \
+            greenlang-app=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.build.outputs.image-tag }} \
+            -n ${{ env.KUBE_NAMESPACE_PROD }} \
+            || kubectl apply -f kubernetes/production/ -n ${{ env.KUBE_NAMESPACE_PROD }}
+
+      - name: Wait for rollout
+        id: rollout
+        run: |
+          kubectl rollout status deployment/greenlang-app \
+            -n ${{ env.KUBE_NAMESPACE_PROD }} \
+            --timeout=600s
+
+      - name: Verify deployment health
+        id: verify
+        run: |
+          # Wait for pods to be ready
+          kubectl wait --for=condition=ready pod \
+            -l app=greenlang-app \
+            -n ${{ env.KUBE_NAMESPACE_PROD }} \
+            --timeout=180s
+
+          # Verify replicas
+          READY=$(kubectl get deployment greenlang-app \
+            -n ${{ env.KUBE_NAMESPACE_PROD }} \
+            -o jsonpath='{.status.readyReplicas}')
+          DESIRED=$(kubectl get deployment greenlang-app \
+            -n ${{ env.KUBE_NAMESPACE_PROD }} \
+            -o jsonpath='{.spec.replicas}')
+
+          if [ "$READY" != "$DESIRED" ]; then
+            echo "Deployment verification failed: $READY/$DESIRED pods ready"
+            exit 1
+          fi
+
+          echo "Deployment verified: $READY/$DESIRED pods ready"
+
+      - name: Run production smoke tests
+        run: |
+          # Production health check
+          PROD_URL=$(kubectl get svc greenlang-app-service \
+            -n ${{ env.KUBE_NAMESPACE_PROD }} \
+            -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+
+          # Health endpoint
+          curl -sf --retry 3 --retry-delay 5 http://${PROD_URL}/api/v1/health
+
+          # Ready endpoint
+          curl -sf --retry 3 --retry-delay 5 http://${PROD_URL}/api/v1/ready
+
+      - name: Rollback on failure
+        if: failure()
+        run: |
+          echo "Deployment failed, initiating rollback..."
+
+          if [ -f deployment-backup.yaml ]; then
+            kubectl apply -f deployment-backup.yaml -n ${{ env.KUBE_NAMESPACE_PROD }}
+          else
+            kubectl rollout undo deployment/greenlang-app -n ${{ env.KUBE_NAMESPACE_PROD }}
+          fi
+
+          kubectl rollout status deployment/greenlang-app \
+            -n ${{ env.KUBE_NAMESPACE_PROD }} \
+            --timeout=300s
+
+          echo "## Rollback Completed" >> $GITHUB_STEP_SUMMARY
+          echo "Rolled back to previous version due to deployment failure." >> $GITHUB_STEP_SUMMARY
+
+      - name: Deployment summary
+        run: |
+          echo "## Production Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "**Image:** ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.build.outputs.image-tag }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Namespace:** ${{ env.KUBE_NAMESPACE_PROD }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Previous Image:** ${{ steps.backup.outputs.current-image }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Deployed by:** ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Time:** $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_STEP_SUMMARY
+
+  # =============================================================================
+  # Post-Deployment Notifications
+  # =============================================================================
+  notify:
+    name: Send Notifications
+    runs-on: ubuntu-latest
+    needs: [deploy-production]
+    if: always()
+    steps:
+      - name: Notify Slack on success
+        if: needs.deploy-production.result == 'success'
+        uses: slackapi/slack-github-action@v1.25.0
+        with:
+          payload: |
+            {
+              "text": "Production Deployment Successful",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*GreenLang Agent Factory* deployed to production\n*Commit:* ${{ github.sha }}\n*By:* ${{ github.actor }}"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+
+      - name: Notify Slack on failure
+        if: needs.deploy-production.result == 'failure'
+        uses: slackapi/slack-github-action@v1.25.0
+        with:
+          payload: |
+            {
+              "text": "Production Deployment Failed",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*GreenLang Agent Factory* production deployment FAILED\n*Commit:* ${{ github.sha }}\n*By:* ${{ github.actor }}\n*Check:* ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+
+      - name: Create GitHub deployment status
+        uses: chrnorm/deployment-status@v2
+        with:
+          token: ${{ github.token }}
+          state: ${{ needs.deploy-production.result == 'success' && 'success' || 'failure' }}
+          deployment-id: ${{ needs.deploy-production.outputs.deployment-id || github.run_id }}
+          environment-url: https://api.greenlang.io

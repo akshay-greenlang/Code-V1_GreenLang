@@ -1,0 +1,255 @@
+# GreenLang Recording Rules
+# Pre-computed metrics for faster dashboard queries
+
+groups:
+  # =============================================================================
+  # Calculation Metrics
+  # =============================================================================
+  - name: calculation_metrics
+    interval: 30s
+    rules:
+      # Total calculations per minute by agent
+      - record: gl:calculations_per_minute:by_agent
+        expr: sum(rate(gl_calculations_total[1m])) by (agent) * 60
+
+      # Total calculations per minute (all agents)
+      - record: gl:calculations_per_minute:total
+        expr: sum(rate(gl_calculations_total[1m])) * 60
+
+      # Success rate by agent
+      - record: gl:calculation_success_rate:by_agent
+        expr: |
+          sum(rate(gl_calculations_total{status="success"}[5m])) by (agent)
+          /
+          sum(rate(gl_calculations_total[5m])) by (agent)
+
+      # Overall success rate
+      - record: gl:calculation_success_rate:total
+        expr: |
+          sum(rate(gl_calculations_total{status="success"}[5m]))
+          /
+          sum(rate(gl_calculations_total[5m]))
+
+      # Error rate by agent
+      - record: gl:error_rate:by_agent
+        expr: |
+          (
+            sum(rate(gl_errors_total[5m])) by (agent)
+            /
+            sum(rate(gl_calculations_total[5m])) by (agent)
+          ) * 100
+
+      # Overall error rate
+      - record: gl:error_rate:total
+        expr: |
+          (
+            sum(rate(gl_errors_total[5m]))
+            /
+            sum(rate(gl_calculations_total[5m]))
+          ) * 100
+
+  # =============================================================================
+  # Latency Metrics
+  # =============================================================================
+  - name: latency_metrics
+    interval: 30s
+    rules:
+      # P50 latency by agent
+      - record: gl:calculation_latency_p50:by_agent
+        expr: |
+          histogram_quantile(0.50,
+            sum(rate(gl_calculation_duration_seconds_bucket[5m])) by (agent, le)
+          )
+
+      # P95 latency by agent
+      - record: gl:calculation_latency_p95:by_agent
+        expr: |
+          histogram_quantile(0.95,
+            sum(rate(gl_calculation_duration_seconds_bucket[5m])) by (agent, le)
+          )
+
+      # P99 latency by agent
+      - record: gl:calculation_latency_p99:by_agent
+        expr: |
+          histogram_quantile(0.99,
+            sum(rate(gl_calculation_duration_seconds_bucket[5m])) by (agent, le)
+          )
+
+      # Overall P50 latency
+      - record: gl:calculation_latency_p50:total
+        expr: |
+          histogram_quantile(0.50,
+            sum(rate(gl_calculation_duration_seconds_bucket[5m])) by (le)
+          )
+
+      # Overall P95 latency
+      - record: gl:calculation_latency_p95:total
+        expr: |
+          histogram_quantile(0.95,
+            sum(rate(gl_calculation_duration_seconds_bucket[5m])) by (le)
+          )
+
+      # Overall P99 latency
+      - record: gl:calculation_latency_p99:total
+        expr: |
+          histogram_quantile(0.99,
+            sum(rate(gl_calculation_duration_seconds_bucket[5m])) by (le)
+          )
+
+      # Average latency by agent
+      - record: gl:calculation_latency_avg:by_agent
+        expr: |
+          sum(rate(gl_calculation_duration_seconds_sum[5m])) by (agent)
+          /
+          sum(rate(gl_calculation_duration_seconds_count[5m])) by (agent)
+
+  # =============================================================================
+  # Emission Factor Metrics
+  # =============================================================================
+  - name: ef_metrics
+    interval: 30s
+    rules:
+      # EF lookups per minute by source
+      - record: gl:ef_lookups_per_minute:by_source
+        expr: sum(rate(gl_ef_lookups_total[1m])) by (source) * 60
+
+      # EF lookups per minute by region
+      - record: gl:ef_lookups_per_minute:by_region
+        expr: sum(rate(gl_ef_lookups_total[1m])) by (region) * 60
+
+      # EF cache hit rate
+      - record: gl:ef_cache_hit_rate
+        expr: |
+          sum(rate(gl_ef_lookups_total{cache="hit"}[5m]))
+          /
+          sum(rate(gl_ef_lookups_total[5m]))
+
+      # EF lookup P95 latency
+      - record: gl:ef_lookup_latency_p95
+        expr: |
+          histogram_quantile(0.95,
+            sum(rate(gl_ef_lookup_duration_seconds_bucket[5m])) by (le)
+          )
+
+      # EF lookup average latency
+      - record: gl:ef_lookup_latency_avg
+        expr: |
+          sum(rate(gl_ef_lookup_duration_seconds_sum[5m]))
+          /
+          sum(rate(gl_ef_lookup_duration_seconds_count[5m]))
+
+  # =============================================================================
+  # HTTP Metrics
+  # =============================================================================
+  - name: http_metrics
+    interval: 30s
+    rules:
+      # Requests per second by handler
+      - record: gl:http_requests_per_second:by_handler
+        expr: sum(rate(http_requests_total[1m])) by (handler)
+
+      # Total requests per second
+      - record: gl:http_requests_per_second:total
+        expr: sum(rate(http_requests_total[1m]))
+
+      # HTTP error rate by handler
+      - record: gl:http_error_rate:by_handler
+        expr: |
+          (
+            sum(rate(http_requests_total{status=~"5.."}[5m])) by (handler)
+            /
+            sum(rate(http_requests_total[5m])) by (handler)
+          ) * 100
+
+      # Overall HTTP error rate
+      - record: gl:http_error_rate:total
+        expr: |
+          (
+            sum(rate(http_requests_total{status=~"5.."}[5m]))
+            /
+            sum(rate(http_requests_total[5m]))
+          ) * 100
+
+      # HTTP P95 latency by handler
+      - record: gl:http_latency_p95:by_handler
+        expr: |
+          histogram_quantile(0.95,
+            sum(rate(http_request_duration_seconds_bucket[5m])) by (handler, le)
+          )
+
+  # =============================================================================
+  # Resource Metrics
+  # =============================================================================
+  - name: resource_metrics
+    interval: 60s
+    rules:
+      # CPU utilization percentage
+      - record: gl:cpu_utilization:by_instance
+        expr: |
+          100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)
+
+      # Memory utilization percentage
+      - record: gl:memory_utilization:by_instance
+        expr: |
+          (
+            (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes)
+            / node_memory_MemTotal_bytes
+          ) * 100
+
+      # Disk utilization percentage
+      - record: gl:disk_utilization:by_instance
+        expr: |
+          (
+            (node_filesystem_size_bytes{mountpoint="/"} - node_filesystem_avail_bytes{mountpoint="/"})
+            / node_filesystem_size_bytes{mountpoint="/"}
+          ) * 100
+
+  # =============================================================================
+  # SLA Metrics
+  # =============================================================================
+  - name: sla_metrics
+    interval: 60s
+    rules:
+      # Availability (1 hour window)
+      - record: gl:availability_1h
+        expr: |
+          (
+            1 - (
+              sum(rate(http_requests_total{status=~"5.."}[1h]))
+              /
+              sum(rate(http_requests_total[1h]))
+            )
+          ) * 100
+
+      # Availability (24 hour window)
+      - record: gl:availability_24h
+        expr: |
+          (
+            1 - (
+              sum(rate(http_requests_total{status=~"5.."}[24h]))
+              /
+              sum(rate(http_requests_total[24h]))
+            )
+          ) * 100
+
+      # Availability (7 day window)
+      - record: gl:availability_7d
+        expr: |
+          (
+            1 - (
+              sum(rate(http_requests_total{status=~"5.."}[7d]))
+              /
+              sum(rate(http_requests_total[7d]))
+            )
+          ) * 100
+
+      # Error budget remaining (monthly, 0.1% = 99.9% SLA)
+      - record: gl:error_budget_remaining_monthly
+        expr: |
+          100 - (
+            (
+              sum(increase(http_requests_total{status=~"5.."}[30d]))
+              /
+              sum(increase(http_requests_total[30d]))
+            ) * 100 / 0.1 * 100
+          )

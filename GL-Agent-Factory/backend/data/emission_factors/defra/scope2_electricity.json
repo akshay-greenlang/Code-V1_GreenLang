@@ -1,0 +1,425 @@
+{
+  "metadata": {
+    "source": "DEFRA",
+    "source_name": "UK Department for Environment, Food and Rural Affairs",
+    "source_document": "UK Government GHG Conversion Factors 2024 - Electricity",
+    "source_url": "https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2024",
+    "version": "2024.0",
+    "last_updated": "2024-06-01",
+    "gwp_set": "AR5",
+    "region": "UK",
+    "description": "DEFRA 2024 emission factors for Scope 2 purchased electricity"
+  },
+  "uk_electricity": {
+    "location_based": {
+      "id": "ef://defra/scope2/uk_electricity_location/2024",
+      "method": "location-based",
+      "description": "UK grid average emission factor",
+      "data_year": 2022,
+      "factors": {
+        "generation": {
+          "co2_factor": 0.18475,
+          "ch4_factor": 0.00042,
+          "n2o_factor": 0.00081,
+          "co2e_factor": 0.18591,
+          "unit": "kg/kWh",
+          "notes": "Emissions from electricity generation only"
+        },
+        "transmission_and_distribution": {
+          "co2_factor": 0.01683,
+          "ch4_factor": 0.00004,
+          "n2o_factor": 0.00007,
+          "co2e_factor": 0.01693,
+          "unit": "kg/kWh",
+          "notes": "T&D losses"
+        },
+        "total": {
+          "co2_factor": 0.20158,
+          "ch4_factor": 0.00046,
+          "n2o_factor": 0.00088,
+          "co2e_factor": 0.20284,
+          "unit": "kg/kWh",
+          "notes": "Generation plus T&D losses"
+        }
+      },
+      "uncertainty_lower_pct": -5,
+      "uncertainty_upper_pct": 5
+    },
+    "market_based": {
+      "id": "ef://defra/scope2/uk_electricity_market/2024",
+      "method": "market-based",
+      "description": "Residual mix for UK electricity",
+      "data_year": 2022,
+      "residual_mix_factor": {
+        "co2e_factor": 0.30876,
+        "unit": "kg/kWh",
+        "notes": "UK residual mix for suppliers without specific contracts"
+      },
+      "renewable_electricity": {
+        "co2e_factor": 0.0,
+        "unit": "kg/kWh",
+        "notes": "REGO-backed renewable electricity"
+      },
+      "notes": "Use market-based method when supplier-specific data or contractual instruments available"
+    }
+  },
+  "uk_regional_factors": {
+    "england": {
+      "id": "ef://defra/scope2/england_electricity/2024",
+      "region": "England",
+      "co2e_factor": 0.20284,
+      "unit": "kg/kWh",
+      "notes": "Same as UK average"
+    },
+    "scotland": {
+      "id": "ef://defra/scope2/scotland_electricity/2024",
+      "region": "Scotland",
+      "co2e_factor": 0.12500,
+      "unit": "kg/kWh",
+      "notes": "Higher renewable share - estimated"
+    },
+    "wales": {
+      "id": "ef://defra/scope2/wales_electricity/2024",
+      "region": "Wales",
+      "co2e_factor": 0.19500,
+      "unit": "kg/kWh",
+      "notes": "Slightly below UK average - estimated"
+    },
+    "northern_ireland": {
+      "id": "ef://defra/scope2/northern_ireland_electricity/2024",
+      "region": "Northern Ireland",
+      "co2e_factor": 0.25300,
+      "unit": "kg/kWh",
+      "notes": "Connected to Ireland grid - estimated"
+    }
+  },
+  "international_electricity": {
+    "europe": [
+      {
+        "id": "ef://defra/scope2/austria_electricity/2024",
+        "country": "Austria",
+        "country_code": "AT",
+        "co2e_factor": 0.08800,
+        "unit": "kg/kWh"
+      },
+      {
+        "id": "ef://defra/scope2/belgium_electricity/2024",
+        "country": "Belgium",
+        "country_code": "BE",
+        "co2e_factor": 0.14800,
+        "unit": "kg/kWh"
+      },
+      {
+        "id": "ef://defra/scope2/bulgaria_electricity/2024",
+        "country": "Bulgaria",
+        "country_code": "BG",
+        "co2e_factor": 0.42200,
+        "unit": "kg/kWh"
+      },
+      {
+        "id": "ef://defra/scope2/croatia_electricity/2024",
+        "country": "Croatia",
+        "country_code": "HR",
+        "co2e_factor": 0.17500,
+        "unit": "kg/kWh"
+      },
+      {
+        "id": "ef://defra/scope2/cyprus_electricity/2024",
+        "country": "Cyprus",
+        "country_code": "CY",
+        "co2e_factor": 0.61800,
+        "unit": "kg/kWh"
+      },
+      {
+        "id": "ef://defra/scope2/czechia_electricity/2024",
+        "country": "Czechia",
+        "country_code": "CZ",
+        "co2e_factor": 0.40200,
+        "unit": "kg/kWh"
+      },
+      {
+        "id": "ef://defra/scope2/denmark_electricity/2024",
+        "country": "Denmark",
+        "country_code": "DK",
+        "co2e_factor": 0.11900,
+        "unit": "kg/kWh"
+      },
+      {
+        "id": "ef://defra/scope2/estonia_electricity/2024",
+        "country": "Estonia",
+        "country_code": "EE",
+        "co2e_factor": 0.52200,
+        "unit": "kg/kWh"
+      },
+      {
+        "id": "ef://defra/scope2/finland_electricity/2024",
+        "country": "Finland",
+        "country_code": "FI",
+        "co2e_factor": 0.06600,
+        "unit": "kg/kWh"
+      },
+      {
+        "id": "ef://defra/scope2/france_electricity/2024",
+        "country": "France",
+        "country_code": "FR",
+        "co2e_factor": 0.05200,
+        "unit": "kg/kWh"
+      },
+      {
+        "id": "ef://defra/scope2/germany_electricity/2024",
+        "country": "Germany",
+        "country_code": "DE",
+        "co2e_factor": 0.35000,
+        "unit": "kg/kWh"
+      },
+      {
+        "id": "ef://defra/scope2/greece_electricity/2024",
+        "country": "Greece",
+        "country_code": "GR",
+        "co2e_factor": 0.36100,
+        "unit": "kg/kWh"
+      },
+      {
+        "id": "ef://defra/scope2/hungary_electricity/2024",
+        "country": "Hungary",
+        "country_code": "HU",
+        "co2e_factor": 0.21700,
+        "unit": "kg/kWh"
+      },
+      {
+        "id": "ef://defra/scope2/ireland_electricity/2024",
+        "country": "Ireland",
+        "country_code": "IE",
+        "co2e_factor": 0.29500,
+        "unit": "kg/kWh"
+      },
+      {
+        "id": "ef://defra/scope2/italy_electricity/2024",
+        "country": "Italy",
+        "country_code": "IT",
+        "co2e_factor": 0.26500,
+        "unit": "kg/kWh"
+      },
+      {
+        "id": "ef://defra/scope2/latvia_electricity/2024",
+        "country": "Latvia",
+        "country_code": "LV",
+        "co2e_factor": 0.08700,
+        "unit": "kg/kWh"
+      },
+      {
+        "id": "ef://defra/scope2/lithuania_electricity/2024",
+        "country": "Lithuania",
+        "country_code": "LT",
+        "co2e_factor": 0.05100,
+        "unit": "kg/kWh"
+      },
+      {
+        "id": "ef://defra/scope2/luxembourg_electricity/2024",
+        "country": "Luxembourg",
+        "country_code": "LU",
+        "co2e_factor": 0.06800,
+        "unit": "kg/kWh"
+      },
+      {
+        "id": "ef://defra/scope2/malta_electricity/2024",
+        "country": "Malta",
+        "country_code": "MT",
+        "co2e_factor": 0.37000,
+        "unit": "kg/kWh"
+      },
+      {
+        "id": "ef://defra/scope2/netherlands_electricity/2024",
+        "country": "Netherlands",
+        "country_code": "NL",
+        "co2e_factor": 0.32800,
+        "unit": "kg/kWh"
+      },
+      {
+        "id": "ef://defra/scope2/norway_electricity/2024",
+        "country": "Norway",
+        "country_code": "NO",
+        "co2e_factor": 0.00800,
+        "unit": "kg/kWh"
+      },
+      {
+        "id": "ef://defra/scope2/poland_electricity/2024",
+        "country": "Poland",
+        "country_code": "PL",
+        "co2e_factor": 0.63500,
+        "unit": "kg/kWh"
+      },
+      {
+        "id": "ef://defra/scope2/portugal_electricity/2024",
+        "country": "Portugal",
+        "country_code": "PT",
+        "co2e_factor": 0.14700,
+        "unit": "kg/kWh"
+      },
+      {
+        "id": "ef://defra/scope2/romania_electricity/2024",
+        "country": "Romania",
+        "country_code": "RO",
+        "co2e_factor": 0.26500,
+        "unit": "kg/kWh"
+      },
+      {
+        "id": "ef://defra/scope2/slovakia_electricity/2024",
+        "country": "Slovakia",
+        "country_code": "SK",
+        "co2e_factor": 0.11900,
+        "unit": "kg/kWh"
+      },
+      {
+        "id": "ef://defra/scope2/slovenia_electricity/2024",
+        "country": "Slovenia",
+        "country_code": "SI",
+        "co2e_factor": 0.21000,
+        "unit": "kg/kWh"
+      },
+      {
+        "id": "ef://defra/scope2/spain_electricity/2024",
+        "country": "Spain",
+        "country_code": "ES",
+        "co2e_factor": 0.14900,
+        "unit": "kg/kWh"
+      },
+      {
+        "id": "ef://defra/scope2/sweden_electricity/2024",
+        "country": "Sweden",
+        "country_code": "SE",
+        "co2e_factor": 0.01200,
+        "unit": "kg/kWh"
+      },
+      {
+        "id": "ef://defra/scope2/switzerland_electricity/2024",
+        "country": "Switzerland",
+        "country_code": "CH",
+        "co2e_factor": 0.01100,
+        "unit": "kg/kWh"
+      }
+    ],
+    "major_economies": [
+      {
+        "id": "ef://defra/scope2/australia_electricity/2024",
+        "country": "Australia",
+        "country_code": "AU",
+        "co2e_factor": 0.65600,
+        "unit": "kg/kWh"
+      },
+      {
+        "id": "ef://defra/scope2/brazil_electricity/2024",
+        "country": "Brazil",
+        "country_code": "BR",
+        "co2e_factor": 0.08100,
+        "unit": "kg/kWh"
+      },
+      {
+        "id": "ef://defra/scope2/canada_electricity/2024",
+        "country": "Canada",
+        "country_code": "CA",
+        "co2e_factor": 0.12000,
+        "unit": "kg/kWh"
+      },
+      {
+        "id": "ef://defra/scope2/china_electricity/2024",
+        "country": "China",
+        "country_code": "CN",
+        "co2e_factor": 0.54900,
+        "unit": "kg/kWh"
+      },
+      {
+        "id": "ef://defra/scope2/india_electricity/2024",
+        "country": "India",
+        "country_code": "IN",
+        "co2e_factor": 0.70800,
+        "unit": "kg/kWh"
+      },
+      {
+        "id": "ef://defra/scope2/japan_electricity/2024",
+        "country": "Japan",
+        "country_code": "JP",
+        "co2e_factor": 0.46200,
+        "unit": "kg/kWh"
+      },
+      {
+        "id": "ef://defra/scope2/south_korea_electricity/2024",
+        "country": "South Korea",
+        "country_code": "KR",
+        "co2e_factor": 0.42400,
+        "unit": "kg/kWh"
+      },
+      {
+        "id": "ef://defra/scope2/mexico_electricity/2024",
+        "country": "Mexico",
+        "country_code": "MX",
+        "co2e_factor": 0.40500,
+        "unit": "kg/kWh"
+      },
+      {
+        "id": "ef://defra/scope2/russia_electricity/2024",
+        "country": "Russia",
+        "country_code": "RU",
+        "co2e_factor": 0.33500,
+        "unit": "kg/kWh"
+      },
+      {
+        "id": "ef://defra/scope2/south_africa_electricity/2024",
+        "country": "South Africa",
+        "country_code": "ZA",
+        "co2e_factor": 0.92800,
+        "unit": "kg/kWh"
+      },
+      {
+        "id": "ef://defra/scope2/usa_electricity/2024",
+        "country": "United States",
+        "country_code": "US",
+        "co2e_factor": 0.38700,
+        "unit": "kg/kWh"
+      }
+    ]
+  },
+  "heat_and_steam": {
+    "district_heating": {
+      "id": "ef://defra/scope2/district_heating/2024",
+      "energy_type": "District Heat",
+      "factors": {
+        "generation": {
+          "co2e_factor": 0.16900,
+          "unit": "kg/kWh"
+        },
+        "distribution_losses": {
+          "co2e_factor": 0.01400,
+          "unit": "kg/kWh"
+        },
+        "total": {
+          "co2e_factor": 0.18300,
+          "unit": "kg/kWh"
+        }
+      },
+      "notes": "UK average district heating"
+    },
+    "steam": {
+      "id": "ef://defra/scope2/steam/2024",
+      "energy_type": "Steam",
+      "factors": {
+        "generation": {
+          "co2e_factor": 0.20100,
+          "unit": "kg/kWh"
+        }
+      },
+      "notes": "Purchased steam from external sources"
+    },
+    "cooling": {
+      "id": "ef://defra/scope2/cooling/2024",
+      "energy_type": "Cooling",
+      "factors": {
+        "generation": {
+          "co2e_factor": 0.07000,
+          "unit": "kg/kWh"
+        }
+      },
+      "notes": "District cooling"
+    }
+  }
+}

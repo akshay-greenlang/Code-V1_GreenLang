@@ -1,0 +1,97 @@
+# Grafana Tempo Configuration
+# Distributed Tracing Backend for GreenLang Agent Factory
+#
+# Documentation: https://grafana.com/docs/tempo/latest/configuration/
+
+# Server configuration
+server:
+  http_listen_port: 3200
+  log_level: info
+
+# Distributor configuration - receives traces
+distributor:
+  receivers:
+    otlp:
+      protocols:
+        grpc:
+          endpoint: 0.0.0.0:4317
+        http:
+          endpoint: 0.0.0.0:4318
+    zipkin:
+      endpoint: 0.0.0.0:9411
+    jaeger:
+      protocols:
+        thrift_http:
+          endpoint: 0.0.0.0:14268
+
+# Ingester configuration - writes traces to backend
+ingester:
+  max_block_duration: 5m
+  max_block_bytes: 1073741824  # 1GB
+  flush_check_period: 30s
+
+# Compactor configuration - background compaction
+compactor:
+  compaction:
+    block_retention: 168h  # 7 days
+
+# Storage configuration
+storage:
+  trace:
+    backend: local
+    local:
+      path: /var/tempo/traces
+    wal:
+      path: /var/tempo/wal
+    block:
+      bloom_filter_false_positive: 0.05
+      v2_index_downsample_bytes: 1000
+      v2_encoding: zstd
+
+# Metrics generator for trace-to-metrics
+metrics_generator:
+  registry:
+    external_labels:
+      source: tempo
+      cluster: greenlang
+  storage:
+    path: /var/tempo/generator/wal
+    remote_write:
+      - url: http://prometheus:9090/api/v1/write
+        send_exemplars: true
+  traces_storage:
+    path: /var/tempo/generator/traces
+
+# Query frontend configuration
+query_frontend:
+  search:
+    duration_slo: 5s
+    throughput_bytes_slo: 1073741824
+  trace_by_id:
+    duration_slo: 5s
+
+# Querier configuration
+querier:
+  max_concurrent_queries: 20
+  search:
+    prefer_self: 10
+
+# Overrides configuration (per-tenant limits)
+overrides:
+  defaults:
+    metrics_generator:
+      processors:
+        - service-graphs
+        - span-metrics
+    ingestion:
+      rate_limit_bytes: 15000000  # 15MB/s
+      burst_size_bytes: 20000000  # 20MB
+    search:
+      max_duration: 0  # Unlimited
+    global:
+      max_traces_per_user: 100000
+      max_bytes_per_trace: 5000000  # 5MB
+
+# Usage reporting (optional, disable for privacy)
+usage_report:
+  reporting_enabled: false

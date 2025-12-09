@@ -1,0 +1,53 @@
+# GreenLang Agent Runtime Service
+# ClusterIP service for internal communication
+apiVersion: v1
+kind: Service
+metadata:
+  name: agent-runtime-service
+  namespace: greenlang-production
+  labels:
+    app.kubernetes.io/name: agent-runtime
+    app.kubernetes.io/instance: production
+    app.kubernetes.io/component: service
+    app.kubernetes.io/part-of: greenlang-platform
+  annotations:
+    description: "Agent Runtime Service - Internal ClusterIP"
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9090"
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: agent-runtime
+    app.kubernetes.io/instance: production
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8000
+    protocol: TCP
+  - name: metrics
+    port: 9090
+    targetPort: 9090
+    protocol: TCP
+  sessionAffinity: None
+---
+# Headless service for StatefulSet-like scenarios
+apiVersion: v1
+kind: Service
+metadata:
+  name: agent-runtime-headless
+  namespace: greenlang-production
+  labels:
+    app.kubernetes.io/name: agent-runtime
+    app.kubernetes.io/instance: production
+    app.kubernetes.io/component: headless-service
+spec:
+  type: ClusterIP
+  clusterIP: None
+  selector:
+    app.kubernetes.io/name: agent-runtime
+    app.kubernetes.io/instance: production
+  ports:
+  - name: http
+    port: 8000
+    targetPort: 8000
+    protocol: TCP

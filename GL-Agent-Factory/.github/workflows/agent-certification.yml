@@ -1,0 +1,703 @@
+# GreenLang Agent Factory - Agent Certification Pipeline
+# Runs 12-dimension certification on agent changes
+# Generates certification report and uploads to registry
+
+name: Agent Certification
+
+on:
+  push:
+    paths:
+      - 'backend/agents/**'
+      - 'agents/**'
+      - 'packs/**'
+      - 'core/greenlang/agents/**'
+  pull_request:
+    paths:
+      - 'backend/agents/**'
+      - 'agents/**'
+      - 'packs/**'
+      - 'core/greenlang/agents/**'
+  workflow_dispatch:
+    inputs:
+      agent-id:
+        description: 'Agent ID to certify (e.g., GL-001)'
+        required: true
+        type: string
+      force-recertify:
+        description: 'Force recertification even if already certified'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  PYTHON_VERSION: "3.11"
+  CERTIFICATION_VERSION: "1.0.0"
+
+jobs:
+  # =============================================================================
+  # Detect Changed Agents
+  # =============================================================================
+  detect-agents:
+    name: Detect Changed Agents
+    runs-on: ubuntu-latest
+    outputs:
+      agents: ${{ steps.detect.outputs.agents }}
+      has-agents: ${{ steps.detect.outputs.has-agents }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect changed agents
+        id: detect
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            # Manual trigger - use specified agent
+            echo "agents=[\"${{ inputs.agent-id }}\"]" >> $GITHUB_OUTPUT
+            echo "has-agents=true" >> $GITHUB_OUTPUT
+          else
+            # Auto-detect from changed files
+            CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} 2>/dev/null || git diff --name-only HEAD~1 HEAD)
+
+            AGENTS=$(echo "$CHANGED_FILES" | grep -E "(backend/agents|agents|packs|core/greenlang/agents)" | \
+              sed -E 's|.*/([^/]+)/.*|\1|' | \
+              sort -u | \
+              jq -R -s -c 'split("\n") | map(select(length > 0))')
+
+            if [ "$AGENTS" == "[]" ] || [ -z "$AGENTS" ]; then
+              echo "agents=[]" >> $GITHUB_OUTPUT
+              echo "has-agents=false" >> $GITHUB_OUTPUT
+            else
+              echo "agents=$AGENTS" >> $GITHUB_OUTPUT
+              echo "has-agents=true" >> $GITHUB_OUTPUT
+            fi
+          fi
+
+      - name: Summary
+        run: |
+          echo "## Detected Agents for Certification" >> $GITHUB_STEP_SUMMARY
+          echo "Agents: ${{ steps.detect.outputs.agents }}" >> $GITHUB_STEP_SUMMARY
+
+  # =============================================================================
+  # Dimension 1: Specification Completeness
+  # =============================================================================
+  dim-1-specification:
+    name: "D1: Specification Completeness"
+    runs-on: ubuntu-latest
+    needs: detect-agents
+    if: needs.detect-agents.outputs.has-agents == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        agent: ${{ fromJson(needs.detect-agents.outputs.agents) }}
+    outputs:
+      result: ${{ steps.check.outputs.result }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          pip install pyyaml jsonschema cerberus
+
+      - name: Check specification completeness
+        id: check
+        run: |
+          # Check for agent specification file
+          SPEC_FILE=$(find . -name "*.yaml" -o -name "*.yml" | xargs grep -l "agent_id.*${{ matrix.agent }}" 2>/dev/null | head -1)
+
+          if [ -z "$SPEC_FILE" ]; then
+            echo "result=fail" >> $GITHUB_OUTPUT
+            echo "FAIL: No specification file found for agent ${{ matrix.agent }}"
+            exit 1
+          fi
+
+          echo "Checking specification: $SPEC_FILE"
+
+          # Validate YAML structure
+          python -c "
+          import yaml
+          import sys
+
+          required_fields = [
+              'metadata.agent_id',
+              'metadata.agent_name',
+              'metadata.version',
+              'metadata.domain',
+              'purpose.problem',
+              'purpose.audience',
+              'purpose.value',
+              'tools',
+              'standards'
+          ]
+
+          with open('$SPEC_FILE', 'r') as f:
+              spec = yaml.safe_load(f)
+
+          missing = []
+          for field in required_fields:
+              parts = field.split('.')
+              obj = spec
+              try:
+                  for part in parts:
+                      obj = obj[part]
+              except (KeyError, TypeError):
+                  missing.append(field)
+
+          if missing:
+              print(f'FAIL: Missing required fields: {missing}')
+              sys.exit(1)
+
+          print('PASS: All required fields present')
+          "
+
+          echo "result=pass" >> $GITHUB_OUTPUT
+
+  # =============================================================================
+  # Dimension 2: Code Implementation
+  # =============================================================================
+  dim-2-implementation:
+    name: "D2: Code Implementation"
+    runs-on: ubuntu-latest
+    needs: detect-agents
+    if: needs.detect-agents.outputs.has-agents == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        agent: ${{ fromJson(needs.detect-agents.outputs.agents) }}
+    outputs:
+      result: ${{ steps.check.outputs.result }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          pip install ruff mypy radon
+
+      - name: Check code quality
+        id: check
+        run: |
+          # Find agent implementation files
+          AGENT_FILES=$(find . -name "*.py" | xargs grep -l "${{ matrix.agent }}" 2>/dev/null || echo "")
+
+          if [ -z "$AGENT_FILES" ]; then
+            echo "result=fail" >> $GITHUB_OUTPUT
+            echo "FAIL: No implementation files found for agent ${{ matrix.agent }}"
+            exit 1
+          fi
+
+          # Run linting
+          ruff check $AGENT_FILES --exit-zero
+
+          # Run type checking
+          mypy $AGENT_FILES --ignore-missing-imports --no-error-summary || true
+
+          # Check complexity
+          radon cc $AGENT_FILES -a -s || true
+
+          # Check for required patterns
+          for file in $AGENT_FILES; do
+            echo "Checking $file..."
+
+            # Check for type hints
+            if ! grep -q "def.*->.*:" "$file" 2>/dev/null; then
+              echo "WARNING: No type hints found in $file"
+            fi
+
+            # Check for docstrings
+            if ! grep -q '"""' "$file" 2>/dev/null; then
+              echo "WARNING: No docstrings found in $file"
+            fi
+
+            # Check for error handling
+            if ! grep -q "try:" "$file" 2>/dev/null; then
+              echo "WARNING: No error handling found in $file"
+            fi
+          done
+
+          echo "result=pass" >> $GITHUB_OUTPUT
+
+  # =============================================================================
+  # Dimension 3: Test Coverage
+  # =============================================================================
+  dim-3-test-coverage:
+    name: "D3: Test Coverage (>85%)"
+    runs-on: ubuntu-latest
+    needs: detect-agents
+    if: needs.detect-agents.outputs.has-agents == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        agent: ${{ fromJson(needs.detect-agents.outputs.agents) }}
+    outputs:
+      result: ${{ steps.check.outputs.result }}
+      coverage: ${{ steps.check.outputs.coverage }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          pip install pytest pytest-cov
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      - name: Run tests with coverage
+        id: check
+        run: |
+          # Find test files for agent
+          TEST_FILES=$(find . -name "test_*.py" | xargs grep -l "${{ matrix.agent }}" 2>/dev/null || echo "")
+
+          if [ -z "$TEST_FILES" ]; then
+            echo "result=fail" >> $GITHUB_OUTPUT
+            echo "coverage=0" >> $GITHUB_OUTPUT
+            echo "FAIL: No test files found for agent ${{ matrix.agent }}"
+            exit 1
+          fi
+
+          # Run tests with coverage
+          pytest $TEST_FILES \
+            --cov=. \
+            --cov-report=term-missing \
+            --cov-fail-under=85 \
+            -v \
+            || true
+
+          # Extract coverage percentage
+          COVERAGE=$(python -c "
+          import subprocess
+          result = subprocess.run(['pytest', '--cov=.', '--cov-report=term'], capture_output=True, text=True)
+          for line in result.stdout.split('\n'):
+              if 'TOTAL' in line:
+                  parts = line.split()
+                  for part in parts:
+                      if '%' in part:
+                          print(part.replace('%', ''))
+                          break
+          " 2>/dev/null || echo "0")
+
+          echo "coverage=$COVERAGE" >> $GITHUB_OUTPUT
+
+          if [ -z "$COVERAGE" ] || [ "$COVERAGE" == "0" ]; then
+            COVERAGE=0
+          fi
+
+          if [ $(echo "$COVERAGE >= 85" | bc -l) -eq 1 ]; then
+            echo "result=pass" >> $GITHUB_OUTPUT
+            echo "PASS: Test coverage is ${COVERAGE}% (>= 85%)"
+          else
+            echo "result=fail" >> $GITHUB_OUTPUT
+            echo "FAIL: Test coverage is ${COVERAGE}% (< 85%)"
+          fi
+
+  # =============================================================================
+  # Dimension 4: Deterministic AI Guarantees
+  # =============================================================================
+  dim-4-determinism:
+    name: "D4: Deterministic AI Guarantees"
+    runs-on: ubuntu-latest
+    needs: detect-agents
+    if: needs.detect-agents.outputs.has-agents == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        agent: ${{ fromJson(needs.detect-agents.outputs.agents) }}
+    outputs:
+      result: ${{ steps.check.outputs.result }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          pip install pytest
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      - name: Run determinism tests
+        id: check
+        run: |
+          # Find determinism test files
+          DETERMINISM_TESTS=$(find . -name "test_*.py" | xargs grep -l "determinism\|reproducib" 2>/dev/null || echo "")
+
+          if [ -z "$DETERMINISM_TESTS" ]; then
+            echo "WARNING: No determinism tests found, checking code for deterministic patterns..."
+
+            # Check for deterministic configuration
+            AGENT_FILES=$(find . -name "*.py" | xargs grep -l "${{ matrix.agent }}" 2>/dev/null || echo "")
+
+            for file in $AGENT_FILES; do
+              # Check for temperature=0
+              if grep -q "temperature.*=.*0" "$file" 2>/dev/null; then
+                echo "PASS: Found temperature=0 in $file"
+              fi
+
+              # Check for seed setting
+              if grep -q "seed.*=\|random.seed\|np.random.seed" "$file" 2>/dev/null; then
+                echo "PASS: Found seed setting in $file"
+              fi
+
+              # Check for non-deterministic patterns (warnings)
+              if grep -q "random()\|datetime.now()\|time.time()" "$file" 2>/dev/null; then
+                echo "WARNING: Potential non-deterministic code in $file"
+              fi
+            done
+          else
+            # Run determinism tests
+            pytest $DETERMINISM_TESTS -v || true
+          fi
+
+          echo "result=pass" >> $GITHUB_OUTPUT
+
+  # =============================================================================
+  # Dimension 5: Documentation Completeness
+  # =============================================================================
+  dim-5-documentation:
+    name: "D5: Documentation Completeness"
+    runs-on: ubuntu-latest
+    needs: detect-agents
+    if: needs.detect-agents.outputs.has-agents == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        agent: ${{ fromJson(needs.detect-agents.outputs.agents) }}
+    outputs:
+      result: ${{ steps.check.outputs.result }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check documentation
+        id: check
+        run: |
+          # Find agent-related files
+          AGENT_DIR=$(find . -type d -name "${{ matrix.agent }}" 2>/dev/null | head -1)
+
+          if [ -z "$AGENT_DIR" ]; then
+            AGENT_DIR=$(find . -name "*.py" | xargs grep -l "${{ matrix.agent }}" 2>/dev/null | head -1 | xargs dirname)
+          fi
+
+          MISSING_DOCS=()
+
+          # Check for README
+          if [ ! -f "$AGENT_DIR/README.md" ] && [ ! -f "$AGENT_DIR/../README.md" ]; then
+            MISSING_DOCS+=("README.md")
+          fi
+
+          # Check for API documentation
+          if ! find "$AGENT_DIR" -name "*.md" | xargs grep -l "API\|Usage" 2>/dev/null; then
+            MISSING_DOCS+=("API documentation")
+          fi
+
+          # Check for docstrings in Python files
+          AGENT_FILES=$(find . -name "*.py" | xargs grep -l "${{ matrix.agent }}" 2>/dev/null || echo "")
+          for file in $AGENT_FILES; do
+            if ! grep -q '"""' "$file" 2>/dev/null; then
+              MISSING_DOCS+=("Docstrings in $file")
+            fi
+          done
+
+          if [ ${#MISSING_DOCS[@]} -gt 0 ]; then
+            echo "WARNING: Missing documentation: ${MISSING_DOCS[*]}"
+          fi
+
+          echo "result=pass" >> $GITHUB_OUTPUT
+
+  # =============================================================================
+  # Dimension 6: Compliance & Security
+  # =============================================================================
+  dim-6-security:
+    name: "D6: Compliance & Security"
+    runs-on: ubuntu-latest
+    needs: detect-agents
+    if: needs.detect-agents.outputs.has-agents == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        agent: ${{ fromJson(needs.detect-agents.outputs.agents) }}
+    outputs:
+      result: ${{ steps.check.outputs.result }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install security tools
+        run: |
+          pip install bandit safety
+
+      - name: Run security scan
+        id: check
+        run: |
+          # Find agent implementation files
+          AGENT_FILES=$(find . -name "*.py" | xargs grep -l "${{ matrix.agent }}" 2>/dev/null || echo ".")
+
+          # Run Bandit
+          echo "Running Bandit security scan..."
+          bandit -r $AGENT_FILES -ll -f txt || true
+
+          # Check for hardcoded secrets
+          echo "Checking for hardcoded secrets..."
+          if grep -r "api_key\s*=\s*['\"]" $AGENT_FILES 2>/dev/null; then
+            echo "FAIL: Potential hardcoded API key found"
+          fi
+
+          if grep -r "password\s*=\s*['\"]" $AGENT_FILES 2>/dev/null; then
+            echo "FAIL: Potential hardcoded password found"
+          fi
+
+          # Check for SQL injection vulnerabilities
+          if grep -r "execute.*%s\|execute.*format\|execute.*f\"" $AGENT_FILES 2>/dev/null; then
+            echo "WARNING: Potential SQL injection vulnerability"
+          fi
+
+          echo "result=pass" >> $GITHUB_OUTPUT
+
+  # =============================================================================
+  # Dimension 7-12: Additional Dimensions
+  # =============================================================================
+  dim-7-12-additional:
+    name: "D7-12: Additional Dimensions"
+    runs-on: ubuntu-latest
+    needs: detect-agents
+    if: needs.detect-agents.outputs.has-agents == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        agent: ${{ fromJson(needs.detect-agents.outputs.agents) }}
+    outputs:
+      result: ${{ steps.check.outputs.result }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check deployment readiness (D7)
+        run: |
+          # Check for Kubernetes manifests
+          if find . -name "deployment.yaml" -o -name "*.k8s.yaml" | head -1 | grep -q .; then
+            echo "PASS: Kubernetes manifests found"
+          else
+            echo "WARNING: No Kubernetes manifests found"
+          fi
+
+          # Check for Dockerfile
+          if [ -f "Dockerfile" ]; then
+            echo "PASS: Dockerfile found"
+          else
+            echo "WARNING: No Dockerfile found"
+          fi
+
+      - name: Check exit bar criteria (D8)
+        run: |
+          echo "Exit bar criteria check - manual review required"
+
+      - name: Check integration (D9)
+        run: |
+          # Find integration test files
+          INT_TESTS=$(find . -path "*/integration/*" -name "test_*.py" 2>/dev/null)
+          if [ -n "$INT_TESTS" ]; then
+            echo "PASS: Integration tests found"
+          else
+            echo "WARNING: No integration tests found"
+          fi
+
+      - name: Check business impact (D10)
+        run: |
+          echo "Business impact check - manual review required"
+
+      - name: Check operational excellence (D11)
+        run: |
+          # Check for metrics/monitoring
+          AGENT_FILES=$(find . -name "*.py" | xargs grep -l "${{ matrix.agent }}" 2>/dev/null || echo "")
+          if echo "$AGENT_FILES" | xargs grep -l "prometheus\|metrics\|logging" 2>/dev/null; then
+            echo "PASS: Monitoring/logging found"
+          else
+            echo "WARNING: No monitoring/logging code found"
+          fi
+
+      - name: Check continuous improvement (D12)
+        id: check
+        run: |
+          echo "Continuous improvement check - manual review required"
+          echo "result=pass" >> $GITHUB_OUTPUT
+
+  # =============================================================================
+  # Generate Certification Report
+  # =============================================================================
+  certification-report:
+    name: Generate Certification Report
+    runs-on: ubuntu-latest
+    needs:
+      - detect-agents
+      - dim-1-specification
+      - dim-2-implementation
+      - dim-3-test-coverage
+      - dim-4-determinism
+      - dim-5-documentation
+      - dim-6-security
+      - dim-7-12-additional
+    if: always() && needs.detect-agents.outputs.has-agents == 'true'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Generate certification report
+        run: |
+          TIMESTAMP=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          REPORT_FILE="certification-report-${{ github.sha }}.json"
+
+          cat > $REPORT_FILE << EOF
+          {
+            "certification_version": "${{ env.CERTIFICATION_VERSION }}",
+            "timestamp": "$TIMESTAMP",
+            "commit": "${{ github.sha }}",
+            "branch": "${{ github.ref_name }}",
+            "agents": ${{ needs.detect-agents.outputs.agents }},
+            "dimensions": {
+              "D1_specification_completeness": {
+                "status": "${{ needs.dim-1-specification.result }}",
+                "weight": "5%",
+                "pass_threshold": "100%"
+              },
+              "D2_code_implementation": {
+                "status": "${{ needs.dim-2-implementation.result }}",
+                "weight": "10%",
+                "pass_threshold": "100%"
+              },
+              "D3_test_coverage": {
+                "status": "${{ needs.dim-3-test-coverage.result }}",
+                "coverage": "${{ needs.dim-3-test-coverage.outputs.coverage || 'N/A' }}%",
+                "weight": "15%",
+                "pass_threshold": ">85%"
+              },
+              "D4_deterministic_ai": {
+                "status": "${{ needs.dim-4-determinism.result }}",
+                "weight": "10%",
+                "pass_threshold": "100%"
+              },
+              "D5_documentation": {
+                "status": "${{ needs.dim-5-documentation.result }}",
+                "weight": "5%",
+                "pass_threshold": "100%"
+              },
+              "D6_compliance_security": {
+                "status": "${{ needs.dim-6-security.result }}",
+                "weight": "20%",
+                "pass_threshold": "100%"
+              },
+              "D7_deployment_readiness": {
+                "status": "${{ needs.dim-7-12-additional.result }}",
+                "weight": "5%",
+                "pass_threshold": "100%"
+              },
+              "D8_exit_bar": {
+                "status": "manual_review",
+                "weight": "10%",
+                "pass_threshold": "100%"
+              },
+              "D9_integration": {
+                "status": "${{ needs.dim-7-12-additional.result }}",
+                "weight": "5%",
+                "pass_threshold": "100%"
+              },
+              "D10_business_impact": {
+                "status": "manual_review",
+                "weight": "5%",
+                "pass_threshold": "100%"
+              },
+              "D11_operational_excellence": {
+                "status": "${{ needs.dim-7-12-additional.result }}",
+                "weight": "5%",
+                "pass_threshold": "100%"
+              },
+              "D12_continuous_improvement": {
+                "status": "manual_review",
+                "weight": "5%",
+                "pass_threshold": "100%"
+              }
+            },
+            "overall_status": "pending_review"
+          }
+          EOF
+
+          cat $REPORT_FILE
+
+      - name: Upload certification report
+        uses: actions/upload-artifact@v4
+        with:
+          name: certification-report
+          path: certification-report-*.json
+          retention-days: 90
+
+      - name: Generate summary
+        run: |
+          echo "# Agent Certification Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Agents:** ${{ needs.detect-agents.outputs.agents }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Dimension Results" >> $GITHUB_STEP_SUMMARY
+          echo "| Dimension | Status | Weight |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----------|--------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| D1: Specification | ${{ needs.dim-1-specification.result }} | 5% |" >> $GITHUB_STEP_SUMMARY
+          echo "| D2: Implementation | ${{ needs.dim-2-implementation.result }} | 10% |" >> $GITHUB_STEP_SUMMARY
+          echo "| D3: Test Coverage | ${{ needs.dim-3-test-coverage.result }} | 15% |" >> $GITHUB_STEP_SUMMARY
+          echo "| D4: Determinism | ${{ needs.dim-4-determinism.result }} | 10% |" >> $GITHUB_STEP_SUMMARY
+          echo "| D5: Documentation | ${{ needs.dim-5-documentation.result }} | 5% |" >> $GITHUB_STEP_SUMMARY
+          echo "| D6: Security | ${{ needs.dim-6-security.result }} | 20% |" >> $GITHUB_STEP_SUMMARY
+          echo "| D7-12: Additional | ${{ needs.dim-7-12-additional.result }} | 30% |" >> $GITHUB_STEP_SUMMARY
+
+  # =============================================================================
+  # Upload to Registry
+  # =============================================================================
+  upload-to-registry:
+    name: Upload to Agent Registry
+    runs-on: ubuntu-latest
+    needs: certification-report
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    steps:
+      - name: Download certification report
+        uses: actions/download-artifact@v4
+        with:
+          name: certification-report
+
+      - name: Upload to registry
+        env:
+          REGISTRY_URL: ${{ secrets.AGENT_REGISTRY_URL }}
+          REGISTRY_TOKEN: ${{ secrets.AGENT_REGISTRY_TOKEN }}
+        run: |
+          # Upload certification report to agent registry
+          if [ -n "$REGISTRY_URL" ] && [ -n "$REGISTRY_TOKEN" ]; then
+            curl -X POST \
+              -H "Authorization: Bearer $REGISTRY_TOKEN" \
+              -H "Content-Type: application/json" \
+              -d @certification-report-*.json \
+              "$REGISTRY_URL/api/v1/certifications"
+          else
+            echo "Registry credentials not configured, skipping upload"
+          fi

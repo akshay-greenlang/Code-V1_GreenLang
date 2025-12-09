@@ -12,34 +12,81 @@ Exports:
     AmbitionLevel: Enum for ambition levels
     PathwayType: Enum for decarbonization pathways
     SectorPathway: Enum for sectoral pathways
+    Scope3EngagementType: Enum for Scope 3 approaches
+    NeutralizationType: Enum for net-zero neutralization
+    ProgressStatus: Enum for progress tracking status
 """
 
 from .agent import (
+    # Main agent
     SBTiValidationAgent,
+    # Input models
     SBTiInput,
+    ScopeEmissions,
+    TargetDefinition,
+    IntensityMetric,
+    Scope3EngagementTarget,
+    NeutralizationPlan,
+    FLAGTarget,
+    CurrentProgress,
+    # Output models
     SBTiOutput,
+    ValidationResult,
+    TargetValidation,
+    ProgressTracking,
+    Recommendation,
+    PathwayCalculation,
+    TargetTrajectory,
+    TargetTrajectoryPoint,
+    NetZeroValidation,
+    FLAGValidation,
+    # Enums
     TargetType,
     AmbitionLevel,
     PathwayType,
     SectorPathway,
-    ScopeEmissions,
-    TargetDefinition,
-    ValidationResult,
-    ProgressTracking,
-    Recommendation,
+    ValidationStatus,
+    ScopeType,
+    Scope3EngagementType,
+    NeutralizationType,
+    ProgressStatus,
+    # Constants
+    SBTiPathwayConstants,
 )
 
 __all__ = [
+    # Main agent
     "SBTiValidationAgent",
+    # Input models
     "SBTiInput",
+    "ScopeEmissions",
+    "TargetDefinition",
+    "IntensityMetric",
+    "Scope3EngagementTarget",
+    "NeutralizationPlan",
+    "FLAGTarget",
+    "CurrentProgress",
+    # Output models
     "SBTiOutput",
+    "ValidationResult",
+    "TargetValidation",
+    "ProgressTracking",
+    "Recommendation",
+    "PathwayCalculation",
+    "TargetTrajectory",
+    "TargetTrajectoryPoint",
+    "NetZeroValidation",
+    "FLAGValidation",
+    # Enums
     "TargetType",
     "AmbitionLevel",
     "PathwayType",
     "SectorPathway",
-    "ScopeEmissions",
-    "TargetDefinition",
-    "ValidationResult",
-    "ProgressTracking",
-    "Recommendation",
+    "ValidationStatus",
+    "ScopeType",
+    "Scope3EngagementType",
+    "NeutralizationType",
+    "ProgressStatus",
+    # Constants
+    "SBTiPathwayConstants",
 ]

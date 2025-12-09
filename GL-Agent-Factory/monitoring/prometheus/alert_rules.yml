@@ -1,0 +1,418 @@
+# GreenLang Alert Rules
+# Production monitoring alerts for SLA compliance
+
+groups:
+  # =============================================================================
+  # Service Availability Alerts
+  # =============================================================================
+  - name: service_availability
+    interval: 30s
+    rules:
+      # Service Down Alert
+      - alert: ServiceDown
+        expr: up{job=~"greenlang.*"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          team: platform
+        annotations:
+          summary: "Service {{ $labels.job }} is down"
+          description: "Service {{ $labels.job }} on {{ $labels.instance }} has been down for more than 1 minute."
+          runbook_url: "https://runbooks.greenlang.io/service-down"
+          dashboard_url: "https://grafana.greenlang.io/d/system-health"
+
+      # API Endpoint Unhealthy
+      - alert: APIEndpointUnhealthy
+        expr: probe_success{job="blackbox-http"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          team: platform
+        annotations:
+          summary: "API endpoint {{ $labels.instance }} is unhealthy"
+          description: "Health check probe for {{ $labels.instance }} has been failing for more than 2 minutes."
+
+      # High Pod Restart Rate
+      - alert: HighPodRestartRate
+        expr: increase(kube_pod_container_status_restarts_total{namespace="greenlang"}[1h]) > 5
+        for: 5m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "High pod restart rate for {{ $labels.pod }}"
+          description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} has restarted {{ $value }} times in the last hour."
+
+  # =============================================================================
+  # Error Rate Alerts
+  # =============================================================================
+  - name: error_rates
+    interval: 30s
+    rules:
+      # High Error Rate (>1%)
+      - alert: HighErrorRate
+        expr: |
+          (
+            sum(rate(gl_errors_total[5m])) by (agent)
+            /
+            sum(rate(gl_calculations_total[5m])) by (agent)
+          ) * 100 > 1
+        for: 5m
+        labels:
+          severity: critical
+          team: backend
+        annotations:
+          summary: "High error rate for agent {{ $labels.agent }}"
+          description: "Agent {{ $labels.agent }} has an error rate of {{ $value | printf \"%.2f\" }}% which exceeds the 1% SLA threshold."
+          runbook_url: "https://runbooks.greenlang.io/high-error-rate"
+
+      # Calculation Failures
+      - alert: CalculationFailureSpike
+        expr: |
+          increase(gl_calculations_total{status="failed"}[10m]) > 50
+        for: 5m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "Spike in calculation failures for {{ $labels.agent }}"
+          description: "Agent {{ $labels.agent }} has experienced {{ $value }} failed calculations in the last 10 minutes."
+
+      # HTTP 5xx Errors
+      - alert: HighHTTP5xxRate
+        expr: |
+          (
+            sum(rate(http_requests_total{status=~"5.."}[5m])) by (handler)
+            /
+            sum(rate(http_requests_total[5m])) by (handler)
+          ) * 100 > 1
+        for: 5m
+        labels:
+          severity: critical
+          team: backend
+        annotations:
+          summary: "High HTTP 5xx error rate on {{ $labels.handler }}"
+          description: "Endpoint {{ $labels.handler }} has a 5xx error rate of {{ $value | printf \"%.2f\" }}%."
+
+      # Emission Factor Lookup Failures
+      - alert: EFLookupFailures
+        expr: |
+          increase(gl_ef_lookups_total{status="failed"}[15m]) > 20
+        for: 5m
+        labels:
+          severity: warning
+          team: data
+        annotations:
+          summary: "High emission factor lookup failures"
+          description: "{{ $value }} EF lookups have failed in the last 15 minutes from source {{ $labels.source }}."
+
+  # =============================================================================
+  # Latency Alerts
+  # =============================================================================
+  - name: latency
+    interval: 30s
+    rules:
+      # High P99 Latency (>1s)
+      - alert: HighP99Latency
+        expr: |
+          histogram_quantile(0.99,
+            sum(rate(gl_calculation_duration_seconds_bucket[5m])) by (agent, le)
+          ) > 1
+        for: 5m
+        labels:
+          severity: critical
+          team: backend
+        annotations:
+          summary: "High P99 latency for agent {{ $labels.agent }}"
+          description: "Agent {{ $labels.agent }} P99 latency is {{ $value | printf \"%.3f\" }}s, exceeding the 1s SLA threshold."
+          runbook_url: "https://runbooks.greenlang.io/high-latency"
+
+      # High P95 Latency Warning
+      - alert: HighP95Latency
+        expr: |
+          histogram_quantile(0.95,
+            sum(rate(gl_calculation_duration_seconds_bucket[5m])) by (agent, le)
+          ) > 0.5
+        for: 10m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "Elevated P95 latency for agent {{ $labels.agent }}"
+          description: "Agent {{ $labels.agent }} P95 latency is {{ $value | printf \"%.3f\" }}s."
+
+      # API Response Time High
+      - alert: APIResponseTimeSlow
+        expr: |
+          histogram_quantile(0.95,
+            sum(rate(http_request_duration_seconds_bucket{handler!~"/metrics|/health"}[5m])) by (handler, le)
+          ) > 2
+        for: 5m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "Slow API response time on {{ $labels.handler }}"
+          description: "Endpoint {{ $labels.handler }} P95 response time is {{ $value | printf \"%.3f\" }}s."
+
+      # EF Lookup Latency
+      - alert: EFLookupSlow
+        expr: |
+          histogram_quantile(0.95,
+            sum(rate(gl_ef_lookup_duration_seconds_bucket[5m])) by (le)
+          ) > 0.5
+        for: 10m
+        labels:
+          severity: warning
+          team: data
+        annotations:
+          summary: "Emission factor lookups are slow"
+          description: "P95 EF lookup latency is {{ $value | printf \"%.3f\" }}s."
+
+  # =============================================================================
+  # Resource Utilization Alerts
+  # =============================================================================
+  - name: resource_utilization
+    interval: 60s
+    rules:
+      # High CPU Usage
+      - alert: HighCPUUsage
+        expr: |
+          (
+            100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)
+          ) > 80
+        for: 10m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "High CPU usage on {{ $labels.instance }}"
+          description: "CPU usage on {{ $labels.instance }} is {{ $value | printf \"%.1f\" }}%."
+
+      # Critical CPU Usage
+      - alert: CriticalCPUUsage
+        expr: |
+          (
+            100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)
+          ) > 95
+        for: 5m
+        labels:
+          severity: critical
+          team: platform
+        annotations:
+          summary: "Critical CPU usage on {{ $labels.instance }}"
+          description: "CPU usage on {{ $labels.instance }} is {{ $value | printf \"%.1f\" }}%."
+
+      # High Memory Usage
+      - alert: HighMemoryUsage
+        expr: |
+          (
+            (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes)
+            / node_memory_MemTotal_bytes
+          ) * 100 > 85
+        for: 10m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "High memory usage on {{ $labels.instance }}"
+          description: "Memory usage on {{ $labels.instance }} is {{ $value | printf \"%.1f\" }}%."
+
+      # Critical Memory Usage
+      - alert: CriticalMemoryUsage
+        expr: |
+          (
+            (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes)
+            / node_memory_MemTotal_bytes
+          ) * 100 > 95
+        for: 5m
+        labels:
+          severity: critical
+          team: platform
+        annotations:
+          summary: "Critical memory usage on {{ $labels.instance }}"
+          description: "Memory usage on {{ $labels.instance }} is {{ $value | printf \"%.1f\" }}%."
+
+      # Disk Space Low
+      - alert: DiskSpaceLow
+        expr: |
+          (
+            (node_filesystem_size_bytes{mountpoint="/"} - node_filesystem_avail_bytes{mountpoint="/"})
+            / node_filesystem_size_bytes{mountpoint="/"}
+          ) * 100 > 80
+        for: 15m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "Low disk space on {{ $labels.instance }}"
+          description: "Disk usage on {{ $labels.instance }} is {{ $value | printf \"%.1f\" }}%."
+
+  # =============================================================================
+  # Database Alerts
+  # =============================================================================
+  - name: database
+    interval: 60s
+    rules:
+      # PostgreSQL Connection Pool Exhaustion
+      - alert: PostgreSQLConnectionPoolHigh
+        expr: |
+          pg_stat_activity_count / pg_settings_max_connections > 0.8
+        for: 5m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "PostgreSQL connection pool usage high"
+          description: "PostgreSQL connection usage is at {{ $value | printf \"%.1f\" }}% of max connections."
+
+      # PostgreSQL Slow Queries
+      - alert: PostgreSQLSlowQueries
+        expr: |
+          rate(pg_stat_statements_mean_time_seconds[5m]) > 1
+        for: 10m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "PostgreSQL slow queries detected"
+          description: "Average query execution time is {{ $value | printf \"%.3f\" }}s."
+
+      # Redis Memory Usage
+      - alert: RedisMemoryHigh
+        expr: |
+          redis_memory_used_bytes / redis_memory_max_bytes > 0.8
+        for: 10m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "Redis memory usage high"
+          description: "Redis memory usage is at {{ $value | printf \"%.1f\" }}%."
+
+      # Redis Connection Count High
+      - alert: RedisConnectionsHigh
+        expr: |
+          redis_connected_clients > 500
+        for: 5m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "High Redis connection count"
+          description: "Redis has {{ $value }} connected clients."
+
+  # =============================================================================
+  # Business Logic Alerts
+  # =============================================================================
+  - name: business_metrics
+    interval: 60s
+    rules:
+      # Low Calculation Throughput
+      - alert: LowCalculationThroughput
+        expr: |
+          sum(rate(gl_calculations_total{status="success"}[10m])) < 1
+        for: 15m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "Low calculation throughput"
+          description: "System is processing only {{ $value | printf \"%.2f\" }} calculations per second."
+
+      # Agent Registry Empty
+      - alert: AgentRegistryEmpty
+        expr: |
+          gl_registry_agents_count == 0
+        for: 5m
+        labels:
+          severity: critical
+          team: backend
+        annotations:
+          summary: "Agent registry is empty"
+          description: "No agents are registered in the system. This will prevent all calculations."
+
+      # No Active Agents
+      - alert: NoActiveAgents
+        expr: |
+          gl_active_agents == 0
+        for: 10m
+        labels:
+          severity: critical
+          team: backend
+        annotations:
+          summary: "No active agents"
+          description: "No agents are currently active. User requests cannot be processed."
+
+      # Emission Factor Cache Miss Rate High
+      - alert: EFCacheMissRateHigh
+        expr: |
+          (
+            sum(rate(gl_ef_lookups_total{cache="miss"}[5m]))
+            /
+            sum(rate(gl_ef_lookups_total[5m]))
+          ) * 100 > 50
+        for: 15m
+        labels:
+          severity: warning
+          team: data
+        annotations:
+          summary: "High emission factor cache miss rate"
+          description: "EF cache miss rate is {{ $value | printf \"%.1f\" }}%. Consider warming the cache."
+
+  # =============================================================================
+  # SLA Compliance Alerts
+  # =============================================================================
+  - name: sla_compliance
+    interval: 60s
+    rules:
+      # SLA Availability Below Threshold
+      - alert: SLAAvailabilityViolation
+        expr: |
+          (
+            1 - (
+              sum(rate(http_requests_total{status=~"5.."}[1h]))
+              /
+              sum(rate(http_requests_total[1h]))
+            )
+          ) * 100 < 99.9
+        for: 5m
+        labels:
+          severity: critical
+          team: platform
+          sla: true
+        annotations:
+          summary: "SLA availability violation"
+          description: "System availability is {{ $value | printf \"%.3f\" }}%, below the 99.9% SLA target."
+
+      # SLA Latency Violation
+      - alert: SLALatencyViolation
+        expr: |
+          histogram_quantile(0.99,
+            sum(rate(gl_calculation_duration_seconds_bucket[1h])) by (le)
+          ) > 1
+        for: 5m
+        labels:
+          severity: critical
+          team: backend
+          sla: true
+        annotations:
+          summary: "SLA latency violation"
+          description: "P99 calculation latency is {{ $value | printf \"%.3f\" }}s, exceeding the 1s SLA target."
+
+      # Error Budget Consumption Rate
+      - alert: ErrorBudgetBurning
+        expr: |
+          (
+            sum(rate(gl_errors_total[1h]))
+            /
+            sum(rate(gl_calculations_total[1h]))
+          ) * 100 > 0.5
+        for: 30m
+        labels:
+          severity: warning
+          team: backend
+          sla: true
+        annotations:
+          summary: "Error budget burning too fast"
+          description: "Current error rate of {{ $value | printf \"%.2f\" }}% will exhaust the monthly error budget."

@@ -1,0 +1,248 @@
+{
+  "metadata": {
+    "source": "IPCC",
+    "source_name": "Intergovernmental Panel on Climate Change",
+    "source_document": "IPCC Sixth Assessment Report (AR6) - Working Group I",
+    "source_url": "https://www.ipcc.ch/report/ar6/wg1/",
+    "version": "AR6",
+    "last_updated": "2021-08-09",
+    "time_horizon": "20 years",
+    "description": "Global Warming Potentials (GWP) from IPCC AR6 for 20-year time horizon"
+  },
+  "reference_gas": {
+    "gas_name": "Carbon Dioxide",
+    "chemical_formula": "CO2",
+    "gwp_20": 1,
+    "notes": "Reference gas - all GWPs are relative to CO2"
+  },
+  "main_greenhouse_gases": [
+    {
+      "id": "ef://ipcc/gwp/co2/ar6_20yr",
+      "gas_name": "Carbon Dioxide",
+      "chemical_formula": "CO2",
+      "cas_number": "124-38-9",
+      "gwp_ar6_20yr": 1,
+      "gwp_ar5_20yr": 1,
+      "notes": "Reference gas"
+    },
+    {
+      "id": "ef://ipcc/gwp/ch4/ar6_20yr",
+      "gas_name": "Methane",
+      "chemical_formula": "CH4",
+      "cas_number": "74-82-8",
+      "gwp_ar6_20yr": 82.5,
+      "gwp_ar6_20yr_with_feedback": 82.5,
+      "gwp_ar5_20yr": 84,
+      "atmospheric_lifetime_years": 11.8,
+      "notes": "Methane has much higher short-term warming impact"
+    },
+    {
+      "id": "ef://ipcc/gwp/n2o/ar6_20yr",
+      "gas_name": "Nitrous Oxide",
+      "chemical_formula": "N2O",
+      "cas_number": "10024-97-2",
+      "gwp_ar6_20yr": 273,
+      "gwp_ar5_20yr": 264,
+      "atmospheric_lifetime_years": 109,
+      "notes": "Similar to 100-year GWP due to long lifetime"
+    }
+  ],
+  "hydrofluorocarbons": [
+    {
+      "id": "ef://ipcc/gwp/hfc-23/ar6_20yr",
+      "gas_name": "HFC-23",
+      "chemical_formula": "CHF3",
+      "gwp_ar6_20yr": 12000,
+      "gwp_ar5_20yr": 10800
+    },
+    {
+      "id": "ef://ipcc/gwp/hfc-32/ar6_20yr",
+      "gas_name": "HFC-32",
+      "chemical_formula": "CH2F2",
+      "gwp_ar6_20yr": 2693,
+      "gwp_ar5_20yr": 2430
+    },
+    {
+      "id": "ef://ipcc/gwp/hfc-125/ar6_20yr",
+      "gas_name": "HFC-125",
+      "chemical_formula": "CHF2CF3",
+      "gwp_ar6_20yr": 6740,
+      "gwp_ar5_20yr": 6090
+    },
+    {
+      "id": "ef://ipcc/gwp/hfc-134a/ar6_20yr",
+      "gas_name": "HFC-134a",
+      "chemical_formula": "CH2FCF3",
+      "gwp_ar6_20yr": 4140,
+      "gwp_ar5_20yr": 3710
+    },
+    {
+      "id": "ef://ipcc/gwp/hfc-143a/ar6_20yr",
+      "gas_name": "HFC-143a",
+      "chemical_formula": "CH3CF3",
+      "gwp_ar6_20yr": 7840,
+      "gwp_ar5_20yr": 6940
+    },
+    {
+      "id": "ef://ipcc/gwp/hfc-152a/ar6_20yr",
+      "gas_name": "HFC-152a",
+      "chemical_formula": "CH3CHF2",
+      "gwp_ar6_20yr": 591,
+      "gwp_ar5_20yr": 506
+    },
+    {
+      "id": "ef://ipcc/gwp/hfc-227ea/ar6_20yr",
+      "gas_name": "HFC-227ea",
+      "chemical_formula": "CF3CHFCF3",
+      "gwp_ar6_20yr": 5360,
+      "gwp_ar5_20yr": 5310
+    },
+    {
+      "id": "ef://ipcc/gwp/hfc-236fa/ar6_20yr",
+      "gas_name": "HFC-236fa",
+      "chemical_formula": "CF3CH2CF3",
+      "gwp_ar6_20yr": 7450,
+      "gwp_ar5_20yr": 7080
+    },
+    {
+      "id": "ef://ipcc/gwp/hfc-245fa/ar6_20yr",
+      "gas_name": "HFC-245fa",
+      "chemical_formula": "CHF2CH2CF3",
+      "gwp_ar6_20yr": 2920,
+      "gwp_ar5_20yr": 2440
+    },
+    {
+      "id": "ef://ipcc/gwp/hfc-365mfc/ar6_20yr",
+      "gas_name": "HFC-365mfc",
+      "chemical_formula": "CH3CF2CH2CF3",
+      "gwp_ar6_20yr": 2660,
+      "gwp_ar5_20yr": 2520
+    },
+    {
+      "id": "ef://ipcc/gwp/hfc-43-10mee/ar6_20yr",
+      "gas_name": "HFC-43-10mee",
+      "chemical_formula": "CF3CHFCHFCF2CF3",
+      "gwp_ar6_20yr": 4310,
+      "gwp_ar5_20yr": 4310
+    }
+  ],
+  "perfluorocarbons": [
+    {
+      "id": "ef://ipcc/gwp/pfc-14/ar6_20yr",
+      "gas_name": "PFC-14 (CF4)",
+      "chemical_formula": "CF4",
+      "gwp_ar6_20yr": 5300,
+      "gwp_ar5_20yr": 4880
+    },
+    {
+      "id": "ef://ipcc/gwp/pfc-116/ar6_20yr",
+      "gas_name": "PFC-116 (C2F6)",
+      "chemical_formula": "C2F6",
+      "gwp_ar6_20yr": 8940,
+      "gwp_ar5_20yr": 8210
+    },
+    {
+      "id": "ef://ipcc/gwp/pfc-218/ar6_20yr",
+      "gas_name": "PFC-218 (C3F8)",
+      "chemical_formula": "C3F8",
+      "gwp_ar6_20yr": 6680,
+      "gwp_ar5_20yr": 6640
+    },
+    {
+      "id": "ef://ipcc/gwp/pfc-318/ar6_20yr",
+      "gas_name": "PFC-318 (c-C4F8)",
+      "chemical_formula": "c-C4F8",
+      "gwp_ar6_20yr": 7350,
+      "gwp_ar5_20yr": 7110
+    },
+    {
+      "id": "ef://ipcc/gwp/pfc-3-1-10/ar6_20yr",
+      "gas_name": "PFC-3-1-10 (C4F10)",
+      "chemical_formula": "C4F10",
+      "gwp_ar6_20yr": 7190,
+      "gwp_ar5_20yr": 6860
+    },
+    {
+      "id": "ef://ipcc/gwp/pfc-4-1-12/ar6_20yr",
+      "gas_name": "PFC-4-1-12 (C5F12)",
+      "chemical_formula": "C5F12",
+      "gwp_ar6_20yr": 6680,
+      "gwp_ar5_20yr": 6380
+    },
+    {
+      "id": "ef://ipcc/gwp/pfc-5-1-14/ar6_20yr",
+      "gas_name": "PFC-5-1-14 (C6F14)",
+      "chemical_formula": "C6F14",
+      "gwp_ar6_20yr": 6220,
+      "gwp_ar5_20yr": 5890
+    }
+  ],
+  "fluorinated_compounds": [
+    {
+      "id": "ef://ipcc/gwp/sf6/ar6_20yr",
+      "gas_name": "Sulfur Hexafluoride",
+      "chemical_formula": "SF6",
+      "gwp_ar6_20yr": 18300,
+      "gwp_ar5_20yr": 17500
+    },
+    {
+      "id": "ef://ipcc/gwp/nf3/ar6_20yr",
+      "gas_name": "Nitrogen Trifluoride",
+      "chemical_formula": "NF3",
+      "gwp_ar6_20yr": 13400,
+      "gwp_ar5_20yr": 12800
+    },
+    {
+      "id": "ef://ipcc/gwp/so2f2/ar6_20yr",
+      "gas_name": "Sulfuryl Fluoride",
+      "chemical_formula": "SO2F2",
+      "gwp_ar6_20yr": 7510,
+      "gwp_ar5_20yr": 7510
+    }
+  ],
+  "hydrofluoroolefins": [
+    {
+      "id": "ef://ipcc/gwp/hfo-1234yf/ar6_20yr",
+      "gas_name": "HFO-1234yf",
+      "chemical_formula": "CF3CF=CH2",
+      "gwp_ar6_20yr": 0.501,
+      "gwp_ar5_20yr": 1,
+      "notes": "Very low GWP due to short atmospheric lifetime"
+    },
+    {
+      "id": "ef://ipcc/gwp/hfo-1234ze/ar6_20yr",
+      "gas_name": "HFO-1234ze(E)",
+      "chemical_formula": "trans-CF3CH=CHF",
+      "gwp_ar6_20yr": 1.37,
+      "gwp_ar5_20yr": 4,
+      "notes": "Very low GWP due to short atmospheric lifetime"
+    }
+  ],
+  "comparison_table": {
+    "description": "Comparison of 20-year vs 100-year GWP for key gases (AR6)",
+    "gases": [
+      {"gas": "CO2", "gwp_20yr": 1, "gwp_100yr": 1, "ratio": 1.0},
+      {"gas": "CH4", "gwp_20yr": 82.5, "gwp_100yr": 27.9, "ratio": 2.96},
+      {"gas": "N2O", "gwp_20yr": 273, "gwp_100yr": 273, "ratio": 1.0},
+      {"gas": "HFC-32", "gwp_20yr": 2693, "gwp_100yr": 771, "ratio": 3.49},
+      {"gas": "HFC-134a", "gwp_20yr": 4140, "gwp_100yr": 1530, "ratio": 2.71},
+      {"gas": "R-410A", "gwp_20yr": 4717, "gwp_100yr": 2256, "ratio": 2.09},
+      {"gas": "SF6", "gwp_20yr": 18300, "gwp_100yr": 25200, "ratio": 0.73}
+    ],
+    "notes": "Short-lived gases like CH4 and HFCs have higher 20-year than 100-year GWP"
+  },
+  "use_cases": {
+    "20_year_gwp": [
+      "Near-term climate impact assessment",
+      "Short-lived climate pollutant strategies",
+      "Methane reduction initiatives",
+      "HFC phasedown planning"
+    ],
+    "100_year_gwp": [
+      "Standard corporate GHG reporting (GHG Protocol)",
+      "National GHG inventories",
+      "Long-term climate targets",
+      "Paris Agreement commitments"
+    ]
+  }
+}

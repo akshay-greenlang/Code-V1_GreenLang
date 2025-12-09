@@ -1,0 +1,107 @@
+# GreenLang Registry Service Network Policy
+# Allows:
+#   - Ingress: From API Server and Agent Runtime only
+#   - Egress: To PostgreSQL only (strict data access)
+#
+# Registry is a critical internal service for agent metadata management
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: registry-netpol
+  namespace: greenlang-production
+  labels:
+    app.kubernetes.io/name: registry-netpol
+    app.kubernetes.io/component: network-policy
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/managed-by: kubectl
+    security.greenlang.ai/policy-type: allow
+  annotations:
+    description: "Network policy for Registry - Agent metadata service"
+    security.greenlang.ai/compliance: "SOC2,ISO27001"
+    security.greenlang.ai/exposure: "internal-only"
+spec:
+  # Select Registry pods
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: registry
+      app.kubernetes.io/component: registry
+  policyTypes:
+    - Ingress
+    - Egress
+
+  ingress:
+    # Allow traffic from API Server
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: api-server
+              app.kubernetes.io/component: api
+      ports:
+        - protocol: TCP
+          port: 8001
+
+    # Allow traffic from Agent Runtime
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: agent-runtime
+              app.kubernetes.io/component: agent-runtime
+      ports:
+        - protocol: TCP
+          port: 8001
+
+    # Allow Prometheus metrics scraping
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: prometheus
+      ports:
+        - protocol: TCP
+          port: 8001
+        - protocol: TCP
+          port: 9091
+
+    # Allow health checks from kubelet
+    - from:
+        - ipBlock:
+            cidr: 10.0.0.0/8
+      ports:
+        - protocol: TCP
+          port: 8001
+
+  egress:
+    # Allow egress to PostgreSQL ONLY
+    # Registry should only access the database
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: postgresql
+      ports:
+        - protocol: TCP
+          port: 5432
+
+    # Allow egress to Redis for caching
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: redis
+      ports:
+        - protocol: TCP
+          port: 6379
+
+    # Allow egress to OpenTelemetry Collector
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: otel-collector
+      ports:
+        - protocol: TCP
+          port: 4317
+        - protocol: TCP
+          port: 4318

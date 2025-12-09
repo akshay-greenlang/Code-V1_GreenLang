@@ -1,0 +1,390 @@
+{
+  "metadata": {
+    "source": "EPA",
+    "source_name": "U.S. Environmental Protection Agency",
+    "source_document": "Emission Factors for Greenhouse Gas Inventories - Industrial Processes",
+    "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+    "version": "2024.1",
+    "last_updated": "2024-04-01",
+    "gwp_set": "AR5",
+    "region": "US",
+    "description": "EPA emission factors for industrial process emissions"
+  },
+  "cement_production": [
+    {
+      "id": "ef://epa/industrial/cement_clinker/2024",
+      "process": "Cement Clinker Production",
+      "co2_factor": 0.510,
+      "co2_unit": "t CO2/t clinker",
+      "uncertainty_lower_pct": -3,
+      "uncertainty_upper_pct": 3,
+      "calculation_method": "Process emissions from calcination",
+      "notes": "Process emissions only - excludes fuel combustion"
+    },
+    {
+      "id": "ef://epa/industrial/cement_finished/2024",
+      "process": "Finished Cement Production",
+      "co2_factor": 0.440,
+      "co2_unit": "t CO2/t cement",
+      "uncertainty_lower_pct": -5,
+      "uncertainty_upper_pct": 5,
+      "calculation_method": "Process emissions adjusted for clinker ratio",
+      "notes": "Assumes 85% clinker ratio"
+    }
+  ],
+  "lime_production": [
+    {
+      "id": "ef://epa/industrial/lime_high_calcium/2024",
+      "process": "High-Calcium Lime Production",
+      "co2_factor": 0.750,
+      "co2_unit": "t CO2/t lime",
+      "uncertainty_lower_pct": -2,
+      "uncertainty_upper_pct": 2,
+      "cao_content": "93-98%",
+      "notes": "Quicklime (CaO)"
+    },
+    {
+      "id": "ef://epa/industrial/lime_dolomitic/2024",
+      "process": "Dolomitic Lime Production",
+      "co2_factor": 0.860,
+      "co2_unit": "t CO2/t lime",
+      "uncertainty_lower_pct": -2,
+      "uncertainty_upper_pct": 2,
+      "cao_mgo_content": "55-58% CaO, 36-40% MgO",
+      "notes": "Dolomitic quicklime (CaO-MgO)"
+    },
+    {
+      "id": "ef://epa/industrial/lime_hydraulic/2024",
+      "process": "Hydraulic Lime Production",
+      "co2_factor": 0.590,
+      "co2_unit": "t CO2/t lime",
+      "uncertainty_lower_pct": -5,
+      "uncertainty_upper_pct": 5,
+      "notes": "Hydraulic lime with lower calcium content"
+    }
+  ],
+  "glass_production": [
+    {
+      "id": "ef://epa/industrial/glass_flat/2024",
+      "process": "Flat Glass Production",
+      "co2_factor": 0.200,
+      "co2_unit": "t CO2/t glass",
+      "uncertainty_lower_pct": -5,
+      "uncertainty_upper_pct": 5,
+      "notes": "Process emissions from raw material decomposition"
+    },
+    {
+      "id": "ef://epa/industrial/glass_container/2024",
+      "process": "Container Glass Production",
+      "co2_factor": 0.185,
+      "co2_unit": "t CO2/t glass",
+      "uncertainty_lower_pct": -5,
+      "uncertainty_upper_pct": 5,
+      "notes": "Higher recycled content typically"
+    },
+    {
+      "id": "ef://epa/industrial/glass_fiber/2024",
+      "process": "Glass Fiber Production",
+      "co2_factor": 0.220,
+      "co2_unit": "t CO2/t fiber",
+      "uncertainty_lower_pct": -5,
+      "uncertainty_upper_pct": 5,
+      "notes": "Fiberglass insulation and reinforcement"
+    }
+  ],
+  "iron_steel_production": [
+    {
+      "id": "ef://epa/industrial/steel_bof/2024",
+      "process": "Steel Production - Basic Oxygen Furnace",
+      "co2_factor": 1.850,
+      "co2_unit": "t CO2/t steel",
+      "uncertainty_lower_pct": -10,
+      "uncertainty_upper_pct": 10,
+      "notes": "Integrated steelmaking from iron ore"
+    },
+    {
+      "id": "ef://epa/industrial/steel_eaf/2024",
+      "process": "Steel Production - Electric Arc Furnace",
+      "co2_factor": 0.450,
+      "co2_unit": "t CO2/t steel",
+      "uncertainty_lower_pct": -10,
+      "uncertainty_upper_pct": 10,
+      "notes": "Scrap-based steelmaking - excludes electricity emissions"
+    },
+    {
+      "id": "ef://epa/industrial/steel_dri/2024",
+      "process": "Direct Reduced Iron Production",
+      "co2_factor": 1.100,
+      "co2_unit": "t CO2/t DRI",
+      "uncertainty_lower_pct": -10,
+      "uncertainty_upper_pct": 10,
+      "notes": "Natural gas-based DRI"
+    },
+    {
+      "id": "ef://epa/industrial/pig_iron/2024",
+      "process": "Pig Iron Production",
+      "co2_factor": 1.350,
+      "co2_unit": "t CO2/t pig iron",
+      "uncertainty_lower_pct": -10,
+      "uncertainty_upper_pct": 10,
+      "notes": "Blast furnace pig iron"
+    },
+    {
+      "id": "ef://epa/industrial/iron_sinter/2024",
+      "process": "Iron Sintering",
+      "co2_factor": 0.200,
+      "co2_unit": "t CO2/t sinter",
+      "uncertainty_lower_pct": -10,
+      "uncertainty_upper_pct": 10,
+      "notes": "Sinter plant emissions"
+    },
+    {
+      "id": "ef://epa/industrial/coke_production/2024",
+      "process": "Coke Production",
+      "co2_factor": 0.560,
+      "co2_unit": "t CO2/t coke",
+      "uncertainty_lower_pct": -5,
+      "uncertainty_upper_pct": 5,
+      "notes": "Metallurgical coke production"
+    }
+  ],
+  "aluminum_production": [
+    {
+      "id": "ef://epa/industrial/aluminum_primary/2024",
+      "process": "Primary Aluminum Production",
+      "co2_factor": 1.500,
+      "co2_unit": "t CO2/t aluminum",
+      "pfc_cf4_factor": 0.020,
+      "pfc_cf4_unit": "kg CF4/t aluminum",
+      "pfc_c2f6_factor": 0.002,
+      "pfc_c2f6_unit": "kg C2F6/t aluminum",
+      "uncertainty_lower_pct": -10,
+      "uncertainty_upper_pct": 10,
+      "notes": "Electrolysis process emissions - excludes electricity"
+    },
+    {
+      "id": "ef://epa/industrial/aluminum_secondary/2024",
+      "process": "Secondary Aluminum Production",
+      "co2_factor": 0.100,
+      "co2_unit": "t CO2/t aluminum",
+      "uncertainty_lower_pct": -15,
+      "uncertainty_upper_pct": 15,
+      "notes": "Recycled aluminum processing"
+    },
+    {
+      "id": "ef://epa/industrial/anode_consumption/2024",
+      "process": "Anode Consumption",
+      "co2_factor": 1.600,
+      "co2_unit": "t CO2/t anode",
+      "uncertainty_lower_pct": -5,
+      "uncertainty_upper_pct": 5,
+      "notes": "Carbon anode consumption in electrolysis"
+    }
+  ],
+  "ammonia_production": [
+    {
+      "id": "ef://epa/industrial/ammonia_steam_reforming/2024",
+      "process": "Ammonia Production - Steam Reforming",
+      "co2_factor": 1.500,
+      "co2_unit": "t CO2/t ammonia",
+      "uncertainty_lower_pct": -5,
+      "uncertainty_upper_pct": 5,
+      "notes": "Natural gas-based ammonia synthesis"
+    },
+    {
+      "id": "ef://epa/industrial/ammonia_partial_oxidation/2024",
+      "process": "Ammonia Production - Partial Oxidation",
+      "co2_factor": 2.200,
+      "co2_unit": "t CO2/t ammonia",
+      "uncertainty_lower_pct": -10,
+      "uncertainty_upper_pct": 10,
+      "notes": "Coal or heavy oil-based ammonia"
+    }
+  ],
+  "nitric_acid_production": [
+    {
+      "id": "ef://epa/industrial/nitric_acid_weak/2024",
+      "process": "Nitric Acid Production - Weak Acid",
+      "n2o_factor": 7.0,
+      "n2o_unit": "kg N2O/t nitric acid",
+      "co2e_factor": 1.855,
+      "co2e_unit": "t CO2e/t nitric acid",
+      "uncertainty_lower_pct": -20,
+      "uncertainty_upper_pct": 20,
+      "notes": "Without abatement, 50-65% concentration"
+    },
+    {
+      "id": "ef://epa/industrial/nitric_acid_with_abatement/2024",
+      "process": "Nitric Acid Production - With NSCR",
+      "n2o_factor": 2.0,
+      "n2o_unit": "kg N2O/t nitric acid",
+      "co2e_factor": 0.530,
+      "co2e_unit": "t CO2e/t nitric acid",
+      "uncertainty_lower_pct": -30,
+      "uncertainty_upper_pct": 30,
+      "notes": "With non-selective catalytic reduction"
+    }
+  ],
+  "adipic_acid_production": [
+    {
+      "id": "ef://epa/industrial/adipic_acid/2024",
+      "process": "Adipic Acid Production",
+      "n2o_factor": 300.0,
+      "n2o_unit": "kg N2O/t adipic acid",
+      "co2e_factor": 79.5,
+      "co2e_unit": "t CO2e/t adipic acid",
+      "uncertainty_lower_pct": -10,
+      "uncertainty_upper_pct": 10,
+      "notes": "Without abatement - nylon production"
+    },
+    {
+      "id": "ef://epa/industrial/adipic_acid_with_abatement/2024",
+      "process": "Adipic Acid Production - With Abatement",
+      "n2o_factor": 9.0,
+      "n2o_unit": "kg N2O/t adipic acid",
+      "co2e_factor": 2.385,
+      "co2e_unit": "t CO2e/t adipic acid",
+      "uncertainty_lower_pct": -20,
+      "uncertainty_upper_pct": 20,
+      "notes": "With thermal/catalytic destruction (97% reduction)"
+    }
+  ],
+  "hydrogen_production": [
+    {
+      "id": "ef://epa/industrial/hydrogen_smr/2024",
+      "process": "Hydrogen Production - Steam Methane Reforming",
+      "co2_factor": 9.3,
+      "co2_unit": "kg CO2/kg H2",
+      "uncertainty_lower_pct": -5,
+      "uncertainty_upper_pct": 5,
+      "notes": "Grey hydrogen from natural gas"
+    },
+    {
+      "id": "ef://epa/industrial/hydrogen_smr_ccs/2024",
+      "process": "Hydrogen Production - SMR with CCS",
+      "co2_factor": 2.0,
+      "co2_unit": "kg CO2/kg H2",
+      "uncertainty_lower_pct": -20,
+      "uncertainty_upper_pct": 20,
+      "notes": "Blue hydrogen with 80% capture"
+    },
+    {
+      "id": "ef://epa/industrial/hydrogen_coal_gasification/2024",
+      "process": "Hydrogen Production - Coal Gasification",
+      "co2_factor": 19.0,
+      "co2_unit": "kg CO2/kg H2",
+      "uncertainty_lower_pct": -10,
+      "uncertainty_upper_pct": 10,
+      "notes": "Coal-based hydrogen without CCS"
+    }
+  ],
+  "petrochemicals": [
+    {
+      "id": "ef://epa/industrial/ethylene_steam_cracking/2024",
+      "process": "Ethylene Production - Steam Cracking",
+      "co2_factor": 1.0,
+      "co2_unit": "t CO2/t ethylene",
+      "uncertainty_lower_pct": -10,
+      "uncertainty_upper_pct": 10,
+      "notes": "Naphtha steam cracking"
+    },
+    {
+      "id": "ef://epa/industrial/propylene_production/2024",
+      "process": "Propylene Production",
+      "co2_factor": 1.2,
+      "co2_unit": "t CO2/t propylene",
+      "uncertainty_lower_pct": -10,
+      "uncertainty_upper_pct": 10,
+      "notes": "FCC and steam cracking routes"
+    },
+    {
+      "id": "ef://epa/industrial/methanol_production/2024",
+      "process": "Methanol Production",
+      "co2_factor": 0.65,
+      "co2_unit": "t CO2/t methanol",
+      "uncertainty_lower_pct": -10,
+      "uncertainty_upper_pct": 10,
+      "notes": "Natural gas-based methanol"
+    }
+  ],
+  "semiconductor_manufacturing": [
+    {
+      "id": "ef://epa/industrial/semiconductor_cf4/2024",
+      "process": "Semiconductor Manufacturing - CF4 Use",
+      "cf4_utilization_rate": 0.80,
+      "destruction_efficiency": 0.00,
+      "emission_factor": 0.80,
+      "emission_unit": "kg CF4/kg CF4 used",
+      "notes": "Without abatement"
+    },
+    {
+      "id": "ef://epa/industrial/semiconductor_c2f6/2024",
+      "process": "Semiconductor Manufacturing - C2F6 Use",
+      "c2f6_utilization_rate": 0.70,
+      "destruction_efficiency": 0.00,
+      "emission_factor": 0.70,
+      "emission_unit": "kg C2F6/kg C2F6 used",
+      "notes": "Without abatement"
+    },
+    {
+      "id": "ef://epa/industrial/semiconductor_nf3/2024",
+      "process": "Semiconductor Manufacturing - NF3 Use",
+      "nf3_utilization_rate": 0.98,
+      "destruction_efficiency": 0.00,
+      "emission_factor": 0.02,
+      "emission_unit": "kg NF3/kg NF3 used",
+      "notes": "High utilization rate"
+    },
+    {
+      "id": "ef://epa/industrial/semiconductor_sf6/2024",
+      "process": "Semiconductor Manufacturing - SF6 Use",
+      "sf6_utilization_rate": 0.70,
+      "destruction_efficiency": 0.00,
+      "emission_factor": 0.30,
+      "emission_unit": "kg SF6/kg SF6 used",
+      "notes": "Without abatement"
+    }
+  ],
+  "magnesium_production": [
+    {
+      "id": "ef://epa/industrial/magnesium_primary/2024",
+      "process": "Primary Magnesium Production",
+      "co2_factor": 5.0,
+      "co2_unit": "t CO2/t magnesium",
+      "sf6_factor": 1.0,
+      "sf6_unit": "kg SF6/t magnesium",
+      "uncertainty_lower_pct": -20,
+      "uncertainty_upper_pct": 20,
+      "notes": "Pidgeon process with SF6 cover gas"
+    },
+    {
+      "id": "ef://epa/industrial/magnesium_casting/2024",
+      "process": "Magnesium Casting",
+      "sf6_factor": 0.5,
+      "sf6_unit": "kg SF6/t magnesium cast",
+      "uncertainty_lower_pct": -30,
+      "uncertainty_upper_pct": 30,
+      "notes": "Die casting with SF6 cover gas"
+    }
+  ],
+  "soda_ash_production": [
+    {
+      "id": "ef://epa/industrial/soda_ash_natural/2024",
+      "process": "Natural Soda Ash Production",
+      "co2_factor": 0.138,
+      "co2_unit": "t CO2/t soda ash",
+      "uncertainty_lower_pct": -10,
+      "uncertainty_upper_pct": 10,
+      "notes": "Trona mining and processing"
+    },
+    {
+      "id": "ef://epa/industrial/soda_ash_synthetic/2024",
+      "process": "Synthetic Soda Ash Production",
+      "co2_factor": 0.415,
+      "co2_unit": "t CO2/t soda ash",
+      "uncertainty_lower_pct": -10,
+      "uncertainty_upper_pct": 10,
+      "notes": "Solvay process"
+    }
+  ]
+}

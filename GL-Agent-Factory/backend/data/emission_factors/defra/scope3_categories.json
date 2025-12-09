@@ -1,0 +1,610 @@
+{
+  "metadata": {
+    "source": "DEFRA",
+    "source_name": "UK Department for Environment, Food and Rural Affairs",
+    "source_document": "UK Government GHG Conversion Factors 2024 - Scope 3",
+    "source_url": "https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2024",
+    "version": "2024.0",
+    "last_updated": "2024-06-01",
+    "gwp_set": "AR5",
+    "region": "UK",
+    "description": "DEFRA 2024 emission factors for Scope 3 categories"
+  },
+  "well_to_tank": {
+    "description": "Upstream emissions from fuel extraction, refining, and transportation",
+    "gaseous_fuels": [
+      {
+        "id": "ef://defra/scope3/wtt_natural_gas/2024",
+        "fuel_name": "Natural Gas",
+        "wtt_factor": 0.02349,
+        "wtt_unit": "kg CO2e/kWh",
+        "notes": "Well-to-tank emissions for natural gas"
+      },
+      {
+        "id": "ef://defra/scope3/wtt_lpg/2024",
+        "fuel_name": "LPG",
+        "wtt_factor": 0.18378,
+        "wtt_unit": "kg CO2e/litre",
+        "notes": "Well-to-tank emissions for LPG"
+      },
+      {
+        "id": "ef://defra/scope3/wtt_propane/2024",
+        "fuel_name": "Propane",
+        "wtt_factor": 0.18564,
+        "wtt_unit": "kg CO2e/litre",
+        "notes": "Well-to-tank emissions for propane"
+      },
+      {
+        "id": "ef://defra/scope3/wtt_butane/2024",
+        "fuel_name": "Butane",
+        "wtt_factor": 0.21141,
+        "wtt_unit": "kg CO2e/litre",
+        "notes": "Well-to-tank emissions for butane"
+      }
+    ],
+    "liquid_fuels": [
+      {
+        "id": "ef://defra/scope3/wtt_petrol/2024",
+        "fuel_name": "Petrol",
+        "wtt_factor": 0.57942,
+        "wtt_unit": "kg CO2e/litre",
+        "notes": "Well-to-tank emissions for petrol"
+      },
+      {
+        "id": "ef://defra/scope3/wtt_diesel/2024",
+        "fuel_name": "Diesel",
+        "wtt_factor": 0.60986,
+        "wtt_unit": "kg CO2e/litre",
+        "notes": "Well-to-tank emissions for diesel"
+      },
+      {
+        "id": "ef://defra/scope3/wtt_gas_oil/2024",
+        "fuel_name": "Gas Oil",
+        "wtt_factor": 0.66925,
+        "wtt_unit": "kg CO2e/litre",
+        "notes": "Well-to-tank emissions for gas oil"
+      },
+      {
+        "id": "ef://defra/scope3/wtt_fuel_oil/2024",
+        "fuel_name": "Fuel Oil",
+        "wtt_factor": 0.42261,
+        "wtt_unit": "kg CO2e/litre",
+        "notes": "Well-to-tank emissions for fuel oil"
+      },
+      {
+        "id": "ef://defra/scope3/wtt_kerosene/2024",
+        "fuel_name": "Kerosene",
+        "wtt_factor": 0.52949,
+        "wtt_unit": "kg CO2e/litre",
+        "notes": "Well-to-tank emissions for kerosene"
+      },
+      {
+        "id": "ef://defra/scope3/wtt_aviation_turbine_fuel/2024",
+        "fuel_name": "Aviation Turbine Fuel",
+        "wtt_factor": 0.52706,
+        "wtt_unit": "kg CO2e/litre",
+        "notes": "Well-to-tank emissions for jet fuel"
+      },
+      {
+        "id": "ef://defra/scope3/wtt_biodiesel/2024",
+        "fuel_name": "Biodiesel",
+        "wtt_factor": 0.42009,
+        "wtt_unit": "kg CO2e/litre",
+        "notes": "Well-to-tank emissions for biodiesel"
+      },
+      {
+        "id": "ef://defra/scope3/wtt_bioethanol/2024",
+        "fuel_name": "Bioethanol",
+        "wtt_factor": 0.53776,
+        "wtt_unit": "kg CO2e/litre",
+        "notes": "Well-to-tank emissions for bioethanol"
+      }
+    ],
+    "solid_fuels": [
+      {
+        "id": "ef://defra/scope3/wtt_coal_industrial/2024",
+        "fuel_name": "Coal (Industrial)",
+        "wtt_factor": 0.03868,
+        "wtt_unit": "kg CO2e/kWh",
+        "notes": "Well-to-tank emissions for industrial coal"
+      },
+      {
+        "id": "ef://defra/scope3/wtt_coal_domestic/2024",
+        "fuel_name": "Coal (Domestic)",
+        "wtt_factor": 0.04684,
+        "wtt_unit": "kg CO2e/kWh",
+        "notes": "Well-to-tank emissions for domestic coal"
+      }
+    ],
+    "electricity": [
+      {
+        "id": "ef://defra/scope3/wtt_uk_electricity/2024",
+        "energy_type": "UK Electricity",
+        "wtt_generation_factor": 0.02076,
+        "wtt_td_factor": 0.00189,
+        "wtt_total_factor": 0.02265,
+        "wtt_unit": "kg CO2e/kWh",
+        "notes": "Well-to-tank emissions for UK electricity generation"
+      }
+    ]
+  },
+  "business_travel": {
+    "flights": {
+      "domestic": [
+        {
+          "id": "ef://defra/scope3/flight_domestic_average/2024",
+          "class": "Average passenger",
+          "distance_band": "Domestic",
+          "co2e_factor": 0.24587,
+          "unit": "kg CO2e/passenger-km",
+          "with_rf": 0.28521,
+          "with_rf_unit": "kg CO2e/passenger-km",
+          "notes": "UK domestic flights"
+        }
+      ],
+      "short_haul": [
+        {
+          "id": "ef://defra/scope3/flight_short_haul_economy/2024",
+          "class": "Economy class",
+          "distance_band": "Short-haul (<3700km)",
+          "co2e_factor": 0.15102,
+          "unit": "kg CO2e/passenger-km",
+          "with_rf": 0.17518,
+          "with_rf_unit": "kg CO2e/passenger-km",
+          "notes": "Short-haul economy class flights"
+        },
+        {
+          "id": "ef://defra/scope3/flight_short_haul_business/2024",
+          "class": "Business class",
+          "distance_band": "Short-haul (<3700km)",
+          "co2e_factor": 0.22653,
+          "unit": "kg CO2e/passenger-km",
+          "with_rf": 0.26278,
+          "with_rf_unit": "kg CO2e/passenger-km",
+          "notes": "Short-haul business class flights"
+        },
+        {
+          "id": "ef://defra/scope3/flight_short_haul_average/2024",
+          "class": "Average passenger",
+          "distance_band": "Short-haul (<3700km)",
+          "co2e_factor": 0.15298,
+          "unit": "kg CO2e/passenger-km",
+          "with_rf": 0.17746,
+          "with_rf_unit": "kg CO2e/passenger-km",
+          "notes": "Short-haul average passenger flights"
+        }
+      ],
+      "long_haul": [
+        {
+          "id": "ef://defra/scope3/flight_long_haul_economy/2024",
+          "class": "Economy class",
+          "distance_band": "Long-haul (>3700km)",
+          "co2e_factor": 0.14615,
+          "unit": "kg CO2e/passenger-km",
+          "with_rf": 0.16953,
+          "with_rf_unit": "kg CO2e/passenger-km",
+          "notes": "Long-haul economy class flights"
+        },
+        {
+          "id": "ef://defra/scope3/flight_long_haul_premium_economy/2024",
+          "class": "Premium economy class",
+          "distance_band": "Long-haul (>3700km)",
+          "co2e_factor": 0.23384,
+          "unit": "kg CO2e/passenger-km",
+          "with_rf": 0.27125,
+          "with_rf_unit": "kg CO2e/passenger-km",
+          "notes": "Long-haul premium economy class flights"
+        },
+        {
+          "id": "ef://defra/scope3/flight_long_haul_business/2024",
+          "class": "Business class",
+          "distance_band": "Long-haul (>3700km)",
+          "co2e_factor": 0.42385,
+          "unit": "kg CO2e/passenger-km",
+          "with_rf": 0.49167,
+          "with_rf_unit": "kg CO2e/passenger-km",
+          "notes": "Long-haul business class flights"
+        },
+        {
+          "id": "ef://defra/scope3/flight_long_haul_first/2024",
+          "class": "First class",
+          "distance_band": "Long-haul (>3700km)",
+          "co2e_factor": 0.58461,
+          "unit": "kg CO2e/passenger-km",
+          "with_rf": 0.67815,
+          "with_rf_unit": "kg CO2e/passenger-km",
+          "notes": "Long-haul first class flights"
+        },
+        {
+          "id": "ef://defra/scope3/flight_long_haul_average/2024",
+          "class": "Average passenger",
+          "distance_band": "Long-haul (>3700km)",
+          "co2e_factor": 0.19085,
+          "unit": "kg CO2e/passenger-km",
+          "with_rf": 0.22138,
+          "with_rf_unit": "kg CO2e/passenger-km",
+          "notes": "Long-haul average passenger flights"
+        }
+      ],
+      "international": [
+        {
+          "id": "ef://defra/scope3/flight_international_average/2024",
+          "class": "Average passenger",
+          "distance_band": "International (all)",
+          "co2e_factor": 0.17139,
+          "unit": "kg CO2e/passenger-km",
+          "with_rf": 0.19881,
+          "with_rf_unit": "kg CO2e/passenger-km",
+          "notes": "International flights average"
+        }
+      ]
+    },
+    "rail": [
+      {
+        "id": "ef://defra/scope3/rail_national/2024",
+        "type": "National rail",
+        "co2e_factor": 0.03549,
+        "unit": "kg CO2e/passenger-km",
+        "notes": "UK national rail average"
+      },
+      {
+        "id": "ef://defra/scope3/rail_international/2024",
+        "type": "International rail",
+        "co2e_factor": 0.00446,
+        "unit": "kg CO2e/passenger-km",
+        "notes": "Eurostar and similar"
+      },
+      {
+        "id": "ef://defra/scope3/rail_light_tram/2024",
+        "type": "Light rail and tram",
+        "co2e_factor": 0.02984,
+        "unit": "kg CO2e/passenger-km",
+        "notes": "UK light rail systems"
+      },
+      {
+        "id": "ef://defra/scope3/rail_london_underground/2024",
+        "type": "London Underground",
+        "co2e_factor": 0.02781,
+        "unit": "kg CO2e/passenger-km",
+        "notes": "London Underground/Tube"
+      }
+    ],
+    "road": [
+      {
+        "id": "ef://defra/scope3/taxi_average/2024",
+        "type": "Taxi",
+        "co2e_factor": 0.14888,
+        "unit": "kg CO2e/passenger-km",
+        "notes": "Average taxi"
+      },
+      {
+        "id": "ef://defra/scope3/bus_local/2024",
+        "type": "Local bus",
+        "co2e_factor": 0.11878,
+        "unit": "kg CO2e/passenger-km",
+        "notes": "Local bus average"
+      },
+      {
+        "id": "ef://defra/scope3/bus_coach/2024",
+        "type": "Coach",
+        "co2e_factor": 0.02732,
+        "unit": "kg CO2e/passenger-km",
+        "notes": "Long distance coach"
+      }
+    ],
+    "hotel_stays": [
+      {
+        "id": "ef://defra/scope3/hotel_uk/2024",
+        "country": "United Kingdom",
+        "country_code": "UK",
+        "co2e_factor": 10.9,
+        "unit": "kg CO2e/room-night",
+        "notes": "UK hotel stay per room per night"
+      },
+      {
+        "id": "ef://defra/scope3/hotel_europe/2024",
+        "region": "Europe (average)",
+        "co2e_factor": 15.2,
+        "unit": "kg CO2e/room-night",
+        "notes": "European average hotel stay"
+      },
+      {
+        "id": "ef://defra/scope3/hotel_north_america/2024",
+        "region": "North America",
+        "co2e_factor": 25.9,
+        "unit": "kg CO2e/room-night",
+        "notes": "North American average hotel stay"
+      },
+      {
+        "id": "ef://defra/scope3/hotel_asia_pacific/2024",
+        "region": "Asia Pacific",
+        "co2e_factor": 28.6,
+        "unit": "kg CO2e/room-night",
+        "notes": "Asia Pacific average hotel stay"
+      },
+      {
+        "id": "ef://defra/scope3/hotel_middle_east/2024",
+        "region": "Middle East",
+        "co2e_factor": 38.5,
+        "unit": "kg CO2e/room-night",
+        "notes": "Middle East average hotel stay"
+      },
+      {
+        "id": "ef://defra/scope3/hotel_africa/2024",
+        "region": "Africa",
+        "co2e_factor": 27.0,
+        "unit": "kg CO2e/room-night",
+        "notes": "Africa average hotel stay"
+      },
+      {
+        "id": "ef://defra/scope3/hotel_latin_america/2024",
+        "region": "Latin America",
+        "co2e_factor": 14.3,
+        "unit": "kg CO2e/room-night",
+        "notes": "Latin America average hotel stay"
+      }
+    ]
+  },
+  "freight": {
+    "road": [
+      {
+        "id": "ef://defra/scope3/freight_hgv_rigid_all/2024",
+        "vehicle_type": "HGV (all rigid)",
+        "co2e_factor": 0.10667,
+        "unit": "kg CO2e/tonne-km",
+        "notes": "All rigid HGVs average"
+      },
+      {
+        "id": "ef://defra/scope3/freight_hgv_articulated_all/2024",
+        "vehicle_type": "HGV (all articulated)",
+        "co2e_factor": 0.04853,
+        "unit": "kg CO2e/tonne-km",
+        "notes": "All articulated HGVs average"
+      },
+      {
+        "id": "ef://defra/scope3/freight_hgv_all_diesel/2024",
+        "vehicle_type": "HGV (all diesel)",
+        "co2e_factor": 0.06313,
+        "unit": "kg CO2e/tonne-km",
+        "notes": "All diesel HGVs average"
+      },
+      {
+        "id": "ef://defra/scope3/freight_van_small/2024",
+        "vehicle_type": "Van (up to 3.5t) - average",
+        "co2e_factor": 0.56901,
+        "unit": "kg CO2e/tonne-km",
+        "notes": "Small vans average load"
+      },
+      {
+        "id": "ef://defra/scope3/freight_van_large/2024",
+        "vehicle_type": "Van (3.5-7.5t) - average",
+        "co2e_factor": 0.25913,
+        "unit": "kg CO2e/tonne-km",
+        "notes": "Large vans average load"
+      }
+    ],
+    "rail": [
+      {
+        "id": "ef://defra/scope3/freight_rail/2024",
+        "mode": "Rail freight",
+        "co2e_factor": 0.02479,
+        "unit": "kg CO2e/tonne-km",
+        "notes": "UK rail freight average"
+      }
+    ],
+    "sea": [
+      {
+        "id": "ef://defra/scope3/freight_sea_container_average/2024",
+        "mode": "Container ship (average)",
+        "co2e_factor": 0.01612,
+        "unit": "kg CO2e/tonne-km",
+        "notes": "Average container ship"
+      },
+      {
+        "id": "ef://defra/scope3/freight_sea_bulk_carrier/2024",
+        "mode": "Bulk carrier (average)",
+        "co2e_factor": 0.00416,
+        "unit": "kg CO2e/tonne-km",
+        "notes": "Average bulk carrier"
+      },
+      {
+        "id": "ef://defra/scope3/freight_sea_tanker/2024",
+        "mode": "General cargo/tanker (average)",
+        "co2e_factor": 0.00827,
+        "unit": "kg CO2e/tonne-km",
+        "notes": "Average general cargo/tanker"
+      },
+      {
+        "id": "ef://defra/scope3/freight_sea_roro/2024",
+        "mode": "RoRo ferry",
+        "co2e_factor": 0.11262,
+        "unit": "kg CO2e/tonne-km",
+        "notes": "Roll-on/Roll-off ferry"
+      }
+    ],
+    "air": [
+      {
+        "id": "ef://defra/scope3/freight_air_domestic/2024",
+        "mode": "Air freight (domestic)",
+        "co2e_factor": 2.47540,
+        "unit": "kg CO2e/tonne-km",
+        "notes": "Domestic air freight"
+      },
+      {
+        "id": "ef://defra/scope3/freight_air_short_haul/2024",
+        "mode": "Air freight (short-haul)",
+        "co2e_factor": 1.13630,
+        "unit": "kg CO2e/tonne-km",
+        "notes": "Short-haul air freight"
+      },
+      {
+        "id": "ef://defra/scope3/freight_air_long_haul/2024",
+        "mode": "Air freight (long-haul)",
+        "co2e_factor": 0.61640,
+        "unit": "kg CO2e/tonne-km",
+        "notes": "Long-haul air freight"
+      },
+      {
+        "id": "ef://defra/scope3/freight_air_international/2024",
+        "mode": "Air freight (international)",
+        "co2e_factor": 0.65720,
+        "unit": "kg CO2e/tonne-km",
+        "notes": "International air freight average"
+      }
+    ]
+  },
+  "waste_disposal": {
+    "landfill": [
+      {
+        "id": "ef://defra/scope3/waste_landfill_mixed/2024",
+        "waste_type": "Mixed municipal waste",
+        "co2e_factor": 586.90,
+        "unit": "kg CO2e/tonne",
+        "notes": "Average mixed waste to landfill"
+      },
+      {
+        "id": "ef://defra/scope3/waste_landfill_paper/2024",
+        "waste_type": "Paper and cardboard",
+        "co2e_factor": 1042.00,
+        "unit": "kg CO2e/tonne",
+        "notes": "Paper/cardboard to landfill"
+      },
+      {
+        "id": "ef://defra/scope3/waste_landfill_food/2024",
+        "waste_type": "Food and drink waste",
+        "co2e_factor": 626.80,
+        "unit": "kg CO2e/tonne",
+        "notes": "Food waste to landfill"
+      },
+      {
+        "id": "ef://defra/scope3/waste_landfill_wood/2024",
+        "waste_type": "Wood",
+        "co2e_factor": 817.90,
+        "unit": "kg CO2e/tonne",
+        "notes": "Wood to landfill"
+      },
+      {
+        "id": "ef://defra/scope3/waste_landfill_textiles/2024",
+        "waste_type": "Textiles",
+        "co2e_factor": 483.00,
+        "unit": "kg CO2e/tonne",
+        "notes": "Textiles to landfill"
+      },
+      {
+        "id": "ef://defra/scope3/waste_landfill_plastics/2024",
+        "waste_type": "Plastics",
+        "co2e_factor": 21.30,
+        "unit": "kg CO2e/tonne",
+        "notes": "Plastics to landfill (minimal decomposition)"
+      },
+      {
+        "id": "ef://defra/scope3/waste_landfill_glass/2024",
+        "waste_type": "Glass",
+        "co2e_factor": 8.90,
+        "unit": "kg CO2e/tonne",
+        "notes": "Glass to landfill"
+      },
+      {
+        "id": "ef://defra/scope3/waste_landfill_metals/2024",
+        "waste_type": "Metal",
+        "co2e_factor": 8.90,
+        "unit": "kg CO2e/tonne",
+        "notes": "Metal to landfill"
+      }
+    ],
+    "incineration": [
+      {
+        "id": "ef://defra/scope3/waste_incineration_mixed/2024",
+        "waste_type": "Mixed municipal waste",
+        "co2e_factor": 21.30,
+        "unit": "kg CO2e/tonne",
+        "notes": "Mixed waste incineration"
+      },
+      {
+        "id": "ef://defra/scope3/waste_incineration_plastics/2024",
+        "waste_type": "Plastics",
+        "co2e_factor": 21.30,
+        "unit": "kg CO2e/tonne",
+        "notes": "Plastics incineration"
+      }
+    ],
+    "recycling": [
+      {
+        "id": "ef://defra/scope3/waste_recycling_mixed/2024",
+        "waste_type": "Mixed recycling",
+        "co2e_factor": 21.30,
+        "unit": "kg CO2e/tonne",
+        "notes": "Mixed recycling collection and processing"
+      },
+      {
+        "id": "ef://defra/scope3/waste_recycling_paper/2024",
+        "waste_type": "Paper and cardboard",
+        "co2e_factor": 21.30,
+        "unit": "kg CO2e/tonne",
+        "notes": "Paper recycling"
+      },
+      {
+        "id": "ef://defra/scope3/waste_recycling_plastics/2024",
+        "waste_type": "Plastics",
+        "co2e_factor": 21.30,
+        "unit": "kg CO2e/tonne",
+        "notes": "Plastics recycling"
+      },
+      {
+        "id": "ef://defra/scope3/waste_recycling_metals/2024",
+        "waste_type": "Metal",
+        "co2e_factor": 21.30,
+        "unit": "kg CO2e/tonne",
+        "notes": "Metal recycling"
+      },
+      {
+        "id": "ef://defra/scope3/waste_recycling_glass/2024",
+        "waste_type": "Glass",
+        "co2e_factor": 21.30,
+        "unit": "kg CO2e/tonne",
+        "notes": "Glass recycling"
+      }
+    ],
+    "composting": [
+      {
+        "id": "ef://defra/scope3/waste_composting_food/2024",
+        "waste_type": "Food waste",
+        "co2e_factor": 10.20,
+        "unit": "kg CO2e/tonne",
+        "notes": "Food waste composting"
+      },
+      {
+        "id": "ef://defra/scope3/waste_composting_garden/2024",
+        "waste_type": "Garden waste",
+        "co2e_factor": 10.20,
+        "unit": "kg CO2e/tonne",
+        "notes": "Garden waste composting"
+      }
+    ],
+    "anaerobic_digestion": [
+      {
+        "id": "ef://defra/scope3/waste_ad_food/2024",
+        "waste_type": "Food waste",
+        "co2e_factor": 10.20,
+        "unit": "kg CO2e/tonne",
+        "notes": "Food waste to anaerobic digestion"
+      }
+    ]
+  },
+  "water_supply_treatment": {
+    "supply": {
+      "id": "ef://defra/scope3/water_supply/2024",
+      "type": "Water supply",
+      "co2e_factor": 0.149,
+      "unit": "kg CO2e/cubic metre",
+      "notes": "Mains water supply"
+    },
+    "treatment": {
+      "id": "ef://defra/scope3/water_treatment/2024",
+      "type": "Water treatment",
+      "co2e_factor": 0.272,
+      "unit": "kg CO2e/cubic metre",
+      "notes": "Wastewater treatment"
+    }
+  }
+}

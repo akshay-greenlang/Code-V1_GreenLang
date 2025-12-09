@@ -1,0 +1,180 @@
+# GreenLang Agent Runtime Horizontal Pod Autoscaler
+# Scales based on CPU, memory, and custom metrics
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: agent-runtime-hpa
+  namespace: greenlang-production
+  labels:
+    app.kubernetes.io/name: agent-runtime
+    app.kubernetes.io/instance: production
+    app.kubernetes.io/component: hpa
+    app.kubernetes.io/part-of: greenlang-platform
+  annotations:
+    description: "HPA for Agent Runtime - scales 2-10 replicas"
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: agent-runtime
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+  # Scale based on CPU utilization
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  # Scale based on memory utilization
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+  # Scale based on requests per second (requires metrics adapter)
+  # - type: Pods
+  #   pods:
+  #     metric:
+  #       name: http_requests_per_second
+  #     target:
+  #       type: AverageValue
+  #       averageValue: "100"
+  # Scale based on queue depth (requires KEDA or Prometheus adapter)
+  # - type: External
+  #   external:
+  #     metric:
+  #       name: agent_queue_depth
+  #       selector:
+  #         matchLabels:
+  #           queue: agent-execution
+  #     target:
+  #       type: AverageValue
+  #       averageValue: "100"
+  behavior:
+    scaleUp:
+      # Stabilization window to prevent flapping
+      stabilizationWindowSeconds: 60
+      policies:
+      # Allow scaling up by 2 pods per minute
+      - type: Pods
+        value: 2
+        periodSeconds: 60
+      # Or scale up by 100% per minute
+      - type: Percent
+        value: 100
+        periodSeconds: 60
+      selectPolicy: Max
+    scaleDown:
+      # Longer stabilization window for scale down
+      stabilizationWindowSeconds: 300
+      policies:
+      # Scale down by 1 pod per 2 minutes
+      - type: Pods
+        value: 1
+        periodSeconds: 120
+      # Or scale down by 10% per 2 minutes
+      - type: Percent
+        value: 10
+        periodSeconds: 120
+      selectPolicy: Min
+---
+# API Server HPA
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: api-server-hpa
+  namespace: greenlang-production
+  labels:
+    app.kubernetes.io/name: api-server
+    app.kubernetes.io/instance: production
+    app.kubernetes.io/component: hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: api-server
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+      - type: Pods
+        value: 2
+        periodSeconds: 60
+      - type: Percent
+        value: 100
+        periodSeconds: 60
+      selectPolicy: Max
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Pods
+        value: 1
+        periodSeconds: 120
+      - type: Percent
+        value: 10
+        periodSeconds: 120
+      selectPolicy: Min
+---
+# Registry HPA
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: registry-hpa
+  namespace: greenlang-production
+  labels:
+    app.kubernetes.io/name: registry
+    app.kubernetes.io/instance: production
+    app.kubernetes.io/component: hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: registry
+  minReplicas: 2
+  maxReplicas: 5
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 60
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 70
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 120
+      policies:
+      - type: Pods
+        value: 1
+        periodSeconds: 60
+      selectPolicy: Max
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Pods
+        value: 1
+        periodSeconds: 180
+      selectPolicy: Min

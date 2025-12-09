@@ -1,0 +1,60 @@
+{
+  "metadata": {
+    "source": "DEFRA",
+    "source_name": "UK Department for Environment, Food and Rural Affairs",
+    "source_document": "UK Government GHG Conversion Factors for Company Reporting 2024",
+    "source_url": "https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2024",
+    "version": "2024.0",
+    "last_updated": "2024-06-01",
+    "gwp_set": "AR5",
+    "region": "UK",
+    "description": "Official UK Government greenhouse gas conversion factors for company reporting"
+  },
+  "overview": {
+    "reporting_year": 2024,
+    "base_year_for_grid_factors": 2022,
+    "gwp_values_source": "IPCC Fifth Assessment Report (AR5)",
+    "methodology": "GHG Protocol Corporate Standard",
+    "update_frequency": "Annual",
+    "applicable_regions": ["United Kingdom", "International operations with UK reporting"]
+  },
+  "scope_coverage": {
+    "scope_1": {
+      "description": "Direct emissions from owned or controlled sources",
+      "categories": [
+        "Stationary combustion",
+        "Mobile combustion",
+        "Process emissions",
+        "Fugitive emissions"
+      ]
+    },
+    "scope_2": {
+      "description": "Indirect emissions from purchased electricity, heat, and steam",
+      "methods": ["Location-based", "Market-based"]
+    },
+    "scope_3": {
+      "description": "All other indirect emissions in the value chain",
+      "categories": [
+        "Purchased goods and services",
+        "Capital goods",
+        "Fuel and energy-related activities",
+        "Upstream transportation",
+        "Waste",
+        "Business travel",
+        "Employee commuting",
+        "Downstream transportation",
+        "Use of sold products",
+        "End-of-life treatment",
+        "Franchises",
+        "Investments"
+      ]
+    }
+  },
+  "key_changes_2024": [
+    "Updated electricity grid factors reflecting 2022 generation data",
+    "Revised well-to-tank factors for transport fuels",
+    "Updated hotel stay factors by country",
+    "New factors for electric vehicles",
+    "Revised material use factors"
+  ]
+}

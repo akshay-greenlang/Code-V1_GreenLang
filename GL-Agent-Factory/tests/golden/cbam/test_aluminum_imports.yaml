@@ -1,0 +1,503 @@
+# Golden Tests: Aluminum Imports - CBAM Compliance Agent (GL-002)
+# Test Count: 30 tests
+# Default Emission Factors (EU Implementing Regulation 2023/1773):
+#   - Global: Direct 1.60 tCO2e/t, Indirect 6.50 tCO2e/t (high electricity intensity)
+#   - China: Direct 1.65 tCO2e/t, Indirect 10.20 tCO2e/t (coal-heavy grid)
+# EU ETS Price: 85.0 EUR/tCO2
+# Formula: embedded_emissions = quantity * (direct_ef + indirect_ef)
+#          cbam_liability = embedded_emissions * ets_price
+
+test_suite:
+  name: "Aluminum Imports CBAM Golden Tests"
+  agent_id: "regulatory/cbam_compliance_v1"
+  version: "1.0.0"
+  description: "Validates CBAM calculations for aluminum products (CN Chapter 76)"
+  regulation: "EU 2023/956"
+
+tests:
+  # China aluminum imports (1-12) - Highest indirect emissions due to coal grid
+  - test_id: "cbam_alu_cn_001"
+    test_name: "Aluminum 100t China Unwrought"
+    description: "CN 7601.10.00 - Unwrought aluminum from China"
+    tags: ["aluminum", "china", "cbam", "cn_7601"]
+    input:
+      cn_code: "76011000"
+      quantity_tonnes: 100
+      country_of_origin: "CN"
+      reporting_period: "Q1 2026"
+    expected:
+      cn_code: "76011000"
+      product_category: "aluminium"
+      quantity_tonnes: 100
+      direct_emissions_tco2e: 165.0
+      indirect_emissions_tco2e: 1020.0
+      total_embedded_emissions_tco2e: 1185.0
+      specific_embedded_emissions: 11.85
+      calculation_method: "country_default"
+      carbon_price_applicable: 85.0
+      cbam_liability_eur: 100725.0
+
+  - test_id: "cbam_alu_cn_002"
+    test_name: "Aluminum 250t China Bars and Rods"
+    description: "CN 7604 - Aluminum bars and rods from China"
+    tags: ["aluminum", "china", "cbam", "cn_7604"]
+    input:
+      cn_code: "76042100"
+      quantity_tonnes: 250
+      country_of_origin: "CN"
+      reporting_period: "Q1 2026"
+    expected:
+      product_category: "aluminium"
+      direct_emissions_tco2e: 412.5
+      indirect_emissions_tco2e: 2550.0
+      total_embedded_emissions_tco2e: 2962.5
+      cbam_liability_eur: 251812.5
+
+  - test_id: "cbam_alu_cn_003"
+    test_name: "Aluminum 500t China Plates/Sheets"
+    description: "CN 7606 - Aluminum plates and sheets from China"
+    tags: ["aluminum", "china", "cbam", "cn_7606"]
+    input:
+      cn_code: "76061200"
+      quantity_tonnes: 500
+      country_of_origin: "CN"
+      reporting_period: "Q2 2026"
+    expected:
+      product_category: "aluminium"
+      direct_emissions_tco2e: 825.0
+      indirect_emissions_tco2e: 5100.0
+      total_embedded_emissions_tco2e: 5925.0
+      cbam_liability_eur: 503625.0
+
+  - test_id: "cbam_alu_cn_004"
+    test_name: "Aluminum 750t China Foil"
+    description: "CN 7607 - Aluminum foil from China"
+    tags: ["aluminum", "china", "cbam", "cn_7607"]
+    input:
+      cn_code: "76071100"
+      quantity_tonnes: 750
+      country_of_origin: "CN"
+      reporting_period: "Q2 2026"
+    expected:
+      product_category: "aluminium"
+      direct_emissions_tco2e: 1237.5
+      indirect_emissions_tco2e: 7650.0
+      total_embedded_emissions_tco2e: 8887.5
+      cbam_liability_eur: 755437.5
+
+  - test_id: "cbam_alu_cn_005"
+    test_name: "Aluminum 1000t China Pipes"
+    description: "CN 7608 - Aluminum tubes and pipes from China"
+    tags: ["aluminum", "china", "cbam", "cn_7608"]
+    input:
+      cn_code: "76081000"
+      quantity_tonnes: 1000
+      country_of_origin: "CN"
+      reporting_period: "Q3 2026"
+    expected:
+      product_category: "aluminium"
+      direct_emissions_tco2e: 1650.0
+      indirect_emissions_tco2e: 10200.0
+      total_embedded_emissions_tco2e: 11850.0
+      cbam_liability_eur: 1007250.0
+
+  - test_id: "cbam_alu_cn_006"
+    test_name: "Aluminum 50t China Wire"
+    description: "CN 7605 - Aluminum wire from China"
+    tags: ["aluminum", "china", "cbam", "cn_7605"]
+    input:
+      cn_code: "76051100"
+      quantity_tonnes: 50
+      country_of_origin: "CN"
+      reporting_period: "Q3 2026"
+    expected:
+      product_category: "aluminium"
+      direct_emissions_tco2e: 82.5
+      indirect_emissions_tco2e: 510.0
+      total_embedded_emissions_tco2e: 592.5
+      cbam_liability_eur: 50362.5
+
+  - test_id: "cbam_alu_cn_007"
+    test_name: "Aluminum 2000t China Bulk Primary"
+    description: "Large bulk primary aluminum from China"
+    tags: ["aluminum", "china", "cbam", "bulk"]
+    input:
+      cn_code: "76011000"
+      quantity_tonnes: 2000
+      country_of_origin: "CN"
+      reporting_period: "Q4 2026"
+    expected:
+      product_category: "aluminium"
+      direct_emissions_tco2e: 3300.0
+      indirect_emissions_tco2e: 20400.0
+      total_embedded_emissions_tco2e: 23700.0
+      cbam_liability_eur: 2014500.0
+
+  - test_id: "cbam_alu_cn_008"
+    test_name: "Aluminum 150t China Scrap"
+    description: "CN 7602 - Aluminum waste and scrap from China"
+    tags: ["aluminum", "china", "cbam", "cn_7602"]
+    input:
+      cn_code: "76020000"
+      quantity_tonnes: 150
+      country_of_origin: "CN"
+      reporting_period: "Q4 2026"
+    expected:
+      product_category: "aluminium"
+      direct_emissions_tco2e: 247.5
+      indirect_emissions_tco2e: 1530.0
+      total_embedded_emissions_tco2e: 1777.5
+      cbam_liability_eur: 151087.5
+
+  - test_id: "cbam_alu_cn_009"
+    test_name: "Aluminum 300t China Structures"
+    description: "CN 7610 - Aluminum structures from China"
+    tags: ["aluminum", "china", "cbam", "cn_7610"]
+    input:
+      cn_code: "76101000"
+      quantity_tonnes: 300
+      country_of_origin: "CN"
+      reporting_period: "Q1 2026"
+    expected:
+      product_category: "aluminium"
+      direct_emissions_tco2e: 495.0
+      indirect_emissions_tco2e: 3060.0
+      total_embedded_emissions_tco2e: 3555.0
+      cbam_liability_eur: 302175.0
+
+  - test_id: "cbam_alu_cn_010"
+    test_name: "Aluminum 400t China Reservoirs/Tanks"
+    description: "CN 7611 - Aluminum reservoirs and tanks"
+    tags: ["aluminum", "china", "cbam", "cn_7611"]
+    input:
+      cn_code: "76110000"
+      quantity_tonnes: 400
+      country_of_origin: "CN"
+      reporting_period: "Q2 2026"
+    expected:
+      product_category: "aluminium"
+      direct_emissions_tco2e: 660.0
+      indirect_emissions_tco2e: 4080.0
+      total_embedded_emissions_tco2e: 4740.0
+      cbam_liability_eur: 402900.0
+
+  - test_id: "cbam_alu_cn_011"
+    test_name: "Aluminum 5000t China Annual Import"
+    description: "Major annual aluminum import from China"
+    tags: ["aluminum", "china", "cbam", "annual"]
+    input:
+      cn_code: "76011000"
+      quantity_tonnes: 5000
+      country_of_origin: "CN"
+      reporting_period: "Q1 2026"
+    expected:
+      product_category: "aluminium"
+      direct_emissions_tco2e: 8250.0
+      indirect_emissions_tco2e: 51000.0
+      total_embedded_emissions_tco2e: 59250.0
+      cbam_liability_eur: 5036250.0
+
+  - test_id: "cbam_alu_cn_012"
+    test_name: "Aluminum 800t China Containers"
+    description: "CN 7612 - Aluminum containers from China"
+    tags: ["aluminum", "china", "cbam", "cn_7612"]
+    input:
+      cn_code: "76129000"
+      quantity_tonnes: 800
+      country_of_origin: "CN"
+      reporting_period: "Q3 2026"
+    expected:
+      product_category: "aluminium"
+      direct_emissions_tco2e: 1320.0
+      indirect_emissions_tco2e: 8160.0
+      total_embedded_emissions_tco2e: 9480.0
+      cbam_liability_eur: 805800.0
+
+  # Global/Other regions (13-22) - Default factors with lower indirect emissions
+  - test_id: "cbam_alu_global_013"
+    test_name: "Aluminum 100t Norway (Low Carbon)"
+    description: "Aluminum from Norway (hydropower)"
+    tags: ["aluminum", "norway", "cbam", "global", "low_carbon"]
+    input:
+      cn_code: "76011000"
+      quantity_tonnes: 100
+      country_of_origin: "NO"
+      reporting_period: "Q1 2026"
+    expected:
+      product_category: "aluminium"
+      direct_emissions_tco2e: 160.0
+      indirect_emissions_tco2e: 650.0
+      total_embedded_emissions_tco2e: 810.0
+      specific_embedded_emissions: 8.10
+      calculation_method: "default"
+      cbam_liability_eur: 68850.0
+
+  - test_id: "cbam_alu_global_014"
+    test_name: "Aluminum 500t Russia"
+    description: "Aluminum from Russia"
+    tags: ["aluminum", "russia", "cbam", "global"]
+    input:
+      cn_code: "76042100"
+      quantity_tonnes: 500
+      country_of_origin: "RU"
+      reporting_period: "Q2 2026"
+    expected:
+      product_category: "aluminium"
+      direct_emissions_tco2e: 800.0
+      indirect_emissions_tco2e: 3250.0
+      total_embedded_emissions_tco2e: 4050.0
+      cbam_liability_eur: 344250.0
+
+  - test_id: "cbam_alu_global_015"
+    test_name: "Aluminum 750t UAE"
+    description: "Aluminum from United Arab Emirates"
+    tags: ["aluminum", "uae", "cbam", "global"]
+    input:
+      cn_code: "76061200"
+      quantity_tonnes: 750
+      country_of_origin: "AE"
+      reporting_period: "Q2 2026"
+    expected:
+      product_category: "aluminium"
+      direct_emissions_tco2e: 1200.0
+      indirect_emissions_tco2e: 4875.0
+      total_embedded_emissions_tco2e: 6075.0
+      cbam_liability_eur: 516375.0
+
+  - test_id: "cbam_alu_global_016"
+    test_name: "Aluminum 1000t India"
+    description: "Aluminum from India"
+    tags: ["aluminum", "india", "cbam", "global"]
+    input:
+      cn_code: "76011000"
+      quantity_tonnes: 1000
+      country_of_origin: "IN"
+      reporting_period: "Q3 2026"
+    expected:
+      product_category: "aluminium"
+      direct_emissions_tco2e: 1600.0
+      indirect_emissions_tco2e: 6500.0
+      total_embedded_emissions_tco2e: 8100.0
+      cbam_liability_eur: 688500.0
+
+  - test_id: "cbam_alu_global_017"
+    test_name: "Aluminum 250t Canada"
+    description: "Aluminum from Canada (hydropower)"
+    tags: ["aluminum", "canada", "cbam", "global", "low_carbon"]
+    input:
+      cn_code: "76011000"
+      quantity_tonnes: 250
+      country_of_origin: "CA"
+      reporting_period: "Q3 2026"
+    expected:
+      product_category: "aluminium"
+      direct_emissions_tco2e: 400.0
+      indirect_emissions_tco2e: 1625.0
+      total_embedded_emissions_tco2e: 2025.0
+      cbam_liability_eur: 172125.0
+
+  - test_id: "cbam_alu_global_018"
+    test_name: "Aluminum 500t Bahrain"
+    description: "Aluminum from Bahrain"
+    tags: ["aluminum", "bahrain", "cbam", "global"]
+    input:
+      cn_code: "76042100"
+      quantity_tonnes: 500
+      country_of_origin: "BH"
+      reporting_period: "Q4 2026"
+    expected:
+      product_category: "aluminium"
+      direct_emissions_tco2e: 800.0
+      indirect_emissions_tco2e: 3250.0
+      total_embedded_emissions_tco2e: 4050.0
+      cbam_liability_eur: 344250.0
+
+  - test_id: "cbam_alu_global_019"
+    test_name: "Aluminum 300t Australia"
+    description: "Aluminum from Australia"
+    tags: ["aluminum", "australia", "cbam", "global"]
+    input:
+      cn_code: "76061200"
+      quantity_tonnes: 300
+      country_of_origin: "AU"
+      reporting_period: "Q4 2026"
+    expected:
+      product_category: "aluminium"
+      direct_emissions_tco2e: 480.0
+      indirect_emissions_tco2e: 1950.0
+      total_embedded_emissions_tco2e: 2430.0
+      cbam_liability_eur: 206550.0
+
+  - test_id: "cbam_alu_global_020"
+    test_name: "Aluminum 600t Iceland"
+    description: "Aluminum from Iceland (geothermal/hydro)"
+    tags: ["aluminum", "iceland", "cbam", "global", "low_carbon"]
+    input:
+      cn_code: "76011000"
+      quantity_tonnes: 600
+      country_of_origin: "IS"
+      reporting_period: "Q1 2026"
+    expected:
+      product_category: "aluminium"
+      direct_emissions_tco2e: 960.0
+      indirect_emissions_tco2e: 3900.0
+      total_embedded_emissions_tco2e: 4860.0
+      cbam_liability_eur: 413100.0
+
+  - test_id: "cbam_alu_global_021"
+    test_name: "Aluminum 150t South Africa"
+    description: "Aluminum from South Africa"
+    tags: ["aluminum", "south_africa", "cbam", "global"]
+    input:
+      cn_code: "76071100"
+      quantity_tonnes: 150
+      country_of_origin: "ZA"
+      reporting_period: "Q2 2026"
+    expected:
+      product_category: "aluminium"
+      direct_emissions_tco2e: 240.0
+      indirect_emissions_tco2e: 975.0
+      total_embedded_emissions_tco2e: 1215.0
+      cbam_liability_eur: 103275.0
+
+  - test_id: "cbam_alu_global_022"
+    test_name: "Aluminum 2000t Brazil"
+    description: "Large aluminum import from Brazil"
+    tags: ["aluminum", "brazil", "cbam", "global"]
+    input:
+      cn_code: "76011000"
+      quantity_tonnes: 2000
+      country_of_origin: "BR"
+      reporting_period: "Q3 2026"
+    expected:
+      product_category: "aluminium"
+      direct_emissions_tco2e: 3200.0
+      indirect_emissions_tco2e: 13000.0
+      total_embedded_emissions_tco2e: 16200.0
+      cbam_liability_eur: 1377000.0
+
+  # Actual verified emissions tests (23-27)
+  - test_id: "cbam_alu_actual_023"
+    test_name: "Aluminum 100t Low Carbon Verified"
+    description: "Verified low-carbon aluminum production"
+    tags: ["aluminum", "actual", "cbam", "verified", "low_carbon"]
+    input:
+      cn_code: "76011000"
+      quantity_tonnes: 100
+      country_of_origin: "IS"
+      actual_emissions: 2.0
+      reporting_period: "Q1 2026"
+    expected:
+      product_category: "aluminium"
+      total_embedded_emissions_tco2e: 200.0
+      calculation_method: "actual"
+      cbam_liability_eur: 17000.0
+
+  - test_id: "cbam_alu_actual_024"
+    test_name: "Aluminum 500t Recycled"
+    description: "Recycled aluminum with very low emissions"
+    tags: ["aluminum", "actual", "cbam", "recycled"]
+    input:
+      cn_code: "76020000"
+      quantity_tonnes: 500
+      country_of_origin: "DE"
+      actual_emissions: 0.5
+      reporting_period: "Q2 2026"
+    expected:
+      product_category: "aluminium"
+      total_embedded_emissions_tco2e: 250.0
+      calculation_method: "actual"
+      cbam_liability_eur: 21250.0
+
+  - test_id: "cbam_alu_actual_025"
+    test_name: "Aluminum 750t Hydropower Verified"
+    description: "Aluminum from 100% hydropower smelter"
+    tags: ["aluminum", "actual", "cbam", "hydropower"]
+    input:
+      cn_code: "76011000"
+      quantity_tonnes: 750
+      country_of_origin: "NO"
+      actual_emissions: 1.8
+      reporting_period: "Q3 2026"
+    expected:
+      product_category: "aluminium"
+      total_embedded_emissions_tco2e: 1350.0
+      calculation_method: "actual"
+      cbam_liability_eur: 114750.0
+
+  - test_id: "cbam_alu_actual_026"
+    test_name: "Aluminum 1000t Standard Verified"
+    description: "Standard verified production"
+    tags: ["aluminum", "actual", "cbam", "verified"]
+    input:
+      cn_code: "76042100"
+      quantity_tonnes: 1000
+      country_of_origin: "AE"
+      actual_emissions: 5.5
+      reporting_period: "Q4 2026"
+    expected:
+      product_category: "aluminium"
+      total_embedded_emissions_tco2e: 5500.0
+      calculation_method: "actual"
+      cbam_liability_eur: 467500.0
+
+  - test_id: "cbam_alu_actual_027"
+    test_name: "Aluminum 200t High Emissions Verified"
+    description: "Verified but high emissions installation"
+    tags: ["aluminum", "actual", "cbam", "high_emissions"]
+    input:
+      cn_code: "76011000"
+      quantity_tonnes: 200
+      country_of_origin: "CN"
+      actual_emissions: 15.0
+      reporting_period: "Q1 2026"
+    expected:
+      product_category: "aluminium"
+      total_embedded_emissions_tco2e: 3000.0
+      calculation_method: "actual"
+      cbam_liability_eur: 255000.0
+
+  # Edge cases (28-30)
+  - test_id: "cbam_alu_edge_028"
+    test_name: "Aluminum Minimum Quantity"
+    description: "Minimum 1 tonne import"
+    tags: ["aluminum", "edge_case", "cbam", "minimum"]
+    input:
+      cn_code: "76011000"
+      quantity_tonnes: 1
+      country_of_origin: "CN"
+      reporting_period: "Q1 2026"
+    expected:
+      product_category: "aluminium"
+      total_embedded_emissions_tco2e: 11.85
+      cbam_liability_eur: 1007.25
+
+  - test_id: "cbam_alu_edge_029"
+    test_name: "Aluminum Decimal Quantity"
+    description: "Non-integer quantity test"
+    tags: ["aluminum", "edge_case", "cbam", "decimal"]
+    input:
+      cn_code: "76042100"
+      quantity_tonnes: 123.456
+      country_of_origin: "CN"
+      reporting_period: "Q2 2026"
+    expected:
+      product_category: "aluminium"
+      total_embedded_emissions_tco2e: 1462.9536
+      cbam_liability_eur: 124350.056
+
+  - test_id: "cbam_alu_edge_030"
+    test_name: "Aluminum 10000t Major Import"
+    description: "Very large bulk aluminum import"
+    tags: ["aluminum", "edge_case", "cbam", "bulk"]
+    input:
+      cn_code: "76011000"
+      quantity_tonnes: 10000
+      country_of_origin: "CN"
+      reporting_period: "Q3 2026"
+    expected:
+      product_category: "aluminium"
+      direct_emissions_tco2e: 16500.0
+      indirect_emissions_tco2e: 102000.0
+      total_embedded_emissions_tco2e: 118500.0
+      cbam_liability_eur: 10072500.0

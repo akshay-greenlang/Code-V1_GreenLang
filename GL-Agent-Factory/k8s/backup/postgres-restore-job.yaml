@@ -1,0 +1,540 @@
+# GreenLang PostgreSQL Restore Job
+# Point-in-time recovery from S3 backups
+#
+# Usage:
+#   1. Set RESTORE_TIMESTAMP or RESTORE_FILE environment variable
+#   2. Apply the job: kubectl apply -f postgres-restore-job.yaml
+#   3. Monitor progress: kubectl logs -f job/postgres-restore -n greenlang-production
+#
+# WARNING: This will DROP and recreate the database!
+# Ensure you have a current backup before running restore.
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-restore-config
+  namespace: greenlang-production
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: restore
+data:
+  # Restore settings
+  # Options: "latest", "timestamp", "specific_file"
+  RESTORE_MODE: "latest"
+  # If RESTORE_MODE=timestamp, specify the target timestamp (format: YYYYMMDD_HHMMSS)
+  RESTORE_TIMESTAMP: ""
+  # If RESTORE_MODE=specific_file, specify the exact filename
+  RESTORE_FILE: ""
+  # S3 settings
+  S3_BUCKET: "greenlang-backups-production"
+  S3_REGION: "us-east-1"
+  S3_PREFIX: "postgres/daily"
+  # PostgreSQL connection settings
+  PGHOST: "postgresql-service"
+  PGPORT: "5432"
+  PGDATABASE: "greenlang"
+  # Safety settings
+  # Set to "true" to confirm restore (REQUIRED)
+  CONFIRM_RESTORE: "false"
+  # Set to "true" to skip backup before restore
+  SKIP_PRE_RESTORE_BACKUP: "false"
+  # Maximum download size (bytes)
+  MAX_DOWNLOAD_SIZE: "10737418240"  # 10GB
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: postgres-restore
+  namespace: greenlang-production
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: restore
+    app.kubernetes.io/part-of: greenlang-platform
+  annotations:
+    description: "PostgreSQL point-in-time restore from S3 backup"
+spec:
+  activeDeadlineSeconds: 14400  # 4 hour timeout
+  backoffLimit: 1  # Only retry once (restore is risky)
+  ttlSecondsAfterFinished: 86400  # Keep for 24 hours for debugging
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: greenlang
+        app.kubernetes.io/component: restore
+      annotations:
+        sidecar.istio.io/inject: "false"
+    spec:
+      serviceAccountName: postgres-backup-sa
+      restartPolicy: Never
+
+      # Security context
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+
+      # Init container to verify connectivity and confirmation
+      initContainers:
+        - name: verify-restore
+          image: postgres:15-alpine
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+
+              echo "=========================================="
+              echo "GreenLang PostgreSQL Restore - Verification"
+              echo "=========================================="
+
+              # Check confirmation flag
+              if [ "${CONFIRM_RESTORE}" != "true" ]; then
+                echo "[ERROR] CONFIRM_RESTORE must be set to 'true' to proceed!"
+                echo "This is a destructive operation that will DROP the existing database."
+                echo ""
+                echo "To proceed, update the ConfigMap:"
+                echo "  kubectl patch configmap postgres-restore-config -n greenlang-production \\"
+                echo "    --type merge -p '{\"data\":{\"CONFIRM_RESTORE\":\"true\"}}'"
+                exit 1
+              fi
+
+              echo "[OK] Restore confirmed"
+
+              # Check PostgreSQL connectivity
+              echo "Checking PostgreSQL connectivity..."
+              until pg_isready -h "${PGHOST}" -p "${PGPORT}" -U "${PGUSER}"; do
+                echo "Waiting for PostgreSQL to be ready..."
+                sleep 5
+              done
+              echo "[OK] PostgreSQL is accessible"
+
+              # Verify we can connect with credentials
+              echo "Verifying database credentials..."
+              psql -h "${PGHOST}" -p "${PGPORT}" -U "${PGUSER}" -d postgres -c "SELECT 1" > /dev/null
+              echo "[OK] Database credentials valid"
+
+              echo "=========================================="
+              echo "Verification complete - proceeding to restore"
+              echo "=========================================="
+          env:
+            - name: PGHOST
+              valueFrom:
+                configMapKeyRef:
+                  name: postgres-restore-config
+                  key: PGHOST
+            - name: PGPORT
+              valueFrom:
+                configMapKeyRef:
+                  name: postgres-restore-config
+                  key: PGPORT
+            - name: PGUSER
+              valueFrom:
+                secretKeyRef:
+                  name: db-credentials
+                  key: DATABASE_USER
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-credentials
+                  key: DATABASE_PASSWORD
+            - name: CONFIRM_RESTORE
+              valueFrom:
+                configMapKeyRef:
+                  name: postgres-restore-config
+                  key: CONFIRM_RESTORE
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "100m"
+              memory: "128Mi"
+
+      containers:
+        - name: postgres-restore
+          image: postgres:15-alpine
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+
+              TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+
+              echo "=========================================="
+              echo "GreenLang PostgreSQL Restore"
+              echo "=========================================="
+              echo "Start time: $(date)"
+              echo "Restore mode: ${RESTORE_MODE}"
+              echo "Target database: ${PGDATABASE}"
+              echo "Database host: ${PGHOST}:${PGPORT}"
+              echo "=========================================="
+
+              # Install AWS CLI
+              echo "[$(date)] Installing AWS CLI..."
+              apk add --no-cache aws-cli
+
+              # Configure AWS credentials
+              export AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}"
+              export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}"
+              export AWS_DEFAULT_REGION="${S3_REGION}"
+
+              # Determine which backup to restore
+              RESTORE_BACKUP=""
+              case "${RESTORE_MODE}" in
+                "latest")
+                  echo "[$(date)] Fetching latest backup..."
+                  RESTORE_BACKUP="latest.sql.gz"
+                  ;;
+                "timestamp")
+                  if [ -z "${RESTORE_TIMESTAMP}" ]; then
+                    echo "[ERROR] RESTORE_TIMESTAMP is required when RESTORE_MODE=timestamp"
+                    exit 1
+                  fi
+                  echo "[$(date)] Finding backup closest to timestamp: ${RESTORE_TIMESTAMP}"
+                  # Find backup file matching or closest to the timestamp
+                  RESTORE_BACKUP=$(aws s3 ls "s3://${S3_BUCKET}/${S3_PREFIX}/" | \
+                    grep "greenlang_${PGDATABASE}_" | \
+                    awk '{print $4}' | \
+                    grep -v "latest.sql.gz" | \
+                    sort -r | \
+                    while read file; do
+                      file_ts=$(echo "$file" | grep -oP '\d{8}_\d{6}' || true)
+                      if [ -n "$file_ts" ] && [ "$file_ts" \<= "$RESTORE_TIMESTAMP" ]; then
+                        echo "$file"
+                        break
+                      fi
+                    done)
+                  if [ -z "${RESTORE_BACKUP}" ]; then
+                    echo "[ERROR] No backup found for timestamp ${RESTORE_TIMESTAMP}"
+                    exit 1
+                  fi
+                  ;;
+                "specific_file")
+                  if [ -z "${RESTORE_FILE}" ]; then
+                    echo "[ERROR] RESTORE_FILE is required when RESTORE_MODE=specific_file"
+                    exit 1
+                  fi
+                  RESTORE_BACKUP="${RESTORE_FILE}"
+                  ;;
+                *)
+                  echo "[ERROR] Invalid RESTORE_MODE: ${RESTORE_MODE}"
+                  echo "Valid options: latest, timestamp, specific_file"
+                  exit 1
+                  ;;
+              esac
+
+              echo "[$(date)] Selected backup file: ${RESTORE_BACKUP}"
+
+              # Download backup from S3
+              RESTORE_PATH="/restore/${RESTORE_BACKUP}"
+              mkdir -p /restore
+
+              echo "[$(date)] Downloading backup from S3..."
+              aws s3 cp "s3://${S3_BUCKET}/${S3_PREFIX}/${RESTORE_BACKUP}" "${RESTORE_PATH}"
+
+              # Verify download
+              if [ ! -f "${RESTORE_PATH}" ]; then
+                echo "[ERROR] Failed to download backup file!"
+                exit 1
+              fi
+
+              DOWNLOAD_SIZE=$(stat -c%s "${RESTORE_PATH}" 2>/dev/null || stat -f%z "${RESTORE_PATH}")
+              echo "[$(date)] Downloaded ${DOWNLOAD_SIZE} bytes"
+
+              # Verify checksum if available
+              if aws s3 ls "s3://${S3_BUCKET}/${S3_PREFIX}/${RESTORE_BACKUP}.sha256" > /dev/null 2>&1; then
+                echo "[$(date)] Verifying checksum..."
+                aws s3 cp "s3://${S3_BUCKET}/${S3_PREFIX}/${RESTORE_BACKUP}.sha256" "/restore/${RESTORE_BACKUP}.sha256"
+                EXPECTED_CHECKSUM=$(cat "/restore/${RESTORE_BACKUP}.sha256" | cut -d' ' -f1)
+                ACTUAL_CHECKSUM=$(sha256sum "${RESTORE_PATH}" | cut -d' ' -f1)
+
+                if [ "${EXPECTED_CHECKSUM}" != "${ACTUAL_CHECKSUM}" ]; then
+                  echo "[ERROR] Checksum mismatch!"
+                  echo "Expected: ${EXPECTED_CHECKSUM}"
+                  echo "Actual: ${ACTUAL_CHECKSUM}"
+                  exit 1
+                fi
+                echo "[OK] Checksum verified: ${ACTUAL_CHECKSUM}"
+              else
+                echo "[WARN] No checksum file found - skipping verification"
+              fi
+
+              # Create pre-restore backup (unless skipped)
+              if [ "${SKIP_PRE_RESTORE_BACKUP}" != "true" ]; then
+                echo "[$(date)] Creating pre-restore backup..."
+                PRE_RESTORE_BACKUP="greenlang_${PGDATABASE}_pre_restore_${TIMESTAMP}.sql.gz"
+                pg_dump \
+                  -h "${PGHOST}" \
+                  -p "${PGPORT}" \
+                  -U "${PGUSER}" \
+                  -d "${PGDATABASE}" \
+                  --no-password \
+                  --format=plain \
+                  | gzip -9 > "/restore/${PRE_RESTORE_BACKUP}"
+
+                echo "[$(date)] Uploading pre-restore backup to S3..."
+                aws s3 cp "/restore/${PRE_RESTORE_BACKUP}" \
+                  "s3://${S3_BUCKET}/${S3_PREFIX}/pre-restore/${PRE_RESTORE_BACKUP}"
+                echo "[OK] Pre-restore backup saved"
+              fi
+
+              # Decompress backup
+              echo "[$(date)] Decompressing backup..."
+              gunzip -c "${RESTORE_PATH}" > /restore/restore.sql
+
+              # Terminate existing connections to the database
+              echo "[$(date)] Terminating existing database connections..."
+              psql -h "${PGHOST}" -p "${PGPORT}" -U "${PGUSER}" -d postgres -c "
+                SELECT pg_terminate_backend(pg_stat_activity.pid)
+                FROM pg_stat_activity
+                WHERE pg_stat_activity.datname = '${PGDATABASE}'
+                  AND pid <> pg_backend_pid();
+              " || true
+
+              # Drop and recreate database
+              echo "[$(date)] Dropping existing database..."
+              psql -h "${PGHOST}" -p "${PGPORT}" -U "${PGUSER}" -d postgres -c "
+                DROP DATABASE IF EXISTS ${PGDATABASE};
+              "
+
+              echo "[$(date)] Creating fresh database..."
+              psql -h "${PGHOST}" -p "${PGPORT}" -U "${PGUSER}" -d postgres -c "
+                CREATE DATABASE ${PGDATABASE} WITH OWNER ${PGUSER} ENCODING 'UTF8';
+              "
+
+              # Restore from backup
+              echo "[$(date)] Restoring database from backup..."
+              psql -h "${PGHOST}" -p "${PGPORT}" -U "${PGUSER}" -d "${PGDATABASE}" \
+                --no-password \
+                --single-transaction \
+                --set ON_ERROR_STOP=on \
+                -f /restore/restore.sql
+
+              # Verify restore
+              echo "[$(date)] Verifying restore..."
+              TABLE_COUNT=$(psql -h "${PGHOST}" -p "${PGPORT}" -U "${PGUSER}" -d "${PGDATABASE}" -t -c "
+                SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public';
+              ")
+              echo "[$(date)] Restored ${TABLE_COUNT} tables"
+
+              # Run ANALYZE for query optimization
+              echo "[$(date)] Running ANALYZE..."
+              psql -h "${PGHOST}" -p "${PGPORT}" -U "${PGUSER}" -d "${PGDATABASE}" -c "ANALYZE;"
+
+              # Clean up
+              rm -rf /restore/*
+
+              echo "=========================================="
+              echo "Restore Summary"
+              echo "=========================================="
+              echo "Status: SUCCESS"
+              echo "Restored from: ${RESTORE_BACKUP}"
+              echo "Database: ${PGDATABASE}"
+              echo "Tables restored: ${TABLE_COUNT}"
+              echo "Completed: $(date)"
+              echo "=========================================="
+
+              # Send notification
+              if [ -n "${SLACK_WEBHOOK_URL}" ]; then
+                curl -X POST -H 'Content-type: application/json' \
+                  --data "{\"text\":\"PostgreSQL Restore COMPLETED: ${PGDATABASE} restored from ${RESTORE_BACKUP}\"}" \
+                  "${SLACK_WEBHOOK_URL}" || true
+              fi
+
+              echo "[$(date)] Restore job completed successfully!"
+
+          env:
+            # PostgreSQL connection
+            - name: PGHOST
+              valueFrom:
+                configMapKeyRef:
+                  name: postgres-restore-config
+                  key: PGHOST
+            - name: PGPORT
+              valueFrom:
+                configMapKeyRef:
+                  name: postgres-restore-config
+                  key: PGPORT
+            - name: PGDATABASE
+              valueFrom:
+                configMapKeyRef:
+                  name: postgres-restore-config
+                  key: PGDATABASE
+            - name: PGUSER
+              valueFrom:
+                secretKeyRef:
+                  name: db-credentials
+                  key: DATABASE_USER
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-credentials
+                  key: DATABASE_PASSWORD
+            # S3 configuration
+            - name: S3_BUCKET
+              valueFrom:
+                configMapKeyRef:
+                  name: postgres-restore-config
+                  key: S3_BUCKET
+            - name: S3_REGION
+              valueFrom:
+                configMapKeyRef:
+                  name: postgres-restore-config
+                  key: S3_REGION
+            - name: S3_PREFIX
+              valueFrom:
+                configMapKeyRef:
+                  name: postgres-restore-config
+                  key: S3_PREFIX
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-backup-s3-credentials
+                  key: AWS_ACCESS_KEY_ID
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-backup-s3-credentials
+                  key: AWS_SECRET_ACCESS_KEY
+            # Restore settings
+            - name: RESTORE_MODE
+              valueFrom:
+                configMapKeyRef:
+                  name: postgres-restore-config
+                  key: RESTORE_MODE
+            - name: RESTORE_TIMESTAMP
+              valueFrom:
+                configMapKeyRef:
+                  name: postgres-restore-config
+                  key: RESTORE_TIMESTAMP
+            - name: RESTORE_FILE
+              valueFrom:
+                configMapKeyRef:
+                  name: postgres-restore-config
+                  key: RESTORE_FILE
+            - name: SKIP_PRE_RESTORE_BACKUP
+              valueFrom:
+                configMapKeyRef:
+                  name: postgres-restore-config
+                  key: SKIP_PRE_RESTORE_BACKUP
+            - name: SLACK_WEBHOOK_URL
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-backup-s3-credentials
+                  key: SLACK_WEBHOOK_URL
+                  optional: true
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            capabilities:
+              drop:
+                - ALL
+
+          resources:
+            requests:
+              cpu: "1000m"
+              memory: "1Gi"
+            limits:
+              cpu: "4000m"
+              memory: "4Gi"
+
+          volumeMounts:
+            - name: restore-storage
+              mountPath: /restore
+            - name: tmp
+              mountPath: /tmp
+
+      volumes:
+        - name: restore-storage
+          emptyDir:
+            sizeLimit: 20Gi
+        - name: tmp
+          emptyDir:
+            sizeLimit: 1Gi
+---
+# Point-in-Time Recovery (PITR) Job Template
+# For WAL-based recovery (requires WAL archiving to be configured)
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: postgres-pitr-restore
+  namespace: greenlang-production
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: pitr-restore
+  annotations:
+    description: "PostgreSQL Point-in-Time Recovery using WAL"
+spec:
+  activeDeadlineSeconds: 14400
+  backoffLimit: 0
+  ttlSecondsAfterFinished: 86400
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: greenlang
+        app.kubernetes.io/component: pitr-restore
+    spec:
+      serviceAccountName: postgres-backup-sa
+      restartPolicy: Never
+
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+
+      containers:
+        - name: pitr-restore
+          image: postgres:15-alpine
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/sh
+            - -c
+            - |
+              echo "=========================================="
+              echo "Point-in-Time Recovery (PITR)"
+              echo "=========================================="
+              echo ""
+              echo "This job template is for WAL-based PITR."
+              echo "Requires PostgreSQL WAL archiving to be configured."
+              echo ""
+              echo "Configuration steps:"
+              echo "1. Enable WAL archiving in PostgreSQL"
+              echo "2. Configure archive_command to upload to S3"
+              echo "3. Set recovery_target_time in recovery.conf"
+              echo ""
+              echo "For full PITR support, consider using:"
+              echo "  - pgBackRest"
+              echo "  - Barman"
+              echo "  - WAL-G"
+              echo ""
+              echo "Refer to the documentation for detailed instructions."
+              echo "=========================================="
+
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "200m"
+              memory: "256Mi"
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL

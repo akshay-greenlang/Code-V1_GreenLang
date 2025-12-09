@@ -1,0 +1,369 @@
+# GreenLang Agent Factory - Docker Compose for Local Development
+# Usage: docker-compose up -d
+version: '3.9'
+
+services:
+  # ==========================================================================
+  # API Server - Main FastAPI gateway
+  # ==========================================================================
+  api-server:
+    build:
+      context: .
+      dockerfile: docker/api-server/Dockerfile
+      args:
+        ENVIRONMENT: development
+    image: greenlang/api-server:dev
+    container_name: greenlang-api-server
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - GREENLANG_APP_ENV=development
+      - GREENLANG_DEBUG=true
+      - GREENLANG_LOG_LEVEL=DEBUG
+      - GREENLANG_DATABASE_URL=postgresql://greenlang:greenlang_dev@postgres:5432/greenlang
+      - GREENLANG_REDIS_URL=redis://redis:6379/0
+      - GREENLANG_JWT_SECRET=dev-jwt-secret-change-in-production
+      - GREENLANG_CORS_ORIGINS=http://localhost:3000,http://localhost:8000
+      - GREENLANG_OTLP_ENDPOINT=http://jaeger:4317
+      - GREENLANG_TRACING_ENABLED=true
+      - GUNICORN_RELOAD=true
+      - GUNICORN_WORKERS=1
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app:cached
+      - api-server-tmp:/app/tmp
+      - api-server-logs:/app/logs
+    networks:
+      - greenlang-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # ==========================================================================
+  # Agent Runtime - AI agent execution engine
+  # ==========================================================================
+  agent-runtime:
+    build:
+      context: .
+      dockerfile: docker/agent-runtime/Dockerfile
+      args:
+        ENVIRONMENT: development
+    image: greenlang/agent-runtime:dev
+    container_name: greenlang-agent-runtime
+    restart: unless-stopped
+    ports:
+      - "8001:8000"
+    environment:
+      - GREENLANG_APP_ENV=development
+      - GREENLANG_DEBUG=true
+      - GREENLANG_LOG_LEVEL=DEBUG
+      - GREENLANG_DATABASE_URL=postgresql://greenlang:greenlang_dev@postgres:5432/greenlang
+      - GREENLANG_REDIS_URL=redis://redis:6379/0
+      - GREENLANG_JWT_SECRET=dev-jwt-secret-change-in-production
+      - GREENLANG_OTLP_ENDPOINT=http://jaeger:4317
+      - GREENLANG_TRACING_ENABLED=true
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app:cached
+      - agent-runtime-tmp:/app/tmp
+      - agent-runtime-logs:/app/logs
+    networks:
+      - greenlang-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # ==========================================================================
+  # Registry - Agent registry and metadata service
+  # ==========================================================================
+  registry:
+    build:
+      context: .
+      dockerfile: docker/registry/Dockerfile
+      args:
+        ENVIRONMENT: development
+    image: greenlang/registry:dev
+    container_name: greenlang-registry
+    restart: unless-stopped
+    ports:
+      - "8002:8001"
+    environment:
+      - GREENLANG_APP_ENV=development
+      - GREENLANG_DEBUG=true
+      - GREENLANG_LOG_LEVEL=DEBUG
+      - GREENLANG_DATABASE_URL=postgresql://greenlang:greenlang_dev@postgres:5432/greenlang
+      - GREENLANG_REDIS_URL=redis://redis:6379/0
+      - GREENLANG_JWT_SECRET=dev-jwt-secret-change-in-production
+      - GREENLANG_OTLP_ENDPOINT=http://jaeger:4317
+      - GREENLANG_TRACING_ENABLED=true
+      - DATABASE_HOST=postgres
+      - DATABASE_PORT=5432
+      - DATABASE_USER=greenlang
+      - DATABASE_PASSWORD=greenlang_dev
+      - RUN_MIGRATIONS=true
+      - WAIT_FOR_POSTGRES=true
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app:cached
+      - registry-tmp:/app/tmp
+      - registry-logs:/app/logs
+    networks:
+      - greenlang-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # ==========================================================================
+  # PostgreSQL - Primary database
+  # ==========================================================================
+  postgres:
+    image: postgres:15-alpine
+    container_name: greenlang-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=greenlang
+      - POSTGRES_PASSWORD=greenlang_dev
+      - POSTGRES_DB=greenlang
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - greenlang-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U greenlang -d greenlang"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # ==========================================================================
+  # Redis - Cache and message queue
+  # ==========================================================================
+  redis:
+    image: redis:7-alpine
+    container_name: greenlang-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis-data:/data
+    networks:
+      - greenlang-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # ==========================================================================
+  # PgAdmin - PostgreSQL management UI (optional)
+  # ==========================================================================
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: greenlang-pgadmin
+    restart: unless-stopped
+    ports:
+      - "5050:80"
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@greenlang.local
+      - PGADMIN_DEFAULT_PASSWORD=admin
+      - PGADMIN_CONFIG_SERVER_MODE=False
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+    networks:
+      - greenlang-network
+    depends_on:
+      - postgres
+    profiles:
+      - tools
+
+  # ==========================================================================
+  # Redis Commander - Redis management UI (optional)
+  # ==========================================================================
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: greenlang-redis-commander
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    environment:
+      - REDIS_HOSTS=local:redis:6379
+    networks:
+      - greenlang-network
+    depends_on:
+      - redis
+    profiles:
+      - tools
+
+  # ==========================================================================
+  # Prometheus - Metrics collection (optional)
+  # ==========================================================================
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: greenlang-prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.enable-lifecycle'
+    volumes:
+      - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    networks:
+      - greenlang-network
+    profiles:
+      - monitoring
+
+  # ==========================================================================
+  # Grafana - Metrics visualization (optional)
+  # ==========================================================================
+  grafana:
+    image: grafana/grafana:latest
+    container_name: greenlang-grafana
+    restart: unless-stopped
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./docker/grafana/provisioning:/etc/grafana/provisioning:ro
+    networks:
+      - greenlang-network
+    depends_on:
+      - prometheus
+    profiles:
+      - monitoring
+
+  # ==========================================================================
+  # Jaeger - Distributed Tracing (optional)
+  # ==========================================================================
+  jaeger:
+    image: jaegertracing/all-in-one:1.53
+    container_name: greenlang-jaeger
+    restart: unless-stopped
+    ports:
+      - "6831:6831/udp"    # Jaeger Thrift (UDP)
+      - "6832:6832/udp"    # Jaeger Thrift (UDP)
+      - "5778:5778"        # Agent config HTTP
+      - "16686:16686"      # Jaeger UI
+      - "4317:4317"        # OTLP gRPC
+      - "4318:4318"        # OTLP HTTP
+      - "14250:14250"      # gRPC Jaeger model
+      - "14268:14268"      # Jaeger Thrift HTTP
+      - "14269:14269"      # Admin HTTP
+      - "9411:9411"        # Zipkin compatible
+    environment:
+      - COLLECTOR_ZIPKIN_HOST_PORT=:9411
+      - COLLECTOR_OTLP_ENABLED=true
+      - SPAN_STORAGE_TYPE=badger
+      - BADGER_EPHEMERAL=false
+      - BADGER_DIRECTORY_VALUE=/badger/data
+      - BADGER_DIRECTORY_KEY=/badger/key
+    volumes:
+      - jaeger-data:/badger
+    networks:
+      - greenlang-network
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:14269/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    profiles:
+      - tracing
+
+  # ==========================================================================
+  # LocalStack - AWS services emulator (optional)
+  # ==========================================================================
+  localstack:
+    image: localstack/localstack:latest
+    container_name: greenlang-localstack
+    restart: unless-stopped
+    ports:
+      - "4566:4566"
+      - "4510-4559:4510-4559"
+    environment:
+      - SERVICES=s3,secretsmanager,sqs
+      - DEBUG=1
+      - DATA_DIR=/var/lib/localstack/data
+      - DOCKER_HOST=unix:///var/run/docker.sock
+    volumes:
+      - localstack-data:/var/lib/localstack
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - greenlang-network
+    profiles:
+      - aws
+
+# ==========================================================================
+# Networks
+# ==========================================================================
+networks:
+  greenlang-network:
+    driver: bridge
+    name: greenlang-network
+
+# ==========================================================================
+# Volumes
+# ==========================================================================
+volumes:
+  postgres-data:
+    name: greenlang-postgres-data
+  redis-data:
+    name: greenlang-redis-data
+  api-server-tmp:
+    name: greenlang-api-server-tmp
+  api-server-logs:
+    name: greenlang-api-server-logs
+  agent-runtime-tmp:
+    name: greenlang-agent-runtime-tmp
+  agent-runtime-logs:
+    name: greenlang-agent-runtime-logs
+  registry-tmp:
+    name: greenlang-registry-tmp
+  registry-logs:
+    name: greenlang-registry-logs
+  pgadmin-data:
+    name: greenlang-pgadmin-data
+  prometheus-data:
+    name: greenlang-prometheus-data
+  grafana-data:
+    name: greenlang-grafana-data
+  localstack-data:
+    name: greenlang-localstack-data
+  jaeger-data:
+    name: greenlang-jaeger-data

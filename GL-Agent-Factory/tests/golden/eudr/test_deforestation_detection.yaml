@@ -1,0 +1,566 @@
+# Golden Tests: Deforestation Detection - EUDR Compliance Agent (GL-004)
+# Test Count: 25 tests
+# Description: Validates compliance status determination and traceability scoring
+
+test_suite:
+  name: "Deforestation Detection Golden Tests"
+  agent_id: "regulatory/eudr_compliance_v1"
+  version: "1.0.0"
+  description: "Validates compliance determination for EUDR"
+
+tests:
+  # Fully compliant scenarios (1-7)
+  - test_id: "eudr_detect_001"
+    test_name: "Fully Compliant Coffee Brazil"
+    description: "All requirements met - should be compliant"
+    tags: ["compliant", "coffee", "full_traceability"]
+    input:
+      commodity_type: "coffee"
+      cn_code: "09011100"
+      quantity_kg: 50000
+      country_of_origin: "BR"
+      geolocation:
+        type: "Point"
+        coordinates: [-47.5, -15.5]
+      production_date: "2024-06-01"
+      supply_chain:
+        - actor: "Farm ABC"
+          role: "producer"
+          verified: true
+        - actor: "Exporter XYZ"
+          role: "trader"
+          verified: true
+        - actor: "Importer EU"
+          role: "importer"
+          verified: true
+      certifications: ["Rainforest Alliance"]
+    expected:
+      compliance_status: "compliant"
+      geolocation_valid: true
+      cutoff_date_compliant: true
+      traceability_score: 100.0
+
+  - test_id: "eudr_detect_002"
+    test_name: "Compliant Cocoa Full Chain"
+    description: "Complete supply chain with verification"
+    tags: ["compliant", "cocoa", "full_traceability"]
+    input:
+      commodity_type: "cocoa"
+      cn_code: "18010000"
+      quantity_kg: 30000
+      country_of_origin: "GH"
+      geolocation:
+        type: "Polygon"
+        coordinates: [[[-1.5, 6.5], [-1.4, 6.5], [-1.4, 6.6], [-1.5, 6.6], [-1.5, 6.5]]]
+      production_date: "2024-03-15"
+      supply_chain:
+        - actor: "Cooperative A"
+          verified: true
+        - actor: "Processor B"
+          verified: true
+        - actor: "Exporter C"
+          verified: true
+        - actor: "Importer D"
+          verified: true
+      certifications: ["UTZ", "Fairtrade"]
+    expected:
+      compliance_status: "compliant"
+      traceability_score: 100.0
+
+  - test_id: "eudr_detect_003"
+    test_name: "Compliant Palm Oil Certified"
+    description: "RSPO certified palm oil"
+    tags: ["compliant", "palm_oil", "rspo"]
+    input:
+      commodity_type: "palm_oil"
+      cn_code: "15111000"
+      quantity_kg: 100000
+      country_of_origin: "MY"
+      geolocation:
+        type: "Polygon"
+        coordinates: [[[101.0, 3.0], [101.1, 3.0], [101.1, 3.1], [101.0, 3.1], [101.0, 3.0]]]
+      production_date: "2024-04-01"
+      supply_chain:
+        - actor: "Plantation A"
+          verified: true
+        - actor: "Mill B"
+          verified: true
+        - actor: "Refinery C"
+          verified: true
+        - actor: "Trader D"
+          verified: true
+      certifications: ["RSPO"]
+    expected:
+      compliance_status: "compliant"
+      traceability_score: 100.0
+
+  - test_id: "eudr_detect_004"
+    test_name: "Compliant Soya Full Documentation"
+    description: "Soya with complete documentation"
+    tags: ["compliant", "soya", "documented"]
+    input:
+      commodity_type: "soya"
+      cn_code: "12010000"
+      quantity_kg: 500000
+      country_of_origin: "BR"
+      geolocation:
+        type: "Polygon"
+        coordinates: [[[-54.0, -12.0], [-53.5, -12.0], [-53.5, -12.5], [-54.0, -12.5], [-54.0, -12.0]]]
+      production_date: "2024-05-15"
+      supply_chain:
+        - actor: "Farm"
+          verified: true
+        - actor: "Silo"
+          verified: true
+        - actor: "Port"
+          verified: true
+      certifications: ["RTRS"]
+    expected:
+      compliance_status: "compliant"
+      traceability_score: 100.0
+
+  - test_id: "eudr_detect_005"
+    test_name: "Compliant Wood FSC"
+    description: "FSC certified timber"
+    tags: ["compliant", "wood", "fsc"]
+    input:
+      commodity_type: "wood"
+      cn_code: "44011200"
+      quantity_kg: 200000
+      country_of_origin: "PE"
+      geolocation:
+        type: "Point"
+        coordinates: [-73.5, -4.0]
+      production_date: "2024-06-01"
+      supply_chain:
+        - actor: "Forest Concession"
+          verified: true
+        - actor: "Sawmill"
+          verified: true
+        - actor: "Exporter"
+          verified: true
+      certifications: ["FSC", "PEFC"]
+    expected:
+      compliance_status: "compliant"
+      traceability_score: 100.0
+
+  - test_id: "eudr_detect_006"
+    test_name: "Compliant Rubber Standard"
+    description: "Standard compliant rubber"
+    tags: ["compliant", "rubber", "standard"]
+    input:
+      commodity_type: "rubber"
+      cn_code: "40011000"
+      quantity_kg: 75000
+      country_of_origin: "MY"
+      geolocation:
+        type: "Point"
+        coordinates: [101.5, 3.1]
+      production_date: "2024-07-15"
+      supply_chain:
+        - actor: "Estate"
+          verified: true
+        - actor: "Factory"
+          verified: true
+      certifications: []
+    expected:
+      compliance_status: "compliant"
+      traceability_score: 100.0
+
+  - test_id: "eudr_detect_007"
+    test_name: "Compliant Standard Risk Country"
+    description: "Standard risk with full compliance"
+    tags: ["compliant", "standard_risk"]
+    input:
+      commodity_type: "coffee"
+      cn_code: "09011100"
+      quantity_kg: 40000
+      country_of_origin: "CO"
+      geolocation:
+        type: "Point"
+        coordinates: [-75.5, 4.6]
+      production_date: "2024-08-01"
+      supply_chain:
+        - actor: "Farm"
+          verified: true
+        - actor: "Cooperative"
+          verified: true
+        - actor: "Exporter"
+          verified: true
+      certifications: ["Rainforest Alliance"]
+    expected:
+      compliance_status: "compliant"
+      risk_level: "standard"
+      traceability_score: 100.0
+
+  # Pending verification scenarios (8-14)
+  - test_id: "eudr_detect_008"
+    test_name: "Pending - Partial Traceability"
+    description: "Some supply chain nodes unverified"
+    tags: ["pending", "partial_traceability"]
+    input:
+      commodity_type: "cocoa"
+      cn_code: "18010000"
+      quantity_kg: 25000
+      country_of_origin: "CI"
+      geolocation:
+        type: "Point"
+        coordinates: [-5.5, 7.5]
+      production_date: "2024-03-01"
+      supply_chain:
+        - actor: "Farm"
+          verified: true
+        - actor: "Middleman"
+          verified: false
+        - actor: "Exporter"
+          verified: true
+    expected:
+      compliance_status: "pending_verification"
+      traceability_score: 66.67
+
+  - test_id: "eudr_detect_009"
+    test_name: "Pending - High Risk No Cert"
+    description: "High risk country without certification"
+    tags: ["pending", "high_risk", "no_certification"]
+    input:
+      commodity_type: "palm_oil"
+      cn_code: "15111000"
+      quantity_kg: 80000
+      country_of_origin: "ID"
+      geolocation:
+        type: "Point"
+        coordinates: [107.5, -6.2]
+      production_date: "2024-04-15"
+      supply_chain:
+        - actor: "Plantation"
+          verified: true
+        - actor: "Mill"
+          verified: true
+      certifications: []
+    expected:
+      compliance_status: "pending_verification"
+      risk_level: "high"
+
+  - test_id: "eudr_detect_010"
+    test_name: "Pending - Low Traceability Score"
+    description: "Less than 100% traceability in high risk"
+    tags: ["pending", "low_traceability"]
+    input:
+      commodity_type: "soya"
+      cn_code: "12010000"
+      quantity_kg: 300000
+      country_of_origin: "BR"
+      geolocation:
+        type: "Point"
+        coordinates: [-54.5, -12.5]
+      production_date: "2024-05-01"
+      supply_chain:
+        - actor: "Farm Group"
+          verified: true
+        - actor: "Unknown Trader"
+          verified: false
+        - actor: "Exporter"
+          verified: true
+    expected:
+      compliance_status: "pending_verification"
+      traceability_score: 66.67
+
+  - test_id: "eudr_detect_011"
+    test_name: "Pending - Missing Documentation"
+    description: "Missing some required documentation"
+    tags: ["pending", "documentation"]
+    input:
+      commodity_type: "wood"
+      cn_code: "44011200"
+      quantity_kg: 100000
+      country_of_origin: "BR"
+      geolocation:
+        type: "Point"
+        coordinates: [-60.0, -3.0]
+      production_date: "2024-06-15"
+      supply_chain:
+        - actor: "Forest"
+          verified: false
+        - actor: "Mill"
+          verified: true
+    expected:
+      compliance_status: "pending_verification"
+      traceability_score: 50.0
+
+  - test_id: "eudr_detect_012"
+    test_name: "Pending - Verification Needed"
+    description: "Needs satellite verification"
+    tags: ["pending", "verification"]
+    input:
+      commodity_type: "rubber"
+      cn_code: "40011000"
+      quantity_kg: 50000
+      country_of_origin: "ID"
+      geolocation:
+        type: "Polygon"
+        coordinates: [[[104.0, -2.0], [104.1, -2.0], [104.1, -2.1], [104.0, -2.1], [104.0, -2.0]]]
+      production_date: "2024-07-01"
+      supply_chain:
+        - actor: "Estate"
+          verified: true
+    expected:
+      compliance_status: "pending_verification"
+      risk_level: "high"
+
+  - test_id: "eudr_detect_013"
+    test_name: "Pending - Empty Supply Chain"
+    description: "No supply chain information"
+    tags: ["pending", "no_supply_chain"]
+    input:
+      commodity_type: "coffee"
+      cn_code: "09011100"
+      quantity_kg: 20000
+      country_of_origin: "BR"
+      geolocation:
+        type: "Point"
+        coordinates: [-47.5, -15.5]
+      production_date: "2024-08-15"
+      supply_chain: []
+    expected:
+      compliance_status: "pending_verification"
+      traceability_score: 0.0
+
+  - test_id: "eudr_detect_014"
+    test_name: "Pending - All Unverified"
+    description: "Supply chain exists but unverified"
+    tags: ["pending", "unverified"]
+    input:
+      commodity_type: "cocoa"
+      cn_code: "18010000"
+      quantity_kg: 35000
+      country_of_origin: "GH"
+      geolocation:
+        type: "Point"
+        coordinates: [-1.5, 6.5]
+      production_date: "2024-09-01"
+      supply_chain:
+        - actor: "Farm"
+          verified: false
+        - actor: "Trader"
+          verified: false
+        - actor: "Exporter"
+          verified: false
+    expected:
+      compliance_status: "pending_verification"
+      traceability_score: 0.0
+
+  # Non-compliant scenarios (15-21)
+  - test_id: "eudr_detect_015"
+    test_name: "Non-Compliant - Pre-Cutoff Date"
+    description: "Production before Dec 31, 2020"
+    tags: ["non_compliant", "cutoff_date"]
+    input:
+      commodity_type: "palm_oil"
+      cn_code: "15111000"
+      quantity_kg: 100000
+      country_of_origin: "ID"
+      geolocation:
+        type: "Point"
+        coordinates: [107.5, -6.2]
+      production_date: "2020-06-15"
+    expected:
+      compliance_status: "non_compliant"
+      cutoff_date_compliant: false
+
+  - test_id: "eudr_detect_016"
+    test_name: "Non-Compliant - Invalid Geolocation"
+    description: "Invalid coordinates"
+    tags: ["non_compliant", "geolocation"]
+    input:
+      commodity_type: "soya"
+      cn_code: "12010000"
+      quantity_kg: 200000
+      country_of_origin: "BR"
+      geolocation:
+        type: "Point"
+        coordinates: [200.0, -100.0]
+      production_date: "2024-04-01"
+    expected:
+      compliance_status: "non_compliant"
+      geolocation_valid: false
+
+  - test_id: "eudr_detect_017"
+    test_name: "Non-Compliant - Both Invalid"
+    description: "Invalid geolocation and pre-cutoff"
+    tags: ["non_compliant", "multiple_failures"]
+    input:
+      commodity_type: "wood"
+      cn_code: "44011200"
+      quantity_kg: 150000
+      country_of_origin: "BR"
+      geolocation:
+        type: "Point"
+        coordinates: [-200.0, 50.0]
+      production_date: "2019-12-01"
+    expected:
+      compliance_status: "non_compliant"
+      geolocation_valid: false
+      cutoff_date_compliant: false
+
+  - test_id: "eudr_detect_018"
+    test_name: "Non-Compliant - 2020 Production"
+    description: "Production in 2020"
+    tags: ["non_compliant", "2020"]
+    input:
+      commodity_type: "cocoa"
+      cn_code: "18010000"
+      quantity_kg: 45000
+      country_of_origin: "CI"
+      geolocation:
+        type: "Point"
+        coordinates: [-5.5, 7.5]
+      production_date: "2020-12-30"
+    expected:
+      compliance_status: "non_compliant"
+      cutoff_date_compliant: false
+
+  - test_id: "eudr_detect_019"
+    test_name: "Non-Compliant - Empty Polygon"
+    description: "Polygon with no valid ring"
+    tags: ["non_compliant", "empty_polygon"]
+    input:
+      commodity_type: "rubber"
+      cn_code: "40011000"
+      quantity_kg: 60000
+      country_of_origin: "MY"
+      geolocation:
+        type: "Polygon"
+        coordinates: [[]]
+      production_date: "2024-05-01"
+    expected:
+      compliance_status: "non_compliant"
+      geolocation_valid: false
+
+  - test_id: "eudr_detect_020"
+    test_name: "Non-Compliant - Too Few Points"
+    description: "Polygon with insufficient points"
+    tags: ["non_compliant", "invalid_polygon"]
+    input:
+      commodity_type: "coffee"
+      cn_code: "09011100"
+      quantity_kg: 30000
+      country_of_origin: "CO"
+      geolocation:
+        type: "Polygon"
+        coordinates: [[[-75.5, 4.5], [-75.4, 4.6]]]
+      production_date: "2024-06-15"
+    expected:
+      compliance_status: "non_compliant"
+      geolocation_valid: false
+
+  - test_id: "eudr_detect_021"
+    test_name: "Non-Compliant - Old Production"
+    description: "Very old production date"
+    tags: ["non_compliant", "old_production"]
+    input:
+      commodity_type: "soya"
+      cn_code: "12010000"
+      quantity_kg: 400000
+      country_of_origin: "BR"
+      geolocation:
+        type: "Point"
+        coordinates: [-54.5, -12.5]
+      production_date: "2018-03-01"
+    expected:
+      compliance_status: "non_compliant"
+      cutoff_date_compliant: false
+
+  # Insufficient data scenarios (22-25)
+  - test_id: "eudr_detect_022"
+    test_name: "Insufficient - Very Low Traceability"
+    description: "Less than 50% traceability"
+    tags: ["insufficient", "low_traceability"]
+    input:
+      commodity_type: "palm_oil"
+      cn_code: "15111000"
+      quantity_kg: 150000
+      country_of_origin: "ID"
+      geolocation:
+        type: "Point"
+        coordinates: [107.5, -6.2]
+      production_date: "2024-03-01"
+      supply_chain:
+        - actor: "Unknown Source"
+          verified: false
+        - actor: "Unknown Trader"
+          verified: false
+        - actor: "Unknown Mill"
+          verified: false
+        - actor: "Exporter"
+          verified: true
+    expected:
+      compliance_status: "insufficient_data"
+      traceability_score: 25.0
+
+  - test_id: "eudr_detect_023"
+    test_name: "Insufficient - Minimal Info"
+    description: "Only basic information available"
+    tags: ["insufficient", "minimal"]
+    input:
+      commodity_type: "cocoa"
+      cn_code: "18010000"
+      quantity_kg: 20000
+      country_of_origin: "GH"
+      geolocation:
+        type: "Point"
+        coordinates: [-1.5, 6.5]
+      production_date: "2024-04-15"
+      supply_chain:
+        - actor: "Unknown"
+          verified: false
+        - actor: "Unknown"
+          verified: false
+    expected:
+      compliance_status: "insufficient_data"
+      traceability_score: 0.0
+
+  - test_id: "eudr_detect_024"
+    test_name: "Insufficient - Single Unverified"
+    description: "Single unverified supply chain node"
+    tags: ["insufficient", "single_node"]
+    input:
+      commodity_type: "wood"
+      cn_code: "44011200"
+      quantity_kg: 80000
+      country_of_origin: "BR"
+      geolocation:
+        type: "Point"
+        coordinates: [-60.0, -3.0]
+      production_date: "2024-05-20"
+      supply_chain:
+        - actor: "Forest Source"
+          verified: false
+    expected:
+      compliance_status: "insufficient_data"
+      traceability_score: 0.0
+
+  - test_id: "eudr_detect_025"
+    test_name: "Insufficient - Mixed Verification"
+    description: "Low overall verification rate"
+    tags: ["insufficient", "mixed"]
+    input:
+      commodity_type: "rubber"
+      cn_code: "40011000"
+      quantity_kg: 45000
+      country_of_origin: "ID"
+      geolocation:
+        type: "Point"
+        coordinates: [104.0, -2.0]
+      production_date: "2024-06-30"
+      supply_chain:
+        - actor: "Estate"
+          verified: false
+        - actor: "Factory"
+          verified: false
+        - actor: "Trader 1"
+          verified: false
+        - actor: "Trader 2"
+          verified: true
+    expected:
+      compliance_status: "insufficient_data"
+      traceability_score: 25.0

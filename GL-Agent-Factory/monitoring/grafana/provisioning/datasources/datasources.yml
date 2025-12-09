@@ -1,0 +1,184 @@
+# Grafana Datasource Provisioning
+# Auto-configures data sources on Grafana startup
+# GreenLang Agent Factory - Observability Stack
+
+apiVersion: 1
+
+# List of datasources to provision
+datasources:
+  # ==========================================================================
+  # Prometheus - Primary Metrics Store
+  # ==========================================================================
+  - name: Prometheus
+    type: prometheus
+    uid: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    isDefault: true
+    editable: false
+    jsonData:
+      # HTTP settings
+      httpMethod: POST
+      timeInterval: "15s"
+      queryTimeout: "60s"
+
+      # Prometheus type settings
+      prometheusType: Prometheus
+      prometheusVersion: "2.47.0"
+
+      # Cache settings
+      cacheLevel: "High"
+      disableRecordingRules: false
+
+      # Incremental querying for better performance
+      incrementalQuerying: true
+      incrementalQueryOverlapWindow: "10m"
+
+      # Exemplar support - Link metrics to traces
+      exemplarTraceIdDestinations:
+        - name: trace_id
+          datasourceUid: tempo
+          urlDisplayLabel: "View Trace"
+    version: 1
+
+  # ==========================================================================
+  # Alertmanager - Alert Management
+  # ==========================================================================
+  - name: Alertmanager
+    type: alertmanager
+    uid: alertmanager
+    access: proxy
+    url: http://alertmanager:9093
+    editable: false
+    jsonData:
+      implementation: prometheus
+      handleGrafanaManagedAlerts: false
+    version: 1
+
+  # ==========================================================================
+  # Loki - Log Aggregation
+  # ==========================================================================
+  - name: Loki
+    type: loki
+    uid: loki
+    access: proxy
+    url: http://loki:3100
+    editable: false
+    jsonData:
+      maxLines: 1000
+      timeout: "60s"
+      # Derived fields to link logs to traces
+      derivedFields:
+        - datasourceUid: tempo
+          matcherRegex: "trace_id=(\\w+)"
+          name: TraceID
+          url: "$${__value.raw}"
+        - datasourceUid: tempo
+          matcherRegex: '"trace_id":\\s*"(\\w+)"'
+          name: TraceID_JSON
+          url: "$${__value.raw}"
+        - datasourceUid: tempo
+          matcherRegex: "traceparent=00-(\\w+)-"
+          name: W3CTraceID
+          url: "$${__value.raw}"
+    version: 1
+
+  # ==========================================================================
+  # Tempo - Distributed Tracing
+  # ==========================================================================
+  - name: Tempo
+    type: tempo
+    uid: tempo
+    access: proxy
+    url: http://tempo:3200
+    editable: false
+    jsonData:
+      httpMethod: GET
+
+      # Trace to Logs correlation
+      tracesToLogs:
+        datasourceUid: loki
+        tags:
+          - job
+          - instance
+          - pod
+          - namespace
+          - service.name
+          - agent.id
+          - tenant.id
+        mappedTags:
+          - key: service.name
+            value: service
+          - key: agent.id
+            value: agent_id
+          - key: tenant.id
+            value: tenant_id
+        mapTagNamesEnabled: true
+        spanStartTimeShift: "-1h"
+        spanEndTimeShift: "1h"
+        filterByTraceID: true
+        filterBySpanID: false
+
+      # Trace to Metrics correlation
+      tracesToMetrics:
+        datasourceUid: prometheus
+        tags:
+          - key: service.name
+            value: service
+          - key: agent.id
+            value: agent_id
+        queries:
+          - name: "Request Rate"
+            query: "sum(rate(http_server_request_duration_seconds_count{$$__tags}[5m]))"
+          - name: "Error Rate"
+            query: "sum(rate(http_server_request_duration_seconds_count{$$__tags,http_status_code=~\"5..\"}[5m]))"
+          - name: "P95 Latency"
+            query: "histogram_quantile(0.95, sum(rate(http_server_request_duration_seconds_bucket{$$__tags}[5m])) by (le))"
+
+      # Service Map powered by Prometheus metrics
+      serviceMap:
+        datasourceUid: prometheus
+
+      # Node Graph for service topology
+      nodeGraph:
+        enabled: true
+
+      # Span Bar (trace waterfall)
+      spanBar:
+        type: "Tag"
+        tag: "http.status_code"
+
+      # Search configuration
+      search:
+        hide: false
+
+      # Loki search integration
+      lokiSearch:
+        datasourceUid: loki
+    version: 1
+
+  # ==========================================================================
+  # Jaeger - Distributed Tracing (Development)
+  # ==========================================================================
+  - name: Jaeger
+    type: jaeger
+    uid: jaeger
+    access: proxy
+    url: http://jaeger:16686
+    editable: false
+    jsonData:
+      tracesToLogs:
+        datasourceUid: loki
+        tags:
+          - service.name
+          - agent.id
+        mapTagNamesEnabled: true
+        spanStartTimeShift: "-1h"
+        spanEndTimeShift: "1h"
+        filterByTraceID: true
+      nodeGraph:
+        enabled: true
+    version: 1
+
+# Delete datasources that are no longer in this file
+deleteDatasources: []

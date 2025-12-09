@@ -1,0 +1,16 @@
+# Include important files in distribution
+include README.md
+include INSTALL.md
+include LICENSE
+include requirements.txt
+
+# Include configuration templates
+recursive-include cli/templates *.yaml *.yml *.json
+
+# Exclude development files
+exclude .gitignore
+exclude .editorconfig
+recursive-exclude tests *
+recursive-exclude docs *
+exclude *.pyc
+exclude __pycache__

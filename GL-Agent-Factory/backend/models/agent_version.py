@@ -52,9 +52,19 @@ class AgentVersion(Base):
     # Foreign key to agent
     agent_uuid = Column(
         UUID(as_uuid=True),
-        ForeignKey("agents.id"),
+        ForeignKey("agents.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
+        comment="Associated agent",
+    )
+
+    # Multi-tenancy (denormalized for RLS performance)
+    tenant_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("tenants.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+        comment="Owning tenant (denormalized)",
     )
 
     # Version info

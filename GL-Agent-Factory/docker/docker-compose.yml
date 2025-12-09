@@ -1,0 +1,138 @@
+# GreenLang Agent Factory - Docker Compose
+# Development and production deployment configuration
+# Version: 1.0.0
+
+version: '3.8'
+
+services:
+  # PostgreSQL Database for Agent Registry
+  postgres:
+    image: postgres:15-alpine
+    container_name: gl-postgres
+    environment:
+      POSTGRES_DB: greenlang
+      POSTGRES_USER: ${POSTGRES_USER:-greenlang}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-greenlang_dev}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U greenlang"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - greenlang-network
+
+  # Redis for caching emission factors
+  redis:
+    image: redis:7-alpine
+    container_name: gl-redis
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - greenlang-network
+
+  # API Server
+  api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.agent-runtime
+    container_name: gl-api
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-greenlang}:${POSTGRES_PASSWORD:-greenlang_dev}@postgres:5432/greenlang
+      REDIS_URL: redis://redis:6379/0
+      ENVIRONMENT: ${ENVIRONMENT:-development}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - greenlang-network
+    volumes:
+      - ../backend:/app/backend:ro
+      - ../specs:/app/specs:ro
+
+  # Agent Worker for background processing
+  worker:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.agent-runtime
+    container_name: gl-worker
+    command: ["celery", "-A", "backend.workers.celery_app", "worker", "--loglevel=info"]
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-greenlang}:${POSTGRES_PASSWORD:-greenlang_dev}@postgres:5432/greenlang
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/1
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - greenlang-network
+
+  # Prometheus for metrics
+  prometheus:
+    image: prom/prometheus:v2.47.0
+    container_name: gl-prometheus
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./prometheus/alert_rules.yml:/etc/prometheus/alert_rules.yml:ro
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.enable-lifecycle'
+    networks:
+      - greenlang-network
+
+  # Grafana for dashboards
+  grafana:
+    image: grafana/grafana:10.1.0
+    container_name: gl-grafana
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
+      GF_USERS_ALLOW_SIGN_UP: false
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana_data:/var/lib/grafana
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+    networks:
+      - greenlang-network
+
+networks:
+  greenlang-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
+  prometheus_data:
+  grafana_data:

@@ -56,6 +56,9 @@ from .agent import (
     RiskLevel,
     RetirementStatus,
     CorrespondingAdjustmentStatus,
+    Article6AuthorizationStatus,
+    CreditCategory,
+    PriceTier,
     # Supporting models
     CarbonCredit,
     ProjectDetails,
@@ -63,9 +66,17 @@ from .agent import (
     VerificationCheck,
     CreditVerificationResult,
     RiskAssessment,
+    RegistryCreditVerification,
+    Article6Compliance,
+    PortfolioAnalysis,
+    PriceBenchmark,
+    PortfolioPriceSummary,
     # Data constants
     REGISTRY_STANDARDS,
     PROJECT_TYPE_PROFILES,
+    PRICE_BENCHMARKS,
+    REGISTRY_API_ENDPOINTS,
+    REMOVAL_PROJECT_TYPES,
     PACK_SPEC,
 )
 
@@ -82,6 +93,9 @@ __all__ = [
     "RiskLevel",
     "RetirementStatus",
     "CorrespondingAdjustmentStatus",
+    "Article6AuthorizationStatus",
+    "CreditCategory",
+    "PriceTier",
     # Supporting models
     "CarbonCredit",
     "ProjectDetails",
@@ -89,9 +103,17 @@ __all__ = [
     "VerificationCheck",
     "CreditVerificationResult",
     "RiskAssessment",
+    "RegistryCreditVerification",
+    "Article6Compliance",
+    "PortfolioAnalysis",
+    "PriceBenchmark",
+    "PortfolioPriceSummary",
     # Data constants
     "REGISTRY_STANDARDS",
     "PROJECT_TYPE_PROFILES",
+    "PRICE_BENCHMARKS",
+    "REGISTRY_API_ENDPOINTS",
+    "REMOVAL_PROJECT_TYPES",
     "PACK_SPEC",
 ]
 

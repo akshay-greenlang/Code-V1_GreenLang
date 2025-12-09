@@ -1,0 +1,505 @@
+# Golden Tests: Steel Imports - CBAM Compliance Agent (GL-002)
+# Test Count: 30 tests
+# Default Emission Factors (EU Implementing Regulation 2023/1773):
+#   - Global: Direct 1.85 tCO2e/t, Indirect 0.32 tCO2e/t
+#   - China: Direct 2.10 tCO2e/t, Indirect 0.45 tCO2e/t
+#   - India: Direct 2.35 tCO2e/t, Indirect 0.52 tCO2e/t
+# EU ETS Price: 85.0 EUR/tCO2
+# Formula: embedded_emissions = quantity * (direct_ef + indirect_ef)
+#          cbam_liability = embedded_emissions * ets_price
+
+test_suite:
+  name: "Steel Imports CBAM Golden Tests"
+  agent_id: "regulatory/cbam_compliance_v1"
+  version: "1.0.0"
+  description: "Validates CBAM calculations for iron and steel imports (CN Chapters 72-73)"
+  regulation: "EU 2023/956"
+
+tests:
+  # China steel imports (1-10) - Higher emission factors
+  - test_id: "cbam_steel_cn_001"
+    test_name: "Steel 100t China Hot-Rolled Flat"
+    description: "CN 7208.10.00 - Hot-rolled flat products from China"
+    tags: ["steel", "china", "cbam", "cn_7208"]
+    input:
+      cn_code: "72081000"
+      quantity_tonnes: 100
+      country_of_origin: "CN"
+      reporting_period: "Q1 2026"
+    expected:
+      cn_code: "72081000"
+      product_category: "iron_steel"
+      quantity_tonnes: 100
+      direct_emissions_tco2e: 210.0
+      indirect_emissions_tco2e: 45.0
+      total_embedded_emissions_tco2e: 255.0
+      specific_embedded_emissions: 2.55
+      calculation_method: "country_default"
+      carbon_price_applicable: 85.0
+      cbam_liability_eur: 21675.0
+
+  - test_id: "cbam_steel_cn_002"
+    test_name: "Steel 500t China Cold-Rolled"
+    description: "CN 7209.16.90 - Cold-rolled steel from China"
+    tags: ["steel", "china", "cbam", "cn_7209"]
+    input:
+      cn_code: "72091690"
+      quantity_tonnes: 500
+      country_of_origin: "CN"
+      reporting_period: "Q1 2026"
+    expected:
+      product_category: "iron_steel"
+      direct_emissions_tco2e: 1050.0
+      indirect_emissions_tco2e: 225.0
+      total_embedded_emissions_tco2e: 1275.0
+      specific_embedded_emissions: 2.55
+      cbam_liability_eur: 108375.0
+
+  - test_id: "cbam_steel_cn_003"
+    test_name: "Steel 1000t China Structural"
+    description: "CN 7308 - Structural steel from China"
+    tags: ["steel", "china", "cbam", "cn_7308"]
+    input:
+      cn_code: "73089000"
+      quantity_tonnes: 1000
+      country_of_origin: "CN"
+      reporting_period: "Q2 2026"
+    expected:
+      product_category: "iron_steel"
+      direct_emissions_tco2e: 2100.0
+      indirect_emissions_tco2e: 450.0
+      total_embedded_emissions_tco2e: 2550.0
+      cbam_liability_eur: 216750.0
+
+  - test_id: "cbam_steel_cn_004"
+    test_name: "Steel 250t China Bars and Rods"
+    description: "CN 7214 - Bars and rods from China"
+    tags: ["steel", "china", "cbam", "cn_7214"]
+    input:
+      cn_code: "72142000"
+      quantity_tonnes: 250
+      country_of_origin: "CN"
+      reporting_period: "Q3 2026"
+    expected:
+      product_category: "iron_steel"
+      direct_emissions_tco2e: 525.0
+      indirect_emissions_tco2e: 112.5
+      total_embedded_emissions_tco2e: 637.5
+      cbam_liability_eur: 54187.5
+
+  - test_id: "cbam_steel_cn_005"
+    test_name: "Steel 750t China Pipes and Tubes"
+    description: "CN 7304 - Pipes and tubes from China"
+    tags: ["steel", "china", "cbam", "cn_7304"]
+    input:
+      cn_code: "73041900"
+      quantity_tonnes: 750
+      country_of_origin: "CN"
+      reporting_period: "Q4 2026"
+    expected:
+      product_category: "iron_steel"
+      direct_emissions_tco2e: 1575.0
+      indirect_emissions_tco2e: 337.5
+      total_embedded_emissions_tco2e: 1912.5
+      cbam_liability_eur: 162562.5
+
+  - test_id: "cbam_steel_cn_006"
+    test_name: "Steel 50t China Stainless"
+    description: "CN 7219 - Stainless steel from China"
+    tags: ["steel", "china", "cbam", "cn_7219", "stainless"]
+    input:
+      cn_code: "72192100"
+      quantity_tonnes: 50
+      country_of_origin: "CN"
+      reporting_period: "Q1 2026"
+    expected:
+      product_category: "iron_steel"
+      direct_emissions_tco2e: 105.0
+      indirect_emissions_tco2e: 22.5
+      total_embedded_emissions_tco2e: 127.5
+      cbam_liability_eur: 10837.5
+
+  - test_id: "cbam_steel_cn_007"
+    test_name: "Steel 2000t China Pig Iron"
+    description: "CN 7201 - Pig iron from China"
+    tags: ["steel", "china", "cbam", "cn_7201"]
+    input:
+      cn_code: "72011000"
+      quantity_tonnes: 2000
+      country_of_origin: "CN"
+      reporting_period: "Q2 2026"
+    expected:
+      product_category: "iron_steel"
+      direct_emissions_tco2e: 4200.0
+      indirect_emissions_tco2e: 900.0
+      total_embedded_emissions_tco2e: 5100.0
+      cbam_liability_eur: 433500.0
+
+  - test_id: "cbam_steel_cn_008"
+    test_name: "Steel 150t China Wire"
+    description: "CN 7217 - Steel wire from China"
+    tags: ["steel", "china", "cbam", "cn_7217"]
+    input:
+      cn_code: "72171000"
+      quantity_tonnes: 150
+      country_of_origin: "CN"
+      reporting_period: "Q3 2026"
+    expected:
+      product_category: "iron_steel"
+      direct_emissions_tco2e: 315.0
+      indirect_emissions_tco2e: 67.5
+      total_embedded_emissions_tco2e: 382.5
+      cbam_liability_eur: 32512.5
+
+  - test_id: "cbam_steel_cn_009"
+    test_name: "Steel 800t China Coated"
+    description: "CN 7210 - Coated steel sheets from China"
+    tags: ["steel", "china", "cbam", "cn_7210"]
+    input:
+      cn_code: "72104900"
+      quantity_tonnes: 800
+      country_of_origin: "CN"
+      reporting_period: "Q4 2026"
+    expected:
+      product_category: "iron_steel"
+      direct_emissions_tco2e: 1680.0
+      indirect_emissions_tco2e: 360.0
+      total_embedded_emissions_tco2e: 2040.0
+      cbam_liability_eur: 173400.0
+
+  - test_id: "cbam_steel_cn_010"
+    test_name: "Steel 5000t China Bulk Import"
+    description: "Large bulk steel import from China"
+    tags: ["steel", "china", "cbam", "bulk"]
+    input:
+      cn_code: "72083900"
+      quantity_tonnes: 5000
+      country_of_origin: "CN"
+      reporting_period: "Q1 2026"
+    expected:
+      product_category: "iron_steel"
+      direct_emissions_tco2e: 10500.0
+      indirect_emissions_tco2e: 2250.0
+      total_embedded_emissions_tco2e: 12750.0
+      cbam_liability_eur: 1083750.0
+
+  # India steel imports (11-15) - Highest emission factors
+  - test_id: "cbam_steel_in_011"
+    test_name: "Steel 100t India Hot-Rolled"
+    description: "Hot-rolled steel from India"
+    tags: ["steel", "india", "cbam", "cn_7208"]
+    input:
+      cn_code: "72081000"
+      quantity_tonnes: 100
+      country_of_origin: "IN"
+      reporting_period: "Q1 2026"
+    expected:
+      product_category: "iron_steel"
+      direct_emissions_tco2e: 235.0
+      indirect_emissions_tco2e: 52.0
+      total_embedded_emissions_tco2e: 287.0
+      specific_embedded_emissions: 2.87
+      calculation_method: "country_default"
+      cbam_liability_eur: 24395.0
+
+  - test_id: "cbam_steel_in_012"
+    test_name: "Steel 500t India Structural"
+    description: "Structural steel from India"
+    tags: ["steel", "india", "cbam", "cn_7308"]
+    input:
+      cn_code: "73089000"
+      quantity_tonnes: 500
+      country_of_origin: "IN"
+      reporting_period: "Q2 2026"
+    expected:
+      product_category: "iron_steel"
+      direct_emissions_tco2e: 1175.0
+      indirect_emissions_tco2e: 260.0
+      total_embedded_emissions_tco2e: 1435.0
+      cbam_liability_eur: 121975.0
+
+  - test_id: "cbam_steel_in_013"
+    test_name: "Steel 1000t India Pipes"
+    description: "Steel pipes from India"
+    tags: ["steel", "india", "cbam", "cn_7304"]
+    input:
+      cn_code: "73041900"
+      quantity_tonnes: 1000
+      country_of_origin: "IN"
+      reporting_period: "Q3 2026"
+    expected:
+      product_category: "iron_steel"
+      direct_emissions_tco2e: 2350.0
+      indirect_emissions_tco2e: 520.0
+      total_embedded_emissions_tco2e: 2870.0
+      cbam_liability_eur: 243950.0
+
+  - test_id: "cbam_steel_in_014"
+    test_name: "Steel 250t India Cold-Rolled"
+    description: "Cold-rolled steel from India"
+    tags: ["steel", "india", "cbam", "cn_7209"]
+    input:
+      cn_code: "72091890"
+      quantity_tonnes: 250
+      country_of_origin: "IN"
+      reporting_period: "Q4 2026"
+    expected:
+      product_category: "iron_steel"
+      direct_emissions_tco2e: 587.5
+      indirect_emissions_tco2e: 130.0
+      total_embedded_emissions_tco2e: 717.5
+      cbam_liability_eur: 60987.5
+
+  - test_id: "cbam_steel_in_015"
+    test_name: "Steel 2000t India Bulk"
+    description: "Large bulk import from India"
+    tags: ["steel", "india", "cbam", "bulk"]
+    input:
+      cn_code: "72083900"
+      quantity_tonnes: 2000
+      country_of_origin: "IN"
+      reporting_period: "Q1 2026"
+    expected:
+      product_category: "iron_steel"
+      direct_emissions_tco2e: 4700.0
+      indirect_emissions_tco2e: 1040.0
+      total_embedded_emissions_tco2e: 5740.0
+      cbam_liability_eur: 487900.0
+
+  # Global/Other regions (16-20) - Default factors
+  - test_id: "cbam_steel_global_016"
+    test_name: "Steel 100t Brazil"
+    description: "Steel import from Brazil (uses global defaults)"
+    tags: ["steel", "brazil", "cbam", "global"]
+    input:
+      cn_code: "72081000"
+      quantity_tonnes: 100
+      country_of_origin: "BR"
+      reporting_period: "Q1 2026"
+    expected:
+      product_category: "iron_steel"
+      direct_emissions_tco2e: 185.0
+      indirect_emissions_tco2e: 32.0
+      total_embedded_emissions_tco2e: 217.0
+      specific_embedded_emissions: 2.17
+      calculation_method: "default"
+      cbam_liability_eur: 18445.0
+
+  - test_id: "cbam_steel_global_017"
+    test_name: "Steel 500t Turkey"
+    description: "Steel import from Turkey"
+    tags: ["steel", "turkey", "cbam", "global"]
+    input:
+      cn_code: "72091690"
+      quantity_tonnes: 500
+      country_of_origin: "TR"
+      reporting_period: "Q2 2026"
+    expected:
+      product_category: "iron_steel"
+      direct_emissions_tco2e: 925.0
+      indirect_emissions_tco2e: 160.0
+      total_embedded_emissions_tco2e: 1085.0
+      cbam_liability_eur: 92225.0
+
+  - test_id: "cbam_steel_global_018"
+    test_name: "Steel 1000t Russia"
+    description: "Steel import from Russia"
+    tags: ["steel", "russia", "cbam", "global"]
+    input:
+      cn_code: "73089000"
+      quantity_tonnes: 1000
+      country_of_origin: "RU"
+      reporting_period: "Q3 2026"
+    expected:
+      product_category: "iron_steel"
+      direct_emissions_tco2e: 1850.0
+      indirect_emissions_tco2e: 320.0
+      total_embedded_emissions_tco2e: 2170.0
+      cbam_liability_eur: 184450.0
+
+  - test_id: "cbam_steel_global_019"
+    test_name: "Steel 750t Ukraine"
+    description: "Steel import from Ukraine"
+    tags: ["steel", "ukraine", "cbam", "global"]
+    input:
+      cn_code: "72142000"
+      quantity_tonnes: 750
+      country_of_origin: "UA"
+      reporting_period: "Q4 2026"
+    expected:
+      product_category: "iron_steel"
+      direct_emissions_tco2e: 1387.5
+      indirect_emissions_tco2e: 240.0
+      total_embedded_emissions_tco2e: 1627.5
+      cbam_liability_eur: 138337.5
+
+  - test_id: "cbam_steel_global_020"
+    test_name: "Steel 300t South Korea"
+    description: "Steel import from South Korea"
+    tags: ["steel", "korea", "cbam", "global"]
+    input:
+      cn_code: "72193400"
+      quantity_tonnes: 300
+      country_of_origin: "KR"
+      reporting_period: "Q1 2026"
+    expected:
+      product_category: "iron_steel"
+      direct_emissions_tco2e: 555.0
+      indirect_emissions_tco2e: 96.0
+      total_embedded_emissions_tco2e: 651.0
+      cbam_liability_eur: 55335.0
+
+  # Actual emissions tests (21-25)
+  - test_id: "cbam_steel_actual_021"
+    test_name: "Steel 100t Verified Low Emissions"
+    description: "Verified installation with low actual emissions"
+    tags: ["steel", "actual", "cbam", "verified"]
+    input:
+      cn_code: "72081000"
+      quantity_tonnes: 100
+      country_of_origin: "CN"
+      actual_emissions: 1.5
+      reporting_period: "Q1 2026"
+    expected:
+      product_category: "iron_steel"
+      direct_emissions_tco2e: 150.0
+      indirect_emissions_tco2e: 0.0
+      total_embedded_emissions_tco2e: 150.0
+      calculation_method: "actual"
+      cbam_liability_eur: 12750.0
+
+  - test_id: "cbam_steel_actual_022"
+    test_name: "Steel 500t Green Steel"
+    description: "Green steel with very low emissions"
+    tags: ["steel", "actual", "cbam", "green"]
+    input:
+      cn_code: "72091690"
+      quantity_tonnes: 500
+      country_of_origin: "SE"
+      actual_emissions: 0.5
+      reporting_period: "Q2 2026"
+    expected:
+      product_category: "iron_steel"
+      total_embedded_emissions_tco2e: 250.0
+      calculation_method: "actual"
+      cbam_liability_eur: 21250.0
+
+  - test_id: "cbam_steel_actual_023"
+    test_name: "Steel 1000t Electric Arc Furnace"
+    description: "EAF steel with verified low emissions"
+    tags: ["steel", "actual", "cbam", "eaf"]
+    input:
+      cn_code: "72083900"
+      quantity_tonnes: 1000
+      country_of_origin: "TR"
+      actual_emissions: 0.8
+      reporting_period: "Q3 2026"
+    expected:
+      product_category: "iron_steel"
+      total_embedded_emissions_tco2e: 800.0
+      calculation_method: "actual"
+      cbam_liability_eur: 68000.0
+
+  - test_id: "cbam_steel_actual_024"
+    test_name: "Steel 250t High Emissions Installation"
+    description: "Installation with higher than default emissions"
+    tags: ["steel", "actual", "cbam", "high_emissions"]
+    input:
+      cn_code: "72142000"
+      quantity_tonnes: 250
+      country_of_origin: "IN"
+      actual_emissions: 3.5
+      reporting_period: "Q4 2026"
+    expected:
+      product_category: "iron_steel"
+      total_embedded_emissions_tco2e: 875.0
+      calculation_method: "actual"
+      cbam_liability_eur: 74375.0
+
+  - test_id: "cbam_steel_actual_025"
+    test_name: "Steel 750t Verified Installation"
+    description: "Standard verified installation"
+    tags: ["steel", "actual", "cbam", "verified"]
+    input:
+      cn_code: "73041900"
+      quantity_tonnes: 750
+      country_of_origin: "JP"
+      actual_emissions: 1.8
+      reporting_period: "Q1 2026"
+    expected:
+      product_category: "iron_steel"
+      total_embedded_emissions_tco2e: 1350.0
+      calculation_method: "actual"
+      cbam_liability_eur: 114750.0
+
+  # Edge cases and special scenarios (26-30)
+  - test_id: "cbam_steel_edge_026"
+    test_name: "Steel Minimum Quantity 1t"
+    description: "Minimum viable CBAM calculation"
+    tags: ["steel", "edge_case", "cbam", "minimum"]
+    input:
+      cn_code: "72081000"
+      quantity_tonnes: 1
+      country_of_origin: "CN"
+      reporting_period: "Q1 2026"
+    expected:
+      product_category: "iron_steel"
+      total_embedded_emissions_tco2e: 2.55
+      cbam_liability_eur: 216.75
+
+  - test_id: "cbam_steel_edge_027"
+    test_name: "Steel Decimal Quantity"
+    description: "Non-integer quantity"
+    tags: ["steel", "edge_case", "cbam", "decimal"]
+    input:
+      cn_code: "72091690"
+      quantity_tonnes: 123.456
+      country_of_origin: "CN"
+      reporting_period: "Q2 2026"
+    expected:
+      product_category: "iron_steel"
+      total_embedded_emissions_tco2e: 314.8128
+      cbam_liability_eur: 26759.088
+
+  - test_id: "cbam_steel_edge_028"
+    test_name: "Steel Large Industrial Import"
+    description: "Very large bulk import"
+    tags: ["steel", "edge_case", "cbam", "large"]
+    input:
+      cn_code: "72083900"
+      quantity_tonnes: 50000
+      country_of_origin: "CN"
+      reporting_period: "Q3 2026"
+    expected:
+      product_category: "iron_steel"
+      total_embedded_emissions_tco2e: 127500.0
+      cbam_liability_eur: 10837500.0
+
+  - test_id: "cbam_steel_edge_029"
+    test_name: "Steel Zero Emissions Claim"
+    description: "Testing zero actual emissions (hydrogen steel)"
+    tags: ["steel", "edge_case", "cbam", "zero"]
+    input:
+      cn_code: "72081000"
+      quantity_tonnes: 100
+      country_of_origin: "SE"
+      actual_emissions: 0.0
+      reporting_period: "Q4 2026"
+    expected:
+      product_category: "iron_steel"
+      total_embedded_emissions_tco2e: 0.0
+      cbam_liability_eur: 0.0
+
+  - test_id: "cbam_steel_edge_030"
+    test_name: "Steel Different CN Subheading"
+    description: "Testing CN code classification"
+    tags: ["steel", "edge_case", "cbam", "cn_code"]
+    input:
+      cn_code: "73269098"
+      quantity_tonnes: 200
+      country_of_origin: "BR"
+      reporting_period: "Q1 2026"
+    expected:
+      product_category: "iron_steel"
+      total_embedded_emissions_tco2e: 434.0
+      cbam_liability_eur: 36890.0

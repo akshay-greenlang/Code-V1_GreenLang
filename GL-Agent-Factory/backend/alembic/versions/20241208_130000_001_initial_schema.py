@@ -1,8 +1,8 @@
 """Initial schema - Create all GL-Agent-Factory tables
 
-Revision ID: 001_initial_schema
+Revision ID: 20241208_130000_001
 Revises: None
-Create Date: 2024-12-08
+Create Date: 2024-12-08 13:00:00 UTC
 
 Creates the complete database schema for GL-Agent-Factory:
 - tenants: Multi-tenant organization management
@@ -30,7 +30,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # Revision identifiers, used by Alembic.
-revision: str = '001_initial_schema'
+revision: str = '20241208_130000_001'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None

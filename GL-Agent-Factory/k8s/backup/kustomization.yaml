@@ -1,0 +1,39 @@
+# GreenLang PostgreSQL Backup Kustomization
+# This file enables easy deployment of backup resources using kustomize
+#
+# Usage:
+#   kubectl apply -k k8s/backup/
+#   kubectl delete -k k8s/backup/
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: greenlang-production
+
+# Labels applied to all resources
+commonLabels:
+  app.kubernetes.io/name: greenlang
+  app.kubernetes.io/component: backup
+  app.kubernetes.io/part-of: greenlang-platform
+  app.kubernetes.io/managed-by: kustomize
+
+# Resources to deploy
+resources:
+  - postgres-backup-cronjob.yaml
+  # Note: Secrets should be applied separately or via external secrets
+  # - postgres-backup-secret.yaml
+
+# ConfigMap generator (optional - use for environment-specific overrides)
+# configMapGenerator:
+#   - name: postgres-backup-config-override
+#     behavior: merge
+#     literals:
+#       - BACKUP_RETENTION_DAYS=60
+#       - S3_BUCKET=greenlang-backups-staging
+
+# Patches for environment-specific customization
+# patches:
+#   - path: patches/staging-schedule.yaml
+#     target:
+#       kind: CronJob
+#       name: postgres-backup

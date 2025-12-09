@@ -1,0 +1,55 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "greenlang.fullname" . }}-config
+  namespace: {{ include "greenlang.namespace" . }}
+  labels:
+    {{- include "greenlang.labels" . | nindent 4 }}
+data:
+  GREENLANG_APP_NAME: "GreenLang Agent Factory"
+  GREENLANG_APP_ENV: {{ .Values.config.appEnv | quote }}
+  GREENLANG_DEBUG: {{ .Values.config.debug | quote }}
+  GREENLANG_LOG_LEVEL: {{ .Values.config.logLevel | quote }}
+  GREENLANG_CORS_ORIGINS: {{ .Values.config.corsOrigins | quote }}
+
+  # Database settings
+  GREENLANG_DATABASE_POOL_SIZE: {{ .Values.config.databasePoolSize | quote }}
+  GREENLANG_DATABASE_MAX_OVERFLOW: {{ .Values.config.databaseMaxOverflow | quote }}
+  GREENLANG_DATABASE_POOL_TIMEOUT: {{ .Values.config.databasePoolTimeout | quote }}
+  DATABASE_HOST: {{ printf "%s-postgresql" .Release.Name | quote }}
+  DATABASE_PORT: "5432"
+  DATABASE_NAME: "greenlang"
+
+  # Redis settings
+  GREENLANG_REDIS_MAX_CONNECTIONS: {{ .Values.config.redisMaxConnections | quote }}
+  REDIS_HOST: {{ printf "%s-redis-master" .Release.Name | quote }}
+  REDIS_PORT: "6379"
+
+  # Rate limiting
+  GREENLANG_RATE_LIMIT_PER_MINUTE: {{ .Values.config.rateLimitPerMinute | quote }}
+  GREENLANG_RATE_LIMIT_BURST: {{ .Values.config.rateLimitBurst | quote }}
+
+  # Execution settings
+  GREENLANG_EXECUTION_TIMEOUT_DEFAULT: {{ .Values.config.executionTimeoutDefault | quote }}
+  GREENLANG_EXECUTION_TIMEOUT_MAX: {{ .Values.config.executionTimeoutMax | quote }}
+  GREENLANG_EXECUTION_MAX_CONCURRENT: {{ .Values.config.executionMaxConcurrent | quote }}
+
+  # S3 settings
+  GREENLANG_S3_BUCKET: {{ .Values.config.s3Bucket | quote }}
+  GREENLANG_S3_REGION: {{ .Values.config.s3Region | quote }}
+
+  # Observability
+  GREENLANG_METRICS_ENABLED: {{ .Values.config.metricsEnabled | quote }}
+  GREENLANG_TRACING_ENABLED: {{ .Values.config.tracingEnabled | quote }}
+  GREENLANG_OTLP_ENDPOINT: {{ .Values.config.otlpEndpoint | quote }}
+
+  # Service URLs
+  AGENT_RUNTIME_URL: {{ printf "http://%s-agent-runtime" (include "greenlang.fullname" .) | quote }}
+  REGISTRY_URL: {{ printf "http://%s-registry" (include "greenlang.fullname" .) | quote }}
+  API_SERVER_URL: {{ printf "http://%s-api-server" (include "greenlang.fullname" .) | quote }}
+
+  # Feature flags
+  FEATURE_ZERO_HALLUCINATION: "true"
+  FEATURE_PROVENANCE_TRACKING: "true"
+  FEATURE_AUDIT_LOGGING: "true"
+  FEATURE_MULTI_TENANCY: "true"
