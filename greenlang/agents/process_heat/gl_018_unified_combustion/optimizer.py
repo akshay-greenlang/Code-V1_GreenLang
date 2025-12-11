@@ -36,7 +36,7 @@ Example:
 """
 
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 import logging
 
 from greenlang.agents.process_heat.shared.base_agent import (
@@ -46,6 +46,11 @@ from greenlang.agents.process_heat.shared.base_agent import (
     SafetyLevel,
     ProcessingError,
 )
+
+# Intelligence Framework imports for LLM capabilities
+from greenlang.agents.intelligence_mixin import IntelligenceMixin, IntelligenceConfig
+from greenlang.agents.intelligence_interface import IntelligenceCapabilities, IntelligenceLevel
+
 from greenlang.agents.process_heat.shared.provenance import ProvenanceTracker
 from greenlang.agents.process_heat.shared.audit import (
     AuditLogger,
@@ -86,7 +91,7 @@ from .emissions import EmissionsController
 logger = logging.getLogger(__name__)
 
 
-class UnifiedCombustionOptimizer(BaseProcessHeatAgent[CombustionInput, CombustionOutput]):
+class UnifiedCombustionOptimizer(IntelligenceMixin, BaseProcessHeatAgent[CombustionInput, CombustionOutput]):
     """
     GL-018 UnifiedCombustionOptimizer Agent.
 
@@ -101,6 +106,13 @@ class UnifiedCombustionOptimizer(BaseProcessHeatAgent[CombustionInput, Combustio
 
     All calculations use deterministic engineering formulas with zero-hallucination
     guarantees - no ML/LLM in the calculation path.
+
+    Intelligence Capabilities (FULL Level - HIGH PRIORITY $24B):
+        - Explanation generation with chain-of-thought reasoning
+        - Actionable recommendations for combustion optimization
+        - Anomaly detection for flame stability and emissions
+        - General reasoning about combustion scenarios
+        - Validation with LLM reasoning for compliance
 
     Attributes:
         config: Agent configuration
@@ -193,8 +205,49 @@ class UnifiedCombustionOptimizer(BaseProcessHeatAgent[CombustionInput, Combustio
         self._optimization_history: List[Dict[str, Any]] = []
         self._alerts_active: List[Alert] = []
 
+        # Initialize intelligence with FULL capabilities (HIGH PRIORITY $24B)
+        self._init_intelligence(IntelligenceConfig(
+            enabled=True,
+            model="auto",
+            max_budget_per_call_usd=0.15,  # Higher budget for FULL level
+            enable_explanations=True,
+            enable_recommendations=True,
+            enable_anomaly_detection=True,
+            enable_reasoning=True,  # FULL level capability
+            enable_validation=True,  # FULL level capability
+            domain_context="unified combustion optimization, boiler and furnace control, ASME PTC 4.1",
+            regulatory_context="NFPA 85/86, EPA MACT, IEC 61511",
+        ))
+
         logger.info(
-            f"UnifiedCombustionOptimizer initialized for {combustion_config.equipment_id}"
+            f"UnifiedCombustionOptimizer initialized for {combustion_config.equipment_id} "
+            f"with FULL LLM intelligence (HIGH PRIORITY $24B market)"
+        )
+
+    def get_intelligence_level(self) -> IntelligenceLevel:
+        """
+        Return the agent's intelligence level.
+
+        Returns:
+            IntelligenceLevel.FULL for unified combustion (HIGH PRIORITY $24B)
+        """
+        return IntelligenceLevel.FULL
+
+    def get_intelligence_capabilities(self) -> IntelligenceCapabilities:
+        """
+        Return the agent's intelligence capabilities.
+
+        Returns:
+            IntelligenceCapabilities with full capabilities including reasoning
+        """
+        return IntelligenceCapabilities(
+            can_explain=True,
+            can_recommend=True,
+            can_detect_anomalies=True,
+            can_reason=True,  # FULL level - chain-of-thought reasoning
+            can_validate=True,  # FULL level - LLM validation
+            uses_rag=False,
+            uses_tools=False,
         )
 
     def process(self, input_data: CombustionInput) -> CombustionOutput:
@@ -274,7 +327,83 @@ class UnifiedCombustionOptimizer(BaseProcessHeatAgent[CombustionInput, Combustio
                     input_data, efficiency, flue_gas_analysis, emissions, flame_stability
                 )
 
-                # Step 12: Create output
+                # Step 12: Generate LLM Intelligence outputs (FULL level)
+                input_data_dict = {
+                    "equipment_id": input_data.equipment_id,
+                    "fuel_type": str(input_data.fuel_type),
+                    "load_pct": input_data.load_pct,
+                    "o2_pct": input_data.flue_gas.o2_pct,
+                    "co_ppm": input_data.flue_gas.co_ppm,
+                    "flue_gas_temp_f": input_data.flue_gas.temperature_f,
+                }
+                output_data_dict = {
+                    "net_efficiency_pct": efficiency.net_efficiency_pct,
+                    "total_losses_pct": efficiency.total_losses_pct,
+                    "excess_air_pct": flue_gas_analysis.excess_air_pct,
+                    "flame_stability_index": flame_stability.flame_stability_index,
+                    "nox_compliance_pct": emissions.nox_compliance_pct,
+                    "co2_tons_hr": emissions.co2_tons_hr,
+                }
+
+                # Generate explanation with chain-of-thought
+                explanation = self.generate_explanation(
+                    input_data=input_data_dict,
+                    output_data=output_data_dict,
+                    calculation_steps=[
+                        f"Analyzed flue gas: O2={input_data.flue_gas.o2_pct:.1f}%, excess air={flue_gas_analysis.excess_air_pct:.1f}%",
+                        f"Calculated efficiency per ASME PTC 4.1: {efficiency.net_efficiency_pct:.1f}%",
+                        f"Evaluated flame stability (FSI): {flame_stability.flame_stability_index:.2f} ({flame_stability.fsi_status})",
+                        f"Analyzed emissions per EPA Method 19: NOx at {emissions.nox_compliance_pct:.1f}% of limit",
+                        f"Generated {len(recommendations)} optimization recommendations",
+                        f"Optimal setpoints: O2={optimal_o2:.1f}%, excess air={optimal_excess_air:.1f}%",
+                    ],
+                )
+
+                # Generate intelligent recommendations
+                intelligent_recommendations = self.generate_recommendations(
+                    analysis={
+                        "efficiency_pct": efficiency.net_efficiency_pct,
+                        "efficiency_below_guarantee": efficiency.net_efficiency_pct < self.combustion_config.efficiency.guarantee_efficiency_pct,
+                        "o2_deviation_pct": flue_gas_analysis.o2_deviation_pct,
+                        "flame_stability_status": flame_stability.fsi_status,
+                        "nox_compliance_pct": emissions.nox_compliance_pct,
+                        "co_ppm": input_data.flue_gas.co_ppm,
+                        "stack_temperature_f": input_data.flue_gas.temperature_f,
+                    },
+                    max_recommendations=5,
+                    focus_areas=["combustion_efficiency", "emissions_control", "flame_stability", "air_fuel_ratio"],
+                )
+
+                # Detect anomalies (FULL level capability)
+                anomalies_detected = self.detect_anomalies(
+                    data={
+                        "o2_pct": input_data.flue_gas.o2_pct,
+                        "co_ppm": input_data.flue_gas.co_ppm,
+                        "flue_gas_temp_f": input_data.flue_gas.temperature_f,
+                        "efficiency_pct": efficiency.net_efficiency_pct,
+                        "flame_stability_index": flame_stability.flame_stability_index,
+                    },
+                    expected_ranges={
+                        "o2_pct": (2.0, 6.0),
+                        "co_ppm": (0, 100),
+                        "flue_gas_temp_f": (300, 500),
+                        "efficiency_pct": (80, 95),
+                        "flame_stability_index": (0.7, 1.0),
+                    },
+                )
+
+                # Reason about combustion scenarios (FULL level capability)
+                reasoning_output = self.reason_about(
+                    question=f"What are the implications of current combustion performance for {input_data.equipment_id}?",
+                    context={
+                        "efficiency": efficiency.net_efficiency_pct,
+                        "emissions_compliance": emissions.in_compliance,
+                        "flame_stability": flame_stability.fsi_status,
+                        "active_alerts": len(alerts),
+                    },
+                    chain_of_thought=True,
+                )
+
                 processing_time = (
                     datetime.now(timezone.utc) - start_time
                 ).total_seconds() * 1000
@@ -294,10 +423,15 @@ class UnifiedCombustionOptimizer(BaseProcessHeatAgent[CombustionInput, Combustio
                     optimal_excess_air_pct=optimal_excess_air,
                     kpis=kpis,
                     alerts=alerts,
+                    explanation=explanation,
+                    intelligent_recommendations=intelligent_recommendations,
+                    anomalies_detected=anomalies_detected,
+                    reasoning_output=reasoning_output,
                     metadata={
                         "agent_version": self.VERSION,
                         "config_equipment_type": str(self.combustion_config.equipment_type),
                         "fuel_type": str(self.combustion_config.fuel_type),
+                        "intelligence_level": "FULL",
                     },
                 )
 

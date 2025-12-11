@@ -45,6 +45,10 @@ from greenlang.agents.process_heat.shared.base_agent import (
     ProcessingMetadata,
 )
 
+# Intelligence Framework imports for LLM capabilities
+from greenlang.agents.intelligence_mixin import IntelligenceMixin, IntelligenceConfig
+from greenlang.agents.intelligence_interface import IntelligenceCapabilities, IntelligenceLevel
+
 from greenlang.agents.process_heat.gl_017_condenser_optimization.config import (
     CondenserOptimizationConfig,
     CoolingTowerConfig,
@@ -93,7 +97,7 @@ from greenlang.agents.process_heat.gl_017_condenser_optimization.performance imp
 logger = logging.getLogger(__name__)
 
 
-class CondenserOptimizerAgent(BaseProcessHeatAgent[CondenserInput, CondenserOutput]):
+class CondenserOptimizerAgent(IntelligenceMixin, BaseProcessHeatAgent[CondenserInput, CondenserOutput]):
     """
     GL-017 CONDENSYNC Condenser Optimization Agent.
 
@@ -107,6 +111,11 @@ class CondenserOptimizerAgent(BaseProcessHeatAgent[CondenserInput, CondenserOutp
 
     The agent follows zero-hallucination principles - all calculations
     are deterministic using HEI Standards methodology.
+
+    Intelligence Capabilities:
+        - Explanation generation for condenser performance reports
+        - Actionable recommendations for fouling mitigation
+        - Anomaly detection for vacuum and air ingress
 
     Attributes:
         condenser_config: Complete condenser configuration
@@ -156,8 +165,46 @@ class CondenserOptimizerAgent(BaseProcessHeatAgent[CondenserInput, CondenserOutp
         # Initialize sub-components
         self._init_components()
 
+        # Initialize intelligence with regulatory context
+        self._init_intelligence(IntelligenceConfig(
+            enabled=True,
+            model="auto",
+            max_budget_per_call_usd=0.10,
+            enable_explanations=True,
+            enable_recommendations=True,
+            enable_anomaly_detection=True,
+            domain_context="condenser optimization, steam surface condensers, HEI standards",
+            regulatory_context="HEI Standards",
+        ))
+
         logger.info(
-            f"CondenserOptimizerAgent initialized: {condenser_config.condenser_id}"
+            f"CondenserOptimizerAgent initialized: {condenser_config.condenser_id} with LLM intelligence"
+        )
+
+    def get_intelligence_level(self) -> IntelligenceLevel:
+        """
+        Return the agent's intelligence level.
+
+        Returns:
+            IntelligenceLevel.STANDARD for condenser optimization
+        """
+        return IntelligenceLevel.STANDARD
+
+    def get_intelligence_capabilities(self) -> IntelligenceCapabilities:
+        """
+        Return the agent's intelligence capabilities.
+
+        Returns:
+            IntelligenceCapabilities with explanation and recommendation support
+        """
+        return IntelligenceCapabilities(
+            can_explain=True,
+            can_recommend=True,
+            can_detect_anomalies=True,
+            can_reason=False,
+            can_validate=True,
+            uses_rag=False,
+            uses_tools=False,
         )
 
     def _init_components(self) -> None:
@@ -279,6 +326,50 @@ class CondenserOptimizerAgent(BaseProcessHeatAgent[CondenserInput, CondenserOutp
                 datetime.now(timezone.utc) - start_time
             ).total_seconds() * 1000
 
+            # Generate LLM Intelligence outputs
+            input_data_dict = {
+                "condenser_id": input_data.condenser_id,
+                "vacuum_inhga": input_data.condenser_vacuum_inhga,
+                "cw_inlet_temp_f": input_data.cw_inlet_temperature_f,
+                "cw_outlet_temp_f": input_data.cw_outlet_temperature_f,
+                "steam_flow_lb_hr": input_data.exhaust_steam_flow_lb_hr,
+                "load_pct": input_data.load_pct,
+            }
+            output_data_dict = {
+                "cleanliness_factor": cleanliness_result.cleanliness_factor,
+                "cleaning_status": cleanliness_result.cleaning_status.value,
+                "backpressure_deviation_pct": performance_result.backpressure_deviation_pct,
+                "vacuum_deviation_inhg": vacuum_result.vacuum_deviation_inhg,
+                "air_ingress_scfm": air_ingress_result.estimated_air_ingress_scfm,
+            }
+
+            # Generate explanation
+            explanation = self.generate_explanation(
+                input_data=input_data_dict,
+                output_data=output_data_dict,
+                calculation_steps=[
+                    f"Calculated HEI cleanliness factor: {cleanliness_result.cleanliness_factor:.3f}",
+                    f"Analyzed tube fouling from backpressure deviation",
+                    f"Monitored vacuum system: {vacuum_result.current_vacuum_inhga:.2f} inHgA",
+                    f"Detected air ingress: {air_ingress_result.estimated_air_ingress_scfm:.1f} SCFM",
+                    f"Performance deviation: {performance_result.backpressure_deviation_pct:.1f}%",
+                ],
+            )
+
+            # Generate intelligent recommendations
+            intelligent_recommendations = self.generate_recommendations(
+                analysis={
+                    "cleanliness_factor": cleanliness_result.cleanliness_factor,
+                    "cleaning_status": cleanliness_result.cleaning_status.value,
+                    "backpressure_deviation_pct": performance_result.backpressure_deviation_pct,
+                    "vacuum_deviation_inhg": vacuum_result.vacuum_deviation_inhg,
+                    "air_ingress_severity": air_ingress_result.ingress_severity,
+                    "heat_rate_impact_btu_kwh": performance_result.heat_rate_impact_btu_kwh,
+                },
+                max_recommendations=5,
+                focus_areas=["fouling", "vacuum", "air_ingress", "cooling_tower"],
+            )
+
             # Create output
             output = CondenserOutput(
                 condenser_id=input_data.condenser_id,
@@ -293,6 +384,8 @@ class CondenserOptimizerAgent(BaseProcessHeatAgent[CondenserInput, CondenserOutp
                 performance=performance_result,
                 recommendations=recommendations,
                 alerts=alerts,
+                explanation=explanation,
+                intelligent_recommendations=intelligent_recommendations,
                 kpis=kpis,
                 input_hash=input_hash,
                 provenance_hash=self._calculate_provenance_hash(

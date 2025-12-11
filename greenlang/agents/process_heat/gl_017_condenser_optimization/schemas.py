@@ -966,6 +966,16 @@ class CondenserOutput(BaseModel):
         description="Active alerts"
     )
 
+    # LLM Intelligence outputs
+    explanation: Optional[str] = Field(
+        default=None,
+        description="LLM-generated explanation of results"
+    )
+    intelligent_recommendations: Optional[List[Dict[str, Any]]] = Field(
+        default=None,
+        description="LLM-generated intelligent recommendations"
+    )
+
     # KPIs
     kpis: Dict[str, float] = Field(
         default_factory=dict,

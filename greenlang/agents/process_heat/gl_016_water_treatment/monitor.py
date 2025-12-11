@@ -56,6 +56,10 @@ from greenlang.agents.process_heat.shared.base_agent import (
     ProcessingMetadata,
 )
 
+# Intelligence Framework Integration
+from greenlang.agents.intelligence_mixin import IntelligenceMixin, IntelligenceConfig
+from greenlang.agents.intelligence_interface import IntelligenceCapabilities, IntelligenceLevel
+
 from greenlang.agents.process_heat.gl_016_water_treatment.schemas import (
     WaterTreatmentInput,
     WaterTreatmentOutput,
@@ -106,7 +110,7 @@ logger = logging.getLogger(__name__)
 # WATER TREATMENT MONITOR CLASS
 # =============================================================================
 
-class WaterTreatmentMonitor(BaseProcessHeatAgent[WaterTreatmentInput, WaterTreatmentOutput]):
+class WaterTreatmentMonitor(IntelligenceMixin, BaseProcessHeatAgent[WaterTreatmentInput, WaterTreatmentOutput]):
     """
     GL-016 WATERGUARD - Main Water Treatment Monitoring Agent.
 
@@ -173,9 +177,37 @@ class WaterTreatmentMonitor(BaseProcessHeatAgent[WaterTreatmentInput, WaterTreat
         # Initialize sub-analyzers
         self._init_analyzers()
 
+        # Initialize intelligence capabilities (ADVANCED level for comprehensive analysis)
+        self._init_intelligence(IntelligenceConfig(
+            enabled=True,
+            model="auto",
+            max_budget_per_call_usd=0.10,
+            enable_explanations=True,
+            enable_recommendations=True,
+            enable_anomaly_detection=True,
+            domain_context="industrial boiler water treatment and chemistry optimization",
+            regulatory_context="ASME Consensus, ABMA Guidelines, EPRI",
+        ))
+
         logger.info(
             f"WaterTreatmentMonitor initialized for system: "
             f"{water_treatment_config.system_id}"
+        )
+
+    def get_intelligence_level(self) -> IntelligenceLevel:
+        """Return the agent's intelligence level."""
+        return IntelligenceLevel.ADVANCED
+
+    def get_intelligence_capabilities(self) -> IntelligenceCapabilities:
+        """Return the agent's intelligence capabilities."""
+        return IntelligenceCapabilities(
+            can_explain=True,
+            can_recommend=True,
+            can_detect_anomalies=True,
+            can_reason=True,
+            can_validate=True,
+            uses_rag=False,
+            uses_tools=False
         )
 
     def _init_analyzers(self) -> None:

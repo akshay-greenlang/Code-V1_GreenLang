@@ -29,13 +29,17 @@ Example:
 """
 
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Dict, List, Optional, Set, Tuple
 import hashlib
 import json
 import logging
 import time
 
 from pydantic import BaseModel, Field
+
+# Intelligence imports for LLM capabilities
+from greenlang.agents.intelligence_mixin import IntelligenceMixin, IntelligenceConfig
+from greenlang.agents.intelligence_interface import IntelligenceCapabilities, IntelligenceLevel
 
 # Import from shared base
 from ..shared.base_agent import (
@@ -82,7 +86,7 @@ logger = logging.getLogger(__name__)
 # MAIN ANALYZER CLASS
 # =============================================================================
 
-class ThermalFluidAnalyzer(BaseProcessHeatAgent[ThermalFluidInput, ThermalFluidOutput]):
+class ThermalFluidAnalyzer(IntelligenceMixin, BaseProcessHeatAgent[ThermalFluidInput, ThermalFluidOutput]):
     """
     GL-009 THERMALIQ Thermal Fluid Systems Analyzer.
 
@@ -170,6 +174,35 @@ class ThermalFluidAnalyzer(BaseProcessHeatAgent[ThermalFluidInput, ThermalFluidO
         logger.info(
             f"ThermalFluidAnalyzer initialized: {config.system_id}, "
             f"fluid={config.fluid_type}, design_temp={config.design_temperature_f}F"
+        )
+
+        # Initialize intelligence with STANDARD level for thermal fluid analyzer
+        self._init_intelligence(IntelligenceConfig(
+            domain_context="thermal fluid systems and heat transfer analysis",
+            regulatory_context="ASTM, ISO",
+            enable_explanations=True,
+            enable_recommendations=True,
+            enable_anomaly_detection=False,
+        ))
+
+    # =========================================================================
+    # INTELLIGENCE INTERFACE METHODS
+    # =========================================================================
+
+    def get_intelligence_level(self) -> IntelligenceLevel:
+        """Return STANDARD intelligence level for thermal fluid analyzer."""
+        return IntelligenceLevel.STANDARD
+
+    def get_intelligence_capabilities(self) -> IntelligenceCapabilities:
+        """Return standard intelligence capabilities."""
+        return IntelligenceCapabilities(
+            can_explain=True,
+            can_recommend=True,
+            can_detect_anomalies=False,
+            can_reason=False,
+            can_validate=False,
+            uses_rag=False,
+            uses_tools=False
         )
 
     def _init_property_database(self) -> None:
@@ -341,6 +374,26 @@ class ThermalFluidAnalyzer(BaseProcessHeatAgent[ThermalFluidInput, ThermalFluidO
                     f"Thermal fluid analysis complete: {overall_status.value}, "
                     f"{self._calculation_count} calculations, "
                     f"{processing_time_ms:.1f}ms"
+                )
+
+                # Generate intelligent explanation of thermal fluid analysis results
+                output.explanation = self.generate_explanation(
+                    input_data={
+                        "system_id": input_data.system_id,
+                        "bulk_temperature_f": input_data.bulk_temperature_f,
+                        "flow_rate_gpm": input_data.flow_rate_gpm
+                    },
+                    output_data={
+                        "status": overall_status.value,
+                        "exergy_efficiency_pct": exergy_analysis.exergy_efficiency_pct if exergy_analysis else None,
+                        "safety_status": safety_analysis.safety_status.value if hasattr(safety_analysis.safety_status, 'value') else str(safety_analysis.safety_status),
+                        "recommendations_count": len(recommendations)
+                    },
+                    calculation_steps=[
+                        f"Exergy efficiency: {exergy_analysis.exergy_efficiency_pct:.1f}%" if exergy_analysis else "Exergy analysis disabled",
+                        f"Safety margin (bulk): {safety_analysis.bulk_temp_margin_f:.1f}F",
+                        f"Safety margin (flash point): {safety_analysis.flash_point_margin_f:.1f}F"
+                    ]
                 )
 
                 return output

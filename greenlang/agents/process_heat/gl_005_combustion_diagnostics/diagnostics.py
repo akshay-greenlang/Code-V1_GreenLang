@@ -47,6 +47,10 @@ import time
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
+# Intelligence imports for LLM capabilities
+from greenlang.agents.intelligence_mixin import IntelligenceMixin, IntelligenceConfig
+from greenlang.agents.intelligence_interface import IntelligenceCapabilities, IntelligenceLevel
+
 from greenlang.agents.process_heat.shared.base_agent import (
     AgentConfig,
     AgentState,
@@ -90,7 +94,7 @@ logger = logging.getLogger(__name__)
 # GL-005 COMBUSTION DIAGNOSTICS AGENT
 # =============================================================================
 
-class CombustionDiagnosticsAgent(BaseProcessHeatAgent[DiagnosticsInput, DiagnosticsOutput]):
+class CombustionDiagnosticsAgent(IntelligenceMixin, BaseProcessHeatAgent[DiagnosticsInput, DiagnosticsOutput]):
     """
     GL-005 COMBUSENSE Combustion Diagnostics Agent.
 
@@ -164,6 +168,35 @@ class CombustionDiagnosticsAgent(BaseProcessHeatAgent[DiagnosticsInput, Diagnost
         logger.info(
             f"GL-005 COMBUSENSE Agent initialized: {config.agent_id} "
             f"(equipment={config.equipment_id}, mode={config.mode.value})"
+        )
+
+        # Initialize intelligence with ADVANCED level for diagnostics
+        self._init_intelligence(IntelligenceConfig(
+            domain_context="combustion diagnostics and equipment health monitoring",
+            regulatory_context="IEC 61511, SIL 2",
+            enable_explanations=True,
+            enable_recommendations=True,
+            enable_anomaly_detection=True,
+        ))
+
+    # =========================================================================
+    # INTELLIGENCE INTERFACE METHODS
+    # =========================================================================
+
+    def get_intelligence_level(self) -> IntelligenceLevel:
+        """Return ADVANCED intelligence level for diagnostics."""
+        return IntelligenceLevel.ADVANCED
+
+    def get_intelligence_capabilities(self) -> IntelligenceCapabilities:
+        """Return advanced intelligence capabilities."""
+        return IntelligenceCapabilities(
+            can_explain=True,
+            can_recommend=True,
+            can_detect_anomalies=True,
+            can_reason=True,
+            can_validate=True,
+            uses_rag=False,
+            uses_tools=False
         )
 
     # =========================================================================
@@ -478,6 +511,26 @@ class CombustionDiagnosticsAgent(BaseProcessHeatAgent[DiagnosticsInput, Diagnost
             f"anomalies={anomaly_result.total_anomalies if anomaly_result else 'N/A'}, "
             f"health={maintenance_result.equipment_health_score if maintenance_result else 'N/A'}, "
             f"time={processing_time_ms:.1f}ms"
+        )
+
+        # Generate intelligent explanation of diagnostic results
+        output.explanation = self.generate_explanation(
+            input_data={
+                "equipment_id": input_data.equipment_id,
+                "o2_pct": input_data.flue_gas.oxygen_pct,
+                "co_ppm": input_data.flue_gas.co_ppm
+            },
+            output_data={
+                "cqi_score": cqi_result.cqi_score if cqi_result else None,
+                "anomalies": anomaly_result.total_anomalies if anomaly_result else 0,
+                "health_score": maintenance_result.equipment_health_score if maintenance_result else None,
+                "alerts_count": len(alerts)
+            },
+            calculation_steps=[
+                f"CQI analysis: {cqi_result.cqi_rating.value if cqi_result else 'N/A'}",
+                f"Anomaly detection: {anomaly_result.total_anomalies if anomaly_result else 0} found",
+                f"Maintenance recommendations: {len(recommendations)}"
+            ]
         )
 
         return output

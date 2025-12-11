@@ -18,6 +18,9 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 import uuid
 
+from greenlang.agents.intelligence_mixin import IntelligenceMixin, IntelligenceConfig
+from greenlang.agents.intelligence_interface import IntelligenceCapabilities, IntelligenceLevel
+
 from .config import EconomizerOptimizationConfig
 from .schemas import (
     EconomizerInput,
@@ -41,7 +44,7 @@ from .acid_dew_point import AcidDewPointCalculator, AcidDewPointInput
 from .effectiveness import EffectivenessCalculator, EffectivenessInput
 
 
-class EconomizerOptimizer:
+class EconomizerOptimizer(IntelligenceMixin):
     """
     GL-020 ECONOPULSE Economizer Optimization Agent.
 
@@ -81,6 +84,34 @@ class EconomizerOptimizer:
         self._last_soot_blow_time: Optional[datetime] = None
         self._effectiveness_history: List[float] = []
         self._fouling_trend_data: List[Dict] = []
+
+        # Initialize intelligence capabilities (STANDARD level)
+        self._init_intelligence(IntelligenceConfig(
+            enabled=True,
+            model="auto",
+            max_budget_per_call_usd=0.10,
+            enable_explanations=True,
+            enable_recommendations=True,
+            enable_anomaly_detection=True,
+            domain_context="industrial economizer performance optimization and heat recovery",
+            regulatory_context="ASME PTC 4",
+        ))
+
+    def get_intelligence_level(self) -> IntelligenceLevel:
+        """Return the intelligence level for this agent (STANDARD)."""
+        return IntelligenceLevel.STANDARD
+
+    def get_intelligence_capabilities(self) -> IntelligenceCapabilities:
+        """Return intelligence capabilities for STANDARD level."""
+        return IntelligenceCapabilities(
+            can_explain=True,
+            can_recommend=True,
+            can_detect_anomalies=True,
+            can_reason=False,
+            can_validate=False,
+            uses_rag=False,
+            uses_tools=False,
+        )
 
     def process(self, input_data: EconomizerInput) -> EconomizerOutput:
         """
@@ -182,6 +213,26 @@ class EconomizerOptimizer:
         output.provenance_hash = hashlib.sha256(
             json.dumps(output.__dict__, sort_keys=True, default=str).encode()
         ).hexdigest()
+
+        # Generate LLM intelligence (STANDARD level)
+        calculation_steps = [
+            f"Analyzed acid dew point: {acid_dew_point_result.sulfuric_acid_dew_point_f:.1f}F",
+            f"Calculated effectiveness ratio: {effectiveness_result.effectiveness_ratio:.2%}",
+            f"Detected gas-side fouling severity: {gas_side_result.fouling_severity}",
+            f"Operating status: {operating_status}",
+        ]
+
+        output.explanation = self.generate_explanation(
+            input_data={"economizer_id": self.economizer_id, "load_pct": input_data.load_pct},
+            output_data={"kpis": kpis, "fouling_type": str(primary_fouling_type), "alerts_count": len(alerts)},
+            calculation_steps=calculation_steps,
+        )
+
+        output.intelligent_recommendations = self.generate_recommendations(
+            analysis={"kpis": kpis, "fouling": {"gas_side": gas_side_result.fouling_severity, "water_side": water_side_result.fouling_severity}, "acid_dew_point_margin": acid_dew_point_result.margin_above_dew_point_f},
+            max_recommendations=5,
+            focus_areas=["fouling reduction", "soot blowing optimization", "acid dew point management", "heat transfer effectiveness"],
+        )
 
         return output
 

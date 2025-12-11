@@ -47,6 +47,10 @@ import uuid
 
 from pydantic import BaseModel, Field
 
+# Intelligence imports for LLM capabilities
+from greenlang.agents.intelligence_mixin import IntelligenceMixin, IntelligenceConfig
+from greenlang.agents.intelligence_interface import IntelligenceCapabilities, IntelligenceLevel
+
 # Import from shared base
 from greenlang.agents.process_heat.shared.base_agent import (
     BaseProcessHeatAgent,
@@ -117,7 +121,7 @@ class SteamTrapAgentConfig(AgentConfig):
 # MAIN AGENT CLASS
 # =============================================================================
 
-class SteamTrapMonitorAgent(BaseProcessHeatAgent[TrapDiagnosticInput, TrapDiagnosticOutput]):
+class SteamTrapMonitorAgent(IntelligenceMixin, BaseProcessHeatAgent[TrapDiagnosticInput, TrapDiagnosticOutput]):
     """
     GL-008 TRAPCATCHER - Steam Trap Monitoring Agent.
 
@@ -214,6 +218,35 @@ class SteamTrapMonitorAgent(BaseProcessHeatAgent[TrapDiagnosticInput, TrapDiagno
         logger.info(
             f"Initialized {self.AGENT_ID} {self.AGENT_NAME} v{self.AGENT_VERSION} "
             f"for plant {self.steam_config.plant_id}"
+        )
+
+        # Initialize intelligence with STANDARD level for steam trap monitor
+        self._init_intelligence(IntelligenceConfig(
+            domain_context="steam trap monitoring and maintenance",
+            regulatory_context="DOE Steam Best Practices",
+            enable_explanations=True,
+            enable_recommendations=True,
+            enable_anomaly_detection=False,
+        ))
+
+    # =========================================================================
+    # INTELLIGENCE INTERFACE METHODS
+    # =========================================================================
+
+    def get_intelligence_level(self) -> IntelligenceLevel:
+        """Return STANDARD intelligence level for steam trap monitor."""
+        return IntelligenceLevel.STANDARD
+
+    def get_intelligence_capabilities(self) -> IntelligenceCapabilities:
+        """Return standard intelligence capabilities."""
+        return IntelligenceCapabilities(
+            can_explain=True,
+            can_recommend=True,
+            can_detect_anomalies=False,
+            can_reason=False,
+            can_validate=False,
+            uses_rag=False,
+            uses_tools=False
         )
 
     def _init_components(self) -> None:
@@ -364,6 +397,26 @@ class SteamTrapMonitorAgent(BaseProcessHeatAgent[TrapDiagnosticInput, TrapDiagno
                     f"Processed trap {input_data.trap_info.trap_id}: "
                     f"{output.condition.status.value} "
                     f"(confidence: {output.condition.confidence.value})"
+                )
+
+                # Generate intelligent explanation of steam trap diagnostic results
+                output.explanation = self.generate_explanation(
+                    input_data={
+                        "trap_id": input_data.trap_info.trap_id,
+                        "trap_type": input_data.trap_info.trap_type.value if hasattr(input_data.trap_info.trap_type, 'value') else str(input_data.trap_info.trap_type),
+                        "steam_pressure_psig": input_data.steam_pressure_psig
+                    },
+                    output_data={
+                        "status": output.condition.status.value,
+                        "confidence": output.condition.confidence.value,
+                        "steam_loss_lb_hr": output.steam_loss.steam_loss_lb_hr,
+                        "health_score": output.health_score.overall_score
+                    },
+                    calculation_steps=[
+                        f"Status: {output.condition.status.value}",
+                        f"Steam loss: {output.steam_loss.steam_loss_lb_hr:.1f} lb/hr",
+                        f"Annual cost: ${output.steam_loss.cost_per_year_usd:,.0f}"
+                    ]
                 )
 
                 return output

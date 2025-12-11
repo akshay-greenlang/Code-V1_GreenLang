@@ -12,6 +12,10 @@ import math
 
 from pydantic import BaseModel, Field
 
+# Intelligence imports for LLM capabilities
+from greenlang.agents.intelligence_mixin import IntelligenceMixin, IntelligenceConfig
+from greenlang.agents.intelligence_interface import IntelligenceCapabilities, IntelligenceLevel
+
 from greenlang.agents.process_heat.shared.calculation_library import (
     ThermalIQCalculationLibrary,
 )
@@ -124,7 +128,7 @@ class WasteHeatAnalysisOutput(BaseModel):
     recommendations: List[str] = Field(default_factory=list)
 
 
-class WasteHeatAnalyzer:
+class WasteHeatAnalyzer(IntelligenceMixin):
     """
     Waste heat recovery opportunity analyzer.
 
@@ -158,6 +162,35 @@ class WasteHeatAnalyzer:
         self._u_value_default = 50.0  # BTU/hr-ft2-F
 
         logger.info("WasteHeatAnalyzer initialized")
+
+        # Initialize intelligence with ADVANCED level for heat recovery analyzer
+        self._init_intelligence(IntelligenceConfig(
+            domain_context="waste heat recovery and thermal integration",
+            regulatory_context="ASME, ISO 50001",
+            enable_explanations=True,
+            enable_recommendations=True,
+            enable_anomaly_detection=True,
+        ))
+
+    # =========================================================================
+    # INTELLIGENCE INTERFACE METHODS
+    # =========================================================================
+
+    def get_intelligence_level(self) -> IntelligenceLevel:
+        """Return ADVANCED intelligence level for heat recovery analyzer."""
+        return IntelligenceLevel.ADVANCED
+
+    def get_intelligence_capabilities(self) -> IntelligenceCapabilities:
+        """Return advanced intelligence capabilities."""
+        return IntelligenceCapabilities(
+            can_explain=True,
+            can_recommend=True,
+            can_detect_anomalies=True,
+            can_reason=True,
+            can_validate=True,
+            uses_rag=False,
+            uses_tools=False
+        )
 
     def analyze(
         self,
@@ -222,7 +255,7 @@ class WasteHeatAnalyzer:
 
         recovery_potential = (total_recoverable / total_waste_heat * 100) if total_waste_heat > 0 else 0
 
-        return WasteHeatAnalysisOutput(
+        output = WasteHeatAnalysisOutput(
             analysis_id=str(uuid.uuid4())[:8],
             total_waste_heat_btu_hr=round(total_waste_heat, 0),
             total_recoverable_btu_hr=round(total_recoverable, 0),
@@ -236,6 +269,29 @@ class WasteHeatAnalyzer:
             portfolio_simple_payback=round(portfolio_payback, 2),
             recommendations=recommendations,
         )
+
+        # Generate intelligent explanation of waste heat analysis results
+        output.explanation = self.generate_explanation(
+            input_data={
+                "sources_count": len(sources),
+                "sinks_count": len(sinks),
+                "total_waste_heat_btu_hr": total_waste_heat
+            },
+            output_data={
+                "recovery_potential_pct": recovery_potential,
+                "opportunities_count": len(opportunities),
+                "total_annual_savings": total_savings,
+                "portfolio_payback_years": portfolio_payback
+            },
+            calculation_steps=[
+                f"Analyzed {len(sources)} waste heat sources",
+                f"Matched with {len(sinks)} heat sinks",
+                f"Identified {len(opportunities)} recovery opportunities",
+                f"Total savings potential: ${total_savings:,.0f}/year"
+            ]
+        )
+
+        return output
 
     def _calculate_available_heat(self, source: WasteHeatSource) -> float:
         """Calculate available waste heat from a source."""

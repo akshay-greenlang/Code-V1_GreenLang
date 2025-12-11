@@ -1,25 +1,38 @@
 # -*- coding: utf-8 -*-
 """
-Smart Provider Factory
+Smart Provider Factory - Multi-Tier Intelligence System
 
-Auto-detects available API keys and creates appropriate LLM provider:
-- If API keys present → use real OpenAI/Anthropic providers
-- If NO keys → use FakeProvider with demo responses
-- Logs which mode is active for user awareness
+GreenLang's intelligence works for EVERYONE - from first-time open-source
+users to enterprise deployments with API keys.
 
-This enables zero-config setup: import and use immediately without API keys!
+TIER SYSTEM:
+- Tier 2 (BYOK): OpenAI/Anthropic with user's API keys - highest quality
+- Tier 1 (Local): Ollama local models - free, private, real LLM
+- Tier 0 (Deterministic): Template-based - always works, no dependencies
+
+SMART AUTO-DETECTION:
+    provider = create_provider()  # Auto-selects best available tier!
+
+    # Result depends on your setup:
+    # - Has OPENAI_API_KEY? → Uses GPT-4o (Tier 2)
+    # - Has Ollama running? → Uses Llama3.2 locally (Tier 1)
+    # - Neither? → Uses DeterministicProvider (Tier 0) - REAL VALUE, not demo!
+
+This enables TRUE zero-config setup with REAL intelligence from day one!
 
 Usage:
     from greenlang.intelligence import create_provider
 
-    # Auto-detect (uses demo mode if no keys)
+    # Auto-detect best tier (recommended)
     provider = create_provider()
 
-    # Or specify model
-    provider = create_provider(model="gpt-4o")  # Requires OPENAI_API_KEY
+    # Force specific tier
+    provider = create_provider(model="deterministic")  # Tier 0
+    provider = create_provider(model="ollama:llama3.2")  # Tier 1
+    provider = create_provider(model="gpt-4o")  # Tier 2 (needs API key)
 
-    # Or force demo mode
-    provider = create_provider(model="demo")
+    # Prefer local over cloud
+    provider = create_provider(model="auto", prefer_local=True)
 """
 
 from __future__ import annotations
@@ -220,109 +233,224 @@ def create_anthropic_provider(
     return AnthropicProvider(provider_config)
 
 
+def create_deterministic_provider(config: Optional[IntelligenceConfig] = None) -> LLMProvider:
+    """
+    Create Tier 0 Deterministic Provider.
+
+    Always available, no dependencies. Provides REAL intelligence
+    using templates, rules, and statistical analysis.
+
+    Args:
+        config: Optional configuration
+
+    Returns:
+        DeterministicProvider instance
+    """
+    from greenlang.intelligence.providers.deterministic import DeterministicProvider
+
+    if config is None:
+        config = get_config_from_env()
+
+    provider_config = LLMProviderConfig(
+        model="deterministic",
+        api_key_env="",
+        timeout_s=config.timeout_s,
+        max_retries=config.max_retries,
+    )
+
+    logger.info(
+        "Creating DeterministicProvider (Tier 0) - "
+        "Production-ready intelligence, no dependencies required."
+    )
+
+    return DeterministicProvider(provider_config)
+
+
+def create_ollama_provider(
+    model: str = "llama3.2",
+    config: Optional[IntelligenceConfig] = None,
+    host: Optional[str] = None,
+) -> LLMProvider:
+    """
+    Create Tier 1 Ollama Local LLM Provider.
+
+    Real LLM intelligence running locally - no API key, no cost, full privacy.
+
+    Args:
+        model: Ollama model name (default: llama3.2)
+        config: Optional configuration
+        host: Ollama API host (default: http://localhost:11434)
+
+    Returns:
+        OllamaProvider instance
+    """
+    from greenlang.intelligence.providers.ollama import OllamaProvider
+
+    if config is None:
+        config = get_config_from_env()
+
+    # Clean model name
+    if model.startswith("ollama:"):
+        model = model[7:]
+
+    provider_config = LLMProviderConfig(
+        model=f"ollama:{model}",
+        api_key_env="",
+        timeout_s=config.timeout_s,
+        max_retries=config.max_retries,
+    )
+
+    ollama_host = host or os.getenv("OLLAMA_HOST", "http://localhost:11434")
+
+    logger.info(
+        f"Creating OllamaProvider (Tier 1) - "
+        f"Local LLM: {model} at {ollama_host}"
+    )
+
+    return OllamaProvider(provider_config, host=ollama_host, model=model)
+
+
+def create_smart_router(
+    prefer_local: bool = False,
+    config: Optional[IntelligenceConfig] = None,
+) -> LLMProvider:
+    """
+    Create Smart Provider Router (Recommended).
+
+    Automatically selects best available tier:
+    - Tier 2: BYOK (OpenAI/Anthropic) if API keys available
+    - Tier 1: Ollama if running locally
+    - Tier 0: Deterministic (always available)
+
+    Args:
+        prefer_local: Prefer Ollama over cloud even if API keys available
+        config: Optional configuration
+
+    Returns:
+        SmartProviderRouter instance
+    """
+    from greenlang.intelligence.providers.router import (
+        SmartProviderRouter,
+        RouterConfig,
+    )
+
+    if config is None:
+        config = get_config_from_env()
+
+    router_config = RouterConfig(
+        prefer_local=prefer_local,
+        detection_timeout_s=config.timeout_s,
+    )
+
+    provider_config = LLMProviderConfig(
+        model="auto",
+        api_key_env="",
+        timeout_s=config.timeout_s,
+        max_retries=config.max_retries,
+    )
+
+    logger.info(
+        "Creating SmartProviderRouter - "
+        "Will auto-detect best available intelligence tier"
+    )
+
+    return SmartProviderRouter(provider_config, router_config=router_config)
+
+
 def create_provider(
     model: str = "auto",
     api_key: Optional[str] = None,
     config: Optional[IntelligenceConfig] = None,
+    prefer_local: bool = False,
 ) -> LLMProvider:
     """
-    Smart provider factory - works without API keys!
+    Smart provider factory - Multi-Tier Intelligence System.
 
-    Auto-detects available API keys and creates appropriate provider:
-    - "auto": Auto-detect best available (OpenAI > Anthropic > Demo)
-    - "demo": Use FakeProvider (no API key required)
-    - "gpt-*": Use OpenAI (requires OPENAI_API_KEY)
-    - "claude-*": Use Anthropic (requires ANTHROPIC_API_KEY)
+    Works for EVERYONE - from first-time open-source users to enterprise deployments.
+
+    TIER SYSTEM:
+    - "auto" (default): Smart router auto-selects best available tier
+    - "deterministic": Tier 0 - Template-based, always works
+    - "ollama:*": Tier 1 - Local LLM, free and private
+    - "gpt-*" / "claude-*": Tier 2 - Cloud LLM with API keys
+    - "demo": Legacy demo mode (FakeProvider)
 
     This is the main entry point for creating LLM providers in GreenLang.
-    It enables zero-config setup: works immediately without API keys!
+    It enables TRUE zero-config setup with REAL intelligence from day one!
 
     Args:
         model: Model selection:
-            - "auto" (default): Auto-detect best available provider
-            - "demo": Force demo mode (no API key required)
-            - "gpt-4-turbo", "gpt-4o", "gpt-4o-mini", "gpt-3.5-turbo": OpenAI models
-            - "claude-3-sonnet-20240229", "claude-3-opus-20240229": Anthropic models
-            - Aliases: "gpt4" -> "gpt-4-turbo", "claude" -> "claude-3-sonnet"
-        api_key: Optional explicit API key (or use environment variables)
+            - "auto" (default): Smart router auto-detects best tier
+            - "deterministic": Force Tier 0 (no dependencies)
+            - "ollama:llama3.2", "ollama:mistral": Force Tier 1 local LLM
+            - "gpt-4o", "claude-3-sonnet": Force Tier 2 cloud LLM
+            - "demo": Legacy demo mode
+        api_key: Optional explicit API key (for Tier 2)
         config: Optional configuration (uses defaults if None)
+        prefer_local: Prefer Ollama over cloud even if API keys available
 
     Returns:
-        LLMProvider instance (OpenAIProvider, AnthropicProvider, or FakeProvider)
-
-    Raises:
-        ValueError: If model requires API key but none found
-        ImportError: If required provider package not installed
+        LLMProvider instance
 
     Examples:
-        # Zero-config: Auto-detect (uses demo mode if no keys)
+        # Auto-detect best tier (recommended)
         provider = create_provider()
-        # -> Uses demo mode if no API keys found
-        # -> Uses OpenAI if OPENAI_API_KEY set
-        # -> Uses Anthropic if ANTHROPIC_API_KEY set
+        # -> Uses Tier 2 if API key set
+        # -> Uses Tier 1 if Ollama running
+        # -> Uses Tier 0 otherwise (real intelligence, not demo!)
 
-        # Explicit demo mode (no API key required)
-        provider = create_provider(model="demo")
+        # Force deterministic (Tier 0) - always works
+        provider = create_provider(model="deterministic")
 
-        # Specific model (requires API key)
+        # Force local LLM (Tier 1)
+        provider = create_provider(model="ollama:llama3.2")
+
+        # Force cloud LLM (Tier 2)
         provider = create_provider(model="gpt-4o")
-        # -> Requires OPENAI_API_KEY environment variable
 
-        # With explicit API key
-        provider = create_provider(model="gpt-4o", api_key="sk-...")
+        # Prefer local over cloud
+        provider = create_provider(prefer_local=True)
 
-        # With custom configuration
-        from greenlang.intelligence.config import IntelligenceConfig
-        config = IntelligenceConfig(timeout_s=30.0, max_retries=5)
-        provider = create_provider(model="auto", config=config)
-
-    Usage with ChatSession:
-        from greenlang.intelligence import create_provider
-        from greenlang.intelligence.runtime.session import ChatSession
-        from greenlang.intelligence.schemas.messages import ChatMessage, Role
-        from greenlang.intelligence.runtime.budget import Budget
-
-        # Create provider (works without API keys!)
-        provider = create_provider()
-
-        # Create session
-        session = ChatSession(provider)
-
-        # Chat
-        response = await session.chat(
-            messages=[
-                ChatMessage(
-                    role=Role.user,
-                    content="What's the carbon intensity in California?"
-                )
-            ],
-            budget=Budget(max_usd=0.50)
-        )
-        print(response.text)
+    Tier Report:
+        from greenlang.intelligence.providers.router import get_tier_report_sync
+        print(get_tier_report_sync())  # Shows all tier statuses
     """
     if config is None:
         config = get_config_from_env()
 
-    # Override with explicit demo_mode
+    # Override with explicit demo_mode (legacy compatibility)
     if config.demo_mode:
         model = "demo"
 
     # Resolve aliases
     model = resolve_model_alias(model)
 
-    # Auto-detect mode
+    # Smart router (recommended for "auto")
     if model == "auto":
-        model = detect_best_provider()
+        return create_smart_router(prefer_local=prefer_local, config=config)
 
-    # Demo mode
+    # Tier 0: Deterministic
+    if model == "deterministic":
+        return create_deterministic_provider(config)
+
+    # Tier 1: Ollama local LLM
+    if model.startswith("ollama"):
+        ollama_model = model[7:] if model.startswith("ollama:") else "llama3.2"
+        return create_ollama_provider(ollama_model, config)
+
+    # Legacy demo mode (now recommends Tier 0)
     if model == "demo":
+        logger.info(
+            "Note: 'demo' mode uses FakeProvider with canned responses. "
+            "Consider using 'deterministic' for real template-based intelligence."
+        )
         return create_demo_provider(config)
 
-    # OpenAI models
+    # Tier 2: OpenAI models
     if model.startswith("gpt"):
         return create_openai_provider(model, config, api_key)
 
-    # Anthropic models
+    # Tier 2: Anthropic models
     if model.startswith("claude"):
         return create_anthropic_provider(model, config, api_key)
 
@@ -335,12 +463,13 @@ def create_provider(
         logger.warning(f"Unknown model '{model}', defaulting to Anthropic with this model name")
         return create_anthropic_provider(model, config, api_key)
 
-    # No API keys - use demo mode
-    logger.warning(
-        f"Unknown model '{model}' and no API keys found. Using demo mode. "
-        "Set OPENAI_API_KEY or ANTHROPIC_API_KEY for production use."
+    # Fallback to deterministic (NOT demo mode!)
+    logger.info(
+        f"Unknown model '{model}' and no API keys found. "
+        "Using Tier 0 DeterministicProvider for real template-based intelligence. "
+        "For LLM intelligence: install Ollama or set API keys."
     )
-    return create_demo_provider(config)
+    return create_deterministic_provider(config)
 
 
 if __name__ == "__main__":

@@ -34,6 +34,9 @@ import hashlib
 import json
 import logging
 
+from greenlang.agents.intelligence_mixin import IntelligenceMixin, IntelligenceConfig
+from greenlang.agents.intelligence_interface import IntelligenceCapabilities, IntelligenceLevel
+
 from greenlang.agents.process_heat.shared.base_agent import (
     AgentCapability,
     AgentConfig,
@@ -91,6 +94,7 @@ logger = logging.getLogger(__name__)
 # =============================================================================
 
 class HeatSchedulerAgent(
+    IntelligenceMixin,
     BaseProcessHeatAgent[HeatSchedulerInput, HeatSchedulerOutput]
 ):
     """
@@ -175,6 +179,18 @@ class HeatSchedulerAgent(
             agent_version=scheduler_config.version,
         )
 
+        # Initialize intelligence capabilities (ADVANCED level)
+        self._init_intelligence(IntelligenceConfig(
+            enabled=True,
+            model="auto",
+            max_budget_per_call_usd=0.10,
+            enable_explanations=True,
+            enable_recommendations=True,
+            enable_anomaly_detection=True,
+            domain_context="industrial process heat scheduling and load optimization",
+            regulatory_context="ISO 50001, FERC",
+        ))
+
         logger.info(
             f"HeatSchedulerAgent initialized: {scheduler_config.agent_name}"
         )
@@ -234,6 +250,22 @@ class HeatSchedulerAgent(
                 ramp_up_minutes=15,
             ),
         ]
+
+    def get_intelligence_level(self) -> IntelligenceLevel:
+        """Return the intelligence level for this agent (ADVANCED)."""
+        return IntelligenceLevel.ADVANCED
+
+    def get_intelligence_capabilities(self) -> IntelligenceCapabilities:
+        """Return intelligence capabilities for ADVANCED level."""
+        return IntelligenceCapabilities(
+            can_explain=True,
+            can_recommend=True,
+            can_detect_anomalies=True,
+            can_reason=True,
+            can_validate=False,
+            uses_rag=False,
+            uses_tools=False,
+        )
 
     def process(
         self,
@@ -381,6 +413,37 @@ class HeatSchedulerAgent(
                     output,
                 )
                 output.input_hash = self._hash_object(input_data)
+
+                # Generate LLM intelligence (ADVANCED level)
+                calculation_steps = [
+                    f"Generated {input_data.optimization_horizon_hours}-hour load forecast",
+                    f"Optimized thermal storage dispatch for {len(self.scheduler_config.thermal_storage)} units",
+                    f"Reduced peak demand from {demand_result.baseline_peak_kw:.0f}kW to {demand_result.optimized_peak_kw:.0f}kW",
+                    f"Total savings: ${cost_results['savings']:.2f}",
+                ]
+
+                output.explanation = self.generate_explanation(
+                    input_data={"facility_id": input_data.facility_id, "horizon_hours": input_data.optimization_horizon_hours},
+                    output_data={"total_savings": output.total_savings_usd, "peak_demand_kw": output.peak_demand_kw, "schedule_actions": len(schedule_actions)},
+                    calculation_steps=calculation_steps,
+                )
+
+                output.intelligent_recommendations = self.generate_recommendations(
+                    analysis={"kpis": kpis, "savings": cost_results, "alerts": alerts},
+                    max_recommendations=5,
+                    focus_areas=["demand charge reduction", "thermal storage utilization", "energy cost optimization"],
+                )
+
+                output.anomalies_detected = self.detect_anomalies(
+                    data={"load_forecast": load_forecast.dict() if hasattr(load_forecast, 'dict') else {}, "demand_result": demand_result.dict() if hasattr(demand_result, 'dict') else {}},
+                    expected_ranges={"peak_reduction_pct": (0, 50), "load_factor_pct": (40, 90)},
+                )
+
+                output.reasoning_output = self.reason_about(
+                    question="What are the key scheduling decisions and their impact on energy costs?",
+                    context={"schedule_actions": len(schedule_actions), "savings": cost_results, "kpis": kpis},
+                    chain_of_thought=True,
+                )
 
                 # Validate output
                 if not self.validate_output(output):

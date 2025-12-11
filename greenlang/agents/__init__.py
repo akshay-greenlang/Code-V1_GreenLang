@@ -6,8 +6,14 @@ GreenLang Agents Module
 This module provides the agent framework and all available agents.
 
 Base Classes:
-- BaseAgent: Original base agent class (legacy)
+- BaseAgent: Original base agent class (legacy - do not use for new agents)
+- IntelligentAgentBase: NEW - AI-native base class with LLM intelligence
 - AgentSpecV2Base: Standardized base class for AgentSpec v2 compliant agents
+
+Intelligence Framework (NEW - Solves Intelligence Paradox):
+- IntelligentAgentBase: Base class with built-in LLM intelligence
+- IntelligenceMixin: Add intelligence to existing agents (retrofit)
+- IntelligenceInterface: Mandatory contract for AI-native agents
 
 Category Mixins (AgentSpec v2 Pattern):
 - DeterministicMixin: Zero-hallucination calculation agents
@@ -16,11 +22,48 @@ Category Mixins (AgentSpec v2 Pattern):
 
 Migration Guide:
 See greenlang/agents/MIGRATION_TO_AGENTSPECV2.md for migration instructions.
+
+NEW AGENTS: Must extend IntelligentAgentBase, not BaseAgent.
+EXISTING AGENTS: Add IntelligenceMixin to retrofit with LLM intelligence.
 """
 
 # Lazy imports to avoid requiring analytics dependencies at import time
 # Import base agent directly as it has no heavy dependencies
 from greenlang.agents.base import BaseAgent
+
+# =============================================================================
+# NEW: Intelligence Framework (Solves the Intelligence Paradox)
+# =============================================================================
+# IntelligentAgentBase - MANDATORY for all new agents
+from greenlang.agents.intelligent_base import (
+    IntelligentAgentBase,
+    IntelligentAgentConfig,
+    IntelligenceLevel,
+    IntelligenceMetrics,
+    Recommendation,
+    Anomaly,
+    create_intelligent_agent_config,
+)
+
+# IntelligenceMixin - For retrofitting existing agents
+from greenlang.agents.intelligence_mixin import (
+    IntelligenceMixin,
+    IntelligenceConfig,
+    retrofit_agent_class,
+    create_intelligent_wrapper,
+    retrofit_all_agents_in_module,
+)
+
+# Intelligence Interface - Mandatory contract for all agents
+from greenlang.agents.intelligence_interface import (
+    IntelligentAgent,
+    IntelligenceCapabilities,
+    AgentIntelligenceValidator,
+    ValidationResult,
+    require_intelligence,
+    is_intelligent_agent,
+    get_agent_intelligence_level,
+)
 
 # Import AgentSpec v2 base classes and mixins
 from greenlang.agents.agentspec_v2_base import AgentSpecV2Base, AgentExecutionContext
@@ -148,12 +191,68 @@ def __getattr__(name):
         )
         from greenlang.agents.fuel_agent_ai_v2 import FuelAgentAI_v2
         return FuelAgentAI_v2
+    # ==========================================================================
+    # INTELLIGENT AGENTS (AI-Native - Solves Intelligence Paradox)
+    # ==========================================================================
+    elif name == "IntelligentCarbonAgent":
+        from greenlang.agents.carbon_agent_intelligent import IntelligentCarbonAgent
+        return IntelligentCarbonAgent
+    elif name == "IntelligentFuelAgent":
+        from greenlang.agents.fuel_agent_intelligent import IntelligentFuelAgent
+        return IntelligentFuelAgent
+    elif name == "IntelligentGridFactorAgent":
+        from greenlang.agents.grid_factor_agent_intelligent import IntelligentGridFactorAgent
+        return IntelligentGridFactorAgent
+    elif name == "IntelligentRecommendationAgent":
+        from greenlang.agents.recommendation_agent_intelligent import IntelligentRecommendationAgent
+        return IntelligentRecommendationAgent
+    # Factory functions for intelligent agents
+    elif name == "create_intelligent_carbon_agent":
+        from greenlang.agents.carbon_agent_intelligent import create_intelligent_carbon_agent
+        return create_intelligent_carbon_agent
+    elif name == "create_intelligent_fuel_agent":
+        from greenlang.agents.fuel_agent_intelligent import create_intelligent_fuel_agent
+        return create_intelligent_fuel_agent
+    elif name == "create_intelligent_grid_factor_agent":
+        from greenlang.agents.grid_factor_agent_intelligent import create_intelligent_grid_factor_agent
+        return create_intelligent_grid_factor_agent
+    elif name == "create_intelligent_recommendation_agent":
+        from greenlang.agents.recommendation_agent_intelligent import create_intelligent_recommendation_agent
+        return create_intelligent_recommendation_agent
     raise AttributeError(f"module 'greenlang.agents' has no attribute '{name}'")
 
 
 __all__ = [
-    # Base classes (legacy)
+    # Base classes (legacy - do not use for new agents)
     "BaseAgent",
+
+    # ==========================================================================
+    # NEW: Intelligence Framework (Solves Intelligence Paradox)
+    # ==========================================================================
+    # IntelligentAgentBase - MANDATORY for all new agents
+    "IntelligentAgentBase",
+    "IntelligentAgentConfig",
+    "IntelligenceLevel",
+    "IntelligenceMetrics",
+    "Recommendation",
+    "Anomaly",
+    "create_intelligent_agent_config",
+
+    # IntelligenceMixin - For retrofitting existing agents
+    "IntelligenceMixin",
+    "IntelligenceConfig",
+    "retrofit_agent_class",
+    "create_intelligent_wrapper",
+    "retrofit_all_agents_in_module",
+
+    # Intelligence Interface - Mandatory contract
+    "IntelligentAgent",
+    "IntelligenceCapabilities",
+    "AgentIntelligenceValidator",
+    "ValidationResult",
+    "require_intelligence",
+    "is_intelligent_agent",
+    "get_agent_intelligence_level",
 
     # AgentSpec v2 Base Classes
     "AgentSpecV2Base",
@@ -198,4 +297,19 @@ __all__ = [
     # Use deterministic versions (FuelAgent, GridFactorAgent) for regulatory work
     "FuelAgentAI",  # DEPRECATED - use FuelAgent
     "FuelAgentAI_v2",  # DEPRECATED - use FuelAgent
+
+    # ==========================================================================
+    # INTELLIGENT AGENTS (AI-Native - Solves Intelligence Paradox)
+    # ==========================================================================
+    # These are the retrofitted versions with full LLM intelligence
+    "IntelligentCarbonAgent",
+    "IntelligentFuelAgent",
+    "IntelligentGridFactorAgent",
+    "IntelligentRecommendationAgent",
+
+    # Factory functions for intelligent agents
+    "create_intelligent_carbon_agent",
+    "create_intelligent_fuel_agent",
+    "create_intelligent_grid_factor_agent",
+    "create_intelligent_recommendation_agent",
 ]

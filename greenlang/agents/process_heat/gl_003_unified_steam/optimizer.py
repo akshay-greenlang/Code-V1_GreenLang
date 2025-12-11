@@ -29,13 +29,17 @@ Example:
 """
 
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Dict, List, Optional, Set, Tuple
 import hashlib
 import json
 import logging
 import time
 
 from pydantic import BaseModel, Field
+
+# Intelligence imports for LLM capabilities
+from greenlang.agents.intelligence_mixin import IntelligenceMixin, IntelligenceConfig
+from greenlang.agents.intelligence_interface import IntelligenceCapabilities, IntelligenceLevel
 
 # Import from shared base
 from ..shared.base_agent import (
@@ -174,7 +178,7 @@ class UnifiedSteamOptimizerInput(BaseModel):
 # UNIFIED STEAM OPTIMIZER
 # =============================================================================
 
-class UnifiedSteamOptimizer(BaseProcessHeatAgent[UnifiedSteamOptimizerInput, UnifiedSteamOptimizerOutput]):
+class UnifiedSteamOptimizer(IntelligenceMixin, BaseProcessHeatAgent[UnifiedSteamOptimizerInput, UnifiedSteamOptimizerOutput]):
     """
     GL-003 Unified Steam System Optimizer.
 
@@ -263,6 +267,35 @@ class UnifiedSteamOptimizer(BaseProcessHeatAgent[UnifiedSteamOptimizerInput, Uni
             f"UnifiedSteamOptimizer initialized: "
             f"{len(config.headers)} headers, "
             f"{len(config.prvs)} PRVs"
+        )
+
+        # Initialize intelligence with ADVANCED level for steam optimizer
+        self._init_intelligence(IntelligenceConfig(
+            domain_context="steam systems and thermal energy optimization",
+            regulatory_context="IAPWS-IF97, ASME PTC 4",
+            enable_explanations=True,
+            enable_recommendations=True,
+            enable_anomaly_detection=True,
+        ))
+
+    # =========================================================================
+    # INTELLIGENCE INTERFACE METHODS
+    # =========================================================================
+
+    def get_intelligence_level(self) -> IntelligenceLevel:
+        """Return ADVANCED intelligence level for steam optimizer."""
+        return IntelligenceLevel.ADVANCED
+
+    def get_intelligence_capabilities(self) -> IntelligenceCapabilities:
+        """Return advanced intelligence capabilities."""
+        return IntelligenceCapabilities(
+            can_explain=True,
+            can_recommend=True,
+            can_detect_anomalies=True,
+            can_reason=True,
+            can_validate=True,
+            uses_rag=False,
+            uses_tools=False
         )
 
     def _init_distribution_optimizer(self) -> None:
@@ -453,6 +486,27 @@ class UnifiedSteamOptimizer(BaseProcessHeatAgent[UnifiedSteamOptimizerInput, Uni
                     f"Steam optimization complete: {overall_status.value}, "
                     f"{self._calculation_count} calculations, "
                     f"{processing_time_ms:.1f}ms"
+                )
+
+                # Generate intelligent explanation of optimization results
+                output.explanation = self.generate_explanation(
+                    input_data={
+                        "headers": len(input_data.header_readings),
+                        "quality_readings": len(input_data.quality_readings),
+                        "total_steam_flow_lb_hr": input_data.total_steam_flow_lb_hr
+                    },
+                    output_data={
+                        "status": overall_status.value,
+                        "system_efficiency_pct": system_efficiency,
+                        "exergy_efficiency_pct": exergy_efficiency,
+                        "recommendations_count": len(recommendations)
+                    },
+                    calculation_steps=[
+                        f"Analyzed {len(header_analyses)} headers",
+                        f"Processed {len(quality_analyses)} quality readings",
+                        f"Generated {len(recommendations)} recommendations",
+                        f"System efficiency: {system_efficiency:.1f}%"
+                    ]
                 )
 
                 return output

@@ -13,6 +13,8 @@ from pydantic import BaseModel, Field
 from greenlang.agents.process_heat.shared.calculation_library import (
     ThermalIQCalculationLibrary,
 )
+from greenlang.agents.intelligence_mixin import IntelligenceMixin, IntelligenceConfig
+from greenlang.agents.intelligence_interface import IntelligenceCapabilities, IntelligenceLevel
 
 logger = logging.getLogger(__name__)
 
@@ -71,12 +73,15 @@ class EmissionsOutput(BaseModel):
     predicted_exceedance_time_hr: Optional[float] = Field(default=None)
 
 
-class EmissionsMonitor:
+class EmissionsMonitor(IntelligenceMixin):
     """
     Real-time emissions monitoring system.
 
     Calculates emissions using EPA Method 19 and monitors
     compliance with permit limits.
+
+    Intelligence Level: ADVANCED
+    Regulatory Context: EPA 40 CFR, RATA, EU ETS
     """
 
     def __init__(
@@ -100,7 +105,35 @@ class EmissionsMonitor:
         self._emissions_history: List[Dict[str, Any]] = []
         self._exceedance_history: List[Dict[str, Any]] = []
 
+        # Initialize intelligence with ADVANCED level configuration
+        self._init_intelligence(IntelligenceConfig(
+            enabled=True,
+            model="auto",
+            max_budget_per_call_usd=0.10,
+            enable_explanations=True,
+            enable_recommendations=True,
+            enable_anomaly_detection=True,
+            domain_context="emissions monitoring and environmental compliance",
+            regulatory_context="EPA 40 CFR, RATA, EU ETS",
+        ))
+
         logger.info(f"EmissionsMonitor initialized for {source_id}")
+
+    def get_intelligence_level(self) -> IntelligenceLevel:
+        """Return the agent's intelligence level."""
+        return IntelligenceLevel.ADVANCED
+
+    def get_intelligence_capabilities(self) -> IntelligenceCapabilities:
+        """Return the agent's intelligence capabilities."""
+        return IntelligenceCapabilities(
+            can_explain=True,
+            can_recommend=True,
+            can_detect_anomalies=True,
+            can_reason=True,
+            can_validate=True,
+            uses_rag=False,
+            uses_tools=False
+        )
 
     def monitor(self, input_data: EmissionsInput) -> EmissionsOutput:
         """
@@ -221,6 +254,32 @@ class EmissionsMonitor:
 
         if exceedances:
             self._exceedance_history.extend(exceedances)
+
+        # Generate LLM explanation for the emissions monitoring results
+        output_data = {
+            "status": status,
+            "co2_lb_hr": round(co2_lb_hr, 2),
+            "co2_kg_hr": round(co2_kg_hr, 2),
+            "co2_ton_yr": round(co2_ton_yr, 1),
+            "exceedances": exceedances,
+            "warnings": warnings,
+            "predicted_exceedance_risk": round(exceedance_risk, 2),
+        }
+
+        explanation = self.generate_explanation(
+            input_data=input_data.dict(),
+            output_data=output_data,
+            calculation_steps=[
+                f"Calculated CO2 emissions: {co2_lb_hr:.2f} lb/hr from {input_data.fuel_flow_rate} {input_data.fuel_flow_unit} {input_data.fuel_type}",
+                f"Applied EPA Method 19 emission factors",
+                f"Checked against permit limits: {self.permit_limits}",
+                f"Analyzed trend from {len(self._emissions_history)} historical readings",
+                f"Determined compliance status: {status}",
+            ]
+        )
+
+        # Log explanation generation
+        logger.debug(f"Generated explanation for {input_data.source_id}")
 
         return EmissionsOutput(
             source_id=input_data.source_id,

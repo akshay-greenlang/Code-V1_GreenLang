@@ -980,6 +980,24 @@ class CombustionOutput(BaseModel):
         description="Active alerts"
     )
 
+    # LLM Intelligence outputs (FULL level capabilities)
+    explanation: Optional[str] = Field(
+        default=None,
+        description="LLM-generated explanation with chain-of-thought reasoning"
+    )
+    intelligent_recommendations: Optional[List[Dict[str, Any]]] = Field(
+        default=None,
+        description="LLM-generated intelligent recommendations"
+    )
+    anomalies_detected: Optional[List[Dict[str, Any]]] = Field(
+        default=None,
+        description="LLM-detected anomalies in combustion data"
+    )
+    reasoning_output: Optional[str] = Field(
+        default=None,
+        description="LLM reasoning about combustion scenarios"
+    )
+
     # Provenance
     provenance_hash: Optional[str] = Field(
         default=None,

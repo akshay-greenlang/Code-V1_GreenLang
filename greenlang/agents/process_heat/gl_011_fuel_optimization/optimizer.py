@@ -88,6 +88,8 @@ from greenlang.agents.process_heat.gl_011_fuel_optimization.cost_optimization im
     TotalCostInput,
     TotalCostOutput,
 )
+from greenlang.agents.intelligence_mixin import IntelligenceMixin, IntelligenceConfig
+from greenlang.agents.intelligence_interface import IntelligenceCapabilities, IntelligenceLevel
 
 logger = logging.getLogger(__name__)
 
@@ -165,7 +167,7 @@ DEFAULT_FUEL_PROPERTIES = {
 # FUEL OPTIMIZATION AGENT
 # =============================================================================
 
-class FuelOptimizationAgent(BaseProcessHeatAgent[FuelOptimizationInput, FuelOptimizationOutput]):
+class FuelOptimizationAgent(IntelligenceMixin, BaseProcessHeatAgent[FuelOptimizationInput, FuelOptimizationOutput]):
     """
     GL-011 FUELCRAFT Fuel Optimization Agent.
 
@@ -180,6 +182,9 @@ class FuelOptimizationAgent(BaseProcessHeatAgent[FuelOptimizationInput, FuelOpti
 
     All calculations are deterministic (zero-hallucination) with complete
     provenance tracking for regulatory compliance.
+
+    Intelligence Level: STANDARD
+    Regulatory Context: ISO 50001, GHG Protocol
 
     Attributes:
         fuel_config: Fuel optimization configuration
@@ -230,8 +235,36 @@ class FuelOptimizationAgent(BaseProcessHeatAgent[FuelOptimizationInput, FuelOpti
         # Initialize components
         self._init_components()
 
+        # Initialize intelligence with STANDARD level configuration
+        self._init_intelligence(IntelligenceConfig(
+            enabled=True,
+            model="auto",
+            max_budget_per_call_usd=0.10,
+            enable_explanations=True,
+            enable_recommendations=True,
+            enable_anomaly_detection=False,
+            domain_context="fuel optimization and energy management",
+            regulatory_context="ISO 50001, GHG Protocol",
+        ))
+
         logger.info(
             f"FuelOptimizationAgent initialized for {fuel_config.facility_id}"
+        )
+
+    def get_intelligence_level(self) -> IntelligenceLevel:
+        """Return the agent's intelligence level."""
+        return IntelligenceLevel.STANDARD
+
+    def get_intelligence_capabilities(self) -> IntelligenceCapabilities:
+        """Return the agent's intelligence capabilities."""
+        return IntelligenceCapabilities(
+            can_explain=True,
+            can_recommend=True,
+            can_detect_anomalies=False,
+            can_reason=True,
+            can_validate=True,
+            uses_rag=False,
+            uses_tools=False
         )
 
     def _init_components(self) -> None:
@@ -385,9 +418,44 @@ class FuelOptimizationAgent(BaseProcessHeatAgent[FuelOptimizationInput, FuelOpti
                 if not self.validate_output(output):
                     raise ValidationError("Output validation failed")
 
+                # Generate LLM explanation for fuel optimization results
+                explanation = self.generate_explanation(
+                    input_data=input_data.dict() if hasattr(input_data, 'dict') else {"facility_id": input_data.facility_id},
+                    output_data={
+                        "optimization_status": optimization_result.optimization_status,
+                        "current_fuel_cost_usd_hr": optimization_result.current_fuel_cost_usd_hr,
+                        "recommended_fuel_cost_usd_hr": optimization_result.recommended_fuel_cost_usd_hr,
+                        "potential_savings_usd_hr": optimization_result.potential_savings_usd_hr,
+                        "potential_savings_usd_year": optimization_result.potential_savings_usd_year,
+                        "co2_reduction_kg_hr": optimization_result.co2_reduction_kg_hr,
+                    },
+                    calculation_steps=[
+                        f"Analyzed {len(fuel_prices)} fuel options",
+                        f"Evaluated blending opportunities" if blend_recommendation else "Blending not applicable",
+                        f"Evaluated switching opportunities" if switching_recommendation else "Switching not applicable",
+                        f"Calculated total cost of ownership",
+                        f"Determined potential savings: ${optimization_result.potential_savings_usd_year:.0f}/year",
+                    ]
+                )
+
+                # Generate recommendations for optimization actions
+                recommendations = self.generate_recommendations(
+                    analysis={
+                        "current_fuel": input_data.current_fuel,
+                        "current_cost_usd_hr": optimization_result.current_fuel_cost_usd_hr,
+                        "potential_savings_usd_year": optimization_result.potential_savings_usd_year,
+                        "blend_recommendation": blend_recommendation.dict() if blend_recommendation else None,
+                        "switching_recommendation": switching_recommendation.dict() if switching_recommendation else None,
+                        "co2_reduction_kg_hr": optimization_result.co2_reduction_kg_hr,
+                    },
+                    max_recommendations=5,
+                    focus_areas=["cost reduction", "emissions reduction", "fuel flexibility"]
+                )
+
                 logger.info(
                     f"Fuel optimization completed in {processing_time:.1f}ms"
                 )
+                logger.debug(f"Generated explanation and {len(recommendations)} recommendations")
 
                 return output
 

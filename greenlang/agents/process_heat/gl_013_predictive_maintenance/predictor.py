@@ -93,11 +93,14 @@ from greenlang.agents.process_heat.gl_013_predictive_maintenance.failure_predict
 from greenlang.agents.process_heat.gl_013_predictive_maintenance.work_order import (
     WorkOrderGenerator,
 )
+from greenlang.agents.intelligence_mixin import IntelligenceMixin, IntelligenceConfig
+from greenlang.agents.intelligence_interface import IntelligenceCapabilities, IntelligenceLevel
 
 logger = logging.getLogger(__name__)
 
 
 class PredictiveMaintenanceAgent(
+    IntelligenceMixin,
     BaseProcessHeatAgent[PredictiveMaintenanceInput, PredictiveMaintenanceOutput]
 ):
     """
@@ -110,6 +113,9 @@ class PredictiveMaintenanceAgent(
     All calculations use DETERMINISTIC methods with ZERO HALLUCINATION
     guarantees. ML is used only for classification and ranking, not for
     final failure probability calculations.
+
+    Intelligence Level: ADVANCED
+    Regulatory Context: ISO 55000, IEC 61511
 
     Features:
         - Weibull distribution analysis for RUL (P10, P50, P90)
@@ -223,9 +229,37 @@ class PredictiveMaintenanceAgent(
         self._historical_failures: List[FailureData] = []
         self._analysis_history: List[Dict[str, Any]] = []
 
+        # Initialize intelligence with ADVANCED level configuration
+        self._init_intelligence(IntelligenceConfig(
+            enabled=True,
+            model="auto",
+            max_budget_per_call_usd=0.10,
+            enable_explanations=True,
+            enable_recommendations=True,
+            enable_anomaly_detection=True,
+            domain_context="predictive maintenance and equipment reliability",
+            regulatory_context="ISO 55000, IEC 61511",
+        ))
+
         logger.info(
             f"PredictiveMaintenanceAgent initialized for "
             f"{equipment_config.equipment_id} ({equipment_config.equipment_type.value})"
+        )
+
+    def get_intelligence_level(self) -> IntelligenceLevel:
+        """Return the agent's intelligence level."""
+        return IntelligenceLevel.ADVANCED
+
+    def get_intelligence_capabilities(self) -> IntelligenceCapabilities:
+        """Return the agent's intelligence capabilities."""
+        return IntelligenceCapabilities(
+            can_explain=True,
+            can_recommend=True,
+            can_detect_anomalies=True,
+            can_reason=True,
+            can_validate=True,
+            uses_rag=False,
+            uses_tools=False
         )
 
     def process(
@@ -438,11 +472,33 @@ class PredictiveMaintenanceAgent(
                 if len(self._health_trend) > 100:
                     self._health_trend.pop(0)
 
+                # Generate LLM explanation for predictive maintenance results
+                explanation = self.generate_explanation(
+                    input_data={"equipment_id": input_data.equipment_id, "running_hours": input_data.running_hours},
+                    output_data={
+                        "health_status": health_status.value,
+                        "health_score": health_score,
+                        "rul_hours": rul_hours,
+                        "overall_failure_probability_30d": overall_prob,
+                        "highest_risk_failure_mode": failure_predictions[0].failure_mode.value if failure_predictions else None,
+                        "alert_count": len(alerts),
+                    },
+                    calculation_steps=[
+                        f"Analyzed {len(vibration_results)} vibration readings",
+                        f"Analyzed oil condition" if oil_result else "Oil analysis not available",
+                        f"Analyzed {len(thermo_results)} thermal images" if thermo_results else "Thermal imaging not available",
+                        f"Analyzed {len(mcsa_results)} current signatures" if mcsa_results else "MCSA not available",
+                        f"Performed Weibull RUL analysis: P50 = {rul_hours:.0f}h" if rul_hours else "Weibull analysis not available",
+                        f"Determined health status: {health_status.value} (score: {health_score:.1f})",
+                    ]
+                )
+
                 logger.info(
                     f"Predictive maintenance complete: "
                     f"health={health_status.value}, score={health_score:.1f}, "
                     f"RUL={rul_hours:.0f}h" if rul_hours else ""
                 )
+                logger.debug(f"Generated explanation for {input_data.equipment_id}")
 
                 return output
 

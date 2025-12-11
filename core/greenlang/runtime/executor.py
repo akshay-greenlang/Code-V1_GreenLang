@@ -37,6 +37,11 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 
+class SecurityError(Exception):
+    """Raised when code execution violates security policies."""
+    pass
+
+
 class DeterministicConfig:
     """Configuration for deterministic execution"""
 
@@ -709,11 +714,27 @@ class Executor:
         return None
 
     def _exec_python_stage(self, stage: Dict, context: Dict) -> Dict:
-        """Execute a Python code stage"""
+        """Execute a Python code stage with security sandbox"""
         code = stage.get("code", "")
 
-        # Create execution namespace
+        # SECURITY: Validate code before execution (prevent RCE)
+        self._validate_code_security(code)
+
+        # Create restricted execution namespace with only safe builtins
+        safe_builtins = {
+            'abs': abs, 'all': all, 'any': any, 'bool': bool,
+            'dict': dict, 'enumerate': enumerate, 'filter': filter,
+            'float': float, 'int': int, 'len': len, 'list': list,
+            'map': map, 'max': max, 'min': min, 'pow': pow,
+            'range': range, 'round': round, 'set': set, 'sorted': sorted,
+            'str': str, 'sum': sum, 'tuple': tuple, 'zip': zip,
+            'True': True, 'False': False, 'None': None,
+            # Math functions
+            'print': lambda *args, **kwargs: None,  # Disabled for security
+        }
+
         namespace = {
+            "__builtins__": safe_builtins,
             "inputs": context.get("input", {}),
             "outputs": {},
             "context": context,
@@ -726,10 +747,68 @@ class Executor:
                 namespace["np"] = np
             namespace["random"] = random
 
-        # Execute code
-        exec(code, namespace)
+        # Execute code in sandboxed environment
+        try:
+            compiled_code = compile(code, '<greenlang-stage>', 'exec')
+            exec(compiled_code, namespace)
+        except Exception as e:
+            logger.error(f"Code execution error: {e}")
+            raise RuntimeError(f"Stage execution failed: {e}")
 
         return namespace.get("outputs", {})
+
+    def _validate_code_security(self, code: str) -> None:
+        """
+        Validate code for security vulnerabilities before execution.
+        Raises SecurityError if dangerous patterns are detected.
+        """
+        import ast
+        import re
+
+        # Dangerous patterns that indicate potential RCE
+        dangerous_patterns = [
+            (r'\b__import__\b', 'Dynamic imports are not allowed'),
+            (r'\beval\s*\(', 'eval() is not allowed'),
+            (r'\bexec\s*\(', 'Nested exec() is not allowed'),
+            (r'\bopen\s*\(', 'File operations require explicit permission'),
+            (r'\bos\.(system|popen|spawn)', 'OS command execution is not allowed'),
+            (r'\bsubprocess\.', 'Subprocess calls are not allowed'),
+            (r'\b__class__\b', 'Attribute introspection is restricted'),
+            (r'\b__bases__\b', 'Class hierarchy access is not allowed'),
+            (r'\b__subclasses__\b', 'Subclass enumeration is not allowed'),
+            (r'\b__globals__\b', 'Global namespace access is not allowed'),
+            (r'\b__code__\b', 'Code object access is not allowed'),
+            (r'\bcompile\s*\(', 'Dynamic compilation is not allowed'),
+            (r'\bglobals\s*\(\)', 'globals() is not allowed'),
+            (r'\blocals\s*\(\)', 'locals() is not allowed'),
+            (r'\bgetattr\s*\(', 'Dynamic attribute access is restricted'),
+            (r'\bsetattr\s*\(', 'Dynamic attribute setting is not allowed'),
+            (r'\bdelattr\s*\(', 'Dynamic attribute deletion is not allowed'),
+        ]
+
+        for pattern, message in dangerous_patterns:
+            if re.search(pattern, code):
+                raise SecurityError(f"SECURITY VIOLATION: {message}")
+
+        # AST-based validation for additional safety
+        try:
+            tree = ast.parse(code)
+            for node in ast.walk(tree):
+                # Block import statements
+                if isinstance(node, (ast.Import, ast.ImportFrom)):
+                    module_name = ''
+                    if isinstance(node, ast.Import):
+                        module_name = node.names[0].name if node.names else ''
+                    else:
+                        module_name = node.module or ''
+
+                    # Only allow safe modules
+                    allowed_modules = {'math', 'decimal', 'datetime', 'json', 'typing'}
+                    if module_name.split('.')[0] not in allowed_modules:
+                        raise SecurityError(f"SECURITY VIOLATION: Import of '{module_name}' is not allowed")
+
+        except SyntaxError as e:
+            raise SecurityError(f"SECURITY VIOLATION: Invalid Python syntax: {e}")
 
     def _exec_shell_stage(self, stage: Dict, context: Dict) -> Dict:
         """Execute a shell command stage with secure input sanitization"""

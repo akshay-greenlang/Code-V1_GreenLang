@@ -248,7 +248,7 @@ class GeneratorConfig:
             "llama_index",
             "transformers",
         ],
-        metadata={"description": "Imports prohibited in calculation path"}
+        metadata={"description": "Imports prohibited in CALCULATION path (LLM allowed for explanations)"}
     )
 
     allowed_ml_agent_types: List[str] = field(
@@ -256,7 +256,87 @@ class GeneratorConfig:
             "ml-classifier",
             "report-generator",
         ],
-        metadata={"description": "Agent types allowed to use ML/LLM"}
+        metadata={"description": "Agent types allowed to use ML/LLM in calculation path"}
+    )
+
+    # ==========================================================================
+    # INTELLIGENCE FRAMEWORK SETTINGS (Solves Intelligence Paradox - Dec 2025)
+    # ==========================================================================
+
+    require_intelligence: bool = field(
+        default=True,
+        metadata={
+            "description": "MANDATORY: Require all new agents to implement IntelligentAgentBase"
+        }
+    )
+
+    default_intelligence_level: str = field(
+        default="STANDARD",
+        metadata={
+            "description": "Default intelligence level for generated agents",
+            "allowed_values": ["BASIC", "STANDARD", "ADVANCED", "FULL"]
+        }
+    )
+
+    intelligence_level_none_allowed: bool = field(
+        default=False,
+        metadata={
+            "description": "Allow NONE intelligence level (DEPRECATED - only for legacy)"
+        }
+    )
+
+    require_intelligence_decorator: bool = field(
+        default=True,
+        metadata={
+            "description": "Require @require_intelligence decorator on all agent classes"
+        }
+    )
+
+    require_explanation_generation: bool = field(
+        default=True,
+        metadata={
+            "description": "Require agents to call generate_explanation() in execute()"
+        }
+    )
+
+    require_recommendation_generation: bool = field(
+        default=True,
+        metadata={
+            "description": "Require agents to call generate_recommendations() in execute()"
+        }
+    )
+
+    intelligence_base_class: str = field(
+        default="IntelligentAgentBase",
+        metadata={
+            "description": "Base class for intelligent agents"
+        }
+    )
+
+    intelligence_mixin_class: str = field(
+        default="IntelligenceMixin",
+        metadata={
+            "description": "Mixin class for retrofitting existing agents"
+        }
+    )
+
+    intelligence_imports: List[str] = field(
+        default_factory=lambda: [
+            "from greenlang.agents import IntelligentAgentBase, IntelligentAgentConfig",
+            "from greenlang.agents import IntelligenceLevel, IntelligenceCapabilities",
+            "from greenlang.agents import require_intelligence",
+            "from greenlang.agents import Recommendation, Anomaly",
+        ],
+        metadata={
+            "description": "Import statements for intelligence framework"
+        }
+    )
+
+    default_regulatory_context: str = field(
+        default="GHG Protocol, CSRD ESRS E1",
+        metadata={
+            "description": "Default regulatory context for generated agents"
+        }
     )
 
     # ==========================================================================

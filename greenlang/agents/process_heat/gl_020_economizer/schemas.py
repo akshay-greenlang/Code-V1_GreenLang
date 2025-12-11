@@ -1107,5 +1107,15 @@ class EconomizerOutput(BaseModel):
         description="Additional metadata"
     )
 
+    # Intelligence outputs (STANDARD level)
+    explanation: Optional[str] = Field(
+        default=None,
+        description="LLM-generated explanation of economizer analysis"
+    )
+    intelligent_recommendations: Optional[List[Dict[str, Any]]] = Field(
+        default=None,
+        description="LLM-generated intelligent recommendations"
+    )
+
     class Config:
         use_enum_values = True

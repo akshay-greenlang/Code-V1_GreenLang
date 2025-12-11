@@ -1,21 +1,66 @@
 # -*- coding: utf-8 -*-
+"""
+IntensityAgent - AI-Native Emission Intensity Calculator
+
+This agent calculates various emission intensity metrics with
+FULL LLM INTELLIGENCE capabilities via IntelligenceMixin.
+
+Intelligence Level: STANDARD
+Capabilities: Explanations, Recommendations, Reasoning
+
+Regulatory Context: GHG Protocol, ISO 14064, CRREM
+"""
 from typing import Dict, Any, Optional
 from greenlang.agents.base import BaseAgent, AgentResult, AgentConfig
+from greenlang.agents.intelligence_mixin import IntelligenceMixin
+from greenlang.agents.intelligence_interface import IntelligenceCapabilities, IntelligenceLevel
 import logging
 
 logger = logging.getLogger(__name__)
 
 
-class IntensityAgent(BaseAgent):
-    """Agent for calculating various emission intensity metrics"""
+class IntensityAgent(IntelligenceMixin, BaseAgent):
+    """
+    AI-Native Emission Intensity Calculator Agent.
+
+    This agent calculates various intensity metrics with FULL LLM INTELLIGENCE:
+
+    1. DETERMINISTIC CALCULATIONS (Zero-Hallucination):
+       - Area-based intensities (per sqft, sqm)
+       - Occupancy-based intensities (per person)
+       - Economic intensities (per revenue, per unit)
+       - Energy use intensity (EUI)
+
+    2. AI-POWERED INTELLIGENCE:
+       - Natural language explanations of intensity metrics
+       - Benchmark comparison narratives
+       - Improvement recommendations
+    """
 
     def __init__(self, config: Optional[AgentConfig] = None):
         super().__init__(
             config
             or AgentConfig(
                 name="IntensityAgent",
-                description="Calculates emission intensity metrics per area, occupancy, and other factors",
+                description="AI-native emission intensity calculator with LLM intelligence",
             )
+        )
+        # Intelligence auto-initializes on first use
+
+    def get_intelligence_level(self) -> IntelligenceLevel:
+        """Return the agent's intelligence level."""
+        return IntelligenceLevel.STANDARD
+
+    def get_intelligence_capabilities(self) -> IntelligenceCapabilities:
+        """Return the agent's intelligence capabilities."""
+        return IntelligenceCapabilities(
+            can_explain=True,
+            can_recommend=True,
+            can_detect_anomalies=True,
+            can_reason=True,
+            can_validate=False,
+            uses_rag=False,
+            uses_tools=False
         )
 
     def validate_input(self, input_data: Dict[str, Any]) -> bool:
@@ -24,7 +69,7 @@ class IntensityAgent(BaseAgent):
         return all(field in input_data for field in required)
 
     def execute(self, input_data: Dict[str, Any]) -> AgentResult:
-        """Calculate various intensity metrics"""
+        """Calculate various intensity metrics with AI intelligence"""
         try:
             total_emissions_kg = input_data.get("total_emissions_kg", 0)
             area = input_data.get("area", 0)
@@ -37,6 +82,9 @@ class IntensityAgent(BaseAgent):
             revenue = input_data.get("revenue", 0)
             production_units = input_data.get("production_units", 0)
 
+            # =================================================================
+            # STEP 1: DETERMINISTIC CALCULATION (Zero-Hallucination)
+            # =================================================================
             # Convert to annual emissions if not already
             annual_emissions_kg = total_emissions_kg * (12 / period_months)
 
@@ -49,6 +97,7 @@ class IntensityAgent(BaseAgent):
                 area_sqm = area / 10.764
 
             intensities = {}
+            calculation_steps = [f"Annualized emissions: {annual_emissions_kg:.2f} kg CO2e"]
 
             # Area-based intensities
             if area_sqft > 0:
@@ -57,6 +106,7 @@ class IntensityAgent(BaseAgent):
                 intensities["per_sqft_month"] = round(
                     annual_emissions_kg / area_sqft / 12, 4
                 )
+                calculation_steps.append(f"Area-based: {intensities['per_sqft_year']:.3f} kgCO2e/sqft/year")
 
             # Occupancy-based intensities
             if occupancy > 0:
@@ -66,6 +116,7 @@ class IntensityAgent(BaseAgent):
                 intensities["per_person_day"] = round(
                     annual_emissions_kg / occupancy / operating_days, 3
                 )
+                calculation_steps.append(f"Per-person: {intensities['per_person_year']:.1f} kgCO2e/person/year")
 
             # Floor-based intensity
             if floor_count > 0:
@@ -88,6 +139,7 @@ class IntensityAgent(BaseAgent):
                 intensities["per_million_revenue"] = round(
                     annual_emissions_kg / (revenue / 1000000), 1
                 )
+                calculation_steps.append(f"Economic: {intensities['per_million_revenue']:.1f} kgCO2e/$M revenue")
 
             # Production intensity (for industrial)
             if production_units > 0:
@@ -112,6 +164,7 @@ class IntensityAgent(BaseAgent):
                 intensities.get("per_sqft_year", 0),
                 input_data.get("building_type", "commercial_office"),
             )
+            calculation_steps.append(f"Performance rating: {rating}")
 
             # Calculate metrics vs benchmarks
             benchmark_comparison = self._compare_to_benchmark(
@@ -120,24 +173,59 @@ class IntensityAgent(BaseAgent):
                 input_data.get("country", "US"),
             )
 
+            # Build deterministic result
+            result_data = {
+                "intensities": intensities,
+                "annual_emissions_kg": round(annual_emissions_kg, 1),
+                "annual_emissions_tons": round(annual_emissions_kg / 1000, 2),
+                "performance_rating": rating,
+                "benchmark_comparison": benchmark_comparison,
+                "primary_metric": {
+                    "value": intensities.get("per_sqft_year", 0),
+                    "unit": "kgCO2e/sqft/year",
+                    "description": "Primary intensity metric for benchmarking",
+                },
+            }
+
+            # =================================================================
+            # STEP 2: AI-POWERED EXPLANATION
+            # =================================================================
+            explanation = self.generate_explanation(
+                input_data=input_data,
+                output_data=result_data,
+                calculation_steps=calculation_steps
+            )
+            result_data["explanation"] = explanation
+
+            # =================================================================
+            # STEP 3: AI-POWERED RECOMMENDATIONS
+            # =================================================================
+            recommendations = self.generate_recommendations(
+                analysis={
+                    **result_data,
+                    "building_type": input_data.get("building_type", "commercial_office"),
+                    "rating": rating,
+                    "vs_benchmark": benchmark_comparison.get("percentage_difference", 0),
+                },
+                max_recommendations=5,
+                focus_areas=["efficiency", "intensity_reduction", "benchmarking"]
+            )
+            result_data["recommendations"] = recommendations
+
+            # =================================================================
+            # STEP 4: ADD INTELLIGENCE METADATA
+            # =================================================================
+            result_data["intelligence_level"] = self.get_intelligence_level().value
+
             return AgentResult(
                 success=True,
-                data={
-                    "intensities": intensities,
-                    "annual_emissions_kg": round(annual_emissions_kg, 1),
-                    "annual_emissions_tons": round(annual_emissions_kg / 1000, 2),
-                    "performance_rating": rating,
-                    "benchmark_comparison": benchmark_comparison,
-                    "primary_metric": {
-                        "value": intensities.get("per_sqft_year", 0),
-                        "unit": "kgCO2e/sqft/year",
-                        "description": "Primary intensity metric for benchmarking",
-                    },
-                },
+                data=result_data,
                 metadata={
                     "calculation_period": f"{period_months} months",
                     "area_used": f"{area_sqft:.0f} sqft",
                     "metrics_calculated": len(intensities),
+                    "intelligence_metrics": self.get_intelligence_metrics(),
+                    "regulatory_context": "GHG Protocol, ISO 14064, CRREM"
                 },
             )
 

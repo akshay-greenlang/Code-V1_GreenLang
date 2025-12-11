@@ -4,9 +4,9 @@
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
-[![Version](https://img.shields.io/badge/version-0.3.0--beta-orange.svg)](https://github.com/greenlang/greenlang/releases)
+[![Version](https://img.shields.io/badge/version-0.3.1--intelligence-orange.svg)](https://github.com/greenlang/greenlang/releases)
 [![Development Status](https://img.shields.io/badge/status-beta-orange.svg)](https://github.com/greenlang/greenlang)
-[![Test Coverage](https://img.shields.io/badge/coverage-95%25+-brightgreen.svg)](https://github.com/greenlang/greenlang)
+[![Test Coverage](https://img.shields.io/badge/coverage-~70%25-yellow.svg)](https://github.com/greenlang/greenlang)
 
 ---
 
@@ -23,7 +23,7 @@ Instead of building carbon accounting, emissions tracking, and regulatory compli
 
 GreenLang is **not** a SaaS product. It's an open-source platform and SDK for developers building climate applications. We provide the building blocks; you build the experience.
 
-**Current Status**: Beta (v0.3.0) - Core infrastructure stable, 3 production-ready applications deployed, expanding regulatory coverage and emission factor library.
+**Current Status**: Beta (v0.3.1-intelligence) - Core infrastructure stable, 3 production-ready applications (CSRD 100%, CBAM 100%, VCCI 55%), 9,282 Python files, 2,313 test files. Targeting v1.0.0 GA in Q2 2026.
 
 ---
 
@@ -592,19 +592,23 @@ Special thanks to the open-source community for libraries we depend on: FastAPI,
 
 ## Project Status
 
-- **Version**: 0.3.0 (Beta)
+- **Version**: 0.3.1-intelligence (Beta)
 - **License**: Apache 2.0
 - **Python**: 3.10+
-- **Production Applications**: 3 (VCCI, CBAM, CSRD)
+- **Production Applications**: 3 (CSRD 100%, CBAM 100%, VCCI 55%)
+- **Codebase**: 9,282 Python files, 2,313 test files
+- **Operational Agents**: 47-59
 - **Emission Factors**: 1,000+ (expanding to 10,000+)
-- **Test Coverage**: 95%+
-- **Last Updated**: November 2025
+- **Test Coverage**: ~70% (target: 85%)
+- **Last Updated**: December 2025
 
 **Build Status**:
 - Core Platform: Beta (Stable)
-- VCCI App: Production-Ready (95%)
-- CBAM App: Production-Ready (95%)
-- CSRD App: Production-Ready (95%)
+- GL-CSRD-APP: Production-Ready (100%)
+- GL-CBAM-APP: Production-Ready (100%)
+- GL-VCCI-APP: In Development (55%)
+- GL-EUDR-APP: Planned (Q1 2026)
+- GL-SB253-APP: Planned (Q2 2026)
 
 ---
 

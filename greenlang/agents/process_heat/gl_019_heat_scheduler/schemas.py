@@ -908,6 +908,24 @@ class HeatSchedulerOutput(BaseModel):
         description="Additional metadata"
     )
 
+    # Intelligence outputs (ADVANCED level)
+    explanation: Optional[str] = Field(
+        default=None,
+        description="LLM-generated explanation of scheduling decisions"
+    )
+    intelligent_recommendations: Optional[List[Dict[str, Any]]] = Field(
+        default=None,
+        description="LLM-generated intelligent recommendations"
+    )
+    anomalies_detected: Optional[List[Dict[str, Any]]] = Field(
+        default=None,
+        description="LLM-detected anomalies in scheduling data"
+    )
+    reasoning_output: Optional[str] = Field(
+        default=None,
+        description="LLM reasoning about scheduling scenarios"
+    )
+
     class Config:
         use_enum_values = True
 

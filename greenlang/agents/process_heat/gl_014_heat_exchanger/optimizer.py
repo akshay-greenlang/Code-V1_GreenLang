@@ -88,11 +88,14 @@ from greenlang.agents.process_heat.gl_014_heat_exchanger.hydraulics import (
 from greenlang.agents.process_heat.gl_014_heat_exchanger.economics import (
     EconomicAnalyzer,
 )
+from greenlang.agents.intelligence_mixin import IntelligenceMixin, IntelligenceConfig
+from greenlang.agents.intelligence_interface import IntelligenceCapabilities, IntelligenceLevel
 
 logger = logging.getLogger(__name__)
 
 
 class HeatExchangerOptimizer(
+    IntelligenceMixin,
     BaseProcessHeatAgent[HeatExchangerInput, HeatExchangerOutput]
 ):
     """
@@ -102,6 +105,9 @@ class HeatExchangerOptimizer(
     using deterministic calculations with TEMA standards compliance. It integrates
     thermal analysis, fouling prediction, cleaning optimization, tube integrity
     assessment, hydraulic analysis, and economic evaluation.
+
+    Intelligence Level: STANDARD
+    Regulatory Context: TEMA, ASME
 
     Key Capabilities:
         - Epsilon-NTU thermal effectiveness analysis
@@ -225,10 +231,38 @@ class HeatExchangerOptimizer(
         self._health_history: List[float] = []
         self._analysis_history: List[Dict[str, Any]] = []
 
+        # Initialize intelligence with STANDARD level configuration
+        self._init_intelligence(IntelligenceConfig(
+            enabled=True,
+            model="auto",
+            max_budget_per_call_usd=0.10,
+            enable_explanations=True,
+            enable_recommendations=True,
+            enable_anomaly_detection=False,
+            domain_context="heat exchanger performance and optimization",
+            regulatory_context="TEMA, ASME",
+        ))
+
         logger.info(
             f"HeatExchangerOptimizer initialized for "
             f"{exchanger_config.exchanger_id} "
             f"({exchanger_config.exchanger_type.value})"
+        )
+
+    def get_intelligence_level(self) -> IntelligenceLevel:
+        """Return the agent's intelligence level."""
+        return IntelligenceLevel.STANDARD
+
+    def get_intelligence_capabilities(self) -> IntelligenceCapabilities:
+        """Return the agent's intelligence capabilities."""
+        return IntelligenceCapabilities(
+            can_explain=True,
+            can_recommend=True,
+            can_detect_anomalies=False,
+            can_reason=True,
+            can_validate=True,
+            uses_rag=False,
+            uses_tools=False
         )
 
     def process(
@@ -383,11 +417,45 @@ class HeatExchangerOptimizer(
                 if len(self._health_history) > 100:
                     self._health_history.pop(0)
 
+                # Generate LLM explanation for heat exchanger optimization results
+                explanation = self.generate_explanation(
+                    input_data={"exchanger_id": input_data.exchanger_id, "hot_side_inlet_temp_c": input_data.hot_side_inlet_temp_c},
+                    output_data={
+                        "health_status": health_status.value,
+                        "health_score": health_score,
+                        "thermal_effectiveness": thermal_result.thermal_effectiveness,
+                        "fouling_factor": fouling_result.current_fouling_factor if fouling_result else None,
+                        "days_until_cleaning": cleaning_recommendation.days_until_recommended if cleaning_recommendation else None,
+                        "tube_remaining_life_years": tube_result.estimated_remaining_life_years if tube_result else None,
+                    },
+                    calculation_steps=[
+                        f"Calculated thermal effectiveness: {thermal_result.thermal_effectiveness:.1%}",
+                        f"Analyzed fouling: {fouling_result.current_fouling_factor:.4f} vs design {self.exchanger_config.design_fouling_factor:.4f}" if fouling_result else "Fouling analysis not available",
+                        f"Determined cleaning recommendation: {cleaning_recommendation.days_until_recommended:.0f} days" if cleaning_recommendation else "Cleaning optimization not available",
+                        f"Tube integrity: {tube_result.estimated_remaining_life_years:.1f} years remaining" if tube_result else "Tube integrity analysis not available",
+                        f"Health status: {health_status.value} (score: {health_score:.1f})",
+                    ]
+                )
+
+                # Generate recommendations for optimization actions
+                recommendations = self.generate_recommendations(
+                    analysis={
+                        "exchanger_id": input_data.exchanger_id,
+                        "health_status": health_status.value,
+                        "thermal_effectiveness": thermal_result.thermal_effectiveness,
+                        "fouling_factor": fouling_result.current_fouling_factor if fouling_result else None,
+                        "cleaning_needed": cleaning_recommendation.recommended if cleaning_recommendation else False,
+                    },
+                    max_recommendations=5,
+                    focus_areas=["cleaning optimization", "heat transfer efficiency", "equipment reliability"]
+                )
+
                 logger.info(
                     f"Heat exchanger analysis complete: "
                     f"health={health_status.value}, "
                     f"effectiveness={thermal_result.thermal_effectiveness:.1%}"
                 )
+                logger.debug(f"Generated explanation and {len(recommendations)} recommendations")
 
                 return output
 

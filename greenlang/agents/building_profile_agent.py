@@ -1,23 +1,68 @@
 # -*- coding: utf-8 -*-
+"""
+BuildingProfileAgent - AI-Native Building Profiling Agent
+
+This agent categorizes buildings and determines appropriate benchmarks with
+FULL LLM INTELLIGENCE capabilities via IntelligenceMixin.
+
+Intelligence Level: STANDARD
+Capabilities: Explanations, Recommendations
+
+Regulatory Context: ASHRAE 90.1, ENERGY STAR, LEED, BREEAM
+"""
 from typing import Dict, Any, Optional
 from greenlang.agents.base import BaseAgent, AgentResult, AgentConfig
+from greenlang.agents.intelligence_mixin import IntelligenceMixin
+from greenlang.agents.intelligence_interface import IntelligenceCapabilities, IntelligenceLevel
 import logging
 
 logger = logging.getLogger(__name__)
 
 
-class BuildingProfileAgent(BaseAgent):
-    """Agent for categorizing buildings and determining appropriate benchmarks"""
+class BuildingProfileAgent(IntelligenceMixin, BaseAgent):
+    """
+    AI-Native Building Profiling Agent.
+
+    This agent categorizes buildings and maps to benchmarks with FULL LLM INTELLIGENCE:
+
+    1. DETERMINISTIC CALCULATIONS (Zero-Hallucination):
+       - Building categorization
+       - EUI expectations
+       - Climate adjustments
+       - Load breakdown analysis
+
+    2. AI-POWERED INTELLIGENCE:
+       - Natural language building performance summaries
+       - Retrofit recommendations
+       - Certification pathway guidance
+    """
 
     def __init__(self, config: Optional[AgentConfig] = None):
         super().__init__(
             config
             or AgentConfig(
                 name="BuildingProfileAgent",
-                description="Categorizes buildings and maps to appropriate benchmarks and standards",
+                description="AI-native building profiling with LLM intelligence",
             )
         )
         self.building_profiles = self._load_building_profiles()
+        # Intelligence auto-initializes on first use
+
+    def get_intelligence_level(self) -> IntelligenceLevel:
+        """Return the agent's intelligence level."""
+        return IntelligenceLevel.STANDARD
+
+    def get_intelligence_capabilities(self) -> IntelligenceCapabilities:
+        """Return the agent's intelligence capabilities."""
+        return IntelligenceCapabilities(
+            can_explain=True,
+            can_recommend=True,
+            can_detect_anomalies=False,
+            can_reason=True,
+            can_validate=False,
+            uses_rag=False,
+            uses_tools=False
+        )
 
     def _load_building_profiles(self) -> Dict:
         """Load building profile data"""
@@ -114,7 +159,7 @@ class BuildingProfileAgent(BaseAgent):
         return "building_type" in input_data
 
     def execute(self, input_data: Dict[str, Any]) -> AgentResult:
-        """Analyze building and provide profile information"""
+        """Analyze building and provide profile information with AI intelligence"""
         try:
             building_type = input_data.get("building_type", "commercial_office")
             area = input_data.get("area", 0)
@@ -125,9 +170,15 @@ class BuildingProfileAgent(BaseAgent):
             climate_zone = input_data.get("climate_zone")
             country = input_data.get("country", "US")
 
+            # =================================================================
+            # STEP 1: DETERMINISTIC CALCULATION (Zero-Hallucination)
+            # =================================================================
+            calculation_steps = []
+
             # Convert area to sqft if needed
             if area_unit == "sqm":
                 area = area * 10.764
+            calculation_steps.append(f"Building area: {area:.0f} sqft")
 
             # Get building profile
             profile = self.building_profiles.get(
@@ -136,6 +187,7 @@ class BuildingProfileAgent(BaseAgent):
 
             # Calculate expected metrics
             expected_occupancy = area / profile.get("typical_occupancy_density", 200)
+            calculation_steps.append(f"Expected occupancy: {expected_occupancy:.0f} people")
 
             # Determine efficiency category based on age
             if building_age < 5:
@@ -150,6 +202,7 @@ class BuildingProfileAgent(BaseAgent):
             else:
                 age_category = "old"
                 efficiency_modifier = 1.30
+            calculation_steps.append(f"Age category: {age_category} (modifier: {efficiency_modifier})")
 
             # Climate zone adjustments
             climate_adjustments = self._get_climate_adjustments(climate_zone)
@@ -161,6 +214,7 @@ class BuildingProfileAgent(BaseAgent):
                 * efficiency_modifier
                 * climate_adjustments.get("hvac_modifier", 1.0)
             )
+            calculation_steps.append(f"Adjusted EUI: {adjusted_eui:.1f} kWh/sqft/year")
 
             # Provide load breakdown
             load_breakdown = {}
@@ -204,6 +258,36 @@ class BuildingProfileAgent(BaseAgent):
             if building_type == "data_center":
                 result_data["typical_pue"] = profile.get("typical_pue", {})
 
+            # =================================================================
+            # STEP 2: AI-POWERED EXPLANATION
+            # =================================================================
+            explanation = self.generate_explanation(
+                input_data=input_data,
+                output_data=result_data,
+                calculation_steps=calculation_steps
+            )
+            result_data["explanation"] = explanation
+
+            # =================================================================
+            # STEP 3: AI-POWERED RECOMMENDATIONS
+            # =================================================================
+            recommendations = self.generate_recommendations(
+                analysis={
+                    **result_data,
+                    "building_age": building_age,
+                    "country": country,
+                    "dominant_load": max(load_breakdown.items(), key=lambda x: x[1])[0] if load_breakdown else "unknown",
+                },
+                max_recommendations=5,
+                focus_areas=["energy_efficiency", "building_upgrades", "certification"]
+            )
+            result_data["recommendations"] = recommendations
+
+            # =================================================================
+            # STEP 4: ADD INTELLIGENCE METADATA
+            # =================================================================
+            result_data["intelligence_level"] = self.get_intelligence_level().value
+
             return AgentResult(
                 success=True,
                 data=result_data,
@@ -211,6 +295,8 @@ class BuildingProfileAgent(BaseAgent):
                     "analysis_type": "building_profile",
                     "area_sqft": area,
                     "floors": floor_count,
+                    "intelligence_metrics": self.get_intelligence_metrics(),
+                    "regulatory_context": "ASHRAE 90.1, ENERGY STAR, LEED, BREEAM"
                 },
             )
 

@@ -51,6 +51,10 @@ from greenlang.core import (
     CoordinationPattern,
 )
 
+# Intelligence Framework imports for LLM capabilities
+from greenlang.agents.intelligence_mixin import IntelligenceMixin, IntelligenceConfig
+from greenlang.agents.intelligence_interface import IntelligenceCapabilities, IntelligenceLevel
+
 from greenlang.GL_016.config import (
     AgentConfiguration,
     BoilerConfiguration,
@@ -364,6 +368,10 @@ class WaterTreatmentResult:
     alerts: List[str] = field(default_factory=list)
     notifications: List[str] = field(default_factory=list)
 
+    # LLM Intelligence outputs
+    explanation: Optional[str] = None
+    intelligent_recommendations: Optional[List[Dict[str, Any]]] = None
+
     # Data provenance
     provenance_hash: str = ""
     data_sources: List[str] = field(default_factory=list)
@@ -402,6 +410,8 @@ class WaterTreatmentResult:
             "compliance_violations": self.compliance_violations,
             "alerts": self.alerts,
             "notifications": self.notifications,
+            "explanation": self.explanation,
+            "intelligent_recommendations": self.intelligent_recommendations,
             "provenance_hash": self.provenance_hash,
             "data_sources": self.data_sources,
             "processing_time_seconds": self.processing_time_seconds,
@@ -413,7 +423,7 @@ class WaterTreatmentResult:
 # ============================================================================
 
 
-class BoilerWaterTreatmentAgent(BaseOrchestrator[AgentConfiguration, WaterTreatmentResult]):
+class BoilerWaterTreatmentAgent(IntelligenceMixin, BaseOrchestrator[AgentConfiguration, WaterTreatmentResult]):
     """
     GL-016 WATERGUARD - Boiler Water Treatment Agent.
 
@@ -423,6 +433,11 @@ class BoilerWaterTreatmentAgent(BaseOrchestrator[AgentConfiguration, WaterTreatm
 
     This agent implements industry best practices based on ASME and ABMA
     guidelines for boiler water treatment.
+
+    Intelligence Capabilities:
+        - Explanation generation for compliance reports
+        - Actionable recommendations for water treatment optimization
+        - Anomaly detection for water chemistry deviations
 
     Attributes:
         config: Agent configuration
@@ -465,9 +480,47 @@ class BoilerWaterTreatmentAgent(BaseOrchestrator[AgentConfiguration, WaterTreatm
         self._historical_data: Dict[str, List[WaterChemistryData]] = {}
         self._last_analysis_time: Dict[str, datetime] = {}
 
+        # Initialize intelligence with regulatory context
+        self._init_intelligence(IntelligenceConfig(
+            enabled=True,
+            model="auto",
+            max_budget_per_call_usd=0.10,
+            enable_explanations=True,
+            enable_recommendations=True,
+            enable_anomaly_detection=True,
+            domain_context="industrial boiler water treatment and chemistry management",
+            regulatory_context="ASME/ABMA, EPA",
+        ))
+
         logger.info(
             f"Initialized {self.config.agent_name} v{self.config.version} "
-            f"for {len(self.config.boilers)} boiler(s)"
+            f"for {len(self.config.boilers)} boiler(s) with LLM intelligence"
+        )
+
+    def get_intelligence_level(self) -> IntelligenceLevel:
+        """
+        Return the agent's intelligence level.
+
+        Returns:
+            IntelligenceLevel.STANDARD for water treatment optimization
+        """
+        return IntelligenceLevel.STANDARD
+
+    def get_intelligence_capabilities(self) -> IntelligenceCapabilities:
+        """
+        Return the agent's intelligence capabilities.
+
+        Returns:
+            IntelligenceCapabilities with explanation and recommendation support
+        """
+        return IntelligenceCapabilities(
+            can_explain=True,
+            can_recommend=True,
+            can_detect_anomalies=True,
+            can_reason=False,
+            can_validate=True,
+            uses_rag=False,
+            uses_tools=False,
         )
 
     async def orchestrate(
@@ -606,6 +659,51 @@ class BoilerWaterTreatmentAgent(BaseOrchestrator[AgentConfiguration, WaterTreatm
 
             # Step 9: Store historical data
             self._store_historical_data(boiler_id, water_chemistry)
+
+            # Step 10: Generate LLM Intelligence outputs
+            input_data_dict = {
+                "boiler_id": boiler_id,
+                "water_chemistry": water_chemistry.to_dict(),
+                "compliance_status": result.compliance_status,
+            }
+            output_data_dict = {
+                "compliance_status": result.compliance_status,
+                "compliance_violations": result.compliance_violations,
+                "scale_risk_level": risk_assessment.scale_risk_level,
+                "corrosion_risk_level": risk_assessment.corrosion_risk_level,
+                "blowdown_cycles": blowdown_data.cycles_of_concentration,
+                "optimization_rationale": optimization.optimization_rationale,
+            }
+
+            # Generate explanation
+            result.explanation = self.generate_explanation(
+                input_data=input_data_dict,
+                output_data=output_data_dict,
+                calculation_steps=[
+                    "Retrieved water chemistry data from SCADA analyzers",
+                    f"Analyzed pH ({water_chemistry.ph}), TDS ({water_chemistry.total_dissolved_solids_ppm} ppm), silica ({water_chemistry.silica_ppm} ppm)",
+                    f"Calculated cycles of concentration: {blowdown_data.cycles_of_concentration:.1f}",
+                    f"Assessed scale risk score: {risk_assessment.scale_risk_score:.2f} ({risk_assessment.scale_risk_level})",
+                    f"Assessed corrosion risk score: {risk_assessment.corrosion_risk_score:.2f} ({risk_assessment.corrosion_risk_level})",
+                    "Optimized chemical dosing per ASME/ABMA guidelines",
+                ],
+            )
+
+            # Generate intelligent recommendations
+            result.intelligent_recommendations = self.generate_recommendations(
+                analysis={
+                    "compliance_status": result.compliance_status,
+                    "violations": result.compliance_violations,
+                    "scale_risk": risk_assessment.scale_risk_level,
+                    "corrosion_risk": risk_assessment.corrosion_risk_level,
+                    "ph": water_chemistry.ph,
+                    "tds_ppm": water_chemistry.total_dissolved_solids_ppm,
+                    "dissolved_oxygen_ppb": water_chemistry.dissolved_oxygen_ppb,
+                    "cycles_of_concentration": blowdown_data.cycles_of_concentration,
+                },
+                max_recommendations=5,
+                focus_areas=["chemical_dosing", "blowdown_optimization", "scale_prevention", "corrosion_control"],
+            )
 
             # Calculate processing time
             processing_time = (datetime.now(timezone.utc) - start_time).total_seconds()

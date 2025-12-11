@@ -10,6 +10,10 @@ import logging
 
 from pydantic import BaseModel, Field
 
+# Intelligence imports for LLM capabilities
+from greenlang.agents.intelligence_mixin import IntelligenceMixin, IntelligenceConfig
+from greenlang.agents.intelligence_interface import IntelligenceCapabilities, IntelligenceLevel
+
 logger = logging.getLogger(__name__)
 
 
@@ -71,7 +75,7 @@ class FurnaceOutput(BaseModel):
     recommendations: List[str] = Field(default_factory=list)
 
 
-class FurnacePerformanceMonitor:
+class FurnacePerformanceMonitor(IntelligenceMixin):
     """
     Furnace performance monitoring system.
 
@@ -94,6 +98,35 @@ class FurnacePerformanceMonitor:
         self._history: List[Dict[str, Any]] = []
 
         logger.info(f"FurnacePerformanceMonitor initialized for {furnace_id}")
+
+        # Initialize intelligence with STANDARD level for furnace monitor
+        self._init_intelligence(IntelligenceConfig(
+            domain_context="furnace performance monitoring and optimization",
+            regulatory_context="NFPA 86",
+            enable_explanations=True,
+            enable_recommendations=True,
+            enable_anomaly_detection=False,
+        ))
+
+    # =========================================================================
+    # INTELLIGENCE INTERFACE METHODS
+    # =========================================================================
+
+    def get_intelligence_level(self) -> IntelligenceLevel:
+        """Return STANDARD intelligence level for furnace monitor."""
+        return IntelligenceLevel.STANDARD
+
+    def get_intelligence_capabilities(self) -> IntelligenceCapabilities:
+        """Return standard intelligence capabilities."""
+        return IntelligenceCapabilities(
+            can_explain=True,
+            can_recommend=True,
+            can_detect_anomalies=False,
+            can_reason=False,
+            can_validate=False,
+            uses_rag=False,
+            uses_tools=False
+        )
 
     def monitor(self, input_data: FurnaceInput) -> FurnaceOutput:
         """Monitor furnace performance."""
@@ -172,7 +205,7 @@ class FurnacePerformanceMonitor:
             "tmt_max": tmt_max,
         })
 
-        return FurnaceOutput(
+        output = FurnaceOutput(
             furnace_id=input_data.furnace_id,
             timestamp=input_data.timestamp,
             status=status,
@@ -187,3 +220,25 @@ class FurnacePerformanceMonitor:
             alerts=alerts,
             recommendations=recommendations,
         )
+
+        # Generate intelligent explanation of furnace monitoring results
+        output.explanation = self.generate_explanation(
+            input_data={
+                "furnace_id": input_data.furnace_id,
+                "flue_gas_temp_f": input_data.flue_gas_temp_f,
+                "o2_pct": input_data.o2_pct
+            },
+            output_data={
+                "status": status,
+                "thermal_efficiency_pct": efficiency,
+                "tmt_max_f": tmt_max,
+                "alerts_count": len(alerts)
+            },
+            calculation_steps=[
+                f"Zone temp uniformity: {uniformity:.1f}%",
+                f"Thermal efficiency: {efficiency:.1f}%",
+                f"Hot spots identified: {len(hot_spots)}"
+            ]
+        )
+
+        return output

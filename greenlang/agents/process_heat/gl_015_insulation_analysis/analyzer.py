@@ -53,11 +53,13 @@ from greenlang.agents.process_heat.shared.audit import (
     AuditLogger,
     AuditLevel,
 )
+from greenlang.agents.intelligence_mixin import IntelligenceMixin, IntelligenceConfig
+from greenlang.agents.intelligence_interface import IntelligenceCapabilities, IntelligenceLevel
 
 logger = logging.getLogger(__name__)
 
 
-class InsulationAnalysisAgent(BaseProcessHeatAgent[InsulationInput, InsulationOutput]):
+class InsulationAnalysisAgent(IntelligenceMixin, BaseProcessHeatAgent[InsulationInput, InsulationOutput]):
     """
     GL-015 INSULSCAN - Insulation Analysis Agent.
 
@@ -67,6 +69,9 @@ class InsulationAnalysisAgent(BaseProcessHeatAgent[InsulationInput, InsulationOu
 
     All calculations are deterministic with zero hallucination - no ML/LLM
     in the calculation path.
+
+    Intelligence Level: STANDARD
+    Regulatory Context: ASTM C680, ISO 12241
 
     Features:
         - ASTM C680 heat loss calculations
@@ -168,8 +173,36 @@ class InsulationAnalysisAgent(BaseProcessHeatAgent[InsulationInput, InsulationOu
         self._analysis_count = 0
         self._analysis_history: List[Dict[str, Any]] = []
 
+        # Initialize intelligence with STANDARD level configuration
+        self._init_intelligence(IntelligenceConfig(
+            enabled=True,
+            model="auto",
+            max_budget_per_call_usd=0.10,
+            enable_explanations=True,
+            enable_recommendations=True,
+            enable_anomaly_detection=False,
+            domain_context="insulation analysis and thermal performance",
+            regulatory_context="ASTM C680, ISO 12241",
+        ))
+
         logger.info(
             f"InsulationAnalysisAgent initialized for {analysis_config.facility_id}"
+        )
+
+    def get_intelligence_level(self) -> IntelligenceLevel:
+        """Return the agent's intelligence level."""
+        return IntelligenceLevel.STANDARD
+
+    def get_intelligence_capabilities(self) -> IntelligenceCapabilities:
+        """Return the agent's intelligence capabilities."""
+        return IntelligenceCapabilities(
+            can_explain=True,
+            can_recommend=True,
+            can_detect_anomalies=False,
+            can_reason=True,
+            can_validate=True,
+            uses_rag=False,
+            uses_tools=False
         )
 
     def process(self, input_data: InsulationInput) -> InsulationOutput:
@@ -310,12 +343,32 @@ class InsulationAnalysisAgent(BaseProcessHeatAgent[InsulationInput, InsulationOu
                 if len(self._analysis_history) > 1000:
                     self._analysis_history.pop(0)
 
+                # Generate LLM explanation for insulation analysis results
+                explanation = self.generate_explanation(
+                    input_data={"item_id": input_data.item_id, "operating_temp_f": input_data.operating_temperature_f},
+                    output_data={
+                        "heat_loss_btu_hr": heat_loss_result.heat_loss_btu_hr,
+                        "surface_temp_f": heat_loss_result.outer_surface_temperature_f,
+                        "osha_compliant": surface_temp_result.is_compliant if surface_temp_result else None,
+                        "economic_thickness_in": economic_result.optimal_thickness_in if economic_result else None,
+                        "condensation_risk": condensation_result.condensation_risk if condensation_result else None,
+                    },
+                    calculation_steps=[
+                        f"Calculated heat loss: {heat_loss_result.heat_loss_btu_hr:.0f} BTU/hr using ASTM C680",
+                        f"Surface temperature: {heat_loss_result.outer_surface_temperature_f:.1f}F",
+                        f"OSHA compliance: {'PASS' if surface_temp_result and surface_temp_result.is_compliant else 'FAIL'}" if surface_temp_result else "Surface temp check not performed",
+                        f"Economic thickness: {economic_result.optimal_thickness_in:.1f}\" (current: {sum(l.thickness_in for l in input_data.insulation_layers):.1f}\")" if economic_result else "Economic analysis not performed",
+                        f"Generated {len(recommendations)} recommendations",
+                    ]
+                )
+
                 logger.info(
                     f"Insulation analysis complete: "
                     f"heat_loss={heat_loss_result.heat_loss_btu_hr:.0f} BTU/hr, "
                     f"surface_temp={heat_loss_result.outer_surface_temperature_f:.1f}F, "
                     f"recommendations={len(recommendations)}"
                 )
+                logger.debug(f"Generated explanation for {input_data.item_id}")
 
                 return output
 

@@ -29,6 +29,10 @@ import uuid
 
 from pydantic import BaseModel
 
+# Intelligence imports for LLM capabilities
+from greenlang.agents.intelligence_mixin import IntelligenceMixin, IntelligenceConfig
+from greenlang.agents.intelligence_interface import IntelligenceCapabilities, IntelligenceLevel
+
 from greenlang.agents.process_heat.gl_001_thermal_command.config import (
     OrchestratorConfig,
     SafetyLevel,
@@ -71,7 +75,7 @@ from greenlang.agents.process_heat.shared.audit import (
 logger = logging.getLogger(__name__)
 
 
-class ThermalCommandOrchestrator:
+class ThermalCommandOrchestrator(IntelligenceMixin):
     """
     GL-001 ThermalCommand Orchestrator.
 
@@ -175,6 +179,35 @@ class ThermalCommandOrchestrator:
         logger.info(
             f"ThermalCommand Orchestrator initialized: {config.orchestrator_id} "
             f"({config.name})"
+        )
+
+        # Initialize intelligence with FULL level for master orchestrator
+        self._init_intelligence(IntelligenceConfig(
+            domain_context="process heat and industrial thermal systems",
+            regulatory_context="NFPA 86, IEC 61511, OSHA 1910",
+            enable_explanations=True,
+            enable_recommendations=True,
+            enable_anomaly_detection=True,
+        ))
+
+    # =========================================================================
+    # INTELLIGENCE INTERFACE METHODS
+    # =========================================================================
+
+    def get_intelligence_level(self) -> IntelligenceLevel:
+        """Return FULL intelligence level for master orchestrator."""
+        return IntelligenceLevel.FULL
+
+    def get_intelligence_capabilities(self) -> IntelligenceCapabilities:
+        """Return full intelligence capabilities."""
+        return IntelligenceCapabilities(
+            can_explain=True,
+            can_recommend=True,
+            can_detect_anomalies=True,
+            can_reason=True,
+            can_validate=True,
+            uses_rag=False,
+            uses_tools=False
         )
 
     # =========================================================================
@@ -427,6 +460,13 @@ class ThermalCommandOrchestrator:
                     "status": result.status.value if hasattr(result.status, 'value') else result.status,
                     "duration_ms": result.duration_ms,
                 },
+            )
+
+            # Generate intelligent explanation of workflow execution
+            result.explanation = self.generate_explanation(
+                input_data={"workflow_id": spec.workflow_id, "name": spec.name, "task_count": len(spec.tasks)},
+                output_data={"status": result.status.value if hasattr(result.status, 'value') else result.status, "duration_ms": result.duration_ms},
+                calculation_steps=[f"Executed {len(spec.tasks)} tasks", f"Completed in {result.duration_ms:.1f}ms"]
             )
 
             return result

@@ -128,6 +128,10 @@ from greenlang.agents.process_heat.gl_021_burner_maintenance.config import (
     SafetyConfig,
 )
 
+# Intelligence Framework Integration
+from greenlang.agents.intelligence_mixin import IntelligenceMixin, IntelligenceConfig
+from greenlang.agents.intelligence_interface import IntelligenceCapabilities, IntelligenceLevel
+
 logger = logging.getLogger(__name__)
 
 
@@ -682,7 +686,7 @@ class GL021Result(BaseModel):
 # BURNER MAINTENANCE PREDICTOR CLASS
 # =============================================================================
 
-class BurnerMaintenancePredictor:
+class BurnerMaintenancePredictor(IntelligenceMixin):
     """
     GL-021 BURNERSENTRY - Main Burner Maintenance Predictor.
 
@@ -774,6 +778,18 @@ class BurnerMaintenancePredictor:
         self._analysis_count = 0
         self._audit_trail: List[Dict[str, Any]] = []
 
+        # Initialize intelligence capabilities (FULL level for comprehensive predictor)
+        self._init_intelligence(IntelligenceConfig(
+            enabled=True,
+            model="auto",
+            max_budget_per_call_usd=0.15,
+            enable_explanations=True,
+            enable_recommendations=True,
+            enable_anomaly_detection=True,
+            domain_context="industrial burner maintenance prediction and combustion optimization",
+            regulatory_context="NFPA 85, API 535, API 560, API 556, ISA 84",
+        ))
+
         logger.info(
             f"BurnerMaintenancePredictor initialized for {config.burner.burner_id}: "
             f"flame={self.flame_analyzer is not None}, "
@@ -783,6 +799,22 @@ class BurnerMaintenancePredictor:
             f"replacement={self.replacement_planner is not None}, "
             f"cmms={self.cmms_integration is not None}, "
             f"explainer={self.explainer is not None}"
+        )
+
+    def get_intelligence_level(self) -> IntelligenceLevel:
+        """Return the agent's intelligence level."""
+        return IntelligenceLevel.FULL
+
+    def get_intelligence_capabilities(self) -> IntelligenceCapabilities:
+        """Return the agent's intelligence capabilities."""
+        return IntelligenceCapabilities(
+            can_explain=True,
+            can_recommend=True,
+            can_detect_anomalies=True,
+            can_reason=True,
+            can_validate=True,
+            uses_rag=False,
+            uses_tools=True  # Uses ML models for prediction
         )
 
     def _init_flame_analyzer(self) -> None:
