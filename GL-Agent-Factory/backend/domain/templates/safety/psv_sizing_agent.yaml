@@ -1,0 +1,719 @@
+# =============================================================================
+# PSV Sizing Agent Template
+# GreenLang Agent Factory - Process Heat Applications
+# =============================================================================
+# Standards: API 520, API 521, ASME BPVC Section VIII
+# Version: 1.0.0
+# =============================================================================
+
+metadata:
+  template_id: psv_sizing_agent
+  name: Pressure Relief Valve Sizing Agent
+  description: >
+    Calculates pressure safety valve (PSV) sizing per API 520/521 for various
+    relief scenarios including fire case, blocked outlet, control valve failure,
+    and thermal expansion. Verifies existing PSV adequacy.
+  category: safety
+  version: "1.0.0"
+  status: production
+  author: GreenLang Engineering Team
+  created_at: "2024-12-01T00:00:00Z"
+  updated_at: "2024-12-11T00:00:00Z"
+
+  tags:
+    - psv
+    - pressure_relief
+    - API_520
+    - API_521
+    - fire_case
+    - overpressure_protection
+
+  equipment_types:
+    - pressure_relief_valve
+    - safety_valve
+    - rupture_disc
+    - pilot_operated_relief
+
+  industries:
+    - oil_gas
+    - petrochemical
+    - chemical
+    - power_generation
+    - refining
+
+  applicable_standards:
+    - API 520 Part I
+    - API 520 Part II
+    - API 521
+    - ASME BPVC VIII
+
+# =============================================================================
+# Input Schema
+# =============================================================================
+
+input_schema:
+  name: PSVSizingInput
+  description: PSV sizing calculation input parameters
+  version: "1.0.0"
+
+  fields:
+    # Equipment identification
+    equipment_tag:
+      type: string
+      description: Protected equipment tag
+      required: true
+
+    psv_tag:
+      type: string
+      description: PSV tag number
+      required: false
+
+    # Relief scenario
+    relief_scenario:
+      type: enum
+      description: Relief scenario for sizing
+      required: true
+      allowed_values:
+        - fire_case
+        - blocked_outlet
+        - control_valve_failure
+        - tube_rupture
+        - thermal_expansion
+        - runaway_reaction
+        - external_fire
+        - power_failure
+        - cooling_water_failure
+        - reflux_failure
+
+    # Fluid properties
+    fluid_name:
+      type: string
+      description: Name of fluid being relieved
+      required: true
+
+    fluid_phase:
+      type: enum
+      description: Phase of fluid at relief conditions
+      required: true
+      allowed_values:
+        - vapor
+        - liquid
+        - two_phase
+        - supercritical
+
+    molecular_weight:
+      type: float
+      description: Molecular weight of fluid
+      required: true
+      unit: g/mol
+      min_value: 1
+
+    specific_heat_ratio:
+      type: float
+      description: Ratio of specific heats (Cp/Cv)
+      required: true
+      unit: dimensionless
+      min_value: 1.0
+      max_value: 2.0
+      default: 1.3
+
+    compressibility_factor:
+      type: float
+      description: Gas compressibility factor
+      required: false
+      unit: dimensionless
+      default: 1.0
+
+    liquid_density:
+      type: float
+      description: Liquid density at relief conditions
+      required: false
+      unit: kg/m3
+
+    liquid_viscosity:
+      type: float
+      description: Liquid viscosity at relief conditions
+      required: false
+      unit: cP
+
+    # Operating conditions
+    normal_operating_pressure:
+      type: float
+      description: Normal operating pressure
+      required: true
+      unit: bar_g
+
+    design_pressure:
+      type: float
+      description: Design pressure of equipment
+      required: true
+      unit: bar_g
+
+    mawp:
+      type: float
+      description: Maximum allowable working pressure
+      required: true
+      unit: bar_g
+
+    operating_temperature:
+      type: float
+      description: Operating temperature
+      required: true
+      unit: celsius
+
+    # Relief conditions
+    set_pressure:
+      type: float
+      description: PSV set pressure
+      required: true
+      unit: bar_g
+
+    overpressure:
+      type: float
+      description: Allowable overpressure
+      required: false
+      unit: percent
+      default: 10
+
+    relieving_temperature:
+      type: float
+      description: Temperature at relieving conditions
+      required: true
+      unit: celsius
+
+    back_pressure:
+      type: float
+      description: Back pressure at PSV outlet
+      required: true
+      unit: bar_g
+
+    back_pressure_constant:
+      type: boolean
+      description: Whether back pressure is constant
+      required: false
+      default: true
+
+    # Relief load
+    required_relief_rate:
+      type: float
+      description: Required relief rate
+      required: true
+      unit: kg/hr
+
+    # Fire case parameters
+    wetted_area:
+      type: float
+      description: Wetted surface area exposed to fire
+      required: false
+      unit: m2
+
+    insulation_factor:
+      type: float
+      description: Insulation credit factor
+      required: false
+      unit: dimensionless
+      default: 1.0
+
+    drainage_factor:
+      type: float
+      description: Drainage factor (F)
+      required: false
+      unit: dimensionless
+      default: 1.0
+
+    latent_heat:
+      type: float
+      description: Latent heat of vaporization
+      required: false
+      unit: kJ/kg
+
+    # Existing PSV (for verification)
+    existing_psv_orifice:
+      type: string
+      description: Existing PSV orifice designation
+      required: false
+
+    existing_psv_area:
+      type: float
+      description: Existing PSV orifice area
+      required: false
+      unit: mm2
+
+# =============================================================================
+# Output Schema
+# =============================================================================
+
+output_schema:
+  name: PSVSizingOutput
+  description: PSV sizing calculation results
+  version: "1.0.0"
+
+  fields:
+    # Sizing results
+    required_orifice_area:
+      type: float
+      description: Required orifice area
+      unit: mm2
+
+    selected_orifice:
+      type: string
+      description: Recommended orifice designation
+
+    selected_orifice_area:
+      type: float
+      description: Area of selected orifice
+      unit: mm2
+
+    area_margin:
+      type: float
+      description: Area margin (selected vs required)
+      unit: percent
+
+    # Relieving conditions
+    relieving_pressure:
+      type: float
+      description: Pressure at relieving conditions
+      unit: bar_a
+
+    relieving_rate:
+      type: float
+      description: Calculated relieving capacity
+      unit: kg/hr
+
+    # Correction factors
+    kd_coefficient:
+      type: float
+      description: Discharge coefficient
+      unit: dimensionless
+
+    kb_back_pressure_factor:
+      type: float
+      description: Back pressure correction factor
+      unit: dimensionless
+
+    kc_combination_factor:
+      type: float
+      description: Rupture disc combination factor
+      unit: dimensionless
+
+    kw_viscosity_factor:
+      type: float
+      description: Viscosity correction factor
+      unit: dimensionless
+
+    # Fire case results (if applicable)
+    fire_heat_input:
+      type: float
+      description: Fire heat absorption rate
+      unit: kW
+
+    fire_relief_rate:
+      type: float
+      description: Required relief rate for fire case
+      unit: kg/hr
+
+    # Existing PSV verification
+    existing_psv_adequate:
+      type: boolean
+      description: Whether existing PSV is adequate
+
+    capacity_ratio:
+      type: float
+      description: Required/available capacity ratio
+      unit: percent
+
+    # Recommendations
+    recommendations:
+      type: list
+      description: PSV selection recommendations
+
+    installation_notes:
+      type: list
+      description: Installation and piping notes
+
+    # Provenance
+    provenance_hash:
+      type: string
+      description: SHA-256 calculation hash
+
+    calculation_timestamp:
+      type: datetime
+      description: Calculation timestamp
+
+    source_references:
+      type: list
+      description: Standards referenced
+
+# =============================================================================
+# Formulas
+# =============================================================================
+
+formulas:
+  - id: API520_VAPOR_AREA
+    name: Vapor Relief Area (API 520)
+    description: Calculate required orifice area for vapor relief
+    equation: "A = W / (C * Kd * P1 * Kb * Kc * sqrt(M / (T * Z)))"
+    variables:
+      A:
+        description: Required orifice area
+        unit: mm2
+        type: float
+      W:
+        description: Required relieving rate
+        unit: kg/hr
+        type: float
+      C:
+        description: Coefficient from specific heat ratio
+        unit: dimensionless
+        type: float
+      Kd:
+        description: Discharge coefficient
+        unit: dimensionless
+        type: float
+      P1:
+        description: Relieving pressure
+        unit: kPa_a
+        type: float
+      Kb:
+        description: Back pressure correction
+        unit: dimensionless
+        type: float
+      Kc:
+        description: Combination factor
+        unit: dimensionless
+        type: float
+      M:
+        description: Molecular weight
+        unit: g/mol
+        type: float
+      T:
+        description: Relieving temperature
+        unit: kelvin
+        type: float
+      Z:
+        description: Compressibility factor
+        unit: dimensionless
+        type: float
+    source:
+      standard: API 520 Part I
+      section: "5.6.2"
+      edition: "2020"
+    application: Gas/vapor relief sizing
+
+  - id: API520_LIQUID_AREA
+    name: Liquid Relief Area (API 520)
+    description: Calculate required orifice area for liquid relief
+    equation: "A = Q / (Kd * Kw * Kc * Kv * sqrt(2 * dP * rho))"
+    variables:
+      A:
+        description: Required orifice area
+        unit: mm2
+        type: float
+      Q:
+        description: Volumetric flow rate
+        unit: L/min
+        type: float
+      Kd:
+        description: Discharge coefficient
+        unit: dimensionless
+        type: float
+      Kw:
+        description: Viscosity correction
+        unit: dimensionless
+        type: float
+      Kv:
+        description: Variable back pressure factor
+        unit: dimensionless
+        type: float
+      dP:
+        description: Differential pressure
+        unit: kPa
+        type: float
+      rho:
+        description: Liquid density
+        unit: kg/m3
+        type: float
+    source:
+      standard: API 520 Part I
+      section: "5.8"
+      edition: "2020"
+    application: Liquid relief sizing
+
+  - id: API521_FIRE_HEAT
+    name: Fire Heat Input (API 521)
+    description: Calculate heat absorption for fire case
+    equation: "Q = 43200 * F * A_w^0.82"
+    variables:
+      Q:
+        description: Heat absorption rate
+        unit: W
+        type: float
+      F:
+        description: Environmental factor
+        unit: dimensionless
+        type: float
+      A_w:
+        description: Wetted area
+        unit: m2
+        type: float
+    source:
+      standard: API 521
+      section: "5.15"
+      edition: "2020"
+    application: Fire case relief load
+
+  - id: API521_FIRE_RELIEF
+    name: Fire Case Relief Rate
+    description: Calculate required relief rate for fire case
+    equation: "W = Q / L"
+    variables:
+      W:
+        description: Required relief rate
+        unit: kg/hr
+        type: float
+      Q:
+        description: Heat input rate
+        unit: kW
+        type: float
+      L:
+        description: Latent heat of vaporization
+        unit: kJ/kg
+        type: float
+    source:
+      standard: API 521
+      section: "5.15"
+      edition: "2020"
+    application: Fire case relief sizing
+
+# =============================================================================
+# Standards References
+# =============================================================================
+
+standards:
+  - code: API 520 Part I
+    title: Sizing, Selection, and Installation of Pressure-Relieving Devices - Sizing and Selection
+    edition: "2020"
+    sections:
+      - "Section 5: Sizing"
+    requirements:
+      - Orifice area calculation
+      - Coefficient selection
+    compliance_level: required
+
+  - code: API 521
+    title: Pressure-relieving and Depressuring Systems
+    edition: "2020"
+    sections:
+      - "Section 5: Causes of Overpressure"
+    requirements:
+      - Relief scenario analysis
+      - Fire case calculations
+    compliance_level: required
+
+  - code: ASME BPVC VIII
+    title: Rules for Construction of Pressure Vessels
+    edition: "2023"
+    sections:
+      - "UG-125 to UG-138"
+    requirements:
+      - Overpressure protection
+    compliance_level: required
+
+# =============================================================================
+# Safety Constraints
+# =============================================================================
+
+safety_constraints:
+  - id: SC_AREA_MARGIN
+    name: Minimum Area Margin
+    description: Selected orifice must provide adequate margin
+    condition: "area_margin >= 0"
+    action: reject
+    severity: critical
+    message: "CRITICAL: Selected orifice area insufficient"
+
+  - id: SC_SET_PRESSURE
+    name: Set Pressure vs MAWP
+    description: Set pressure must not exceed MAWP
+    condition: "set_pressure <= mawp"
+    action: reject
+    severity: critical
+    message: "Set pressure {set_pressure} exceeds MAWP {mawp}"
+
+  - id: SC_OVERPRESSURE_LIMIT
+    name: Overpressure Limit
+    description: Overpressure must be within limits
+    condition: "overpressure <= 21"
+    action: warn
+    severity: warning
+    message: "Overpressure {overpressure}% exceeds 21% for fire case"
+
+# =============================================================================
+# Processing Pipeline
+# =============================================================================
+
+processing:
+  steps:
+    - id: STEP_01_VALIDATE_INPUTS
+      name: Input Validation
+      type: validation
+      inputs:
+        - all_input_fields
+      outputs:
+        - validation_status
+      constraints:
+        - SC_SET_PRESSURE
+      error_handling: reject
+
+    - id: STEP_02_RELIEVING_CONDITIONS
+      name: Calculate Relieving Conditions
+      type: calculation
+      inputs:
+        - set_pressure
+        - overpressure
+        - back_pressure
+        - relieving_temperature
+      outputs:
+        - relieving_pressure
+      error_handling: propagate
+
+    - id: STEP_03_CORRECTION_FACTORS
+      name: Determine Correction Factors
+      type: lookup
+      inputs:
+        - specific_heat_ratio
+        - back_pressure
+        - relieving_pressure
+        - liquid_viscosity
+      outputs:
+        - kd_coefficient
+        - kb_back_pressure_factor
+        - kc_combination_factor
+        - kw_viscosity_factor
+      error_handling: propagate
+
+    - id: STEP_04_FIRE_CASE
+      name: Fire Case Calculation
+      type: calculation
+      inputs:
+        - wetted_area
+        - insulation_factor
+        - drainage_factor
+        - latent_heat
+        - relief_scenario
+      outputs:
+        - fire_heat_input
+        - fire_relief_rate
+      formula_refs:
+        - API521_FIRE_HEAT
+        - API521_FIRE_RELIEF
+      error_handling: default
+
+    - id: STEP_05_ORIFICE_SIZING
+      name: Orifice Area Calculation
+      type: calculation
+      inputs:
+        - required_relief_rate
+        - fluid_phase
+        - all_correction_factors
+      outputs:
+        - required_orifice_area
+      formula_refs:
+        - API520_VAPOR_AREA
+        - API520_LIQUID_AREA
+      error_handling: propagate
+
+    - id: STEP_06_ORIFICE_SELECTION
+      name: Orifice Selection
+      type: lookup
+      inputs:
+        - required_orifice_area
+      outputs:
+        - selected_orifice
+        - selected_orifice_area
+        - area_margin
+      constraints:
+        - SC_AREA_MARGIN
+      error_handling: propagate
+
+    - id: STEP_07_VERIFY_EXISTING
+      name: Verify Existing PSV
+      type: calculation
+      inputs:
+        - existing_psv_area
+        - required_orifice_area
+      outputs:
+        - existing_psv_adequate
+        - capacity_ratio
+      error_handling: default
+
+    - id: STEP_08_RECOMMENDATIONS
+      name: Generate Recommendations
+      type: decision
+      inputs:
+        - selected_orifice
+        - existing_psv_adequate
+      outputs:
+        - recommendations
+        - installation_notes
+      error_handling: default
+
+    - id: STEP_09_PROVENANCE
+      name: Provenance Tracking
+      type: output
+      inputs:
+        - all_inputs
+        - all_outputs
+      outputs:
+        - provenance_hash
+        - calculation_timestamp
+        - source_references
+      error_handling: propagate
+
+# =============================================================================
+# Zero-Hallucination Configuration
+# =============================================================================
+
+zero_hallucination:
+  enabled: true
+  calculation_mode: deterministic
+  allowed_operations:
+    - arithmetic
+    - formula_evaluation
+    - table_lookup
+    - square_root
+    - logarithmic_calculation
+  forbidden_operations:
+    - llm_psv_sizing
+  require_formula_citation: true
+  require_provenance: true
+  llm_allowed_for:
+    - recommendation_narrative
+
+# =============================================================================
+# Test Cases
+# =============================================================================
+
+test_cases:
+  - name: Vapor Relief - Natural Gas
+    inputs:
+      equipment_tag: V-101
+      relief_scenario: blocked_outlet
+      fluid_name: natural_gas
+      fluid_phase: vapor
+      molecular_weight: 18
+      specific_heat_ratio: 1.3
+      compressibility_factor: 0.95
+      normal_operating_pressure: 30
+      design_pressure: 40
+      mawp: 40
+      operating_temperature: 50
+      set_pressure: 40
+      overpressure: 10
+      relieving_temperature: 60
+      back_pressure: 1
+      required_relief_rate: 5000
+    expected_outputs:
+      required_orifice_area:
+        min: 100
+        max: 500

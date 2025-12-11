@@ -1,0 +1,850 @@
+# =============================================================================
+# SIL Assessment Agent Template
+# GreenLang Agent Factory - Process Heat Applications
+# =============================================================================
+# Standards: IEC 61511, IEC 61508, ISA 84
+# Version: 1.0.0
+# =============================================================================
+
+metadata:
+  template_id: sil_assessment_agent
+  name: SIL Determination and Verification Agent
+  description: >
+    Determines required Safety Integrity Level (SIL) for safety instrumented
+    functions using LOPA, risk graph, and risk matrix methods per IEC 61511.
+    Verifies SIF design meets SIL requirements through PFD calculations.
+  category: safety
+  version: "1.0.0"
+  status: production
+  author: GreenLang Engineering Team
+  created_at: "2024-12-01T00:00:00Z"
+  updated_at: "2024-12-11T00:00:00Z"
+
+  tags:
+    - SIL
+    - safety_integrity_level
+    - LOPA
+    - IEC_61511
+    - SIF
+    - functional_safety
+    - PFD
+
+  equipment_types:
+    - safety_instrumented_function
+    - burner_management_system
+    - emergency_shutdown_system
+    - high_integrity_protection_system
+
+  industries:
+    - oil_gas
+    - petrochemical
+    - chemical
+    - power_generation
+    - refining
+
+  applicable_standards:
+    - IEC 61511
+    - IEC 61508
+    - ISA 84
+
+  compliance_frameworks:
+    - IEC Functional Safety
+    - OSHA PSM
+    - EPA RMP
+
+# =============================================================================
+# Input Schema
+# =============================================================================
+
+input_schema:
+  name: SILAssessmentInput
+  description: SIL determination and verification input parameters
+  version: "1.0.0"
+
+  fields:
+    # Assessment method
+    assessment_method:
+      type: enum
+      description: Method for SIL determination
+      required: true
+      allowed_values:
+        - LOPA
+        - risk_graph
+        - risk_matrix
+        - calibrated_risk_graph
+
+    # Hazard identification
+    hazard_description:
+      type: string
+      description: Description of the hazardous event
+      required: true
+
+    sif_description:
+      type: string
+      description: Description of the safety instrumented function
+      required: true
+
+    sif_tag:
+      type: string
+      description: SIF tag/identifier
+      required: true
+
+    equipment_protected:
+      type: string
+      description: Equipment or area protected by SIF
+      required: true
+
+    # Consequence analysis
+    consequence_severity:
+      type: enum
+      description: Severity of consequence without SIF
+      required: true
+      allowed_values:
+        - catastrophic
+        - major
+        - serious
+        - minor
+
+    fatality_potential:
+      type: integer
+      description: Potential number of fatalities
+      required: false
+      min_value: 0
+
+    injury_potential:
+      type: integer
+      description: Potential number of injuries
+      required: false
+      min_value: 0
+
+    environmental_impact:
+      type: enum
+      description: Environmental impact severity
+      required: false
+      allowed_values:
+        - major_offsite
+        - minor_offsite
+        - major_onsite
+        - minor_onsite
+        - none
+
+    financial_impact:
+      type: float
+      description: Estimated financial impact
+      required: false
+      unit: USD
+
+    # Frequency analysis
+    initiating_event_frequency:
+      type: float
+      description: Frequency of initiating cause
+      required: true
+      unit: per_year
+      min_value: 0
+
+    initiating_event_description:
+      type: string
+      description: Description of initiating event
+      required: true
+
+    # Independent protection layers
+    ipls:
+      type: list
+      description: List of independent protection layers
+      required: false
+
+    ipl_bpcs:
+      type: float
+      description: PFD credit for BPCS (if applicable)
+      required: false
+      min_value: 0
+      max_value: 1
+
+    ipl_alarm:
+      type: float
+      description: PFD credit for operator response to alarm
+      required: false
+      min_value: 0
+      max_value: 1
+
+    ipl_relief:
+      type: float
+      description: PFD credit for pressure relief device
+      required: false
+      min_value: 0
+      max_value: 1
+
+    ipl_dike:
+      type: float
+      description: PFD credit for dike/containment
+      required: false
+      min_value: 0
+      max_value: 1
+
+    ipl_other:
+      type: list
+      description: Other IPLs with PFD values
+      required: false
+
+    # Risk criteria
+    tolerable_risk_frequency:
+      type: float
+      description: Corporate tolerable risk frequency
+      required: true
+      unit: per_year
+      min_value: 0
+
+    # SIF design parameters (for verification)
+    sensor_type:
+      type: string
+      description: Type of sensor/detector
+      required: false
+
+    sensor_pfd:
+      type: float
+      description: Sensor probability of failure on demand
+      required: false
+      min_value: 0
+      max_value: 1
+
+    sensor_voting:
+      type: string
+      description: Sensor voting arrangement (e.g., 1oo1, 2oo3)
+      required: false
+      default: "1oo1"
+
+    logic_solver_type:
+      type: string
+      description: Type of logic solver (safety PLC, relay, etc.)
+      required: false
+
+    logic_solver_pfd:
+      type: float
+      description: Logic solver PFD
+      required: false
+      min_value: 0
+      max_value: 1
+
+    final_element_type:
+      type: string
+      description: Type of final element
+      required: false
+
+    final_element_pfd:
+      type: float
+      description: Final element PFD
+      required: false
+      min_value: 0
+      max_value: 1
+
+    final_element_voting:
+      type: string
+      description: Final element voting (e.g., 1oo1, 1oo2)
+      required: false
+      default: "1oo1"
+
+    # Testing parameters
+    proof_test_interval:
+      type: float
+      description: Proof test interval
+      required: false
+      unit: months
+      default: 12
+
+    diagnostic_coverage:
+      type: float
+      description: Diagnostic coverage percentage
+      required: false
+      unit: percent
+      min_value: 0
+      max_value: 100
+
+    # Risk graph parameters (if using risk graph method)
+    occupancy_factor:
+      type: enum
+      description: Personnel exposure factor
+      required: false
+      allowed_values:
+        - continuous
+        - frequent
+        - occasional
+        - rare
+
+    avoidance_possibility:
+      type: enum
+      description: Possibility of avoiding hazardous event
+      required: false
+      allowed_values:
+        - impossible
+        - possible
+        - likely
+
+# =============================================================================
+# Output Schema
+# =============================================================================
+
+output_schema:
+  name: SILAssessmentOutput
+  description: SIL assessment results
+  version: "1.0.0"
+
+  fields:
+    # Required SIL
+    required_sil:
+      type: integer
+      description: Required Safety Integrity Level
+      min_value: 1
+      max_value: 4
+
+    required_pfd:
+      type: float
+      description: Required probability of failure on demand
+
+    pfd_range:
+      type: string
+      description: PFD range for required SIL
+
+    risk_reduction_required:
+      type: float
+      description: Required risk reduction factor
+
+    # LOPA results (if applicable)
+    unmitigated_frequency:
+      type: float
+      description: Unmitigated event frequency
+      unit: per_year
+
+    mitigated_frequency_without_sif:
+      type: float
+      description: Frequency after non-SIF IPLs
+      unit: per_year
+
+    sif_pfd_required:
+      type: float
+      description: Required SIF PFD from LOPA
+
+    # SIF verification (if design provided)
+    sif_pfd_achieved:
+      type: float
+      description: Achieved SIF PFD
+
+    sif_sil_achieved:
+      type: integer
+      description: Achieved SIL level
+
+    sif_verification_status:
+      type: string
+      description: Verification pass/fail status
+
+    design_margin:
+      type: float
+      description: Design margin (achieved vs required)
+
+    # Component analysis
+    sensor_sil_contribution:
+      type: float
+      description: Sensor contribution to system PFD
+      unit: percent
+
+    logic_solver_sil_contribution:
+      type: float
+      description: Logic solver contribution
+      unit: percent
+
+    final_element_sil_contribution:
+      type: float
+      description: Final element contribution
+      unit: percent
+
+    # Architecture assessment
+    hardware_fault_tolerance:
+      type: integer
+      description: Hardware fault tolerance (HFT)
+
+    architecture_constraints:
+      type: string
+      description: Architecture constraints per IEC 61511
+
+    sff_requirement:
+      type: float
+      description: Required safe failure fraction
+      unit: percent
+
+    # IPL summary
+    total_ipl_credit:
+      type: float
+      description: Total IPL credit (combined PFD)
+
+    ipl_summary:
+      type: list
+      description: Summary of all IPLs considered
+
+    # Recommendations
+    recommendations:
+      type: list
+      description: Design and testing recommendations
+
+    improvement_options:
+      type: list
+      description: Options to improve SIL capability
+
+    # Documentation requirements
+    documentation_requirements:
+      type: list
+      description: Required documentation per IEC 61511
+
+    # Provenance
+    provenance_hash:
+      type: string
+      description: SHA-256 assessment hash
+
+    calculation_timestamp:
+      type: datetime
+      description: Assessment timestamp
+
+    source_references:
+      type: list
+      description: Standards referenced
+
+# =============================================================================
+# Formulas
+# =============================================================================
+
+formulas:
+  - id: LOPA_SIF_PFD
+    name: LOPA SIF PFD Calculation
+    description: Calculate required SIF PFD using LOPA
+    equation: "PFD_SIF = f_tolerable / (f_init * PFD_ipl1 * PFD_ipl2 * ...)"
+    variables:
+      PFD_SIF:
+        description: Required SIF probability of failure on demand
+        unit: dimensionless
+        type: float
+      f_tolerable:
+        description: Tolerable risk frequency
+        unit: per_year
+        type: float
+      f_init:
+        description: Initiating event frequency
+        unit: per_year
+        type: float
+      PFD_ipln:
+        description: IPL PFD values
+        unit: dimensionless
+        type: float
+    source:
+      standard: IEC 61511
+      section: "Part 3, Annex F"
+      edition: "2016"
+    application: LOPA-based SIL determination
+
+  - id: SIF_SYSTEM_PFD
+    name: SIF System PFD
+    description: Calculate total SIF PFD from components
+    equation: "PFD_sys = PFD_sensor + PFD_logic + PFD_final"
+    variables:
+      PFD_sys:
+        description: System PFD
+        unit: dimensionless
+        type: float
+      PFD_sensor:
+        description: Sensor subsystem PFD
+        unit: dimensionless
+        type: float
+      PFD_logic:
+        description: Logic solver PFD
+        unit: dimensionless
+        type: float
+      PFD_final:
+        description: Final element PFD
+        unit: dimensionless
+        type: float
+    source:
+      standard: IEC 61511
+      section: "Part 1, Section 11"
+      edition: "2016"
+    application: SIF PFD verification
+
+  - id: PFD_1OO1
+    name: 1oo1 Voting PFD
+    description: PFD for 1 out of 1 voting
+    equation: "PFD_avg = lambda_DU * TI / 2"
+    variables:
+      PFD_avg:
+        description: Average probability of failure on demand
+        unit: dimensionless
+        type: float
+      lambda_DU:
+        description: Dangerous undetected failure rate
+        unit: per_hour
+        type: float
+      TI:
+        description: Proof test interval
+        unit: hours
+        type: float
+    source:
+      standard: IEC 61511
+      section: "Part 1, Section 11"
+      edition: "2016"
+    application: 1oo1 subsystem PFD calculation
+
+  - id: PFD_1OO2
+    name: 1oo2 Voting PFD
+    description: PFD for 1 out of 2 voting
+    equation: "PFD_avg = (lambda_DU * TI)^2 / 3"
+    variables:
+      PFD_avg:
+        description: Average PFD
+        unit: dimensionless
+        type: float
+      lambda_DU:
+        description: Dangerous undetected failure rate
+        unit: per_hour
+        type: float
+      TI:
+        description: Proof test interval
+        unit: hours
+        type: float
+    source:
+      standard: IEC 61511
+      section: "Part 1, Section 11"
+      edition: "2016"
+    application: 1oo2 redundant architecture
+
+  - id: PFD_2OO3
+    name: 2oo3 Voting PFD
+    description: PFD for 2 out of 3 voting
+    equation: "PFD_avg = (lambda_DU * TI)^2"
+    variables:
+      PFD_avg:
+        description: Average PFD
+        unit: dimensionless
+        type: float
+      lambda_DU:
+        description: Dangerous undetected failure rate
+        unit: per_hour
+        type: float
+      TI:
+        description: Proof test interval
+        unit: hours
+        type: float
+    source:
+      standard: IEC 61511
+      section: "Part 1, Section 11"
+      edition: "2016"
+    application: 2oo3 voting architecture
+
+  - id: SIL_FROM_PFD
+    name: SIL Determination from PFD
+    description: Determine SIL from required PFD
+    equation: |
+      SIL 4: 10^-5 <= PFD < 10^-4
+      SIL 3: 10^-4 <= PFD < 10^-3
+      SIL 2: 10^-3 <= PFD < 10^-2
+      SIL 1: 10^-2 <= PFD < 10^-1
+    variables:
+      SIL:
+        description: Safety Integrity Level
+        unit: dimensionless
+        type: integer
+      PFD:
+        description: Probability of failure on demand
+        unit: dimensionless
+        type: float
+    source:
+      standard: IEC 61511
+      section: "Part 1, Table 4"
+      edition: "2016"
+    application: SIL assignment
+
+# =============================================================================
+# Standards References
+# =============================================================================
+
+standards:
+  - code: IEC 61511
+    title: Functional safety - Safety instrumented systems for the process industry
+    edition: "2016"
+    sections:
+      - "Part 1: Framework, definitions"
+      - "Part 2: Guidelines for application"
+      - "Part 3: Guidance for SIL determination"
+    requirements:
+      - SIL determination methods
+      - SIF verification
+      - Documentation requirements
+    compliance_level: required
+
+  - code: IEC 61508
+    title: Functional safety of electrical/electronic/programmable electronic safety-related systems
+    edition: "2010"
+    sections:
+      - "Part 1-7"
+    requirements:
+      - General functional safety framework
+    compliance_level: required
+
+  - code: ISA 84
+    title: Application of Safety Instrumented Systems for the Process Industries
+    edition: "2016"
+    sections:
+      - "ISA 84.00.01"
+    requirements:
+      - US adoption of IEC 61511
+    compliance_level: required
+
+# =============================================================================
+# Safety Constraints
+# =============================================================================
+
+safety_constraints:
+  - id: SC_MIN_SIL
+    name: Minimum SIL Requirement
+    description: SIF must meet required SIL
+    condition: "sif_sil_achieved >= required_sil"
+    action: reject
+    severity: critical
+    standard_reference: IEC 61511 Part 1
+    message: "CRITICAL: Achieved SIL {sif_sil_achieved} does not meet required SIL {required_sil}"
+
+  - id: SC_MAX_SIL
+    name: Maximum SIL Limitation
+    description: Process industry typically limited to SIL 3
+    condition: "required_sil <= 3"
+    action: warn
+    severity: error
+    standard_reference: IEC 61511 Part 1 Section 9
+    message: "Required SIL {required_sil} exceeds typical process industry limit of SIL 3"
+
+  - id: SC_DESIGN_MARGIN
+    name: Design Margin
+    description: Recommended design margin for SIF PFD
+    condition: "sif_pfd_achieved <= sif_pfd_required * 0.5"
+    action: warn
+    severity: warning
+    message: "Achieved PFD lacks recommended design margin"
+
+  - id: SC_HFT_REQUIREMENT
+    name: Hardware Fault Tolerance
+    description: HFT requirement per SIL level
+    condition: "hardware_fault_tolerance >= 0"
+    action: warn
+    severity: warning
+    standard_reference: IEC 61511 Part 1 Table 6
+    message: "Review hardware fault tolerance requirement for SIL {required_sil}"
+
+  - id: SC_PROOF_TEST_INTERVAL
+    name: Proof Test Interval
+    description: Proof test interval should not exceed assumption
+    condition: "proof_test_interval <= 24"
+    action: warn
+    severity: warning
+    message: "Proof test interval {proof_test_interval} months may be excessive"
+
+# =============================================================================
+# Processing Pipeline
+# =============================================================================
+
+processing:
+  steps:
+    - id: STEP_01_VALIDATE_INPUTS
+      name: Input Validation
+      type: validation
+      description: Validate all input parameters
+      inputs:
+        - all_input_fields
+      outputs:
+        - validation_status
+      error_handling: reject
+
+    - id: STEP_02_DETERMINE_METHOD
+      name: Assessment Method Selection
+      type: classification
+      description: Confirm and validate assessment method
+      inputs:
+        - assessment_method
+        - consequence_severity
+        - initiating_event_frequency
+      outputs:
+        - method_confirmed
+      error_handling: propagate
+
+    - id: STEP_03_CONSEQUENCE_ANALYSIS
+      name: Consequence Analysis
+      type: calculation
+      description: Analyze consequence severity
+      inputs:
+        - consequence_severity
+        - fatality_potential
+        - injury_potential
+        - environmental_impact
+        - financial_impact
+      outputs:
+        - consequence_category
+        - consequence_factor
+      error_handling: propagate
+
+    - id: STEP_04_FREQUENCY_ANALYSIS
+      name: Frequency Analysis
+      type: calculation
+      description: Calculate unmitigated and mitigated frequencies
+      inputs:
+        - initiating_event_frequency
+        - ipls
+        - ipl_bpcs
+        - ipl_alarm
+        - ipl_relief
+        - ipl_dike
+        - ipl_other
+      outputs:
+        - unmitigated_frequency
+        - mitigated_frequency_without_sif
+        - total_ipl_credit
+        - ipl_summary
+      error_handling: propagate
+
+    - id: STEP_05_SIL_DETERMINATION
+      name: SIL Determination
+      type: calculation
+      description: Determine required SIL
+      inputs:
+        - assessment_method
+        - mitigated_frequency_without_sif
+        - tolerable_risk_frequency
+        - consequence_category
+        - occupancy_factor
+        - avoidance_possibility
+      outputs:
+        - required_sil
+        - required_pfd
+        - pfd_range
+        - risk_reduction_required
+        - sif_pfd_required
+      formula_refs:
+        - LOPA_SIF_PFD
+        - SIL_FROM_PFD
+      constraints:
+        - SC_MAX_SIL
+      error_handling: propagate
+
+    - id: STEP_06_SIF_VERIFICATION
+      name: SIF Design Verification
+      type: calculation
+      description: Verify SIF design meets requirements
+      inputs:
+        - sensor_pfd
+        - sensor_voting
+        - logic_solver_pfd
+        - final_element_pfd
+        - final_element_voting
+        - proof_test_interval
+        - diagnostic_coverage
+      outputs:
+        - sif_pfd_achieved
+        - sif_sil_achieved
+        - sif_verification_status
+        - design_margin
+        - sensor_sil_contribution
+        - logic_solver_sil_contribution
+        - final_element_sil_contribution
+      formula_refs:
+        - SIF_SYSTEM_PFD
+        - PFD_1OO1
+        - PFD_1OO2
+        - PFD_2OO3
+      constraints:
+        - SC_MIN_SIL
+        - SC_DESIGN_MARGIN
+      error_handling: propagate
+
+    - id: STEP_07_ARCHITECTURE_ASSESSMENT
+      name: Architecture Assessment
+      type: calculation
+      description: Assess architecture constraints
+      inputs:
+        - required_sil
+        - sensor_voting
+        - final_element_voting
+        - diagnostic_coverage
+      outputs:
+        - hardware_fault_tolerance
+        - architecture_constraints
+        - sff_requirement
+      constraints:
+        - SC_HFT_REQUIREMENT
+      error_handling: propagate
+
+    - id: STEP_08_RECOMMENDATIONS
+      name: Generate Recommendations
+      type: decision
+      description: Generate design recommendations
+      inputs:
+        - required_sil
+        - sif_verification_status
+        - design_margin
+      outputs:
+        - recommendations
+        - improvement_options
+        - documentation_requirements
+      error_handling: default
+
+    - id: STEP_09_PROVENANCE
+      name: Provenance Tracking
+      type: output
+      description: Generate assessment provenance
+      inputs:
+        - all_inputs
+        - all_outputs
+      outputs:
+        - provenance_hash
+        - calculation_timestamp
+        - source_references
+      error_handling: propagate
+
+# =============================================================================
+# Zero-Hallucination Configuration
+# =============================================================================
+
+zero_hallucination:
+  enabled: true
+  calculation_mode: deterministic
+  allowed_operations:
+    - arithmetic
+    - formula_evaluation
+    - table_lookup
+    - logarithmic_calculation
+    - boolean_logic
+  forbidden_operations:
+    - llm_sil_determination
+    - ml_pfd_prediction
+  require_formula_citation: true
+  require_provenance: true
+  llm_allowed_for:
+    - recommendation_narrative
+    - hazard_description_review
+
+# =============================================================================
+# Test Cases
+# =============================================================================
+
+test_cases:
+  - name: LOPA - High Pressure Protection
+    description: SIL determination for high pressure SIF using LOPA
+    inputs:
+      assessment_method: LOPA
+      hazard_description: Vessel overpressure leading to rupture
+      sif_description: High pressure shutdown (PAHH)
+      sif_tag: SIF-001
+      equipment_protected: V-101
+      consequence_severity: major
+      fatality_potential: 2
+      initiating_event_frequency: 0.1
+      initiating_event_description: Control valve failure
+      ipl_bpcs: 0.1
+      ipl_alarm: 0.1
+      ipl_relief: 0.01
+      tolerable_risk_frequency: 0.0001
+    expected_outputs:
+      required_sil:
+        min: 1
+        max: 2

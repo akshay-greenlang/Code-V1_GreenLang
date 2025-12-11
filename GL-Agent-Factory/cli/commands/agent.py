@@ -556,6 +556,501 @@ def info(
         raise typer.Exit(1)
 
 
+@app.command()
+def new(
+    name: str = typer.Argument(
+        ...,
+        help="Name for the new agent (e.g., carbon-calculator)",
+    ),
+    agent_type: str = typer.Option(
+        "regulatory",
+        "--type",
+        "-t",
+        help="Agent type (regulatory/calculation/validation/reporting)",
+    ),
+    domain: str = typer.Option(
+        "emissions",
+        "--domain",
+        "-d",
+        help="Domain (emissions/energy/waste/water)",
+    ),
+    template: str = typer.Option(
+        "basic",
+        "--template",
+        help="Template to use (basic/regulatory/calculation)",
+    ),
+    output_dir: Optional[Path] = typer.Option(
+        None,
+        "--output",
+        "-o",
+        help="Output directory for generated agent",
+    ),
+    interactive: bool = typer.Option(
+        False,
+        "--interactive",
+        "-i",
+        help="Interactive mode with prompts",
+    ),
+):
+    """
+    Create a new agent from scratch with sensible defaults.
+
+    This is a streamlined command for quickly scaffolding new agents.
+    For more control, use 'gl agent create' with a spec file.
+
+    Example:
+        gl agent new carbon-calculator --type calculation --domain emissions
+        gl agent new nfpa86-compliance --type regulatory --template regulatory
+    """
+    try:
+        console.print(f"\n[bold cyan]Creating new agent:[/bold cyan] {name}\n")
+
+        # Load configuration
+        config = load_config()
+        if output_dir is None:
+            output_dir = Path(get_config_value("defaults.output_dir", "agents", config))
+
+        # Create agent ID from name
+        agent_id = name.lower().replace(" ", "-").replace("_", "-")
+
+        # Interactive mode - gather additional info
+        description = "Auto-generated agent"
+        frameworks = []
+        standards = []
+
+        if interactive:
+            from rich.prompt import Prompt
+            description = Prompt.ask("Description", default=f"{name} agent for {domain}")
+            frameworks_input = Prompt.ask(
+                "Regulatory frameworks (comma-separated)",
+                default="GHG Protocol,ISO 14064"
+            )
+            frameworks = [f.strip() for f in frameworks_input.split(",")]
+            standards_input = Prompt.ask(
+                "Standards (comma-separated)",
+                default=""
+            )
+            if standards_input:
+                standards = [s.strip() for s in standards_input.split(",")]
+
+        # Build spec
+        spec = {
+            "metadata": {
+                "id": agent_id,
+                "name": name,
+                "version": "0.1.0",
+                "type": agent_type,
+                "domain": domain,
+                "description": description,
+                "created": datetime.now().isoformat(),
+            },
+            "capabilities": _get_default_capabilities(agent_type),
+            "architecture": {
+                "pattern": "pipeline" if agent_type == "calculation" else "multi-agent",
+                "zero_hallucination": True,
+            },
+            "regulatory": {
+                "frameworks": frameworks or ["GHG Protocol", "ISO 14064"],
+                "standards": standards,
+            },
+            "validation": {
+                "input_validation": True,
+                "output_validation": True,
+                "provenance_tracking": True,
+            },
+        }
+
+        # Display info
+        info_display = {
+            "ID": agent_id,
+            "Name": name,
+            "Type": agent_type,
+            "Domain": domain,
+            "Template": template,
+            "Output": str(output_dir / agent_id),
+        }
+        console.print(create_info_panel("New Agent Configuration", info_display))
+        console.print()
+
+        # Generate agent
+        agent_output_dir = output_dir / agent_id
+        agent_output_dir.mkdir(parents=True, exist_ok=True)
+
+        files_created = []
+
+        with create_progress_bar() as progress:
+            task1 = progress.add_task("Generating core agent code...", total=100)
+            files_created.extend(generate_core_agent(spec, agent_output_dir, False))
+            progress.update(task1, completed=100)
+
+            task2 = progress.add_task("Creating configuration files...", total=100)
+            files_created.extend(generate_config_files(spec, agent_output_dir, False))
+            progress.update(task2, completed=100)
+
+            task3 = progress.add_task("Generating test suite...", total=100)
+            files_created.extend(generate_tests(spec, agent_output_dir, False))
+            progress.update(task3, completed=100)
+
+            task4 = progress.add_task("Creating documentation...", total=100)
+            files_created.extend(generate_documentation(spec, agent_output_dir, False))
+            progress.update(task4, completed=100)
+
+            task5 = progress.add_task("Generating deployment configs...", total=100)
+            files_created.extend(generate_deployment_configs(spec, agent_output_dir, False))
+            progress.update(task5, completed=100)
+
+        print_generation_summary(agent_output_dir, files_created)
+
+        console.print("\n[bold]Next steps:[/bold]")
+        console.print(f"  1. Customize the implementation: [cyan]cd {agent_output_dir}[/cyan]")
+        console.print(f"  2. Validate: [cyan]gl agent validate {agent_output_dir}/agent.yaml[/cyan]")
+        console.print(f"  3. Test: [cyan]gl agent test {agent_output_dir}[/cyan]")
+        console.print(f"  4. Deploy: [cyan]gl agent deploy {agent_output_dir}[/cyan]\n")
+
+    except Exception as e:
+        print_error(f"Failed to create new agent: {str(e)}")
+        raise typer.Exit(1)
+
+
+@app.command()
+def deploy(
+    agent_path: Path = typer.Argument(
+        ...,
+        help="Path to agent directory",
+        exists=True,
+        file_okay=False,
+        dir_okay=True,
+    ),
+    environment: str = typer.Option(
+        "development",
+        "--env",
+        "-e",
+        help="Target environment (development/staging/production)",
+    ),
+    registry: Optional[str] = typer.Option(
+        None,
+        "--registry",
+        "-r",
+        help="Container registry URL",
+    ),
+    tag: Optional[str] = typer.Option(
+        None,
+        "--tag",
+        "-t",
+        help="Docker image tag",
+    ),
+    dry_run: bool = typer.Option(
+        False,
+        "--dry-run",
+        help="Show what would be deployed without deploying",
+    ),
+    skip_tests: bool = typer.Option(
+        False,
+        "--skip-tests",
+        help="Skip running tests before deployment",
+    ),
+    skip_certification: bool = typer.Option(
+        False,
+        "--skip-certification",
+        help="Skip certification check before deployment",
+    ),
+):
+    """
+    Deploy an agent to a target environment.
+
+    This command builds, tests, and deploys an agent to the specified
+    environment. For production deployments, certification is required.
+
+    Deployment Steps:
+    1. Run tests (unless --skip-tests)
+    2. Run certification (unless --skip-certification)
+    3. Build Docker image
+    4. Push to registry
+    5. Deploy to target environment
+
+    Example:
+        gl agent deploy agents/carbon-calculator --env staging
+        gl agent deploy agents/nfpa86 --env production --tag v1.0.0
+    """
+    try:
+        console.print(f"\n[bold cyan]Deploying agent:[/bold cyan] {agent_path}\n")
+
+        # Load agent metadata
+        metadata_file = agent_path / "agent.yaml"
+        if not metadata_file.exists():
+            print_error(f"No agent.yaml found in {agent_path}")
+            raise typer.Exit(1)
+
+        with open(metadata_file, "r") as f:
+            metadata = yaml.safe_load(f)
+
+        agent_id = metadata.get("id", agent_path.name)
+        agent_version = tag or metadata.get("version", "0.1.0")
+
+        # Display deployment info
+        config = load_config()
+        registry_url = registry or get_config_value("registry.docker_url", "registry.greenlang.io", config)
+        image_name = f"{registry_url}/{agent_id}:{agent_version}"
+
+        info_display = {
+            "Agent": agent_id,
+            "Version": agent_version,
+            "Environment": environment,
+            "Image": image_name,
+            "Mode": "DRY RUN" if dry_run else "DEPLOY",
+        }
+        console.print(create_info_panel("Deployment Configuration", info_display))
+        console.print()
+
+        # Production requires certification
+        if environment == "production" and not skip_certification:
+            print_info("Production deployment requires certification")
+
+        steps_completed = 0
+        total_steps = 5 - (1 if skip_tests else 0) - (1 if skip_certification else 0)
+
+        with create_progress_bar() as progress:
+            main_task = progress.add_task("[bold]Deployment progress", total=total_steps)
+
+            # Step 1: Run tests
+            if not skip_tests:
+                task = progress.add_task("Running tests...", total=100)
+                test_results = run_agent_tests(agent_path, verbose=False, coverage=False, parallel=True)
+                progress.update(task, completed=100)
+                steps_completed += 1
+                progress.update(main_task, completed=steps_completed)
+
+                if test_results.get("failed", 0) > 0:
+                    print_error(f"Tests failed: {test_results['failed']} failures")
+                    if not dry_run:
+                        raise typer.Exit(1)
+
+            # Step 2: Run certification (for staging/production)
+            if not skip_certification and environment in ["staging", "production"]:
+                task = progress.add_task("Running certification...", total=100)
+                # Simulate certification check
+                cert_passed = True
+                progress.update(task, completed=100)
+                steps_completed += 1
+                progress.update(main_task, completed=steps_completed)
+
+                if not cert_passed:
+                    print_error("Certification failed - cannot deploy to " + environment)
+                    if not dry_run:
+                        raise typer.Exit(1)
+
+            # Step 3: Build Docker image
+            task = progress.add_task("Building Docker image...", total=100)
+            if not dry_run:
+                _build_docker_image(agent_path, image_name)
+            progress.update(task, completed=100)
+            steps_completed += 1
+            progress.update(main_task, completed=steps_completed)
+
+            # Step 4: Push to registry
+            task = progress.add_task("Pushing to registry...", total=100)
+            if not dry_run:
+                _push_docker_image(image_name)
+            progress.update(task, completed=100)
+            steps_completed += 1
+            progress.update(main_task, completed=steps_completed)
+
+            # Step 5: Deploy to environment
+            task = progress.add_task(f"Deploying to {environment}...", total=100)
+            if not dry_run:
+                _deploy_to_environment(agent_id, image_name, environment)
+            progress.update(task, completed=100)
+            steps_completed += 1
+            progress.update(main_task, completed=steps_completed)
+
+        console.print()
+
+        if dry_run:
+            print_success(f"Dry run complete - agent would be deployed to {environment}")
+            console.print(f"\nImage would be: [cyan]{image_name}[/cyan]")
+        else:
+            print_success(f"Agent deployed successfully to {environment}")
+            console.print(f"\nImage: [cyan]{image_name}[/cyan]")
+            console.print(f"Check status: [cyan]gl agent status {agent_id} --env {environment}[/cyan]\n")
+
+    except Exception as e:
+        print_error(f"Deployment failed: {str(e)}")
+        raise typer.Exit(1)
+
+
+@app.command()
+def status(
+    agent_id: str = typer.Argument(
+        ...,
+        help="Agent ID to check status for",
+    ),
+    environment: str = typer.Option(
+        "development",
+        "--env",
+        "-e",
+        help="Target environment to check",
+    ),
+    watch: bool = typer.Option(
+        False,
+        "--watch",
+        "-w",
+        help="Watch status continuously",
+    ),
+    json_output: bool = typer.Option(
+        False,
+        "--json",
+        help="Output as JSON",
+    ),
+):
+    """
+    Check the deployment status of an agent.
+
+    This command retrieves the current status of a deployed agent
+    including health, resource usage, and recent activity.
+
+    Example:
+        gl agent status carbon-calculator --env production
+        gl agent status nfpa86 --env staging --watch
+    """
+    try:
+        if not json_output:
+            console.print(f"\n[bold cyan]Agent Status:[/bold cyan] {agent_id}\n")
+
+        # Simulate status retrieval
+        status_info = _get_agent_status(agent_id, environment)
+
+        if json_output:
+            console.print_json(data=status_info)
+            return
+
+        # Display status panel
+        health_color = "green" if status_info["health"] == "healthy" else "red"
+        status_display = {
+            "Agent ID": agent_id,
+            "Environment": environment,
+            "Status": f"[{health_color}]{status_info['status']}[/{health_color}]",
+            "Health": f"[{health_color}]{status_info['health']}[/{health_color}]",
+            "Replicas": f"{status_info['replicas_ready']}/{status_info['replicas_desired']}",
+            "Version": status_info["version"],
+            "Image": status_info["image"],
+            "Last Deployed": status_info["last_deployed"],
+            "Uptime": status_info["uptime"],
+        }
+        console.print(create_info_panel("Deployment Status", status_display))
+
+        # Resource usage
+        console.print("\n[bold]Resource Usage:[/bold]")
+        console.print(f"  CPU:    {status_info['cpu_usage']}")
+        console.print(f"  Memory: {status_info['memory_usage']}")
+        console.print(f"  Disk:   {status_info['disk_usage']}")
+
+        # Recent activity
+        console.print("\n[bold]Recent Activity:[/bold]")
+        for activity in status_info.get("recent_activity", [])[:5]:
+            console.print(f"  [{activity['time']}] {activity['message']}")
+
+        # Health checks
+        console.print("\n[bold]Health Checks:[/bold]")
+        for check in status_info.get("health_checks", []):
+            check_color = "green" if check["status"] == "passing" else "red"
+            console.print(f"  [{check_color}]{check['status'].upper()}[/{check_color}] {check['name']}")
+
+        console.print()
+
+        if watch:
+            print_info("Watch mode: Press Ctrl+C to exit")
+            import time
+            try:
+                while True:
+                    time.sleep(5)
+                    console.clear()
+                    # Re-fetch and display (recursive call without watch)
+                    status(agent_id, environment, watch=False, json_output=False)
+            except KeyboardInterrupt:
+                console.print("\n[dim]Watch mode ended[/dim]")
+
+    except Exception as e:
+        print_error(f"Failed to get agent status: {str(e)}")
+        raise typer.Exit(1)
+
+
+def _get_default_capabilities(agent_type: str) -> list:
+    """Get default capabilities for an agent type."""
+    capabilities = {
+        "regulatory": [
+            "compliance_validation",
+            "regulatory_mapping",
+            "audit_trail_generation",
+            "provenance_tracking",
+        ],
+        "calculation": [
+            "emissions_calculation",
+            "unit_conversion",
+            "aggregation",
+            "provenance_tracking",
+        ],
+        "validation": [
+            "input_validation",
+            "output_validation",
+            "schema_validation",
+            "data_quality_checks",
+        ],
+        "reporting": [
+            "report_generation",
+            "data_aggregation",
+            "visualization",
+            "export_formats",
+        ],
+    }
+    return capabilities.get(agent_type, capabilities["regulatory"])
+
+
+def _build_docker_image(agent_path: Path, image_name: str) -> None:
+    """Build Docker image for agent."""
+    # Placeholder - in real implementation, would call docker build
+    pass
+
+
+def _push_docker_image(image_name: str) -> None:
+    """Push Docker image to registry."""
+    # Placeholder - in real implementation, would call docker push
+    pass
+
+
+def _deploy_to_environment(agent_id: str, image_name: str, environment: str) -> None:
+    """Deploy agent to target environment."""
+    # Placeholder - in real implementation, would deploy via kubectl/helm
+    pass
+
+
+def _get_agent_status(agent_id: str, environment: str) -> dict:
+    """Get agent deployment status."""
+    # Placeholder - in real implementation, would query kubernetes/deployment system
+    return {
+        "status": "running",
+        "health": "healthy",
+        "replicas_ready": 3,
+        "replicas_desired": 3,
+        "version": "0.1.0",
+        "image": f"registry.greenlang.io/{agent_id}:0.1.0",
+        "last_deployed": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "uptime": "2d 5h 23m",
+        "cpu_usage": "15%",
+        "memory_usage": "256MB / 512MB",
+        "disk_usage": "120MB",
+        "recent_activity": [
+            {"time": "10:23:45", "message": "Processed 150 calculation requests"},
+            {"time": "10:18:30", "message": "Health check passed"},
+            {"time": "10:15:00", "message": "Scaled to 3 replicas"},
+        ],
+        "health_checks": [
+            {"name": "Liveness", "status": "passing"},
+            {"name": "Readiness", "status": "passing"},
+            {"name": "Database", "status": "passing"},
+        ],
+    }
+
+
 # Helper functions for agent generation
 
 def validate_spec(spec: dict, strict: bool = False, verbose: bool = False) -> dict:

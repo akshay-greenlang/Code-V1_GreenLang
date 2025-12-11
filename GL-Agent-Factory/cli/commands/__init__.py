@@ -4,6 +4,6 @@ CLI Commands
 Command groups for the GreenLang Agent Factory CLI.
 """
 
-from . import agent, template, registry
+from . import agent, template, registry, formula, standards, ontology, scaffold, shadow
 
-__all__ = ["agent", "template", "registry"]
+__all__ = ["agent", "template", "registry", "formula", "standards", "ontology", "scaffold", "shadow"]

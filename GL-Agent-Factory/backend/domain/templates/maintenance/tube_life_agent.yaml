@@ -1,0 +1,1029 @@
+# =============================================================================
+# Tube Life Assessment Agent Template
+# GreenLang Agent Factory - Process Heat Applications
+# =============================================================================
+# Standards: API 530, API 579-1/ASME FFS-1, API 571
+# Version: 1.0.0
+# =============================================================================
+
+metadata:
+  template_id: tube_life_agent
+  name: Heater Tube Remaining Life Assessment Agent
+  description: >
+    Calculates remaining life of fired heater and boiler tubes based on creep,
+    oxidation, and corrosion degradation mechanisms. Implements API 530/579
+    methodologies for fitness-for-service evaluation and inspection planning.
+  category: maintenance
+  version: "1.0.0"
+  status: production
+  author: GreenLang Engineering Team
+  created_at: "2024-12-01T00:00:00Z"
+  updated_at: "2024-12-11T00:00:00Z"
+
+  tags:
+    - tube_life
+    - creep_assessment
+    - remaining_life
+    - fired_heater
+    - boiler_tubes
+    - API_530
+    - API_579
+
+  equipment_types:
+    - fired_heater_tube
+    - boiler_tube
+    - reformer_tube
+    - cracker_tube
+    - superheater_tube
+
+  industries:
+    - oil_gas
+    - petrochemical
+    - refining
+    - power_generation
+    - chemical
+
+  applicable_standards:
+    - API 530
+    - API 579-1/ASME FFS-1
+    - API 571
+    - API 560
+    - ASME Section VIII
+
+# =============================================================================
+# Input Schema
+# =============================================================================
+
+input_schema:
+  name: TubeLifeInput
+  description: Tube life assessment input parameters
+  version: "1.0.0"
+
+  fields:
+    # Tube identification
+    tube_tag:
+      type: string
+      description: Tube/coil tag number
+      required: true
+
+    heater_tag:
+      type: string
+      description: Heater equipment tag
+      required: true
+
+    tube_location:
+      type: enum
+      description: Tube location in heater
+      required: true
+      allowed_values:
+        - radiant
+        - convection
+        - shock
+        - shield
+        - superheater
+        - reformer
+
+    service:
+      type: string
+      description: Service description
+      required: true
+
+    # Material specification
+    material_spec:
+      type: string
+      description: Material specification
+      required: true
+      # Common materials: P5, P9, P11, P22, SS304H, SS316H, SS321H, 800H, HK40
+
+    material_grade:
+      type: enum
+      description: Material grade
+      required: true
+      allowed_values:
+        - carbon_steel
+        - Cr_Mo_5
+        - Cr_Mo_9
+        - Cr_Mo_1_25
+        - Cr_Mo_2_25
+        - SS_304H
+        - SS_316H
+        - SS_321H
+        - SS_347H
+        - Alloy_800H
+        - HK40
+        - HP_modified
+
+    # Original dimensions
+    nominal_od:
+      type: float
+      description: Nominal outside diameter
+      required: true
+      unit: mm
+
+    nominal_thickness:
+      type: float
+      description: Nominal wall thickness
+      required: true
+      unit: mm
+
+    tube_length:
+      type: float
+      description: Tube length
+      required: false
+      unit: m
+
+    # Current condition
+    measured_thickness:
+      type: float
+      description: Minimum measured wall thickness
+      required: true
+      unit: mm
+
+    average_thickness:
+      type: float
+      description: Average measured thickness
+      required: false
+      unit: mm
+
+    measurement_date:
+      type: datetime
+      description: Date of thickness measurement
+      required: true
+
+    previous_thickness:
+      type: float
+      description: Previous thickness measurement
+      required: false
+      unit: mm
+
+    previous_measurement_date:
+      type: datetime
+      description: Date of previous measurement
+      required: false
+
+    # Operating conditions
+    design_temperature:
+      type: float
+      description: Design temperature
+      required: true
+      unit: celsius
+
+    operating_temperature:
+      type: float
+      description: Operating metal temperature (TMT)
+      required: true
+      unit: celsius
+
+    max_temperature:
+      type: float
+      description: Maximum recorded temperature
+      required: false
+      unit: celsius
+
+    design_pressure:
+      type: float
+      description: Design pressure
+      required: true
+      unit: bar_g
+
+    operating_pressure:
+      type: float
+      description: Operating pressure
+      required: true
+      unit: bar_g
+
+    # Service history
+    in_service_date:
+      type: datetime
+      description: Date tube put in service
+      required: true
+
+    operating_hours:
+      type: float
+      description: Total operating hours
+      required: true
+      unit: hours
+
+    startup_cycles:
+      type: integer
+      description: Number of startup cycles
+      required: false
+      default: 0
+
+    # Degradation data
+    corrosion_rate:
+      type: float
+      description: Measured or estimated corrosion rate
+      required: false
+      unit: mm/year
+
+    oxidation_rate:
+      type: float
+      description: Oxidation/scaling rate
+      required: false
+      unit: mm/year
+
+    creep_damage_fraction:
+      type: float
+      description: Existing creep damage fraction
+      required: false
+      unit: dimensionless
+      default: 0
+
+    fatigue_damage_fraction:
+      type: float
+      description: Existing fatigue damage fraction
+      required: false
+      unit: dimensionless
+      default: 0
+
+    # Visual/NDE inspection
+    visual_condition:
+      type: enum
+      description: Visual inspection result
+      required: false
+      allowed_values:
+        - good
+        - minor_scale
+        - moderate_scale
+        - heavy_scale
+        - bulging
+        - blistering
+        - cracking
+        - sagging
+
+    nde_findings:
+      type: list
+      description: NDE inspection findings
+      required: false
+
+    # Material testing
+    hardness_reading:
+      type: float
+      description: Hardness measurement
+      required: false
+      unit: HBW
+
+    replica_results:
+      type: dict
+      description: Metallurgical replica results
+      required: false
+
+    # Minimum required thickness
+    code_minimum_thickness:
+      type: float
+      description: Code minimum required thickness
+      required: false
+      unit: mm
+
+    retirement_thickness:
+      type: float
+      description: Retirement thickness
+      required: false
+      unit: mm
+
+    # Economic parameters
+    tube_replacement_cost:
+      type: float
+      description: Cost to replace tube
+      required: false
+      unit: USD
+
+    unplanned_outage_cost:
+      type: float
+      description: Cost of unplanned tube failure
+      required: false
+      unit: USD/day
+
+# =============================================================================
+# Output Schema
+# =============================================================================
+
+output_schema:
+  name: TubeLifeOutput
+  description: Tube life assessment results
+  version: "1.0.0"
+
+  fields:
+    # Thickness analysis
+    thickness_loss:
+      type: float
+      description: Total thickness loss
+      unit: mm
+
+    thickness_loss_rate:
+      type: float
+      description: Rate of thickness loss
+      unit: mm/year
+
+    remaining_corrosion_allowance:
+      type: float
+      description: Remaining corrosion allowance
+      unit: mm
+
+    # Stress analysis
+    hoop_stress:
+      type: float
+      description: Hoop stress at measured thickness
+      unit: MPa
+
+    allowable_stress:
+      type: float
+      description: Allowable stress at temperature
+      unit: MPa
+
+    stress_ratio:
+      type: float
+      description: Actual/Allowable stress ratio
+      unit: dimensionless
+
+    # Creep analysis
+    larson_miller_parameter:
+      type: float
+      description: Larson-Miller parameter
+      unit: dimensionless
+
+    creep_rupture_life:
+      type: float
+      description: Creep rupture life at conditions
+      unit: hours
+
+    creep_life_fraction_used:
+      type: float
+      description: Fraction of creep life consumed
+      unit: percent
+
+    creep_remaining_life:
+      type: float
+      description: Remaining creep life
+      unit: years
+
+    # Corrosion/oxidation life
+    corrosion_remaining_life:
+      type: float
+      description: Remaining life based on corrosion
+      unit: years
+
+    years_to_retirement_thickness:
+      type: float
+      description: Years to reach retirement thickness
+      unit: years
+
+    # Combined assessment
+    limiting_mechanism:
+      type: string
+      description: Life-limiting degradation mechanism
+
+    remaining_life:
+      type: float
+      description: Overall remaining life estimate
+      unit: years
+
+    confidence_level:
+      type: float
+      description: Confidence in remaining life estimate
+      unit: percent
+
+    # Fitness-for-service
+    ffs_status:
+      type: enum
+      description: Fitness-for-service status
+      allowed_values:
+        - fit_for_service
+        - fit_with_restrictions
+        - remediation_required
+        - unfit_replace
+
+    ffs_level:
+      type: enum
+      description: API 579 assessment level performed
+      allowed_values:
+        - Level_1
+        - Level_2
+        - Level_3
+
+    # Risk assessment
+    failure_probability:
+      type: float
+      description: Probability of failure before next inspection
+      unit: percent
+
+    consequence_category:
+      type: enum
+      description: Consequence category
+      allowed_values:
+        - low
+        - medium
+        - high
+        - very_high
+
+    risk_ranking:
+      type: enum
+      description: Overall risk ranking
+      allowed_values:
+        - low
+        - medium
+        - medium_high
+        - high
+
+    # Recommendations
+    recommended_action:
+      type: string
+      description: Recommended action
+
+    action_priority:
+      type: enum
+      description: Action priority
+      allowed_values:
+        - immediate
+        - urgent
+        - next_turnaround
+        - routine
+        - monitor
+
+    next_inspection_date:
+      type: date
+      description: Recommended next inspection date
+
+    inspection_interval:
+      type: float
+      description: Recommended inspection interval
+      unit: months
+
+    monitoring_requirements:
+      type: list
+      description: Additional monitoring requirements
+
+    # Operational recommendations
+    max_allowable_temperature:
+      type: float
+      description: Maximum allowable operating temperature
+      unit: celsius
+
+    operating_envelope:
+      type: dict
+      description: Safe operating envelope
+
+    # Economic analysis
+    repair_vs_replace:
+      type: string
+      description: Repair vs replace recommendation
+
+    cost_of_failure:
+      type: float
+      description: Expected cost if tube fails
+      unit: USD
+
+    # Provenance
+    provenance_hash:
+      type: string
+      description: SHA-256 hash
+
+    calculation_timestamp:
+      type: datetime
+      description: Assessment timestamp
+
+    source_references:
+      type: list
+      description: Standards and references used
+
+# =============================================================================
+# Formulas
+# =============================================================================
+
+formulas:
+  - id: HOOP_STRESS
+    name: Hoop Stress Calculation
+    description: Calculate hoop stress in tube per API 530
+    equation: "sigma = P * D_o / (2 * t)"
+    variables:
+      sigma:
+        description: Hoop stress
+        unit: MPa
+        type: float
+      P:
+        description: Internal pressure
+        unit: MPa
+        type: float
+      D_o:
+        description: Outside diameter
+        unit: mm
+        type: float
+      t:
+        description: Wall thickness
+        unit: mm
+        type: float
+    source:
+      standard: API 530
+      section: "Section 4"
+      edition: "2015"
+    application: Stress calculation
+
+  - id: MINIMUM_THICKNESS_API530
+    name: Minimum Required Thickness
+    description: Calculate minimum required thickness per API 530
+    equation: "t_min = P * D_o / (2 * S * E + P)"
+    variables:
+      t_min:
+        description: Minimum thickness
+        unit: mm
+        type: float
+      P:
+        description: Design pressure
+        unit: MPa
+        type: float
+      D_o:
+        description: Outside diameter
+        unit: mm
+        type: float
+      S:
+        description: Allowable stress
+        unit: MPa
+        type: float
+      E:
+        description: Weld joint efficiency
+        unit: dimensionless
+        type: float
+    source:
+      standard: API 530
+      section: "Section 4.2"
+      edition: "2015"
+    application: Minimum thickness
+
+  - id: LARSON_MILLER
+    name: Larson-Miller Parameter
+    description: Calculate Larson-Miller parameter for creep
+    equation: "LMP = T * (C + log10(t_r))"
+    variables:
+      LMP:
+        description: Larson-Miller parameter
+        unit: dimensionless
+        type: float
+      T:
+        description: Absolute temperature
+        unit: kelvin
+        type: float
+      C:
+        description: Material constant (typically 20)
+        unit: dimensionless
+        type: float
+      t_r:
+        description: Rupture time
+        unit: hours
+        type: float
+    source:
+      standard: API 530
+      section: "Appendix F"
+      edition: "2015"
+    application: Creep life assessment
+
+  - id: CREEP_LIFE_FRACTION
+    name: Creep Life Fraction
+    description: Calculate creep life fraction consumed
+    equation: "LF = sum(t_i / t_r_i)"
+    variables:
+      LF:
+        description: Life fraction consumed
+        unit: dimensionless
+        type: float
+      t_i:
+        description: Time at condition i
+        unit: hours
+        type: float
+      t_r_i:
+        description: Rupture life at condition i
+        unit: hours
+        type: float
+    source:
+      standard: API 579-1
+      section: "Part 10"
+      edition: "2021"
+    application: Creep damage assessment
+
+  - id: CORROSION_REMAINING_LIFE
+    name: Corrosion-Based Remaining Life
+    description: Calculate remaining life based on corrosion rate
+    equation: "RL = (t_act - t_min) / CR"
+    variables:
+      RL:
+        description: Remaining life
+        unit: years
+        type: float
+      t_act:
+        description: Actual thickness
+        unit: mm
+        type: float
+      t_min:
+        description: Minimum required thickness
+        unit: mm
+        type: float
+      CR:
+        description: Corrosion rate
+        unit: mm/year
+        type: float
+    source:
+      standard: API 579-1
+      section: "Part 4"
+      edition: "2021"
+    application: Corrosion life assessment
+
+  - id: OMEGA_METHOD
+    name: Omega Method Creep Assessment
+    description: API 579 Omega method for creep
+    equation: "t_remain = (1/Omega) * ln((1 - D_0) / (1 - D_allow))"
+    variables:
+      t_remain:
+        description: Remaining creep life
+        unit: hours
+        type: float
+      Omega:
+        description: Omega parameter (multiaxial)
+        unit: 1/hours
+        type: float
+      D_0:
+        description: Current damage
+        unit: dimensionless
+        type: float
+      D_allow:
+        description: Allowable damage
+        unit: dimensionless
+        type: float
+    source:
+      standard: API 579-1
+      section: "Part 10"
+      edition: "2021"
+    application: Advanced creep analysis
+
+# =============================================================================
+# Safety Constraints
+# =============================================================================
+
+safety_constraints:
+  - id: SC_BELOW_RETIREMENT
+    name: Below Retirement Thickness
+    description: Tube thickness below retirement limit
+    condition: "measured_thickness >= retirement_thickness"
+    action: reject
+    severity: critical
+    message: "CRITICAL: Tube {tube_tag} thickness {measured_thickness}mm below retirement {retirement_thickness}mm - REPLACE IMMEDIATELY"
+
+  - id: SC_HIGH_STRESS_RATIO
+    name: High Stress Ratio
+    description: Stress ratio exceeds allowable
+    condition: "stress_ratio <= 1.0"
+    action: reject
+    severity: critical
+    message: "CRITICAL: Stress ratio {stress_ratio} exceeds 1.0 - tube overstressed"
+
+  - id: SC_CREEP_LIFE_EXHAUSTED
+    name: Creep Life Exhausted
+    description: Creep life fraction approaching limit
+    condition: "creep_life_fraction_used <= 80"
+    action: warn
+    severity: error
+    message: "WARNING: Tube {tube_tag} creep life {creep_life_fraction_used}% consumed"
+
+  - id: SC_HIGH_CORROSION_RATE
+    name: High Corrosion Rate
+    description: Corrosion rate exceeds expected
+    condition: "corrosion_rate <= expected_rate * 2"
+    action: warn
+    severity: warning
+    message: "Elevated corrosion rate {corrosion_rate} mm/year detected"
+
+  - id: SC_OVER_TEMPERATURE
+    name: Over Design Temperature
+    description: Operating temperature exceeds design
+    condition: "operating_temperature <= design_temperature"
+    action: warn
+    severity: error
+    message: "Operating temperature {operating_temperature}C exceeds design {design_temperature}C"
+
+# =============================================================================
+# Processing Pipeline
+# =============================================================================
+
+processing:
+  steps:
+    - id: STEP_01_VALIDATE
+      name: Input Validation
+      type: validation
+      inputs:
+        - all_input_fields
+      outputs:
+        - validation_status
+      error_handling: reject
+
+    - id: STEP_02_THICKNESS_ANALYSIS
+      name: Thickness Analysis
+      type: calculation
+      inputs:
+        - nominal_thickness
+        - measured_thickness
+        - previous_thickness
+        - measurement_date
+        - previous_measurement_date
+      outputs:
+        - thickness_loss
+        - thickness_loss_rate
+        - remaining_corrosion_allowance
+      error_handling: propagate
+
+    - id: STEP_03_CORROSION_RATE
+      name: Calculate Corrosion Rate
+      type: calculation
+      inputs:
+        - measured_thickness
+        - previous_thickness
+        - measurement_date
+        - previous_measurement_date
+        - corrosion_rate
+      outputs:
+        - effective_corrosion_rate
+        - corrosion_trend
+      error_handling: propagate
+
+    - id: STEP_04_MIN_THICKNESS
+      name: Calculate Minimum Thickness
+      type: calculation
+      inputs:
+        - design_pressure
+        - nominal_od
+        - material_grade
+        - design_temperature
+      outputs:
+        - code_minimum_thickness
+        - retirement_thickness
+        - allowable_stress
+      formula_refs:
+        - MINIMUM_THICKNESS_API530
+      constraints:
+        - SC_BELOW_RETIREMENT
+      error_handling: propagate
+
+    - id: STEP_05_STRESS_ANALYSIS
+      name: Stress Analysis
+      type: calculation
+      inputs:
+        - operating_pressure
+        - nominal_od
+        - measured_thickness
+        - allowable_stress
+      outputs:
+        - hoop_stress
+        - stress_ratio
+      formula_refs:
+        - HOOP_STRESS
+      constraints:
+        - SC_HIGH_STRESS_RATIO
+      error_handling: propagate
+
+    - id: STEP_06_CREEP_ANALYSIS
+      name: Creep Life Analysis
+      type: calculation
+      inputs:
+        - material_grade
+        - operating_temperature
+        - hoop_stress
+        - operating_hours
+        - creep_damage_fraction
+      outputs:
+        - larson_miller_parameter
+        - creep_rupture_life
+        - creep_life_fraction_used
+        - creep_remaining_life
+      formula_refs:
+        - LARSON_MILLER
+        - CREEP_LIFE_FRACTION
+      constraints:
+        - SC_CREEP_LIFE_EXHAUSTED
+      error_handling: propagate
+
+    - id: STEP_07_CORROSION_LIFE
+      name: Corrosion Life Analysis
+      type: calculation
+      inputs:
+        - measured_thickness
+        - retirement_thickness
+        - effective_corrosion_rate
+      outputs:
+        - corrosion_remaining_life
+        - years_to_retirement_thickness
+      formula_refs:
+        - CORROSION_REMAINING_LIFE
+      constraints:
+        - SC_HIGH_CORROSION_RATE
+      error_handling: propagate
+
+    - id: STEP_08_COMBINED_ASSESSMENT
+      name: Combined Life Assessment
+      type: calculation
+      inputs:
+        - creep_remaining_life
+        - corrosion_remaining_life
+        - fatigue_damage_fraction
+      outputs:
+        - limiting_mechanism
+        - remaining_life
+        - confidence_level
+      error_handling: propagate
+
+    - id: STEP_09_FFS_ASSESSMENT
+      name: Fitness-for-Service Assessment
+      type: decision
+      inputs:
+        - stress_ratio
+        - remaining_life
+        - visual_condition
+        - nde_findings
+      outputs:
+        - ffs_status
+        - ffs_level
+      error_handling: propagate
+
+    - id: STEP_10_RISK_ASSESSMENT
+      name: Risk Assessment
+      type: calculation
+      inputs:
+        - remaining_life
+        - service
+        - consequence_category
+      outputs:
+        - failure_probability
+        - risk_ranking
+      error_handling: propagate
+
+    - id: STEP_11_RECOMMENDATIONS
+      name: Generate Recommendations
+      type: decision
+      inputs:
+        - ffs_status
+        - remaining_life
+        - risk_ranking
+        - operating_temperature
+      outputs:
+        - recommended_action
+        - action_priority
+        - next_inspection_date
+        - inspection_interval
+        - monitoring_requirements
+        - max_allowable_temperature
+        - operating_envelope
+      error_handling: propagate
+
+    - id: STEP_12_ECONOMICS
+      name: Economic Analysis
+      type: calculation
+      inputs:
+        - remaining_life
+        - tube_replacement_cost
+        - unplanned_outage_cost
+        - failure_probability
+      outputs:
+        - repair_vs_replace
+        - cost_of_failure
+      error_handling: default
+
+    - id: STEP_13_PROVENANCE
+      name: Provenance Tracking
+      type: output
+      inputs:
+        - all_inputs
+        - all_outputs
+      outputs:
+        - provenance_hash
+        - calculation_timestamp
+        - source_references
+      error_handling: propagate
+
+# =============================================================================
+# Standards References
+# =============================================================================
+
+standards:
+  - code: API 530
+    title: Calculation of Heater-tube Thickness in Petroleum Refineries
+    edition: "2015"
+    sections:
+      - "Section 4: Design"
+      - "Appendix F: Stress-Rupture Data"
+    requirements:
+      - Minimum thickness calculation
+      - Allowable stress tables
+      - Creep-rupture curves
+    compliance_level: required
+
+  - code: API 579-1/ASME FFS-1
+    title: Fitness-For-Service
+    edition: "2021"
+    sections:
+      - "Part 4: General Metal Loss"
+      - "Part 10: Creep and High-Temperature Assessment"
+    requirements:
+      - FFS assessment methodology
+      - Remaining life calculation
+      - Acceptance criteria
+    compliance_level: required
+
+  - code: API 571
+    title: Damage Mechanisms Affecting Fixed Equipment
+    edition: "2020"
+    sections:
+      - "High Temperature Hydrogen Attack"
+      - "Oxidation"
+      - "Creep"
+    requirements:
+      - Damage mechanism identification
+      - Inspection recommendations
+    compliance_level: reference
+
+  - code: API 560
+    title: Fired Heaters for General Refinery Service
+    edition: "2016"
+    sections:
+      - "Section 5: Materials"
+      - "Appendix A: Inspection"
+    requirements:
+      - Material selection
+      - Design requirements
+    compliance_level: reference
+
+# =============================================================================
+# Zero-Hallucination Configuration
+# =============================================================================
+
+zero_hallucination:
+  enabled: true
+  calculation_mode: deterministic
+  allowed_operations:
+    - arithmetic
+    - formula_evaluation
+    - material_property_lookup
+    - stress_calculation
+    - creep_curve_interpolation
+    - corrosion_rate_trending
+  forbidden_operations:
+    - llm_life_estimation
+    - ml_failure_prediction_without_validation
+    - guessed_material_properties
+  require_formula_citation: true
+  require_provenance: true
+  llm_allowed_for:
+    - damage_mechanism_classification
+    - recommendation_narrative
+    - nde_finding_interpretation
+    - report_generation
+
+# =============================================================================
+# Test Cases
+# =============================================================================
+
+test_cases:
+  - name: Radiant Tube Creep Assessment
+    inputs:
+      tube_tag: H-101-R-A1
+      heater_tag: H-101
+      tube_location: radiant
+      service: Crude charge heater
+      material_grade: Cr_Mo_9
+      nominal_od: 114.3
+      nominal_thickness: 6.0
+      measured_thickness: 5.2
+      measurement_date: "2024-12-01T00:00:00Z"
+      design_temperature: 550
+      operating_temperature: 540
+      design_pressure: 25
+      operating_pressure: 22
+      in_service_date: "2010-01-01T00:00:00Z"
+      operating_hours: 100000
+    expected_outputs:
+      ffs_status: fit_for_service
+      remaining_life:
+        min: 3
+        max: 15
+
+  - name: Thin Convection Tube
+    inputs:
+      tube_tag: H-102-C-B3
+      heater_tag: H-102
+      tube_location: convection
+      service: Vacuum heater
+      material_grade: carbon_steel
+      nominal_od: 88.9
+      nominal_thickness: 5.5
+      measured_thickness: 3.2
+      retirement_thickness: 3.0
+      measurement_date: "2024-12-01T00:00:00Z"
+      previous_thickness: 3.8
+      previous_measurement_date: "2022-12-01T00:00:00Z"
+      design_temperature: 400
+      operating_temperature: 380
+      design_pressure: 15
+      operating_pressure: 12
+      in_service_date: "2005-01-01T00:00:00Z"
+      operating_hours: 150000
+    expected_outputs:
+      action_priority: urgent
+      years_to_retirement_thickness:
+        min: 0.5
+        max: 2.0

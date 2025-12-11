@@ -1,0 +1,694 @@
+# =============================================================================
+# Decarbonization Pathways Agent Template
+# GreenLang Agent Factory - Process Heat Applications
+# =============================================================================
+# Standards: IEA, IRENA, DOE
+# Version: 1.0.0
+# =============================================================================
+
+metadata:
+  template_id: decarbonization_agent
+  name: Process Heat Decarbonization Pathways Agent
+  description: >
+    Evaluates decarbonization pathways for process heat including electrification,
+    hydrogen, biomass, CCUS, and efficiency improvements. Provides techno-economic
+    analysis and roadmap development.
+  category: emissions
+  version: "1.0.0"
+  status: production
+  author: GreenLang Engineering Team
+  created_at: "2024-12-01T00:00:00Z"
+  updated_at: "2024-12-11T00:00:00Z"
+
+  tags:
+    - decarbonization
+    - electrification
+    - hydrogen
+    - CCUS
+    - net_zero
+    - pathway_analysis
+
+  equipment_types:
+    - process_heat_system
+    - industrial_facility
+
+  industries:
+    - all
+
+  applicable_standards:
+    - IEA Net Zero
+    - IRENA
+    - SBTi
+
+# =============================================================================
+# Input Schema
+# =============================================================================
+
+input_schema:
+  name: DecarbonizationInput
+  description: Decarbonization analysis input parameters
+  version: "1.0.0"
+
+  fields:
+    # Facility profile
+    facility_name:
+      type: string
+      description: Facility name
+      required: true
+
+    industry_sector:
+      type: enum
+      description: Industry sector
+      required: true
+      allowed_values:
+        - steel
+        - cement
+        - chemicals
+        - glass
+        - ceramics
+        - food_beverage
+        - pulp_paper
+        - refining
+        - other
+
+    # Current heat demand
+    process_heat_demand:
+      type: float
+      description: Annual process heat demand
+      required: true
+      unit: GJ/year
+
+    temperature_requirement:
+      type: float
+      description: Process temperature requirement
+      required: true
+      unit: celsius
+
+    temperature_profile:
+      type: dict
+      description: Temperature distribution of heat demand
+      required: false
+
+    # Current emissions
+    current_emissions:
+      type: float
+      description: Current annual CO2 emissions
+      required: true
+      unit: tonnes_CO2/year
+
+    current_fuel_type:
+      type: enum
+      description: Current primary fuel
+      required: true
+      allowed_values:
+        - natural_gas
+        - coal
+        - fuel_oil
+        - biomass
+        - mixed
+
+    current_fuel_cost:
+      type: float
+      description: Current fuel cost
+      required: true
+      unit: USD/GJ
+
+    # Grid conditions
+    grid_carbon_intensity:
+      type: float
+      description: Grid carbon intensity
+      required: true
+      unit: kg_CO2/kWh
+
+    electricity_cost:
+      type: float
+      description: Industrial electricity cost
+      required: true
+      unit: USD/kWh
+
+    renewable_availability:
+      type: float
+      description: Renewable energy availability
+      required: false
+      unit: percent
+      default: 30
+
+    # Hydrogen availability
+    hydrogen_availability:
+      type: enum
+      description: Hydrogen availability
+      required: false
+      allowed_values:
+        - none
+        - limited
+        - available
+        - abundant
+      default: limited
+
+    hydrogen_cost:
+      type: float
+      description: Hydrogen cost
+      required: false
+      unit: USD/kg
+
+    hydrogen_carbon_intensity:
+      type: float
+      description: Hydrogen carbon intensity
+      required: false
+      unit: kg_CO2/kg_H2
+
+    # Biomass availability
+    biomass_availability:
+      type: enum
+      description: Sustainable biomass availability
+      required: false
+      allowed_values:
+        - none
+        - limited
+        - available
+        - abundant
+      default: limited
+
+    biomass_cost:
+      type: float
+      description: Biomass cost
+      required: false
+      unit: USD/GJ
+
+    # CCUS feasibility
+    ccus_feasible:
+      type: boolean
+      description: Whether CCUS is feasible at site
+      required: false
+      default: false
+
+    co2_storage_available:
+      type: boolean
+      description: CO2 storage availability
+      required: false
+      default: false
+
+    ccus_cost:
+      type: float
+      description: CCUS cost
+      required: false
+      unit: USD/tonne_CO2
+
+    # Targets
+    target_year:
+      type: integer
+      description: Net zero target year
+      required: true
+      default: 2050
+
+    interim_target_2030:
+      type: float
+      description: 2030 emission reduction target
+      required: false
+      unit: percent
+      default: 50
+
+    # Financial parameters
+    discount_rate:
+      type: float
+      description: Discount rate
+      required: false
+      unit: percent
+      default: 8
+
+    carbon_price_current:
+      type: float
+      description: Current carbon price
+      required: false
+      unit: USD/tonne_CO2
+      default: 50
+
+    carbon_price_2030:
+      type: float
+      description: Expected 2030 carbon price
+      required: false
+      unit: USD/tonne_CO2
+      default: 100
+
+    carbon_price_2050:
+      type: float
+      description: Expected 2050 carbon price
+      required: false
+      unit: USD/tonne_CO2
+      default: 200
+
+# =============================================================================
+# Output Schema
+# =============================================================================
+
+output_schema:
+  name: DecarbonizationOutput
+  description: Decarbonization pathway analysis results
+  version: "1.0.0"
+
+  fields:
+    # Pathway options
+    pathways_evaluated:
+      type: list
+      description: List of evaluated pathways
+
+    recommended_pathway:
+      type: string
+      description: Recommended decarbonization pathway
+
+    pathway_ranking:
+      type: list
+      description: Ranked pathways by criteria
+
+    # Technology analysis
+    electrification_feasible:
+      type: boolean
+      description: Electrification feasibility
+
+    electrification_capex:
+      type: float
+      description: Electrification capital cost
+      unit: USD
+
+    electrification_opex_delta:
+      type: float
+      description: Change in operating cost
+      unit: USD/year
+
+    electrification_emissions:
+      type: float
+      description: Emissions after electrification
+      unit: tonnes_CO2/year
+
+    hydrogen_feasible:
+      type: boolean
+      description: Hydrogen feasibility
+
+    hydrogen_capex:
+      type: float
+      description: Hydrogen conversion capital cost
+      unit: USD
+
+    hydrogen_opex_delta:
+      type: float
+      description: Hydrogen operating cost change
+      unit: USD/year
+
+    hydrogen_emissions:
+      type: float
+      description: Emissions with hydrogen
+      unit: tonnes_CO2/year
+
+    ccus_feasible:
+      type: boolean
+      description: CCUS feasibility
+
+    ccus_capex:
+      type: float
+      description: CCUS capital cost
+      unit: USD
+
+    ccus_opex:
+      type: float
+      description: CCUS operating cost
+      unit: USD/year
+
+    ccus_capture_rate:
+      type: float
+      description: CO2 capture rate
+      unit: percent
+
+    # Economic analysis
+    abatement_costs:
+      type: dict
+      description: Marginal abatement cost by pathway
+      unit: USD/tonne_CO2
+
+    npv_by_pathway:
+      type: dict
+      description: NPV of each pathway
+
+    irr_by_pathway:
+      type: dict
+      description: IRR of each pathway
+
+    payback_by_pathway:
+      type: dict
+      description: Payback period by pathway
+
+    # Emission trajectory
+    baseline_trajectory:
+      type: list
+      description: Business as usual emissions trajectory
+
+    target_trajectory:
+      type: list
+      description: Target emissions trajectory
+
+    pathway_trajectory:
+      type: list
+      description: Recommended pathway trajectory
+
+    # Implementation roadmap
+    roadmap_phases:
+      type: list
+      description: Implementation phases
+
+    near_term_actions:
+      type: list
+      description: Near-term actions (0-3 years)
+
+    medium_term_actions:
+      type: list
+      description: Medium-term actions (3-10 years)
+
+    long_term_actions:
+      type: list
+      description: Long-term actions (10+ years)
+
+    # Key metrics
+    total_investment_required:
+      type: float
+      description: Total investment required
+      unit: USD
+
+    annual_savings_potential:
+      type: float
+      description: Annual savings at carbon prices
+      unit: USD/year
+
+    emission_reduction_potential:
+      type: float
+      description: Total emission reduction
+      unit: tonnes_CO2/year
+
+    # Risks and barriers
+    key_risks:
+      type: list
+      description: Key implementation risks
+
+    barriers:
+      type: list
+      description: Identified barriers
+
+    enablers:
+      type: list
+      description: Key enablers required
+
+    provenance_hash:
+      type: string
+      description: SHA-256 hash
+
+    calculation_timestamp:
+      type: datetime
+      description: Timestamp
+
+    source_references:
+      type: list
+      description: References used
+
+# =============================================================================
+# Formulas
+# =============================================================================
+
+formulas:
+  - id: ELECTRIFICATION_EMISSIONS
+    name: Electrification Emissions
+    description: Emissions after electrification
+    equation: "E_elec = Heat * (1/COP) * EF_grid / 3.6"
+    variables:
+      E_elec:
+        description: Annual emissions
+        unit: tonnes_CO2
+        type: float
+      Heat:
+        description: Heat demand
+        unit: GJ
+        type: float
+      COP:
+        description: Heat pump COP
+        unit: dimensionless
+        type: float
+      EF_grid:
+        description: Grid emission factor
+        unit: kg_CO2/kWh
+        type: float
+    source:
+      standard: IEA
+      section: "Industry Heat"
+      edition: "2023"
+    application: Electrification pathway
+
+  - id: HYDROGEN_EMISSIONS
+    name: Hydrogen Combustion Emissions
+    description: Emissions from hydrogen use
+    equation: "E_H2 = (Heat / LHV_H2) * EF_H2"
+    variables:
+      E_H2:
+        description: Annual emissions
+        unit: tonnes_CO2
+        type: float
+      Heat:
+        description: Heat demand
+        unit: GJ
+        type: float
+      LHV_H2:
+        description: Hydrogen LHV
+        unit: GJ/kg
+        type: float
+      EF_H2:
+        description: Hydrogen production carbon intensity
+        unit: kg_CO2/kg_H2
+        type: float
+    source:
+      standard: IEA
+      section: "Hydrogen"
+      edition: "2023"
+    application: Hydrogen pathway
+
+  - id: MARGINAL_ABATEMENT_COST
+    name: Marginal Abatement Cost
+    description: Cost per tonne CO2 abated
+    equation: "MAC = (CAPEX_annualized + delta_OPEX) / delta_E"
+    variables:
+      MAC:
+        description: Marginal abatement cost
+        unit: USD/tonne_CO2
+        type: float
+      CAPEX_annualized:
+        description: Annualized capital cost
+        unit: USD/year
+        type: float
+      delta_OPEX:
+        description: Operating cost change
+        unit: USD/year
+        type: float
+      delta_E:
+        description: Emissions reduction
+        unit: tonnes_CO2/year
+        type: float
+    source:
+      standard: McKinsey MAC
+      section: "Methodology"
+      edition: "2023"
+    application: Economic comparison
+
+# =============================================================================
+# Processing Pipeline
+# =============================================================================
+
+processing:
+  steps:
+    - id: STEP_01_VALIDATE
+      name: Input Validation
+      type: validation
+      inputs:
+        - all_input_fields
+      outputs:
+        - validation_status
+      error_handling: reject
+
+    - id: STEP_02_BASELINE
+      name: Establish Baseline
+      type: calculation
+      inputs:
+        - current_emissions
+        - process_heat_demand
+      outputs:
+        - baseline_trajectory
+      error_handling: propagate
+
+    - id: STEP_03_ELECTRIFICATION
+      name: Evaluate Electrification
+      type: calculation
+      inputs:
+        - temperature_requirement
+        - process_heat_demand
+        - electricity_cost
+        - grid_carbon_intensity
+      outputs:
+        - electrification_feasible
+        - electrification_capex
+        - electrification_opex_delta
+        - electrification_emissions
+      formula_refs:
+        - ELECTRIFICATION_EMISSIONS
+      error_handling: propagate
+
+    - id: STEP_04_HYDROGEN
+      name: Evaluate Hydrogen
+      type: calculation
+      inputs:
+        - hydrogen_availability
+        - hydrogen_cost
+        - hydrogen_carbon_intensity
+        - process_heat_demand
+      outputs:
+        - hydrogen_feasible
+        - hydrogen_capex
+        - hydrogen_opex_delta
+        - hydrogen_emissions
+      formula_refs:
+        - HYDROGEN_EMISSIONS
+      error_handling: propagate
+
+    - id: STEP_05_CCUS
+      name: Evaluate CCUS
+      type: calculation
+      inputs:
+        - ccus_feasible
+        - co2_storage_available
+        - ccus_cost
+        - current_emissions
+      outputs:
+        - ccus_capex
+        - ccus_opex
+        - ccus_capture_rate
+      error_handling: default
+
+    - id: STEP_06_ECONOMICS
+      name: Economic Analysis
+      type: calculation
+      inputs:
+        - all_pathway_costs
+        - carbon_price_current
+        - carbon_price_2030
+        - discount_rate
+      outputs:
+        - abatement_costs
+        - npv_by_pathway
+        - irr_by_pathway
+        - payback_by_pathway
+      formula_refs:
+        - MARGINAL_ABATEMENT_COST
+      error_handling: propagate
+
+    - id: STEP_07_RANKING
+      name: Rank Pathways
+      type: decision
+      inputs:
+        - all_pathway_analyses
+        - abatement_costs
+      outputs:
+        - pathways_evaluated
+        - recommended_pathway
+        - pathway_ranking
+      error_handling: propagate
+
+    - id: STEP_08_ROADMAP
+      name: Develop Roadmap
+      type: decision
+      inputs:
+        - recommended_pathway
+        - target_year
+        - interim_target_2030
+      outputs:
+        - roadmap_phases
+        - near_term_actions
+        - medium_term_actions
+        - long_term_actions
+        - pathway_trajectory
+      error_handling: propagate
+
+    - id: STEP_09_RISKS
+      name: Risk Assessment
+      type: decision
+      inputs:
+        - recommended_pathway
+        - industry_sector
+      outputs:
+        - key_risks
+        - barriers
+        - enablers
+      error_handling: default
+
+    - id: STEP_10_SUMMARY
+      name: Compile Summary
+      type: aggregation
+      inputs:
+        - all_results
+      outputs:
+        - total_investment_required
+        - annual_savings_potential
+        - emission_reduction_potential
+      error_handling: propagate
+
+    - id: STEP_11_PROVENANCE
+      name: Provenance Tracking
+      type: output
+      inputs:
+        - all_inputs
+        - all_outputs
+      outputs:
+        - provenance_hash
+        - calculation_timestamp
+        - source_references
+      error_handling: propagate
+
+# =============================================================================
+# Zero-Hallucination Configuration
+# =============================================================================
+
+zero_hallucination:
+  enabled: true
+  calculation_mode: deterministic
+  allowed_operations:
+    - arithmetic
+    - formula_evaluation
+    - npv_calculation
+    - cost_comparison
+  forbidden_operations:
+    - llm_cost_estimation
+    - llm_emission_prediction
+  require_formula_citation: true
+  require_provenance: true
+  llm_allowed_for:
+    - pathway_narrative
+    - risk_description
+    - recommendation_generation
+    - barrier_identification
+
+# =============================================================================
+# Test Cases
+# =============================================================================
+
+test_cases:
+  - name: Cement Plant Decarbonization
+    inputs:
+      facility_name: Cement Plant Alpha
+      industry_sector: cement
+      process_heat_demand: 2000000
+      temperature_requirement: 1450
+      current_emissions: 200000
+      current_fuel_type: coal
+      current_fuel_cost: 3.0
+      grid_carbon_intensity: 0.4
+      electricity_cost: 0.08
+      hydrogen_availability: limited
+      hydrogen_cost: 5.0
+      ccus_feasible: true
+      target_year: 2050
+      carbon_price_current: 50
+    expected_outputs:
+      electrification_feasible: false
+      ccus_feasible: true

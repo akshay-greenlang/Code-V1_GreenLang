@@ -1,0 +1,829 @@
+# =============================================================================
+# Predictive Maintenance Agent Template
+# GreenLang Agent Factory - Process Heat Applications
+# =============================================================================
+# Standards: ISO 13381, ISO 17359, API 691
+# Version: 1.0.0
+# =============================================================================
+
+metadata:
+  template_id: predictive_maintenance_agent
+  name: Equipment Health Monitoring Agent
+  description: >
+    Monitors process heat equipment health using vibration, temperature, and
+    performance data to predict failures before they occur. Implements
+    condition-based maintenance strategies with ROI optimization.
+  category: maintenance
+  version: "1.0.0"
+  status: production
+  author: GreenLang Engineering Team
+  created_at: "2024-12-01T00:00:00Z"
+  updated_at: "2024-12-11T00:00:00Z"
+
+  tags:
+    - predictive_maintenance
+    - condition_monitoring
+    - equipment_health
+    - vibration_analysis
+    - failure_prediction
+
+  equipment_types:
+    - rotating_equipment
+    - pump
+    - fan
+    - compressor
+    - turbine
+    - motor
+    - gearbox
+    - heat_exchanger
+    - fired_heater
+
+  industries:
+    - oil_gas
+    - power_generation
+    - petrochemical
+    - chemical
+    - manufacturing
+
+  applicable_standards:
+    - ISO 13381
+    - ISO 17359
+    - ISO 10816
+    - API 691
+    - API 670
+
+# =============================================================================
+# Input Schema
+# =============================================================================
+
+input_schema:
+  name: PredictiveMaintenanceInput
+  description: Predictive maintenance input parameters
+  version: "1.0.0"
+
+  fields:
+    # Equipment identification
+    equipment_tag:
+      type: string
+      description: Equipment tag number
+      required: true
+
+    equipment_type:
+      type: enum
+      description: Type of equipment
+      required: true
+      allowed_values:
+        - pump
+        - fan
+        - compressor
+        - motor
+        - turbine
+        - gearbox
+        - fired_heater
+        - heat_exchanger
+
+    equipment_criticality:
+      type: enum
+      description: Equipment criticality rating
+      required: true
+      allowed_values:
+        - critical
+        - essential
+        - standard
+        - non_critical
+
+    operating_speed:
+      type: float
+      description: Operating speed
+      required: false
+      unit: rpm
+
+    rated_power:
+      type: float
+      description: Rated power
+      required: false
+      unit: kW
+
+    # Vibration data
+    vibration_overall:
+      type: float
+      description: Overall vibration velocity
+      required: false
+      unit: mm/s_rms
+
+    vibration_1x:
+      type: float
+      description: 1X (running speed) amplitude
+      required: false
+      unit: mm/s
+
+    vibration_2x:
+      type: float
+      description: 2X amplitude
+      required: false
+      unit: mm/s
+
+    vibration_trend:
+      type: list
+      description: Historical vibration readings
+      required: false
+
+    vibration_spectrum:
+      type: dict
+      description: Vibration spectrum data
+      required: false
+
+    # Bearing data
+    bearing_temperature:
+      type: float
+      description: Bearing temperature
+      required: false
+      unit: celsius
+
+    bearing_temp_trend:
+      type: list
+      description: Historical bearing temperatures
+      required: false
+
+    oil_analysis_results:
+      type: dict
+      description: Oil analysis results
+      required: false
+
+    # Temperature data
+    process_temperature:
+      type: float
+      description: Process temperature
+      required: false
+      unit: celsius
+
+    skin_temperature:
+      type: float
+      description: Equipment skin temperature
+      required: false
+      unit: celsius
+
+    ambient_temperature:
+      type: float
+      description: Ambient temperature
+      required: false
+      unit: celsius
+
+    # Performance data
+    current_efficiency:
+      type: float
+      description: Current operating efficiency
+      required: false
+      unit: percent
+
+    design_efficiency:
+      type: float
+      description: Design efficiency
+      required: false
+      unit: percent
+
+    efficiency_trend:
+      type: list
+      description: Historical efficiency data
+      required: false
+
+    # Operating parameters
+    operating_hours:
+      type: float
+      description: Total operating hours
+      required: false
+      unit: hours
+
+    starts_count:
+      type: integer
+      description: Number of starts
+      required: false
+
+    last_maintenance_date:
+      type: datetime
+      description: Last maintenance date
+      required: false
+
+    maintenance_interval:
+      type: float
+      description: Scheduled maintenance interval
+      required: false
+      unit: hours
+
+    # Alert thresholds
+    vibration_alarm:
+      type: float
+      description: Vibration alarm threshold
+      required: false
+      unit: mm/s_rms
+      default: 7.1
+
+    vibration_trip:
+      type: float
+      description: Vibration trip threshold
+      required: false
+      unit: mm/s_rms
+      default: 11.2
+
+    temperature_alarm:
+      type: float
+      description: Temperature alarm threshold
+      required: false
+      unit: celsius
+
+    # Economic parameters
+    replacement_cost:
+      type: float
+      description: Equipment replacement cost
+      required: false
+      unit: USD
+
+    unplanned_downtime_cost:
+      type: float
+      description: Cost per hour of unplanned downtime
+      required: false
+      unit: USD/hour
+
+    planned_maintenance_cost:
+      type: float
+      description: Cost of planned maintenance
+      required: false
+      unit: USD
+
+# =============================================================================
+# Output Schema
+# =============================================================================
+
+output_schema:
+  name: PredictiveMaintenanceOutput
+  description: Predictive maintenance analysis results
+  version: "1.0.0"
+
+  fields:
+    # Health assessment
+    health_index:
+      type: float
+      description: Equipment health index (0-100)
+      unit: percent
+
+    health_status:
+      type: enum
+      description: Health status classification
+      allowed_values:
+        - good
+        - acceptable
+        - unsatisfactory
+        - unacceptable
+        - critical
+
+    degradation_rate:
+      type: float
+      description: Rate of degradation
+      unit: percent/month
+
+    # Failure prediction
+    failure_probability:
+      type: float
+      description: Probability of failure in next interval
+      unit: percent
+
+    estimated_remaining_life:
+      type: float
+      description: Estimated remaining useful life
+      unit: hours
+
+    confidence_level:
+      type: float
+      description: Confidence in prediction
+      unit: percent
+
+    # Fault detection
+    faults_detected:
+      type: list
+      description: List of detected faults
+
+    fault_severity:
+      type: enum
+      description: Most severe fault severity
+      allowed_values:
+        - none
+        - minor
+        - moderate
+        - severe
+        - critical
+
+    root_cause_analysis:
+      type: list
+      description: Probable root causes
+
+    # Vibration analysis
+    vibration_status:
+      type: string
+      description: Vibration status per ISO 10816
+
+    vibration_diagnosis:
+      type: list
+      description: Vibration-based diagnoses
+
+    # Trending
+    trend_status:
+      type: enum
+      description: Overall trend status
+      allowed_values:
+        - stable
+        - improving
+        - degrading_slowly
+        - degrading_rapidly
+        - erratic
+
+    days_to_alarm:
+      type: float
+      description: Estimated days to alarm threshold
+      unit: days
+
+    days_to_trip:
+      type: float
+      description: Estimated days to trip threshold
+      unit: days
+
+    # Maintenance recommendations
+    recommended_action:
+      type: string
+      description: Recommended maintenance action
+
+    action_priority:
+      type: enum
+      description: Action priority
+      allowed_values:
+        - immediate
+        - urgent
+        - scheduled
+        - routine
+        - monitor
+
+    optimal_maintenance_window:
+      type: dict
+      description: Optimal maintenance timing window
+
+    maintenance_tasks:
+      type: list
+      description: Specific maintenance tasks required
+
+    # Economic analysis
+    risk_of_failure_cost:
+      type: float
+      description: Expected cost of failure
+      unit: USD
+
+    maintenance_roi:
+      type: float
+      description: ROI of recommended maintenance
+      unit: percent
+
+    cost_avoidance:
+      type: float
+      description: Cost avoidance from predictive maintenance
+      unit: USD
+
+    # Provenance
+    provenance_hash:
+      type: string
+      description: SHA-256 hash
+
+    calculation_timestamp:
+      type: datetime
+      description: Analysis timestamp
+
+    data_quality_score:
+      type: float
+      description: Data quality assessment
+      unit: percent
+
+# =============================================================================
+# Formulas
+# =============================================================================
+
+formulas:
+  - id: HEALTH_INDEX
+    name: Equipment Health Index
+    description: Calculate overall equipment health index
+    equation: "HI = 100 - (w_v * V_score + w_t * T_score + w_e * E_score + w_o * O_score)"
+    variables:
+      HI:
+        description: Health Index
+        unit: percent
+        type: float
+      w_v:
+        description: Vibration weight factor
+        unit: dimensionless
+        type: float
+      V_score:
+        description: Vibration penalty score
+        unit: percent
+        type: float
+      w_t:
+        description: Temperature weight factor
+        unit: dimensionless
+        type: float
+      T_score:
+        description: Temperature penalty score
+        unit: percent
+        type: float
+      w_e:
+        description: Efficiency weight factor
+        unit: dimensionless
+        type: float
+      E_score:
+        description: Efficiency penalty score
+        unit: percent
+        type: float
+      w_o:
+        description: Oil analysis weight factor
+        unit: dimensionless
+        type: float
+      O_score:
+        description: Oil analysis penalty score
+        unit: percent
+        type: float
+    source:
+      standard: ISO 17359
+      section: "Condition Monitoring"
+      edition: "2011"
+    application: Health assessment
+
+  - id: REMAINING_USEFUL_LIFE
+    name: Remaining Useful Life
+    description: Estimate remaining useful life from degradation rate
+    equation: "RUL = (Threshold - Current) / Degradation_Rate"
+    variables:
+      RUL:
+        description: Remaining useful life
+        unit: hours
+        type: float
+      Threshold:
+        description: Failure threshold value
+        unit: varies
+        type: float
+      Current:
+        description: Current parameter value
+        unit: varies
+        type: float
+      Degradation_Rate:
+        description: Rate of degradation
+        unit: varies/hour
+        type: float
+    source:
+      standard: ISO 13381-1
+      section: "Prognostics"
+      edition: "2015"
+    application: Life prediction
+
+  - id: VIBRATION_SEVERITY_ISO
+    name: Vibration Severity per ISO 10816
+    description: Classify vibration severity
+    equation: |
+      Class I (small machines): Good <0.71, Acceptable <1.8, Unsatisfactory <4.5, Unacceptable >=4.5
+      Class II (medium machines): Good <1.12, Acceptable <2.8, Unsatisfactory <7.1, Unacceptable >=7.1
+      Class III (large machines, rigid): Good <1.8, Acceptable <4.5, Unsatisfactory <11.2, Unacceptable >=11.2
+      Class IV (large machines, soft): Good <2.8, Acceptable <7.1, Unsatisfactory <18, Unacceptable >=18
+    variables:
+      V_rms:
+        description: Vibration velocity RMS
+        unit: mm/s
+        type: float
+      Machine_Class:
+        description: Machine classification
+        unit: dimensionless
+        type: enum
+    source:
+      standard: ISO 10816-3
+      section: "Evaluation criteria"
+      edition: "2009"
+    application: Vibration classification
+
+  - id: FAILURE_PROBABILITY
+    name: Failure Probability
+    description: Calculate probability of failure
+    equation: "P_f = 1 - exp(-(t/eta)^beta)"
+    variables:
+      P_f:
+        description: Failure probability
+        unit: dimensionless
+        type: float
+      t:
+        description: Time in service
+        unit: hours
+        type: float
+      eta:
+        description: Characteristic life (Weibull)
+        unit: hours
+        type: float
+      beta:
+        description: Shape parameter (Weibull)
+        unit: dimensionless
+        type: float
+    source:
+      standard: ISO 13381-1
+      section: "Reliability"
+      edition: "2015"
+    application: Failure prediction
+
+  - id: RISK_COST
+    name: Risk-Based Cost
+    description: Calculate expected cost of failure
+    equation: "Risk_Cost = P_f * (C_replacement + C_downtime * MTTR + C_consequential)"
+    variables:
+      Risk_Cost:
+        description: Expected failure cost
+        unit: USD
+        type: float
+      P_f:
+        description: Failure probability
+        unit: dimensionless
+        type: float
+      C_replacement:
+        description: Replacement cost
+        unit: USD
+        type: float
+      C_downtime:
+        description: Downtime cost rate
+        unit: USD/hour
+        type: float
+      MTTR:
+        description: Mean time to repair
+        unit: hours
+        type: float
+      C_consequential:
+        description: Consequential damage cost
+        unit: USD
+        type: float
+    source:
+      standard: API 691
+      section: "Risk-Based Inspection"
+      edition: "2017"
+    application: Economic analysis
+
+# =============================================================================
+# Safety Constraints
+# =============================================================================
+
+safety_constraints:
+  - id: SC_VIBRATION_TRIP
+    name: Vibration Trip Level
+    description: Vibration exceeds trip level
+    condition: "vibration_overall <= vibration_trip"
+    action: reject
+    severity: critical
+    message: "CRITICAL: Vibration {vibration_overall} mm/s exceeds trip level - shutdown required"
+
+  - id: SC_VIBRATION_ALARM
+    name: Vibration Alarm Level
+    description: Vibration exceeds alarm level
+    condition: "vibration_overall <= vibration_alarm"
+    action: warn
+    severity: error
+    message: "Vibration {vibration_overall} mm/s exceeds alarm - immediate attention required"
+
+  - id: SC_BEARING_TEMP
+    name: Bearing Temperature High
+    description: Bearing temperature exceeds limit
+    condition: "bearing_temperature <= temperature_alarm"
+    action: warn
+    severity: error
+    message: "Bearing temperature {bearing_temperature}C exceeds alarm threshold"
+
+  - id: SC_RAPID_DEGRADATION
+    name: Rapid Degradation
+    description: Equipment degrading rapidly
+    condition: "degradation_rate <= 10"
+    action: warn
+    severity: warning
+    message: "Rapid degradation detected - degradation rate {degradation_rate}%/month"
+
+# =============================================================================
+# Processing Pipeline
+# =============================================================================
+
+processing:
+  steps:
+    - id: STEP_01_VALIDATE
+      name: Input Validation
+      type: validation
+      inputs:
+        - all_input_fields
+      outputs:
+        - validation_status
+        - data_quality_score
+      error_handling: reject
+
+    - id: STEP_02_VIBRATION_ANALYSIS
+      name: Vibration Analysis
+      type: calculation
+      inputs:
+        - vibration_overall
+        - vibration_1x
+        - vibration_2x
+        - vibration_spectrum
+        - operating_speed
+      outputs:
+        - vibration_status
+        - vibration_diagnosis
+      formula_refs:
+        - VIBRATION_SEVERITY_ISO
+      constraints:
+        - SC_VIBRATION_TRIP
+        - SC_VIBRATION_ALARM
+      error_handling: propagate
+
+    - id: STEP_03_TEMPERATURE_ANALYSIS
+      name: Temperature Analysis
+      type: calculation
+      inputs:
+        - bearing_temperature
+        - bearing_temp_trend
+        - process_temperature
+        - skin_temperature
+      outputs:
+        - temperature_status
+        - temperature_diagnosis
+      constraints:
+        - SC_BEARING_TEMP
+      error_handling: propagate
+
+    - id: STEP_04_PERFORMANCE_ANALYSIS
+      name: Performance Analysis
+      type: calculation
+      inputs:
+        - current_efficiency
+        - design_efficiency
+        - efficiency_trend
+      outputs:
+        - performance_status
+        - efficiency_degradation
+      error_handling: default
+
+    - id: STEP_05_TREND_ANALYSIS
+      name: Trend Analysis
+      type: calculation
+      inputs:
+        - vibration_trend
+        - bearing_temp_trend
+        - efficiency_trend
+      outputs:
+        - trend_status
+        - degradation_rate
+        - days_to_alarm
+        - days_to_trip
+      constraints:
+        - SC_RAPID_DEGRADATION
+      error_handling: propagate
+
+    - id: STEP_06_HEALTH_INDEX
+      name: Calculate Health Index
+      type: calculation
+      inputs:
+        - vibration_status
+        - temperature_status
+        - performance_status
+        - oil_analysis_results
+      outputs:
+        - health_index
+        - health_status
+      formula_refs:
+        - HEALTH_INDEX
+      error_handling: propagate
+
+    - id: STEP_07_FAULT_DETECTION
+      name: Fault Detection
+      type: classification
+      inputs:
+        - vibration_diagnosis
+        - temperature_diagnosis
+        - oil_analysis_results
+      outputs:
+        - faults_detected
+        - fault_severity
+        - root_cause_analysis
+      error_handling: propagate
+
+    - id: STEP_08_FAILURE_PREDICTION
+      name: Failure Prediction
+      type: calculation
+      inputs:
+        - health_index
+        - degradation_rate
+        - operating_hours
+        - equipment_type
+      outputs:
+        - failure_probability
+        - estimated_remaining_life
+        - confidence_level
+      formula_refs:
+        - REMAINING_USEFUL_LIFE
+        - FAILURE_PROBABILITY
+      error_handling: propagate
+
+    - id: STEP_09_ECONOMICS
+      name: Economic Analysis
+      type: calculation
+      inputs:
+        - failure_probability
+        - replacement_cost
+        - unplanned_downtime_cost
+        - planned_maintenance_cost
+      outputs:
+        - risk_of_failure_cost
+        - maintenance_roi
+        - cost_avoidance
+      formula_refs:
+        - RISK_COST
+      error_handling: default
+
+    - id: STEP_10_RECOMMENDATIONS
+      name: Generate Recommendations
+      type: decision
+      inputs:
+        - health_status
+        - fault_severity
+        - failure_probability
+        - maintenance_roi
+      outputs:
+        - recommended_action
+        - action_priority
+        - optimal_maintenance_window
+        - maintenance_tasks
+      error_handling: propagate
+
+    - id: STEP_11_PROVENANCE
+      name: Provenance Tracking
+      type: output
+      inputs:
+        - all_inputs
+        - all_outputs
+      outputs:
+        - provenance_hash
+        - calculation_timestamp
+      error_handling: propagate
+
+# =============================================================================
+# Zero-Hallucination Configuration
+# =============================================================================
+
+zero_hallucination:
+  enabled: true
+  calculation_mode: deterministic
+  allowed_operations:
+    - arithmetic
+    - formula_evaluation
+    - statistical_trending
+    - vibration_spectrum_analysis
+    - weibull_calculation
+  forbidden_operations:
+    - llm_failure_prediction
+    - ml_rul_estimation_without_validation
+  require_formula_citation: true
+  require_provenance: true
+  llm_allowed_for:
+    - fault_classification
+    - root_cause_narrative
+    - maintenance_recommendation
+    - report_generation
+
+# =============================================================================
+# Test Cases
+# =============================================================================
+
+test_cases:
+  - name: Pump with High Vibration
+    inputs:
+      equipment_tag: P-201
+      equipment_type: pump
+      equipment_criticality: essential
+      operating_speed: 2980
+      vibration_overall: 8.5
+      vibration_1x: 6.2
+      vibration_2x: 3.1
+      bearing_temperature: 75
+      vibration_alarm: 7.1
+      vibration_trip: 11.2
+      replacement_cost: 50000
+      unplanned_downtime_cost: 5000
+    expected_outputs:
+      health_status: unsatisfactory
+      action_priority: urgent
+
+  - name: Healthy Motor
+    inputs:
+      equipment_tag: M-101
+      equipment_type: motor
+      equipment_criticality: standard
+      operating_speed: 1480
+      vibration_overall: 1.5
+      bearing_temperature: 55
+      current_efficiency: 94
+      design_efficiency: 95
+      vibration_alarm: 2.8
+      vibration_trip: 4.5
+    expected_outputs:
+      health_status: good
+      action_priority: monitor

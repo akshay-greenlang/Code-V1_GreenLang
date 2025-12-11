@@ -1,0 +1,387 @@
+# =============================================================================
+# HAZOP Assistant Agent Template
+# GreenLang Agent Factory - Process Heat Applications
+# =============================================================================
+# Standards: IEC 61882, ISO 31000
+# Version: 1.0.0
+# =============================================================================
+
+metadata:
+  template_id: hazop_assistant_agent
+  name: HAZOP Study Support Agent
+  description: >
+    Assists with Hazard and Operability (HAZOP) studies by generating
+    deviation scenarios, suggesting causes and consequences, identifying
+    safeguards, and documenting recommendations for process heat equipment.
+  category: safety
+  version: "1.0.0"
+  status: production
+  author: GreenLang Engineering Team
+  created_at: "2024-12-01T00:00:00Z"
+  updated_at: "2024-12-11T00:00:00Z"
+
+  tags:
+    - HAZOP
+    - hazard_analysis
+    - process_safety
+    - deviation_analysis
+    - safeguard_identification
+
+  equipment_types:
+    - boiler
+    - fired_heater
+    - heat_exchanger
+    - steam_system
+    - furnace
+
+  industries:
+    - oil_gas
+    - petrochemical
+    - chemical
+    - power_generation
+
+  applicable_standards:
+    - IEC 61882
+    - ISO 31000
+
+# =============================================================================
+# Input Schema
+# =============================================================================
+
+input_schema:
+  name: HAZOPInput
+  description: HAZOP study support input parameters
+  version: "1.0.0"
+
+  fields:
+    # Study scope
+    node_name:
+      type: string
+      description: HAZOP study node name
+      required: true
+
+    node_description:
+      type: string
+      description: Description of the study node
+      required: true
+
+    equipment_type:
+      type: enum
+      description: Type of equipment in node
+      required: true
+      allowed_values:
+        - boiler
+        - fired_heater
+        - heat_exchanger
+        - steam_header
+        - condensate_system
+        - fuel_system
+        - air_system
+        - flue_gas_system
+
+    # Design intent
+    design_intent:
+      type: string
+      description: Normal design intent/operation
+      required: true
+
+    # Process parameters
+    process_parameters:
+      type: list
+      description: List of process parameters for deviation analysis
+      required: true
+
+    normal_operating_conditions:
+      type: dict
+      description: Normal operating conditions
+      required: true
+
+    # P&ID reference
+    pid_reference:
+      type: string
+      description: P&ID drawing number
+      required: true
+
+    line_number:
+      type: string
+      description: Line number being studied
+      required: false
+
+    # Guideword selection
+    guidewords_to_apply:
+      type: list
+      description: Guidewords to apply
+      required: false
+      default:
+        - NO
+        - MORE
+        - LESS
+        - REVERSE
+        - OTHER THAN
+        - PART OF
+        - AS WELL AS
+
+    # Existing safeguards
+    existing_safeguards:
+      type: list
+      description: List of existing safeguards
+      required: false
+
+    # Previous incidents
+    previous_incidents:
+      type: list
+      description: Previous incident history
+      required: false
+
+# =============================================================================
+# Output Schema
+# =============================================================================
+
+output_schema:
+  name: HAZOPOutput
+  description: HAZOP study support results
+  version: "1.0.0"
+
+  fields:
+    # Deviation analysis
+    deviations_identified:
+      type: list
+      description: List of identified deviations
+
+    deviation_worksheets:
+      type: list
+      description: Detailed worksheets for each deviation
+
+    # Risk assessment
+    risk_matrix:
+      type: dict
+      description: Risk ranking matrix
+
+    high_risk_scenarios:
+      type: list
+      description: Scenarios requiring immediate action
+
+    # Recommendations
+    recommendations:
+      type: list
+      description: HAZOP recommendations
+
+    action_items:
+      type: list
+      description: Action items from study
+
+    # Documentation
+    hazop_summary:
+      type: string
+      description: Executive summary
+
+    # Provenance
+    provenance_hash:
+      type: string
+      description: SHA-256 hash
+
+    calculation_timestamp:
+      type: datetime
+      description: Timestamp
+
+    source_references:
+      type: list
+      description: Standards referenced
+
+# =============================================================================
+# Formulas
+# =============================================================================
+
+formulas:
+  - id: RISK_RANKING
+    name: Risk Ranking Matrix
+    description: Calculate risk rank from likelihood and severity
+    equation: "Risk = Likelihood x Severity"
+    variables:
+      Risk:
+        description: Risk ranking
+        unit: dimensionless
+        type: integer
+      Likelihood:
+        description: Likelihood category (1-5)
+        unit: dimensionless
+        type: integer
+      Severity:
+        description: Severity category (1-5)
+        unit: dimensionless
+        type: integer
+    source:
+      standard: ISO 31000
+      section: "Risk Assessment"
+      edition: "2018"
+    application: Risk categorization
+
+# =============================================================================
+# Standards References
+# =============================================================================
+
+standards:
+  - code: IEC 61882
+    title: Hazard and operability studies (HAZOP studies) - Application guide
+    edition: "2016"
+    sections:
+      - "HAZOP methodology"
+    requirements:
+      - HAZOP study process
+      - Documentation requirements
+    compliance_level: required
+
+# =============================================================================
+# Safety Constraints
+# =============================================================================
+
+safety_constraints:
+  - id: SC_HIGH_RISK
+    name: High Risk Scenario Flag
+    description: Flag scenarios exceeding risk tolerance
+    condition: "risk_rank <= 15"
+    action: warn
+    severity: error
+    message: "High risk scenario identified - requires immediate action"
+
+# =============================================================================
+# Processing Pipeline
+# =============================================================================
+
+processing:
+  steps:
+    - id: STEP_01_VALIDATE_INPUTS
+      name: Input Validation
+      type: validation
+      inputs:
+        - all_input_fields
+      outputs:
+        - validation_status
+      error_handling: reject
+
+    - id: STEP_02_GENERATE_DEVIATIONS
+      name: Generate Deviations
+      type: calculation
+      inputs:
+        - process_parameters
+        - guidewords_to_apply
+      outputs:
+        - deviations_identified
+      error_handling: propagate
+
+    - id: STEP_03_ANALYZE_CAUSES
+      name: Analyze Causes
+      type: decision
+      inputs:
+        - deviations_identified
+        - equipment_type
+        - previous_incidents
+      outputs:
+        - deviation_worksheets
+      error_handling: propagate
+
+    - id: STEP_04_IDENTIFY_SAFEGUARDS
+      name: Identify Safeguards
+      type: lookup
+      inputs:
+        - deviation_worksheets
+        - existing_safeguards
+      outputs:
+        - safeguard_analysis
+      error_handling: propagate
+
+    - id: STEP_05_RISK_RANKING
+      name: Risk Ranking
+      type: calculation
+      inputs:
+        - deviation_worksheets
+      outputs:
+        - risk_matrix
+        - high_risk_scenarios
+      formula_refs:
+        - RISK_RANKING
+      constraints:
+        - SC_HIGH_RISK
+      error_handling: propagate
+
+    - id: STEP_06_GENERATE_RECOMMENDATIONS
+      name: Generate Recommendations
+      type: decision
+      inputs:
+        - high_risk_scenarios
+      outputs:
+        - recommendations
+        - action_items
+      error_handling: default
+
+    - id: STEP_07_COMPILE_SUMMARY
+      name: Compile Summary
+      type: aggregation
+      inputs:
+        - all_results
+      outputs:
+        - hazop_summary
+      error_handling: default
+
+    - id: STEP_08_PROVENANCE
+      name: Provenance Tracking
+      type: output
+      inputs:
+        - all_inputs
+        - all_outputs
+      outputs:
+        - provenance_hash
+        - calculation_timestamp
+        - source_references
+      error_handling: propagate
+
+# =============================================================================
+# Zero-Hallucination Configuration
+# =============================================================================
+
+zero_hallucination:
+  enabled: true
+  calculation_mode: deterministic
+  allowed_operations:
+    - table_lookup
+    - pattern_matching
+    - risk_multiplication
+  forbidden_operations:
+    - llm_consequence_prediction
+    - llm_risk_value_generation
+  require_formula_citation: true
+  require_provenance: true
+  llm_allowed_for:
+    - cause_suggestion
+    - consequence_description
+    - recommendation_narrative
+    - safeguard_identification
+
+# =============================================================================
+# Test Cases
+# =============================================================================
+
+test_cases:
+  - name: Boiler Feedwater HAZOP
+    inputs:
+      node_name: BFW-001
+      node_description: Boiler feedwater supply system
+      equipment_type: boiler
+      design_intent: Maintain continuous feedwater supply to boiler at 105C, 15 bar
+      process_parameters:
+        - flow
+        - temperature
+        - pressure
+        - level
+      normal_operating_conditions:
+        flow: 10000
+        temperature: 105
+        pressure: 15
+      pid_reference: PID-001-001
+      guidewords_to_apply:
+        - NO
+        - MORE
+        - LESS
+    expected_outputs:
+      deviations_identified:
+        min_count: 6

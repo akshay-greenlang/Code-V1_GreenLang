@@ -1,0 +1,518 @@
+# =============================================================================
+# Carbon Footprint Agent Template
+# GreenLang Agent Factory - Process Heat Applications
+# =============================================================================
+# Standards: GHG Protocol, ISO 14064, CBAM
+# Version: 1.0.0
+# =============================================================================
+
+metadata:
+  template_id: carbon_footprint_agent
+  name: Process Carbon Footprint Calculation Agent
+  description: >
+    Calculates Scope 1 and Scope 2 carbon footprint for process heat operations
+    per GHG Protocol. Supports product-level carbon intensity calculations
+    for CBAM and carbon pricing compliance.
+  category: emissions
+  version: "1.0.0"
+  status: production
+  author: GreenLang Engineering Team
+  created_at: "2024-12-01T00:00:00Z"
+  updated_at: "2024-12-11T00:00:00Z"
+
+  tags:
+    - carbon_footprint
+    - GHG_Protocol
+    - Scope_1
+    - Scope_2
+    - CBAM
+    - carbon_intensity
+
+  equipment_types:
+    - process_facility
+    - production_line
+    - product
+
+  industries:
+    - all
+
+  applicable_standards:
+    - GHG Protocol
+    - ISO 14064
+    - EU CBAM
+
+# =============================================================================
+# Input Schema
+# =============================================================================
+
+input_schema:
+  name: CarbonFootprintInput
+  description: Carbon footprint calculation input parameters
+  version: "1.0.0"
+
+  fields:
+    # Facility identification
+    facility_name:
+      type: string
+      description: Facility name
+      required: true
+
+    reporting_period:
+      type: string
+      description: Reporting period
+      required: true
+      default: "2024"
+
+    # Scope 1 - Direct emissions
+    scope1_fuels:
+      type: list
+      description: List of fuels consumed with quantities
+      required: true
+
+    natural_gas_consumption:
+      type: float
+      description: Natural gas consumption
+      required: false
+      unit: GJ
+
+    fuel_oil_consumption:
+      type: float
+      description: Fuel oil consumption
+      required: false
+      unit: litres
+
+    coal_consumption:
+      type: float
+      description: Coal consumption
+      required: false
+      unit: tonnes
+
+    process_emissions:
+      type: float
+      description: Process emissions (non-combustion)
+      required: false
+      unit: tonnes_CO2e
+
+    fugitive_emissions:
+      type: float
+      description: Fugitive emissions
+      required: false
+      unit: tonnes_CO2e
+
+    # Scope 2 - Indirect from electricity/steam
+    electricity_consumption:
+      type: float
+      description: Electricity consumption
+      required: true
+      unit: MWh
+
+    grid_emission_factor:
+      type: float
+      description: Grid emission factor
+      required: true
+      unit: kg_CO2/kWh
+
+    purchased_steam:
+      type: float
+      description: Purchased steam
+      required: false
+      unit: GJ
+
+    steam_emission_factor:
+      type: float
+      description: Steam emission factor
+      required: false
+      unit: kg_CO2/GJ
+
+    # Production data
+    production_volume:
+      type: float
+      description: Production volume
+      required: true
+      unit: tonnes
+
+    product_type:
+      type: string
+      description: Product type
+      required: true
+
+    # CBAM specific
+    cbam_applicable:
+      type: boolean
+      description: Whether CBAM applies
+      required: false
+      default: false
+
+    precursor_emissions:
+      type: float
+      description: Emissions from precursors
+      required: false
+      unit: tonnes_CO2e
+
+# =============================================================================
+# Output Schema
+# =============================================================================
+
+output_schema:
+  name: CarbonFootprintOutput
+  description: Carbon footprint calculation results
+  version: "1.0.0"
+
+  fields:
+    # Scope 1
+    scope1_total:
+      type: float
+      description: Total Scope 1 emissions
+      unit: tonnes_CO2e
+
+    scope1_combustion:
+      type: float
+      description: Scope 1 from combustion
+      unit: tonnes_CO2e
+
+    scope1_process:
+      type: float
+      description: Scope 1 from process
+      unit: tonnes_CO2e
+
+    scope1_fugitive:
+      type: float
+      description: Scope 1 fugitive
+      unit: tonnes_CO2e
+
+    # Scope 2
+    scope2_location:
+      type: float
+      description: Scope 2 location-based
+      unit: tonnes_CO2e
+
+    scope2_market:
+      type: float
+      description: Scope 2 market-based
+      unit: tonnes_CO2e
+
+    # Total
+    total_emissions:
+      type: float
+      description: Total Scope 1 + Scope 2
+      unit: tonnes_CO2e
+
+    # Intensity metrics
+    carbon_intensity:
+      type: float
+      description: Emissions per tonne product
+      unit: tonnes_CO2e/tonne_product
+
+    energy_intensity:
+      type: float
+      description: Energy per tonne product
+      unit: GJ/tonne
+
+    # CBAM specific
+    cbam_specific_emissions:
+      type: float
+      description: CBAM specific embedded emissions
+      unit: tonnes_CO2/tonne_product
+
+    cbam_direct_emissions:
+      type: float
+      description: CBAM direct emissions
+      unit: tonnes_CO2/tonne_product
+
+    cbam_indirect_emissions:
+      type: float
+      description: CBAM indirect emissions
+      unit: tonnes_CO2/tonne_product
+
+    # Breakdown
+    emissions_by_source:
+      type: dict
+      description: Emissions by source
+
+    # Recommendations
+    reduction_opportunities:
+      type: list
+      description: Emission reduction opportunities
+
+    benchmark_comparison:
+      type: dict
+      description: Comparison to benchmarks
+
+    provenance_hash:
+      type: string
+      description: SHA-256 hash
+
+    calculation_timestamp:
+      type: datetime
+      description: Timestamp
+
+    source_references:
+      type: list
+      description: Standards used
+
+# =============================================================================
+# Formulas
+# =============================================================================
+
+formulas:
+  - id: SCOPE1_COMBUSTION
+    name: Scope 1 Combustion Emissions
+    description: Calculate Scope 1 from fuel combustion
+    equation: "E_comb = sum(Fuel_i * EF_i)"
+    variables:
+      E_comb:
+        description: Combustion emissions
+        unit: tonnes_CO2e
+        type: float
+      Fuel_i:
+        description: Fuel consumption
+        unit: GJ or kg
+        type: float
+      EF_i:
+        description: Emission factor
+        unit: kg_CO2e/GJ or kg_CO2e/kg
+        type: float
+    source:
+      standard: GHG Protocol
+      section: "Chapter 4"
+      edition: "2015"
+    application: Scope 1 calculation
+
+  - id: SCOPE2_LOCATION
+    name: Scope 2 Location-Based
+    description: Calculate Scope 2 location-based emissions
+    equation: "E_s2 = Elec * EF_grid"
+    variables:
+      E_s2:
+        description: Scope 2 emissions
+        unit: tonnes_CO2e
+        type: float
+      Elec:
+        description: Electricity consumption
+        unit: MWh
+        type: float
+      EF_grid:
+        description: Grid emission factor
+        unit: tonnes_CO2e/MWh
+        type: float
+    source:
+      standard: GHG Protocol Scope 2 Guidance
+      section: "Chapter 6"
+      edition: "2015"
+    application: Scope 2 location method
+
+  - id: CBAM_SPECIFIC_EMISSIONS
+    name: CBAM Specific Embedded Emissions
+    description: Calculate CBAM specific emissions
+    equation: "SEE = (Direct + Indirect + Precursors) / Production"
+    variables:
+      SEE:
+        description: Specific embedded emissions
+        unit: tonnes_CO2/tonne
+        type: float
+      Direct:
+        description: Direct emissions
+        unit: tonnes_CO2
+        type: float
+      Indirect:
+        description: Indirect emissions
+        unit: tonnes_CO2
+        type: float
+      Precursors:
+        description: Precursor emissions
+        unit: tonnes_CO2
+        type: float
+      Production:
+        description: Production quantity
+        unit: tonnes
+        type: float
+    source:
+      standard: EU CBAM
+      section: "Annex IV"
+      edition: "2023"
+    application: CBAM reporting
+
+# =============================================================================
+# Standards References
+# =============================================================================
+
+standards:
+  - code: GHG Protocol
+    title: GHG Protocol Corporate Standard
+    edition: "2015"
+    sections:
+      - "Chapter 4: Setting Boundaries"
+      - "Chapter 6: Identifying Emissions"
+    requirements:
+      - Scope 1, 2, 3 methodology
+    compliance_level: required
+
+  - code: ISO 14064
+    title: Greenhouse gases - Quantification and reporting
+    edition: "2018"
+    sections:
+      - "Part 1: Organization level"
+    requirements:
+      - GHG inventory requirements
+    compliance_level: required
+
+  - code: EU CBAM
+    title: Carbon Border Adjustment Mechanism
+    edition: "2023"
+    sections:
+      - "Annex IV: Methodology"
+    requirements:
+      - Embedded emissions calculation
+    compliance_level: required
+
+# =============================================================================
+# Processing Pipeline
+# =============================================================================
+
+processing:
+  steps:
+    - id: STEP_01_VALIDATE
+      name: Input Validation
+      type: validation
+      inputs:
+        - all_input_fields
+      outputs:
+        - validation_status
+      error_handling: reject
+
+    - id: STEP_02_SCOPE1
+      name: Calculate Scope 1
+      type: calculation
+      inputs:
+        - scope1_fuels
+        - process_emissions
+        - fugitive_emissions
+      outputs:
+        - scope1_combustion
+        - scope1_process
+        - scope1_fugitive
+        - scope1_total
+      formula_refs:
+        - SCOPE1_COMBUSTION
+      error_handling: propagate
+
+    - id: STEP_03_SCOPE2
+      name: Calculate Scope 2
+      type: calculation
+      inputs:
+        - electricity_consumption
+        - grid_emission_factor
+        - purchased_steam
+        - steam_emission_factor
+      outputs:
+        - scope2_location
+        - scope2_market
+      formula_refs:
+        - SCOPE2_LOCATION
+      error_handling: propagate
+
+    - id: STEP_04_TOTAL
+      name: Calculate Totals
+      type: calculation
+      inputs:
+        - scope1_total
+        - scope2_location
+      outputs:
+        - total_emissions
+        - emissions_by_source
+      error_handling: propagate
+
+    - id: STEP_05_INTENSITY
+      name: Calculate Intensity
+      type: calculation
+      inputs:
+        - total_emissions
+        - production_volume
+      outputs:
+        - carbon_intensity
+        - energy_intensity
+      error_handling: propagate
+
+    - id: STEP_06_CBAM
+      name: CBAM Calculations
+      type: calculation
+      inputs:
+        - cbam_applicable
+        - scope1_total
+        - scope2_location
+        - precursor_emissions
+        - production_volume
+      outputs:
+        - cbam_specific_emissions
+        - cbam_direct_emissions
+        - cbam_indirect_emissions
+      formula_refs:
+        - CBAM_SPECIFIC_EMISSIONS
+      error_handling: default
+
+    - id: STEP_07_RECOMMENDATIONS
+      name: Generate Recommendations
+      type: decision
+      inputs:
+        - emissions_by_source
+        - carbon_intensity
+      outputs:
+        - reduction_opportunities
+        - benchmark_comparison
+      error_handling: default
+
+    - id: STEP_08_PROVENANCE
+      name: Provenance Tracking
+      type: output
+      inputs:
+        - all_inputs
+        - all_outputs
+      outputs:
+        - provenance_hash
+        - calculation_timestamp
+        - source_references
+      error_handling: propagate
+
+# =============================================================================
+# Zero-Hallucination Configuration
+# =============================================================================
+
+zero_hallucination:
+  enabled: true
+  calculation_mode: deterministic
+  allowed_operations:
+    - arithmetic
+    - formula_evaluation
+    - emission_factor_lookup
+    - aggregation
+  forbidden_operations:
+    - llm_emission_calculation
+    - ml_footprint_estimation
+  require_formula_citation: true
+  require_provenance: true
+  llm_allowed_for:
+    - reduction_recommendation
+    - benchmark_narrative
+
+# =============================================================================
+# Test Cases
+# =============================================================================
+
+test_cases:
+  - name: Steel Plant Carbon Footprint
+    inputs:
+      facility_name: Steel Works A
+      reporting_period: "2024"
+      natural_gas_consumption: 500000
+      electricity_consumption: 50000
+      grid_emission_factor: 0.4
+      production_volume: 100000
+      product_type: steel_billet
+      cbam_applicable: true
+    expected_outputs:
+      scope1_total:
+        min: 20000
+        max: 40000
+      carbon_intensity:
+        min: 0.5
+        max: 2.0

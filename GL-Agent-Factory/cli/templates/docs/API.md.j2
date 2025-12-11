@@ -1,0 +1,262 @@
+# {{ cookiecutter.agent_name }} - API Reference
+
+## Overview
+
+This document provides the complete API reference for the {{ cookiecutter.agent_name }}.
+
+## Classes
+
+### {{ cookiecutter.agent_class_name }}
+
+Main agent class for {{ cookiecutter.domain }} operations.
+
+```python
+class {{ cookiecutter.agent_class_name }}:
+    """
+    {{ cookiecutter.agent_class_name }} implementation.
+
+    This agent is responsible for {{ cookiecutter.description }}.
+    """
+```
+
+#### Constructor
+
+```python
+def __init__(self, config: Optional[Dict[str, Any]] = None) -> None
+```
+
+**Parameters:**
+- `config` (Optional[Dict[str, Any]]): Optional configuration dictionary
+
+**Example:**
+```python
+# Default initialization
+agent = {{ cookiecutter.agent_class_name }}()
+
+# With custom config
+agent = {{ cookiecutter.agent_class_name }}(config={
+    "verbose": True,
+    "strict_validation": True
+})
+```
+
+#### Properties
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `id` | str | Agent identifier |
+| `version` | str | Agent version |
+| `name` | str | Human-readable name |
+| `config` | Dict | Configuration dictionary |
+
+#### Methods
+
+##### process
+
+```python
+def process(
+    self,
+    input_data: {{ cookiecutter.agent_class_name }}Input
+) -> {{ cookiecutter.agent_class_name }}Output
+```
+
+Main processing method.
+
+**Parameters:**
+- `input_data` ({{ cookiecutter.agent_class_name }}Input): Validated input data
+
+**Returns:**
+- `{{ cookiecutter.agent_class_name }}Output`: Processed output with provenance hash
+
+**Raises:**
+- `ValueError`: If input data fails validation
+- `ProcessingError`: If processing fails
+
+**Example:**
+```python
+input_data = {{ cookiecutter.agent_class_name }}Input(
+    # input parameters
+)
+result = agent.process(input_data)
+```
+
+---
+
+### {{ cookiecutter.agent_class_name }}Input
+
+Input data model using Pydantic.
+
+```python
+class {{ cookiecutter.agent_class_name }}Input(BaseModel):
+    """Input data model for {{ cookiecutter.agent_class_name }}."""
+```
+
+#### Fields
+
+| Field | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+{% for field in cookiecutter.input_fields %}
+| `{{ field.name }}` | {{ field.type }} | {{ field.required }} | {{ field.default }} | {{ field.description }} |
+{% endfor %}
+
+#### Validators
+
+Input validation is performed automatically by Pydantic. Custom validators can be added for business logic validation.
+
+#### Example
+
+```python
+from agent import {{ cookiecutter.agent_class_name }}Input
+
+# Create input
+input_data = {{ cookiecutter.agent_class_name }}Input(
+    {% for field in cookiecutter.input_fields %}
+    {{ field.name }}={{ field.example }},
+    {% endfor %}
+)
+```
+
+---
+
+### {{ cookiecutter.agent_class_name }}Output
+
+Output data model using Pydantic.
+
+```python
+class {{ cookiecutter.agent_class_name }}Output(BaseModel):
+    """Output data model for {{ cookiecutter.agent_class_name }}."""
+```
+
+#### Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `result` | Any | Primary processing result |
+| `provenance_hash` | str | SHA-256 hash for audit trail (64 characters) |
+| `processing_time_ms` | float | Processing duration in milliseconds |
+| `validation_status` | str | "PASS" or "FAIL" |
+{% for field in cookiecutter.output_fields %}
+| `{{ field.name }}` | {{ field.type }} | {{ field.description }} |
+{% endfor %}
+
+#### Methods
+
+##### json
+
+```python
+def json(self, **kwargs) -> str
+```
+
+Serialize output to JSON string.
+
+**Returns:**
+- `str`: JSON representation of output
+
+**Example:**
+```python
+result = agent.process(input_data)
+json_output = result.json()
+print(json_output)
+```
+
+##### dict
+
+```python
+def dict(self, **kwargs) -> Dict[str, Any]
+```
+
+Convert output to dictionary.
+
+**Returns:**
+- `Dict[str, Any]`: Dictionary representation
+
+---
+
+## Error Handling
+
+### ValueError
+
+Raised when input validation fails.
+
+```python
+try:
+    result = agent.process(invalid_input)
+except ValueError as e:
+    print(f"Validation error: {e}")
+```
+
+### ProcessingError
+
+Raised when processing fails due to internal errors.
+
+```python
+try:
+    result = agent.process(input_data)
+except ProcessingError as e:
+    print(f"Processing error: {e}")
+```
+
+---
+
+## Provenance Tracking
+
+Every output includes a SHA-256 provenance hash that can be used for audit trails.
+
+### Hash Calculation
+
+```python
+provenance_str = f"{input_data.json()}{str(output_data)}"
+provenance_hash = hashlib.sha256(provenance_str.encode()).hexdigest()
+```
+
+### Verification
+
+```python
+# Verify provenance
+import hashlib
+
+def verify_provenance(input_data, result):
+    expected = hashlib.sha256(
+        f"{input_data.json()}{str(result.result)}".encode()
+    ).hexdigest()
+    return expected == result.provenance_hash
+```
+
+---
+
+## Type Hints
+
+Full type hints are provided for IDE support and static analysis.
+
+```python
+from typing import Dict, List, Optional, Any
+from pydantic import BaseModel, Field
+
+# All methods include return type hints
+def process(self, input_data: {{ cookiecutter.agent_class_name }}Input) -> {{ cookiecutter.agent_class_name }}Output:
+    ...
+```
+
+---
+
+## Configuration Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `verbose` | bool | False | Enable verbose logging |
+| `strict_validation` | bool | False | Enable strict input validation |
+| `enable_caching` | bool | True | Enable result caching |
+| `max_retries` | int | 3 | Maximum retry attempts |
+| `timeout_seconds` | int | 30 | Processing timeout |
+
+---
+
+## See Also
+
+- [README.md](README.md) - Overview and quick start
+- [CHANGELOG.md](CHANGELOG.md) - Version history
+- [Test Documentation](tests/) - Test coverage details
+
+---
+
+*Auto-generated by GreenLang Agent Factory*

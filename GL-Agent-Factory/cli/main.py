@@ -8,7 +8,7 @@ import typer
 from typing import Optional
 from pathlib import Path
 
-from cli.commands import agent, template, registry
+from cli.commands import agent, template, registry, formula, standards, ontology, scaffold, shadow
 from cli.utils.console import console, print_banner, print_error
 
 # Create main Typer app
@@ -35,6 +35,31 @@ app.add_typer(
     registry.app,
     name="registry",
     help="Registry management commands (search, pull, push)",
+)
+app.add_typer(
+    formula.app,
+    name="formula",
+    help="Formula management (search, validate, test, list)",
+)
+app.add_typer(
+    standards.app,
+    name="standards",
+    help="Standards management (search, equipment, section)",
+)
+app.add_typer(
+    ontology.app,
+    name="ontology",
+    help="Ontology management (query, equipment, export)",
+)
+app.add_typer(
+    scaffold.app,
+    name="scaffold",
+    help="Scaffolding (agent, test, docs from templates)",
+)
+app.add_typer(
+    shadow.app,
+    name="shadow",
+    help="Shadow mode testing (record, replay, compare, report)",
 )
 
 

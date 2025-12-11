@@ -1,0 +1,556 @@
+# =============================================================================
+# Steam Trap Survey Agent Template
+# GreenLang Agent Factory - Process Heat Applications
+# =============================================================================
+# Standards: DOE Steam Best Practices, ASME
+# Version: 1.0.0
+# =============================================================================
+
+metadata:
+  template_id: steam_trap_survey_agent
+  name: Steam Trap Assessment Agent
+  description: >
+    Analyzes steam trap survey data to identify failed, leaking, and
+    inefficient traps. Calculates energy losses, prioritizes repairs,
+    and provides ROI analysis for trap maintenance programs.
+  category: maintenance
+  version: "1.0.0"
+  status: production
+  author: GreenLang Engineering Team
+  created_at: "2024-12-01T00:00:00Z"
+  updated_at: "2024-12-11T00:00:00Z"
+
+  tags:
+    - steam_trap
+    - energy_loss
+    - survey
+    - condensate
+    - steam_system
+
+  equipment_types:
+    - steam_trap
+
+  industries:
+    - oil_gas
+    - power_generation
+    - petrochemical
+    - chemical
+    - food_beverage
+    - pulp_paper
+
+  applicable_standards:
+    - DOE Steam Best Practices
+    - ASME
+
+# =============================================================================
+# Input Schema
+# =============================================================================
+
+input_schema:
+  name: SteamTrapSurveyInput
+  description: Steam trap survey input parameters
+  version: "1.0.0"
+
+  fields:
+    # Trap identification
+    trap_tag:
+      type: string
+      description: Steam trap tag number
+      required: true
+
+    trap_location:
+      type: string
+      description: Location description
+      required: true
+
+    trap_type:
+      type: enum
+      description: Type of steam trap
+      required: true
+      allowed_values:
+        - thermodynamic
+        - thermostatic
+        - mechanical_float
+        - mechanical_bucket
+        - bimetallic
+
+    trap_size:
+      type: float
+      description: Trap connection size
+      required: false
+      unit: inch
+
+    # Operating conditions
+    operating_pressure:
+      type: float
+      description: Operating steam pressure
+      required: true
+      unit: bar_g
+
+    operating_temperature:
+      type: float
+      description: Upstream temperature
+      required: false
+      unit: celsius
+
+    condensate_load:
+      type: float
+      description: Design condensate load
+      required: false
+      unit: kg/hr
+
+    # Survey data
+    survey_date:
+      type: datetime
+      description: Survey date
+      required: true
+
+    survey_method:
+      type: enum
+      description: Survey method used
+      required: true
+      allowed_values:
+        - ultrasonic
+        - temperature
+        - visual
+        - combination
+
+    # Ultrasonic data
+    ultrasonic_reading:
+      type: float
+      description: Ultrasonic reading (dB)
+      required: false
+      unit: dB
+
+    ultrasonic_frequency:
+      type: string
+      description: Sound pattern/frequency
+      required: false
+
+    # Temperature data
+    inlet_temperature:
+      type: float
+      description: Inlet temperature
+      required: false
+      unit: celsius
+
+    outlet_temperature:
+      type: float
+      description: Outlet temperature
+      required: false
+      unit: celsius
+
+    delta_t:
+      type: float
+      description: Temperature difference across trap
+      required: false
+      unit: celsius
+
+    # Visual observations
+    visual_discharge:
+      type: enum
+      description: Visual discharge observation
+      required: false
+      allowed_values:
+        - normal
+        - continuous_steam
+        - no_discharge
+        - intermittent
+        - flooded
+
+    # Trap condition assessment
+    assessed_condition:
+      type: enum
+      description: Surveyor's assessed condition
+      required: true
+      allowed_values:
+        - good
+        - leaking
+        - failed_open
+        - failed_closed
+        - cold
+        - suspect
+
+    estimated_leak_rate:
+      type: float
+      description: Estimated steam leak rate
+      required: false
+      unit: kg/hr
+
+    # Economic parameters
+    steam_cost:
+      type: float
+      description: Steam cost
+      required: true
+      unit: USD/tonne
+
+    operating_hours:
+      type: float
+      description: Annual operating hours
+      required: false
+      unit: hours/year
+      default: 8000
+
+    replacement_cost:
+      type: float
+      description: Cost to replace trap
+      required: false
+      unit: USD
+      default: 500
+
+# =============================================================================
+# Output Schema
+# =============================================================================
+
+output_schema:
+  name: SteamTrapSurveyOutput
+  description: Steam trap assessment results
+  version: "1.0.0"
+
+  fields:
+    # Condition analysis
+    condition_confirmed:
+      type: string
+      description: Confirmed trap condition
+
+    failure_mode:
+      type: string
+      description: Identified failure mode
+
+    confidence_level:
+      type: float
+      description: Confidence in assessment
+      unit: percent
+
+    # Loss calculations
+    steam_loss_rate:
+      type: float
+      description: Steam loss rate
+      unit: kg/hr
+
+    annual_steam_loss:
+      type: float
+      description: Annual steam loss
+      unit: tonnes/year
+
+    energy_loss:
+      type: float
+      description: Energy loss
+      unit: GJ/year
+
+    annual_cost_loss:
+      type: float
+      description: Annual cost of losses
+      unit: USD/year
+
+    # CO2 impact
+    co2_emissions:
+      type: float
+      description: CO2 from steam loss
+      unit: tonnes_CO2/year
+
+    # Repair priority
+    repair_priority:
+      type: enum
+      description: Repair priority
+      allowed_values:
+        - critical
+        - high
+        - medium
+        - low
+        - monitor
+
+    payback_period:
+      type: float
+      description: Simple payback for repair
+      unit: months
+
+    roi:
+      type: float
+      description: Return on investment
+      unit: percent
+
+    # Recommendations
+    recommended_action:
+      type: string
+      description: Recommended action
+
+    replacement_trap_type:
+      type: string
+      description: Recommended replacement type
+
+    follow_up_date:
+      type: date
+      description: Recommended follow-up date
+
+    # Provenance
+    provenance_hash:
+      type: string
+      description: SHA-256 hash
+
+    calculation_timestamp:
+      type: datetime
+      description: Assessment timestamp
+
+# =============================================================================
+# Formulas
+# =============================================================================
+
+formulas:
+  - id: STEAM_LOSS_FAILED_OPEN
+    name: Steam Loss - Failed Open Trap
+    description: Calculate steam loss from failed open trap
+    equation: "W = C * A * sqrt(2 * rho * dP)"
+    variables:
+      W:
+        description: Steam loss rate
+        unit: kg/hr
+        type: float
+      C:
+        description: Discharge coefficient
+        unit: dimensionless
+        type: float
+      A:
+        description: Orifice area
+        unit: m2
+        type: float
+      rho:
+        description: Steam density
+        unit: kg/m3
+        type: float
+      dP:
+        description: Pressure drop
+        unit: Pa
+        type: float
+    source:
+      standard: DOE Steam Best Practices
+      section: "Steam Tip Sheet 1"
+      edition: "2012"
+    application: Failed open trap loss
+
+  - id: STEAM_LOSS_LEAKING
+    name: Steam Loss - Leaking Trap
+    description: Estimate steam loss from leaking trap
+    equation: "W = k * sqrt(P) * d^2"
+    variables:
+      W:
+        description: Steam loss rate
+        unit: lb/hr
+        type: float
+      k:
+        description: Leak factor (0.3-1.0)
+        unit: dimensionless
+        type: float
+      P:
+        description: Operating pressure
+        unit: psig
+        type: float
+      d:
+        description: Equivalent leak diameter
+        unit: inch
+        type: float
+    source:
+      standard: DOE Steam Best Practices
+      section: "Steam Tip Sheet 1"
+      edition: "2012"
+    application: Leaking trap loss estimation
+
+  - id: ANNUAL_COST_LOSS
+    name: Annual Cost of Steam Loss
+    description: Calculate annual cost of steam loss
+    equation: "Cost = W * Hours * C_steam / 1000"
+    variables:
+      Cost:
+        description: Annual cost
+        unit: USD/year
+        type: float
+      W:
+        description: Steam loss rate
+        unit: kg/hr
+        type: float
+      Hours:
+        description: Operating hours
+        unit: hours/year
+        type: float
+      C_steam:
+        description: Steam cost
+        unit: USD/tonne
+        type: float
+    source:
+      standard: DOE Steam Best Practices
+      section: "Economics"
+      edition: "2012"
+    application: Economic loss calculation
+
+# =============================================================================
+# Safety Constraints
+# =============================================================================
+
+safety_constraints:
+  - id: SC_FAILED_OPEN
+    name: Failed Open Detection
+    description: Flag failed open traps
+    condition: "assessed_condition != 'failed_open'"
+    action: warn
+    severity: error
+    message: "Steam trap {trap_tag} failed open - significant steam loss"
+
+  - id: SC_FAILED_CLOSED
+    name: Failed Closed Detection
+    description: Flag failed closed traps
+    condition: "assessed_condition != 'failed_closed'"
+    action: warn
+    severity: error
+    message: "Steam trap {trap_tag} failed closed - process impact risk"
+
+# =============================================================================
+# Processing Pipeline
+# =============================================================================
+
+processing:
+  steps:
+    - id: STEP_01_VALIDATE
+      name: Input Validation
+      type: validation
+      inputs:
+        - all_input_fields
+      outputs:
+        - validation_status
+      error_handling: reject
+
+    - id: STEP_02_CONDITION_ANALYSIS
+      name: Condition Analysis
+      type: classification
+      inputs:
+        - ultrasonic_reading
+        - delta_t
+        - visual_discharge
+        - assessed_condition
+      outputs:
+        - condition_confirmed
+        - failure_mode
+        - confidence_level
+      error_handling: propagate
+
+    - id: STEP_03_LOSS_CALCULATION
+      name: Calculate Steam Loss
+      type: calculation
+      inputs:
+        - condition_confirmed
+        - operating_pressure
+        - trap_size
+        - estimated_leak_rate
+      outputs:
+        - steam_loss_rate
+        - annual_steam_loss
+        - energy_loss
+      formula_refs:
+        - STEAM_LOSS_FAILED_OPEN
+        - STEAM_LOSS_LEAKING
+      error_handling: propagate
+
+    - id: STEP_04_ECONOMICS
+      name: Economic Analysis
+      type: calculation
+      inputs:
+        - annual_steam_loss
+        - steam_cost
+        - replacement_cost
+        - operating_hours
+      outputs:
+        - annual_cost_loss
+        - payback_period
+        - roi
+      formula_refs:
+        - ANNUAL_COST_LOSS
+      error_handling: propagate
+
+    - id: STEP_05_CO2
+      name: CO2 Impact
+      type: calculation
+      inputs:
+        - annual_steam_loss
+      outputs:
+        - co2_emissions
+      error_handling: default
+
+    - id: STEP_06_PRIORITIZE
+      name: Prioritize Repair
+      type: decision
+      inputs:
+        - condition_confirmed
+        - annual_cost_loss
+        - payback_period
+      outputs:
+        - repair_priority
+      constraints:
+        - SC_FAILED_OPEN
+        - SC_FAILED_CLOSED
+      error_handling: propagate
+
+    - id: STEP_07_RECOMMENDATIONS
+      name: Generate Recommendations
+      type: decision
+      inputs:
+        - condition_confirmed
+        - trap_type
+        - repair_priority
+      outputs:
+        - recommended_action
+        - replacement_trap_type
+        - follow_up_date
+      error_handling: default
+
+    - id: STEP_08_PROVENANCE
+      name: Provenance Tracking
+      type: output
+      inputs:
+        - all_inputs
+        - all_outputs
+      outputs:
+        - provenance_hash
+        - calculation_timestamp
+      error_handling: propagate
+
+# =============================================================================
+# Zero-Hallucination Configuration
+# =============================================================================
+
+zero_hallucination:
+  enabled: true
+  calculation_mode: deterministic
+  allowed_operations:
+    - arithmetic
+    - formula_evaluation
+    - steam_table_lookup
+  forbidden_operations:
+    - llm_loss_estimation
+  require_formula_citation: true
+  require_provenance: true
+  llm_allowed_for:
+    - failure_mode_classification
+    - recommendation_narrative
+
+# =============================================================================
+# Test Cases
+# =============================================================================
+
+test_cases:
+  - name: Failed Open Thermodynamic Trap
+    inputs:
+      trap_tag: ST-101
+      trap_location: Unit 1 Steam Header
+      trap_type: thermodynamic
+      trap_size: 0.5
+      operating_pressure: 10
+      survey_date: "2024-12-01T10:00:00Z"
+      survey_method: ultrasonic
+      ultrasonic_reading: 85
+      inlet_temperature: 184
+      outlet_temperature: 180
+      assessed_condition: failed_open
+      steam_cost: 30
+      operating_hours: 8000
+    expected_outputs:
+      condition_confirmed: failed_open
+      repair_priority: critical

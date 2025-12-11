@@ -1,0 +1,19 @@
+{
+    "agent_id": "my-agent",
+    "agent_name": "My Agent",
+    "agent_class_name": "MyAgent",
+    "version": "0.1.0",
+    "description": "Agent description",
+    "agent_type": "regulatory",
+    "domain": "emissions",
+    "author": "GreenLang",
+    "license": "Apache-2.0",
+    "created_at": "2024-01-01T00:00:00Z",
+    "architecture_pattern": "pipeline",
+    "capabilities": ["compliance_validation", "provenance_tracking"],
+    "frameworks": ["GHG Protocol", "ISO 14064"],
+    "standards": [],
+    "dependencies": ["pydantic", "pandas"],
+    "input_fields": [],
+    "output_fields": []
+}

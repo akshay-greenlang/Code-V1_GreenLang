@@ -1,0 +1,873 @@
+# =============================================================================
+# Heat Exchanger Performance Agent Template
+# GreenLang Agent Factory - Process Heat Applications
+# =============================================================================
+# Standards: API 660, TEMA, ASME BPVC VIII
+# Version: 1.0.0
+# =============================================================================
+
+metadata:
+  template_id: heat_exchanger_agent
+  name: Heat Exchanger Performance Analysis Agent
+  description: >
+    Analyzes heat exchanger performance including effectiveness, fouling factor,
+    pressure drop, and heat transfer coefficient calculations per TEMA and API
+    standards. Supports shell-and-tube, plate, and air-cooled exchangers.
+  category: efficiency
+  version: "1.0.0"
+  status: production
+  author: GreenLang Engineering Team
+  created_at: "2024-12-01T00:00:00Z"
+  updated_at: "2024-12-11T00:00:00Z"
+
+  tags:
+    - heat_exchanger
+    - TEMA
+    - API_660
+    - fouling
+    - heat_transfer
+    - thermal_performance
+
+  equipment_types:
+    - shell_tube_hx
+    - plate_hx
+    - air_cooled_hx
+    - double_pipe_hx
+    - spiral_hx
+
+  industries:
+    - oil_gas
+    - petrochemical
+    - chemical
+    - power_generation
+    - food_beverage
+
+  applicable_standards:
+    - TEMA
+    - API 660
+    - API 661
+    - ASME BPVC VIII
+
+# =============================================================================
+# Input Schema
+# =============================================================================
+
+input_schema:
+  name: HeatExchangerInput
+  description: Input parameters for heat exchanger analysis
+  version: "1.0.0"
+
+  fields:
+    # Exchanger identification
+    exchanger_type:
+      type: enum
+      description: Type of heat exchanger
+      required: true
+      allowed_values:
+        - shell_tube
+        - plate
+        - air_cooled
+        - double_pipe
+        - spiral
+
+    tema_type:
+      type: string
+      description: TEMA designation (e.g., AES, BEM, AEW)
+      required: false
+
+    service:
+      type: string
+      description: Process service description
+      required: true
+
+    # Design parameters
+    design_duty:
+      type: float
+      description: Design heat duty
+      required: true
+      unit: kW
+      min_value: 0
+
+    design_u:
+      type: float
+      description: Design overall heat transfer coefficient
+      required: true
+      unit: W/m2-K
+      min_value: 10
+      max_value: 10000
+
+    design_area:
+      type: float
+      description: Design heat transfer area
+      required: true
+      unit: m2
+      min_value: 0.1
+
+    design_fouling_shell:
+      type: float
+      description: Design fouling factor - shell side
+      required: false
+      unit: m2-K/W
+      default: 0.00017
+
+    design_fouling_tube:
+      type: float
+      description: Design fouling factor - tube side
+      required: false
+      unit: m2-K/W
+      default: 0.00017
+
+    # Hot side inputs
+    hot_side_fluid:
+      type: string
+      description: Hot side fluid name
+      required: true
+
+    hot_side_flow:
+      type: float
+      description: Hot side mass flow rate
+      required: true
+      unit: kg/hr
+      min_value: 0
+
+    hot_side_inlet_temp:
+      type: float
+      description: Hot side inlet temperature
+      required: true
+      unit: celsius
+      min_value: -200
+      max_value: 1000
+
+    hot_side_outlet_temp:
+      type: float
+      description: Hot side outlet temperature
+      required: true
+      unit: celsius
+
+    hot_side_inlet_pressure:
+      type: float
+      description: Hot side inlet pressure
+      required: false
+      unit: bar_g
+
+    hot_side_dp:
+      type: float
+      description: Hot side pressure drop
+      required: false
+      unit: bar
+
+    hot_side_cp:
+      type: float
+      description: Hot side specific heat
+      required: true
+      unit: kJ/kg-K
+      min_value: 0.1
+
+    # Cold side inputs
+    cold_side_fluid:
+      type: string
+      description: Cold side fluid name
+      required: true
+
+    cold_side_flow:
+      type: float
+      description: Cold side mass flow rate
+      required: true
+      unit: kg/hr
+      min_value: 0
+
+    cold_side_inlet_temp:
+      type: float
+      description: Cold side inlet temperature
+      required: true
+      unit: celsius
+
+    cold_side_outlet_temp:
+      type: float
+      description: Cold side outlet temperature
+      required: true
+      unit: celsius
+
+    cold_side_inlet_pressure:
+      type: float
+      description: Cold side inlet pressure
+      required: false
+      unit: bar_g
+
+    cold_side_dp:
+      type: float
+      description: Cold side pressure drop
+      required: false
+      unit: bar
+
+    cold_side_cp:
+      type: float
+      description: Cold side specific heat
+      required: true
+      unit: kJ/kg-K
+      min_value: 0.1
+
+    # Geometry (for shell-tube)
+    tube_od:
+      type: float
+      description: Tube outside diameter
+      required: false
+      unit: mm
+
+    tube_length:
+      type: float
+      description: Tube length
+      required: false
+      unit: m
+
+    number_of_tubes:
+      type: integer
+      description: Number of tubes
+      required: false
+
+    number_of_passes:
+      type: integer
+      description: Number of tube passes
+      required: false
+      default: 1
+
+    baffle_spacing:
+      type: float
+      description: Baffle spacing
+      required: false
+      unit: mm
+
+    # Operating conditions
+    ambient_temperature:
+      type: float
+      description: Ambient temperature
+      required: false
+      unit: celsius
+      default: 25
+
+# =============================================================================
+# Output Schema
+# =============================================================================
+
+output_schema:
+  name: HeatExchangerOutput
+  description: Heat exchanger performance analysis results
+  version: "1.0.0"
+
+  fields:
+    # Thermal performance
+    actual_duty:
+      type: float
+      description: Actual heat duty
+      unit: kW
+
+    duty_ratio:
+      type: float
+      description: Actual duty as percentage of design
+      unit: percent
+
+    lmtd:
+      type: float
+      description: Log mean temperature difference
+      unit: celsius
+
+    lmtd_corrected:
+      type: float
+      description: Corrected LMTD (F factor applied)
+      unit: celsius
+
+    f_factor:
+      type: float
+      description: LMTD correction factor
+      unit: dimensionless
+
+    # Heat transfer coefficients
+    actual_u:
+      type: float
+      description: Actual overall heat transfer coefficient
+      unit: W/m2-K
+
+    clean_u:
+      type: float
+      description: Clean overall heat transfer coefficient
+      unit: W/m2-K
+
+    u_ratio:
+      type: float
+      description: U actual / U design ratio
+      unit: percent
+
+    # Fouling analysis
+    fouling_factor:
+      type: float
+      description: Current fouling resistance
+      unit: m2-K/W
+
+    fouling_percentage:
+      type: float
+      description: Fouling as percentage of design allowance
+      unit: percent
+
+    cleanliness_factor:
+      type: float
+      description: Heat transfer cleanliness factor
+      unit: percent
+
+    # Effectiveness
+    effectiveness:
+      type: float
+      description: Thermal effectiveness (epsilon)
+      unit: percent
+
+    ntu:
+      type: float
+      description: Number of transfer units
+      unit: dimensionless
+
+    capacity_ratio:
+      type: float
+      description: Heat capacity ratio (C_min/C_max)
+      unit: dimensionless
+
+    # Temperature approach
+    hot_approach:
+      type: float
+      description: Hot end temperature approach
+      unit: celsius
+
+    cold_approach:
+      type: float
+      description: Cold end temperature approach
+      unit: celsius
+
+    min_approach:
+      type: float
+      description: Minimum temperature approach
+      unit: celsius
+
+    # Heat balance
+    heat_balance_error:
+      type: float
+      description: Heat balance error between hot and cold sides
+      unit: percent
+
+    hot_side_duty:
+      type: float
+      description: Heat released by hot side
+      unit: kW
+
+    cold_side_duty:
+      type: float
+      description: Heat absorbed by cold side
+      unit: kW
+
+    # Pressure drop (if provided)
+    hot_side_dp_ratio:
+      type: float
+      description: Hot side dP vs design
+      unit: percent
+
+    cold_side_dp_ratio:
+      type: float
+      description: Cold side dP vs design
+      unit: percent
+
+    # Performance indicators
+    performance_index:
+      type: float
+      description: Overall performance index (0-100)
+      unit: percent
+
+    cleaning_recommended:
+      type: boolean
+      description: Whether cleaning is recommended
+
+    days_to_cleaning:
+      type: integer
+      description: Estimated days until cleaning required
+      unit: days
+
+    # Recommendations
+    recommendations:
+      type: list
+      description: Performance improvement recommendations
+
+    # Provenance
+    provenance_hash:
+      type: string
+      description: SHA-256 hash of calculation
+
+    calculation_timestamp:
+      type: datetime
+      description: Timestamp of analysis
+
+    source_references:
+      type: list
+      description: Standards and methods used
+
+# =============================================================================
+# Formulas
+# =============================================================================
+
+formulas:
+  - id: LMTD_COUNTERFLOW
+    name: Log Mean Temperature Difference
+    description: LMTD for counterflow arrangement
+    equation: "LMTD = (dT1 - dT2) / ln(dT1/dT2)"
+    variables:
+      dT1:
+        description: Temperature difference at one end
+        unit: celsius
+        type: float
+      dT2:
+        description: Temperature difference at other end
+        unit: celsius
+        type: float
+    source:
+      standard: TEMA
+      section: "Section 7"
+      edition: "10th"
+    application: Standard LMTD calculation
+
+  - id: LMTD_CORRECTION_F
+    name: LMTD Correction Factor
+    description: F factor for multi-pass exchangers
+    equation: "F = f(P, R, N_shells, N_passes)"
+    variables:
+      P:
+        description: Temperature effectiveness
+        unit: dimensionless
+        type: float
+      R:
+        description: Heat capacity ratio
+        unit: dimensionless
+        type: float
+    source:
+      standard: TEMA
+      section: "Section 7"
+      edition: "10th"
+    application: Multi-pass LMTD correction
+
+  - id: OVERALL_HTC
+    name: Overall Heat Transfer Coefficient
+    description: Overall U from duty and LMTD
+    equation: "U = Q / (A * LMTD)"
+    variables:
+      Q:
+        description: Heat duty
+        unit: W
+        type: float
+      A:
+        description: Heat transfer area
+        unit: m2
+        type: float
+      LMTD:
+        description: Log mean temperature difference
+        unit: kelvin
+        type: float
+    source:
+      standard: TEMA
+      section: "Section 7"
+      edition: "10th"
+    application: Back-calculate U from operating data
+
+  - id: FOULING_RESISTANCE
+    name: Fouling Resistance
+    description: Calculate fouling from U values
+    equation: "R_f = (1/U_actual) - (1/U_clean)"
+    variables:
+      U_actual:
+        description: Actual overall coefficient
+        unit: W/m2-K
+        type: float
+      U_clean:
+        description: Clean overall coefficient
+        unit: W/m2-K
+        type: float
+    source:
+      standard: TEMA
+      section: "Section 10"
+      edition: "10th"
+    application: Fouling monitoring
+
+  - id: EFFECTIVENESS_NTU
+    name: Effectiveness-NTU Method
+    description: Thermal effectiveness from NTU
+    equation: "epsilon = (1 - exp(-NTU*(1-Cr))) / (1 - Cr*exp(-NTU*(1-Cr)))"
+    variables:
+      NTU:
+        description: Number of transfer units
+        unit: dimensionless
+        type: float
+      Cr:
+        description: Capacity ratio
+        unit: dimensionless
+        type: float
+    source:
+      standard: TEMA
+      section: "Section 7"
+      edition: "10th"
+    application: Counterflow effectiveness
+    limitations:
+      - For counterflow configuration
+      - Different equations for other configurations
+
+  - id: NTU_CALCULATION
+    name: NTU Calculation
+    description: Number of transfer units
+    equation: "NTU = U * A / C_min"
+    variables:
+      U:
+        description: Overall heat transfer coefficient
+        unit: W/m2-K
+        type: float
+      A:
+        description: Heat transfer area
+        unit: m2
+        type: float
+      C_min:
+        description: Minimum heat capacity rate
+        unit: W/K
+        type: float
+    source:
+      standard: TEMA
+      section: "Section 7"
+      edition: "10th"
+    application: NTU method analysis
+
+  - id: CLEANLINESS_FACTOR
+    name: Cleanliness Factor
+    description: Ratio of actual to clean U value
+    equation: "CF = U_actual / U_clean * 100"
+    variables:
+      U_actual:
+        description: Actual U value
+        unit: W/m2-K
+        type: float
+      U_clean:
+        description: Clean U value
+        unit: W/m2-K
+        type: float
+    source:
+      standard: API 660
+      section: "Appendix"
+      edition: "2022"
+    application: Fouling assessment
+
+# =============================================================================
+# Standards References
+# =============================================================================
+
+standards:
+  - code: TEMA
+    title: Standards of the Tubular Exchanger Manufacturers Association
+    edition: "10th"
+    sections:
+      - "Section 7: Thermal Relations"
+      - "Section 10: Recommended Good Practice"
+    requirements:
+      - LMTD calculations
+      - Fouling factors
+      - Mechanical design
+    compliance_level: required
+
+  - code: API 660
+    title: Shell-and-Tube Heat Exchangers
+    edition: "2022"
+    sections:
+      - "Section 5: Design"
+      - "Section 7: Inspection and Testing"
+    requirements:
+      - Design requirements
+      - Material specifications
+    compliance_level: required
+
+  - code: API 661
+    title: Air-Cooled Heat Exchangers
+    edition: "2021"
+    sections:
+      - "Section 5: Thermal Design"
+    requirements:
+      - Air-cooled specific requirements
+    compliance_level: recommended
+
+# =============================================================================
+# Safety Constraints
+# =============================================================================
+
+safety_constraints:
+  - id: SC_HEAT_BALANCE
+    name: Heat Balance Check
+    description: Heat balance must close within tolerance
+    condition: "abs(heat_balance_error) <= 10"
+    action: warn
+    severity: warning
+    message: "Heat balance error {heat_balance_error}% exceeds 10% tolerance"
+
+  - id: SC_APPROACH_TEMP
+    name: Minimum Approach Temperature
+    description: Prevent temperature cross
+    condition: "min_approach >= 3"
+    action: warn
+    severity: error
+    message: "Minimum approach {min_approach}C below 3C - check measurements"
+
+  - id: SC_FOULING_SEVERE
+    name: Severe Fouling
+    description: Flag severe fouling condition
+    condition: "fouling_percentage <= 200"
+    action: warn
+    severity: error
+    message: "Fouling at {fouling_percentage}% of design - cleaning required"
+
+  - id: SC_U_LOW
+    name: Low Heat Transfer Coefficient
+    description: Flag abnormally low U value
+    condition: "u_ratio >= 30"
+    action: warn
+    severity: warning
+    message: "U value at {u_ratio}% of design - check for fouling or bypass"
+
+  - id: SC_EFFECTIVENESS_LOW
+    name: Low Thermal Effectiveness
+    description: Flag low thermal effectiveness
+    condition: "effectiveness >= 20"
+    action: warn
+    severity: warning
+    message: "Thermal effectiveness {effectiveness}% below 20%"
+
+  - id: SC_DUTY_DEFICIENCY
+    name: Duty Deficiency
+    description: Flag significant duty deficiency
+    condition: "duty_ratio >= 70"
+    action: warn
+    severity: warning
+    message: "Actual duty at {duty_ratio}% of design"
+
+# =============================================================================
+# Processing Pipeline
+# =============================================================================
+
+processing:
+  steps:
+    - id: STEP_01_VALIDATE_INPUTS
+      name: Input Validation
+      type: validation
+      description: Validate all input parameters
+      inputs:
+        - all_input_fields
+      outputs:
+        - validation_status
+      error_handling: reject
+
+    - id: STEP_02_CALCULATE_DUTIES
+      name: Heat Duty Calculations
+      type: calculation
+      description: Calculate heat duties for both sides
+      inputs:
+        - hot_side_flow
+        - hot_side_inlet_temp
+        - hot_side_outlet_temp
+        - hot_side_cp
+        - cold_side_flow
+        - cold_side_inlet_temp
+        - cold_side_outlet_temp
+        - cold_side_cp
+      outputs:
+        - hot_side_duty
+        - cold_side_duty
+        - actual_duty
+        - heat_balance_error
+      constraints:
+        - SC_HEAT_BALANCE
+      error_handling: propagate
+
+    - id: STEP_03_CALCULATE_LMTD
+      name: LMTD Calculation
+      type: calculation
+      description: Calculate log mean temperature difference
+      inputs:
+        - hot_side_inlet_temp
+        - hot_side_outlet_temp
+        - cold_side_inlet_temp
+        - cold_side_outlet_temp
+      outputs:
+        - lmtd
+        - f_factor
+        - lmtd_corrected
+        - hot_approach
+        - cold_approach
+        - min_approach
+      formula_refs:
+        - LMTD_COUNTERFLOW
+        - LMTD_CORRECTION_F
+      constraints:
+        - SC_APPROACH_TEMP
+      error_handling: propagate
+
+    - id: STEP_04_CALCULATE_U
+      name: Overall Coefficient
+      type: calculation
+      description: Calculate actual U value
+      inputs:
+        - actual_duty
+        - design_area
+        - lmtd_corrected
+        - design_u
+      outputs:
+        - actual_u
+        - u_ratio
+        - clean_u
+      formula_refs:
+        - OVERALL_HTC
+      constraints:
+        - SC_U_LOW
+      error_handling: propagate
+
+    - id: STEP_05_FOULING_ANALYSIS
+      name: Fouling Analysis
+      type: calculation
+      description: Calculate fouling resistance
+      inputs:
+        - actual_u
+        - clean_u
+        - design_fouling_shell
+        - design_fouling_tube
+      outputs:
+        - fouling_factor
+        - fouling_percentage
+        - cleanliness_factor
+      formula_refs:
+        - FOULING_RESISTANCE
+        - CLEANLINESS_FACTOR
+      constraints:
+        - SC_FOULING_SEVERE
+      error_handling: propagate
+
+    - id: STEP_06_EFFECTIVENESS
+      name: Effectiveness Analysis
+      type: calculation
+      description: Calculate thermal effectiveness and NTU
+      inputs:
+        - hot_side_flow
+        - hot_side_cp
+        - cold_side_flow
+        - cold_side_cp
+        - actual_u
+        - design_area
+      outputs:
+        - effectiveness
+        - ntu
+        - capacity_ratio
+      formula_refs:
+        - EFFECTIVENESS_NTU
+        - NTU_CALCULATION
+      constraints:
+        - SC_EFFECTIVENESS_LOW
+      error_handling: propagate
+
+    - id: STEP_07_DUTY_COMPARISON
+      name: Duty Comparison
+      type: calculation
+      description: Compare actual to design duty
+      inputs:
+        - actual_duty
+        - design_duty
+      outputs:
+        - duty_ratio
+      constraints:
+        - SC_DUTY_DEFICIENCY
+      error_handling: propagate
+
+    - id: STEP_08_PERFORMANCE_INDEX
+      name: Performance Assessment
+      type: calculation
+      description: Calculate overall performance index
+      inputs:
+        - u_ratio
+        - fouling_percentage
+        - duty_ratio
+      outputs:
+        - performance_index
+        - cleaning_recommended
+        - days_to_cleaning
+      error_handling: default
+
+    - id: STEP_09_RECOMMENDATIONS
+      name: Generate Recommendations
+      type: decision
+      description: Generate improvement recommendations
+      inputs:
+        - fouling_percentage
+        - u_ratio
+        - effectiveness
+      outputs:
+        - recommendations
+      error_handling: default
+
+    - id: STEP_10_PROVENANCE
+      name: Provenance Tracking
+      type: output
+      description: Calculate provenance hash
+      inputs:
+        - all_inputs
+        - all_outputs
+      outputs:
+        - provenance_hash
+        - calculation_timestamp
+        - source_references
+      error_handling: propagate
+
+# =============================================================================
+# Zero-Hallucination Configuration
+# =============================================================================
+
+zero_hallucination:
+  enabled: true
+  calculation_mode: deterministic
+  allowed_operations:
+    - arithmetic
+    - formula_evaluation
+    - table_lookup
+    - interpolation
+    - logarithmic_calculation
+  forbidden_operations:
+    - llm_numeric_calculation
+    - ml_prediction_for_fouling
+  require_formula_citation: true
+  require_provenance: true
+  llm_allowed_for:
+    - recommendation_generation
+    - root_cause_classification
+
+# =============================================================================
+# Test Cases
+# =============================================================================
+
+test_cases:
+  - name: Shell-Tube HX Normal Operation
+    description: Typical shell-tube exchanger performance
+    inputs:
+      exchanger_type: shell_tube
+      tema_type: AES
+      service: crude_preheat
+      design_duty: 5000
+      design_u: 400
+      design_area: 150
+      hot_side_fluid: crude_oil
+      hot_side_flow: 100000
+      hot_side_inlet_temp: 200
+      hot_side_outlet_temp: 120
+      hot_side_cp: 2.2
+      cold_side_fluid: process_water
+      cold_side_flow: 80000
+      cold_side_inlet_temp: 30
+      cold_side_outlet_temp: 90
+      cold_side_cp: 4.18
+    expected_outputs:
+      effectiveness:
+        min: 40
+        max: 70
+      fouling_percentage:
+        min: 0
+        max: 100

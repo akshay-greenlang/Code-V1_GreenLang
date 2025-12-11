@@ -363,3 +363,40 @@ def get_agent(agent_id: str):
     if agent_id not in AGENT_REGISTRY:
         raise ValueError(f"Agent not found: {agent_id}. Available: {list(AGENT_REGISTRY.keys())}")
     return AGENT_REGISTRY[agent_id]
+
+
+# Import the comprehensive Process Heat registry
+try:
+    from .registry import (
+        AgentRegistry,
+        AgentInfo,
+        get_registry,
+        get_agent as get_process_heat_agent,
+        list_agents,
+        get_statistics,
+        AGENT_DEFINITIONS,
+    )
+
+    __all__.extend([
+        "AgentRegistry",
+        "AgentInfo",
+        "get_registry",
+        "get_process_heat_agent",
+        "list_agents",
+        "get_statistics",
+        "AGENT_DEFINITIONS",
+    ])
+except ImportError:
+    pass  # Registry not yet available
+
+
+# GL-Agent-Factory: 100 Process Heat Agents Summary
+# =================================================
+# GL-001 to GL-013: Climate & Compliance Agents (13 agents)
+# GL-020 to GL-021: Process Heat Baseline (2 agents)
+# GL-022 to GL-030: Steam System Agents (9 agents)
+# GL-031 to GL-045: Safety & Optimization Agents (15 agents)
+# GL-046 to GL-060: Analytics Agents (15 agents)
+# GL-061 to GL-075: Digital Twin & Simulation Agents (15 agents)
+# GL-076 to GL-100: Financial & Business Agents (25 agents)
+# Total: 100 agents covering the complete Process Heat domain
