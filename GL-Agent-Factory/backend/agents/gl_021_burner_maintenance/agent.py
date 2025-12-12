@@ -9,20 +9,43 @@ The agent follows GreenLang's zero-hallucination principle by using only
 deterministic calculations from reliability engineering standards - no ML/LLM
 in the calculation path.
 
+NEW in v1.1.0: SHAP/LIME explainability for health scores and maintenance
+priority decisions. Explanations are for TRANSPARENCY only - all numeric
+calculations remain deterministic.
+
 Example:
     >>> config = AgentConfig(agent_id="GL-021")
     >>> agent = BurnerMaintenancePredictorAgent(config)
     >>> result = agent.run(input_data)
     >>> assert result.validation_status == "PASS"
+    >>> # Get explanation for health score
+    >>> explanation = agent.explain_health_score(input_data, result)
+    >>> print(explanation.natural_language_summary)
 """
 
 from datetime import datetime, date
 from enum import Enum
-from typing import Dict, List, Optional, Any
+from typing import Dict, List, Optional, Any, Callable
 import hashlib
 import logging
 
 from pydantic import BaseModel, Field, validator, root_validator
+
+# Import explainability components
+try:
+    from ...engines.explainability import (
+        ExplainabilityEngine,
+        ExplainabilityMixin,
+        ExplainabilityReport,
+        SHAPValues,
+        LIMEExplanation,
+        FeatureContribution,
+        NaturalLanguageGenerator,
+    )
+    EXPLAINABILITY_AVAILABLE = True
+except ImportError:
+    EXPLAINABILITY_AVAILABLE = False
+    ExplainabilityMixin = object  # Fallback to object if not available
 
 from .calculators.weibull import (
     weibull_reliability,
@@ -394,13 +417,33 @@ class BurnerOutput(BaseModel):
         description="Validation error messages if any"
     )
 
+    # Explainability (optional - for regulatory compliance and audit trails)
+    health_score_explanation: Optional[str] = Field(
+        default=None,
+        description="Natural language explanation of health score calculation"
+    )
+    priority_explanation: Optional[str] = Field(
+        default=None,
+        description="Natural language explanation of maintenance priority"
+    )
+    feature_importance: Optional[Dict[str, float]] = Field(
+        default=None,
+        description="Feature importance scores for health calculation"
+    )
+    explanation_confidence: Optional[float] = Field(
+        default=None,
+        ge=0,
+        le=1,
+        description="Confidence level of the explanation (0-1)"
+    )
+
 
 class AgentConfig(BaseModel):
     """Configuration for BurnerMaintenancePredictorAgent."""
 
     agent_id: str = Field(default="GL-021", description="Agent identifier")
     agent_name: str = Field(default="BURNERSENTRY", description="Agent name")
-    version: str = Field(default="1.0.0", description="Agent version")
+    version: str = Field(default="1.1.0", description="Agent version")
     reliability_threshold: float = Field(
         default=0.5,
         ge=0,
@@ -419,9 +462,22 @@ class AgentConfig(BaseModel):
         le=100,
         description="Health score below which maintenance is high priority"
     )
+    # Explainability configuration
+    enable_explainability: bool = Field(
+        default=True,
+        description="Enable SHAP/LIME explainability features"
+    )
+    include_explanations_in_output: bool = Field(
+        default=True,
+        description="Include natural language explanations in output"
+    )
+    explainability_random_seed: int = Field(
+        default=42,
+        description="Random seed for reproducible explanations"
+    )
 
 
-class BurnerMaintenancePredictorAgent:
+class BurnerMaintenancePredictorAgent(ExplainabilityMixin):
     """
     BurnerMaintenancePredictorAgent implementation (GL-021 BURNERSENTRY).
 
@@ -430,11 +486,18 @@ class BurnerMaintenancePredictorAgent:
     deterministic health scoring. It follows zero-hallucination principles
     by using only physics-based and statistical formulas.
 
+    NEW in v1.1.0: SHAP/LIME Explainability
+    - Feature importance for health score calculation
+    - Local explanations for maintenance recommendations
+    - Natural language summaries for audit trails
+    - All explanations are for TRANSPARENCY - calculations remain deterministic
+
     Attributes:
         config: Agent configuration
         agent_id: Unique agent identifier
         agent_name: Human-readable agent name
         version: Agent version string
+        explainability_engine: Engine for generating explanations (if enabled)
 
     Example:
         >>> config = AgentConfig()
@@ -457,7 +520,19 @@ class BurnerMaintenancePredictorAgent:
         ... )
         >>> result = agent.run(input_data)
         >>> assert result.validation_status == "PASS"
+        >>> # Get detailed explanation
+        >>> explanation = agent.explain_health_score(input_data, result)
+        >>> print(explanation.natural_language_summary)
     """
+
+    # Health score weight factors (for explainability)
+    HEALTH_WEIGHTS = {
+        "operating_life_ratio": 0.25,
+        "flame_quality": 0.30,
+        "cycles_factor": 0.15,
+        "age_factor": 0.15,
+        "component_health": 0.15,
+    }
 
     def __init__(self, config: Optional[AgentConfig] = None):
         """
@@ -471,8 +546,26 @@ class BurnerMaintenancePredictorAgent:
         self.agent_name = self.config.agent_name
         self.version = self.config.version
 
+        # Initialize explainability engine if available and enabled
+        self.explainability_engine = None
+        self._explainability_enabled = False
+
+        if EXPLAINABILITY_AVAILABLE and self.config.enable_explainability:
+            try:
+                self.explainability_engine = ExplainabilityEngine(
+                    enable_shap=True,
+                    enable_lime=True,
+                    random_seed=self.config.explainability_random_seed,
+                )
+                self._explainability_enabled = True
+                logger.info("Explainability engine initialized successfully")
+            except Exception as e:
+                logger.warning(f"Failed to initialize explainability engine: {e}")
+                self._explainability_enabled = False
+
         logger.info(
-            f"Initialized {self.agent_name} agent v{self.version} (ID: {self.agent_id})"
+            f"Initialized {self.agent_name} agent v{self.version} (ID: {self.agent_id}), "
+            f"explainability={'enabled' if self._explainability_enabled else 'disabled'}"
         )
 
     def run(self, input_data: BurnerInput) -> BurnerOutput:
@@ -579,6 +672,32 @@ class BurnerMaintenancePredictorAgent:
                 validation_errors.append("Health score out of range")
                 validation_status = "FAIL"
 
+            # Step 11: Generate explainability (if enabled)
+            health_explanation = None
+            priority_explanation = None
+            feature_importance = None
+            explanation_confidence = None
+
+            if self._explainability_enabled and self.config.include_explanations_in_output:
+                try:
+                    explanation_result = self._generate_health_explanation(
+                        input_data, health_metrics, flame_quality
+                    )
+                    health_explanation = explanation_result.get('summary')
+                    feature_importance = explanation_result.get('feature_importance')
+                    explanation_confidence = explanation_result.get('confidence')
+
+                    priority_explanation = self._generate_priority_explanation(
+                        health_metrics['health_score'],
+                        reliability_metrics['rul_hours'],
+                        reliability_metrics['failure_prob_30d'],
+                        priority
+                    )
+                    logger.debug("Explainability generated successfully")
+                except Exception as e:
+                    logger.warning(f"Failed to generate explanations: {e}")
+                    validation_errors.append(f"Explainability warning: {str(e)}")
+
             # Build output
             output = BurnerOutput(
                 burner_id=input_data.burner_id,
@@ -601,7 +720,12 @@ class BurnerMaintenancePredictorAgent:
                 provenance_hash=provenance_hash,
                 processing_time_ms=processing_time_ms,
                 validation_status=validation_status,
-                validation_errors=validation_errors
+                validation_errors=validation_errors,
+                # Explainability fields
+                health_score_explanation=health_explanation,
+                priority_explanation=priority_explanation,
+                feature_importance=feature_importance,
+                explanation_confidence=explanation_confidence,
             )
 
             logger.info(
@@ -890,3 +1014,316 @@ class BurnerMaintenancePredictorAgent:
 
         provenance_str = str(provenance_data)
         return hashlib.sha256(provenance_str.encode('utf-8')).hexdigest()
+
+    # =========================================================================
+    # EXPLAINABILITY METHODS
+    # These methods provide SHAP/LIME explanations for TRANSPARENCY.
+    # CRITICAL: All numeric calculations remain deterministic.
+    # Explanations describe WHY calculations produced certain results.
+    # =========================================================================
+
+    def _generate_health_explanation(
+        self,
+        input_data: BurnerInput,
+        health_metrics: Dict[str, float],
+        flame_quality: Dict[str, float],
+    ) -> Dict[str, Any]:
+        """
+        Generate explanation for health score calculation.
+
+        Uses SHAP values to explain feature contributions to the health score.
+
+        IMPORTANT: This explains WHY the health score was calculated,
+        NOT the calculation itself. All numeric values are deterministic.
+
+        Args:
+            input_data: Original input data
+            health_metrics: Calculated health metrics
+            flame_quality: Flame quality results
+
+        Returns:
+            Dictionary with summary, feature_importance, and confidence
+        """
+        if not self._explainability_enabled or not self.explainability_engine:
+            return {
+                'summary': None,
+                'feature_importance': None,
+                'confidence': None
+            }
+
+        # Prepare feature values for explanation
+        age_years = (date.today() - input_data.installation_date).days / 365.25
+        life_ratio = min(1.0, input_data.operating_hours / max(1, input_data.design_life_hours))
+
+        feature_values = {
+            'operating_life_ratio': life_ratio,
+            'flame_quality': flame_quality['score'],
+            'cycles_factor': health_metrics['cycles_factor'],
+            'age_factor': health_metrics['age_factor'],
+            'component_health': 80.0,  # Default if not provided
+        }
+
+        # Define the deterministic health calculation function
+        def health_calculator(features: Dict[str, float]) -> float:
+            """Mirror of the actual health calculation for explanation."""
+            life_score = max(0, min(100, (1 - features.get('operating_life_ratio', 0)) * 100))
+            flame_score = features.get('flame_quality', 0)
+            cycles_score = features.get('cycles_factor', 0) * 100
+            age_score = features.get('age_factor', 0) * 100
+            component_score = features.get('component_health', 80)
+
+            return (
+                self.HEALTH_WEIGHTS['operating_life_ratio'] * life_score +
+                self.HEALTH_WEIGHTS['flame_quality'] * flame_score +
+                self.HEALTH_WEIGHTS['cycles_factor'] * cycles_score +
+                self.HEALTH_WEIGHTS['age_factor'] * age_score +
+                self.HEALTH_WEIGHTS['component_health'] * component_score
+            )
+
+        # Generate explanation using the explainability engine
+        report = self.explainability_engine.explain_weighted_score(
+            prediction_function=health_calculator,
+            feature_values=feature_values,
+            feature_weights=self.HEALTH_WEIGHTS,
+            output_name='health_score',
+            context='health_score',
+        )
+
+        # Extract feature importance from SHAP values
+        feature_importance = {}
+        if report.shap_values:
+            total_abs = sum(abs(v) for v in report.shap_values.shap_values.values())
+            if total_abs > 0:
+                for feature, shap_val in report.shap_values.shap_values.items():
+                    feature_importance[feature] = round(abs(shap_val) / total_abs, 4)
+
+        return {
+            'summary': report.natural_language_summary,
+            'feature_importance': feature_importance,
+            'confidence': report.overall_confidence,
+            'report': report,  # Full report for detailed analysis
+        }
+
+    def _generate_priority_explanation(
+        self,
+        health_score: float,
+        rul_hours: float,
+        failure_prob_30d: float,
+        priority: str,
+    ) -> str:
+        """
+        Generate natural language explanation for maintenance priority.
+
+        Args:
+            health_score: Overall health score
+            rul_hours: Remaining useful life in hours
+            failure_prob_30d: 30-day failure probability
+            priority: Determined priority level
+
+        Returns:
+            Natural language explanation string
+        """
+        if not self._explainability_enabled:
+            return None
+
+        # Build explanation based on which factors drove the priority
+        factors = []
+
+        # Health score assessment
+        if health_score < 30:
+            factors.append(f"health score is critically low at {health_score:.1f}/100")
+        elif health_score < 50:
+            factors.append(f"health score of {health_score:.1f}/100 indicates significant degradation")
+        elif health_score < 70:
+            factors.append(f"health score of {health_score:.1f}/100 shows moderate wear")
+        else:
+            factors.append(f"health score of {health_score:.1f}/100 is acceptable")
+
+        # RUL assessment
+        if rul_hours < 500:
+            factors.append(f"remaining useful life is critically low ({rul_hours:.0f} hours)")
+        elif rul_hours < 2000:
+            factors.append(f"remaining useful life of {rul_hours:.0f} hours requires attention")
+        elif rul_hours < 5000:
+            factors.append(f"remaining useful life of {rul_hours:.0f} hours is moderate")
+        else:
+            factors.append(f"remaining useful life of {rul_hours:.0f} hours is healthy")
+
+        # Failure probability assessment
+        if failure_prob_30d > 0.30:
+            factors.append(f"30-day failure probability is high at {failure_prob_30d:.1%}")
+        elif failure_prob_30d > 0.15:
+            factors.append(f"30-day failure probability of {failure_prob_30d:.1%} is elevated")
+        elif failure_prob_30d > 0.05:
+            factors.append(f"30-day failure probability of {failure_prob_30d:.1%} is moderate")
+        else:
+            factors.append(f"30-day failure probability is low at {failure_prob_30d:.1%}")
+
+        # Build summary
+        priority_descriptions = {
+            'CRITICAL': 'Immediate maintenance is required',
+            'HIGH': 'Maintenance should be scheduled within one week',
+            'MEDIUM': 'Maintenance should be scheduled within one month',
+            'LOW': 'Routine maintenance can be scheduled as convenient',
+            'NONE': 'No maintenance action required at this time',
+        }
+
+        summary = f"Maintenance priority is {priority}. {priority_descriptions.get(priority, '')} "
+        summary += f"This assessment is based on: {'; '.join(factors)}."
+
+        return summary
+
+    def explain_health_score(
+        self,
+        input_data: BurnerInput,
+        output: BurnerOutput,
+    ) -> Optional[Any]:
+        """
+        Generate detailed SHAP/LIME explanation for health score.
+
+        This is a public method for users who want detailed explainability
+        reports beyond what's included in the standard output.
+
+        Args:
+            input_data: Original input data
+            output: Output from run() method
+
+        Returns:
+            ExplainabilityReport with full SHAP/LIME analysis, or None if disabled
+
+        Example:
+            >>> result = agent.run(input_data)
+            >>> explanation = agent.explain_health_score(input_data, result)
+            >>> print(explanation.natural_language_summary)
+            >>> print(explanation.shap_values.get_top_contributors(3))
+        """
+        if not self._explainability_enabled or not self.explainability_engine:
+            logger.warning("Explainability is not enabled")
+            return None
+
+        # Recalculate health metrics for explanation
+        age_years = (date.today() - input_data.installation_date).days / 365.25
+        age_factor = max(0, 1 - (age_years / 20))
+        cycles_factor = max(0, 1 - (input_data.cycles_count / 50000))
+
+        return self.explainability_engine.explain_health_score(
+            operating_hours=input_data.operating_hours,
+            design_life=input_data.design_life_hours,
+            flame_quality=output.flame_quality_score,
+            cycles_factor=cycles_factor,
+            age_factor=age_factor,
+            calculated_health_score=output.overall_health_score,
+        )
+
+    def explain_maintenance_priority(
+        self,
+        output: BurnerOutput,
+    ) -> Optional[Any]:
+        """
+        Generate detailed explanation for maintenance priority decision.
+
+        Args:
+            output: Output from run() method
+
+        Returns:
+            ExplainabilityReport for the priority decision, or None if disabled
+
+        Example:
+            >>> result = agent.run(input_data)
+            >>> priority_explanation = agent.explain_maintenance_priority(result)
+            >>> print(priority_explanation.natural_language_summary)
+        """
+        if not self._explainability_enabled or not self.explainability_engine:
+            logger.warning("Explainability is not enabled")
+            return None
+
+        return self.explainability_engine.explain_maintenance_priority(
+            health_score=output.overall_health_score,
+            rul_hours=output.remaining_useful_life_hours,
+            failure_prob_30d=output.failure_probability_30d,
+            priority_result=output.maintenance_priority.value,
+        )
+
+    def generate_audit_report(
+        self,
+        input_data: BurnerInput,
+        output: BurnerOutput,
+    ) -> Dict[str, Any]:
+        """
+        Generate comprehensive audit report with explainability.
+
+        This method creates a complete audit trail suitable for
+        regulatory compliance, including:
+        - All input data
+        - All calculated outputs
+        - Feature importance explanations
+        - Natural language summaries
+        - Provenance hashes
+
+        Args:
+            input_data: Original input data
+            output: Output from run() method
+
+        Returns:
+            Dictionary containing complete audit information
+
+        Example:
+            >>> result = agent.run(input_data)
+            >>> audit = agent.generate_audit_report(input_data, result)
+            >>> json.dump(audit, open('audit_trail.json', 'w'), indent=2)
+        """
+        audit_report = {
+            'agent': {
+                'id': self.agent_id,
+                'name': self.agent_name,
+                'version': self.version,
+            },
+            'timestamp': datetime.now().isoformat(),
+            'input_summary': {
+                'burner_id': input_data.burner_id,
+                'burner_model': input_data.burner_model,
+                'fuel_type': input_data.fuel_type.value,
+                'operating_hours': input_data.operating_hours,
+                'design_life_hours': input_data.design_life_hours,
+            },
+            'output_summary': {
+                'overall_health_score': output.overall_health_score,
+                'maintenance_priority': output.maintenance_priority.value,
+                'remaining_useful_life_hours': output.remaining_useful_life_hours,
+                'failure_probability_30d': output.failure_probability_30d,
+                'should_replace': output.should_replace,
+            },
+            'provenance': {
+                'hash': output.provenance_hash,
+                'processing_time_ms': output.processing_time_ms,
+                'validation_status': output.validation_status,
+            },
+            'explainability': {
+                'enabled': self._explainability_enabled,
+                'health_explanation': output.health_score_explanation,
+                'priority_explanation': output.priority_explanation,
+                'feature_importance': output.feature_importance,
+                'confidence': output.explanation_confidence,
+            },
+            'recommendations': [
+                {
+                    'action': rec.action,
+                    'priority': rec.priority.value,
+                    'reason': rec.reason,
+                }
+                for rec in output.recommendations
+            ],
+            'audit_notes': [
+                'All numeric calculations are deterministic (zero-hallucination)',
+                'Explanations describe feature importance, not calculations',
+                'Provenance hash enables verification of calculation integrity',
+                f'Explainability confidence: {output.explanation_confidence or "N/A"}',
+            ],
+        }
+
+        return audit_report
+
+    @property
+    def explainability_enabled(self) -> bool:
+        """Check if explainability is enabled."""
+        return self._explainability_enabled

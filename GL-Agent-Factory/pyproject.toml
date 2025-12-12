@@ -131,8 +131,11 @@ emission_calculator = "greenlang.agents.emission_calculator:EmissionCalculator"
 # =============================================================================
 
 [tool.setuptools]
-packages = ["greenlang"]
-package-dir = {"" = "."}
+package-dir = {"" = "backend"}
+
+[tool.setuptools.packages.find]
+where = ["backend"]
+include = ["agents*", "engines*", "services*", "app*", "core*", "connectors*", "data*"]
 
 [tool.setuptools.package-data]
 greenlang = ["py.typed", "*.yaml", "*.json"]
