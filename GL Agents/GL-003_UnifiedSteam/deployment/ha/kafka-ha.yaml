@@ -1,0 +1,31 @@
+# GL-003 UnifiedSteam - Kafka Topics Configuration
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gl-003-kafka-topics
+  namespace: greenlang
+data:
+  topics.sh: |
+    #!/bin/bash
+    BOOTSTRAP_SERVER="kafka-0.kafka-headless.greenlang.svc.cluster.local:9092"
+
+    # GL-003 UnifiedSteam topics
+    kafka-topics.sh --create --if-not-exists --bootstrap-server $BOOTSTRAP_SERVER \
+      --topic gl003.telemetry.steam --partitions 8 --replication-factor 3
+
+    kafka-topics.sh --create --if-not-exists --bootstrap-server $BOOTSTRAP_SERVER \
+      --topic gl003.calculations.thermodynamics --partitions 4 --replication-factor 3
+
+    kafka-topics.sh --create --if-not-exists --bootstrap-server $BOOTSTRAP_SERVER \
+      --topic gl003.diagnostics.traps --partitions 4 --replication-factor 3
+
+    kafka-topics.sh --create --if-not-exists --bootstrap-server $BOOTSTRAP_SERVER \
+      --topic gl003.optimization.recommendations --partitions 4 --replication-factor 3
+
+    kafka-topics.sh --create --if-not-exists --bootstrap-server $BOOTSTRAP_SERVER \
+      --topic gl003.alerts.safety --partitions 4 --replication-factor 3
+
+    kafka-topics.sh --create --if-not-exists --bootstrap-server $BOOTSTRAP_SERVER \
+      --topic gl003.audit.log --partitions 8 --replication-factor 3 \
+      --config retention.ms=220752000000

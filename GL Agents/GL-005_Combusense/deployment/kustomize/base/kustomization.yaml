@@ -1,0 +1,79 @@
+# Kustomize Base Configuration for GL-005 CombustionControlAgent
+# This defines the common resources shared across all environments
+# Real-time control system with high availability requirements
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Namespace for all resources
+namespace: greenlang
+
+# Common labels applied to all resources
+commonLabels:
+  app: gl-005-combustion-control
+  agent: "GL-005"
+  managed-by: "kustomize"
+  control-system: "real-time"
+
+# Common annotations
+commonAnnotations:
+  documentation: "https://docs.greenlang.ai/agents/GL-005"
+  deployment-tool: "kustomize"
+  sla.uptime: "99.9%"
+  sla.latency: "<100ms"
+
+# Resources to include
+resources:
+  # Core Kubernetes resources
+  - ../../deployment.yaml
+  - ../../service.yaml
+  - ../../configmap.yaml
+  - ../../secret.yaml
+  - ../../hpa.yaml
+  - ../../networkpolicy.yaml
+  - ../../ingress.yaml
+  - ../../servicemonitor.yaml
+
+  # Production-grade resources
+  - ../../pdb.yaml
+  - ../../serviceaccount.yaml
+  - ../../resourcequota.yaml
+  - ../../limitrange.yaml
+
+# ConfigMap generator (for environment-agnostic configuration)
+configMapGenerator:
+  - name: gl-005-base-config
+    literals:
+      - app_name=GL-005 CombustionControlAgent
+      - app_version=1.0.0
+      - deployment_tool=kustomize
+      - control_loop_interval_ms=100
+      - max_control_latency_ms=100
+      - health_check_interval_s=10
+
+# Secret generator (for base secrets - override in overlays)
+secretGenerator:
+  - name: gl-005-base-secrets
+    type: Opaque
+    literals:
+      - placeholder=REPLACE_IN_OVERLAYS
+
+# Images (for version management)
+images:
+  - name: gcr.io/greenlang/gl-005-combustion-control
+    newTag: 1.0.0
+
+# Replicas (override in overlays)
+replicas:
+  - name: gl-005-combustion-control
+    count: 3
+
+# Resource transformers
+# Apply resource limits across all deployments
+
+# Strategic merge patches (optional)
+# patches:
+#   - path: patch-resource-limits.yaml
+#     target:
+#       kind: Deployment
+#       name: gl-005-combustion-control

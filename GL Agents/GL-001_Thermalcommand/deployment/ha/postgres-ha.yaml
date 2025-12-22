@@ -1,0 +1,620 @@
+# GL-001 ThermalCommand - PostgreSQL High Availability Configuration
+# Patroni-based PostgreSQL cluster with streaming replication
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gl-001-postgres-config
+  namespace: greenlang
+  labels:
+    app: gl-001-postgres
+data:
+  PATRONI_SCOPE: gl-001-postgres
+  PATRONI_NAMESPACE: greenlang
+  PATRONI_NAME: "${POD_NAME}"
+  PATRONI_KUBERNETES_LABELS: "{app: gl-001-postgres}"
+  PATRONI_KUBERNETES_USE_ENDPOINTS: "true"
+  PATRONI_SUPERUSER_USERNAME: postgres
+  PATRONI_REPLICATION_USERNAME: replicator
+  PATRONI_RESTAPI_LISTEN: "0.0.0.0:8008"
+  PATRONI_RESTAPI_CONNECT_ADDRESS: "${POD_IP}:8008"
+  PATRONI_POSTGRESQL_LISTEN: "0.0.0.0:5432"
+  PATRONI_POSTGRESQL_CONNECT_ADDRESS: "${POD_IP}:5432"
+  PATRONI_POSTGRESQL_DATA_DIR: "/var/lib/postgresql/data/pgdata"
+  PATRONI_LOG_LEVEL: INFO
+
+  # PostgreSQL configuration
+  postgresql.conf: |
+    # Connection Settings
+    listen_addresses = '*'
+    port = 5432
+    max_connections = 200
+    superuser_reserved_connections = 5
+
+    # Memory Settings
+    shared_buffers = 2GB
+    effective_cache_size = 6GB
+    work_mem = 64MB
+    maintenance_work_mem = 512MB
+    wal_buffers = 64MB
+
+    # WAL Settings
+    wal_level = replica
+    max_wal_senders = 10
+    max_replication_slots = 10
+    wal_keep_size = 1GB
+    synchronous_commit = on
+    synchronous_standby_names = 'ANY 1 (*)'
+
+    # Checkpoints
+    checkpoint_completion_target = 0.9
+    checkpoint_timeout = 10min
+    max_wal_size = 4GB
+    min_wal_size = 1GB
+
+    # Query Planner
+    random_page_cost = 1.1
+    effective_io_concurrency = 200
+    default_statistics_target = 100
+
+    # Logging
+    log_destination = 'stderr'
+    logging_collector = on
+    log_directory = '/var/log/postgresql'
+    log_filename = 'postgresql-%Y-%m-%d_%H%M%S.log'
+    log_rotation_age = 1d
+    log_rotation_size = 100MB
+    log_min_duration_statement = 1000
+    log_checkpoints = on
+    log_connections = on
+    log_disconnections = on
+    log_lock_waits = on
+    log_temp_files = 0
+    log_autovacuum_min_duration = 0
+
+    # Autovacuum
+    autovacuum = on
+    autovacuum_max_workers = 3
+    autovacuum_naptime = 1min
+    autovacuum_vacuum_threshold = 50
+    autovacuum_analyze_threshold = 50
+    autovacuum_vacuum_scale_factor = 0.02
+    autovacuum_analyze_scale_factor = 0.01
+
+    # SSL
+    ssl = on
+    ssl_cert_file = '/etc/ssl/certs/tls.crt'
+    ssl_key_file = '/etc/ssl/certs/tls.key'
+
+    # Timeouts
+    statement_timeout = 60000
+    lock_timeout = 30000
+    idle_in_transaction_session_timeout = 300000
+
+    # Archive
+    archive_mode = on
+    archive_command = 'envdir /etc/wal-e.d/env wal-e wal-push %p'
+    archive_timeout = 60
+
+  pg_hba.conf: |
+    # TYPE  DATABASE        USER            ADDRESS                 METHOD
+    local   all             all                                     trust
+    host    all             all             127.0.0.1/32            md5
+    host    all             all             ::1/128                 md5
+    host    all             all             0.0.0.0/0               md5
+    host    replication     replicator      0.0.0.0/0               md5
+
+  patroni.yaml: |
+    scope: gl-001-postgres
+    namespace: /greenlang/
+
+    kubernetes:
+      use_endpoints: true
+      labels:
+        app: gl-001-postgres
+      scope_label: cluster-name
+      role_label: role
+
+    restapi:
+      listen: 0.0.0.0:8008
+      connect_address: ${POD_IP}:8008
+
+    bootstrap:
+      dcs:
+        ttl: 30
+        loop_wait: 10
+        retry_timeout: 10
+        maximum_lag_on_failover: 1048576
+        postgresql:
+          use_pg_rewind: true
+          use_slots: true
+          parameters:
+            max_connections: 200
+            shared_buffers: 2GB
+            wal_level: replica
+            max_wal_senders: 10
+            max_replication_slots: 10
+            synchronous_commit: on
+
+      initdb:
+        - encoding: UTF8
+        - data-checksums
+
+      pg_hba:
+        - host replication replicator 0.0.0.0/0 md5
+        - host all all 0.0.0.0/0 md5
+
+    postgresql:
+      listen: 0.0.0.0:5432
+      connect_address: ${POD_IP}:5432
+      data_dir: /var/lib/postgresql/data/pgdata
+      pgpass: /tmp/pgpass
+      authentication:
+        superuser:
+          username: postgres
+          password: ${POSTGRES_PASSWORD}
+        replication:
+          username: replicator
+          password: ${REPLICATION_PASSWORD}
+      callbacks:
+        on_start: /scripts/on_start.sh
+        on_stop: /scripts/on_stop.sh
+        on_role_change: /scripts/on_role_change.sh
+
+    tags:
+      nofailover: false
+      noloadbalance: false
+      clonefrom: false
+      nosync: false
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: gl-001-db-credentials
+  namespace: greenlang
+  labels:
+    app: gl-001-postgres
+type: Opaque
+stringData:
+  postgres-password: "${POSTGRES_PASSWORD}"
+  replication-password: "${REPLICATION_PASSWORD}"
+  username: "greenlang"
+  password: "${APP_DB_PASSWORD}"
+  host: "gl-001-postgres.greenlang.svc.cluster.local"
+  port: "5432"
+  database: "greenlang_gl001"
+  url: "postgresql://greenlang:${APP_DB_PASSWORD}@gl-001-postgres.greenlang.svc.cluster.local:5432/greenlang_gl001?sslmode=require"
+---
+# PostgreSQL StatefulSet
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: gl-001-postgres
+  namespace: greenlang
+  labels:
+    app: gl-001-postgres
+    cluster-name: gl-001-postgres
+spec:
+  serviceName: gl-001-postgres
+  replicas: 3
+  selector:
+    matchLabels:
+      app: gl-001-postgres
+  template:
+    metadata:
+      labels:
+        app: gl-001-postgres
+        cluster-name: gl-001-postgres
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9187"
+    spec:
+      serviceAccountName: gl-001-postgres
+      securityContext:
+        fsGroup: 999
+        runAsUser: 999
+        runAsNonRoot: true
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  app: gl-001-postgres
+              topologyKey: topology.kubernetes.io/zone
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: gl-001-postgres
+                topologyKey: kubernetes.io/hostname
+
+      initContainers:
+        - name: init-chmod
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              mkdir -p /var/lib/postgresql/data/pgdata
+              chmod 700 /var/lib/postgresql/data/pgdata
+              chown -R 999:999 /var/lib/postgresql/data
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+          securityContext:
+            runAsUser: 0
+
+      containers:
+        - name: postgres
+          image: registry.opensource.zalan.do/acid/spilo-15:3.0-p1
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5432
+              name: postgresql
+            - containerPort: 8008
+              name: patroni
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: gl-001-db-credentials
+                  key: postgres-password
+            - name: REPLICATION_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: gl-001-db-credentials
+                  key: replication-password
+            - name: PATRONI_KUBERNETES_POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: PATRONI_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: PATRONI_SCOPE
+              value: gl-001-postgres
+            - name: PATRONI_KUBERNETES_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: PATRONI_KUBERNETES_LABELS
+              value: "{app: gl-001-postgres}"
+            - name: PATRONI_SUPERUSER_USERNAME
+              value: postgres
+            - name: PATRONI_SUPERUSER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: gl-001-db-credentials
+                  key: postgres-password
+            - name: PATRONI_REPLICATION_USERNAME
+              value: replicator
+            - name: PATRONI_REPLICATION_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: gl-001-db-credentials
+                  key: replication-password
+            - name: PATRONI_RESTAPI_CONNECT_ADDRESS
+              value: "$(POD_IP):8008"
+            - name: PATRONI_POSTGRESQL_CONNECT_ADDRESS
+              value: "$(POD_IP):5432"
+            - name: PATRONI_POSTGRESQL_DATA_DIR
+              value: /var/lib/postgresql/data/pgdata
+          resources:
+            requests:
+              cpu: 500m
+              memory: 2Gi
+            limits:
+              cpu: 2000m
+              memory: 4Gi
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+            - name: config
+              mountPath: /etc/patroni
+            - name: scripts
+              mountPath: /scripts
+            - name: tls
+              mountPath: /etc/ssl/certs
+          livenessProbe:
+            httpGet:
+              path: /liveness
+              port: 8008
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /readiness
+              port: 8008
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+
+        - name: postgres-exporter
+          image: quay.io/prometheuscommunity/postgres-exporter:v0.14.0
+          ports:
+            - containerPort: 9187
+              name: metrics
+          env:
+            - name: DATA_SOURCE_URI
+              value: "localhost:5432/postgres?sslmode=disable"
+            - name: DATA_SOURCE_USER
+              value: postgres
+            - name: DATA_SOURCE_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: gl-001-db-credentials
+                  key: postgres-password
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+
+      volumes:
+        - name: config
+          configMap:
+            name: gl-001-postgres-config
+        - name: scripts
+          configMap:
+            name: gl-001-postgres-scripts
+            defaultMode: 0755
+        - name: tls
+          secret:
+            secretName: gl-001-postgres-tls
+            defaultMode: 0600
+
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+        labels:
+          app: gl-001-postgres
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: gp3
+        resources:
+          requests:
+            storage: 100Gi
+---
+# PostgreSQL Scripts ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gl-001-postgres-scripts
+  namespace: greenlang
+  labels:
+    app: gl-001-postgres
+data:
+  on_start.sh: |
+    #!/bin/bash
+    echo "[$(date)] PostgreSQL starting on $(hostname)"
+
+  on_stop.sh: |
+    #!/bin/bash
+    echo "[$(date)] PostgreSQL stopping on $(hostname)"
+
+  on_role_change.sh: |
+    #!/bin/bash
+    ROLE=$1
+    echo "[$(date)] Role changed to: $ROLE on $(hostname)"
+
+    if [ "$ROLE" = "master" ]; then
+      echo "Promoted to master, running master setup..."
+      # Any master-specific setup
+    elif [ "$ROLE" = "replica" ]; then
+      echo "Demoted to replica..."
+    fi
+
+    # Send notification
+    if [ -n "$SLACK_WEBHOOK" ]; then
+      curl -X POST -H 'Content-type: application/json' \
+        --data "{\"text\":\"PostgreSQL role change: $(hostname) is now $ROLE\"}" \
+        "$SLACK_WEBHOOK"
+    fi
+
+  backup.sh: |
+    #!/bin/bash
+    set -e
+    BACKUP_DIR="/backups/$(date +%Y%m%d_%H%M%S)"
+    mkdir -p "$BACKUP_DIR"
+
+    pg_basebackup -D "$BACKUP_DIR" -Ft -z -P \
+      -h localhost -U replicator
+
+    echo "Backup completed: $BACKUP_DIR"
+    aws s3 sync "$BACKUP_DIR" "s3://greenlang-backups/gl-001/postgresql/"
+
+  verify.sh: |
+    #!/bin/bash
+    # Verify PostgreSQL cluster health
+
+    echo "=== Patroni Status ==="
+    curl -s http://localhost:8008/patroni | jq .
+
+    echo "=== Cluster Members ==="
+    curl -s http://localhost:8008/cluster | jq .
+
+    echo "=== Replication Status ==="
+    psql -U postgres -c "SELECT * FROM pg_stat_replication;"
+
+    echo "=== Database Size ==="
+    psql -U postgres -c "SELECT pg_database.datname, pg_size_pretty(pg_database_size(pg_database.datname)) FROM pg_database ORDER BY pg_database_size(pg_database.datname) DESC;"
+---
+# ServiceAccount for Patroni
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: gl-001-postgres
+  namespace: greenlang
+  labels:
+    app: gl-001-postgres
+---
+# Role for Patroni
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: gl-001-postgres
+  namespace: greenlang
+  labels:
+    app: gl-001-postgres
+rules:
+  - apiGroups: [""]
+    resources: ["endpoints", "pods"]
+    verbs: ["get", "list", "watch", "patch", "update"]
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list"]
+---
+# RoleBinding for Patroni
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: gl-001-postgres
+  namespace: greenlang
+  labels:
+    app: gl-001-postgres
+subjects:
+  - kind: ServiceAccount
+    name: gl-001-postgres
+    namespace: greenlang
+roleRef:
+  kind: Role
+  name: gl-001-postgres
+  apiGroup: rbac.authorization.k8s.io
+---
+# PostgreSQL Service (leader)
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-001-postgres
+  namespace: greenlang
+  labels:
+    app: gl-001-postgres
+spec:
+  type: ClusterIP
+  ports:
+    - port: 5432
+      targetPort: 5432
+      name: postgresql
+    - port: 8008
+      targetPort: 8008
+      name: patroni
+    - port: 9187
+      targetPort: 9187
+      name: metrics
+  selector:
+    app: gl-001-postgres
+    role: master
+---
+# PostgreSQL Replica Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-001-postgres-replica
+  namespace: greenlang
+  labels:
+    app: gl-001-postgres
+spec:
+  type: ClusterIP
+  ports:
+    - port: 5432
+      targetPort: 5432
+      name: postgresql
+    - port: 9187
+      targetPort: 9187
+      name: metrics
+  selector:
+    app: gl-001-postgres
+    role: replica
+---
+# Headless Service for StatefulSet
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-001-postgres-headless
+  namespace: greenlang
+  labels:
+    app: gl-001-postgres
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+    - port: 5432
+      targetPort: 5432
+      name: postgresql
+    - port: 8008
+      targetPort: 8008
+      name: patroni
+  selector:
+    app: gl-001-postgres
+---
+# PodDisruptionBudget
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: gl-001-postgres-pdb
+  namespace: greenlang
+  labels:
+    app: gl-001-postgres
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: gl-001-postgres
+---
+# Certificate for TLS
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: gl-001-postgres-tls
+  namespace: greenlang
+  labels:
+    app: gl-001-postgres
+spec:
+  secretName: gl-001-postgres-tls
+  duration: 8760h  # 1 year
+  renewBefore: 720h  # 30 days
+  subject:
+    organizations:
+      - GreenLang
+  commonName: gl-001-postgres.greenlang.svc.cluster.local
+  isCA: false
+  privateKey:
+    algorithm: RSA
+    encoding: PKCS1
+    size: 2048
+  usages:
+    - server auth
+    - client auth
+  dnsNames:
+    - gl-001-postgres
+    - gl-001-postgres.greenlang.svc
+    - gl-001-postgres.greenlang.svc.cluster.local
+    - "*.gl-001-postgres-headless.greenlang.svc.cluster.local"
+  issuerRef:
+    name: greenlang-ca-issuer
+    kind: ClusterIssuer

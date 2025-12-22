@@ -1,0 +1,592 @@
+# GL-003 UNIFIEDSTEAM Pack Specification
+# GreenLang v1.0 Specification
+# Steam System Optimizer Agent
+
+name: gl-003-unifiedsteam
+version: 1.0.0
+description: |
+  GL-003 UNIFIEDSTEAM - SteamSystemOptimizer
+  Comprehensive steam system optimization including IAPWS-IF97 thermodynamics,
+  steam trap diagnostics, desuperheater control, condensate recovery optimization,
+  and network-wide steam balance management with full audit trail.
+
+metadata:
+  agent_id: GL-003
+  capability: UNIFIEDSTEAM
+  priority: P0
+  business_impact: "Steam efficiency gains of 5-15%, trap loss reduction 70%"
+  target_release: Q4 2025
+  status: implemented
+
+author:
+  name: GreenLang Process Heat Team
+  email: process-heat@greenlang.ai
+
+license: Proprietary
+
+# Mission Statement
+mission: |
+  Optimize steam system performance across the entire plant by managing steam
+  generation, distribution, and utilization. Provide real-time diagnostics
+  for steam traps, optimize desuperheater operations, maximize condensate
+  recovery, and deliver traceable thermodynamic calculations per IAPWS-IF97.
+
+# Core Capabilities
+capabilities:
+  # Thermodynamic Calculations
+  - iapws_if97_steam_properties
+  - enthalpy_balance_calculations
+  - steam_quality_analysis
+  - superheat_subcool_calculations
+  - pressure_enthalpy_diagrams
+
+  # Steam Trap Diagnostics
+  - acoustic_monitoring_integration
+  - temperature_differential_analysis
+  - trap_failure_detection
+  - loss_quantification_kg_hr
+  - maintenance_priority_ranking
+
+  # Desuperheater Optimization
+  - spray_water_flow_optimization
+  - outlet_temperature_control
+  - attemperator_performance_tracking
+  - energy_balance_verification
+
+  # Condensate Recovery
+  - return_rate_optimization
+  - flash_steam_recovery
+  - contamination_detection
+  - energy_recovery_quantification
+
+  # Steam Network
+  - pressure_level_optimization
+  - header_balance_management
+  - letdown_station_optimization
+  - vent_loss_minimization
+
+  # Control
+  - cascade_pid_control
+  - feedforward_compensation
+  - constraint_handling
+  - setpoint_optimization
+
+  # Safety
+  - safety_envelope_enforcement
+  - interlock_management
+  - trip_handling
+  - overpressure_protection
+
+  # Integration
+  - opcua_connectivity
+  - historian_integration
+  - kafka_streaming
+  - graphql_rest_apis
+
+  # Explainability
+  - shap_feature_attribution
+  - lime_local_explanations
+  - physics_based_explanations
+  - counterfactual_analysis
+
+  # Uncertainty
+  - sensor_uncertainty_gum_compliant
+  - monte_carlo_propagation
+  - quality_gates
+  - confidence_intervals
+
+  # Audit
+  - sha256_provenance_tracking
+  - calculation_trace_logging
+  - evidence_pack_generation
+  - compliance_reporting
+
+# Dependencies
+dependencies:
+  python: ">=3.10"
+  packages:
+    # Core
+    - pydantic>=2.0
+    - numpy>=1.24
+    - scipy>=1.10
+    - pandas>=2.0
+
+    # Thermodynamics
+    - iapws>=1.5  # IAPWS-IF97 implementation reference
+    - CoolProp>=6.4  # Additional property validation
+
+    # Async
+    - asyncio-throttle>=1.0
+    - aiohttp>=3.8
+
+    # Streaming
+    - aiokafka>=0.8
+    - confluent-kafka>=2.0
+
+    # API
+    - fastapi>=0.100
+    - uvicorn>=0.22
+    - strawberry-graphql>=0.180
+    - websockets>=11.0
+
+    # Database
+    - sqlalchemy>=2.0
+    - asyncpg>=0.27
+    - influxdb-client>=1.36
+
+    # OPC-UA
+    - asyncua>=1.0
+
+    # ML/Explainability
+    - scikit-learn>=1.3
+    - shap>=0.42
+    - lime>=0.2
+
+    # Monitoring
+    - prometheus-client>=0.17
+    - opentelemetry-api>=1.18
+    - opentelemetry-sdk>=1.18
+
+    # Logging
+    - structlog>=23.1
+
+# Entry Points
+entry_points:
+  main: core.orchestrator:UnifiedSteamOrchestrator
+  api_rest: api.rest_api:app
+  api_graphql: api.graphql_api:GraphQLApp
+  kafka: streaming.kafka_consumer:start_consumers
+  cli: cli:main
+
+# Module Structure
+modules:
+  thermodynamics:
+    description: "IAPWS-IF97 compliant steam property calculations"
+    files:
+      - iapws_if97.py
+      - steam_properties.py
+      - enthalpy_balance.py
+      - steam_quality.py
+      - uncertainty.py
+    key_functions:
+      - get_steam_properties
+      - calculate_enthalpy
+      - calculate_entropy
+      - get_saturation_properties
+      - calculate_steam_quality
+      - determine_iapws_region
+
+  calculators:
+    description: "Zero-hallucination calculation engines"
+    files:
+      - desuperheater_calculator.py
+      - condensate_calculator.py
+      - trap_diagnostics_calculator.py
+      - heat_balance_calculator.py
+      - steam_kpi_calculator.py
+      - enthalpy_balance_integration.py
+    key_classes:
+      - DesuperheaterCalculator
+      - CondensateCalculator
+      - TrapDiagnosticsCalculator
+      - HeatBalanceCalculator
+      - SteamKPICalculator
+
+  optimization:
+    description: "Multi-objective optimization engines"
+    files:
+      - desuperheater_optimizer.py
+      - condensate_optimizer.py
+      - steam_network_optimizer.py
+      - trap_maintenance_optimizer.py
+      - recommendation_engine.py
+      - multi_objective.py
+      - constraints.py
+    key_classes:
+      - DesuperheaterOptimizer
+      - CondensateOptimizer
+      - SteamNetworkOptimizer
+      - TrapMaintenanceOptimizer
+
+  control:
+    description: "Real-time control systems"
+    files:
+      - desuperheater_controller.py
+      - steam_quality_controller.py
+      - prv_controller.py
+      - setpoint_manager.py
+    key_classes:
+      - DesuperheaterController
+      - SteamQualityController
+      - PRVController
+      - SetpointManager
+
+  safety:
+    description: "Safety systems and interlocks"
+    files:
+      - safety_envelope.py
+      - constraint_validator.py
+      - interlock_manager.py
+      - trip_handler.py
+    key_classes:
+      - SafetyEnvelope
+      - ConstraintValidator
+      - InterlockManager
+      - TripHandler
+
+  uncertainty:
+    description: "GUM-compliant uncertainty quantification"
+    files:
+      - sensor_uncertainty.py
+      - propagation.py
+      - quality_gates.py
+      - uncertainty_reporter.py
+      - monte_carlo.py
+      - uncertainty_models.py
+    key_classes:
+      - SensorUncertaintyManager
+      - UncertaintyPropagator
+      - QualityGate
+      - MonteCarloSimulator
+
+  causal:
+    description: "Causal inference and root cause analysis"
+    files:
+      - causal_graph.py
+      - root_cause_analyzer.py
+      - counterfactual_engine.py
+      - intervention_recommender.py
+    key_classes:
+      - CausalGraph
+      - RootCauseAnalyzer
+      - CounterfactualEngine
+      - InterventionRecommender
+
+  explainability:
+    description: "Explainable AI for recommendations"
+    files:
+      - physics_explainer.py
+      - shap_explainer.py
+      - lime_explainer.py
+      - explanation_generator.py
+      - explainability_payload.py
+    key_classes:
+      - PhysicsExplainer
+      - SHAPExplainer
+      - LIMEExplainer
+      - ExplanationGenerator
+
+# Configuration Schema
+config:
+  type: object
+  properties:
+    steam_system:
+      $ref: "#/definitions/SteamSystemConfig"
+    thermodynamics:
+      $ref: "#/definitions/ThermodynamicsConfig"
+    trap_diagnostics:
+      $ref: "#/definitions/TrapDiagnosticsConfig"
+    desuperheater:
+      $ref: "#/definitions/DesuperheaterConfig"
+    condensate:
+      $ref: "#/definitions/CondensateConfig"
+    safety:
+      $ref: "#/definitions/SafetyConfig"
+    integration:
+      $ref: "#/definitions/IntegrationConfig"
+
+definitions:
+  SteamSystemConfig:
+    type: object
+    properties:
+      num_pressure_levels:
+        type: integer
+        default: 3
+        description: "Number of steam pressure levels (HP, MP, LP)"
+      num_headers:
+        type: integer
+        default: 6
+        description: "Total number of steam headers"
+      num_traps:
+        type: integer
+        default: 500
+        description: "Approximate number of steam traps"
+
+  ThermodynamicsConfig:
+    type: object
+    properties:
+      iapws_region_check:
+        type: boolean
+        default: true
+        description: "Validate IAPWS-IF97 region for all calculations"
+      cache_enabled:
+        type: boolean
+        default: true
+        description: "Enable property lookup caching"
+      precision:
+        type: string
+        enum: [standard, high]
+        default: standard
+
+  TrapDiagnosticsConfig:
+    type: object
+    properties:
+      acoustic_enabled:
+        type: boolean
+        default: true
+      temperature_differential_threshold_c:
+        type: number
+        default: 5.0
+      failure_probability_threshold:
+        type: number
+        default: 0.7
+      survey_interval_days:
+        type: integer
+        default: 90
+
+  DesuperheaterConfig:
+    type: object
+    properties:
+      outlet_temp_tolerance_c:
+        type: number
+        default: 5.0
+      min_superheat_c:
+        type: number
+        default: 10.0
+      max_spray_rate_kg_s:
+        type: number
+        default: 10.0
+      control_mode:
+        type: string
+        enum: [cascade, feedforward, combined]
+        default: combined
+
+  CondensateConfig:
+    type: object
+    properties:
+      target_return_percent:
+        type: number
+        default: 85.0
+      flash_recovery_enabled:
+        type: boolean
+        default: true
+      contamination_detection:
+        type: boolean
+        default: true
+
+  SafetyConfig:
+    type: object
+    properties:
+      max_header_pressure_kpa:
+        type: number
+        default: 4500.0
+      min_superheat_c:
+        type: number
+        default: 5.0
+      max_desuperheater_outlet_temp_c:
+        type: number
+        default: 450.0
+      interlock_response_ms:
+        type: integer
+        default: 100
+
+  IntegrationConfig:
+    type: object
+    properties:
+      opcua_enabled:
+        type: boolean
+        default: true
+      historian_enabled:
+        type: boolean
+        default: true
+      kafka_enabled:
+        type: boolean
+        default: true
+      acoustic_monitoring_enabled:
+        type: boolean
+        default: true
+
+# Success Criteria (KPIs)
+kpis:
+  steam_efficiency:
+    metric: steam_system_efficiency_percent
+    target: ">= 85%"
+    improvement: "5-15% gain vs baseline"
+    measurement: "Energy balance method"
+
+  trap_losses:
+    metric: trap_loss_kg_hr
+    target: "< 50 kg/hr total"
+    improvement: "70% reduction in losses"
+    measurement: "Acoustic + temperature diagnostics"
+
+  trap_failure_rate:
+    metric: trap_failure_percent
+    target: "< 5%"
+    industry_benchmark: "15-25% typical"
+    measurement: "Continuous monitoring"
+
+  condensate_return:
+    metric: condensate_return_percent
+    target: ">= 85%"
+    measurement: "Flow meter ratio"
+
+  desuperheater_performance:
+    metric: outlet_temp_deviation_c
+    target: "<= 5 C"
+    measurement: "Temperature sensor accuracy"
+
+  energy_recovery:
+    metric: flash_steam_recovery_percent
+    target: ">= 80%"
+    measurement: "Energy balance"
+
+  latency:
+    metric: calculation_time_ms
+    targets:
+      steam_properties: "< 1 ms"
+      enthalpy_balance: "< 10 ms"
+      trap_diagnostics: "< 50 ms"
+      optimization: "< 500 ms"
+
+# IAPWS-IF97 Reference
+iapws_if97:
+  description: "International Association for Properties of Water and Steam"
+  regions:
+    region_1: "Compressed liquid (subcooled)"
+    region_2: "Superheated vapor"
+    region_3: "Supercritical"
+    region_4: "Saturation line (two-phase)"
+    region_5: "High temperature steam"
+  validity:
+    pressure: "0 - 100 MPa"
+    temperature: "273.15 - 2273.15 K"
+  properties_calculated:
+    - specific_volume_m3_kg
+    - specific_enthalpy_kj_kg
+    - specific_entropy_kj_kg_k
+    - specific_internal_energy_kj_kg
+    - specific_isobaric_heat_capacity_kj_kg_k
+    - specific_isochoric_heat_capacity_kj_kg_k
+    - speed_of_sound_m_s
+    - isentropic_exponent
+
+# Data Requirements
+data_requirements:
+  steam_sensors:
+    frequency: 1-5s
+    latency_sla: "<10s"
+    required:
+      - header_pressure_kpa
+      - header_temperature_c
+      - steam_flow_kg_s
+      - desuperheater_inlet_temp
+      - desuperheater_outlet_temp
+      - spray_water_flow
+    optional:
+      - steam_quality
+      - condensate_flow
+      - condensate_temperature
+
+  trap_monitoring:
+    frequency: 1-60s
+    latency_sla: "<30s"
+    sensors:
+      - inlet_temperature
+      - outlet_temperature
+      - acoustic_signature
+      - ultrasonic_reading
+
+  condensate_system:
+    frequency: 5-60s
+    latency_sla: "<30s"
+    sensors:
+      - return_flow_kg_s
+      - return_temperature_c
+      - makeup_water_flow
+      - flash_tank_pressure
+
+# Kafka Topics
+kafka_topics:
+  - name: gl003.telemetry.steam
+    schema: avro
+    partitions: 8
+    replication: 3
+    description: "Real-time steam system telemetry"
+
+  - name: gl003.calculations.thermodynamics
+    schema: avro
+    partitions: 4
+    replication: 3
+    description: "IAPWS-IF97 calculation results"
+
+  - name: gl003.diagnostics.traps
+    schema: avro
+    partitions: 4
+    replication: 3
+    description: "Steam trap diagnostic results"
+
+  - name: gl003.optimization.recommendations
+    schema: avro
+    partitions: 4
+    replication: 3
+    description: "Optimization recommendations"
+
+  - name: gl003.alerts.safety
+    schema: avro
+    partitions: 4
+    replication: 3
+    description: "Safety alerts and violations"
+
+  - name: gl003.audit.log
+    schema: avro
+    partitions: 8
+    replication: 3
+    retention: 7_years
+    description: "Complete audit trail"
+
+# Webhook Events
+webhook_events:
+  - TrapFailureDetected
+  - DesuperheaterOptimization
+  - CondensateRecoveryAlert
+  - SteamBalanceDeviation
+  - SafetyInterlock
+
+# Reference Standards
+standards:
+  - IAPWS-IF97 (Thermodynamic Properties of Water and Steam)
+  - ASME PTC 19.3 (Temperature Measurement)
+  - ASME PTC 19.5 (Flow Measurement)
+  - ISO 5167 (Flow Measurement using Orifice Plates)
+  - ASTM E1137 (Standard Specification for Thermocouples)
+  - ISA-77.42 (Fossil Fuel Power Plant Steam Temperature Controls)
+  - GUM (Guide to Expression of Uncertainty in Measurement)
+
+# Audit Requirements
+audit:
+  retention_years: 7
+  hash_algorithm: SHA-256
+  provenance_tracking: true
+  append_only: true
+  queryable_by:
+    - equipment_id
+    - time_range
+    - calculation_type
+    - provenance_hash
+    - trap_id
+    - header_id
+
+# Zero-Hallucination Guarantee
+zero_hallucination:
+  principle: "All calculations are deterministic - NO LLM in calculation path"
+  guarantees:
+    - same_input_same_output
+    - bit_perfect_reproducibility
+    - complete_provenance_tracking
+    - sha256_hash_for_every_calculation
+  calculation_methods:
+    thermodynamics: "IAPWS-IF97 (validated against steam tables)"
+    enthalpy_balance: "First law of thermodynamics"
+    trap_diagnostics: "Statistical analysis + physics model"
+    optimization: "Constrained nonlinear programming (SLSQP)"

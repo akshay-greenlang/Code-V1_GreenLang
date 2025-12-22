@@ -23,7 +23,6 @@
       "Bash(gh run list:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-<<<<<<< HEAD
       "WebFetch(domain:pypi.org)",
       "Bash(cd:*)",
       "Bash(scriptscheck_version_consistency.bat)",
@@ -271,7 +270,18 @@
       "Bash(del testsagentstest_industrial_process_heat_agent_ai_async_fixed.py)",
       "Bash(do echo \"=== Deploying $agent ===\")",
       "Bash(do echo \"=== $log ===\")",
-      "Bash(head:*)"
+      "Bash(head:*)",
+      "Bash(wc -l \"c:/Users/aksha/Code-V1_GreenLang/GL Agents/GL-003_UnifiedSteam\"/**/*.py)",
+      "Bash(wc:*)",
+      "Bash(mkdir:*)",
+      "Bash(pip install:*)",
+      "Bash(python -c:*)",
+      "Bash(cp:*)",
+      "Bash(python -m py_compile:*)",
+      "WebSearch",
+      "WebFetch(domain:www.decatur.de)",
+      "Bash(del \"C:\\\\Users\\\\aksha\\\\Code-V1_GreenLang\\\\GL Agents\\\\GL-002_Flameguard\\\\tests\\\\conftest.py\")",
+      "Bash(python3:*)"
     ],
     "deny": [],
     "ask": []

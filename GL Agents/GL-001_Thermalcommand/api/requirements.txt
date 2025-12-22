@@ -1,0 +1,53 @@
+# GL-001 ThermalCommand API Dependencies
+# =======================================
+
+# Core Framework
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+starlette>=0.32.0
+
+# GraphQL
+strawberry-graphql[fastapi]>=0.215.0
+
+# gRPC
+grpcio>=1.59.0
+grpcio-tools>=1.59.0
+protobuf>=4.24.0
+
+# Data Validation
+pydantic>=2.5.0
+email-validator>=2.1.0
+
+# Authentication
+python-jose[cryptography]>=3.3.0
+passlib[bcrypt]>=1.7.4
+python-multipart>=0.0.6
+
+# Rate Limiting
+slowapi>=0.1.9
+
+# Monitoring & Metrics
+prometheus-client>=0.19.0
+
+# HTTP Client (for testing)
+httpx>=0.25.0
+
+# Testing
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+pytest-cov>=4.1.0
+
+# Development
+black>=23.11.0
+isort>=5.12.0
+mypy>=1.7.0
+ruff>=0.1.6
+
+# Optional: Database drivers
+# asyncpg>=0.29.0  # PostgreSQL
+# aioredis>=2.0.1  # Redis for caching
+
+# Optional: Distributed tracing
+# opentelemetry-api>=1.21.0
+# opentelemetry-sdk>=1.21.0
+# opentelemetry-instrumentation-fastapi>=0.42b0

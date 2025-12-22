@@ -1,0 +1,99 @@
+# GL-004 BURNMASTER - Helm Chart
+# ===============================
+# Parameterized deployment for Kubernetes
+
+apiVersion: v2
+name: gl004-burnmaster
+description: |
+  GL-004 BURNMASTER - Industrial Combustion Monitoring and Optimization Agent
+
+  This Helm chart deploys the GL-004 BURNMASTER agent, which provides:
+  - Real-time combustion monitoring
+  - OPC-UA integration for industrial systems
+  - Time series analytics with InfluxDB
+  - Event streaming with Kafka
+  - Predictive maintenance capabilities
+  - Causal inference for root cause analysis
+
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+
+# Chart maintainers
+maintainers:
+  - name: GreenLang DevOps
+    email: devops@greenlang.io
+    url: https://greenlang.io
+
+# Keywords for searchability
+keywords:
+  - combustion
+  - industrial
+  - monitoring
+  - greenlang
+  - sustainability
+  - emissions
+  - optimization
+
+# Home and sources
+home: https://greenlang.io/products/gl-004-burnmaster
+sources:
+  - https://github.com/greenlang/gl-004-burnmaster
+
+# Chart icon
+icon: https://greenlang.io/assets/icons/gl-004-burnmaster.png
+
+# Annotations
+annotations:
+  category: Industrial Monitoring
+  licenses: MIT
+  artifacthub.io/license: MIT
+  artifacthub.io/maintainers: |
+    - name: GreenLang DevOps
+      email: devops@greenlang.io
+  artifacthub.io/prerelease: "false"
+  artifacthub.io/signKey: |
+    fingerprint: XXXX
+    url: https://greenlang.io/gpg-key.pub
+
+# Dependencies
+dependencies:
+  # PostgreSQL (optional - can use external)
+  - name: postgresql
+    version: "13.2.x"
+    repository: https://charts.bitnami.com/bitnami
+    condition: postgresql.enabled
+    tags:
+      - database
+
+  # Redis (optional - can use external)
+  - name: redis
+    version: "18.4.x"
+    repository: https://charts.bitnami.com/bitnami
+    condition: redis.enabled
+    tags:
+      - cache
+
+  # Kafka (optional - can use external)
+  - name: kafka
+    version: "26.6.x"
+    repository: https://charts.bitnami.com/bitnami
+    condition: kafka.enabled
+    tags:
+      - messaging
+
+  # InfluxDB (optional - can use external)
+  - name: influxdb2
+    version: "2.1.x"
+    repository: https://helm.influxdata.com/
+    condition: influxdb.enabled
+    tags:
+      - timeseries
+
+  # Prometheus Stack (optional)
+  - name: kube-prometheus-stack
+    version: "54.2.x"
+    repository: https://prometheus-community.github.io/helm-charts
+    condition: monitoring.enabled
+    tags:
+      - monitoring

@@ -1,0 +1,348 @@
+# GL-001 ThermalCommand - Quality CI Workflow
+# Comprehensive code quality checks
+# Version: 1.0.0
+
+name: Code Quality
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - develop
+      - "feature/**"
+      - "release/**"
+    paths:
+      - "**.py"
+      - "pyproject.toml"
+      - ".pre-commit-config.yaml"
+      - ".github/workflows/quality.yml"
+  pull_request:
+    branches:
+      - main
+      - master
+      - develop
+    paths:
+      - "**.py"
+      - "pyproject.toml"
+      - ".pre-commit-config.yaml"
+  workflow_dispatch:
+    inputs:
+      run_slow_tests:
+        description: "Run slow tests"
+        required: false
+        default: "false"
+        type: boolean
+
+# Cancel in-progress runs for the same branch
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHON_VERSION: "3.10"
+  COVERAGE_THRESHOLD: 85
+
+jobs:
+  # ==========================================================================
+  # Pre-flight Checks
+  # ==========================================================================
+  pre-flight:
+    name: Pre-flight Checks
+    runs-on: ubuntu-latest
+    outputs:
+      should_skip: ${{ steps.skip_check.outputs.should_skip }}
+    steps:
+      - name: Skip check
+        id: skip_check
+        uses: fkirc/skip-duplicate-actions@v5
+        with:
+          concurrent_skipping: "same_content_newer"
+          skip_after_successful_duplicate: "true"
+
+  # ==========================================================================
+  # Black - Code Formatting Check
+  # ==========================================================================
+  black:
+    name: Black (Formatting)
+    runs-on: ubuntu-latest
+    needs: pre-flight
+    if: needs.pre-flight.outputs.should_skip != 'true'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install Black
+        run: pip install black>=23.7.0
+
+      - name: Run Black check
+        run: |
+          black --version
+          black --check --diff --config pyproject.toml .
+
+  # ==========================================================================
+  # Ruff - Linting
+  # ==========================================================================
+  ruff:
+    name: Ruff (Linting)
+    runs-on: ubuntu-latest
+    needs: pre-flight
+    if: needs.pre-flight.outputs.should_skip != 'true'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install Ruff
+        run: pip install ruff>=0.1.0
+
+      - name: Run Ruff linter
+        run: |
+          ruff --version
+          ruff check --config pyproject.toml --output-format=github .
+
+      - name: Run Ruff format check
+        run: |
+          ruff format --check --config pyproject.toml .
+
+  # ==========================================================================
+  # MyPy - Type Checking
+  # ==========================================================================
+  mypy:
+    name: MyPy (Type Checking)
+    runs-on: ubuntu-latest
+    needs: pre-flight
+    if: needs.pre-flight.outputs.should_skip != 'true'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Cache pip dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-mypy-${{ hashFiles('pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-mypy-
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install mypy>=1.5.0 pydantic>=2.0.0
+          pip install types-python-dateutil types-requests
+          # Install project dependencies for type checking
+          pip install numpy scipy fastapi uvicorn httpx structlog prometheus-client
+
+      - name: Run MyPy
+        run: |
+          mypy --version
+          mypy --config-file pyproject.toml \
+               --install-types \
+               --non-interactive \
+               --exclude 'tests/' \
+               --exclude 'deployment/' \
+               --exclude '.*_pb2\.py' \
+               .
+
+  # ==========================================================================
+  # Pytest - Unit Tests with Coverage
+  # ==========================================================================
+  pytest:
+    name: Pytest (Tests + Coverage)
+    runs-on: ubuntu-latest
+    needs: pre-flight
+    if: needs.pre-flight.outputs.should_skip != 'true'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Cache pip dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-test-${{ hashFiles('pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-test-
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install pytest>=7.4.0 pytest-cov>=4.1.0 pytest-asyncio>=0.21.0 \
+                      pytest-timeout>=2.2.0 pytest-mock>=3.11.0 pytest-xdist>=3.3.0
+          pip install pydantic>=2.0.0 numpy scipy python-dateutil anyio
+
+      - name: Run tests with coverage
+        run: |
+          pytest --version
+          pytest tests/ \
+            -v \
+            --cov=. \
+            --cov-config=pyproject.toml \
+            --cov-report=term-missing \
+            --cov-report=xml:coverage.xml \
+            --cov-report=html:htmlcov \
+            --cov-fail-under=${{ env.COVERAGE_THRESHOLD }} \
+            -m "not slow and not integration and not requires_hardware" \
+            --timeout=60 \
+            --tb=short \
+            -x
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report
+          path: |
+            coverage.xml
+            htmlcov/
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        if: always()
+        with:
+          files: coverage.xml
+          fail_ci_if_error: false
+          verbose: true
+
+  # ==========================================================================
+  # Security Checks
+  # ==========================================================================
+  security:
+    name: Security (Bandit)
+    runs-on: ubuntu-latest
+    needs: pre-flight
+    if: needs.pre-flight.outputs.should_skip != 'true'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install Bandit
+        run: pip install bandit>=1.7.0
+
+      - name: Run Bandit
+        run: |
+          bandit --version
+          bandit -c pyproject.toml -r . \
+            --exclude ./tests,./deployment,./.venv \
+            -f json -o bandit-report.json || true
+          bandit -c pyproject.toml -r . \
+            --exclude ./tests,./deployment,./.venv \
+            -ll
+
+      - name: Upload Bandit report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bandit-report
+          path: bandit-report.json
+
+  # ==========================================================================
+  # Integration Tests (Optional)
+  # ==========================================================================
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: [black, ruff, mypy, pytest]
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install pytest>=7.4.0 pytest-asyncio>=0.21.0 pytest-timeout>=2.2.0
+          pip install pydantic>=2.0.0 numpy scipy python-dateutil anyio httpx
+
+      - name: Run integration tests
+        run: |
+          pytest tests/ \
+            -v \
+            -m "integration and not requires_hardware" \
+            --timeout=120 \
+            --tb=short \
+            || echo "Integration tests completed (failures allowed in CI)"
+
+  # ==========================================================================
+  # Quality Gate Summary
+  # ==========================================================================
+  quality-gate:
+    name: Quality Gate
+    runs-on: ubuntu-latest
+    needs: [black, ruff, mypy, pytest, security]
+    if: always()
+    steps:
+      - name: Check all jobs
+        run: |
+          echo "Checking quality gate status..."
+
+          # Check Black
+          if [[ "${{ needs.black.result }}" != "success" ]]; then
+            echo "Black formatting check failed"
+            exit 1
+          fi
+
+          # Check Ruff
+          if [[ "${{ needs.ruff.result }}" != "success" ]]; then
+            echo "Ruff linting check failed"
+            exit 1
+          fi
+
+          # Check MyPy
+          if [[ "${{ needs.mypy.result }}" != "success" ]]; then
+            echo "MyPy type checking failed"
+            exit 1
+          fi
+
+          # Check Pytest
+          if [[ "${{ needs.pytest.result }}" != "success" ]]; then
+            echo "Pytest tests failed or coverage below threshold"
+            exit 1
+          fi
+
+          # Check Security
+          if [[ "${{ needs.security.result }}" != "success" ]]; then
+            echo "Security check failed"
+            exit 1
+          fi
+
+          echo "All quality gates passed!"
+
+      - name: Create quality badge
+        if: success()
+        run: |
+          echo "Quality gate passed - all checks successful"
+          echo "- Black: ${{ needs.black.result }}"
+          echo "- Ruff: ${{ needs.ruff.result }}"
+          echo "- MyPy: ${{ needs.mypy.result }}"
+          echo "- Pytest: ${{ needs.pytest.result }}"
+          echo "- Security: ${{ needs.security.result }}"

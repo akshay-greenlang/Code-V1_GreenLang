@@ -1,0 +1,274 @@
+# GL-001 ThermalCommand Pack Specification
+# GreenLang v1.0 Specification
+
+name: gl-001-thermalcommand
+version: 1.0.0
+description: |
+  GL-001 ThermalCommand - ProcessHeatOrchestrator
+  Master orchestrator for all process heat operations with MILP optimization,
+  cascade PID control, SIS safety integration, and full ML explainability.
+
+metadata:
+  agent_id: GL-001
+  capability: THERMALCOMMAND
+  priority: P0
+  business_impact: "$20B value at stake"
+  target_release: Q4 2025
+  status: implemented
+
+author:
+  name: GreenLang Process Heat Team
+  email: process-heat@greenlang.ai
+
+license: Proprietary
+
+# Mission Statement
+mission: |
+  Deliver reliable, safe, and cost-optimal heat to all consuming units by
+  orchestrating supply assets and distribution networks in real time, with
+  traceable decisions and explainability suitable for regulated industrial
+  environments.
+
+# Core Capabilities
+capabilities:
+  - plant_wide_heat_network_allocation
+  - multi_period_optimization
+  - milp_load_dispatch
+  - cascade_pid_control
+  - sis_safety_integration
+  - cmms_maintenance_integration
+  - opcua_connectivity
+  - kafka_streaming
+  - graphql_grpc_apis
+  - webhook_events
+  - shap_lime_explainability
+  - uncertainty_quantification
+  - audit_logging
+
+# Dependencies
+dependencies:
+  python: ">=3.10"
+  packages:
+    - pydantic>=2.0.0
+    - numpy>=1.24.0
+    - scipy>=1.11.0
+    - fastapi>=0.100.0
+    - strawberry-graphql>=0.200.0
+    - grpcio>=1.50.0
+    - aiokafka>=0.8.0
+    - asyncua>=1.0.0  # OPC-UA
+    - prometheus-client>=0.17.0
+    - opentelemetry-api>=1.20.0
+    - shap>=0.42.0
+    - lime>=0.2.0
+    - httpx>=0.24.0
+    - cryptography>=41.0.0
+
+# Entry Points
+entry_points:
+  main: core.orchestrator:ThermalCommandOrchestrator
+  api: api.graphql_api:GraphQLApp
+  grpc: api.grpc_services:serve
+  kafka: streaming.kafka_streaming:start_consumers
+
+# Configuration Schema
+config:
+  type: object
+  properties:
+    safety:
+      $ref: "#/definitions/SafetyConfig"
+    integration:
+      $ref: "#/definitions/IntegrationConfig"
+    mlops:
+      $ref: "#/definitions/MLOpsConfig"
+    metrics:
+      $ref: "#/definitions/MetricsConfig"
+    api:
+      $ref: "#/definitions/APIConfig"
+
+definitions:
+  SafetyConfig:
+    type: object
+    properties:
+      level:
+        type: string
+        enum: [SIL_1, SIL_2, SIL_3, SIL_4]
+        default: SIL_3
+      emergency_shutdown_enabled:
+        type: boolean
+        default: true
+      watchdog_timeout_ms:
+        type: integer
+        default: 5000
+
+  IntegrationConfig:
+    type: object
+    properties:
+      opcua_enabled:
+        type: boolean
+        default: true
+      kafka_enabled:
+        type: boolean
+        default: true
+      mqtt_enabled:
+        type: boolean
+        default: true
+
+  MLOpsConfig:
+    type: object
+    properties:
+      explainability_enabled:
+        type: boolean
+        default: true
+      uncertainty_quantification:
+        type: boolean
+        default: true
+      drift_detection_enabled:
+        type: boolean
+        default: true
+
+  MetricsConfig:
+    type: object
+    properties:
+      enabled:
+        type: boolean
+        default: true
+      port:
+        type: integer
+        default: 9090
+
+  APIConfig:
+    type: object
+    properties:
+      rest_enabled:
+        type: boolean
+        default: true
+      graphql_enabled:
+        type: boolean
+        default: true
+      auth_enabled:
+        type: boolean
+        default: true
+
+# Success Criteria (KPIs)
+kpis:
+  economics:
+    metric: energy_cost_reduction
+    target: plant_specific
+    frequency: weekly
+  reliability:
+    metric: heat_demand_satisfaction
+    target: ">= 99%"
+    guardrail: demand_served_within_tolerance
+  safety:
+    metric: sis_boundary_violations
+    target: 0
+    guardrail: hard_stop
+  emissions:
+    metric: co2e_per_unit_production
+    target: downward_trend
+    auditable: true
+  operations:
+    metric: operator_override_rate
+    target: declining_trend
+  latency:
+    metric: decision_to_actuation_cycle
+    target: "<= 60s"
+    configurable: true
+
+# Data Requirements
+data_requirements:
+  process_sensors:
+    frequency: 1-5s
+    latency_sla: "<10s"
+    source: SCADA/PLC via OPC-UA
+  energy_consumption:
+    frequency: 5-60s
+    latency_sla: "<60s"
+    source: Energy meters/EMS
+  safety_system_status:
+    frequency: 1-10s
+    latency_sla: "<10s"
+    source: SIS historian
+    mode: read_only
+  production_schedules:
+    frequency: 15m-24h
+    latency_sla: "<5m"
+    source: ERP/MES
+  weather_forecasts:
+    frequency: 1h-6h
+    latency_sla: "<10m"
+    source: Weather provider API
+  energy_prices:
+    frequency: 5m-1h
+    latency_sla: "<10m"
+    source: Market feed API
+  equipment_health:
+    frequency: 1m-1h
+    latency_sla: "<15m"
+    source: CMMS/EAM + condition monitoring
+  alarm_states:
+    frequency: 1-5s
+    latency_sla: "<10s"
+    source: Alarm system/historian
+
+# Kafka Topics
+kafka_topics:
+  - name: gl001.telemetry.normalized
+    schema: avro
+    partitions: 8
+    replication: 3
+  - name: gl001.plan.dispatch
+    schema: avro
+    partitions: 4
+    replication: 3
+  - name: gl001.actions.recommendations
+    schema: avro
+    partitions: 4
+    replication: 3
+  - name: gl001.safety.events
+    schema: avro
+    partitions: 4
+    replication: 3
+  - name: gl001.maintenance.triggers
+    schema: avro
+    partitions: 4
+    replication: 3
+  - name: gl001.explainability.reports
+    schema: avro
+    partitions: 4
+    replication: 3
+  - name: gl001.audit.log
+    schema: avro
+    partitions: 8
+    replication: 3
+    retention: 7_years
+
+# Webhook Events
+webhook_events:
+  - HeatPlanCreated
+  - SetpointRecommendation
+  - SafetyActionBlocked
+  - MaintenanceTrigger
+
+# Reference Standards
+standards:
+  - ASME PTC 4.1 (Process Heat Performance)
+  - ISO 50001:2018 (Energy Management)
+  - IEC 61511 (Safety Instrumented Systems)
+  - NFPA 86 (Ovens and Furnaces)
+  - EPA 40 CFR 98 Subpart C (GHG Reporting)
+  - ISA-84 (Safety Instrumented Functions)
+  - ISA-18.2 (Alarm Management)
+
+# Audit Requirements
+audit:
+  retention_years: 7
+  hash_algorithm: SHA-256
+  append_only: true
+  queryable_by:
+    - asset
+    - time_range
+    - operator
+    - event_type
+    - boundary_id

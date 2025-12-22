@@ -1,0 +1,135 @@
+# GL-002 FLAMEGUARD - Docker Compose
+# Local development and testing
+
+version: "3.8"
+
+services:
+  flameguard:
+    build:
+      context: ..
+      dockerfile: deployment/Dockerfile
+    container_name: flameguard
+    ports:
+      - "8080:8080"    # API
+      - "9090:9090"    # Metrics
+    environment:
+      - FLAMEGUARD_LOG_LEVEL=DEBUG
+      - FLAMEGUARD_SCADA_HOST=modbus-simulator
+      - FLAMEGUARD_KAFKA_BROKERS=kafka:9092
+      - FLAMEGUARD_DB_HOST=postgres
+      - FLAMEGUARD_REDIS_HOST=redis
+    depends_on:
+      - kafka
+      - redis
+      - postgres
+    networks:
+      - flameguard-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    volumes:
+      - flameguard-data:/app/data
+
+  # Kafka for event streaming
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.4.0
+    container_name: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+    networks:
+      - flameguard-network
+
+  kafka:
+    image: confluentinc/cp-kafka:7.4.0
+    container_name: kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    networks:
+      - flameguard-network
+
+  # Redis for caching
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - flameguard-network
+    volumes:
+      - redis-data:/data
+
+  # PostgreSQL for persistent storage
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: flameguard
+      POSTGRES_USER: flameguard
+      POSTGRES_PASSWORD: flameguard_dev
+    networks:
+      - flameguard-network
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  # Modbus simulator for SCADA testing
+  modbus-simulator:
+    image: oitc/modbus-server:latest
+    container_name: modbus-simulator
+    ports:
+      - "5020:502"
+    networks:
+      - flameguard-network
+
+  # Prometheus for metrics
+  prometheus:
+    image: prom/prometheus:v2.45.0
+    container_name: prometheus
+    ports:
+      - "9091:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    networks:
+      - flameguard-network
+
+  # Grafana for visualization
+  grafana:
+    image: grafana/grafana:10.0.0
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - grafana-data:/var/lib/grafana
+    networks:
+      - flameguard-network
+    depends_on:
+      - prometheus
+
+networks:
+  flameguard-network:
+    driver: bridge
+
+volumes:
+  flameguard-data:
+  redis-data:
+  postgres-data:
+  prometheus-data:
+  grafana-data:

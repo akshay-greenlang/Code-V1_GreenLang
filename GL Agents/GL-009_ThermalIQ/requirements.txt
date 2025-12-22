@@ -1,0 +1,59 @@
+# GL-009 ThermalIQ - ThermalFluidAnalyzer
+# Dependencies for thermal fluid analysis and efficiency calculations
+
+# Core Framework
+pydantic>=2.0.0
+fastapi>=0.100.0
+uvicorn>=0.22.0
+aiohttp>=3.8.0
+
+# Numerical/Scientific Computing
+numpy>=1.24.0
+scipy>=1.10.0
+pandas>=2.0.0
+
+# Thermodynamic Libraries
+CoolProp>=6.4.0
+iapws>=1.5.0
+
+# Optimization
+pulp>=2.7.0
+
+# ML/Explainability
+scikit-learn>=1.2.0
+shap>=0.42.0
+lime>=0.2.0
+
+# Visualization
+matplotlib>=3.7.0
+plotly>=5.15.0
+kaleido>=0.2.1  # For static image export
+
+# GraphQL
+strawberry-graphql>=0.200.0
+
+# Streaming
+aiokafka>=0.8.0
+
+# Metrics & Monitoring
+prometheus-client>=0.17.0
+opentelemetry-api>=1.20.0
+opentelemetry-sdk>=1.20.0
+
+# Security
+cryptography>=41.0.0
+python-jose>=3.3.0
+
+# HTTP Client
+httpx>=0.24.0
+
+# Testing
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+pytest-cov>=4.1.0
+hypothesis>=6.82.0
+
+# Development
+black>=23.0.0
+ruff>=0.0.280
+mypy>=1.4.0

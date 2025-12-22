@@ -1,0 +1,32 @@
+# GL-005 CombustionControlAgent Integration Connectors
+# Production Dependencies
+
+# OPC UA Protocol Support
+asyncua>=1.0.0  # OPC UA client/server for DCS and SCADA integration
+
+# Modbus Protocol Support
+pymodbus>=3.5.0  # Modbus TCP/RTU for PLC and analyzer integration
+
+# MQTT Protocol Support
+paho-mqtt>=1.6.0  # MQTT client for analyzer and SCADA integration
+
+# Monitoring and Metrics
+prometheus-client>=0.18.0  # Prometheus metrics exporter
+
+# Data Processing
+numpy>=1.24.0  # Numerical computing for signal processing
+scipy>=1.10.0  # Scientific computing for FFT flame analysis (optional)
+
+# Type Checking (Development)
+pydantic>=2.0.0  # Data validation and settings management
+
+# Async Support
+asyncio-mqtt>=0.16.0  # Async MQTT wrapper (alternative to paho-mqtt)
+
+# Development Dependencies (Optional)
+# pytest>=7.4.0  # Testing framework
+# pytest-asyncio>=0.21.0  # Async test support
+# pytest-cov>=4.1.0  # Coverage reporting
+# black>=23.0.0  # Code formatting
+# mypy>=1.5.0  # Static type checking
+# ruff>=0.1.0  # Fast Python linter

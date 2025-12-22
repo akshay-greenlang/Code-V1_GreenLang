@@ -1,0 +1,116 @@
+# GL-005 CombustionControlAgent - Network Policy
+# Controls network traffic to/from the application
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: gl-005-network-policy
+  namespace: greenlang
+  labels:
+    app: gl-005-combustion-control
+    agent: "GL-005"
+spec:
+  # Apply to GL-005 pods
+  podSelector:
+    matchLabels:
+      app: gl-005-combustion-control
+      agent: "GL-005"
+
+  # Policy types
+  policyTypes:
+    - Ingress
+    - Egress
+
+  # Ingress rules (incoming traffic)
+  ingress:
+    # Allow from Ingress controller
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: ingress-nginx
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 8000
+
+    # Allow from Prometheus (metrics scraping)
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+        - podSelector:
+            matchLabels:
+              app: prometheus
+      ports:
+        - protocol: TCP
+          port: 8001
+
+    # Allow from same namespace (inter-pod communication)
+    - from:
+        - podSelector:
+            matchLabels:
+              app: gl-005-combustion-control
+      ports:
+        - protocol: TCP
+          port: 8000
+        - protocol: TCP
+          port: 8001
+
+  # Egress rules (outgoing traffic)
+  egress:
+    # Allow to PostgreSQL
+    - to:
+        - podSelector:
+            matchLabels:
+              app: postgresql
+      ports:
+        - protocol: TCP
+          port: 5432
+
+    # Allow to Redis
+    - to:
+        - podSelector:
+            matchLabels:
+              app: redis
+      ports:
+        - protocol: TCP
+          port: 6379
+
+    # Allow to GL-002 (integration)
+    - to:
+        - podSelector:
+            matchLabels:
+              app: gl-002-boiler-efficiency
+      ports:
+        - protocol: TCP
+          port: 8000
+
+    # Allow DNS resolution (TCP and UDP)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: kube-system
+        - podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+
+    # Allow external HTTPS (for AI APIs, weather, etc.)
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: TCP
+          port: 443
+
+    # Allow MQTT broker (external)
+    - ports:
+        - protocol: TCP
+          port: 8883
+        - protocol: TCP
+          port: 1883

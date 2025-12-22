@@ -1,0 +1,9 @@
+# Dev Environment - Replica Count Patch
+# Single replica for cost savings in dev
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gl-005-combustion-control
+spec:
+  replicas: 1  # Single replica for dev

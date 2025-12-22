@@ -1,0 +1,450 @@
+# =============================================================================
+# GL-003 UNIFIEDSTEAM - Kubernetes ConfigMap
+# Steam System Optimization Agent
+# =============================================================================
+# Configuration includes:
+# - Application settings
+# - Feature flags
+# - Logging configuration
+# - Integration endpoints
+# - Safety thresholds
+# - Optimization parameters
+# =============================================================================
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: unifiedsteam-config
+  namespace: greenlang-steam
+  labels:
+    app.kubernetes.io/name: unifiedsteam
+    app.kubernetes.io/instance: unifiedsteam-production
+    app.kubernetes.io/component: config
+    app.kubernetes.io/part-of: greenlang
+    app.kubernetes.io/version: "1.0.0"
+    agent-id: gl-003
+  annotations:
+    description: "Configuration for GL-003 UNIFIEDSTEAM Steam System Optimizer"
+    last-updated: "2024-01-01T00:00:00Z"
+data:
+  # =============================================================================
+  # Application Settings
+  # =============================================================================
+  log-level: "INFO"
+  api-port: "8080"
+  grpc-port: "50051"
+  metrics-port: "9090"
+  environment: "production"
+  timezone: "UTC"
+
+  # =============================================================================
+  # Server Configuration
+  # =============================================================================
+  server-workers: "4"
+  server-max-connections: "1000"
+  server-keep-alive-timeout: "30"
+  server-request-timeout: "300"
+  server-graceful-shutdown-timeout: "60"
+
+  # =============================================================================
+  # Kafka Configuration
+  # =============================================================================
+  kafka-brokers: "kafka-0.kafka-headless.greenlang-steam.svc.cluster.local:9092,kafka-1.kafka-headless.greenlang-steam.svc.cluster.local:9092,kafka-2.kafka-headless.greenlang-steam.svc.cluster.local:9092"
+  kafka-consumer-group: "unifiedsteam-consumer-group"
+  kafka-auto-offset-reset: "earliest"
+  kafka-enable-auto-commit: "false"
+  kafka-max-poll-records: "500"
+  kafka-session-timeout-ms: "30000"
+  kafka-heartbeat-interval-ms: "10000"
+  kafka-security-protocol: "SASL_SSL"
+  kafka-sasl-mechanism: "SCRAM-SHA-512"
+
+  # Kafka topics configuration
+  kafka-topics: |
+    steam.sensor.readings
+    steam.control.commands
+    steam.optimization.results
+    steam.optimization.requests
+    steam.alerts.critical
+    steam.alerts.warning
+    steam.events.audit
+    steam.trap.diagnostics
+    steam.rca.analysis
+    steam.kpi.metrics
+
+  # =============================================================================
+  # OPC-UA Configuration
+  # =============================================================================
+  opcua-endpoint: "opc.tcp://scada.industrial.local:4840"
+  opcua-security-mode: "SignAndEncrypt"
+  opcua-security-policy: "Basic256Sha256"
+  opcua-subscription-interval: "500"
+  opcua-max-keepalive-count: "10"
+  opcua-reconnect-interval: "10"
+  opcua-connection-timeout: "30"
+  opcua-request-timeout: "60"
+
+  # OPC-UA node mappings for steam system
+  opcua-nodes: |
+    # Steam Header - Pressure
+    ns=2;s=Steam.Header.HP.Pressure.PV
+    ns=2;s=Steam.Header.HP.Pressure.SP
+    ns=2;s=Steam.Header.MP.Pressure.PV
+    ns=2;s=Steam.Header.MP.Pressure.SP
+    ns=2;s=Steam.Header.LP.Pressure.PV
+    ns=2;s=Steam.Header.LP.Pressure.SP
+    # Steam Header - Temperature
+    ns=2;s=Steam.Header.HP.Temperature.PV
+    ns=2;s=Steam.Header.HP.Temperature.SP
+    ns=2;s=Steam.Header.MP.Temperature.PV
+    ns=2;s=Steam.Header.LP.Temperature.PV
+    # Steam Flow
+    ns=2;s=Steam.Flow.Total
+    ns=2;s=Steam.Flow.HP.Generation
+    ns=2;s=Steam.Flow.MP.Generation
+    ns=2;s=Steam.Flow.Condensate.Return
+    ns=2;s=Steam.Flow.Makeup.Water
+    # Boiler Status
+    ns=2;s=Boiler.1.Status
+    ns=2;s=Boiler.1.Load.Percent
+    ns=2;s=Boiler.1.Efficiency
+    ns=2;s=Boiler.2.Status
+    ns=2;s=Boiler.2.Load.Percent
+    ns=2;s=Boiler.2.Efficiency
+    ns=2;s=Boiler.3.Status
+    ns=2;s=Boiler.3.Load.Percent
+    ns=2;s=Boiler.3.Efficiency
+    # Desuperheater
+    ns=2;s=Desuperheater.1.Inlet.Temperature
+    ns=2;s=Desuperheater.1.Outlet.Temperature
+    ns=2;s=Desuperheater.1.Spray.Flow
+    ns=2;s=Desuperheater.1.Valve.Position
+    # Steam Traps
+    ns=2;s=Trap.Zone1.Status
+    ns=2;s=Trap.Zone2.Status
+    ns=2;s=Trap.Zone3.Status
+
+  # =============================================================================
+  # Redis Configuration
+  # =============================================================================
+  redis-host: "redis.greenlang-steam.svc.cluster.local"
+  redis-port: "6379"
+  redis-db: "0"
+  redis-max-connections: "100"
+  redis-socket-timeout: "5"
+  redis-connect-timeout: "10"
+  redis-ttl-default: "3600"
+  redis-ttl-session: "86400"
+  redis-ttl-cache: "300"
+  redis-ssl-enabled: "true"
+
+  # =============================================================================
+  # Database Configuration
+  # =============================================================================
+  db-pool-size: "10"
+  db-max-overflow: "20"
+  db-pool-timeout: "30"
+  db-pool-recycle: "1800"
+  db-echo: "false"
+  db-ssl-mode: "require"
+
+  # =============================================================================
+  # OpenTelemetry Configuration
+  # =============================================================================
+  otel-endpoint: "http://otel-collector.observability.svc.cluster.local:4317"
+  otel-protocol: "grpc"
+  otel-trace-ratio: "0.1"
+  otel-log-level: "INFO"
+  otel-metrics-interval: "15"
+  otel-batch-timeout: "5000"
+  otel-max-queue-size: "2048"
+  otel-max-export-batch-size: "512"
+
+  # =============================================================================
+  # Optimization Settings
+  # =============================================================================
+  optimization-enabled: "true"
+  optimization-interval-seconds: "60"
+  optimization-horizon-seconds: "300"
+  optimization-min-efficiency: "0.75"
+  optimization-max-iterations: "1000"
+  optimization-tolerance: "0.001"
+  optimization-time-limit-seconds: "30"
+  optimization-algorithm: "hybrid"
+  optimization-mode: "advisory"
+
+  # Optimization weights
+  optimization-weight-efficiency: "0.4"
+  optimization-weight-cost: "0.35"
+  optimization-weight-emissions: "0.25"
+
+  # =============================================================================
+  # Thermodynamic Settings (IAPWS-IF97)
+  # =============================================================================
+  steam-reference-pressure-pa: "101325"
+  steam-reference-temperature-k: "298.15"
+  steam-critical-pressure-mpa: "22.064"
+  steam-critical-temperature-k: "647.096"
+  steam-specific-heat-ratio: "1.33"
+  condensate-return-temp-target-c: "80"
+  min-superheat-c: "10"
+  max-superheat-c: "150"
+
+  # =============================================================================
+  # Safety Limits
+  # =============================================================================
+  safety-enabled: "true"
+  safety-max-pressure-pa: "1200000"
+  safety-min-pressure-pa: "100000"
+  safety-max-temperature-c: "250"
+  safety-min-temperature-c: "100"
+  safety-max-flow-rate-kg-s: "50000"
+  safety-emergency-shutdown-delay-s: "5"
+  safety-alarm-acknowledgment-timeout-s: "300"
+  safety-interlock-enabled: "true"
+
+  # Alarm thresholds
+  safety-pressure-high-alarm-pa: "1100000"
+  safety-pressure-low-alarm-pa: "150000"
+  safety-temperature-high-alarm-c: "230"
+  safety-temperature-low-alarm-c: "110"
+
+  # =============================================================================
+  # Steam Trap Diagnostics Settings
+  # =============================================================================
+  trap-diagnostics-enabled: "true"
+  trap-polling-interval-s: "60"
+  trap-failure-threshold: "0.3"
+  trap-steam-loss-threshold-kg-h: "10"
+  trap-acoustic-sampling-rate-hz: "44100"
+  trap-maintenance-prediction-horizon-days: "90"
+
+  # =============================================================================
+  # Explainability Settings
+  # =============================================================================
+  explainability-enabled: "true"
+  shap-enabled: "true"
+  shap-sample-size: "100"
+  shap-max-features: "10"
+  lime-enabled: "true"
+  lime-num-samples: "500"
+  lime-num-features: "10"
+  physics-trace-enabled: "true"
+
+  # =============================================================================
+  # Uncertainty Quantification Settings
+  # =============================================================================
+  uncertainty-enabled: "true"
+  uncertainty-confidence-level: "0.95"
+  uncertainty-propagation-method: "monte_carlo"
+  uncertainty-monte-carlo-samples: "1000"
+  uncertainty-pressure-percent: "0.5"
+  uncertainty-temperature-c: "1.0"
+  uncertainty-flow-percent: "2.0"
+
+  # =============================================================================
+  # Feature Flags
+  # =============================================================================
+  feature-flags: |
+    {
+      "enable_real_time_optimization": true,
+      "enable_predictive_maintenance": true,
+      "enable_causal_analysis": true,
+      "enable_explainability": true,
+      "enable_uncertainty_quantification": true,
+      "enable_automatic_control": false,
+      "enable_ml_predictions": true,
+      "enable_graphql_subscriptions": true,
+      "enable_grpc_streaming": true,
+      "enable_audit_logging": true,
+      "enable_provenance_tracking": true,
+      "enable_deterministic_mode": true,
+      "enable_sensor_validation": true,
+      "enable_outlier_detection": true,
+      "enable_flash_steam_recovery": true,
+      "enable_condensate_optimization": true,
+      "enable_trap_diagnostics": true,
+      "enable_rca_analysis": true,
+      "enable_kpi_dashboard": true,
+      "enable_climate_reporting": true,
+      "experimental_advanced_thermodynamics": false,
+      "experimental_digital_twin": false,
+      "experimental_reinforcement_learning": false
+    }
+
+  # =============================================================================
+  # Logging Configuration
+  # =============================================================================
+  logging-format: "json"
+  logging-include-trace-id: "true"
+  logging-include-span-id: "true"
+  logging-include-request-id: "true"
+  logging-redact-sensitive: "true"
+  logging-max-message-length: "10000"
+
+  # Log levels per module
+  logging-levels: |
+    {
+      "root": "INFO",
+      "uvicorn": "WARNING",
+      "uvicorn.access": "INFO",
+      "uvicorn.error": "ERROR",
+      "sqlalchemy": "WARNING",
+      "sqlalchemy.engine": "WARNING",
+      "kafka": "WARNING",
+      "asyncua": "WARNING",
+      "httpx": "WARNING",
+      "unifiedsteam": "INFO",
+      "unifiedsteam.optimization": "DEBUG",
+      "unifiedsteam.safety": "DEBUG",
+      "unifiedsteam.thermodynamics": "INFO",
+      "unifiedsteam.traps": "INFO",
+      "unifiedsteam.audit": "INFO"
+    }
+
+  # =============================================================================
+  # Rate Limiting Configuration
+  # =============================================================================
+  rate-limit-enabled: "true"
+  rate-limit-requests-per-minute: "100"
+  rate-limit-burst: "20"
+  rate-limit-by-ip: "true"
+  rate-limit-by-user: "true"
+
+  # =============================================================================
+  # CORS Configuration
+  # =============================================================================
+  cors-enabled: "true"
+  cors-allow-origins: |
+    https://steam.greenlang.io
+    https://api.steam.greenlang.io
+    https://dashboard.greenlang.io
+  cors-allow-methods: "GET,POST,PUT,DELETE,PATCH,OPTIONS"
+  cors-allow-headers: "Authorization,Content-Type,X-API-Key,X-Request-ID"
+  cors-max-age: "86400"
+
+  # =============================================================================
+  # Application Configuration File (YAML)
+  # =============================================================================
+  application.yaml: |
+    # GL-003 UNIFIEDSTEAM Configuration
+    application:
+      name: unifiedsteam
+      version: "1.0.0"
+      environment: production
+      agent_id: gl-003
+
+    server:
+      http:
+        port: 8080
+        host: "0.0.0.0"
+        workers: 4
+        keep_alive: 30
+        request_timeout: 300
+      grpc:
+        port: 50051
+        max_workers: 10
+        max_message_length: 104857600  # 100MB
+        reflection_enabled: true
+      metrics:
+        port: 9090
+        enabled: true
+        path: "/metrics"
+
+    logging:
+      level: INFO
+      format: json
+      include_trace_id: true
+      include_span_id: true
+      redact_sensitive: true
+
+    steam_system:
+      units: SI
+      reference_conditions:
+        pressure: 101325  # Pa
+        temperature: 298.15  # K
+      design_conditions:
+        hp_header:
+          pressure: 4000000  # Pa (40 bar)
+          temperature: 673.15  # K (400 C)
+        mp_header:
+          pressure: 1000000  # Pa (10 bar)
+          temperature: 453.15  # K (180 C)
+        lp_header:
+          pressure: 300000  # Pa (3 bar)
+          temperature: 406.15  # K (133 C)
+
+    optimization:
+      enabled: true
+      mode: advisory  # advisory or closed_loop
+      interval_seconds: 60
+      prediction_horizon: 300
+      algorithm: hybrid
+      objectives:
+        - minimize_energy_consumption
+        - maximize_efficiency
+        - minimize_emissions
+        - minimize_cost
+      weights:
+        efficiency: 0.4
+        cost: 0.35
+        emissions: 0.25
+      constraints:
+        min_efficiency: 0.75
+        max_iterations: 1000
+        time_limit_seconds: 30
+        tolerance: 0.001
+
+    safety:
+      enabled: true
+      sil_level: SIL_2
+      emergency_shutdown:
+        enabled: true
+        delay_seconds: 5
+      alarm_thresholds:
+        pressure_high: 1100000  # Pa
+        pressure_low: 150000   # Pa
+        temperature_high: 230  # C
+        temperature_low: 110   # C
+      interlock:
+        enabled: true
+        acknowledge_timeout: 300
+
+    integrations:
+      kafka:
+        enabled: true
+        auto_commit: false
+        session_timeout_ms: 30000
+      opcua:
+        enabled: true
+        security_mode: SignAndEncrypt
+        reconnect_interval: 10
+      redis:
+        enabled: true
+        ssl: true
+        cache_ttl: 3600
+      database:
+        pool_size: 10
+        ssl_mode: require
+
+    explainability:
+      enabled: true
+      shap:
+        enabled: true
+        sample_size: 100
+      lime:
+        enabled: true
+        num_samples: 500
+      physics_trace: true
+
+    uncertainty:
+      enabled: true
+      method: monte_carlo
+      samples: 1000
+      confidence_level: 0.95
+
+    audit:
+      enabled: true
+      provenance_tracking: true
+      deterministic_mode: true
+      retention_days: 365

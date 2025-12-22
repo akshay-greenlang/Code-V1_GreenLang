@@ -1,0 +1,152 @@
+# =============================================================================
+# GL-005 COMBUSENSE - Vault Kubernetes Integration
+# =============================================================================
+# NOTE: GL-005 operates in real-time control mode with sub-100ms requirements.
+# Secret caching is configured more aggressively to minimize latency.
+# =============================================================================
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: gl-005-combusense
+  namespace: greenlang
+  labels:
+    app: gl-005-combusense
+    agent-id: GL-005
+  annotations:
+    vault.hashicorp.com/agent-inject: "true"
+    vault.hashicorp.com/role: "gl-005-combusense"
+    vault.hashicorp.com/agent-pre-populate-only: "true"  # Pre-populate for real-time performance
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: gl-005-vault-auth-delegator
+subjects:
+  - kind: ServiceAccount
+    name: gl-005-combusense
+    namespace: greenlang
+roleRef:
+  kind: ClusterRole
+  name: system:auth-delegator
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gl-005-vault-agent-config
+  namespace: greenlang
+data:
+  vault-agent-config.hcl: |
+    pid_file = "/home/vault/.pid"
+    vault {
+      address = "https://vault.greenlang.local:8200"
+    }
+    auto_auth {
+      method "kubernetes" {
+        mount_path = "auth/kubernetes"
+        config = {
+          role = "gl-005-combusense"
+        }
+      }
+      sink "file" {
+        config = {
+          path = "/home/vault/.vault-token"
+          mode = 0640
+        }
+      }
+    }
+    template {
+      destination = "/vault/secrets/database.json"
+      contents = <<EOF
+    {
+      "username": "{{ with secret "database/creds/gl-005-postgres" }}{{ .Data.username }}{{ end }}",
+      "password": "{{ with secret "database/creds/gl-005-postgres" }}{{ .Data.password }}{{ end }}"
+    }
+    EOF
+    }
+    template {
+      destination = "/vault/secrets/plc.json"
+      contents = <<EOF
+    {{ with secret "secret/data/greenlang/agents/GL-005/integrations/plc" }}
+    {{ .Data.data | toJSON }}
+    {{ end }}
+    EOF
+    }
+    template {
+      destination = "/vault/secrets/dcs.json"
+      contents = <<EOF
+    {{ with secret "secret/data/greenlang/agents/GL-005/integrations/dcs" }}
+    {{ .Data.data | toJSON }}
+    {{ end }}
+    EOF
+    }
+    template {
+      destination = "/vault/secrets/combustion-analyzer.json"
+      contents = <<EOF
+    {{ with secret "secret/data/greenlang/agents/GL-005/integrations/combustion-analyzer" }}
+    {{ .Data.data | toJSON }}
+    {{ end }}
+    EOF
+    }
+    template {
+      destination = "/vault/secrets/jwt-secret"
+      contents = "{{ with secret \"secret/data/greenlang/agents/GL-005/auth/jwt\" }}{{ .Data.data.secret }}{{ end }}"
+      perms = "0400"
+    }
+    template {
+      destination = "/vault/secrets/redis.json"
+      contents = <<EOF
+    {{ with secret "secret/data/greenlang/agents/GL-005/cache/redis" }}
+    {{ .Data.data | toJSON }}
+    {{ end }}
+    EOF
+    }
+---
+apiVersion: external-secrets.io/v1beta1
+kind: SecretStore
+metadata:
+  name: gl-005-vault-backend
+  namespace: greenlang
+spec:
+  provider:
+    vault:
+      server: "https://vault.greenlang.local:8200"
+      path: "secret"
+      version: "v2"
+      auth:
+        kubernetes:
+          mountPath: "kubernetes"
+          role: "gl-005-combusense"
+          serviceAccountRef:
+            name: "gl-005-combusense"
+---
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+  name: gl-005-secrets
+  namespace: greenlang
+spec:
+  refreshInterval: "10m"  # Longer refresh for real-time system
+  secretStoreRef:
+    kind: SecretStore
+    name: gl-005-vault-backend
+  target:
+    name: gl-005-secrets
+    creationPolicy: Owner
+  data:
+    - secretKey: JWT_SECRET
+      remoteRef:
+        key: greenlang/agents/GL-005/auth/jwt
+        property: secret
+    - secretKey: PLC_HOST
+      remoteRef:
+        key: greenlang/agents/GL-005/integrations/plc
+        property: host
+    - secretKey: DCS_HOST
+      remoteRef:
+        key: greenlang/agents/GL-005/integrations/dcs
+        property: host
+    - secretKey: REDIS_URL
+      remoteRef:
+        key: greenlang/agents/GL-005/cache/redis
+        property: url

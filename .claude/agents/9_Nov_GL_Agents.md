@@ -1,3 +1,8 @@
+---
+name: gl-workforce-docs
+description: Documentation for GreenLang AI Agent Workforce Deployment
+---
+
 # GreenLang AI Agent Workforce Deployment
 
 **Date:** November 9, 2025

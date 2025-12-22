@@ -1,0 +1,630 @@
+# GL-005 COMBUSENSE Pack Specification
+# GreenLang v1.0 Specification
+# Combustion Control & Sensing Agent
+
+name: gl-005-combusense
+version: 1.0.0
+description: |
+  GL-005 COMBUSENSE - Combustion Control & Sensing Agent
+  Real-time combustion monitoring and control with advanced PID/feedforward control,
+  stability analysis, emissions prediction, and comprehensive sensor integration.
+  Provides deterministic, explainable combustion optimization for industrial systems.
+
+metadata:
+  agent_id: GL-005
+  capability: COMBUSENSE
+  priority: P0
+  business_impact: "Combustion efficiency gains of 2-5%, stability improvement 30%"
+  target_release: Q4 2025
+  status: implemented
+
+author:
+  name: GreenLang Process Heat Team
+  email: process-heat@greenlang.ai
+
+license: Proprietary
+
+# Mission Statement
+mission: |
+  Provide real-time combustion control and monitoring by integrating multiple
+  sensor types (temperature, pressure, flow, flame scanner, combustion analyzer),
+  implementing advanced PID with feedforward compensation, detecting stability
+  issues, and generating explainable optimization recommendations.
+
+# Core Capabilities
+capabilities:
+  # Control Systems
+  - pid_controller_with_anti_windup
+  - feedforward_compensation
+  - cascade_control_architecture
+  - setpoint_tracking_optimization
+  - bumpless_transfer
+
+  # Combustion Calculations
+  - air_fuel_ratio_calculation
+  - stoichiometric_analysis
+  - lambda_equivalence_ratio
+  - excess_air_optimization
+  - combustion_efficiency_calculation
+
+  # Stability Analysis
+  - flame_stability_monitoring
+  - oscillation_detection
+  - combustion_quality_index_cqi
+  - stability_margin_analysis
+  - instability_prediction
+
+  # Emissions
+  - nox_estimation
+  - co_estimation
+  - emissions_trend_analysis
+  - regulatory_compliance_checking
+
+  # Diagnostics
+  - combustion_diagnostics
+  - anomaly_detection
+  - root_cause_analysis
+  - performance_degradation_detection
+
+  # Sensor Integration
+  - temperature_sensor_array
+  - pressure_sensor_integration
+  - flow_meter_integration
+  - flame_scanner_integration
+  - combustion_analyzer_integration
+  - dcs_plc_connectivity
+  - scada_integration
+
+  # Safety
+  - safety_validation
+  - interlock_integration
+  - emergency_response
+  - constraint_enforcement
+
+  # Explainability
+  - decision_explainability
+  - narrative_generation
+  - physics_based_explanations
+  - feature_attribution
+
+  # Real-time Communication
+  - websocket_streaming
+  - sse_streaming
+  - rest_api
+  - prometheus_metrics
+
+# Dependencies
+dependencies:
+  python: ">=3.10"
+  packages:
+    # Core
+    - pydantic>=2.0
+    - numpy>=1.24
+    - scipy>=1.10
+    - pandas>=2.0
+
+    # Control Systems
+    - control>=0.9  # Control systems library
+    - simple-pid>=1.0
+
+    # Async
+    - asyncio-throttle>=1.0
+    - aiohttp>=3.8
+    - websockets>=11.0
+
+    # API
+    - fastapi>=0.100
+    - uvicorn>=0.22
+    - sse-starlette>=1.6
+
+    # Database
+    - sqlalchemy>=2.0
+    - asyncpg>=0.27
+    - influxdb-client>=1.36
+
+    # Industrial Protocols
+    - pymodbus>=3.0  # Modbus
+    - opcua>=0.98  # OPC-UA legacy
+    - asyncua>=1.0  # OPC-UA async
+
+    # Monitoring
+    - prometheus-client>=0.17
+    - opentelemetry-api>=1.18
+    - opentelemetry-sdk>=1.18
+
+    # Testing
+    - pytest>=7.0
+    - pytest-asyncio>=0.21
+    - hypothesis>=6.0
+
+    # Logging
+    - structlog>=23.1
+
+# Entry Points
+entry_points:
+  main: agents.combustion_control_orchestrator:CombustionControlOrchestrator
+  api: agents.main:app
+  websocket: agents.websocket_handler:start_websocket
+  sse: agents.sse_streaming:start_sse
+  cli: tools:main
+
+# Module Structure
+modules:
+  agents:
+    description: "Core orchestration and API"
+    files:
+      - combustion_control_orchestrator.py
+      - config.py
+      - tools.py
+      - main.py
+      - security_validator.py
+      - websocket_handler.py
+      - sse_streaming.py
+    key_classes:
+      - CombustionControlOrchestrator
+      - CombusenseConfig
+      - SecurityValidator
+      - WebSocketHandler
+
+  calculators:
+    description: "Zero-hallucination calculation engines"
+    files:
+      - pid_controller.py
+      - feedforward_controller.py
+      - air_fuel_ratio_calculator.py
+      - advanced_stoichiometry.py
+      - combustion_stability_calculator.py
+      - stability_analyzer.py
+      - emissions_calculator.py
+      - combustion_performance_calculator.py
+      - heat_output_calculator.py
+      - fuel_air_optimizer.py
+      - safety_validator.py
+      - cqi_calculator.py
+      - combustion_diagnostics.py
+      - anomaly_detection.py
+      - explainability.py
+      - narrative_generator.py
+    key_classes:
+      - PIDController
+      - FeedforwardController
+      - AirFuelRatioCalculator
+      - AdvancedStoichiometry
+      - CombustionStabilityCalculator
+      - StabilityAnalyzer
+      - EmissionsCalculator
+      - CombustionPerformanceCalculator
+      - HeatOutputCalculator
+      - FuelAirOptimizer
+      - SafetyValidator
+      - CQICalculator
+      - CombustionDiagnostics
+      - AnomalyDetector
+      - Explainability
+      - NarrativeGenerator
+
+  integrations:
+    description: "Sensor and system integrations"
+    files:
+      - temperature_sensor_connector.py
+      - temperature_sensor_array_connector.py
+      - pressure_sensor_connector.py
+      - flow_meter_connector.py
+      - flame_scanner_connector.py
+      - combustion_analyzer_connector.py
+      - dcs_connector.py
+      - plc_connector.py
+      - scada_integration.py
+    key_classes:
+      - TemperatureSensorConnector
+      - TemperatureSensorArrayConnector
+      - PressureSensorConnector
+      - FlowMeterConnector
+      - FlameScannerConnector
+      - CombustionAnalyzerConnector
+      - DCSConnector
+      - PLCConnector
+      - SCADAIntegration
+
+  monitoring:
+    description: "Metrics and observability"
+    files:
+      - metrics.py
+    key_classes:
+      - MetricsCollector
+      - PrometheusExporter
+
+# Configuration Schema
+config:
+  type: object
+  properties:
+    control:
+      $ref: "#/definitions/ControlConfig"
+    combustion:
+      $ref: "#/definitions/CombustionConfig"
+    stability:
+      $ref: "#/definitions/StabilityConfig"
+    safety:
+      $ref: "#/definitions/SafetyConfig"
+    sensors:
+      $ref: "#/definitions/SensorConfig"
+    integration:
+      $ref: "#/definitions/IntegrationConfig"
+
+definitions:
+  ControlConfig:
+    type: object
+    properties:
+      pid:
+        type: object
+        properties:
+          kp:
+            type: number
+            default: 1.0
+            description: "Proportional gain"
+          ki:
+            type: number
+            default: 0.1
+            description: "Integral gain"
+          kd:
+            type: number
+            default: 0.01
+            description: "Derivative gain"
+          output_min:
+            type: number
+            default: 0.0
+          output_max:
+            type: number
+            default: 100.0
+          anti_windup:
+            type: boolean
+            default: true
+      feedforward:
+        type: object
+        properties:
+          enabled:
+            type: boolean
+            default: true
+          gain:
+            type: number
+            default: 1.0
+          time_constant_s:
+            type: number
+            default: 5.0
+      update_interval_ms:
+        type: integer
+        default: 100
+
+  CombustionConfig:
+    type: object
+    properties:
+      target_o2_percent:
+        type: number
+        default: 3.0
+        description: "Target O2 setpoint"
+      target_lambda:
+        type: number
+        default: 1.15
+        description: "Target air-fuel equivalence ratio"
+      fuel_type:
+        type: string
+        enum: [natural_gas, propane, fuel_oil, hydrogen_blend]
+        default: natural_gas
+      min_excess_air_percent:
+        type: number
+        default: 10.0
+      max_excess_air_percent:
+        type: number
+        default: 30.0
+
+  StabilityConfig:
+    type: object
+    properties:
+      cqi_warning_threshold:
+        type: number
+        default: 0.7
+        description: "Combustion Quality Index warning level"
+      cqi_critical_threshold:
+        type: number
+        default: 0.5
+        description: "CQI critical level"
+      oscillation_detection:
+        type: boolean
+        default: true
+      flame_signal_min:
+        type: number
+        default: 20.0
+        description: "Minimum acceptable flame signal %"
+
+  SafetyConfig:
+    type: object
+    properties:
+      min_o2_percent:
+        type: number
+        default: 1.0
+        description: "Minimum O2 (avoid rich combustion)"
+      max_o2_percent:
+        type: number
+        default: 10.0
+        description: "Maximum O2 (efficiency limit)"
+      max_co_ppm:
+        type: number
+        default: 200
+        description: "Maximum CO limit"
+      max_furnace_pressure_mbar:
+        type: number
+        default: 10.0
+        description: "Maximum furnace pressure"
+      flame_failure_response_ms:
+        type: integer
+        default: 50
+        description: "Flame failure response time"
+      interlock_enabled:
+        type: boolean
+        default: true
+
+  SensorConfig:
+    type: object
+    properties:
+      temperature_array_size:
+        type: integer
+        default: 8
+      polling_interval_ms:
+        type: integer
+        default: 100
+      timeout_ms:
+        type: integer
+        default: 5000
+      quality_threshold:
+        type: number
+        default: 0.8
+
+  IntegrationConfig:
+    type: object
+    properties:
+      dcs_enabled:
+        type: boolean
+        default: true
+      plc_enabled:
+        type: boolean
+        default: true
+      scada_enabled:
+        type: boolean
+        default: true
+      combustion_analyzer_enabled:
+        type: boolean
+        default: true
+      flame_scanner_enabled:
+        type: boolean
+        default: true
+      websocket_enabled:
+        type: boolean
+        default: true
+      sse_enabled:
+        type: boolean
+        default: true
+
+# Success Criteria (KPIs)
+kpis:
+  control_accuracy:
+    metric: setpoint_tracking_error_percent
+    target: "< 2%"
+    measurement: "RMS error over 1 hour"
+
+  stability:
+    metric: combustion_quality_index
+    target: ">= 0.8"
+    improvement: "30% improvement in stability events"
+    measurement: "CQI algorithm"
+
+  response_time:
+    metric: disturbance_rejection_time_s
+    target: "< 5s"
+    measurement: "90% recovery time"
+
+  emissions:
+    metric: co_ppm_average
+    target: "< 50 ppm"
+    guardrail: "max_co_ppm limit"
+
+  efficiency:
+    metric: combustion_efficiency_percent
+    target: ">= 85%"
+    improvement: "2-5% gain"
+    measurement: "Heat balance method"
+
+  latency:
+    metric: calculation_time_ms
+    targets:
+      pid_update: "< 1 ms"
+      stoichiometry: "< 1 ms"
+      stability_analysis: "< 5 ms"
+      emissions_estimation: "< 5 ms"
+      diagnostics: "< 50 ms"
+
+  throughput:
+    metric: control_cycles_per_second
+    target: "> 100"
+
+  determinism:
+    metric: reproducibility_hash_match
+    target: "100%"
+    measurement: "SHA-256 verification"
+
+# Control Theory Reference
+control_theory:
+  pid_controller:
+    description: "Proportional-Integral-Derivative controller"
+    formula: "u(t) = Kp*e(t) + Ki*integral(e) + Kd*de/dt"
+    features:
+      - anti_windup_clamping
+      - derivative_filtering
+      - setpoint_weighting
+      - bumpless_transfer
+
+  feedforward:
+    description: "Feedforward compensation for measurable disturbances"
+    formula: "u_ff = Gff * d(s)"
+    use_cases:
+      - fuel_quality_changes
+      - load_changes
+      - air_temperature_variations
+
+  cascade_control:
+    description: "Inner-outer loop architecture"
+    outer_loop: "O2 setpoint control"
+    inner_loop: "Air damper position control"
+
+# Combustion Quality Index (CQI)
+cqi_algorithm:
+  description: "Composite metric for combustion health"
+  components:
+    flame_stability:
+      weight: 0.3
+      measurement: "CV of flame signal"
+    o2_stability:
+      weight: 0.25
+      measurement: "CV of O2 reading"
+    co_level:
+      weight: 0.25
+      measurement: "Normalized CO (0-200 ppm)"
+    temperature_uniformity:
+      weight: 0.2
+      measurement: "CV of temperature array"
+  formula: "CQI = sum(weight_i * normalized_score_i)"
+  interpretation:
+    excellent: ">= 0.9"
+    good: "0.8 - 0.9"
+    acceptable: "0.7 - 0.8"
+    warning: "0.5 - 0.7"
+    critical: "< 0.5"
+
+# Data Requirements
+data_requirements:
+  real_time_sensors:
+    frequency: 10-100ms
+    latency_sla: "<100ms"
+    required:
+      - o2_percent
+      - fuel_flow_rate
+      - air_flow_rate
+      - flame_signal
+      - furnace_temperature
+      - furnace_pressure
+    optional:
+      - co_ppm
+      - nox_ppm
+      - temperature_array
+      - air_damper_position
+      - fuel_valve_position
+
+  combustion_analyzer:
+    frequency: 1-10s
+    latency_sla: "<5s"
+    measurements:
+      - o2_percent
+      - co_ppm
+      - co2_percent
+      - nox_ppm
+
+  flame_scanner:
+    frequency: 10-100ms
+    latency_sla: "<100ms"
+    measurements:
+      - flame_intensity
+      - flame_frequency
+      - flame_stability
+
+# Deployment
+deployment:
+  kubernetes:
+    replicas: 2
+    resources:
+      requests:
+        cpu: 500m
+        memory: 512Mi
+      limits:
+        cpu: 2000m
+        memory: 2Gi
+    probes:
+      liveness:
+        path: /health
+        interval: 10s
+      readiness:
+        path: /ready
+        interval: 5s
+  environments:
+    - dev
+    - staging
+    - prod
+
+# Testing
+testing:
+  unit_tests:
+    - test_pid_controller_edge_cases.py
+    - test_calculators.py
+    - test_config.py
+    - test_tools.py
+    - test_combustion_stability_analysis.py
+    - test_cqi_and_diagnostics.py
+    - test_api.py
+    - test_orchestrator.py
+
+  integration_tests:
+    - test_e2e_control_workflow.py
+    - test_safety_interlocks.py
+    - test_safety_interlock_failure_paths.py
+    - test_integration_connectors.py
+    - test_determinism_validation.py
+
+  determinism_tests:
+    - test_reproducibility.py
+
+  performance_tests:
+    - test_benchmarks.py
+
+  security_tests:
+    - test_security.py
+
+  e2e_tests:
+    - test_complete_workflow.py
+
+# Reference Standards
+standards:
+  - NFPA 86 (Ovens and Furnaces Safety)
+  - NFPA 85 (Boiler and Combustion Systems)
+  - IEC 61511 (Safety Instrumented Systems)
+  - ISA-5.1 (P&ID Symbols)
+  - ISA-18.2 (Alarm Management)
+  - EPA 40 CFR 60 (Emissions Standards)
+
+# Audit Requirements
+audit:
+  retention_years: 7
+  hash_algorithm: SHA-256
+  provenance_tracking: true
+  append_only: true
+  queryable_by:
+    - equipment_id
+    - time_range
+    - calculation_type
+    - control_action
+    - provenance_hash
+
+# Zero-Hallucination Guarantee
+zero_hallucination:
+  principle: "All calculations are deterministic - NO LLM in calculation path"
+  guarantees:
+    - same_input_same_output
+    - bit_perfect_reproducibility
+    - complete_provenance_tracking
+    - sha256_hash_for_every_calculation
+  verification:
+    - determinism_tests_mandatory
+    - hash_verification_on_every_calculation
+    - reproducibility_test_suite
+  calculation_methods:
+    pid_control: "Classical PID with anti-windup (deterministic)"
+    stoichiometry: "Physics-based (conservation equations)"
+    stability: "Statistical analysis (CV, variance)"
+    emissions: "Empirical correlations (peer-reviewed)"

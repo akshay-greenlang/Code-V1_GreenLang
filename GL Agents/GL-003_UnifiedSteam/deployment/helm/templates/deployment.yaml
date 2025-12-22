@@ -1,0 +1,213 @@
+{{/*
+GL-003 UNIFIEDSTEAM - Deployment Template
+*/}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "unifiedsteam.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "unifiedsteam.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  revisionHistoryLimit: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      {{- include "unifiedsteam.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include "unifiedsteam.configChecksum" . }}
+        {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- include "unifiedsteam.labels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "unifiedsteam.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      terminationGracePeriodSeconds: 60
+
+      {{- if or .Values.initContainers.waitForKafka.enabled .Values.initContainers.waitForRedis.enabled .Values.initContainers.waitForPostgres.enabled }}
+      initContainers:
+        {{- if .Values.initContainers.waitForKafka.enabled }}
+        - name: wait-for-kafka
+          image: {{ .Values.initContainers.waitForKafka.image }}
+          command: ['sh', '-c', 'until nc -z {{ include "unifiedsteam.kafkaBrokers" . | replace ":9092" "" }} 9092; do echo waiting for kafka; sleep 2; done']
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+        {{- end }}
+        {{- if .Values.initContainers.waitForRedis.enabled }}
+        - name: wait-for-redis
+          image: {{ .Values.initContainers.waitForRedis.image }}
+          command: ['sh', '-c', 'until nc -z {{ include "unifiedsteam.redisHost" . }} {{ .Values.config.redis.port }}; do echo waiting for redis; sleep 2; done']
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+        {{- end }}
+        {{- if .Values.initContainers.waitForPostgres.enabled }}
+        - name: wait-for-postgres
+          image: {{ .Values.initContainers.waitForPostgres.image }}
+          command: ['sh', '-c', 'until nc -z {{ include "unifiedsteam.postgresHost" . }} 5432; do echo waiting for postgres; sleep 2; done']
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+        {{- end }}
+      {{- end }}
+
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: {{ include "unifiedsteam.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.containerPorts.http }}
+              protocol: TCP
+            - name: grpc
+              containerPort: {{ .Values.containerPorts.grpc }}
+              protocol: TCP
+            - name: metrics
+              containerPort: {{ .Values.containerPorts.metrics }}
+              protocol: TCP
+          env:
+            {{- range $key, $value := .Values.env }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: KAFKA_BROKERS
+              value: {{ include "unifiedsteam.kafkaBrokers" . | quote }}
+            - name: REDIS_HOST
+              value: {{ include "unifiedsteam.redisHost" . | quote }}
+            - name: REDIS_PORT
+              value: {{ .Values.config.redis.port | quote }}
+            {{- if .Values.secrets.databaseUrl }}
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "unifiedsteam.fullname" . }}-secrets
+                  key: database-url
+            {{- end }}
+            - name: API_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "unifiedsteam.fullname" . }}-secrets
+                  key: api-secret-key
+          {{- with .Values.envFromConfigMap }}
+          envFrom:
+            {{- range . }}
+            - configMapRef:
+                name: {{ . }}
+            {{- end }}
+          {{- end }}
+          {{- with .Values.envFromSecret }}
+            {{- range . }}
+            - secretRef:
+                name: {{ . }}
+            {{- end }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          livenessProbe:
+            {{- toYaml .Values.livenessProbe | nindent 12 }}
+          readinessProbe:
+            {{- toYaml .Values.readinessProbe | nindent 12 }}
+          {{- if .Values.startupProbe }}
+          startupProbe:
+            {{- toYaml .Values.startupProbe | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: config
+              mountPath: /app/config
+              readOnly: true
+            {{- if .Values.persistence.data.enabled }}
+            - name: data
+              mountPath: /app/data
+            {{- end }}
+            {{- if .Values.persistence.models.enabled }}
+            - name: models
+              mountPath: /app/models
+              readOnly: true
+            {{- end }}
+            - name: logs
+              mountPath: /app/logs
+            - name: tmp
+              mountPath: /tmp
+
+        {{- with .Values.sidecars }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "unifiedsteam.fullname" . }}-config
+        {{- if .Values.persistence.data.enabled }}
+        - name: data
+          persistentVolumeClaim:
+            claimName: {{ include "unifiedsteam.fullname" . }}-data
+        {{- end }}
+        {{- if .Values.persistence.models.enabled }}
+        - name: models
+          persistentVolumeClaim:
+            claimName: {{ include "unifiedsteam.fullname" . }}-models
+        {{- end }}
+        - name: logs
+          emptyDir: {}
+        - name: tmp
+          emptyDir: {}
+
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

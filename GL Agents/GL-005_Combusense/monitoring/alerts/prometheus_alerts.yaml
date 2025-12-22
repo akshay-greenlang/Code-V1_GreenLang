@@ -1,0 +1,422 @@
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: gl-005-alerts
+  namespace: greenlang
+  labels:
+    app: gl-005-combustion-control
+    prometheus: kube-prometheus
+    role: alert-rules
+spec:
+  groups:
+    # ========================================
+    # CRITICAL ALERTS (P0) - Immediate Action Required
+    # ========================================
+    - name: gl005.critical
+      interval: 10s
+      rules:
+        - alert: GL005SafetyInterlock
+          expr: gl005_safety_status == 0
+          for: 0s
+          labels:
+            severity: critical
+            priority: P0
+            component: safety
+            sil_level: SIL-2
+          annotations:
+            summary: "GL-005 Safety interlock triggered"
+            description: "Safety interlock active on unit {{ $labels.unit_id }}: {{ $labels.reason }}. System in UNSAFE state."
+            impact: "Combustion control disabled, production halted"
+            runbook_url: "https://docs.greenlang.io/runbooks/GL-005/INCIDENT_RESPONSE.md#scenario-1-safety-interlock-triggered"
+            dashboard_url: "https://grafana.greenlang.io/d/gl005-safety"
+
+        - alert: GL005EmergencyShutdown
+          expr: changes(gl005_emergency_shutdowns_total[1m]) > 0
+          for: 0s
+          labels:
+            severity: critical
+            priority: P0
+            component: safety
+            sil_level: SIL-2
+          annotations:
+            summary: "GL-005 Emergency shutdown triggered"
+            description: "Emergency shutdown event on unit {{ $labels.unit_id }}. Reason: {{ $labels.shutdown_reason }}"
+            impact: "All burners shut down immediately, process stopped"
+            runbook_url: "https://docs.greenlang.io/runbooks/GL-005/INCIDENT_RESPONSE.md#scenario-2-emergency-shutdown"
+            dashboard_url: "https://grafana.greenlang.io/d/gl005-safety"
+            pagerduty_severity: "critical"
+
+        - alert: GL005ControlLoopDown
+          expr: rate(gl005_control_loop_executions_total[1m]) == 0
+          for: 30s
+          labels:
+            severity: critical
+            priority: P0
+            component: control-loop
+          annotations:
+            summary: "GL-005 Control loop stopped"
+            description: "Control loop on unit {{ $labels.unit_id }} has stopped executing. No control cycles in last 30 seconds."
+            impact: "Combustion process uncontrolled, safety risk"
+            runbook_url: "https://docs.greenlang.io/runbooks/GL-005/TROUBLESHOOTING.md#issue-11-control-loop-stopped"
+            dashboard_url: "https://grafana.greenlang.io/d/gl005-agent-performance"
+
+        - alert: GL005FlameFailure
+          expr: gl005_safety_interlocks_flame_presence == 0
+          for: 5s
+          labels:
+            severity: critical
+            priority: P0
+            component: safety
+            sil_level: SIL-2
+          annotations:
+            summary: "GL-005 Flame detection failure"
+            description: "Flame loss detected on unit {{ $labels.unit_id }}, burner {{ $labels.burner_id }}"
+            impact: "Fuel supply will be cut immediately per safety protocol"
+            runbook_url: "https://docs.greenlang.io/runbooks/GL-005/INCIDENT_RESPONSE.md#scenario-6-flame-failure"
+            dashboard_url: "https://grafana.greenlang.io/d/gl005-safety"
+
+        - alert: GL005TemperatureExceeded
+          expr: gl005_furnace_temperature_c > gl005_safety_max_furnace_temp_c
+          for: 10s
+          labels:
+            severity: critical
+            priority: P0
+            component: safety
+            sil_level: SIL-2
+          annotations:
+            summary: "GL-005 Critical temperature exceeded"
+            description: "Furnace temperature {{ $value }}°C exceeds safety limit {{ $labels.max_temp }}°C on unit {{ $labels.unit_id }}"
+            impact: "Emergency shutdown imminent if temperature continues to rise"
+            runbook_url: "https://docs.greenlang.io/runbooks/GL-005/INCIDENT_RESPONSE.md#scenario-7-temperature-runaway"
+            dashboard_url: "https://grafana.greenlang.io/d/gl005-safety"
+
+    # ========================================
+    # HIGH PRIORITY ALERTS (P1) - Urgent Attention
+    # ========================================
+    - name: gl005.high
+      interval: 30s
+      rules:
+        - alert: GL005ControlLatencyHigh
+          expr: histogram_quantile(0.95, sum(rate(gl005_control_loop_duration_seconds_bucket[5m])) by (le, unit_id)) > 0.1
+          for: 2m
+          labels:
+            severity: high
+            priority: P1
+            component: performance
+          annotations:
+            summary: "GL-005 Control loop latency >100ms"
+            description: "P95 control latency is {{ $value | humanizeDuration }} on unit {{ $labels.unit_id }} (SLO: <100ms)"
+            impact: "Control response degraded, may affect stability"
+            runbook_url: "https://docs.greenlang.io/runbooks/GL-005/TROUBLESHOOTING.md#issue-11-control-loop-latency"
+            dashboard_url: "https://grafana.greenlang.io/d/gl005-agent-performance"
+            slo_violation: "control_latency_slo"
+
+        - alert: GL005StabilityLow
+          expr: gl005_stability_index < 0.7
+          for: 5m
+          labels:
+            severity: high
+            priority: P1
+            component: combustion
+          annotations:
+            summary: "GL-005 Combustion instability detected"
+            description: "Stability index {{ $value }} below threshold (target: >0.8) on unit {{ $labels.unit_id }}"
+            impact: "Poor combustion quality, increased emissions risk"
+            runbook_url: "https://docs.greenlang.io/runbooks/GL-005/INCIDENT_RESPONSE.md#scenario-4-combustion-instability"
+            dashboard_url: "https://grafana.greenlang.io/d/gl005-combustion"
+
+        - alert: GL005EmissionsExceeded
+          expr: gl005_emissions_nox_ppm > 50 OR gl005_emissions_co_ppm > 100
+          for: 10m
+          labels:
+            severity: high
+            priority: P1
+            component: emissions
+            regulatory: "EPA-compliance"
+          annotations:
+            summary: "GL-005 Emissions limit exceeded"
+            description: "NOx: {{ $labels.nox_ppm }}ppm (limit: 50ppm), CO: {{ $labels.co_ppm }}ppm (limit: 100ppm) on unit {{ $labels.unit_id }}"
+            impact: "Regulatory non-compliance, potential fines"
+            runbook_url: "https://docs.greenlang.io/runbooks/GL-005/INCIDENT_RESPONSE.md#scenario-5-emissions-violation"
+            dashboard_url: "https://grafana.greenlang.io/d/gl005-combustion"
+            compliance_framework: "EPA Clean Air Act"
+
+        - alert: GL005DCSConnectionLost
+          expr: gl005_dcs_connection_status == 0
+          for: 1m
+          labels:
+            severity: high
+            priority: P1
+            component: integration
+          annotations:
+            summary: "GL-005 DCS connection lost"
+            description: "DCS connection failed on unit {{ $labels.unit_id }}. No sensor data available."
+            impact: "Control system operating in degraded mode, safety risk"
+            runbook_url: "https://docs.greenlang.io/runbooks/GL-005/INCIDENT_RESPONSE.md#scenario-3-dcs-connection-failure"
+            dashboard_url: "https://grafana.greenlang.io/d/gl005-agent-performance"
+
+        - alert: GL005PLCConnectionLost
+          expr: gl005_plc_connection_status == 0
+          for: 1m
+          labels:
+            severity: high
+            priority: P1
+            component: integration
+          annotations:
+            summary: "GL-005 PLC connection lost"
+            description: "PLC connection failed on unit {{ $labels.unit_id }}. Cannot execute control commands."
+            impact: "Control loop cannot issue commands, manual operation required"
+            runbook_url: "https://docs.greenlang.io/runbooks/GL-005/TROUBLESHOOTING.md#issue-5-plc-communication-failure"
+            dashboard_url: "https://grafana.greenlang.io/d/gl005-agent-performance"
+
+        - alert: GL005ControlSuccessRateLow
+          expr: sum(rate(gl005_control_loop_executions_total{status="success"}[5m])) by (unit_id) / sum(rate(gl005_control_loop_executions_total[5m])) by (unit_id) * 100 < 99
+          for: 5m
+          labels:
+            severity: high
+            priority: P1
+            component: reliability
+          annotations:
+            summary: "GL-005 Control success rate below SLO"
+            description: "Control success rate {{ $value | humanizePercentage }} on unit {{ $labels.unit_id }} (SLO: >99%)"
+            impact: "Frequent control failures affecting process reliability"
+            runbook_url: "https://docs.greenlang.io/runbooks/GL-005/TROUBLESHOOTING.md#issue-12-low-success-rate"
+            dashboard_url: "https://grafana.greenlang.io/d/gl005-agent-performance"
+            slo_violation: "control_success_rate_slo"
+
+    # ========================================
+    # MEDIUM PRIORITY ALERTS (P2) - Investigation Needed
+    # ========================================
+    - name: gl005.medium
+      interval: 1m
+      rules:
+        - alert: GL005MemoryHigh
+          expr: gl005_memory_usage_percent > 85
+          for: 10m
+          labels:
+            severity: medium
+            priority: P2
+            component: resources
+          annotations:
+            summary: "GL-005 Memory usage high"
+            description: "Memory usage {{ $value }}% on unit {{ $labels.unit_id }} (threshold: 85%)"
+            impact: "Risk of OOM kill, potential control disruption"
+            runbook_url: "https://docs.greenlang.io/runbooks/GL-005/TROUBLESHOOTING.md#issue-8-high-memory"
+            dashboard_url: "https://grafana.greenlang.io/d/gl005-agent-performance"
+
+        - alert: GL005CPUHigh
+          expr: gl005_cpu_usage_percent > 80
+          for: 10m
+          labels:
+            severity: medium
+            priority: P2
+            component: resources
+          annotations:
+            summary: "GL-005 CPU usage high"
+            description: "CPU usage {{ $value }}% on unit {{ $labels.unit_id }} (threshold: 80%)"
+            impact: "Increased control latency risk"
+            runbook_url: "https://docs.greenlang.io/runbooks/GL-005/TROUBLESHOOTING.md#issue-9-high-cpu"
+            dashboard_url: "https://grafana.greenlang.io/d/gl005-agent-performance"
+
+        - alert: GL005HeatOutputDeviation
+          expr: abs(gl005_heat_output_mj_per_hr - gl005_heat_output_target_mj_per_hr) / gl005_heat_output_target_mj_per_hr * 100 > 5
+          for: 15m
+          labels:
+            severity: medium
+            priority: P2
+            component: performance
+          annotations:
+            summary: "GL-005 Heat output deviating from target"
+            description: "Heat output deviation {{ $value }}% on unit {{ $labels.unit_id }} (threshold: 5%)"
+            impact: "Suboptimal process performance, efficiency loss"
+            runbook_url: "https://docs.greenlang.io/runbooks/GL-005/TROUBLESHOOTING.md#issue-13-heat-output-deviation"
+            dashboard_url: "https://grafana.greenlang.io/d/gl005-combustion"
+
+        - alert: GL005EfficiencyLow
+          expr: gl005_combustion_efficiency_percent < 85
+          for: 20m
+          labels:
+            severity: medium
+            priority: P2
+            component: efficiency
+          annotations:
+            summary: "GL-005 Combustion efficiency low"
+            description: "Efficiency {{ $value }}% on unit {{ $labels.unit_id }} (target: >90%)"
+            impact: "Increased fuel consumption, higher operating costs"
+            runbook_url: "https://docs.greenlang.io/runbooks/GL-005/TROUBLESHOOTING.md#issue-14-low-efficiency"
+            dashboard_url: "https://grafana.greenlang.io/d/gl005-combustion"
+
+        - alert: GL005IntegrationLatencyHigh
+          expr: gl005_dcs_read_latency_ms > 100 OR gl005_plc_read_latency_ms > 100
+          for: 10m
+          labels:
+            severity: medium
+            priority: P2
+            component: integration
+          annotations:
+            summary: "GL-005 Integration latency high"
+            description: "DCS/PLC read latency {{ $value }}ms on unit {{ $labels.unit_id }} (target: <50ms)"
+            impact: "Slower control response, may affect loop performance"
+            runbook_url: "https://docs.greenlang.io/runbooks/GL-005/TROUBLESHOOTING.md#issue-15-integration-latency"
+            dashboard_url: "https://grafana.greenlang.io/d/gl005-agent-performance"
+
+        - alert: GL005AgentExecutionSlow
+          expr: histogram_quantile(0.95, sum(rate(gl005_agent_duration_seconds_bucket[5m])) by (le, agent, unit_id)) > on(agent) group_left() (gl005_agent_slo_duration_seconds)
+          for: 10m
+          labels:
+            severity: medium
+            priority: P2
+            component: performance
+          annotations:
+            summary: "GL-005 Agent {{ $labels.agent }} execution slow"
+            description: "Agent {{ $labels.agent }} P95 duration {{ $value | humanizeDuration }} exceeds SLO on unit {{ $labels.unit_id }}"
+            impact: "Agent performance degraded, contributing to overall latency"
+            runbook_url: "https://docs.greenlang.io/runbooks/GL-005/TROUBLESHOOTING.md#issue-16-agent-slow"
+            dashboard_url: "https://grafana.greenlang.io/d/gl005-agent-performance"
+
+    # ========================================
+    # WARNING ALERTS (P3) - Monitoring/Trending
+    # ========================================
+    - name: gl005.warning
+      interval: 5m
+      rules:
+        - alert: GL005ControlFrequencyLow
+          expr: gl005_control_frequency_hz < 8
+          for: 15m
+          labels:
+            severity: warning
+            priority: P3
+            component: performance
+          annotations:
+            summary: "GL-005 Control frequency below target"
+            description: "Control frequency {{ $value }}Hz on unit {{ $labels.unit_id }} (target: 10Hz)"
+            impact: "Reduced control responsiveness"
+            dashboard_url: "https://grafana.greenlang.io/d/gl005-agent-performance"
+
+        - alert: GL005OscillationDetected
+          expr: gl005_oscillation_amplitude_percent > 5
+          for: 10m
+          labels:
+            severity: warning
+            priority: P3
+            component: stability
+          annotations:
+            summary: "GL-005 Process oscillation detected"
+            description: "Oscillation amplitude {{ $value }}% on unit {{ $labels.unit_id }} (threshold: 5%)"
+            impact: "Control loop may need tuning"
+            dashboard_url: "https://grafana.greenlang.io/d/gl005-combustion"
+
+        - alert: GL005ManualOverrideActive
+          expr: gl005_manual_override_active == 1
+          for: 1h
+          labels:
+            severity: warning
+            priority: P3
+            component: operations
+          annotations:
+            summary: "GL-005 Manual override active for extended period"
+            description: "Manual override has been active for >1h on unit {{ $labels.unit_id }}"
+            impact: "Automated control disabled, operator-dependent"
+            dashboard_url: "https://grafana.greenlang.io/d/gl005-safety"
+
+        - alert: GL005SafetyRiskScoreElevated
+          expr: gl005_safety_risk_score > 50
+          for: 30m
+          labels:
+            severity: warning
+            priority: P3
+            component: safety
+          annotations:
+            summary: "GL-005 Safety risk score elevated"
+            description: "Safety risk score {{ $value }} on unit {{ $labels.unit_id }} (target: <30)"
+            impact: "Increased safety risk, review conditions"
+            dashboard_url: "https://grafana.greenlang.io/d/gl005-safety"
+
+    # ========================================
+    # SIL-2 COMPLIANCE MONITORING
+    # ========================================
+    - name: gl005.sil2_compliance
+      interval: 30s
+      rules:
+        - alert: GL005SIL2ComplianceFailure
+          expr: gl005_sil2_compliance_status == 0
+          for: 1m
+          labels:
+            severity: critical
+            priority: P0
+            component: safety
+            sil_level: SIL-2
+            compliance: "IEC-61511"
+          annotations:
+            summary: "GL-005 SIL-2 compliance failure"
+            description: "SIL-2 compliance check failed on unit {{ $labels.unit_id }}. Reason: {{ $labels.failure_reason }}"
+            impact: "Safety system not operating at required SIL-2 level, regulatory violation"
+            runbook_url: "https://docs.greenlang.io/runbooks/GL-005/INCIDENT_RESPONSE.md#scenario-8-sil2-compliance-failure"
+            dashboard_url: "https://grafana.greenlang.io/d/gl005-safety"
+            regulatory_requirement: "IEC 61511 SIL-2"
+
+        - alert: GL005SafetyCheckDurationExceeded
+          expr: histogram_quantile(0.95, sum(rate(gl005_safety_check_duration_seconds_bucket[5m])) by (le, unit_id)) * 1000 > 20
+          for: 5m
+          labels:
+            severity: high
+            priority: P1
+            component: safety
+            sil_level: SIL-2
+          annotations:
+            summary: "GL-005 Safety check duration exceeds SIL-2 requirements"
+            description: "Safety check P95 duration {{ $value }}ms exceeds 20ms SIL-2 requirement on unit {{ $labels.unit_id }}"
+            impact: "Safety system response time degraded, SIL-2 compliance at risk"
+            runbook_url: "https://docs.greenlang.io/runbooks/GL-005/TROUBLESHOOTING.md#issue-17-safety-check-slow"
+            dashboard_url: "https://grafana.greenlang.io/d/gl005-safety"
+            slo_violation: "safety_response_time_slo"
+
+        - alert: GL005BlowoutRiskHigh
+          expr: gl005_blowout_risk_score > 80
+          for: 2m
+          labels:
+            severity: high
+            priority: P1
+            component: safety
+            sil_level: SIL-2
+          annotations:
+            summary: "GL-005 Blowout risk high"
+            description: "Blowout risk score {{ $value }} on unit {{ $labels.unit_id }} (critical threshold: 80)"
+            impact: "High risk of flame blowout, potential safety incident"
+            runbook_url: "https://docs.greenlang.io/runbooks/GL-005/INCIDENT_RESPONSE.md#scenario-9-blowout-risk"
+            dashboard_url: "https://grafana.greenlang.io/d/gl005-safety"
+
+    # ========================================
+    # RECORDING RULES (for SLO calculation)
+    # ========================================
+    - name: gl005.recording_rules
+      interval: 30s
+      rules:
+        # Control latency SLI
+        - record: gl005:control_latency:sli
+          expr: histogram_quantile(0.95, sum(rate(gl005_control_loop_duration_seconds_bucket[5m])) by (le, unit_id))
+
+        # Control success rate SLI
+        - record: gl005:control_success_rate:sli
+          expr: sum(rate(gl005_control_loop_executions_total{status="success"}[5m])) by (unit_id) / sum(rate(gl005_control_loop_executions_total[5m])) by (unit_id)
+
+        # Safety response time SLI
+        - record: gl005:safety_response_time:sli
+          expr: histogram_quantile(0.95, sum(rate(gl005_safety_check_duration_seconds_bucket[5m])) by (le, unit_id))
+
+        # Overall availability SLI
+        - record: gl005:availability:sli
+          expr: avg_over_time(gl005_safety_status[5m])
+
+        # Emissions compliance SLI
+        - record: gl005:emissions_compliance:sli
+          expr: (gl005_emissions_nox_ppm <= 50) and (gl005_emissions_co_ppm <= 100)
+
+        # Error budget burn rate (1h window)
+        - record: gl005:error_budget_burn_rate:1h
+          expr: (1 - gl005:control_success_rate:sli) / (1 - 0.99)
+
+        # Error budget burn rate (6h window)
+        - record: gl005:error_budget_burn_rate:6h
+          expr: (1 - avg_over_time(gl005:control_success_rate:sli[6h])) / (1 - 0.99)

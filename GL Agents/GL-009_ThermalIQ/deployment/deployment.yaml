@@ -1,0 +1,128 @@
+# GL-009 ThermalIQ - Kubernetes Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gl-009-thermaliq
+  namespace: greenlang-process-heat
+  labels:
+    app: thermaliq
+    agent-id: GL-009
+    tier: calculator
+    version: "1.0.0"
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: thermaliq
+  template:
+    metadata:
+      labels:
+        app: thermaliq
+        agent-id: GL-009
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: thermaliq-sa
+      containers:
+        - name: thermaliq
+          image: greenlang/gl-009-thermaliq:1.0.0
+          ports:
+            - name: http
+              containerPort: 8080
+            - name: metrics
+              containerPort: 9090
+            - name: graphql
+              containerPort: 8081
+          env:
+            - name: THERMALIQ_LOG_LEVEL
+              value: "INFO"
+            - name: THERMALIQ_OPCUA_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: thermaliq-config
+                  key: opcua_host
+            - name: THERMALIQ_KAFKA_BROKERS
+              valueFrom:
+                configMapKeyRef:
+                  name: thermaliq-config
+                  key: kafka_brokers
+            - name: THERMALIQ_DB_CONNECTION
+              valueFrom:
+                secretKeyRef:
+                  name: thermaliq-secrets
+                  key: database_url
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "1Gi"
+            limits:
+              cpu: "2000m"
+              memory: "4Gi"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          volumeMounts:
+            - name: fluid-data
+              mountPath: /app/data/fluids
+              readOnly: true
+            - name: config
+              mountPath: /app/config
+              readOnly: true
+      volumes:
+        - name: fluid-data
+          configMap:
+            name: thermaliq-fluid-library
+        - name: config
+          configMap:
+            name: thermaliq-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: thermaliq-service
+  namespace: greenlang-process-heat
+  labels:
+    app: thermaliq
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+    - name: metrics
+      port: 9090
+      targetPort: 9090
+    - name: graphql
+      port: 8081
+      targetPort: 8081
+  selector:
+    app: thermaliq
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: thermaliq-config
+  namespace: greenlang-process-heat
+data:
+  opcua_host: "opcua.process-heat.local"
+  kafka_brokers: "kafka-0.kafka:9092,kafka-1.kafka:9092,kafka-2.kafka:9092"
+  calculation_mode: "FULL_ANALYSIS"
+  explainability_enabled: "true"
+  uncertainty_quantification: "true"
+  sankey_export_format: "svg"
+  fluid_library_version: "1.0.0"

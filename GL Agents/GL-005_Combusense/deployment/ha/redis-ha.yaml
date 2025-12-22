@@ -1,0 +1,445 @@
+# GL-005 Combusense - Redis HA Configuration
+# High-availability Redis with Sentinel for real-time control caching
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gl-005-redis-config
+  namespace: greenlang
+data:
+  redis.conf: |
+    # GL-005 Combusense Redis Configuration
+    # Optimized for real-time control system caching
+
+    # Network
+    bind 0.0.0.0
+    port 6379
+    tcp-backlog 511
+    timeout 0
+    tcp-keepalive 300
+
+    # General
+    daemonize no
+    supervised no
+    loglevel notice
+    databases 16
+
+    # Snapshotting (RDB)
+    save 900 1
+    save 300 10
+    save 60 10000
+    stop-writes-on-bgsave-error yes
+    rdbcompression yes
+    rdbchecksum yes
+    dbfilename dump.rdb
+    dir /data
+
+    # Replication
+    replica-serve-stale-data yes
+    replica-read-only yes
+    repl-diskless-sync no
+    repl-diskless-sync-delay 5
+    repl-ping-replica-period 10
+    repl-timeout 60
+    repl-disable-tcp-nodelay no
+    repl-backlog-size 64mb
+    repl-backlog-ttl 3600
+
+    # Security
+    requirepass ${REDIS_PASSWORD}
+    masterauth ${REDIS_PASSWORD}
+
+    # Memory Management (optimized for control data)
+    maxmemory 2gb
+    maxmemory-policy allkeys-lru
+
+    # Append Only File (AOF) - enabled for control state durability
+    appendonly yes
+    appendfilename "appendonly.aof"
+    appendfsync everysec
+    no-appendfsync-on-rewrite no
+    auto-aof-rewrite-percentage 100
+    auto-aof-rewrite-min-size 64mb
+    aof-load-truncated yes
+    aof-use-rdb-preamble yes
+
+    # Lua scripting
+    lua-time-limit 5000
+
+    # Cluster (disabled - using Sentinel)
+    cluster-enabled no
+
+    # Slow log
+    slowlog-log-slower-than 10000
+    slowlog-max-len 128
+
+    # Latency monitor
+    latency-monitor-threshold 100
+
+    # Event notification (for control state changes)
+    notify-keyspace-events "KEA"
+
+    # Streams (for control event streaming)
+    stream-node-max-bytes 4096
+    stream-node-max-entries 100
+
+  sentinel.conf: |
+    # GL-005 Combusense Redis Sentinel Configuration
+
+    port 26379
+    sentinel monitor gl-005-master gl-005-redis-0.gl-005-redis-headless 6379 2
+    sentinel auth-pass gl-005-master ${REDIS_PASSWORD}
+    sentinel down-after-milliseconds gl-005-master 5000
+    sentinel parallel-syncs gl-005-master 1
+    sentinel failover-timeout gl-005-master 10000
+    sentinel deny-scripts-reconfig yes
+
+---
+# Redis StatefulSet
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: gl-005-redis
+  namespace: greenlang
+  labels:
+    app: gl-005-redis
+spec:
+  serviceName: gl-005-redis-headless
+  replicas: 3
+  selector:
+    matchLabels:
+      app: gl-005-redis
+  template:
+    metadata:
+      labels:
+        app: gl-005-redis
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9121"
+    spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  app: gl-005-redis
+              topologyKey: kubernetes.io/hostname
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: gl-005-redis
+                topologyKey: topology.kubernetes.io/zone
+
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: DoNotSchedule
+          labelSelector:
+            matchLabels:
+              app: gl-005-redis
+
+      initContainers:
+        - name: init-config
+          image: redis:7.2-alpine
+          command:
+            - sh
+            - -c
+            - |
+              cp /config/redis.conf /data/redis.conf
+              sed -i "s/\${REDIS_PASSWORD}/${REDIS_PASSWORD}/g" /data/redis.conf
+          env:
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: gl-005-combusense-secrets
+                  key: REDIS_PASSWORD
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: data
+              mountPath: /data
+
+      containers:
+        - name: redis
+          image: redis:7.2-alpine
+          command:
+            - redis-server
+            - /data/redis.conf
+          ports:
+            - name: redis
+              containerPort: 6379
+              protocol: TCP
+
+          env:
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: gl-005-combusense-secrets
+                  key: REDIS_PASSWORD
+
+          resources:
+            requests:
+              cpu: 200m
+              memory: 256Mi
+            limits:
+              cpu: 1000m
+              memory: 2Gi
+
+          livenessProbe:
+            exec:
+              command:
+                - redis-cli
+                - -a
+                - $(REDIS_PASSWORD)
+                - ping
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+          readinessProbe:
+            exec:
+              command:
+                - redis-cli
+                - -a
+                - $(REDIS_PASSWORD)
+                - ping
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            - name: config
+              mountPath: /config
+
+        - name: redis-exporter
+          image: oliver006/redis_exporter:v1.55.0
+          ports:
+            - name: metrics
+              containerPort: 9121
+          env:
+            - name: REDIS_ADDR
+              value: "redis://localhost:6379"
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: gl-005-combusense-secrets
+                  key: REDIS_PASSWORD
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi
+
+      volumes:
+        - name: config
+          configMap:
+            name: gl-005-redis-config
+
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: fast-ssd
+        resources:
+          requests:
+            storage: 10Gi
+
+---
+# Redis Sentinel StatefulSet
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: gl-005-redis-sentinel
+  namespace: greenlang
+  labels:
+    app: gl-005-redis-sentinel
+spec:
+  serviceName: gl-005-redis-sentinel-headless
+  replicas: 3
+  selector:
+    matchLabels:
+      app: gl-005-redis-sentinel
+  template:
+    metadata:
+      labels:
+        app: gl-005-redis-sentinel
+    spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  app: gl-005-redis-sentinel
+              topologyKey: kubernetes.io/hostname
+
+      initContainers:
+        - name: init-config
+          image: redis:7.2-alpine
+          command:
+            - sh
+            - -c
+            - |
+              cp /config/sentinel.conf /data/sentinel.conf
+              sed -i "s/\${REDIS_PASSWORD}/${REDIS_PASSWORD}/g" /data/sentinel.conf
+          env:
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: gl-005-combusense-secrets
+                  key: REDIS_PASSWORD
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: data
+              mountPath: /data
+
+      containers:
+        - name: sentinel
+          image: redis:7.2-alpine
+          command:
+            - redis-sentinel
+            - /data/sentinel.conf
+          ports:
+            - name: sentinel
+              containerPort: 26379
+              protocol: TCP
+
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+
+          livenessProbe:
+            exec:
+              command:
+                - redis-cli
+                - -p
+                - "26379"
+                - ping
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+
+          readinessProbe:
+            exec:
+              command:
+                - redis-cli
+                - -p
+                - "26379"
+                - ping
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            - name: config
+              mountPath: /config
+
+      volumes:
+        - name: config
+          configMap:
+            name: gl-005-redis-config
+
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: fast-ssd
+        resources:
+          requests:
+            storage: 1Gi
+
+---
+# Redis Headless Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-005-redis-headless
+  namespace: greenlang
+  labels:
+    app: gl-005-redis
+spec:
+  clusterIP: None
+  selector:
+    app: gl-005-redis
+  ports:
+    - name: redis
+      port: 6379
+      targetPort: 6379
+
+---
+# Redis Sentinel Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-005-redis-sentinel
+  namespace: greenlang
+  labels:
+    app: gl-005-redis-sentinel
+spec:
+  type: ClusterIP
+  selector:
+    app: gl-005-redis-sentinel
+  ports:
+    - name: sentinel
+      port: 26379
+      targetPort: 26379
+
+---
+# Redis Sentinel Headless Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-005-redis-sentinel-headless
+  namespace: greenlang
+  labels:
+    app: gl-005-redis-sentinel
+spec:
+  clusterIP: None
+  selector:
+    app: gl-005-redis-sentinel
+  ports:
+    - name: sentinel
+      port: 26379
+      targetPort: 26379
+
+---
+# PodDisruptionBudget for Redis
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: gl-005-redis-pdb
+  namespace: greenlang
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: gl-005-redis
+
+---
+# PodDisruptionBudget for Redis Sentinel
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: gl-005-redis-sentinel-pdb
+  namespace: greenlang
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: gl-005-redis-sentinel
