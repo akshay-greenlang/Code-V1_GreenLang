@@ -1,0 +1,255 @@
+# GL-006 HEATRECLAIM - Kubernetes Service
+#
+# Exposes the HEATRECLAIM agent for internal cluster communication
+# and external access via Ingress.
+#
+# Reference: ASME PTC 4.4 for heat recovery system monitoring standards
+#
+# Apply: kubectl apply -f deploy/kubernetes/service.yaml
+#
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-006-heatreclaim
+  namespace: greenlang-agents
+  labels:
+    app: gl-006-heatreclaim
+    agent-id: GL-006
+    agent-class: optimizer
+    domain: heat-recovery
+    version: "1.0.0"
+  annotations:
+    # Prometheus service discovery
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8006"
+    prometheus.io/path: "/metrics"
+    # Service description
+    description: "Heat Recovery Maximizer Agent - Pinch Analysis & HEN Optimization"
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 8006
+      targetPort: 8006
+      protocol: TCP
+    - name: metrics
+      port: 9090
+      targetPort: 9090
+      protocol: TCP
+    - name: grpc
+      port: 50051
+      targetPort: 50051
+      protocol: TCP
+  selector:
+    app: gl-006-heatreclaim
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 3600
+
+---
+# Headless service for StatefulSet deployments (if needed)
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-006-heatreclaim-headless
+  namespace: greenlang-agents
+  labels:
+    app: gl-006-heatreclaim
+    service-type: headless
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+    - name: http
+      port: 8006
+      targetPort: 8006
+      protocol: TCP
+  selector:
+    app: gl-006-heatreclaim
+
+---
+# External service for load balancer access (production)
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-006-heatreclaim-external
+  namespace: greenlang-agents
+  labels:
+    app: gl-006-heatreclaim
+    service-type: external
+  annotations:
+    # Cloud provider annotations for load balancer
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+    service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+    # Health check configuration
+    service.beta.kubernetes.io/aws-load-balancer-healthcheck-path: "/api/v1/health"
+    service.beta.kubernetes.io/aws-load-balancer-healthcheck-interval: "30"
+    service.beta.kubernetes.io/aws-load-balancer-healthcheck-timeout: "10"
+spec:
+  type: LoadBalancer
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8006
+      protocol: TCP
+    - name: https
+      port: 443
+      targetPort: 8006
+      protocol: TCP
+  selector:
+    app: gl-006-heatreclaim
+  externalTrafficPolicy: Local
+  healthCheckNodePort: 30006
+
+---
+# Ingress for HTTP/HTTPS routing
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: gl-006-heatreclaim-ingress
+  namespace: greenlang-agents
+  labels:
+    app: gl-006-heatreclaim
+  annotations:
+    # Ingress controller configuration
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+    # Rate limiting
+    nginx.ingress.kubernetes.io/limit-rps: "100"
+    nginx.ingress.kubernetes.io/limit-connections: "50"
+    # CORS
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "*"
+    # Certificate management
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - heatreclaim.greenlang.io
+        - gl-006.greenlang.io
+      secretName: gl-006-heatreclaim-tls
+  rules:
+    - host: heatreclaim.greenlang.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: gl-006-heatreclaim
+                port:
+                  number: 8006
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: gl-006-heatreclaim
+                port:
+                  number: 8006
+          - path: /graphql
+            pathType: Prefix
+            backend:
+              service:
+                name: gl-006-heatreclaim
+                port:
+                  number: 8006
+    - host: gl-006.greenlang.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: gl-006-heatreclaim
+                port:
+                  number: 8006
+
+---
+# NetworkPolicy for security
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: gl-006-heatreclaim-network-policy
+  namespace: greenlang-agents
+  labels:
+    app: gl-006-heatreclaim
+spec:
+  podSelector:
+    matchLabels:
+      app: gl-006-heatreclaim
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Allow ingress from nginx ingress controller
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 8006
+    # Allow ingress from other GreenLang agents
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: greenlang-agents
+      ports:
+        - protocol: TCP
+          port: 8006
+        - protocol: TCP
+          port: 50051
+    # Allow Prometheus scraping
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+      ports:
+        - protocol: TCP
+          port: 9090
+  egress:
+    # Allow DNS resolution
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: UDP
+          port: 53
+    # Allow connection to Redis
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: greenlang-agents
+        - podSelector:
+            matchLabels:
+              app: redis
+      ports:
+        - protocol: TCP
+          port: 6379
+    # Allow connection to Kafka
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: greenlang-agents
+        - podSelector:
+            matchLabels:
+              app: kafka
+      ports:
+        - protocol: TCP
+          port: 9092
+    # Allow HTTPS egress for external APIs
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 10.0.0.0/8
+              - 172.16.0.0/12
+              - 192.168.0.0/16
+      ports:
+        - protocol: TCP
+          port: 443

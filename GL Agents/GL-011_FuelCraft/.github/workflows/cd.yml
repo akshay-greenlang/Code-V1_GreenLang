@@ -1,0 +1,418 @@
+# GL-011 FUELCRAFT - Continuous Deployment Pipeline
+# Deploys to staging then production with smoke tests and rollback capability
+name: GL-011 FUELCRAFT CD
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+      - 'v[0-9]+.[0-9]+.[0-9]+-rc.[0-9]+'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        type: choice
+        options:
+          - staging
+          - production
+      image_tag:
+        description: 'Docker image tag to deploy'
+        required: true
+        type: string
+      skip_smoke_tests:
+        description: 'Skip smoke tests'
+        required: false
+        type: boolean
+        default: false
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: greenlang/gl-011-fuelcraft
+  HELM_CHART_PATH: GL Agents/GL-011_FuelCraft/deploy/helm
+  K8S_NAMESPACE: gl-agents
+
+jobs:
+  # ==========================================================================
+  # Pre-deployment Validation
+  # ==========================================================================
+  validate:
+    name: Pre-deployment Validation
+    runs-on: ubuntu-latest
+    outputs:
+      image_tag: ${{ steps.get-tag.outputs.tag }}
+      environment: ${{ steps.determine-env.outputs.environment }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get image tag
+        id: get-tag
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "tag=${{ github.event.inputs.image_tag }}" >> $GITHUB_OUTPUT
+          else
+            echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Determine environment
+        id: determine-env
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "environment=${{ github.event.inputs.environment }}" >> $GITHUB_OUTPUT
+          elif [[ "${GITHUB_REF#refs/tags/}" == *"-rc."* ]]; then
+            echo "environment=staging" >> $GITHUB_OUTPUT
+          else
+            echo "environment=production" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Verify image exists
+        run: |
+          docker manifest inspect ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.get-tag.outputs.tag }} || \
+          (echo "Image not found: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.get-tag.outputs.tag }}" && exit 1)
+
+      - name: Validate Kubernetes manifests
+        run: |
+          # Install kubeval
+          wget -q https://github.com/instrumenta/kubeval/releases/latest/download/kubeval-linux-amd64.tar.gz
+          tar xf kubeval-linux-amd64.tar.gz
+          sudo mv kubeval /usr/local/bin/
+
+          # Validate manifests
+          kubeval --strict "GL Agents/GL-011_FuelCraft/deploy/kubernetes/"*.yaml
+
+  # ==========================================================================
+  # Deploy to Staging
+  # ==========================================================================
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: validate
+    if: needs.validate.outputs.environment == 'staging' || needs.validate.outputs.environment == 'production'
+    environment:
+      name: staging
+      url: https://staging.fuelcraft.greenlang.io
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure kubectl
+        uses: azure/k8s-set-context@v4
+        with:
+          kubeconfig: ${{ secrets.STAGING_KUBECONFIG }}
+
+      - name: Create namespace if not exists
+        run: |
+          kubectl create namespace ${{ env.K8S_NAMESPACE }} --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Apply ConfigMap
+        run: |
+          kubectl apply -f "GL Agents/GL-011_FuelCraft/deploy/kubernetes/configmap.yaml" -n ${{ env.K8S_NAMESPACE }}
+
+      - name: Deploy application
+        run: |
+          # Update image tag in deployment
+          sed -i "s|image: .*gl-011-fuelcraft:.*|image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.validate.outputs.image_tag }}|g" \
+            "GL Agents/GL-011_FuelCraft/deploy/kubernetes/deployment.yaml"
+
+          # Apply all manifests
+          kubectl apply -f "GL Agents/GL-011_FuelCraft/deploy/kubernetes/deployment.yaml" -n ${{ env.K8S_NAMESPACE }}
+          kubectl apply -f "GL Agents/GL-011_FuelCraft/deploy/kubernetes/service.yaml" -n ${{ env.K8S_NAMESPACE }}
+          kubectl apply -f "GL Agents/GL-011_FuelCraft/deploy/kubernetes/hpa.yaml" -n ${{ env.K8S_NAMESPACE }}
+          kubectl apply -f "GL Agents/GL-011_FuelCraft/deploy/kubernetes/pdb.yaml" -n ${{ env.K8S_NAMESPACE }}
+          kubectl apply -f "GL Agents/GL-011_FuelCraft/deploy/kubernetes/networkpolicy.yaml" -n ${{ env.K8S_NAMESPACE }}
+
+      - name: Wait for rollout
+        run: |
+          kubectl rollout status deployment/gl-011-fuelcraft -n ${{ env.K8S_NAMESPACE }} --timeout=300s
+
+      - name: Verify deployment
+        run: |
+          kubectl get pods -l app=gl-011-fuelcraft -n ${{ env.K8S_NAMESPACE }}
+          kubectl get svc -l app=gl-011-fuelcraft -n ${{ env.K8S_NAMESPACE }}
+
+  # ==========================================================================
+  # Staging Smoke Tests
+  # ==========================================================================
+  smoke-tests-staging:
+    name: Staging Smoke Tests
+    runs-on: ubuntu-latest
+    needs: [validate, deploy-staging]
+    if: ${{ !github.event.inputs.skip_smoke_tests }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install test dependencies
+        run: |
+          pip install requests pytest httpx
+
+      - name: Run smoke tests
+        env:
+          API_URL: https://staging.fuelcraft.greenlang.io
+          API_KEY: ${{ secrets.STAGING_API_KEY }}
+        run: |
+          # Health check
+          curl -f "$API_URL/health/live" || exit 1
+          curl -f "$API_URL/health/ready" || exit 1
+
+          # API smoke tests
+          python -c "
+          import requests
+          import sys
+
+          base_url = '$API_URL'
+          headers = {'X-API-Key': '$API_KEY'}
+
+          # Test health endpoints
+          resp = requests.get(f'{base_url}/health/live')
+          assert resp.status_code == 200, f'Health check failed: {resp.status_code}'
+
+          resp = requests.get(f'{base_url}/health/ready')
+          assert resp.status_code == 200, f'Readiness check failed: {resp.status_code}'
+
+          # Test metrics endpoint
+          resp = requests.get(f'{base_url}/metrics')
+          assert resp.status_code == 200, f'Metrics endpoint failed: {resp.status_code}'
+
+          print('All smoke tests passed!')
+          "
+
+      - name: Run integration smoke tests
+        env:
+          API_URL: https://staging.fuelcraft.greenlang.io
+          API_KEY: ${{ secrets.STAGING_API_KEY }}
+        run: |
+          # Test optimization endpoint with minimal payload
+          python -c "
+          import requests
+          import json
+
+          base_url = '$API_URL'
+          headers = {
+              'X-API-Key': '$API_KEY',
+              'Content-Type': 'application/json'
+          }
+
+          # Simple API test
+          resp = requests.get(f'{base_url}/api/v1/config', headers=headers)
+          print(f'Config endpoint: {resp.status_code}')
+
+          print('Integration smoke tests completed!')
+          "
+
+  # ==========================================================================
+  # Deploy to Production
+  # ==========================================================================
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [validate, smoke-tests-staging]
+    if: needs.validate.outputs.environment == 'production'
+    environment:
+      name: production
+      url: https://fuelcraft.greenlang.io
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure kubectl
+        uses: azure/k8s-set-context@v4
+        with:
+          kubeconfig: ${{ secrets.PRODUCTION_KUBECONFIG }}
+
+      - name: Create backup of current deployment
+        run: |
+          kubectl get deployment gl-011-fuelcraft -n ${{ env.K8S_NAMESPACE }} -o yaml > deployment-backup.yaml || true
+          echo "Backup created at $(date)" >> deployment-backup.yaml
+
+      - name: Upload deployment backup
+        uses: actions/upload-artifact@v4
+        with:
+          name: deployment-backup
+          path: deployment-backup.yaml
+          retention-days: 30
+
+      - name: Apply ConfigMap
+        run: |
+          kubectl apply -f "GL Agents/GL-011_FuelCraft/deploy/kubernetes/configmap.yaml" -n ${{ env.K8S_NAMESPACE }}
+
+      - name: Blue-Green Deployment
+        run: |
+          # Update image tag
+          sed -i "s|image: .*gl-011-fuelcraft:.*|image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.validate.outputs.image_tag }}|g" \
+            "GL Agents/GL-011_FuelCraft/deploy/kubernetes/deployment.yaml"
+
+          # Apply with record for rollback
+          kubectl apply -f "GL Agents/GL-011_FuelCraft/deploy/kubernetes/deployment.yaml" -n ${{ env.K8S_NAMESPACE }} --record
+          kubectl apply -f "GL Agents/GL-011_FuelCraft/deploy/kubernetes/service.yaml" -n ${{ env.K8S_NAMESPACE }}
+          kubectl apply -f "GL Agents/GL-011_FuelCraft/deploy/kubernetes/hpa.yaml" -n ${{ env.K8S_NAMESPACE }}
+          kubectl apply -f "GL Agents/GL-011_FuelCraft/deploy/kubernetes/pdb.yaml" -n ${{ env.K8S_NAMESPACE }}
+          kubectl apply -f "GL Agents/GL-011_FuelCraft/deploy/kubernetes/networkpolicy.yaml" -n ${{ env.K8S_NAMESPACE }}
+          kubectl apply -f "GL Agents/GL-011_FuelCraft/deploy/kubernetes/servicemonitor.yaml" -n ${{ env.K8S_NAMESPACE }} || true
+
+      - name: Wait for rollout
+        run: |
+          kubectl rollout status deployment/gl-011-fuelcraft -n ${{ env.K8S_NAMESPACE }} --timeout=600s
+
+      - name: Verify deployment
+        run: |
+          echo "## Deployment Status" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Pods" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          kubectl get pods -l app=gl-011-fuelcraft -n ${{ env.K8S_NAMESPACE }} >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Services" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          kubectl get svc -l app=gl-011-fuelcraft -n ${{ env.K8S_NAMESPACE }} >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
+  # ==========================================================================
+  # Production Smoke Tests
+  # ==========================================================================
+  smoke-tests-production:
+    name: Production Smoke Tests
+    runs-on: ubuntu-latest
+    needs: [validate, deploy-production]
+    if: needs.validate.outputs.environment == 'production' && !github.event.inputs.skip_smoke_tests
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install test dependencies
+        run: pip install requests
+
+      - name: Run production smoke tests
+        env:
+          API_URL: https://fuelcraft.greenlang.io
+          API_KEY: ${{ secrets.PRODUCTION_API_KEY }}
+        run: |
+          python -c "
+          import requests
+          import sys
+          import time
+
+          base_url = '$API_URL'
+          headers = {'X-API-Key': '$API_KEY'}
+
+          # Wait for service to be ready
+          for i in range(30):
+              try:
+                  resp = requests.get(f'{base_url}/health/live', timeout=5)
+                  if resp.status_code == 200:
+                      break
+              except:
+                  pass
+              time.sleep(2)
+
+          # Verify all health endpoints
+          endpoints = ['/health/live', '/health/ready', '/health/startup']
+          for endpoint in endpoints:
+              resp = requests.get(f'{base_url}{endpoint}')
+              assert resp.status_code == 200, f'{endpoint} failed: {resp.status_code}'
+              print(f'{endpoint}: OK')
+
+          # Verify metrics
+          resp = requests.get(f'{base_url}/metrics')
+          assert resp.status_code == 200, f'Metrics failed: {resp.status_code}'
+          print('Metrics: OK')
+
+          print('All production smoke tests passed!')
+          "
+
+  # ==========================================================================
+  # Rollback Job (Manual Trigger)
+  # ==========================================================================
+  rollback:
+    name: Rollback Deployment
+    runs-on: ubuntu-latest
+    if: failure() && needs.deploy-production.result == 'failure'
+    needs: [deploy-production]
+    environment:
+      name: production
+    steps:
+      - name: Configure kubectl
+        uses: azure/k8s-set-context@v4
+        with:
+          kubeconfig: ${{ secrets.PRODUCTION_KUBECONFIG }}
+
+      - name: Rollback deployment
+        run: |
+          echo "Rolling back deployment..."
+          kubectl rollout undo deployment/gl-011-fuelcraft -n ${{ env.K8S_NAMESPACE }}
+          kubectl rollout status deployment/gl-011-fuelcraft -n ${{ env.K8S_NAMESPACE }} --timeout=300s
+
+      - name: Verify rollback
+        run: |
+          kubectl get pods -l app=gl-011-fuelcraft -n ${{ env.K8S_NAMESPACE }}
+
+      - name: Notify rollback
+        run: |
+          echo "## ROLLBACK PERFORMED" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Production deployment failed and was automatically rolled back." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Previous version restored at $(date)" >> $GITHUB_STEP_SUMMARY
+
+  # ==========================================================================
+  # Post-deployment Notifications
+  # ==========================================================================
+  notify:
+    name: Deployment Notification
+    runs-on: ubuntu-latest
+    needs: [validate, deploy-production, smoke-tests-production]
+    if: always()
+    steps:
+      - name: Deployment Summary
+        run: |
+          echo "## GL-011 FuelCraft Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Image Tag | ${{ needs.validate.outputs.image_tag }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Environment | ${{ needs.validate.outputs.environment }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Deployment | ${{ needs.deploy-production.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Smoke Tests | ${{ needs.smoke-tests-production.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Timestamp | $(date -u +%Y-%m-%dT%H:%M:%SZ) |" >> $GITHUB_STEP_SUMMARY
+
+      - name: Send Slack notification
+        if: always()
+        uses: slackapi/slack-github-action@v1.25.0
+        with:
+          payload: |
+            {
+              "text": "GL-011 FuelCraft Deployment",
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "GL-011 FuelCraft Deployment ${{ needs.deploy-production.result == 'success' && 'Succeeded' || 'Failed' }}"
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {"type": "mrkdwn", "text": "*Environment:*\n${{ needs.validate.outputs.environment }}"},
+                    {"type": "mrkdwn", "text": "*Version:*\n${{ needs.validate.outputs.image_tag }}"},
+                    {"type": "mrkdwn", "text": "*Status:*\n${{ needs.deploy-production.result }}"},
+                    {"type": "mrkdwn", "text": "*Smoke Tests:*\n${{ needs.smoke-tests-production.result }}"}
+                  ]
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK

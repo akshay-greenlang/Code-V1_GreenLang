@@ -1,0 +1,109 @@
+# =============================================================================
+# GL-008 TRAPCATCHER - Coverage Configuration
+# =============================================================================
+# Configuration for pytest-cov to achieve 85%+ test coverage.
+#
+# Author: GL-BackendDeveloper
+# Date: December 2025
+# =============================================================================
+
+[run]
+# Source directories to measure
+source = .
+branch = True
+parallel = True
+relative_files = True
+
+# Omit files from coverage
+omit =
+    # Test files
+    tests/*
+    test_*
+    *_test.py
+    conftest.py
+
+    # Configuration and setup
+    setup.py
+    setup.cfg
+    pyproject.toml
+
+    # Deployment files
+    deployment/*
+    deploy/*
+
+    # Virtual environments
+    .venv/*
+    venv/*
+    env/*
+
+    # Cache and build
+    __pycache__/*
+    *.pyc
+    .eggs/*
+    *.egg-info/*
+    build/*
+    dist/*
+
+    # Documentation
+    docs/*
+
+    # Scripts
+    scripts/*
+
+[paths]
+source =
+    .
+    */GL-008_Trapcatcher/
+
+[report]
+# Minimum coverage percentage
+fail_under = 85
+
+# Display options
+show_missing = True
+skip_covered = False
+precision = 2
+
+# Exclude lines from coverage
+exclude_lines =
+    # Standard pragmas
+    pragma: no cover
+
+    # Debug-only code
+    def __repr__
+    def __str__
+
+    # Abstract methods
+    raise NotImplementedError
+    @abstractmethod
+
+    # Type checking
+    if TYPE_CHECKING:
+    if typing.TYPE_CHECKING:
+
+    # Defensive assertions
+    assert False
+
+    # Main guard
+    if __name__ == .__main__.:
+
+    # Logging setup
+    logging.basicConfig
+
+    # Platform-specific
+    if sys.platform
+
+# Files to skip in report
+ignore_errors = True
+
+[html]
+directory = htmlcov
+title = GL-008 TRAPCATCHER Coverage Report
+show_contexts = True
+
+[xml]
+output = coverage.xml
+
+[json]
+output = coverage.json
+pretty_print = True

@@ -1,0 +1,437 @@
+# -*- yaml -*-
+# ==============================================================================
+# GL-009 THERMALIQ - Kubernetes Production Deployment
+# ==============================================================================
+# Production-grade Kubernetes manifests for thermal efficiency agent.
+#
+# Resources:
+#   - Namespace: gl-agents
+#   - Deployment: gl-009-thermaliq
+#   - Service: gl-009-thermaliq-svc
+#   - ConfigMap: gl-009-config
+#   - Secret: gl-009-secrets
+#   - ServiceAccount with RBAC
+#   - HorizontalPodAutoscaler
+#   - PodDisruptionBudget
+#   - NetworkPolicy
+#
+# Apply:
+#   kubectl apply -f deployment.yaml
+#
+# Author: GL-BackendDeveloper
+# Version: 1.0.0
+# ==============================================================================
+
+---
+# ==============================================================================
+# ConfigMap - Application Configuration
+# ==============================================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gl-009-config
+  namespace: gl-agents
+  labels:
+    app.kubernetes.io/name: gl-009-thermaliq
+    app.kubernetes.io/component: config
+data:
+  # Agent Configuration
+  GL_AGENT_ID: "GL-009"
+  GL_AGENT_NAME: "THERMALIQ"
+  GL_LOG_LEVEL: "INFO"
+  GL_LOG_FORMAT: "json"
+  GL_ENABLE_METRICS: "true"
+  GL_ENABLE_TRACING: "true"
+
+  # API Configuration
+  API_HOST: "0.0.0.0"
+  API_PORT: "8080"
+  API_WORKERS: "4"
+
+  # IAPWS-IF97 Configuration
+  IAPWS_PRECISION: "high"
+  STEAM_TABLE_CACHE_SIZE: "10000"
+  STEAM_TABLE_CACHE_ENABLED: "true"
+
+  # Feature Flags
+  FEATURE_EXERGY_ANALYSIS: "true"
+  FEATURE_REAL_TIME_STREAMING: "true"
+  FEATURE_SHAP_EXPLAINABILITY: "true"
+  FEATURE_SANKEY_DIAGRAMS: "true"
+
+  # Calculation Precision
+  CALCULATION_DECIMAL_PLACES: "6"
+  UNCERTAINTY_PROPAGATION: "true"
+
+  # Kafka Topics
+  KAFKA_TOPIC_CALCULATIONS: "thermaliq.calculations"
+  KAFKA_TOPIC_EVENTS: "thermaliq.events"
+
+---
+# ==============================================================================
+# Secret - Sensitive Configuration
+# ==============================================================================
+apiVersion: v1
+kind: Secret
+metadata:
+  name: gl-009-secrets
+  namespace: gl-agents
+  labels:
+    app.kubernetes.io/name: gl-009-thermaliq
+type: Opaque
+stringData:
+  DATABASE_URL: "postgresql://thermaliq:CHANGE_ME@timescaledb:5432/thermaliq"
+  REDIS_URL: "redis://:CHANGE_ME@redis:6379/0"
+  API_KEY: "CHANGE_ME_IN_PRODUCTION"
+  KAFKA_SASL_PASSWORD: "CHANGE_ME"
+
+---
+# ==============================================================================
+# ServiceAccount
+# ==============================================================================
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: gl-009-thermaliq
+  namespace: gl-agents
+  labels:
+    app.kubernetes.io/name: gl-009-thermaliq
+automountServiceAccountToken: false
+
+---
+# ==============================================================================
+# Role - Minimal RBAC permissions
+# ==============================================================================
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: gl-009-thermaliq-role
+  namespace: gl-agents
+rules:
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["secrets"]
+    resourceNames: ["gl-009-secrets"]
+    verbs: ["get"]
+
+---
+# ==============================================================================
+# RoleBinding
+# ==============================================================================
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: gl-009-thermaliq-rolebinding
+  namespace: gl-agents
+subjects:
+  - kind: ServiceAccount
+    name: gl-009-thermaliq
+    namespace: gl-agents
+roleRef:
+  kind: Role
+  name: gl-009-thermaliq-role
+  apiGroup: rbac.authorization.k8s.io
+
+---
+# ==============================================================================
+# Deployment
+# ==============================================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gl-009-thermaliq
+  namespace: gl-agents
+  labels:
+    app.kubernetes.io/name: gl-009-thermaliq
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/component: api
+    app.kubernetes.io/part-of: greenlang
+spec:
+  replicas: 3
+  revisionHistoryLimit: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: gl-009-thermaliq
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: gl-009-thermaliq
+        app.kubernetes.io/version: "1.0.0"
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: gl-009-thermaliq
+      automountServiceAccountToken: false
+
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: gl-009-thermaliq
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: DoNotSchedule
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: gl-009-thermaliq
+
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app.kubernetes.io/name
+                      operator: In
+                      values:
+                        - gl-009-thermaliq
+                topologyKey: kubernetes.io/hostname
+
+      containers:
+        - name: thermaliq
+          image: greenlang/gl-009-thermaliq:1.0.0
+          imagePullPolicy: IfNotPresent
+
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+            - name: metrics
+              containerPort: 9090
+              protocol: TCP
+
+          envFrom:
+            - configMapRef:
+                name: gl-009-config
+            - secretRef:
+                name: gl-009-secrets
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+
+          resources:
+            requests:
+              cpu: 500m
+              memory: 1Gi
+            limits:
+              cpu: 2000m
+              memory: 4Gi
+
+          startupProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 30
+
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+            - name: cache
+              mountPath: /app/cache
+            - name: steam-tables
+              mountPath: /app/steam_tables
+            - name: logs
+              mountPath: /app/logs
+
+      volumes:
+        - name: tmp
+          emptyDir:
+            sizeLimit: 200Mi
+        - name: cache
+          emptyDir:
+            sizeLimit: 1Gi
+        - name: steam-tables
+          emptyDir:
+            sizeLimit: 500Mi
+        - name: logs
+          emptyDir:
+            sizeLimit: 200Mi
+
+      terminationGracePeriodSeconds: 30
+
+---
+# ==============================================================================
+# Service
+# ==============================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-009-thermaliq-svc
+  namespace: gl-agents
+  labels:
+    app.kubernetes.io/name: gl-009-thermaliq
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: gl-009-thermaliq
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+      protocol: TCP
+    - name: metrics
+      port: 9090
+      targetPort: metrics
+      protocol: TCP
+
+---
+# ==============================================================================
+# Horizontal Pod Autoscaler
+# ==============================================================================
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: gl-009-thermaliq-hpa
+  namespace: gl-agents
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: gl-009-thermaliq
+  minReplicas: 3
+  maxReplicas: 15
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Percent
+          value: 10
+          periodSeconds: 60
+    scaleUp:
+      stabilizationWindowSeconds: 30
+      policies:
+        - type: Percent
+          value: 100
+          periodSeconds: 15
+
+---
+# ==============================================================================
+# Pod Disruption Budget
+# ==============================================================================
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: gl-009-thermaliq-pdb
+  namespace: gl-agents
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: gl-009-thermaliq
+  minAvailable: 2
+
+---
+# ==============================================================================
+# Network Policy
+# ==============================================================================
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: gl-009-thermaliq-netpol
+  namespace: gl-agents
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: gl-009-thermaliq
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 8080
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+      ports:
+        - protocol: TCP
+          port: 9090
+  egress:
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: UDP
+          port: 53
+    - to:
+        - podSelector:
+            matchLabels:
+              app: timescaledb
+      ports:
+        - protocol: TCP
+          port: 5432
+    - to:
+        - podSelector:
+            matchLabels:
+              app: redis
+      ports:
+        - protocol: TCP
+          port: 6379
+    - to:
+        - podSelector:
+            matchLabels:
+              app: kafka
+      ports:
+        - protocol: TCP
+          port: 9092

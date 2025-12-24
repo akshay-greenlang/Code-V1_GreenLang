@@ -1,0 +1,260 @@
+# GL-007 FURNACEPULSE - Kubernetes Service Configuration
+# Provides both ClusterIP (internal) and LoadBalancer (external) access
+#
+# Apply: kubectl apply -f deploy/kubernetes/service.yaml
+# Check: kubectl get svc -n greenlang-agents -l app=gl-007-furnacepulse
+#
+# Features:
+#   - ClusterIP service for internal cluster communication
+#   - LoadBalancer service for external access (optional)
+#   - Headless service for StatefulSet-like discovery
+#   - Metrics port for Prometheus scraping
+#
+---
+# ========================================
+# ClusterIP Service (Internal Access)
+# ========================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-007-furnacepulse
+  namespace: greenlang-agents
+  labels:
+    app: gl-007-furnacepulse
+    app.kubernetes.io/name: furnacepulse
+    app.kubernetes.io/instance: gl-007
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/component: agent
+    app.kubernetes.io/part-of: greenlang-platform
+    agent-id: GL-007
+    service-type: internal
+  annotations:
+    description: "Internal ClusterIP service for FurnacePulse agent"
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9090"
+    prometheus.io/path: "/metrics"
+spec:
+  type: ClusterIP
+
+  # Session affinity for stateful connections
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 3600
+
+  ports:
+    # HTTP API port
+    - name: http
+      port: 8080
+      targetPort: http
+      protocol: TCP
+
+    # Metrics port for Prometheus
+    - name: metrics
+      port: 9090
+      targetPort: metrics
+      protocol: TCP
+
+    # gRPC port for inter-agent communication
+    - name: grpc
+      port: 50051
+      targetPort: grpc
+      protocol: TCP
+
+  selector:
+    app: gl-007-furnacepulse
+    agent-id: GL-007
+
+---
+# ========================================
+# LoadBalancer Service (External Access)
+# ========================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-007-furnacepulse-lb
+  namespace: greenlang-agents
+  labels:
+    app: gl-007-furnacepulse
+    app.kubernetes.io/name: furnacepulse
+    app.kubernetes.io/instance: gl-007
+    app.kubernetes.io/version: "1.0.0"
+    agent-id: GL-007
+    service-type: external
+  annotations:
+    description: "External LoadBalancer service for FurnacePulse agent"
+    # AWS NLB annotations (if using AWS)
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+    service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+    service.beta.kubernetes.io/aws-load-balancer-backend-protocol: "tcp"
+    service.beta.kubernetes.io/aws-load-balancer-ssl-cert: ""
+    service.beta.kubernetes.io/aws-load-balancer-ssl-ports: "443"
+    # GCP annotations (if using GCP)
+    cloud.google.com/load-balancer-type: "External"
+    cloud.google.com/neg: '{"ingress": true}'
+    # Azure annotations (if using Azure)
+    service.beta.kubernetes.io/azure-load-balancer-internal: "false"
+    # Health check annotations
+    service.beta.kubernetes.io/aws-load-balancer-healthcheck-path: "/api/v1/health/ready"
+    service.beta.kubernetes.io/aws-load-balancer-healthcheck-interval: "30"
+    service.beta.kubernetes.io/aws-load-balancer-healthcheck-timeout: "10"
+spec:
+  type: LoadBalancer
+
+  # External traffic policy for client IP preservation
+  externalTrafficPolicy: Local
+
+  # Health check node port (auto-assigned if not specified)
+  # healthCheckNodePort: 30080
+
+  # Load balancer source ranges (restrict access)
+  loadBalancerSourceRanges:
+    - 10.0.0.0/8      # Internal networks
+    - 172.16.0.0/12   # Docker networks
+    - 192.168.0.0/16  # Private networks
+    # Add your corporate IP ranges here
+    # - x.x.x.x/32    # Specific IP
+
+  ports:
+    # HTTP API port (consider using HTTPS in production)
+    - name: http
+      port: 80
+      targetPort: http
+      protocol: TCP
+
+    # HTTPS port (requires TLS termination)
+    - name: https
+      port: 443
+      targetPort: http
+      protocol: TCP
+
+  selector:
+    app: gl-007-furnacepulse
+    agent-id: GL-007
+
+---
+# ========================================
+# Headless Service (Pod Discovery)
+# ========================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-007-furnacepulse-headless
+  namespace: greenlang-agents
+  labels:
+    app: gl-007-furnacepulse
+    app.kubernetes.io/name: furnacepulse
+    app.kubernetes.io/instance: gl-007
+    agent-id: GL-007
+    service-type: headless
+  annotations:
+    description: "Headless service for direct pod discovery"
+spec:
+  type: ClusterIP
+  clusterIP: None  # Headless service
+
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
+      protocol: TCP
+    - name: metrics
+      port: 9090
+      targetPort: metrics
+      protocol: TCP
+    - name: grpc
+      port: 50051
+      targetPort: grpc
+      protocol: TCP
+
+  selector:
+    app: gl-007-furnacepulse
+    agent-id: GL-007
+
+  # Publish not-ready addresses for service discovery during startup
+  publishNotReadyAddresses: true
+
+---
+# ========================================
+# Metrics Service (Prometheus Scraping)
+# ========================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-007-furnacepulse-metrics
+  namespace: greenlang-agents
+  labels:
+    app: gl-007-furnacepulse
+    app.kubernetes.io/name: furnacepulse
+    app.kubernetes.io/instance: gl-007
+    agent-id: GL-007
+    service-type: metrics
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9090"
+    prometheus.io/path: "/metrics"
+    prometheus.io/scheme: "http"
+spec:
+  type: ClusterIP
+
+  ports:
+    - name: metrics
+      port: 9090
+      targetPort: metrics
+      protocol: TCP
+
+  selector:
+    app: gl-007-furnacepulse
+    agent-id: GL-007
+
+---
+# ========================================
+# ServiceMonitor for Prometheus Operator
+# ========================================
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: gl-007-furnacepulse
+  namespace: greenlang-agents
+  labels:
+    app: gl-007-furnacepulse
+    agent-id: GL-007
+    release: prometheus  # Match Prometheus Operator label selector
+spec:
+  selector:
+    matchLabels:
+      app: gl-007-furnacepulse
+      service-type: metrics
+
+  namespaceSelector:
+    matchNames:
+      - greenlang-agents
+
+  endpoints:
+    - port: metrics
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s
+      honorLabels: true
+
+      # Metric relabeling
+      metricRelabelings:
+        - sourceLabels: [__name__]
+          regex: 'furnacepulse_.*'
+          action: keep
+
+      # Relabel configs for additional labels
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod
+        - sourceLabels: [__meta_kubernetes_pod_node_name]
+          targetLabel: node
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace
+
+---
+# ========================================
+# EndpointSlice for advanced networking
+# ========================================
+# Note: EndpointSlices are automatically created by Kubernetes 1.21+
+# This is for documentation purposes only

@@ -1,0 +1,25 @@
+# GL-011 FUELCRAFT - Pod Disruption Budget
+# Ensures optimization availability during node maintenance/upgrades
+# maxUnavailable: 1 - Only one pod can be disrupted at a time
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: gl-011-fuelcraft-pdb
+  namespace: gl-agents
+  labels:
+    app: gl-011-fuelcraft
+    app.kubernetes.io/name: gl-011-fuelcraft
+    app.kubernetes.io/component: availability
+    component: optimization
+    tier: fuel-management
+    compliance: tcfd
+spec:
+  # Maximum number of pods that can be unavailable during disruption
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: gl-011-fuelcraft
+      component: optimization
+  # Unhealthy pod eviction policy (Kubernetes 1.26+)
+  # unhealthyPodEvictionPolicy: IfHealthyBudget

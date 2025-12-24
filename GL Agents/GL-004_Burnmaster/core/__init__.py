@@ -45,6 +45,20 @@ from .orchestrator import (
     OrchestrationMetrics,
 )
 
+from .circuit_breaker import (
+    CircuitBreaker,
+    CircuitBreakerConfig,
+    CircuitBreakerRegistry,
+    CircuitState,
+    FailureType,
+    RecoveryStrategy,
+    CallResult,
+    CircuitBreakerState,
+    CircuitBreakerMetrics,
+    FailureRecord,
+    circuit_breaker_registry,
+)
+
 # Aliases for compatibility with main __init__.py
 BurnerConfig = BurnmasterConfig
 BurnerProcessData = ProcessState
@@ -88,4 +102,16 @@ __all__ = [
     "BurnerOrchestrator",
     "BurnerSystemOrchestrator",
     "OrchestrationMetrics",
+    # Circuit Breaker
+    "CircuitBreaker",
+    "CircuitBreakerConfig",
+    "CircuitBreakerRegistry",
+    "CircuitState",
+    "FailureType",
+    "RecoveryStrategy",
+    "CallResult",
+    "CircuitBreakerState",
+    "CircuitBreakerMetrics",
+    "FailureRecord",
+    "circuit_breaker_registry",
 ]

@@ -12,14 +12,20 @@ from datetime import datetime, timezone, timedelta
 from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
-from ...core.circuit_breaker import (
+import sys
+from pathlib import Path
+
+# Add project root to path
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+
+from core.circuit_breaker import (
     CircuitBreaker,
     CircuitBreakerConfig,
     CircuitBreakerRegistry,
     CircuitState,
     CircuitOpenError,
 )
-from ...integration.scada_connector import (
+from integration.scada_connector import (
     SCADAConnectionConfig,
     SCADAProtocol,
     TagMapping,
@@ -27,7 +33,7 @@ from ...integration.scada_connector import (
     TagQuality,
     DataType,
 )
-from ...integration.protected_scada_connector import (
+from integration.protected_scada_connector import (
     ProtectedSCADAConnector,
     FallbackConfig,
     FallbackStrategy,

@@ -1,0 +1,149 @@
+# GL-007 FURNACEPULSE - Pod Disruption Budget
+# Ensures minimum availability during voluntary disruptions
+#
+# Apply: kubectl apply -f deploy/kubernetes/pdb.yaml
+# Check: kubectl get pdb gl-007-furnacepulse-pdb -n greenlang-agents
+#
+# Features:
+#   - minAvailable: 1 ensures at least 1 pod always running
+#   - Protects against node drains, cluster upgrades, etc.
+#   - Allows controlled rolling updates
+#
+# Voluntary Disruptions Include:
+#   - Node drains (kubectl drain)
+#   - Cluster autoscaler scale-downs
+#   - Pod evictions for resource reclaim
+#   - Kubernetes version upgrades
+#   - Deployment updates (handled by strategy)
+#
+# Does NOT Protect Against:
+#   - Node crashes/failures
+#   - Container OOM kills
+#   - Application crashes
+#   - Network partitions
+#
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: gl-007-furnacepulse-pdb
+  namespace: greenlang-agents
+  labels:
+    app: gl-007-furnacepulse
+    app.kubernetes.io/name: furnacepulse
+    app.kubernetes.io/instance: gl-007
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/component: availability
+    app.kubernetes.io/part-of: greenlang-platform
+    agent-id: GL-007
+  annotations:
+    description: "Pod Disruption Budget ensuring at least 1 pod available"
+    owner: "greenlang-team"
+spec:
+  # Minimum number of pods that must be available
+  # With 3 replicas and minAvailable: 1, allows 2 pods to be disrupted
+  minAvailable: 1
+
+  # Alternative: maxUnavailable (uncomment to use instead of minAvailable)
+  # maxUnavailable: 1  # Allow at most 1 pod to be unavailable
+
+  # Selector matching the deployment pods
+  selector:
+    matchLabels:
+      app: gl-007-furnacepulse
+      agent-id: GL-007
+
+  # Unhealthy pod eviction policy (Kubernetes 1.27+)
+  # Determines how unhealthy pods count against the budget
+  # - IfHealthyBudget: Only evict unhealthy pods if budget allows (default)
+  # - AlwaysAllow: Always allow eviction of unhealthy pods
+  unhealthyPodEvictionPolicy: IfHealthyBudget
+
+---
+# ========================================
+# PDB for High Availability (Stricter)
+# ========================================
+# Use this for critical production workloads requiring higher availability
+#
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: gl-007-furnacepulse-pdb-strict
+  namespace: greenlang-agents
+  labels:
+    app: gl-007-furnacepulse
+    agent-id: GL-007
+    pdb-type: strict
+  annotations:
+    description: "Strict PDB requiring 2 pods available (for critical deployments)"
+spec:
+  # Require at least 2 pods available
+  # With 3 replicas, allows only 1 pod to be disrupted at a time
+  minAvailable: 2
+
+  selector:
+    matchLabels:
+      app: gl-007-furnacepulse
+      agent-id: GL-007
+
+  unhealthyPodEvictionPolicy: IfHealthyBudget
+
+---
+# ========================================
+# PDB for Maintenance Window (Relaxed)
+# ========================================
+# Use during scheduled maintenance windows when more disruption is acceptable
+# Apply temporarily and revert to standard PDB after maintenance
+#
+# apiVersion: policy/v1
+# kind: PodDisruptionBudget
+# metadata:
+#   name: gl-007-furnacepulse-pdb-maintenance
+#   namespace: greenlang-agents
+#   labels:
+#     app: gl-007-furnacepulse
+#     agent-id: GL-007
+#     pdb-type: maintenance
+#   annotations:
+#     description: "Relaxed PDB for maintenance windows"
+#     maintenance-window: "2025-01-01T00:00:00Z/2025-01-01T06:00:00Z"
+# spec:
+#   # Allow all but 1 pod to be disrupted
+#   maxUnavailable: 2
+#
+#   selector:
+#     matchLabels:
+#       app: gl-007-furnacepulse
+#       agent-id: GL-007
+#
+#   unhealthyPodEvictionPolicy: AlwaysAllow
+
+---
+# ========================================
+# PDB Notes and Best Practices
+# ========================================
+#
+# 1. SIZING GUIDELINES:
+#    - For 2 replicas: minAvailable: 1 (50% availability)
+#    - For 3 replicas: minAvailable: 1 or 2 (33-66% availability)
+#    - For 5+ replicas: minAvailable: 3 or maxUnavailable: 40%
+#
+# 2. CONSIDERATIONS:
+#    - PDB with minAvailable: 3 and 3 replicas = no voluntary disruptions allowed
+#    - This can block node drains and cluster upgrades
+#    - Use maxUnavailable for more flexibility
+#
+# 3. CONFLICT WITH HPA:
+#    - If HPA scales to minReplicas (2), and PDB requires minAvailable: 2
+#    - Then no pods can be voluntarily evicted
+#    - Ensure minAvailable < HPA minReplicas
+#
+# 4. DEPLOYMENT INTERACTION:
+#    - Rolling updates create new pods before terminating old ones
+#    - PDB applies to total pods, not just old replicas
+#    - With maxSurge: 1 and minAvailable: 2, deployment will still progress
+#
+# 5. DEBUGGING:
+#    - kubectl get pdb -n greenlang-agents
+#    - kubectl describe pdb gl-007-furnacepulse-pdb -n greenlang-agents
+#    - kubectl get events -n greenlang-agents --field-selector reason=DisruptionBlocked

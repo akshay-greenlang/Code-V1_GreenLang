@@ -1,0 +1,309 @@
+# -*- yaml -*-
+# ==============================================================================
+# GL-009 THERMALIQ - Docker Compose Development Configuration
+# ==============================================================================
+# Complete development environment for thermal efficiency agent.
+#
+# Services:
+#   - thermaliq: Main API application
+#   - timescaledb: Time-series database (PostgreSQL extension)
+#   - redis: Caching and steam property cache
+#   - kafka: Event streaming for real-time calculations
+#   - prometheus: Metrics collection
+#   - grafana: Efficiency dashboards
+#
+# Usage:
+#   docker-compose up -d              # Start all services
+#   docker-compose logs -f thermaliq  # View logs
+#   docker-compose down -v            # Stop and cleanup
+#
+# Author: GL-BackendDeveloper
+# Version: 1.0.0
+# ==============================================================================
+
+version: '3.9'
+
+x-common-env: &common-env
+  GL_AGENT_ID: GL-009
+  GL_AGENT_NAME: THERMALIQ
+  GL_LOG_LEVEL: DEBUG
+  GL_ENABLE_METRICS: "true"
+  GL_ENABLE_TRACING: "true"
+  TZ: UTC
+
+x-healthcheck-defaults: &healthcheck-defaults
+  interval: 30s
+  timeout: 10s
+  retries: 3
+  start_period: 10s
+
+services:
+  # ===========================================================================
+  # THERMALIQ API Service
+  # ===========================================================================
+  thermaliq:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+      args:
+        APP_VERSION: ${APP_VERSION:-1.0.0-dev}
+        BUILD_DATE: ${BUILD_DATE:-}
+        VCS_REF: ${VCS_REF:-dev}
+    image: gl-009-thermaliq:${APP_VERSION:-latest}
+    container_name: gl-009-thermaliq
+    hostname: thermaliq
+    restart: unless-stopped
+
+    environment:
+      <<: *common-env
+      APP_ENV: development
+      API_HOST: 0.0.0.0
+      API_PORT: 8080
+      API_WORKERS: 2
+      # Database
+      DATABASE_URL: postgresql://thermaliq:thermaliq_dev@timescaledb:5432/thermaliq
+      # Redis
+      REDIS_URL: redis://redis:6379/0
+      STEAM_TABLE_CACHE_ENABLED: "true"
+      # Kafka
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      KAFKA_TOPIC_CALCULATIONS: thermaliq.calculations
+      KAFKA_TOPIC_EVENTS: thermaliq.events
+      # IAPWS configuration
+      IAPWS_PRECISION: high
+      STEAM_TABLE_CACHE_SIZE: 10000
+      # Prometheus
+      PROMETHEUS_MULTIPROC_DIR: /tmp/prometheus
+      # OpenTelemetry
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
+      OTEL_SERVICE_NAME: gl-009-thermaliq
+
+    ports:
+      - "8080:8080"
+      - "9090:9090"
+
+    volumes:
+      - ./logs:/app/logs:rw
+      - ./data:/app/data:rw
+      - thermaliq-cache:/app/cache:rw
+      - steam-tables:/app/steam_tables:rw
+
+    depends_on:
+      timescaledb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+
+    networks:
+      - thermaliq-network
+
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+    logging:
+      driver: json-file
+      options:
+        max-size: "100m"
+        max-file: "5"
+
+  # ===========================================================================
+  # TimescaleDB - Time-Series PostgreSQL
+  # ===========================================================================
+  timescaledb:
+    image: timescale/timescaledb:latest-pg15
+    container_name: gl-009-timescaledb
+    hostname: timescaledb
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_DB: thermaliq
+      POSTGRES_USER: thermaliq
+      POSTGRES_PASSWORD: thermaliq_dev
+      PGDATA: /var/lib/postgresql/data/pgdata
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - timescale-data:/var/lib/postgresql/data
+      - ./deploy/sql/init_timescale.sql:/docker-entrypoint-initdb.d/init.sql:ro
+
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD-SHELL", "pg_isready -U thermaliq -d thermaliq"]
+
+    networks:
+      - thermaliq-network
+
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+
+  # ===========================================================================
+  # Redis Cache
+  # ===========================================================================
+  redis:
+    image: redis:7-alpine
+    container_name: gl-009-redis
+    hostname: redis
+    restart: unless-stopped
+
+    command: >
+      redis-server
+      --appendonly yes
+      --maxmemory 512mb
+      --maxmemory-policy allkeys-lru
+      --save 60 1000
+
+    ports:
+      - "6379:6379"
+
+    volumes:
+      - redis-data:/data
+
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD", "redis-cli", "ping"]
+
+    networks:
+      - thermaliq-network
+
+  # ===========================================================================
+  # Kafka - Event Streaming
+  # ===========================================================================
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: gl-009-zookeeper
+    hostname: zookeeper
+    restart: unless-stopped
+
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+    ports:
+      - "2181:2181"
+
+    networks:
+      - thermaliq-network
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: gl-009-kafka
+    hostname: kafka
+    restart: unless-stopped
+
+    depends_on:
+      - zookeeper
+
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+
+    ports:
+      - "9092:9092"
+
+    networks:
+      - thermaliq-network
+
+  # ===========================================================================
+  # Prometheus Metrics
+  # ===========================================================================
+  prometheus:
+    image: prom/prometheus:v2.47.0
+    container_name: gl-009-prometheus
+    hostname: prometheus
+    restart: unless-stopped
+
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=30d'
+      - '--web.enable-lifecycle'
+
+    ports:
+      - "9091:9090"
+
+    volumes:
+      - ./deploy/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+
+    networks:
+      - thermaliq-network
+
+  # ===========================================================================
+  # Grafana Dashboards
+  # ===========================================================================
+  grafana:
+    image: grafana/grafana:10.1.0
+    container_name: gl-009-grafana
+    hostname: grafana
+    restart: unless-stopped
+
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: thermaliq_dev
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_SERVER_ROOT_URL: http://localhost:3000
+
+    ports:
+      - "3000:3000"
+
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./deploy/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./deploy/grafana/dashboards:/var/lib/grafana/dashboards:ro
+
+    depends_on:
+      - prometheus
+      - timescaledb
+
+    networks:
+      - thermaliq-network
+
+# ===========================================================================
+# Networks
+# ===========================================================================
+networks:
+  thermaliq-network:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.29.0.0/16
+
+# ===========================================================================
+# Volumes
+# ===========================================================================
+volumes:
+  timescale-data:
+    driver: local
+  redis-data:
+    driver: local
+  prometheus-data:
+    driver: local
+  grafana-data:
+    driver: local
+  thermaliq-cache:
+    driver: local
+  steam-tables:
+    driver: local

@@ -884,7 +884,7 @@ class AIOptimizationConfig(BaseModel):
     class Config:
         use_enum_values = True
 
-    @root_validator
+    @root_validator(skip_on_failure=True)
     def validate_weights(cls, values):
         """Validate optimization weights sum to 1.0."""
         eff = values.get('efficiency_weight', 0)

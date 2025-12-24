@@ -1,0 +1,468 @@
+# -*- yaml -*-
+# ==============================================================================
+# GL-008 TRAPCATCHER - Kubernetes Production Deployment
+# ==============================================================================
+# Production-grade Kubernetes manifests for steam trap monitoring agent.
+#
+# Resources:
+#   - Namespace: gl-agents
+#   - Deployment: gl-008-trapcatcher
+#   - Service: gl-008-trapcatcher-svc
+#   - ConfigMap: gl-008-config
+#   - Secret: gl-008-secrets
+#   - ServiceAccount with RBAC
+#   - HorizontalPodAutoscaler
+#   - PodDisruptionBudget
+#   - NetworkPolicy
+#
+# Apply:
+#   kubectl apply -f deployment.yaml
+#
+# Author: GL-BackendDeveloper
+# Version: 1.0.0
+# ==============================================================================
+
+---
+# ==============================================================================
+# Namespace
+# ==============================================================================
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gl-agents
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: agents
+
+---
+# ==============================================================================
+# ConfigMap - Application Configuration
+# ==============================================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gl-008-config
+  namespace: gl-agents
+  labels:
+    app.kubernetes.io/name: gl-008-trapcatcher
+    app.kubernetes.io/component: config
+data:
+  # Agent Configuration
+  GL_AGENT_ID: "GL-008"
+  GL_AGENT_NAME: "TRAPCATCHER"
+  GL_LOG_LEVEL: "INFO"
+  GL_LOG_FORMAT: "json"
+  GL_ENABLE_METRICS: "true"
+  GL_ENABLE_TRACING: "true"
+
+  # API Configuration
+  API_HOST: "0.0.0.0"
+  API_PORT: "8080"
+  API_WORKERS: "4"
+
+  # Feature Flags
+  FEATURE_SHAP_EXPLAINABILITY: "true"
+  FEATURE_FLEET_ANALYSIS: "true"
+  FEATURE_REAL_TIME_ALERTS: "true"
+
+  # Classification Thresholds
+  CLASSIFICATION_CONFIDENCE_THRESHOLD: "0.70"
+  ACOUSTIC_WEIGHT: "0.40"
+  THERMAL_WEIGHT: "0.40"
+  CONTEXT_WEIGHT: "0.20"
+
+  # Energy Calculation
+  DEFAULT_STEAM_COST_USD: "12.50"
+  DEFAULT_CARBON_PRICE_USD: "50.00"
+  DEFAULT_BOILER_EFFICIENCY: "0.82"
+
+---
+# ==============================================================================
+# Secret - Sensitive Configuration (use external secrets in production)
+# ==============================================================================
+apiVersion: v1
+kind: Secret
+metadata:
+  name: gl-008-secrets
+  namespace: gl-agents
+  labels:
+    app.kubernetes.io/name: gl-008-trapcatcher
+    app.kubernetes.io/component: secrets
+type: Opaque
+stringData:
+  # Database (use external secret manager in production)
+  DATABASE_URL: "postgresql://trapcatcher:CHANGE_ME@postgres:5432/trapcatcher"
+
+  # Redis
+  REDIS_URL: "redis://:CHANGE_ME@redis:6379/0"
+
+  # API Key (rotate regularly)
+  API_KEY: "CHANGE_ME_IN_PRODUCTION"
+
+---
+# ==============================================================================
+# ServiceAccount
+# ==============================================================================
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: gl-008-trapcatcher
+  namespace: gl-agents
+  labels:
+    app.kubernetes.io/name: gl-008-trapcatcher
+automountServiceAccountToken: false
+
+---
+# ==============================================================================
+# Role - Minimal RBAC permissions
+# ==============================================================================
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: gl-008-trapcatcher-role
+  namespace: gl-agents
+rules:
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["secrets"]
+    resourceNames: ["gl-008-secrets"]
+    verbs: ["get"]
+
+---
+# ==============================================================================
+# RoleBinding
+# ==============================================================================
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: gl-008-trapcatcher-rolebinding
+  namespace: gl-agents
+subjects:
+  - kind: ServiceAccount
+    name: gl-008-trapcatcher
+    namespace: gl-agents
+roleRef:
+  kind: Role
+  name: gl-008-trapcatcher-role
+  apiGroup: rbac.authorization.k8s.io
+
+---
+# ==============================================================================
+# Deployment
+# ==============================================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gl-008-trapcatcher
+  namespace: gl-agents
+  labels:
+    app.kubernetes.io/name: gl-008-trapcatcher
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/component: api
+    app.kubernetes.io/part-of: greenlang
+    app.kubernetes.io/managed-by: kubectl
+  annotations:
+    kubernetes.io/description: "Steam trap monitoring and diagnostics agent"
+spec:
+  replicas: 3
+  revisionHistoryLimit: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: gl-008-trapcatcher
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: gl-008-trapcatcher
+        app.kubernetes.io/version: "1.0.0"
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: gl-008-trapcatcher
+      automountServiceAccountToken: false
+
+      # Security Context
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+
+      # Pod topology spread for high availability
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: gl-008-trapcatcher
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: DoNotSchedule
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: gl-008-trapcatcher
+
+      # Anti-affinity for distribution
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app.kubernetes.io/name
+                      operator: In
+                      values:
+                        - gl-008-trapcatcher
+                topologyKey: kubernetes.io/hostname
+
+      containers:
+        - name: trapcatcher
+          image: greenlang/gl-008-trapcatcher:1.0.0
+          imagePullPolicy: IfNotPresent
+
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+            - name: metrics
+              containerPort: 9090
+              protocol: TCP
+
+          # Environment from ConfigMap and Secret
+          envFrom:
+            - configMapRef:
+                name: gl-008-config
+            - secretRef:
+                name: gl-008-secrets
+
+          # Container security
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+
+          # Resource limits
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: 1000m
+              memory: 2Gi
+
+          # Probes
+          startupProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 30
+
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+
+          # Volume mounts
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+            - name: cache
+              mountPath: /app/cache
+            - name: logs
+              mountPath: /app/logs
+
+      volumes:
+        - name: tmp
+          emptyDir:
+            sizeLimit: 100Mi
+        - name: cache
+          emptyDir:
+            sizeLimit: 500Mi
+        - name: logs
+          emptyDir:
+            sizeLimit: 200Mi
+
+      # Termination settings
+      terminationGracePeriodSeconds: 30
+
+---
+# ==============================================================================
+# Service
+# ==============================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-008-trapcatcher-svc
+  namespace: gl-agents
+  labels:
+    app.kubernetes.io/name: gl-008-trapcatcher
+    app.kubernetes.io/component: service
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: gl-008-trapcatcher
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+      protocol: TCP
+    - name: metrics
+      port: 9090
+      targetPort: metrics
+      protocol: TCP
+  sessionAffinity: None
+
+---
+# ==============================================================================
+# Horizontal Pod Autoscaler
+# ==============================================================================
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: gl-008-trapcatcher-hpa
+  namespace: gl-agents
+  labels:
+    app.kubernetes.io/name: gl-008-trapcatcher
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: gl-008-trapcatcher
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Percent
+          value: 10
+          periodSeconds: 60
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+        - type: Percent
+          value: 100
+          periodSeconds: 15
+        - type: Pods
+          value: 4
+          periodSeconds: 15
+      selectPolicy: Max
+
+---
+# ==============================================================================
+# Pod Disruption Budget
+# ==============================================================================
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: gl-008-trapcatcher-pdb
+  namespace: gl-agents
+  labels:
+    app.kubernetes.io/name: gl-008-trapcatcher
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: gl-008-trapcatcher
+  minAvailable: 2
+
+---
+# ==============================================================================
+# Network Policy
+# ==============================================================================
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: gl-008-trapcatcher-netpol
+  namespace: gl-agents
+  labels:
+    app.kubernetes.io/name: gl-008-trapcatcher
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: gl-008-trapcatcher
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Allow from ingress controller
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 8080
+    # Allow from Prometheus
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+      ports:
+        - protocol: TCP
+          port: 9090
+  egress:
+    # Allow DNS
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: UDP
+          port: 53
+    # Allow PostgreSQL
+    - to:
+        - podSelector:
+            matchLabels:
+              app: postgres
+      ports:
+        - protocol: TCP
+          port: 5432
+    # Allow Redis
+    - to:
+        - podSelector:
+            matchLabels:
+              app: redis
+      ports:
+        - protocol: TCP
+          port: 6379

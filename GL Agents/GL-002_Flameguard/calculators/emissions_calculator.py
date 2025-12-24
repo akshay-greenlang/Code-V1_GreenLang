@@ -96,6 +96,12 @@ class EmissionsResult:
 
     # GHG totals
     co2e_metric_tons_hr: float
+
+    # Provenance (required - moved before defaults)
+    input_hash: str
+    method: str
+
+    # Optional fields with defaults
     ghg_scope: int = 1
 
     # Compliance
@@ -103,10 +109,6 @@ class EmissionsResult:
     co_compliant: bool = True
     so2_compliant: bool = True
     overall_compliant: bool = True
-
-    # Provenance
-    input_hash: str
-    method: str
 
 
 class EmissionsCalculator:

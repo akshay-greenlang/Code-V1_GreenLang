@@ -9,6 +9,9 @@ Uses Hypothesis for property-based testing to verify invariants:
 """
 
 import pytest
+# Optional hypothesis dependency
+pytest.importorskip('hypothesis')
+
 from hypothesis import given, strategies as st, assume, settings, HealthCheck
 from hypothesis.stateful import RuleBasedStateMachine, rule, initialize, invariant
 from datetime import datetime, timezone

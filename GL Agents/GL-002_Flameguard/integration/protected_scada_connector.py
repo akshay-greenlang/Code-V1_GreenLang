@@ -32,7 +32,11 @@ import hashlib
 import logging
 import time
 
-from ..core.circuit_breaker import (
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from core.circuit_breaker import (
     CircuitBreaker,
     CircuitBreakerConfig,
     CircuitBreakerRegistry,

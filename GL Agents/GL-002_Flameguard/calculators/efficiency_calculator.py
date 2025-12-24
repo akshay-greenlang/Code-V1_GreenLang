@@ -83,17 +83,17 @@ FUEL_DATABASE = {
 class EfficiencyInput:
     """Input data for efficiency calculation."""
 
-    # Process conditions
+    # Process conditions (required fields - no defaults)
     steam_flow_klb_hr: float
     steam_pressure_psig: float
     steam_temperature_f: float
     feedwater_temperature_f: float
     fuel_flow_rate: float  # lb/hr or scfh
-    fuel_flow_unit: str = "lb_hr"
+    flue_gas_temperature_f: float  # Required - moved before defaults
+    flue_gas_o2_percent: float  # Required - moved before defaults
 
-    # Flue gas analysis
-    flue_gas_temperature_f: float
-    flue_gas_o2_percent: float
+    # Optional fields with defaults
+    fuel_flow_unit: str = "lb_hr"
     flue_gas_co_ppm: float = 0.0
     flue_gas_co2_percent: float = 0.0
 

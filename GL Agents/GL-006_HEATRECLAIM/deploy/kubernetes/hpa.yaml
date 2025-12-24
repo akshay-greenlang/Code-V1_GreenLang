@@ -1,0 +1,205 @@
+# GL-006 HEATRECLAIM - Horizontal Pod Autoscaler Configuration
+#
+# Automatically scales the HEATRECLAIM agent based on CPU, memory,
+# and custom metrics (optimization queue depth, response time).
+#
+# Reference: ASME PTC 4.4 for heat recovery system performance monitoring
+#
+# Apply: kubectl apply -f deploy/kubernetes/hpa.yaml
+#
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: gl-006-heatreclaim-hpa
+  namespace: greenlang-agents
+  labels:
+    app: gl-006-heatreclaim
+    agent-id: GL-006
+    agent-class: optimizer
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: gl-006-heatreclaim
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+    # CPU-based scaling - target 70% utilization
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    # Memory-based scaling - target 80% utilization
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+    # Custom metric: optimization requests per second
+    - type: Pods
+      pods:
+        metric:
+          name: optimization_requests_per_second
+        target:
+          type: AverageValue
+          averageValue: 10
+    # Custom metric: average response time (milliseconds)
+    - type: Pods
+      pods:
+        metric:
+          name: http_request_duration_seconds_avg
+        target:
+          type: AverageValue
+          averageValue: "500m"  # 500ms target
+    # External metric: Kafka consumer lag
+    - type: External
+      external:
+        metric:
+          name: kafka_consumer_lag
+          selector:
+            matchLabels:
+              topic: heatreclaim-requests
+        target:
+          type: AverageValue
+          averageValue: 100
+  behavior:
+    # Scale-down behavior - conservative to avoid thrashing
+    scaleDown:
+      stabilizationWindowSeconds: 300  # 5 minutes stabilization
+      policies:
+        - type: Pods
+          value: 1
+          periodSeconds: 60
+        - type: Percent
+          value: 10
+          periodSeconds: 60
+      selectPolicy: Min  # Use the policy that scales down slowest
+    # Scale-up behavior - responsive to load spikes
+    scaleUp:
+      stabilizationWindowSeconds: 60  # 1 minute stabilization
+      policies:
+        - type: Pods
+          value: 4
+          periodSeconds: 60
+        - type: Percent
+          value: 100
+          periodSeconds: 60
+      selectPolicy: Max  # Use the policy that scales up fastest
+
+---
+# Vertical Pod Autoscaler for right-sizing resources
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: gl-006-heatreclaim-vpa
+  namespace: greenlang-agents
+  labels:
+    app: gl-006-heatreclaim
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: gl-006-heatreclaim
+  updatePolicy:
+    updateMode: "Auto"  # Can be "Off", "Initial", "Recreate", or "Auto"
+  resourcePolicy:
+    containerPolicies:
+      - containerName: heatreclaim
+        minAllowed:
+          cpu: "100m"
+          memory: "256Mi"
+        maxAllowed:
+          cpu: "4000m"
+          memory: "8Gi"
+        controlledResources:
+          - cpu
+          - memory
+        controlledValues: RequestsAndLimits
+
+---
+# Pod Disruption Budget for high availability
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: gl-006-heatreclaim-pdb
+  namespace: greenlang-agents
+  labels:
+    app: gl-006-heatreclaim
+spec:
+  # Ensure at least 1 pod is always available during disruptions
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: gl-006-heatreclaim
+
+---
+# Priority Class for workload scheduling priority
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: gl-006-heatreclaim-priority
+  labels:
+    app: gl-006-heatreclaim
+value: 100000
+globalDefault: false
+description: "Priority class for GL-006 HEATRECLAIM agent - heat recovery optimization is production-critical"
+preemptionPolicy: PreemptLowerPriority
+
+---
+# Resource Quota for namespace resource limits
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: gl-006-heatreclaim-quota
+  namespace: greenlang-agents
+  labels:
+    app: gl-006-heatreclaim
+spec:
+  hard:
+    # CPU limits
+    requests.cpu: "10"
+    limits.cpu: "20"
+    # Memory limits
+    requests.memory: "20Gi"
+    limits.memory: "40Gi"
+    # Pod limits
+    pods: "20"
+    # PVC limits
+    persistentvolumeclaims: "10"
+    # Service limits
+    services: "5"
+    services.loadbalancers: "2"
+
+---
+# Limit Range for container defaults
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: gl-006-heatreclaim-limits
+  namespace: greenlang-agents
+  labels:
+    app: gl-006-heatreclaim
+spec:
+  limits:
+    - type: Container
+      default:
+        cpu: "500m"
+        memory: "1Gi"
+      defaultRequest:
+        cpu: "100m"
+        memory: "256Mi"
+      min:
+        cpu: "50m"
+        memory: "64Mi"
+      max:
+        cpu: "4000m"
+        memory: "8Gi"
+    - type: PersistentVolumeClaim
+      min:
+        storage: "1Gi"
+      max:
+        storage: "100Gi"

@@ -1,0 +1,146 @@
+{
+  "suite_id": "DRYNESS-SUITE-001",
+  "description": "Golden values for dryness fraction calculations based on IAPWS-IF97",
+  "version": "1.0.0",
+  "created_date": "2025-01-01",
+  "last_validated": "2025-01-01",
+  "reference": "IAPWS-IF97 Industrial Formulation for Thermodynamic Properties of Water and Steam",
+  "test_cases": [
+    {
+      "test_id": "DRYNESS-001",
+      "description": "Saturated liquid at 1 MPa",
+      "inputs": {
+        "pressure_mpa": 1.0,
+        "h_f_kj_kg": 762.81,
+        "h_fg_kj_kg": 2015.3,
+        "enthalpy_kj_kg": 762.81
+      },
+      "expected_outputs": {
+        "dryness_fraction": 0.0,
+        "state": "SATURATED_LIQUID"
+      },
+      "tolerances": {
+        "dryness_fraction": 0.001
+      }
+    },
+    {
+      "test_id": "DRYNESS-002",
+      "description": "Saturated vapor at 1 MPa",
+      "inputs": {
+        "pressure_mpa": 1.0,
+        "h_f_kj_kg": 762.81,
+        "h_fg_kj_kg": 2015.3,
+        "enthalpy_kj_kg": 2778.1
+      },
+      "expected_outputs": {
+        "dryness_fraction": 1.0,
+        "state": "SATURATED_VAPOR"
+      },
+      "tolerances": {
+        "dryness_fraction": 0.001
+      }
+    },
+    {
+      "test_id": "DRYNESS-003",
+      "description": "90% quality wet steam at 1 MPa",
+      "inputs": {
+        "pressure_mpa": 1.0,
+        "h_f_kj_kg": 762.81,
+        "h_fg_kj_kg": 2015.3,
+        "enthalpy_kj_kg": 2576.58
+      },
+      "expected_outputs": {
+        "dryness_fraction": 0.9,
+        "state": "WET_STEAM"
+      },
+      "tolerances": {
+        "dryness_fraction": 0.01
+      }
+    },
+    {
+      "test_id": "DRYNESS-004",
+      "description": "50% quality wet steam at 5 MPa",
+      "inputs": {
+        "pressure_mpa": 5.0,
+        "h_f_kj_kg": 1154.2,
+        "h_fg_kj_kg": 1640.1,
+        "enthalpy_kj_kg": 1974.25
+      },
+      "expected_outputs": {
+        "dryness_fraction": 0.5,
+        "state": "WET_STEAM"
+      },
+      "tolerances": {
+        "dryness_fraction": 0.01
+      }
+    },
+    {
+      "test_id": "DRYNESS-005",
+      "description": "95% quality at 0.1 MPa",
+      "inputs": {
+        "pressure_mpa": 0.1,
+        "h_f_kj_kg": 417.44,
+        "h_fg_kj_kg": 2258.0,
+        "enthalpy_kj_kg": 2562.54
+      },
+      "expected_outputs": {
+        "dryness_fraction": 0.95,
+        "state": "WET_STEAM"
+      },
+      "tolerances": {
+        "dryness_fraction": 0.01
+      }
+    },
+    {
+      "test_id": "DRYNESS-006",
+      "description": "75% quality at 10 MPa",
+      "inputs": {
+        "pressure_mpa": 10.0,
+        "h_f_kj_kg": 1407.6,
+        "h_fg_kj_kg": 1317.1,
+        "enthalpy_kj_kg": 2395.43
+      },
+      "expected_outputs": {
+        "dryness_fraction": 0.75,
+        "state": "WET_STEAM"
+      },
+      "tolerances": {
+        "dryness_fraction": 0.01
+      }
+    },
+    {
+      "test_id": "DRYNESS-007",
+      "description": "Entropy method - 90% quality at 1 MPa",
+      "inputs": {
+        "pressure_mpa": 1.0,
+        "s_f_kj_kg_k": 2.1387,
+        "s_fg_kj_kg_k": 4.4478,
+        "entropy_kj_kg_k": 6.1417
+      },
+      "expected_outputs": {
+        "dryness_fraction": 0.9,
+        "method": "ENTROPY"
+      },
+      "tolerances": {
+        "dryness_fraction": 0.01
+      }
+    },
+    {
+      "test_id": "DRYNESS-008",
+      "description": "Near-critical pressure (15 MPa)",
+      "inputs": {
+        "pressure_mpa": 15.0,
+        "h_f_kj_kg": 1610.5,
+        "h_fg_kj_kg": 1000.0,
+        "enthalpy_kj_kg": 2110.5
+      },
+      "expected_outputs": {
+        "dryness_fraction": 0.5,
+        "state": "WET_STEAM"
+      },
+      "tolerances": {
+        "dryness_fraction": 0.02
+      }
+    }
+  ]
+}
