@@ -1,66 +1,57 @@
-# GL-011 FUELCRAFT - Kubernetes Service Definition
-# Exposes REST API (8080), gRPC (50051), and Metrics (9090) endpoints
----
+# GL-011 FuelCraft Service
 apiVersion: v1
 kind: Service
 metadata:
-  name: gl-011-fuelcraft-svc
-  namespace: gl-agents
+  name: gl-011-fuelcraft
+  namespace: greenlang
   labels:
     app: gl-011-fuelcraft
-    app.kubernetes.io/name: gl-011-fuelcraft
-    app.kubernetes.io/component: optimization
-    app.kubernetes.io/part-of: greenlang
-    component: optimization
-    tier: fuel-management
-    compliance: tcfd
-  annotations:
-    prometheus.io/scrape: "true"
-    prometheus.io/port: "9090"
+    agent-id: GL-011
+    codename: FUELCRAFT
 spec:
   type: ClusterIP
   selector:
     app: gl-011-fuelcraft
-    component: optimization
   ports:
-    # REST API - Internal service port 8080
     - name: http
       port: 8080
       targetPort: 8080
       protocol: TCP
-    # gRPC - For inter-agent communication
-    - name: grpc
-      port: 50051
-      targetPort: 50051
-      protocol: TCP
-    # Prometheus Metrics
     - name: metrics
       port: 9090
       targetPort: 9090
       protocol: TCP
-  sessionAffinity: None
 ---
-# Headless Service for StatefulSet-like discovery (if needed for Kafka consumer groups)
 apiVersion: v1
 kind: Service
 metadata:
   name: gl-011-fuelcraft-headless
-  namespace: gl-agents
+  namespace: greenlang
   labels:
     app: gl-011-fuelcraft
-    app.kubernetes.io/name: gl-011-fuelcraft
-    component: optimization
-    tier: fuel-management
 spec:
   type: ClusterIP
   clusterIP: None
   selector:
     app: gl-011-fuelcraft
-    component: optimization
   ports:
     - name: http
       port: 8080
       targetPort: 8080
-    - name: grpc
-      port: 50051
-      targetPort: 50051
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-011-fuelcraft-metrics
+  namespace: greenlang
+  labels:
+    app: gl-011-fuelcraft
+    monitoring: prometheus
+spec:
+  type: ClusterIP
+  selector:
+    app: gl-011-fuelcraft
+  ports:
+    - name: metrics
+      port: 9090
+      targetPort: 9090

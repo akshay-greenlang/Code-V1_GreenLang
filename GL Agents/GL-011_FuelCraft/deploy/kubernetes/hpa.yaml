@@ -1,76 +1,42 @@
-# GL-011 FUELCRAFT - Horizontal Pod Autoscaler
-# Scales based on CPU (70% target) and Memory utilization
-# Min: 3 replicas, Max: 10 replicas for optimization workloads
----
+# GL-011 FuelCraft Horizontal Pod Autoscaler
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
   name: gl-011-fuelcraft-hpa
-  namespace: gl-agents
+  namespace: greenlang
   labels:
     app: gl-011-fuelcraft
-    app.kubernetes.io/name: gl-011-fuelcraft
-    app.kubernetes.io/component: autoscaler
-    component: optimization
-    tier: fuel-management
-    compliance: tcfd
+    agent-id: GL-011
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
     name: gl-011-fuelcraft
-  # Scaling bounds
-  minReplicas: 3
+  minReplicas: 2
   maxReplicas: 10
-  # Scaling metrics
   metrics:
-    # CPU-based scaling - target 70%
     - type: Resource
       resource:
         name: cpu
         target:
           type: Utilization
           averageUtilization: 70
-    # Memory-based scaling - target 80%
     - type: Resource
       resource:
         name: memory
         target:
           type: Utilization
           averageUtilization: 80
-    # Custom metric: Optimization queue depth (if available)
-    # - type: Pods
-    #   pods:
-    #     metric:
-    #       name: optimization_queue_depth
-    #     target:
-    #       type: AverageValue
-    #       averageValue: "10"
-  # Scaling behavior - conservative for optimization workloads
   behavior:
-    # Scale down slowly to avoid disrupting active optimizations
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+        - type: Pods
+          value: 2
+          periodSeconds: 60
     scaleDown:
       stabilizationWindowSeconds: 300
       policies:
-        # Scale down at most 10% of pods per minute
-        - type: Percent
-          value: 10
-          periodSeconds: 60
-        # Or 1 pod per minute (whichever is less)
         - type: Pods
           value: 1
-          periodSeconds: 60
-      selectPolicy: Min
-    # Scale up quickly to handle demand spikes
-    scaleUp:
-      stabilizationWindowSeconds: 30
-      policies:
-        # Scale up by 100% per 15 seconds if needed
-        - type: Percent
-          value: 100
-          periodSeconds: 15
-        # Or 2 pods per 15 seconds
-        - type: Pods
-          value: 2
-          periodSeconds: 15
-      selectPolicy: Max
+          periodSeconds: 120

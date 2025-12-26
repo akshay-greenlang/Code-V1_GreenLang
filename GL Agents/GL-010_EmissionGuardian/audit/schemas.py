@@ -229,12 +229,13 @@ class DataLineage:
         }
 
     def to_dot(self) -> str:
+        """Generate DOT graph representation of data lineage."""
         lines = ["digraph DataLineage {"]
         lines.append("    rankdir=TB;")
         lines.append("    node [shape=box, style=filled];")
         source_label = f"Source: {self.source_type}
 {self.source_id}"
-        lines.append(f"    source [label="{source_label}", fillcolor=lightblue];")
+        lines.append(f'    source [label="{source_label}", fillcolor=lightblue];')
         prev_node = "source"
         for step in self.transformations:
             node_id = f"step_{step.step_number}"
@@ -243,14 +244,14 @@ class DataLineage:
             label = f"Step {step.step_number}
 {op_val}
 {func_short}"
-            lines.append(f"    {node_id} [label="{label}", fillcolor=lightyellow];")
+            lines.append(f'    {node_id} [label="{label}", fillcolor=lightyellow];')
             lines.append(f"    {prev_node} -> {node_id};")
             prev_node = node_id
         hash_preview = self.final_hash[:16] if self.final_hash else "pending"
         final_label = f"Final Data
 {self.data_id}
 hash: {hash_preview}..."
-        lines.append(f"    final [label="{final_label}", fillcolor=lightgreen];")
+        lines.append(f'    final [label="{final_label}", fillcolor=lightgreen];')
         lines.append(f"    {prev_node} -> final;")
         lines.append("}")
         return "

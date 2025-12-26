@@ -1,159 +1,40 @@
-# GL-011 FUELCRAFT - ConfigMap for Fuel Optimization Parameters
-# Contains solver configuration, feature flags, and retention policies
----
+# GL-011 FuelCraft ConfigMap
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: gl-011-fuelcraft-config
-  namespace: gl-agents
+  namespace: greenlang
   labels:
     app: gl-011-fuelcraft
-    app.kubernetes.io/name: gl-011-fuelcraft
-    app.kubernetes.io/component: config
-    component: optimization
-    tier: fuel-management
-    compliance: tcfd
+    agent-id: GL-011
+    codename: FUELCRAFT
 data:
-  # ==========================================================================
-  # Agent Configuration
-  # ==========================================================================
-  GL_AGENT_ID: "GL-011"
-  GL_AGENT_NAME: "FUELCRAFT"
-  GL_LOG_LEVEL: "INFO"
-  GL_LOG_FORMAT: "json"
-  GL_ENABLE_METRICS: "true"
-  GL_ENABLE_TRACING: "true"
-
-  # ==========================================================================
-  # API Configuration
-  # ==========================================================================
-  API_HOST: "0.0.0.0"
-  API_PORT: "8080"
-  API_WORKERS: "4"
-  GRPC_PORT: "50051"
-
-  # ==========================================================================
-  # Solver Configuration - HiGHS Default (Open-source LP/MIP solver)
-  # ==========================================================================
-  SOLVER_TYPE: "highs"
-  SOLVER_TIMEOUT_SECONDS: "300"
-  SOLVER_GAP_TOLERANCE: "0.001"
-  SOLVER_THREADS: "4"
-  # Determinism: Fixed seed for reproducible optimization
-  SOLVER_RANDOM_SEED: "42"
-  SOLVER_DETERMINISTIC: "true"
-  SOLVER_LOG_LEVEL: "1"
-
-  # ==========================================================================
-  # Forecast Configuration
-  # ==========================================================================
-  FORECAST_HORIZONS: "24,168,720"
-  FORECAST_UPDATE_INTERVAL_HOURS: "4"
-  FORECAST_QUANTILES: "0.1,0.5,0.9"
-  FORECAST_MIN_HISTORY_DAYS: "365"
-
-  # ==========================================================================
-  # Carbon Accounting Configuration (ISO 14064 / TCFD)
-  # ==========================================================================
-  CARBON_BOUNDARY: "WTW"
-  CARBON_INTENSITY_UNIT: "kgCO2e/GJ"
-  CARBON_GWP_VERSION: "AR6"
-  CARBON_EMISSION_FACTOR_SOURCE: "governed"
-  CARBON_PATHWAY_SPECIFIC: "true"
-
-  # ==========================================================================
-  # Safety Configuration (IEC 61511)
-  # ==========================================================================
-  SAFETY_SIL_LEVEL: "2"
-  SAFETY_FAIL_CLOSED: "true"
-  SAFETY_CIRCUIT_BREAKER_ENABLED: "true"
-  SAFETY_FAILURE_THRESHOLD: "5"
-  SAFETY_RECOVERY_TIMEOUT_SECONDS: "30"
-
-  # ==========================================================================
-  # Audit Configuration (7-year retention = 2555 days)
-  # ==========================================================================
-  AUDIT_RETENTION_DAYS: "2555"
-  AUDIT_ENABLED: "true"
-  AUDIT_COMPRESSION: "gzip"
-  AUDIT_BUNDLE_ENABLED: "true"
-  AUDIT_BUNDLE_PATH: "/app/bundles"
-
-  # ==========================================================================
-  # Fuel Types Supported
-  # ==========================================================================
-  FUEL_TYPES: "natural_gas,fuel_oil_2,fuel_oil_6,coal,biomass,hydrogen,biogas,diesel"
-
-  # ==========================================================================
-  # Blending Configuration
-  # ==========================================================================
-  BLENDING_ENABLED: "true"
-  BLENDING_MIN_RATIO: "0.05"
-  BLENDING_MAX_COMPONENTS: "5"
-
-  # ==========================================================================
-  # Kafka Configuration
-  # ==========================================================================
-  KAFKA_BOOTSTRAP_SERVERS: "kafka-cluster-kafka-bootstrap.kafka:9092"
-  KAFKA_GROUP_ID: "gl-011-fuelcraft"
-  KAFKA_AUTO_OFFSET_RESET: "earliest"
-  KAFKA_ENABLE_AUTO_COMMIT: "false"
-  KAFKA_TOPIC_FUEL_PRICES: "fuelcraft.fuel-prices"
-  KAFKA_TOPIC_OPTIMIZATION: "fuelcraft.optimization"
-  KAFKA_TOPIC_EVENTS: "fuelcraft.events"
-  KAFKA_TOPIC_AUDIT: "fuelcraft.audit"
-  KAFKA_TOPIC_INVENTORY: "fuel.inventory.v1"
-  KAFKA_TOPIC_DLQ: "fuelcraft.dlq"
-
-  # ==========================================================================
-  # OPC-UA Configuration
-  # ==========================================================================
-  OPCUA_ENDPOINT: "opc.tcp://opcua-server:4840"
-  OPCUA_SECURITY_MODE: "SignAndEncrypt"
-  OPCUA_SECURITY_POLICY: "Basic256Sha256"
-  OPCUA_POLLING_INTERVAL_MS: "1000"
-
-  # ==========================================================================
-  # ERP Integration Configuration
-  # ==========================================================================
-  ERP_SYSTEM_TYPE: "sap_s4hana"
-  ERP_TIMEOUT_SECONDS: "30"
-  ERP_MAX_RETRIES: "3"
-  ERP_CIRCUIT_BREAKER_THRESHOLD: "5"
-  ERP_CIRCUIT_BREAKER_TIMEOUT_SECONDS: "60"
-
-  # ==========================================================================
+  ENVIRONMENT: "production"
+  LOG_LEVEL: "INFO"
+  
+  # Fuel Optimization Parameters
+  FUEL_BLENDING_OPTIMIZATION: "true"
+  MULTI_FUEL_CAPABILITY: "true"
+  HEATING_VALUE_TRACKING: "true"
+  FUEL_INVENTORY_MANAGEMENT: "true"
+  
+  # Economic Parameters
+  NATURAL_GAS_COST_PER_MMBTU: "8.0"
+  FUEL_OIL_COST_PER_GAL: "3.5"
+  ELECTRICITY_COST_PER_KWH: "0.12"
+  OPTIMIZATION_HORIZON_HOURS: "24"
+  
+  # Quality Parameters
+  FUEL_ANALYSIS_FREQUENCY_HOURS: "8"
+  BTU_VARIANCE_THRESHOLD_PERCENT: "5"
+  SULFUR_CONTENT_LIMIT_PERCENT: "0.5"
+  
   # Feature Flags
-  # ==========================================================================
-  FEATURE_PRICE_FORECASTING: "true"
-  FEATURE_CARBON_OPTIMIZATION: "true"
-  FEATURE_MULTI_FUEL_BLENDING: "true"
-  FEATURE_SHAP_EXPLAINABILITY: "true"
-  FEATURE_STORAGE_OPTIMIZATION: "true"
-  FEATURE_ERP_INTEGRATION: "true"
-  FEATURE_OPCUA_TELEMETRY: "true"
-  FEATURE_KAFKA_STREAMING: "true"
-
-  # ==========================================================================
-  # Calculation Precision
-  # ==========================================================================
-  CALCULATION_DECIMAL_PLACES: "6"
-  UNCERTAINTY_PROPAGATION: "true"
-  ENERGY_UNIT: "MJ"
-  MASS_UNIT: "kg"
-  VOLUME_REFERENCE_TEMP_C: "15.0"
-
-  # ==========================================================================
-  # Prometheus Configuration
-  # ==========================================================================
-  PROMETHEUS_MULTIPROC_DIR: "/tmp/prometheus"
-  METRICS_PORT: "9090"
-  METRICS_PREFIX: "gl011_fuelcraft"
-
-  # ==========================================================================
-  # OpenTelemetry Configuration
-  # ==========================================================================
-  OTEL_SERVICE_NAME: "gl-011-fuelcraft"
-  OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector:4317"
-  OTEL_TRACES_SAMPLER: "parentbased_traceidratio"
-  OTEL_TRACES_SAMPLER_ARG: "0.1"
+  FEATURE_FUEL_SWITCHING: "true"
+  FEATURE_COST_OPTIMIZATION: "true"
+  FEATURE_BLEND_OPTIMIZATION: "true"
+  FEATURE_PROCUREMENT_INTEGRATION: "false"
+  
+  # API Configuration
+  API_RATE_LIMIT: "1000"
+  API_TIMEOUT_SECONDS: "30"

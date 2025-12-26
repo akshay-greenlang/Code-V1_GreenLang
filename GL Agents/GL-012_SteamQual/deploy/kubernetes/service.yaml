@@ -1,170 +1,57 @@
-# =============================================================================
-# GL-012 STEAMQUAL - Kubernetes Service
-# =============================================================================
-# Service and Ingress configuration for steam quality monitoring agent.
-#
-# Resources:
-#   - Service: gl-012-steamqual-svc (ClusterIP)
-#   - Ingress: gl-012-steamqual-ingress
-#
-# Endpoints:
-#   - /api/v1/* - REST API endpoints
-#   - /health   - Health check
-#   - /metrics  - Prometheus metrics (port 9090)
-#
-# Author: GL-DevOpsEngineer
-# Version: 1.0.0
-# Date: December 2025
-# =============================================================================
-
----
-# =============================================================================
-# Service - ClusterIP
-# =============================================================================
+# GL-012 SteamQual Service
 apiVersion: v1
 kind: Service
 metadata:
-  name: gl-012-steamqual-svc
-  namespace: gl-agents
+  name: gl-012-steamqual
+  namespace: greenlang
   labels:
-    app.kubernetes.io/name: gl-012-steamqual
-    app.kubernetes.io/component: service
-    app.kubernetes.io/part-of: greenlang
-  annotations:
-    prometheus.io/scrape: "true"
-    prometheus.io/port: "9090"
-    prometheus.io/path: "/metrics"
+    app: gl-012-steamqual
+    agent-id: GL-012
+    codename: STEAMQUAL
 spec:
   type: ClusterIP
   selector:
-    app.kubernetes.io/name: gl-012-steamqual
+    app: gl-012-steamqual
   ports:
     - name: http
-      port: 80
-      targetPort: http
+      port: 8080
+      targetPort: 8080
       protocol: TCP
     - name: metrics
       port: 9090
-      targetPort: metrics
+      targetPort: 9090
       protocol: TCP
-  sessionAffinity: None
-
 ---
-# =============================================================================
-# Headless Service - For StatefulSet / Direct Pod Access
-# =============================================================================
 apiVersion: v1
 kind: Service
 metadata:
   name: gl-012-steamqual-headless
-  namespace: gl-agents
+  namespace: greenlang
   labels:
-    app.kubernetes.io/name: gl-012-steamqual
-    app.kubernetes.io/component: headless-service
+    app: gl-012-steamqual
 spec:
   type: ClusterIP
   clusterIP: None
   selector:
-    app.kubernetes.io/name: gl-012-steamqual
+    app: gl-012-steamqual
   ports:
     - name: http
       port: 8080
-      targetPort: http
-      protocol: TCP
-
+      targetPort: 8080
 ---
-# =============================================================================
-# Ingress - External Access
-# =============================================================================
-apiVersion: networking.k8s.io/v1
-kind: Ingress
+apiVersion: v1
+kind: Service
 metadata:
-  name: gl-012-steamqual-ingress
-  namespace: gl-agents
+  name: gl-012-steamqual-metrics
+  namespace: greenlang
   labels:
-    app.kubernetes.io/name: gl-012-steamqual
-    app.kubernetes.io/component: ingress
-  annotations:
-    kubernetes.io/ingress.class: "nginx"
-    nginx.ingress.kubernetes.io/ssl-redirect: "true"
-    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
-    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
-    nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
-    nginx.ingress.kubernetes.io/proxy-connect-timeout: "10"
-    # Rate limiting
-    nginx.ingress.kubernetes.io/limit-rps: "100"
-    nginx.ingress.kubernetes.io/limit-connections: "50"
-    # CORS
-    nginx.ingress.kubernetes.io/enable-cors: "true"
-    nginx.ingress.kubernetes.io/cors-allow-origin: "*"
-    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, DELETE, OPTIONS"
-    nginx.ingress.kubernetes.io/cors-allow-headers: "DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization,X-API-Key"
-    # TLS
-    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    app: gl-012-steamqual
+    monitoring: prometheus
 spec:
-  ingressClassName: nginx
-  tls:
-    - hosts:
-        - steamqual.greenlang.io
-        - api.steamqual.greenlang.io
-      secretName: gl-012-steamqual-tls
-  rules:
-    - host: steamqual.greenlang.io
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: gl-012-steamqual-svc
-                port:
-                  number: 80
-    - host: api.steamqual.greenlang.io
-      http:
-        paths:
-          - path: /api
-            pathType: Prefix
-            backend:
-              service:
-                name: gl-012-steamqual-svc
-                port:
-                  number: 80
-          - path: /health
-            pathType: Prefix
-            backend:
-              service:
-                name: gl-012-steamqual-svc
-                port:
-                  number: 80
-
----
-# =============================================================================
-# ServiceMonitor - For Prometheus Operator
-# =============================================================================
-apiVersion: monitoring.coreos.com/v1
-kind: ServiceMonitor
-metadata:
-  name: gl-012-steamqual-monitor
-  namespace: gl-agents
-  labels:
-    app.kubernetes.io/name: gl-012-steamqual
-    app.kubernetes.io/component: monitoring
-    release: prometheus
-spec:
+  type: ClusterIP
   selector:
-    matchLabels:
-      app.kubernetes.io/name: gl-012-steamqual
-  namespaceSelector:
-    matchNames:
-      - gl-agents
-  endpoints:
-    - port: metrics
-      path: /metrics
-      interval: 30s
-      scrapeTimeout: 10s
-      scheme: http
-      honorLabels: true
-      metricRelabelings:
-        - sourceLabels: [__name__]
-          regex: 'go_.*'
-          action: drop
+    app: gl-012-steamqual
+  ports:
+    - name: metrics
+      port: 9090
+      targetPort: 9090

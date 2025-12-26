@@ -1,227 +1,42 @@
-# =============================================================================
-# GL-012 STEAMQUAL - Horizontal Pod Autoscaler
-# =============================================================================
-# Autoscaling configuration for steam quality monitoring agent.
-#
-# Scaling Behavior:
-#   - Minimum: 3 replicas (high availability)
-#   - Maximum: 15 replicas (burst capacity)
-#   - CPU target: 70% utilization
-#   - Memory target: 80% utilization
-#   - Custom metrics: Request rate, calculation latency
-#
-# Scale-up: Aggressive (respond quickly to load)
-# Scale-down: Conservative (avoid flapping)
-#
-# Author: GL-DevOpsEngineer
-# Version: 1.0.0
-# Date: December 2025
-# =============================================================================
-
----
-# =============================================================================
-# Horizontal Pod Autoscaler
-# =============================================================================
+# GL-012 SteamQual Horizontal Pod Autoscaler
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
   name: gl-012-steamqual-hpa
-  namespace: gl-agents
+  namespace: greenlang
   labels:
-    app.kubernetes.io/name: gl-012-steamqual
-    app.kubernetes.io/component: autoscaler
-    app.kubernetes.io/part-of: greenlang
+    app: gl-012-steamqual
+    agent-id: GL-012
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
     name: gl-012-steamqual
-
-  # Replica bounds
-  minReplicas: 3
-  maxReplicas: 15
-
-  # Scaling metrics
+  minReplicas: 2
+  maxReplicas: 10
   metrics:
-    # CPU utilization
     - type: Resource
       resource:
         name: cpu
         target:
           type: Utilization
           averageUtilization: 70
-
-    # Memory utilization
     - type: Resource
       resource:
         name: memory
         target:
           type: Utilization
           averageUtilization: 80
-
-    # Custom metric: HTTP requests per second (requires Prometheus adapter)
-    - type: Pods
-      pods:
-        metric:
-          name: http_requests_per_second
-        target:
-          type: AverageValue
-          averageValue: "100"
-
-    # Custom metric: Steam quality calculation latency (requires Prometheus adapter)
-    - type: Pods
-      pods:
-        metric:
-          name: steam_quality_calculation_latency_p99
-        target:
-          type: AverageValue
-          averageValue: "500m"  # 500ms p99 latency target
-
-  # Scaling behavior
   behavior:
-    # Scale-down behavior (conservative)
-    scaleDown:
-      stabilizationWindowSeconds: 300  # 5 minutes stabilization
+    scaleUp:
+      stabilizationWindowSeconds: 60
       policies:
-        - type: Percent
-          value: 10
-          periodSeconds: 60  # Max 10% reduction per minute
+        - type: Pods
+          value: 2
+          periodSeconds: 60
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
         - type: Pods
           value: 1
-          periodSeconds: 60  # Max 1 pod reduction per minute
-      selectPolicy: Min  # Use the most conservative policy
-
-    # Scale-up behavior (aggressive)
-    scaleUp:
-      stabilizationWindowSeconds: 30  # 30 seconds stabilization
-      policies:
-        - type: Percent
-          value: 100
-          periodSeconds: 15  # Double capacity every 15 seconds if needed
-        - type: Pods
-          value: 4
-          periodSeconds: 15  # Add up to 4 pods every 15 seconds
-      selectPolicy: Max  # Use the most aggressive policy
-
----
-# =============================================================================
-# Vertical Pod Autoscaler (Optional - requires VPA installed)
-# =============================================================================
-apiVersion: autoscaling.k8s.io/v1
-kind: VerticalPodAutoscaler
-metadata:
-  name: gl-012-steamqual-vpa
-  namespace: gl-agents
-  labels:
-    app.kubernetes.io/name: gl-012-steamqual
-    app.kubernetes.io/component: vpa
-spec:
-  targetRef:
-    apiVersion: apps/v1
-    kind: Deployment
-    name: gl-012-steamqual
-  updatePolicy:
-    updateMode: "Off"  # Recommendation only, don't auto-apply
-  resourcePolicy:
-    containerPolicies:
-      - containerName: steamqual
-        minAllowed:
-          cpu: 100m
-          memory: 256Mi
-        maxAllowed:
-          cpu: 4
-          memory: 8Gi
-        controlledResources:
-          - cpu
-          - memory
-        controlledValues: RequestsAndLimits
-
----
-# =============================================================================
-# PodMonitor for Custom Metrics (Prometheus Operator)
-# =============================================================================
-apiVersion: monitoring.coreos.com/v1
-kind: PodMonitor
-metadata:
-  name: gl-012-steamqual-podmonitor
-  namespace: gl-agents
-  labels:
-    app.kubernetes.io/name: gl-012-steamqual
-    app.kubernetes.io/component: monitoring
-spec:
-  selector:
-    matchLabels:
-      app.kubernetes.io/name: gl-012-steamqual
-  namespaceSelector:
-    matchNames:
-      - gl-agents
-  podMetricsEndpoints:
-    - port: metrics
-      path: /metrics
-      interval: 15s
-      scrapeTimeout: 10s
-
----
-# =============================================================================
-# PrometheusRule for Autoscaling Alerts
-# =============================================================================
-apiVersion: monitoring.coreos.com/v1
-kind: PrometheusRule
-metadata:
-  name: gl-012-steamqual-autoscaling-rules
-  namespace: gl-agents
-  labels:
-    app.kubernetes.io/name: gl-012-steamqual
-    app.kubernetes.io/component: alerts
-    prometheus: kube-prometheus
-spec:
-  groups:
-    - name: gl-012-steamqual-autoscaling
-      interval: 30s
-      rules:
-        # Alert when approaching max replicas
-        - alert: SteamQualNearMaxReplicas
-          expr: |
-            kube_horizontalpodautoscaler_status_current_replicas{horizontalpodautoscaler="gl-012-steamqual-hpa"}
-            / kube_horizontalpodautoscaler_spec_max_replicas{horizontalpodautoscaler="gl-012-steamqual-hpa"}
-            > 0.8
-          for: 5m
-          labels:
-            severity: warning
-            agent: gl-012-steamqual
-          annotations:
-            summary: "GL-012 STEAMQUAL near maximum replicas"
-            description: "STEAMQUAL is running at {{ $value | humanizePercentage }} of max replicas. Consider increasing max replicas."
-
-        # Alert when at minimum replicas with high CPU
-        - alert: SteamQualAtMinReplicasHighLoad
-          expr: |
-            (
-              kube_horizontalpodautoscaler_status_current_replicas{horizontalpodautoscaler="gl-012-steamqual-hpa"}
-              == kube_horizontalpodautoscaler_spec_min_replicas{horizontalpodautoscaler="gl-012-steamqual-hpa"}
-            )
-            and
-            (
-              avg(rate(container_cpu_usage_seconds_total{pod=~"gl-012-steamqual.*"}[5m])) by (pod)
-              / avg(kube_pod_container_resource_requests{resource="cpu", pod=~"gl-012-steamqual.*"}) by (pod)
-              > 0.5
-            )
-          for: 10m
-          labels:
-            severity: info
-            agent: gl-012-steamqual
-          annotations:
-            summary: "GL-012 STEAMQUAL at minimum replicas with elevated load"
-            description: "STEAMQUAL is at minimum replicas but experiencing elevated CPU usage."
-
-        # Alert when scaling events are frequent (potential flapping)
-        - alert: SteamQualFrequentScaling
-          expr: |
-            changes(kube_horizontalpodautoscaler_status_current_replicas{horizontalpodautoscaler="gl-012-steamqual-hpa"}[30m]) > 5
-          for: 5m
-          labels:
-            severity: warning
-            agent: gl-012-steamqual
-          annotations:
-            summary: "GL-012 STEAMQUAL frequent scaling events"
-            description: "STEAMQUAL has scaled {{ $value }} times in the last 30 minutes. Consider adjusting HPA settings."
+          periodSeconds: 120

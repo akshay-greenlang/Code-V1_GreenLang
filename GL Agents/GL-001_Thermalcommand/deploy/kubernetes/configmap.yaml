@@ -1,0 +1,47 @@
+# GL-001 ThermalCommand ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gl-001-thermalcommand-config
+  namespace: greenlang
+  labels:
+    app: gl-001-thermalcommand
+    agent-id: GL-001
+    codename: THERMALCOMMAND
+data:
+  ENVIRONMENT: "production"
+  LOG_LEVEL: "INFO"
+  
+  # Thermal Optimization Parameters
+  OPTIMIZATION_HORIZON_HOURS: "24"
+  OPTIMIZATION_INTERVAL_MINUTES: "15"
+  MILP_SOLVER: "CBC"
+  MILP_TIME_LIMIT_SECONDS: "300"
+  
+  # Equipment Control Parameters
+  CASCADE_PID_ENABLED: "true"
+  TEMPERATURE_SETPOINT_TOLERANCE: "2.0"
+  PRESSURE_SETPOINT_TOLERANCE: "0.5"
+  RAMP_RATE_LIMIT: "5.0"
+  
+  # Safety Integration
+  EMERGENCY_SHUTDOWN_ENABLED: "true"
+  HIGH_TEMP_THRESHOLD: "500.0"
+  LOW_TEMP_THRESHOLD: "50.0"
+  HIGH_PRESSURE_THRESHOLD: "150.0"
+  
+  # Data Collection
+  DATA_COLLECTION_INTERVAL_SECONDS: "10"
+  HISTORIAN_BATCH_SIZE: "100"
+  METRICS_EXPORT_INTERVAL: "15"
+  
+  # Feature Flags
+  FEATURE_PREDICTIVE_CONTROL: "true"
+  FEATURE_MULTI_EQUIPMENT_COORDINATION: "true"
+  FEATURE_DYNAMIC_SETPOINT_OPTIMIZATION: "true"
+  FEATURE_THERMAL_STORAGE_INTEGRATION: "false"
+  
+  # API Configuration
+  API_RATE_LIMIT: "1000"
+  API_TIMEOUT_SECONDS: "30"
+  CORS_ORIGINS: "*"

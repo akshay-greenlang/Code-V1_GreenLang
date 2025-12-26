@@ -19,11 +19,29 @@ from .circuit_breaker import (
     circuit_breaker_registry
 )
 
+from .velocity_limiter import (
+    VelocityLimitStatus,
+    SetpointDirection,
+    SafetyMode,
+    CombusenseVelocityLimit,
+    VelocityLimitResult,
+    CombusenseVelocityLimiter,
+    DEFAULT_COMBUSENSE_LIMITS,
+)
+
 __all__ = [
     "CircuitBreaker",
     "CircuitBreakerConfig",
     "CircuitState",
     "CallResult",
     "CircuitBreakerRegistry",
-    "circuit_breaker_registry"
+    "circuit_breaker_registry",
+    # Velocity Limiter
+    "VelocityLimitStatus",
+    "SetpointDirection",
+    "SafetyMode",
+    "CombusenseVelocityLimit",
+    "VelocityLimitResult",
+    "CombusenseVelocityLimiter",
+    "DEFAULT_COMBUSENSE_LIMITS",
 ]

@@ -1,140 +1,45 @@
-# =============================================================================
-# GL-012 STEAMQUAL - Kubernetes Production Deployment
-# =============================================================================
-# Production-grade Kubernetes manifests for steam quality monitoring agent.
-#
-# Resources:
-#   - Namespace: gl-agents
-#   - Deployment: gl-012-steamqual
-#   - ServiceAccount with RBAC
-#   - PodDisruptionBudget
-#   - NetworkPolicy
-#
-# Standards Compliance:
-#   - ASME PTC 19.11: Steam and Water Sampling
-#   - IAPWS-IF97: Steam Property Calculations
-#   - ISO 9001: Quality Management
-#   - GreenLang Global AI Standards v2.0
-#
-# Apply:
-#   kubectl apply -f deployment.yaml
-#
-# Author: GL-DevOpsEngineer
-# Version: 1.0.0
-# Date: December 2025
-# =============================================================================
-
----
-# =============================================================================
-# Namespace
-# =============================================================================
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: gl-agents
-  labels:
-    app.kubernetes.io/name: greenlang
-    app.kubernetes.io/component: agents
-    app.kubernetes.io/managed-by: kubectl
-
----
-# =============================================================================
-# ServiceAccount
-# =============================================================================
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: gl-012-steamqual
-  namespace: gl-agents
-  labels:
-    app.kubernetes.io/name: gl-012-steamqual
-    app.kubernetes.io/component: serviceaccount
-automountServiceAccountToken: false
-
----
-# =============================================================================
-# Role - Minimal RBAC permissions
-# =============================================================================
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
-  name: gl-012-steamqual-role
-  namespace: gl-agents
-  labels:
-    app.kubernetes.io/name: gl-012-steamqual
-rules:
-  - apiGroups: [""]
-    resources: ["configmaps"]
-    verbs: ["get", "list", "watch"]
-  - apiGroups: [""]
-    resources: ["secrets"]
-    resourceNames: ["gl-012-secrets"]
-    verbs: ["get"]
-
----
-# =============================================================================
-# RoleBinding
-# =============================================================================
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: gl-012-steamqual-rolebinding
-  namespace: gl-agents
-  labels:
-    app.kubernetes.io/name: gl-012-steamqual
-subjects:
-  - kind: ServiceAccount
-    name: gl-012-steamqual
-    namespace: gl-agents
-roleRef:
-  kind: Role
-  name: gl-012-steamqual-role
-  apiGroup: rbac.authorization.k8s.io
-
----
-# =============================================================================
-# Deployment
-# =============================================================================
+# GL-012 SteamQual Deployment
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: gl-012-steamqual
-  namespace: gl-agents
+  namespace: greenlang
   labels:
-    app.kubernetes.io/name: gl-012-steamqual
-    app.kubernetes.io/version: "1.0.0"
-    app.kubernetes.io/component: api
-    app.kubernetes.io/part-of: greenlang
-    app.kubernetes.io/managed-by: kubectl
+    app: gl-012-steamqual
+    agent-id: GL-012
+    codename: STEAMQUAL
+    version: v1.0.0
+    tier: production
+    domain: steam-quality
   annotations:
-    kubernetes.io/description: "Steam quality monitoring and control agent"
-    greenlang.io/standards: "ASME-PTC-19.11,IAPWS-IF97,ISO-9001"
+    kubernetes.io/description: "GL-012 SteamQual - Steam Quality Agent"
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9090"
+    prometheus.io/path: "/metrics"
 spec:
-  replicas: 3
-  revisionHistoryLimit: 5
+  replicas: 2
+  revisionHistoryLimit: 10
   strategy:
     type: RollingUpdate
     rollingUpdate:
-      maxUnavailable: 1
       maxSurge: 1
+      maxUnavailable: 0
   selector:
     matchLabels:
-      app.kubernetes.io/name: gl-012-steamqual
+      app: gl-012-steamqual
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: gl-012-steamqual
-        app.kubernetes.io/version: "1.0.0"
-        app.kubernetes.io/component: api
+        app: gl-012-steamqual
+        agent-id: GL-012
+        codename: STEAMQUAL
+        version: v1.0.0
       annotations:
         prometheus.io/scrape: "true"
         prometheus.io/port: "9090"
         prometheus.io/path: "/metrics"
     spec:
-      serviceAccountName: gl-012-steamqual
-      automountServiceAccountToken: false
-
-      # Security Context - Pod level
+      serviceAccountName: gl-012-steamqual-sa
       securityContext:
         runAsNonRoot: true
         runAsUser: 1000
@@ -142,41 +47,26 @@ spec:
         fsGroup: 1000
         seccompProfile:
           type: RuntimeDefault
-
-      # Pod topology spread for high availability
-      topologySpreadConstraints:
-        - maxSkew: 1
-          topologyKey: topology.kubernetes.io/zone
-          whenUnsatisfiable: ScheduleAnyway
-          labelSelector:
-            matchLabels:
-              app.kubernetes.io/name: gl-012-steamqual
-        - maxSkew: 1
-          topologyKey: kubernetes.io/hostname
-          whenUnsatisfiable: DoNotSchedule
-          labelSelector:
-            matchLabels:
-              app.kubernetes.io/name: gl-012-steamqual
-
-      # Anti-affinity for distribution across nodes
       affinity:
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
             - weight: 100
               podAffinityTerm:
                 labelSelector:
-                  matchExpressions:
-                    - key: app.kubernetes.io/name
-                      operator: In
-                      values:
-                        - gl-012-steamqual
+                  matchLabels:
+                    app: gl-012-steamqual
                 topologyKey: kubernetes.io/hostname
-
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: gl-012-steamqual
       containers:
-        - name: steamqual
-          image: ghcr.io/greenlang/gl-012-steamqual:1.0.0
-          imagePullPolicy: IfNotPresent
-
+        - name: gl-012-steamqual
+          image: gcr.io/greenlang/gl-012-steamqual:v1.0.0
+          imagePullPolicy: Always
           ports:
             - name: http
               containerPort: 8080
@@ -184,16 +74,31 @@ spec:
             - name: metrics
               containerPort: 9090
               protocol: TCP
-
-          # Environment from ConfigMap and Secret
-          envFrom:
-            - configMapRef:
-                name: gl-012-config
-            - secretRef:
-                name: gl-012-secrets
-
-          # Additional environment variables
           env:
+            - name: ENVIRONMENT
+              valueFrom:
+                configMapKeyRef:
+                  name: gl-012-steamqual-config
+                  key: ENVIRONMENT
+            - name: GL012_LOG_LEVEL
+              valueFrom:
+                configMapKeyRef:
+                  name: gl-012-steamqual-config
+                  key: LOG_LEVEL
+            - name: GL012_API_PORT
+              value: "8080"
+            - name: GL012_METRICS_PORT
+              value: "9090"
+            - name: GL012_DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: gl-012-steamqual-secrets
+                  key: database-url
+            - name: GL012_REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: gl-012-steamqual-secrets
+                  key: redis-url
             - name: POD_NAME
               valueFrom:
                 fieldRef:
@@ -202,189 +107,64 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
-            - name: POD_IP
-              valueFrom:
-                fieldRef:
-                  fieldPath: status.podIP
-
-          # Container security context
-          securityContext:
-            allowPrivilegeEscalation: false
-            readOnlyRootFilesystem: true
-            capabilities:
-              drop:
-                - ALL
-
-          # Resource limits and requests
           resources:
             requests:
-              cpu: 250m
-              memory: 512Mi
+              memory: "512Mi"
+              cpu: "250m"
             limits:
-              cpu: 1000m
-              memory: 2Gi
-
-          # Startup probe - allows slow startup
-          startupProbe:
-            httpGet:
-              path: /health
-              port: http
-            initialDelaySeconds: 10
-            periodSeconds: 5
-            timeoutSeconds: 3
-            failureThreshold: 30
-
-          # Liveness probe - restarts if unhealthy
+              memory: "4Gi"
+              cpu: "2000m"
           livenessProbe:
             httpGet:
               path: /health
-              port: http
-            initialDelaySeconds: 15
-            periodSeconds: 20
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
             timeoutSeconds: 5
             failureThreshold: 3
-
-          # Readiness probe - removes from service if not ready
           readinessProbe:
             httpGet:
-              path: /health/ready
-              port: http
+              path: /ready
+              port: 8080
             initialDelaySeconds: 10
-            periodSeconds: 10
+            periodSeconds: 5
             timeoutSeconds: 3
-            successThreshold: 1
             failureThreshold: 3
-
-          # Volume mounts
+          startupProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            failureThreshold: 30
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1000
+            capabilities:
+              drop:
+                - ALL
           volumeMounts:
-            - name: tmp
+            - name: config-volume
+              mountPath: /app/config
+              readOnly: true
+            - name: tmp-volume
               mountPath: /tmp
-            - name: cache
-              mountPath: /app/cache
-            - name: steam-tables
-              mountPath: /app/steam_tables
-            - name: logs
-              mountPath: /app/logs
-            - name: audit
-              mountPath: /app/audit
-
-      # Volumes
+            - name: logs-volume
+              mountPath: /var/log/greenlang
+            - name: quality-data-volume
+              mountPath: /var/data/steam_quality
       volumes:
-        - name: tmp
-          emptyDir:
-            sizeLimit: 200Mi
-        - name: cache
-          emptyDir:
-            sizeLimit: 1Gi
-        - name: steam-tables
-          emptyDir:
-            sizeLimit: 500Mi
-        - name: logs
-          emptyDir:
-            sizeLimit: 200Mi
-        - name: audit
-          emptyDir:
-            sizeLimit: 500Mi
-
-      # Termination settings
+        - name: config-volume
+          configMap:
+            name: gl-012-steamqual-config
+        - name: tmp-volume
+          emptyDir: {}
+        - name: logs-volume
+          emptyDir: {}
+        - name: quality-data-volume
+          emptyDir: {}
       terminationGracePeriodSeconds: 30
-
-      # DNS policy
       dnsPolicy: ClusterFirst
-
----
-# =============================================================================
-# Pod Disruption Budget
-# =============================================================================
-apiVersion: policy/v1
-kind: PodDisruptionBudget
-metadata:
-  name: gl-012-steamqual-pdb
-  namespace: gl-agents
-  labels:
-    app.kubernetes.io/name: gl-012-steamqual
-spec:
-  selector:
-    matchLabels:
-      app.kubernetes.io/name: gl-012-steamqual
-  minAvailable: 2
-
----
-# =============================================================================
-# Network Policy
-# =============================================================================
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: gl-012-steamqual-netpol
-  namespace: gl-agents
-  labels:
-    app.kubernetes.io/name: gl-012-steamqual
-spec:
-  podSelector:
-    matchLabels:
-      app.kubernetes.io/name: gl-012-steamqual
-  policyTypes:
-    - Ingress
-    - Egress
-  ingress:
-    # Allow from ingress controller
-    - from:
-        - namespaceSelector:
-            matchLabels:
-              kubernetes.io/metadata.name: ingress-nginx
-      ports:
-        - protocol: TCP
-          port: 8080
-    # Allow from Prometheus for metrics scraping
-    - from:
-        - namespaceSelector:
-            matchLabels:
-              kubernetes.io/metadata.name: monitoring
-      ports:
-        - protocol: TCP
-          port: 9090
-    # Allow from other GL agents
-    - from:
-        - podSelector:
-            matchLabels:
-              app.kubernetes.io/part-of: greenlang
-      ports:
-        - protocol: TCP
-          port: 8080
-  egress:
-    # Allow DNS resolution
-    - to:
-        - namespaceSelector: {}
-      ports:
-        - protocol: UDP
-          port: 53
-        - protocol: TCP
-          port: 53
-    # Allow TimescaleDB/PostgreSQL
-    - to:
-        - podSelector:
-            matchLabels:
-              app: timescaledb
-      ports:
-        - protocol: TCP
-          port: 5432
-    # Allow Redis
-    - to:
-        - podSelector:
-            matchLabels:
-              app: redis
-      ports:
-        - protocol: TCP
-          port: 6379
-    # Allow HTTPS for external APIs
-    - to:
-        - ipBlock:
-            cidr: 0.0.0.0/0
-            except:
-              - 10.0.0.0/8
-              - 172.16.0.0/12
-              - 192.168.0.0/16
-      ports:
-        - protocol: TCP
-          port: 443
+      restartPolicy: Always

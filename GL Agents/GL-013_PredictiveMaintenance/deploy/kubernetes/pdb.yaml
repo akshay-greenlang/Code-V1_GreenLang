@@ -1,0 +1,15 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: gl-013-predictive-maintenance
+  namespace: greenlang
+  labels:
+    app: gl-013-predictive-maintenance
+    app.kubernetes.io/name: gl-013-predictive-maintenance
+    app.kubernetes.io/component: agent
+    app.kubernetes.io/part-of: greenlang
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: gl-013-predictive-maintenance

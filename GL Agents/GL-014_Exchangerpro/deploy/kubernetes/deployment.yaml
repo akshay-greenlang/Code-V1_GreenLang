@@ -1,0 +1,230 @@
+# GL-014 Exchangerpro Deployment
+# Heat Exchanger Performance Optimization Agent
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gl-014-exchangerpro
+  namespace: greenlang
+  labels:
+    app: gl-014-exchangerpro
+    component: thermal-optimizer
+    agent-id: GL-014
+    codename: EXCHANGERPRO
+    version: v1.0.0
+    tier: production
+    domain: heat-exchanger-optimization
+  annotations:
+    kubernetes.io/description: "GL-014 Exchangerpro - Heat Exchanger Performance Optimization Agent"
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9090"
+    prometheus.io/path: "/metrics"
+spec:
+  replicas: 2
+  revisionHistoryLimit: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: gl-014-exchangerpro
+  template:
+    metadata:
+      labels:
+        app: gl-014-exchangerpro
+        component: thermal-optimizer
+        agent-id: GL-014
+        codename: EXCHANGERPRO
+        version: v1.0.0
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: gl-014-exchangerpro-sa
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: gl-014-exchangerpro
+                topologyKey: kubernetes.io/hostname
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: gl-014-exchangerpro
+      containers:
+        - name: gl-014-exchangerpro
+          image: greenlang/gl-014-exchangerpro:1.0.0
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+            - name: metrics
+              containerPort: 9090
+              protocol: TCP
+          env:
+            # Environment from ConfigMap
+            - name: ENVIRONMENT
+              valueFrom:
+                configMapKeyRef:
+                  name: gl-014-exchangerpro-config
+                  key: ENVIRONMENT
+            - name: GL014_AGENT_ID
+              valueFrom:
+                configMapKeyRef:
+                  name: gl-014-exchangerpro-config
+                  key: GL014_AGENT_ID
+            - name: GL014_AGENT_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: gl-014-exchangerpro-config
+                  key: GL014_AGENT_NAME
+            - name: GL014_VERSION
+              valueFrom:
+                configMapKeyRef:
+                  name: gl-014-exchangerpro-config
+                  key: GL014_VERSION
+            - name: LOG_LEVEL
+              valueFrom:
+                configMapKeyRef:
+                  name: gl-014-exchangerpro-config
+                  key: LOG_LEVEL
+            - name: TRACK_PROVENANCE
+              valueFrom:
+                configMapKeyRef:
+                  name: gl-014-exchangerpro-config
+                  key: TRACK_PROVENANCE
+            - name: THERMAL_ENGINE_VERSION
+              valueFrom:
+                configMapKeyRef:
+                  name: gl-014-exchangerpro-config
+                  key: THERMAL_ENGINE_VERSION
+            - name: ML_SERVICE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: gl-014-exchangerpro-config
+                  key: ML_SERVICE_URL
+            - name: OPTIMIZER_SERVICE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: gl-014-exchangerpro-config
+                  key: OPTIMIZER_SERVICE_URL
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              valueFrom:
+                configMapKeyRef:
+                  name: gl-014-exchangerpro-config
+                  key: KAFKA_BOOTSTRAP_SERVERS
+            # Static port configuration
+            - name: GL014_API_PORT
+              value: "8000"
+            - name: GL014_METRICS_PORT
+              value: "9090"
+            # Secrets
+            - name: OPCUA_CREDENTIALS
+              valueFrom:
+                secretKeyRef:
+                  name: gl-014-exchangerpro-secrets
+                  key: opcua-credentials
+            - name: CMMS_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: gl-014-exchangerpro-secrets
+                  key: cmms-api-key
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: gl-014-exchangerpro-secrets
+                  key: database-url
+            # Pod metadata
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "4Gi"
+              cpu: "2000m"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          startupProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            failureThreshold: 30
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1000
+            capabilities:
+              drop:
+                - ALL
+          volumeMounts:
+            - name: config-volume
+              mountPath: /app/config
+              readOnly: true
+            - name: tmp-volume
+              mountPath: /tmp
+            - name: logs-volume
+              mountPath: /var/log/greenlang
+            - name: exchanger-data-volume
+              mountPath: /var/data/exchanger_optimization
+            - name: thermal-models-volume
+              mountPath: /var/models/thermal
+      volumes:
+        - name: config-volume
+          configMap:
+            name: gl-014-exchangerpro-config
+        - name: tmp-volume
+          emptyDir: {}
+        - name: logs-volume
+          emptyDir: {}
+        - name: exchanger-data-volume
+          emptyDir: {}
+        - name: thermal-models-volume
+          emptyDir: {}
+      terminationGracePeriodSeconds: 30
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always

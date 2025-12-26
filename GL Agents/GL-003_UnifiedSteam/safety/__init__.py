@@ -83,6 +83,16 @@ from .trip_handler import (
     SystemState as TripSystemState,
 )
 
+from .velocity_limiter import (
+    VelocityLimitStatus,
+    SetpointDirection,
+    SafetyMode,
+    SteamTrapVelocityLimit,
+    VelocityLimitResult,
+    SteamTrapVelocityLimiter,
+    DEFAULT_STEAM_TRAP_LIMITS,
+)
+
 __all__ = [
     # Safety Envelope
     "SafetyEnvelope",
@@ -134,4 +144,12 @@ __all__ = [
     "SafeStateResult",
     "TripReport",
     "TripSystemState",
+    # Velocity Limiter
+    "VelocityLimitStatus",
+    "SetpointDirection",
+    "SafetyMode",
+    "SteamTrapVelocityLimit",
+    "VelocityLimitResult",
+    "SteamTrapVelocityLimiter",
+    "DEFAULT_STEAM_TRAP_LIMITS",
 ]

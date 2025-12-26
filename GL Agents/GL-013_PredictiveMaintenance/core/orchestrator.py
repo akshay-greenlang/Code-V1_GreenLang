@@ -41,6 +41,11 @@ from .schemas import (
     MaintenanceWindow,
 )
 
+try:
+    from safety.velocity_limiter import VelocityLimiter, VelocityConfig
+except ImportError:
+    from ..safety.velocity_limiter import VelocityLimiter, VelocityConfig
+
 logger = logging.getLogger(__name__)
 
 
@@ -80,6 +85,7 @@ class PredictiveMaintenanceOrchestrator:
         health_calculator: Optional[Any] = None,
         signal_processor: Optional[Any] = None,
         explainer: Optional[Any] = None,
+        velocity_limiter: Optional[VelocityLimiter] = None,
         track_provenance: bool = True,
     ):
         """
@@ -93,6 +99,7 @@ class PredictiveMaintenanceOrchestrator:
             health_calculator: Health index calculator
             signal_processor: Signal processing module
             explainer: Explainability module
+            velocity_limiter: Velocity limiter for rate-of-change constraints
             track_provenance: Enable provenance tracking
         """
         self.config = config
@@ -105,6 +112,7 @@ class PredictiveMaintenanceOrchestrator:
         self._health_calculator = health_calculator
         self._signal_processor = signal_processor
         self._explainer = explainer
+        self._velocity_limiter = velocity_limiter or VelocityLimiter(VelocityConfig())
 
         # Internal state
         self._state = OrchestratorState()
@@ -202,6 +210,23 @@ class PredictiveMaintenanceOrchestrator:
             recommendations = self._generate_recommendations(
                 asset_id, asset, failure_pred, rul_est, anomaly_det, health_idx
             )
+
+        # Apply velocity limiting to constrain rate of change on key predictions
+        if self._velocity_limiter:
+            if failure_pred:
+                vel_result = self._velocity_limiter.apply(
+                    asset_id, 'failure_probability', failure_pred.failure_probability, timestamp
+                )
+                if vel_result.was_constrained:
+                    failure_pred.failure_probability = vel_result.constrained_value
+                    logger.debug(f'Velocity limited failure_probability for {asset_id}: {vel_result.original_value:.4f} -> {vel_result.constrained_value:.4f}')
+            if health_idx:
+                vel_result = self._velocity_limiter.apply(
+                    asset_id, 'health_index', health_idx.overall_health, timestamp
+                )
+                if vel_result.was_constrained:
+                    health_idx.overall_health = vel_result.constrained_value
+                    logger.debug(f'Velocity limited health_index for {asset_id}: {vel_result.original_value:.4f} -> {vel_result.constrained_value:.4f}')
 
         # Build result
         computation_time_ms = (time.time() - start_time) * 1000
@@ -359,6 +384,18 @@ class PredictiveMaintenanceOrchestrator:
         ))
 
         return schedule
+
+    def get_velocity_statistics(self, asset_id: Optional[str] = None) -> Dict[str, Any]:
+        """Get velocity limiter statistics for monitoring."""
+        if self._velocity_limiter:
+            return self._velocity_limiter.get_statistics(asset_id)
+        return {}
+
+    def reset_velocity_state(self, asset_id: Optional[str] = None) -> int:
+        """Reset velocity limiter state for asset or all assets."""
+        if self._velocity_limiter:
+            return self._velocity_limiter.reset(asset_id)
+        return 0
 
     def _predict_failure(
         self,

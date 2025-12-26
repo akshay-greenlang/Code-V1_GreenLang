@@ -110,6 +110,25 @@ from .audit_trail import (
     compute_provenance_hash,
 )
 
+# LIME Quality Explainer exports
+from .lime_quality_explainer import (
+    # Enums
+    FeatureSelectionMethod,
+    KernelType,
+    ConsistencyStatus,
+    ExplanationMode,
+    # Models
+    LIMEConfig,
+    FeatureExplanation,
+    LIMEExplanation,
+    # Main class
+    LIMEQualityExplainer,
+    # Factory
+    create_lime_explainer,
+    # Constants
+    QUALITY_FEATURE_METADATA,
+)
+
 
 # Module version
 __version__ = "1.0.0"
@@ -169,6 +188,18 @@ __all__ = [
     "ExplanationAuditTrail",
     "AuditExporter",
     "compute_provenance_hash",
+
+    # LIME Quality Explainer
+    "FeatureSelectionMethod",
+    "KernelType",
+    "ConsistencyStatus",
+    "ExplanationMode",
+    "LIMEConfig",
+    "FeatureExplanation",
+    "LIMEExplanation",
+    "LIMEQualityExplainer",
+    "create_lime_explainer",
+    "QUALITY_FEATURE_METADATA",
 ]
 
 

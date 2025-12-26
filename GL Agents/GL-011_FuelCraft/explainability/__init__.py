@@ -123,6 +123,35 @@ from .report_generator import (
     compute_report_hash,
 )
 
+from .lime_fuel_explainer import (
+    # Enums
+    FuelPropertyType,
+    PerturbationType,
+    # Data models
+    ChemistryConstraint,
+    FuelLocalSurrogateModel,
+    FuelFeatureContribution,
+    LIMEFuelExplanation,
+    # Explainer classes
+    LIMEFuelExplainer,
+)
+
+from .causal_fuel_analyzer import (
+    # Enums
+    CausalNodeType,
+    CausalEdgeType,
+    # Data models
+    CausalNode,
+    CausalEdge,
+    CounterfactualResult,
+    CausalExplanation,
+    # DAG and Analyzer classes
+    FuelCausalDAG,
+    CausalFuelAnalyzer,
+    # Utility functions
+    validate_causal_explanation,
+)
+
 __version__ = "1.0.0"
 __author__ = "GreenLang AI Team"
 
@@ -188,4 +217,22 @@ __all__ = [
     "validate_report_citations",
     "export_report",
     "compute_report_hash",
+    # LIME Fuel Explainer
+    "FuelPropertyType",
+    "PerturbationType",
+    "ChemistryConstraint",
+    "FuelLocalSurrogateModel",
+    "FuelFeatureContribution",
+    "LIMEFuelExplanation",
+    "LIMEFuelExplainer",
+    # Causal Fuel Analyzer
+    "CausalNodeType",
+    "CausalEdgeType",
+    "CausalNode",
+    "CausalEdge",
+    "CounterfactualResult",
+    "CausalExplanation",
+    "FuelCausalDAG",
+    "CausalFuelAnalyzer",
+    "validate_causal_explanation",
 ]

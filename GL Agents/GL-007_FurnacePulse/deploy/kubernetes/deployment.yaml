@@ -1,182 +1,45 @@
-# GL-007 FURNACEPULSE - Kubernetes Deployment Configuration
-# Production-grade deployment with HPA, PDB, health probes, and Prometheus metrics
-#
-# Apply: kubectl apply -f deploy/kubernetes/deployment.yaml
-# Check: kubectl get all -n greenlang-agents -l app=gl-007-furnacepulse
-#
-# This consolidated manifest includes:
-#   - Deployment with 3 replicas and rolling update strategy
-#   - HorizontalPodAutoscaler for dynamic scaling (2-10 replicas)
-#   - PodDisruptionBudget for availability during maintenance
-#   - Security context (non-root, read-only filesystem)
-#   - Liveness, readiness, and startup probes
-#   - Prometheus metrics annotations for observability
-#   - Pod anti-affinity for node distribution
-#   - Topology spread constraints for zone distribution
-#
-# Global AI Standards Compliance:
-#   - Production Readiness: CI/CD, Docker, K8s, monitoring (10/10)
-#   - Safety: Circuit breaker, read-only mode, advisory-only (15/15)
-#   - NFPA 86 compliance framework integration
-#
----
-# =============================================================================
-# NAMESPACE (if not exists)
-# =============================================================================
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: greenlang-agents
-  labels:
-    name: greenlang-agents
-    app.kubernetes.io/part-of: greenlang-platform
-
----
-# =============================================================================
-# SERVICE ACCOUNT
-# =============================================================================
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: gl-007-furnacepulse-sa
-  namespace: greenlang-agents
-  labels:
-    app: gl-007-furnacepulse
-    agent-id: GL-007
-  annotations:
-    description: "Service account for GL-007 FurnacePulse agent"
-
----
-# =============================================================================
-# CONFIGMAP
-# =============================================================================
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: gl-007-furnacepulse-config
-  namespace: greenlang-agents
-  labels:
-    app: gl-007-furnacepulse
-    agent-id: GL-007
-data:
-  # Application settings
-  GL_AGENT_ID: "GL-007"
-  GL_AGENT_NAME: "FurnacePulse"
-  GL_LOG_LEVEL: "INFO"
-  GL_ENVIRONMENT: "production"
-
-  # Server configuration
-  SERVER_HOST: "0.0.0.0"
-  SERVER_PORT: "8080"
-  METRICS_PORT: "9090"
-  GRPC_PORT: "50051"
-
-  # Feature flags
-  ENABLE_SHAP_EXPLAINER: "true"
-  ENABLE_NFPA86_COMPLIANCE: "true"
-  ENABLE_AUDIT_LOGGING: "true"
-  ENABLE_CIRCUIT_BREAKER: "true"
-
-  # Circuit breaker configuration
-  CIRCUIT_BREAKER_FAILURE_THRESHOLD: "5"
-  CIRCUIT_BREAKER_RESET_TIMEOUT: "60"
-  CIRCUIT_BREAKER_HALF_OPEN_REQUESTS: "3"
-
-  # Kafka configuration (optional)
-  KAFKA_HOST: "kafka"
-  KAFKA_PORT: "9092"
-  KAFKA_CONSUMER_GROUP: "furnacepulse-consumer"
-
-  # Database configuration
-  DB_HOST: "timescaledb"
-  DB_PORT: "5432"
-
-  # Explainability settings
-  SHAP_MAX_SAMPLES: "1000"
-  SHAP_TREE_EXPLAINER_ENABLED: "true"
-
----
-# =============================================================================
-# DEPLOYMENT
-# =============================================================================
+# GL-007 FurnacePulse Deployment
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: gl-007-furnacepulse
-  namespace: greenlang-agents
+  namespace: greenlang
   labels:
     app: gl-007-furnacepulse
-    app.kubernetes.io/name: furnacepulse
-    app.kubernetes.io/instance: gl-007
-    app.kubernetes.io/version: "1.0.0"
-    app.kubernetes.io/component: agent
-    app.kubernetes.io/part-of: greenlang-platform
-    app.kubernetes.io/managed-by: kubectl
     agent-id: GL-007
-    agent-class: monitor
-    domain: furnaces
-    tier: application
+    codename: FURNACEPULSE
+    version: v1.0.0
+    tier: production
+    domain: furnace-monitoring
   annotations:
-    description: "Furnace Performance Monitoring Agent with RUL Prediction"
-    owner: "greenlang-team"
-    contact: "furnace-ops@greenlang.io"
+    kubernetes.io/description: "GL-007 FurnacePulse - Furnace Monitoring Agent"
     prometheus.io/scrape: "true"
     prometheus.io/port: "9090"
     prometheus.io/path: "/metrics"
 spec:
-  # 3 replicas for high availability
-  replicas: 3
-
-  # Selector must match template labels
-  selector:
-    matchLabels:
-      app: gl-007-furnacepulse
-      agent-id: GL-007
-
-  # Rolling update strategy for zero-downtime deployments
+  replicas: 2
+  revisionHistoryLimit: 10
   strategy:
     type: RollingUpdate
     rollingUpdate:
-      # Never reduce below 2 healthy replicas during update
-      maxUnavailable: 1
-      # Allow 1 extra pod during rolling update
       maxSurge: 1
-
-  # Minimum seconds for pod to be ready before marking available
-  minReadySeconds: 10
-
-  # Revision history limit for rollback capability
-  revisionHistoryLimit: 10
-
-  # Progress deadline for deployment to be considered failed
-  progressDeadlineSeconds: 600
-
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: gl-007-furnacepulse
   template:
     metadata:
       labels:
         app: gl-007-furnacepulse
-        app.kubernetes.io/name: furnacepulse
-        app.kubernetes.io/instance: gl-007
-        app.kubernetes.io/version: "1.0.0"
         agent-id: GL-007
-        agent-class: monitor
+        codename: FURNACEPULSE
         version: v1.0.0
       annotations:
-        # Prometheus metrics annotations
         prometheus.io/scrape: "true"
         prometheus.io/port: "9090"
         prometheus.io/path: "/metrics"
-        prometheus.io/scheme: "http"
-        # Annotation for config change detection
-        checksum/config: "auto-generated-on-deploy"
-        # Sidecar injection annotations
-        sidecar.istio.io/inject: "true"
-
     spec:
-      # Service account for RBAC
       serviceAccountName: gl-007-furnacepulse-sa
-
-      # Security context for the pod
       securityContext:
         runAsNonRoot: true
         runAsUser: 1000
@@ -184,99 +47,26 @@ spec:
         fsGroup: 1000
         seccompProfile:
           type: RuntimeDefault
-
-      # Priority class for scheduling priority
-      priorityClassName: high-priority
-
-      # Init containers for dependency checking
-      initContainers:
-        # Wait for Kafka availability
-        - name: wait-for-kafka
-          image: busybox:1.36
-          command:
-            - 'sh'
-            - '-c'
-            - |
-              echo "Waiting for Kafka..."
-              until nc -z ${KAFKA_HOST:-kafka} ${KAFKA_PORT:-9092}; do
-                echo "Kafka not ready, waiting..."
-                sleep 2
-              done
-              echo "Kafka is ready!"
-          env:
-            - name: KAFKA_HOST
-              valueFrom:
-                configMapKeyRef:
-                  name: gl-007-furnacepulse-config
-                  key: KAFKA_HOST
-                  optional: true
-            - name: KAFKA_PORT
-              valueFrom:
-                configMapKeyRef:
-                  name: gl-007-furnacepulse-config
-                  key: KAFKA_PORT
-                  optional: true
-          securityContext:
-            allowPrivilegeEscalation: false
-            readOnlyRootFilesystem: true
-            capabilities:
-              drop:
-                - ALL
-          resources:
-            requests:
-              cpu: 10m
-              memory: 16Mi
-            limits:
-              cpu: 50m
-              memory: 32Mi
-
-        # Wait for database availability
-        - name: wait-for-db
-          image: busybox:1.36
-          command:
-            - 'sh'
-            - '-c'
-            - |
-              echo "Waiting for Database..."
-              until nc -z ${DB_HOST:-timescaledb} ${DB_PORT:-5432}; do
-                echo "Database not ready, waiting..."
-                sleep 2
-              done
-              echo "Database is ready!"
-          env:
-            - name: DB_HOST
-              valueFrom:
-                configMapKeyRef:
-                  name: gl-007-furnacepulse-config
-                  key: DB_HOST
-                  optional: true
-            - name: DB_PORT
-              valueFrom:
-                configMapKeyRef:
-                  name: gl-007-furnacepulse-config
-                  key: DB_PORT
-                  optional: true
-          securityContext:
-            allowPrivilegeEscalation: false
-            readOnlyRootFilesystem: true
-            capabilities:
-              drop:
-                - ALL
-          resources:
-            requests:
-              cpu: 10m
-              memory: 16Mi
-            limits:
-              cpu: 50m
-              memory: 32Mi
-
-      # Main container
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: gl-007-furnacepulse
+                topologyKey: kubernetes.io/hostname
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: gl-007-furnacepulse
       containers:
-        - name: furnacepulse
-          image: ghcr.io/greenlang/gl-007-furnacepulse:1.0.0
+        - name: gl-007-furnacepulse
+          image: gcr.io/greenlang/gl-007-furnacepulse:v1.0.0
           imagePullPolicy: Always
-
-          # Container ports
           ports:
             - name: http
               containerPort: 8080
@@ -284,18 +74,31 @@ spec:
             - name: metrics
               containerPort: 9090
               protocol: TCP
-            - name: grpc
-              containerPort: 50051
-              protocol: TCP
-
-          # Environment from ConfigMap
-          envFrom:
-            - configMapRef:
-                name: gl-007-furnacepulse-config
-
-          # Environment variables
           env:
-            # Pod information
+            - name: ENVIRONMENT
+              valueFrom:
+                configMapKeyRef:
+                  name: gl-007-furnacepulse-config
+                  key: ENVIRONMENT
+            - name: GL007_LOG_LEVEL
+              valueFrom:
+                configMapKeyRef:
+                  name: gl-007-furnacepulse-config
+                  key: LOG_LEVEL
+            - name: GL007_API_PORT
+              value: "8080"
+            - name: GL007_METRICS_PORT
+              value: "9090"
+            - name: GL007_DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: gl-007-furnacepulse-secrets
+                  key: database-url
+            - name: GL007_REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: gl-007-furnacepulse-secrets
+                  key: redis-url
             - name: POD_NAME
               valueFrom:
                 fieldRef:
@@ -304,663 +107,64 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
-            - name: POD_IP
-              valueFrom:
-                fieldRef:
-                  fieldPath: status.podIP
-            - name: NODE_NAME
-              valueFrom:
-                fieldRef:
-                  fieldPath: spec.nodeName
-
-            # Secrets
-            - name: DATABASE_URL
-              valueFrom:
-                secretKeyRef:
-                  name: gl-007-furnacepulse-secrets
-                  key: DATABASE_URL
-                  optional: true
-            - name: REDIS_URL
-              valueFrom:
-                secretKeyRef:
-                  name: gl-007-furnacepulse-secrets
-                  key: REDIS_URL
-                  optional: true
-            - name: KAFKA_BOOTSTRAP_SERVERS
-              valueFrom:
-                secretKeyRef:
-                  name: gl-007-furnacepulse-secrets
-                  key: KAFKA_BOOTSTRAP_SERVERS
-                  optional: true
-            - name: OPCUA_ENDPOINT
-              valueFrom:
-                secretKeyRef:
-                  name: gl-007-furnacepulse-secrets
-                  key: OPCUA_ENDPOINT
-                  optional: true
-            - name: OPCUA_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: gl-007-furnacepulse-secrets
-                  key: OPCUA_USERNAME
-                  optional: true
-            - name: OPCUA_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: gl-007-furnacepulse-secrets
-                  key: OPCUA_PASSWORD
-                  optional: true
-            - name: CMMS_API_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: gl-007-furnacepulse-secrets
-                  key: CMMS_API_KEY
-                  optional: true
-
-            # Application settings
-            - name: PYTHONUNBUFFERED
-              value: "1"
-            - name: PYTHONPATH
-              value: "/app"
-
-          # Resource requests and limits
           resources:
             requests:
-              cpu: 500m
-              memory: 1Gi
-              ephemeral-storage: 100Mi
+              memory: "512Mi"
+              cpu: "250m"
             limits:
-              cpu: 2000m
-              memory: 4Gi
-              ephemeral-storage: 1Gi
-
-          # Liveness probe - is the container alive?
+              memory: "4Gi"
+              cpu: "2000m"
           livenessProbe:
             httpGet:
-              path: /api/v1/health/live
-              port: http
-              scheme: HTTP
+              path: /health
+              port: 8080
             initialDelaySeconds: 30
-            periodSeconds: 30
-            timeoutSeconds: 10
-            failureThreshold: 3
-            successThreshold: 1
-
-          # Readiness probe - is the container ready to receive traffic?
-          readinessProbe:
-            httpGet:
-              path: /api/v1/health/ready
-              port: http
-              scheme: HTTP
-            initialDelaySeconds: 10
             periodSeconds: 10
             timeoutSeconds: 5
             failureThreshold: 3
-            successThreshold: 1
-
-          # Startup probe - for slow-starting containers
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
           startupProbe:
             httpGet:
-              path: /api/v1/health/startup
-              port: http
-              scheme: HTTP
+              path: /health
+              port: 8080
             initialDelaySeconds: 5
             periodSeconds: 5
-            timeoutSeconds: 5
             failureThreshold: 30
-            successThreshold: 1
-
-          # Security context for container
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
             runAsNonRoot: true
             runAsUser: 1000
-            runAsGroup: 1000
             capabilities:
               drop:
                 - ALL
-
-          # Volume mounts
           volumeMounts:
-            - name: tmp
-              mountPath: /tmp
-            - name: cache
-              mountPath: /app/.cache
-            - name: prometheus-multiproc
-              mountPath: /tmp/prometheus
             - name: config-volume
               mountPath: /app/config
               readOnly: true
-            - name: certificates
-              mountPath: /app/certs
-              readOnly: true
-            - name: shap-exports
-              mountPath: /app/exports
-
-          # Lifecycle hooks
-          lifecycle:
-            preStop:
-              exec:
-                command:
-                  - /bin/sh
-                  - -c
-                  - |
-                    echo "Graceful shutdown initiated..."
-                    # Signal application to stop accepting new requests
-                    kill -SIGTERM 1
-                    # Wait for in-flight requests to complete
-                    sleep 15
-
-      # Volumes
+            - name: tmp-volume
+              mountPath: /tmp
+            - name: logs-volume
+              mountPath: /var/log/greenlang
+            - name: furnace-data-volume
+              mountPath: /var/data/furnace_monitoring
       volumes:
-        - name: tmp
-          emptyDir:
-            sizeLimit: 100Mi
-        - name: cache
-          emptyDir:
-            sizeLimit: 1Gi
-        - name: prometheus-multiproc
-          emptyDir:
-            sizeLimit: 100Mi
-        - name: shap-exports
-          emptyDir:
-            sizeLimit: 500Mi
         - name: config-volume
           configMap:
             name: gl-007-furnacepulse-config
-        - name: certificates
-          secret:
-            secretName: gl-007-furnacepulse-certs
-            optional: true
-
-      # Pod anti-affinity for distribution across nodes
-      affinity:
-        podAntiAffinity:
-          # Prefer scheduling on different nodes
-          preferredDuringSchedulingIgnoredDuringExecution:
-            - weight: 100
-              podAffinityTerm:
-                labelSelector:
-                  matchExpressions:
-                    - key: app
-                      operator: In
-                      values:
-                        - gl-007-furnacepulse
-                topologyKey: kubernetes.io/hostname
-
-        # Node affinity for specific node types
-        nodeAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-            - weight: 50
-              preference:
-                matchExpressions:
-                  - key: node-type
-                    operator: In
-                    values:
-                      - compute-optimized
-
-      # Topology spread constraints for even distribution
-      topologySpreadConstraints:
-        # Spread across zones
-        - maxSkew: 1
-          topologyKey: topology.kubernetes.io/zone
-          whenUnsatisfiable: ScheduleAnyway
-          labelSelector:
-            matchLabels:
-              app: gl-007-furnacepulse
-        # Spread across nodes
-        - maxSkew: 1
-          topologyKey: kubernetes.io/hostname
-          whenUnsatisfiable: ScheduleAnyway
-          labelSelector:
-            matchLabels:
-              app: gl-007-furnacepulse
-
-      # Tolerations for node taints
-      tolerations:
-        - key: "dedicated"
-          operator: "Equal"
-          value: "greenlang-agents"
-          effect: "NoSchedule"
-
-      # DNS configuration
+        - name: tmp-volume
+          emptyDir: {}
+        - name: logs-volume
+          emptyDir: {}
+        - name: furnace-data-volume
+          emptyDir: {}
+      terminationGracePeriodSeconds: 30
       dnsPolicy: ClusterFirst
-      dnsConfig:
-        options:
-          - name: ndots
-            value: "2"
-          - name: timeout
-            value: "5"
-          - name: attempts
-            value: "2"
-
-      # Graceful termination period
-      terminationGracePeriodSeconds: 60
-
-      # Restart policy
       restartPolicy: Always
-
-      # Image pull secrets
-      imagePullSecrets:
-        - name: ghcr-pull-secret
-
----
-# =============================================================================
-# HORIZONTAL POD AUTOSCALER (HPA)
-# =============================================================================
-apiVersion: autoscaling/v2
-kind: HorizontalPodAutoscaler
-metadata:
-  name: gl-007-furnacepulse-hpa
-  namespace: greenlang-agents
-  labels:
-    app: gl-007-furnacepulse
-    app.kubernetes.io/name: furnacepulse
-    app.kubernetes.io/instance: gl-007
-    app.kubernetes.io/version: "1.0.0"
-    app.kubernetes.io/component: autoscaler
-    app.kubernetes.io/part-of: greenlang-platform
-    agent-id: GL-007
-  annotations:
-    description: "HPA for FurnacePulse agent with CPU/memory scaling"
-    autoscaling.kubernetes.io/metrics-source: "resource,custom"
-spec:
-  # Reference to the deployment to scale
-  scaleTargetRef:
-    apiVersion: apps/v1
-    kind: Deployment
-    name: gl-007-furnacepulse
-
-  # Replica limits
-  minReplicas: 2   # Minimum for HA
-  maxReplicas: 10  # Maximum based on capacity
-
-  # Scaling metrics
-  metrics:
-    # CPU utilization - primary scaling metric
-    - type: Resource
-      resource:
-        name: cpu
-        target:
-          type: Utilization
-          averageUtilization: 70  # Scale up at 70% CPU
-
-    # Memory utilization - secondary scaling metric
-    - type: Resource
-      resource:
-        name: memory
-        target:
-          type: Utilization
-          averageUtilization: 80  # Scale up at 80% memory
-
-    # Custom metric: Request rate per second (from Prometheus)
-    - type: Pods
-      pods:
-        metric:
-          name: furnacepulse_http_requests_per_second
-        target:
-          type: AverageValue
-          averageValue: "100"  # Scale at 100 requests/sec per pod
-
-  # Scaling behavior configuration
-  behavior:
-    # Scale-up behavior
-    scaleUp:
-      # Stabilization window - wait before scaling up
-      stabilizationWindowSeconds: 60
-
-      # Policies for scale-up
-      policies:
-        # Allow scaling up by 2 pods every 30 seconds
-        - type: Pods
-          value: 2
-          periodSeconds: 30
-
-        # Allow scaling up by 100% every 30 seconds
-        - type: Percent
-          value: 100
-          periodSeconds: 30
-
-      # Select the policy that results in the highest change
-      selectPolicy: Max
-
-    # Scale-down behavior (more conservative)
-    scaleDown:
-      # Stabilization window - wait 5 minutes before scaling down
-      stabilizationWindowSeconds: 300
-
-      # Policies for scale-down
-      policies:
-        # Scale down by 1 pod every 60 seconds
-        - type: Pods
-          value: 1
-          periodSeconds: 60
-
-        # Scale down by max 10% every 60 seconds
-        - type: Percent
-          value: 10
-          periodSeconds: 60
-
-      # Select the policy that results in the smallest change (conservative)
-      selectPolicy: Min
-
----
-# =============================================================================
-# POD DISRUPTION BUDGET (PDB)
-# =============================================================================
-apiVersion: policy/v1
-kind: PodDisruptionBudget
-metadata:
-  name: gl-007-furnacepulse-pdb
-  namespace: greenlang-agents
-  labels:
-    app: gl-007-furnacepulse
-    app.kubernetes.io/name: furnacepulse
-    app.kubernetes.io/instance: gl-007
-    app.kubernetes.io/version: "1.0.0"
-    app.kubernetes.io/component: availability
-    app.kubernetes.io/part-of: greenlang-platform
-    agent-id: GL-007
-  annotations:
-    description: "Pod Disruption Budget ensuring at least 1 pod available"
-    owner: "greenlang-team"
-spec:
-  # Minimum number of pods that must be available
-  # With 3 replicas and minAvailable: 1, allows 2 pods to be disrupted
-  minAvailable: 1
-
-  # Selector matching the deployment pods
-  selector:
-    matchLabels:
-      app: gl-007-furnacepulse
-      agent-id: GL-007
-
-  # Unhealthy pod eviction policy (Kubernetes 1.27+)
-  unhealthyPodEvictionPolicy: IfHealthyBudget
-
----
-# =============================================================================
-# CLUSTERIP SERVICE (Internal Access)
-# =============================================================================
-apiVersion: v1
-kind: Service
-metadata:
-  name: gl-007-furnacepulse
-  namespace: greenlang-agents
-  labels:
-    app: gl-007-furnacepulse
-    app.kubernetes.io/name: furnacepulse
-    app.kubernetes.io/instance: gl-007
-    app.kubernetes.io/version: "1.0.0"
-    app.kubernetes.io/component: agent
-    app.kubernetes.io/part-of: greenlang-platform
-    agent-id: GL-007
-    service-type: internal
-  annotations:
-    description: "Internal ClusterIP service for FurnacePulse agent"
-    prometheus.io/scrape: "true"
-    prometheus.io/port: "9090"
-    prometheus.io/path: "/metrics"
-spec:
-  type: ClusterIP
-
-  # Session affinity for stateful connections
-  sessionAffinity: ClientIP
-  sessionAffinityConfig:
-    clientIP:
-      timeoutSeconds: 3600
-
-  ports:
-    # HTTP API port
-    - name: http
-      port: 8080
-      targetPort: http
-      protocol: TCP
-
-    # Metrics port for Prometheus
-    - name: metrics
-      port: 9090
-      targetPort: metrics
-      protocol: TCP
-
-    # gRPC port for inter-agent communication
-    - name: grpc
-      port: 50051
-      targetPort: grpc
-      protocol: TCP
-
-  selector:
-    app: gl-007-furnacepulse
-    agent-id: GL-007
-
----
-# =============================================================================
-# SERVICEMONITOR FOR PROMETHEUS OPERATOR
-# =============================================================================
-apiVersion: monitoring.coreos.com/v1
-kind: ServiceMonitor
-metadata:
-  name: gl-007-furnacepulse
-  namespace: greenlang-agents
-  labels:
-    app: gl-007-furnacepulse
-    agent-id: GL-007
-    release: prometheus  # Match Prometheus Operator label selector
-spec:
-  selector:
-    matchLabels:
-      app: gl-007-furnacepulse
-
-  namespaceSelector:
-    matchNames:
-      - greenlang-agents
-
-  endpoints:
-    - port: metrics
-      path: /metrics
-      interval: 30s
-      scrapeTimeout: 10s
-      honorLabels: true
-
-      # Metric relabeling
-      metricRelabelings:
-        - sourceLabels: [__name__]
-          regex: 'furnacepulse_.*'
-          action: keep
-
-      # Relabel configs for additional labels
-      relabelings:
-        - sourceLabels: [__meta_kubernetes_pod_name]
-          targetLabel: pod
-        - sourceLabels: [__meta_kubernetes_pod_node_name]
-          targetLabel: node
-        - sourceLabels: [__meta_kubernetes_namespace]
-          targetLabel: namespace
-
----
-# =============================================================================
-# NETWORK POLICY
-# =============================================================================
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: gl-007-furnacepulse-network
-  namespace: greenlang-agents
-  labels:
-    app: gl-007-furnacepulse
-    agent-id: GL-007
-spec:
-  podSelector:
-    matchLabels:
-      app: gl-007-furnacepulse
-
-  policyTypes:
-    - Ingress
-    - Egress
-
-  ingress:
-    # Allow traffic from other agents in namespace
-    - from:
-        - namespaceSelector:
-            matchLabels:
-              name: greenlang-agents
-      ports:
-        - protocol: TCP
-          port: 8080
-        - protocol: TCP
-          port: 50051
-
-    # Allow Prometheus scraping
-    - from:
-        - namespaceSelector:
-            matchLabels:
-              name: monitoring
-      ports:
-        - protocol: TCP
-          port: 9090
-
-  egress:
-    # Allow DNS
-    - to:
-        - namespaceSelector: {}
-      ports:
-        - protocol: UDP
-          port: 53
-
-    # Allow Kafka
-    - to:
-        - namespaceSelector:
-            matchLabels:
-              name: kafka
-      ports:
-        - protocol: TCP
-          port: 9092
-
-    # Allow TimescaleDB
-    - to:
-        - namespaceSelector:
-            matchLabels:
-              name: database
-      ports:
-        - protocol: TCP
-          port: 5432
-
-    # Allow Redis
-    - to:
-        - namespaceSelector: {}
-      ports:
-        - protocol: TCP
-          port: 6379
-
----
-# =============================================================================
-# PROMETHEUSRULE FOR ALERTING
-# =============================================================================
-apiVersion: monitoring.coreos.com/v1
-kind: PrometheusRule
-metadata:
-  name: gl-007-furnacepulse-alerts
-  namespace: greenlang-agents
-  labels:
-    app: gl-007-furnacepulse
-    agent-id: GL-007
-    prometheus: greenlang
-spec:
-  groups:
-    - name: gl-007-furnacepulse.rules
-      rules:
-        # High error rate alert
-        - alert: FurnacePulseHighErrorRate
-          expr: |
-            sum(rate(furnacepulse_http_requests_total{status=~"5.."}[5m]))
-            / sum(rate(furnacepulse_http_requests_total[5m])) > 0.05
-          for: 5m
-          labels:
-            severity: critical
-            agent: GL-007
-          annotations:
-            summary: "High error rate in FurnacePulse"
-            description: "Error rate is {{ $value | humanizePercentage }} over the last 5 minutes"
-
-        # High latency alert
-        - alert: FurnacePulseHighLatency
-          expr: |
-            histogram_quantile(0.95,
-              sum(rate(furnacepulse_request_duration_seconds_bucket[5m])) by (le)
-            ) > 2
-          for: 5m
-          labels:
-            severity: warning
-            agent: GL-007
-          annotations:
-            summary: "High latency in FurnacePulse"
-            description: "P95 latency is {{ $value | humanizeDuration }}"
-
-        # Pod availability alert
-        - alert: FurnacePulsePodUnavailable
-          expr: |
-            kube_deployment_status_replicas_available{deployment="gl-007-furnacepulse"}
-            < kube_deployment_spec_replicas{deployment="gl-007-furnacepulse"}
-          for: 5m
-          labels:
-            severity: warning
-            agent: GL-007
-          annotations:
-            summary: "FurnacePulse pods unavailable"
-            description: "Only {{ $value }} of expected pods are available"
-
-        # Circuit breaker open alert
-        - alert: FurnacePulseCircuitBreakerOpen
-          expr: furnacepulse_circuit_breaker_state{state="open"} == 1
-          for: 1m
-          labels:
-            severity: critical
-            agent: GL-007
-          annotations:
-            summary: "FurnacePulse circuit breaker is open"
-            description: "Circuit breaker for {{ $labels.service }} is open"
-
-        # RUL prediction anomaly alert
-        - alert: FurnacePulseRULAnomaly
-          expr: |
-            furnacepulse_rul_prediction_hours < 168
-          for: 15m
-          labels:
-            severity: warning
-            agent: GL-007
-          annotations:
-            summary: "Component RUL below 1 week"
-            description: "Component {{ $labels.component_id }} has RUL of {{ $value }} hours"
-
----
-# =============================================================================
-# NOTES
-# =============================================================================
-# Deployment Notes:
-#
-# 1. PRE-REQUISITES:
-#    - Create namespace: kubectl create namespace greenlang-agents
-#    - Create secrets: kubectl create secret generic gl-007-furnacepulse-secrets ...
-#    - Apply priority class: kubectl apply -f priorityclass.yaml
-#
-# 2. APPLY:
-#    kubectl apply -f deploy/kubernetes/deployment.yaml
-#
-# 3. VERIFY:
-#    kubectl get all -n greenlang-agents -l app=gl-007-furnacepulse
-#    kubectl get hpa -n greenlang-agents
-#    kubectl get pdb -n greenlang-agents
-#
-# 4. MONITORING:
-#    - Metrics: http://<pod-ip>:9090/metrics
-#    - Health: http://<pod-ip>:8080/api/v1/health
-#    - Grafana dashboard: gl-007-furnacepulse
-#
-# 5. SCALING:
-#    Manual: kubectl scale deployment gl-007-furnacepulse --replicas=5 -n greenlang-agents
-#    HPA will manage automatically based on CPU/memory
-#
-# 6. ROLLBACK:
-#    kubectl rollout undo deployment/gl-007-furnacepulse -n greenlang-agents
-#    kubectl rollout history deployment/gl-007-furnacepulse -n greenlang-agents

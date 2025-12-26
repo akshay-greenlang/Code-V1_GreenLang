@@ -1,0 +1,67 @@
+# GL-001 ThermalCommand Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-001-thermalcommand
+  namespace: greenlang
+  labels:
+    app: gl-001-thermalcommand
+    agent-id: GL-001
+    codename: THERMALCOMMAND
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9090"
+    prometheus.io/path: "/metrics"
+spec:
+  type: ClusterIP
+  selector:
+    app: gl-001-thermalcommand
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+      protocol: TCP
+    - name: metrics
+      port: 9090
+      targetPort: 9090
+      protocol: TCP
+---
+# Headless service for StatefulSet or direct pod access
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-001-thermalcommand-headless
+  namespace: greenlang
+  labels:
+    app: gl-001-thermalcommand
+    agent-id: GL-001
+spec:
+  type: ClusterIP
+  clusterIP: None
+  selector:
+    app: gl-001-thermalcommand
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+      protocol: TCP
+---
+# Metrics service for Prometheus ServiceMonitor
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-001-thermalcommand-metrics
+  namespace: greenlang
+  labels:
+    app: gl-001-thermalcommand
+    agent-id: GL-001
+    monitoring: prometheus
+spec:
+  type: ClusterIP
+  selector:
+    app: gl-001-thermalcommand
+  ports:
+    - name: metrics
+      port: 9090
+      targetPort: 9090
+      protocol: TCP

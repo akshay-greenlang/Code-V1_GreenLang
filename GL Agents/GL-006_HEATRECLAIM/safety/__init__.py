@@ -69,6 +69,29 @@ from .exceptions import (
     ViolationDetails,
     ViolationSeverity,
 )
+from .circuit_breaker import (
+    # Enums
+    CircuitBreakerState,
+    CircuitBreakerEvent,
+    HealthLevel,
+    # Exceptions
+    CircuitBreakerError,
+    CircuitOpenError,
+    CircuitHalfOpenError,
+    LoadShedError,
+    # Models
+    DynamicCircuitBreakerConfig,
+    CircuitBreakerMetrics,
+    CircuitBreakerAuditRecord,
+    # Core Classes
+    DynamicCircuitBreaker,
+    CircuitBreakerRegistry,
+    HeatReclaimCircuitBreakers,
+    # Functions
+    get_circuit_breaker,
+    get_or_create_circuit_breaker,
+    circuit_protected,
+)
 
 __all__ = [
     # Original validator
@@ -105,4 +128,21 @@ __all__ = [
     "ThermalStressViolation",
     "ViolationDetails",
     "ViolationSeverity",
+    # Dynamic Circuit Breaker
+    "CircuitBreakerState",
+    "CircuitBreakerEvent",
+    "HealthLevel",
+    "CircuitBreakerError",
+    "CircuitOpenError",
+    "CircuitHalfOpenError",
+    "LoadShedError",
+    "DynamicCircuitBreakerConfig",
+    "CircuitBreakerMetrics",
+    "CircuitBreakerAuditRecord",
+    "DynamicCircuitBreaker",
+    "CircuitBreakerRegistry",
+    "HeatReclaimCircuitBreakers",
+    "get_circuit_breaker",
+    "get_or_create_circuit_breaker",
+    "circuit_protected",
 ]

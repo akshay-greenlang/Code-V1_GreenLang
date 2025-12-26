@@ -1,218 +1,42 @@
-# GL-007 FURNACEPULSE - Horizontal Pod Autoscaler
-# Scales pods between 2-10 replicas based on CPU (70%) and memory metrics
-#
-# Apply: kubectl apply -f deploy/kubernetes/hpa.yaml
-# Check: kubectl get hpa gl-007-furnacepulse-hpa -n greenlang-agents
-#
-# Features:
-#   - CPU-based scaling at 70% threshold
-#   - Memory-based scaling at 80% threshold
-#   - Custom metrics support (Kafka consumer lag, request rate)
-#   - Stabilization windows to prevent thrashing
-#   - Controlled scale-up and scale-down policies
-#
----
+# GL-007 FurnacePulse Horizontal Pod Autoscaler
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
   name: gl-007-furnacepulse-hpa
-  namespace: greenlang-agents
+  namespace: greenlang
   labels:
     app: gl-007-furnacepulse
-    app.kubernetes.io/name: furnacepulse
-    app.kubernetes.io/instance: gl-007
-    app.kubernetes.io/version: "1.0.0"
-    app.kubernetes.io/component: autoscaler
-    app.kubernetes.io/part-of: greenlang-platform
     agent-id: GL-007
-  annotations:
-    description: "HPA for FurnacePulse agent with CPU/memory scaling"
-    autoscaling.kubernetes.io/metrics-source: "resource,custom"
 spec:
-  # Reference to the deployment to scale
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
     name: gl-007-furnacepulse
-
-  # Replica limits
-  minReplicas: 2   # Minimum for HA
-  maxReplicas: 10  # Maximum based on capacity
-
-  # Scaling metrics
+  minReplicas: 2
+  maxReplicas: 10
   metrics:
-    # CPU utilization - primary scaling metric
     - type: Resource
       resource:
         name: cpu
         target:
           type: Utilization
-          averageUtilization: 70  # Scale up at 70% CPU
-
-    # Memory utilization - secondary scaling metric
+          averageUtilization: 70
     - type: Resource
       resource:
         name: memory
         target:
           type: Utilization
-          averageUtilization: 80  # Scale up at 80% memory
-
-    # Custom metric: Request rate per second (from Prometheus)
-    # Requires prometheus-adapter or KEDA
-    - type: Pods
-      pods:
-        metric:
-          name: furnacepulse_http_requests_per_second
-        target:
-          type: AverageValue
-          averageValue: "100"  # Scale at 100 requests/sec per pod
-
-    # External metric: Kafka consumer lag
-    # Requires KEDA or custom metrics adapter
-    - type: External
-      external:
-        metric:
-          name: kafka_consumergroup_lag
-          selector:
-            matchLabels:
-              consumergroup: furnacepulse-consumer
-              topic: furnacepulse.telemetry.raw
-        target:
-          type: Value
-          value: "10000"  # Scale at 10k message lag
-
-  # Scaling behavior configuration
+          averageUtilization: 80
   behavior:
-    # Scale-up behavior
     scaleUp:
-      # Stabilization window - wait before scaling up
       stabilizationWindowSeconds: 60
-
-      # Policies for scale-up
       policies:
-        # Allow scaling up by 2 pods every 30 seconds
         - type: Pods
           value: 2
-          periodSeconds: 30
-
-        # Allow scaling up by 100% every 30 seconds
-        - type: Percent
-          value: 100
-          periodSeconds: 30
-
-      # Select the policy that results in the highest change
-      selectPolicy: Max
-
-    # Scale-down behavior (more conservative)
+          periodSeconds: 60
     scaleDown:
-      # Stabilization window - wait 5 minutes before scaling down
-      # This prevents thrashing from temporary load decreases
       stabilizationWindowSeconds: 300
-
-      # Policies for scale-down
       policies:
-        # Scale down by 1 pod every 60 seconds
         - type: Pods
           value: 1
-          periodSeconds: 60
-
-        # Scale down by max 10% every 60 seconds
-        - type: Percent
-          value: 10
-          periodSeconds: 60
-
-      # Select the policy that results in the smallest change (conservative)
-      selectPolicy: Min
-
----
-# ========================================
-# KEDA ScaledObject (Optional, for Kafka-based scaling)
-# ========================================
-# Uncomment if using KEDA for event-driven scaling
-#
-# apiVersion: keda.sh/v1alpha1
-# kind: ScaledObject
-# metadata:
-#   name: gl-007-furnacepulse-keda
-#   namespace: greenlang-agents
-#   labels:
-#     app: gl-007-furnacepulse
-#     agent-id: GL-007
-# spec:
-#   scaleTargetRef:
-#     apiVersion: apps/v1
-#     kind: Deployment
-#     name: gl-007-furnacepulse
-#
-#   minReplicaCount: 2
-#   maxReplicaCount: 10
-#
-#   pollingInterval: 30
-#   cooldownPeriod: 300
-#
-#   triggers:
-#     # Kafka consumer lag trigger
-#     - type: kafka
-#       metadata:
-#         bootstrapServers: kafka:9092
-#         consumerGroup: furnacepulse-consumer
-#         topic: furnacepulse.telemetry.raw
-#         lagThreshold: "10000"
-#         offsetResetPolicy: latest
-#
-#     # CPU trigger as fallback
-#     - type: cpu
-#       metricType: Utilization
-#       metadata:
-#         value: "70"
-#
-#     # Prometheus metrics trigger
-#     - type: prometheus
-#       metadata:
-#         serverAddress: http://prometheus:9090
-#         metricName: furnacepulse_processing_queue_depth
-#         threshold: "1000"
-#         query: |
-#           sum(furnacepulse_processing_queue_depth{namespace="greenlang-agents"})
-
----
-# ========================================
-# Vertical Pod Autoscaler (VPA) - Optional
-# ========================================
-# Automatically adjusts CPU/memory requests
-# Use with caution - may conflict with HPA
-#
-# apiVersion: autoscaling.k8s.io/v1
-# kind: VerticalPodAutoscaler
-# metadata:
-#   name: gl-007-furnacepulse-vpa
-#   namespace: greenlang-agents
-#   labels:
-#     app: gl-007-furnacepulse
-#     agent-id: GL-007
-# spec:
-#   targetRef:
-#     apiVersion: apps/v1
-#     kind: Deployment
-#     name: gl-007-furnacepulse
-#
-#   # UpdateMode: "Off" means VPA only provides recommendations
-#   # Change to "Auto" for automatic updates (disrupts pods)
-#   updatePolicy:
-#     updateMode: "Off"
-#
-#   resourcePolicy:
-#     containerPolicies:
-#       - containerName: furnacepulse
-#         # Minimum resources
-#         minAllowed:
-#           cpu: 100m
-#           memory: 256Mi
-#         # Maximum resources
-#         maxAllowed:
-#           cpu: 4000m
-#           memory: 8Gi
-#         # Controlled resources
-#         controlledResources: ["cpu", "memory"]
-#         # Controlled values (RequestsOnly for HPA compatibility)
-#         controlledValues: RequestsOnly
+          periodSeconds: 120

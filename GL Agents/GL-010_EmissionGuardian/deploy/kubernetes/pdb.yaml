@@ -1,0 +1,57 @@
+# GL-010 EmissionGuardian Pod Disruption Budget
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: gl-010-emissionguardian-pdb
+  namespace: greenlang
+  labels:
+    app: gl-010-emissionguardian
+    agent-id: GL-010
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: gl-010-emissionguardian
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: gl-010-emissionguardian-network-policy
+  namespace: greenlang
+spec:
+  podSelector:
+    matchLabels:
+      app: gl-010-emissionguardian
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: greenlang
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+      ports:
+        - protocol: TCP
+          port: 8080
+        - protocol: TCP
+          port: 9090
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: greenlang
+      ports:
+        - protocol: TCP
+          port: 5432
+        - protocol: TCP
+          port: 6379
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 443

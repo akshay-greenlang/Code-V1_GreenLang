@@ -1,0 +1,397 @@
+# GL-015 INSULSCAN Deployment
+# Insulation Scanning & Thermal Assessment Agent
+# Production-grade deployment with security hardening, health probes, and observability
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gl-015-insulscan
+  namespace: greenlang
+  labels:
+    app: gl-015-insulscan
+    app.kubernetes.io/name: gl-015-insulscan
+    app.kubernetes.io/instance: gl-015-insulscan-production
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/component: thermal-assessment
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/managed-by: gitops
+    component: insulation-scanner
+    agent-id: GL-015
+    codename: INSULSCAN
+    version: v1.0.0
+    tier: production
+    domain: thermal-assessment
+    team: process-heat
+  annotations:
+    kubernetes.io/description: "GL-015 INSULSCAN - Insulation Scanning & Thermal Assessment Agent"
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9090"
+    prometheus.io/path: "/metrics"
+    argocd.argoproj.io/sync-wave: "2"
+    fluxcd.io/automated: "false"
+spec:
+  replicas: 2
+  revisionHistoryLimit: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: gl-015-insulscan
+  template:
+    metadata:
+      labels:
+        app: gl-015-insulscan
+        app.kubernetes.io/name: gl-015-insulscan
+        app.kubernetes.io/instance: gl-015-insulscan-production
+        app.kubernetes.io/version: "1.0.0"
+        app.kubernetes.io/component: thermal-assessment
+        component: insulation-scanner
+        agent-id: GL-015
+        codename: INSULSCAN
+        version: v1.0.0
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+        prometheus.io/path: "/metrics"
+        sidecar.istio.io/inject: "true"
+        instrumentation.opentelemetry.io/inject-python: "true"
+    spec:
+      serviceAccountName: gl-015-insulscan-sa
+      automountServiceAccountToken: false
+
+      # Pod-level security context
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+
+      # Pod anti-affinity to spread replicas across nodes
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  app: gl-015-insulscan
+              topologyKey: kubernetes.io/hostname
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: gl-015-insulscan
+                topologyKey: topology.kubernetes.io/zone
+
+      # Topology spread constraints for zone distribution
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: gl-015-insulscan
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: DoNotSchedule
+          labelSelector:
+            matchLabels:
+              app: gl-015-insulscan
+
+      containers:
+        - name: gl-015-insulscan
+          image: greenlang/gl-015-insulscan:latest
+          imagePullPolicy: Always
+
+          ports:
+            - name: http
+              containerPort: 8015
+              protocol: TCP
+            - name: grpc
+              containerPort: 50051
+              protocol: TCP
+            - name: metrics
+              containerPort: 9090
+              protocol: TCP
+
+          # Environment variables from ConfigMap
+          env:
+            - name: ENVIRONMENT
+              valueFrom:
+                configMapKeyRef:
+                  name: gl-015-insulscan-config
+                  key: ENVIRONMENT
+            - name: GL015_AGENT_ID
+              valueFrom:
+                configMapKeyRef:
+                  name: gl-015-insulscan-config
+                  key: GL015_AGENT_ID
+            - name: GL015_AGENT_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: gl-015-insulscan-config
+                  key: GL015_AGENT_NAME
+            - name: GL015_VERSION
+              valueFrom:
+                configMapKeyRef:
+                  name: gl-015-insulscan-config
+                  key: GL015_VERSION
+            - name: LOG_LEVEL
+              valueFrom:
+                configMapKeyRef:
+                  name: gl-015-insulscan-config
+                  key: LOG_LEVEL
+            - name: LOG_FORMAT
+              valueFrom:
+                configMapKeyRef:
+                  name: gl-015-insulscan-config
+                  key: LOG_FORMAT
+            - name: TRACK_PROVENANCE
+              valueFrom:
+                configMapKeyRef:
+                  name: gl-015-insulscan-config
+                  key: TRACK_PROVENANCE
+            - name: THERMAL_IMAGING_ENGINE
+              valueFrom:
+                configMapKeyRef:
+                  name: gl-015-insulscan-config
+                  key: THERMAL_IMAGING_ENGINE
+            - name: ML_SERVICE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: gl-015-insulscan-config
+                  key: ML_SERVICE_URL
+            - name: CMMS_SERVICE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: gl-015-insulscan-config
+                  key: CMMS_SERVICE_URL
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              valueFrom:
+                configMapKeyRef:
+                  name: gl-015-insulscan-config
+                  key: KAFKA_BOOTSTRAP_SERVERS
+
+            # Static port configuration
+            - name: GL015_API_PORT
+              value: "8015"
+            - name: GL015_GRPC_PORT
+              value: "50051"
+            - name: GL015_METRICS_PORT
+              value: "9090"
+
+            # Secrets
+            - name: OPCUA_CREDENTIALS
+              valueFrom:
+                secretKeyRef:
+                  name: gl-015-insulscan-secrets
+                  key: opcua-credentials
+            - name: CMMS_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: gl-015-insulscan-secrets
+                  key: cmms-api-key
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: gl-015-insulscan-secrets
+                  key: database-url
+            - name: KAFKA_CREDENTIALS
+              valueFrom:
+                secretKeyRef:
+                  name: gl-015-insulscan-secrets
+                  key: kafka-credentials
+                  optional: true
+
+            # Pod metadata for observability
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+
+          # Resource limits and requests
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "500m"
+            limits:
+              memory: "2Gi"
+              cpu: "2000m"
+
+          # Liveness probe - checks if container is running
+          livenessProbe:
+            httpGet:
+              path: /api/v1/health/live
+              port: 8015
+              scheme: HTTP
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+            successThreshold: 1
+
+          # Readiness probe - checks if container is ready to serve traffic
+          readinessProbe:
+            httpGet:
+              path: /api/v1/health/ready
+              port: 8015
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+            successThreshold: 1
+
+          # Startup probe - allows for slow starting containers
+          startupProbe:
+            httpGet:
+              path: /api/v1/health/startup
+              port: 8015
+              scheme: HTTP
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 5
+            failureThreshold: 30
+            successThreshold: 1
+
+          # Container-level security context
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+
+          # Volume mounts
+          volumeMounts:
+            - name: config-volume
+              mountPath: /app/config
+              readOnly: true
+            - name: tmp-volume
+              mountPath: /tmp
+            - name: logs-volume
+              mountPath: /var/log/greenlang
+            - name: thermal-images-volume
+              mountPath: /var/data/thermal_images
+            - name: insulation-reports-volume
+              mountPath: /var/data/insulation_reports
+            - name: ml-models-volume
+              mountPath: /var/models/insulation
+            - name: cache-volume
+              mountPath: /var/cache/insulscan
+
+      # Init container for database migrations (optional)
+      initContainers:
+        - name: wait-for-dependencies
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              echo "Waiting for dependencies to be ready..."
+              sleep 5
+              echo "Dependencies check complete"
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1000
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            requests:
+              memory: "32Mi"
+              cpu: "10m"
+            limits:
+              memory: "64Mi"
+              cpu: "50m"
+
+      # Volumes
+      volumes:
+        - name: config-volume
+          configMap:
+            name: gl-015-insulscan-config
+            defaultMode: 0440
+        - name: tmp-volume
+          emptyDir:
+            medium: Memory
+            sizeLimit: 256Mi
+        - name: logs-volume
+          emptyDir:
+            sizeLimit: 512Mi
+        - name: thermal-images-volume
+          emptyDir:
+            sizeLimit: 2Gi
+        - name: insulation-reports-volume
+          emptyDir:
+            sizeLimit: 1Gi
+        - name: ml-models-volume
+          emptyDir:
+            sizeLimit: 500Mi
+        - name: cache-volume
+          emptyDir:
+            sizeLimit: 256Mi
+
+      # Graceful shutdown
+      terminationGracePeriodSeconds: 45
+
+      # DNS configuration
+      dnsPolicy: ClusterFirst
+      dnsConfig:
+        options:
+          - name: ndots
+            value: "2"
+          - name: timeout
+            value: "5"
+          - name: attempts
+            value: "2"
+
+      restartPolicy: Always
+
+      # Node selection (optional - uncomment if needed)
+      # nodeSelector:
+      #   node-type: compute
+      #   workload-type: ai-agents
+
+      # Tolerations (optional - uncomment if needed)
+      # tolerations:
+      #   - key: "dedicated"
+      #     operator: "Equal"
+      #     value: "ai-workloads"
+      #     effect: "NoSchedule"
+
+---
+# ServiceAccount for GL-015 INSULSCAN
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: gl-015-insulscan-sa
+  namespace: greenlang
+  labels:
+    app: gl-015-insulscan
+    agent-id: GL-015
+    codename: INSULSCAN
+  annotations:
+    kubernetes.io/description: "Service account for GL-015 INSULSCAN Insulation Scanning Agent"
+automountServiceAccountToken: false

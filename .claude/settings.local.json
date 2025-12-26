@@ -282,7 +282,8 @@
       "WebFetch(domain:www.decatur.de)",
       "Bash(del \"C:\\\\Users\\\\aksha\\\\Code-V1_GreenLang\\\\GL Agents\\\\GL-002_Flameguard\\\\tests\\\\conftest.py\")",
       "Bash(python3:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(ls:*)"
     ],
     "deny": [],
     "ask": []

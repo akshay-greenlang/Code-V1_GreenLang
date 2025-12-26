@@ -130,6 +130,20 @@ from .bounds_validator import (
     STEAM_QUALITY_BOUNDS,
 )
 
+# Velocity Limiter exports
+from .velocity_limiter import (
+    # Enums
+    VelocityLimitStatus,
+    SetpointType,
+    # Models
+    VelocityLimitConfig,
+    VelocityLimitResult,
+    # Main class
+    VelocityLimiter,
+    # Factory
+    create_velocity_limiter,
+)
+
 
 # Module version
 __version__ = "1.0.0"
@@ -193,4 +207,12 @@ __all__ = [
     "SteamQualDiagnosticInput",
     "SteamQualBoundsValidator",
     "STEAM_QUALITY_BOUNDS",
+
+    # Velocity Limiter
+    "VelocityLimitStatus",
+    "SetpointType",
+    "VelocityLimitConfig",
+    "VelocityLimitResult",
+    "VelocityLimiter",
+    "create_velocity_limiter",
 ]

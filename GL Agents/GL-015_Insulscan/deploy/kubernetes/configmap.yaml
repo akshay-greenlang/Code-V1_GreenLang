@@ -1,0 +1,315 @@
+# GL-015 INSULSCAN ConfigMap
+# Insulation Scanning & Thermal Assessment Agent Configuration
+# Contains all non-sensitive configuration parameters
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gl-015-insulscan-config
+  namespace: greenlang
+  labels:
+    app: gl-015-insulscan
+    app.kubernetes.io/name: gl-015-insulscan
+    app.kubernetes.io/instance: gl-015-insulscan-production
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/component: configuration
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/managed-by: gitops
+    component: insulation-scanner
+    agent-id: GL-015
+    codename: INSULSCAN
+  annotations:
+    kubernetes.io/description: "Configuration for GL-015 INSULSCAN Insulation Scanning & Thermal Assessment Agent"
+    config.kubernetes.io/local-config: "true"
+data:
+  # =============================================================================
+  # Core Agent Configuration
+  # =============================================================================
+  ENVIRONMENT: "production"
+  GL015_AGENT_ID: "GL-015"
+  GL015_AGENT_NAME: "INSULSCAN"
+  GL015_AGENT_DESCRIPTION: "Insulation Scanning & Thermal Assessment Agent"
+  GL015_VERSION: "1.0.0"
+  TRACK_PROVENANCE: "true"
+  ENABLE_AUDIT_LOGGING: "true"
+
+  # =============================================================================
+  # Logging Configuration
+  # =============================================================================
+  LOG_LEVEL: "INFO"
+  LOG_FORMAT: "json"
+  LOG_OUTPUT: "stdout"
+  LOG_INCLUDE_CALLER: "true"
+  LOG_INCLUDE_STACKTRACE: "error"
+  LOG_SAMPLING_INITIAL: "100"
+  LOG_SAMPLING_THEREAFTER: "100"
+
+  # =============================================================================
+  # Thermal Imaging Engine Configuration
+  # =============================================================================
+  THERMAL_IMAGING_ENGINE: "advanced-ir-v2"
+  THERMAL_CAMERA_PROTOCOL: "rtsp"
+  THERMAL_IMAGE_FORMAT: "radiometric-jpeg"
+  THERMAL_IMAGE_RESOLUTION: "640x480"
+  THERMAL_FRAME_RATE: "30"
+  TEMPERATURE_UNIT: "celsius"
+  EMISSIVITY_DEFAULT: "0.95"
+
+  # =============================================================================
+  # Insulation Assessment Thresholds
+  # =============================================================================
+  # Temperature differential thresholds (Celsius)
+  TEMP_DIFF_NORMAL_MAX_C: "5.0"
+  TEMP_DIFF_WARNING_MIN_C: "5.0"
+  TEMP_DIFF_WARNING_MAX_C: "15.0"
+  TEMP_DIFF_CRITICAL_MIN_C: "15.0"
+  TEMP_DIFF_CRITICAL_MAX_C: "30.0"
+  TEMP_DIFF_SEVERE_MIN_C: "30.0"
+
+  # R-value assessment thresholds
+  RVALUE_EXCELLENT_MIN: "3.5"
+  RVALUE_GOOD_MIN: "2.5"
+  RVALUE_FAIR_MIN: "1.5"
+  RVALUE_POOR_MAX: "1.5"
+
+  # Heat loss thresholds (W/m2)
+  HEAT_LOSS_NORMAL_MAX: "50"
+  HEAT_LOSS_ELEVATED_MAX: "150"
+  HEAT_LOSS_HIGH_MAX: "300"
+  HEAT_LOSS_SEVERE_MIN: "300"
+
+  # =============================================================================
+  # Scanning Parameters
+  # =============================================================================
+  SCAN_MODE: "continuous"
+  SCAN_INTERVAL_SECONDS: "60"
+  SCAN_BATCH_SIZE: "10"
+  SCAN_TIMEOUT_SECONDS: "300"
+  SCAN_RETRY_ATTEMPTS: "3"
+  SCAN_RETRY_DELAY_SECONDS: "10"
+
+  # Area coverage
+  SCAN_OVERLAP_PERCENT: "20"
+  SCAN_MIN_COVERAGE_PERCENT: "95"
+  SCAN_GRID_RESOLUTION_CM: "10"
+
+  # =============================================================================
+  # Defect Detection Configuration
+  # =============================================================================
+  DEFECT_DETECTION_MODEL: "insulation-defect-cnn-v3"
+  DEFECT_CONFIDENCE_THRESHOLD: "0.75"
+  DEFECT_MIN_AREA_CM2: "25"
+  DEFECT_MERGE_DISTANCE_CM: "5"
+
+  # Defect types to detect
+  DETECT_THERMAL_BRIDGES: "true"
+  DETECT_MOISTURE_INGRESS: "true"
+  DETECT_AIR_LEAKAGE: "true"
+  DETECT_INSULATION_GAPS: "true"
+  DETECT_COMPRESSION_DAMAGE: "true"
+  DETECT_THERMAL_SHORTS: "true"
+
+  # =============================================================================
+  # ML Model Configuration
+  # =============================================================================
+  ML_MODEL_VERSION: "2.1.0"
+  ML_INFERENCE_BATCH_SIZE: "16"
+  ML_INFERENCE_TIMEOUT_MS: "5000"
+  ML_MODEL_CACHE_ENABLED: "true"
+  ML_MODEL_CACHE_SIZE_MB: "512"
+
+  # =============================================================================
+  # Integration Service URLs
+  # =============================================================================
+  ML_SERVICE_URL: "http://ml-inference-service.greenlang.svc.cluster.local:8080"
+  CMMS_SERVICE_URL: "http://cmms-gateway.greenlang.svc.cluster.local:8080"
+  OPTIMIZER_SERVICE_URL: "http://optimizer-service.greenlang.svc.cluster.local:8080"
+  ASSET_REGISTRY_URL: "http://asset-registry.greenlang.svc.cluster.local:8080"
+  NOTIFICATION_SERVICE_URL: "http://notification-service.greenlang.svc.cluster.local:8080"
+  REPORT_SERVICE_URL: "http://report-generator.greenlang.svc.cluster.local:8080"
+
+  # =============================================================================
+  # Kafka Configuration
+  # =============================================================================
+  KAFKA_BOOTSTRAP_SERVERS: "kafka-cluster-kafka-bootstrap.kafka.svc.cluster.local:9092"
+  KAFKA_TOPIC_PREFIX: "gl015-insulscan"
+  KAFKA_CONSUMER_GROUP: "gl015-insulscan-group"
+  KAFKA_AUTO_OFFSET_RESET: "earliest"
+  KAFKA_ENABLE_AUTO_COMMIT: "false"
+  KAFKA_SESSION_TIMEOUT_MS: "30000"
+  KAFKA_HEARTBEAT_INTERVAL_MS: "10000"
+  KAFKA_MAX_POLL_RECORDS: "100"
+
+  # Kafka topics
+  KAFKA_TOPIC_THERMAL_SCANS: "gl015.thermal.scans"
+  KAFKA_TOPIC_DEFECT_ALERTS: "gl015.defects.alerts"
+  KAFKA_TOPIC_ASSESSMENT_RESULTS: "gl015.assessment.results"
+  KAFKA_TOPIC_MAINTENANCE_REQUESTS: "gl015.maintenance.requests"
+
+  # =============================================================================
+  # OPC-UA Configuration
+  # =============================================================================
+  OPCUA_ENABLED: "true"
+  OPCUA_ENDPOINT_URL: "opc.tcp://opcua-server.greenlang.svc.cluster.local:4840"
+  OPCUA_SECURITY_MODE: "SignAndEncrypt"
+  OPCUA_SECURITY_POLICY: "Basic256Sha256"
+  OPCUA_SUBSCRIPTION_INTERVAL_MS: "1000"
+  OPCUA_PUBLISH_INTERVAL_MS: "5000"
+  OPCUA_LIFETIME_COUNT: "1000"
+  OPCUA_MAX_KEEP_ALIVE_COUNT: "10"
+
+  # =============================================================================
+  # Safety Parameters
+  # =============================================================================
+  SAFETY_ENABLED: "true"
+  EMERGENCY_SHUTDOWN_ENABLED: "true"
+  MAX_SURFACE_TEMPERATURE_C: "200.0"
+  MIN_AMBIENT_TEMPERATURE_C: "-40.0"
+  MAX_AMBIENT_TEMPERATURE_C: "60.0"
+  TEMPERATURE_RATE_OF_CHANGE_ALARM_C_PER_MIN: "10.0"
+  AUTOMATIC_ALARM_ESCALATION: "true"
+  ALARM_ACKNOWLEDGMENT_TIMEOUT_MINUTES: "30"
+
+  # =============================================================================
+  # Feature Flags
+  # =============================================================================
+  FEATURE_THERMAL_IMAGING: "true"
+  FEATURE_DEFECT_DETECTION: "true"
+  FEATURE_PREDICTIVE_DEGRADATION: "true"
+  FEATURE_AUTOMATIC_REPORTING: "true"
+  FEATURE_CMMS_INTEGRATION: "true"
+  FEATURE_ENERGY_LOSS_CALCULATION: "true"
+  FEATURE_ROI_ANALYSIS: "true"
+  FEATURE_CAUSAL_ANALYSIS: "true"
+  FEATURE_EXPLAINABLE_AI: "true"
+  FEATURE_3D_THERMAL_MAPPING: "false"
+  FEATURE_DRONE_INTEGRATION: "false"
+  FEATURE_AR_OVERLAY: "false"
+
+  # =============================================================================
+  # Reporting Configuration
+  # =============================================================================
+  REPORT_GENERATION_ENABLED: "true"
+  REPORT_FORMAT: "pdf,json,csv"
+  REPORT_RETENTION_DAYS: "365"
+  REPORT_AUTO_DISTRIBUTION: "true"
+  REPORT_INCLUDE_THERMAL_IMAGES: "true"
+  REPORT_INCLUDE_RECOMMENDATIONS: "true"
+  REPORT_INCLUDE_COST_ANALYSIS: "true"
+
+  # =============================================================================
+  # Data Retention and Storage
+  # =============================================================================
+  DATA_RETENTION_DAYS: "90"
+  THERMAL_IMAGE_RETENTION_DAYS: "365"
+  METRICS_AGGREGATION_INTERVAL_SECONDS: "60"
+  METRICS_RETENTION_DAYS: "30"
+  ARCHIVE_ENABLED: "true"
+  ARCHIVE_STORAGE_CLASS: "GLACIER"
+
+  # =============================================================================
+  # API Configuration
+  # =============================================================================
+  API_RATE_LIMIT_PER_MINUTE: "1000"
+  API_TIMEOUT_SECONDS: "30"
+  API_MAX_BATCH_SIZE: "100"
+  API_ENABLE_CORS: "true"
+  API_CORS_ORIGINS: "*"
+  API_ENABLE_SWAGGER: "true"
+  API_ENABLE_GRAPHQL: "false"
+
+  # =============================================================================
+  # Caching Configuration
+  # =============================================================================
+  CACHE_ENABLED: "true"
+  CACHE_TTL_SECONDS: "300"
+  CACHE_MAX_SIZE_MB: "256"
+  CACHE_EVICTION_POLICY: "lru"
+
+  # =============================================================================
+  # Observability Configuration
+  # =============================================================================
+  METRICS_ENABLED: "true"
+  METRICS_PREFIX: "gl015_insulscan"
+  TRACING_ENABLED: "true"
+  TRACING_SAMPLE_RATE: "0.1"
+  OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector.monitoring.svc.cluster.local:4317"
+  OTEL_SERVICE_NAME: "gl-015-insulscan"
+
+---
+# Application-specific configuration file mounted as a volume
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gl-015-insulscan-app-config
+  namespace: greenlang
+  labels:
+    app: gl-015-insulscan
+    agent-id: GL-015
+    codename: INSULSCAN
+    config-type: application
+data:
+  insulscan.yaml: |
+    # GL-015 INSULSCAN Application Configuration
+    agent:
+      id: GL-015
+      name: INSULSCAN
+      version: 1.0.0
+      description: Insulation Scanning & Thermal Assessment Agent
+
+    thermal_imaging:
+      engine: advanced-ir-v2
+      resolution: 640x480
+      frame_rate: 30
+      emissivity_default: 0.95
+      temperature_range:
+        min: -40
+        max: 500
+        unit: celsius
+
+    assessment:
+      thresholds:
+        temperature_differential:
+          normal: 5.0
+          warning: 15.0
+          critical: 30.0
+        r_value:
+          excellent: 3.5
+          good: 2.5
+          fair: 1.5
+        heat_loss_w_per_m2:
+          normal: 50
+          elevated: 150
+          high: 300
+
+    defect_detection:
+      model: insulation-defect-cnn-v3
+      confidence_threshold: 0.75
+      min_area_cm2: 25
+      types:
+        - thermal_bridges
+        - moisture_ingress
+        - air_leakage
+        - insulation_gaps
+        - compression_damage
+        - thermal_shorts
+
+    safety:
+      max_surface_temperature_c: 200.0
+      rate_of_change_alarm_c_per_min: 10.0
+      emergency_shutdown_enabled: true
+      alarm_escalation_enabled: true
+
+    integrations:
+      opcua:
+        enabled: true
+        security_mode: SignAndEncrypt
+        security_policy: Basic256Sha256
+      cmms:
+        enabled: true
+        auto_work_order: true
+      kafka:
+        enabled: true
+        topics:
+          scans: gl015.thermal.scans
+          alerts: gl015.defects.alerts
+          results: gl015.assessment.results

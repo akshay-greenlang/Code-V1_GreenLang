@@ -1,25 +1,57 @@
-# GL-011 FUELCRAFT - Pod Disruption Budget
-# Ensures optimization availability during node maintenance/upgrades
-# maxUnavailable: 1 - Only one pod can be disrupted at a time
----
+# GL-011 FuelCraft Pod Disruption Budget
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
   name: gl-011-fuelcraft-pdb
-  namespace: gl-agents
+  namespace: greenlang
   labels:
     app: gl-011-fuelcraft
-    app.kubernetes.io/name: gl-011-fuelcraft
-    app.kubernetes.io/component: availability
-    component: optimization
-    tier: fuel-management
-    compliance: tcfd
+    agent-id: GL-011
 spec:
-  # Maximum number of pods that can be unavailable during disruption
-  maxUnavailable: 1
+  minAvailable: 1
   selector:
     matchLabels:
       app: gl-011-fuelcraft
-      component: optimization
-  # Unhealthy pod eviction policy (Kubernetes 1.26+)
-  # unhealthyPodEvictionPolicy: IfHealthyBudget
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: gl-011-fuelcraft-network-policy
+  namespace: greenlang
+spec:
+  podSelector:
+    matchLabels:
+      app: gl-011-fuelcraft
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: greenlang
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+      ports:
+        - protocol: TCP
+          port: 8080
+        - protocol: TCP
+          port: 9090
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: greenlang
+      ports:
+        - protocol: TCP
+          port: 5432
+        - protocol: TCP
+          port: 6379
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 443

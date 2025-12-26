@@ -1,0 +1,288 @@
+# GL-015 INSULSCAN Horizontal Pod Autoscaler
+# Insulation Scanning & Thermal Assessment Agent
+# Automatic scaling based on CPU, memory, and custom metrics
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: gl-015-insulscan-hpa
+  namespace: greenlang
+  labels:
+    app: gl-015-insulscan
+    app.kubernetes.io/name: gl-015-insulscan
+    app.kubernetes.io/instance: gl-015-insulscan-production
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/component: autoscaling
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/managed-by: gitops
+    component: insulation-scanner
+    agent-id: GL-015
+    codename: INSULSCAN
+  annotations:
+    kubernetes.io/description: "HPA for GL-015 INSULSCAN - scales based on CPU, memory, and thermal scan queue depth"
+    # Prometheus adapter annotations for custom metrics
+    prometheus.io/custom-metrics: "true"
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: gl-015-insulscan
+
+  # Replica bounds
+  minReplicas: 2
+  maxReplicas: 10
+
+  # Scaling metrics
+  metrics:
+    # CPU utilization metric
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+
+    # Memory utilization metric
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+
+    # Custom metric: Thermal scan queue depth (requires Prometheus adapter)
+    # Uncomment when custom metrics are configured
+    # - type: Pods
+    #   pods:
+    #     metric:
+    #       name: gl015_insulscan_scan_queue_depth
+    #     target:
+    #       type: AverageValue
+    #       averageValue: "50"
+
+    # Custom metric: Active thermal scans
+    # - type: Pods
+    #   pods:
+    #     metric:
+    #       name: gl015_insulscan_active_scans
+    #     target:
+    #       type: AverageValue
+    #       averageValue: "10"
+
+    # Custom metric: HTTP request rate
+    # - type: Pods
+    #   pods:
+    #     metric:
+    #       name: http_requests_per_second
+    #     target:
+    #       type: AverageValue
+    #       averageValue: "100"
+
+    # External metric: Kafka consumer lag (requires external metrics)
+    # - type: External
+    #   external:
+    #     metric:
+    #       name: kafka_consumergroup_lag
+    #       selector:
+    #         matchLabels:
+    #           consumergroup: gl015-insulscan-group
+    #           topic: gl015.thermal.scans
+    #     target:
+    #       type: AverageValue
+    #       averageValue: "1000"
+
+  # Scaling behavior configuration
+  behavior:
+    # Scale up configuration
+    scaleUp:
+      # Stabilization window to prevent flapping
+      stabilizationWindowSeconds: 60
+      policies:
+        # Scale up by 2 pods at a time
+        - type: Pods
+          value: 2
+          periodSeconds: 60
+        # Or scale up by 100% (double the pods)
+        - type: Percent
+          value: 100
+          periodSeconds: 60
+      # Use the policy that results in the highest change
+      selectPolicy: Max
+
+    # Scale down configuration
+    scaleDown:
+      # Longer stabilization window for scale down to prevent thrashing
+      stabilizationWindowSeconds: 300
+      policies:
+        # Scale down by 1 pod at a time
+        - type: Pods
+          value: 1
+          periodSeconds: 120
+        # Or scale down by 10% max
+        - type: Percent
+          value: 10
+          periodSeconds: 120
+      # Use the policy that results in the smallest change (more conservative)
+      selectPolicy: Min
+
+---
+# Vertical Pod Autoscaler (VPA) recommendation
+# Provides resource recommendations based on actual usage
+# Requires VPA to be installed in the cluster
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: gl-015-insulscan-vpa
+  namespace: greenlang
+  labels:
+    app: gl-015-insulscan
+    app.kubernetes.io/name: gl-015-insulscan
+    app.kubernetes.io/component: autoscaling
+    agent-id: GL-015
+    codename: INSULSCAN
+  annotations:
+    kubernetes.io/description: "VPA for GL-015 INSULSCAN - provides resource recommendations"
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: gl-015-insulscan
+  updatePolicy:
+    # Options: "Off", "Initial", "Recreate", "Auto"
+    # "Off" - VPA only provides recommendations, does not update pods
+    # "Initial" - VPA only assigns resources on pod creation
+    # "Recreate" - VPA evicts pods that need to be updated
+    # "Auto" - VPA updates pods in place if possible, otherwise recreates
+    updateMode: "Off"  # Start with recommendations only
+  resourcePolicy:
+    containerPolicies:
+      - containerName: gl-015-insulscan
+        # Minimum resources (floor)
+        minAllowed:
+          cpu: 250m
+          memory: 256Mi
+        # Maximum resources (ceiling)
+        maxAllowed:
+          cpu: 4000m
+          memory: 4Gi
+        # Control which resources VPA manages
+        controlledResources:
+          - cpu
+          - memory
+        # Control which values VPA can change
+        controlledValues: RequestsAndLimits
+
+---
+# PodMonitor for custom metrics collection
+# Used by HPA through Prometheus adapter
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: gl-015-insulscan-metrics
+  namespace: greenlang
+  labels:
+    app: gl-015-insulscan
+    app.kubernetes.io/name: gl-015-insulscan
+    app.kubernetes.io/component: monitoring
+    agent-id: GL-015
+    codename: INSULSCAN
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: gl-015-insulscan
+  namespaceSelector:
+    matchNames:
+      - greenlang
+  podMetricsEndpoints:
+    - port: metrics
+      path: /metrics
+      interval: 15s
+      scrapeTimeout: 10s
+      honorLabels: true
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_pod_label_agent_id]
+          targetLabel: agent_id
+        - sourceLabels: [__meta_kubernetes_pod_label_codename]
+          targetLabel: codename
+
+---
+# PrometheusRule for autoscaling alerts
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: gl-015-insulscan-autoscaling-alerts
+  namespace: greenlang
+  labels:
+    app: gl-015-insulscan
+    app.kubernetes.io/name: gl-015-insulscan
+    app.kubernetes.io/component: alerting
+    agent-id: GL-015
+    codename: INSULSCAN
+    prometheus: kube-prometheus
+    role: alert-rules
+spec:
+  groups:
+    - name: gl-015-insulscan-autoscaling
+      interval: 30s
+      rules:
+        # Alert when HPA is at max replicas for extended period
+        - alert: GL015InsulscanHPAAtMaxReplicas
+          expr: |
+            kube_horizontalpodautoscaler_status_current_replicas{horizontalpodautoscaler="gl-015-insulscan-hpa", namespace="greenlang"}
+            ==
+            kube_horizontalpodautoscaler_spec_max_replicas{horizontalpodautoscaler="gl-015-insulscan-hpa", namespace="greenlang"}
+          for: 15m
+          labels:
+            severity: warning
+            agent_id: GL-015
+            codename: INSULSCAN
+          annotations:
+            summary: "GL-015 INSULSCAN HPA at maximum replicas"
+            description: "HPA for GL-015 INSULSCAN has been at max replicas ({{ $value }}) for more than 15 minutes. Consider increasing maxReplicas."
+
+        # Alert when HPA is unable to scale
+        - alert: GL015InsulscanHPAScalingFailed
+          expr: |
+            kube_horizontalpodautoscaler_status_condition{horizontalpodautoscaler="gl-015-insulscan-hpa", namespace="greenlang", condition="ScalingActive", status="false"} == 1
+          for: 5m
+          labels:
+            severity: critical
+            agent_id: GL-015
+            codename: INSULSCAN
+          annotations:
+            summary: "GL-015 INSULSCAN HPA scaling failed"
+            description: "HPA for GL-015 INSULSCAN has been unable to scale for more than 5 minutes. Check HPA events and metrics."
+
+        # Alert on high CPU utilization approaching scale threshold
+        - alert: GL015InsulscanHighCPUUtilization
+          expr: |
+            (
+              sum(rate(container_cpu_usage_seconds_total{namespace="greenlang", pod=~"gl-015-insulscan-.*", container="gl-015-insulscan"}[5m]))
+              /
+              sum(kube_pod_container_resource_requests{namespace="greenlang", pod=~"gl-015-insulscan-.*", container="gl-015-insulscan", resource="cpu"})
+            ) * 100 > 85
+          for: 10m
+          labels:
+            severity: warning
+            agent_id: GL-015
+            codename: INSULSCAN
+          annotations:
+            summary: "GL-015 INSULSCAN high CPU utilization"
+            description: "GL-015 INSULSCAN CPU utilization is {{ $value | printf \"%.1f\" }}% for more than 10 minutes."
+
+        # Alert on high memory utilization approaching scale threshold
+        - alert: GL015InsulscanHighMemoryUtilization
+          expr: |
+            (
+              sum(container_memory_working_set_bytes{namespace="greenlang", pod=~"gl-015-insulscan-.*", container="gl-015-insulscan"})
+              /
+              sum(kube_pod_container_resource_requests{namespace="greenlang", pod=~"gl-015-insulscan-.*", container="gl-015-insulscan", resource="memory"})
+            ) * 100 > 90
+          for: 10m
+          labels:
+            severity: warning
+            agent_id: GL-015
+            codename: INSULSCAN
+          annotations:
+            summary: "GL-015 INSULSCAN high memory utilization"
+            description: "GL-015 INSULSCAN memory utilization is {{ $value | printf \"%.1f\" }}% for more than 10 minutes."

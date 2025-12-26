@@ -17,10 +17,29 @@ from .trap_state_classifier import (
     ConfidenceLevel,
 )
 
+from .seed_manager import (
+    SeedManager,
+    SeedConfig,
+    SeedRecord,
+    SeedMetrics,
+    SeedDerivationMethod,
+    SeedScope,
+    DEFAULT_SEED,
+)
+
 __all__ = [
+    # Trap state classifier
     "TrapStateClassifier",
     "ClassificationConfig",
     "ClassificationResult",
     "TrapCondition",
     "ConfidenceLevel",
+    # Seed manager
+    "SeedManager",
+    "SeedConfig",
+    "SeedRecord",
+    "SeedMetrics",
+    "SeedDerivationMethod",
+    "SeedScope",
+    "DEFAULT_SEED",
 ]

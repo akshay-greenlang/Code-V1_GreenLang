@@ -73,6 +73,24 @@ from safety.emergency_response import (
     ShutdownResult,
     NotificationResult,
 )
+from safety.velocity_limiter import (
+    # Enums
+    VelocityLimitStatus,
+    SetpointDirection,
+    SafetyMode,
+    # Data classes
+    VelocityLimit,
+    # Models
+    VelocityLimitConfig,
+    VelocityLimitResult,
+    VelocityAuditRecord,
+    # Main class
+    CombustionVelocityLimiter,
+    # Constants
+    DEFAULT_VELOCITY_LIMITS,
+    # Functions
+    create_velocity_limit,
+)
 
 __all__ = [
     # Safety Envelope
@@ -120,6 +138,17 @@ __all__ = [
     "ActionPlan",
     "ShutdownResult",
     "NotificationResult",
+    # Velocity Limiter
+    "VelocityLimitStatus",
+    "SetpointDirection",
+    "SafetyMode",
+    "VelocityLimit",
+    "VelocityLimitConfig",
+    "VelocityLimitResult",
+    "VelocityAuditRecord",
+    "CombustionVelocityLimiter",
+    "DEFAULT_VELOCITY_LIMITS",
+    "create_velocity_limit",
 ]
 
 __version__ = "1.0.0"

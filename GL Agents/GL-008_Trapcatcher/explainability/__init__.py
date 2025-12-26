@@ -2,7 +2,7 @@
 """
 GL-008 TRAPCATCHER Explainability Module
 
-SHAP-compatible explainability for steam trap diagnostics.
+SHAP and LIME compatible explainability for steam trap diagnostics.
 
 Author: GL-BackendDeveloper
 Date: December 2025
@@ -17,10 +17,33 @@ from .diagnostic_explainer import (
     CounterfactualExplanation,
 )
 
+from .lime_trap_explainer import (
+    LimeTrapExplainer,
+    LimeConfig,
+    LimeExplanation,
+    LimeFeatureWeight,
+    LocalFidelity,
+    KernelType,
+    DiscretizationType,
+    SamplingStrategy,
+    TRAP_FEATURES,
+)
+
 __all__ = [
+    # Diagnostic explainer
     "DiagnosticExplainer",
     "ExplainerConfig",
     "ExplanationResult",
     "FeatureContribution",
     "CounterfactualExplanation",
+    # LIME explainer
+    "LimeTrapExplainer",
+    "LimeConfig",
+    "LimeExplanation",
+    "LimeFeatureWeight",
+    "LocalFidelity",
+    "KernelType",
+    "DiscretizationType",
+    "SamplingStrategy",
+    "TRAP_FEATURES",
 ]
