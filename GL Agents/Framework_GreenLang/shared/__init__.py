@@ -8,6 +8,8 @@ Common utilities for all GreenLang agents including:
 - Base calculator classes (deterministic)
 - Physical constants (NIST, IAPWS)
 - Emission factors (DEFRA, EPA, IPCC)
+- Guardrails integration (OWASP LLM Top 10, NIST AI RMF)
+- Circuit breaker (fault tolerance)
 """
 
 from .provenance import ProvenanceTracker, ProvenanceRecord, TrackingContext
@@ -41,6 +43,31 @@ from .constants import (
     ConstantSource,
     GWP,
 )
+from .guardrails_integration import (
+    GuardrailsIntegration,
+    GuardrailExecutionResult,
+    ViolationRecord,
+    ViolationLogger,
+    GuardrailViolationError,
+    GuardrailProfile,
+    GuardrailMode,
+    with_guardrails,
+    validate_input,
+    validate_output,
+    get_integration,
+)
+from .circuit_breaker import (
+    CircuitBreaker,
+    CircuitBreakerRegistry,
+    CircuitMetrics,
+    StateTransitionEvent,
+    CircuitState,
+    CircuitBreakerError,
+    CircuitOpenError,
+    CircuitHalfOpenError,
+    circuit_breaker,
+    CIRCUIT_BREAKER_REGISTRY,
+)
 
 __all__ = [
     # Provenance
@@ -73,4 +100,27 @@ __all__ = [
     "EmissionFactor",
     "ConstantSource",
     "GWP",
+    # Guardrails Integration
+    "GuardrailsIntegration",
+    "GuardrailExecutionResult",
+    "ViolationRecord",
+    "ViolationLogger",
+    "GuardrailViolationError",
+    "GuardrailProfile",
+    "GuardrailMode",
+    "with_guardrails",
+    "validate_input",
+    "validate_output",
+    "get_integration",
+    # Circuit Breaker
+    "CircuitBreaker",
+    "CircuitBreakerRegistry",
+    "CircuitMetrics",
+    "StateTransitionEvent",
+    "CircuitState",
+    "CircuitBreakerError",
+    "CircuitOpenError",
+    "CircuitHalfOpenError",
+    "circuit_breaker",
+    "CIRCUIT_BREAKER_REGISTRY",
 ]

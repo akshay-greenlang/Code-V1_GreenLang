@@ -1,0 +1,103 @@
+# GL-016 WATERGUARD - Python Dependencies
+# Boiler Water Treatment Optimization Agent
+
+# Core Framework
+pydantic>=2.5.0
+pydantic-settings>=2.1.0
+
+# Numeric & Scientific
+numpy>=1.26.0
+scipy>=1.11.0
+pandas>=2.1.0
+
+# Chemistry & Thermodynamics
+iapws>=1.5.0           # IAPWS-IF97 steam/water properties
+pint>=0.23             # Physical unit handling with uncertainty
+
+# API Framework
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0
+starlette>=0.35.0
+python-multipart>=0.0.6
+
+# GraphQL
+strawberry-graphql>=0.217.0
+strawberry-graphql[fastapi]>=0.217.0
+
+# gRPC
+grpcio>=1.60.0
+grpcio-tools>=1.60.0
+protobuf>=4.25.0
+
+# Streaming
+aiokafka>=0.9.0
+confluent-kafka>=2.3.0
+kafka-python>=2.0.2
+
+# OT Integration
+asyncua>=1.0.0         # OPC-UA async client/server
+opcua>=0.98.0          # OPC-UA legacy support
+pymodbus>=3.5.0        # Modbus TCP/RTU
+
+# Database
+sqlalchemy>=2.0.0
+asyncpg>=0.29.0
+psycopg2-binary>=2.9.9
+alembic>=1.13.0
+
+# Caching
+redis>=5.0.0
+aioredis>=2.0.1
+
+# ML & Explainability
+shap>=0.44.0
+lime>=0.2.0
+scikit-learn>=1.3.0
+
+# Observability
+prometheus-client>=0.19.0
+opentelemetry-api>=1.22.0
+opentelemetry-sdk>=1.22.0
+opentelemetry-exporter-otlp>=1.22.0
+opentelemetry-instrumentation-fastapi>=0.43b0
+
+# Logging
+structlog>=24.1.0
+python-json-logger>=2.0.7
+
+# Security
+cryptography>=41.0.0
+python-jose[cryptography]>=3.3.0
+passlib[bcrypt]>=1.7.4
+pyjwt>=2.8.0
+
+# Configuration
+python-dotenv>=1.0.0
+pyyaml>=6.0.1
+toml>=0.10.2
+
+# Async
+anyio>=4.2.0
+httpx>=0.26.0
+aiohttp>=3.9.0
+aiofiles>=23.2.1
+
+# Validation & Serialization
+msgpack>=1.0.7
+orjson>=3.9.10
+
+# Datetime
+python-dateutil>=2.8.2
+pytz>=2023.3
+
+# CLI
+typer>=0.9.0
+rich>=13.7.0
+click>=8.1.7
+
+# Testing (dev)
+# pytest>=7.4.0
+# pytest-asyncio>=0.23.0
+# pytest-cov>=4.1.0
+# hypothesis>=6.92.0
+# faker>=22.0.0

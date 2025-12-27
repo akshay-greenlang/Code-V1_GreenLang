@@ -283,7 +283,10 @@
       "Bash(del \"C:\\\\Users\\\\aksha\\\\Code-V1_GreenLang\\\\GL Agents\\\\GL-002_Flameguard\\\\tests\\\\conftest.py\")",
       "Bash(python3:*)",
       "Bash(grep:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(do basename \"$dir\")",
+      "Bash(python enhance_agent.py:*)",
+      "Bash(do echo \"=== Enhancing $agent ===\")"
     ],
     "deny": [],
     "ask": []

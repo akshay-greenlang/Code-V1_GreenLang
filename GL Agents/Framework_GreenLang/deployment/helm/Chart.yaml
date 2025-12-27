@@ -1,0 +1,105 @@
+# GreenLang Agent Helm Chart
+# Template Version: 1.0.0
+
+apiVersion: v2
+name: greenlang-agent
+description: A Helm chart for deploying GreenLang Industrial AI Agents
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+
+# Chart Maintainers
+maintainers:
+  - name: GreenLang DevOps Team
+    email: devops@greenlang.io
+    url: https://github.com/greenlang
+
+# Keywords for chart discovery
+keywords:
+  - greenlang
+  - ai-agent
+  - industrial
+  - thermal
+  - monitoring
+  - fastapi
+  - python
+
+# Home and source URLs
+home: https://greenlang.io
+sources:
+  - https://github.com/greenlang/agents
+
+# Chart Dependencies
+dependencies:
+  # PostgreSQL (optional - set postgresql.enabled=true)
+  - name: postgresql
+    version: "13.x.x"
+    repository: https://charts.bitnami.com/bitnami
+    condition: postgresql.enabled
+    tags:
+      - database
+
+  # Redis (optional - set redis.enabled=true)
+  - name: redis
+    version: "18.x.x"
+    repository: https://charts.bitnami.com/bitnami
+    condition: redis.enabled
+    tags:
+      - cache
+
+  # Prometheus (optional - set monitoring.prometheus.enabled=true)
+  - name: prometheus
+    version: "25.x.x"
+    repository: https://prometheus-community.github.io/helm-charts
+    condition: monitoring.prometheus.enabled
+    tags:
+      - monitoring
+
+# Annotations
+annotations:
+  # Artifact Hub annotations
+  artifacthub.io/category: ai-machine-learning
+  artifacthub.io/license: Apache-2.0
+  artifacthub.io/operator: "false"
+  artifacthub.io/prerelease: "false"
+  artifacthub.io/signKey: |
+    fingerprint: ABC123...
+    url: https://greenlang.io/pgp-key.asc
+
+  # Change log
+  artifacthub.io/changes: |
+    - kind: added
+      description: Initial release
+    - kind: added
+      description: Multi-stage Docker build support
+    - kind: added
+      description: Horizontal Pod Autoscaler
+    - kind: added
+      description: Network policies
+    - kind: security
+      description: Non-root container execution
+
+  # Container images
+  artifacthub.io/containsSecurityUpdates: "true"
+  artifacthub.io/images: |
+    - name: greenlang-agent
+      image: ghcr.io/greenlang/agent:1.0.0
+      platforms:
+        - linux/amd64
+        - linux/arm64
+
+  # Links
+  artifacthub.io/links: |
+    - name: Documentation
+      url: https://docs.greenlang.io
+    - name: Support
+      url: https://github.com/greenlang/agents/issues
+
+# Kubernetes version compatibility
+kubeVersion: ">=1.25.0-0"
+
+# Icon for UI displays
+icon: https://greenlang.io/assets/logo.png
+
+# Deprecation notice (uncomment when deprecating)
+# deprecated: false
