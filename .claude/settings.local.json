@@ -286,7 +286,8 @@
       "Bash(ls:*)",
       "Bash(do basename \"$dir\")",
       "Bash(python enhance_agent.py:*)",
-      "Bash(do echo \"=== Enhancing $agent ===\")"
+      "Bash(do echo \"=== Enhancing $agent ===\")",
+      "Bash(tree:*)"
     ],
     "deny": [],
     "ask": []

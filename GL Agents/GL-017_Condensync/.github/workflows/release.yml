@@ -1,0 +1,432 @@
+# GL-017_Condensync Release Pipeline
+# Automated Release with Semantic Versioning
+# Version: 1.0.0
+
+name: Release Pipeline
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g., 1.2.3)'
+        required: true
+        type: string
+      prerelease:
+        description: 'Pre-release (alpha, beta, rc)'
+        required: false
+        type: string
+        default: ''
+
+env:
+  # Agent Configuration
+  AGENT_NAME: "GL-017_Condensync"
+  AGENT_ID: "gl-017-condensync"
+  PYTHON_VERSION: "3.11"
+  REGISTRY: ghcr.io
+  IMAGE_NAME: greenlang/gl-017-condensync
+
+permissions:
+  contents: write
+  packages: write
+  id-token: write
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Validate Release
+  # ---------------------------------------------------------------------------
+  validate:
+    name: Validate Release
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      is_prerelease: ${{ steps.version.outputs.is_prerelease }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determine version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+            PRERELEASE="${{ github.event.inputs.prerelease }}"
+            if [ -n "$PRERELEASE" ]; then
+              VERSION="${VERSION}-${PRERELEASE}"
+              echo "is_prerelease=true" >> $GITHUB_OUTPUT
+            else
+              echo "is_prerelease=false" >> $GITHUB_OUTPUT
+            fi
+          else
+            VERSION="${GITHUB_REF#refs/tags/v}"
+            if [[ "$VERSION" == *"-"* ]]; then
+              echo "is_prerelease=true" >> $GITHUB_OUTPUT
+            else
+              echo "is_prerelease=false" >> $GITHUB_OUTPUT
+            fi
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Releasing GL-017 Condensync version: $VERSION"
+
+      - name: Validate semantic version
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9]+)?$ ]]; then
+            echo "::error::Invalid semantic version: $VERSION"
+            exit 1
+          fi
+
+  # ---------------------------------------------------------------------------
+  # Run Full Test Suite
+  # ---------------------------------------------------------------------------
+  test:
+    name: Full Test Suite
+    runs-on: ubuntu-latest
+    needs: validate
+
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+      postgres:
+        image: postgres:15-alpine
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: condensync_test
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-cov pytest-asyncio
+
+      - name: Run full test suite
+        run: |
+          pytest tests/ \
+            --cov=. \
+            --cov-report=xml \
+            --cov-fail-under=80 \
+            -v
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/condensync_test
+          REDIS_URL: redis://localhost:6379/0
+
+  # ---------------------------------------------------------------------------
+  # Security Audit
+  # ---------------------------------------------------------------------------
+  security-audit:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    needs: validate
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Run security audit
+        run: |
+          pip install bandit safety pip-audit
+
+          echo "=== Bandit Security Scan ==="
+          bandit -r . -ll -ii -x tests/,venv/ || true
+
+          echo "=== Safety Check ==="
+          pip install -r requirements.txt
+          safety check || true
+
+          echo "=== Pip Audit ==="
+          pip-audit || true
+
+  # ---------------------------------------------------------------------------
+  # Build and Push Docker Image
+  # ---------------------------------------------------------------------------
+  build-push:
+    name: Build and Push Docker Image
+    runs-on: ubuntu-latest
+    needs: [validate, test, security-audit]
+    outputs:
+      digest: ${{ steps.build.outputs.digest }}
+      image: ${{ steps.meta.outputs.tags }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=semver,pattern={{version}},value=${{ needs.validate.outputs.version }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ needs.validate.outputs.version }}
+            type=semver,pattern={{major}},value=${{ needs.validate.outputs.version }}
+            type=sha,prefix=
+            type=raw,value=latest,enable=${{ needs.validate.outputs.is_prerelease == 'false' }}
+
+      - name: Build and push Docker image
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            VERSION=${{ needs.validate.outputs.version }}
+            BUILD_DATE=${{ github.event.head_commit.timestamp }}
+            VCS_REF=${{ github.sha }}
+
+      - name: Sign container image
+        if: ${{ needs.validate.outputs.is_prerelease == 'false' }}
+        env:
+          COSIGN_EXPERIMENTAL: "true"
+        run: |
+          cosign sign --yes ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.build.outputs.digest }} || true
+
+  # ---------------------------------------------------------------------------
+  # Generate SBOM
+  # ---------------------------------------------------------------------------
+  sbom:
+    name: Generate SBOM
+    runs-on: ubuntu-latest
+    needs: [validate, build-push]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Generate SBOM with Syft
+        uses: anchore/sbom-action@v0
+        with:
+          image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.validate.outputs.version }}
+          artifact-name: sbom-gl-017-condensync-${{ needs.validate.outputs.version }}.spdx.json
+          output-file: ./sbom.spdx.json
+
+      - name: Upload SBOM
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom
+          path: ./sbom.spdx.json
+          retention-days: 90
+
+  # ---------------------------------------------------------------------------
+  # Package Helm Chart
+  # ---------------------------------------------------------------------------
+  helm-package:
+    name: Package Helm Chart
+    runs-on: ubuntu-latest
+    needs: [validate, build-push]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: 'v3.13.0'
+
+      - name: Update chart version
+        run: |
+          sed -i "s/^version:.*/version: ${{ needs.validate.outputs.version }}/" deployment/helm/Chart.yaml
+          sed -i "s/^appVersion:.*/appVersion: \"${{ needs.validate.outputs.version }}\"/" deployment/helm/Chart.yaml
+
+      - name: Package Helm chart
+        run: |
+          helm package deployment/helm/ -d ./charts
+
+      - name: Upload Helm chart
+        uses: actions/upload-artifact@v4
+        with:
+          name: helm-chart
+          path: ./charts/
+          retention-days: 90
+
+  # ---------------------------------------------------------------------------
+  # Create GitHub Release
+  # ---------------------------------------------------------------------------
+  create-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: [validate, build-push, sbom, helm-package]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download SBOM
+        uses: actions/download-artifact@v4
+        with:
+          name: sbom
+
+      - name: Download Helm chart
+        uses: actions/download-artifact@v4
+        with:
+          name: helm-chart
+          path: ./charts
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+
+          if [ -n "$PREVIOUS_TAG" ]; then
+            echo "## GL-017 Condensync - Changes since $PREVIOUS_TAG" > CHANGELOG.md
+            echo "" >> CHANGELOG.md
+
+            echo "### Commits" >> CHANGELOG.md
+            git log ${PREVIOUS_TAG}..HEAD --pretty=format:"- %s (%h)" >> CHANGELOG.md
+            echo "" >> CHANGELOG.md
+
+            echo "### Contributors" >> CHANGELOG.md
+            git log ${PREVIOUS_TAG}..HEAD --pretty=format:"- @%an" | sort -u >> CHANGELOG.md
+          else
+            echo "## GL-017 Condensync - Initial Release" > CHANGELOG.md
+            echo "" >> CHANGELOG.md
+            echo "First release of GL-017 Condensync - Condenser Optimization Agent" >> CHANGELOG.md
+            echo "" >> CHANGELOG.md
+            echo "### Features" >> CHANGELOG.md
+            echo "- Condenser efficiency optimization" >> CHANGELOG.md
+            echo "- Real-time performance monitoring" >> CHANGELOG.md
+            echo "- Predictive maintenance capabilities" >> CHANGELOG.md
+            echo "- Integration with GreenLang thermal agents" >> CHANGELOG.md
+          fi
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ needs.validate.outputs.version }}
+          name: "GL-017 Condensync v${{ needs.validate.outputs.version }}"
+          body_path: CHANGELOG.md
+          draft: false
+          prerelease: ${{ needs.validate.outputs.is_prerelease == 'true' }}
+          files: |
+            sbom.spdx.json
+            charts/*.tgz
+          generate_release_notes: true
+
+  # ---------------------------------------------------------------------------
+  # Deploy to Staging (Auto)
+  # ---------------------------------------------------------------------------
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: [validate, build-push, create-release]
+    if: ${{ needs.validate.outputs.is_prerelease == 'false' }}
+    environment:
+      name: staging
+      url: https://staging.gl-017-condensync.greenlang.io
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.28.0'
+
+      - name: Configure kubectl
+        run: |
+          echo "${{ secrets.KUBE_CONFIG_STAGING }}" | base64 -d > kubeconfig
+          export KUBECONFIG=kubeconfig
+
+      - name: Deploy to staging
+        run: |
+          kubectl set image deployment/${{ env.AGENT_ID }} \
+            ${{ env.AGENT_ID }}=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.validate.outputs.version }} \
+            -n greenlang-staging
+
+      - name: Verify deployment
+        run: |
+          kubectl rollout status deployment/${{ env.AGENT_ID }} -n greenlang-staging --timeout=300s
+
+      - name: Run smoke tests
+        run: |
+          STAGING_URL="https://staging-gl-017-condensync.greenlang.io"
+
+          echo "Testing health endpoint..."
+          curl -sf "${STAGING_URL}/api/v1/health" || exit 1
+
+          echo "Testing readiness endpoint..."
+          curl -sf "${STAGING_URL}/api/v1/ready" || exit 1
+
+          echo "GL-017 Condensync staging smoke tests passed"
+
+  # ---------------------------------------------------------------------------
+  # Notify Release
+  # ---------------------------------------------------------------------------
+  notify:
+    name: Notify Release
+    runs-on: ubuntu-latest
+    needs: [validate, create-release, deploy-staging]
+    if: always()
+
+    steps:
+      - name: Send Slack notification
+        if: ${{ secrets.SLACK_WEBHOOK_URL != '' }}
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          text: |
+            GL-017 Condensync Release v${{ needs.validate.outputs.version }}
+            Release: ${{ needs.create-release.result }}
+            Staging: ${{ needs.deploy-staging.result }}
+          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
+          channel: '#releases'
+
+      - name: Summary
+        run: |
+          echo "## GL-017 Condensync Release Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Version**: ${{ needs.validate.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Pre-release**: ${{ needs.validate.outputs.is_prerelease }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Release Status**: ${{ needs.create-release.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Staging Deployment**: ${{ needs.deploy-staging.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Docker Image" >> $GITHUB_STEP_SUMMARY
+          echo "\`${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.validate.outputs.version }}\`" >> $GITHUB_STEP_SUMMARY

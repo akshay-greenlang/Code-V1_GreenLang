@@ -1,0 +1,370 @@
+# =============================================================================
+# GL-017 CONDENSYNC - Docker Compose Configuration
+# Local Development and Testing Environment
+# =============================================================================
+# Usage:
+#   Development:  docker-compose up -d
+#   Testing:      docker-compose --profile testing up
+#   Full stack:   docker-compose --profile full up -d
+#   Cleanup:      docker-compose down -v
+# =============================================================================
+
+version: "3.9"
+
+# =============================================================================
+# NAMED VOLUMES
+# =============================================================================
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  kafka_data:
+    driver: local
+  zookeeper_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+
+# =============================================================================
+# NETWORKS
+# =============================================================================
+networks:
+  condensync-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
+
+# =============================================================================
+# SERVICES
+# =============================================================================
+services:
+  # ---------------------------------------------------------------------------
+  # GL-017 CONDENSYNC Agent
+  # ---------------------------------------------------------------------------
+  condensync:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: gl017-condensync
+    hostname: condensync
+    restart: unless-stopped
+    ports:
+      - "8017:8017"     # REST API
+      - "9017:9017"     # Prometheus metrics
+    environment:
+      # Agent Configuration
+      GL017_AGENT_ID: GL-017
+      GL017_AGENT_NAME: CONDENSYNC
+      GL017_AGENT_MODE: diagnostic
+      GL017_LOG_LEVEL: DEBUG
+      GL017_ENABLE_PROVENANCE: "true"
+      GL017_ENABLE_EXPLAINABILITY: "true"
+      # API Configuration
+      GL017_API_HOST: "0.0.0.0"
+      GL017_API_PORT: "8017"
+      GL017_API_WORKERS: "2"
+      GL017_API_RELOAD: "true"
+      # Database
+      GL017_DATABASE_URL: postgresql://condensync:condensync@postgres:5432/condensync
+      # Redis
+      GL017_REDIS_URL: redis://redis:6379/0
+      # Kafka
+      GL017_KAFKA_ENABLED: "true"
+      GL017_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      # Metrics
+      GL017_METRICS_ENABLED: "true"
+      GL017_METRICS_PORT: "9017"
+      # Economic defaults
+      GL017_FUEL_COST: "3.50"
+      GL017_ELECTRICITY_PRICE: "40.0"
+    volumes:
+      - .:/app:delegated
+      - /app/__pycache__
+      - /app/.pytest_cache
+    networks:
+      - condensync-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8017/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # ---------------------------------------------------------------------------
+  # PostgreSQL Database
+  # ---------------------------------------------------------------------------
+  postgres:
+    image: postgres:16-alpine
+    container_name: gl017-postgres
+    hostname: postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: condensync
+      POSTGRES_PASSWORD: condensync
+      POSTGRES_DB: condensync
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./deployment/init-db.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - condensync-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U condensync -d condensync"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ---------------------------------------------------------------------------
+  # Redis Cache
+  # ---------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: gl017-redis
+    hostname: redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    networks:
+      - condensync-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ---------------------------------------------------------------------------
+  # Zookeeper (Kafka dependency)
+  # ---------------------------------------------------------------------------
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.3
+    container_name: gl017-zookeeper
+    hostname: zookeeper
+    restart: unless-stopped
+    profiles:
+      - full
+      - kafka
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    volumes:
+      - zookeeper_data:/var/lib/zookeeper/data
+    networks:
+      - condensync-network
+
+  # ---------------------------------------------------------------------------
+  # Apache Kafka
+  # ---------------------------------------------------------------------------
+  kafka:
+    image: confluentinc/cp-kafka:7.5.3
+    container_name: gl017-kafka
+    hostname: kafka
+    restart: unless-stopped
+    profiles:
+      - full
+      - kafka
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    networks:
+      - condensync-network
+    depends_on:
+      - zookeeper
+
+  # ---------------------------------------------------------------------------
+  # Kafka UI (optional)
+  # ---------------------------------------------------------------------------
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: gl017-kafka-ui
+    hostname: kafka-ui
+    restart: unless-stopped
+    profiles:
+      - full
+      - kafka
+    ports:
+      - "8080:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: condensync
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
+      KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
+    networks:
+      - condensync-network
+    depends_on:
+      - kafka
+
+  # ---------------------------------------------------------------------------
+  # Prometheus (Metrics Collection)
+  # ---------------------------------------------------------------------------
+  prometheus:
+    image: prom/prometheus:v2.48.1
+    container_name: gl017-prometheus
+    hostname: prometheus
+    restart: unless-stopped
+    profiles:
+      - full
+      - monitoring
+    ports:
+      - "9090:9090"
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.enable-lifecycle'
+      - '--storage.tsdb.retention.time=15d'
+    volumes:
+      - ./deployment/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    networks:
+      - condensync-network
+
+  # ---------------------------------------------------------------------------
+  # Grafana (Visualization)
+  # ---------------------------------------------------------------------------
+  grafana:
+    image: grafana/grafana:10.2.3
+    container_name: gl017-grafana
+    hostname: grafana
+    restart: unless-stopped
+    profiles:
+      - full
+      - monitoring
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: condensync
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_SERVER_ROOT_URL: http://localhost:3000
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./deployment/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./deployment/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    networks:
+      - condensync-network
+    depends_on:
+      - prometheus
+
+  # ---------------------------------------------------------------------------
+  # Jaeger (Distributed Tracing)
+  # ---------------------------------------------------------------------------
+  jaeger:
+    image: jaegertracing/all-in-one:1.53
+    container_name: gl017-jaeger
+    hostname: jaeger
+    restart: unless-stopped
+    profiles:
+      - full
+      - tracing
+    ports:
+      - "16686:16686"   # Jaeger UI
+      - "4317:4317"     # OTLP gRPC
+      - "4318:4318"     # OTLP HTTP
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+    networks:
+      - condensync-network
+
+  # ---------------------------------------------------------------------------
+  # OPC-UA Simulator (Testing)
+  # ---------------------------------------------------------------------------
+  opcua-simulator:
+    image: ghcr.io/greenlang/opcua-simulator:latest
+    container_name: gl017-opcua-sim
+    hostname: opcua-simulator
+    restart: unless-stopped
+    profiles:
+      - full
+      - integration
+    ports:
+      - "4840:4840"
+    environment:
+      SIMULATOR_MODE: condenser
+      UPDATE_INTERVAL_MS: 1000
+    networks:
+      - condensync-network
+
+  # ---------------------------------------------------------------------------
+  # Test Runner (CI/CD)
+  # ---------------------------------------------------------------------------
+  test-runner:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: testing
+    container_name: gl017-test-runner
+    profiles:
+      - testing
+    environment:
+      GL017_DATABASE_URL: postgresql://condensync:condensync@postgres:5432/condensync_test
+      GL017_REDIS_URL: redis://redis:6379/1
+      PYTEST_ADDOPTS: "--tb=short -q --cov=. --cov-report=xml"
+    volumes:
+      - .:/app
+      - ./test-reports:/app/test-reports
+    networks:
+      - condensync-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: ["pytest", "tests/", "-v", "--junitxml=test-reports/junit.xml"]
+
+# =============================================================================
+# USAGE EXAMPLES
+# =============================================================================
+#
+# Start basic development environment:
+#   docker-compose up -d
+#
+# Start with Kafka:
+#   docker-compose --profile kafka up -d
+#
+# Start with monitoring (Prometheus + Grafana):
+#   docker-compose --profile monitoring up -d
+#
+# Start full stack:
+#   docker-compose --profile full up -d
+#
+# Run tests:
+#   docker-compose --profile testing run --rm test-runner
+#
+# View logs:
+#   docker-compose logs -f condensync
+#
+# Execute command in container:
+#   docker-compose exec condensync python -c "from agent import CondensyncAgent; print('OK')"
+#
+# Scale workers (if using Kafka):
+#   docker-compose --profile kafka up -d --scale condensync=3
+#
+# Cleanup everything:
+#   docker-compose --profile full down -v --remove-orphans
+#
+# =============================================================================
