@@ -1,0 +1,57 @@
+# Ralphy Configuration for GreenLang CBAM MVP
+# Based on PRD: 2026_PRD_MVP/GreenLang_PRD_MVP_2026.md
+
+project:
+  name: greenlang-cbam-pack-mvp
+  description: "CBAM Compliance Pack + Pack Runner - EU Carbon Border Adjustment Mechanism reporting tool"
+  language: python
+  version: "1.0.0"
+
+# Project context
+context:
+  framework: click  # CLI framework
+  test_framework: pytest
+  type_checking: true
+
+# Commands
+commands:
+  test: "pytest tests/ -v --cov=src --cov-report=term-missing"
+  lint: "ruff check src/ tests/"
+  format: "ruff format src/ tests/"
+  typecheck: "mypy src/"
+
+# Coding rules and standards
+rules:
+  - "Use Python 3.10+ features"
+  - "All functions must have type hints"
+  - "Use Decimal for financial/emissions calculations, never float"
+  - "All public functions must have docstrings"
+  - "Follow PEP 8 style guidelines"
+  - "Use pydantic for data validation"
+  - "Use click for CLI implementation"
+  - "Generate deterministic outputs - no random ordering"
+  - "All errors must include error codes (VAL-001, CALC-001, XML-001 format)"
+  - "Every calculation must be traceable to source data"
+  - "Use SHA-256 for file hashing"
+  - "Use ISO 8601 for all timestamps"
+  - "Support both CSV and XLSX input files"
+  - "Fail fast on validation errors with actionable messages"
+
+# Boundaries - files/directories to never modify
+boundaries:
+  - "node_modules/"
+  - ".git/"
+  - ".venv/"
+  - "__pycache__/"
+  - "*.pyc"
+  - ".env"
+  - "*.xlsx"  # Don't modify template files after creation
+
+# Engine configuration
+engine:
+  default: claude
+  auto_approval: true
+  max_retries: 3
+
+# Webhook notifications (optional)
+webhooks: []

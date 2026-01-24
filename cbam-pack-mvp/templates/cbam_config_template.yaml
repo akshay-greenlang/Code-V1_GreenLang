@@ -1,0 +1,39 @@
+# CBAM Configuration Template
+# GreenLang CBAM Pack v0.1.0
+#
+# This file configures your CBAM quarterly report.
+# Fill in your declarant information and reporting period.
+
+# Declarant Information (required)
+declarant:
+  # Your company name
+  name: "Your Company Name GmbH"
+
+  # Your EU EORI number (Economic Operators Registration and Identification)
+  eori_number: "DE123456789012345"
+
+  # Company address
+  address:
+    street: "123 Example Street"
+    city: "Berlin"
+    postal_code: "10115"
+    country: "DE"  # ISO 3166-1 alpha-2 country code
+
+  # Contact person for CBAM matters
+  contact:
+    name: "Max Mustermann"
+    email: "cbam@example.com"
+    phone: "+49 30 12345678"  # optional
+
+# Reporting Period (required)
+reporting_period:
+  quarter: "Q1"  # Q1, Q2, Q3, or Q4
+  year: 2025
+
+# Processing Settings (optional)
+settings:
+  # How to aggregate results in the report
+  # Options:
+  #   - by_product_origin: Combine lines with same CN code and country (default)
+  #   - preserve_detail: Keep all line-level detail
+  aggregation: "by_product_origin"

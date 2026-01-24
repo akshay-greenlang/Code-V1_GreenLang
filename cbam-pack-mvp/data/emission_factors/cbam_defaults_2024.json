@@ -1,0 +1,143 @@
+{
+  "metadata": {
+    "source": "EU Commission Implementing Regulation (EU) 2023/1773",
+    "version": "2024.1.0",
+    "effective_date": "2024-01-01",
+    "expiry_date": "2027-12-31",
+    "description": "Default emission factors for CBAM transitional period"
+  },
+  "factors": {
+    "steel": {
+      "description": "Iron and Steel products (CN 72xx, 73xx)",
+      "cn_prefixes": ["72", "73"],
+      "by_country": {
+        "CN": {
+          "country_name": "China",
+          "direct_emissions_factor": 1.85,
+          "indirect_emissions_factor": 0.42,
+          "unit": "tCO2e/tonne"
+        },
+        "IN": {
+          "country_name": "India",
+          "direct_emissions_factor": 2.10,
+          "indirect_emissions_factor": 0.55,
+          "unit": "tCO2e/tonne"
+        },
+        "RU": {
+          "country_name": "Russia",
+          "direct_emissions_factor": 1.75,
+          "indirect_emissions_factor": 0.38,
+          "unit": "tCO2e/tonne"
+        },
+        "TR": {
+          "country_name": "Turkey",
+          "direct_emissions_factor": 1.65,
+          "indirect_emissions_factor": 0.35,
+          "unit": "tCO2e/tonne"
+        },
+        "UA": {
+          "country_name": "Ukraine",
+          "direct_emissions_factor": 1.90,
+          "indirect_emissions_factor": 0.45,
+          "unit": "tCO2e/tonne"
+        },
+        "KR": {
+          "country_name": "South Korea",
+          "direct_emissions_factor": 1.55,
+          "indirect_emissions_factor": 0.32,
+          "unit": "tCO2e/tonne"
+        },
+        "JP": {
+          "country_name": "Japan",
+          "direct_emissions_factor": 1.50,
+          "indirect_emissions_factor": 0.30,
+          "unit": "tCO2e/tonne"
+        },
+        "BR": {
+          "country_name": "Brazil",
+          "direct_emissions_factor": 1.60,
+          "indirect_emissions_factor": 0.12,
+          "unit": "tCO2e/tonne"
+        },
+        "ZA": {
+          "country_name": "South Africa",
+          "direct_emissions_factor": 2.00,
+          "indirect_emissions_factor": 0.65,
+          "unit": "tCO2e/tonne"
+        },
+        "DEFAULT": {
+          "country_name": "Other Countries",
+          "direct_emissions_factor": 1.95,
+          "indirect_emissions_factor": 0.48,
+          "unit": "tCO2e/tonne"
+        }
+      }
+    },
+    "aluminum": {
+      "description": "Aluminum products (CN 76xx)",
+      "cn_prefixes": ["76"],
+      "by_country": {
+        "CN": {
+          "country_name": "China",
+          "direct_emissions_factor": 7.20,
+          "indirect_emissions_factor": 5.30,
+          "unit": "tCO2e/tonne"
+        },
+        "IN": {
+          "country_name": "India",
+          "direct_emissions_factor": 6.80,
+          "indirect_emissions_factor": 5.50,
+          "unit": "tCO2e/tonne"
+        },
+        "RU": {
+          "country_name": "Russia",
+          "direct_emissions_factor": 6.50,
+          "indirect_emissions_factor": 4.80,
+          "unit": "tCO2e/tonne"
+        },
+        "AE": {
+          "country_name": "UAE",
+          "direct_emissions_factor": 5.80,
+          "indirect_emissions_factor": 4.20,
+          "unit": "tCO2e/tonne"
+        },
+        "NO": {
+          "country_name": "Norway",
+          "direct_emissions_factor": 1.60,
+          "indirect_emissions_factor": 0.05,
+          "unit": "tCO2e/tonne"
+        },
+        "CA": {
+          "country_name": "Canada",
+          "direct_emissions_factor": 2.20,
+          "indirect_emissions_factor": 0.15,
+          "unit": "tCO2e/tonne"
+        },
+        "IS": {
+          "country_name": "Iceland",
+          "direct_emissions_factor": 1.55,
+          "indirect_emissions_factor": 0.02,
+          "unit": "tCO2e/tonne"
+        },
+        "AU": {
+          "country_name": "Australia",
+          "direct_emissions_factor": 5.50,
+          "indirect_emissions_factor": 4.00,
+          "unit": "tCO2e/tonne"
+        },
+        "BR": {
+          "country_name": "Brazil",
+          "direct_emissions_factor": 4.80,
+          "indirect_emissions_factor": 0.50,
+          "unit": "tCO2e/tonne"
+        },
+        "DEFAULT": {
+          "country_name": "Other Countries",
+          "direct_emissions_factor": 6.00,
+          "indirect_emissions_factor": 4.50,
+          "unit": "tCO2e/tonne"
+        }
+      }
+    }
+  }
+}

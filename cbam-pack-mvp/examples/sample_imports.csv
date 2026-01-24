@@ -1,0 +1,11 @@
+line_id,quarter,year,cn_code,product_description,country_of_origin,quantity,unit,supplier_id,installation_id,supplier_direct_emissions,supplier_indirect_emissions,supplier_certificate_ref
+IMP-2025-001,Q1,2025,72061000,Carbon steel ingots - Grade A,CN,50000,kg,SUP-CN-001,,,,
+IMP-2025-002,Q1,2025,72061000,Carbon steel ingots - Grade B,CN,75000,kg,SUP-CN-001,,,,
+IMP-2025-003,Q1,2025,72082500,Hot-rolled steel coils 3mm,IN,120.5,tonnes,SUP-IN-001,INST-IN-001,1.85,0.42,CERT-2025-IN-001
+IMP-2025-004,Q1,2025,72082500,Hot-rolled steel coils 5mm,IN,85.25,tonnes,SUP-IN-001,INST-IN-001,1.85,0.42,CERT-2025-IN-001
+IMP-2025-005,Q1,2025,72082700,Hot-rolled steel coils 8mm,TR,45,tonnes,SUP-TR-001,,,,
+IMP-2025-006,Q1,2025,73011000,Steel sheet piling,CN,30,tonnes,SUP-CN-002,,,,
+IMP-2025-007,Q1,2025,76011000,Primary aluminum ingots,RU,200,tonnes,SUP-RU-001,,,,
+IMP-2025-008,Q1,2025,76011000,Primary aluminum ingots,AE,150,tonnes,SUP-AE-001,INST-AE-001,8.5,2.1,CERT-2025-AE-001
+IMP-2025-009,Q1,2025,76012000,Aluminum alloy ingots,CN,80,tonnes,SUP-CN-003,,,,
+IMP-2025-010,Q1,2025,76020000,Aluminum scrap and waste,IN,25,tonnes,SUP-IN-002,,,,

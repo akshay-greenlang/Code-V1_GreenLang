@@ -1,0 +1,4 @@
+line_id,quarter,year,cn_code,product_description,country_of_origin,quantity,unit,supplier_id,installation_id,supplier_direct_emissions,supplier_indirect_emissions,supplier_certificate_ref
+IMP-001,Q1,2025,72061000,Carbon steel ingots,CN,50000,kg,SUP-001,,,,,
+IMP-002,Q1,2025,72082500,Hot-rolled steel coils,IN,75.5,tonnes,SUP-002,INST-IN-001,1.85,0.42,CERT-2025-001
+IMP-003,Q1,2025,76011000,Primary aluminum ingots,RU,120,tonnes,SUP-003,,,,,
