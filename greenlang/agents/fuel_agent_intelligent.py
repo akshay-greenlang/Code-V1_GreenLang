@@ -67,7 +67,7 @@ from greenlang.utils.performance_tracker import PerformanceTracker
 from greenlang.agents.tools import get_registry
 from greenlang.exceptions import ValidationError, ExecutionError, MissingData
 from greenlang.determinism import DeterministicClock
-from templates.agent_monitoring import OperationalMonitoringMixin
+from greenlang.templates.agent_monitoring import OperationalMonitoringMixin
 
 logger = logging.getLogger(__name__)
 

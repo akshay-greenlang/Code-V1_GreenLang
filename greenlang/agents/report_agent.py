@@ -2,7 +2,7 @@
 from typing import Any, Dict
 from datetime import datetime
 from greenlang.agents.base import BaseAgent, AgentResult, AgentConfig
-from templates.agent_monitoring import OperationalMonitoringMixin
+from greenlang.templates.agent_monitoring import OperationalMonitoringMixin
 from greenlang.determinism import DeterministicClock
 
 

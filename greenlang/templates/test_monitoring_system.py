@@ -27,7 +27,7 @@ def test_imports():
     print("-" * 70)
 
     try:
-        from templates.agent_monitoring import (
+        from greenlang.templates.agent_monitoring import (
             OperationalMonitoringMixin,
             HealthStatus,
             AlertSeverity,
@@ -49,7 +49,7 @@ def test_mixin_integration():
     print("-" * 70)
 
     try:
-        from templates.agent_monitoring import OperationalMonitoringMixin
+        from greenlang.templates.agent_monitoring import OperationalMonitoringMixin
         from greenlang.agents.base import BaseAgent, AgentResult
 
         class TestAgent(OperationalMonitoringMixin, BaseAgent):
@@ -87,7 +87,7 @@ def test_performance_tracking():
     print("-" * 70)
 
     try:
-        from templates.agent_monitoring import OperationalMonitoringMixin
+        from greenlang.templates.agent_monitoring import OperationalMonitoringMixin
         from greenlang.agents.base import BaseAgent, AgentResult
 
         class PerfAgent(OperationalMonitoringMixin, BaseAgent):
@@ -140,7 +140,7 @@ def test_health_checks():
     print("-" * 70)
 
     try:
-        from templates.agent_monitoring import (
+        from greenlang.templates.agent_monitoring import (
             OperationalMonitoringMixin,
             HealthStatus
         )
@@ -201,7 +201,7 @@ def test_alerting():
     print("-" * 70)
 
     try:
-        from templates.agent_monitoring import (
+        from greenlang.templates.agent_monitoring import (
             OperationalMonitoringMixin,
             AlertSeverity
         )
@@ -272,7 +272,7 @@ def test_prometheus_metrics():
     print("-" * 70)
 
     try:
-        from templates.agent_monitoring import OperationalMonitoringMixin
+        from greenlang.templates.agent_monitoring import OperationalMonitoringMixin
         from greenlang.agents.base import BaseAgent, AgentResult
 
         class MetricsAgent(OperationalMonitoringMixin, BaseAgent):
@@ -321,7 +321,7 @@ def test_performance_summary():
     print("-" * 70)
 
     try:
-        from templates.agent_monitoring import OperationalMonitoringMixin
+        from greenlang.templates.agent_monitoring import OperationalMonitoringMixin
         from greenlang.agents.base import BaseAgent, AgentResult
         import random
 

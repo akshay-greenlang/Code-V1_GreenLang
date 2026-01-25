@@ -14,7 +14,7 @@ from typing import Any, Dict, List
 from greenlang.agents.base import BaseAgent, AgentResult, AgentConfig
 from greenlang.agents.intelligence_mixin import IntelligenceMixin
 from greenlang.agents.intelligence_interface import IntelligenceCapabilities, IntelligenceLevel
-from templates.agent_monitoring import OperationalMonitoringMixin
+from greenlang.templates.agent_monitoring import OperationalMonitoringMixin
 
 
 class CarbonAgent(IntelligenceMixin, OperationalMonitoringMixin, BaseAgent):

@@ -78,12 +78,18 @@ from .invalidation import (
     UnifiedInvalidationManager,
 )
 
+# Backward compatibility aliases
+get_global_cache = get_legacy_cache
+reset_global_cache = reset_legacy_cache
+
 __all__ = [
     # Legacy
     "EmissionFactorCache",
     "LegacyCacheEntry",
     "get_legacy_cache",
     "reset_legacy_cache",
+    "get_global_cache",  # Backward compatibility
+    "reset_global_cache",  # Backward compatibility
 
     # Architecture
     "CacheArchitecture",

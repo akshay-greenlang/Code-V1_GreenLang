@@ -60,7 +60,7 @@ warnings.warn(
 )
 
 from ..types import Agent, AgentResult, ErrorInfo
-from templates.agent_monitoring import OperationalMonitoringMixin
+from greenlang.templates.agent_monitoring import OperationalMonitoringMixin
 from .types import GridFactorInput, GridFactorOutput
 from .grid_factor_agent import GridFactorAgent
 from greenlang.exceptions import ExecutionError, ValidationError

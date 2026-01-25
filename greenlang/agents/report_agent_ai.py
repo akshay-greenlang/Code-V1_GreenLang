@@ -48,7 +48,7 @@ import asyncio
 import logging
 
 from greenlang.agents.base import BaseAgent, AgentResult, AgentConfig
-from templates.agent_monitoring import OperationalMonitoringMixin
+from greenlang.templates.agent_monitoring import OperationalMonitoringMixin
 from greenlang.agents.report_agent import ReportAgent
 # Fixed: Removed incomplete import
 from greenlang.determinism import DeterministicClock

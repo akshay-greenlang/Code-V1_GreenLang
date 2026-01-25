@@ -139,14 +139,14 @@ class MonitoringIntegrator:
                 # Pattern 1: from greenlang.agents.base import BaseAgent
                 if line.startswith("from greenlang.agents.base"):
                     new_lines.append(line)
-                    new_lines.append("from templates.agent_monitoring import OperationalMonitoringMixin")
+                    new_lines.append("from greenlang.templates.agent_monitoring import OperationalMonitoringMixin")
                     changes["import_added"] = True
                     import_section_done = True
                     continue
                 # Pattern 2: from ..types import Agent
                 elif line.startswith("from ..types import Agent"):
                     new_lines.append(line)
-                    new_lines.append("from templates.agent_monitoring import OperationalMonitoringMixin")
+                    new_lines.append("from greenlang.templates.agent_monitoring import OperationalMonitoringMixin")
                     changes["import_added"] = True
                     import_section_done = True
                     continue
