@@ -8,11 +8,13 @@ Template for testing GreenLang pipelines.
 Copy this template and customize for your specific pipeline.
 """
 
+import pytest
 from greenlang.testing import PipelineTestCase
 # Import your pipeline here
 # from your_module import YourPipeline
 
 
+@pytest.mark.skip(reason="Template test - copy and customize for your pipeline")
 class TestYourPipeline(PipelineTestCase):
     """Test suite for YourPipeline."""
 

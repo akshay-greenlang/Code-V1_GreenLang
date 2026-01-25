@@ -8,11 +8,13 @@ Template for end-to-end integration testing.
 Copy this template and customize for your integration tests.
 """
 
+import pytest
 from greenlang.testing import IntegrationTestCase
 # Import your components here
 # from your_module import YourApp
 
 
+@pytest.mark.skip(reason="Template test - copy and customize for your integration")
 class TestYourIntegration(IntegrationTestCase):
     """Test suite for end-to-end integration."""
 

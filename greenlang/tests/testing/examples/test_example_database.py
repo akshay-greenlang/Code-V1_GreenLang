@@ -6,9 +6,11 @@ Example Database Test
 Demonstrates how to test database operations.
 """
 
+import pytest
 from greenlang.testing import DatabaseTestCase
 
 
+@pytest.mark.skip(reason="Example test - demonstrates database testing patterns")
 class TestDatabase(DatabaseTestCase):
     """Test suite for database operations."""
 

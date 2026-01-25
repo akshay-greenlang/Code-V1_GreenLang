@@ -115,10 +115,10 @@ class CalculatorAgent:
 
         # Thread and process pools for parallel execution
         self._thread_pool = ThreadPoolExecutor(
-            max_workers=config.get("thread_workers", min(32, (multiprocessing.cpu_count() or 1) + 4))
+            max_workers=self.config.get("thread_workers", min(32, (multiprocessing.cpu_count() or 1) + 4))
         )
         self._process_pool = ProcessPoolExecutor(
-            max_workers=config.get("process_workers", multiprocessing.cpu_count() or 1)
+            max_workers=self.config.get("process_workers", multiprocessing.cpu_count() or 1)
         )
 
         logger.info("Initialized CalculatorAgent")

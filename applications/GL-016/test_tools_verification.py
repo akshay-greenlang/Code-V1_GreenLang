@@ -6,9 +6,13 @@ Tests key functions to ensure deterministic calculations work correctly.
 """
 
 import sys
-sys.path.insert(0, 'C:/Users/aksha/Code-V1_GreenLang')
+from pathlib import Path
 
-from GL-016.tools import WaterTreatmentTools, ScavengerType, AmineType, BoilerType
+# Add the GL-016 directory to path for imports
+sys.path.insert(0, str(Path(__file__).parent))
+
+from tools import WaterTreatmentTools, ScavengerType, AmineType, BoilerType  # noqa: E402
+
 
 def test_water_chemistry():
     """Test water chemistry calculations."""
@@ -49,7 +53,7 @@ def test_water_chemistry():
     }
 
     analysis = WaterTreatmentTools.analyze_water_quality(chemistry_data)
-    print(f"\nWater Quality Analysis:")
+    print("\nWater Quality Analysis:")
     print(f"  LSI: {analysis.lsi_value}")
     print(f"  RSI: {analysis.rsi_value}")
     print(f"  Scale Tendency: {analysis.scale_tendency}")
@@ -101,7 +105,7 @@ def test_blowdown_optimization():
         water_data=water_data,
         steam_demand=5000.0
     )
-    print(f"\nBlowdown Optimization:")
+    print("\nBlowdown Optimization:")
     print(f"  Optimal Cycles: {optimization.optimal_cycles}")
     print(f"  Blowdown Rate: {optimization.recommended_blowdown_rate} kg/hr")
     print(f"  Water Savings: {optimization.water_savings} m3/day")
@@ -261,7 +265,7 @@ def test_compliance_checking():
     asme_result = WaterTreatmentTools.check_asme_compliance(
         chemistry, pressure=15.0
     )
-    print(f"\nASME Compliance:")
+    print("\nASME Compliance:")
     print(f"  Status: {asme_result.compliance_status}")
     print(f"  Parameters Checked: {asme_result.parameters_checked}")
     print(f"  Violations: {len(asme_result.violations)}")
@@ -279,7 +283,7 @@ def test_compliance_checking():
         chemistry_with_residuals,
         BoilerType.WATER_TUBE
     )
-    print(f"\nABMA Compliance:")
+    print("\nABMA Compliance:")
     print(f"  Status: {abma_result.compliance_status}")
     print(f"  Violations: {len(abma_result.violations)}")
 
@@ -288,7 +292,7 @@ def test_compliance_checking():
         program_type="phosphate",
         chemistry=chemistry_with_residuals
     )
-    print(f"\nTreatment Program Validation:")
+    print("\nTreatment Program Validation:")
     print(f"  Valid: {validation.is_valid}")
     print(f"  Effectiveness Score: {validation.effectiveness_score}")
     print(f"  Chemistry Compatible: {validation.chemistry_compatibility}")
@@ -315,7 +319,7 @@ def test_provenance():
 
     print(f"Analysis 1 Hash: {analysis1.provenance_hash[:16]}...")
     print(f"Analysis 2 Hash: {analysis2.provenance_hash[:16]}...")
-    print(f"Hashes include timestamp, so they differ for deterministic tracking")
+    print("Hashes include timestamp, so they differ for deterministic tracking")
 
 
 if __name__ == "__main__":

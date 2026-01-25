@@ -8,11 +8,13 @@ Template for testing GreenLang agents.
 Copy this template and customize for your specific agent.
 """
 
+import pytest
 from greenlang.testing import AgentTestCase
 # Import your agent here
 # from your_module import YourAgent
 
 
+@pytest.mark.skip(reason="Template test - copy and customize for your agent")
 class TestYourAgent(AgentTestCase):
     """Test suite for YourAgent."""
 

@@ -16,12 +16,12 @@ Author: GreenLang Framework Team
 Date: December 2025
 """
 
-from greenlang.core.orchestrator import Orchestrator, WorkflowOrchestrator
-from greenlang.core.async_orchestrator import AsyncOrchestrator
-from greenlang.core.workflow import Workflow, WorkflowStep
+from greenlang.execution.core.orchestrator import Orchestrator, WorkflowOrchestrator
+from greenlang.execution.core.async_orchestrator import AsyncOrchestrator
+from greenlang.execution.core.workflow import Workflow, WorkflowStep
 
 # New orchestration infrastructure
-from greenlang.core.base_orchestrator import (
+from greenlang.execution.core.base_orchestrator import (
     BaseOrchestrator,
     OrchestrationResult,
     OrchestratorConfig,
@@ -29,7 +29,7 @@ from greenlang.core.base_orchestrator import (
     OrchestratorState,
     create_base_orchestrator_config,
 )
-from greenlang.core.message_bus import (
+from greenlang.execution.core.message_bus import (
     Message,
     MessageBus,
     MessageBusConfig,
@@ -40,7 +40,7 @@ from greenlang.core.message_bus import (
     Subscription,
     create_message_bus,
 )
-from greenlang.core.task_scheduler import (
+from greenlang.execution.core.task_scheduler import (
     AgentCapacity,
     LoadBalanceStrategy,
     Task,
@@ -52,7 +52,7 @@ from greenlang.core.task_scheduler import (
     TaskState,
     create_task_scheduler,
 )
-from greenlang.core.coordination_layer import (
+from greenlang.execution.core.coordination_layer import (
     AgentInfo,
     ConsensusProposal,
     ConsensusResult,
@@ -69,7 +69,7 @@ from greenlang.core.coordination_layer import (
     TransactionState,
     create_coordination_layer,
 )
-from greenlang.core.safety_monitor import (
+from greenlang.execution.core.safety_monitor import (
     CircuitBreaker,
     CircuitState,
     ConstraintType,

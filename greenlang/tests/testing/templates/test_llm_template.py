@@ -8,11 +8,13 @@ Template for testing LLM integrations.
 Copy this template and customize for your specific LLM integration.
 """
 
+import pytest
 from greenlang.testing import LLMTestCase
 # Import your LLM function here
 # from your_module import your_llm_function
 
 
+@pytest.mark.skip(reason="Template test - copy and customize for your LLM integration")
 class TestYourLLMIntegration(LLMTestCase):
     """Test suite for LLM integration."""
 
