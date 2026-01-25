@@ -2,7 +2,12 @@
 CBAM Pack Web Application
 
 FastAPI-based web interface for the CBAM Compliance Pack.
-Provides file upload, processing, and result visualization.
+Provides file upload, processing, and result visualization with:
+- XSD schema validation status
+- Policy PASS/WARN/FAIL status
+- Row-level drilldown for default factor usage
+- Gap report with actionable recommendations
+- Evidence folder with immutable input copies
 """
 
 import io
@@ -96,13 +101,44 @@ def create_app() -> FastAPI:
                 "errors": result.errors,
             }
 
-            # Add compliance status
+            # Add policy status
+            if result.policy_result:
+                response_data["policy"] = result.policy_result
+
+            # Add XML validation status
+            if result.xml_validation:
+                response_data["xml_validation"] = result.xml_validation
+
+            # Add gap summary
+            if result.gap_summary:
+                response_data["gap_summary"] = result.gap_summary
+
+            # Add lines using defaults for drilldown
+            if result.lines_using_defaults:
+                response_data["lines_using_defaults"] = result.lines_using_defaults
+
+            # Build compliance status based on policy
             if result.success:
+                policy = result.policy_result or {}
+                policy_status = policy.get("status", "PASS")
                 default_usage = result.statistics.get("default_usage_percent", 0)
+
+                if policy_status == "PASS":
+                    compliance_status = "compliant"
+                    compliance_message = "All policy checks passed. Report is compliant."
+                elif policy_status == "WARN":
+                    compliance_status = "warning"
+                    compliance_message = f"Report generated with warnings. Default factor usage: {default_usage:.1f}%"
+                else:
+                    compliance_status = "error"
+                    compliance_message = "Policy validation failed. Review violations."
+
                 response_data["compliance"] = {
-                    "status": "compliant" if default_usage <= 20 else "warning",
+                    "status": compliance_status,
+                    "policy_status": policy_status,
                     "default_usage_percent": default_usage,
-                    "message": f"Default factor usage: {default_usage:.1f}%"
+                    "message": compliance_message,
+                    "can_export": policy.get("can_export", True),
                 }
 
             return response_data
@@ -195,7 +231,7 @@ def get_home_html() -> str:
         }
 
         .container {
-            max-width: 900px;
+            max-width: 1100px;
             margin: 0 auto;
             padding: 40px 20px;
         }
@@ -361,6 +397,60 @@ def get_home_html() -> str:
             margin-top: 5px;
         }
 
+        .validation-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .validation-card {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .validation-card h4 {
+            margin-bottom: 15px;
+            color: #fff;
+        }
+
+        .validation-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: bold;
+        }
+
+        .status-badge.pass {
+            background: rgba(78, 204, 163, 0.2);
+            color: #4ecca3;
+        }
+
+        .status-badge.warn {
+            background: rgba(255, 193, 7, 0.2);
+            color: #ffc107;
+        }
+
+        .status-badge.fail {
+            background: rgba(220, 53, 69, 0.2);
+            color: #dc3545;
+        }
+
+        .validation-detail {
+            color: #888;
+            font-size: 0.9em;
+        }
+
         .compliance-badge {
             display: inline-block;
             padding: 8px 16px;
@@ -382,6 +472,105 @@ def get_home_html() -> str:
         .compliance-badge.error {
             background: rgba(220, 53, 69, 0.2);
             color: #dc3545;
+        }
+
+        .section-title {
+            margin: 30px 0 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .drilldown-section {
+            margin-top: 20px;
+        }
+
+        .drilldown-toggle {
+            background: rgba(255, 193, 7, 0.1);
+            border: 1px solid rgba(255, 193, 7, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .drilldown-toggle:hover {
+            background: rgba(255, 193, 7, 0.15);
+        }
+
+        .drilldown-content {
+            display: none;
+            margin-top: 10px;
+        }
+
+        .drilldown-content.show {
+            display: block;
+        }
+
+        .default-line-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+        }
+
+        .default-line-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .default-line-id {
+            font-weight: bold;
+            color: #4ecca3;
+        }
+
+        .default-line-emissions {
+            color: #ffc107;
+        }
+
+        .default-line-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+            color: #888;
+        }
+
+        .missing-fields {
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(220, 53, 69, 0.1);
+            border-radius: 4px;
+        }
+
+        .missing-fields-title {
+            font-weight: bold;
+            color: #dc3545;
+            margin-bottom: 5px;
+        }
+
+        .missing-field-tag {
+            display: inline-block;
+            background: rgba(220, 53, 69, 0.2);
+            color: #dc3545;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            margin: 2px;
+        }
+
+        .recommended-action {
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(78, 204, 163, 0.1);
+            border-radius: 4px;
+            color: #4ecca3;
+            font-size: 0.9em;
         }
 
         .artifacts-list {
@@ -436,6 +625,26 @@ def get_home_html() -> str:
             font-weight: bold;
         }
 
+        .violation-list {
+            margin-top: 10px;
+        }
+
+        .violation-item {
+            background: rgba(220, 53, 69, 0.1);
+            border-left: 3px solid #dc3545;
+            padding: 10px 15px;
+            margin-bottom: 8px;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .warning-item {
+            background: rgba(255, 193, 7, 0.1);
+            border-left: 3px solid #ffc107;
+            padding: 10px 15px;
+            margin-bottom: 8px;
+            border-radius: 0 8px 8px 0;
+        }
+
         footer {
             text-align: center;
             padding: 40px;
@@ -451,16 +660,16 @@ def get_home_html() -> str:
 <body>
     <div class="container">
         <header>
-            <div class="logo">🌿</div>
+            <div class="logo">&#127807;</div>
             <h1>GreenLang CBAM Pack</h1>
             <p class="subtitle">EU Carbon Border Adjustment Mechanism Compliance Tool</p>
         </header>
 
         <div class="card">
-            <h2 style="margin-bottom: 20px;">📁 Upload Files</h2>
+            <h2 style="margin-bottom: 20px;">&#128193; Upload Files</h2>
 
             <div class="upload-zone" id="configZone" onclick="document.getElementById('configFile').click()">
-                <div class="upload-icon">📄</div>
+                <div class="upload-icon">&#128196;</div>
                 <div class="upload-text">Config File (YAML)</div>
                 <div class="upload-hint">Drag & drop or click to select</div>
                 <div class="file-name" id="configFileName"></div>
@@ -468,7 +677,7 @@ def get_home_html() -> str:
             </div>
 
             <div class="upload-zone" id="importsZone" onclick="document.getElementById('importsFile').click()">
-                <div class="upload-icon">📊</div>
+                <div class="upload-icon">&#128202;</div>
                 <div class="upload-text">Import Ledger (CSV/XLSX)</div>
                 <div class="upload-hint">Drag & drop or click to select</div>
                 <div class="file-name" id="importsFileName"></div>
@@ -476,7 +685,7 @@ def get_home_html() -> str:
             </div>
 
             <button class="btn" id="processBtn" onclick="processFiles()" disabled>
-                ▶ Generate Report
+                &#9654; Generate Report
             </button>
 
             <div class="progress-container" id="progressContainer">
@@ -488,21 +697,37 @@ def get_home_html() -> str:
         </div>
 
         <div class="results card" id="resultsCard">
-            <h2 style="margin-bottom: 20px;">📊 Results</h2>
+            <h2 style="margin-bottom: 20px;">&#128202; Results</h2>
 
             <div id="complianceStatus"></div>
 
+            <!-- Validation Status Section -->
+            <div class="validation-grid" id="validationGrid"></div>
+
+            <!-- Statistics Section -->
             <div class="stat-grid" id="statsGrid"></div>
 
-            <h3 style="margin-bottom: 15px;">📦 Generated Artifacts</h3>
+            <!-- Lines Using Defaults Drilldown -->
+            <div class="drilldown-section" id="drilldownSection" style="display: none;">
+                <div class="drilldown-toggle" onclick="toggleDrilldown()">
+                    <span>&#9888; <span id="defaultLinesCount">0</span> lines using default factors - Click to review</span>
+                    <span id="drilldownArrow">&#9660;</span>
+                </div>
+                <div class="drilldown-content" id="drilldownContent"></div>
+            </div>
+
+            <!-- Policy Violations/Warnings -->
+            <div id="policySection"></div>
+
+            <h3 class="section-title">&#128230; Generated Artifacts</h3>
             <ul class="artifacts-list" id="artifactsList"></ul>
 
             <button class="btn btn-download-all" id="downloadAllBtn" onclick="downloadAll()">
-                ⬇ Download All (ZIP)
+                &#11015; Download All (ZIP)
             </button>
 
             <div class="error-list" id="errorList" style="display: none;">
-                <h3 style="margin-bottom: 15px; color: #dc3545;">⚠ Errors</h3>
+                <h3 style="margin-bottom: 15px; color: #dc3545;">&#9888; Errors</h3>
                 <div id="errorItems"></div>
             </div>
         </div>
@@ -540,7 +765,6 @@ def get_home_html() -> str:
                     const type = id === 'configZone' ? 'config' : 'imports';
                     const input = document.getElementById(type === 'config' ? 'configFile' : 'importsFile');
 
-                    // Create a DataTransfer to set files
                     const dt = new DataTransfer();
                     dt.items.add(file);
                     input.files = dt.files;
@@ -558,7 +782,7 @@ def get_home_html() -> str:
             const nameEl = document.getElementById(type === 'config' ? 'configFileName' : 'importsFileName');
 
             zone.classList.add('has-file');
-            nameEl.textContent = '✓ ' + file.name;
+            nameEl.textContent = '&#10003; ' + file.name;
 
             if (type === 'config') {
                 configFile = file;
@@ -585,25 +809,25 @@ def get_home_html() -> str:
             progressContainer.style.display = 'block';
             resultsCard.classList.remove('show');
 
-            // Simulate progress
             let progress = 0;
             const stages = [
                 'Validating inputs...',
+                'Evaluating policy...',
                 'Loading emission factors...',
                 'Calculating emissions...',
-                'Generating XML...',
+                'Validating XML schema...',
                 'Creating audit bundle...',
+                'Generating gap report...',
                 'Finalizing...'
             ];
 
             const progressInterval = setInterval(() => {
-                progress += 15;
+                progress += 12;
                 if (progress > 90) progress = 90;
                 progressFill.style.width = progress + '%';
-                progressText.textContent = stages[Math.min(Math.floor(progress / 15), stages.length - 1)];
+                progressText.textContent = stages[Math.min(Math.floor(progress / 12), stages.length - 1)];
             }, 300);
 
-            // Create form data
             const formData = new FormData();
             formData.append('config_file', configFile);
             formData.append('imports_file', importsFile);
@@ -619,11 +843,9 @@ def get_home_html() -> str:
 
                 clearInterval(progressInterval);
                 progressFill.style.width = '100%';
-                progressText.textContent = result.success ? 'Complete!' : 'Completed with errors';
+                progressText.textContent = result.success ? 'Complete!' : 'Completed with issues';
 
                 currentSessionId = result.session_id;
-
-                // Display results
                 displayResults(result);
 
             } catch (error) {
@@ -637,28 +859,78 @@ def get_home_html() -> str:
         function displayResults(result) {
             const resultsCard = document.getElementById('resultsCard');
             const complianceStatus = document.getElementById('complianceStatus');
+            const validationGrid = document.getElementById('validationGrid');
             const statsGrid = document.getElementById('statsGrid');
             const artifactsList = document.getElementById('artifactsList');
             const errorList = document.getElementById('errorList');
             const errorItems = document.getElementById('errorItems');
+            const drilldownSection = document.getElementById('drilldownSection');
+            const policySection = document.getElementById('policySection');
 
             resultsCard.classList.add('show');
 
             // Compliance status
             if (result.success) {
-                const compliance = result.compliance || { status: 'compliant', message: 'Report generated successfully' };
+                const compliance = result.compliance || { status: 'compliant', message: 'Report generated' };
+                const statusIcon = compliance.status === 'compliant' ? '&#10003;' :
+                                   compliance.status === 'warning' ? '&#9888;' : '&#10007;';
+                const statusText = compliance.status === 'compliant' ? 'Compliant' :
+                                   compliance.status === 'warning' ? 'Review Required' : 'Policy Failed';
                 complianceStatus.innerHTML = `
                     <div class="compliance-badge ${compliance.status}">
-                        ${compliance.status === 'compliant' ? '✓ Compliant' : '⚠ Review Required'}
+                        ${statusIcon} ${statusText}
                     </div>
                     <p style="margin-bottom: 20px; color: #888;">${compliance.message}</p>
                 `;
             } else {
                 complianceStatus.innerHTML = `
-                    <div class="compliance-badge error">✗ Failed</div>
+                    <div class="compliance-badge error">&#10007; Failed</div>
                     <p style="margin-bottom: 20px; color: #888;">Report generation failed. See errors below.</p>
                 `;
             }
+
+            // Validation cards
+            let validationHtml = '';
+
+            // XML Schema Validation
+            const xmlVal = result.xml_validation || {};
+            validationHtml += `
+                <div class="validation-card">
+                    <h4>&#128196; XML Schema Validation</h4>
+                    <div class="validation-status">
+                        <span class="status-badge ${xmlVal.status === 'PASS' ? 'pass' : xmlVal.status === 'FAIL' ? 'fail' : 'warn'}">
+                            ${xmlVal.status || 'N/A'}
+                        </span>
+                    </div>
+                    <div class="validation-detail">
+                        Schema Version: ${xmlVal.schema_version || 'N/A'}<br>
+                        Schema Date: ${xmlVal.schema_date || 'N/A'}
+                    </div>
+                    ${xmlVal.errors && xmlVal.errors.length > 0 ?
+                        `<div style="color: #dc3545; margin-top: 10px; font-size: 0.85em;">
+                            ${xmlVal.errors.map(e => `&#8226; ${e}`).join('<br>')}
+                        </div>` : ''}
+                </div>
+            `;
+
+            // Policy Validation
+            const policy = result.policy || {};
+            validationHtml += `
+                <div class="validation-card">
+                    <h4>&#128736; Policy Validation</h4>
+                    <div class="validation-status">
+                        <span class="status-badge ${policy.status === 'PASS' ? 'pass' : policy.status === 'WARN' ? 'warn' : 'fail'}">
+                            ${policy.status || 'N/A'}
+                        </span>
+                    </div>
+                    <div class="validation-detail">
+                        Score: ${policy.overall_score ? policy.overall_score.toFixed(0) : 'N/A'}/100<br>
+                        Can Export: ${policy.can_export !== undefined ? (policy.can_export ? 'Yes' : 'No') : 'N/A'}
+                    </div>
+                </div>
+            `;
+
+            validationGrid.innerHTML = validationHtml;
 
             // Statistics
             const stats = result.statistics || {};
@@ -675,13 +947,88 @@ def get_home_html() -> str:
                     <div class="stat-value">${(stats.default_usage_percent || 0).toFixed(1)}%</div>
                     <div class="stat-label">Default Factor Usage</div>
                 </div>
+                <div class="stat-card">
+                    <div class="stat-value">${stats.lines_using_defaults || 0}</div>
+                    <div class="stat-label">Lines Using Defaults</div>
+                </div>
             `;
+
+            // Lines using defaults drilldown
+            const defaultLines = result.lines_using_defaults || [];
+            if (defaultLines.length > 0) {
+                drilldownSection.style.display = 'block';
+                document.getElementById('defaultLinesCount').textContent = defaultLines.length;
+
+                let drilldownHtml = '';
+                defaultLines.forEach(line => {
+                    drilldownHtml += `
+                        <div class="default-line-item">
+                            <div class="default-line-header">
+                                <span class="default-line-id">${line.line_id}</span>
+                                <span class="default-line-emissions">${line.total_emissions_tco2e.toFixed(2)} tCO2e</span>
+                            </div>
+                            <div class="default-line-details">
+                                <span>&#128230; CN Code: ${line.cn_code}</span>
+                                <span>&#127758; Country: ${line.country_of_origin}</span>
+                                <span>&#128666; Supplier: ${line.supplier_id || 'Unknown'}</span>
+                            </div>
+                            <div style="color: #888; font-size: 0.9em; margin-bottom: 10px;">
+                                ${line.product_description}
+                            </div>
+                            ${line.missing_fields && line.missing_fields.length > 0 ? `
+                                <div class="missing-fields">
+                                    <div class="missing-fields-title">Missing Data Fields:</div>
+                                    ${line.missing_fields.map(f => `<span class="missing-field-tag">${f}</span>`).join('')}
+                                </div>
+                            ` : ''}
+                            <div class="recommended-action">
+                                &#128161; ${line.recommended_action}
+                            </div>
+                        </div>
+                    `;
+                });
+                document.getElementById('drilldownContent').innerHTML = drilldownHtml;
+            } else {
+                drilldownSection.style.display = 'none';
+            }
+
+            // Policy violations and warnings
+            let policyHtml = '';
+            if (policy.violations && policy.violations.length > 0) {
+                policyHtml += '<h3 class="section-title" style="color: #dc3545;">&#10060; Policy Violations</h3>';
+                policyHtml += '<div class="violation-list">';
+                policy.violations.forEach(v => {
+                    policyHtml += `
+                        <div class="violation-item">
+                            <strong>${v.rule_id}: ${v.rule_name}</strong><br>
+                            <span style="color: #888;">${v.message}</span>
+                            ${v.remediation ? `<br><span style="color: #4ecca3;">&#128161; ${v.remediation}</span>` : ''}
+                        </div>
+                    `;
+                });
+                policyHtml += '</div>';
+            }
+            if (policy.warnings && policy.warnings.length > 0) {
+                policyHtml += '<h3 class="section-title" style="color: #ffc107;">&#9888; Policy Warnings</h3>';
+                policyHtml += '<div class="violation-list">';
+                policy.warnings.forEach(w => {
+                    policyHtml += `
+                        <div class="warning-item">
+                            <strong>${w.rule_id}: ${w.rule_name}</strong><br>
+                            <span style="color: #888;">${w.message}</span>
+                            ${w.remediation ? `<br><span style="color: #4ecca3;">&#128161; ${w.remediation}</span>` : ''}
+                        </div>
+                    `;
+                });
+                policyHtml += '</div>';
+            }
+            policySection.innerHTML = policyHtml;
 
             // Artifacts
             const artifacts = result.artifacts || [];
             artifactsList.innerHTML = artifacts.map(artifact => `
                 <li>
-                    <span>📄 ${artifact}</span>
+                    <span>&#128196; ${artifact}</span>
                     <a href="/api/download/${currentSessionId}/${artifact}" class="download-link">Download</a>
                 </li>
             `).join('');
@@ -698,6 +1045,13 @@ def get_home_html() -> str:
             } else {
                 errorList.style.display = 'none';
             }
+        }
+
+        function toggleDrilldown() {
+            const content = document.getElementById('drilldownContent');
+            const arrow = document.getElementById('drilldownArrow');
+            content.classList.toggle('show');
+            arrow.innerHTML = content.classList.contains('show') ? '&#9650;' : '&#9660;';
         }
 
         function downloadAll() {
