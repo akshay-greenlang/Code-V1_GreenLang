@@ -18,19 +18,16 @@ from datetime import datetime, timezone
 from unittest.mock import Mock, patch, MagicMock
 import time
 
-import sys
-import os
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from optimizer import (
+from greenlang.agents.process_heat.gl_003_unified_steam.optimizer import (
     UnifiedSteamOptimizer,
     UnifiedSteamOptimizerInput,
 )
-from config import (
+from greenlang.agents.process_heat.gl_003_unified_steam.config import (
     UnifiedSteamConfig,
     create_default_config,
 )
-from schemas import (
+from greenlang.agents.process_heat.gl_003_unified_steam.schemas import (
     HeaderBalanceInput,
     HeaderBalanceOutput,
     SteamQualityReading,

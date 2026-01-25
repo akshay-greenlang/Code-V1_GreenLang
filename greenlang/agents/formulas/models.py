@@ -9,7 +9,7 @@ data integrity issues.
 """
 
 from typing import Dict, Any, List, Optional, Literal
-from pydantic import BaseModel, Field, validator, root_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 from datetime import datetime, date
 from enum import Enum
 import json
@@ -74,11 +74,12 @@ class ValidationRules(BaseModel):
     allow_negative: bool = Field(False, description="Whether negative values allowed")
     precision: Optional[int] = Field(None, ge=0, le=10, description="Decimal precision")
 
-    @validator('max_value')
-    def validate_max_greater_than_min(cls, v, values):
+    @field_validator('max_value')
+    @classmethod
+    def validate_max_greater_than_min(cls, v, info):
         """Ensure max_value > min_value if both specified."""
-        if v is not None and values.get('min_value') is not None:
-            if v <= values['min_value']:
+        if v is not None and info.data.get('min_value') is not None:
+            if v <= info.data['min_value']:
                 raise ValueError("max_value must be greater than min_value")
         return v
 
@@ -147,7 +148,8 @@ class FormulaVersion(BaseModel):
     class Config:
         use_enum_values = True
 
-    @validator('required_inputs', 'optional_inputs')
+    @field_validator('required_inputs', 'optional_inputs')
+    @classmethod
     def validate_input_names(cls, v):
         """Validate input names are valid Python identifiers."""
         for name in v:
@@ -155,17 +157,13 @@ class FormulaVersion(BaseModel):
                 raise ValueError(f"Invalid input name: {name}")
         return v
 
-    @root_validator
-    def validate_effective_dates(cls, values):
+    @model_validator(mode='after')
+    def validate_effective_dates(self):
         """Ensure effective_to > effective_from."""
-        effective_from = values.get('effective_from')
-        effective_to = values.get('effective_to')
-
-        if effective_from and effective_to:
-            if effective_to <= effective_from:
+        if self.effective_from and self.effective_to:
+            if self.effective_to <= self.effective_from:
                 raise ValueError("effective_to must be after effective_from")
-
-        return values
+        return self
 
     def to_json_dict(self) -> Dict[str, Any]:
         """Convert to JSON-serializable dict for database storage."""
@@ -273,10 +271,11 @@ class ABTest(BaseModel):
     created_at: datetime = Field(default_factory=datetime.now)
     created_by: str = Field(default="system", max_length=100)
 
-    @validator('variant_version_id')
-    def validate_different_versions(cls, v, values):
+    @field_validator('variant_version_id')
+    @classmethod
+    def validate_different_versions(cls, v, info):
         """Ensure control and variant are different versions."""
-        if v == values.get('control_version_id'):
+        if v == info.data.get('control_version_id'):
             raise ValueError("Variant version must be different from control version")
         return v
 

@@ -50,7 +50,6 @@ from greenlang.agents.process_heat.gl_001_thermal_command.sis_integration import
     SensorReading,
     SensorStatus,
     VotingResult,
-    ProblemCode as SISProblemCode,
     create_high_temperature_interlock,
     create_high_pressure_interlock,
     create_low_level_interlock,

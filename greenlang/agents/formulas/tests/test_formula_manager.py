@@ -14,9 +14,9 @@ import tempfile
 from pathlib import Path
 from datetime import date
 
-from greenlang.formulas import FormulaManager
-from greenlang.formulas.models import FormulaCategory, VersionStatus
-from greenlang.exceptions import ValidationError, ProcessingError
+from greenlang.agents.formulas import FormulaManager
+from greenlang.agents.formulas.models import FormulaCategory, VersionStatus
+from greenlang.exceptions import ValidationError, ExecutionError
 
 
 @pytest.fixture

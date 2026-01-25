@@ -16,7 +16,7 @@ import json
 import logging
 from pathlib import Path
 
-from greenlang.formulas.models import (
+from greenlang.agents.formulas.models import (
     FormulaMetadata,
     FormulaVersion,
     FormulaDependency,
@@ -27,8 +27,8 @@ from greenlang.formulas.models import (
 )
 from greenlang.exceptions import (
     ValidationError,
-    ProcessingError,
-    IntegrationError,
+    ExecutionError,
+    DataAccessError,
 )
 
 logger = logging.getLogger(__name__)
@@ -57,7 +57,7 @@ class FormulaRepository:
             schema_path: Path to schema.sql file (optional, for initialization)
 
         Raises:
-            IntegrationError: If database connection fails
+            DataAccessError: If database connection fails
         """
         self.db_path = db_path
         self.schema_path = schema_path or str(
@@ -82,7 +82,7 @@ class FormulaRepository:
                 logger.debug(f"Connected to database: {self.db_path}")
             except Exception as e:
                 logger.error(f"Database connection failed: {e}")
-                raise IntegrationError(f"Database connection failed: {e}") from e
+                raise DataAccessError(f"Database connection failed: {e}") from e
 
         return self._connection
 
@@ -99,7 +99,7 @@ class FormulaRepository:
             logger.info("Database schema initialized successfully")
         except Exception as e:
             logger.error(f"Database initialization failed: {e}")
-            raise IntegrationError(f"Database initialization failed: {e}") from e
+            raise DataAccessError(f"Database initialization failed: {e}") from e
 
     def close(self):
         """Close database connection."""
@@ -124,7 +124,7 @@ class FormulaRepository:
 
         Raises:
             ValidationError: If formula already exists
-            IntegrationError: If database operation fails
+            DataAccessError: If database operation fails
         """
         try:
             conn = self._get_connection()
@@ -160,7 +160,7 @@ class FormulaRepository:
             ) from e
         except Exception as e:
             logger.error(f"Failed to create formula: {e}")
-            raise IntegrationError(f"Failed to create formula: {e}") from e
+            raise DataAccessError(f"Failed to create formula: {e}") from e
 
     def get_formula_by_code(self, formula_code: str) -> Optional[FormulaMetadata]:
         """
@@ -198,7 +198,7 @@ class FormulaRepository:
 
         except Exception as e:
             logger.error(f"Failed to get formula {formula_code}: {e}")
-            raise IntegrationError(f"Failed to get formula: {e}") from e
+            raise DataAccessError(f"Failed to get formula: {e}") from e
 
     def get_formula_by_id(self, formula_id: int) -> Optional[FormulaMetadata]:
         """Get formula metadata by ID."""
@@ -226,7 +226,7 @@ class FormulaRepository:
 
         except Exception as e:
             logger.error(f"Failed to get formula by id {formula_id}: {e}")
-            raise IntegrationError(f"Failed to get formula: {e}") from e
+            raise DataAccessError(f"Failed to get formula: {e}") from e
 
     def list_formulas(
         self, category: Optional[str] = None, limit: int = 100, offset: int = 0
@@ -286,7 +286,7 @@ class FormulaRepository:
 
         except Exception as e:
             logger.error(f"Failed to list formulas: {e}")
-            raise IntegrationError(f"Failed to list formulas: {e}") from e
+            raise DataAccessError(f"Failed to list formulas: {e}") from e
 
     # ========================================================================
     # FORMULA VERSION OPERATIONS
@@ -304,7 +304,7 @@ class FormulaRepository:
 
         Raises:
             ValidationError: If version already exists
-            IntegrationError: If database operation fails
+            DataAccessError: If database operation fails
         """
         try:
             conn = self._get_connection()
@@ -363,7 +363,7 @@ class FormulaRepository:
             ) from e
         except Exception as e:
             logger.error(f"Failed to create version: {e}")
-            raise IntegrationError(f"Failed to create version: {e}") from e
+            raise DataAccessError(f"Failed to create version: {e}") from e
 
     def get_version(
         self, formula_code: str, version_number: int
@@ -390,7 +390,7 @@ class FormulaRepository:
 
         except Exception as e:
             logger.error(f"Failed to get version: {e}")
-            raise IntegrationError(f"Failed to get version: {e}") from e
+            raise DataAccessError(f"Failed to get version: {e}") from e
 
     def get_active_version(
         self, formula_code: str, as_of_date: Optional[date] = None
@@ -433,7 +433,7 @@ class FormulaRepository:
 
         except Exception as e:
             logger.error(f"Failed to get active version: {e}")
-            raise IntegrationError(f"Failed to get active version: {e}") from e
+            raise DataAccessError(f"Failed to get active version: {e}") from e
 
     def get_latest_version_number(self, formula_id: int) -> int:
         """Get the latest version number for a formula."""
@@ -455,7 +455,7 @@ class FormulaRepository:
 
         except Exception as e:
             logger.error(f"Failed to get latest version number: {e}")
-            raise IntegrationError(f"Failed to get latest version number: {e}") from e
+            raise DataAccessError(f"Failed to get latest version number: {e}") from e
 
     def list_versions(
         self, formula_code: str
@@ -483,7 +483,7 @@ class FormulaRepository:
 
         except Exception as e:
             logger.error(f"Failed to list versions: {e}")
-            raise IntegrationError(f"Failed to list versions: {e}") from e
+            raise DataAccessError(f"Failed to list versions: {e}") from e
 
     def update_version_status(
         self, version_id: int, new_status: VersionStatus
@@ -507,7 +507,7 @@ class FormulaRepository:
 
         except Exception as e:
             logger.error(f"Failed to update version status: {e}")
-            raise IntegrationError(f"Failed to update version status: {e}") from e
+            raise DataAccessError(f"Failed to update version status: {e}") from e
 
     def set_effective_dates(
         self, version_id: int, effective_from: date, effective_to: Optional[date] = None
@@ -535,7 +535,7 @@ class FormulaRepository:
 
         except Exception as e:
             logger.error(f"Failed to set effective dates: {e}")
-            raise IntegrationError(f"Failed to set effective dates: {e}") from e
+            raise DataAccessError(f"Failed to set effective dates: {e}") from e
 
     # ========================================================================
     # DEPENDENCY OPERATIONS
@@ -567,7 +567,7 @@ class FormulaRepository:
 
         except Exception as e:
             logger.error(f"Failed to add dependency: {e}")
-            raise IntegrationError(f"Failed to add dependency: {e}") from e
+            raise DataAccessError(f"Failed to add dependency: {e}") from e
 
     def get_dependencies(self, version_id: int) -> List[FormulaDependency]:
         """Get all dependencies for a formula version."""
@@ -599,7 +599,7 @@ class FormulaRepository:
 
         except Exception as e:
             logger.error(f"Failed to get dependencies: {e}")
-            raise IntegrationError(f"Failed to get dependencies: {e}") from e
+            raise DataAccessError(f"Failed to get dependencies: {e}") from e
 
     # ========================================================================
     # EXECUTION LOG OPERATIONS
@@ -641,7 +641,7 @@ class FormulaRepository:
 
         except Exception as e:
             logger.error(f"Failed to log execution: {e}")
-            raise IntegrationError(f"Failed to log execution: {e}") from e
+            raise DataAccessError(f"Failed to log execution: {e}") from e
 
     # ========================================================================
     # HELPER METHODS

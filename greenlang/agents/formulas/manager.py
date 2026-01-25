@@ -12,9 +12,9 @@ from datetime import datetime, date
 from pathlib import Path
 import logging
 
-from greenlang.formulas.repository import FormulaRepository
-from greenlang.formulas.engine import FormulaExecutionEngine
-from greenlang.formulas.models import (
+from greenlang.agents.formulas.repository import FormulaRepository
+from greenlang.agents.formulas.engine import FormulaExecutionEngine
+from greenlang.agents.formulas.models import (
     FormulaMetadata,
     FormulaVersion,
     FormulaDependency,
@@ -26,7 +26,7 @@ from greenlang.formulas.models import (
 )
 from greenlang.exceptions import (
     ValidationError,
-    ProcessingError,
+    ExecutionError,
 )
 
 logger = logging.getLogger(__name__)
@@ -93,7 +93,7 @@ class FormulaManager:
 
         Raises:
             ValidationError: If input validation fails
-            ProcessingError: If execution fails
+            ExecutionError: If execution fails
         """
         result = self.engine.execute(
             formula_code=formula_code,

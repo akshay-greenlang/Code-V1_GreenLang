@@ -16,9 +16,9 @@ import yaml
 import logging
 from datetime import datetime
 
-from greenlang.formulas.manager import FormulaManager
-from greenlang.formulas.models import FormulaCategory
-from greenlang.exceptions import ValidationError, ProcessingError
+from greenlang.agents.formulas.manager import FormulaManager
+from greenlang.agents.formulas.models import FormulaCategory
+from greenlang.exceptions import ValidationError, ExecutionError
 
 logger = logging.getLogger(__name__)
 
@@ -119,7 +119,7 @@ class FormulaMigrator:
 
         except Exception as e:
             logger.error(f"YAML migration failed: {e}")
-            raise ProcessingError(f"YAML migration failed: {e}") from e
+            raise ExecutionError(f"YAML migration failed: {e}") from e
 
     def _import_yaml_formula(
         self,
@@ -262,7 +262,7 @@ class FormulaMigrator:
 
         except Exception as e:
             logger.error(f"Python migration failed: {e}")
-            raise ProcessingError(f"Python migration failed: {e}") from e
+            raise ExecutionError(f"Python migration failed: {e}") from e
 
     def _import_emission_factor(
         self,

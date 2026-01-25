@@ -17,19 +17,16 @@ from datetime import datetime, timezone
 from unittest.mock import Mock, patch
 import math
 
-import sys
-import os
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from flash_recovery import (
+from greenlang.agents.process_heat.gl_003_unified_steam.flash_recovery import (
     FlashSteamCalculator,
     FlashTankSizer,
     MultiStageFlashOptimizer,
     FlashRecoveryOptimizer,
     FlashConstants,
 )
-from config import FlashRecoveryConfig
-from schemas import FlashSteamInput, FlashSteamOutput
+from greenlang.agents.process_heat.gl_003_unified_steam.config import FlashRecoveryConfig
+from greenlang.agents.process_heat.gl_003_unified_steam.schemas import FlashSteamInput, FlashSteamOutput
 
 
 # =============================================================================

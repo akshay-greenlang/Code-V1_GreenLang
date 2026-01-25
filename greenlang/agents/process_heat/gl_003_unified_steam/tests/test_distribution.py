@@ -17,23 +17,20 @@ from datetime import datetime, timezone
 from unittest.mock import Mock, patch
 import math
 
-import sys
-import os
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from distribution import (
+from greenlang.agents.process_heat.gl_003_unified_steam.distribution import (
     SteamPropertyCalculator,
     SteamTableConstants,
     ExergyConstants,
     HeaderBalanceCalculator,
     SteamDistributionOptimizer,
 )
-from config import (
+from greenlang.agents.process_heat.gl_003_unified_steam.config import (
     SteamHeaderConfig,
     SteamHeaderLevel,
     ExergyOptimizationConfig,
 )
-from schemas import (
+from greenlang.agents.process_heat.gl_003_unified_steam.schemas import (
     HeaderBalanceInput,
     HeaderBalanceOutput,
     OptimizationStatus,

@@ -16,17 +16,17 @@ import time
 import operator
 import re
 
-from greenlang.formulas.models import (
+from greenlang.agents.formulas.models import (
     FormulaVersion,
     FormulaExecutionResult,
     ExecutionStatus,
     CalculationType,
     ValidationRules,
 )
-from greenlang.formulas.repository import FormulaRepository
+from greenlang.agents.formulas.repository import FormulaRepository
 from greenlang.exceptions import (
     ValidationError,
-    ProcessingError,
+    ExecutionError,
 )
 
 logger = logging.getLogger(__name__)
@@ -84,7 +84,7 @@ class FormulaExecutionEngine:
 
         Raises:
             ValidationError: If input validation fails
-            ProcessingError: If execution fails
+            ExecutionError: If execution fails
         """
         start_time = time.time()
 
@@ -96,7 +96,7 @@ class FormulaExecutionEngine:
                 version = self.repository.get_active_version(formula_code)
 
             if not version:
-                raise ProcessingError(
+                raise ExecutionError(
                     f"No active version found for formula {formula_code}"
                 )
 
@@ -185,7 +185,7 @@ class FormulaExecutionEngine:
                 error_message=str(e),
             )
 
-            raise ProcessingError(f"Formula execution failed: {e}") from e
+            raise ExecutionError(f"Formula execution failed: {e}") from e
 
     def _validate_inputs(self, version: FormulaVersion, input_data: Dict[str, Any]):
         """
@@ -301,7 +301,7 @@ class FormulaExecutionEngine:
             Calculated output value
 
         Raises:
-            ProcessingError: If calculation fails
+            ExecutionError: If calculation fails
         """
         calc_type = CalculationType(version.calculation_type)
 
@@ -325,16 +325,16 @@ class FormulaExecutionEngine:
                 return self._calc_custom_expression(version, input_data)
 
             else:
-                raise ProcessingError(
+                raise ExecutionError(
                     f"Unsupported calculation type: {calc_type}"
                 )
 
         except ZeroDivisionError as e:
-            raise ProcessingError("Division by zero") from e
+            raise ExecutionError("Division by zero") from e
         except KeyError as e:
-            raise ProcessingError(f"Missing input: {e}") from e
+            raise ExecutionError(f"Missing input: {e}") from e
         except Exception as e:
-            raise ProcessingError(f"Calculation failed: {e}") from e
+            raise ExecutionError(f"Calculation failed: {e}") from e
 
     def _calc_sum(self, version: FormulaVersion, input_data: Dict[str, Any]) -> float:
         """Calculate sum of inputs."""
@@ -367,12 +367,12 @@ class FormulaExecutionEngine:
         values = [input_data[key] for key in version.required_inputs]
 
         if len(values) != 2:
-            raise ProcessingError("Division requires exactly 2 inputs")
+            raise ExecutionError("Division requires exactly 2 inputs")
 
         numerator, denominator = values
 
         if denominator == 0:
-            raise ProcessingError("Division by zero")
+            raise ExecutionError("Division by zero")
 
         return numerator / denominator
 
@@ -381,13 +381,13 @@ class FormulaExecutionEngine:
     ) -> float:
         """Calculate percentage (numerator / denominator * 100)."""
         if len(version.required_inputs) != 2:
-            raise ProcessingError("Percentage requires exactly 2 inputs")
+            raise ExecutionError("Percentage requires exactly 2 inputs")
 
         numerator = input_data[version.required_inputs[0]]
         denominator = input_data[version.required_inputs[1]]
 
         if denominator == 0:
-            raise ProcessingError("Division by zero in percentage calculation")
+            raise ExecutionError("Division by zero in percentage calculation")
 
         return (numerator / denominator) * 100
 
@@ -401,7 +401,7 @@ class FormulaExecutionEngine:
         No file I/O, imports, or dangerous functions allowed.
 
         Raises:
-            ProcessingError: If expression contains unsafe operations
+            ExecutionError: If expression contains unsafe operations
         """
         expression = version.formula_expression
 
@@ -430,7 +430,7 @@ class FormulaExecutionEngine:
 
         for pattern in dangerous_patterns:
             if re.search(pattern, expression, re.IGNORECASE):
-                raise ProcessingError(
+                raise ExecutionError(
                     f"Expression contains forbidden pattern: {pattern}"
                 )
 
@@ -440,7 +440,7 @@ class FormulaExecutionEngine:
             return result
 
         except Exception as e:
-            raise ProcessingError(f"Expression evaluation failed: {e}") from e
+            raise ExecutionError(f"Expression evaluation failed: {e}") from e
 
     def _calculate_hash(self, data: Any) -> str:
         """

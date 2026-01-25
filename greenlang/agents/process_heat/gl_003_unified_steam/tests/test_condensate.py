@@ -16,21 +16,17 @@ import pytest
 from datetime import datetime, timezone
 from unittest.mock import Mock, patch
 
-import sys
-import os
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-from condensate import (
+from greenlang.agents.process_heat.gl_003_unified_steam.condensate import (
     CondensateReturnOptimizer,
     CondensateHeatCalculator,
     CondensateQualityAnalyzer,
     SteamTrapSurveyAnalyzer,
 )
-from config import (
+from greenlang.agents.process_heat.gl_003_unified_steam.config import (
     CondensateConfig,
     SteamTrapSurveyConfig,
 )
-from schemas import (
+from greenlang.agents.process_heat.gl_003_unified_steam.schemas import (
     CondensateReading,
     CondensateReturnAnalysis,
     SteamTrapReading,

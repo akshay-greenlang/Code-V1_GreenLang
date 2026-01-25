@@ -19,14 +19,14 @@ Example:
     >>> print(result)
 """
 
-from greenlang.formulas.manager import FormulaManager
-from greenlang.formulas.models import (
+from greenlang.agents.formulas.manager import FormulaManager
+from greenlang.agents.formulas.models import (
     FormulaVersion,
     FormulaMetadata,
     FormulaExecutionResult,
 )
-from greenlang.formulas.repository import FormulaRepository
-from greenlang.formulas.engine import FormulaExecutionEngine
+from greenlang.agents.formulas.repository import FormulaRepository
+from greenlang.agents.formulas.engine import FormulaExecutionEngine
 
 __all__ = [
     "FormulaManager",
