@@ -18,7 +18,9 @@ try:
 except ImportError as e:
     print(f"Import error: {e}")
     print("Trying with fallback imports...")
-    
+    from pydantic import BaseModel
+    from typing import Optional, Dict, Any, List
+
     # Simple fallback manifest class
     class PackManifest(BaseModel):
         name: str
