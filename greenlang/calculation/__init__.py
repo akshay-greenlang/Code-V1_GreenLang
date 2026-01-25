@@ -5,6 +5,14 @@ GreenLang Zero-Hallucination Calculation Engine
 This module provides deterministic, bit-perfect, reproducible calculations
 for greenhouse gas emissions across Scopes 1, 2, and 3.
 
+REORGANIZED: This module is now organized into submodules for better separation of concerns.
+Please import from the specific submodules:
+- greenlang.calculation.emissions - Core emission calculations (Scope 1/2/3)
+- greenlang.calculation.physics - Physics and thermodynamic calculations
+- greenlang.calculation.industry - Industry-specific calculators
+
+This file provides backward-compatible re-exports.
+
 Key Guarantees:
 - ZERO HALLUCINATION: No LLM in calculation path
 - 100% DETERMINISTIC: Same input → Same output (bit-perfect)
@@ -28,43 +36,53 @@ Version: 1.0.0
 Last Updated: 2025-01-15
 """
 
-from greenlang.calculation.core_calculator import (
+import warnings
+
+warnings.warn(
+    "Importing from greenlang.calculation is deprecated. "
+    "Please import from specific submodules: "
+    "greenlang.calculation.emissions, greenlang.calculation.physics, "
+    "greenlang.calculation.industry",
+    DeprecationWarning,
+    stacklevel=2
+)
+
+from greenlang.calculation.emissions.core_calculator import (
     EmissionCalculator,
     CalculationResult,
     CalculationRequest,
     FactorResolution,
 )
 
-from greenlang.calculation.scope1_calculator import Scope1Calculator, Scope1Result
-from greenlang.calculation.scope2_calculator import Scope2Calculator, Scope2Result
-from greenlang.calculation.scope3_calculator import Scope3Calculator, Scope3Result
+from greenlang.calculation.emissions.scope1_calculator import Scope1Calculator, Scope1Result
+from greenlang.calculation.emissions.scope2_calculator import Scope2Calculator, Scope2Result
+from greenlang.calculation.emissions.scope3_calculator import Scope3Calculator, Scope3Result
 
-from greenlang.calculation.gas_decomposition import (
+from greenlang.calculation.emissions.gas_decomposition import (
     MultiGasCalculator,
     GasBreakdown,
     GWP_AR6_100YR,
 )
 
-# Backward-compatible import (deprecated - consolidated to utils)
-from greenlang.calculation.unit_converter import UnitConverter, UnitConversionError
+from greenlang.calculation.emissions.unit_converter import UnitConverter, UnitConversionError
 
-from greenlang.calculation.uncertainty import (
+from greenlang.calculation.emissions.uncertainty import (
     UncertaintyCalculator,
     UncertaintyResult,
 )
 
-from greenlang.calculation.audit_trail import (
+from greenlang.calculation.emissions.audit_trail import (
     AuditTrailGenerator,
     AuditTrail,
     CalculationStep,
 )
 
-from greenlang.calculation.batch_calculator import (
+from greenlang.calculation.emissions.batch_calculator import (
     BatchCalculator,
     BatchResult,
 )
 
-from greenlang.calculation.validator import (
+from greenlang.calculation.emissions.validator import (
     CalculationValidator,
     ValidationResult,
     ValidationError,

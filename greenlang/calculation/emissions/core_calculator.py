@@ -394,7 +394,7 @@ class EmissionCalculator:
 
         # Import here to avoid circular dependency
         if unit_converter is None:
-            from greenlang.calculation.unit_converter import UnitConverter
+            from greenlang.calculation.emissions.unit_converter import UnitConverter
             self.unit_converter = UnitConverter()
         else:
             self.unit_converter = unit_converter

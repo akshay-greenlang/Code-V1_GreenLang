@@ -4,34 +4,25 @@ GreenLang Determinism Module - Utilities for Deterministic Operations
 This module provides utilities to ensure deterministic behavior across the GreenLang
 framework, making it suitable for regulatory compliance and auditable calculations.
 
-DEPRECATED: This module is now organized into submodules for better separation of concerns.
-Please import from the specific submodules:
-- greenlang.determinism.clock - Time management
-- greenlang.determinism.uuid - ID generation
-- greenlang.determinism.random - Random number generation
-- greenlang.determinism.decimal - Financial decimal operations
-- greenlang.determinism.files - File operations
+Features:
+- Deterministic ID generation using content-based hashing
+- Controlled timestamp generation with freezable clock
+- Seeded random number generation
+- Decimal precision for financial calculations
+- Sorted file operations
 
-This file provides backward-compatible re-exports.
+Organization:
+- clock: Time management and freezable clock
+- uuid: ID and UUID generation
+- random: Seeded random number generation
+- decimal: Financial decimal precision
+- files: Sorted file operations
 
 Author: GreenLang Team
 Date: 2025-11-21
 """
 
-import warnings
-
-# Show deprecation warning when importing from this module
-warnings.warn(
-    "Importing from greenlang.determinism is deprecated. "
-    "Please import from specific submodules: "
-    "greenlang.determinism.clock, greenlang.determinism.uuid, "
-    "greenlang.determinism.random, greenlang.determinism.decimal, "
-    "greenlang.determinism.files",
-    DeprecationWarning,
-    stacklevel=2
-)
-
-# Backward-compatible re-exports from separated modules
+# Import all components from separated modules
 from greenlang.determinism.clock import (
     DeterministicClock,
     now,

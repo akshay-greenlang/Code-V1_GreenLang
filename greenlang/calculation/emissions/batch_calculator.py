@@ -20,7 +20,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import List, Optional, Callable, Dict, Any
 from greenlang.determinism import FinancialDecimal
-from greenlang.calculation.core_calculator import (
+from greenlang.calculation.emissions.core_calculator import (
     EmissionCalculator,
     CalculationRequest,
     CalculationResult,

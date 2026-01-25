@@ -19,7 +19,7 @@ import json
 from dataclasses import dataclass, field, asdict
 from datetime import datetime
 from typing import Dict, List, Any, Optional
-from greenlang.calculation.core_calculator import CalculationResult
+from greenlang.calculation.emissions.core_calculator import CalculationResult
 from greenlang.determinism import DeterministicClock
 
 

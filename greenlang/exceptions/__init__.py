@@ -1,18 +1,8 @@
-# -*- coding: utf-8 -*-
-"""GreenLang Custom Exception Hierarchy.
+"""
+GreenLang Custom Exception Hierarchy.
 
 This module provides a comprehensive exception hierarchy for GreenLang with rich
 error context for debugging, monitoring, and user feedback.
-
-DEPRECATED: This module is now organized into submodules for better separation of concerns.
-Please import from the specific submodules:
-- greenlang.exceptions.base - Base exception class
-- greenlang.exceptions.agent - Agent-related exceptions
-- greenlang.exceptions.workflow - Workflow orchestration exceptions
-- greenlang.exceptions.data - Data access and validation exceptions
-- greenlang.exceptions.utils - Exception utilities
-
-This file provides backward-compatible re-exports.
 
 Exception Hierarchy:
     GreenLangException (base)
@@ -39,6 +29,13 @@ All exceptions include rich context:
 - timestamp: When the error occurred
 - traceback: Full stack trace for debugging
 
+Organization:
+- base: Base exception class with rich context
+- agent: Agent-related exceptions
+- workflow: Workflow orchestration exceptions
+- data: Data access and validation exceptions
+- utils: Exception utilities and helpers
+
 Example:
     >>> from greenlang.exceptions import ValidationError
     >>> raise ValidationError(
@@ -52,20 +49,7 @@ Date: October 2025
 Status: Production Ready
 """
 
-import warnings
-
-# Show deprecation warning when importing from this module
-warnings.warn(
-    "Importing from greenlang.exceptions is deprecated. "
-    "Please import from specific submodules: "
-    "greenlang.exceptions.base, greenlang.exceptions.agent, "
-    "greenlang.exceptions.workflow, greenlang.exceptions.data, "
-    "greenlang.exceptions.utils",
-    DeprecationWarning,
-    stacklevel=2
-)
-
-# Backward-compatible re-exports from separated modules
+# Import from separated modules
 from greenlang.exceptions.base import GreenLangException
 
 from greenlang.exceptions.agent import (
