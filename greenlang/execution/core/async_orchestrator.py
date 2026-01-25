@@ -48,8 +48,8 @@ import logging
 from typing import Dict, Any, List, Set, Optional
 from concurrent.futures import ThreadPoolExecutor
 
-from greenlang.core.orchestrator import Orchestrator
-from greenlang.core.workflow import Workflow
+from greenlang.execution.core.orchestrator import Orchestrator
+from greenlang.execution.core.workflow import Workflow
 from greenlang.agents.base import BaseAgent
 
 # Try importing AsyncAgentBase

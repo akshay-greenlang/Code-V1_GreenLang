@@ -16,7 +16,7 @@ import logging
 import statistics
 from collections import defaultdict, deque
 
-from greenlang.infrastructure.base import BaseInfrastructureComponent, InfrastructureConfig
+from greenlang.execution.infrastructure.base import BaseInfrastructureComponent, InfrastructureConfig
 
 logger = logging.getLogger(__name__)
 
@@ -63,12 +63,13 @@ class TelemetryCollector(BaseInfrastructureComponent):
     def __init__(self, config: Optional[InfrastructureConfig] = None,
                  buffer_size: int = 10000):
         """Initialize telemetry collector."""
-        super().__init__(config or InfrastructureConfig(component_name="TelemetryCollector"))
+        # Set instance variables before super().__init__() since _initialize() needs them
         self.buffer_size = buffer_size
         self.metrics: Dict[str, deque] = defaultdict(lambda: deque(maxlen=buffer_size))
         self.counters: Dict[str, float] = defaultdict(float)
         self.gauges: Dict[str, float] = {}
         self.timers: Dict[str, List[float]] = defaultdict(list)
+        super().__init__(config or InfrastructureConfig(component_name="TelemetryCollector"))
 
     def _initialize(self) -> None:
         """Initialize telemetry resources."""

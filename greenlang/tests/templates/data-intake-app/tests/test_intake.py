@@ -7,6 +7,9 @@ All tests use pytest and pytest-asyncio for async support.
 """
 
 import pytest
+
+# Skip all tests in this module - this is a template for users to copy and customize
+pytestmark = pytest.mark.skip(reason="Template test - copy to your application and customize")
 import pandas as pd
 from pathlib import Path
 import tempfile

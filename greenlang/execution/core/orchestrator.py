@@ -16,7 +16,7 @@ from enum import Enum
 import uuid
 
 from greenlang.agents.base import BaseAgent
-from greenlang.core.workflow import Workflow
+from greenlang.execution.core.workflow import Workflow
 import logging
 import ast
 

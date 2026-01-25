@@ -20,27 +20,27 @@ Example:
     >>> cache = CacheManager()
 """
 
-from greenlang.infrastructure.base import (
+from greenlang.execution.infrastructure.base import (
     BaseInfrastructureComponent,
     InfrastructureConfig,
     ComponentStatus,
 )
-from greenlang.infrastructure.validation import (
+from greenlang.execution.infrastructure.validation import (
     ValidationFramework,
     ValidationResult,
     ValidationRule,
 )
-from greenlang.infrastructure.cache import (
+from greenlang.execution.infrastructure.cache import (
     CacheManager,
     CacheConfig,
     CacheEntry,
 )
-from greenlang.infrastructure.telemetry import (
+from greenlang.execution.infrastructure.telemetry import (
     TelemetryCollector,
     Metric,
     MetricType,
 )
-from greenlang.infrastructure.provenance import (
+from greenlang.execution.infrastructure.provenance import (
     ProvenanceTracker,
     ProvenanceRecord,
     DataLineage,

@@ -28,14 +28,14 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, Generic, List, Optional, Set, TypeVar
 
-from greenlang.core.message_bus import (
+from greenlang.execution.core.message_bus import (
     Message,
     MessageBus,
     MessageBusConfig,
     MessagePriority,
     MessageType,
 )
-from greenlang.core.task_scheduler import (
+from greenlang.execution.core.task_scheduler import (
     AgentCapacity,
     LoadBalanceStrategy,
     Task,
@@ -44,7 +44,7 @@ from greenlang.core.task_scheduler import (
     TaskSchedulerConfig,
     TaskState,
 )
-from greenlang.core.coordination_layer import (
+from greenlang.execution.core.coordination_layer import (
     AgentInfo,
     CoordinationConfig,
     CoordinationLayer,
@@ -52,7 +52,7 @@ from greenlang.core.coordination_layer import (
     Saga,
     SagaStep,
 )
-from greenlang.core.safety_monitor import (
+from greenlang.execution.core.safety_monitor import (
     OperationContext,
     SafetyConfig,
     SafetyConstraint,

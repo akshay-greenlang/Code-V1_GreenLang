@@ -45,7 +45,7 @@ from datetime import datetime, timezone
 from typing import Any, Callable, Coroutine, Dict, List, Optional, Set
 import uuid
 
-from greenlang.core.messaging.events import Event, EventPriority
+from greenlang.execution.core.messaging.events import Event, EventPriority
 
 logger = logging.getLogger(__name__)
 

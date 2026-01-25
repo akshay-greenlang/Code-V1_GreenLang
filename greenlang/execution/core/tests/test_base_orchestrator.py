@@ -18,21 +18,21 @@ import pytest
 from typing import Any, Dict, List, Optional
 from datetime import datetime, timezone
 
-from greenlang.core.base_orchestrator import (
+from greenlang.execution.core.base_orchestrator import (
     BaseOrchestrator,
     OrchestrationResult,
     OrchestratorConfig,
     OrchestratorMetrics,
     OrchestratorState,
 )
-from greenlang.core.message_bus import (
+from greenlang.execution.core.message_bus import (
     Message,
     MessageBus,
     MessageBusConfig,
     MessagePriority,
     MessageType,
 )
-from greenlang.core.task_scheduler import (
+from greenlang.execution.core.task_scheduler import (
     AgentCapacity,
     LoadBalanceStrategy,
     Task,
@@ -41,7 +41,7 @@ from greenlang.core.task_scheduler import (
     TaskSchedulerConfig,
     TaskState,
 )
-from greenlang.core.coordination_layer import (
+from greenlang.execution.core.coordination_layer import (
     AgentInfo,
     CoordinationConfig,
     CoordinationLayer,
@@ -51,7 +51,7 @@ from greenlang.core.coordination_layer import (
     SagaStep,
     TransactionState,
 )
-from greenlang.core.safety_monitor import (
+from greenlang.execution.core.safety_monitor import (
     CircuitBreaker,
     CircuitState,
     ConstraintType,
@@ -563,7 +563,7 @@ class TestCoordinationLayer:
         await coordinator.vote_on_proposal(proposal.proposal_id, "agent-2", "reject")
 
         # Resolve
-        from greenlang.core.coordination_layer import ConsensusResult
+        from greenlang.execution.core.coordination_layer import ConsensusResult
         result = await coordinator.resolve_consensus(proposal.proposal_id)
         assert result == ConsensusResult.ACHIEVED
 

@@ -95,6 +95,8 @@ class TestReportingAgent:
     @pytest.mark.asyncio
     async def test_generate_markdown_report(self):
         """Test generating Markdown report."""
+        pytest.importorskip("tabulate", reason="tabulate package required for markdown reports")
+
         agent = ReportingAgent()
 
         data = pd.DataFrame({

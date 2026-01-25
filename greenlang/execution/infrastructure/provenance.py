@@ -16,7 +16,7 @@ from datetime import datetime
 import logging
 
 from greenlang.utilities.determinism import deterministic_uuid
-from greenlang.infrastructure.base import BaseInfrastructureComponent, InfrastructureConfig
+from greenlang.execution.infrastructure.base import BaseInfrastructureComponent, InfrastructureConfig
 
 logger = logging.getLogger(__name__)
 
@@ -124,7 +124,7 @@ class ProvenanceTracker(BaseInfrastructureComponent):
         # Create record with deterministic ID
         # Generate deterministic ID from content
         record_content = f"{transformation}:{input_hash}:{output_hash}:{parent_id}"
-        record_id = deterministic_uuid(record_content)
+        record_id = deterministic_uuid("provenance", record_content)
 
         record = ProvenanceRecord(
             id=record_id,

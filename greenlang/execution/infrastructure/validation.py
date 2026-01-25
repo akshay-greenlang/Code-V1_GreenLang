@@ -15,7 +15,7 @@ from dataclasses import dataclass, field
 import logging
 from datetime import datetime
 
-from greenlang.infrastructure.base import BaseInfrastructureComponent, InfrastructureConfig
+from greenlang.execution.infrastructure.base import BaseInfrastructureComponent, InfrastructureConfig
 
 logger = logging.getLogger(__name__)
 

@@ -44,13 +44,13 @@ Date: December 2025
 Status: Production Ready
 """
 
-from greenlang.core.messaging.events import (
+from greenlang.execution.core.messaging.events import (
     Event,
     EventPriority,
     StandardEvents,
     create_event,
 )
-from greenlang.core.messaging.message_bus import (
+from greenlang.execution.core.messaging.message_bus import (
     EventHandler,
     InMemoryMessageBus,
     MessageBus,

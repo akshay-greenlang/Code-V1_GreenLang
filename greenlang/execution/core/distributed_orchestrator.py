@@ -64,8 +64,8 @@ from enum import Enum
 from typing import Dict, Any, List, Optional, Set, Callable
 from contextlib import asynccontextmanager
 
-from greenlang.core.async_orchestrator import AsyncOrchestrator
-from greenlang.core.workflow import Workflow
+from greenlang.execution.core.async_orchestrator import AsyncOrchestrator
+from greenlang.execution.core.workflow import Workflow
 from greenlang.utilities.determinism import DeterministicClock, deterministic_uuid
 
 # Redis imports with fallback

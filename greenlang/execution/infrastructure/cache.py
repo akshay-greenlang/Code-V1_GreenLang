@@ -17,7 +17,7 @@ import hashlib
 import json
 from functools import wraps
 
-from greenlang.infrastructure.base import BaseInfrastructureComponent, InfrastructureConfig
+from greenlang.execution.infrastructure.base import BaseInfrastructureComponent, InfrastructureConfig
 
 logger = logging.getLogger(__name__)
 
@@ -65,12 +65,13 @@ class CacheManager(BaseInfrastructureComponent):
     def __init__(self, config: Optional[InfrastructureConfig] = None,
                  cache_config: Optional[CacheConfig] = None):
         """Initialize cache manager."""
-        super().__init__(config or InfrastructureConfig(component_name="CacheManager"))
+        # Set cache_config before super().__init__() since _initialize() needs it
         self.cache_config = cache_config or CacheConfig()
         self.cache: Dict[str, CacheEntry] = {}
         self.hits = 0
         self.misses = 0
         self.evictions = 0
+        super().__init__(config or InfrastructureConfig(component_name="CacheManager"))
 
     def _initialize(self) -> None:
         """Initialize cache resources."""
