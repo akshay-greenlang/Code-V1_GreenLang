@@ -1,1 +1,0 @@
-{"pipeline": {"policy": {"network": ["github.com", "api.openai.com"], "max_memory": 1024, "max_cpu": 2, "max_disk": 1024}, "resources": {"memory": 512, "cpu": 1, "disk": 256}}, "egress": ["github.com"], "stage": "production"}

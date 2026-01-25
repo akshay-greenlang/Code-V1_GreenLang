@@ -1,1 +1,0 @@
-{"pack":{"name":"test","license":"MIT","kind":"pack","policy":{"network":["github.com"],"ef_vintage_min":2024},"security":{"sbom":"test.json"}},"stage":"publish"}

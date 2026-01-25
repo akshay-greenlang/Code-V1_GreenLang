@@ -287,7 +287,13 @@
       "Bash(do basename \"$dir\")",
       "Bash(python enhance_agent.py:*)",
       "Bash(do echo \"=== Enhancing $agent ===\")",
-      "Bash(tree:*)"
+      "Bash(tree:*)",
+      "Bash(git init:*)",
+      "Bash(gl-cbam version:*)",
+      "Bash(gl-cbam run cbam:*)",
+      "Bash(gl-cbam web:*)",
+      "Bash(ralphy --init:*)",
+      "Bash(ralphy:*)"
     ],
     "deny": [],
     "ask": []

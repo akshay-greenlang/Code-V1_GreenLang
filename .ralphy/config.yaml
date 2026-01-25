@@ -1,0 +1,51 @@
+# Ralphy Configuration
+# https://github.com/michaelshimeles/ralphy
+
+# Project info
+project:
+  name: "greenlang"
+  language: "Python"
+  framework: "FastAPI"
+  description: "GreenLang Climate Operating System - Agentic runtime + DSL for enterprise climate data, emissions, and decarbonization"
+
+# Commands for Python project
+commands:
+  test: "pytest tests/ -v"
+  lint: "ruff check . --fix"
+  build: "python -m build"
+  typecheck: "mypy greenlang/"
+  format: "ruff format ."
+
+# Rules - instructions the AI MUST follow
+rules:
+  - "CRITICAL: NEVER modify files in 2026_PRD_MVP/ directory"
+  - "CRITICAL: NEVER modify files in cbam-pack-mvp/ directory"
+  - "Always update imports after moving any Python files"
+  - "Run tests after each major reorganization phase"
+  - "Create backward-compatible re-exports when moving public modules"
+  - "Follow PEP 8 naming conventions"
+  - "Use singular names for Python modules (e.g., 'config' not 'configs')"
+  - "Keep all changes in atomic commits for easy rollback"
+  - "Preserve existing functionality - no breaking changes to public API"
+  - "Update any CI/CD paths when moving files"
+  - "Add deprecation warnings before removing backward compatibility"
+
+# Boundaries - files/folders the AI should not modify
+boundaries:
+  never_touch:
+    - "2026_PRD_MVP/**"
+    - "cbam-pack-mvp/**"
+    - "*.lock"
+    - ".git/**"
+    - "node_modules/**"
+    - "__pycache__/**"
+    - "*.pyc"
+    - ".env*"
+    - "credentials*"
+    - "secrets*"
+
+# Validation settings
+validation:
+  run_tests: true
+  run_lint: true
+  require_passing: true
