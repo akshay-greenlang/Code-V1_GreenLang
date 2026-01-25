@@ -182,7 +182,7 @@ GreenLang currently powers **3 production-ready climate compliance applications*
 - Supply chain carbon intensity analysis
 - Vendor emissions benchmarking
 
-**Getting Started**: See [GL-VCCI-Carbon-APP/README.md](GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/README.md)
+**Getting Started**: See [GL-VCCI-Carbon-APP/README.md](applications/GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/README.md)
 
 ---
 
@@ -203,7 +203,7 @@ GreenLang currently powers **3 production-ready climate compliance applications*
 - Quarterly CBAM reports submission
 - Carbon price estimation for imported goods
 
-**Getting Started**: See [GL-CBAM-APP/README.md](GL-CBAM-APP/CBAM-Importer-Copilot/README.md)
+**Getting Started**: See [GL-CBAM-APP/README.md](applications/GL-CBAM-APP/CBAM-Importer-Copilot/README.md)
 
 ---
 
@@ -224,7 +224,7 @@ GreenLang currently powers **3 production-ready climate compliance applications*
 - Sustainability report generation (ESRS-compliant)
 - Audit-ready documentation for external assurance
 
-**Getting Started**: See [GL-CSRD-APP/README.md](GL-CSRD-APP/CSRD-Reporting-Platform/README.md)
+**Getting Started**: See [GL-CSRD-APP/README.md](applications/GL-CSRD-APP/CSRD-Reporting-Platform/README.md)
 
 ---
 
@@ -350,9 +350,9 @@ See [docs/PRODUCTION_DEPLOYMENT_GUIDE.md](docs/PRODUCTION_DEPLOYMENT_GUIDE.md) f
 - [Data Pipeline Guide](docs/DATA_PIPELINE_GUIDE.md) - Intake, validation, processing
 
 ### Application Guides
-- [VCCI Scope 3 Platform](GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/README.md)
-- [CBAM Importer Copilot](GL-CBAM-APP/CBAM-Importer-Copilot/README.md)
-- [CSRD Reporting Platform](GL-CSRD-APP/CSRD-Reporting-Platform/README.md)
+- [VCCI Scope 3 Platform](applications/GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/README.md)
+- [CBAM Importer Copilot](applications/GL-CBAM-APP/CBAM-Importer-Copilot/README.md)
+- [CSRD Reporting Platform](applications/GL-CSRD-APP/CSRD-Reporting-Platform/README.md)
 
 ### Deployment & Operations
 - [Production Deployment Guide](docs/PRODUCTION_DEPLOYMENT_GUIDE.md) - Deploy to production
@@ -619,7 +619,7 @@ pip install greenlang-cli[full]
 gl --version
 ```
 
-Start with the [Quick Start Guide](docs/QUICK_START.md) or explore the [Applications](GL-VCCI-Carbon-APP/).
+Start with the [Quick Start Guide](docs/QUICK_START.md) or explore the [Applications](applications/).
 
 **Questions?** Open an [issue](https://github.com/greenlang/greenlang/issues) or join our [Discord](https://discord.gg/greenlang).
 
