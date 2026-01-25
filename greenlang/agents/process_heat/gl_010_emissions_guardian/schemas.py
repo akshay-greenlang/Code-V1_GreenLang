@@ -541,7 +541,7 @@ class EmissionsAggregate(BaseEmissionsSchema):
         description="Primary calculation method"
     )
 
-    @root_validator
+    @root_validator(skip_on_failure=True)
     def validate_period(cls, values):
         """Validate period start is before period end."""
         start = values.get('period_start')

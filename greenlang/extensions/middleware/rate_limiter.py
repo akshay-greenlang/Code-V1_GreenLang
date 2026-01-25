@@ -15,7 +15,7 @@ from collections import defaultdict, deque
 from enum import Enum
 import threading
 from functools import wraps
-from greenlang.utilities.determinism import deterministic_random
+from greenlang.utilities.determinism import deterministic_random, DeterministicClock
 
 
 class RateLimitStrategy(Enum):

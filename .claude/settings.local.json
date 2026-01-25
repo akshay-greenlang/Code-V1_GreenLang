@@ -295,7 +295,10 @@
       "Bash(ralphy --init:*)",
       "Bash(ralphy:*)",
       "Bash(tasklist:*)",
-      "Bash(git -C \"C:\\\\Users\\\\aksha\\\\Code-V1_GreenLang\" status --short)"
+      "Bash(git -C \"C:\\\\Users\\\\aksha\\\\Code-V1_GreenLang\" status --short)",
+      "Bash(python -m flake8:*)",
+      "Bash(python -m pylint:*)",
+      "Bash(python -m bandit:*)"
     ],
     "deny": [],
     "ask": []

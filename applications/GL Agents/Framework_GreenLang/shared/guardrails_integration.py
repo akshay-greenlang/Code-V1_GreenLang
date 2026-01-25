@@ -45,7 +45,7 @@ import uuid
 
 # Import from advanced guardrails module
 try:
-    from Framework_GreenLang.advanced.guardrails import (
+    from advanced.guardrails import (
         GuardrailType,
         ViolationSeverity,
         ActionType,
@@ -61,24 +61,22 @@ try:
         GREENLANG_GUARDRAILS,
         create_default_orchestrator,
     )
-except ImportError:
-    # Fallback to relative import for tests
-    from ..advanced.guardrails import (
-        GuardrailType,
-        ViolationSeverity,
-        ActionType,
-        GuardrailViolation,
-        GuardrailResult,
-        Guardrail,
-        PromptInjectionGuardrail,
-        DataLeakageGuardrail,
-        ActionGate,
-        SafetyEnvelopeGuardrail,
-        PolicyEnforcementGuardrail,
-        GuardrailOrchestrator,
-        GREENLANG_GUARDRAILS,
-        create_default_orchestrator,
-    )
+except ModuleNotFoundError:
+    # Delayed import - will be resolved when module is properly initialized
+    GuardrailType = None
+    ViolationSeverity = None
+    ActionType = None
+    GuardrailViolation = None
+    GuardrailResult = None
+    Guardrail = None
+    PromptInjectionGuardrail = None
+    DataLeakageGuardrail = None
+    ActionGate = None
+    SafetyEnvelopeGuardrail = None
+    PolicyEnforcementGuardrail = None
+    GuardrailOrchestrator = None
+    GREENLANG_GUARDRAILS = None
+    create_default_orchestrator = None
 
 
 logger = logging.getLogger(__name__)

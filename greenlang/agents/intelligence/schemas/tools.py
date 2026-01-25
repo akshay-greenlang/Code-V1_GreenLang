@@ -10,7 +10,7 @@ JSON Schema-based tool contracts for LLM function calling:
 
 from __future__ import annotations
 from typing import Any, Dict, Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class ToolDef(BaseModel):
@@ -58,8 +58,8 @@ class ToolDef(BaseModel):
         description="JSON Schema for tool parameters (type:object, properties, required)"
     )
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "examples": [
                 {
                     "name": "get_grid_intensity",
@@ -82,7 +82,8 @@ class ToolDef(BaseModel):
                     },
                 }
             ]
-        }
+        },
+    )
 
 
 class ToolCall(BaseModel):
@@ -112,8 +113,8 @@ class ToolCall(BaseModel):
         description="Tool arguments (must match tool's JSON Schema)"
     )
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "examples": [
                 {
                     "id": "call_001",
@@ -121,7 +122,8 @@ class ToolCall(BaseModel):
                     "arguments": {"region": "CA", "year": 2024},
                 }
             ]
-        }
+        },
+    )
 
 
 class ToolChoice:

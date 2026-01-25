@@ -15,7 +15,7 @@ Enables:
 
 from __future__ import annotations
 from typing import Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class BudgetExceeded(Exception):
@@ -228,8 +228,8 @@ class Budget(BaseModel):
         """
         self.add(add_usd=other.spent_usd, add_tokens=other.spent_tokens)
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "examples": [
                 {
                     "max_usd": 0.50,
@@ -238,4 +238,5 @@ class Budget(BaseModel):
                     "spent_tokens": 1500,
                 }
             ]
-        }
+        },
+    )

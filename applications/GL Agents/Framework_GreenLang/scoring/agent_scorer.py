@@ -83,7 +83,7 @@ class AgentScorer:
 
     def __init__(self, standard=None):
         """Initialize scorer with quality standard."""
-        from ..standards.quality_standards import GREENLANG_STANDARD
+        from standards.quality_standards import GREENLANG_STANDARD
         self.standard = standard or GREENLANG_STANDARD
 
     def score_agent(self, agent_path: str) -> ScoreReport:

@@ -19,7 +19,7 @@ All providers MUST implement async chat() with consistent signature.
 from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import Any, Mapping, Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from greenlang.agents.intelligence.schemas.messages import ChatMessage
 from greenlang.agents.intelligence.schemas.tools import ToolDef
@@ -69,17 +69,18 @@ class LLMCapabilities(BaseModel):
         description="Total context window size (input + output)"
     )
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "examples": [
                 {
                     "function_calling": True,
                     "json_schema_mode": True,
                     "max_output_tokens": 4096,
-                    "context_window_tokens": 128000
+                    "context_window_tokens": 128000,
                 }
             ]
-        }
+        },
+    )
 
 
 class LLMProviderConfig(BaseModel):
@@ -121,17 +122,18 @@ class LLMProviderConfig(BaseModel):
         description="Max retry attempts on transient failures (429, 503, etc.)"
     )
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "examples": [
                 {
                     "model": "gpt-4-0613",
                     "api_key_env": "OPENAI_API_KEY",
                     "timeout_s": 60.0,
-                    "max_retries": 3
+                    "max_retries": 3,
                 }
             ]
-        }
+        },
+    )
 
 
 class LLMProvider(ABC):

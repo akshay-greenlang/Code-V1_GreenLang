@@ -96,6 +96,6 @@ Move to `.github/workflows/archive/`:
 - [x] TODO/FIXME markers: <20 (currently 96)
 - [ ] All tests pass
 - [ ] All imports work
-- [ ] Clean git history
+- [x] Clean git history
 
 ## Target Grade: A-

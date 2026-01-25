@@ -1578,7 +1578,7 @@ class GL021Config(BaseModel):
         description="Configuration version"
     )
 
-    @root_validator
+    @root_validator(skip_on_failure=True)
     def validate_config_consistency(cls, values):
         """Validate configuration consistency across components."""
         burner = values.get("burner")

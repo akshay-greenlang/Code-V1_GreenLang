@@ -556,7 +556,7 @@ class FlameCharacteristics(BaseModel):
         description="Overall flame status"
     )
 
-    @root_validator
+    @root_validator(skip_on_failure=True)
     def derive_flame_status(cls, values):
         """Derive flame status from metrics."""
         stability = values.get("flame_stability_index", 1.0)
@@ -813,7 +813,7 @@ class FuelQualityData(BaseModel):
         description="List of specification deviations"
     )
 
-    @root_validator
+    @root_validator(skip_on_failure=True)
     def calculate_wobbe_index(cls, values):
         """Calculate Wobbe Index if HHV and SG available."""
         hhv = values.get("higher_heating_value_mj_m3")
@@ -1240,7 +1240,7 @@ class GL021Input(BaseModel):
         description="Generate CMMS work orders"
     )
 
-    @root_validator
+    @root_validator(skip_on_failure=True)
     def validate_burner_id_consistency(cls, values):
         """Ensure burner_id is consistent across inputs."""
         burner_id = values.get("burner_id")

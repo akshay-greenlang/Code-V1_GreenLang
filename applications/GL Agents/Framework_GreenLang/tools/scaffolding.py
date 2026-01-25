@@ -9,8 +9,16 @@ from typing import Dict, List, Optional, Type
 import json
 import shutil
 
-from ..templates import BaseAgentTemplate, AgentConfig, CalculatorTemplate, OptimizerTemplate
-from ..templates.base_agent import AgentType
+try:
+    from templates import BaseAgentTemplate, AgentConfig, CalculatorTemplate, OptimizerTemplate
+    from templates.base_agent import AgentType
+except ModuleNotFoundError:
+    # Will be imported later when module path is properly set up
+    BaseAgentTemplate = None
+    AgentConfig = None
+    CalculatorTemplate = None
+    OptimizerTemplate = None
+    AgentType = None
 
 
 class AgentScaffolder:
@@ -28,14 +36,31 @@ class AgentScaffolder:
         >>> scaffolder.create_agent(config)
     """
 
-    TEMPLATE_MAP: Dict[AgentType, Type[BaseAgentTemplate]] = {
-        AgentType.CALCULATOR: CalculatorTemplate,
-        AgentType.OPTIMIZER: OptimizerTemplate,
-        AgentType.ANALYZER: BaseAgentTemplate,
-        AgentType.PREDICTOR: BaseAgentTemplate,
-        AgentType.ORCHESTRATOR: BaseAgentTemplate,
-        AgentType.HYBRID: BaseAgentTemplate,
-    }
+    TEMPLATE_MAP: Optional[Dict] = None
+
+    @staticmethod
+    def _get_template_map():
+        """Lazy initialization of template map."""
+        if AgentType is None:
+            # Re-import when needed
+            from templates import BaseAgentTemplate as BAT, CalculatorTemplate as CT, OptimizerTemplate as OT
+            from templates.base_agent import AgentType as AT
+            return {
+                AT.CALCULATOR: CT,
+                AT.OPTIMIZER: OT,
+                AT.ANALYZER: BAT,
+                AT.PREDICTOR: BAT,
+                AT.ORCHESTRATOR: BAT,
+                AT.HYBRID: BAT,
+            }
+        return {
+            AgentType.CALCULATOR: CalculatorTemplate,
+            AgentType.OPTIMIZER: OptimizerTemplate,
+            AgentType.ANALYZER: BaseAgentTemplate,
+            AgentType.PREDICTOR: BaseAgentTemplate,
+            AgentType.ORCHESTRATOR: BaseAgentTemplate,
+            AgentType.HYBRID: BaseAgentTemplate,
+        }
 
     def __init__(self, output_dir: str):
         """
@@ -69,7 +94,8 @@ class AgentScaffolder:
             shutil.rmtree(agent_dir)
 
         # Select template class
-        template_class = self.TEMPLATE_MAP.get(config.agent_type, BaseAgentTemplate)
+        template_map = self._get_template_map()
+        template_class = template_map.get(config.agent_type, template_map.get(list(template_map.keys())[2]))  # Default to ANALYZER
         template = template_class(config)
 
         # Create directory structure
@@ -169,9 +195,10 @@ class AgentScaffolder:
             "hybrid": "Combined functionality from multiple types",
         }
 
-    def get_template_structure(self, agent_type: AgentType) -> Dict[str, str]:
+    def get_template_structure(self, agent_type) -> Dict[str, str]:
         """Get directory structure for a template type."""
-        template_class = self.TEMPLATE_MAP.get(agent_type, BaseAgentTemplate)
+        template_map = self._get_template_map()
+        template_class = template_map.get(agent_type, template_map.get(list(template_map.keys())[2]))  # Default to ANALYZER
 
         # Create temporary config
         temp_config = AgentConfig(

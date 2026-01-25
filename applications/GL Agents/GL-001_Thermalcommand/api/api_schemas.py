@@ -432,7 +432,7 @@ class DemandUpdate(BaseModel):
     source_system: str = Field(..., description="System that generated the forecast")
     model_version: Optional[str] = None
 
-    @root_validator
+    @root_validator(skip_on_failure=True)
     def validate_lengths(cls, values):
         demand = values.get("demand_mw", [])
         timestamps = values.get("demand_timestamps", [])

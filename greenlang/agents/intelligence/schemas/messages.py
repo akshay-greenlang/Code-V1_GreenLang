@@ -12,7 +12,7 @@ Strongly-typed messages for LLM conversations:
 from __future__ import annotations
 from enum import Enum
 from typing import Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class Role(str, Enum):
@@ -58,9 +58,9 @@ class ChatMessage(BaseModel):
         default=None, description="Tool call ID (for tool role messages)"
     )
 
-    class Config:
-        use_enum_values = True
-        json_schema_extra = {
+    model_config = ConfigDict(
+        use_enum_values=True,
+        json_schema_extra={
             "examples": [
                 {
                     "role": "system",
@@ -74,4 +74,5 @@ class ChatMessage(BaseModel):
                     "tool_call_id": "call_001",
                 },
             ]
-        }
+        },
+    )

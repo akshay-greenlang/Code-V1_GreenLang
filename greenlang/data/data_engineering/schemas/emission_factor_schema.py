@@ -203,7 +203,7 @@ class EmissionFactorVersion(BaseModel):
     approved_by: Optional[str] = Field(None, description="Approver user ID")
     approved_at: Optional[datetime] = Field(None, description="Approval timestamp")
 
-    @root_validator
+    @root_validator(skip_on_failure=True)
     def validate_dates(cls, values):
         eff_from = values.get('effective_from')
         eff_to = values.get('effective_to')

@@ -19,7 +19,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import List, Optional, Callable, Dict, Any
-from greenlang.utilities.determinism import FinancialDecimal
+from greenlang.utilities.determinism import FinancialDecimal, DeterministicClock
 from .core_calculator import (
     EmissionCalculator,
     CalculationRequest,

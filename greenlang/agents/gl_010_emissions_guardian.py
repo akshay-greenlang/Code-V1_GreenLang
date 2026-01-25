@@ -489,7 +489,7 @@ class EmissionsGuardianInput(BaseModel):
         default=False, description="Generate EPA Part 75 report format"
     )
 
-    @root_validator
+    @root_validator(skip_on_failure=True)
     def validate_inputs(cls, values):
         """Validate input combinations."""
         # Must have either CEMS data or fuel info for calculations

@@ -14,7 +14,7 @@ from typing import Dict, Any, Optional, List, Union, Callable
 from enum import Enum
 from dataclasses import dataclass
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, validator, ConfigDict
 
 # Import checkpointing components
 try:
@@ -157,9 +157,7 @@ class Pipeline(BaseModel):
     _checkpoint_disabled_reason: Optional[str] = None
     _checkpoint_status_callback: Optional[Callable[[str, Dict[str, Any]], None]] = None
 
-    class Config:
-        arbitrary_types_allowed = True
-        underscore_attrs_are_private = True
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
     def __init__(self, **data):
         """

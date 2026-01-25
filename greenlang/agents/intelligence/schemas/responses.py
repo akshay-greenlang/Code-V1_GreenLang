@@ -12,7 +12,7 @@ Normalized response format across providers:
 from __future__ import annotations
 from enum import Enum
 from typing import Any, List, Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class FinishReason(str, Enum):
@@ -48,8 +48,8 @@ class Usage(BaseModel):
     total_tokens: int = Field(default=0, description="Total tokens (input + output)")
     cost_usd: float = Field(default=0.0, description="Total cost in USD")
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "examples": [
                 {
                     "prompt_tokens": 1200,
@@ -58,7 +58,8 @@ class Usage(BaseModel):
                     "cost_usd": 0.0234,
                 }
             ]
-        }
+        },
+    )
 
 
 class ProviderInfo(BaseModel):
@@ -77,8 +78,8 @@ class ProviderInfo(BaseModel):
         default=None, description="Provider's request ID (for support/debugging)"
     )
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "examples": [
                 {
                     "provider": "openai",
@@ -86,7 +87,8 @@ class ProviderInfo(BaseModel):
                     "request_id": "req_abc123xyz",
                 }
             ]
-        }
+        },
+    )
 
 
 class ChatResponse(BaseModel):
@@ -136,9 +138,9 @@ class ChatResponse(BaseModel):
         description="Raw provider response (for debugging ONLY; never log/persist)",
     )
 
-    class Config:
-        use_enum_values = True
-        json_schema_extra = {
+    model_config = ConfigDict(
+        use_enum_values=True,
+        json_schema_extra={
             "examples": [
                 {
                     "text": "Based on the calculation, the emissions are 1,021 kg CO2e.",
@@ -158,4 +160,5 @@ class ChatResponse(BaseModel):
                     "raw": None,
                 }
             ]
-        }
+        },
+    )

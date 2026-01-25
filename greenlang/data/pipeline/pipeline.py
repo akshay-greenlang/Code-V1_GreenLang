@@ -28,7 +28,7 @@ import yaml
 from .models import ImportJob, ImportStatus, FactorVersion, ChangeLog, ChangeType
 from .validator import EmissionFactorValidator
 from ..models import EmissionResult
-from greenlang.utilities.determinism import FinancialDecimal
+from greenlang.utilities.determinism import FinancialDecimal, DeterministicClock
 
 logger = logging.getLogger(__name__)
 

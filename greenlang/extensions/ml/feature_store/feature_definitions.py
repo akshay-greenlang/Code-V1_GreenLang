@@ -478,7 +478,7 @@ class BoilerFeatures(BaseFeatures):
             logger.warning(f"Efficiency {v} exceeds typical maximum of 98%")
         return v
 
-    @root_validator
+    @root_validator(skip_on_failure=True)
     def validate_heat_balance(cls, values):
         """Validate heat input/output consistency."""
         heat_input = values.get('heat_input')
@@ -700,7 +700,7 @@ class SteamFeatures(BaseFeatures):
         description="Steam velocity (m/s)"
     )
 
-    @root_validator
+    @root_validator(skip_on_failure=True)
     def validate_thermodynamic_consistency(cls, values):
         """Validate thermodynamic consistency."""
         pressure = values.get('pressure')
@@ -823,7 +823,7 @@ class EmissionsFeatures(BaseFeatures):
         description="Global warming potential for N2O (AR5)"
     )
 
-    @root_validator
+    @root_validator(skip_on_failure=True)
     def validate_ghg_calculation(cls, values):
         """Validate total GHG is consistent with component emissions."""
         co2_rate = values.get('co2_rate', 0)

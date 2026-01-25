@@ -383,7 +383,7 @@ from datetime import datetime, timezone
 import hashlib
 import json
 
-from ..models import AgentInput, AgentOutput
+from models import AgentInput, AgentOutput
 
 
 class {self.config.name}Engine:
