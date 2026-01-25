@@ -17,8 +17,7 @@ Date: October 2025
 import pytest
 from unittest.mock import Mock, patch, AsyncMock
 from greenlang.agents.carbon_agent_ai import CarbonAgentAI
-from greenlang.intelligence import ChatResponse, Usage, FinishReason
-from greenlang.intelligence.schemas.responses import ProviderInfo
+from greenlang.intelligence import ChatResponse, Usage, FinishReason, ProviderInfo
 
 
 class TestCarbonAgentAI:
