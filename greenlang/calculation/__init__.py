@@ -45,6 +45,7 @@ from greenlang.calculation.gas_decomposition import (
     GWP_AR6_100YR,
 )
 
+# Backward-compatible import (deprecated - consolidated to utils)
 from greenlang.calculation.unit_converter import UnitConverter, UnitConversionError
 
 from greenlang.calculation.uncertainty import (

@@ -36,6 +36,12 @@ from greenlang_registry.db.models import (
     GovernancePolicy,
     LifecycleState,
 )
+from greenlang_registry.clients import (
+    OCIManifest,
+    OCIDescriptor,
+    OCIAuth,
+    OCIClient,
+)
 
 __all__ = [
     # Version
@@ -54,4 +60,9 @@ __all__ = [
     "AuditLog",
     "GovernancePolicy",
     "LifecycleState",
+    # OCI Client
+    "OCIManifest",
+    "OCIDescriptor",
+    "OCIAuth",
+    "OCIClient",
 ]
