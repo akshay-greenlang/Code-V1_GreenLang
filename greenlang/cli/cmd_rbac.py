@@ -31,7 +31,7 @@ import json
 # Import policy enforcer and RBAC components
 try:
     from greenlang.policy.enforcer import PolicyEnforcer
-    from greenlang.core.greenlang.policy.agent_rbac import (
+    from greenlang.policy.agent_rbac import (
         AgentPermission,
         PREDEFINED_ROLES
     )

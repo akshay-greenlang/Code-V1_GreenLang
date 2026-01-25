@@ -1,0 +1,301 @@
+{
+  "metadata": {
+    "version": "1.0.0",
+    "last_updated": "2025-08-23",
+    "source": "GreenLang Fuel Properties Database",
+    "description": "Standard fuel properties and conversion factors"
+  },
+  "fuel_properties": {
+    "electricity": {
+      "energy_content": {
+        "value": 3412,
+        "unit": "Btu/kWh",
+        "description": "Standard conversion"
+      },
+      "typical_efficiency": {
+        "generation": 0.35,
+        "transmission": 0.95,
+        "end_use": 0.90
+      },
+      "renewable_potential": "high",
+      "storage_capable": true
+    },
+    "natural_gas": {
+      "energy_content": {
+        "value": 100000,
+        "unit": "Btu/therm",
+        "description": "Standard therm definition"
+      },
+      "typical_efficiency": {
+        "combustion": 0.85,
+        "distribution": 0.98,
+        "end_use": 0.80
+      },
+      "renewable_potential": "low",
+      "storage_capable": true,
+      "density": {
+        "value": 0.717,
+        "unit": "kg/m3"
+      }
+    },
+    "diesel": {
+      "energy_content": {
+        "value": 138690,
+        "unit": "Btu/gallon",
+        "description": "US diesel #2"
+      },
+      "typical_efficiency": {
+        "combustion": 0.40,
+        "distribution": 0.99,
+        "end_use": 0.35
+      },
+      "renewable_potential": "medium",
+      "storage_capable": true,
+      "density": {
+        "value": 0.832,
+        "unit": "kg/L"
+      }
+    },
+    "gasoline": {
+      "energy_content": {
+        "value": 124238,
+        "unit": "Btu/gallon",
+        "description": "Regular unleaded"
+      },
+      "typical_efficiency": {
+        "combustion": 0.30,
+        "distribution": 0.99,
+        "end_use": 0.25
+      },
+      "renewable_potential": "low",
+      "storage_capable": true,
+      "density": {
+        "value": 0.745,
+        "unit": "kg/L"
+      }
+    },
+    "propane": {
+      "energy_content": {
+        "value": 91333,
+        "unit": "Btu/gallon",
+        "description": "LPG"
+      },
+      "typical_efficiency": {
+        "combustion": 0.80,
+        "distribution": 0.98,
+        "end_use": 0.75
+      },
+      "renewable_potential": "low",
+      "storage_capable": true,
+      "density": {
+        "value": 0.493,
+        "unit": "kg/L"
+      }
+    },
+    "fuel_oil": {
+      "energy_content": {
+        "value": 139600,
+        "unit": "Btu/gallon",
+        "description": "#2 heating oil"
+      },
+      "typical_efficiency": {
+        "combustion": 0.78,
+        "distribution": 0.99,
+        "end_use": 0.75
+      },
+      "renewable_potential": "low",
+      "storage_capable": true,
+      "density": {
+        "value": 0.845,
+        "unit": "kg/L"
+      }
+    },
+    "coal": {
+      "energy_content": {
+        "value": 20000000,
+        "unit": "Btu/ton",
+        "description": "Bituminous coal average"
+      },
+      "typical_efficiency": {
+        "combustion": 0.35,
+        "distribution": 0.95,
+        "end_use": 0.33
+      },
+      "renewable_potential": "none",
+      "storage_capable": true,
+      "subtypes": {
+        "anthracite": 25400000,
+        "bituminous": 24000000,
+        "subbituminous": 17000000,
+        "lignite": 14000000
+      }
+    },
+    "biomass": {
+      "energy_content": {
+        "value": 8000,
+        "unit": "Btu/lb",
+        "description": "Wood pellets"
+      },
+      "typical_efficiency": {
+        "combustion": 0.75,
+        "distribution": 0.95,
+        "end_use": 0.70
+      },
+      "renewable_potential": "high",
+      "storage_capable": true,
+      "moisture_impact": {
+        "10_percent": 1.0,
+        "20_percent": 0.95,
+        "30_percent": 0.85,
+        "40_percent": 0.75
+      }
+    },
+    "hydrogen": {
+      "energy_content": {
+        "value": 51600,
+        "unit": "Btu/lb",
+        "description": "Lower heating value"
+      },
+      "typical_efficiency": {
+        "fuel_cell": 0.60,
+        "combustion": 0.35,
+        "distribution": 0.90
+      },
+      "renewable_potential": "high",
+      "storage_capable": true,
+      "production_methods": {
+        "green": "electrolysis_renewable",
+        "blue": "steam_reforming_ccs",
+        "grey": "steam_reforming",
+        "turquoise": "pyrolysis"
+      }
+    },
+    "solar_pv": {
+      "energy_content": {
+        "value": 3412,
+        "unit": "Btu/kWh",
+        "description": "Direct electricity"
+      },
+      "typical_efficiency": {
+        "generation": 0.20,
+        "inverter": 0.95,
+        "system": 0.85
+      },
+      "renewable_potential": "renewable",
+      "storage_capable": false,
+      "capacity_factor": {
+        "residential": 0.15,
+        "commercial": 0.18,
+        "utility": 0.25
+      }
+    },
+    "wind": {
+      "energy_content": {
+        "value": 3412,
+        "unit": "Btu/kWh",
+        "description": "Direct electricity"
+      },
+      "typical_efficiency": {
+        "generation": 0.45,
+        "transmission": 0.95,
+        "system": 0.90
+      },
+      "renewable_potential": "renewable",
+      "storage_capable": false,
+      "capacity_factor": {
+        "onshore": 0.35,
+        "offshore": 0.50
+      }
+    }
+  },
+  "conversion_factors": {
+    "energy": {
+      "kwh_to_mmbtu": 0.003412,
+      "therms_to_mmbtu": 0.1,
+      "gj_to_mmbtu": 0.947817,
+      "mj_to_kwh": 0.277778,
+      "btu_to_kwh": 0.000293071,
+      "mcf_to_therms": 10.37,
+      "ccf_to_therms": 1.037
+    },
+    "volume": {
+      "gallons_to_liters": 3.78541,
+      "m3_to_ft3": 35.3147,
+      "m3_to_gallons": 264.172,
+      "liters_to_gallons": 0.264172
+    },
+    "mass": {
+      "kg_to_lbs": 2.20462,
+      "tons_to_tonnes": 0.907185,
+      "tonnes_to_tons": 1.10231,
+      "lbs_to_kg": 0.453592
+    }
+  },
+  "emission_intensity_benchmarks": {
+    "electricity": {
+      "coal": 2.21,
+      "natural_gas": 0.91,
+      "nuclear": 0.02,
+      "wind": 0.02,
+      "solar": 0.05,
+      "hydro": 0.02,
+      "unit": "lbsCO2e/kWh"
+    },
+    "transportation": {
+      "gasoline": 19.6,
+      "diesel": 22.4,
+      "propane": 12.7,
+      "natural_gas": 14.5,
+      "unit": "lbsCO2e/gallon"
+    }
+  },
+  "fuel_switching_recommendations": {
+    "coal_to_natural_gas": {
+      "emission_reduction": 0.45,
+      "cost_impact": "neutral",
+      "feasibility": "high"
+    },
+    "oil_to_natural_gas": {
+      "emission_reduction": 0.25,
+      "cost_impact": "positive",
+      "feasibility": "high"
+    },
+    "natural_gas_to_electric": {
+      "emission_reduction": 0.30,
+      "cost_impact": "negative",
+      "feasibility": "medium"
+    },
+    "diesel_to_biodiesel": {
+      "emission_reduction": 0.75,
+      "cost_impact": "negative",
+      "feasibility": "high"
+    },
+    "grid_to_solar": {
+      "emission_reduction": 0.90,
+      "cost_impact": "positive_longterm",
+      "feasibility": "medium"
+    }
+  },
+  "regional_adjustments": {
+    "US": {
+      "grid_renewable_percentage": 20,
+      "natural_gas_methane_leakage": 0.023,
+      "diesel_biodiesel_blend": 0.05
+    },
+    "EU": {
+      "grid_renewable_percentage": 35,
+      "natural_gas_methane_leakage": 0.015,
+      "diesel_biodiesel_blend": 0.10
+    },
+    "CN": {
+      "grid_renewable_percentage": 28,
+      "natural_gas_methane_leakage": 0.030,
+      "diesel_biodiesel_blend": 0.02
+    },
+    "IN": {
+      "grid_renewable_percentage": 22,
+      "natural_gas_methane_leakage": 0.025,
+      "diesel_biodiesel_blend": 0.05
+    }
+  }
+}

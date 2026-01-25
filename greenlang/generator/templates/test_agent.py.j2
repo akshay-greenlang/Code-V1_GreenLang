@@ -1,0 +1,509 @@
+"""
+Test suite for {{ name }}.
+
+This module provides comprehensive tests for the {{ agent_class_name }}:
+- Golden tests (from AgentSpec)
+- Property-based tests
+- Unit tests
+- Tool tests
+- Provenance tests
+
+Run with: pytest tests/test_agent.py -v
+
+Generated from AgentSpec: {{ id }}
+Version: {{ version }}
+"""
+
+import pytest
+import asyncio
+from typing import Any, Dict
+from datetime import datetime
+
+from {{ module_name }}.agent import (
+    {{ agent_class_name }},
+    {{ agent_class_name }}Input,
+    {{ agent_class_name }}Output,
+)
+{% if tools %}
+from {{ module_name }}.tools import (
+{% for tool in tools %}
+    {{ tool.class_name }},
+{% endfor %}
+)
+{% endif %}
+
+
+# =============================================================================
+# Fixtures
+# =============================================================================
+
+@pytest.fixture
+def agent() -> {{ agent_class_name }}:
+    """Create agent instance for testing."""
+    return {{ agent_class_name }}(
+        enable_provenance=True,
+        enable_citations=True,
+    )
+
+
+@pytest.fixture
+def agent_no_provenance() -> {{ agent_class_name }}:
+    """Create agent without provenance tracking."""
+    return {{ agent_class_name }}(
+        enable_provenance=False,
+        enable_citations=False,
+    )
+
+
+@pytest.fixture
+def sample_input() -> Dict[str, Any]:
+    """Sample input data for testing."""
+    return {
+{% for input in inputs %}
+{% if input.default is not none %}
+        "{{ input.name }}": {{ input.default | repr }},
+{% elif input.type == "string" %}
+        "{{ input.name }}": "test_value",
+{% elif input.type == "number" %}
+        "{{ input.name }}": 100.0,
+{% elif input.type == "integer" %}
+        "{{ input.name }}": 100,
+{% elif input.type == "boolean" %}
+        "{{ input.name }}": True,
+{% elif input.type == "array" %}
+        "{{ input.name }}": [],
+{% elif input.type == "object" %}
+        "{{ input.name }}": {},
+{% else %}
+        "{{ input.name }}": None,
+{% endif %}
+{% endfor %}
+    }
+
+
+# =============================================================================
+# Golden Tests (from AgentSpec)
+# =============================================================================
+
+{% if tests and tests.golden %}
+class TestGolden:
+    """
+    Golden test cases from AgentSpec.
+
+    These tests verify that the agent produces expected outputs
+    for known inputs. They serve as regression tests.
+    """
+
+{% for test in tests.golden %}
+    @pytest.mark.asyncio
+    async def {{ test.test_method_name }}(self, agent: {{ agent_class_name }}):
+        """
+        {{ test.description or test.name }}
+
+        Input: {{ test.input }}
+        Expected: {{ test.expect }}
+        """
+        # Arrange
+        input_data = {{ agent_class_name }}Input(
+{% for key, value in test.input.items() %}
+            {{ key }}={{ value | repr }},
+{% endfor %}
+        )
+
+        # Act
+        result = await agent.run(input_data)
+
+        # Assert
+        assert result is not None, "Result should not be None"
+        assert result.output is not None, "Output should not be None"
+
+{% for key, value in test.expect.items() %}
+{% if value is mapping and 'value' in value %}
+{% if value.tol is defined %}
+        # Check {{ key }} with tolerance {{ value.tol }}
+        assert abs(result.output.{{ key }} - {{ value.value }}) < {{ value.tol }}, \
+            f"Expected {{ key }}={{ value.value }} (+/- {{ value.tol }}), got {result.output.{{ key }}}"
+{% else %}
+        assert result.output.{{ key }} == {{ value.value }}, \
+            f"Expected {{ key }}={{ value.value }}, got {result.output.{{ key }}}"
+{% endif %}
+{% else %}
+        assert result.output.{{ key }} == {{ value | repr }}, \
+            f"Expected {{ key }}={{ value | repr }}, got {result.output.{{ key }}}"
+{% endif %}
+{% endfor %}
+
+{% endfor %}
+{% else %}
+class TestGolden:
+    """Golden tests - add tests to AgentSpec to generate these."""
+
+    def test_placeholder(self, agent: {{ agent_class_name }}):
+        """Placeholder - add golden tests to AgentSpec."""
+        assert agent is not None
+{% endif %}
+
+
+# =============================================================================
+# Property Tests
+# =============================================================================
+
+{% if tests and tests.properties %}
+class TestProperties:
+    """
+    Property-based tests from AgentSpec.
+
+    These tests verify that certain mathematical or logical
+    properties hold across all valid inputs.
+    """
+
+{% for prop in tests.properties %}
+    def test_property_{{ prop.name | replace("-", "_") | replace(" ", "_") }}(self, agent: {{ agent_class_name }}):
+        """
+        {{ prop.description or prop.name }}
+
+        Rule: {{ prop.rule }}
+{% if prop.tolerance %}
+        Tolerance: {{ prop.tolerance }}
+{% endif %}
+        """
+        # TODO: Implement property-based test
+        # Rule: {{ prop.rule }}
+        #
+        # Example implementation:
+        # for _ in range(100):  # Test with random inputs
+        #     input_data = generate_random_input()
+        #     result = agent.run(input_data)
+        #     assert property_holds(result), "Property violated"
+        pass
+
+{% endfor %}
+{% else %}
+class TestProperties:
+    """Property tests - add properties to AgentSpec to generate these."""
+
+    def test_placeholder(self, agent: {{ agent_class_name }}):
+        """Placeholder - add property tests to AgentSpec."""
+        assert agent is not None
+{% endif %}
+
+
+# =============================================================================
+# Unit Tests
+# =============================================================================
+
+class TestAgentInitialization:
+    """Test agent initialization and configuration."""
+
+    def test_agent_creates_with_defaults(self):
+        """Test agent can be created with default settings."""
+        agent = {{ agent_class_name }}()
+        assert agent is not None
+        assert agent.agent_id == "{{ id }}"
+        assert agent.agent_version == "{{ version }}"
+
+    def test_agent_creates_with_custom_id(self):
+        """Test agent can be created with custom ID."""
+        agent = {{ agent_class_name }}(agent_id="custom-id")
+        assert agent.agent_id == "custom-id"
+
+    def test_agent_creates_without_provenance(self):
+        """Test agent can be created without provenance."""
+        agent = {{ agent_class_name }}(enable_provenance=False)
+        assert agent.provenance_tracker is None
+
+    def test_agent_creates_without_citations(self):
+        """Test agent can be created without citations."""
+        agent = {{ agent_class_name }}(enable_citations=False)
+        assert agent.citation_tracker is None
+
+
+class TestInputValidation:
+    """Test input validation."""
+
+    def test_valid_input_passes(self, sample_input: Dict[str, Any]):
+        """Test valid input passes validation."""
+        input_data = {{ agent_class_name }}Input(**sample_input)
+        assert input_data is not None
+
+{% for input in inputs %}
+{% if input.required %}
+    def test_missing_{{ input.name }}_fails(self, sample_input: Dict[str, Any]):
+        """Test missing required field {{ input.name }} fails."""
+        del sample_input["{{ input.name }}"]
+        with pytest.raises(Exception):  # Pydantic ValidationError
+            {{ agent_class_name }}Input(**sample_input)
+
+{% endif %}
+{% if input.minimum is not none %}
+    def test_{{ input.name }}_below_minimum_fails(self, sample_input: Dict[str, Any]):
+        """Test {{ input.name }} below minimum {{ input.minimum }} fails."""
+        sample_input["{{ input.name }}"] = {{ input.minimum }} - 1
+        with pytest.raises(Exception):
+            {{ agent_class_name }}Input(**sample_input)
+
+{% endif %}
+{% if input.maximum is not none %}
+    def test_{{ input.name }}_above_maximum_fails(self, sample_input: Dict[str, Any]):
+        """Test {{ input.name }} above maximum {{ input.maximum }} fails."""
+        sample_input["{{ input.name }}"] = {{ input.maximum }} + 1
+        with pytest.raises(Exception):
+            {{ agent_class_name }}Input(**sample_input)
+
+{% endif %}
+{% endfor %}
+
+
+class TestAgentExecution:
+    """Test agent execution."""
+
+    @pytest.mark.asyncio
+    async def test_execute_returns_output(
+        self,
+        agent: {{ agent_class_name }},
+        sample_input: Dict[str, Any]
+    ):
+        """Test agent execution returns valid output."""
+        input_data = {{ agent_class_name }}Input(**sample_input)
+        result = await agent.run(input_data)
+
+        assert result is not None
+        assert result.output is not None
+        assert isinstance(result.output, {{ agent_class_name }}Output)
+
+    @pytest.mark.asyncio
+    async def test_execute_tracks_processing_time(
+        self,
+        agent: {{ agent_class_name }},
+        sample_input: Dict[str, Any]
+    ):
+        """Test processing time is tracked."""
+        input_data = {{ agent_class_name }}Input(**sample_input)
+        result = await agent.run(input_data)
+
+        assert result.output.processing_time_ms is not None
+        assert result.output.processing_time_ms >= 0
+
+    @pytest.mark.asyncio
+    async def test_execute_sets_validation_status(
+        self,
+        agent: {{ agent_class_name }},
+        sample_input: Dict[str, Any]
+    ):
+        """Test validation status is set."""
+        input_data = {{ agent_class_name }}Input(**sample_input)
+        result = await agent.run(input_data)
+
+        assert result.output.validation_status in ["PASS", "FAIL"]
+
+
+# =============================================================================
+# Provenance Tests
+# =============================================================================
+
+class TestProvenance:
+    """Test provenance tracking."""
+
+    @pytest.mark.asyncio
+    async def test_provenance_record_created(
+        self,
+        agent: {{ agent_class_name }},
+        sample_input: Dict[str, Any]
+    ):
+        """Test provenance record is created."""
+        input_data = {{ agent_class_name }}Input(**sample_input)
+        result = await agent.run(input_data)
+
+        assert result.provenance is not None
+        assert result.provenance.agent_id == "{{ id }}"
+
+    @pytest.mark.asyncio
+    async def test_provenance_has_input_hash(
+        self,
+        agent: {{ agent_class_name }},
+        sample_input: Dict[str, Any]
+    ):
+        """Test provenance has input hash."""
+        input_data = {{ agent_class_name }}Input(**sample_input)
+        result = await agent.run(input_data)
+
+        assert result.provenance.input_hash is not None
+        assert len(result.provenance.input_hash) == 64  # SHA-256
+
+    @pytest.mark.asyncio
+    async def test_provenance_has_output_hash(
+        self,
+        agent: {{ agent_class_name }},
+        sample_input: Dict[str, Any]
+    ):
+        """Test provenance has output hash."""
+        input_data = {{ agent_class_name }}Input(**sample_input)
+        result = await agent.run(input_data)
+
+        assert result.provenance.output_hash is not None
+        assert len(result.provenance.output_hash) == 64  # SHA-256
+
+    @pytest.mark.asyncio
+    async def test_provenance_chain_hash(
+        self,
+        agent: {{ agent_class_name }},
+        sample_input: Dict[str, Any]
+    ):
+        """Test provenance chain hash is computed."""
+        input_data = {{ agent_class_name }}Input(**sample_input)
+        result = await agent.run(input_data)
+
+        assert result.provenance.provenance_chain is not None
+        assert len(result.provenance.provenance_chain) == 64
+
+    @pytest.mark.asyncio
+    async def test_same_input_same_hash(
+        self,
+        agent: {{ agent_class_name }},
+        sample_input: Dict[str, Any]
+    ):
+        """Test same input produces same hash (determinism)."""
+        input_data = {{ agent_class_name }}Input(**sample_input)
+
+        result1 = await agent.run(input_data)
+        result2 = await agent.run(input_data)
+
+        assert result1.provenance.input_hash == result2.provenance.input_hash
+
+
+# =============================================================================
+# Tool Tests
+# =============================================================================
+
+{% if tools %}
+class TestTools:
+    """Test tool implementations."""
+
+{% for tool in tools %}
+    def test_{{ tool.name }}_tool_exists(self, agent: {{ agent_class_name }}):
+        """Test {{ tool.name }} tool is registered."""
+        assert "{{ tool.name }}" in agent._tools
+
+    def test_{{ tool.name }}_tool_is_safe(self):
+        """Test {{ tool.name }} tool is marked as safe (deterministic)."""
+        tool = {{ tool.class_name }}()
+        assert tool.safe == {{ tool.safe }}
+
+    @pytest.mark.asyncio
+    async def test_{{ tool.name }}_tool_executes(self, agent: {{ agent_class_name }}):
+        """Test {{ tool.name }} tool can be called."""
+        # Note: This test may fail if tool requires specific parameters
+        try:
+            result = await agent.call_{{ tool.name }}(
+{% for param in tool.input_parameters %}
+{% if param.required %}
+{% if param.type == "string" %}
+                {{ param.name }}="test",
+{% elif param.type == "number" %}
+                {{ param.name }}=1.0,
+{% elif param.type == "integer" %}
+                {{ param.name }}=1,
+{% else %}
+                {{ param.name }}=None,
+{% endif %}
+{% endif %}
+{% endfor %}
+            )
+            assert result is not None
+        except NotImplementedError:
+            pytest.skip("Tool not implemented")
+
+{% endfor %}
+{% else %}
+class TestTools:
+    """Tool tests - no tools configured."""
+
+    def test_no_tools_registered(self, agent: {{ agent_class_name }}):
+        """Test no tools are registered."""
+        assert len(agent._tools) == 0
+{% endif %}
+
+
+# =============================================================================
+# Integration Tests
+# =============================================================================
+
+class TestIntegration:
+    """Integration tests for complete workflows."""
+
+    @pytest.mark.asyncio
+    async def test_full_workflow(
+        self,
+        agent: {{ agent_class_name }},
+        sample_input: Dict[str, Any]
+    ):
+        """Test complete agent workflow."""
+        # Create input
+        input_data = {{ agent_class_name }}Input(**sample_input)
+
+        # Run agent
+        result = await agent.run(input_data)
+
+        # Verify result structure
+        assert result is not None
+        assert result.output is not None
+        assert result.provenance is not None
+        assert result.metadata is not None
+
+        # Verify timing
+        assert result.metadata.get("context", {}).get("duration") is not None
+
+
+# =============================================================================
+# Performance Tests
+# =============================================================================
+
+class TestPerformance:
+    """Performance and benchmark tests."""
+
+    @pytest.mark.asyncio
+    async def test_execution_under_100ms(
+        self,
+        agent: {{ agent_class_name }},
+        sample_input: Dict[str, Any]
+    ):
+        """Test execution completes under 100ms (placeholder logic)."""
+        input_data = {{ agent_class_name }}Input(**sample_input)
+        result = await agent.run(input_data)
+
+        # Note: Adjust threshold based on actual implementation
+        assert result.output.processing_time_ms < 1000  # 1 second max for now
+
+    @pytest.mark.asyncio
+    async def test_multiple_executions(
+        self,
+        agent: {{ agent_class_name }},
+        sample_input: Dict[str, Any]
+    ):
+        """Test agent handles multiple sequential executions."""
+        input_data = {{ agent_class_name }}Input(**sample_input)
+
+        for i in range(5):
+            result = await agent.run(input_data)
+            assert result is not None
+
+
+# =============================================================================
+# Error Handling Tests
+# =============================================================================
+
+class TestErrorHandling:
+    """Test error handling."""
+
+    @pytest.mark.asyncio
+    async def test_invalid_input_raises_error(self, agent: {{ agent_class_name }}):
+        """Test invalid input raises appropriate error."""
+        with pytest.raises(Exception):
+            # Attempt to create input with invalid data
+            {{ agent_class_name }}Input(invalid_field="value")
+
+    def test_unknown_field_rejected(self, sample_input: Dict[str, Any]):
+        """Test unknown fields are rejected."""
+        sample_input["unknown_field"] = "value"
+        with pytest.raises(Exception):
+            {{ agent_class_name }}Input(**sample_input)

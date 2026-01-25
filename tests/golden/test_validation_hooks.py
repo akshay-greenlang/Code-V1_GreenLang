@@ -9,7 +9,7 @@ import sys
 from pathlib import Path
 
 try:
-    from greenlang.core.greenlang.validation.hooks import (
+    from greenlang.validation.hooks import (
         EmissionFactorValidator,
         UnitValidator,
         ThermodynamicValidator,

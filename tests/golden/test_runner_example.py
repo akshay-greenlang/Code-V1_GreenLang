@@ -9,14 +9,14 @@ import sys
 from pathlib import Path
 
 try:
-    from greenlang.core.greenlang.testing.golden_test_runner import GoldenTestRunner
+    from greenlang.testing.golden_test_runner import GoldenTestRunner
 except ImportError:
-    from greenlang.core.greenlang.testing.golden_tests import GoldenTestRunner
+    from greenlang.testing.golden_tests import GoldenTestRunner
 
 try:
-    from greenlang.core.greenlang.validation.emission_factors import EmissionFactorDB
+    from greenlang.validation.emission_factors import EmissionFactorDB
 except ImportError:
-    from greenlang.core.greenlang.data.emission_factor_db import EmissionFactorDB
+    from greenlang.data.emission_factor_db import EmissionFactorDB
 
 
 def calculate_emissions(inputs: dict) -> float:

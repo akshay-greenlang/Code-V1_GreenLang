@@ -9,10 +9,10 @@ import sys
 from pathlib import Path
 
 try:
-    from greenlang.core.greenlang.validation.emission_factors import EmissionFactorDB, EmissionCategory, DataSource
+    from greenlang.validation.emission_factors import EmissionFactorDB, EmissionCategory, DataSource
 except ImportError:
     # Try alternative import path
-    from greenlang.core.greenlang.data.emission_factor_db import EmissionFactorDB, EmissionCategory, DataSource
+    from greenlang.data.emission_factor_db import EmissionFactorDB, EmissionCategory, DataSource
 
 
 def test_database_initialization():
