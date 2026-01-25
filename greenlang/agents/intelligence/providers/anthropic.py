@@ -68,22 +68,22 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
-from greenlang.intelligence.providers.base import (
+from greenlang.agents.intelligence.providers.base import (
     LLMProvider,
     LLMProviderConfig,
     LLMCapabilities,
 )
-from greenlang.intelligence.schemas.messages import ChatMessage, Role
-from greenlang.intelligence.schemas.tools import ToolDef, ToolCall, ToolChoice
-from greenlang.intelligence.schemas.responses import (
+from greenlang.agents.intelligence.schemas.messages import ChatMessage, Role
+from greenlang.agents.intelligence.schemas.tools import ToolDef, ToolCall, ToolChoice
+from greenlang.agents.intelligence.schemas.responses import (
     ChatResponse,
     Usage,
     FinishReason,
     ProviderInfo,
 )
-from greenlang.intelligence.schemas.jsonschema import JSONSchema
-from greenlang.intelligence.runtime.budget import Budget, BudgetExceeded
-from greenlang.intelligence.providers.errors import (
+from greenlang.agents.intelligence.schemas.jsonschema import JSONSchema
+from greenlang.agents.intelligence.runtime.budget import Budget, BudgetExceeded
+from greenlang.agents.intelligence.providers.errors import (
     ProviderAuthError,
     ProviderRateLimit,
     ProviderTimeout,
@@ -92,7 +92,7 @@ from greenlang.intelligence.providers.errors import (
     ProviderContentFilter,
     classify_provider_error,
 )
-from greenlang.intelligence.runtime.json_validator import (
+from greenlang.agents.intelligence.runtime.json_validator import (
     parse_and_validate,
     get_repair_prompt,
     JSONRetryTracker,

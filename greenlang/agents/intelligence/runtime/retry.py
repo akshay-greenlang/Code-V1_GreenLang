@@ -107,7 +107,7 @@ def is_transient_error(error: Exception) -> bool:
         True if error is transient and worth retrying
 
     Example:
-        from greenlang.intelligence.providers.errors import ProviderRateLimit
+        from greenlang.agents.intelligence.providers.errors import ProviderRateLimit
 
         try:
             provider.chat(...)
@@ -121,7 +121,7 @@ def is_transient_error(error: Exception) -> bool:
     """
     # Import provider errors here to avoid circular dependency
     try:
-        from greenlang.intelligence.providers.errors import (
+        from greenlang.agents.intelligence.providers.errors import (
             ProviderRateLimit,
             ProviderTimeout,
             ProviderServerError,
@@ -133,7 +133,7 @@ def is_transient_error(error: Exception) -> bool:
         pass
 
     # Budget errors are never transient
-    from greenlang.intelligence.runtime.budget import BudgetExceeded
+    from greenlang.agents.intelligence.runtime.budget import BudgetExceeded
 
     if isinstance(error, BudgetExceeded):
         return False

@@ -18,69 +18,69 @@ Key Components:
 - Section hierarchy extraction for proper citations
 """
 
-from greenlang.intelligence.rag.models import (
+from greenlang.agents.intelligence.rag.models import (
     DocMeta,
     Chunk,
     RAGCitation,
     QueryResult,
     IngestionManifest,
 )
-from greenlang.intelligence.rag.config import RAGConfig, get_rag_config, get_config
-from greenlang.intelligence.rag.hashing import (
+from greenlang.agents.intelligence.rag.config import RAGConfig, get_rag_config, get_config
+from greenlang.agents.intelligence.rag.hashing import (
     sha256_str,
     canonicalize_text,
     chunk_uuid5,
     section_hash,
 )
-from greenlang.intelligence.rag.sanitize import (
+from greenlang.agents.intelligence.rag.sanitize import (
     sanitize_rag_input,
     sanitize_citation_uri,
 )
-from greenlang.intelligence.rag.embeddings import (
+from greenlang.agents.intelligence.rag.embeddings import (
     EmbeddingProvider,
     MiniLMProvider,
     OpenAIProvider,
     get_embedding_provider,
 )
-from greenlang.intelligence.rag.vector_stores import (
+from greenlang.agents.intelligence.rag.vector_stores import (
     VectorStoreProvider,
     FAISSProvider,
     WeaviateProvider,
     Document,
     get_vector_store,
 )
-from greenlang.intelligence.rag.weaviate_client import WeaviateClient
-from greenlang.intelligence.rag.retrievers import (
+from greenlang.agents.intelligence.rag.weaviate_client import WeaviateClient
+from greenlang.agents.intelligence.rag.retrievers import (
     MMRRetriever,
     SimilarityRetriever,
     get_retriever,
 )
-from greenlang.intelligence.rag.chunker import (
+from greenlang.agents.intelligence.rag.chunker import (
     TokenAwareChunker,
     CharacterChunker,
     get_chunker,
 )
-from greenlang.intelligence.rag.version_manager import (
+from greenlang.agents.intelligence.rag.version_manager import (
     DocumentVersionManager,
     VersionConflict,
 )
-from greenlang.intelligence.rag.governance import (
+from greenlang.agents.intelligence.rag.governance import (
     RAGGovernance,
     ApprovalRequest,
 )
-from greenlang.intelligence.rag.table_extractor import (
+from greenlang.agents.intelligence.rag.table_extractor import (
     ClimateTableExtractor,
 )
-from greenlang.intelligence.rag.section_extractor import (
+from greenlang.agents.intelligence.rag.section_extractor import (
     SectionPathExtractor,
     SectionMatch,
 )
-from greenlang.intelligence.rag.engine import RAGEngine
-from greenlang.intelligence.rag.determinism import DeterministicRAG
+from greenlang.agents.intelligence.rag.engine import RAGEngine
+from greenlang.agents.intelligence.rag.determinism import DeterministicRAG
 
 # Import standalone modules
-from greenlang.intelligence.rag import ingest
-from greenlang.intelligence.rag import query
+from greenlang.agents.intelligence.rag import ingest
+from greenlang.agents.intelligence.rag import query
 
 __all__ = [
     # Schemas

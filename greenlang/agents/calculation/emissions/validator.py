@@ -16,7 +16,7 @@ from dataclasses import dataclass, field
 from typing import List, Optional, Dict, Any
 from decimal import Decimal
 from greenlang.utilities.determinism import FinancialDecimal
-from greenlang.calculation.emissions.core_calculator import (
+from .core_calculator import (
     CalculationRequest,
     CalculationResult,
     CalculationStatus,

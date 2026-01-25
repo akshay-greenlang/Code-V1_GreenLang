@@ -17,8 +17,8 @@ from typing import List, Dict, Optional, Any
 from pathlib import Path
 import logging
 
-from greenlang.intelligence.rag.config import RAGConfig, get_config, is_collection_allowed
-from greenlang.intelligence.rag.models import Chunk
+from greenlang.agents.intelligence.rag.config import RAGConfig, get_config, is_collection_allowed
+from greenlang.agents.intelligence.rag.models import Chunk
 
 logger = logging.getLogger(__name__)
 
@@ -481,7 +481,7 @@ class WeaviateProvider(VectorStoreProvider):
 
         # Import and create WeaviateClient
         if weaviate_client is None:
-            from greenlang.intelligence.rag.weaviate_client import WeaviateClient
+            from greenlang.agents.intelligence.rag.weaviate_client import WeaviateClient
 
             self.weaviate_client = WeaviateClient(
                 endpoint=self.config.weaviate_endpoint,
@@ -803,7 +803,7 @@ def get_vector_store(
     if provider == "faiss":
         return FAISSProvider(dimension=dimension, config=config)
     elif provider == "weaviate":
-        from greenlang.intelligence.rag.weaviate_client import WeaviateClient
+        from greenlang.agents.intelligence.rag.weaviate_client import WeaviateClient
 
         weaviate_client = WeaviateClient(
             endpoint=config.weaviate_endpoint,

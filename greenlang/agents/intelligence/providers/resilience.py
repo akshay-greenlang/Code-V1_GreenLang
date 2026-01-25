@@ -343,7 +343,7 @@ class ResilientHTTPClient:
             True if should retry, False otherwise
         """
         # Import here to avoid circular dependency
-        from greenlang.intelligence.providers.errors import (
+        from greenlang.agents.intelligence.providers.errors import (
             ProviderRateLimit,
             ProviderTimeout,
             ProviderServerError,

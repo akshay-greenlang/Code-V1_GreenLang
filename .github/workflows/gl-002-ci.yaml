@@ -8,20 +8,20 @@ on:
   push:
     branches: ['**']
     paths:
-      - 'greenlang_2030/agent_foundation/agents/GL-002/**'
+      - 'applications/GL Agents/GL-002_Flameguard/**'
       - '.github/workflows/gl-002-ci.yaml'
 
   pull_request:
     branches: [main, master, develop]
     paths:
-      - 'greenlang_2030/agent_foundation/agents/GL-002/**'
+      - 'applications/GL Agents/GL-002_Flameguard/**'
       - '.github/workflows/gl-002-ci.yaml'
 
   workflow_dispatch:
 
 env:
   PYTHON_VERSION: '3.11'
-  AGENT_PATH: 'greenlang_2030/agent_foundation/agents/GL-002'
+  AGENT_PATH: 'applications/GL Agents/GL-002_Flameguard'
   COVERAGE_THRESHOLD: 95
   COMPLEXITY_THRESHOLD: 10
   MIN_TYPE_COVERAGE: 100
@@ -54,22 +54,22 @@ jobs:
       - name: Lint with ruff
         run: |
           echo "Running ruff linter..."
-          ruff check GreenLang_2030/agent_foundation/agents/GL-002 --exit-zero
+          ruff check applications/GL Agents/GL-002_Flameguard --exit-zero
 
       - name: Format check with black
         run: |
           echo "Checking code formatting with black..."
-          black --check GreenLang_2030/agent_foundation/agents/GL-002 || true
+          black --check applications/GL Agents/GL-002_Flameguard || true
 
       - name: Import sort check
         run: |
           echo "Checking import sorting with isort..."
-          isort --check-only GreenLang_2030/agent_foundation/agents/GL-002 || true
+          isort --check-only applications/GL Agents/GL-002_Flameguard || true
 
       - name: Type check with mypy
         run: |
           echo "Running type checker mypy..."
-          mypy GreenLang_2030/agent_foundation/agents/GL-002 --ignore-missing-imports --exit-code=0 || true
+          mypy applications/GL Agents/GL-002_Flameguard --ignore-missing-imports --exit-code=0 || true
 
   # Job 2: Unit and integration tests
   test:
@@ -121,8 +121,8 @@ jobs:
       - name: Run unit tests
         run: |
           echo "Running unit tests..."
-          pytest GreenLang_2030/agent_foundation/agents/GL-002/tests/unit \
-            --cov=GreenLang_2030.agent_foundation.agents.GL_002 \
+          pytest applications/GL Agents/GL-002_Flameguard/tests/unit \
+            --cov=. \
             --cov-report=xml \
             --cov-report=term \
             --cov-fail-under=75 \
@@ -134,7 +134,7 @@ jobs:
       - name: Run integration tests
         run: |
           echo "Running integration tests..."
-          pytest GreenLang_2030/agent_foundation/agents/GL-002/tests/integration \
+          pytest applications/GL Agents/GL-002_Flameguard/tests/integration \
             -v \
             --timeout=60 || true
         env:
@@ -175,9 +175,9 @@ jobs:
       - name: Security scan with bandit
         run: |
           echo "Running security scan with bandit..."
-          bandit -r GreenLang_2030/agent_foundation/agents/GL-002 \
+          bandit -r applications/GL Agents/GL-002_Flameguard \
             -f json -o bandit-report.json || true
-          bandit -r GreenLang_2030/agent_foundation/agents/GL-002 || true
+          bandit -r applications/GL Agents/GL-002_Flameguard || true
 
       - name: Dependency vulnerability check
         run: |
@@ -238,7 +238,7 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: ./GreenLang_2030/agent_foundation/agents/GL-002
+          context: ./applications/GL Agents/GL-002_Flameguard
           push: ${{ github.event_name == 'push' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}

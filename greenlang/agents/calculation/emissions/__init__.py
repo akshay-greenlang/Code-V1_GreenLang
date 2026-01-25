@@ -17,7 +17,7 @@ Author: GreenLang Team
 Date: 2025-11-21
 """
 
-from greenlang.calculation.emissions.core_calculator import (
+from .core_calculator import (
     EmissionCalculator,
     CalculationResult,
     CalculationRequest,
@@ -25,27 +25,27 @@ from greenlang.calculation.emissions.core_calculator import (
     CalculationStatus,
     FallbackLevel,
 )
-from greenlang.calculation.emissions.scope1_calculator import Scope1Calculator, Scope1Result
-from greenlang.calculation.emissions.scope2_calculator import Scope2Calculator, Scope2Result
-from greenlang.calculation.emissions.scope3_calculator import Scope3Calculator, Scope3Result
-from greenlang.calculation.emissions.batch_calculator import BatchCalculator, BatchResult
-from greenlang.calculation.emissions.audit_trail import (
+from .scope1_calculator import Scope1Calculator, Scope1Result
+from .scope2_calculator import Scope2Calculator, Scope2Result
+from .scope3_calculator import Scope3Calculator, Scope3Result
+from .batch_calculator import BatchCalculator, BatchResult
+from .audit_trail import (
     AuditTrail,
     AuditTrailGenerator,
     CalculationStep,
 )
-from greenlang.calculation.emissions.gas_decomposition import (
+from .gas_decomposition import (
     MultiGasCalculator,
     GasBreakdown,
     GWP_AR6_100YR,
 )
-from greenlang.calculation.emissions.uncertainty import UncertaintyCalculator, UncertaintyResult
-from greenlang.calculation.emissions.validator import (
+from .uncertainty import UncertaintyCalculator, UncertaintyResult
+from .validator import (
     CalculationValidator,
     ValidationResult,
     ValidationError,
 )
-from greenlang.calculation.emissions.unit_converter import UnitConverter, UnitConversionError
+from .unit_converter import UnitConverter, UnitConversionError
 
 
 __all__ = [

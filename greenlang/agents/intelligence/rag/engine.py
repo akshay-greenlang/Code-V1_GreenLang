@@ -24,20 +24,20 @@ from typing import List, Optional, Dict, Any, Literal
 from datetime import datetime
 import hashlib
 
-from greenlang.intelligence.rag.models import (
+from greenlang.agents.intelligence.rag.models import (
     DocMeta,
     Chunk,
     RAGCitation,
     QueryResult,
     IngestionManifest,
 )
-from greenlang.intelligence.rag.config import (
+from greenlang.agents.intelligence.rag.config import (
     RAGConfig,
     get_config,
     enforce_allowlist,
     is_collection_allowed,
 )
-from greenlang.intelligence.rag.hashing import (
+from greenlang.agents.intelligence.rag.hashing import (
     file_hash,
     doc_hash,
     section_hash,
@@ -45,13 +45,13 @@ from greenlang.intelligence.rag.hashing import (
     canonicalize_text,
     query_hash,
 )
-from greenlang.intelligence.rag.sanitize import (
+from greenlang.agents.intelligence.rag.sanitize import (
     sanitize_rag_input,
     sanitize_for_prompt,
     validate_collection_name,
     detect_suspicious_content,
 )
-from greenlang.intelligence.rag.determinism import DeterministicRAG
+from greenlang.agents.intelligence.rag.determinism import DeterministicRAG
 
 
 class RAGEngine:
@@ -117,9 +117,9 @@ class RAGEngine:
 
         # Import components
         try:
-            from greenlang.intelligence.rag.embeddings import get_embedding_provider
-            from greenlang.intelligence.rag.vector_stores import get_vector_store
-            from greenlang.intelligence.rag.retrievers import get_retriever
+            from greenlang.agents.intelligence.rag.embeddings import get_embedding_provider
+            from greenlang.agents.intelligence.rag.vector_stores import get_vector_store
+            from greenlang.agents.intelligence.rag.retrievers import get_retriever
 
             # Initialize embedder (factory function only takes config)
             self.embedder = get_embedding_provider(config=self.config)
@@ -401,7 +401,7 @@ class RAGEngine:
             collection: Collection name
         """
         import numpy as np
-        from greenlang.intelligence.rag.vector_stores import Document
+        from greenlang.agents.intelligence.rag.vector_stores import Document
 
         # Create Document objects for vector store
         documents = []
@@ -660,7 +660,7 @@ class RAGEngine:
             Tuple of (selected_chunks, scores)
         """
         import numpy as np
-        from greenlang.intelligence.rag.retrievers import mmr_retrieval
+        from greenlang.agents.intelligence.rag.retrievers import mmr_retrieval
 
         # Convert query embedding to numpy array
         query_vec = np.array(query_embedding, dtype=np.float32)

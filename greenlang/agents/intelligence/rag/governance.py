@@ -21,9 +21,9 @@ from pathlib import Path
 from typing import Dict, List, Optional, Set
 from dataclasses import dataclass, asdict
 
-from greenlang.intelligence.rag.models import DocMeta
-from greenlang.intelligence.rag.config import RAGConfig
-from greenlang.intelligence.rag.hashing import file_hash, sha256_str
+from greenlang.agents.intelligence.rag.models import DocMeta
+from greenlang.agents.intelligence.rag.config import RAGConfig
+from greenlang.agents.intelligence.rag.hashing import file_hash, sha256_str
 from greenlang.utilities.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)

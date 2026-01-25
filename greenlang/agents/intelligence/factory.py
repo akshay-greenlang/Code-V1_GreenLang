@@ -40,8 +40,8 @@ import os
 import logging
 from typing import Optional
 
-from greenlang.intelligence.providers.base import LLMProvider, LLMProviderConfig
-from greenlang.intelligence.config import (
+from greenlang.agents.intelligence.providers.base import LLMProvider, LLMProviderConfig
+from greenlang.agents.intelligence.config import (
     IntelligenceConfig,
     get_config_from_env,
     resolve_model_alias,
@@ -127,7 +127,7 @@ def create_demo_provider(config: Optional[IntelligenceConfig] = None) -> LLMProv
     Returns:
         FakeProvider instance
     """
-    from greenlang.intelligence.providers.fake import FakeProvider
+    from greenlang.agents.intelligence.providers.fake import FakeProvider
 
     if config is None:
         config = get_config_from_env()
@@ -167,7 +167,7 @@ def create_openai_provider(
         ValueError: If API key not found
         ImportError: If openai package not installed
     """
-    from greenlang.intelligence.providers.openai import OpenAIProvider
+    from greenlang.agents.intelligence.providers.openai import OpenAIProvider
 
     if config is None:
         config = get_config_from_env()
@@ -210,7 +210,7 @@ def create_anthropic_provider(
         ValueError: If API key not found
         ImportError: If anthropic package not installed
     """
-    from greenlang.intelligence.providers.anthropic import AnthropicProvider
+    from greenlang.agents.intelligence.providers.anthropic import AnthropicProvider
 
     if config is None:
         config = get_config_from_env()
@@ -246,7 +246,7 @@ def create_deterministic_provider(config: Optional[IntelligenceConfig] = None) -
     Returns:
         DeterministicProvider instance
     """
-    from greenlang.intelligence.providers.deterministic import DeterministicProvider
+    from greenlang.agents.intelligence.providers.deterministic import DeterministicProvider
 
     if config is None:
         config = get_config_from_env()
@@ -284,7 +284,7 @@ def create_ollama_provider(
     Returns:
         OllamaProvider instance
     """
-    from greenlang.intelligence.providers.ollama import OllamaProvider
+    from greenlang.agents.intelligence.providers.ollama import OllamaProvider
 
     if config is None:
         config = get_config_from_env()
@@ -329,7 +329,7 @@ def create_smart_router(
     Returns:
         SmartProviderRouter instance
     """
-    from greenlang.intelligence.providers.router import (
+    from greenlang.agents.intelligence.providers.router import (
         SmartProviderRouter,
         RouterConfig,
     )
@@ -412,7 +412,7 @@ def create_provider(
         provider = create_provider(prefer_local=True)
 
     Tier Report:
-        from greenlang.intelligence.providers.router import get_tier_report_sync
+        from greenlang.agents.intelligence.providers.router import get_tier_report_sync
         print(get_tier_report_sync())  # Shows all tier statuses
     """
     if config is None:
@@ -485,8 +485,8 @@ if __name__ == "__main__":
         python -m greenlang.intelligence.factory
     """
     import asyncio
-    from greenlang.intelligence.schemas.messages import ChatMessage, Role
-    from greenlang.intelligence.runtime.budget import Budget
+    from greenlang.agents.intelligence.schemas.messages import ChatMessage, Role
+    from greenlang.agents.intelligence.runtime.budget import Budget
 
     async def example_auto_detect():
         """Example: Auto-detect provider"""

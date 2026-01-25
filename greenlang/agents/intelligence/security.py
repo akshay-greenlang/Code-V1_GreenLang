@@ -25,7 +25,7 @@ import re
 from typing import List, Optional, Dict, Any
 from pydantic import BaseModel, Field
 
-from greenlang.intelligence.runtime.telemetry import IntelligenceTelemetry
+from greenlang.agents.intelligence.runtime.telemetry import IntelligenceTelemetry
 
 
 class PromptInjectionDetected(Exception):
@@ -83,7 +83,7 @@ class PromptGuard:
         safe_input = guard.sanitize_input(user_input)
 
         # With telemetry integration
-        from greenlang.intelligence.runtime.telemetry import IntelligenceTelemetry, FileEmitter
+        from greenlang.agents.intelligence.runtime.telemetry import IntelligenceTelemetry, FileEmitter
         telemetry = IntelligenceTelemetry(FileEmitter("logs/security.jsonl"))
         guard = PromptGuard(telemetry=telemetry)
 
@@ -507,7 +507,7 @@ if __name__ == "__main__":
 
     # Example 5: With telemetry
     print("Example 5: Telemetry integration")
-    from greenlang.intelligence.runtime.telemetry import IntelligenceTelemetry, ConsoleEmitter
+    from greenlang.agents.intelligence.runtime.telemetry import IntelligenceTelemetry, ConsoleEmitter
     telemetry = IntelligenceTelemetry(emitter=ConsoleEmitter())
     guard_with_telemetry = PromptGuard(telemetry=telemetry)
 

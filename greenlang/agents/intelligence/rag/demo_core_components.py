@@ -16,13 +16,13 @@ import asyncio
 import numpy as np
 from pathlib import Path
 
-from greenlang.intelligence.rag.config import RAGConfig
-from greenlang.intelligence.rag.models import DocMeta, Chunk
-from greenlang.intelligence.rag.chunker import get_chunker
-from greenlang.intelligence.rag.embeddings import get_embedding_provider
-from greenlang.intelligence.rag.vector_stores import get_vector_store, Document
-from greenlang.intelligence.rag.retrievers import get_retriever
-from greenlang.intelligence.rag.hashing import sha256_str, file_hash
+from greenlang.agents.intelligence.rag.config import RAGConfig
+from greenlang.agents.intelligence.rag.models import DocMeta, Chunk
+from greenlang.agents.intelligence.rag.chunker import get_chunker
+from greenlang.agents.intelligence.rag.embeddings import get_embedding_provider
+from greenlang.agents.intelligence.rag.vector_stores import get_vector_store, Document
+from greenlang.agents.intelligence.rag.retrievers import get_retriever
+from greenlang.agents.intelligence.rag.hashing import sha256_str, file_hash
 from datetime import date
 
 

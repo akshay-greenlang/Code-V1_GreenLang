@@ -10,9 +10,9 @@ Orchestration, budget enforcement, telemetry, and retry logic:
 - JSON I/O: Schema validation
 """
 
-from greenlang.intelligence.runtime.session import ChatSession
-from greenlang.intelligence.runtime.budget import Budget, BudgetExceeded
-from greenlang.intelligence.runtime.jsonio import (
+from greenlang.agents.intelligence.runtime.session import ChatSession
+from greenlang.agents.intelligence.runtime.budget import Budget, BudgetExceeded
+from greenlang.agents.intelligence.runtime.jsonio import (
     validate_json_payload,
     JSONValidationError,
 )

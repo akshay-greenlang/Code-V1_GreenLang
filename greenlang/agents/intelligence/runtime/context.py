@@ -30,7 +30,7 @@ Example:
 from __future__ import annotations
 import logging
 from typing import List, Optional
-from greenlang.intelligence.schemas.messages import ChatMessage, Role
+from greenlang.agents.intelligence.schemas.messages import ChatMessage, Role
 
 logger = logging.getLogger(__name__)
 

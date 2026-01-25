@@ -16,7 +16,7 @@ import numpy as np
 from typing import List, Optional, Tuple
 import logging
 
-from greenlang.intelligence.rag.vector_stores import Document, VectorStoreProvider
+from greenlang.agents.intelligence.rag.vector_stores import Document, VectorStoreProvider
 
 logger = logging.getLogger(__name__)
 

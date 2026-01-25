@@ -7,7 +7,7 @@ Tests deterministic unit conversions for energy, mass, volume, etc.
 
 import pytest
 from decimal import Decimal
-from greenlang.calculation.unit_converter import (
+from greenlang.agents.calculation.emissions.unit_converter import (
     UnitConverter,
     UnitConversionError,
 )

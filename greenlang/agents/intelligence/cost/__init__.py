@@ -8,6 +8,6 @@ Provides per-request cost tracking and aggregation:
 - Cost aggregation across multiple calls
 """
 
-from greenlang.intelligence.cost.tracker import CostTracker, RequestCost
+from greenlang.agents.intelligence.cost.tracker import CostTracker, RequestCost
 
 __all__ = ["CostTracker", "RequestCost"]

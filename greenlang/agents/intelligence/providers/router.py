@@ -31,20 +31,20 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Dict, List, Mapping, Optional, Callable
 
-from greenlang.intelligence.providers.base import (
+from greenlang.agents.intelligence.providers.base import (
     LLMProvider,
     LLMProviderConfig,
     LLMCapabilities,
 )
-from greenlang.intelligence.schemas.messages import ChatMessage, Role
-from greenlang.intelligence.schemas.tools import ToolDef
-from greenlang.intelligence.schemas.responses import (
+from greenlang.agents.intelligence.schemas.messages import ChatMessage, Role
+from greenlang.agents.intelligence.schemas.tools import ToolDef
+from greenlang.agents.intelligence.schemas.responses import (
     ChatResponse,
     Usage,
     FinishReason,
     ProviderInfo,
 )
-from greenlang.intelligence.runtime.budget import Budget
+from greenlang.agents.intelligence.runtime.budget import Budget
 
 logger = logging.getLogger(__name__)
 
@@ -193,7 +193,7 @@ class SmartProviderRouter(LLMProvider):
 
         # Tier 1: Check Ollama
         try:
-            from greenlang.intelligence.providers.ollama import (
+            from greenlang.agents.intelligence.providers.ollama import (
                 check_ollama_available,
                 list_ollama_models,
             )
@@ -299,23 +299,23 @@ class SmartProviderRouter(LLMProvider):
         status = self._tier_status.get(tier)
 
         if tier == IntelligenceTier.TIER_0_DETERMINISTIC:
-            from greenlang.intelligence.providers.deterministic import DeterministicProvider
+            from greenlang.agents.intelligence.providers.deterministic import DeterministicProvider
             config = LLMProviderConfig(model="deterministic", api_key_env="")
             return DeterministicProvider(config)
 
         elif tier == IntelligenceTier.TIER_1_LOCAL:
-            from greenlang.intelligence.providers.ollama import OllamaProvider
+            from greenlang.agents.intelligence.providers.ollama import OllamaProvider
             model = status.model if status else self.router_config.ollama_model
             config = LLMProviderConfig(model=f"ollama:{model}", api_key_env="")
             return OllamaProvider(config, host=self.router_config.ollama_host, model=model)
 
         elif tier == IntelligenceTier.TIER_2_CLOUD:
             if status and "OpenAI" in status.provider_name:
-                from greenlang.intelligence.providers.openai import OpenAIProvider
+                from greenlang.agents.intelligence.providers.openai import OpenAIProvider
                 config = LLMProviderConfig(model="gpt-4o", api_key_env="OPENAI_API_KEY")
                 return OpenAIProvider(config)
             else:
-                from greenlang.intelligence.providers.anthropic import AnthropicProvider
+                from greenlang.agents.intelligence.providers.anthropic import AnthropicProvider
                 config = LLMProviderConfig(
                     model="claude-3-sonnet-20240229",
                     api_key_env="ANTHROPIC_API_KEY"

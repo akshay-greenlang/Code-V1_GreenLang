@@ -16,7 +16,7 @@ class TestScope2Calculator:
     def setup(self):
         """Setup test calculator"""
         try:
-            from greenlang.calculation.scope2_calculator import Scope2Calculator
+            from greenlang.agents.calculation.emissions.scope2_calculator import Scope2Calculator
             self.calculator = Scope2Calculator()
         except ImportError:
             pytest.skip("Scope2Calculator not available")

@@ -69,8 +69,8 @@ from typing import Any, Callable, Dict, List, Optional, get_type_hints
 from functools import wraps
 from pydantic import BaseModel, Field, ValidationError
 
-from greenlang.intelligence.schemas.tools import ToolDef
-from greenlang.intelligence.runtime.jsonio import validate_json_payload
+from greenlang.agents.intelligence.schemas.tools import ToolDef
+from greenlang.agents.intelligence.runtime.jsonio import validate_json_payload
 
 logger = logging.getLogger(__name__)
 

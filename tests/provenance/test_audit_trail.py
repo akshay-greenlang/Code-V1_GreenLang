@@ -19,7 +19,7 @@ class TestAuditTrailGenerator:
     def setup(self):
         """Setup audit trail generator"""
         try:
-            from greenlang.calculation.audit_trail import AuditTrailGenerator
+            from greenlang.agents.calculation.emissions.audit_trail import AuditTrailGenerator
             self.generator = AuditTrailGenerator()
         except ImportError:
             pytest.skip("AuditTrailGenerator not available")
@@ -108,7 +108,7 @@ class TestProvenanceTracking:
     def test_calculation_provenance_complete(self):
         """Test calculation includes complete provenance"""
         try:
-            from greenlang.calculation.core_calculator import EmissionCalculator, CalculationRequest
+            from greenlang.agents.calculation.emissions.core_calculator import EmissionCalculator, CalculationRequest
         except ImportError:
             pytest.skip("Calculator not available")
 

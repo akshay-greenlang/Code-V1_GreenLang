@@ -17,7 +17,7 @@ from __future__ import annotations
 import time
 from typing import Dict, List, Any, Optional
 from datetime import datetime, timedelta
-from greenlang.intelligence.runtime.monitoring import get_metrics_collector
+from greenlang.agents.intelligence.runtime.monitoring import get_metrics_collector
 from greenlang.utilities.determinism import DeterministicClock
 from greenlang.intelligence import ChatMessage
 

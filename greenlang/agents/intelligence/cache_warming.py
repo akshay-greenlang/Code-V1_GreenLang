@@ -30,7 +30,7 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import Any, Callable, Coroutine, Dict, List, Optional
 
-from greenlang.intelligence.semantic_cache import SemanticCache, get_global_cache
+from greenlang.agents.intelligence.semantic_cache import SemanticCache, get_global_cache
 from greenlang.utilities.determinism import DeterministicClock
 
 

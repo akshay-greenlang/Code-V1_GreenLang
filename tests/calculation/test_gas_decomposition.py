@@ -16,7 +16,7 @@ class TestMultiGasCalculator:
     def setup(self):
         """Setup multi-gas calculator"""
         try:
-            from greenlang.calculation.gas_decomposition import MultiGasCalculator
+            from greenlang.agents.calculation.emissions.gas_decomposition import MultiGasCalculator
             self.calculator = MultiGasCalculator()
         except ImportError:
             pytest.skip("MultiGasCalculator not available")
@@ -45,7 +45,7 @@ class TestMultiGasCalculator:
     def test_gwp_ar6_factors(self):
         """Test GWP factors match AR6 values"""
         try:
-            from greenlang.calculation.gas_decomposition import GWP_AR6_100YR
+            from greenlang.agents.calculation.emissions.gas_decomposition import GWP_AR6_100YR
         except ImportError:
             pytest.skip("GWP factors not available")
 

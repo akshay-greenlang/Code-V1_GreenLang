@@ -13,9 +13,9 @@ import re
 from typing import List, Optional
 import logging
 
-from greenlang.intelligence.rag.models import Chunk
-from greenlang.intelligence.rag.hashing import chunk_uuid5, section_hash
-from greenlang.intelligence.rag.config import RAGConfig, get_config
+from greenlang.agents.intelligence.rag.models import Chunk
+from greenlang.agents.intelligence.rag.hashing import chunk_uuid5, section_hash
+from greenlang.agents.intelligence.rag.config import RAGConfig, get_config
 
 logger = logging.getLogger(__name__)
 

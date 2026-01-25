@@ -9,11 +9,11 @@ fugitive emissions, process emissions).
 import pytest
 from decimal import Decimal
 from datetime import date
-from greenlang.calculation.scope1_calculator import (
+from greenlang.agents.calculation.emissions.scope1_calculator import (
     Scope1Calculator,
     Scope1Result,
 )
-from greenlang.calculation.core_calculator import CalculationRequest
+from greenlang.agents.calculation.emissions.core_calculator import CalculationRequest
 
 
 class TestScope1Calculator:

@@ -30,17 +30,17 @@ import asyncio
 import logging
 from typing import Any, List, Mapping, Optional
 
-from greenlang.intelligence.providers.base import (
+from greenlang.agents.intelligence.providers.base import (
     LLMProvider,
     LLMProviderConfig,
     LLMCapabilities,
 )
-from greenlang.intelligence.schemas.messages import ChatMessage, Role
-from greenlang.intelligence.schemas.tools import ToolDef
-from greenlang.intelligence.schemas.responses import ChatResponse, Usage, FinishReason, ProviderInfo
-from greenlang.intelligence.schemas.jsonschema import JSONSchema
-from greenlang.intelligence.runtime.budget import Budget, BudgetExceeded
-from greenlang.intelligence.demo_responses import get_demo_response, get_demo_tool_result
+from greenlang.agents.intelligence.schemas.messages import ChatMessage, Role
+from greenlang.agents.intelligence.schemas.tools import ToolDef
+from greenlang.agents.intelligence.schemas.responses import ChatResponse, Usage, FinishReason, ProviderInfo
+from greenlang.agents.intelligence.schemas.jsonschema import JSONSchema
+from greenlang.agents.intelligence.runtime.budget import Budget, BudgetExceeded
+from greenlang.agents.intelligence.demo_responses import get_demo_response, get_demo_tool_result
 
 logger = logging.getLogger(__name__)
 

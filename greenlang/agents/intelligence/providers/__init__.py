@@ -25,12 +25,12 @@ SMART ROUTER:
 All providers implement LLMProvider ABC for consistent interface.
 """
 
-from greenlang.intelligence.providers.base import (
+from greenlang.agents.intelligence.providers.base import (
     LLMProvider,
     LLMProviderConfig,
     LLMCapabilities,
 )
-from greenlang.intelligence.providers.errors import (
+from greenlang.agents.intelligence.providers.errors import (
     ProviderAuthError,
     ProviderRateLimit,
     ProviderTimeout,
@@ -39,12 +39,12 @@ from greenlang.intelligence.providers.errors import (
 )
 
 # Core providers
-from greenlang.intelligence.providers.fake import FakeProvider
-from greenlang.intelligence.providers.deterministic import DeterministicProvider
-from greenlang.intelligence.providers.ollama import OllamaProvider
+from greenlang.agents.intelligence.providers.fake import FakeProvider
+from greenlang.agents.intelligence.providers.deterministic import DeterministicProvider
+from greenlang.agents.intelligence.providers.ollama import OllamaProvider
 
 # Smart router
-from greenlang.intelligence.providers.router import (
+from greenlang.agents.intelligence.providers.router import (
     SmartProviderRouter,
     IntelligenceTier,
     TierStatus,

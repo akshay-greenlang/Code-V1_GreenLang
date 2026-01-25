@@ -396,7 +396,7 @@ def get_global_tracker() -> CostTracker:
         Singleton CostTracker instance
 
     Example:
-        from greenlang.intelligence.cost.tracker import get_global_tracker
+        from greenlang.agents.intelligence.cost.tracker import get_global_tracker
 
         tracker = get_global_tracker()
         tracker.record("req_1", 100, 50, 0.0015)

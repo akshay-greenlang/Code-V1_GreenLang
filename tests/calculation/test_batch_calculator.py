@@ -17,7 +17,7 @@ class TestBatchCalculator:
     def setup(self):
         """Setup batch calculator"""
         try:
-            from greenlang.calculation.batch_calculator import BatchCalculator
+            from greenlang.agents.calculation.emissions.batch_calculator import BatchCalculator
             self.calculator = BatchCalculator()
         except ImportError:
             pytest.skip("BatchCalculator not available")

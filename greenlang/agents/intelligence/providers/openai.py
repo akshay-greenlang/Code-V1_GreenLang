@@ -42,12 +42,12 @@ try:
 except ImportError:
     OPENAI_AVAILABLE = False
 
-from greenlang.intelligence.providers.base import (
+from greenlang.agents.intelligence.providers.base import (
     LLMProvider,
     LLMProviderConfig,
     LLMCapabilities,
 )
-from greenlang.intelligence.providers.errors import (
+from greenlang.agents.intelligence.providers.errors import (
     ProviderError,
     ProviderAuthError,
     ProviderRateLimit,
@@ -57,12 +57,12 @@ from greenlang.intelligence.providers.errors import (
     ProviderContentFilter,
     classify_provider_error,
 )
-from greenlang.intelligence.schemas.messages import ChatMessage, Role
-from greenlang.intelligence.schemas.tools import ToolDef, ToolCall
-from greenlang.intelligence.schemas.responses import ChatResponse, Usage, FinishReason, ProviderInfo
-from greenlang.intelligence.schemas.jsonschema import JSONSchema
-from greenlang.intelligence.runtime.budget import Budget, BudgetExceeded
-from greenlang.intelligence.runtime.json_validator import (
+from greenlang.agents.intelligence.schemas.messages import ChatMessage, Role
+from greenlang.agents.intelligence.schemas.tools import ToolDef, ToolCall
+from greenlang.agents.intelligence.schemas.responses import ChatResponse, Usage, FinishReason, ProviderInfo
+from greenlang.agents.intelligence.schemas.jsonschema import JSONSchema
+from greenlang.agents.intelligence.runtime.budget import Budget, BudgetExceeded
+from greenlang.agents.intelligence.runtime.json_validator import (
     parse_and_validate,
     get_repair_prompt,
     JSONRetryTracker,

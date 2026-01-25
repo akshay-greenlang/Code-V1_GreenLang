@@ -12,8 +12,8 @@ AI-native intelligence framework for climate calculations with:
 
 Quick Start (No API Key Required!):
     from greenlang.intelligence import create_provider, ChatSession
-    from greenlang.intelligence.schemas.messages import ChatMessage, Role
-    from greenlang.intelligence.runtime.budget import Budget
+    from greenlang.agents.intelligence.schemas.messages import ChatMessage, Role
+    from greenlang.agents.intelligence.runtime.budget import Budget
 
     # Works immediately - no setup required!
     provider = create_provider()  # Auto-detects (demo if no keys)
@@ -46,67 +46,67 @@ Phase 5 (AI Optimization):
 - Request batching for throughput optimization
 """
 
-from greenlang.intelligence.schemas.messages import ChatMessage, Role
-from greenlang.intelligence.schemas.tools import ToolDef, ToolCall, ToolChoice
-from greenlang.intelligence.schemas.responses import ChatResponse, Usage, FinishReason, ProviderInfo
-from greenlang.intelligence.runtime.budget import Budget, BudgetExceeded
-from greenlang.intelligence.runtime.session import ChatSession
-from greenlang.intelligence.providers.base import LLMProvider, LLMProviderConfig
-from greenlang.intelligence.factory import (
+from greenlang.agents.intelligence.schemas.messages import ChatMessage, Role
+from greenlang.agents.intelligence.schemas.tools import ToolDef, ToolCall, ToolChoice
+from greenlang.agents.intelligence.schemas.responses import ChatResponse, Usage, FinishReason, ProviderInfo
+from greenlang.agents.intelligence.runtime.budget import Budget, BudgetExceeded
+from greenlang.agents.intelligence.runtime.session import ChatSession
+from greenlang.agents.intelligence.providers.base import LLMProvider, LLMProviderConfig
+from greenlang.agents.intelligence.factory import (
     create_provider,
     has_openai_key,
     has_anthropic_key,
     has_any_api_key,
 )
-from greenlang.intelligence.config import IntelligenceConfig, get_recommended_model
-from greenlang.intelligence.verification import (
+from greenlang.agents.intelligence.config import IntelligenceConfig, get_recommended_model
+from greenlang.agents.intelligence.verification import (
     HallucinationDetector,
     HallucinationDetected,
     NumericClaim,
     Citation,
 )
-from greenlang.intelligence.security import PromptGuard, PromptInjectionDetected
+from greenlang.agents.intelligence.security import PromptGuard, PromptInjectionDetected
 
 # Phase 5: AI Optimization
-from greenlang.intelligence.semantic_cache import (
+from greenlang.agents.intelligence.semantic_cache import (
     SemanticCache,
     get_global_cache,
     CacheEntry,
     CacheMetrics,
 )
-from greenlang.intelligence.cache_warming import (
+from greenlang.agents.intelligence.cache_warming import (
     CacheWarmer,
     warm_cache_on_startup,
     COMMON_QUERIES,
 )
-from greenlang.intelligence.prompt_compression import (
+from greenlang.agents.intelligence.prompt_compression import (
     PromptCompressor,
     CompressionResult,
     get_compression_metrics,
 )
-from greenlang.intelligence.streaming import (
+from greenlang.agents.intelligence.streaming import (
     stream_chat_completion,
     stream_to_sse,
     StreamToken,
     StreamingProvider,
 )
-from greenlang.intelligence.fallback import (
+from greenlang.agents.intelligence.fallback import (
     FallbackManager,
     ModelConfig,
     DEFAULT_FALLBACK_CHAIN,
     CircuitBreaker,
 )
-from greenlang.intelligence.quality_check import (
+from greenlang.agents.intelligence.quality_check import (
     QualityChecker,
     QualityScore,
 )
-from greenlang.intelligence.budget import (
+from greenlang.agents.intelligence.budget import (
     BudgetTracker,
     Budget as BudgetConfig,
     BudgetExceededError,
     Usage as UsageRecord,
 )
-from greenlang.intelligence.request_batching import (
+from greenlang.agents.intelligence.request_batching import (
     RequestBatcher,
     AdaptiveBatcher,
 )

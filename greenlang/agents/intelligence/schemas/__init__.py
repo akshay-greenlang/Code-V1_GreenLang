@@ -9,15 +9,15 @@ Strongly-typed data structures for:
 - JSON schema validation helpers
 """
 
-from greenlang.intelligence.schemas.messages import ChatMessage, Role
-from greenlang.intelligence.schemas.tools import ToolDef, ToolCall, ToolChoice
-from greenlang.intelligence.schemas.responses import (
+from greenlang.agents.intelligence.schemas.messages import ChatMessage, Role
+from greenlang.agents.intelligence.schemas.tools import ToolDef, ToolCall, ToolChoice
+from greenlang.agents.intelligence.schemas.responses import (
     ChatResponse,
     Usage,
     FinishReason,
     ProviderInfo,
 )
-from greenlang.intelligence.schemas.jsonschema import JSONSchema
+from greenlang.agents.intelligence.schemas.jsonschema import JSONSchema
 
 __all__ = [
     "ChatMessage",

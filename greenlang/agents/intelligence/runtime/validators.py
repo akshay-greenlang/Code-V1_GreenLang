@@ -35,7 +35,7 @@ import re
 from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, Field, ValidationError
 
-from greenlang.intelligence.runtime.json_validator import GLValidationError
+from greenlang.agents.intelligence.runtime.json_validator import GLValidationError
 
 
 class ClimateValidator:

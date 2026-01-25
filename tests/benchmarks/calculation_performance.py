@@ -177,7 +177,7 @@ def benchmark_uncertainty_propagation(n_runs: int = 100):
     print("BENCHMARK: Uncertainty Propagation (10K simulations)")
     print("="*60)
 
-    from greenlang.calculation.uncertainty import UncertaintyCalculator
+    from greenlang.agents.calculation.emissions.uncertainty import UncertaintyCalculator
 
     unc_calc = UncertaintyCalculator()
     durations = []
@@ -225,7 +225,7 @@ def benchmark_gas_decomposition(n_runs: int = 10000):
     print("BENCHMARK: Gas Decomposition Performance")
     print("="*60)
 
-    from greenlang.calculation.gas_decomposition import MultiGasCalculator
+    from greenlang.agents.calculation.emissions.gas_decomposition import MultiGasCalculator
 
     gas_calc = MultiGasCalculator()
     durations = []

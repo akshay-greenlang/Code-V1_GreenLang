@@ -19,8 +19,8 @@ from typing import Dict, List, Optional, Tuple
 from collections import defaultdict
 import logging
 
-from greenlang.intelligence.rag.models import DocMeta
-from greenlang.intelligence.rag.hashing import file_hash
+from greenlang.agents.intelligence.rag.models import DocMeta
+from greenlang.agents.intelligence.rag.hashing import file_hash
 from greenlang.utilities.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)

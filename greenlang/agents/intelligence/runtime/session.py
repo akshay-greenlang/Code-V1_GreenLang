@@ -22,13 +22,13 @@ from __future__ import annotations
 import time
 from typing import Any, Callable, Dict, List, Mapping, Optional
 
-from greenlang.intelligence.providers.base import LLMProvider
-from greenlang.intelligence.schemas.messages import ChatMessage
-from greenlang.intelligence.schemas.tools import ToolDef
-from greenlang.intelligence.schemas.responses import ChatResponse
-from greenlang.intelligence.schemas.jsonschema import JSONSchema
-from greenlang.intelligence.runtime.budget import Budget, BudgetExceeded
-from greenlang.intelligence.providers.errors import (
+from greenlang.agents.intelligence.providers.base import LLMProvider
+from greenlang.agents.intelligence.schemas.messages import ChatMessage
+from greenlang.agents.intelligence.schemas.tools import ToolDef
+from greenlang.agents.intelligence.schemas.responses import ChatResponse
+from greenlang.agents.intelligence.schemas.jsonschema import JSONSchema
+from greenlang.agents.intelligence.runtime.budget import Budget, BudgetExceeded
+from greenlang.agents.intelligence.providers.errors import (
     ProviderError,
     classify_provider_error,
 )
@@ -75,7 +75,7 @@ class ChatSession:
             print(f"LLM requested tool: {response.tool_calls[0]['name']}")
 
         # With telemetry
-        from greenlang.intelligence.runtime.telemetry import IntelligenceTelemetry, FileEmitter
+        from greenlang.agents.intelligence.runtime.telemetry import IntelligenceTelemetry, FileEmitter
 
         telemetry = IntelligenceTelemetry(
             emitter=FileEmitter("logs/intelligence.jsonl")
@@ -119,7 +119,7 @@ class ChatSession:
             session = ChatSession(provider)
 
             # With IntelligenceTelemetry
-            from greenlang.intelligence.runtime.telemetry import IntelligenceTelemetry
+            from greenlang.agents.intelligence.runtime.telemetry import IntelligenceTelemetry
             telemetry = IntelligenceTelemetry()
             session = ChatSession(provider, telemetry=telemetry)
 

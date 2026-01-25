@@ -67,12 +67,12 @@ from pydantic import BaseModel, Field
 from enum import Enum
 
 from greenlang.agents.base import BaseAgent, AgentConfig, AgentResult
-from greenlang.intelligence import create_provider
-from greenlang.intelligence.providers.base import LLMProvider
-from greenlang.intelligence.runtime.session import ChatSession
-from greenlang.intelligence.runtime.budget import Budget, BudgetExceeded
-from greenlang.intelligence.schemas.messages import ChatMessage, Role
-from greenlang.intelligence.schemas.tools import ToolDef
+from greenlang.agents.intelligence import create_provider
+from greenlang.agents.intelligence.providers.base import LLMProvider
+from greenlang.agents.intelligence.runtime.session import ChatSession
+from greenlang.agents.intelligence.runtime.budget import Budget, BudgetExceeded
+from greenlang.agents.intelligence.schemas.messages import ChatMessage, Role
+from greenlang.agents.intelligence.schemas.tools import ToolDef
 from greenlang.utilities.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)

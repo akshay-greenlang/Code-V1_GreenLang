@@ -8,7 +8,7 @@ Tests for EmissionCalculator - the heart of the calculation engine.
 import pytest
 from decimal import Decimal
 from datetime import date
-from greenlang.calculation.core_calculator import (
+from greenlang.agents.calculation.emissions.core_calculator import (
     EmissionCalculator,
     CalculationRequest,
     CalculationResult,

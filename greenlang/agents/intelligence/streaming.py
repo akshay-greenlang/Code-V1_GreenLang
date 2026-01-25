@@ -518,7 +518,7 @@ async def stream_to_sse(
 FASTAPI_EXAMPLE = """
 from fastapi import FastAPI
 from fastapi.responses import StreamingResponse
-from greenlang.intelligence.streaming import stream_to_sse
+from greenlang.agents.intelligence.streaming import stream_to_sse
 
 app = FastAPI()
 

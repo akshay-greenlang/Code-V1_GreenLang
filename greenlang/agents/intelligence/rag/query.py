@@ -18,26 +18,26 @@ import time
 from typing import List, Optional, Dict
 import numpy as np
 
-from greenlang.intelligence.rag.models import (
+from greenlang.agents.intelligence.rag.models import (
     QueryResult,
     Chunk,
     RAGCitation,
     DocMeta,
 )
-from greenlang.intelligence.rag.config import (
+from greenlang.agents.intelligence.rag.config import (
     RAGConfig,
     get_config,
     enforce_allowlist,
 )
-from greenlang.intelligence.rag.embeddings import get_embedding_provider
-from greenlang.intelligence.rag.vector_stores import get_vector_store, Document
-from greenlang.intelligence.rag.retrievers import get_retriever, mmr_retrieval
-from greenlang.intelligence.rag.sanitize import (
+from greenlang.agents.intelligence.rag.embeddings import get_embedding_provider
+from greenlang.agents.intelligence.rag.vector_stores import get_vector_store, Document
+from greenlang.agents.intelligence.rag.retrievers import get_retriever, mmr_retrieval
+from greenlang.agents.intelligence.rag.sanitize import (
     sanitize_rag_input,
     sanitize_for_prompt,
     detect_suspicious_content,
 )
-from greenlang.intelligence.rag.hashing import query_hash
+from greenlang.agents.intelligence.rag.hashing import query_hash
 
 
 async def query(

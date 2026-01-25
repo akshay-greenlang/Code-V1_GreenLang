@@ -46,20 +46,20 @@ jobs:
 
       - name: Install dependencies
         run: |
-          cd GL-VCCI-Carbon-APP/VCCI-Scope3-Platform
+          cd applications/GL-VCCI-Carbon-APP/VCCI-Scope3-Platform
           pip install -r requirements.txt
           pip install pytest pytest-cov pytest-asyncio
 
       - name: Run linting
         run: |
-          cd GL-VCCI-Carbon-APP/VCCI-Scope3-Platform
+          cd applications/GL-VCCI-Carbon-APP/VCCI-Scope3-Platform
           pip install ruff black
           ruff check .
           black --check .
 
       - name: Run tests
         run: |
-          cd GL-VCCI-Carbon-APP/VCCI-Scope3-Platform
+          cd applications/GL-VCCI-Carbon-APP/VCCI-Scope3-Platform
           pytest tests/ \
             --cov=. \
             --cov-report=xml \
@@ -70,13 +70,13 @@ jobs:
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
         with:
-          files: ./GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/coverage.xml
+          files: ./applications/GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/coverage.xml
           flags: vcci-platform
           fail_ci_if_error: true
 
       - name: Check test coverage threshold
         run: |
-          cd GL-VCCI-Carbon-APP/VCCI-Scope3-Platform
+          cd applications/GL-VCCI-Carbon-APP/VCCI-Scope3-Platform
           COVERAGE=$(python -c "import xml.etree.ElementTree as ET; tree = ET.parse('coverage.xml'); print(tree.getroot().attrib['line-rate'])")
           echo "Coverage: $(echo "$COVERAGE * 100" | bc)%"
           if (( $(echo "$COVERAGE < 0.85" | bc -l) )); then
@@ -102,20 +102,20 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
-          args: --severity-threshold=high --file=GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/requirements.txt
+          args: --severity-threshold=high --file=applications/GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/requirements.txt
 
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
           scan-type: 'fs'
-          scan-ref: './GL-VCCI-Carbon-APP/VCCI-Scope3-Platform'
+          scan-ref: './applications/GL-VCCI-Carbon-APP/VCCI-Scope3-Platform'
           severity: 'CRITICAL,HIGH'
           exit-code: '1'
 
       - name: Run Bandit security linter
         run: |
           pip install bandit
-          cd GL-VCCI-Carbon-APP/VCCI-Scope3-Platform
+          cd applications/GL-VCCI-Carbon-APP/VCCI-Scope3-Platform
           bandit -r . -ll -f json -o bandit-report.json || true
           bandit -r . -ll
 
@@ -125,7 +125,7 @@ jobs:
         with:
           name: security-reports
           path: |
-            GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/bandit-report.json
+            applications/GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/bandit-report.json
 
   # ==============================================================================
   # Build Docker Image
@@ -162,7 +162,7 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: ./GL-VCCI-Carbon-APP/VCCI-Scope3-Platform
+          context: ./applications/GL-VCCI-Carbon-APP/VCCI-Scope3-Platform
           push: true
           tags: |
             ${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.VERSION }}
@@ -220,7 +220,7 @@ jobs:
 
       - name: Run pre-deployment checks
         run: |
-          cd GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/deployment/scripts
+          cd applications/GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/deployment/scripts
           export ENVIRONMENT=staging
           export VERSION=${{ steps.version.outputs.VERSION }}
           export KUBERNETES_NAMESPACE=vcci-staging
@@ -228,7 +228,7 @@ jobs:
 
       - name: Deploy to staging
         run: |
-          cd GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/deployment/scripts
+          cd applications/GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/deployment/scripts
           export ENVIRONMENT=staging
           export VERSION=${{ steps.version.outputs.VERSION }}
           export KUBERNETES_NAMESPACE=vcci-staging
@@ -236,13 +236,13 @@ jobs:
 
       - name: Run smoke tests
         run: |
-          cd GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/deployment/scripts
+          cd applications/GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/deployment/scripts
           export API_BASE_URL=https://staging-api.vcci.company.com
           bash smoke-test.sh
 
       - name: Post-deployment validation
         run: |
-          cd GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/deployment/scripts
+          cd applications/GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/deployment/scripts
           export API_BASE_URL=https://staging-api.vcci.company.com
           export KUBERNETES_NAMESPACE=vcci-staging
           bash post_deployment_validation.sh
@@ -283,14 +283,14 @@ jobs:
 
       - name: Create backup
         run: |
-          cd GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/deployment/scripts
+          cd applications/GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/deployment/scripts
           export ENVIRONMENT=production
           export KUBERNETES_NAMESPACE=vcci-production
           bash backup_production.sh
 
       - name: Run pre-deployment checks
         run: |
-          cd GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/deployment/scripts
+          cd applications/GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/deployment/scripts
           export ENVIRONMENT=production
           export VERSION=${{ steps.version.outputs.VERSION }}
           export KUBERNETES_NAMESPACE=vcci-production
@@ -299,7 +299,7 @@ jobs:
       - name: Deploy to production (Blue-Green)
         id: deploy
         run: |
-          cd GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/deployment/scripts
+          cd applications/GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/deployment/scripts
           export ENVIRONMENT=production
           export VERSION=${{ steps.version.outputs.VERSION }}
           export KUBERNETES_NAMESPACE=vcci-production
@@ -307,14 +307,14 @@ jobs:
 
       - name: Run smoke tests
         run: |
-          cd GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/deployment/scripts
+          cd applications/GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/deployment/scripts
           export API_BASE_URL=https://api.vcci.company.com
           bash smoke-test.sh
 
       - name: Post-deployment validation
         id: validation
         run: |
-          cd GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/deployment/scripts
+          cd applications/GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/deployment/scripts
           export API_BASE_URL=https://api.vcci.company.com
           export KUBERNETES_NAMESPACE=vcci-production
           bash post_deployment_validation.sh
@@ -322,7 +322,7 @@ jobs:
       - name: Rollback on failure
         if: failure() && steps.deploy.conclusion == 'failure'
         run: |
-          cd GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/deployment/scripts
+          cd applications/GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/deployment/scripts
           export KUBERNETES_NAMESPACE=vcci-production
           bash rollback.sh
 
@@ -426,16 +426,16 @@ jobs:
 
       - name: Run performance tests
         run: |
-          cd GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/tests/performance
+          cd applications/GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/tests/performance
           k6 run --out json=performance-results.json load-test.js
 
       - name: Analyze performance results
         run: |
-          cd GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/tests/performance
+          cd applications/GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/tests/performance
           python analyze_performance.py performance-results.json
 
       - name: Upload performance results
         uses: actions/upload-artifact@v4
         with:
           name: performance-results
-          path: GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/tests/performance/performance-results.json
+          path: applications/GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/tests/performance/performance-results.json

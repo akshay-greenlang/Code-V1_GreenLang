@@ -21,11 +21,11 @@ from abc import ABC, abstractmethod
 from typing import Any, Mapping, Optional
 from pydantic import BaseModel, Field
 
-from greenlang.intelligence.schemas.messages import ChatMessage
-from greenlang.intelligence.schemas.tools import ToolDef
-from greenlang.intelligence.schemas.responses import ChatResponse, Usage
-from greenlang.intelligence.runtime.budget import Budget, BudgetExceeded
-from greenlang.intelligence.schemas.jsonschema import JSONSchema
+from greenlang.agents.intelligence.schemas.messages import ChatMessage
+from greenlang.agents.intelligence.schemas.tools import ToolDef
+from greenlang.agents.intelligence.schemas.responses import ChatResponse, Usage
+from greenlang.agents.intelligence.runtime.budget import Budget, BudgetExceeded
+from greenlang.agents.intelligence.schemas.jsonschema import JSONSchema
 
 
 class LLMCapabilities(BaseModel):

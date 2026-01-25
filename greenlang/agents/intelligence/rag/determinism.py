@@ -20,9 +20,9 @@ from pathlib import Path
 from typing import Optional, List, Dict, Any, Literal
 from datetime import datetime
 
-from greenlang.intelligence.rag.models import QueryResult, Chunk, RAGCitation
-from greenlang.intelligence.rag.hashing import query_hash, canonicalize_text
-from greenlang.intelligence.rag.config import RAGConfig
+from greenlang.agents.intelligence.rag.models import QueryResult, Chunk, RAGCitation
+from greenlang.agents.intelligence.rag.hashing import query_hash, canonicalize_text
+from greenlang.agents.intelligence.rag.config import RAGConfig
 from greenlang.utilities.determinism import DeterministicClock
 
 

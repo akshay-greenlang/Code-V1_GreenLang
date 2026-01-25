@@ -16,8 +16,8 @@ from abc import ABC, abstractmethod
 from typing import List, Optional
 import logging
 
-from greenlang.intelligence.rag.config import RAGConfig, get_config
-from greenlang.intelligence.rag.hashing import embedding_hash
+from greenlang.agents.intelligence.rag.config import RAGConfig, get_config
+from greenlang.agents.intelligence.rag.hashing import embedding_hash
 
 logger = logging.getLogger(__name__)
 

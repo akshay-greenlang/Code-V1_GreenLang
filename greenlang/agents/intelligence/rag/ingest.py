@@ -23,26 +23,26 @@ from typing import List, Optional, Dict, Any
 from datetime import datetime
 
 from greenlang.utilities.determinism import DeterministicClock
-from greenlang.intelligence.rag.models import (
+from greenlang.agents.intelligence.rag.models import (
     DocMeta,
     Chunk,
     IngestionManifest,
 )
-from greenlang.intelligence.rag.config import (
+from greenlang.agents.intelligence.rag.config import (
     RAGConfig,
     get_config,
     is_collection_allowed,
 )
-from greenlang.intelligence.rag.embeddings import get_embedding_provider
-from greenlang.intelligence.rag.vector_stores import get_vector_store, Document
-from greenlang.intelligence.rag.chunker import get_chunker
-from greenlang.intelligence.rag.hashing import (
+from greenlang.agents.intelligence.rag.embeddings import get_embedding_provider
+from greenlang.agents.intelligence.rag.vector_stores import get_vector_store, Document
+from greenlang.agents.intelligence.rag.chunker import get_chunker
+from greenlang.agents.intelligence.rag.hashing import (
     file_hash,
     canonicalize_text,
     chunk_uuid5,
     section_hash,
 )
-from greenlang.intelligence.rag.sanitize import (
+from greenlang.agents.intelligence.rag.sanitize import (
     validate_collection_name,
     detect_suspicious_content,
 )

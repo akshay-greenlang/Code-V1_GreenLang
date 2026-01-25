@@ -64,12 +64,12 @@ from typing import Any, Dict, List, Mapping, Optional
 
 from pydantic import BaseModel, Field
 
-from greenlang.intelligence.providers.base import LLMProvider
-from greenlang.intelligence.schemas.messages import ChatMessage
-from greenlang.intelligence.schemas.tools import ToolDef
-from greenlang.intelligence.schemas.responses import ChatResponse
-from greenlang.intelligence.schemas.jsonschema import JSONSchema
-from greenlang.intelligence.runtime.budget import Budget
+from greenlang.agents.intelligence.providers.base import LLMProvider
+from greenlang.agents.intelligence.schemas.messages import ChatMessage
+from greenlang.agents.intelligence.schemas.tools import ToolDef
+from greenlang.agents.intelligence.schemas.responses import ChatResponse
+from greenlang.agents.intelligence.schemas.jsonschema import JSONSchema
+from greenlang.agents.intelligence.runtime.budget import Budget
 
 
 class CacheMode(str, Enum):

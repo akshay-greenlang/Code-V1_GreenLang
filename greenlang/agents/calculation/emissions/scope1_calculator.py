@@ -15,12 +15,12 @@ from dataclasses import dataclass
 from decimal import Decimal
 from typing import Optional, Dict, Any
 from greenlang.utilities.determinism import FinancialDecimal
-from greenlang.calculation.emissions.core_calculator import (
+from .core_calculator import (
     EmissionCalculator,
     CalculationRequest,
     CalculationResult,
 )
-from greenlang.calculation.emissions.gas_decomposition import MultiGasCalculator, GasBreakdown
+from .gas_decomposition import MultiGasCalculator, GasBreakdown
 
 
 @dataclass
