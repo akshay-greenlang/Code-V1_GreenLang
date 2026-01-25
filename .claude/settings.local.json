@@ -293,7 +293,9 @@
       "Bash(gl-cbam run cbam:*)",
       "Bash(gl-cbam web:*)",
       "Bash(ralphy --init:*)",
-      "Bash(ralphy:*)"
+      "Bash(ralphy:*)",
+      "Bash(tasklist:*)",
+      "Bash(git -C \"C:\\\\Users\\\\aksha\\\\Code-V1_GreenLang\" status --short)"
     ],
     "deny": [],
     "ask": []
