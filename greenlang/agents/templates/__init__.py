@@ -11,15 +11,17 @@ Common agent templates that can be extended by applications:
 Version: 1.0.0
 """
 
-from greenlang.agents.templates.intake_agent import IntakeAgent, IntakeResult
+from greenlang.agents.templates.intake_agent import IntakeAgent, IntakeResult, DataFormat
 from greenlang.agents.templates.calculator_agent import CalculatorAgent, CalculationResult
-from greenlang.agents.templates.reporting_agent import ReportingAgent, ReportResult
+from greenlang.agents.templates.reporting_agent import ReportingAgent, ReportResult, ReportFormat
 
 __all__ = [
     "IntakeAgent",
     "IntakeResult",
+    "DataFormat",
     "CalculatorAgent",
     "CalculationResult",
     "ReportingAgent",
     "ReportResult",
+    "ReportFormat",
 ]
