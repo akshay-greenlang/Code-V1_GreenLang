@@ -10,7 +10,7 @@ on:
       - main
       - master
     paths:
-      - 'GreenLang_2030/agent_foundation/agents/GL-002/**'
+      - 'applications/GL Agents/GL-002_Flameguard/**'
       - '.github/workflows/gl-002-cd.yaml'
       - 'requirements.txt'
 
@@ -89,7 +89,7 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: ./GreenLang_2030/agent_foundation/agents/GL-002
+          context: ./applications/GL Agents/GL-002_Flameguard
           push: true
           tags: |
             ghcr.io/${{ github.repository }}/gl-002:${{ needs.determine-env.outputs.image-tag }}

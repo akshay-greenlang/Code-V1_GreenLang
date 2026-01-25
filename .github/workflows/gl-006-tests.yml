@@ -8,21 +8,21 @@ on:
   push:
     branches: [main, master, develop, '**']
     paths:
-      - 'GreenLang_2030/agent_foundation/agents/GL-006/**'
+      - 'applications/GL Agents/GL-006_HEATRECLAIM/**'
       - '.github/workflows/gl-006-tests.yml'
 
   pull_request:
     branches: [main, master]
     paths:
-      - 'GreenLang_2030/agent_foundation/agents/GL-006/**'
+      - 'applications/GL Agents/GL-006_HEATRECLAIM/**'
       - '.github/workflows/gl-006-tests.yml'
 
   workflow_dispatch:
 
 env:
-  AGENT_PATH: GreenLang_2030/agent_foundation/agents/GL-006
+  AGENT_PATH: applications/GL Agents/GL-006_HEATRECLAIM
   COVERAGE_THRESHOLD: 85
-  PYTHONPATH: ${{ github.workspace }}/GreenLang_2030/agent_foundation/agents/GL-006
+  PYTHONPATH: ${{ github.workspace }}/applications/GL Agents/GL-006_HEATRECLAIM
 
 concurrency:
   group: gl-006-ci-${{ github.ref }}

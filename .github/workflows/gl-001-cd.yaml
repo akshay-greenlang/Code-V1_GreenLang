@@ -36,7 +36,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  GL_001_PATH: 'GreenLang_2030/agent_foundation/agents/GL-001'
+  GL_001_PATH: 'applications/GL Agents/GL-001_Thermalcommand'
   CONTAINER_REGISTRY: ghcr.io
   IMAGE_NAME: gl-001-process-heat
   KUBECTL_VERSION: '1.28.0'

@@ -8,21 +8,21 @@ on:
   push:
     branches: [main, master, develop, '**']
     paths:
-      - 'GreenLang_2030/agent_foundation/agents/GL-007/**'
+      - 'applications/GL Agents/GL-007_FurnacePulse/**'
       - '.github/workflows/gl-007-tests.yml'
 
   pull_request:
     branches: [main, master]
     paths:
-      - 'GreenLang_2030/agent_foundation/agents/GL-007/**'
+      - 'applications/GL Agents/GL-007_FurnacePulse/**'
       - '.github/workflows/gl-007-tests.yml'
 
   workflow_dispatch:
 
 env:
-  AGENT_PATH: GreenLang_2030/agent_foundation/agents/GL-007
+  AGENT_PATH: applications/GL Agents/GL-007_FurnacePulse
   COVERAGE_THRESHOLD: 85
-  PYTHONPATH: ${{ github.workspace }}/GreenLang_2030/agent_foundation/agents/GL-007
+  PYTHONPATH: ${{ github.workspace }}/applications/GL Agents/GL-007_FurnacePulse
 
 concurrency:
   group: gl-007-ci-${{ github.ref }}

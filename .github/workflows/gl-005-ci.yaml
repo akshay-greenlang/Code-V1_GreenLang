@@ -4,16 +4,16 @@ on:
   push:
     branches: [master, develop]
     paths:
-      - 'GreenLang_2030/agent_foundation/agents/GL-005/**'
+      - 'applications/GL Agents/GL-005_Combusense/**'
       - '.github/workflows/gl-005-ci.yaml'
   pull_request:
     branches: [master]
     paths:
-      - 'GreenLang_2030/agent_foundation/agents/GL-005/**'
+      - 'applications/GL Agents/GL-005_Combusense/**'
 
 env:
   PYTHON_VERSION: '3.11'
-  APP_PATH: GreenLang_2030/agent_foundation/agents/GL-005
+  APP_PATH: applications/GL Agents/GL-005_Combusense
 
 jobs:
   # ===========================================================================

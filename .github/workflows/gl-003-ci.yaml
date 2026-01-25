@@ -8,20 +8,20 @@ on:
   push:
     branches: ['**']
     paths:
-      - 'GreenLang_2030/agent_foundation/agents/GL-003/**'
+      - 'applications/GL Agents/GL-003_UnifiedSteam/**'
       - '.github/workflows/gl-003-ci.yaml'
 
   pull_request:
     branches: [main, master, develop]
     paths:
-      - 'GreenLang_2030/agent_foundation/agents/GL-003/**'
+      - 'applications/GL Agents/GL-003_UnifiedSteam/**'
       - '.github/workflows/gl-003-ci.yaml'
 
   workflow_dispatch:
 
 env:
   PYTHON_VERSION: '3.11'
-  AGENT_PATH: 'GreenLang_2030/agent_foundation/agents/GL-003'
+  AGENT_PATH: 'applications/GL Agents/GL-003_UnifiedSteam'
   COVERAGE_THRESHOLD: 95
   COMPLEXITY_THRESHOLD: 10
   MIN_TYPE_COVERAGE: 100

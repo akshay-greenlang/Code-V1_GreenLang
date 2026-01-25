@@ -8,21 +8,21 @@ on:
   push:
     branches: [main, master, develop, '**']
     paths:
-      - 'GreenLang_2030/agent_foundation/agents/GL-004/**'
+      - 'applications/GL Agents/GL-004_Burnmaster/**'
       - '.github/workflows/gl-004-tests.yml'
 
   pull_request:
     branches: [main, master]
     paths:
-      - 'GreenLang_2030/agent_foundation/agents/GL-004/**'
+      - 'applications/GL Agents/GL-004_Burnmaster/**'
       - '.github/workflows/gl-004-tests.yml'
 
   workflow_dispatch:
 
 env:
-  AGENT_PATH: GreenLang_2030/agent_foundation/agents/GL-004
+  AGENT_PATH: applications/GL Agents/GL-004_Burnmaster
   COVERAGE_THRESHOLD: 85
-  PYTHONPATH: ${{ github.workspace }}/GreenLang_2030/agent_foundation/agents/GL-004
+  PYTHONPATH: ${{ github.workspace }}/applications/GL Agents/GL-004_Burnmaster
 
 concurrency:
   group: gl-004-ci-${{ github.ref }}

@@ -61,7 +61,7 @@ jobs:
       matrix:
         python-version: ['3.11']
         directory:
-          - 'GreenLang_2030/agent_foundation'
+          - 'applications'
           - '.'
 
     steps:
@@ -180,7 +180,7 @@ jobs:
           pip install pip-licenses
 
       - name: Check licenses
-        working-directory: GreenLang_2030/agent_foundation
+        working-directory: applications
         run: |
           # Install dependencies
           pip install -r requirements.txt
@@ -203,7 +203,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: license-report
-          path: GreenLang_2030/agent_foundation/licenses-report.json
+          path: applications/licenses-report.json
 
   # ===========================================================================
   # SBOM GENERATION (Software Bill of Materials)
@@ -226,7 +226,7 @@ jobs:
           pip install cyclonedx-bom
 
       - name: Generate SBOM
-        working-directory: GreenLang_2030/agent_foundation
+        working-directory: applications
         run: |
           # Install dependencies
           pip install -r requirements.txt
@@ -241,7 +241,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: sbom
-          path: GreenLang_2030/agent_foundation/sbom.json
+          path: applications/sbom.json
 
   # ===========================================================================
   # SUMMARY REPORT & NOTIFICATIONS
