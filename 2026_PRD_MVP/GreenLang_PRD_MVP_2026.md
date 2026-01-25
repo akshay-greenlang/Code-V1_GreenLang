@@ -2,8 +2,8 @@
 
 ## CBAM Compliance Essentials Pack (2026)
 
-**Document Version:** 2.0.0
-**Status:** Updated per CTO Review
+**Document Version:** 2.1.0
+**Status:** P0 Fixes Implemented per CTO MVP Review
 **Last Updated:** January 2026
 **Document Owner:** GreenLang Product Team
 
@@ -56,6 +56,7 @@
 |---------|------|--------|---------|
 | 1.0.0 | January 2026 | GreenLang Team | Initial PRD based on stakeholder interviews |
 | 2.0.0 | January 2026 | GreenLang Team | Updated per CTO review - 2026 operational compliance, policy guardrails |
+| 2.1.0 | January 2026 | GreenLang Team | P0 fixes per CTO MVP review - XML schema validation, config preview, export gating |
 
 ### Key Changes in v2.0.0
 
@@ -67,6 +68,23 @@
 | Error handling | Fail-fast only | Fail-fast + collect-all mode | Better UX for Excel-first users |
 | Interface | CLI only | CLI + Setup Wizard + Web UI | Reduce friction for SMB users |
 | Authorization | Not addressed | Authorization readiness checks | Critical for 2026 compliance |
+
+### Key Changes in v2.1.0 (CTO MVP Review Fixes)
+
+| Issue | Priority | Problem | Fix Implemented |
+|-------|----------|---------|-----------------|
+| XML Schema Validation | P0 | Elements reported as "missing" due to namespace mismatch | Namespace-aware element search in structural validation |
+| Config Preview | P0 | No way to verify YAML mapping before processing | Config preview shown after YAML upload (declarant, EORI, quarter/year) |
+| Export Gating | P0 | `Can Export: Yes` shown even when schema FAIL | New gating logic: Schema FAIL = hard block, Policy FAIL = draft allowed |
+| Validation Hierarchy | P0 | No distinction between schema (hard) vs policy (soft) errors | UI now shows clear hierarchy and export eligibility summary |
+
+**CTO Validation Rules Implemented:**
+
+```
+Schema validation FAIL → Can Export: NO (hard block - registry will reject)
+Policy validation FAIL → Can Export: YES (Draft) with explicit disclaimer
+Overall: Not Uploadable until schema passes
+```
 
 ---
 
@@ -817,6 +835,8 @@ docker run -p 8000:8000 greenlang/cbam-pack:2.0.0 web
 
 ### Appendix A: CTO Review Feedback Implementation
 
+**Phase 1 (v2.0.0) - Architecture Feedback:**
+
 | CTO Feedback | Implementation |
 |--------------|----------------|
 | "Transitional-only is time-misaligned" | Added 2026 operational mode |
@@ -825,6 +845,35 @@ docker run -p 8000:8000 greenlang/cbam-pack:2.0.0 web
 | "Iron & Steel dominates volumes" | Made Aluminum fast-follow |
 | "Add collect-all errors for Excel users" | Added collect-all error mode |
 | "Add wizard to reduce friction" | Added setup wizard + Web UI |
+
+**Phase 2 (v2.1.0) - MVP Review P0 Fixes:**
+
+| CTO Feedback | Implementation |
+|--------------|----------------|
+| "XML Schema Validation FAIL is P0" | Fixed namespace-aware element search - validation now correctly identifies all elements |
+| "Config preview after YAML upload" | Added `/api/preview-config` endpoint and UI preview card showing declarant, EORI, quarter/year, mode |
+| "Can Export: Yes while schema FAIL is dangerous" | Implemented tiered export gating: Schema FAIL = hard block, Policy FAIL = soft (draft allowed) |
+| "Schema errors need to be expandable" | Added detailed schema error display in validation card with full error output |
+| "Clear labeling for Draft/Invalid" | Added export_label field with status badges: "INVALID - Cannot Export", "Draft - Review Warnings", "Ready for Submission" |
+
+**CTO Validation Hierarchy (Implemented):**
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    VALIDATION HIERARCHY                          │
+├─────────────────────────────────────────────────────────────────┤
+│  1. Schema Validation (XSD)                                      │
+│     ├─ PASS → Continue to Policy                                │
+│     └─ FAIL → HARD BLOCK (Can Export: NO)                       │
+│                                                                  │
+│  2. Policy Validation (20% cap, EU method, etc.)                │
+│     ├─ PASS → Compliant, Ready for Submission                   │
+│     ├─ WARN → Draft allowed with warnings                       │
+│     └─ FAIL → Draft allowed but NOT COMPLIANT                   │
+│                                                                  │
+│  Overall: Schema MUST pass before any export                     │
+└─────────────────────────────────────────────────────────────────┘
+```
 
 ### Appendix B: Updated CLI Reference
 

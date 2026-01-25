@@ -174,6 +174,27 @@ class CBAMXMLGenerator:
         try:
             root = ET.fromstring(xml_content)
 
+            # Namespace-aware element search
+            # The XML uses xmlns="urn:cbam:transitional:v1", so we need to use
+            # namespace mapping for find() to work correctly
+            ns = {"cbam": self.CBAM_NS}
+
+            # Also try without namespace prefix (for default namespace)
+            # ElementTree requires explicit namespace handling
+            def find_element(parent, name):
+                """Find element with or without namespace."""
+                # Try with namespace prefix
+                elem = parent.find(f"cbam:{name}", ns)
+                if elem is not None:
+                    return elem
+                # Try without namespace (for documents without namespace or default ns)
+                elem = parent.find(name)
+                if elem is not None:
+                    return elem
+                # Try with default namespace URI in braces
+                elem = parent.find(f"{{{self.CBAM_NS}}}{name}")
+                return elem
+
             # Check required elements
             required_elements = [
                 "Header",
@@ -184,35 +205,35 @@ class CBAMXMLGenerator:
             ]
 
             for elem_name in required_elements:
-                if root.find(elem_name) is None:
+                if find_element(root, elem_name) is None:
                     errors.append(f"Missing required element: {elem_name}")
 
             # Check Header elements
-            header = root.find("Header")
+            header = find_element(root, "Header")
             if header is not None:
                 for sub_elem in ["GeneratedAt", "ReportType", "SchemaVersion"]:
-                    if header.find(sub_elem) is None:
+                    if find_element(header, sub_elem) is None:
                         errors.append(f"Missing Header/{sub_elem}")
 
             # Check Declarant elements
-            declarant = root.find("Declarant")
+            declarant = find_element(root, "Declarant")
             if declarant is not None:
                 for sub_elem in ["Name", "EORINumber", "Address", "Contact"]:
-                    if declarant.find(sub_elem) is None:
+                    if find_element(declarant, sub_elem) is None:
                         errors.append(f"Missing Declarant/{sub_elem}")
 
             # Check ReportingPeriod elements
-            period = root.find("ReportingPeriod")
+            period = find_element(root, "ReportingPeriod")
             if period is not None:
                 for sub_elem in ["Quarter", "Year", "StartDate", "EndDate"]:
-                    if period.find(sub_elem) is None:
+                    if find_element(period, sub_elem) is None:
                         errors.append(f"Missing ReportingPeriod/{sub_elem}")
 
             # Check Summary elements
-            summary = root.find("Summary")
+            summary = find_element(root, "Summary")
             if summary is not None:
                 for sub_elem in ["TotalLines", "TotalEmissionsTCO2e"]:
-                    if summary.find(sub_elem) is None:
+                    if find_element(summary, sub_elem) is None:
                         errors.append(f"Missing Summary/{sub_elem}")
 
         except ET.ParseError as e:

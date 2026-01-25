@@ -25,6 +25,8 @@ from fastapi.responses import HTMLResponse, FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
+import yaml
+
 from cbam_pack import __version__
 from cbam_pack.pipeline import CBAMPipeline, PipelineResult
 
@@ -117,29 +119,50 @@ def create_app() -> FastAPI:
             if result.lines_using_defaults:
                 response_data["lines_using_defaults"] = result.lines_using_defaults
 
-            # Build compliance status based on policy
-            if result.success:
-                policy = result.policy_result or {}
-                policy_status = policy.get("status", "PASS")
-                default_usage = result.statistics.get("default_usage_percent", 0)
+            # Build compliance status based on BOTH schema and policy validation
+            # CTO Rule: Schema FAIL = hard block, Policy FAIL = soft (draft allowed)
+            xml_val = result.xml_validation or {}
+            schema_status = xml_val.get("status", "PASS")
+            schema_valid = schema_status == "PASS"
 
-                if policy_status == "PASS":
-                    compliance_status = "compliant"
-                    compliance_message = "All policy checks passed. Report is compliant."
-                elif policy_status == "WARN":
-                    compliance_status = "warning"
-                    compliance_message = f"Report generated with warnings. Default factor usage: {default_usage:.1f}%"
-                else:
-                    compliance_status = "error"
-                    compliance_message = "Policy validation failed. Review violations."
+            policy = result.policy_result or {}
+            policy_status = policy.get("status", "PASS")
+            default_usage = result.statistics.get("default_usage_percent", 0)
 
-                response_data["compliance"] = {
-                    "status": compliance_status,
-                    "policy_status": policy_status,
-                    "default_usage_percent": default_usage,
-                    "message": compliance_message,
-                    "can_export": policy.get("can_export", True),
-                }
+            # Determine overall compliance status
+            # Schema validation FAIL → Can Export: NO (hard block)
+            # Policy validation FAIL → Can Export: YES (draft allowed)
+            if not schema_valid:
+                compliance_status = "schema_fail"
+                compliance_message = "XML Schema Validation FAILED. Report cannot be uploaded to registry. Fix schema errors first."
+                can_export = False
+                export_label = "INVALID - Cannot Export"
+            elif policy_status == "PASS":
+                compliance_status = "compliant"
+                compliance_message = "All validations passed. Report is compliant and ready for submission."
+                can_export = True
+                export_label = "Ready for Submission"
+            elif policy_status == "WARN":
+                compliance_status = "warning"
+                compliance_message = f"Report generated with warnings. Default factor usage: {default_usage:.1f}%. Export as draft allowed."
+                can_export = True
+                export_label = "Draft - Review Warnings"
+            else:  # policy FAIL
+                compliance_status = "policy_fail"
+                compliance_message = "Policy validation failed. Export allowed as draft but NOT COMPLIANT. Review violations before submission."
+                can_export = True  # Policy fail = soft fail, draft export allowed
+                export_label = "Draft - NOT COMPLIANT"
+
+            response_data["compliance"] = {
+                "status": compliance_status,
+                "schema_status": schema_status,
+                "schema_valid": schema_valid,
+                "policy_status": policy_status,
+                "default_usage_percent": default_usage,
+                "message": compliance_message,
+                "can_export": can_export,
+                "export_label": export_label,
+            }
 
             return response_data
 
@@ -199,6 +222,49 @@ def create_app() -> FastAPI:
             filename=file_path.name,
             media_type="application/octet-stream"
         )
+
+    @app.post("/api/preview-config")
+    async def preview_config(config_file: UploadFile = File(...)):
+        """Preview config file after upload to verify YAML mapping."""
+        try:
+            content = await config_file.read()
+            config_data = yaml.safe_load(content.decode('utf-8'))
+
+            # Extract preview data
+            declarant = config_data.get('declarant', {})
+            reporting_period = config_data.get('reporting_period', {})
+            representative = config_data.get('representative', {})
+
+            preview = {
+                "success": True,
+                "declarant": {
+                    "name": declarant.get('name', 'Not specified'),
+                    "eori_number": declarant.get('eori_number', 'Not specified'),
+                },
+                "reporting_period": {
+                    "quarter": reporting_period.get('quarter', 'Not specified'),
+                    "year": reporting_period.get('year', 'Not specified'),
+                },
+                "representative": {
+                    "name": representative.get('name') if representative else None,
+                    "eori_number": representative.get('eori_number') if representative else None,
+                } if representative else None,
+                "mode": config_data.get('mode', 'transitional'),
+                "settings": config_data.get('settings', {}),
+            }
+
+            return preview
+
+        except yaml.YAMLError as e:
+            return {
+                "success": False,
+                "error": f"Invalid YAML: {str(e)}",
+            }
+        except Exception as e:
+            return {
+                "success": False,
+                "error": f"Error parsing config: {str(e)}",
+            }
 
     @app.get("/health")
     async def health_check():
@@ -684,6 +750,34 @@ def get_home_html() -> str:
                 <input type="file" id="importsFile" accept=".csv,.xlsx,.xls" onchange="handleFileSelect(this, 'imports')">
             </div>
 
+            <!-- Config Preview Section -->
+            <div id="configPreview" style="display: none; background: rgba(78, 204, 163, 0.1); border: 1px solid rgba(78, 204, 163, 0.3); border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                <h4 style="color: #4ecca3; margin-bottom: 15px;">&#10003; Config Loaded</h4>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                    <div>
+                        <div style="color: #888; font-size: 0.85em;">Declarant</div>
+                        <div id="previewDeclarant" style="font-weight: bold;">-</div>
+                    </div>
+                    <div>
+                        <div style="color: #888; font-size: 0.85em;">EORI Number</div>
+                        <div id="previewEORI" style="font-weight: bold;">-</div>
+                    </div>
+                    <div>
+                        <div style="color: #888; font-size: 0.85em;">Reporting Period</div>
+                        <div id="previewPeriod" style="font-weight: bold;">-</div>
+                    </div>
+                    <div>
+                        <div style="color: #888; font-size: 0.85em;">Mode</div>
+                        <div id="previewMode" style="font-weight: bold;">-</div>
+                    </div>
+                </div>
+                <div id="previewRepresentative" style="margin-top: 15px; display: none;">
+                    <div style="color: #888; font-size: 0.85em;">Representative</div>
+                    <div id="previewRepName" style="font-weight: bold;">-</div>
+                </div>
+                <div id="previewError" style="color: #dc3545; margin-top: 10px; display: none;"></div>
+            </div>
+
             <button class="btn" id="processBtn" onclick="processFiles()" disabled>
                 &#9654; Generate Report
             </button>
@@ -774,7 +868,7 @@ def get_home_html() -> str:
             });
         });
 
-        function handleFileSelect(input, type) {
+        async function handleFileSelect(input, type) {
             const file = input.files[0];
             if (!file) return;
 
@@ -786,11 +880,58 @@ def get_home_html() -> str:
 
             if (type === 'config') {
                 configFile = file;
+                // Fetch config preview
+                await previewConfigFile(file);
             } else {
                 importsFile = file;
             }
 
             updateProcessButton();
+        }
+
+        async function previewConfigFile(file) {
+            const previewSection = document.getElementById('configPreview');
+            const previewError = document.getElementById('previewError');
+
+            try {
+                const formData = new FormData();
+                formData.append('config_file', file);
+
+                const response = await fetch('/api/preview-config', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const preview = await response.json();
+
+                if (preview.success) {
+                    document.getElementById('previewDeclarant').textContent = preview.declarant.name;
+                    document.getElementById('previewEORI').textContent = preview.declarant.eori_number;
+                    document.getElementById('previewPeriod').textContent =
+                        `${preview.reporting_period.quarter} ${preview.reporting_period.year}`;
+                    document.getElementById('previewMode').textContent =
+                        preview.mode.charAt(0).toUpperCase() + preview.mode.slice(1);
+
+                    if (preview.representative && preview.representative.name) {
+                        document.getElementById('previewRepName').textContent =
+                            `${preview.representative.name} (${preview.representative.eori_number || 'No EORI'})`;
+                        document.getElementById('previewRepresentative').style.display = 'block';
+                    } else {
+                        document.getElementById('previewRepresentative').style.display = 'none';
+                    }
+
+                    previewError.style.display = 'none';
+                    previewSection.style.display = 'block';
+                } else {
+                    previewError.textContent = preview.error;
+                    previewError.style.display = 'block';
+                    previewSection.style.display = 'block';
+                }
+            } catch (error) {
+                previewError.textContent = 'Failed to preview config: ' + error.message;
+                previewError.style.display = 'block';
+                previewSection.style.display = 'block';
+            }
         }
 
         function updateProcessButton() {
@@ -869,24 +1010,81 @@ def get_home_html() -> str:
 
             resultsCard.classList.add('show');
 
-            // Compliance status
+            // Compliance status with schema/policy distinction
             if (result.success) {
-                const compliance = result.compliance || { status: 'compliant', message: 'Report generated' };
-                const statusIcon = compliance.status === 'compliant' ? '&#10003;' :
-                                   compliance.status === 'warning' ? '&#9888;' : '&#10007;';
-                const statusText = compliance.status === 'compliant' ? 'Compliant' :
-                                   compliance.status === 'warning' ? 'Review Required' : 'Policy Failed';
+                const compliance = result.compliance || { status: 'compliant', message: 'Report generated', can_export: true };
+
+                // Map status to display
+                let statusIcon, statusText, badgeClass;
+                switch (compliance.status) {
+                    case 'compliant':
+                        statusIcon = '&#10003;';
+                        statusText = 'Compliant';
+                        badgeClass = 'compliant';
+                        break;
+                    case 'warning':
+                        statusIcon = '&#9888;';
+                        statusText = 'Review Required';
+                        badgeClass = 'warning';
+                        break;
+                    case 'schema_fail':
+                        statusIcon = '&#10060;';
+                        statusText = 'SCHEMA FAIL - Cannot Submit';
+                        badgeClass = 'error';
+                        break;
+                    case 'policy_fail':
+                        statusIcon = '&#9888;';
+                        statusText = 'Policy Failed (Draft OK)';
+                        badgeClass = 'warning';
+                        break;
+                    default:
+                        statusIcon = '&#10007;';
+                        statusText = 'Error';
+                        badgeClass = 'error';
+                }
+
                 complianceStatus.innerHTML = `
-                    <div class="compliance-badge ${compliance.status}">
+                    <div class="compliance-badge ${badgeClass}">
                         ${statusIcon} ${statusText}
                     </div>
                     <p style="margin-bottom: 20px; color: #888;">${compliance.message}</p>
+                    ${compliance.export_label ? `<div style="margin-bottom: 15px;">
+                        <span style="padding: 4px 12px; border-radius: 4px; font-size: 0.85em; font-weight: bold;
+                            background: ${compliance.can_export ? 'rgba(78, 204, 163, 0.2)' : 'rgba(220, 53, 69, 0.2)'};
+                            color: ${compliance.can_export ? '#4ecca3' : '#dc3545'};">
+                            ${compliance.export_label}
+                        </span>
+                    </div>` : ''}
                 `;
+
+                // Update download button based on export permission
+                const downloadAllBtn = document.getElementById('downloadAllBtn');
+                if (!compliance.can_export) {
+                    downloadAllBtn.disabled = true;
+                    downloadAllBtn.innerHTML = '&#128683; Download Blocked - Fix Schema Errors First';
+                    downloadAllBtn.style.background = 'linear-gradient(135deg, #dc3545 0%, #c82333 100%)';
+                    downloadAllBtn.style.cursor = 'not-allowed';
+                } else if (compliance.status === 'policy_fail' || compliance.status === 'warning') {
+                    downloadAllBtn.disabled = false;
+                    downloadAllBtn.innerHTML = '&#11015; Download All (ZIP) - DRAFT';
+                    downloadAllBtn.style.background = 'linear-gradient(135deg, #ffc107 0%, #e0a800 100%)';
+                    downloadAllBtn.style.cursor = 'pointer';
+                } else {
+                    downloadAllBtn.disabled = false;
+                    downloadAllBtn.innerHTML = '&#11015; Download All (ZIP)';
+                    downloadAllBtn.style.background = 'linear-gradient(135deg, #4ecca3 0%, #45b393 100%)';
+                    downloadAllBtn.style.cursor = 'pointer';
+                }
             } else {
                 complianceStatus.innerHTML = `
                     <div class="compliance-badge error">&#10007; Failed</div>
                     <p style="margin-bottom: 20px; color: #888;">Report generation failed. See errors below.</p>
                 `;
+                const downloadAllBtn = document.getElementById('downloadAllBtn');
+                downloadAllBtn.disabled = true;
+                downloadAllBtn.innerHTML = '&#128683; Download Not Available';
+                downloadAllBtn.style.background = 'linear-gradient(135deg, #dc3545 0%, #c82333 100%)';
+                downloadAllBtn.style.cursor = 'not-allowed';
             }
 
             // Validation cards
@@ -915,6 +1113,7 @@ def get_home_html() -> str:
 
             // Policy Validation
             const policy = result.policy || {};
+            const compliance = result.compliance || {};
             validationHtml += `
                 <div class="validation-card">
                     <h4>&#128736; Policy Validation</h4>
@@ -925,7 +1124,24 @@ def get_home_html() -> str:
                     </div>
                     <div class="validation-detail">
                         Score: ${policy.overall_score ? policy.overall_score.toFixed(0) : 'N/A'}/100<br>
-                        Can Export: ${policy.can_export !== undefined ? (policy.can_export ? 'Yes' : 'No') : 'N/A'}
+                        Policy Allows Export: ${policy.can_export !== undefined ? (policy.can_export ? 'Yes (Draft)' : 'No') : 'N/A'}
+                    </div>
+                </div>
+            `;
+
+            // Export Eligibility Summary Card
+            validationHtml += `
+                <div class="validation-card" style="grid-column: 1 / -1; background: ${compliance.can_export ? 'rgba(78, 204, 163, 0.1)' : 'rgba(220, 53, 69, 0.1)'}; border-color: ${compliance.can_export ? 'rgba(78, 204, 163, 0.3)' : 'rgba(220, 53, 69, 0.3)'};">
+                    <h4>&#128230; Export Eligibility</h4>
+                    <div class="validation-status">
+                        <span class="status-badge ${compliance.can_export ? 'pass' : 'fail'}">
+                            ${compliance.can_export ? 'CAN EXPORT' : 'BLOCKED'}
+                        </span>
+                    </div>
+                    <div class="validation-detail">
+                        Schema: ${compliance.schema_valid ? 'Valid' : 'INVALID (hard fail)'}<br>
+                        Policy: ${compliance.policy_status || 'N/A'} (soft - draft allowed)<br>
+                        <strong>Status: ${compliance.export_label || 'Unknown'}</strong>
                     </div>
                 </div>
             `;
