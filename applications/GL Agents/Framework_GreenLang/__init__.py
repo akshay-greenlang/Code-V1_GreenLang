@@ -27,6 +27,7 @@ __author__ = "GreenLang Technologies"
 
 from .standards import (
     QualityStandard,
+    QualityDimension,
     ComplianceLevel,
     AgentClass,
     DomainCategory,
@@ -34,7 +35,6 @@ from .standards import (
 from .scoring import (
     AgentScorer,
     ScoreReport,
-    QualityDimension,
 )
 from .shared import (
     ProvenanceTracker,

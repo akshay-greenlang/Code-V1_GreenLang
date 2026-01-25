@@ -28,7 +28,7 @@ import logging
 import hashlib
 import time
 import uuid
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union, TYPE_CHECKING
 from datetime import datetime, timezone
 from dataclasses import dataclass, field
 import json
@@ -36,12 +36,15 @@ import json
 import numpy as np
 
 # SHAP imports with fallback
+if TYPE_CHECKING:
+    import shap
+
 try:
     import shap
     SHAP_AVAILABLE = True
 except ImportError:
     SHAP_AVAILABLE = False
-    shap = None
+    shap = None  # type: ignore
 
 from .explanation_schemas import (
     FeatureContribution,
@@ -778,7 +781,7 @@ class SHAPExplainerService:
 
     def _compute_interaction_effects(
         self,
-        explainer: shap.TreeExplainer,
+        explainer: "shap.TreeExplainer",
         instance: np.ndarray,
         top_k: int = 5
     ) -> Dict[str, Dict[str, float]]:

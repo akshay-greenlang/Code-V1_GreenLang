@@ -222,7 +222,7 @@ class TestGoldenMaster:
 
     # Example:
     # def test_basic_calculation_golden(self):
-    #     '''Golden test for basic calculation.'''
+    #     """Golden test for basic calculation."""
     #     golden = load_golden_case("basic_calculation")
     #
     #     calculator = MyCalculator()

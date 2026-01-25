@@ -44,22 +44,41 @@ import uuid
 
 
 # Import from advanced guardrails module
-from ..advanced.guardrails import (
-    GuardrailType,
-    ViolationSeverity,
-    ActionType,
-    GuardrailViolation,
-    GuardrailResult,
-    Guardrail,
-    PromptInjectionGuardrail,
-    DataLeakageGuardrail,
-    ActionGate,
-    SafetyEnvelopeGuardrail,
-    PolicyEnforcementGuardrail,
-    GuardrailOrchestrator,
-    GREENLANG_GUARDRAILS,
-    create_default_orchestrator,
-)
+try:
+    from Framework_GreenLang.advanced.guardrails import (
+        GuardrailType,
+        ViolationSeverity,
+        ActionType,
+        GuardrailViolation,
+        GuardrailResult,
+        Guardrail,
+        PromptInjectionGuardrail,
+        DataLeakageGuardrail,
+        ActionGate,
+        SafetyEnvelopeGuardrail,
+        PolicyEnforcementGuardrail,
+        GuardrailOrchestrator,
+        GREENLANG_GUARDRAILS,
+        create_default_orchestrator,
+    )
+except ImportError:
+    # Fallback to relative import for tests
+    from ..advanced.guardrails import (
+        GuardrailType,
+        ViolationSeverity,
+        ActionType,
+        GuardrailViolation,
+        GuardrailResult,
+        Guardrail,
+        PromptInjectionGuardrail,
+        DataLeakageGuardrail,
+        ActionGate,
+        SafetyEnvelopeGuardrail,
+        PolicyEnforcementGuardrail,
+        GuardrailOrchestrator,
+        GREENLANG_GUARDRAILS,
+        create_default_orchestrator,
+    )
 
 
 logger = logging.getLogger(__name__)

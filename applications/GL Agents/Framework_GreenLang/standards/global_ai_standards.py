@@ -943,6 +943,18 @@ CURRENT_AGENT_SCORES: Dict[str, AgentScore] = {
 GLOBAL_AI_STANDARD = GlobalAIStandard()
 
 
+# Initialize derived fields for all agent scores now that GLOBAL_AI_STANDARD is defined
+def _initialize_agent_scores():
+    """Initialize derived fields for all agent scores."""
+    for score in CURRENT_AGENT_SCORES.values():
+        score.tier = GLOBAL_AI_STANDARD.get_tier(score.total_score)
+        score.grade = GLOBAL_AI_STANDARD.get_grade(score.total_score)
+        score.certification = GLOBAL_AI_STANDARD.get_certification(score.total_score)
+
+
+_initialize_agent_scores()
+
+
 def get_improvement_roadmap(agent_id: str) -> List[str]:
     """
     Get specific improvement actions for an agent to reach 95+.
