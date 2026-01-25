@@ -8,20 +8,20 @@ on:
   push:
     branches: ['**']
     paths:
-      - 'applications/GL Agents/GL-003_UnifiedSteam/**'
+      - 'applications/gl_agents/GL-003_UnifiedSteam/**'
       - '.github/workflows/gl-003-ci.yaml'
 
   pull_request:
     branches: [main, master, develop]
     paths:
-      - 'applications/GL Agents/GL-003_UnifiedSteam/**'
+      - 'applications/gl_agents/GL-003_UnifiedSteam/**'
       - '.github/workflows/gl-003-ci.yaml'
 
   workflow_dispatch:
 
 env:
   PYTHON_VERSION: '3.11'
-  AGENT_PATH: 'applications/GL Agents/GL-003_UnifiedSteam'
+  AGENT_PATH: 'applications/gl_agents/GL-003_UnifiedSteam'
   COVERAGE_THRESHOLD: 95
   COMPLEXITY_THRESHOLD: 10
   MIN_TYPE_COVERAGE: 100

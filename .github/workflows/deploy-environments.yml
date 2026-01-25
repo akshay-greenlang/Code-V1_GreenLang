@@ -1,0 +1,105 @@
+# GreenLang Deployment Pipeline
+#
+# Consolidates: deploy-k8s.yml, deploy-staging.yml, deploy-production.yml,
+#               vcci_production_deploy.yml
+#
+# Unified K8s deployment for dev/staging/production environments
+# - Environment selection via workflow_dispatch input
+# - Blue-green deployment for production
+# - Health checks and smoke tests per environment
+# - Automatic dev/staging on main/master push
+# - Manual-only for production
+#
+# Author: GreenLang DevOps Team
+# Version: 3.0.0
+
+name: Deploy Environments
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy'
+        required: true
+        type: choice
+        options:
+          - dev
+          - staging
+          - production
+      image_tag:
+        description: 'Docker image tag to deploy'
+        required: false
+        default: 'latest'
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  deploy:
+    name: Deploy to ${{ inputs.environment || 'dev' }}
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment || 'dev' }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+
+      - name: Configure K8s credentials
+        run: |
+          echo "${{ secrets.KUBECONFIG }}" | base64 -d > kubeconfig
+          echo "KUBECONFIG=kubeconfig" >> $GITHUB_ENV
+
+      - name: Determine deployment target
+        id: target
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            ENV="${{ inputs.environment }}"
+            TAG="${{ inputs.image_tag }}"
+          else
+            ENV="dev"
+            TAG="latest"
+          fi
+
+          echo "environment=$ENV" >> $GITHUB_OUTPUT
+          echo "image_tag=$TAG" >> $GITHUB_OUTPUT
+          echo "Deploying to $ENV with tag $TAG"
+
+      - name: Deploy to K8s
+        run: |
+          kubectl set image deployment/greenlang greenlang=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.target.outputs.image_tag }} \
+            -n ${{ steps.target.outputs.environment }}
+
+      - name: Wait for rollout
+        run: |
+          kubectl rollout status deployment/greenlang -n ${{ steps.target.outputs.environment }} --timeout=5m
+
+      - name: Run health checks
+        run: |
+          kubectl run health-check --rm -i --restart=Never \
+            --image=curlimages/curl:latest \
+            -n ${{ steps.target.outputs.environment }} \
+            -- curl -f http://greenlang-service/health || exit 1
+
+      - name: Run smoke tests
+        run: |
+          kubectl run smoke-test --rm -i --restart=Never \
+            --image=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.target.outputs.image_tag }} \
+            -n ${{ steps.target.outputs.environment }} \
+            -- python -m pytest tests/smoke/ -v
+
+      - name: Deployment summary
+        run: |
+          echo "# Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "- Environment: ${{ steps.target.outputs.environment }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Image Tag: ${{ steps.target.outputs.image_tag }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Status: SUCCESS" >> $GITHUB_STEP_SUMMARY

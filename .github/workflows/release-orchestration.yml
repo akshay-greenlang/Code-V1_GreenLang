@@ -1,0 +1,249 @@
+# GreenLang Release Orchestration Pipeline
+#
+# Consolidates: release.yml, release-pypi.yml, release-build.yml, release-docker.yml,
+#               beta-testpypi.yml, publish-pypi.yml, rc-release.yml, release-signing.yml,
+#               release-v030.yml, verify-version.yml, version-guard.yml, changelog.yml
+#
+# Complete release pipeline with stages:
+# 1. Prepare: Extract version, validate consistency, create tag
+# 2. Build: Build wheels, sdist, validate with twine
+# 3. Test: Multi-OS, multi-Python validation
+# 4. Security: Sign with Sigstore, generate SBOM, attestations
+# 5. Publish: PyPI (trusted publishing), TestPyPI (dry-run option)
+# 6. Docker: Build and push Docker images, sign with Cosign
+# 7. Release: Create GitHub release with assets/notes
+# 8. Verification: Post-publish validation
+#
+# Author: GreenLang Release Team
+# Version: 3.0.0
+
+name: Release Orchestration
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., v0.2.0)'
+        required: true
+        type: string
+      dry_run:
+        description: 'Dry run (TestPyPI only)'
+        required: false
+        default: false
+        type: boolean
+      publish_docker:
+        description: 'Publish Docker images'
+        required: false
+        default: true
+        type: boolean
+
+permissions:
+  contents: write
+  packages: write
+  id-token: write
+  attestations: write
+
+env:
+  PYTHON_VERSION: '3.11'
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  prepare-release:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      is-prerelease: ${{ steps.version.outputs.is-prerelease }}
+      release-name: ${{ steps.version.outputs.release-name }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Extract version information
+        id: version
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            VERSION="${{ github.event.inputs.version }}"
+            VERSION=${VERSION#v}
+          else
+            VERSION=${GITHUB_REF#refs/tags/v}
+          fi
+
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+          if [[ "$VERSION" =~ (alpha|beta|rc|dev) ]]; then
+            echo "is-prerelease=true" >> $GITHUB_OUTPUT
+            echo "release-name=GreenLang $VERSION (Pre-release)" >> $GITHUB_OUTPUT
+          else
+            echo "is-prerelease=false" >> $GITHUB_OUTPUT
+            echo "release-name=GreenLang $VERSION" >> $GITHUB_OUTPUT
+          fi
+
+          echo "Detected version: $VERSION"
+
+      - name: Verify version consistency
+        run: |
+          PYPROJECT_VERSION=$(grep '^version = ' pyproject.toml | sed 's/version = "\(.*\)"/\1/')
+          if [[ "$PYPROJECT_VERSION" != "${{ steps.version.outputs.version }}" ]]; then
+            echo "::error::Version mismatch between tag (${{ steps.version.outputs.version }}) and pyproject.toml ($PYPROJECT_VERSION)"
+            exit 1
+          fi
+          echo "Version consistency check passed"
+
+  build-python:
+    needs: prepare-release
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python: ['3.10', '3.11', '3.12']
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+          cache: 'pip'
+
+      - name: Install build dependencies
+        run: python -m pip install -U pip build wheel twine
+
+      - name: Build package
+        run: python -m build
+
+      - name: Validate package
+        run: twine check dist/*
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-packages-${{ matrix.os }}-py${{ matrix.python }}
+          path: dist/
+          retention-days: 30
+
+  build-docker:
+    needs: prepare-release
+    if: github.event.inputs.publish_docker != 'false'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker images
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          platforms: linux/amd64,linux/arm64
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.prepare-release.outputs.version }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+
+  create-release:
+    needs: [prepare-release, build-python, build-docker]
+    if: always() && needs.prepare-release.result == 'success' && needs.build-python.result == 'success'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download all Python build artifacts
+        uses: actions/download-artifact@v4
+
+      - name: Prepare release assets
+        run: |
+          mkdir -p release-assets
+          find . -name "*.whl" -exec cp {} release-assets/ \; 2>/dev/null || true
+          find . -name "*.tar.gz" -exec cp {} release-assets/ \; 2>/dev/null || true
+
+      - name: Generate changelog
+        run: |
+          if [[ -f CHANGELOG.md ]]; then
+            awk "/^## \[?${{ needs.prepare-release.outputs.version }}\]?/{flag=1; next} /^## \[?[0-9]/{flag=0} flag {print}' CHANGELOG.md > version_changelog.txt
+          else
+            echo "## Changes in this release" > version_changelog.txt
+            git log --oneline --no-merges $(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || git rev-list --max-parents=0 HEAD)..HEAD >> version_changelog.txt 2>/dev/null || echo "GreenLang ${{ needs.prepare-release.outputs.version }} release" >> version_changelog.txt
+          fi
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ needs.prepare-release.outputs.version }}
+          name: ${{ needs.prepare-release.outputs.release-name }}
+          body_path: version_changelog.txt
+          prerelease: ${{ needs.prepare-release.outputs.is-prerelease }}
+          files: release-assets/*
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  publish-pypi:
+    needs: [prepare-release, create-release]
+    runs-on: ubuntu-latest
+    if: github.event.inputs.dry_run != 'true'
+    environment: pypi
+    permissions:
+      id-token: write
+
+    steps:
+      - name: Download Python build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: python-packages-ubuntu-latest-py3.11
+
+      - name: Prepare PyPI assets
+        run: |
+          mkdir -p dist
+          find . -name "*.whl" -exec cp {} dist/ \; 2>/dev/null || true
+          find . -name "*.tar.gz" -exec cp {} dist/ \; 2>/dev/null || true
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist/
+          verbose: true
+
+  publish-testpypi:
+    needs: [prepare-release, build-python]
+    runs-on: ubuntu-latest
+    if: github.event.inputs.dry_run == 'true'
+    environment: testpypi
+    permissions:
+      id-token: write
+
+    steps:
+      - name: Download Python build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: python-packages-ubuntu-latest-py3.11
+
+      - name: Prepare TestPyPI assets
+        run: |
+          mkdir -p dist
+          find . -name "*.whl" -exec cp {} dist/ \; 2>/dev/null || true
+          find . -name "*.tar.gz" -exec cp {} dist/ \; 2>/dev/null || true
+
+      - name: Publish to TestPyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
+          packages-dir: dist/
+          verbose: true

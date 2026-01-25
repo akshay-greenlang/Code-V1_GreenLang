@@ -8,7 +8,7 @@ on:
 
 env:
   PYTHON_VERSION: '3.11'
-  AGENT_PATH: 'applications/GL Agents/GL-002_Flameguard'
+  AGENT_PATH: 'applications/gl_agents/GL-002_Flameguard'
 
 jobs:
   security-scan:
@@ -24,28 +24,28 @@ jobs:
           cache: 'pip'
 
       - name: Install dependencies
-        working-directory: applications/GL Agents/GL-002_Flameguard
+        working-directory: applications/gl_agents/GL-002_Flameguard
         run: |
           pip install -r requirements.txt
           pip install bandit safety pip-audit
 
       - name: Bandit scan
-        working-directory: applications/GL Agents/GL-002_Flameguard
+        working-directory: applications/gl_agents/GL-002_Flameguard
         run: bandit -r . -ll -f json -o bandit-daily.json || true
 
       - name: Safety check
-        working-directory: applications/GL Agents/GL-002_Flameguard
+        working-directory: applications/gl_agents/GL-002_Flameguard
         run: safety check --json --output safety-daily.json || true
 
       - name: pip-audit
-        working-directory: applications/GL Agents/GL-002_Flameguard
+        working-directory: applications/gl_agents/GL-002_Flameguard
         run: pip-audit --format json --output audit-daily.json || true
 
       - name: Upload results
         uses: actions/upload-artifact@v4
         with:
           name: daily-security-scan
-          path: applications/GL Agents/GL-002_Flameguard/*-daily.json
+          path: applications/gl_agents/GL-002_Flameguard/*-daily.json
           retention-days: 90
 
   dependency-update:
@@ -60,7 +60,7 @@ jobs:
           python-version: '3.10'
 
       - name: Check for updates
-        working-directory: applications/GL Agents/GL-002_Flameguard
+        working-directory: applications/gl_agents/GL-002_Flameguard
         run: |
           pip list --outdated
 
@@ -78,20 +78,20 @@ jobs:
           cache: 'pip'
 
       - name: Install dependencies
-        working-directory: applications/GL Agents/GL-002_Flameguard
+        working-directory: applications/gl_agents/GL-002_Flameguard
         run: |
           pip install -r requirements.txt
           pip install pytest-benchmark
 
       - name: Run benchmarks
-        working-directory: applications/GL Agents/GL-002_Flameguard
+        working-directory: applications/gl_agents/GL-002_Flameguard
         run: pytest tests/test_performance.py --benchmark-only --benchmark-json=benchmark.json || true
 
       - name: Upload benchmarks
         uses: actions/upload-artifact@v4
         with:
           name: performance-benchmarks
-          path: applications/GL Agents/GL-002_Flameguard/benchmark.json
+          path: applications/gl_agents/GL-002_Flameguard/benchmark.json
           retention-days: 365
 
   coverage-trend:
@@ -107,16 +107,16 @@ jobs:
           cache: 'pip'
 
       - name: Install dependencies
-        working-directory: applications/GL Agents/GL-002_Flameguard
+        working-directory: applications/gl_agents/GL-002_Flameguard
         run: pip install -r requirements.txt
 
       - name: Run tests with coverage
-        working-directory: applications/GL Agents/GL-002_Flameguard
+        working-directory: applications/gl_agents/GL-002_Flameguard
         run: pytest --cov=. --cov-report=json:coverage-trend.json tests/
 
       - name: Upload coverage trend
         uses: actions/upload-artifact@v4
         with:
           name: coverage-trend
-          path: applications/GL Agents/GL-002_Flameguard/coverage-trend.json
+          path: applications/gl_agents/GL-002_Flameguard/coverage-trend.json
           retention-days: 365

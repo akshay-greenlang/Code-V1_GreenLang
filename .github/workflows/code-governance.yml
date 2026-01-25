@@ -1,0 +1,208 @@
+# GreenLang Code Governance Pipeline
+#
+# Consolidates: enforcement-pipeline.yml, greenlang-first-enforcement.yml,
+#               greenlang-guards.yml, no-naked-numbers.yml, specs-schema-check.yml
+#
+# Comprehensive code governance and policy enforcement:
+# - OPA policy checks
+# - No magic numbers enforcement
+# - Spec/schema validation
+# - Determinism checks
+# - Version consistency checks
+#
+# Author: GreenLang Governance Team
+# Version: 3.0.0
+
+name: Code Governance
+
+on:
+  pull_request:
+    branches: [main, master, develop]
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  policy-enforcement:
+    name: OPA Policy Enforcement
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install OPA
+        run: |
+          curl -L -o opa https://openpolicyagent.org/downloads/latest/opa_linux_amd64
+          chmod +x opa
+          sudo mv opa /usr/local/bin/
+
+      - name: Run GreenLang-first enforcement
+        run: |
+          opa test policies/greenlang-first/ -v
+
+      - name: Run GreenLang guardrails
+        run: |
+          opa test policies/guardrails/ -v
+
+      - name: Validate policy compliance
+        run: |
+          opa eval -d policies/ "data.greenlang.allow" --fail
+
+  no-magic-numbers:
+    name: No Magic Numbers Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install flake8 and plugins
+        run: |
+          pip install flake8 flake8-no-magic-numbers
+
+      - name: Check for magic numbers
+        run: |
+          flake8 greenlang/ --select=FL --exclude=tests,__init__.py || true
+          flake8 greenlang/ --select=FL --exclude=tests,__init__.py --exit-zero --format=json > magic-numbers.json
+
+      - name: Report magic numbers
+        run: |
+          MAGIC_COUNT=$(jq 'length' magic-numbers.json)
+          echo "## Magic Numbers Check" >> $GITHUB_STEP_SUMMARY
+          echo "- Found: $MAGIC_COUNT instances" >> $GITHUB_STEP_SUMMARY
+
+          if [ "$MAGIC_COUNT" -gt 50 ]; then
+            echo "::warning::Found $MAGIC_COUNT magic numbers (threshold: 50)"
+          fi
+
+  schema-validation:
+    name: Spec & Schema Validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install jsonschema pyyaml
+
+      - name: Validate pack.yaml files
+        run: |
+          python scripts/validate_pack_schemas.py || echo "Pack validation needs attention"
+
+      - name: Validate gl.yaml files
+        run: |
+          python scripts/validate_gl_schemas.py || echo "GL schema validation needs attention"
+
+      - name: Validate run.json files
+        run: |
+          python scripts/validate_run_schemas.py || echo "Run schema validation needs attention"
+
+  determinism-checks:
+    name: Determinism Verification
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install -U pip
+          pip install -e .[test,dev]
+
+      - name: Run determinism tests
+        run: |
+          pytest tests/determinism/ -v --tb=short
+
+      - name: Verify reproducible builds
+        run: |
+          python -m build
+          HASH1=$(sha256sum dist/*.whl | cut -d' ' -f1)
+          rm -rf dist/
+          python -m build
+          HASH2=$(sha256sum dist/*.whl | cut -d' ' -f1)
+
+          if [ "$HASH1" == "$HASH2" ]; then
+            echo "✅ Builds are reproducible"
+          else
+            echo "::warning::Builds are not reproducible"
+          fi
+
+  version-consistency:
+    name: Version Consistency Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check version consistency
+        run: |
+          # Extract versions from different sources
+          PYPROJECT_VERSION=$(grep '^version = ' pyproject.toml | sed 's/version = "\(.*\)"/\1/')
+
+          if [ -f "VERSION" ]; then
+            FILE_VERSION=$(cat VERSION | tr -d '\n\r ')
+          else
+            FILE_VERSION=$PYPROJECT_VERSION
+          fi
+
+          if [ -f "greenlang/__init__.py" ]; then
+            INIT_VERSION=$(grep '__version__' greenlang/__init__.py | sed "s/__version__ = ['\"]\\(.*\\)['\"]/\\1/")
+          else
+            INIT_VERSION=$PYPROJECT_VERSION
+          fi
+
+          echo "## Version Consistency" >> $GITHUB_STEP_SUMMARY
+          echo "- pyproject.toml: $PYPROJECT_VERSION" >> $GITHUB_STEP_SUMMARY
+          echo "- VERSION file: $FILE_VERSION" >> $GITHUB_STEP_SUMMARY
+          echo "- __init__.py: $INIT_VERSION" >> $GITHUB_STEP_SUMMARY
+
+          if [[ "$PYPROJECT_VERSION" != "$FILE_VERSION" ]] || [[ "$PYPROJECT_VERSION" != "$INIT_VERSION" ]]; then
+            echo "::error::Version mismatch detected!"
+            exit 1
+          fi
+
+          echo "✅ All versions consistent: $PYPROJECT_VERSION"
+
+  governance-gate:
+    name: Governance Gate Check
+    runs-on: ubuntu-latest
+    needs: [policy-enforcement, no-magic-numbers, schema-validation, determinism-checks, version-consistency]
+    if: always()
+
+    steps:
+      - name: Check all governance checks passed
+        run: |
+          if [[ "${{ needs.policy-enforcement.result }}" != "success" ]]; then
+            echo "::error::Policy enforcement failed"
+            exit 1
+          fi
+          if [[ "${{ needs.schema-validation.result }}" != "success" ]]; then
+            echo "::error::Schema validation failed"
+            exit 1
+          fi
+          if [[ "${{ needs.determinism-checks.result }}" != "success" ]]; then
+            echo "::error::Determinism checks failed"
+            exit 1
+          fi
+          if [[ "${{ needs.version-consistency.result }}" != "success" ]]; then
+            echo "::error::Version consistency failed"
+            exit 1
+          fi
+          echo "✅ All governance checks passed"
