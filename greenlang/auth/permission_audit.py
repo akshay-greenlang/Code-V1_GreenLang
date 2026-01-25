@@ -28,9 +28,9 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 from pathlib import Path
 from collections import defaultdict
 import uuid
-from greenlang.determinism import deterministic_uuid, DeterministicClock
+from greenlang.utilities.determinism import deterministic_uuid, DeterministicClock
 from greenlang.intelligence import ChatMessage
-from greenlang.determinism import DeterministicClock, deterministic_uuid
+from greenlang.utilities.determinism import DeterministicClock, deterministic_uuid
 
 logger = logging.getLogger(__name__)
 

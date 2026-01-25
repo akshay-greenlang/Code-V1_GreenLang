@@ -23,7 +23,7 @@ import logging
 from greenlang.agents.base_agents import InsightAgent, AuditEntry
 from greenlang.agents.categories import AgentCategory, AgentMetadata
 from greenlang.agents.report_agent import ReportAgent
-from greenlang.determinism import DeterministicClock
+from greenlang.utilities.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 

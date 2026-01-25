@@ -47,7 +47,7 @@ agent = CustomAgent("my-agent")
     # Example 3: Compliant code
     (test_dir / "example3_compliant.py").write_text("""
 # Example 3: Compliant Code
-from greenlang.sdk.base import Agent
+from greenlang.integration.sdk.base import Agent
 from greenlang.intelligence import ChatSession
 
 class MyAgent(Agent):
@@ -149,7 +149,7 @@ def show_recommendations():
 
     recommendations = [
         ("❌ example1_forbidden_import.py", "Replace 'import openai' with 'from greenlang.intelligence import ChatSession'"),
-        ("❌ example2_custom_agent.py", "Make CustomAgent inherit from greenlang.sdk.base.Agent"),
+        ("❌ example2_custom_agent.py", "Make CustomAgent inherit from greenlang.integration.sdk.base.Agent"),
         ("✅ example3_compliant.py", "No changes needed - fully compliant!"),
         ("❌ example4_redis.py", "Replace 'import redis' with 'from greenlang.cache import CacheManager'"),
         ("❌ example5_custom_auth.py", "Replace custom auth with 'from greenlang.auth import AuthManager'"),

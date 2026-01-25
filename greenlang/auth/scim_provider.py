@@ -4,9 +4,9 @@ SCIM 2.0 User Provisioning Provider for GreenLang
 
 This module implements a SCIM 2.0 server for automated user and group provisioning
 from identity providers like Okta, Azure AD, and OneLogin.
-from greenlang.determinism import DeterministicClock, deterministic_uuid
+from greenlang.utilities.determinism import DeterministicClock, deterministic_uuid
 from greenlang.intelligence import ChatMessage
-from greenlang.determinism import deterministic_uuid, DeterministicClock
+from greenlang.utilities.determinism import deterministic_uuid, DeterministicClock
 
 SCIM (System for Cross-domain Identity Management) is a standard for automating
 user provisioning and deprovisioning.

@@ -18,7 +18,7 @@ from datetime import datetime, timedelta
 import logging
 from prometheus_client import Counter, Histogram, Gauge
 import asyncio
-from greenlang.determinism import DeterministicClock
+from greenlang.utilities.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 

@@ -51,7 +51,7 @@ from datetime import datetime
 import asyncio
 import logging
 import warnings
-from greenlang.determinism import DeterministicClock
+from greenlang.utilities.determinism import DeterministicClock
 
 # DEPRECATION WARNING: This agent is deprecated for CRITICAL PATH emissions calculations
 warnings.warn(

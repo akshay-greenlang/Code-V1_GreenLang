@@ -21,7 +21,7 @@ import re
 from pathlib import Path
 import logging
 
-from greenlang.determinism import DeterministicClock
+from greenlang.utilities.determinism import DeterministicClock
 from .models import (
     ValidationResult,
     URIAccessibilityCheck,

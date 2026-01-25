@@ -21,7 +21,7 @@ from greenlang.core.orchestrator import Orchestrator
 from greenlang.core.workflow import Workflow
 from greenlang.cli.jsonl_logger import JSONLLogger
 from greenlang.cli.agent_registry import AgentRegistry
-from greenlang.determinism import DeterministicClock
+from greenlang.utilities.determinism import DeterministicClock
 
 # Initialize console and logging
 console = Console()

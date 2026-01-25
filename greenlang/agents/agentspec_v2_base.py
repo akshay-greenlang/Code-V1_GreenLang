@@ -48,7 +48,7 @@ from pydantic import BaseModel, Field, ValidationError
 from greenlang.specs.agentspec_v2 import AgentSpecV2
 from greenlang.specs.errors import GLValidationError, GLVErr
 from greenlang.types import AgentResult
-from greenlang.determinism import deterministic_uuid, DeterministicClock
+from greenlang.utilities.determinism import deterministic_uuid, DeterministicClock
 
 logger = logging.getLogger(__name__)
 

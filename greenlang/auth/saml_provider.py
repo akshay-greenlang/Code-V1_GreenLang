@@ -34,7 +34,7 @@ from typing import Dict, List, Optional, Any, Tuple, TYPE_CHECKING
 from dataclasses import dataclass, field
 from enum import Enum
 import xml.etree.ElementTree as ET
-from greenlang.determinism import deterministic_uuid, DeterministicClock
+from greenlang.utilities.determinism import deterministic_uuid, DeterministicClock
 
 try:
     from onelogin.saml2.auth import OneLogin_Saml2_Auth

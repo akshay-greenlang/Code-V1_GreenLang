@@ -13,7 +13,7 @@ on:
       - 'release/**'
       - 'hotfix/**'
     paths:
-      - 'greenlang_2030/agent_foundation/agents/GL-001/**'
+      - 'applications/GL Agents/GL-001_Thermalcommand/**'
       - '.github/workflows/gl-001-ci.yaml'
       - 'requirements.txt'
       - 'pytest.ini'
@@ -24,7 +24,7 @@ on:
       - master
       - develop
     paths:
-      - 'greenlang_2030/agent_foundation/agents/GL-001/**'
+      - 'applications/GL Agents/GL-001_Thermalcommand/**'
       - '.github/workflows/gl-001-ci.yaml'
       - 'requirements.txt'
 
@@ -43,7 +43,7 @@ concurrency:
 
 env:
   PYTHON_VERSION: '3.11'
-  GL_001_PATH: 'greenlang_2030/agent_foundation/agents/GL-001'
+  GL_001_PATH: 'applications/GL Agents/GL-001_Thermalcommand'
   COVERAGE_THRESHOLD: 85
   NODE_ENV: test
 

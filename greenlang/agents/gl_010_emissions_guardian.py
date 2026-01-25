@@ -52,7 +52,7 @@ from greenlang.core.provenance.calculation_provenance import (
     CalculationStep,
     OperationType,
 )
-from greenlang.determinism import (
+from greenlang.utilities.determinism import (
     DeterministicClock,
     content_hash,
     safe_decimal,

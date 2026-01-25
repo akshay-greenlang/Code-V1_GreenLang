@@ -170,8 +170,8 @@ class InfrastructureFirstLinter(ast.NodeVisitor):
                     node.col_offset,
                     'ERROR',
                     'CUSTOM_AGENT',
-                    f"Agent class '{class_name}' does not inherit from greenlang.sdk.base.Agent",
-                    "Add 'from greenlang.sdk.base import Agent' and inherit from Agent",
+                    f"Agent class '{class_name}' does not inherit from greenlang.integration.sdk.base.Agent",
+                    "Add 'from greenlang.integration.sdk.base import Agent' and inherit from Agent",
                     'architecture'
                 )
             elif not self.has_agent_import:
@@ -181,7 +181,7 @@ class InfrastructureFirstLinter(ast.NodeVisitor):
                     'WARNING',
                     'MISSING_IMPORT',
                     f"Agent base class used but greenlang.sdk.base not imported",
-                    "Add 'from greenlang.sdk.base import Agent'",
+                    "Add 'from greenlang.integration.sdk.base import Agent'",
                     'imports'
                 )
 

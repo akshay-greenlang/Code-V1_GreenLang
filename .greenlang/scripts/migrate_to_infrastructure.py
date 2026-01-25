@@ -78,13 +78,13 @@ session = ChatSession(provider="openai")""",
                 description="Migrate custom agent to inherit from Agent base class",
                 detect_pattern=r"class\s+\w+Agent\s*(?:\([^)]*\))?\s*:",
                 detect_imports=[],
-                suggest_code="""from greenlang.sdk.base import Agent
+                suggest_code="""from greenlang.integration.sdk.base import Agent
 
 class YourAgent(Agent):
     def execute(self, input_data):
         # Your agent logic here
         return self.process(input_data)""",
-                suggest_imports=["from greenlang.sdk.base import Agent"],
+                suggest_imports=["from greenlang.integration.sdk.base import Agent"],
                 category="agent",
                 confidence=0.85
             ),
@@ -139,11 +139,11 @@ session = ChatSession(provider="anthropic")""",
                 description="Replace LangChain with GreenLang Pipeline",
                 detect_pattern=r"from\s+langchain\s+import",
                 detect_imports=["langchain"],
-                suggest_code="""from greenlang.sdk.base import Pipeline, Agent
+                suggest_code="""from greenlang.integration.sdk.base import Pipeline, Agent
 
 # Use GreenLang Pipeline instead of LangChain
 pipeline = Pipeline(agents=[agent1, agent2])""",
-                suggest_imports=["from greenlang.sdk.base import Pipeline, Agent"],
+                suggest_imports=["from greenlang.integration.sdk.base import Pipeline, Agent"],
                 category="pipeline",
                 confidence=0.8
             ),
@@ -154,11 +154,11 @@ pipeline = Pipeline(agents=[agent1, agent2])""",
                 description="Use GreenLang structured logging",
                 detect_pattern=r"logging\.basicConfig\s*\(",
                 detect_imports=["logging"],
-                suggest_code="""from greenlang.utils.logging import StructuredLogger
+                suggest_code="""from greenlang.utilities.utils.logging import StructuredLogger
 
 logger = StructuredLogger(__name__)
 # Use logger.info(), logger.error(), etc.""",
-                suggest_imports=["from greenlang.utils.logging import StructuredLogger"],
+                suggest_imports=["from greenlang.utilities.utils.logging import StructuredLogger"],
                 category="logging",
                 confidence=0.7
             ),
@@ -169,11 +169,11 @@ logger = StructuredLogger(__name__)
                 description="Consider using GreenLang HTTP utilities",
                 detect_pattern=r"requests\.(?:get|post|put|delete)\s*\(",
                 detect_imports=["requests"],
-                suggest_code="""from greenlang.utils.http import HTTPClient
+                suggest_code="""from greenlang.utilities.utils.http import HTTPClient
 
 client = HTTPClient()
 # Use client.get(), client.post(), etc. with built-in retries and monitoring""",
-                suggest_imports=["from greenlang.utils.http import HTTPClient"],
+                suggest_imports=["from greenlang.utilities.utils.http import HTTPClient"],
                 category="http",
                 confidence=0.6
             ),
@@ -184,7 +184,7 @@ client = HTTPClient()
                 description="Use Agent.batch_process() for batch operations",
                 detect_pattern=r"def\s+process_batch\s*\(",
                 detect_imports=[],
-                suggest_code="""from greenlang.sdk.base import Agent
+                suggest_code="""from greenlang.integration.sdk.base import Agent
 
 class YourAgent(Agent):
     def execute(self, input_data):
@@ -193,7 +193,7 @@ class YourAgent(Agent):
 
 # Use built-in batch processing
 results = agent.batch_process(items, max_workers=10)""",
-                suggest_imports=["from greenlang.sdk.base import Agent"],
+                suggest_imports=["from greenlang.integration.sdk.base import Agent"],
                 category="agent",
                 confidence=0.75
             ),

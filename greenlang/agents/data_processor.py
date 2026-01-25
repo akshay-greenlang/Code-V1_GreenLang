@@ -13,7 +13,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from tqdm import tqdm
 
 from .base import BaseAgent, AgentConfig, AgentResult, AgentMetrics
-from greenlang.determinism import FinancialDecimal
+from greenlang.utilities.determinism import FinancialDecimal
 
 logger = logging.getLogger(__name__)
 

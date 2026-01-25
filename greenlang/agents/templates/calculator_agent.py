@@ -19,7 +19,7 @@ import json
 import asyncio
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 import multiprocessing
-from greenlang.determinism import DeterministicClock
+from greenlang.utilities.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 

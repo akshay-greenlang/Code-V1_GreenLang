@@ -57,7 +57,7 @@ from greenlang.agents.intelligence_interface import (
     IntelligenceCapabilities,
     require_intelligence,
 )
-from greenlang.determinism import DeterministicClock
+from greenlang.utilities.determinism import DeterministicClock
 from greenlang.templates.agent_monitoring import OperationalMonitoringMixin
 
 logger = logging.getLogger(__name__)

@@ -22,7 +22,7 @@ from datetime import datetime
 from greenlang.agents.base_agents import ReasoningAgent
 from greenlang.agents.categories import AgentCategory, AgentMetadata
 from greenlang.intelligence.schemas.tools import ToolDef
-from greenlang.determinism import DeterministicClock
+from greenlang.utilities.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 

@@ -17,7 +17,7 @@ from pathlib import Path
 import yaml
 import sys
 import os
-from greenlang.determinism import DeterministicClock
+from greenlang.utilities.determinism import DeterministicClock
 
 # Add parent directory to path for imports
 sys.path.append(str(Path(__file__).parent.parent))

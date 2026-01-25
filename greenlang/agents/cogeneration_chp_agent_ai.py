@@ -135,7 +135,7 @@ import numpy as np
 from greenlang.core.chat_session import ChatSession
 from greenlang.core.tool_registry import ToolRegistry
 from greenlang.provenance import ProvenanceTracker
-from greenlang.determinism import DeterministicClock
+from greenlang.utilities.determinism import DeterministicClock
 
 # Configure logging
 logger = logging.getLogger(__name__)

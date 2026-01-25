@@ -30,7 +30,7 @@ from greenlang.auth.permissions import (
     PermissionEffect,
     PermissionCondition
 )
-from greenlang.determinism import deterministic_uuid
+from greenlang.utilities.determinism import deterministic_uuid
 
 
 class TestDatabaseConfig:

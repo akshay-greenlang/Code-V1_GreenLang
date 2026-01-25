@@ -19,7 +19,7 @@ import logging
 from contextlib import contextmanager
 from enum import Enum
 
-from greenlang.determinism import deterministic_uuid
+from greenlang.utilities.determinism import deterministic_uuid
 
 from sqlalchemy import (
     create_engine, Column, String, Text, Integer, DateTime, Boolean,
@@ -40,7 +40,7 @@ from greenlang.auth.permissions import (
     Permission, PermissionCondition, PermissionEffect,
     PermissionAction, ResourceType
 )
-from greenlang.determinism import deterministic_uuid, DeterministicClock
+from greenlang.utilities.determinism import deterministic_uuid, DeterministicClock
 
 logger = logging.getLogger(__name__)
 

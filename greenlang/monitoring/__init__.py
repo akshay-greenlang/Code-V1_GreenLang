@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-GreenLang Monitoring
-===================
+GreenLang Monitoring & Observability Layer
+==========================================
 
-Production monitoring and observability for GreenLang v0.2.0.
+Consolidated module containing monitoring, telemetry, observability, and sandbox.
+Production monitoring and observability for GreenLang v2.0.0.
 
 This module provides:
 - Prometheus metrics integration (50+ standard metrics per agent)
@@ -14,6 +15,15 @@ This module provides:
 - Resource usage tracking
 - Custom metrics collection
 - Metrics validation tools
+- Telemetry and logging (from telemetry/)
+- Observability features (from observability/)
+- Sandbox monitoring (from sandbox/)
+
+Sub-modules:
+- monitoring.metrics: Core metrics collection (base directory)
+- monitoring.telemetry: Logging, metrics, health tracking
+- monitoring.observability: Observability infrastructure
+- monitoring.sandbox: Sandbox capabilities, OS isolation
 """
 
 from .metrics import (
@@ -80,6 +90,6 @@ __all__ = [
     "HeatRecoveryMetrics",
 ]
 
-__version__ = "1.0.0"
+__version__ = "2.0.0"
 __standard_metrics_count__ = 71
 __min_required_metrics__ = 50

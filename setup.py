@@ -40,7 +40,7 @@ class PostInstallCommand(install):
     def setup_windows_path(self):
         """Set up Windows PATH for gl command."""
         try:
-            from greenlang.utils.post_install import run_post_install
+            from greenlang.utilities.utils.post_install import run_post_install
             run_post_install()
         except ImportError:
             print("Post-install setup not available")

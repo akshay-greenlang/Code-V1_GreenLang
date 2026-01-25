@@ -18,7 +18,7 @@ import logging
 from collections import defaultdict
 
 from .models import DataQualityMetrics
-from greenlang.determinism import DeterministicClock
+from greenlang.utilities.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 

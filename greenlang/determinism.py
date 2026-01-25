@@ -22,7 +22,7 @@ import warnings
 
 # Show deprecation warning when importing from this module
 warnings.warn(
-    "Importing from greenlang.determinism is deprecated. "
+    "Importing from greenlang.utilities.determinism is deprecated. "
     "Please import from specific submodules: "
     "greenlang.determinism.clock, greenlang.determinism.uuid, "
     "greenlang.determinism.random, greenlang.determinism.decimal, "
@@ -32,7 +32,7 @@ warnings.warn(
 )
 
 # Backward-compatible re-exports from separated modules
-from greenlang.determinism.clock import (
+from greenlang.utilities.determinism.clock import (
     DeterministicClock,
     now,
     utcnow,
@@ -40,19 +40,19 @@ from greenlang.determinism.clock import (
     unfreeze_time,
 )
 
-from greenlang.determinism.uuid import (
+from greenlang.utilities.determinism.uuid import (
     deterministic_id,
     deterministic_uuid,
     content_hash,
 )
 
-from greenlang.determinism.random import (
+from greenlang.utilities.determinism.random import (
     DeterministicRandom,
     deterministic_random,
     set_global_random_seed,
 )
 
-from greenlang.determinism.decimal import (
+from greenlang.utilities.determinism.decimal import (
     FinancialDecimal,
     safe_decimal,
     safe_decimal_multiply,
@@ -62,7 +62,7 @@ from greenlang.determinism.decimal import (
     round_for_reporting,
 )
 
-from greenlang.determinism.files import (
+from greenlang.utilities.determinism.files import (
     sorted_listdir,
     sorted_glob,
     sorted_iterdir,

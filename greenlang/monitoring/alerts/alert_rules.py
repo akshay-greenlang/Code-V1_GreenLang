@@ -15,7 +15,7 @@ from typing import Dict, List, Any, Optional
 from datetime import datetime
 from enum import Enum
 import requests
-from greenlang.determinism import DeterministicClock
+from greenlang.utilities.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 

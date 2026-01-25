@@ -16,7 +16,7 @@ from datetime import datetime, timedelta
 from typing import Dict, List, Any, Optional
 from collections import defaultdict
 import re
-from greenlang.determinism import DeterministicClock
+from greenlang.utilities.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 

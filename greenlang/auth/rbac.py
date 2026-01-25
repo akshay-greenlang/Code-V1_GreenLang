@@ -9,7 +9,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Dict, List, Set, Optional, Any
 import fnmatch
-from greenlang.determinism import DeterministicClock
+from greenlang.utilities.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 

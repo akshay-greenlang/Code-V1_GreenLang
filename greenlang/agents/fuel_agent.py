@@ -14,7 +14,7 @@ from greenlang.utils.unit_converter import UnitConverter
 from greenlang.utils.performance_tracker import PerformanceTracker
 from greenlang.agents.tools import get_registry
 from greenlang.exceptions import ValidationError, ExecutionError, MissingData
-from greenlang.determinism import DeterministicClock
+from greenlang.utilities.determinism import DeterministicClock
 
 
 class FuelAgent(Agent[FuelInput, FuelOutput]):

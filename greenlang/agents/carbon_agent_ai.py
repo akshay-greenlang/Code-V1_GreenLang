@@ -50,7 +50,7 @@ import logging
 from greenlang.agents.base import BaseAgent, AgentResult, AgentConfig
 from greenlang.agents.carbon_agent import CarbonAgent
 # Fixed: Removed incomplete import
-from greenlang.determinism import DeterministicClock
+from greenlang.utilities.determinism import DeterministicClock
 from greenlang.intelligence import ChatSession, ChatMessage
 from greenlang.intelligence.schemas.tools import ToolDef
 from greenlang.agents.tools import get_registry

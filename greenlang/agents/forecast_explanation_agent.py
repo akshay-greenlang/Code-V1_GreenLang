@@ -44,7 +44,7 @@ import logging
 from greenlang.agents.base_agents import InsightAgent, AuditEntry
 from greenlang.agents.categories import AgentCategory, AgentMetadata
 from greenlang.agents.forecast_agent_sarima import SARIMAForecastAgent
-from greenlang.determinism import DeterministicClock
+from greenlang.utilities.determinism import DeterministicClock
 
 
 logger = logging.getLogger(__name__)

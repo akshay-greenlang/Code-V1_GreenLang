@@ -17,12 +17,30 @@ __license__ = "MIT"
 from ._version import __version__
 
 # Core infrastructure exports only
-from .sdk.base import Agent, Pipeline, Connector, Dataset, Report
-from .sdk.context import Context, Artifact
-from .packs.registry import PackRegistry
-from .packs.loader import PackLoader
-from .runtime.executor import Executor
-from .policy.enforcer import PolicyEnforcer
+# Updated imports for consolidated structure v2.0
+try:
+    from .integration.sdk.base import Agent, Pipeline, Connector, Dataset, Report
+    from .integration.sdk.context import Context, Artifact
+except ImportError:
+    # Fallback for development
+    Agent = Pipeline = Connector = Dataset = Report = None
+    Context = Artifact = None
+
+try:
+    from .ecosystem.packs.registry import PackRegistry
+    from .ecosystem.packs.loader import PackLoader
+except ImportError:
+    PackRegistry = PackLoader = None
+
+try:
+    from .execution.runtime.executor import Executor
+except ImportError:
+    Executor = None
+
+try:
+    from .governance.policy.enforcer import PolicyEnforcer
+except ImportError:
+    PolicyEnforcer = None
 
 __all__ = [
     # Core SDK abstractions

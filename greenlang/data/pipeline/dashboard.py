@@ -23,7 +23,7 @@ from .monitoring import DataQualityMonitor, CoverageAnalyzer, SourceDiversityAna
 from .pipeline import AutomatedImportPipeline, ScheduledImporter, RollbackManager
 from .workflow import UpdateWorkflow, ApprovalManager
 from .models import ImportJob, ImportStatus
-from greenlang.determinism import DeterministicClock
+from greenlang.utilities.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 console = Console()

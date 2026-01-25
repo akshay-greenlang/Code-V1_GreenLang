@@ -34,7 +34,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 from urllib.parse import urlencode, parse_qs, urlparse
 import jwt
-from greenlang.determinism import DeterministicClock
+from greenlang.utilities.determinism import DeterministicClock
 
 try:
     from authlib.integrations.requests_client import OAuth2Session

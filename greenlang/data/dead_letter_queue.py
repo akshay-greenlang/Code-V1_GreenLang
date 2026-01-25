@@ -17,7 +17,7 @@ from pathlib import Path
 import pickle
 import asyncio
 from collections import defaultdict
-from greenlang.determinism import DeterministicClock
+from greenlang.utilities.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 

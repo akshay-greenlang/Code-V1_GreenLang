@@ -38,7 +38,7 @@ FinancialMetricsTool,
     GridIntegrationTool,
 
 )
-from greenlang.determinism import DeterministicClock
+from greenlang.utilities.determinism import DeterministicClock
 from greenlang.intelligence import ChatSession, ChatMessage
 
 logger = logging.getLogger(__name__)

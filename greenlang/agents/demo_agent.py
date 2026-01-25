@@ -1,4 +1,4 @@
-from greenlang.determinism import FinancialDecimal
+from greenlang.utilities.determinism import FinancialDecimal
 # -*- coding: utf-8 -*-
 """Demo Agent for GreenLang - Simple emissions calculator."""
 

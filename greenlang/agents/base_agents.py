@@ -20,7 +20,7 @@ import hashlib
 import json
 
 from greenlang.agents.categories import AgentCategory, AgentMetadata
-from greenlang.determinism import DeterministicClock
+from greenlang.utilities.determinism import DeterministicClock
 
 
 @dataclass

@@ -12,7 +12,7 @@ from rich.console import Console
 from rich.table import Table
 from rich.panel import Panel
 
-from greenlang.determinism import DeterministicClock
+from greenlang.utilities.determinism import DeterministicClock
 from greenlang.auth import (
     TenantManager,
     TenantQuota,

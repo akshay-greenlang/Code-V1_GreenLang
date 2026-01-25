@@ -8,7 +8,7 @@ import time
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, Any, Optional
-from greenlang.determinism import DeterministicClock
+from greenlang.utilities.determinism import DeterministicClock
 
 
 class JSONLLogger:

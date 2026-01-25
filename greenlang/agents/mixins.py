@@ -24,7 +24,7 @@ import json
 import logging
 from datetime import datetime
 
-from greenlang.determinism import DeterministicClock
+from greenlang.utilities.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 

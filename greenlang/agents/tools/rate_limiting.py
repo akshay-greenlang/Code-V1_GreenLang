@@ -26,7 +26,7 @@ import logging
 from typing import Dict, Optional, Tuple
 from dataclasses import dataclass
 from collections import defaultdict
-from greenlang.determinism import FinancialDecimal
+from greenlang.utilities.determinism import FinancialDecimal
 
 logger = logging.getLogger(__name__)
 

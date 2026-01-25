@@ -30,7 +30,7 @@ from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 from dataclasses import dataclass, field, asdict
 from collections import defaultdict
-from greenlang.determinism import DeterministicClock
+from greenlang.utilities.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 

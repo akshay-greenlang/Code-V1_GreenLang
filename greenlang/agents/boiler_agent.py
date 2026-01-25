@@ -12,7 +12,7 @@ from .types import BoilerInput, BoilerOutput
 from greenlang.data.emission_factors import EmissionFactors
 from greenlang.utils.unit_converter import UnitConverter
 from greenlang.utils.performance_tracker import PerformanceTracker
-from greenlang.determinism import DeterministicClock
+from greenlang.utilities.determinism import DeterministicClock
 
 
 class BoilerAgent(Agent[BoilerInput, BoilerOutput]):

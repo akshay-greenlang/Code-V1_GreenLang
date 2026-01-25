@@ -51,7 +51,7 @@ from greenlang.agents.base import BaseAgent, AgentResult, AgentConfig
 from greenlang.templates.agent_monitoring import OperationalMonitoringMixin
 from greenlang.agents.report_agent import ReportAgent
 # Fixed: Removed incomplete import
-from greenlang.determinism import DeterministicClock
+from greenlang.utilities.determinism import DeterministicClock
 from greenlang.intelligence import ChatSession, ChatMessage
 from greenlang.intelligence.schemas.tools import ToolDef
 from greenlang.agents.citations import (

@@ -16,7 +16,7 @@ from dataclasses import dataclass
 from enum import Enum
 import pandas as pd
 import json
-from greenlang.determinism import DeterministicClock
+from greenlang.utilities.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 

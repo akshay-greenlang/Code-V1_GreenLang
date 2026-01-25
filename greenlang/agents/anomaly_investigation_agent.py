@@ -25,7 +25,7 @@ import logging
 from greenlang.agents.base_agents import InsightAgent, AuditEntry
 from greenlang.agents.categories import AgentCategory, AgentMetadata
 from greenlang.agents.anomaly_agent_iforest import IsolationForestAnomalyAgent
-from greenlang.determinism import DeterministicClock
+from greenlang.utilities.determinism import DeterministicClock
 
 
 logger = logging.getLogger(__name__)

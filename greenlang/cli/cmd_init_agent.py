@@ -22,7 +22,7 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 import yaml
-from greenlang.determinism import DeterministicClock
+from greenlang.utilities.determinism import DeterministicClock
 
 app = typer.Typer()
 console = Console()

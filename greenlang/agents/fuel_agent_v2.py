@@ -34,7 +34,7 @@ from greenlang.agents.agentspec_v2_base import AgentSpecV2Base, AgentExecutionCo
 from greenlang.agents.mixins import DeterministicMixin
 from greenlang.data.emission_factors import EmissionFactors
 from greenlang.utils.unit_converter import UnitConverter
-from greenlang.determinism import DeterministicClock
+from greenlang.utilities.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 

@@ -36,7 +36,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Dict, List, Optional, Any, Union, Callable
 from uuid import uuid4
-from greenlang.determinism import DeterministicClock
+from greenlang.utilities.determinism import DeterministicClock
 
 # Try to import Prometheus client
 try:

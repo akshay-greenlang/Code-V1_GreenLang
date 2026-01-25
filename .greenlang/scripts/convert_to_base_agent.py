@@ -5,7 +5,7 @@ logger = logging.getLogger(__name__)
 """
 GreenLang Agent Inheritance Converter
 
-Converts custom agent classes to inherit from greenlang.sdk.base.Agent.
+Converts custom agent classes to inherit from greenlang.integration.sdk.base.Agent.
 Maps custom methods to Agent lifecycle hooks.
 """
 
@@ -45,7 +45,7 @@ class AgentConverter(ast.NodeTransformer):
             # Convert the class
             new_node = self._convert_agent_class(node)
             self.converted_classes.append(node.name)
-            self.imports_to_add.add("from greenlang.sdk.base import Agent")
+            self.imports_to_add.add("from greenlang.integration.sdk.base import Agent")
             return new_node
 
         return node

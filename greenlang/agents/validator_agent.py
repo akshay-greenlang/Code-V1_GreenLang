@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from typing import Any, Dict, List
 from greenlang.agents.base import BaseAgent, AgentResult, AgentConfig
-from greenlang.determinism import FinancialDecimal
+from greenlang.utilities.determinism import FinancialDecimal
 
 
 class InputValidatorAgent(BaseAgent):

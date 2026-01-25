@@ -13,7 +13,7 @@ import time
 from datetime import datetime
 from pathlib import Path
 from collections import defaultdict
-from greenlang.determinism import DeterministicClock
+from greenlang.utilities.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 

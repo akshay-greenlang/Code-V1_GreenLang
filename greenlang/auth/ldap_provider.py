@@ -29,7 +29,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 import threading
 import time
-from greenlang.determinism import DeterministicClock
+from greenlang.utilities.determinism import DeterministicClock
 
 try:
     import ldap3

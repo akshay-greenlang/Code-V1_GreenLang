@@ -26,7 +26,7 @@ from rich import box
 
 from greenlang.sdk import GreenLangClient, WorkflowBuilder, AgentBuilder
 from greenlang.core.workflow import Workflow
-from greenlang.determinism import FinancialDecimal
+from greenlang.utilities.determinism import FinancialDecimal
 
 console = Console()
 

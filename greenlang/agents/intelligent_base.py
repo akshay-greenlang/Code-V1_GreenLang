@@ -73,7 +73,7 @@ from greenlang.intelligence.runtime.session import ChatSession
 from greenlang.intelligence.runtime.budget import Budget, BudgetExceeded
 from greenlang.intelligence.schemas.messages import ChatMessage, Role
 from greenlang.intelligence.schemas.tools import ToolDef
-from greenlang.determinism import DeterministicClock
+from greenlang.utilities.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 

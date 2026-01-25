@@ -58,7 +58,7 @@ import numpy as np
 import pandas as pd
 from dataclasses import dataclass
 import warnings
-from greenlang.determinism import DeterministicClock
+from greenlang.utilities.determinism import DeterministicClock
 
 # Suppress statsmodels warnings
 warnings.filterwarnings('ignore', category=UserWarning)

@@ -17,7 +17,7 @@ from dataclasses import dataclass
 from datetime import datetime
 import re
 import ast
-from greenlang.determinism import DeterministicClock
+from greenlang.utilities.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 

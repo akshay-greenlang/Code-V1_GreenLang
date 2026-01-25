@@ -58,8 +58,8 @@ import numpy as np
 import pandas as pd
 from dataclasses import dataclass
 import warnings
-from greenlang.determinism import FinancialDecimal
-from greenlang.determinism import deterministic_random
+from greenlang.utilities.determinism import FinancialDecimal
+from greenlang.utilities.determinism import deterministic_random
 
 # Suppress sklearn warnings
 warnings.filterwarnings('ignore', category=UserWarning)

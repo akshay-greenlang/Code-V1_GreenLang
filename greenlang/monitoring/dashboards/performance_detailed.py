@@ -37,7 +37,7 @@ from datetime import datetime, timedelta
 from typing import Dict, List, Any
 import json
 from pathlib import Path
-from greenlang.determinism import deterministic_random
+from greenlang.utilities.determinism import deterministic_random
 
 
 try:

@@ -51,7 +51,7 @@ from typing import Any, Callable, Dict, Generic, List, Optional, TypeVar
 import yaml
 from pydantic import BaseModel, Field, ValidationError
 
-from greenlang.determinism import DeterministicClock, deterministic_uuid
+from greenlang.utilities.determinism import DeterministicClock, deterministic_uuid
 from greenlang.exceptions import (
     ExecutionError,
     TimeoutError as GLTimeoutError,

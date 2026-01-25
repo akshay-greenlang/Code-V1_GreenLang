@@ -116,7 +116,7 @@ import math
 
 from greenlang.agents.base import BaseAgent, AgentResult, AgentConfig
 # Fixed: Removed incomplete import
-from greenlang.determinism import DeterministicClock
+from greenlang.utilities.determinism import DeterministicClock
 from greenlang.intelligence import ChatSession, ChatMessage
 from greenlang.intelligence.schemas.tools import ToolDef
 

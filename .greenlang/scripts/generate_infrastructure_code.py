@@ -45,8 +45,8 @@ Created: {DeterministicClock.now().strftime("%Y-%m-%d %H:%M:%S")}
 """
 
 from typing import Any, Dict, List, Optional
-from greenlang.sdk.base import Agent
-from greenlang.utils.logging import StructuredLogger
+from greenlang.integration.sdk.base import Agent
+from greenlang.utilities.utils.logging import StructuredLogger
 
 
 class {name}(Agent):
@@ -158,8 +158,8 @@ Created: {DeterministicClock.now().strftime("%Y-%m-%d %H:%M:%S")}
 """
 
 from typing import Any, Dict, List, Optional
-from greenlang.sdk.base import Pipeline, Agent
-from greenlang.utils.logging import StructuredLogger
+from greenlang.integration.sdk.base import Pipeline, Agent
+from greenlang.utilities.utils.logging import StructuredLogger
 
 
 # TODO: Import your agent classes
@@ -246,7 +246,7 @@ Created: {DeterministicClock.now().strftime("%Y-%m-%d %H:%M:%S")}
 
 from typing import List, Dict, Any, Optional
 from greenlang.intelligence import ChatSession
-from greenlang.utils.logging import StructuredLogger
+from greenlang.utilities.utils.logging import StructuredLogger
 
 
 class LLMSessionManager:
@@ -366,7 +366,7 @@ Created: {DeterministicClock.now().strftime("%Y-%m-%d %H:%M:%S")}
 
 from typing import Any, Optional
 from greenlang.cache import CacheManager
-from greenlang.utils.logging import StructuredLogger
+from greenlang.utilities.utils.logging import StructuredLogger
 import json
 
 
@@ -529,7 +529,7 @@ Created: {DeterministicClock.now().strftime("%Y-%m-%d %H:%M:%S")}
 
 from typing import Any, Dict, List
 from greenlang.validation import ValidationFramework
-from greenlang.utils.logging import StructuredLogger
+from greenlang.utilities.utils.logging import StructuredLogger
 
 
 class {name}Validator:
@@ -674,7 +674,7 @@ Created: {DeterministicClock.now().strftime("%Y-%m-%d %H:%M:%S")}
 
 from typing import Any, Optional
 from greenlang.config import Config
-from greenlang.utils.logging import StructuredLogger
+from greenlang.utilities.utils.logging import StructuredLogger
 import os
 
 

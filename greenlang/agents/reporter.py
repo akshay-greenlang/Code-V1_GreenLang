@@ -12,7 +12,7 @@ from datetime import datetime
 from collections import defaultdict
 
 from .base import BaseAgent, AgentConfig, AgentResult
-from greenlang.determinism import DeterministicClock
+from greenlang.utilities.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
