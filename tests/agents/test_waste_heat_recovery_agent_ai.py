@@ -41,7 +41,7 @@ from greenlang.agents.waste_heat_recovery_agent_ai import (
     calculate_effectiveness_ntu,
     convert_volumetric_to_mass_flow,
 )
-from greenlang.framework import AgentConfig
+from greenlang.agents.base import AgentConfig
 
 
 class TestWasteHeatRecoveryAgentUnit(unittest.TestCase):

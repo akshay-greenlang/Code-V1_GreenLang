@@ -8,16 +8,23 @@ climate data and catch errors.
 import sys
 from pathlib import Path
 
-# Add core to path
-sys.path.insert(0, str(Path(__file__).parent.parent.parent / 'core'))
-
-from greenlang.validation import (
-    EmissionFactorValidator,
-    UnitValidator,
-    ThermodynamicValidator,
-    GWPValidator,
-    ValidationLevel
-)
+try:
+    from greenlang.core.greenlang.validation.hooks import (
+        EmissionFactorValidator,
+        UnitValidator,
+        ThermodynamicValidator,
+        GWPValidator,
+        ValidationLevel
+    )
+except ImportError:
+    # Try alternative import path
+    from greenlang.data.validation import (
+        EmissionFactorValidator,
+        UnitValidator,
+        ThermodynamicValidator,
+        GWPValidator,
+        ValidationLevel
+    )
 
 
 def test_emission_factor_validator():

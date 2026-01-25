@@ -8,11 +8,15 @@ climate calculations against expert-validated answers.
 import sys
 from pathlib import Path
 
-# Add core to path
-sys.path.insert(0, str(Path(__file__).parent.parent.parent / 'core'))
+try:
+    from greenlang.core.greenlang.testing.golden_test_runner import GoldenTestRunner
+except ImportError:
+    from greenlang.core.greenlang.testing.golden_tests import GoldenTestRunner
 
-from greenlang.testing import GoldenTestRunner
-from greenlang.validation import EmissionFactorDB
+try:
+    from greenlang.core.greenlang.validation.emission_factors import EmissionFactorDB
+except ImportError:
+    from greenlang.core.greenlang.data.emission_factor_db import EmissionFactorDB
 
 
 def calculate_emissions(inputs: dict) -> float:

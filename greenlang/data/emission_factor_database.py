@@ -28,7 +28,7 @@ Example:
     >>> print(co2e)  # 10.21 (same as v1)
 """
 
-from typing import Optional, Dict, List, Tuple
+from typing import Optional, Dict, List, Tuple, Any
 from datetime import date, datetime, timedelta
 from pathlib import Path
 import json

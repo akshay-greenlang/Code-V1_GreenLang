@@ -18,7 +18,14 @@ Date: November 2024
 """
 
 import pytest
-from hypothesis import given, strategies as st, assume, settings, example, HealthCheck
+
+try:
+    from hypothesis import given, strategies as st, assume, settings, example, HealthCheck
+    HYPOTHESIS_AVAILABLE = True
+except ImportError:
+    HYPOTHESIS_AVAILABLE = False
+    pytest.skip("hypothesis not installed", allow_module_level=True)
+
 from greenlang.agents.fuel_agent_ai import FuelAgentAI
 from tests.determinism.test_framework import DeterminismTester
 

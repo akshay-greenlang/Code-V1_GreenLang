@@ -20,7 +20,7 @@ from typing import List
 
 from greenlang.agents.tools.financial import FinancialMetricsTool
 from greenlang.agents.tools.grid import GridIntegrationTool
-from greenlang.agents.tools.emissions import EmissionsCalculatorTool
+from greenlang.agents.tools.emissions import CalculateEmissionsTool
 from greenlang.agents.tools.telemetry import get_telemetry, reset_global_telemetry
 from greenlang.agents.tools.audit import get_audit_logger
 from greenlang.agents.tools.rate_limiting import get_rate_limiter

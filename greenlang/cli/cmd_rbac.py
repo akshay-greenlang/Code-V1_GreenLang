@@ -30,24 +30,14 @@ import json
 
 # Import policy enforcer and RBAC components
 try:
-    from core.greenlang.policy.enforcer import PolicyEnforcer
-    from core.greenlang.policy.agent_rbac import (
+    from greenlang.policy.enforcer import PolicyEnforcer
+    from greenlang.core.greenlang.policy.agent_rbac import (
         AgentPermission,
         PREDEFINED_ROLES
     )
-except ImportError:
-    # Fallback import paths
-    try:
-        import sys
-        sys.path.insert(0, str(Path(__file__).parent.parent.parent))
-        from core.greenlang.policy.enforcer import PolicyEnforcer
-        from core.greenlang.policy.agent_rbac import (
-            AgentPermission,
-            PREDEFINED_ROLES
-        )
-    except ImportError as e:
-        print(f"Error: Could not import RBAC modules: {e}")
-        raise typer.Exit(1)
+except ImportError as e:
+    print(f"Error: Could not import RBAC modules: {e}")
+    raise typer.Exit(1)
 
 
 app = typer.Typer(

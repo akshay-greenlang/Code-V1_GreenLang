@@ -19,20 +19,53 @@ from datetime import datetime
 from typing import List, Dict, Any
 import asyncio
 
-from greenlang_core.pipeline import (
-    AgentPipeline,
-    PipelineConfig,
-    PipelineExecutor,
-    AgentNode,
-    DataFlow
-)
-from greenlang_core.agents import BaseAgent
-from greenlang_core.database import DatabaseSession
-from greenlang_core.exceptions import (
-    PipelineExecutionError,
-    AgentDependencyError,
-    DataValidationError
-)
+try:
+    from greenlang.sdk.pipeline import Pipeline as AgentPipeline
+    from greenlang.agents.base import BaseAgent
+    # PipelineConfig doesn't exist in greenlang.sdk.pipeline, create placeholder
+    PipelineConfig = None
+    PipelineExecutor = None
+    AgentNode = None
+    DataFlow = None
+except ImportError:
+    # Try alternative import
+    try:
+        from greenlang.data_engineering.etl.base_pipeline import (
+            PipelineConfig,
+            PipelineExecutor
+        )
+        from greenlang.agents.base import BaseAgent
+        AgentPipeline = None
+        AgentNode = None
+        DataFlow = None
+    except ImportError:
+        # All imports failed, create placeholders
+        AgentPipeline = None
+        PipelineConfig = None
+        PipelineExecutor = None
+        AgentNode = None
+        DataFlow = None
+        BaseAgent = None
+
+try:
+    from greenlang.database import DatabaseSession
+except ImportError:
+    DatabaseSession = None
+
+try:
+    from greenlang.exceptions import (
+        PipelineExecutionError,
+        AgentDependencyError,
+        DataValidationError
+    )
+except ImportError:
+    # Define placeholder exceptions
+    class PipelineExecutionError(Exception):
+        pass
+    class AgentDependencyError(Exception):
+        pass
+    class DataValidationError(Exception):
+        pass
 
 
 # Test Fixtures

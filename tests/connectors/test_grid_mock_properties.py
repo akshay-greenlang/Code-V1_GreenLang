@@ -20,7 +20,13 @@ Properties tested:
 import pytest
 from datetime import datetime, timezone, timedelta
 from decimal import Decimal
-from hypothesis import given, strategies as st, settings
+
+try:
+    from hypothesis import given, strategies as st, settings
+    HYPOTHESIS_AVAILABLE = True
+except ImportError:
+    HYPOTHESIS_AVAILABLE = False
+    pytest.skip("hypothesis not installed", allow_module_level=True)
 
 from greenlang.connectors.grid.mock import GridIntensityMockConnector
 from greenlang.connectors.models import GridIntensityQuery, TimeWindow, REGION_METADATA

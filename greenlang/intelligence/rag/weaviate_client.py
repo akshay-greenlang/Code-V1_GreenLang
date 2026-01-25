@@ -11,8 +11,15 @@ Handles:
 CRITICAL: Schema must match CTO spec Section 6 exactly.
 """
 
-import weaviate
-from weaviate.util import generate_uuid5
+try:
+    import weaviate
+    from weaviate.util import generate_uuid5
+    WEAVIATE_AVAILABLE = True
+except ImportError:
+    WEAVIATE_AVAILABLE = False
+    weaviate = None
+    generate_uuid5 = None
+
 from typing import List, Dict, Optional, Any
 import os
 import time
@@ -50,7 +57,13 @@ class WeaviateClient:
 
         Raises:
             ConnectionError: If Weaviate is not reachable after retries
+            ImportError: If weaviate package is not installed
         """
+        if not WEAVIATE_AVAILABLE:
+            raise ImportError(
+                "weaviate package is not installed. Install it with: pip install weaviate-client"
+            )
+
         self.endpoint = endpoint
         self.api_key = api_key
         self.timeout_config = timeout_config

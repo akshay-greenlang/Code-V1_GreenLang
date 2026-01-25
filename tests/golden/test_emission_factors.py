@@ -8,10 +8,11 @@ returns accurate factors for climate calculations.
 import sys
 from pathlib import Path
 
-# Add core to path
-sys.path.insert(0, str(Path(__file__).parent.parent.parent / 'core'))
-
-from greenlang.validation import EmissionFactorDB, EmissionCategory, DataSource
+try:
+    from greenlang.core.greenlang.validation.emission_factors import EmissionFactorDB, EmissionCategory, DataSource
+except ImportError:
+    # Try alternative import path
+    from greenlang.core.greenlang.data.emission_factor_db import EmissionFactorDB, EmissionCategory, DataSource
 
 
 def test_database_initialization():
