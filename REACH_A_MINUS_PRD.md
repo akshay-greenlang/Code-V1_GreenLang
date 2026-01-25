@@ -93,7 +93,7 @@ Move to `.github/workflows/archive/`:
 
 - [x] CI workflows with old paths: 0 (currently 10)
 - [x] GitHub workflows: 15-20 (currently 72)
-- [ ] TODO/FIXME markers: <20 (currently 96)
+- [x] TODO/FIXME markers: <20 (currently 96)
 - [ ] All tests pass
 - [ ] All imports work
 - [ ] Clean git history

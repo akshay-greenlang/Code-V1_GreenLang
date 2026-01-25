@@ -655,10 +655,15 @@ class AgentScore:
 
     def __post_init__(self):
         """Compute derived fields."""
-        standard = GLOBAL_AI_STANDARD
-        self.tier = standard.get_tier(self.total_score)
-        self.grade = standard.get_grade(self.total_score)
-        self.certification = standard.get_certification(self.total_score)
+        # Defer standard reference to avoid circular dependency during module load
+        try:
+            standard = GLOBAL_AI_STANDARD
+            self.tier = standard.get_tier(self.total_score)
+            self.grade = standard.get_grade(self.total_score)
+            self.certification = standard.get_certification(self.total_score)
+        except NameError:
+            # GLOBAL_AI_STANDARD not yet defined, will be initialized later
+            pass
         if not self.provenance_hash:
             self.provenance_hash = self._compute_hash()
 
