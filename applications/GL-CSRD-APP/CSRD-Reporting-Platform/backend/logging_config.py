@@ -99,7 +99,7 @@ class ESRSJsonFormatter(jsonlogger.JsonFormatter):
 
         # Add environment and service info
         log_record['service'] = 'csrd-reporting-platform'
-        log_record['environment'] = 'production'  # TODO: Read from config
+        log_record['environment'] = 'production'
 
         # Add process and thread info for debugging
         log_record['process'] = {

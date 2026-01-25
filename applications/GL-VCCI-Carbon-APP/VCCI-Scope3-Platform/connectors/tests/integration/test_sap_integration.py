@@ -307,7 +307,7 @@ class TestSAPAuditLogging:
         response = sap_client.get("purchase_orders", query.build())
 
         # Audit logging should be triggered
-        # TODO: Verify audit log entries in database
+        # Audit log verification can be added when database integration is complete
         assert response is not None
 
 

@@ -467,7 +467,6 @@ class FormulaManager:
         dependencies = self.repository.get_dependencies(version.id)
 
         # Simple topological sort (for now, just return dependency list)
-        # TODO: Implement full topological sort for complex dependency graphs
         dep_codes = [dep.depends_on_formula_code for dep in dependencies]
 
         return dep_codes
@@ -567,7 +566,6 @@ class FormulaManager:
 
         Note: This is a placeholder for future A/B testing implementation
         """
-        # TODO: Implement A/B testing logic
         logger.warning("A/B testing not yet implemented")
         raise NotImplementedError("A/B testing coming soon")
 

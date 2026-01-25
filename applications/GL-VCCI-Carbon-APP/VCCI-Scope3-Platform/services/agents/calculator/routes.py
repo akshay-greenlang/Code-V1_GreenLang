@@ -78,7 +78,6 @@ def get_calculator() -> Scope3CalculatorAgent:
     global _calculator_instance
 
     if _calculator_instance is None:
-        # TODO: Initialize with proper dependencies
         # For now, this is a placeholder that will be replaced during integration
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,

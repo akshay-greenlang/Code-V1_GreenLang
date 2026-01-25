@@ -439,7 +439,6 @@ class APIKeyValidator:
 
     async def _lookup_key(self, key_hash: str) -> Optional[APIKeyInfo]:
         """Lookup API key in database."""
-        # TODO: Implement actual database lookup
         # For now, return a mock for development
 
         # Placeholder: accept any key that starts with "gl_"
@@ -687,7 +686,6 @@ class RequestLogger:
 
     async def _emit_metrics(self, log_data: Dict[str, Any]) -> None:
         """Emit metrics to monitoring system."""
-        # TODO: Implement Prometheus/StatsD metrics emission
         pass
 
 

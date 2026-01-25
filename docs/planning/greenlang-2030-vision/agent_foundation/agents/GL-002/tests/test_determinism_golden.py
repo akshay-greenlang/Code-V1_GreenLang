@@ -926,7 +926,6 @@ def generate_golden_result_database():
 
     golden_db = {}
 
-    # TODO: Generate all golden results and save to JSON
     # golden_db["test_name"] = {"input_hash": ..., "output": ...}
 
     # Save to file

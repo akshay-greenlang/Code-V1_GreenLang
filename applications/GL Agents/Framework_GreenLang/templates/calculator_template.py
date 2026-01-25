@@ -220,7 +220,6 @@ class TestGoldenMaster:
     regression or intentional formula change.
     """
 
-    # TODO: Add golden test cases
     # Example:
     # def test_basic_calculation_golden(self):
     #     '''Golden test for basic calculation.'''
@@ -243,7 +242,6 @@ class TestDeterminism:
 
     def test_same_inputs_same_hash(self):
         """Same inputs must produce same hash."""
-        # TODO: Implement with actual calculator
         # calculator = MyCalculator()
         #
         # inputs = MyInputs(...)
@@ -256,7 +254,6 @@ class TestDeterminism:
 
     def test_hash_changes_with_input(self):
         """Different inputs must produce different hashes."""
-        # TODO: Implement with actual calculator
         pass
 '''
 
@@ -307,7 +304,6 @@ class FormulaDefinition:
     implementation_notes: Optional[str] = None
 
 
-# TODO: Add formula definitions for this agent
 # Example:
 #
 # HEAT_TRANSFER_FORMULA = FormulaDefinition(

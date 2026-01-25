@@ -63,7 +63,6 @@ async def search_agents(
     """
     logger.info(f"Searching agents: {request.query}")
 
-    # TODO: Call discovery service
     # results = await discovery_service.search(request.query, filters)
 
     return SearchResponse(
@@ -90,7 +89,6 @@ async def get_trending_agents(
     """
     logger.info(f"Getting trending agents for period {period}")
 
-    # TODO: Call discovery service
     # agents = await discovery_service.get_trending(period, limit)
 
     return []
@@ -112,7 +110,6 @@ async def get_recent_agents(
     """
     logger.info("Getting recent agents")
 
-    # TODO: Call registry service
 
     return []
 
@@ -134,7 +131,6 @@ async def get_similar_agents(
     """
     logger.info(f"Getting agents similar to {agent_id}")
 
-    # TODO: Call discovery service
     # agents = await discovery_service.get_similar(agent_id, limit)
 
     return []
@@ -154,7 +150,6 @@ async def get_search_facets() -> Dict[str, Any]:
     """
     logger.info("Getting search facets")
 
-    # TODO: Call registry service
     # facets = await registry_service.get_facets()
 
     return {

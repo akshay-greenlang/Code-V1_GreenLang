@@ -235,7 +235,7 @@ class {{ AGENT_CLASS_NAME }}(IntelligentAgentBase):
             Calculation results (all numbers must be deterministic)
         """
         # {{ CALCULATION_IMPLEMENTATION }}
-        # TODO: Implement your deterministic calculation here
+        # PLACEHOLDER: Implement your deterministic calculation here
 
         # Example placeholder - replace with actual calculation
         result = {
@@ -267,7 +267,7 @@ class {{ AGENT_CLASS_NAME }}(IntelligentAgentBase):
         """
         steps = [
             # {{ CALCULATION_STEPS }}
-            # TODO: Document your calculation steps
+            # PLACEHOLDER: Document your calculation steps
             "Step 1: Retrieved relevant data",
             "Step 2: Applied calculation methodology",
             "Step 3: Computed result"
@@ -291,7 +291,6 @@ class {{ AGENT_CLASS_NAME }}(IntelligentAgentBase):
         focus_areas = ["efficiency", "compliance"]
 
         # {{ RECOMMENDATION_FOCUS_LOGIC }}
-        # TODO: Add logic to determine focus areas based on results
 
         return focus_areas
 
@@ -304,7 +303,7 @@ class {{ AGENT_CLASS_NAME }}(IntelligentAgentBase):
         """
         return {
             # {{ EXPECTED_RANGES }}
-            # TODO: Define expected ranges for your data fields
+            # PLACEHOLDER: Define expected ranges for your data fields
             # "field_name": (min_value, max_value),
         }
 
@@ -321,7 +320,7 @@ class {{ AGENT_CLASS_NAME }}(IntelligentAgentBase):
             True if valid, False otherwise
         """
         # {{ INPUT_VALIDATION }}
-        # TODO: Add your validation logic
+        # PLACEHOLDER: Add your validation logic
 
         required_fields = []  # Add required fields
         for field in required_fields:
@@ -376,7 +375,6 @@ if __name__ == "__main__":
     # Example input
     example_input = {
         # {{ EXAMPLE_INPUT }}
-        # TODO: Add example input data
     }
 
     # Run agent

@@ -351,7 +351,6 @@ class SCADAConnector(BaseConnector[SCADAQuery, SCADAPayload, SCADAConfig]):
     # OPC UA protocol methods
     async def _connect_opcua(self):
         """Connect to OPC UA server."""
-        # TODO: Implement OPC UA connection using asyncua library
         # from asyncua import Client
         # self._client = Client(self.config.endpoint)
         # await self._client.connect()
@@ -377,7 +376,6 @@ class SCADAConnector(BaseConnector[SCADAQuery, SCADAPayload, SCADAConfig]):
     # Modbus protocol methods
     async def _connect_modbus(self):
         """Connect to Modbus device."""
-        # TODO: Implement Modbus connection using pymodbus
         raise NotImplementedError("Modbus support requires pymodbus library")
 
     async def _disconnect_modbus(self):

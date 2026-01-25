@@ -211,7 +211,6 @@ def sync_expense_reports(self, tenant_id: str = "tenant-default") -> Dict[str, A
         # Map to logistics schema
         logistics_records = mapper.map_expenses_batch(new_expenses)
 
-        # TODO: Store logistics_records in platform database
         # For now, just log
         logger.info(f"Generated {len(logistics_records)} logistics records")
 
@@ -309,7 +308,6 @@ def sync_commute_surveys(self, tenant_id: str = "tenant-default") -> Dict[str, A
         # Map to Category 7 format
         commute_records = mapper.map_commutes_batch(new_commutes)
 
-        # TODO: Store commute_records in platform database
         # For now, just log
         logger.info(f"Generated {len(commute_records)} commute records")
 

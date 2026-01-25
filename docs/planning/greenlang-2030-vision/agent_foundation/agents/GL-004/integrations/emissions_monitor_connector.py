@@ -740,7 +740,7 @@ class EmissionsMonitorConnector:
             compliance_status=compliance_status,
             exceedances=recent_exceedances,
             data_availability=min(100.0, data_availability),
-            substituted_data_percent=0.0,  # TODO: Track substituted data
+            substituted_data_percent=0.0,
             monitor_status="operational"
         )
 

@@ -1040,7 +1040,6 @@ class TenantManager:
 
             logger.info(f"Database user created: {user_name}")
 
-            # TODO: Store credentials in secrets manager (AWS Secrets Manager, HashiCorp Vault, etc.)
             # For now, credentials are managed by master user
 
         except asyncpg.DuplicateDatabaseError:

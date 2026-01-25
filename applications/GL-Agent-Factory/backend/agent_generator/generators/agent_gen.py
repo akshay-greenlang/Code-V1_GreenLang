@@ -248,7 +248,6 @@ class {{ class_name }}:
         """
         result: Dict[str, Any] = {}
 
-        # TODO: Implement your zero-hallucination processing logic here
         # Example patterns:
         #
         # 1. Database lookups:

@@ -287,7 +287,6 @@ def discover_agents(module_paths: List[str] = None) -> List[AgentInfo]:
     Otherwise, return the pre-cataloged agents.
     """
     if module_paths:
-        # TODO: Implement dynamic discovery
         logger.info(f"Discovering agents in: {module_paths}")
 
     return AGENT_CATALOG

@@ -275,6 +275,82 @@ def agentspec_v2(
 # Migration Helpers
 # ==============================================================================
 
+def _python_type_to_dtype(type_hint: Any) -> str:
+    """Convert Python type hint to AgentSpec dtype."""
+    import typing
+    type_str = str(type_hint).lower()
+
+    if type_hint is None or type_hint == type(None):
+        return "null"
+    elif type_hint in (int, "int"):
+        return "integer"
+    elif type_hint in (float, "float"):
+        return "number"
+    elif type_hint in (str, "str"):
+        return "string"
+    elif type_hint in (bool, "bool"):
+        return "boolean"
+    elif "list" in type_str or "array" in type_str:
+        return "array"
+    elif "dict" in type_str or "mapping" in type_str:
+        return "object"
+    else:
+        return "string"  # Default to string for unknown types
+
+
+def _extract_inputs_from_signature(sig) -> dict:
+    """Extract input field definitions from method signature."""
+    import inspect
+    inputs = {}
+
+    for name, param in sig.parameters.items():
+        if name in ("self", "cls"):
+            continue
+
+        dtype = "string"
+        if param.annotation != inspect.Parameter.empty:
+            dtype = _python_type_to_dtype(param.annotation)
+
+        field_def = {
+            "dtype": dtype,
+            "unit": "1",
+            "description": f"Input parameter: {name}",
+            "required": param.default == inspect.Parameter.empty,
+        }
+
+        if param.default != inspect.Parameter.empty:
+            field_def["default"] = param.default
+
+        inputs[name] = field_def
+
+    return inputs if inputs else {"_empty": {"dtype": "null", "description": "No inputs required"}}
+
+
+def _extract_outputs_from_signature(sig, method) -> dict:
+    """Extract output field definitions from return annotation and docstring."""
+    import inspect
+
+    outputs = {}
+    return_annotation = sig.return_annotation
+
+    if return_annotation != inspect.Signature.empty:
+        dtype = _python_type_to_dtype(return_annotation)
+        outputs["result"] = {
+            "dtype": dtype,
+            "unit": "1",
+            "description": f"Return value of type {return_annotation}",
+        }
+    else:
+        # Default output for methods without return annotation
+        outputs["result"] = {
+            "dtype": "object",
+            "unit": "1",
+            "description": "Agent execution result",
+        }
+
+    return outputs
+
+
 def create_pack_yaml_for_agent(
     agent: Any,
     output_path: Path,
@@ -332,24 +408,8 @@ def create_pack_yaml_for_agent(
             "deterministic": True,
             "timeout_seconds": 30,
             "memory_limit_mb": 512,
-            "inputs": {
-                # TODO: Analyze method signature and add fields
-                # For now, add placeholder
-                "_placeholder": {
-                    "dtype": "string",
-                    "unit": "1",
-                    "description": "TODO: Define input fields based on agent implementation",
-                    "required": False,
-                }
-            },
-            "outputs": {
-                # TODO: Analyze return type and add fields
-                "_placeholder": {
-                    "dtype": "string",
-                    "unit": "1",
-                    "description": "TODO: Define output fields based on agent implementation",
-                }
-            },
+            "inputs": _extract_inputs_from_signature(sig),
+            "outputs": _extract_outputs_from_signature(sig, run_method),
             "factors": [],
         },
         "provenance": {
@@ -364,5 +424,5 @@ def create_pack_yaml_for_agent(
     with open(output_path, "w") as f:
         yaml.dump(pack_data, f, default_flow_style=False, sort_keys=False)
 
-    print(f"✅ Created pack.yaml at {output_path}")
-    print(f"⚠️  TODO: Update input/output fields to match agent implementation")
+    print(f"Created pack.yaml at {output_path}")
+    print(f"Note: Review generated input/output fields for accuracy")

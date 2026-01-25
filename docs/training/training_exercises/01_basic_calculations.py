@@ -134,7 +134,6 @@ def main():
     print("Calculate emissions for 1000 liters of diesel in the US.")
     print()
 
-    # TODO: Complete this task
     # Use the calculator to calculate emissions for:
     # - fuel_type: "diesel"
     # - quantity: 1000
@@ -162,7 +161,6 @@ def main():
     print("What is the expected emission value?")
     print()
 
-    # TODO: Calculate manually and verify with the calculator
     # Natural gas emission factor for US is 1.93 kg CO2e per liter
 
     # YOUR CODE HERE:
@@ -186,7 +184,6 @@ def main():
     print("Verify that the same inputs produce the same provenance hash.")
     print()
 
-    # TODO: Run the same calculation twice and compare hashes
 
     # YOUR CODE HERE:
     result_a = calculator.calculate(fuel_type="diesel", quantity=100, region="US")
@@ -211,7 +208,6 @@ def main():
     print("  - 200 liters gasoline (US)")
     print()
 
-    # TODO: Use calculate_batch with a list of records
 
     # YOUR CODE HERE:
     records = [
@@ -236,7 +232,6 @@ def main():
     print("Try to calculate emissions for 'hydrogen' (not in our database).")
     print()
 
-    # TODO: Handle the error gracefully
 
     # YOUR CODE HERE:
     task5_answer = None

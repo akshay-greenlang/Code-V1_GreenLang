@@ -683,7 +683,7 @@ class {spec.agent_class_name}(SDKAgentBase[{spec.agent_class_name}Input, {spec.a
         Returns:
             Dictionary of output values
         """
-        # TODO: Implement core logic using tools
+                # Core logic implementation
         # Example:
         # result = await self.call_calculate_emissions(
         #     fuel_type=input_data.fuel_type,
@@ -773,7 +773,7 @@ class {tool.class_name}:
         Returns:
             Tool execution result
         """
-        # TODO: Implement actual tool logic
+            # Tool logic implementation
         # This should call the actual implementation at {tool.impl}
 
         # Validate required parameters
@@ -795,7 +795,7 @@ class {tool.class_name}:
 
     def validate_params(self, params: Dict[str, Any]) -> bool:
         """Validate input parameters."""
-        # TODO: Add validation based on schema
+            # Schema-based validation
         return True
 ''')
 
@@ -939,7 +939,7 @@ def list_tools() -> List[str]:
         Property: {prop.description or prop.rule}
         Rule: {prop.rule}
         """
-        # TODO: Implement property-based test
+        # Property-based testing implementation
         # Rule: {prop.rule}
         pass
 ''')

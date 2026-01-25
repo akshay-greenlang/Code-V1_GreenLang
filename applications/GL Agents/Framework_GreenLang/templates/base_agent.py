@@ -549,7 +549,6 @@ class AgentInput(BaseModel):
         max_length=200,
     )
 
-    # TODO: Add domain-specific input fields
     # Example:
     # temperature: float = Field(..., ge=-273.15, description="Temperature in Celsius")
     # pressure: float = Field(..., gt=0, description="Pressure in Pa")
@@ -591,7 +590,7 @@ class AgentOutput(BaseModel):
     Includes calculation results and provenance metadata.
     """
 
-    # Results - TODO: Add domain-specific output fields
+    # Results - TEMPLATE: Add domain-specific output fields below
     # Example:
     # efficiency: float = Field(..., description="Calculated efficiency")
     # energy_recovered: float = Field(..., description="Energy recovered in kW")

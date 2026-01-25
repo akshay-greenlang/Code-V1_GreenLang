@@ -461,7 +461,6 @@ async def process_batch_job(
                         inputs[agent_field] = row_data[file_column]
 
                 # Execute agent (placeholder)
-                # TODO: Call actual agent execution service
                 await asyncio.sleep(0.1)  # Simulate processing
 
                 # Mock result

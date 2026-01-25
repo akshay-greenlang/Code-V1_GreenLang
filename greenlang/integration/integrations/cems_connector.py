@@ -81,7 +81,6 @@ class CEMSConnector(BaseConnector[CEMSQuery, CEMSPayload, CEMSConfig]):
         """Connect to CEMS device."""
         if self.config.mock_mode:
             return True
-        # TODO: Implement CEMS connection
         return True
 
     async def disconnect(self) -> bool:

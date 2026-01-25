@@ -280,6 +280,5 @@ def normalize_tool_arguments(
     if error:
         raise error
 
-    # TODO: Fill in defaults from schema (future enhancement)
 
     return arguments

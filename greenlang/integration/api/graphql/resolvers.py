@@ -625,7 +625,7 @@ class Query:
         orchestrator = context.orchestrator
 
         # Calculate uptime (placeholder)
-        uptime = 3600.0  # TODO: Track actual uptime
+        uptime = 3600.0
 
         # Health checks
         checks = [
@@ -678,7 +678,6 @@ class Query:
         ):
             raise PermissionError("Access denied to metrics")
 
-        # TODO: Implement actual metrics collection
         # Placeholder metrics
         metrics = [
             Metric(
@@ -1181,7 +1180,6 @@ class Mutation:
         ):
             raise PermissionError(f"Access denied to cancel execution {id}")
 
-        # TODO: Implement cancellation logic
         execution = await context.execution_loader.load(id)
         if execution:
             # Update status to cancelled (would need persistent storage)
@@ -1523,7 +1521,6 @@ class Mutation:
         ):
             raise PermissionError("Access denied to delete executions")
 
-        # TODO: Implement execution deletion from history
         # For now, return count (would need persistent storage)
         deleted_count = len(ids)
         logger.info(f"Batch deleted {deleted_count} executions")

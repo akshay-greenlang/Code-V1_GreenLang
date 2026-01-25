@@ -327,7 +327,6 @@ class EventSourcingPattern:
         # Implementation depends on broker's ability to read from specific point
         # For Redis Streams, use XREAD with timestamp
         logger.info("Replaying events...")
-        # TODO: Implement event replay logic
 
 
 class SagaPattern:

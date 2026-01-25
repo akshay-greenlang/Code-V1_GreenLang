@@ -422,7 +422,6 @@ class TenantContextMiddleware(BaseHTTPMiddleware):
                     logger.warning("X-Tenant-ID without X-API-Key")
                     tenant_id = None
                 else:
-                    # TODO: Validate API key
                     logger.debug(f"Tenant from header: {tenant_id}")
 
         # 3. Try subdomain extraction

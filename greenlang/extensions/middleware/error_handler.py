@@ -305,7 +305,6 @@ class ErrorHandler:
             exception: Critical exception
             request_id: Optional request ID
         """
-        # TODO: Integrate with alerting system (PagerDuty, Slack, etc.)
         alert_message = f"CRITICAL ERROR: {exception.__class__.__name__}: {str(exception)}"
         if request_id:
             alert_message += f" (Request ID: {request_id})"

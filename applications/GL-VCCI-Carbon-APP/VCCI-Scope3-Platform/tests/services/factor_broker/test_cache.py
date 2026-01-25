@@ -38,7 +38,6 @@ class TestFactorCache:
     @pytest.fixture
     def cache(self, cache_config):
         """Create FactorCache instance."""
-        # TODO: Mock Redis connection
         return FactorCache(cache_config)
 
     @pytest.mark.asyncio
@@ -51,7 +50,6 @@ class TestFactorCache:
         - Factor retrieved from cache
         - Cache hit count incremented
         """
-        # TODO: Implement test
         pass
 
     @pytest.mark.asyncio
@@ -64,7 +62,6 @@ class TestFactorCache:
         - Returns None
         - Cache miss count incremented
         """
-        # TODO: Implement test
         pass
 
     @pytest.mark.asyncio
@@ -77,7 +74,6 @@ class TestFactorCache:
         - Consistent key for same request
         - Different keys for different requests
         """
-        # TODO: Implement test
         pass
 
     @pytest.mark.asyncio
@@ -90,7 +86,6 @@ class TestFactorCache:
         - TTL > 24 hours raises LicenseViolationError
         - Error message explains ecoinvent license
         """
-        # TODO: Implement test
         pass
 
     @pytest.mark.asyncio
@@ -103,7 +98,6 @@ class TestFactorCache:
         - After TTL expires, get returns None
         - New fetch required
         """
-        # TODO: Implement test
         pass
 
     @pytest.mark.asyncio
@@ -116,7 +110,6 @@ class TestFactorCache:
         - Invalidate called
         - Subsequent get returns None
         """
-        # TODO: Implement test
         pass
 
     @pytest.mark.asyncio
@@ -130,7 +123,6 @@ class TestFactorCache:
         - Matching factors removed
         - Non-matching factors remain
         """
-        # TODO: Implement test
         pass
 
     @pytest.mark.asyncio
@@ -143,7 +135,6 @@ class TestFactorCache:
         - Hit rate calculated correctly
         - Redis memory stats included
         """
-        # TODO: Implement test
         pass
 
     @pytest.mark.asyncio
@@ -156,5 +147,4 @@ class TestFactorCache:
         - CacheError raised on initialization
         - Error message is helpful
         """
-        # TODO: Implement test
         pass

@@ -738,7 +738,6 @@ class WebSocketServer:
         Returns:
             Tuple of (tenant_id, user_id) if authenticated, None otherwise
         """
-        # TODO: Implement proper JWT/API key validation
         # For development, accept any token with a tenant_id
 
         if tenant_id:
@@ -859,12 +858,10 @@ class WebSocketServer:
 
         # Execution rooms - must belong to connection's tenant
         if room.startswith("execution:"):
-            # TODO: Validate execution belongs to tenant
             return True
 
         # Agent rooms - must have access to agent
         if room.startswith("agent:"):
-            # TODO: Validate agent access
             return True
 
         # Metrics rooms

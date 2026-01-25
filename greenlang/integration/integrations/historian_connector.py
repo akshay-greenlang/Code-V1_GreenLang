@@ -84,7 +84,6 @@ class HistorianConnector(BaseConnector[HistorianQuery, HistorianPayload, Histori
         """Connect to historian server."""
         if self.config.mock_mode:
             return True
-        # TODO: Implement historian connection
         return True
 
     async def disconnect(self) -> bool:

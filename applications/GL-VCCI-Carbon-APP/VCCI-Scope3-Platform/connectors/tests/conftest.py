@@ -347,7 +347,6 @@ def test_db_connection():
     Yields:
         Database connection for test data cleanup
     """
-    # TODO: Implement database connection
     # For now, return mock
     yield MagicMock()
 

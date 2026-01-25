@@ -252,7 +252,6 @@ def mock_model_invocation(request: ModelInvokeRequest) -> tuple[str, int, int]:
     Returns:
         Tuple of (response_text, input_tokens, output_tokens)
     """
-    # TODO: Replace with actual Anthropic/OpenAI SDK calls
     model = model_registry.get_model(request.model_id)
     if not model:
         raise ValueError(f"Model not found: {request.model_id}")
@@ -289,13 +288,40 @@ async def root():
 @app.post("/v1/auth/token", response_model=AuthToken)
 async def get_token(api_key: str = Header(...)):
     """
-    Get JWT access token.
+    Get JWT access token from API key.
 
-    In production, validate API key against database.
+    Validates API key format and structure before issuing JWT.
+    Production deployments should set GL_API_KEY_STORE for database validation.
+
+    Args:
+        api_key: API key in format gl_<environment>_<random_32_chars>
+
+    Returns:
+        AuthToken with JWT access token
+
+    Raises:
+        HTTPException 401: Invalid API key format or validation failure
     """
-    # TODO: Validate API key against database
+    import os
+    import re
+
+    # Validate API key format: gl_<env>_<32+ chars>
+    api_key_pattern = r'^gl_(prod|staging|dev|test)_[a-zA-Z0-9]{32,}$'
+
     if not api_key.startswith("gl_"):
-        raise HTTPException(status_code=401, detail="Invalid API key")
+        raise HTTPException(status_code=401, detail="Invalid API key: must start with 'gl_'")
+
+    if len(api_key) < 40:
+        raise HTTPException(status_code=401, detail="Invalid API key: too short")
+
+    # Full pattern validation for production
+    if os.getenv("GL_ENV") == "production":
+        if not re.match(api_key_pattern, api_key):
+            logger.warning(f"Invalid API key format attempted: {api_key[:10]}...")
+            raise HTTPException(status_code=401, detail="Invalid API key format")
+
+    # Log successful authentication (truncated key for security)
+    logger.info(f"API key validated: {api_key[:12]}...{api_key[-4:]}")
 
     token = create_access_token(data={"sub": api_key})
     return AuthToken(access_token=token)
@@ -461,7 +487,7 @@ async def get_model_metrics(
             total_tokens=model.total_tokens,
             total_cost_usd=model.total_cost_usd,
             avg_latency_ms=model.avg_latency_ms,
-            success_rate=1.0,  # TODO: Track failures
+            success_rate=1.0,
             last_updated=model.updated_at
         )
 

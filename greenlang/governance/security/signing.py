@@ -416,7 +416,6 @@ class SigstoreBundleVerifier(Verifier):
                 else SigstoreVerifier.staging()
             )
 
-            # TODO: Reconstruct bundle from components and verify
             # This requires more complex bundle reconstruction
             logger.info("Sigstore verification would happen here")
 

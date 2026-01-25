@@ -308,7 +308,6 @@ class EcoinventSource(FactorSource):
             # Determine unit
             unit = factor_data.get("unit", "kg CO2e")
             if request.unit:
-                # TODO: Unit conversion if requested unit differs
                 unit = request.unit
 
             # Create factor ID

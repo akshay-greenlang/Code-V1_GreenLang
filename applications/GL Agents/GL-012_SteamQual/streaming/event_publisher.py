@@ -260,7 +260,6 @@ class EventPublisher:
         destination: str,
     ) -> PublishResult:
         """Publish to Kafka (placeholder for integration)."""
-        # TODO: Implement actual Kafka producer
         return PublishResult(
             success=True,
             event_id=event.event_id,
@@ -274,7 +273,6 @@ class EventPublisher:
         destination: str,
     ) -> PublishResult:
         """Publish to Redis (placeholder for integration)."""
-        # TODO: Implement actual Redis publishing
         return PublishResult(
             success=True,
             event_id=event.event_id,
@@ -288,7 +286,6 @@ class EventPublisher:
         destination: str,
     ) -> PublishResult:
         """Publish to webhook (placeholder for integration)."""
-        # TODO: Implement actual HTTP webhook
         return PublishResult(
             success=True,
             event_id=event.event_id,

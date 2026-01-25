@@ -364,7 +364,6 @@ class SubscriptionManager:
         Returns:
             SystemMetrics object
         """
-        # TODO: Implement actual metrics collection
         # Placeholder implementation
         import psutil
 
@@ -379,7 +378,7 @@ class SubscriptionManager:
             cpu_usage=cpu_usage,
             memory_usage=memory_usage,
             active_executions=len(self.execution_subscribers),
-            requests_per_second=0.0,  # TODO: Track actual RPS
+            requests_per_second=0.0,
             timestamp=DeterministicClock.utcnow(),
         )
 

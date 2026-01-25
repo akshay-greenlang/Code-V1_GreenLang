@@ -47,11 +47,11 @@ import asyncio
 from typing import Any, Dict, List, Optional, Callable
 from pydantic import BaseModel, Field
 
-from greenlang.intelligence import create_provider
-from greenlang.intelligence.providers.base import LLMProvider
-from greenlang.intelligence.runtime.session import ChatSession
-from greenlang.intelligence.runtime.budget import Budget, BudgetExceeded
-from greenlang.intelligence.schemas.messages import ChatMessage, Role
+from greenlang.agents.intelligence import create_provider
+from greenlang.agents.intelligence.providers.base import LLMProvider
+from greenlang.agents.intelligence.runtime.session import ChatSession
+from greenlang.agents.intelligence.runtime.budget import Budget, BudgetExceeded
+from greenlang.agents.intelligence.schemas.messages import ChatMessage, Role
 
 logger = logging.getLogger(__name__)
 

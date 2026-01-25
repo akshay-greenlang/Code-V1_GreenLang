@@ -168,7 +168,6 @@ class ERPConnector(BaseConnector[ERPQuery, ERPPayload, ERPConfig]):
                 return True
 
             # Authenticate and establish session
-            # TODO: Implement ERP-specific authentication
             return True
 
         except Exception as e:
@@ -196,7 +195,6 @@ class ERPConnector(BaseConnector[ERPQuery, ERPPayload, ERPConfig]):
         if self.config.mock_mode:
             return await self._fetch_mock_data(query)
 
-        # TODO: Implement ERP data fetch
         raise NotImplementedError("ERP data fetch requires implementation")
 
     async def _fetch_mock_data(self, query: ERPQuery) -> ERPPayload:

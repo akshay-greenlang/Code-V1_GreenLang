@@ -441,7 +441,6 @@ class ModelRouter:
         """
         import time
 
-        # TODO: Replace with actual LLM SDK calls
         model = self.registry.get_model(model_id)
         if not model:
             raise ValueError(f"Model not found: {model_id}")

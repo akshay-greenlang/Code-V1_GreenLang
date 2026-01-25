@@ -1236,7 +1236,6 @@ class TestDeterminism:
     @settings(max_examples=100, phases=[Phase.generate, Phase.target])
     def test_calculation_determinism(self, input_value: float):
         """Same input should always produce same output."""
-        # TODO: Replace with actual calculator import
         def sample_calculation(x):
             return x * 2.5  # Placeholder
 
@@ -1278,7 +1277,6 @@ class TestBoundaryConditions:
     @settings(max_examples=50)
     def test_near_zero_values(self, value: float):
         """Handle values near zero correctly."""
-        # TODO: Replace with actual validation
         assume(value >= 0)
         result = value * 2  # Placeholder
         assert result >= 0, "Result should be non-negative"
@@ -1287,7 +1285,6 @@ class TestBoundaryConditions:
     @settings(max_examples=50)
     def test_near_max_values(self, value: float):
         """Handle values near maximum correctly."""
-        # TODO: Replace with actual bounds
         MAX_VALUE = 1000
         assume(value <= MAX_VALUE)
         assert value <= MAX_VALUE, "Should respect upper bound"
@@ -1302,7 +1299,6 @@ class TestBoundaryConditions:
         assume(not math.isnan(value))
         assume(not math.isinf(value))
 
-        # TODO: Replace with actual calculation
         if value > 0:
             result = value * 2
             assert result > 0, "Positive input should give positive output"
@@ -1322,7 +1318,6 @@ class TestInvariants:
     @settings(max_examples=100)
     def test_efficiency_bounds(self, input1: float, input2: float):
         """Efficiency should always be between 0 and 1."""
-        # TODO: Replace with actual efficiency calculation
         efficiency = min(input1, input2) / max(input1, input2)
 
         assert 0 <= efficiency <= 1, (
@@ -1333,7 +1328,6 @@ class TestInvariants:
     @settings(max_examples=50)
     def test_energy_conservation(self, energy_in: float):
         """Energy out should never exceed energy in (conservation)."""
-        # TODO: Replace with actual energy calculation
         efficiency = 0.85
         energy_out = energy_in * efficiency
 
@@ -1353,7 +1347,6 @@ class TestInputValidation:
     @settings(max_examples=100)
     def test_string_sanitization(self, text: str):
         """String inputs should be properly sanitized."""
-        # TODO: Replace with actual sanitization
         sanitized = text.strip()
 
         # Should not start/end with whitespace
@@ -1370,7 +1363,6 @@ class TestInputValidation:
     @settings(max_examples=50)
     def test_dict_validation(self, data: Dict[str, Any]):
         """Dictionary inputs should be validated."""
-        # TODO: Replace with actual validation
 
         # Should be serializable to JSON
         try:

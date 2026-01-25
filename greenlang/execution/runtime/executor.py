@@ -631,7 +631,6 @@ class Executor:
 
     def _run_cloud(self, pipeline: Dict[str, Any], context: Dict[str, Any]) -> Result:
         """Execute pipeline on cloud functions"""
-        # TODO: Implement cloud execution
         # This would invoke Lambda/Cloud Functions for each step
         return Result(success=False, error="Cloud execution not yet implemented")
 

@@ -63,7 +63,6 @@ async def get_agent_metrics(
     """
     logger.info(f"Getting metrics for agent {agent_id}")
 
-    # TODO: Call metrics service
 
     return AgentMetricsResponse(
         agent_id=agent_id,

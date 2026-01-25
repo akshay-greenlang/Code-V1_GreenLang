@@ -1023,7 +1023,6 @@ class WeatherConnector(BaseConnector):
             if self._nws_client:
                 await self._nws_client.initialize()
 
-            # TODO: Connect to on-site station if configured
 
             self._state = ConnectionState.CONNECTED
             self._logger.info("Weather connector connected")

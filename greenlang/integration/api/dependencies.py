@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 # Security scheme
 security = HTTPBearer()
 
-# Database configuration (TODO: Move to config)
+# Database configuration - configurable via environment variables
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./greenlang.db")
 JWT_SECRET = os.getenv("JWT_SECRET", "")
 JWT_ALGORITHM = "HS256"

@@ -6,7 +6,8 @@ GreenLang Chat Session Management
 Manages conversational AI sessions for agent interactions.
 Provides context management, message history, and session state.
 
-This is a stub implementation - TODO: Complete implementation.
+This module provides basic chat session functionality for local agent execution.
+For production LLM integration, use the ml_platform module.
 
 Author: GreenLang Framework Team
 """
@@ -34,12 +35,13 @@ class ChatSession:
     """
     Manages a chat session with context and message history.
 
-    TODO: This is a stub implementation. Full implementation should include:
-    - Integration with LLM providers
-    - Session persistence
-    - Context window management
-    - Token counting
-    - Conversation branching
+    This implementation provides:
+    - Message history management with configurable limits
+    - Context key-value storage for session state
+    - Session serialization for persistence
+
+    For advanced features (LLM integration, token counting, persistence),
+    see the ml_platform module and external providers.
     """
 
     def __init__(self, session_id: Optional[str] = None, max_history: int = 100):

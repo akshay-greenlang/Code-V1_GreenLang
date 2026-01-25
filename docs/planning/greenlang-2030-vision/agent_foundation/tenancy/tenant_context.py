@@ -588,7 +588,7 @@ class TenantExtractor:
             # Extract JWT token (remove 'Bearer ' prefix)
             token = auth_header.replace("Bearer ", "").strip()
 
-            # PRODUCTION JWT VALIDATION - Replaces TODO at line 231
+            # PRODUCTION JWT VALIDATION
             # Validates signature, expiration, issuer, audience, and custom claims
             payload = self.jwt_validator.validate_token(token)
 

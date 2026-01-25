@@ -774,7 +774,6 @@ class {module_name.title().replace("_", "")}Agent:
         IMPORTANT: This method uses DETERMINISTIC processing only.
         No LLM calls allowed for numeric calculations.
         """
-        # TODO: Implement workflow using tools
         # Example:
         # result = await {config.tools[0]}(input_data)
         # return result
@@ -865,7 +864,6 @@ async def {tool}(
     """
     logger.info(f"Executing {tool}")
 
-    # TODO: Implement deterministic logic
     # Example:
     # - Database lookup: value = db.lookup(key)
     # - Arithmetic: result = a * b + c

@@ -242,7 +242,6 @@ def main():
     print("  3. CalculationAgent")
     print()
 
-    # TODO: Create the pipeline
 
     # YOUR CODE HERE:
     pipeline = Pipeline("basic_pipeline")
@@ -269,7 +268,6 @@ def main():
     print("Test with input that has all optional fields.")
     print()
 
-    # TODO: Create extended pipeline and test
 
     # YOUR CODE HERE:
     extended_pipeline = Pipeline("extended_pipeline")
@@ -304,7 +302,6 @@ def main():
     print("Test with: negative quantity")
     print()
 
-    # TODO: Test error handling
 
     # YOUR CODE HERE:
     invalid_input = {"fuel_type": "diesel", "quantity": -100}
@@ -327,7 +324,6 @@ def main():
     print("Execute with natural_gas, 250 liters.")
     print()
 
-    # TODO: Create complete pipeline
 
     # YOUR CODE HERE:
     full_pipeline = Pipeline("full_pipeline")
@@ -357,7 +353,6 @@ def main():
     print("Sum up the total emissions from all successful calculations.")
     print()
 
-    # TODO: Process batch and sum emissions
 
     # YOUR CODE HERE:
     batch_inputs = [

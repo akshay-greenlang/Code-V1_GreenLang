@@ -799,7 +799,6 @@ class ComplianceEvaluator:
         Returns:
             Compliance record
         """
-        # TODO: Unit conversion if needed
 
         # Calculate percent of limit
         percent_of_limit = (actual_value / limit.limit_value * 100) if limit.limit_value > 0 else 0

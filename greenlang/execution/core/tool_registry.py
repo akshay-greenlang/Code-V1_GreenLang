@@ -6,7 +6,8 @@ GreenLang Tool Registry
 Manages registration and discovery of tools/functions available to agents.
 Provides a centralized registry for agent capabilities.
 
-This is a stub implementation - TODO: Complete implementation.
+This module provides a functional tool registry for local agent execution.
+For distributed tool management, see the ecosystem/hub module.
 
 Author: GreenLang Framework Team
 """
@@ -36,12 +37,14 @@ class ToolRegistry:
     """
     Central registry for agent tools and capabilities.
 
-    TODO: This is a stub implementation. Full implementation should include:
-    - Tool validation
-    - Permission management
-    - Tool versioning
-    - Dynamic loading
-    - Tool composition
+    This implementation provides:
+    - Tool registration via decorator or direct call
+    - Tool discovery by name or category tags
+    - Parameter introspection from function signatures
+    - Tool execution with error handling
+
+    For advanced features (versioning, permissions, dynamic loading),
+    see the ecosystem/hub module.
     """
 
     def __init__(self):

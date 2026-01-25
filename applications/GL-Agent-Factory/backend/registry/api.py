@@ -65,7 +65,6 @@ async def get_registry_service():
     with database session dependency.
     """
     from backend.registry.service import AgentRegistryService
-    # TODO: Initialize with actual database session
     return AgentRegistryService(session=None)
 
 
@@ -1138,4 +1137,3 @@ async def _log_audit_event(
             "timestamp": datetime.utcnow().isoformat(),
         },
     )
-    # TODO: Persist to audit log table

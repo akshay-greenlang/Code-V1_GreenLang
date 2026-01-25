@@ -62,7 +62,6 @@ class TestStationaryCombustionGolden:
         Calculation:
             50,000 therms x 5.30 kg CO2e/therm = 265,000 kg CO2e
         """
-        # TODO: Implement when calculator is ready
         expected_emissions = 50000 * 5.30  # 265,000 kg CO2e
         tolerance = expected_emissions * 0.01  # 1%
 

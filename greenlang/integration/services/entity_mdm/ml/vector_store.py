@@ -426,7 +426,7 @@ class VectorStore:
             if filters:
                 # Note: Filter syntax depends on Weaviate version
                 # This is a simplified example
-                pass  # TODO: Implement filtering when needed
+                pass
 
             # Execute search
             response = search_query

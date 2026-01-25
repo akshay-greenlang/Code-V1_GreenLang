@@ -954,7 +954,7 @@ class AgentRegistryService:
             "version": ver.version,
             "artifact_path": ver.artifact_path,
             "checksum": ver.checksum,
-            "size_bytes": None,  # TODO: Get from storage
+            "size_bytes": None,
         }
 
     async def increment_download(
@@ -1063,7 +1063,7 @@ class AgentRegistryService:
                 "total_downloads": total_downloads,
                 "by_status": by_status,
                 "by_category": by_category,
-                "recent_activity": [],  # TODO: Implement
+                "recent_activity": [],
             }
         else:
             agents = list(self._in_memory_agents.values())

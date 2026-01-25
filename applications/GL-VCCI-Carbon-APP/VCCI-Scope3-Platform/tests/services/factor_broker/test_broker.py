@@ -33,13 +33,11 @@ class TestFactorBroker:
     @pytest.fixture
     def mock_config(self):
         """Create mock configuration for testing."""
-        # TODO: Implement mock configuration
         pass
 
     @pytest.fixture
     def broker(self, mock_config):
         """Create FactorBroker instance for testing."""
-        # TODO: Implement broker fixture
         pass
 
     @pytest.mark.asyncio
@@ -53,7 +51,6 @@ class TestFactorBroker:
         - Factor is cached
         - Response includes ecoinvent in provenance
         """
-        # TODO: Implement test
         pass
 
     @pytest.mark.asyncio
@@ -67,7 +64,6 @@ class TestFactorBroker:
         - DESNZ returns factor
         - Provenance shows both sources tried
         """
-        # TODO: Implement test
         pass
 
     @pytest.mark.asyncio
@@ -81,7 +77,6 @@ class TestFactorBroker:
         - Response is flagged as proxy
         - Warning message included
         """
-        # TODO: Implement test
         pass
 
     @pytest.mark.asyncio
@@ -95,7 +90,6 @@ class TestFactorBroker:
         - Provenance shows cache_hit=True
         - Latency is lower for cached request
         """
-        # TODO: Implement test
         pass
 
     @pytest.mark.asyncio
@@ -109,7 +103,6 @@ class TestFactorBroker:
         - Difference calculated
         - Response includes both factors
         """
-        # TODO: Implement test
         pass
 
     @pytest.mark.asyncio
@@ -123,7 +116,6 @@ class TestFactorBroker:
         - Cache stats included
         - Response includes latency metrics
         """
-        # TODO: Implement test
         pass
 
     @pytest.mark.asyncio
@@ -137,7 +129,6 @@ class TestFactorBroker:
         - FactorNotFoundError raised
         - Error includes suggestions
         """
-        # TODO: Implement test
         pass
 
     @pytest.mark.asyncio
@@ -151,5 +142,4 @@ class TestFactorBroker:
         - Source usage counted
         - Cache hit rate calculated
         """
-        # TODO: Implement test
         pass

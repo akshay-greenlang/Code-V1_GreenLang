@@ -636,7 +636,7 @@ async def explain_model(
             model_id=model_id,
             feature_importance=feature_importance,
             feature_rankings=feature_rankings,
-            interaction_effects=None,  # TODO: Implement interactions
+            interaction_effects=None,
             summary_statistics=summary_statistics,
             sample_size=len(X_sample),
             provenance_hash=provenance_hash,

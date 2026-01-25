@@ -823,7 +823,6 @@ class ComputeSpec(BaseModel):
     def warn_non_deterministic(self):
         """Warn if deterministic=false (non-determinism should be rare)."""
         if not self.deterministic:
-            # TODO: Add warning logging (non-blocking)
             # For now, we allow it but document that it's discouraged
             pass
         return self

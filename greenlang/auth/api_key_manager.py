@@ -338,8 +338,21 @@ class APIKeyManager:
         # Hash the provided key
         key_hash = self._hash_key(api_key)
 
-        # Look up by hash
+        # Look up by hash (primary lookup)
         key_id = self._key_hashes.get(key_hash)
+
+        # Check grace period hashes for recently rotated keys
+        if not key_id and hasattr(self, '_grace_period_hashes'):
+            grace_entry = self._grace_period_hashes.get(key_hash)
+            if grace_entry:
+                grace_key_id, grace_expiry = grace_entry
+                if datetime.now(timezone.utc) < grace_expiry:
+                    key_id = grace_key_id
+                    logger.info(f"API key validated via grace period: {key_id}")
+                else:
+                    # Clean up expired grace period entry
+                    del self._grace_period_hashes[key_hash]
+
         if not key_id:
             logger.warning(f"API key validation failed: key not found")
             raise InvalidAPIKeyError("Invalid API key")
@@ -464,13 +477,17 @@ class APIKeyManager:
         old_record.key_hash = new_hash
         old_record.last_rotated_at = datetime.now(timezone.utc)
 
-        # Update hash lookup
+        # Keep old hash valid for grace period (allows seamless rotation)
+        grace_expiry = datetime.now(timezone.utc) + timedelta(hours=grace_period_hours)
+        if not hasattr(self, '_grace_period_hashes'):
+            self._grace_period_hashes: Dict[str, tuple[str, datetime]] = {}
+        self._grace_period_hashes[old_hash] = (key_id, grace_expiry)
+
+        # Update primary hash lookup to new hash
         del self._key_hashes[old_hash]
         self._key_hashes[new_hash] = key_id
 
-        # TODO: In production, keep old_hash valid for grace_period_hours
-
-        logger.info(f"Rotated API key: {key_id}")
+        logger.info(f"Rotated API key: {key_id}, old key valid until {grace_expiry.isoformat()}")
         return old_record, new_full_key
 
     def list_user_keys(self, user_id: str) -> List[APIKeyRecord]:

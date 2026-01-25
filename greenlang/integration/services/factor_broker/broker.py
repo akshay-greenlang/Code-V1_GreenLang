@@ -446,7 +446,6 @@ class FactorBroker:
         Returns:
             List of suggested product names
         """
-        # TODO: Implement fuzzy matching against known products
         # For now, return empty list
         return []
 

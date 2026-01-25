@@ -904,7 +904,6 @@ def main():
 
     # Run validation
     if args.all_agents:
-        # TODO: Implement batch validation
         print("Batch validation not yet implemented", file=sys.stderr)
         sys.exit(1)
     else:

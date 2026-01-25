@@ -319,7 +319,6 @@ def create_incremental_archive(
     Returns:
         Path to incremental archive
     """
-    # TODO: Implement incremental archiving
     # This would compare against a base archive and only include changed files
     logger.warning("Incremental archiving not yet implemented, creating full archive")
     return create_pack_archive(pack_path, output_path)

@@ -38,7 +38,7 @@ except ImportError:
     print("   For security compliance, consider running within GreenLang framework")
 
 # Configuration
-REPO_OWNER = "your-username"  # TODO: Replace with your GitHub username
+REPO_OWNER = "your-username"
 REPO_NAME = "GreenLang"
 BRANCH = "master"
 

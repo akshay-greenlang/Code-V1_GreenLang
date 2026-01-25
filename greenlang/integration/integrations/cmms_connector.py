@@ -83,7 +83,6 @@ class CMMSConnector(BaseConnector[CMMSQuery, CMMSPayload, CMMSConfig]):
         """Connect to CMMS system."""
         if self.config.mock_mode:
             return True
-        # TODO: Implement CMMS connection
         return True
 
     async def disconnect(self) -> bool:

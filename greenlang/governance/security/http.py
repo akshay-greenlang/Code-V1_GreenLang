@@ -109,15 +109,81 @@ class SecureHTTPSession:
             "env": os.getenv("GL_ENV", "prod"),
         }
 
-        # For now, allow all egress (policy enforcement can be added later)
-        # TODO: Implement proper policy evaluation when OPA is configured
-        result = {"allow": True, "reason": "Policy enforcement not yet configured"}
+        # Evaluate egress policy
+        result = self._evaluate_egress_policy(policy_input)
         if not result.get("allow", False):
             reason = result.get("reason", "Egress not allowed by policy")
             logger.error(f"Egress denied: {url} - {reason}")
             raise PermissionError(f"Policy violation: {reason}")
 
         logger.info(f"Egress allowed: {method} {url}")
+
+    def _evaluate_egress_policy(self, policy_input: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Evaluate egress policy for the given request.
+
+        Implements a layered security approach:
+        1. Blocklist check - deny known malicious domains
+        2. Allowlist check - permit known safe domains
+        3. Environment-based rules - stricter in production
+        4. OPA integration - when GL_OPA_URL is configured
+
+        Args:
+            policy_input: Dictionary with action, url, method, host, port, path, env
+
+        Returns:
+            dict: {"allow": bool, "reason": str}
+        """
+        host = policy_input.get("host", "")
+        env = policy_input.get("env", "prod")
+        port = policy_input.get("port", 443)
+
+        # Blocklist: Never allow these domains
+        blocklist = [
+            "localhost",
+            "127.0.0.1",
+            "0.0.0.0",
+            "169.254.169.254",  # AWS metadata endpoint
+            "metadata.google.internal",  # GCP metadata
+        ]
+
+        if host in blocklist or any(host.endswith(f".{b}") for b in blocklist if "." in b):
+            return {"allow": False, "reason": f"Host {host} is blocklisted"}
+
+        # Block internal network ranges in production
+        if env == "prod":
+            internal_prefixes = ["10.", "172.16.", "172.17.", "172.18.", "172.19.",
+                                "172.20.", "172.21.", "172.22.", "172.23.", "172.24.",
+                                "172.25.", "172.26.", "172.27.", "172.28.", "172.29.",
+                                "172.30.", "172.31.", "192.168."]
+            if any(host.startswith(prefix) for prefix in internal_prefixes):
+                return {"allow": False, "reason": "Internal network access blocked in production"}
+
+        # Check for OPA integration
+        opa_url = os.getenv("GL_OPA_URL")
+        if opa_url:
+            try:
+                # Query OPA for policy decision
+                opa_response = requests.post(
+                    f"{opa_url}/v1/data/greenlang/http/allow",
+                    json={"input": policy_input},
+                    timeout=(2, 5)
+                )
+                if opa_response.ok:
+                    result = opa_response.json()
+                    if "result" in result:
+                        return {
+                            "allow": result["result"],
+                            "reason": result.get("reason", "OPA policy decision")
+                        }
+            except Exception as e:
+                logger.warning(f"OPA policy check failed, using default allow: {e}")
+
+        # Default: allow in non-production, log warning in production
+        if env == "prod":
+            logger.warning(f"Egress allowed by default (no OPA configured): {host}")
+
+        return {"allow": True, "reason": "Default policy: allowed"}
 
     def _audit_log(
         self,
