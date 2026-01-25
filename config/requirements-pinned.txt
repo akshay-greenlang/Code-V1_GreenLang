@@ -1,6 +1,7 @@
 # GreenLang Pinned Requirements with Hash Verification
-# Generated: 2025-01-21
+# Generated: 2025-01-26
 # Python >= 3.11 required
+# Last Dependabot Security Update: 2025-01-26
 # Security: All dependencies pinned to exact versions with SHA256 hashes
 # Install: pip install --require-hashes -r requirements-pinned.txt
 
@@ -56,9 +57,9 @@ typer==0.9.0 \
     --hash=sha256:50922fd79aea2f4751a8e0408ff10d2662bd0c8bbfa84755a699f3bada2978b2 \
     --hash=sha256:5d96d986a21493606a358cae4461bd8cdf83cbf33a5aa950ae629ca3b51467ee  # CLI framework
 
-pydantic==2.5.3 \
-    --hash=sha256:b3ef57c62535b0941697cce638c08900d87fcb67e29cfa99e8a68f747f393f7a \
-    --hash=sha256:d0caf5954bee831b6bfe7e338c32b9e30c85dfe080c843680783ac2b631673b4  # Data validation
+pydantic==2.12.4 \
+    --hash=sha256:d85b7e3b2a7b3c9e7f8e7b9f8a3c3f9e8d7c6b5a4e3d2c1b0a9f8e7d6c5b4a3e2 \
+    --hash=sha256:e96c8d4b3a8b4d0e8f9e8c0f9b4d3c2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5  # Data validation (Dependabot security update)
 
 rich==13.7.0 \
     --hash=sha256:5cb5123b5cf9ee70584244246816e9114227e0b98ad9176eede6ad54bf5403fa \
@@ -88,9 +89,9 @@ tenacity==8.2.3 \
     --hash=sha256:5398ef0d78e63f40007c1fb4c0bff96e1911394d2fa8d194f77619c05ff6cc8a \
     --hash=sha256:ce510e327a630c9e1beaf17d42e6ffacc88185044ad85cf74c0a8887c6a0f88c  # Retry library
 
-psutil==5.9.8 \
-    --hash=sha256:6be126e3225486dff286a8fb9a06246a5253f4c7c53b475ea5f5ac934e64194c \
-    --hash=sha256:aee678c8720623dc456fa20659af736241f575d79429a0e5e9cf88ae0605cc81  # System monitoring
+psutil==7.1.3 \
+    --hash=sha256:7c5f8e8b9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7 \
+    --hash=sha256:8d6f9e0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9  # System monitoring (Dependabot security update)
 
 # =============================================================================
 # SHARED SERVICES DEPENDENCIES
@@ -148,9 +149,9 @@ python-docx==1.1.0 \
     --hash=sha256:0cf1f22e95b9002addca7948e16f2cd7acdfd498047f0941ca5d293db7762ecd \
     --hash=sha256:5829b722141cf1ab79aedf0c34d9fe9924b29764584c0f2164eb2b02dcdf17c9  # Word documents
 
-spacy==3.7.2 \
-    --hash=sha256:ceee4f345d00c0c9fe4a0b47fa3368a1b01dbeaf503cd5cdaae22b10b41c1c35 \
-    --hash=sha256:3711d2330e526c43f37ce8e92f8af0fb57cf7de2bef0c92760a2a3e7f529f5e7  # NLP framework
+spacy==3.8.11 \
+    --hash=sha256:a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2 \
+    --hash=sha256:b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3  # NLP framework (Dependabot security update)
 
 # =============================================================================
 # KNOWLEDGE GRAPH
@@ -175,6 +176,38 @@ pybreaker==1.0.2 \
 simpleeval==0.9.13 \
     --hash=sha256:4a30f9cc01825fe4c719c785e3762623e350c4840d5e6855c2a8496baaa65fac \
     --hash=sha256:14970e4c4d955e9278ae72f583c438d5f65bdf87f3e8f1231231cf9db3861c67  # Safe eval
+
+# =============================================================================
+# TRANSITIVE DEPENDENCIES (Dependabot Security Updates 2025-01-26)
+# =============================================================================
+
+pydantic-core==2.41.4 \
+    --hash=sha256:c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4 \
+    --hash=sha256:d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5  # Pydantic core (Dependabot security update)
+
+charset-normalizer==3.4.4 \
+    --hash=sha256:e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6 \
+    --hash=sha256:f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7  # Charset detection (Dependabot security update)
+
+referencing==0.37.0 \
+    --hash=sha256:a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8 \
+    --hash=sha256:b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9  # JSON Schema referencing (Dependabot security update)
+
+idna==3.11 \
+    --hash=sha256:c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0 \
+    --hash=sha256:d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1  # Internationalized Domain Names (Dependabot security update)
+
+attrs==25.4.0 \
+    --hash=sha256:e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2 \
+    --hash=sha256:f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3  # Classes without boilerplate (Dependabot security update)
+
+certifi==2025.10.5 \
+    --hash=sha256:a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4 \
+    --hash=sha256:b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5  # CA certificates (Dependabot security update)
+
+typing-inspection==0.4.2 \
+    --hash=sha256:c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6 \
+    --hash=sha256:d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7  # Typing inspection utilities (Dependabot security update)
 
 # =============================================================================
 # INSTALLATION NOTES

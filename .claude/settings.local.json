@@ -299,7 +299,8 @@
       "Bash(python -m flake8:*)",
       "Bash(python -m pylint:*)",
       "Bash(python -m bandit:*)",
-      "Bash(del /f \"c:\\\\Users\\\\aksha\\\\Code-V1_GreenLang\\\\.ralphy\\\\progress.txt\")"
+      "Bash(del /f \"c:\\\\Users\\\\aksha\\\\Code-V1_GreenLang\\\\.ralphy\\\\progress.txt\")",
+      "Bash(more:*)"
     ],
     "deny": [],
     "ask": []
