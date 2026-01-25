@@ -230,7 +230,7 @@ Per project rules, these directories are **NEVER** modified:
 ## References
 
 - **Related Documents:**
-  - `VALIDATION_PRD.md` - Product requirements (DO NOT MODIFY)
+  - `docs/planning/VALIDATION_PRD.md` - Product requirements (DO NOT MODIFY)
   - `.ralphy/progress.txt` - Progress tracking (DO NOT MODIFY)
   - Architecture exploration report - Agent a00e335
 
