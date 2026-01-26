@@ -1,0 +1,84 @@
+# GreenLang Climate OS - Production Kustomization
+# This file orchestrates all production Kubernetes resources
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: greenlang-production
+
+# Common labels applied to all resources
+commonLabels:
+  app.kubernetes.io/name: greenlang
+  app.kubernetes.io/part-of: greenlang-climate-os
+  app.kubernetes.io/managed-by: kustomize
+  environment: production
+
+# Common annotations
+commonAnnotations:
+  greenlang.io/version: "2.0"
+  greenlang.io/component: "infrastructure"
+
+# Resources to include
+resources:
+  # Core namespace and RBAC
+  - namespace.yaml
+  - rbac.yaml
+  - resource-quotas.yaml
+  - network-policies.yaml
+
+  # Secrets (apply separately with sealed-secrets or external-secrets)
+  - secrets-template.yaml
+
+  # Data layer
+  - postgresql/
+  - redis/
+  - weaviate/
+
+  # Core services
+  - api-gateway/
+  - agent-factory/
+
+  # Observability
+  - monitoring/
+
+  # Ingress
+  - ingress.yaml
+
+# ConfigMap generator for environment-specific configs
+configMapGenerator:
+  - name: greenlang-config
+    literals:
+      - ENVIRONMENT=production
+      - LOG_LEVEL=INFO
+      - ENABLE_TELEMETRY=true
+      - ZERO_HALLUCINATION_MODE=true
+      - AGENT_FACTORY_VERSION=1.0
+      - MAX_CONCURRENT_AGENTS=100
+      - CACHE_TTL_SECONDS=3600
+
+# Secret generator placeholder (use external-secrets in production)
+secretGenerator:
+  - name: greenlang-secrets
+    type: Opaque
+    literals:
+      - JWT_SECRET_PLACEHOLDER=REPLACE_WITH_EXTERNAL_SECRET
+
+# Patches for production overrides
+patches:
+  - path: patches/increase-replicas.yaml
+  - path: patches/production-resources.yaml
+  - path: patches/enable-pdb.yaml
+
+# Images - pin to specific versions in production
+images:
+  - name: greenlang/api
+    newTag: "2.0.0"
+  - name: greenlang/agent-factory
+    newTag: "1.0.0"
+  - name: greenlang/worker
+    newTag: "2.0.0"
+  - name: postgres
+    newName: timescale/timescaledb-ha
+    newTag: "pg16-ts2.14"
+  - name: redis
+    newTag: "7.2-alpine"

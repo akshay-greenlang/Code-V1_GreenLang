@@ -1,0 +1,88 @@
+# GreenLang Climate OS - Production Namespace
+# INFRA-001: Kubernetes Production Cluster
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: greenlang-production
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: namespace
+    environment: production
+    # Enable Istio sidecar injection if using service mesh
+    istio-injection: enabled
+    # Pod security standards
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/warn: restricted
+  annotations:
+    greenlang.io/description: "GreenLang Climate OS Production Environment"
+    greenlang.io/owner: "platform-team"
+    greenlang.io/tier: "tier-1"
+---
+# Production resource quota
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: greenlang-production-quota
+  namespace: greenlang-production
+spec:
+  hard:
+    # CPU limits
+    requests.cpu: "200"
+    limits.cpu: "400"
+    # Memory limits
+    requests.memory: 400Gi
+    limits.memory: 800Gi
+    # Storage
+    persistentvolumeclaims: "50"
+    requests.storage: 2Ti
+    # Pods
+    pods: "500"
+    # Services
+    services: "100"
+    services.loadbalancers: "5"
+    services.nodeports: "10"
+    # Secrets and ConfigMaps
+    secrets: "200"
+    configmaps: "200"
+    # Replication controllers
+    replicationcontrollers: "50"
+    # Resource quotas scoped to specific priority classes
+    count/deployments.apps: "100"
+    count/statefulsets.apps: "20"
+    count/jobs.batch: "200"
+---
+# Limit range for default resource constraints
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: greenlang-production-limits
+  namespace: greenlang-production
+spec:
+  limits:
+    # Container defaults
+    - type: Container
+      default:
+        cpu: "500m"
+        memory: 512Mi
+      defaultRequest:
+        cpu: 100m
+        memory: 128Mi
+      max:
+        cpu: "8"
+        memory: 16Gi
+      min:
+        cpu: 50m
+        memory: 64Mi
+    # Pod limits
+    - type: Pod
+      max:
+        cpu: "32"
+        memory: 64Gi
+    # PVC limits
+    - type: PersistentVolumeClaim
+      max:
+        storage: 100Gi
+      min:
+        storage: 1Gi

@@ -1,0 +1,78 @@
+# GreenLang Climate OS - Ralphy Configuration
+# This file configures Ralphy for automated development execution
+
+project:
+  name: "GreenLang Climate OS"
+  description: "Building the world's Climate Operating System"
+  version: "2.0"
+
+# Agent configuration
+agents:
+  primary: "claude-code"
+  fallback:
+    - "cursor"
+    - "copilot"
+  parallel_limit: 3
+
+# Required commands that must pass
+required_commands:
+  test: "pytest tests/ -v"
+  lint: "ruff check src/"
+  format: "ruff format src/"
+  typecheck: "mypy src/"
+  security: "bandit -r src/"
+
+# Build verification
+build:
+  command: "python -m build"
+  verify: true
+
+# Project-specific rules
+rules:
+  - "All agents must implement BaseAgent interface"
+  - "Every calculation requires emission factor provenance"
+  - "Lineage must be complete for every output"
+  - "Temperature must be 0.0 for LLM calls (zero-hallucination)"
+  - "Test coverage minimum 85%"
+  - "No hardcoded secrets or API keys"
+  - "All async operations must have timeout"
+
+# Guardrails for AI agents
+guardrails:
+  file_patterns:
+    allow:
+      - "src/**/*.py"
+      - "tests/**/*.py"
+      - "applications/**/*.py"
+      - "docs/**/*.md"
+    deny:
+      - "**/.env*"
+      - "**/secrets/**"
+      - "**/credentials/**"
+
+  code_patterns:
+    deny:
+      - "eval("
+      - "exec("
+      - "os.system("
+      - "subprocess.call(shell=True"
+
+# Branch management
+git:
+  main_branch: "main"
+  feature_prefix: "feature/"
+  bugfix_prefix: "fix/"
+  auto_merge: false
+  require_review: true
+
+# Task execution settings
+execution:
+  timeout_minutes: 60
+  retry_count: 3
+  checkpoint_frequency: 5  # Save progress every 5 tasks
+
+# Reporting
+reporting:
+  format: "markdown"
+  output_dir: "docs/reports"
+  include_metrics: true

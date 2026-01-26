@@ -1,0 +1,209 @@
+# GreenLang Climate OS - Production RBAC Configuration
+# INFRA-001: Kubernetes Production Cluster
+
+---
+# Service Account for GreenLang Core Services
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: greenlang-core
+  namespace: greenlang-production
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: rbac
+automountServiceAccountToken: true
+---
+# Service Account for Agent Factory
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: greenlang-agent-factory
+  namespace: greenlang-production
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: agent-factory
+---
+# Service Account for Workers
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: greenlang-worker
+  namespace: greenlang-production
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: worker
+---
+# Role for core GreenLang services
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: greenlang-core-role
+  namespace: greenlang-production
+rules:
+  # Pod management for job execution
+  - apiGroups: [""]
+    resources: ["pods", "pods/log", "pods/status"]
+    verbs: ["get", "list", "watch", "create", "delete"]
+  # Job management for agent execution
+  - apiGroups: ["batch"]
+    resources: ["jobs", "jobs/status"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  # ConfigMaps for configuration
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["get", "list", "watch"]
+  # Secrets for credentials (limited)
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "list"]
+  # PVC for data storage
+  - apiGroups: [""]
+    resources: ["persistentvolumeclaims"]
+    verbs: ["get", "list", "create", "delete"]
+  # Services for discovery
+  - apiGroups: [""]
+    resources: ["services", "endpoints"]
+    verbs: ["get", "list", "watch"]
+  # Events for observability
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["get", "list", "watch", "create"]
+---
+# Role for Agent Factory (elevated permissions)
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: greenlang-agent-factory-role
+  namespace: greenlang-production
+rules:
+  # Full pod management for agent spawning
+  - apiGroups: [""]
+    resources: ["pods", "pods/log", "pods/status", "pods/exec"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  # Job management
+  - apiGroups: ["batch"]
+    resources: ["jobs", "jobs/status", "cronjobs"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  # Deployment management for agent services
+  - apiGroups: ["apps"]
+    resources: ["deployments", "deployments/scale", "replicasets"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  # ConfigMaps for agent configs
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  # Secrets for agent credentials
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  # PVC for agent storage
+  - apiGroups: [""]
+    resources: ["persistentvolumeclaims"]
+    verbs: ["get", "list", "watch", "create", "update", "delete"]
+  # Services for agent endpoints
+  - apiGroups: [""]
+    resources: ["services"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  # HPA for auto-scaling
+  - apiGroups: ["autoscaling"]
+    resources: ["horizontalpodautoscalers"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  # Network policies
+  - apiGroups: ["networking.k8s.io"]
+    resources: ["networkpolicies"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+---
+# Role for Workers (limited permissions)
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: greenlang-worker-role
+  namespace: greenlang-production
+rules:
+  # Read-only pod access
+  - apiGroups: [""]
+    resources: ["pods", "pods/log"]
+    verbs: ["get", "list", "watch"]
+  # ConfigMaps for configuration
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["get", "list", "watch"]
+  # Secrets for credentials
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get"]
+  # Events for logging
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["create"]
+---
+# RoleBindings
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: greenlang-core-binding
+  namespace: greenlang-production
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: greenlang-core-role
+subjects:
+  - kind: ServiceAccount
+    name: greenlang-core
+    namespace: greenlang-production
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: greenlang-agent-factory-binding
+  namespace: greenlang-production
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: greenlang-agent-factory-role
+subjects:
+  - kind: ServiceAccount
+    name: greenlang-agent-factory
+    namespace: greenlang-production
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: greenlang-worker-binding
+  namespace: greenlang-production
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: greenlang-worker-role
+subjects:
+  - kind: ServiceAccount
+    name: greenlang-worker
+    namespace: greenlang-production
+---
+# ClusterRole for cross-namespace monitoring
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: greenlang-monitoring
+  labels:
+    app.kubernetes.io/name: greenlang
+rules:
+  - apiGroups: [""]
+    resources: ["namespaces", "nodes", "nodes/metrics"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["metrics.k8s.io"]
+    resources: ["pods", "nodes"]
+    verbs: ["get", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: greenlang-monitoring-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: greenlang-monitoring
+subjects:
+  - kind: ServiceAccount
+    name: greenlang-core
+    namespace: greenlang-production

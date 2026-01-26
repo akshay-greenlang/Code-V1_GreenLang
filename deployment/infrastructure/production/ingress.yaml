@@ -1,0 +1,118 @@
+# GreenLang Climate OS - Production Ingress
+# Unified ingress configuration for all services
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: greenlang-ingress
+  namespace: greenlang-production
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: ingress
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "100m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "60"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    # Rate limiting
+    nginx.ingress.kubernetes.io/limit-rps: "100"
+    nginx.ingress.kubernetes.io/limit-connections: "50"
+    # Security headers
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      add_header X-Frame-Options "SAMEORIGIN" always;
+      add_header X-Content-Type-Options "nosniff" always;
+      add_header X-XSS-Protection "1; mode=block" always;
+      add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+      add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';" always;
+spec:
+  tls:
+    - hosts:
+        - api.greenlang.io
+        - agents.greenlang.io
+        - app.greenlang.io
+      secretName: greenlang-tls
+  rules:
+    # API Gateway
+    - host: api.greenlang.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: api-gateway
+                port:
+                  number: 8080
+
+    # Agent Factory
+    - host: agents.greenlang.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: agent-factory
+                port:
+                  number: 8000
+
+    # Web Application
+    - host: app.greenlang.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend
+                port:
+                  number: 80
+---
+# Internal ingress for monitoring (restricted access)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: greenlang-monitoring-ingress
+  namespace: greenlang-production
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: monitoring
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/auth-type: basic
+    nginx.ingress.kubernetes.io/auth-secret: monitoring-basic-auth
+    nginx.ingress.kubernetes.io/auth-realm: "GreenLang Monitoring"
+spec:
+  tls:
+    - hosts:
+        - monitoring.greenlang.io
+      secretName: greenlang-monitoring-tls
+  rules:
+    - host: monitoring.greenlang.io
+      http:
+        paths:
+          - path: /prometheus
+            pathType: Prefix
+            backend:
+              service:
+                name: prometheus
+                port:
+                  number: 9090
+          - path: /grafana
+            pathType: Prefix
+            backend:
+              service:
+                name: grafana
+                port:
+                  number: 3000
+          - path: /alertmanager
+            pathType: Prefix
+            backend:
+              service:
+                name: alertmanager
+                port:
+                  number: 9093

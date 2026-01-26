@@ -1,0 +1,492 @@
+# GreenLang Climate OS - Ralphy Task Configuration
+# Compatible with Ralphy AI Orchestration Tool
+# https://github.com/michaelshimeles/ralphy
+
+project:
+  name: "GreenLang Climate OS"
+  version: "2.0"
+  description: "Build the world's Climate Operating System with 10,000+ AI agents"
+  repository: "https://github.com/greenlang/climate-os"
+
+config:
+  parallel_agents: 3
+  max_retries: 3
+  timeout_minutes: 60
+  required_commands:
+    - test: "pytest"
+    - lint: "ruff check"
+    - format: "ruff format"
+    - typecheck: "mypy"
+  guardrails:
+    - "All agents must pass zero-hallucination tests"
+    - "Every calculation must have complete lineage"
+    - "Test coverage minimum 85%"
+    - "Security scan must pass"
+
+# =============================================================================
+# YEAR 1: 2026 - Foundation & Regulatory Sprint
+# =============================================================================
+
+year_1_2026:
+  description: "Foundation & Regulatory Sprint"
+  target_agents: 500
+  target_arr: "$40M"
+
+  q1_2026:
+    name: "Core Platform & EUDR"
+    duration: "12 weeks"
+
+    infrastructure:
+      - id: "INFRA-001"
+        task: "Deploy Kubernetes production cluster"
+        priority: "P0"
+        effort: "1 week"
+
+      - id: "INFRA-002"
+        task: "Configure PostgreSQL + TimescaleDB"
+        priority: "P0"
+        effort: "3 days"
+
+      - id: "INFRA-003"
+        task: "Set up Redis caching cluster"
+        priority: "P0"
+        effort: "2 days"
+
+      - id: "INFRA-004"
+        task: "Deploy Agent Factory v1.0"
+        priority: "P0"
+        effort: "2 weeks"
+        depends_on: ["INFRA-001", "INFRA-002", "INFRA-003"]
+
+      - id: "INFRA-005"
+        task: "Implement JWT authentication"
+        priority: "P0"
+        effort: "1 week"
+
+      - id: "INFRA-006"
+        task: "Build RBAC authorization layer"
+        priority: "P0"
+        effort: "1 week"
+        depends_on: ["INFRA-005"]
+
+      - id: "INFRA-007"
+        task: "Set up CI/CD pipelines"
+        priority: "P0"
+        effort: "3 days"
+
+      - id: "INFRA-008"
+        task: "Configure observability (Prometheus + Grafana)"
+        priority: "P0"
+        effort: "3 days"
+
+    foundation_agents:
+      - id: "AGENT-FOUND-001"
+        task: "Build GL-FOUND-X-001 GreenLang Orchestrator"
+        description: |
+          DAG execution engine for multi-agent pipelines.
+          - Dependency graph management
+          - Retry/timeout handling
+          - Deterministic run metadata
+          - Observability hooks
+        priority: "P0"
+        effort: "3 weeks"
+        tests:
+          - "test_dag_execution.py"
+          - "test_determinism.py"
+          - "test_retry_logic.py"
+
+      - id: "AGENT-FOUND-002"
+        task: "Build GL-FOUND-X-002 Schema Compiler & Validator"
+        description: |
+          Validates input payloads against GreenLang schemas.
+          - JSON Schema validation
+          - Unit consistency checking
+          - Machine-fixable error hints
+        priority: "P0"
+        effort: "2 weeks"
+        tests:
+          - "test_schema_validation.py"
+          - "test_error_hints.py"
+
+      - id: "AGENT-FOUND-003"
+        task: "Build GL-FOUND-X-003 Unit & Reference Normalizer"
+        description: |
+          Normalizes units and standardizes references.
+          - Unit conversion engine
+          - Fuel/material standardization
+          - Reference ID management
+        priority: "P0"
+        effort: "2 weeks"
+        depends_on: ["AGENT-FOUND-002"]
+
+      - id: "AGENT-FOUND-004"
+        task: "Build GL-FOUND-X-004 Assumptions Registry"
+        description: |
+          Version-controlled assumption management.
+          - Assumption catalog
+          - Scenario management
+          - Change logging
+        priority: "P0"
+        effort: "2 weeks"
+
+      - id: "AGENT-FOUND-005"
+        task: "Build GL-FOUND-X-005 Citations & Evidence Agent"
+        priority: "P1"
+        effort: "2 weeks"
+
+      - id: "AGENT-FOUND-006"
+        task: "Build GL-FOUND-X-006 Access & Policy Guard"
+        priority: "P1"
+        effort: "2 weeks"
+
+      - id: "AGENT-FOUND-007"
+        task: "Build GL-FOUND-X-007 Agent Registry"
+        priority: "P0"
+        effort: "1 week"
+
+      - id: "AGENT-FOUND-008"
+        task: "Build GL-FOUND-X-008 Reproducibility Agent"
+        priority: "P1"
+        effort: "2 weeks"
+
+      - id: "AGENT-FOUND-009"
+        task: "Build GL-FOUND-X-009 QA Test Harness"
+        priority: "P0"
+        effort: "2 weeks"
+
+      - id: "AGENT-FOUND-010"
+        task: "Build GL-FOUND-X-010 Observability Agent"
+        priority: "P0"
+        effort: "1 week"
+
+    data_agents:
+      - id: "AGENT-DATA-001"
+        task: "Build GL-DATA-X-001 PDF & Invoice Extractor"
+        priority: "P0"
+        effort: "2 weeks"
+
+      - id: "AGENT-DATA-002"
+        task: "Build GL-DATA-X-002 Excel/CSV Normalizer"
+        priority: "P0"
+        effort: "1 week"
+
+      - id: "AGENT-DATA-003"
+        task: "Build GL-DATA-X-003 ERP Finance Connector"
+        priority: "P0"
+        effort: "2 weeks"
+
+      - id: "AGENT-DATA-004"
+        task: "Build GL-DATA-REG-004 EUDR Traceability Connector"
+        priority: "P0"
+        effort: "2 weeks"
+
+      - id: "AGENT-DATA-005"
+        task: "Build GL-DATA-GEO-001 GIS/Mapping Connector"
+        priority: "P0"
+        effort: "2 weeks"
+
+      - id: "AGENT-DATA-006"
+        task: "Build GL-DATA-GEO-003 Deforestation Satellite Connector"
+        priority: "P0"
+        effort: "2 weeks"
+
+    mrv_agents:
+      - id: "AGENT-MRV-001"
+        task: "Build GL-MRV-X-001 Stationary Combustion Agent"
+        description: |
+          Scope 1 stationary combustion emissions calculator.
+          - Fuel combustion calculations
+          - Multiple fuel types support
+          - GHG Protocol/ISO compliance
+          - Emission factor selection
+        priority: "P0"
+        effort: "2 weeks"
+
+      - id: "AGENT-MRV-002"
+        task: "Build GL-MRV-X-002 Refrigerants & F-Gas Agent"
+        priority: "P0"
+        effort: "2 weeks"
+
+      - id: "AGENT-MRV-003"
+        task: "Build GL-MRV-X-003 Mobile Combustion Agent"
+        priority: "P0"
+        effort: "2 weeks"
+
+      - id: "AGENT-MRV-004"
+        task: "Build GL-MRV-X-020 Scope 2 Location-Based Agent"
+        priority: "P0"
+        effort: "2 weeks"
+
+      - id: "AGENT-MRV-005"
+        task: "Build GL-MRV-X-021 Scope 2 Market-Based Agent"
+        priority: "P0"
+        effort: "2 weeks"
+
+    eudr_agents:
+      - id: "AGENT-EUDR-001"
+        task: "Build Supply Chain Mapping Master Agent"
+        priority: "P0"
+        effort: "2 weeks"
+
+      - id: "AGENT-EUDR-002"
+        task: "Build Geolocation Verification Agent"
+        priority: "P0"
+        effort: "2 weeks"
+
+      - id: "AGENT-EUDR-003"
+        task: "Build Satellite Monitoring Agent"
+        priority: "P0"
+        effort: "3 weeks"
+
+      - id: "AGENT-EUDR-004"
+        task: "Build Forest Cover Analysis Agent"
+        priority: "P0"
+        effort: "2 weeks"
+
+      - id: "AGENT-EUDR-005"
+        task: "Build Due Diligence Orchestrator"
+        priority: "P0"
+        effort: "2 weeks"
+
+    applications:
+      - id: "APP-001"
+        task: "Launch GL-EUDR-APP v1.0"
+        priority: "P0"
+        effort: "4 weeks"
+        depends_on: ["AGENT-EUDR-001", "AGENT-EUDR-002", "AGENT-EUDR-003", "AGENT-EUDR-004", "AGENT-EUDR-005"]
+
+      - id: "APP-002"
+        task: "Enhance GL-CSRD-APP v1.1"
+        priority: "P0"
+        effort: "2 weeks"
+
+      - id: "APP-003"
+        task: "Enhance GL-CBAM-APP v1.1"
+        priority: "P0"
+        effort: "2 weeks"
+
+      - id: "APP-004"
+        task: "Enhance GL-VCCI-APP v1.1"
+        priority: "P0"
+        effort: "2 weeks"
+
+    solution_packs:
+      - id: "PACK-001"
+        task: "Create CSRD Starter Pack"
+        priority: "P0"
+        effort: "3 days"
+
+      - id: "PACK-002"
+        task: "Create CBAM Readiness Pack"
+        priority: "P0"
+        effort: "3 days"
+
+      - id: "PACK-003"
+        task: "Create EUDR Complete Pack"
+        priority: "P0"
+        effort: "3 days"
+
+      - id: "PACK-004"
+        task: "Create Net Zero Starter Pack"
+        priority: "P1"
+        effort: "3 days"
+
+    milestones:
+      - id: "M1"
+        name: "Agent Factory v1.0 Deployed"
+        target_date: "2026-01-31"
+
+      - id: "M2"
+        name: "10 Foundation Agents Complete"
+        target_date: "2026-02-15"
+
+      - id: "M3"
+        name: "GL-EUDR-APP Launched"
+        target_date: "2026-03-15"
+
+      - id: "M4"
+        name: "100 Agents in Production"
+        target_date: "2026-03-31"
+
+      - id: "M5"
+        name: "$5M ARR Achieved"
+        target_date: "2026-03-31"
+
+  q2_2026:
+    name: "Industrial & SB 253"
+    duration: "12 weeks"
+    target_agents: 100
+
+    planning_agents:
+      - id: "AGENT-PLAN-001"
+        task: "Build GL-PLAN-X-001 Abatement Option Generator"
+        priority: "P0"
+        effort: "2 weeks"
+
+      - id: "AGENT-PLAN-002"
+        task: "Build GL-PLAN-X-002 MACC Curve Builder"
+        priority: "P0"
+        effort: "2 weeks"
+
+      - id: "AGENT-PLAN-003"
+        task: "Build GL-PLAN-IND-001 Industrial Heat Decarb"
+        priority: "P0"
+        effort: "2 weeks"
+
+      - id: "AGENT-PLAN-004"
+        task: "Build GL-PLAN-IND-002 Boiler Replacement Advisor"
+        priority: "P0"
+        effort: "2 weeks"
+
+    finance_agents:
+      - id: "AGENT-FIN-001"
+        task: "Build GL-FIN-X-001 TCO Calculator"
+        priority: "P0"
+        effort: "2 weeks"
+
+      - id: "AGENT-FIN-002"
+        task: "Build GL-FIN-X-002 NPV/IRR Analyzer"
+        priority: "P0"
+        effort: "2 weeks"
+
+      - id: "AGENT-FIN-003"
+        task: "Build GL-FIN-X-005 BoQ Generator"
+        priority: "P0"
+        effort: "2 weeks"
+
+    sb253_agents:
+      - id: "AGENT-SB253-001"
+        task: "Build CA Scope 1-3 Reporters"
+        priority: "P0"
+        effort: "3 weeks"
+
+      - id: "AGENT-SB253-002"
+        task: "Build CARB Registry Connector"
+        priority: "P0"
+        effort: "2 weeks"
+
+      - id: "AGENT-SB253-003"
+        task: "Build Third-Party Verifier Prep"
+        priority: "P0"
+        effort: "2 weeks"
+
+    applications:
+      - id: "APP-011"
+        task: "Launch GL-SB253-APP v1.0"
+        priority: "P0"
+        effort: "4 weeks"
+
+      - id: "APP-012"
+        task: "Launch GL-FoodBev-APP v1.0"
+        priority: "P0"
+        effort: "4 weeks"
+
+      - id: "APP-013"
+        task: "Launch GL-Energy-APP v1.0"
+        priority: "P0"
+        effort: "3 weeks"
+
+      - id: "APP-014"
+        task: "Launch GL-Boiler-APP v1.0"
+        priority: "P0"
+        effort: "3 weeks"
+
+    milestones:
+      - id: "M6"
+        name: "GL-SB253-APP Launched"
+        target_date: "2026-05-15"
+
+      - id: "M7"
+        name: "200 Agents in Production"
+        target_date: "2026-06-30"
+
+      - id: "M8"
+        name: "$12M ARR Achieved"
+        target_date: "2026-06-30"
+
+  q3_2026:
+    name: "Buildings & Transport"
+    duration: "12 weeks"
+    target_agents: 150
+
+    # ... (abbreviated - full tasks in TODO-YEAR1-2026.md)
+
+  q4_2026:
+    name: "Supply Chain & Scope 3"
+    duration: "12 weeks"
+    target_agents: 150
+
+    # ... (abbreviated - full tasks in TODO-YEAR1-2026.md)
+
+# =============================================================================
+# YEAR 2: 2027 - Expansion & Scale (Abbreviated)
+# =============================================================================
+
+year_2_2027:
+  description: "Expansion & Scale"
+  target_agents: 2000
+  target_arr: "$150M"
+
+  # Full tasks in TODO-YEAR2-2027.md
+
+# =============================================================================
+# YEAR 3: 2028 - Market Leadership (Abbreviated)
+# =============================================================================
+
+year_3_2028:
+  description: "Market Leadership"
+  target_agents: 7500
+  target_arr: "$400M"
+
+  # Full tasks in TODO-YEAR3-2028.md
+
+# =============================================================================
+# Ralphy Execution Commands
+# =============================================================================
+
+execution:
+  commands:
+    # Run all Q1 2026 infrastructure tasks
+    q1_infra: "ralphy run year_1_2026.q1_2026.infrastructure --parallel"
+
+    # Run foundation agents sequentially
+    foundation: "ralphy run year_1_2026.q1_2026.foundation_agents --sequential"
+
+    # Run all Q1 tasks
+    q1_all: "ralphy run year_1_2026.q1_2026 --parallel-groups"
+
+    # Run Year 1 complete
+    year1: "ralphy run year_1_2026 --parallel-groups"
+
+    # Run specific agent
+    single_agent: "ralphy run AGENT-FOUND-001"
+
+    # Dry run to see execution plan
+    dry_run: "ralphy run year_1_2026.q1_2026 --dry-run"
+
+# =============================================================================
+# Quality Gates
+# =============================================================================
+
+quality_gates:
+  agent_development:
+    - "Unit tests pass (pytest)"
+    - "Integration tests pass"
+    - "Zero-hallucination test pass"
+    - "Lineage completeness verified"
+    - "Test coverage >= 85%"
+    - "Security scan clean"
+    - "Documentation complete"
+
+  application_development:
+    - "All agent dependencies met"
+    - "E2E tests pass"
+    - "Performance benchmarks met"
+    - "Accessibility audit pass"
+    - "Security audit pass"
+
+  pack_development:
+    - "All agents available"
+    - "Workflows tested"
+    - "Documentation complete"
+    - "Pricing approved"

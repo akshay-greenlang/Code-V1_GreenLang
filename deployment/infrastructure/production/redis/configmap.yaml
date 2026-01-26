@@ -1,0 +1,200 @@
+# GreenLang Climate OS - Redis Configuration
+# INFRA-003: Redis caching cluster configuration
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: redis-config
+  namespace: greenlang-production
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: redis
+data:
+  redis-master.conf: |
+    # GreenLang Redis Master Configuration
+
+    # Network
+    bind 0.0.0.0
+    port 6379
+    protected-mode yes
+    tcp-backlog 511
+    timeout 0
+    tcp-keepalive 300
+
+    # Security
+    requirepass ${REDIS_PASSWORD}
+    masterauth ${REDIS_PASSWORD}
+
+    # Memory Management
+    maxmemory 6gb
+    maxmemory-policy allkeys-lru
+    maxmemory-samples 10
+
+    # Persistence - AOF for durability
+    appendonly yes
+    appendfilename "appendonly.aof"
+    appendfsync everysec
+    no-appendfsync-on-rewrite no
+    auto-aof-rewrite-percentage 100
+    auto-aof-rewrite-min-size 64mb
+    aof-load-truncated yes
+    aof-use-rdb-preamble yes
+
+    # RDB Snapshots
+    save 900 1
+    save 300 10
+    save 60 10000
+    stop-writes-on-bgsave-error yes
+    rdbcompression yes
+    rdbchecksum yes
+    dbfilename dump.rdb
+    dir /data
+
+    # Replication
+    replica-serve-stale-data yes
+    replica-read-only yes
+    repl-diskless-sync yes
+    repl-diskless-sync-delay 5
+    repl-ping-replica-period 10
+    repl-timeout 60
+    repl-disable-tcp-nodelay no
+    repl-backlog-size 64mb
+    repl-backlog-ttl 3600
+    min-replicas-to-write 1
+    min-replicas-max-lag 10
+
+    # Lazy Freeing
+    lazyfree-lazy-eviction yes
+    lazyfree-lazy-expire yes
+    lazyfree-lazy-server-del yes
+    replica-lazy-flush yes
+
+    # Threading (Redis 7+)
+    io-threads 4
+    io-threads-do-reads yes
+
+    # Slow Log
+    slowlog-log-slower-than 10000
+    slowlog-max-len 128
+
+    # Latency Monitor
+    latency-monitor-threshold 100
+
+    # Cluster Mode - Disabled (using Sentinel)
+    cluster-enabled no
+
+  redis-replica.conf: |
+    # GreenLang Redis Replica Configuration
+
+    # Network
+    bind 0.0.0.0
+    port 6379
+    protected-mode yes
+    tcp-backlog 511
+    timeout 0
+    tcp-keepalive 300
+
+    # Security
+    requirepass ${REDIS_PASSWORD}
+    masterauth ${REDIS_PASSWORD}
+
+    # Memory Management
+    maxmemory 6gb
+    maxmemory-policy allkeys-lru
+    maxmemory-samples 10
+
+    # Persistence
+    appendonly yes
+    appendfilename "appendonly.aof"
+    appendfsync everysec
+    no-appendfsync-on-rewrite no
+    auto-aof-rewrite-percentage 100
+    auto-aof-rewrite-min-size 64mb
+    aof-load-truncated yes
+    aof-use-rdb-preamble yes
+
+    save 900 1
+    save 300 10
+    save 60 10000
+    stop-writes-on-bgsave-error yes
+    rdbcompression yes
+    rdbchecksum yes
+    dbfilename dump.rdb
+    dir /data
+
+    # Replication - Configured as replica
+    replica-serve-stale-data yes
+    replica-read-only yes
+    repl-diskless-sync yes
+    repl-diskless-sync-delay 5
+    repl-ping-replica-period 10
+    repl-timeout 60
+    repl-disable-tcp-nodelay no
+
+    # Lazy Freeing
+    lazyfree-lazy-eviction yes
+    lazyfree-lazy-expire yes
+    lazyfree-lazy-server-del yes
+    replica-lazy-flush yes
+
+    # Threading
+    io-threads 4
+    io-threads-do-reads yes
+
+    # Slow Log
+    slowlog-log-slower-than 10000
+    slowlog-max-len 128
+
+    # Cluster Mode - Disabled
+    cluster-enabled no
+
+  sentinel.conf: |
+    # GreenLang Redis Sentinel Configuration
+
+    # Sentinel Port
+    port 26379
+    bind 0.0.0.0
+
+    # Sentinel Auth
+    sentinel auth-pass greenlang-master ${REDIS_PASSWORD}
+
+    # Quorum: 2 out of 3 sentinels must agree for failover
+    # sentinel monitor greenlang-master <host> <port> <quorum>
+    # This line is added by init container
+
+    # Failover Settings
+    sentinel down-after-milliseconds greenlang-master 5000
+    sentinel failover-timeout greenlang-master 60000
+    sentinel parallel-syncs greenlang-master 1
+
+    # Notification script (optional)
+    # sentinel notification-script greenlang-master /scripts/notify.sh
+
+    # Client reconfiguration script (optional)
+    # sentinel client-reconfig-script greenlang-master /scripts/reconfig.sh
+
+    # Deny scripts reconfig
+    sentinel deny-scripts-reconfig yes
+
+    # Resolve hostnames (important for Kubernetes)
+    sentinel resolve-hostnames yes
+    sentinel announce-hostnames yes
+
+    # Logging
+    logfile ""
+    loglevel notice
+---
+# Redis Secrets Template
+apiVersion: v1
+kind: Secret
+metadata:
+  name: redis-credentials
+  namespace: greenlang-production
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: redis
+type: Opaque
+stringData:
+  # IMPORTANT: Replace with actual secure password in production
+  # Use external-secrets or sealed-secrets for production
+  password: "REPLACE_WITH_SECURE_PASSWORD"
