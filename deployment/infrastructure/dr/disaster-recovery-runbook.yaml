@@ -1,0 +1,456 @@
+# =============================================================================
+# GreenLang Disaster Recovery Runbook
+# =============================================================================
+# DR-001: Comprehensive disaster recovery procedures
+#
+# This document defines:
+#   - RTO/RPO targets
+#   - Failover procedures
+#   - Backup and restore processes
+#   - DR testing schedule
+#
+# Author: GreenLang Platform Team
+# Version: 1.0.0
+# Last Updated: 2026-01-26
+# =============================================================================
+
+---
+metadata:
+  name: greenlang-disaster-recovery-runbook
+  version: "1.0.0"
+  classification: CONFIDENTIAL
+  owner: platform-team@greenlang.io
+  review_schedule: quarterly
+  last_review: "2026-01-26"
+  next_review: "2026-04-26"
+
+# =============================================================================
+# RECOVERY OBJECTIVES
+# =============================================================================
+recovery_objectives:
+  # Recovery Time Objective - maximum acceptable downtime
+  rto:
+    tier_1_critical:
+      target: "15 minutes"
+      services:
+        - api-gateway
+        - authentication
+        - core-agents
+      description: "Critical services must be restored within 15 minutes"
+
+    tier_2_important:
+      target: "1 hour"
+      services:
+        - calculation-engines
+        - reporting-services
+        - data-connectors
+      description: "Important services must be restored within 1 hour"
+
+    tier_3_standard:
+      target: "4 hours"
+      services:
+        - ml-inference
+        - batch-processing
+        - analytics
+      description: "Standard services must be restored within 4 hours"
+
+  # Recovery Point Objective - maximum acceptable data loss
+  rpo:
+    transactional_data:
+      target: "0 seconds"
+      method: "synchronous_replication"
+      services:
+        - postgresql-primary
+        - redis-sentinel
+      description: "Zero data loss for transactional data"
+
+    analytics_data:
+      target: "1 hour"
+      method: "async_replication_with_backup"
+      services:
+        - timescaledb
+        - opensearch
+      description: "Maximum 1 hour data loss for analytics"
+
+    cold_storage:
+      target: "24 hours"
+      method: "daily_backup"
+      services:
+        - artifact-storage
+        - model-registry
+      description: "Maximum 24 hour data loss for cold storage"
+
+# =============================================================================
+# BACKUP PROCEDURES
+# =============================================================================
+backup_procedures:
+  # Database backups
+  postgresql:
+    type: "continuous"
+    tool: "pgBackRest"
+    schedule:
+      full: "0 2 * * 0"  # Weekly full backup Sunday 2 AM
+      differential: "0 2 * * 1-6"  # Daily differential Mon-Sat 2 AM
+      wal_archive: "continuous"  # Continuous WAL archiving
+    retention:
+      full: "4 weeks"
+      differential: "7 days"
+      wal: "7 days"
+    storage:
+      primary: "s3://greenlang-backups-primary/postgresql/"
+      secondary: "s3://greenlang-backups-dr/postgresql/"
+    encryption: "AES-256-GCM"
+    verification: "weekly"
+
+  timescaledb:
+    type: "continuous"
+    tool: "pgBackRest"
+    schedule:
+      full: "0 3 * * 0"
+      differential: "0 3 * * 1-6"
+      wal_archive: "continuous"
+    retention:
+      full: "4 weeks"
+      differential: "7 days"
+      wal: "7 days"
+    storage:
+      primary: "s3://greenlang-backups-primary/timescaledb/"
+      secondary: "s3://greenlang-backups-dr/timescaledb/"
+
+  redis:
+    type: "snapshot"
+    tool: "redis-backup"
+    schedule: "*/15 * * * *"  # Every 15 minutes
+    retention: "48 hours"
+    storage:
+      primary: "s3://greenlang-backups-primary/redis/"
+
+  # Application state backups
+  kubernetes:
+    type: "snapshot"
+    tool: "Velero"
+    schedule:
+      full: "0 1 * * *"  # Daily at 1 AM
+      config: "*/30 * * * *"  # ConfigMaps/Secrets every 30 min
+    retention: "30 days"
+    storage:
+      primary: "s3://greenlang-backups-primary/kubernetes/"
+      secondary: "s3://greenlang-backups-dr/kubernetes/"
+    include:
+      - namespaces: ["greenlang-*"]
+      - resources: ["deployments", "statefulsets", "configmaps", "secrets", "pvcs"]
+
+  # Artifact storage
+  s3_artifacts:
+    type: "replication"
+    tool: "S3 Cross-Region Replication"
+    schedule: "real-time"
+    retention: "indefinite"
+    source: "s3://greenlang-artifacts-primary/"
+    destination: "s3://greenlang-artifacts-dr/"
+
+# =============================================================================
+# FAILOVER PROCEDURES
+# =============================================================================
+failover_procedures:
+  # Automated failover scenarios
+  automated:
+    database_primary_failure:
+      trigger: "3 consecutive health check failures"
+      action: "promote_replica_to_primary"
+      steps:
+        - name: "Detect primary failure"
+          timeout: "30 seconds"
+          command: "pg_isready returns failure 3 times"
+
+        - name: "Halt writes to primary"
+          timeout: "5 seconds"
+          command: "Update PgBouncer to reject connections"
+
+        - name: "Verify replica sync status"
+          timeout: "30 seconds"
+          command: "Check pg_stat_replication lag < 1 second"
+
+        - name: "Promote replica"
+          timeout: "30 seconds"
+          command: "pg_ctl promote on replica"
+
+        - name: "Update DNS/Service"
+          timeout: "60 seconds"
+          command: "Update Kubernetes service selector"
+
+        - name: "Verify new primary"
+          timeout: "30 seconds"
+          command: "Run health checks on new primary"
+
+        - name: "Resume traffic"
+          timeout: "10 seconds"
+          command: "Update PgBouncer to accept connections"
+
+      rollback:
+        condition: "new_primary_unhealthy"
+        action: "restore_from_backup"
+
+    redis_sentinel_failover:
+      trigger: "sentinel_detect_master_failure"
+      action: "automatic_via_sentinel"
+      timeout: "30 seconds"
+
+    kubernetes_node_failure:
+      trigger: "node_not_ready_5_minutes"
+      action: "pod_rescheduling"
+      timeout: "5 minutes"
+
+  # Manual failover procedures
+  manual:
+    region_failover:
+      description: "Failover from primary region to DR region"
+      estimated_time: "30 minutes"
+      approval_required: true
+      approvers:
+        - "on-call-lead"
+        - "platform-manager"
+
+      pre_checks:
+        - name: "Verify DR region health"
+          command: "kubectl --context=dr get nodes"
+          expected: "all nodes Ready"
+
+        - name: "Verify backup freshness"
+          command: "check_backup_age < 1 hour"
+          expected: "true"
+
+        - name: "Verify DR database sync"
+          command: "pg_stat_replication lag < 60 seconds"
+          expected: "true"
+
+      steps:
+        - name: "Notify stakeholders"
+          action: "Send PagerDuty alert and Slack notification"
+          timeout: "2 minutes"
+
+        - name: "Stop writes to primary region"
+          action: |
+            kubectl --context=primary scale deployment greenlang-api --replicas=0
+            kubectl --context=primary scale deployment greenlang-worker --replicas=0
+          timeout: "5 minutes"
+
+        - name: "Verify replication caught up"
+          action: "Wait for pg_stat_replication to show no lag"
+          timeout: "5 minutes"
+
+        - name: "Promote DR database"
+          action: |
+            kubectl --context=dr exec -n greenlang-database timescaledb-0 -- \
+              pg_ctl promote -D /var/lib/postgresql/data
+          timeout: "2 minutes"
+
+        - name: "Update Route53 DNS"
+          action: |
+            aws route53 change-resource-record-sets \
+              --hosted-zone-id $ZONE_ID \
+              --change-batch file://dr-dns-failover.json
+          timeout: "5 minutes"
+
+        - name: "Scale up DR services"
+          action: |
+            kubectl --context=dr scale deployment greenlang-api --replicas=5
+            kubectl --context=dr scale deployment greenlang-worker --replicas=3
+          timeout: "5 minutes"
+
+        - name: "Verify DR services healthy"
+          action: "Run smoke tests against DR endpoints"
+          timeout: "10 minutes"
+
+        - name: "Update monitoring"
+          action: "Point Grafana dashboards to DR metrics"
+          timeout: "2 minutes"
+
+      post_failover:
+        - name: "Document incident"
+          action: "Create incident report in Confluence"
+
+        - name: "Schedule failback planning"
+          action: "Create Jira ticket for failback"
+
+        - name: "Update runbook if needed"
+          action: "Note any issues encountered"
+
+# =============================================================================
+# RESTORE PROCEDURES
+# =============================================================================
+restore_procedures:
+  postgresql:
+    full_restore:
+      description: "Restore PostgreSQL from backup"
+      estimated_time: "30-60 minutes depending on data size"
+      steps:
+        - name: "Stop PostgreSQL"
+          command: "kubectl scale statefulset postgresql --replicas=0"
+
+        - name: "Delete data volume"
+          command: "kubectl delete pvc postgresql-data-0"
+
+        - name: "Restore from backup"
+          command: |
+            pgbackrest restore \
+              --stanza=greenlang \
+              --target-time="2026-01-26 12:00:00" \
+              --type=time
+
+        - name: "Start PostgreSQL"
+          command: "kubectl scale statefulset postgresql --replicas=1"
+
+        - name: "Verify restore"
+          command: "Run data integrity checks"
+
+    point_in_time_recovery:
+      description: "Restore to specific point in time"
+      estimated_time: "15-30 minutes"
+      steps:
+        - name: "Identify target time"
+          action: "Review logs to determine last good state"
+
+        - name: "Create recovery configuration"
+          command: |
+            pgbackrest restore \
+              --stanza=greenlang \
+              --target-time="YYYY-MM-DD HH:MM:SS" \
+              --type=time \
+              --target-action=promote
+
+        - name: "Verify data integrity"
+          action: "Compare row counts with backup manifest"
+
+  kubernetes:
+    namespace_restore:
+      description: "Restore Kubernetes namespace from Velero backup"
+      estimated_time: "15-30 minutes"
+      steps:
+        - name: "List available backups"
+          command: "velero backup get"
+
+        - name: "Describe backup"
+          command: "velero backup describe BACKUP_NAME --details"
+
+        - name: "Restore namespace"
+          command: |
+            velero restore create --from-backup BACKUP_NAME \
+              --include-namespaces greenlang-production \
+              --restore-volumes
+
+        - name: "Monitor restore"
+          command: "velero restore describe RESTORE_NAME"
+
+        - name: "Verify pods running"
+          command: "kubectl get pods -n greenlang-production"
+
+# =============================================================================
+# DR TESTING SCHEDULE
+# =============================================================================
+dr_testing:
+  schedule:
+    quarterly_full_test:
+      description: "Complete DR failover test"
+      frequency: "quarterly"
+      next_test: "2026-04-15"
+      duration: "4 hours"
+      participants:
+        - platform-team
+        - sre-team
+        - on-call-engineers
+      scope:
+        - "Full region failover"
+        - "Database restore verification"
+        - "Application smoke tests"
+        - "RTO/RPO measurement"
+
+    monthly_backup_test:
+      description: "Verify backup restoration"
+      frequency: "monthly"
+      next_test: "2026-02-15"
+      duration: "2 hours"
+      scope:
+        - "Restore database to test environment"
+        - "Verify data integrity"
+        - "Measure restore time"
+
+    weekly_health_check:
+      description: "Verify DR infrastructure health"
+      frequency: "weekly"
+      day: "Friday"
+      duration: "30 minutes"
+      scope:
+        - "Check DR region node health"
+        - "Verify backup jobs completed"
+        - "Check replication lag"
+        - "Review backup storage usage"
+
+  test_procedures:
+    pre_test:
+      - "Notify stakeholders of upcoming test"
+      - "Verify test environment isolated"
+      - "Document current system state"
+      - "Prepare rollback procedure"
+
+    during_test:
+      - "Record all actions with timestamps"
+      - "Measure actual RTO/RPO"
+      - "Document any issues"
+      - "Test monitoring and alerting"
+
+    post_test:
+      - "Restore primary region"
+      - "Verify data consistency"
+      - "Create test report"
+      - "Update procedures if needed"
+      - "Schedule follow-up for issues"
+
+# =============================================================================
+# CONTACTS AND ESCALATION
+# =============================================================================
+contacts:
+  primary_on_call:
+    pagerduty: "https://greenlang.pagerduty.com/schedules/P123ABC"
+    slack_channel: "#platform-oncall"
+
+  escalation_path:
+    level_1:
+      role: "On-Call Engineer"
+      response_time: "15 minutes"
+      contact: "PagerDuty rotation"
+
+    level_2:
+      role: "Platform Lead"
+      response_time: "30 minutes"
+      contact: "platform-lead@greenlang.io"
+
+    level_3:
+      role: "VP Engineering"
+      response_time: "1 hour"
+      contact: "vp-eng@greenlang.io"
+
+  external_contacts:
+    aws_support:
+      account_id: "123456789012"
+      support_plan: "Enterprise"
+      phone: "+1-800-555-0123"
+
+    database_vendor:
+      name: "Timescale"
+      support_email: "support@timescale.com"
+      contract_id: "TS-ENT-12345"
+
+# =============================================================================
+# APPENDIX: Recovery Scripts
+# =============================================================================
+scripts:
+  location: "s3://greenlang-dr-scripts/"
+  files:
+    - "failover-primary-to-dr.sh"
+    - "failback-dr-to-primary.sh"
+    - "restore-postgresql.sh"
+    - "restore-kubernetes.sh"
+    - "verify-data-integrity.sh"
+    - "update-dns.sh"
+    - "notify-stakeholders.sh"

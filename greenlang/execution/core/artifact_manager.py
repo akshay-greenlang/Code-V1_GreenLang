@@ -8,6 +8,8 @@ storing, and retrieving artifacts throughout pipeline execution.
 
 import json
 import hashlib
+import logging
+import os
 import shutil
 from typing import Dict, Any, Optional, List, Union
 from pathlib import Path
@@ -16,6 +18,8 @@ from dataclasses import dataclass, field, asdict
 from enum import Enum
 import mimetypes
 from greenlang.utilities.determinism import DeterministicClock
+
+logger = logging.getLogger(__name__)
 
 
 class ArtifactType(Enum):
@@ -93,20 +97,42 @@ class Artifact:
         if self.storage_type == ArtifactStorage.LOCAL:
             return self.storage_path.exists()
 
-        # NOTE: Cloud storage implementation pending
-        # When implementing S3/Azure/GCS:
-        # if self.storage_type == ArtifactStorage.S3:
-        #     import boto3
-        #     s3 = boto3.client('s3')
-        #     try:
-        #         s3.head_object(Bucket=bucket, Key=key)
-        #         return True
-        #     except:
-        #         return False
-        # elif self.storage_type == ArtifactStorage.AZURE:
-        #     from azure.storage.blob import BlobServiceClient
-        #     blob_client = BlobServiceClient.from_connection_string(conn_str)
-        #     return blob_client.get_blob_client(container, blob).exists()
+        # INFRA-006: S3 storage implementation
+        if self.storage_type == ArtifactStorage.S3:
+            try:
+                from greenlang.execution.core.storage.s3_client import get_s3_client
+                s3_client = get_s3_client()
+                return s3_client.exists(str(self.storage_path))
+            except Exception as e:
+                logger.warning(f"Error checking S3 existence: {e}")
+                return False
+
+        # Azure Blob Storage implementation
+        if self.storage_type == ArtifactStorage.AZURE:
+            try:
+                from azure.storage.blob import BlobServiceClient
+                conn_str = os.environ.get("AZURE_STORAGE_CONNECTION_STRING")
+                container = os.environ.get("GREENLANG_AZURE_CONTAINER", "greenlang-artifacts")
+                if conn_str:
+                    blob_service = BlobServiceClient.from_connection_string(conn_str)
+                    blob_client = blob_service.get_blob_client(container, str(self.storage_path))
+                    return blob_client.exists()
+            except Exception as e:
+                logger.warning(f"Error checking Azure existence: {e}")
+                return False
+
+        # GCS implementation
+        if self.storage_type == ArtifactStorage.GCS:
+            try:
+                from google.cloud import storage
+                bucket_name = os.environ.get("GREENLANG_GCS_BUCKET", "greenlang-artifacts")
+                client = storage.Client()
+                bucket = client.bucket(bucket_name)
+                blob = bucket.blob(str(self.storage_path))
+                return blob.exists()
+            except Exception as e:
+                logger.warning(f"Error checking GCS existence: {e}")
+                return False
 
         return False
 
@@ -122,17 +148,52 @@ class Artifact:
             with open(self.storage_path, mode) as f:
                 return f.read()
 
-        # NOTE: Cloud storage read implementation pending
-        # When implementing:
-        # if self.storage_type == ArtifactStorage.S3:
-        #     import boto3
-        #     s3 = boto3.client('s3')
-        #     obj = s3.get_object(Bucket=bucket, Key=key)
-        #     return obj['Body'].read()
-        # elif self.storage_type == ArtifactStorage.AZURE:
-        #     blob_client = BlobServiceClient.from_connection_string(conn_str)
-        #     downloader = blob_client.get_blob_client(container, blob).download_blob()
-        #     return downloader.readall()
+        # INFRA-006: S3 storage read implementation
+        if self.storage_type == ArtifactStorage.S3:
+            try:
+                from greenlang.execution.core.storage.s3_client import get_s3_client
+                s3_client = get_s3_client()
+                content = s3_client.download(str(self.storage_path))
+                if "b" not in mode:
+                    return content.decode("utf-8")
+                return content
+            except Exception as e:
+                logger.error(f"Error reading from S3: {e}")
+                raise
+
+        # Azure Blob Storage read implementation
+        if self.storage_type == ArtifactStorage.AZURE:
+            try:
+                from azure.storage.blob import BlobServiceClient
+                conn_str = os.environ.get("AZURE_STORAGE_CONNECTION_STRING")
+                container = os.environ.get("GREENLANG_AZURE_CONTAINER", "greenlang-artifacts")
+                if conn_str:
+                    blob_service = BlobServiceClient.from_connection_string(conn_str)
+                    blob_client = blob_service.get_blob_client(container, str(self.storage_path))
+                    downloader = blob_client.download_blob()
+                    content = downloader.readall()
+                    if "b" not in mode:
+                        return content.decode("utf-8")
+                    return content
+            except Exception as e:
+                logger.error(f"Error reading from Azure: {e}")
+                raise
+
+        # GCS read implementation
+        if self.storage_type == ArtifactStorage.GCS:
+            try:
+                from google.cloud import storage
+                bucket_name = os.environ.get("GREENLANG_GCS_BUCKET", "greenlang-artifacts")
+                client = storage.Client()
+                bucket = client.bucket(bucket_name)
+                blob = bucket.blob(str(self.storage_path))
+                content = blob.download_as_bytes()
+                if "b" not in mode:
+                    return content.decode("utf-8")
+                return content
+            except Exception as e:
+                logger.error(f"Error reading from GCS: {e}")
+                raise
 
         raise NotImplementedError(f"Storage type {self.storage_type} not implemented")
 
@@ -142,26 +203,61 @@ class Artifact:
             self.storage_path.parent.mkdir(parents=True, exist_ok=True)
             with open(self.storage_path, mode) as f:
                 f.write(content)
-        else:
-            # NOTE: Cloud storage write implementation pending
-            # When implementing:
-            # if self.storage_type == ArtifactStorage.S3:
-            #     import boto3
-            #     s3 = boto3.client('s3')
-            #     s3.put_object(Bucket=bucket, Key=key, Body=content)
-            # elif self.storage_type == ArtifactStorage.AZURE:
-            #     blob_client = BlobServiceClient.from_connection_string(conn_str)
-            #     blob_client.get_blob_client(container, blob).upload_blob(content, overwrite=True)
-            # elif self.storage_type == ArtifactStorage.GCS:
-            #     from google.cloud import storage
-            #     client = storage.Client()
-            #     bucket = client.bucket(bucket_name)
-            #     blob = bucket.blob(blob_name)
-            #     blob.upload_from_string(content)
+            return
 
-            raise NotImplementedError(
-                f"Storage type {self.storage_type} not implemented"
-            )
+        # INFRA-006: S3 storage write implementation
+        if self.storage_type == ArtifactStorage.S3:
+            try:
+                from greenlang.execution.core.storage.s3_client import get_s3_client
+                s3_client = get_s3_client()
+                content_type = self.metadata.mime_type if self.metadata else None
+                s3_client.upload(
+                    str(self.storage_path),
+                    content,
+                    content_type=content_type,
+                )
+                return
+            except Exception as e:
+                logger.error(f"Error writing to S3: {e}")
+                raise
+
+        # Azure Blob Storage write implementation
+        if self.storage_type == ArtifactStorage.AZURE:
+            try:
+                from azure.storage.blob import BlobServiceClient
+                conn_str = os.environ.get("AZURE_STORAGE_CONNECTION_STRING")
+                container = os.environ.get("GREENLANG_AZURE_CONTAINER", "greenlang-artifacts")
+                if conn_str:
+                    blob_service = BlobServiceClient.from_connection_string(conn_str)
+                    blob_client = blob_service.get_blob_client(container, str(self.storage_path))
+                    if isinstance(content, str):
+                        content = content.encode("utf-8")
+                    blob_client.upload_blob(content, overwrite=True)
+                    return
+            except Exception as e:
+                logger.error(f"Error writing to Azure: {e}")
+                raise
+
+        # GCS write implementation
+        if self.storage_type == ArtifactStorage.GCS:
+            try:
+                from google.cloud import storage
+                bucket_name = os.environ.get("GREENLANG_GCS_BUCKET", "greenlang-artifacts")
+                client = storage.Client()
+                bucket = client.bucket(bucket_name)
+                blob = bucket.blob(str(self.storage_path))
+                if isinstance(content, str):
+                    blob.upload_from_string(content, content_type="text/plain")
+                else:
+                    blob.upload_from_string(content, content_type="application/octet-stream")
+                return
+            except Exception as e:
+                logger.error(f"Error writing to GCS: {e}")
+                raise
+
+        raise NotImplementedError(
+            f"Storage type {self.storage_type} not implemented"
+        )
 
 
 class ArtifactManager:

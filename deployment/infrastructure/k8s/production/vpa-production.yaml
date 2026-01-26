@@ -1,0 +1,333 @@
+# =============================================================================
+# GreenLang Production Vertical Pod Autoscalers (VPA)
+# =============================================================================
+# INFRA-002: VPA configurations for dynamic resource right-sizing
+#
+# This configuration provides:
+#   1. Automatic resource adjustment based on actual usage
+#   2. Memory and CPU optimization for cost efficiency
+#   3. Works alongside HPA for comprehensive autoscaling
+#
+# Mode options:
+#   - Off: Only recommendations, no auto-updates
+#   - Initial: Apply recommendations only on pod creation
+#   - Auto: Apply recommendations throughout pod lifecycle (recommended)
+# =============================================================================
+---
+# =============================================================================
+# VPA: API Service - Auto Mode for Production
+# =============================================================================
+# Primary API service VPA with automatic resource adjustment.
+# Uses Auto mode for continuous optimization.
+# =============================================================================
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: greenlang-api-vpa-auto
+  namespace: greenlang-production
+  labels:
+    app.kubernetes.io/name: greenlang-api
+    app.kubernetes.io/component: api
+    app.kubernetes.io/part-of: greenlang-platform
+    environment: production
+  annotations:
+    description: "VPA for GreenLang API service with automatic resource adjustment"
+    infra-task: "INFRA-002"
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: greenlang-api
+  updatePolicy:
+    updateMode: "Auto"
+    minReplicas: 2
+  resourcePolicy:
+    containerPolicies:
+      - containerName: api
+        minAllowed:
+          cpu: 100m
+          memory: 256Mi
+        maxAllowed:
+          cpu: 4000m
+          memory: 8Gi
+        controlledResources: ["cpu", "memory"]
+        controlledValues: RequestsAndLimits
+        mode: Auto
+
+---
+# =============================================================================
+# VPA: Agent Runtime Service
+# =============================================================================
+# VPA for agent execution runtime pods.
+# Uses Auto mode for memory-intensive agent workloads.
+# =============================================================================
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: greenlang-agent-runtime-vpa
+  namespace: greenlang-production
+  labels:
+    app.kubernetes.io/name: greenlang-agent-runtime
+    app.kubernetes.io/component: runtime
+    app.kubernetes.io/part-of: greenlang-platform
+    environment: production
+  annotations:
+    description: "VPA for GreenLang Agent Runtime with automatic resource adjustment"
+    infra-task: "INFRA-002"
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: greenlang-agent-runtime
+  updatePolicy:
+    updateMode: "Auto"
+    minReplicas: 2
+  resourcePolicy:
+    containerPolicies:
+      - containerName: agent-runtime
+        minAllowed:
+          cpu: 200m
+          memory: 512Mi
+        maxAllowed:
+          cpu: 8000m
+          memory: 16Gi
+        controlledResources: ["cpu", "memory"]
+        controlledValues: RequestsAndLimits
+        mode: Auto
+
+---
+# =============================================================================
+# VPA: Registry Service
+# =============================================================================
+# VPA for agent registry service.
+# Optimizes resource usage for registry operations.
+# =============================================================================
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: greenlang-registry-vpa
+  namespace: greenlang-production
+  labels:
+    app.kubernetes.io/name: greenlang-registry
+    app.kubernetes.io/component: registry
+    app.kubernetes.io/part-of: greenlang-platform
+    environment: production
+  annotations:
+    description: "VPA for GreenLang Registry service"
+    infra-task: "INFRA-002"
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: greenlang-registry
+  updatePolicy:
+    updateMode: "Auto"
+    minReplicas: 2
+  resourcePolicy:
+    containerPolicies:
+      - containerName: registry
+        minAllowed:
+          cpu: 100m
+          memory: 256Mi
+        maxAllowed:
+          cpu: 2000m
+          memory: 4Gi
+        controlledResources: ["cpu", "memory"]
+        controlledValues: RequestsAndLimits
+        mode: Auto
+
+---
+# =============================================================================
+# VPA: Worker Service
+# =============================================================================
+# VPA for background worker pods.
+# Auto mode for variable workload processing.
+# =============================================================================
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: greenlang-worker-vpa-auto
+  namespace: greenlang-production
+  labels:
+    app.kubernetes.io/name: greenlang-worker
+    app.kubernetes.io/component: worker
+    app.kubernetes.io/part-of: greenlang-platform
+    environment: production
+  annotations:
+    description: "VPA for GreenLang Worker service with automatic resource adjustment"
+    infra-task: "INFRA-002"
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: greenlang-worker
+  updatePolicy:
+    updateMode: "Auto"
+    minReplicas: 2
+  resourcePolicy:
+    containerPolicies:
+      - containerName: worker
+        minAllowed:
+          cpu: 200m
+          memory: 512Mi
+        maxAllowed:
+          cpu: 4000m
+          memory: 8Gi
+        controlledResources: ["cpu", "memory"]
+        controlledValues: RequestsAndLimits
+        mode: Auto
+
+---
+# =============================================================================
+# VPA: ML Inference Service
+# =============================================================================
+# VPA for ML inference pods.
+# Initial mode to avoid disruption during inference.
+# =============================================================================
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: greenlang-ml-inference-vpa
+  namespace: greenlang-production
+  labels:
+    app.kubernetes.io/name: greenlang-ml-inference
+    app.kubernetes.io/component: ml-inference
+    app.kubernetes.io/part-of: greenlang-platform
+    environment: production
+  annotations:
+    description: "VPA for GreenLang ML Inference service"
+    infra-task: "INFRA-002"
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: greenlang-ml-inference
+  updatePolicy:
+    updateMode: "Initial"
+    minReplicas: 2
+  resourcePolicy:
+    containerPolicies:
+      - containerName: ml-inference
+        minAllowed:
+          cpu: 500m
+          memory: 1Gi
+        maxAllowed:
+          cpu: 8000m
+          memory: 32Gi
+        controlledResources: ["cpu", "memory"]
+        controlledValues: RequestsAndLimits
+        mode: Auto
+
+---
+# =============================================================================
+# VPA: Frontend Service
+# =============================================================================
+# VPA for frontend pods.
+# Auto mode for traffic-based resource optimization.
+# =============================================================================
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: greenlang-frontend-vpa
+  namespace: greenlang-production
+  labels:
+    app.kubernetes.io/name: greenlang-frontend
+    app.kubernetes.io/component: frontend
+    app.kubernetes.io/part-of: greenlang-platform
+    environment: production
+  annotations:
+    description: "VPA for GreenLang Frontend service"
+    infra-task: "INFRA-002"
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: greenlang-frontend
+  updatePolicy:
+    updateMode: "Auto"
+    minReplicas: 2
+  resourcePolicy:
+    containerPolicies:
+      - containerName: frontend
+        minAllowed:
+          cpu: 50m
+          memory: 128Mi
+        maxAllowed:
+          cpu: 1000m
+          memory: 2Gi
+        controlledResources: ["cpu", "memory"]
+        controlledValues: RequestsAndLimits
+        mode: Auto
+
+---
+# =============================================================================
+# VPA: Scheduler Service
+# =============================================================================
+# VPA for scheduler pods.
+# Initial mode to avoid disruption to scheduling operations.
+# =============================================================================
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: greenlang-scheduler-vpa
+  namespace: greenlang-production
+  labels:
+    app.kubernetes.io/name: greenlang-scheduler
+    app.kubernetes.io/component: scheduler
+    app.kubernetes.io/part-of: greenlang-platform
+    environment: production
+  annotations:
+    description: "VPA for GreenLang Scheduler service"
+    infra-task: "INFRA-002"
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: greenlang-scheduler
+  updatePolicy:
+    updateMode: "Initial"
+    minReplicas: 1
+  resourcePolicy:
+    containerPolicies:
+      - containerName: scheduler
+        minAllowed:
+          cpu: 100m
+          memory: 256Mi
+        maxAllowed:
+          cpu: 2000m
+          memory: 4Gi
+        controlledResources: ["cpu", "memory"]
+        controlledValues: RequestsAndLimits
+        mode: Auto
+
+---
+# =============================================================================
+# VPA Updater Configuration
+# =============================================================================
+# ConfigMap for VPA updater settings.
+# Controls how VPA applies resource recommendations.
+# =============================================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vpa-updater-config
+  namespace: kube-system
+  labels:
+    app.kubernetes.io/name: vpa-updater
+    app.kubernetes.io/part-of: greenlang-platform
+  annotations:
+    description: "Configuration for VPA updater behavior"
+    infra-task: "INFRA-002"
+data:
+  # Minimum time between pod evictions
+  updater-interval: "1m"
+  # Only evict pods using more than 10% above recommendations
+  pod-update-threshold: "0.1"
+  # Minimum time pod must be running before eviction
+  min-replicas: "2"
+  # Eviction tolerance
+  eviction-tolerance: "0.5"
+  # Rate limit for pod evictions
+  eviction-rate-limit: "1"
+  # Rate limit burst for pod evictions
+  eviction-rate-burst: "1"

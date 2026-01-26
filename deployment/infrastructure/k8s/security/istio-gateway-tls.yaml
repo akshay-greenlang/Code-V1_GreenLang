@@ -31,7 +31,7 @@ metadata:
     security.greenlang.io/tier: edge
   annotations:
     description: "Public HTTPS gateway for GreenLang API"
-    security.greenlang.io/tls-version: "1.2+"
+    security.greenlang.io/tls-version: "1.3"
     security.greenlang.io/certificates: "cert-manager/letsencrypt-prod"
 spec:
   selector:
@@ -50,8 +50,8 @@ spec:
         mode: SIMPLE
         # Certificate from cert-manager (Let's Encrypt)
         credentialName: greenlang-api-tls
-        # Minimum TLS version
-        minProtocolVersion: TLSV1_2
+        # Minimum TLS version - SEC-004: TLS 1.3 exclusive for maximum security
+        minProtocolVersion: TLSV1_3
         # Cipher suites - modern, secure options only
         cipherSuites:
           - ECDHE-ECDSA-AES256-GCM-SHA384

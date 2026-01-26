@@ -1,0 +1,577 @@
+# =============================================================================
+# GreenLang CIS Kubernetes Benchmark Configuration
+# =============================================================================
+# SEC-005: CIS Kubernetes benchmark scanning with kube-bench
+#
+# This configuration provides:
+#   - kube-bench deployment for CIS scanning
+#   - Automated compliance checks
+#   - Remediation runbook integration
+#   - CI/CD pipeline integration
+#
+# Author: GreenLang Platform Team
+# Version: 1.0.0
+# =============================================================================
+
+---
+# =============================================================================
+# NAMESPACE
+# =============================================================================
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: greenlang-security
+  labels:
+    app.kubernetes.io/name: greenlang-security
+    app.kubernetes.io/part-of: greenlang-platform
+    pod-security.kubernetes.io/enforce: privileged
+    pod-security.kubernetes.io/audit: privileged
+    pod-security.kubernetes.io/warn: privileged
+
+---
+# =============================================================================
+# SERVICEACCOUNT: kube-bench
+# =============================================================================
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kube-bench
+  namespace: greenlang-security
+  labels:
+    app.kubernetes.io/name: kube-bench
+    app.kubernetes.io/part-of: greenlang-platform
+  annotations:
+    security-task: "SEC-005"
+
+---
+# =============================================================================
+# CLUSTERROLE: kube-bench
+# =============================================================================
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kube-bench
+  labels:
+    app.kubernetes.io/name: kube-bench
+    app.kubernetes.io/part-of: greenlang-platform
+rules:
+  - apiGroups: [""]
+    resources:
+      - nodes
+      - pods
+      - namespaces
+      - configmaps
+      - secrets
+      - serviceaccounts
+      - services
+    verbs: ["get", "list"]
+  - apiGroups: ["apps"]
+    resources:
+      - deployments
+      - statefulsets
+      - daemonsets
+      - replicasets
+    verbs: ["get", "list"]
+  - apiGroups: ["rbac.authorization.k8s.io"]
+    resources:
+      - clusterroles
+      - clusterrolebindings
+      - roles
+      - rolebindings
+    verbs: ["get", "list"]
+  - apiGroups: ["networking.k8s.io"]
+    resources:
+      - networkpolicies
+    verbs: ["get", "list"]
+  - apiGroups: ["policy"]
+    resources:
+      - podsecuritypolicies
+      - poddisruptionbudgets
+    verbs: ["get", "list"]
+
+---
+# =============================================================================
+# CLUSTERROLEBINDING: kube-bench
+# =============================================================================
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kube-bench
+  labels:
+    app.kubernetes.io/name: kube-bench
+    app.kubernetes.io/part-of: greenlang-platform
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: kube-bench
+subjects:
+  - kind: ServiceAccount
+    name: kube-bench
+    namespace: greenlang-security
+
+---
+# =============================================================================
+# CONFIGMAP: kube-bench Configuration
+# =============================================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kube-bench-config
+  namespace: greenlang-security
+  labels:
+    app.kubernetes.io/name: kube-bench
+    app.kubernetes.io/part-of: greenlang-platform
+  annotations:
+    security-task: "SEC-005"
+data:
+  config.yaml: |
+    # kube-bench configuration for GreenLang
+
+    # Benchmark version
+    benchmark_version: "cis-1.8"
+
+    # Target components
+    targets:
+      - master
+      - node
+      - etcd
+      - controlplane
+      - policies
+      - managedservices
+
+    # Output configuration
+    output:
+      format: json
+      file: /var/log/kube-bench/results.json
+
+    # Scoring
+    scoring:
+      fail_threshold: 0
+      warn_threshold: 10
+
+    # Custom checks for GreenLang
+    custom_checks:
+      - id: GL-001
+        description: "Ensure GreenLang namespaces have network policies"
+        remediation: "Apply network policies to all greenlang-* namespaces"
+
+      - id: GL-002
+        description: "Ensure pod security standards are enforced"
+        remediation: "Enable pod security admission for restricted profile"
+
+      - id: GL-003
+        description: "Ensure secrets are encrypted at rest"
+        remediation: "Configure KMS encryption for secrets"
+
+---
+# =============================================================================
+# CRONJOB: Scheduled CIS Benchmark Scan
+# =============================================================================
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: kube-bench-scan
+  namespace: greenlang-security
+  labels:
+    app.kubernetes.io/name: kube-bench
+    app.kubernetes.io/part-of: greenlang-platform
+  annotations:
+    security-task: "SEC-005"
+spec:
+  schedule: "0 2 * * *"  # Daily at 2 AM
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 7
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: 86400
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: kube-bench
+        spec:
+          serviceAccountName: kube-bench
+          restartPolicy: Never
+          hostPID: true
+
+          containers:
+            - name: kube-bench
+              image: aquasec/kube-bench:v0.7.0
+              imagePullPolicy: IfNotPresent
+
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  # Run kube-bench with JSON output
+                  kube-bench run \
+                    --benchmark cis-1.8 \
+                    --json \
+                    --outputfile /results/kube-bench-results.json
+
+                  # Also generate human-readable report
+                  kube-bench run \
+                    --benchmark cis-1.8 \
+                    > /results/kube-bench-results.txt
+
+                  # Upload results to S3
+                  TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+                  aws s3 cp /results/kube-bench-results.json \
+                    s3://greenlang-security-reports/cis-benchmark/${TIMESTAMP}/results.json
+                  aws s3 cp /results/kube-bench-results.txt \
+                    s3://greenlang-security-reports/cis-benchmark/${TIMESTAMP}/results.txt
+
+                  # Send summary to Slack
+                  PASS_COUNT=$(jq '.Controls[].tests[].results[] | select(.status == "PASS")' /results/kube-bench-results.json | wc -l)
+                  FAIL_COUNT=$(jq '.Controls[].tests[].results[] | select(.status == "FAIL")' /results/kube-bench-results.json | wc -l)
+                  WARN_COUNT=$(jq '.Controls[].tests[].results[] | select(.status == "WARN")' /results/kube-bench-results.json | wc -l)
+
+                  curl -X POST -H 'Content-type: application/json' \
+                    --data "{\"text\":\"CIS Benchmark Results: ✅ ${PASS_COUNT} PASS | ❌ ${FAIL_COUNT} FAIL | ⚠️ ${WARN_COUNT} WARN\"}" \
+                    ${SLACK_WEBHOOK_URL}
+
+                  # Exit with failure if any FAIL results
+                  if [ "$FAIL_COUNT" -gt 0 ]; then
+                    echo "CIS Benchmark scan found $FAIL_COUNT failures"
+                    exit 1
+                  fi
+
+              env:
+                - name: SLACK_WEBHOOK_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: security-webhooks
+                      key: slack-webhook-url
+                - name: AWS_REGION
+                  value: "us-east-1"
+
+              envFrom:
+                - secretRef:
+                    name: aws-credentials
+
+              resources:
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
+                limits:
+                  cpu: 500m
+                  memory: 512Mi
+
+              volumeMounts:
+                - name: var-lib-etcd
+                  mountPath: /var/lib/etcd
+                  readOnly: true
+                - name: var-lib-kubelet
+                  mountPath: /var/lib/kubelet
+                  readOnly: true
+                - name: var-lib-kube-scheduler
+                  mountPath: /var/lib/kube-scheduler
+                  readOnly: true
+                - name: var-lib-kube-controller-manager
+                  mountPath: /var/lib/kube-controller-manager
+                  readOnly: true
+                - name: etc-systemd
+                  mountPath: /etc/systemd
+                  readOnly: true
+                - name: lib-systemd
+                  mountPath: /lib/systemd/
+                  readOnly: true
+                - name: srv-kubernetes
+                  mountPath: /srv/kubernetes/
+                  readOnly: true
+                - name: etc-kubernetes
+                  mountPath: /etc/kubernetes
+                  readOnly: true
+                - name: usr-bin
+                  mountPath: /usr/local/mount-from-host/bin
+                  readOnly: true
+                - name: etc-cni-netd
+                  mountPath: /etc/cni/net.d/
+                  readOnly: true
+                - name: opt-cni-bin
+                  mountPath: /opt/cni/bin/
+                  readOnly: true
+                - name: results
+                  mountPath: /results
+
+          volumes:
+            - name: var-lib-etcd
+              hostPath:
+                path: "/var/lib/etcd"
+            - name: var-lib-kubelet
+              hostPath:
+                path: "/var/lib/kubelet"
+            - name: var-lib-kube-scheduler
+              hostPath:
+                path: "/var/lib/kube-scheduler"
+            - name: var-lib-kube-controller-manager
+              hostPath:
+                path: "/var/lib/kube-controller-manager"
+            - name: etc-systemd
+              hostPath:
+                path: "/etc/systemd"
+            - name: lib-systemd
+              hostPath:
+                path: "/lib/systemd"
+            - name: srv-kubernetes
+              hostPath:
+                path: "/srv/kubernetes"
+            - name: etc-kubernetes
+              hostPath:
+                path: "/etc/kubernetes"
+            - name: usr-bin
+              hostPath:
+                path: "/usr/bin"
+            - name: etc-cni-netd
+              hostPath:
+                path: "/etc/cni/net.d/"
+            - name: opt-cni-bin
+              hostPath:
+                path: "/opt/cni/bin/"
+            - name: results
+              emptyDir: {}
+
+---
+# =============================================================================
+# SECRET: Security Webhooks
+# =============================================================================
+apiVersion: v1
+kind: Secret
+metadata:
+  name: security-webhooks
+  namespace: greenlang-security
+  labels:
+    app.kubernetes.io/name: kube-bench
+    app.kubernetes.io/part-of: greenlang-platform
+  annotations:
+    security-task: "SEC-005"
+    external-secrets.io/managed: "true"
+type: Opaque
+stringData:
+  # Placeholder - should be populated by secrets operator
+  slack-webhook-url: "https://hooks.slack.com/services/PLACEHOLDER"
+
+---
+# =============================================================================
+# JOB: On-Demand CIS Benchmark Scan
+# =============================================================================
+# Use this for manual/CI-triggered scans:
+# kubectl create job --from=cronjob/kube-bench-scan kube-bench-manual-$(date +%s)
+# =============================================================================
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: kube-bench-ondemand
+  namespace: greenlang-security
+  labels:
+    app.kubernetes.io/name: kube-bench
+    app.kubernetes.io/part-of: greenlang-platform
+  annotations:
+    security-task: "SEC-005"
+    description: "On-demand CIS benchmark scan for CI/CD integration"
+spec:
+  ttlSecondsAfterFinished: 3600
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: kube-bench
+    spec:
+      serviceAccountName: kube-bench
+      restartPolicy: Never
+      hostPID: true
+
+      containers:
+        - name: kube-bench
+          image: aquasec/kube-bench:v0.7.0
+          imagePullPolicy: IfNotPresent
+
+          command:
+            - kube-bench
+            - run
+            - --benchmark
+            - cis-1.8
+            - --json
+
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+
+          volumeMounts:
+            - name: var-lib-kubelet
+              mountPath: /var/lib/kubelet
+              readOnly: true
+            - name: etc-kubernetes
+              mountPath: /etc/kubernetes
+              readOnly: true
+
+      volumes:
+        - name: var-lib-kubelet
+          hostPath:
+            path: "/var/lib/kubelet"
+        - name: etc-kubernetes
+          hostPath:
+            path: "/etc/kubernetes"
+
+---
+# =============================================================================
+# CONFIGMAP: CIS Benchmark Remediation Runbook
+# =============================================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cis-remediation-runbook
+  namespace: greenlang-security
+  labels:
+    app.kubernetes.io/name: kube-bench
+    app.kubernetes.io/part-of: greenlang-platform
+  annotations:
+    security-task: "SEC-005"
+data:
+  runbook.yaml: |
+    # CIS Kubernetes Benchmark Remediation Runbook
+
+    remediations:
+      # Control Plane Security
+      "1.1.1":
+        check: "Ensure API server pod specification file permissions"
+        remediation: |
+          chmod 600 /etc/kubernetes/manifests/kube-apiserver.yaml
+        automated: true
+
+      "1.1.12":
+        check: "Ensure etcd data directory permissions"
+        remediation: |
+          chmod 700 /var/lib/etcd
+        automated: true
+
+      "1.2.1":
+        check: "Ensure --anonymous-auth is set to false"
+        remediation: |
+          Edit /etc/kubernetes/manifests/kube-apiserver.yaml:
+          Add --anonymous-auth=false to command args
+        automated: false
+
+      "1.2.6":
+        check: "Ensure --kubelet-certificate-authority is set"
+        remediation: |
+          Edit /etc/kubernetes/manifests/kube-apiserver.yaml:
+          Add --kubelet-certificate-authority=/etc/kubernetes/pki/ca.crt
+        automated: false
+
+      # Worker Node Security
+      "4.1.1":
+        check: "Ensure kubelet service file permissions"
+        remediation: |
+          chmod 600 /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+        automated: true
+
+      "4.2.1":
+        check: "Ensure --anonymous-auth is false for kubelet"
+        remediation: |
+          Edit /var/lib/kubelet/config.yaml:
+          Set authentication.anonymous.enabled: false
+        automated: false
+
+      # Pod Security
+      "5.1.1":
+        check: "Ensure default service accounts are not used"
+        remediation: |
+          Create dedicated service accounts for each workload:
+          kubectl create serviceaccount <name> -n <namespace>
+        automated: false
+
+      "5.2.1":
+        check: "Ensure Pod Security Standards are enforced"
+        remediation: |
+          Add labels to namespace:
+          kubectl label namespace <name> \
+            pod-security.kubernetes.io/enforce=restricted \
+            pod-security.kubernetes.io/audit=restricted \
+            pod-security.kubernetes.io/warn=restricted
+        automated: true
+
+      "5.3.1":
+        check: "Ensure network policies are in place"
+        remediation: |
+          Apply default deny network policy to namespace:
+          apiVersion: networking.k8s.io/v1
+          kind: NetworkPolicy
+          metadata:
+            name: default-deny-all
+          spec:
+            podSelector: {}
+            policyTypes:
+            - Ingress
+            - Egress
+        automated: true
+
+    # GreenLang-specific remediations
+    greenlang_specific:
+      "GL-001":
+        check: "Ensure all greenlang namespaces have network policies"
+        namespaces:
+          - greenlang-production
+          - greenlang-agents
+          - greenlang-data
+          - greenlang-database
+        remediation: |
+          Apply network policies from:
+          deployment/infrastructure/k8s/security/network-policies/
+
+      "GL-002":
+        check: "Ensure secrets encryption is enabled"
+        remediation: |
+          Verify EncryptionConfiguration in:
+          /etc/kubernetes/encryption-config.yaml
+
+      "GL-003":
+        check: "Ensure Istio mTLS is in STRICT mode"
+        remediation: |
+          Apply PeerAuthentication from:
+          deployment/infrastructure/k8s/security/istio-mtls.yaml
+
+---
+# =============================================================================
+# PROMETHEUSRULE: CIS Benchmark Alerts
+# =============================================================================
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: cis-benchmark-alerts
+  namespace: greenlang-security
+  labels:
+    app.kubernetes.io/name: kube-bench
+    app.kubernetes.io/part-of: greenlang-platform
+    prometheus: k8s
+    role: alert-rules
+spec:
+  groups:
+    - name: cis-benchmark
+      rules:
+        - alert: CISBenchmarkScanFailed
+          expr: |
+            kube_job_status_failed{job_name=~"kube-bench.*", namespace="greenlang-security"} > 0
+          for: 5m
+          labels:
+            severity: warning
+            team: security
+          annotations:
+            summary: "CIS Benchmark scan job failed"
+            description: "The CIS Benchmark scan job {{ $labels.job_name }} has failed"
+            runbook_url: "https://wiki.greenlang.io/runbooks/cis-benchmark-failure"
+
+        - alert: CISBenchmarkCriticalFailure
+          expr: |
+            cis_benchmark_failures{severity="FAIL"} > 0
+          for: 1h
+          labels:
+            severity: critical
+            team: security
+          annotations:
+            summary: "CIS Benchmark has critical failures"
+            description: "{{ $value }} CIS Benchmark checks are failing"
+            runbook_url: "https://wiki.greenlang.io/runbooks/cis-benchmark-remediation"
