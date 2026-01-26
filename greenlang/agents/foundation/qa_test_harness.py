@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-GL-FOUND-X-009: QA Test Harness Agent
-=====================================
+GL-FOUND-X-008: Quality Gate & Test Harness Agent
+=================================================
 
 A comprehensive testing framework for all GreenLang agents. This agent provides
 systematic verification of zero-hallucination guarantees, determinism, lineage
@@ -388,7 +388,7 @@ COMMON_FIXTURES = {
 
 class QATestHarnessAgent(BaseAgent):
     """
-    GL-FOUND-X-009: QA Test Harness Agent
+    GL-FOUND-X-008: Quality Gate & Test Harness Agent
 
     A comprehensive testing framework for all GreenLang agents.
     Provides systematic verification of zero-hallucination guarantees,
@@ -417,8 +417,8 @@ class QATestHarnessAgent(BaseAgent):
         benchmark = harness.benchmark_agent(agent_type, input_data, iterations=100)
     """
 
-    AGENT_ID = "GL-FOUND-X-009"
-    AGENT_NAME = "QA Test Harness Agent"
+    AGENT_ID = "GL-FOUND-X-008"
+    AGENT_NAME = "Quality Gate & Test Harness Agent"
     VERSION = "1.0.0"
 
     def __init__(self, config: Optional[AgentConfig] = None):

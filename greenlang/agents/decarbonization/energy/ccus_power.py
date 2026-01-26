@@ -18,6 +18,8 @@ logger = logging.getLogger(__name__)
 class CCUSPowerAgent(DecarbonizationEnergyBaseAgent):
     """GL-DECARB-ENE-007: CCUS for Power Agent"""
 
+    AGENT_ID = "GL-DECARB-ENE-007"
+    AGENT_NAME = "CCUS for Power Agent"
     category = AgentCategory.RECOMMENDATION
     metadata = AgentMetadata(
         name="GL-DECARB-ENE-007",

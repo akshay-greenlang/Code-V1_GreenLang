@@ -55,6 +55,8 @@ class StorageSystemsMRVAgent(MRVEnergyBaseAgent):
     This agent is CRITICAL PATH - all calculations are deterministic.
     """
 
+    AGENT_ID = "GL-MRV-ENE-004"
+    AGENT_NAME = "Storage Systems MRV Agent"
     category = AgentCategory.CRITICAL
     metadata = AgentMetadata(
         name="GL-MRV-ENE-004",

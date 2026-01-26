@@ -57,6 +57,8 @@ class HydrogenProductionMRVAgent(MRVEnergyBaseAgent):
     This agent is CRITICAL PATH - all calculations are deterministic.
     """
 
+    AGENT_ID = "GL-MRV-ENE-008"
+    AGENT_NAME = "Hydrogen Production MRV Agent"
     category = AgentCategory.CRITICAL
     metadata = AgentMetadata(
         name="GL-MRV-ENE-008",

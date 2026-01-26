@@ -30,7 +30,7 @@ from decimal import Decimal, ROUND_HALF_UP
 from enum import Enum
 from typing import Any, Dict, List, Optional, Union
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 
 logger = logging.getLogger(__name__)
 
@@ -233,7 +233,8 @@ class TransportMRVInput(BaseModel):
     class Config:
         use_enum_values = True
 
-    @validator("reporting_year")
+    @field_validator("reporting_year")
+    @classmethod
     def validate_reporting_year(cls, v: int) -> int:
         """Validate reporting year is reasonable."""
         current_year = datetime.now().year

@@ -19,6 +19,8 @@ logger = logging.getLogger(__name__)
 class JustTransitionPlannerAgent(DecarbonizationEnergyBaseAgent):
     """GL-DECARB-ENE-010: Just Transition Planner Agent"""
 
+    AGENT_ID = "GL-DECARB-ENE-010"
+    AGENT_NAME = "Just Transition Planner Agent"
     category = AgentCategory.RECOMMENDATION
     metadata = AgentMetadata(
         name="GL-DECARB-ENE-010",

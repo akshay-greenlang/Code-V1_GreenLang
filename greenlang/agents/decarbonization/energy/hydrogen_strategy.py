@@ -19,6 +19,8 @@ logger = logging.getLogger(__name__)
 class HydrogenStrategyAgent(DecarbonizationEnergyBaseAgent):
     """GL-DECARB-ENE-005: Hydrogen Strategy Agent"""
 
+    AGENT_ID = "GL-DECARB-ENE-005"
+    AGENT_NAME = "Hydrogen Strategy Agent"
     category = AgentCategory.RECOMMENDATION
     metadata = AgentMetadata(
         name="GL-DECARB-ENE-005",

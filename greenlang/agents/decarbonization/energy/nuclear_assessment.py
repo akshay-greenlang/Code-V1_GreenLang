@@ -19,6 +19,8 @@ logger = logging.getLogger(__name__)
 class NuclearAssessmentAgent(DecarbonizationEnergyBaseAgent):
     """GL-DECARB-ENE-006: Nuclear Assessment Agent"""
 
+    AGENT_ID = "GL-DECARB-ENE-006"
+    AGENT_NAME = "Nuclear Assessment Agent"
     category = AgentCategory.RECOMMENDATION
     metadata = AgentMetadata(
         name="GL-DECARB-ENE-006",

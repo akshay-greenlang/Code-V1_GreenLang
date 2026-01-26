@@ -53,6 +53,8 @@ class RenewableGenerationMRVAgent(MRVEnergyBaseAgent):
     This agent is CRITICAL PATH - all calculations are deterministic.
     """
 
+    AGENT_ID = "GL-MRV-ENE-003"
+    AGENT_NAME = "Renewable Generation MRV Agent"
     category = AgentCategory.CRITICAL
     metadata = AgentMetadata(
         name="GL-MRV-ENE-003",

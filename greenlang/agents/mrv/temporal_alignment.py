@@ -62,7 +62,7 @@ class TimePeriod(BaseModel):
 
 class DataPoint(BaseModel):
     """A data point with temporal context."""
-    date: date = Field(...)
+    point_date: date = Field(..., description="Date of the data point")
     value: float = Field(...)
     unit: str = Field(default="tCO2e")
     source: Optional[str] = Field(None)
@@ -156,7 +156,7 @@ class TemporalAlignmentAgent(DeterministicAgent):
             aligned_data: List[AlignedDataPoint] = []
 
             # Sort data points by date
-            sorted_points = sorted(align_input.data_points, key=lambda x: x.date)
+            sorted_points = sorted(align_input.data_points, key=lambda x: x.point_date)
 
             # Calculate target period days
             target_start = align_input.target_period.start_date
@@ -171,7 +171,7 @@ class TemporalAlignmentAgent(DeterministicAgent):
             data_days = 0
             for i, point in enumerate(sorted_points):
                 if i < len(sorted_points) - 1:
-                    days = (sorted_points[i + 1].date - point.date).days
+                    days = (sorted_points[i + 1].date - point.point_date).days
                 else:
                     days = 30  # Assume monthly for last point
                 data_days += days
@@ -182,8 +182,8 @@ class TemporalAlignmentAgent(DeterministicAgent):
             # Align each data point
             for point in sorted_points:
                 # Calculate overlap with target period
-                point_start = point.date
-                point_end = point.date  # Assume point data
+                point_start = point.point_date
+                point_end = point.point_date  # Assume point data
 
                 # Simple prorating: distribute across target period
                 if align_input.alignment_method == AlignmentMethod.PRORATING:
@@ -197,8 +197,8 @@ class TemporalAlignmentAgent(DeterministicAgent):
                     aligned_value = point.value
 
                 aligned_data.append(AlignedDataPoint(
-                    original_date=point.date,
-                    aligned_date=point.date,
+                    original_date=point.point_date,
+                    aligned_date=point.point_date,
                     original_value=point.value,
                     aligned_value=round(aligned_value, 4),
                     adjustment_factor=round(factor, 4),

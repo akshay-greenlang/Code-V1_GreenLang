@@ -19,6 +19,8 @@ logger = logging.getLogger(__name__)
 class DemandFlexibilityAgent(DecarbonizationEnergyBaseAgent):
     """GL-DECARB-ENE-004: Demand Flexibility Agent"""
 
+    AGENT_ID = "GL-DECARB-ENE-004"
+    AGENT_NAME = "Demand Flexibility Agent"
     category = AgentCategory.RECOMMENDATION
     metadata = AgentMetadata(
         name="GL-DECARB-ENE-004",

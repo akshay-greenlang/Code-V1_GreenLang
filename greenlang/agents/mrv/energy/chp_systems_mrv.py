@@ -54,6 +54,8 @@ class CHPSystemsMRVAgent(MRVEnergyBaseAgent):
     This agent is CRITICAL PATH - all calculations are deterministic.
     """
 
+    AGENT_ID = "GL-MRV-ENE-007"
+    AGENT_NAME = "CHP Systems MRV Agent"
     category = AgentCategory.CRITICAL
     metadata = AgentMetadata(
         name="GL-MRV-ENE-007",

@@ -33,6 +33,8 @@ class RenewableIntegrationAgent(DecarbonizationEnergyBaseAgent):
     - Curtailment risk assessment
     """
 
+    AGENT_ID = "GL-DECARB-ENE-002"
+    AGENT_NAME = "Renewable Integration Agent"
     category = AgentCategory.RECOMMENDATION
     metadata = AgentMetadata(
         name="GL-DECARB-ENE-002",

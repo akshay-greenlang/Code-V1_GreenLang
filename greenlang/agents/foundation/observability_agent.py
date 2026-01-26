@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-GL-FOUND-X-010: GreenLang Observability Agent
-=============================================
+GL-FOUND-X-009: Observability & Telemetry Agent
+===============================================
 
 The observability infrastructure agent for GreenLang Climate OS.
 Provides comprehensive metrics, logging, tracing, and alerting capabilities.
@@ -313,7 +313,7 @@ class ActiveSpan:
 
 class ObservabilityAgent(BaseAgent):
     """
-    GL-FOUND-X-010: GreenLang Observability Agent
+    GL-FOUND-X-009: Observability & Telemetry Agent
 
     Provides comprehensive observability infrastructure for GreenLang Climate OS.
     Handles metrics collection, distributed tracing, structured logging,
@@ -349,8 +349,8 @@ class ObservabilityAgent(BaseAgent):
         })
     """
 
-    AGENT_ID = "GL-FOUND-X-010"
-    AGENT_NAME = "GreenLang Observability Agent"
+    AGENT_ID = "GL-FOUND-X-009"
+    AGENT_NAME = "Observability & Telemetry Agent"
     VERSION = "1.0.0"
 
     def __init__(self, config: Optional[AgentConfig] = None):

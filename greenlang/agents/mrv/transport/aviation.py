@@ -44,7 +44,7 @@ from decimal import Decimal, ROUND_HALF_UP
 from typing import Dict, List, Optional, Any
 from enum import Enum
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 
 from greenlang.agents.mrv.transport.base import (
     BaseTransportMRVAgent,
@@ -196,7 +196,8 @@ class FlightRecord(BaseModel):
     class Config:
         use_enum_values = True
 
-    @validator("origin_iata", "destination_iata")
+    @field_validator("origin_iata", "destination_iata")
+    @classmethod
     def normalize_iata(cls, v: str) -> str:
         """Normalize IATA codes to uppercase."""
         return v.upper().strip()

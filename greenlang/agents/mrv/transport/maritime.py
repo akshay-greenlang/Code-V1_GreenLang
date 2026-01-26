@@ -47,7 +47,7 @@ from decimal import Decimal, ROUND_HALF_UP
 from typing import Dict, List, Optional, Any
 from enum import Enum
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, model_validator
 
 from greenlang.agents.mrv.transport.base import (
     BaseTransportMRVAgent,
@@ -254,13 +254,15 @@ class VoyageRecord(BaseModel):
     class Config:
         use_enum_values = True
 
-    @validator("distance_km", pre=True, always=True)
-    def convert_nm_to_km(cls, v, values):
+    @model_validator(mode="before")
+    @classmethod
+    def convert_nm_to_km(cls, data: Any) -> Any:
         """Convert nautical miles to kilometers if not provided."""
-        if v is None and values.get("distance_nm"):
-            # 1 nautical mile = 1.852 km
-            return Decimal(str(values["distance_nm"])) * Decimal("1.852")
-        return v
+        if isinstance(data, dict):
+            if data.get("distance_km") is None and data.get("distance_nm"):
+                # 1 nautical mile = 1.852 km
+                data["distance_km"] = Decimal(str(data["distance_nm"])) * Decimal("1.852")
+        return data
 
 
 class MaritimeInput(TransportMRVInput):

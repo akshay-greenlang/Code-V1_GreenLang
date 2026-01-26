@@ -309,7 +309,10 @@
       "Bash(python scripts/continue_security_cleanup.py:*)",
       "Bash(python:*)",
       "WebFetch(domain:raw.githubusercontent.com)",
-      "Bash(npm install -g ralphy-cli)"
+      "Bash(npm install -g ralphy-cli)",
+      "Bash(do)",
+      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\aksha\\\\Code-V1_GreenLang\\\\greenlang\\\\agents\\\\mrv\\\\energy\" -Filter \"*.py\")",
+      "Bash(Select-Object Name)"
     ],
     "deny": [],
     "ask": []

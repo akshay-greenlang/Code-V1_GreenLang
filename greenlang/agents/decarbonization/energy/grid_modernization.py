@@ -19,6 +19,8 @@ logger = logging.getLogger(__name__)
 class GridModernizationAgent(DecarbonizationEnergyBaseAgent):
     """GL-DECARB-ENE-009: Grid Modernization Agent"""
 
+    AGENT_ID = "GL-DECARB-ENE-009"
+    AGENT_NAME = "Grid Modernization Agent"
     category = AgentCategory.RECOMMENDATION
     metadata = AgentMetadata(
         name="GL-DECARB-ENE-009",

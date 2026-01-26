@@ -19,6 +19,8 @@ logger = logging.getLogger(__name__)
 class DistributedGenerationAgent(DecarbonizationEnergyBaseAgent):
     """GL-DECARB-ENE-008: Distributed Generation Agent"""
 
+    AGENT_ID = "GL-DECARB-ENE-008"
+    AGENT_NAME = "Distributed Generation Agent"
     category = AgentCategory.RECOMMENDATION
     metadata = AgentMetadata(
         name="GL-DECARB-ENE-008",

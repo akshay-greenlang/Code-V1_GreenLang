@@ -44,7 +44,7 @@ from datetime import datetime
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Dict, List, Optional, Any
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 from greenlang.agents.mrv.transport.base import (
     BaseTransportMRVAgent,
@@ -107,15 +107,17 @@ class VehicleRecord(BaseModel):
     class Config:
         use_enum_values = True
 
-    @validator("distance_km", pre=True, always=True)
-    def calculate_distance_from_odometer(cls, v, values):
+    @model_validator(mode="before")
+    @classmethod
+    def calculate_distance_from_odometer(cls, data: Any) -> Any:
         """Calculate distance from odometer readings if not provided."""
-        if v is None:
-            start = values.get("odometer_start")
-            end = values.get("odometer_end")
-            if start is not None and end is not None:
-                return Decimal(str(end)) - Decimal(str(start))
-        return v
+        if isinstance(data, dict):
+            if data.get("distance_km") is None:
+                start = data.get("odometer_start")
+                end = data.get("odometer_end")
+                if start is not None and end is not None:
+                    data["distance_km"] = Decimal(str(end)) - Decimal(str(start))
+        return data
 
 
 class FleetRecord(BaseModel):
@@ -183,9 +185,10 @@ class RoadTransportInput(TransportMRVInput):
         None, ge=0, description="Refrigeration unit fuel consumption"
     )
 
-    @validator("vehicle_records", "fleet_records")
-    def validate_has_data(cls, v, values, field):
-        """Validate that either vehicles or fleets are provided."""
+    @field_validator("vehicle_records", "fleet_records")
+    @classmethod
+    def validate_has_data(cls, v: List) -> List:
+        """Validate records format."""
         return v
 
 

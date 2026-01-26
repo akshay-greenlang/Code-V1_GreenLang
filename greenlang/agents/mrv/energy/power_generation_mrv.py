@@ -65,6 +65,8 @@ class PowerGenerationMRVAgent(MRVEnergyBaseAgent):
         supported_technologies: List of supported generation types
     """
 
+    AGENT_ID = "GL-MRV-ENE-001"
+    AGENT_NAME = "Power Generation MRV Agent"
     category = AgentCategory.CRITICAL
     metadata = AgentMetadata(
         name="GL-MRV-ENE-001",

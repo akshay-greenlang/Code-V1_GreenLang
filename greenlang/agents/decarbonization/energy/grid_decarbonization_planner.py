@@ -49,6 +49,8 @@ class GridDecarbonizationPlannerAgent(DecarbonizationEnergyBaseAgent):
     and deterministic calculations for financials.
     """
 
+    AGENT_ID = "GL-DECARB-ENE-001"
+    AGENT_NAME = "Grid Decarbonization Planner Agent"
     category = AgentCategory.RECOMMENDATION
     metadata = AgentMetadata(
         name="GL-DECARB-ENE-001",

@@ -33,6 +33,8 @@ class StorageOptimizationAgent(DecarbonizationEnergyBaseAgent):
     - Economic analysis
     """
 
+    AGENT_ID = "GL-DECARB-ENE-003"
+    AGENT_NAME = "Storage Optimization Agent"
     category = AgentCategory.RECOMMENDATION
     metadata = AgentMetadata(
         name="GL-DECARB-ENE-003",

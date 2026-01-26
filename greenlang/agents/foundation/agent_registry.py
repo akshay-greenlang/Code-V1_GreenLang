@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-GL-FOUND-X-007: Versioned Agent Registry
-=========================================
+GL-FOUND-X-010: Agent Registry & Versioning Agent
+==================================================
 
 A comprehensive catalog of all available agents in the GreenLang Climate OS.
 This agent maintains agent metadata, versions, capabilities, dependencies,
@@ -429,7 +429,7 @@ class DependencyResolutionOutput(BaseModel):
 
 class VersionedAgentRegistry(BaseAgent):
     """
-    GL-FOUND-X-007: Versioned Agent Registry
+    GL-FOUND-X-010: Agent Registry & Versioning Agent
 
     A comprehensive catalog of all available agents in the GreenLang Climate OS.
     Provides agent registration, discovery, version management, capability matching,
@@ -460,8 +460,8 @@ class VersionedAgentRegistry(BaseAgent):
         ))
     """
 
-    AGENT_ID = "GL-FOUND-X-007"
-    AGENT_NAME = "Versioned Agent Registry"
+    AGENT_ID = "GL-FOUND-X-010"
+    AGENT_NAME = "Agent Registry & Versioning Agent"
     VERSION = "1.0.0"
 
     def __init__(self, config: Optional[AgentConfig] = None):

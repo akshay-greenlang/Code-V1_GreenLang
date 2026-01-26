@@ -31,6 +31,8 @@ class ExtremeHeatResilienceAgent(AdaptationEnergyBaseAgent):
     including generation derating, transmission losses, and cooling needs.
     """
 
+    AGENT_ID = "GL-ADAPT-ENE-001"
+    AGENT_NAME = "Extreme Heat Resilience Agent"
     category = AgentCategory.INSIGHT
     metadata = AgentMetadata(
         name="GL-ADAPT-ENE-001",
@@ -125,6 +127,8 @@ class FloodResilienceAgent(AdaptationEnergyBaseAgent):
     power plants, and underground systems.
     """
 
+    AGENT_ID = "GL-ADAPT-ENE-002"
+    AGENT_NAME = "Flood Resilience Agent"
     category = AgentCategory.INSIGHT
     metadata = AgentMetadata(
         name="GL-ADAPT-ENE-002",
@@ -180,6 +184,8 @@ class WildfireResilienceAgent(AdaptationEnergyBaseAgent):
     renewable generation facilities.
     """
 
+    AGENT_ID = "GL-ADAPT-ENE-003"
+    AGENT_NAME = "Wildfire Resilience Agent"
     category = AgentCategory.INSIGHT
     metadata = AgentMetadata(
         name="GL-ADAPT-ENE-003",
@@ -225,6 +231,8 @@ class DroughtResilienceAgent(AdaptationEnergyBaseAgent):
     Assesses drought impacts on hydropower and thermal cooling.
     """
 
+    AGENT_ID = "GL-ADAPT-ENE-004"
+    AGENT_NAME = "Drought Resilience Agent"
     category = AgentCategory.INSIGHT
     metadata = AgentMetadata(
         name="GL-ADAPT-ENE-004",
@@ -265,6 +273,8 @@ class HurricaneResilienceAgent(AdaptationEnergyBaseAgent):
     Assesses hurricane and severe storm risk to coastal infrastructure.
     """
 
+    AGENT_ID = "GL-ADAPT-ENE-005"
+    AGENT_NAME = "Hurricane Resilience Agent"
     category = AgentCategory.INSIGHT
     metadata = AgentMetadata(
         name="GL-ADAPT-ENE-005",
@@ -306,6 +316,8 @@ class SeaLevelRiseResilienceAgent(AdaptationEnergyBaseAgent):
     Assesses sea level rise risk to coastal energy facilities.
     """
 
+    AGENT_ID = "GL-ADAPT-ENE-006"
+    AGENT_NAME = "Sea Level Rise Resilience Agent"
     category = AgentCategory.INSIGHT
     metadata = AgentMetadata(
         name="GL-ADAPT-ENE-006",
@@ -348,6 +360,8 @@ class IceStormResilienceAgent(AdaptationEnergyBaseAgent):
     Assesses ice storm risk to transmission and distribution systems.
     """
 
+    AGENT_ID = "GL-ADAPT-ENE-007"
+    AGENT_NAME = "Ice Storm Resilience Agent"
     category = AgentCategory.INSIGHT
     metadata = AgentMetadata(
         name="GL-ADAPT-ENE-007",
@@ -388,6 +402,8 @@ class ComprehensiveClimateResilienceAgent(AdaptationEnergyBaseAgent):
     Integrates all hazard assessments for portfolio-level resilience planning.
     """
 
+    AGENT_ID = "GL-ADAPT-ENE-008"
+    AGENT_NAME = "Comprehensive Climate Resilience Agent"
     category = AgentCategory.INSIGHT
     metadata = AgentMetadata(
         name="GL-ADAPT-ENE-008",

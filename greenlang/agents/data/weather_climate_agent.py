@@ -132,7 +132,7 @@ class WeatherObservation(BaseModel):
 class DailyWeatherSummary(BaseModel):
     """Daily weather summary."""
     location_id: str = Field(...)
-    date: date = Field(...)
+    observation_date: date = Field(..., description="Date of observation")
     temp_avg_c: float = Field(...)
     temp_min_c: float = Field(...)
     temp_max_c: float = Field(...)

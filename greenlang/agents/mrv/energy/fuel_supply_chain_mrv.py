@@ -55,6 +55,8 @@ class FuelSupplyChainMRVAgent(MRVEnergyBaseAgent):
     This agent is CRITICAL PATH - all calculations are deterministic.
     """
 
+    AGENT_ID = "GL-MRV-ENE-006"
+    AGENT_NAME = "Fuel Supply Chain MRV Agent"
     category = AgentCategory.CRITICAL
     metadata = AgentMetadata(
         name="GL-MRV-ENE-006",
