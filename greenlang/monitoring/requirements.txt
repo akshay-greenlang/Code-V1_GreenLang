@@ -10,7 +10,7 @@ uvicorn[standard]==0.24.0
 pydantic==2.5.0
 
 # Async Support
-aiohttp==3.9.1
+aiohttp==3.13.3
 asyncio-mqtt==0.16.1
 
 # Prometheus
