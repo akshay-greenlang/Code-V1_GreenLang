@@ -58,7 +58,7 @@ dependencies = [
   "python-dotenv==1.0.1",
   "typing-extensions==4.9.0",
   "httpx==0.26.0",
-  "requests==2.31.0",
+  "requests==2.32.4",
   "networkx==3.2.1",
   "tenacity==8.2.3",
   "pybreaker==1.0.2",
