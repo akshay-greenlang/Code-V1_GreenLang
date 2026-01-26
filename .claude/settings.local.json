@@ -307,7 +307,9 @@
       "Bash(python scripts/security_full_audit.py:*)",
       "Bash(python scripts/dismiss_remaining.py:*)",
       "Bash(python scripts/continue_security_cleanup.py:*)",
-      "Bash(python:*)"
+      "Bash(python:*)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(npm install -g ralphy-cli)"
     ],
     "deny": [],
     "ask": []
