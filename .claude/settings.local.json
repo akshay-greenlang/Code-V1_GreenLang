@@ -302,7 +302,11 @@
       "Bash(del /f \"c:\\\\Users\\\\aksha\\\\Code-V1_GreenLang\\\\.ralphy\\\\progress.txt\")",
       "Bash(more:*)",
       "Bash(python scripts/github_api_cleanup.py:*)",
-      "Bash(python scripts/get_git_creds.py:*)"
+      "Bash(python scripts/get_git_creds.py:*)",
+      "Bash(python scripts/security_audit.py:*)",
+      "Bash(python scripts/security_full_audit.py:*)",
+      "Bash(python scripts/dismiss_remaining.py:*)",
+      "Bash(python scripts/continue_security_cleanup.py:*)"
     ],
     "deny": [],
     "ask": []
