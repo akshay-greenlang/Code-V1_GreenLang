@@ -279,7 +279,9 @@ class HubAuth:
                 payload = jwt.decode(self.token, options={"verify_signature": False})
             else:
                 # Production mode - always verify signature
-                secret_key = os.getenv("JWT_SECRET_KEY", "default-secret-key-change-in-production")
+                secret_key = os.getenv("JWT_SECRET_KEY")
+                if not secret_key:
+                    raise ValueError("SECURITY: JWT_SECRET_KEY environment variable must be set in production")
                 payload = jwt.decode(self.token, secret_key, algorithms=["HS256"])
 
             # Check expiration

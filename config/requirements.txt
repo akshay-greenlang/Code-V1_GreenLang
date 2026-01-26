@@ -17,7 +17,7 @@ packaging==23.2
 python-dotenv==1.0.1
 typing-extensions==4.9.0
 httpx==0.26.0
-requests==2.31.0
+requests==2.32.4  # Security update
 networkx==3.2.1
 tenacity==8.2.3
 psutil>=5.9.0,<8.0  # Flexible version range for system monitoring (updated for 7.x)
