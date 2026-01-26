@@ -306,7 +306,8 @@
       "Bash(python scripts/security_audit.py:*)",
       "Bash(python scripts/security_full_audit.py:*)",
       "Bash(python scripts/dismiss_remaining.py:*)",
-      "Bash(python scripts/continue_security_cleanup.py:*)"
+      "Bash(python scripts/continue_security_cleanup.py:*)",
+      "Bash(python:*)"
     ],
     "deny": [],
     "ask": []
