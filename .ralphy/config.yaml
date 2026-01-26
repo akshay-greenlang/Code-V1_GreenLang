@@ -49,3 +49,27 @@ validation:
   run_tests: true
   run_lint: true
   require_passing: true
+
+# GitHub integration
+github:
+  owner: "akshay-greenlang"
+  repo: "Code-V1_GreenLang"
+  cleanup_script: "scripts/github_api_cleanup.py"
+
+# Current tasks
+tasks:
+  - id: "gh-cleanup-001"
+    name: "Close stale Friday Gate issues"
+    status: "completed"
+    completed_at: "2026-01-26T09:58:02Z"
+    result: "17 issues closed successfully"
+  - id: "gh-cleanup-002"
+    name: "Close superseded Dependabot PRs"
+    status: "completed"
+    completed_at: "2026-01-26T09:58:02Z"
+    result: "11 PRs closed successfully"
+  - id: "deps-update-001"
+    name: "Update dependencies for security"
+    status: "completed"
+    completed_at: "2026-01-26T09:45:00Z"
+    result: "11 packages updated in pyproject.toml, requirements.txt, requirements-pinned.txt"
