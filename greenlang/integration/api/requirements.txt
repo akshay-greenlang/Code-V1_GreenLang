@@ -8,8 +8,8 @@ pydantic==2.5.0
 pydantic-settings==2.1.0
 
 # Security
-python-jose[cryptography]==3.3.0
-python-multipart==0.0.6
+python-jose[cryptography]==3.4.0
+python-multipart==0.0.18
 passlib[bcrypt]==1.7.4
 
 # Rate limiting

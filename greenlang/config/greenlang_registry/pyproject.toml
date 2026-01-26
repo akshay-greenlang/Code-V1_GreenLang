@@ -38,8 +38,8 @@ dependencies = [
     # Web Framework
     "fastapi>=0.104.0,<1.0.0",
     "uvicorn[standard]>=0.24.0,<1.0.0",
-    "gunicorn>=21.0.0,<22.0.0",
-    "python-multipart>=0.0.6",
+    "gunicorn>=22.0.0,<23.0.0",
+    "python-multipart>=0.0.18",
     # Data Validation
     "pydantic>=2.5.0,<3.0.0",
     "pydantic-settings>=2.1.0,<3.0.0",
