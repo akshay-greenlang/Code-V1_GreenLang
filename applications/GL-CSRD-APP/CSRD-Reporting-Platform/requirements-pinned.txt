@@ -126,7 +126,7 @@ hiredis==2.3.2
 # PDF generation
 reportlab==4.0.9
 pypdf==4.0.1
-weasyprint==60.2
+weasyprint==68.0
 
 # Charts and visualizations
 matplotlib==3.8.2
