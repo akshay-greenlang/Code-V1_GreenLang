@@ -33,9 +33,9 @@ lxml==5.1.0 \
     --hash=sha256:3eea6ed6e6c918e468e693c41ef07f3c3acc310b70ddd9cc72d9ef84bc9564ca \
     --hash=sha256:c94b792af431f6adb6859eb218137acd9a35f4f7442cea57e4a59c54751c36af  # XML parser
 
-jinja2==3.1.3 \
-    --hash=sha256:ac8bd6544d4bb2c9792bf3a159e80bba8fda7f07e81bc3aed565432d5925ba90 \
-    --hash=sha256:7d6d50dd97d52cbc355597bd845fabfbac3f551e1f99619e39a35ce8c370b5fa  # Template engine
+jinja2==3.1.6 \
+    --hash=sha256:85ece4451f492d0c13c5dd7c13a64681a86afae63a5f347908daf103ce6d2f67 \
+    --hash=sha256:6db6c52ff59e29c838b0b1bb528c25e3f06c9db7bb8f8e31e31ac5dbc4dcdac1  # Template engine - Security update
 
 sqlalchemy==2.0.25 \
     --hash=sha256:a2c69a7664fb2d54b8682dd774c3b54f67f84fa123cf84dda2a5f40dcaa04e08 \
