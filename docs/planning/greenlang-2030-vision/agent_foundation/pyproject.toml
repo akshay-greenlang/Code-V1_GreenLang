@@ -82,7 +82,7 @@ dependencies = [
     "httptools~=0.6.1",
     "starlette~=0.36.3",
     "httpx~=0.26.0",
-    "aiohttp~=3.9.3",
+    "aiohttp~=3.13.3",
     "requests~=2.31.0",
 
     # Template & Document Processing

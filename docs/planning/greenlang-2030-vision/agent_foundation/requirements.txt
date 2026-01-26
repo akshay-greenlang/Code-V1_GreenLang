@@ -102,7 +102,7 @@ starlette==0.36.3
 
 # HTTP clients
 httpx==0.26.0
-aiohttp==3.9.3
+aiohttp==3.13.3
 requests==2.31.0
 
 # =============================================================================
@@ -265,7 +265,7 @@ trio==0.24.0
 # =============================================================================
 # 1. cryptography==46.0.3 - Updated from 42.0.5 to latest (v46 series)
 #    - Includes all security patches from 43.x, 44.x, 45.x series
-# 2. aiohttp==3.9.3 - Pinned to avoid CVE-2024-23334 (affects <3.9.2)
+# 2. aiohttp==3.13.3 - Pinned to avoid CVE-2024-23334 (affects <3.9.2)
 # 3. jinja2==3.1.3 - Security patches for template injection
 # 4. requests==2.31.0 - Latest stable with security fixes
 # 5. All packages pinned to exact versions to prevent supply chain attacks
