@@ -151,6 +151,25 @@ class AgentHealthStatus(str, Enum):
     DISABLED = "disabled"           # Agent explicitly disabled
 
 
+class ExecutionMode(str, Enum):
+    """
+    Agent execution mode for GLIP v1 compatibility.
+
+    GLIP v1 uses K8s Jobs for artifact-first execution.
+    Legacy mode uses HTTP endpoints for backward compatibility.
+    """
+    GLIP_V1 = "glip_v1"             # GLIP v1 K8s Job execution (artifact-first)
+    LEGACY_HTTP = "legacy_http"     # Legacy HTTP endpoint execution
+    HYBRID = "hybrid"               # Supports both modes
+
+
+class IdempotencySupport(str, Enum):
+    """Level of idempotency support for an agent."""
+    FULL = "full"                   # Fully idempotent - same inputs always produce same outputs
+    PARTIAL = "partial"             # Idempotent for most operations
+    NONE = "none"                   # Not idempotent - may produce different outputs
+
+
 class CapabilityCategory(str, Enum):
     """Categories of agent capabilities."""
     CALCULATION = "calculation"     # Numeric calculations
@@ -168,6 +187,85 @@ class CapabilityCategory(str, Enum):
 # =============================================================================
 # Pydantic Models for Agent Metadata
 # =============================================================================
+
+class ResourceProfile(BaseModel):
+    """
+    Resource requirements for GLIP v1 K8s Job execution.
+
+    Defines CPU, memory, GPU, and storage requirements for agents.
+    These values map directly to K8s resource requests/limits.
+    """
+    cpu_request: str = Field(default="100m", description="CPU request (e.g., '100m', '1')")
+    cpu_limit: str = Field(default="1", description="CPU limit (e.g., '1', '4')")
+    memory_request: str = Field(default="256Mi", description="Memory request (e.g., '256Mi', '1Gi')")
+    memory_limit: str = Field(default="1Gi", description="Memory limit (e.g., '1Gi', '4Gi')")
+    gpu_count: int = Field(default=0, ge=0, description="Number of GPUs required")
+    gpu_type: Optional[str] = Field(None, description="GPU type (e.g., 'nvidia-tesla-t4')")
+    ephemeral_storage_request: str = Field(default="1Gi", description="Ephemeral storage request")
+    ephemeral_storage_limit: str = Field(default="10Gi", description="Ephemeral storage limit")
+    timeout_seconds: int = Field(default=3600, ge=60, le=86400, description="Max execution time (60s-24h)")
+
+    @property
+    def to_k8s_resources(self) -> Dict[str, Any]:
+        """Convert to K8s resource specification."""
+        resources = {
+            "requests": {
+                "cpu": self.cpu_request,
+                "memory": self.memory_request,
+                "ephemeral-storage": self.ephemeral_storage_request,
+            },
+            "limits": {
+                "cpu": self.cpu_limit,
+                "memory": self.memory_limit,
+                "ephemeral-storage": self.ephemeral_storage_limit,
+            }
+        }
+        if self.gpu_count > 0:
+            gpu_resource = f"nvidia.com/gpu" if not self.gpu_type else f"nvidia.com/{self.gpu_type}"
+            resources["requests"][gpu_resource] = str(self.gpu_count)
+            resources["limits"][gpu_resource] = str(self.gpu_count)
+        return resources
+
+
+class ContainerSpec(BaseModel):
+    """
+    Container specification for GLIP v1 agent execution.
+
+    Defines the Docker image and configuration for K8s Job deployment.
+    """
+    image: str = Field(..., description="Docker image (e.g., 'greenlang/gl-mrv-x-001:1.0.0')")
+    image_pull_policy: str = Field(default="IfNotPresent", description="K8s image pull policy")
+    image_pull_secrets: List[str] = Field(default_factory=list, description="Image pull secret names")
+    entrypoint: Optional[List[str]] = Field(None, description="Container entrypoint override")
+    command: Optional[List[str]] = Field(None, description="Container command override")
+    working_dir: Optional[str] = Field(None, description="Working directory in container")
+    env_vars: Dict[str, str] = Field(default_factory=dict, description="Additional environment variables")
+    volume_mounts: List[Dict[str, str]] = Field(default_factory=list, description="Volume mount specifications")
+
+    @field_validator('image')
+    @classmethod
+    def validate_image(cls, v: str) -> str:
+        """Validate Docker image format."""
+        if not v or '/' not in v:
+            raise ValueError(f"Invalid Docker image format: {v}. Expected format: registry/name:tag")
+        return v
+
+
+class LegacyHttpConfig(BaseModel):
+    """
+    Legacy HTTP endpoint configuration for backward compatibility.
+
+    Allows existing HTTP-based agents to work with the orchestrator
+    through the HttpLegacyAdapter.
+    """
+    endpoint: str = Field(..., description="HTTP endpoint URL (e.g., 'http://agent-service:8080/execute')")
+    method: str = Field(default="POST", description="HTTP method")
+    auth_type: Optional[str] = Field(None, description="Auth type: 'bearer', 'api_key', 'basic'")
+    auth_secret_name: Optional[str] = Field(None, description="K8s secret name for auth credentials")
+    timeout_seconds: int = Field(default=300, ge=10, le=3600, description="HTTP timeout")
+    retry_count: int = Field(default=3, ge=0, le=10, description="Retry count on failure")
+    health_check_path: Optional[str] = Field(None, description="Health check endpoint path")
+
 
 class SemanticVersion(BaseModel):
     """Semantic version representation with comparison support."""
@@ -336,6 +434,45 @@ class AgentMetadataEntry(BaseModel):
     registered_at: datetime = Field(default_factory=DeterministicClock.now, description="Registration timestamp")
     updated_at: datetime = Field(default_factory=DeterministicClock.now, description="Last update timestamp")
 
+    # GLIP v1 Extensions
+    execution_mode: ExecutionMode = Field(
+        default=ExecutionMode.LEGACY_HTTP,
+        description="Execution mode: GLIP v1 (K8s Jobs) or Legacy HTTP"
+    )
+    idempotency_support: IdempotencySupport = Field(
+        default=IdempotencySupport.NONE,
+        description="Level of idempotency support for retry safety"
+    )
+    resource_profile: Optional[ResourceProfile] = Field(
+        None,
+        description="Resource requirements for GLIP v1 K8s Job execution"
+    )
+    container_spec: Optional[ContainerSpec] = Field(
+        None,
+        description="Container specification for GLIP v1 execution"
+    )
+    legacy_http_config: Optional[LegacyHttpConfig] = Field(
+        None,
+        description="Legacy HTTP endpoint configuration for backward compatibility"
+    )
+    glip_version: Optional[str] = Field(
+        None,
+        description="GLIP protocol version supported (e.g., '1.0.0')"
+    )
+    supports_checkpointing: bool = Field(
+        default=False,
+        description="Whether agent supports checkpoint/resume"
+    )
+    deterministic: bool = Field(
+        default=True,
+        description="Whether agent produces deterministic outputs"
+    )
+    max_concurrent_runs: Optional[int] = Field(
+        None,
+        ge=1,
+        description="Maximum concurrent runs allowed (None = unlimited)"
+    )
+
     @field_validator('agent_id')
     @classmethod
     def validate_agent_id(cls, v: str) -> str:
@@ -344,6 +481,24 @@ class AgentMetadataEntry(BaseModel):
         if not re.match(pattern, v):
             raise ValueError(f"Invalid agent ID format: {v}. Expected format: GL-LAYER-X-NNN")
         return v
+
+    @model_validator(mode='after')
+    def validate_execution_config(self) -> "AgentMetadataEntry":
+        """Validate that execution mode has corresponding configuration."""
+        if self.execution_mode == ExecutionMode.GLIP_V1:
+            if self.container_spec is None:
+                raise ValueError("GLIP v1 execution mode requires container_spec")
+            if self.resource_profile is None:
+                # Set default resource profile for GLIP v1
+                object.__setattr__(self, 'resource_profile', ResourceProfile())
+        elif self.execution_mode == ExecutionMode.LEGACY_HTTP:
+            if self.legacy_http_config is None:
+                raise ValueError("Legacy HTTP execution mode requires legacy_http_config")
+        elif self.execution_mode == ExecutionMode.HYBRID:
+            # Hybrid mode requires both configurations
+            if self.container_spec is None and self.legacy_http_config is None:
+                raise ValueError("Hybrid execution mode requires at least one of container_spec or legacy_http_config")
+        return self
 
     @property
     def parsed_version(self) -> SemanticVersion:
@@ -372,6 +527,43 @@ class AgentMetadataEntry(BaseModel):
         """Check if agent supports a specific sector."""
         return len(self.sectors) == 0 or sector in self.sectors
 
+    @property
+    def is_glip_compatible(self) -> bool:
+        """Check if agent supports GLIP v1 execution."""
+        return self.execution_mode in (ExecutionMode.GLIP_V1, ExecutionMode.HYBRID)
+
+    @property
+    def is_legacy_compatible(self) -> bool:
+        """Check if agent supports legacy HTTP execution."""
+        return self.execution_mode in (ExecutionMode.LEGACY_HTTP, ExecutionMode.HYBRID)
+
+    @property
+    def is_idempotent(self) -> bool:
+        """Check if agent is fully idempotent."""
+        return self.idempotency_support == IdempotencySupport.FULL
+
+    @property
+    def container_image(self) -> Optional[str]:
+        """Get container image for GLIP v1 execution."""
+        return self.container_spec.image if self.container_spec else None
+
+    def get_resource_limits(self) -> Dict[str, str]:
+        """Get resource limits for K8s Job."""
+        if self.resource_profile:
+            return {
+                "cpu": self.resource_profile.cpu_limit,
+                "memory": self.resource_profile.memory_limit,
+            }
+        return {"cpu": "1", "memory": "1Gi"}
+
+    def get_execution_timeout(self) -> int:
+        """Get execution timeout in seconds."""
+        if self.resource_profile:
+            return self.resource_profile.timeout_seconds
+        if self.legacy_http_config:
+            return self.legacy_http_config.timeout_seconds
+        return 3600  # Default 1 hour
+
 
 class RegistryQueryInput(BaseModel):
     """Input for registry query operations."""
@@ -391,6 +583,13 @@ class RegistryQueryInput(BaseModel):
 
     # Search
     search_text: Optional[str] = Field(None, description="Text search in name and description")
+
+    # GLIP v1 filters
+    execution_mode: Optional[ExecutionMode] = Field(None, description="Filter by execution mode")
+    glip_compatible: Optional[bool] = Field(None, description="Filter for GLIP v1 compatible agents")
+    idempotent_only: bool = Field(default=False, description="Only return fully idempotent agents")
+    deterministic_only: bool = Field(default=False, description="Only return deterministic agents")
+    has_container_spec: Optional[bool] = Field(None, description="Filter by container spec availability")
 
     # Pagination
     limit: int = Field(default=100, ge=1, le=1000, description="Maximum results to return")
@@ -856,6 +1055,30 @@ class VersionedAgentRegistry(BaseAgent):
                 search_lower not in metadata.description.lower()):
                 return False
 
+        # GLIP v1 filters
+        if query.execution_mode is not None:
+            if metadata.execution_mode != query.execution_mode:
+                return False
+
+        if query.glip_compatible is not None:
+            if query.glip_compatible and not metadata.is_glip_compatible:
+                return False
+            if not query.glip_compatible and metadata.is_glip_compatible:
+                return False
+
+        if query.idempotent_only:
+            if not metadata.is_idempotent:
+                return False
+
+        if query.deterministic_only:
+            if not metadata.deterministic:
+                return False
+
+        if query.has_container_spec is not None:
+            has_spec = metadata.container_spec is not None
+            if query.has_container_spec != has_spec:
+                return False
+
         return True
 
     def get_agent(
@@ -931,6 +1154,182 @@ class VersionedAgentRegistry(BaseAgent):
 
             class_key = f"{agent_id}@{version}"
             return self._agent_classes.get(class_key)
+
+    # =========================================================================
+    # GLIP v1 Support Methods
+    # =========================================================================
+
+    def find_glip_compatible_agents(
+        self,
+        layer: Optional[AgentLayer] = None,
+        sector: Optional[SectorClassification] = None,
+        require_idempotent: bool = False,
+        require_deterministic: bool = False
+    ) -> List[AgentMetadataEntry]:
+        """
+        Find agents that support GLIP v1 execution.
+
+        Args:
+            layer: Optional layer filter
+            sector: Optional sector filter
+            require_idempotent: If True, only return fully idempotent agents
+            require_deterministic: If True, only return deterministic agents
+
+        Returns:
+            List of GLIP v1 compatible agents
+        """
+        query = RegistryQueryInput(
+            layer=layer,
+            sector=sector,
+            glip_compatible=True,
+            idempotent_only=require_idempotent,
+            deterministic_only=require_deterministic,
+        )
+        result = self.query_agents(query)
+        return result.agents
+
+    def get_container_spec(
+        self,
+        agent_id: str,
+        version: Optional[str] = None
+    ) -> Optional[ContainerSpec]:
+        """
+        Get container specification for GLIP v1 execution.
+
+        Args:
+            agent_id: Agent ID
+            version: Specific version (None = latest)
+
+        Returns:
+            ContainerSpec or None if not available
+        """
+        metadata = self.get_agent(agent_id, version)
+        if metadata is None:
+            return None
+        return metadata.container_spec
+
+    def get_resource_profile(
+        self,
+        agent_id: str,
+        version: Optional[str] = None
+    ) -> Optional[ResourceProfile]:
+        """
+        Get resource profile for GLIP v1 execution.
+
+        Args:
+            agent_id: Agent ID
+            version: Specific version (None = latest)
+
+        Returns:
+            ResourceProfile or None if not available
+        """
+        metadata = self.get_agent(agent_id, version)
+        if metadata is None:
+            return None
+        return metadata.resource_profile
+
+    def migrate_agent_to_glip(
+        self,
+        agent_id: str,
+        container_spec: ContainerSpec,
+        resource_profile: Optional[ResourceProfile] = None,
+        idempotency_support: IdempotencySupport = IdempotencySupport.NONE,
+        version: Optional[str] = None
+    ) -> bool:
+        """
+        Migrate a legacy HTTP agent to GLIP v1 hybrid mode.
+
+        This updates an existing agent to support both legacy HTTP
+        and GLIP v1 execution modes.
+
+        Args:
+            agent_id: Agent ID to migrate
+            container_spec: Container specification for GLIP v1
+            resource_profile: Resource requirements (defaults to ResourceProfile())
+            idempotency_support: Level of idempotency support
+            version: Specific version to migrate (None = latest)
+
+        Returns:
+            True if migration succeeded
+        """
+        with self._lock:
+            metadata = self.get_agent(agent_id, version)
+            if metadata is None:
+                self.logger.error(f"Agent not found for migration: {agent_id}")
+                return False
+
+            if metadata.execution_mode == ExecutionMode.GLIP_V1:
+                self.logger.info(f"Agent already GLIP v1: {agent_id}")
+                return True
+
+            # Update to hybrid mode
+            metadata.execution_mode = ExecutionMode.HYBRID
+            metadata.container_spec = container_spec
+            metadata.resource_profile = resource_profile or ResourceProfile()
+            metadata.idempotency_support = idempotency_support
+            metadata.glip_version = "1.0.0"
+            metadata.updated_at = DeterministicClock.now()
+
+            self.logger.info(f"Migrated agent to GLIP v1 hybrid: {agent_id}@{metadata.version}")
+            self._notify_reload(agent_id, metadata.version)
+
+            return True
+
+    def get_execution_context(
+        self,
+        agent_id: str,
+        version: Optional[str] = None,
+        prefer_glip: bool = True
+    ) -> Dict[str, Any]:
+        """
+        Get execution context for running an agent.
+
+        Returns the appropriate configuration for either GLIP v1
+        or legacy HTTP execution.
+
+        Args:
+            agent_id: Agent ID
+            version: Specific version (None = latest)
+            prefer_glip: If True, prefer GLIP v1 for hybrid agents
+
+        Returns:
+            Dictionary with execution context
+        """
+        metadata = self.get_agent(agent_id, version)
+        if metadata is None:
+            return {"error": f"Agent not found: {agent_id}"}
+
+        context = {
+            "agent_id": agent_id,
+            "version": metadata.version,
+            "deterministic": metadata.deterministic,
+            "idempotent": metadata.is_idempotent,
+            "supports_checkpointing": metadata.supports_checkpointing,
+        }
+
+        if metadata.execution_mode == ExecutionMode.GLIP_V1:
+            context["execution_mode"] = "glip_v1"
+            context["container_spec"] = metadata.container_spec.model_dump() if metadata.container_spec else None
+            context["resource_profile"] = metadata.resource_profile.model_dump() if metadata.resource_profile else None
+            context["timeout_seconds"] = metadata.get_execution_timeout()
+
+        elif metadata.execution_mode == ExecutionMode.LEGACY_HTTP:
+            context["execution_mode"] = "legacy_http"
+            context["http_config"] = metadata.legacy_http_config.model_dump() if metadata.legacy_http_config else None
+            context["timeout_seconds"] = metadata.get_execution_timeout()
+
+        elif metadata.execution_mode == ExecutionMode.HYBRID:
+            if prefer_glip and metadata.container_spec:
+                context["execution_mode"] = "glip_v1"
+                context["container_spec"] = metadata.container_spec.model_dump()
+                context["resource_profile"] = metadata.resource_profile.model_dump() if metadata.resource_profile else None
+            else:
+                context["execution_mode"] = "legacy_http"
+                context["http_config"] = metadata.legacy_http_config.model_dump() if metadata.legacy_http_config else None
+            context["timeout_seconds"] = metadata.get_execution_timeout()
+            context["fallback_available"] = True
+
+        return context
 
     # =========================================================================
     # Capability Matching
@@ -1454,6 +1853,137 @@ def create_agent_metadata(
         sectors=sectors or [],
         variants=[AgentVariant(**v) for v in (variants or [])],
         dependencies=[AgentDependency(**d) for d in (dependencies or [])],
+        tags=tags or [],
+        **kwargs
+    )
+
+
+def create_glip_agent_metadata(
+    agent_id: str,
+    name: str,
+    description: str,
+    version: str,
+    layer: AgentLayer,
+    container_image: str,
+    capabilities: Optional[List[Dict[str, Any]]] = None,
+    sectors: Optional[List[SectorClassification]] = None,
+    cpu_limit: str = "1",
+    memory_limit: str = "1Gi",
+    timeout_seconds: int = 3600,
+    idempotent: bool = False,
+    deterministic: bool = True,
+    tags: Optional[List[str]] = None,
+    **kwargs
+) -> AgentMetadataEntry:
+    """
+    Factory function to create GLIP v1 compatible agent metadata.
+
+    This is a convenience function for registering agents that use
+    the GLIP v1 protocol with K8s Job execution.
+
+    Args:
+        agent_id: Unique agent identifier
+        name: Human-readable name
+        description: Agent description
+        version: Semantic version string
+        layer: Agent layer
+        container_image: Docker image for K8s execution
+        capabilities: List of capability dictionaries
+        sectors: List of applicable sectors
+        cpu_limit: CPU limit (e.g., '1', '2')
+        memory_limit: Memory limit (e.g., '1Gi', '4Gi')
+        timeout_seconds: Max execution time
+        idempotent: Whether agent is fully idempotent
+        deterministic: Whether agent produces deterministic outputs
+        tags: Searchable tags
+        **kwargs: Additional metadata fields
+
+    Returns:
+        AgentMetadataEntry instance configured for GLIP v1
+    """
+    resource_profile = ResourceProfile(
+        cpu_limit=cpu_limit,
+        memory_limit=memory_limit,
+        timeout_seconds=timeout_seconds,
+    )
+
+    container_spec = ContainerSpec(image=container_image)
+
+    return AgentMetadataEntry(
+        agent_id=agent_id,
+        name=name,
+        description=description,
+        version=version,
+        layer=layer,
+        execution_mode=ExecutionMode.GLIP_V1,
+        idempotency_support=IdempotencySupport.FULL if idempotent else IdempotencySupport.NONE,
+        deterministic=deterministic,
+        resource_profile=resource_profile,
+        container_spec=container_spec,
+        glip_version="1.0.0",
+        capabilities=[AgentCapability(**c) for c in (capabilities or [])],
+        sectors=sectors or [],
+        tags=tags or [],
+        **kwargs
+    )
+
+
+def create_legacy_agent_metadata(
+    agent_id: str,
+    name: str,
+    description: str,
+    version: str,
+    layer: AgentLayer,
+    http_endpoint: str,
+    capabilities: Optional[List[Dict[str, Any]]] = None,
+    sectors: Optional[List[SectorClassification]] = None,
+    auth_type: Optional[str] = None,
+    auth_secret_name: Optional[str] = None,
+    timeout_seconds: int = 300,
+    tags: Optional[List[str]] = None,
+    **kwargs
+) -> AgentMetadataEntry:
+    """
+    Factory function to create legacy HTTP agent metadata.
+
+    This is a convenience function for registering existing HTTP-based
+    agents that will be invoked through the HttpLegacyAdapter.
+
+    Args:
+        agent_id: Unique agent identifier
+        name: Human-readable name
+        description: Agent description
+        version: Semantic version string
+        layer: Agent layer
+        http_endpoint: HTTP endpoint URL
+        capabilities: List of capability dictionaries
+        sectors: List of applicable sectors
+        auth_type: Authentication type ('bearer', 'api_key', 'basic')
+        auth_secret_name: K8s secret name for auth credentials
+        timeout_seconds: HTTP timeout
+        tags: Searchable tags
+        **kwargs: Additional metadata fields
+
+    Returns:
+        AgentMetadataEntry instance configured for legacy HTTP
+    """
+    legacy_config = LegacyHttpConfig(
+        endpoint=http_endpoint,
+        auth_type=auth_type,
+        auth_secret_name=auth_secret_name,
+        timeout_seconds=timeout_seconds,
+    )
+
+    return AgentMetadataEntry(
+        agent_id=agent_id,
+        name=name,
+        description=description,
+        version=version,
+        layer=layer,
+        execution_mode=ExecutionMode.LEGACY_HTTP,
+        legacy_http_config=legacy_config,
+        capabilities=[AgentCapability(**c) for c in (capabilities or [])],
+        sectors=sectors or [],
         tags=tags or [],
         **kwargs
     )

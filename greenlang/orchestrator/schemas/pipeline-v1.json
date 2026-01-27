@@ -1,0 +1,441 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://greenlang.io/schemas/pipeline-v1.json",
+  "title": "GreenLang Pipeline Schema v1",
+  "description": "Declarative Pipeline YAML specification for GL-FOUND-X-001 GreenLang Orchestrator",
+  "type": "object",
+  "required": ["apiVersion", "kind", "metadata", "spec"],
+  "additionalProperties": false,
+  "properties": {
+    "apiVersion": {
+      "type": "string",
+      "const": "greenlang/v1",
+      "description": "API version (must be 'greenlang/v1')"
+    },
+    "kind": {
+      "type": "string",
+      "const": "Pipeline",
+      "description": "Resource kind (must be 'Pipeline')"
+    },
+    "metadata": {
+      "$ref": "#/$defs/PipelineMetadata"
+    },
+    "spec": {
+      "$ref": "#/$defs/PipelineSpec"
+    }
+  },
+  "$defs": {
+    "PipelineMetadata": {
+      "type": "object",
+      "title": "Pipeline Metadata",
+      "description": "Pipeline identification and organizational information",
+      "required": ["name"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 253,
+          "pattern": "^[a-z0-9]([a-z0-9\\-]*[a-z0-9])?$",
+          "description": "Pipeline name (DNS-compatible, lowercase alphanumeric with hyphens)"
+        },
+        "namespace": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 63,
+          "pattern": "^[a-z0-9]([a-z0-9\\-]*[a-z0-9])?$",
+          "default": "default",
+          "description": "Namespace for logical grouping"
+        },
+        "labels": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "maxLength": 253
+          },
+          "propertyNames": {
+            "pattern": "^[a-zA-Z_][a-zA-Z0-9_\\-\\.]*$",
+            "maxLength": 63
+          },
+          "default": {},
+          "description": "Labels for categorization and filtering"
+        },
+        "annotations": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "maxLength": 253
+          },
+          "propertyNames": {
+            "pattern": "^[a-zA-Z_][a-zA-Z0-9_\\-\\.]*$",
+            "maxLength": 63
+          },
+          "default": {},
+          "description": "Annotations for tooling and documentation"
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 1000,
+          "description": "Human-readable pipeline description"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$",
+          "default": "1.0.0",
+          "description": "Semantic version of the pipeline"
+        },
+        "owner": {
+          "type": "string",
+          "description": "Pipeline owner identifier"
+        },
+        "team": {
+          "type": "string",
+          "description": "Owning team identifier"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "description": "Tags for categorization"
+        }
+      }
+    },
+    "ParameterType": {
+      "type": "string",
+      "enum": ["string", "integer", "number", "boolean", "array", "object"],
+      "description": "Supported parameter data types"
+    },
+    "ParameterDefinition": {
+      "type": "object",
+      "title": "Parameter Definition",
+      "description": "Definition for a pipeline parameter",
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "$ref": "#/$defs/ParameterType",
+          "default": "string",
+          "description": "Data type of the parameter"
+        },
+        "required": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether the parameter must be provided"
+        },
+        "default": {
+          "description": "Default value if parameter not provided"
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 500,
+          "description": "Human-readable description"
+        },
+        "enum": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              { "type": "string" },
+              { "type": "integer" },
+              { "type": "number" }
+            ]
+          },
+          "description": "Allowed values for the parameter"
+        },
+        "minimum": {
+          "type": "number",
+          "description": "Minimum value (for numeric types)"
+        },
+        "maximum": {
+          "type": "number",
+          "description": "Maximum value (for numeric types)"
+        },
+        "pattern": {
+          "type": "string",
+          "format": "regex",
+          "description": "Regex pattern for validation (for string type)"
+        },
+        "secret": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether this parameter contains sensitive data"
+        }
+      }
+    },
+    "PolicySeverity": {
+      "type": "string",
+      "enum": ["info", "warning", "error", "critical"],
+      "description": "Policy violation severity levels"
+    },
+    "PolicyAttachment": {
+      "type": "object",
+      "title": "Policy Attachment",
+      "description": "Policy attachment for governance enforcement on a step",
+      "required": ["name"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-z][a-z0-9_]*$",
+          "description": "Policy name (lowercase with underscores)"
+        },
+        "severity": {
+          "$ref": "#/$defs/PolicySeverity",
+          "default": "error",
+          "description": "Severity level for policy violations"
+        },
+        "params": {
+          "type": "object",
+          "additionalProperties": true,
+          "default": {},
+          "description": "Parameters to pass to the policy"
+        },
+        "enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether the policy is active"
+        }
+      }
+    },
+    "StepDefinition": {
+      "type": "object",
+      "title": "Step Definition",
+      "description": "Definition for a pipeline step",
+      "required": ["id", "agent"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 63,
+          "pattern": "^[a-z][a-z0-9\\-]*$",
+          "description": "Unique step identifier (lowercase alphanumeric with hyphens)"
+        },
+        "agent": {
+          "type": "string",
+          "pattern": "^GL-[A-Z]{2,8}-[A-Z]-\\d{3}$",
+          "description": "Agent ID to execute (format: GL-CATEGORY-TYPE-NUMBER)",
+          "examples": ["GL-DATA-X-001", "GL-CALC-A-002", "GL-REPORT-X-003"]
+        },
+        "dependsOn": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9\\-]*$"
+          },
+          "uniqueItems": true,
+          "default": [],
+          "description": "List of step IDs this step depends on"
+        },
+        "with": {
+          "type": "object",
+          "additionalProperties": true,
+          "default": {},
+          "description": "Input parameters for the agent (supports {{ params.name }} and {{ steps.id.outputs.key }} templates)"
+        },
+        "outputs": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "pattern": "^\\$\\.[\\w\\.\\[\\]]+$",
+            "description": "JSONPath expression for output extraction"
+          },
+          "default": {},
+          "description": "Output extraction mapping (key -> JSONPath expression)"
+        },
+        "policy": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/PolicyAttachment"
+          },
+          "default": [],
+          "description": "Policy attachments for governance"
+        },
+        "timeoutSeconds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 86400,
+          "default": 900,
+          "description": "Maximum execution time in seconds (1 second to 24 hours)"
+        },
+        "retries": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10,
+          "default": 0,
+          "description": "Number of retry attempts on failure (0-10)"
+        },
+        "retryDelaySeconds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 3600,
+          "default": 30,
+          "description": "Delay between retries in seconds"
+        },
+        "condition": {
+          "type": "string",
+          "description": "Condition expression for conditional execution"
+        },
+        "continueOnError": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether to continue pipeline execution on step failure"
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 500,
+          "description": "Human-readable step description"
+        }
+      }
+    },
+    "PipelineDefaults": {
+      "type": "object",
+      "title": "Pipeline Defaults",
+      "description": "Default values applied to all steps in the pipeline",
+      "additionalProperties": false,
+      "properties": {
+        "retries": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10,
+          "default": 0,
+          "description": "Default retry count for steps"
+        },
+        "timeoutSeconds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 86400,
+          "default": 900,
+          "description": "Default timeout for steps in seconds"
+        },
+        "retryDelaySeconds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 3600,
+          "default": 30,
+          "description": "Default retry delay for steps in seconds"
+        }
+      }
+    },
+    "PipelineSpec": {
+      "type": "object",
+      "title": "Pipeline Specification",
+      "description": "Pipeline specification containing parameters, defaults, and steps",
+      "required": ["steps"],
+      "additionalProperties": false,
+      "properties": {
+        "parameters": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/ParameterDefinition"
+          },
+          "default": {},
+          "description": "Parameter definitions for pipeline inputs"
+        },
+        "defaults": {
+          "$ref": "#/$defs/PipelineDefaults",
+          "description": "Default values applied to all steps"
+        },
+        "steps": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/StepDefinition"
+          },
+          "minItems": 1,
+          "description": "List of step definitions (at least one required)"
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "apiVersion": "greenlang/v1",
+      "kind": "Pipeline",
+      "metadata": {
+        "name": "carbon-footprint-pipeline",
+        "namespace": "production",
+        "labels": {
+          "team": "sustainability",
+          "domain": "scope3"
+        },
+        "version": "1.0.0"
+      },
+      "spec": {
+        "parameters": {
+          "input_uri": {
+            "type": "string",
+            "required": true,
+            "description": "S3 URI for input data"
+          },
+          "reporting_year": {
+            "type": "integer",
+            "required": true,
+            "minimum": 2020,
+            "maximum": 2030,
+            "description": "Reporting year for carbon footprint"
+          }
+        },
+        "defaults": {
+          "retries": 2,
+          "timeoutSeconds": 900
+        },
+        "steps": [
+          {
+            "id": "ingest",
+            "agent": "GL-DATA-X-001",
+            "with": {
+              "uri": "{{ params.input_uri }}"
+            },
+            "outputs": {
+              "dataset": "$.artifact.dataset_uri"
+            },
+            "description": "Ingest raw data from S3"
+          },
+          {
+            "id": "validate",
+            "agent": "GL-DATA-X-002",
+            "dependsOn": ["ingest"],
+            "with": {
+              "dataset_uri": "{{ steps.ingest.outputs.dataset }}"
+            },
+            "outputs": {
+              "validated": "$.artifact.validated_uri"
+            },
+            "policy": [
+              {
+                "name": "no_pii_export",
+                "severity": "error"
+              }
+            ],
+            "description": "Validate data quality and schema"
+          },
+          {
+            "id": "calculate",
+            "agent": "GL-CALC-A-001",
+            "dependsOn": ["validate"],
+            "with": {
+              "input_uri": "{{ steps.validate.outputs.validated }}",
+              "year": "{{ params.reporting_year }}"
+            },
+            "outputs": {
+              "emissions": "$.result.total_emissions_tco2e"
+            },
+            "timeoutSeconds": 1800,
+            "description": "Calculate carbon footprint emissions"
+          },
+          {
+            "id": "report",
+            "agent": "GL-REPORT-X-001",
+            "dependsOn": ["calculate"],
+            "with": {
+              "emissions_data": "{{ steps.calculate.outputs.emissions }}"
+            },
+            "description": "Generate carbon footprint report"
+          }
+        ]
+      }
+    }
+  ]
+}
