@@ -64,18 +64,18 @@ fastparquet==2024.2.0
 # LLM orchestration
 langchain==0.1.6
 langchain-core==0.1.21
-langchain-community==0.0.20
+langchain-community==0.4.1
 langchain-openai==0.0.5
 langchain-anthropic==0.1.4
 
 # LLM APIs
 openai==1.12.0
 anthropic==0.18.1
-httpx==0.26.0
+httpx==0.28.1
 
 # Vector databases (RAG)
 pinecone-client==3.0.2
-weaviate-client==4.4.4
+weaviate-client==4.19.2
 
 # Embeddings
 sentence-transformers==2.3.1
@@ -94,14 +94,14 @@ starlette==0.36.3
 pydantic[email]==2.5.3
 
 # HTTP client
-httpx==0.26.0
+httpx==0.28.1
 requests==2.31.0
 aiohttp==3.9.3
 yarl==1.9.4
 multidict==6.0.5
 
 # CORS and middleware
-python-multipart==0.0.9
+python-multipart==0.0.22
 python-jose[cryptography]==3.3.0
 cryptography==46.0.3
 
@@ -125,7 +125,7 @@ hiredis==2.3.2
 
 # PDF generation
 reportlab==4.0.9
-pypdf==4.0.1
+pypdf==6.6.2
 weasyprint==68.0
 
 # Charts and visualizations
@@ -202,7 +202,7 @@ click==8.1.7
 typer==0.9.0
 
 # Configuration
-python-dotenv==1.0.1
+python-dotenv==1.2.1
 dynaconf==3.2.4
 
 # File utilities

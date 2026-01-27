@@ -23,7 +23,7 @@ pandas>=2.0.0
 # - Why this version: Modern API, improved performance, better type hints
 
 # Data Validation & Modeling
-pydantic>=2.0.0
+pydantic>=2.12.5
 # - Used by: All 3 agents
 # - Purpose: Data validation, serialization, type safety
 # - Why this version: Pydantic v2 has 20× better performance

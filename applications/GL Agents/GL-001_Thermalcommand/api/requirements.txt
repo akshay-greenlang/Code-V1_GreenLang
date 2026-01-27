@@ -21,7 +21,7 @@ email-validator>=2.1.0
 # Authentication
 python-jose[cryptography]>=3.3.0
 passlib[bcrypt]>=1.7.4
-python-multipart>=0.0.6
+python-multipart>=0.0.22
 
 # Rate Limiting
 slowapi>=0.1.9
@@ -30,7 +30,7 @@ slowapi>=0.1.9
 prometheus-client>=0.19.0
 
 # HTTP Client (for testing)
-httpx>=0.25.0
+httpx>=0.28.1
 
 # Testing
 pytest>=7.4.0

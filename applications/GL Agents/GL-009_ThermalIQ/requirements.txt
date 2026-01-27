@@ -45,7 +45,7 @@ cryptography>=41.0.0
 python-jose>=3.3.0
 
 # HTTP Client
-httpx>=0.24.0
+httpx>=0.28.1
 
 # Testing
 pytest>=7.4.0

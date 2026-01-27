@@ -7,7 +7,7 @@ python>=3.11
 # Web Framework
 fastapi==0.104.1
 uvicorn[standard]==0.24.0
-pydantic==2.5.0
+pydantic==2.12.5
 
 # Async Support
 aiohttp==3.13.3
@@ -38,11 +38,11 @@ aiosmtplib==3.0.1
 
 # HTTP Requests
 requests==2.32.4
-httpx==0.25.2
+httpx==0.28.1
 
 # Configuration
 pyyaml==6.0.1
-python-dotenv==1.0.0
+python-dotenv==1.2.1
 
 # Logging
 structlog==23.2.0

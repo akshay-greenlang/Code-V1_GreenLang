@@ -50,14 +50,14 @@ classifiers = [
 ]
 dependencies = [
   "typer==0.9.0",
-  "pydantic==2.12.4",
+  "pydantic==2.12.5",
   "pyyaml==6.0.1",
   "rich==13.7.0",
   "jsonschema==4.21.1",
   "packaging==23.2",
-  "python-dotenv==1.0.1",
+  "python-dotenv==1.2.1",
   "typing-extensions==4.9.0",
-  "httpx==0.26.0",
+  "httpx==0.28.1",
   "requests==2.32.4",
   "networkx==3.2.1",
   "tenacity==8.2.3",
@@ -104,9 +104,9 @@ llm = [
   # NOTE: GL-CSRD-APP uses greenlang.intelligence abstraction layer instead of direct LangChain imports
   "langchain==0.1.9",
   "langchain-openai==0.0.5",
-  "langchain-community==0.0.24",
+  "langchain-community==0.4.1",
   "anthropic==0.18.1",
-  "pypdf==4.0.1",
+  "pypdf==6.6.2",
 ]
 ml = [
   "torch==2.1.2",
@@ -115,7 +115,7 @@ ml = [
   "scikit-learn==1.4.0",
 ]
 vector-db = [
-  "weaviate-client==4.4.1",
+  "weaviate-client==4.19.2",
   "chromadb==0.4.22",
   "pinecone-client==3.0.2",
   "faiss-cpu==1.7.4",
@@ -136,11 +136,11 @@ server = [
   "opentelemetry-instrumentation-fastapi==0.43b0",
   "structlog==24.1.0",
   "gunicorn==21.2.0",
-  "python-multipart==0.0.9",
+  "python-multipart==0.0.22",
   "asyncpg==0.29.0",
   "aioredis==2.0.1",
   "slowapi==0.1.9",
-  "httpx==0.26.0",
+  "httpx==0.28.1",
 ]
 security = [
   "cryptography==46.0.3",
@@ -155,7 +155,7 @@ supply-chain = [
   "sigstore==3.0.0",
   "cyclonedx-bom==4.4.0",
   "cryptography==46.0.3",
-  "pip-audit==2.7.0",
+  "pip-audit==2.10.0",
   "safety==3.0.1",
 ]
 test = [
@@ -165,7 +165,7 @@ test = [
   "pytest-mock==3.12.0",
   "pytest-timeout==2.2.0",
   "pytest-xdist==3.5.0",
-  "pytest-benchmark==4.0.0",
+  "pytest-benchmark==5.2.3",
   "pytest-regressions==2.5.0",
   "hypothesis==6.98.0",
   "psutil==7.1.3",
@@ -191,9 +191,9 @@ dev = [
   "types-jsonschema==4.21.0.20240118",
   "ipython==8.21.0",
   "jupyter==1.0.0",
-  "pre-commit==3.6.0",
-  "watchdog==4.0.0",
-  "docker==7.0.0",
+  "pre-commit==4.5.1",
+  "watchdog==6.0.0",
+  "docker==7.1.0",
   "kubernetes==29.0.0",
   "flake8==7.0.0",
   "pylint==3.0.3",

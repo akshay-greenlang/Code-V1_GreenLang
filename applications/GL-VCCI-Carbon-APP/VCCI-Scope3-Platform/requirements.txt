@@ -38,7 +38,7 @@ python-dateutil>=2.8.2  # Date parsing and manipulation
 # ============================================================================
 # VALIDATION & SCHEMAS
 # ============================================================================
-pydantic>=2.5.0,<3.0.0  # Data validation and settings management
+pydantic>=2.12.5,<3.0.0  # Data validation and settings management
 pydantic-settings>=2.1.0  # Settings management with environment variables
 jsonschema>=4.20.0  # JSON Schema validation
 pyyaml>=6.0  # YAML parsing (schemas, rules, config)
@@ -76,9 +76,9 @@ py-rego>=0.2.0  # Rego policy language parser (optional)
 # ============================================================================
 fastapi>=0.104.0,<1.0.0  # Web framework for APIs
 uvicorn[standard]>=0.24.0  # ASGI server
-pydantic[email]>=2.5.0  # Email validation
-python-multipart>=0.0.6  # File upload support
-httpx>=0.25.0  # Async HTTP client
+pydantic[email]>=2.12.5  # Email validation
+python-multipart>=0.0.22  # File upload support
+httpx>=0.28.1  # Async HTTP client
 
 # ============================================================================
 # DATABASE DRIVERS
@@ -94,7 +94,7 @@ redis>=5.0.0  # Redis Python client
 hiredis>=2.3.0  # Fast Redis parser
 
 # Vector Database (Weaviate) - Used by Entity MDM
-weaviate-client>=3.26.0  # Weaviate Python client (v2.0: Entity MDM)
+weaviate-client>=4.19.2  # Weaviate Python client (v2.0: Entity MDM)
 
 # ============================================================================
 # CLOUD & STORAGE
@@ -158,7 +158,7 @@ oracledb>=2.0.0  # Oracle Database driver (optional, for direct DB access)
 # EMAIL & NOTIFICATIONS
 # ============================================================================
 sendgrid>=6.10.0  # SendGrid email service
-python-dotenv>=1.0.0  # Environment variable management
+python-dotenv>=1.2.1  # Environment variable management
 jinja2>=3.1.2  # Template engine for emails
 
 # ============================================================================

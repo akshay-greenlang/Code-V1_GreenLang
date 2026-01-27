@@ -20,7 +20,7 @@ tiktoken==0.6.0
 # LangChain Framework - Pinned for stability
 langchain==0.1.9
 langchain-core==0.1.27
-langchain-community==0.0.24
+langchain-community==0.4.1
 
 # Sentence Transformers - Vector embeddings
 sentence-transformers==2.3.1
@@ -77,7 +77,7 @@ chromadb==0.4.22
 pinecone-client==3.0.2
 
 # Weaviate - Enterprise vector database
-weaviate-client==4.4.1
+weaviate-client==4.19.2
 
 # FAISS - Facebook AI Similarity Search (CPU optimized)
 faiss-cpu==1.7.4
@@ -101,7 +101,7 @@ httptools==0.6.1
 starlette==0.36.3
 
 # HTTP clients
-httpx==0.26.0
+httpx==0.28.1
 aiohttp==3.13.3
 requests==2.31.0
 
@@ -112,7 +112,7 @@ requests==2.31.0
 jinja2==3.1.6
 
 # PDF processing (modern replacement for PyPDF2)
-pypdf==6.6.0
+pypdf==6.6.2
 
 # Microsoft Word documents
 python-docx==1.1.0
@@ -173,7 +173,7 @@ PyJWT==2.8.0
 # UTILITIES
 # =============================================================================
 # Environment variables
-python-dotenv==1.0.1
+python-dotenv==1.2.1
 
 # Retry/backoff logic
 tenacity==8.2.3

@@ -3,12 +3,12 @@
 
 # Core framework
 pydantic>=2.0.0,<3.0.0
-python-dotenv>=1.0.0
+python-dotenv>=1.2.1
 
 # API framework
 fastapi>=0.100.0,<1.0.0
 uvicorn[standard]>=0.22.0,<1.0.0
-httpx>=0.24.0
+httpx>=0.28.1
 
 # Async support
 aiohttp>=3.8.0,<4.0.0
