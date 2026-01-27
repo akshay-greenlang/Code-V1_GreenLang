@@ -104,7 +104,7 @@ llm = [
   # NOTE: GL-CSRD-APP uses greenlang.intelligence abstraction layer instead of direct LangChain imports
   "langchain==0.1.9",
   "langchain-openai==0.0.5",
-  "langchain-community==0.0.24",
+  "langchain-community==0.4.1",
   "anthropic==0.18.1",
   "pypdf==4.0.1",
 ]
