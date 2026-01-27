@@ -115,7 +115,7 @@ ml = [
   "scikit-learn==1.4.0",
 ]
 vector-db = [
-  "weaviate-client==4.4.1",
+  "weaviate-client==4.19.2",
   "chromadb==0.4.22",
   "pinecone-client==3.0.2",
   "faiss-cpu==1.7.4",
