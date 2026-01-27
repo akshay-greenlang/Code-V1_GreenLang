@@ -155,7 +155,7 @@ supply-chain = [
   "sigstore==3.0.0",
   "cyclonedx-bom==4.4.0",
   "cryptography==46.0.3",
-  "pip-audit==2.7.0",
+  "pip-audit==2.10.0",
   "safety==3.0.1",
 ]
 test = [
