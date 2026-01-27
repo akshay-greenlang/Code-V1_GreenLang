@@ -55,7 +55,7 @@ dependencies = [
   "rich==13.7.0",
   "jsonschema==4.21.1",
   "packaging==23.2",
-  "python-dotenv==1.0.1",
+  "python-dotenv==1.2.1",
   "typing-extensions==4.9.0",
   "httpx==0.26.0",
   "requests==2.32.4",
