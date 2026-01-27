@@ -43,7 +43,7 @@ types-jsonschema>=4.21.0.20240118,<5.0.0
 ipython>=8.21.0,<9.0.0
 jupyter>=1.0.0,<2.0.0
 pre-commit>=3.6.0,<4.0.0
-watchdog>=4.0.0,<5.0.0
+watchdog>=4.0.0,<7.0.0
 docker>=7.0.0,<8.0.0
 kubernetes>=29.0.0,<30.0.0
 

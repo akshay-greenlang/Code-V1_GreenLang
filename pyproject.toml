@@ -192,7 +192,7 @@ dev = [
   "ipython==8.21.0",
   "jupyter==1.0.0",
   "pre-commit==3.6.0",
-  "watchdog==4.0.0",
+  "watchdog==6.0.0",
   "docker==7.0.0",
   "kubernetes==29.0.0",
   "flake8==7.0.0",
