@@ -57,7 +57,7 @@ dependencies = [
   "packaging==23.2",
   "python-dotenv==1.0.1",
   "typing-extensions==4.9.0",
-  "httpx==0.26.0",
+  "httpx==0.28.1",
   "requests==2.32.4",
   "networkx==3.2.1",
   "tenacity==8.2.3",
@@ -140,7 +140,7 @@ server = [
   "asyncpg==0.29.0",
   "aioredis==2.0.1",
   "slowapi==0.1.9",
-  "httpx==0.26.0",
+  "httpx==0.28.1",
 ]
 security = [
   "cryptography==46.0.3",

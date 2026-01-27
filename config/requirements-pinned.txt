@@ -21,9 +21,9 @@ requests==2.32.4 \
     --hash=sha256:27babd3cda2a6d50b30443204ee89830707d396671944c998b5975b031ac2b2c \
     --hash=sha256:27d0316682c8a29834d3264820024b62a36942083d52caf2f14c0591336d3422  # HTTP library
 
-httpx==0.26.0 \
-    --hash=sha256:451b55c30d5185ea6b23c2c793abf9bb237d2a7dfb901ced6ff69ad37ec1dfaf \
-    --hash=sha256:8915f5a3627c4d47b73e8202457cb28f1266982d1159bd5779d86a80c0eab1cd  # Modern HTTP client
+httpx==0.28.1 \
+    --hash=sha256:75e98c5f16b0f35b567856f597f06ff2270a374470a5c2392242528e3e3e42fc \
+    --hash=sha256:d909fcccc110f8c7faf814ca82a9a4d816bc5a6dbfea25d6591d6985b8ba59ad  # Modern HTTP client
 
 pyyaml==6.0.1 \
     --hash=sha256:bfdf460b1736c775f2ba9f6a92bca30bc2095067b8a9d77876d1fad6cc3b4a43 \
