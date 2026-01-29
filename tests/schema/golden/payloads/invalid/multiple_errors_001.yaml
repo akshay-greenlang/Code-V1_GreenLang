@@ -1,0 +1,22 @@
+# Invalid Payload - Multiple Errors
+# Tests: Multiple validation errors in single payload
+# Schema: basic/numeric_constraints.yaml
+
+_test_metadata:
+  schema: "basic/numeric_constraints.yaml"
+  description: "Multiple validation errors"
+  expected_valid: false
+  expected_errors:
+    - code: "GLSCHEMA-E200"
+      path: "/temperature"
+      severity: "error"
+    - code: "GLSCHEMA-E200"
+      path: "/quantity"
+      severity: "error"
+    - code: "GLSCHEMA-E200"
+      path: "/percentage"
+      severity: "error"
+
+temperature: -500    # Below minimum -273.15
+quantity: -10        # Below minimum 1
+percentage: 200      # Above maximum 100

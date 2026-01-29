@@ -1,0 +1,14 @@
+# Valid Dependency Rules Payload 001
+# Tests: Individual type with proper fields
+# Schema: rules/dependency_rules.yaml
+
+_test_metadata:
+  schema: "rules/dependency_rules.yaml"
+  description: "Valid individual type with required fields"
+  expected_valid: true
+
+id: "ABCD1234"
+type: "individual"
+first_name: "John"
+last_name: "Doe"
+date_of_birth: "1990-05-15"

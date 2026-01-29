@@ -1,0 +1,16 @@
+# Invalid Payload - Unknown Field (Strict Mode)
+# Error Code: GLSCHEMA-E101 (UNKNOWN_FIELD)
+# Schema: basic/string_constraints.yaml
+
+_test_metadata:
+  schema: "basic/string_constraints.yaml"
+  description: "Unknown field 'extra_field' not allowed (strict mode)"
+  expected_valid: false
+  expected_errors:
+    - code: "GLSCHEMA-E101"
+      path: "/extra_field"
+      severity: "error"
+
+username: "valid_user"
+email: "user@example.com"
+extra_field: "this field is not in schema"

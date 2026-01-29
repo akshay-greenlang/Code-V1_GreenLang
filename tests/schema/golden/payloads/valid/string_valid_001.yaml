@@ -1,0 +1,18 @@
+# Valid String Constraints Payload 001
+# Tests: All string constraints satisfied
+# Schema: basic/string_constraints.yaml
+
+_test_metadata:
+  schema: "basic/string_constraints.yaml"
+  description: "Valid payload with all string constraints satisfied"
+  expected_valid: true
+
+username: "john_doe123"
+email: "john.doe@example.com"
+phone: "+14155551234"
+country_code: "US"
+description: "This is a valid description within the 500 character limit."
+uuid: "550e8400-e29b-41d4-a716-446655440000"
+uri: "https://example.com/resource/123"
+date: "2026-01-15"
+datetime: "2026-01-15T10:30:00Z"

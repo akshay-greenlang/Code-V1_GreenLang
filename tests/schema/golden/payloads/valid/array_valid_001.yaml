@@ -1,0 +1,37 @@
+# Valid Array Constraints Payload 001
+# Tests: All array constraints satisfied
+# Schema: basic/array_constraints.yaml
+
+_test_metadata:
+  schema: "basic/array_constraints.yaml"
+  description: "Valid payload with all array constraints satisfied"
+  expected_valid: true
+
+tags:
+  - "sustainability"
+  - "emissions"
+  - "carbon"
+
+measurements:
+  - 100.5
+  - 200.0
+  - 150.75
+
+categories:
+  - "energy"
+  - "transport"
+
+readings:
+  - timestamp: "2026-01-15T10:00:00Z"
+    value: 42.5
+    unit: "kWh"
+  - timestamp: "2026-01-15T11:00:00Z"
+    value: 45.2
+    unit: "kWh"
+
+priorities:
+  - 1
+  - 2
+  - 3
+
+empty_allowed: []

@@ -1,0 +1,11 @@
+# Valid String Constraints Payload 002
+# Tests: Minimal required fields only
+# Schema: basic/string_constraints.yaml
+
+_test_metadata:
+  schema: "basic/string_constraints.yaml"
+  description: "Valid payload with only required fields"
+  expected_valid: true
+
+username: "abc"
+email: "a@b.co"

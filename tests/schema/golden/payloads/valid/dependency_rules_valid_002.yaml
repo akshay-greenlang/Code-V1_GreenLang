@@ -1,0 +1,13 @@
+# Valid Dependency Rules Payload 002
+# Tests: Organization type with proper fields
+# Schema: rules/dependency_rules.yaml
+
+_test_metadata:
+  schema: "rules/dependency_rules.yaml"
+  description: "Valid organization type with required fields"
+  expected_valid: true
+
+id: "ORG56789"
+type: "organization"
+organization_name: "Acme Corporation"
+registration_number: "REG-2026-00001"

@@ -1,0 +1,53 @@
+{
+  "valid": false,
+  "schema_ref": {
+    "schema_id": "urn:greenlang:test:schemas:basic:simple_object",
+    "version": "1.0.0",
+    "variant": null
+  },
+  "summary": {
+    "total_findings": 1,
+    "errors": 1,
+    "warnings": 0,
+    "info": 0
+  },
+  "findings": [
+    {
+      "code": "GLSCHEMA-E100",
+      "severity": "error",
+      "path": "/name",
+      "message": "Required field is missing",
+      "expected": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 100
+      },
+      "actual": null,
+      "hint": {
+        "suggestion": "Add the required field 'name' with type string"
+      }
+    }
+  ],
+  "normalized_payload": null,
+  "fix_suggestions": [
+    {
+      "patch": [
+        {
+          "op": "add",
+          "path": "/name",
+          "value": ""
+        }
+      ],
+      "preconditions": [
+        {
+          "op": "test",
+          "path": "/name",
+          "value": null
+        }
+      ],
+      "confidence": 0.5,
+      "safety": "needs_review",
+      "rationale": "Adding missing required field 'name' with default empty string value. Review and provide actual value."
+    }
+  ]
+}

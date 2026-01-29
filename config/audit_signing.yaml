@@ -1,0 +1,127 @@
+# Audit Trail Signing Configuration (FR-694)
+# GreenLang Orchestrator - Tamper-Evident Audit Signing
+#
+# This configuration controls cryptographic signing of audit packages.
+# Choose the appropriate provider based on your security requirements:
+#   - local: File-based keys (development/single-node)
+#   - aws_kms: AWS Key Management Service (production)
+#   - hashicorp_vault: HashiCorp Vault Transit (enterprise)
+
+# =============================================================================
+# SIGNING CONFIGURATION
+# =============================================================================
+
+signing:
+  # Enable/disable audit package signing
+  enabled: true
+
+  # Default provider to use
+  default_provider: local
+
+  # =============================================================================
+  # LOCAL PROVIDER (Development/Testing)
+  # =============================================================================
+  local:
+    # Unique key identifier for tracking and rotation
+    key_id: "greenlang-audit-key-001"
+
+    # Signature algorithm:
+    #   - Ed25519 (recommended): Fast, secure, small signatures
+    #   - RSA-PSS-SHA256: Wide compatibility
+    #   - RSA-PSS-SHA384: Higher security RSA
+    #   - RSA-PSS-SHA512: Maximum security RSA
+    #   - ECDSA-P256-SHA256: Elliptic curve (NIST P-256)
+    #   - ECDSA-P384-SHA384: Elliptic curve (NIST P-384)
+    algorithm: Ed25519
+
+    # Path to private key file (PEM format)
+    # If not specified, a new key will be generated
+    # private_key_path: /etc/greenlang/keys/audit-signing-key.pem
+
+    # Password for encrypted private key (optional)
+    # key_password: "${AUDIT_KEY_PASSWORD}"
+
+    # RSA key size (only used for RSA algorithms)
+    key_size: 3072
+
+    # Key expiration (ISO 8601 format, optional)
+    # expires_at: "2027-01-01T00:00:00Z"
+
+  # =============================================================================
+  # AWS KMS PROVIDER (Production)
+  # =============================================================================
+  aws_kms:
+    # KMS key ID or ARN
+    # key_id: "arn:aws:kms:us-east-1:123456789012:key/12345678-1234-1234-1234-123456789012"
+    key_id: "${AWS_KMS_KEY_ID}"
+
+    # AWS region
+    region: us-east-1
+
+    # Signature algorithm (must match KMS key type)
+    algorithm: ECDSA-P256-SHA256
+
+    # AWS profile name (optional, uses default credentials if not specified)
+    # profile_name: greenlang-production
+
+  # =============================================================================
+  # HASHICORP VAULT PROVIDER (Enterprise)
+  # =============================================================================
+  hashicorp_vault:
+    # Vault server URL
+    vault_url: "${VAULT_ADDR}"
+
+    # Transit secrets engine key name
+    key_name: greenlang-audit-signing
+
+    # Vault token (or use VAULT_TOKEN environment variable)
+    # token: "${VAULT_TOKEN}"
+
+    # Transit secrets engine mount point
+    mount_point: transit
+
+    # Signature algorithm
+    algorithm: Ed25519
+
+    # Specific key version (optional, uses latest if not specified)
+    # key_version: 1
+
+# =============================================================================
+# VERIFICATION CONFIGURATION
+# =============================================================================
+
+verification:
+  # Enable signature verification on audit package retrieval
+  enabled: true
+
+  # Fail if signature is missing (strict mode)
+  require_signature: false
+
+  # Public keys for verification (supports key rotation)
+  # Multiple keys can be registered for historical verification
+  public_keys: []
+    # Keys will be loaded from the signing provider automatically
+    # Additional keys can be added here for rotation support
+    # - key_id: "greenlang-audit-key-000"
+    #   algorithm: Ed25519
+    #   public_key_pem: |
+    #     -----BEGIN PUBLIC KEY-----
+    #     ...
+    #     -----END PUBLIC KEY-----
+
+# =============================================================================
+# KEY ROTATION POLICY
+# =============================================================================
+
+key_rotation:
+  # Enable automatic key rotation reminders
+  enabled: true
+
+  # Key rotation interval in days
+  rotation_interval_days: 365
+
+  # Days before expiration to warn
+  warning_threshold_days: 30
+
+  # Keep old keys for verification (number of previous versions)
+  keep_versions: 3

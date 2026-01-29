@@ -1,0 +1,84 @@
+# Energy Units Test Schema
+# Tests: unit validation for energy dimension
+# GL-FOUND-X-002 Golden Test
+
+$schema: "https://json-schema.org/draft/2020-12/schema"
+$id: "gl://schemas/test/energy_units@1.0.0"
+title: "Energy Units Test Schema"
+description: "Schema for testing energy unit validation"
+type: object
+
+required:
+  - energy_consumption
+
+properties:
+  energy_consumption:
+    type: object
+    description: "Energy consumption with unit"
+    required:
+      - value
+      - unit
+    properties:
+      value:
+        type: number
+        minimum: 0
+        description: "Numeric value"
+      unit:
+        type: string
+        description: "Energy unit"
+        enum:
+          - Wh
+          - kWh
+          - MWh
+          - GWh
+          - J
+          - kJ
+          - MJ
+          - GJ
+    x-gl-unit:
+      dimension: energy
+      canonical: kWh
+      allowed:
+        - Wh
+        - kWh
+        - MWh
+        - GWh
+        - J
+        - kJ
+        - MJ
+        - GJ
+
+  electricity_used:
+    type: object
+    description: "Electricity consumption"
+    properties:
+      value:
+        type: number
+        minimum: 0
+      unit:
+        type: string
+        enum:
+          - kWh
+          - MWh
+    x-gl-unit:
+      dimension: energy
+      canonical: kWh
+
+  fuel_energy:
+    type: object
+    description: "Fuel energy content"
+    properties:
+      value:
+        type: number
+        minimum: 0
+      unit:
+        type: string
+        enum:
+          - MJ
+          - GJ
+          - kWh
+    x-gl-unit:
+      dimension: energy
+      canonical: MJ
+
+additionalProperties: false

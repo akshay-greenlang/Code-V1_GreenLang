@@ -28,7 +28,10 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime, timezone, timedelta
 from enum import Enum
-from typing import Any, Callable, Coroutine, Dict, List, Optional, Set, TypeVar
+from typing import Any, Callable, Coroutine, Dict, List, Optional, Set, Tuple, TypeVar, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from greenlang.orchestrator.quotas.manager import QuotaManager
 
 logger = logging.getLogger(__name__)
 
@@ -100,6 +103,7 @@ class Task:
         result: Task result (on completion)
         error: Error message (on failure)
         metadata: Additional task metadata
+        namespace: Namespace for quota management (FR-024)
     """
 
     task_type: str
@@ -120,6 +124,7 @@ class Task:
     result: Optional[Any] = None
     error: Optional[str] = None
     metadata: Dict[str, Any] = field(default_factory=dict)
+    namespace: str = field(default="default")  # FR-024: Namespace for quota management
     _attempts: int = field(default=0, repr=False)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -140,6 +145,7 @@ class Task:
             "result": self.result,
             "error": self.error,
             "metadata": self.metadata,
+            "namespace": self.namespace,
         }
 
     @classmethod
@@ -156,6 +162,7 @@ class Task:
             assigned_agent=data.get("assigned_agent"),
             state=TaskState(data.get("state", "pending")),
             metadata=data.get("metadata", {}),
+            namespace=data.get("namespace", "default"),
         )
         task.created_at = data.get(
             "created_at", datetime.now(timezone.utc).isoformat()
@@ -301,6 +308,10 @@ class TaskSchedulerMetrics:
     last_updated: str = field(
         default_factory=lambda: datetime.now(timezone.utc).isoformat()
     )
+    # FR-024: Quota metrics
+    quota_checks_passed: int = 0
+    quota_checks_failed: int = 0
+    tasks_queued_by_quota: int = 0
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert metrics to dictionary."""
@@ -317,6 +328,9 @@ class TaskSchedulerMetrics:
             "agents_available": self.agents_available,
             "agents_total": self.agents_total,
             "last_updated": self.last_updated,
+            "quota_checks_passed": self.quota_checks_passed,
+            "quota_checks_failed": self.quota_checks_failed,
+            "tasks_queued_by_quota": self.tasks_queued_by_quota,
         }
 
 
@@ -335,6 +349,7 @@ class TaskScheduler:
     - Timeout and retry handling
     - Agent capacity management
     - Comprehensive metrics
+    - FR-024: Namespace concurrency quota integration
 
     Example:
         >>> config = TaskSchedulerConfig(
@@ -360,12 +375,17 @@ class TaskScheduler:
         >>> result = await scheduler.wait_for_completion(task_id, timeout=30.0)
     """
 
-    def __init__(self, config: Optional[TaskSchedulerConfig] = None) -> None:
+    def __init__(
+        self,
+        config: Optional[TaskSchedulerConfig] = None,
+        quota_manager: Optional["QuotaManager"] = None,
+    ) -> None:
         """
         Initialize TaskScheduler.
 
         Args:
             config: Configuration options
+            quota_manager: Optional QuotaManager for namespace concurrency quotas (FR-024)
         """
         self.config = config or TaskSchedulerConfig()
         self._tasks: Dict[str, Task] = {}
@@ -382,9 +402,15 @@ class TaskScheduler:
         self._wait_times: List[float] = []
         self._execution_times: List[float] = []
 
+        # FR-024: Namespace concurrency quota integration
+        self._quota_manager: Optional["QuotaManager"] = quota_manager
+        self._namespace_wait_times: Dict[str, List[float]] = {}
+
         logger.info(
             f"TaskScheduler initialized with strategy: {self.config.load_balance_strategy.value}"
         )
+        if quota_manager:
+            logger.info("TaskScheduler initialized with QuotaManager for namespace quotas")
 
     async def start(self) -> None:
         """Start the task scheduler."""
@@ -453,9 +479,22 @@ class TaskScheduler:
         self._executors[task_type] = executor
         logger.debug(f"Registered executor for task type: {task_type}")
 
+    def set_quota_manager(self, quota_manager: "QuotaManager") -> None:
+        """
+        Set or update the quota manager.
+
+        Args:
+            quota_manager: QuotaManager instance for namespace quotas
+        """
+        self._quota_manager = quota_manager
+        logger.info("QuotaManager set for TaskScheduler")
+
     async def schedule(self, task: Task) -> str:
         """
         Schedule a task for execution.
+
+        FR-024: If a QuotaManager is configured, checks namespace quotas before
+        scheduling. Tasks may be queued if the namespace quota is exceeded.
 
         Args:
             task: Task to schedule
@@ -464,6 +503,16 @@ class TaskScheduler:
             Task ID
         """
         async with self._lock:
+            # FR-024: Check namespace quota if QuotaManager is configured
+            quota_allowed = True
+            if self._quota_manager:
+                quota_allowed = await self._check_namespace_quota(task)
+                if not quota_allowed:
+                    self._metrics.tasks_queued_by_quota += 1
+                    logger.info(
+                        f"Task {task.task_id} queued by quota manager for namespace {task.namespace}"
+                    )
+
             self._tasks[task.task_id] = task
             self._completion_events[task.task_id] = asyncio.Event()
 
@@ -492,6 +541,44 @@ class TaskScheduler:
 
         logger.debug(f"Scheduled task: {task.task_id} ({task.task_type})")
         return task.task_id
+
+    async def _check_namespace_quota(self, task: Task) -> bool:
+        """
+        Check namespace quota for a task.
+
+        Args:
+            task: Task to check quota for
+
+        Returns:
+            True if quota allows immediate execution, False if queued
+        """
+        if not self._quota_manager:
+            return True
+
+        # Convert TaskPriority to numeric priority (1-10)
+        priority_map = {
+            TaskPriority.CRITICAL: 10,
+            TaskPriority.HIGH: 8,
+            TaskPriority.NORMAL: 5,
+            TaskPriority.LOW: 3,
+            TaskPriority.BACKGROUND: 1,
+        }
+        numeric_priority = priority_map.get(task.priority, 5)
+
+        # Try to acquire run slot
+        acquired = await self._quota_manager.acquire_run_slot(
+            namespace=task.namespace,
+            run_id=task.task_id,
+            priority=numeric_priority,
+            wait_for_slot=True,
+        )
+
+        if acquired:
+            self._metrics.quota_checks_passed += 1
+        else:
+            self._metrics.quota_checks_failed += 1
+
+        return acquired
 
     async def schedule_batch(self, tasks: List[Task]) -> List[str]:
         """
@@ -783,6 +870,10 @@ class TaskScheduler:
             self._metrics.tasks_running = max(0, self._metrics.tasks_running - 1)
             self._metrics.last_updated = datetime.now(timezone.utc).isoformat()
 
+            # FR-024: Release namespace quota slot
+            if self._quota_manager:
+                await self._quota_manager.release_run_slot(task.namespace, task.task_id)
+
             # Signal completion
             if task.task_id in self._completion_events:
                 self._completion_events[task.task_id].set()
@@ -862,6 +953,80 @@ class TaskScheduler:
     def get_running_tasks(self) -> List[Task]:
         """Get all running tasks."""
         return [t for t in self._tasks.values() if t.state == TaskState.RUNNING]
+
+    # =========================================================================
+    # FR-024: QUOTA METRICS METHODS
+    # =========================================================================
+
+    def get_namespace_metrics(self, namespace: str) -> Dict[str, Any]:
+        """
+        Get metrics for a specific namespace.
+
+        Args:
+            namespace: Namespace identifier
+
+        Returns:
+            Dictionary with namespace-specific metrics
+        """
+        namespace_tasks = [t for t in self._tasks.values() if t.namespace == namespace]
+        running = len([t for t in namespace_tasks if t.state == TaskState.RUNNING])
+        pending = len([t for t in namespace_tasks if t.state in [TaskState.PENDING, TaskState.SCHEDULED]])
+        completed = len([t for t in namespace_tasks if t.state == TaskState.COMPLETED])
+        failed = len([t for t in namespace_tasks if t.state == TaskState.FAILED])
+
+        # Get quota metrics if quota manager is available
+        quota_metrics = {}
+        if self._quota_manager:
+            try:
+                qm = self._quota_manager.get_metrics(namespace)
+                quota_metrics = {
+                    "quota_usage_percent": qm.quota_usage_percent,
+                    "queue_depth": qm.queue_depth,
+                    "queue_wait_time_seconds": qm.queue_wait_time_seconds,
+                    "runs_utilization_percent": qm.runs_utilization_percent,
+                    "steps_utilization_percent": qm.steps_utilization_percent,
+                }
+            except Exception as e:
+                logger.warning(f"Failed to get quota metrics for namespace {namespace}: {e}")
+
+        return {
+            "namespace": namespace,
+            "tasks_running": running,
+            "tasks_pending": pending,
+            "tasks_completed": completed,
+            "tasks_failed": failed,
+            "total_tasks": len(namespace_tasks),
+            **quota_metrics,
+        }
+
+    def get_all_namespace_metrics(self) -> Dict[str, Dict[str, Any]]:
+        """
+        Get metrics for all namespaces.
+
+        Returns:
+            Dictionary of namespace -> metrics
+        """
+        namespaces = set(t.namespace for t in self._tasks.values())
+        return {ns: self.get_namespace_metrics(ns) for ns in namespaces}
+
+    def get_quota_utilization(self) -> Dict[str, float]:
+        """
+        Get quota utilization percentages for all namespaces.
+
+        Returns:
+            Dictionary of namespace -> utilization percentage
+        """
+        if not self._quota_manager:
+            return {}
+
+        result = {}
+        try:
+            for metrics in self._quota_manager.get_all_metrics():
+                result[metrics.namespace] = metrics.quota_usage_percent
+        except Exception as e:
+            logger.warning(f"Failed to get quota utilization: {e}")
+
+        return result
 
 
 # Factory function

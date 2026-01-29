@@ -1,0 +1,16 @@
+# Invalid Payload - Unit Incompatible
+# Error Code: GLSCHEMA-E301 (UNIT_INCOMPATIBLE)
+# Schema: units/energy_units.yaml
+
+_test_metadata:
+  schema: "units/energy_units.yaml"
+  description: "Unit incompatible - wrong dimension (mass instead of energy)"
+  expected_valid: false
+  expected_errors:
+    - code: "GLSCHEMA-E301"
+      path: "/energy_consumption/unit"
+      severity: "error"
+
+energy_consumption:
+  value: 1500
+  unit: "kg"  # kg is mass, not energy

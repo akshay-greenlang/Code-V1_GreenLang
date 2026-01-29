@@ -1,0 +1,21 @@
+# Invalid Payload - Type Mismatch (array expected, object provided)
+# Error Code: GLSCHEMA-E102 (TYPE_MISMATCH)
+# Schema: basic/type_constraints.yaml
+
+_test_metadata:
+  schema: "basic/type_constraints.yaml"
+  description: "Type mismatch - array_field should be array, got object"
+  expected_valid: false
+  expected_errors:
+    - code: "GLSCHEMA-E102"
+      path: "/array_field"
+      severity: "error"
+
+string_field: "test"
+number_field: 3.14
+integer_field: 42
+boolean_field: true
+array_field:
+  key: "value"
+object_field:
+  nested_string: "test"

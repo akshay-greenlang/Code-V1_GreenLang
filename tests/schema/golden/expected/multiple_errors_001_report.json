@@ -1,0 +1,54 @@
+{
+  "valid": false,
+  "schema_ref": {
+    "schema_id": "gl://schemas/test/numeric_constraints",
+    "version": "1.0.0"
+  },
+  "summary": {
+    "error_count": 3,
+    "warning_count": 0,
+    "info_count": 0,
+    "total_findings": 3
+  },
+  "findings": [
+    {
+      "code": "GLSCHEMA-E200",
+      "severity": "error",
+      "path": "/percentage",
+      "message": "Value 200 is above maximum 100",
+      "expected": {
+        "minimum": 0,
+        "maximum": 100
+      },
+      "actual": {
+        "value": 200
+      }
+    },
+    {
+      "code": "GLSCHEMA-E200",
+      "severity": "error",
+      "path": "/quantity",
+      "message": "Value -10 is below minimum 1",
+      "expected": {
+        "minimum": 1,
+        "maximum": 10000
+      },
+      "actual": {
+        "value": -10
+      }
+    },
+    {
+      "code": "GLSCHEMA-E200",
+      "severity": "error",
+      "path": "/temperature",
+      "message": "Value -500 is below minimum -273.15",
+      "expected": {
+        "minimum": -273.15,
+        "maximum": 1000
+      },
+      "actual": {
+        "value": -500
+      }
+    }
+  ]
+}

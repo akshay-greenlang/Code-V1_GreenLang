@@ -1,0 +1,67 @@
+# Type Constraints Test Schema
+# Tests: type validation for all JSON types
+# GL-FOUND-X-002 Golden Test
+
+$schema: "https://json-schema.org/draft/2020-12/schema"
+$id: "gl://schemas/test/type_constraints@1.0.0"
+title: "Type Constraints Test Schema"
+description: "Schema for testing type validation"
+type: object
+
+required:
+  - string_field
+  - number_field
+  - integer_field
+  - boolean_field
+  - array_field
+  - object_field
+
+properties:
+  string_field:
+    type: string
+    description: "Must be a string"
+
+  number_field:
+    type: number
+    description: "Must be a number (int or float)"
+
+  integer_field:
+    type: integer
+    description: "Must be an integer (no decimals)"
+
+  boolean_field:
+    type: boolean
+    description: "Must be true or false"
+
+  array_field:
+    type: array
+    description: "Must be an array"
+    items:
+      type: string
+
+  object_field:
+    type: object
+    description: "Must be an object"
+    properties:
+      nested_string:
+        type: string
+      nested_number:
+        type: number
+
+  null_field:
+    type: "null"
+    description: "Must be null"
+
+  nullable_string:
+    type:
+      - string
+      - "null"
+    description: "Can be string or null"
+
+  multi_type:
+    type:
+      - string
+      - integer
+    description: "Can be string or integer"
+
+additionalProperties: false

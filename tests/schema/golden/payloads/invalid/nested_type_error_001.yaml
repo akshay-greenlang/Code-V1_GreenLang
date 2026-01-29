@@ -1,0 +1,21 @@
+# Invalid Payload - Nested Type Error
+# Error Code: GLSCHEMA-E102 (TYPE_MISMATCH in nested object)
+# Schema: basic/object_constraints.yaml
+
+_test_metadata:
+  schema: "basic/object_constraints.yaml"
+  description: "Type mismatch in nested metadata object"
+  expected_valid: false
+  expected_errors:
+    - code: "GLSCHEMA-E102"
+      path: "/metadata/version"
+      severity: "error"
+
+id: "ABC-123456"
+name: "Test Organization"
+metadata:
+  created_at: "2026-01-15T10:00:00Z"
+  version: "not-an-integer"  # Should be integer
+
+attributes:
+  dept: "Engineering"

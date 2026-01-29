@@ -1,0 +1,18 @@
+# Invalid Payload - Dependency Violation
+# Error Code: GLSCHEMA-E403 (DEPENDENCY_VIOLATION)
+# Schema: rules/dependency_rules.yaml
+
+_test_metadata:
+  schema: "rules/dependency_rules.yaml"
+  description: "Dependency violation - name present but email missing"
+  expected_valid: false
+  expected_errors:
+    - code: "GLSCHEMA-E403"
+      path: ""
+      severity: "error"
+
+id: "ABCD1234"
+type: "individual"
+name: "John Doe"  # When name is present, email is required
+first_name: "John"
+last_name: "Doe"

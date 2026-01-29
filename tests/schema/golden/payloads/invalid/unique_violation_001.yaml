@@ -1,0 +1,20 @@
+# Invalid Payload - Unique Items Violation
+# Error Code: GLSCHEMA-E204 (UNIQUE_VIOLATION)
+# Schema: basic/array_constraints.yaml
+
+_test_metadata:
+  schema: "basic/array_constraints.yaml"
+  description: "Unique items violation - duplicate tags"
+  expected_valid: false
+  expected_errors:
+    - code: "GLSCHEMA-E204"
+      path: "/tags"
+      severity: "error"
+
+tags:
+  - "energy"
+  - "carbon"
+  - "energy"  # Duplicate of first item
+
+measurements:
+  - 100

@@ -1,0 +1,43 @@
+# Invalid Payload - Property Count Violation (too many properties)
+# Error Code: GLSCHEMA-E105 (PROPERTY_COUNT_VIOLATION)
+# Schema: basic/object_constraints.yaml
+
+_test_metadata:
+  schema: "basic/object_constraints.yaml"
+  description: "Too many properties in tags_map (max 20)"
+  expected_valid: false
+  expected_errors:
+    - code: "GLSCHEMA-E105"
+      path: "/tags_map"
+      severity: "error"
+
+id: "ABC-123456"
+name: "Test Organization"
+metadata:
+  created_at: "2026-01-15T10:00:00Z"
+
+tags_map:
+  tag_01: "value"
+  tag_02: "value"
+  tag_03: "value"
+  tag_04: "value"
+  tag_05: "value"
+  tag_06: "value"
+  tag_07: "value"
+  tag_08: "value"
+  tag_09: "value"
+  tag_10: "value"
+  tag_11: "value"
+  tag_12: "value"
+  tag_13: "value"
+  tag_14: "value"
+  tag_15: "value"
+  tag_16: "value"
+  tag_17: "value"
+  tag_18: "value"
+  tag_19: "value"
+  tag_20: "value"
+  tag_21: "value"  # Exceeds maxProperties of 20
+
+attributes:
+  dept: "Engineering"

@@ -79,6 +79,20 @@ from greenlang.orchestrator.api.models import (
     RunSubmitRequest,
     StepStatus,
     StepStatusResponse,
+    # FR-074: Checkpoint and retry models
+    CheckpointStatusEnum,
+    StepCheckpointResponse,
+    RunCheckpointResponse,
+    RunRetryRequest,
+    RunRetryResponse,
+    NonIdempotentStepWarning,
+    CheckpointClearResponse,
+)
+
+# FR-043: Import approval routes
+from greenlang.orchestrator.api.approval_routes import (
+    approval_router,
+    run_approval_router,
 )
 
 logger = logging.getLogger(__name__)
@@ -99,6 +113,12 @@ run_router = APIRouter(prefix="/runs", tags=["Run Operations"])
 # Agent registry router
 agent_router = APIRouter(prefix="/agents", tags=["Agent Registry"])
 
+# FR-024: Quota management router
+quota_router = APIRouter(prefix="/quotas", tags=["Quota Management"])
+
+# FR-024: Namespace-specific quota router
+namespace_quota_router = APIRouter(prefix="/namespaces", tags=["Namespace Quotas"])
+
 
 # =============================================================================
 # ERROR CODES
@@ -115,11 +135,17 @@ class GreenLangErrorCodes:
     PIPELINE_NOT_FOUND = "GL-E-RES-001"
     RUN_NOT_FOUND = "GL-E-RES-002"
     AGENT_NOT_FOUND = "GL-E-RES-003"
+    NAMESPACE_NOT_FOUND = "GL-E-RES-004"  # FR-024
+    CHECKPOINT_NOT_FOUND = "GL-E-RES-005"  # FR-074
 
     # Operation errors (GL-E-OPS-*)
     PIPELINE_EXISTS = "GL-E-OPS-001"
     RUN_NOT_CANCELABLE = "GL-E-OPS-002"
     POLICY_VIOLATION = "GL-E-OPS-003"
+    RUN_NOT_RETRYABLE = "GL-E-OPS-004"  # FR-074
+    MAX_RETRIES_EXCEEDED = "GL-E-OPS-005"  # FR-074
+    SCHEMA_INCOMPATIBLE = "GL-E-OPS-006"  # FR-074
+    CHECKPOINT_EXPIRED = "GL-E-OPS-007"  # FR-074
 
     # Auth errors (GL-E-AUTH-*)
     UNAUTHORIZED = "GL-E-AUTH-001"
@@ -1124,6 +1150,507 @@ async def get_run_audit(
 
 
 # =============================================================================
+# FR-074: CHECKPOINT AND RETRY ENDPOINTS
+# =============================================================================
+
+# Global checkpoint manager instance (initialized on startup)
+_checkpoint_manager_instance = None
+
+
+async def get_checkpoint_manager():
+    """
+    Get the CheckpointManager instance.
+
+    Returns:
+        CheckpointManager instance
+
+    Raises:
+        HTTPException: If checkpoint manager is not initialized
+    """
+    global _checkpoint_manager_instance
+
+    if _checkpoint_manager_instance is None:
+        try:
+            from greenlang.execution.core.checkpoint_manager import (
+                CheckpointManager,
+                InMemoryCheckpointStore,
+            )
+
+            # Initialize with in-memory store by default
+            # Production would use PostgresCheckpointStore
+            store = InMemoryCheckpointStore()
+            event_store = await get_event_store()
+            _checkpoint_manager_instance = CheckpointManager(
+                store=store,
+                event_store=event_store,
+            )
+            logger.info("CheckpointManager initialized via dependency injection")
+        except ImportError as e:
+            logger.warning(f"CheckpointManager not available: {e}")
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Checkpoint management service unavailable",
+            )
+
+    return _checkpoint_manager_instance
+
+
+def set_checkpoint_manager(manager) -> None:
+    """Set the checkpoint manager instance (for testing or custom initialization)."""
+    global _checkpoint_manager_instance
+    _checkpoint_manager_instance = manager
+
+
+@run_router.post(
+    "/{run_id}:retry",
+    response_model=RunRetryResponse,
+    status_code=status.HTTP_202_ACCEPTED,
+    summary="Retry a failed run from checkpoint",
+    description="Retry a failed or canceled run, optionally resuming from checkpoint.",
+    responses={
+        202: {"description": "Retry submitted successfully"},
+        400: {"model": ErrorResponse, "description": "Invalid retry request"},
+        404: {"model": ErrorResponse, "description": "Run or checkpoint not found"},
+        409: {"model": ErrorResponse, "description": "Run cannot be retried"},
+        401: {"model": ErrorResponse, "description": "Unauthorized"},
+    },
+)
+async def retry_run(
+    run_id: str,
+    request: RunRetryRequest,
+    auth: AuthContext = Depends(get_api_key),
+    trace: RequestTrace = Depends(get_request_trace),
+    orchestrator=Depends(get_orchestrator),
+    policy_engine=Depends(get_policy_engine),
+) -> RunRetryResponse:
+    """
+    Retry a failed or canceled run.
+
+    When from_checkpoint=True, the retry will:
+    - Skip steps that completed successfully (unless in force_rerun_steps)
+    - Use outputs from completed steps as inputs to dependent steps
+    - Track retry lineage via parent_run_id
+
+    Edge cases handled:
+    - Non-idempotent steps: Returns warnings in response
+    - Schema changes: Validates plan hash compatibility
+    - Expired checkpoints: Returns appropriate error
+    - Max retries exceeded: Returns error when limit reached
+    """
+    logger.info(f"Retry requested for run: {run_id} [{trace.trace_id}]")
+
+    try:
+        # Step 1: Check if original run exists
+        run = await orchestrator.get_run(run_id)
+        if run is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=create_error_response(
+                    error_type="not_found",
+                    message=f"Run not found: {run_id}",
+                    details=[
+                        ErrorDetail(
+                            code=GreenLangErrorCodes.RUN_NOT_FOUND,
+                            message=f"Run with ID '{run_id}' does not exist",
+                        )
+                    ],
+                    trace_id=trace.trace_id,
+                ).model_dump(),
+            )
+
+        # Step 2: Check if run can be retried (must be failed or canceled)
+        current_status = run.get("status", "pending")
+        if current_status not in ["failed", "canceled"]:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=create_error_response(
+                    error_type="conflict",
+                    message=f"Run cannot be retried: status is {current_status}",
+                    details=[
+                        ErrorDetail(
+                            code=GreenLangErrorCodes.RUN_NOT_RETRYABLE,
+                            message=f"Only failed or canceled runs can be retried. Current status: {current_status}",
+                        )
+                    ],
+                    trace_id=trace.trace_id,
+                ).model_dump(),
+            )
+
+        # Step 3: Get checkpoint manager and load checkpoint if using checkpoint
+        checkpoint_manager = await get_checkpoint_manager()
+        checkpoint = None
+        skipped_steps = []
+        steps_to_execute = []
+        non_idempotent_warnings = []
+        schema_compatible = True
+
+        if request.from_checkpoint:
+            checkpoint = await checkpoint_manager.get_run_checkpoint(run_id)
+
+            if checkpoint is None:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail=create_error_response(
+                        error_type="not_found",
+                        message=f"Checkpoint not found for run: {run_id}",
+                        details=[
+                            ErrorDetail(
+                                code=GreenLangErrorCodes.CHECKPOINT_NOT_FOUND,
+                                message=f"No checkpoint exists for run '{run_id}'",
+                            )
+                        ],
+                        trace_id=trace.trace_id,
+                    ).model_dump(),
+                )
+
+            # Check if checkpoint is expired
+            if checkpoint.is_expired():
+                raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT,
+                    detail=create_error_response(
+                        error_type="conflict",
+                        message=f"Checkpoint expired for run: {run_id}",
+                        details=[
+                            ErrorDetail(
+                                code=GreenLangErrorCodes.CHECKPOINT_EXPIRED,
+                                message=f"Checkpoint expired at {checkpoint.expires_at.isoformat()}",
+                            )
+                        ],
+                        trace_id=trace.trace_id,
+                    ).model_dump(),
+                )
+
+            # Check max retry count
+            from greenlang.execution.core.checkpoint_manager import DEFAULT_MAX_RETRY_COUNT
+            if checkpoint.retry_count >= DEFAULT_MAX_RETRY_COUNT:
+                raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT,
+                    detail=create_error_response(
+                        error_type="conflict",
+                        message=f"Max retry count exceeded for run: {run_id}",
+                        details=[
+                            ErrorDetail(
+                                code=GreenLangErrorCodes.MAX_RETRIES_EXCEEDED,
+                                message=f"Maximum retry count ({DEFAULT_MAX_RETRY_COUNT}) exceeded. Current: {checkpoint.retry_count}",
+                            )
+                        ],
+                        trace_id=trace.trace_id,
+                    ).model_dump(),
+                )
+
+            # Check schema compatibility if pipeline has changed
+            pipeline = await orchestrator.get_pipeline(run.get("pipeline_id", ""))
+            if pipeline:
+                import json
+                pipeline_data = pipeline.get("definition", {})
+                content_str = json.dumps(pipeline_data, sort_keys=True)
+                current_plan_hash = hashlib.sha256(content_str.encode()).hexdigest()
+
+                schema_compatible = await checkpoint_manager.validate_schema_compatibility(
+                    run_id, current_plan_hash
+                )
+                if not schema_compatible:
+                    logger.warning(f"Schema mismatch for retry of {run_id}")
+
+            # Determine which steps to skip and execute
+            all_step_ids = [s.get("id", "") for s in pipeline.get("definition", {}).get("spec", {}).get("steps", [])]
+            force_rerun_set = set(request.force_rerun_steps or [])
+
+            if request.skip_succeeded:
+                completed_steps = checkpoint.get_completed_steps()
+                skipped_steps = [s for s in completed_steps if s not in force_rerun_set]
+                steps_to_execute = [s for s in all_step_ids if s not in skipped_steps]
+            else:
+                steps_to_execute = all_step_ids
+
+            # Check for non-idempotent steps being re-run
+            step_metadata = {}
+            for step in pipeline.get("definition", {}).get("spec", {}).get("steps", []):
+                step_id = step.get("id", "")
+                step_metadata[step_id] = {
+                    "idempotency_behavior": step.get("idempotency_behavior", "unknown")
+                }
+
+            non_idempotent_step_ids = await checkpoint_manager.get_non_idempotent_steps(
+                run_id, step_metadata
+            )
+            for step_id in non_idempotent_step_ids:
+                if step_id in steps_to_execute:
+                    non_idempotent_warnings.append(
+                        NonIdempotentStepWarning(
+                            step_id=step_id,
+                            warning_message=f"Step '{step_id}' may not be idempotent and could have side effects",
+                            idempotency_behavior="non_idempotent",
+                            recommendation="Consider manual verification after retry"
+                        )
+                    )
+
+        # Step 4: Generate new run ID
+        new_run_id = f"run-retry-{str(uuid4())[:8]}"
+
+        # Step 5: Prepare retry checkpoint if using checkpoint
+        retry_count = 1
+        if request.from_checkpoint and checkpoint:
+            new_checkpoint = await checkpoint_manager.prepare_retry(
+                original_run_id=run_id,
+                new_run_id=new_run_id,
+                skip_succeeded=request.skip_succeeded,
+                force_rerun_steps=request.force_rerun_steps,
+            )
+            if new_checkpoint:
+                retry_count = new_checkpoint.retry_count
+
+        # Step 6: Submit new run to orchestrator
+        parameters = request.new_parameters or run.get("parameters", {})
+
+        await orchestrator.submit_run(
+            pipeline_id=run.get("pipeline_id", ""),
+            parameters=parameters,
+            tenant_id=run.get("tenant_id", ""),
+            user_id=run.get("user_id"),
+            labels={**run.get("labels", {}), "retry_from": run_id},
+            priority=run.get("priority", 5),
+            dry_run=False,
+            timeout_seconds=run.get("timeout_seconds"),
+        )
+
+        _metrics["runs_total"] += 1
+        _metrics["runs_active"] += 1
+
+        # Build response
+        resume_step = steps_to_execute[0] if steps_to_execute else None
+        message = f"Retry submitted successfully."
+        if request.from_checkpoint and resume_step:
+            message += f" Resuming from step '{resume_step}'."
+        if skipped_steps:
+            message += f" Skipping {len(skipped_steps)} completed step(s)."
+
+        return RunRetryResponse(
+            new_run_id=new_run_id,
+            original_run_id=run_id,
+            skipped_steps=skipped_steps,
+            steps_to_execute=steps_to_execute,
+            retry_count=retry_count,
+            from_checkpoint=request.from_checkpoint,
+            non_idempotent_warnings=non_idempotent_warnings,
+            schema_compatible=schema_compatible,
+            created_at=datetime.now(timezone.utc),
+            message=message,
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to retry run: {e} [{trace.trace_id}]", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=create_error_response(
+                error_type="internal_error",
+                message="Failed to retry run",
+                trace_id=trace.trace_id,
+            ).model_dump(),
+        )
+
+
+@run_router.get(
+    "/{run_id}/checkpoint",
+    response_model=RunCheckpointResponse,
+    summary="Get run checkpoint state",
+    description="Get the current checkpoint state for a run.",
+    responses={
+        200: {"description": "Checkpoint state"},
+        404: {"model": ErrorResponse, "description": "Run or checkpoint not found"},
+        401: {"model": ErrorResponse, "description": "Unauthorized"},
+    },
+)
+async def get_run_checkpoint(
+    run_id: str,
+    auth: AuthContext = Depends(get_api_key),
+    trace: RequestTrace = Depends(get_request_trace),
+    orchestrator=Depends(get_orchestrator),
+) -> RunCheckpointResponse:
+    """
+    Get the current checkpoint state for a run.
+
+    Returns the complete checkpoint including:
+    - Step checkpoint states (status, outputs, artifacts)
+    - Retry count and lineage (parent_run_id)
+    - Expiration status
+    - State hash for integrity verification
+    """
+    logger.debug(f"Getting checkpoint for run: {run_id} [{trace.trace_id}]")
+
+    try:
+        # Check if run exists
+        run = await orchestrator.get_run(run_id)
+        if run is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=create_error_response(
+                    error_type="not_found",
+                    message=f"Run not found: {run_id}",
+                    details=[
+                        ErrorDetail(
+                            code=GreenLangErrorCodes.RUN_NOT_FOUND,
+                            message=f"Run with ID '{run_id}' does not exist",
+                        )
+                    ],
+                    trace_id=trace.trace_id,
+                ).model_dump(),
+            )
+
+        # Get checkpoint
+        checkpoint_manager = await get_checkpoint_manager()
+        checkpoint = await checkpoint_manager.get_run_checkpoint(run_id)
+
+        if checkpoint is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=create_error_response(
+                    error_type="not_found",
+                    message=f"Checkpoint not found for run: {run_id}",
+                    details=[
+                        ErrorDetail(
+                            code=GreenLangErrorCodes.CHECKPOINT_NOT_FOUND,
+                            message=f"No checkpoint exists for run '{run_id}'",
+                        )
+                    ],
+                    trace_id=trace.trace_id,
+                ).model_dump(),
+            )
+
+        # Convert step checkpoints to response format
+        step_checkpoints = {}
+        for step_id, state in checkpoint.step_checkpoints.items():
+            step_checkpoints[step_id] = StepCheckpointResponse(
+                step_id=state.step_id,
+                status=CheckpointStatusEnum(state.status.value),
+                outputs=state.outputs,
+                artifacts=state.artifacts,
+                idempotency_key=state.idempotency_key,
+                attempt=state.attempt,
+                error_message=state.error_message,
+                started_at=state.started_at,
+                completed_at=state.completed_at,
+            )
+
+        return RunCheckpointResponse(
+            run_id=checkpoint.run_id,
+            plan_id=checkpoint.plan_id,
+            plan_hash=checkpoint.plan_hash,
+            pipeline_id=checkpoint.pipeline_id,
+            step_checkpoints=step_checkpoints,
+            last_successful_step=checkpoint.last_successful_step,
+            retry_count=checkpoint.retry_count,
+            parent_run_id=checkpoint.parent_run_id,
+            created_at=checkpoint.created_at,
+            updated_at=checkpoint.updated_at,
+            expires_at=checkpoint.expires_at,
+            is_expired=checkpoint.is_expired(),
+            completed_steps=checkpoint.get_completed_steps(),
+            failed_steps=checkpoint.get_failed_steps(),
+            state_hash=checkpoint.compute_state_hash(),
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to get checkpoint: {e} [{trace.trace_id}]", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=create_error_response(
+                error_type="internal_error",
+                message="Failed to get checkpoint",
+                trace_id=trace.trace_id,
+            ).model_dump(),
+        )
+
+
+@run_router.delete(
+    "/{run_id}/checkpoint",
+    response_model=CheckpointClearResponse,
+    summary="Clear run checkpoint",
+    description="Delete the checkpoint for a run.",
+    responses={
+        200: {"description": "Checkpoint cleared"},
+        404: {"model": ErrorResponse, "description": "Run or checkpoint not found"},
+        401: {"model": ErrorResponse, "description": "Unauthorized"},
+    },
+)
+async def clear_run_checkpoint(
+    run_id: str,
+    auth: AuthContext = Depends(get_api_key),
+    trace: RequestTrace = Depends(get_request_trace),
+    orchestrator=Depends(get_orchestrator),
+) -> CheckpointClearResponse:
+    """
+    Delete the checkpoint for a run.
+
+    This operation is irreversible. Once cleared, the run cannot be
+    retried from checkpoint.
+    """
+    logger.info(f"Clearing checkpoint for run: {run_id} [{trace.trace_id}]")
+
+    try:
+        # Check if run exists
+        run = await orchestrator.get_run(run_id)
+        if run is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=create_error_response(
+                    error_type="not_found",
+                    message=f"Run not found: {run_id}",
+                    details=[
+                        ErrorDetail(
+                            code=GreenLangErrorCodes.RUN_NOT_FOUND,
+                            message=f"Run with ID '{run_id}' does not exist",
+                        )
+                    ],
+                    trace_id=trace.trace_id,
+                ).model_dump(),
+            )
+
+        # Clear checkpoint
+        checkpoint_manager = await get_checkpoint_manager()
+        cleared = await checkpoint_manager.clear_checkpoint(run_id)
+
+        if not cleared:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=create_error_response(
+                    error_type="not_found",
+                    message=f"Checkpoint not found for run: {run_id}",
+                    details=[
+                        ErrorDetail(
+                            code=GreenLangErrorCodes.CHECKPOINT_NOT_FOUND,
+                            message=f"No checkpoint exists for run '{run_id}'",
+                        )
+                    ],
+                    trace_id=trace.trace_id,
+                ).model_dump(),
+            )
+
+        return CheckpointClearResponse(
+            run_id=run_id,
+            cleared=True,
+            message=f"Checkpoint for run '{run_id}' has been cleared successfully.",
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to clear checkpoint: {e} [{trace.trace_id}]", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=create_error_response(
+                error_type="internal_error",
+                message="Failed to clear checkpoint",
+                trace_id=trace.trace_id,
+            ).model_dump(),
+        )
+
+
+# =============================================================================
 # HEALTH AND METRICS ENDPOINTS
 # =============================================================================
 
@@ -1332,6 +1859,15 @@ greenlang_policy_denials {_metrics["policy_denials"]}
 # TYPE greenlang_uptime_seconds gauge
 greenlang_uptime_seconds {uptime}
 """
+
+    # FR-024: Add quota metrics if quota manager is available
+    try:
+        quota_manager = await get_quota_manager()
+        quota_prometheus = quota_manager.get_prometheus_metrics()
+        prometheus_output += "\n" + quota_prometheus
+    except Exception as e:
+        logger.debug(f"Quota metrics not available: {e}")
+
     return PlainTextResponse(content=prometheus_output, media_type="text/plain")
 
 
@@ -1592,12 +2128,604 @@ async def get_agent(
 
 
 # =============================================================================
+# FR-024: QUOTA MANAGEMENT ENDPOINTS
+# =============================================================================
+
+# Global quota manager instance (initialized on startup)
+_quota_manager_instance = None
+
+
+async def get_quota_manager():
+    """
+    Get the QuotaManager instance.
+
+    Returns:
+        QuotaManager instance
+
+    Raises:
+        HTTPException: If quota manager is not initialized
+    """
+    global _quota_manager_instance
+
+    if _quota_manager_instance is None:
+        try:
+            from greenlang.orchestrator.quotas import QuotaManager
+
+            _quota_manager_instance = QuotaManager()
+            # Try to load from default config
+            try:
+                import os
+                config_path = os.environ.get(
+                    "QUOTA_CONFIG_PATH",
+                    "config/namespace_quotas.yaml"
+                )
+                _quota_manager_instance.load_from_yaml(config_path)
+            except Exception as e:
+                logger.warning(f"Could not load quota config: {e}")
+
+            logger.info("QuotaManager initialized via dependency injection")
+        except ImportError as e:
+            logger.warning(f"QuotaManager not available: {e}")
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Quota management service unavailable",
+            )
+
+    return _quota_manager_instance
+
+
+def set_quota_manager(manager) -> None:
+    """Set the quota manager instance (for testing or custom initialization)."""
+    global _quota_manager_instance
+    _quota_manager_instance = manager
+
+
+# Pydantic models for quota API
+from pydantic import BaseModel, Field
+from typing import Dict, List, Any
+
+
+class QuotaConfigRequest(BaseModel):
+    """Request model for updating namespace quotas."""
+    max_concurrent_runs: int = Field(
+        default=20, ge=1, le=1000, description="Maximum concurrent runs"
+    )
+    max_concurrent_steps: int = Field(
+        default=100, ge=1, le=10000, description="Maximum concurrent steps"
+    )
+    max_queued_runs: int = Field(
+        default=50, ge=0, le=10000, description="Maximum queued runs"
+    )
+    priority_weight: float = Field(
+        default=1.0, ge=0.1, le=10.0, description="Priority weight"
+    )
+    queue_timeout_seconds: float = Field(
+        default=300.0, ge=10.0, le=86400.0, description="Queue timeout in seconds"
+    )
+
+
+class QuotaConfigResponse(BaseModel):
+    """Response model for quota configuration."""
+    namespace: str = Field(..., description="Namespace identifier")
+    max_concurrent_runs: int = Field(..., description="Maximum concurrent runs")
+    max_concurrent_steps: int = Field(..., description="Maximum concurrent steps")
+    max_queued_runs: int = Field(..., description="Maximum queued runs")
+    priority_weight: float = Field(..., description="Priority weight")
+    queue_timeout_seconds: float = Field(..., description="Queue timeout in seconds")
+
+
+class QuotaUsageResponse(BaseModel):
+    """Response model for quota usage."""
+    namespace: str = Field(..., description="Namespace identifier")
+    current_runs: int = Field(..., description="Current active runs")
+    current_steps: int = Field(..., description="Current active steps")
+    queued_runs: int = Field(..., description="Runs waiting in queue")
+    active_run_ids: List[str] = Field(..., description="Active run IDs")
+    last_updated: str = Field(..., description="Last update timestamp")
+    total_runs_started: int = Field(..., description="Total runs started")
+    total_runs_completed: int = Field(..., description="Total runs completed")
+    total_queue_timeouts: int = Field(..., description="Total queue timeouts")
+
+
+class QuotaMetricsResponse(BaseModel):
+    """Response model for quota metrics."""
+    namespace: str = Field(..., description="Namespace identifier")
+    quota_usage_percent: float = Field(..., description="Overall quota utilization")
+    queue_depth: int = Field(..., description="Queue depth")
+    queue_wait_time_seconds: float = Field(..., description="Average queue wait time")
+    runs_utilization_percent: float = Field(..., description="Run slots utilization")
+    steps_utilization_percent: float = Field(..., description="Step slots utilization")
+
+
+class AllQuotasResponse(BaseModel):
+    """Response model for listing all quotas."""
+    quotas: List[QuotaConfigResponse] = Field(..., description="List of quota configs")
+    total: int = Field(..., description="Total count")
+
+
+@quota_router.get(
+    "",
+    response_model=AllQuotasResponse,
+    summary="List all namespace quotas",
+    description="Get quota configuration for all namespaces.",
+    responses={
+        200: {"description": "List of quotas"},
+        401: {"model": ErrorResponse, "description": "Unauthorized"},
+    },
+)
+async def list_quotas(
+    auth: AuthContext = Depends(get_api_key),
+    trace: RequestTrace = Depends(get_request_trace),
+) -> AllQuotasResponse:
+    """
+    List quota configurations for all namespaces.
+
+    Returns both explicitly configured namespaces and the default quota.
+    """
+    logger.debug(f"Listing all quotas [{trace.trace_id}]")
+
+    try:
+        quota_manager = await get_quota_manager()
+        all_quotas = quota_manager.get_all_quotas()
+
+        quotas_list = []
+        for namespace, config in all_quotas.items():
+            quotas_list.append(
+                QuotaConfigResponse(
+                    namespace=namespace,
+                    max_concurrent_runs=config.max_concurrent_runs,
+                    max_concurrent_steps=config.max_concurrent_steps,
+                    max_queued_runs=config.max_queued_runs,
+                    priority_weight=config.priority_weight,
+                    queue_timeout_seconds=config.queue_timeout_seconds,
+                )
+            )
+
+        return AllQuotasResponse(quotas=quotas_list, total=len(quotas_list))
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to list quotas: {e} [{trace.trace_id}]", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=create_error_response(
+                error_type="internal_error",
+                message="Failed to list quotas",
+                trace_id=trace.trace_id,
+            ).model_dump(),
+        )
+
+
+@namespace_quota_router.get(
+    "/{namespace}/quota",
+    response_model=QuotaConfigResponse,
+    summary="Get namespace quota",
+    description="Get quota configuration for a specific namespace.",
+    responses={
+        200: {"description": "Quota configuration"},
+        401: {"model": ErrorResponse, "description": "Unauthorized"},
+    },
+)
+async def get_namespace_quota(
+    namespace: str,
+    auth: AuthContext = Depends(get_api_key),
+    trace: RequestTrace = Depends(get_request_trace),
+) -> QuotaConfigResponse:
+    """
+    Get quota configuration for a specific namespace.
+
+    If no explicit quota is configured, returns the default quota.
+    """
+    logger.debug(f"Getting quota for namespace: {namespace} [{trace.trace_id}]")
+
+    try:
+        quota_manager = await get_quota_manager()
+        config = quota_manager.get_quota(namespace)
+
+        return QuotaConfigResponse(
+            namespace=namespace,
+            max_concurrent_runs=config.max_concurrent_runs,
+            max_concurrent_steps=config.max_concurrent_steps,
+            max_queued_runs=config.max_queued_runs,
+            priority_weight=config.priority_weight,
+            queue_timeout_seconds=config.queue_timeout_seconds,
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to get quota: {e} [{trace.trace_id}]", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=create_error_response(
+                error_type="internal_error",
+                message="Failed to get namespace quota",
+                trace_id=trace.trace_id,
+            ).model_dump(),
+        )
+
+
+@namespace_quota_router.put(
+    "/{namespace}/quota",
+    response_model=QuotaConfigResponse,
+    summary="Update namespace quota",
+    description="Update quota configuration for a namespace (admin only).",
+    responses={
+        200: {"description": "Updated quota configuration"},
+        401: {"model": ErrorResponse, "description": "Unauthorized"},
+        403: {"model": ErrorResponse, "description": "Forbidden - admin only"},
+    },
+)
+async def update_namespace_quota(
+    namespace: str,
+    request: QuotaConfigRequest,
+    auth: AuthContext = Depends(get_api_key),
+    trace: RequestTrace = Depends(get_request_trace),
+) -> QuotaConfigResponse:
+    """
+    Update quota configuration for a namespace.
+
+    Requires admin scope.
+    """
+    logger.info(f"Updating quota for namespace: {namespace} [{trace.trace_id}]")
+
+    # Check admin permission
+    if not auth.has_scope("admin") and not auth.has_scope("quotas:write"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=create_error_response(
+                error_type="forbidden",
+                message="Admin scope required to update quotas",
+                details=[
+                    ErrorDetail(
+                        code=GreenLangErrorCodes.FORBIDDEN,
+                        message="Requires 'admin' or 'quotas:write' scope",
+                    )
+                ],
+                trace_id=trace.trace_id,
+            ).model_dump(),
+        )
+
+    try:
+        quota_manager = await get_quota_manager()
+
+        # Import QuotaConfig from the quotas module
+        from greenlang.orchestrator.quotas import QuotaConfig
+
+        config = QuotaConfig(
+            max_concurrent_runs=request.max_concurrent_runs,
+            max_concurrent_steps=request.max_concurrent_steps,
+            max_queued_runs=request.max_queued_runs,
+            priority_weight=request.priority_weight,
+            queue_timeout_seconds=request.queue_timeout_seconds,
+        )
+
+        quota_manager.set_quota(namespace, config)
+
+        return QuotaConfigResponse(
+            namespace=namespace,
+            max_concurrent_runs=config.max_concurrent_runs,
+            max_concurrent_steps=config.max_concurrent_steps,
+            max_queued_runs=config.max_queued_runs,
+            priority_weight=config.priority_weight,
+            queue_timeout_seconds=config.queue_timeout_seconds,
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to update quota: {e} [{trace.trace_id}]", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=create_error_response(
+                error_type="internal_error",
+                message="Failed to update namespace quota",
+                trace_id=trace.trace_id,
+            ).model_dump(),
+        )
+
+
+@namespace_quota_router.get(
+    "/{namespace}/quota/usage",
+    response_model=QuotaUsageResponse,
+    summary="Get namespace quota usage",
+    description="Get current usage metrics for a namespace.",
+    responses={
+        200: {"description": "Current usage metrics"},
+        401: {"model": ErrorResponse, "description": "Unauthorized"},
+    },
+)
+async def get_namespace_quota_usage(
+    namespace: str,
+    auth: AuthContext = Depends(get_api_key),
+    trace: RequestTrace = Depends(get_request_trace),
+) -> QuotaUsageResponse:
+    """
+    Get current usage metrics for a namespace.
+
+    Returns real-time information about active runs, steps, and queue status.
+    """
+    logger.debug(f"Getting quota usage for namespace: {namespace} [{trace.trace_id}]")
+
+    try:
+        quota_manager = await get_quota_manager()
+        usage = quota_manager.get_usage(namespace)
+
+        return QuotaUsageResponse(
+            namespace=namespace,
+            current_runs=usage.current_runs,
+            current_steps=usage.current_steps,
+            queued_runs=usage.queued_runs,
+            active_run_ids=list(usage.active_run_ids),
+            last_updated=usage.last_updated.isoformat(),
+            total_runs_started=usage.total_runs_started,
+            total_runs_completed=usage.total_runs_completed,
+            total_queue_timeouts=usage.total_queue_timeouts,
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to get quota usage: {e} [{trace.trace_id}]", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=create_error_response(
+                error_type="internal_error",
+                message="Failed to get namespace quota usage",
+                trace_id=trace.trace_id,
+            ).model_dump(),
+        )
+
+
+# =============================================================================
+# FR-063: WEBHOOK MANAGEMENT ENDPOINTS
+# =============================================================================
+
+webhook_router = APIRouter(prefix="/namespaces", tags=["Webhook Management"])
+
+_alert_manager_instance = None
+
+
+async def get_alert_manager():
+    """Get or create the AlertManager instance."""
+    global _alert_manager_instance
+    if _alert_manager_instance is None:
+        try:
+            from greenlang.orchestrator.alerting import AlertManager
+            _alert_manager_instance = AlertManager()
+            try:
+                import os
+                config_path = os.environ.get("GREENLANG_ALERTING_CONFIG", "config/alerting.yaml")
+                if os.path.exists(config_path):
+                    await _alert_manager_instance.load_config(config_path)
+            except Exception as e:
+                logger.warning(f"Could not load alerting config: {e}")
+            logger.info("AlertManager initialized via dependency injection")
+        except ImportError as e:
+            logger.warning(f"AlertManager not available: {e}")
+            _alert_manager_instance = None
+    return _alert_manager_instance
+
+
+def set_alert_manager(manager) -> None:
+    """Set the alert manager instance (for testing)."""
+    global _alert_manager_instance
+    _alert_manager_instance = manager
+
+
+from pydantic import BaseModel as PydanticBaseModel
+
+
+class WebhookRegisterRequest(PydanticBaseModel):
+    """Request to register a new webhook."""
+    name: str = Field(..., description="Webhook name")
+    provider: str = Field(default="custom", description="Provider type")
+    url: Optional[str] = Field(None, description="Webhook URL")
+    secret: Optional[str] = Field(None, description="HMAC signing secret")
+    routing_key: Optional[str] = Field(None, description="Routing key (PagerDuty)")
+    events: List[str] = Field(default_factory=list, description="Event types")
+    severity_threshold: str = Field(default="medium", description="Severity threshold")
+    retries: int = Field(default=3, ge=0, le=10, description="Retry attempts")
+    timeout_seconds: int = Field(default=30, ge=1, le=300, description="Timeout")
+    enabled: bool = Field(default=True, description="Whether enabled")
+    headers: Dict[str, str] = Field(default_factory=dict, description="HTTP headers")
+    metadata: Dict[str, Any] = Field(default_factory=dict, description="Metadata")
+
+
+class WebhookResponse(PydanticBaseModel):
+    """Response for webhook operations."""
+    webhook_id: str = Field(..., description="Webhook ID")
+    name: str = Field(..., description="Webhook name")
+    provider: str = Field(..., description="Provider type")
+    events: List[str] = Field(..., description="Subscribed events")
+    severity_threshold: str = Field(..., description="Severity threshold")
+    enabled: bool = Field(..., description="Whether enabled")
+    retries: int = Field(..., description="Retry attempts")
+    timeout_seconds: int = Field(..., description="Request timeout")
+
+
+class WebhookListResponse(PydanticBaseModel):
+    """Response for listing webhooks."""
+    webhooks: List[WebhookResponse] = Field(..., description="List of webhooks")
+    total: int = Field(..., description="Total count")
+    namespace: str = Field(..., description="Namespace")
+
+
+class TestAlertRequest(PydanticBaseModel):
+    """Request to send a test alert."""
+    namespace: str = Field(..., description="Namespace")
+    webhook_id: Optional[str] = Field(None, description="Specific webhook")
+
+
+class TestAlertResponse(PydanticBaseModel):
+    """Response for test alert."""
+    success: bool = Field(..., description="Whether successful")
+    results: List[Dict[str, Any]] = Field(..., description="Delivery results")
+    message: str = Field(..., description="Status message")
+
+
+@webhook_router.get(
+    "/{namespace}/webhooks",
+    response_model=WebhookListResponse,
+    summary="List webhooks for namespace",
+    responses={200: {"description": "List of webhooks"}, 401: {"model": ErrorResponse}},
+)
+async def list_webhooks(
+    namespace: str,
+    auth: AuthContext = Depends(get_api_key),
+    trace: RequestTrace = Depends(get_request_trace),
+) -> WebhookListResponse:
+    """List all webhooks configured for a namespace."""
+    logger.debug(f"Listing webhooks for namespace '{namespace}' [{trace.trace_id}]")
+    try:
+        alert_manager = await get_alert_manager()
+        if alert_manager is None:
+            return WebhookListResponse(webhooks=[], total=0, namespace=namespace)
+        webhooks = alert_manager.list_webhooks(namespace)
+        webhook_responses = [
+            WebhookResponse(
+                webhook_id=wh.webhook_id, name=wh.name, provider=wh.provider,
+                events=wh.events, severity_threshold=wh.severity_threshold.value,
+                enabled=wh.enabled, retries=wh.retries, timeout_seconds=wh.timeout_seconds,
+            )
+            for wh in webhooks
+        ]
+        return WebhookListResponse(webhooks=webhook_responses, total=len(webhook_responses), namespace=namespace)
+    except Exception as e:
+        logger.error(f"Failed to list webhooks: {e} [{trace.trace_id}]", exc_info=True)
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=create_error_response(error_type="internal_error", message="Failed to list webhooks", trace_id=trace.trace_id).model_dump())
+
+
+@webhook_router.post(
+    "/{namespace}/webhooks",
+    response_model=WebhookResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Register a webhook",
+    responses={201: {"description": "Webhook registered"}, 401: {"model": ErrorResponse}},
+)
+async def register_webhook(
+    namespace: str,
+    request: WebhookRegisterRequest,
+    auth: AuthContext = Depends(get_api_key),
+    trace: RequestTrace = Depends(get_request_trace),
+) -> WebhookResponse:
+    """Register a new webhook for a namespace."""
+    logger.info(f"Registering webhook '{request.name}' for '{namespace}' [{trace.trace_id}]")
+    try:
+        alert_manager = await get_alert_manager()
+        if alert_manager is None:
+            raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail=create_error_response(error_type="service_unavailable", message="Alert manager not available", trace_id=trace.trace_id).model_dump())
+        from greenlang.orchestrator.alerting import AlertSeverity, WebhookConfig
+        try:
+            severity_threshold = AlertSeverity(request.severity_threshold.lower())
+        except ValueError:
+            severity_threshold = AlertSeverity.MEDIUM
+        webhook_config = WebhookConfig(
+            name=request.name, provider=request.provider, url=request.url, secret=request.secret,
+            routing_key=request.routing_key, events=request.events, severity_threshold=severity_threshold,
+            retries=request.retries, timeout_seconds=request.timeout_seconds, enabled=request.enabled,
+            headers=request.headers, metadata=request.metadata,
+        )
+        webhook_id = alert_manager.register_webhook(namespace, webhook_config)
+        logger.info(f"Webhook registered: {webhook_id} [{trace.trace_id}]")
+        return WebhookResponse(
+            webhook_id=webhook_id, name=webhook_config.name, provider=webhook_config.provider,
+            events=webhook_config.events, severity_threshold=webhook_config.severity_threshold.value,
+            enabled=webhook_config.enabled, retries=webhook_config.retries, timeout_seconds=webhook_config.timeout_seconds,
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to register webhook: {e} [{trace.trace_id}]", exc_info=True)
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=create_error_response(error_type="internal_error", message="Failed to register webhook", trace_id=trace.trace_id).model_dump())
+
+
+@webhook_router.delete(
+    "/{namespace}/webhooks/{webhook_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete a webhook",
+    responses={204: {"description": "Webhook deleted"}, 404: {"model": ErrorResponse}},
+)
+async def delete_webhook(
+    namespace: str,
+    webhook_id: str,
+    auth: AuthContext = Depends(get_api_key),
+    trace: RequestTrace = Depends(get_request_trace),
+) -> Response:
+    """Unregister a webhook from a namespace."""
+    logger.info(f"Deleting webhook '{webhook_id}' from '{namespace}' [{trace.trace_id}]")
+    try:
+        alert_manager = await get_alert_manager()
+        if alert_manager is None:
+            raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail=create_error_response(error_type="service_unavailable", message="Alert manager not available", trace_id=trace.trace_id).model_dump())
+        deleted = alert_manager.unregister_webhook(namespace, webhook_id)
+        if not deleted:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                detail=create_error_response(error_type="not_found", message=f"Webhook not found: {webhook_id}",
+                    details=[ErrorDetail(code="GL-E-RES-004", message=f"Webhook '{webhook_id}' not in namespace '{namespace}'")],
+                    trace_id=trace.trace_id).model_dump())
+        return Response(status_code=status.HTTP_204_NO_CONTENT)
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to delete webhook: {e} [{trace.trace_id}]", exc_info=True)
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=create_error_response(error_type="internal_error", message="Failed to delete webhook", trace_id=trace.trace_id).model_dump())
+
+
+@router.post(
+    "/api/v1/webhooks/test",
+    response_model=TestAlertResponse,
+    summary="Send test alert",
+    tags=["Webhook Management"],
+    responses={200: {"description": "Test alert sent"}, 401: {"model": ErrorResponse}},
+)
+async def send_test_alert(
+    request: TestAlertRequest,
+    auth: AuthContext = Depends(get_api_key),
+    trace: RequestTrace = Depends(get_request_trace),
+) -> TestAlertResponse:
+    """Send a test alert to verify webhook configuration."""
+    logger.info(f"Sending test alert to '{request.namespace}' [{trace.trace_id}]")
+    try:
+        alert_manager = await get_alert_manager()
+        if alert_manager is None:
+            return TestAlertResponse(success=False, results=[], message="Alert manager not available")
+        results = await alert_manager.send_test_alert(namespace=request.namespace, webhook_id=request.webhook_id)
+        result_dicts = [{"webhook_id": r.webhook_id, "status": r.status.value, "status_code": r.status_code,
+            "attempts": r.attempts, "error_message": r.error_message, "latency_ms": r.latency_ms} for r in results]
+        success = all(r.status.value == "delivered" for r in results) if results else False
+        delivered = sum(1 for r in results if r.status.value == "delivered")
+        message = f"Test alert sent to {delivered}/{len(results)} webhooks" if results else "No webhooks configured"
+        return TestAlertResponse(success=success, results=result_dicts, message=message)
+    except Exception as e:
+        logger.error(f"Failed to send test alert: {e} [{trace.trace_id}]", exc_info=True)
+        return TestAlertResponse(success=False, results=[], message=f"Failed: {str(e)}")
+
+
+# =============================================================================
 # INCLUDE SUB-ROUTERS
 # =============================================================================
 
 router.include_router(pipeline_router, prefix="/api/v1")
 router.include_router(run_router, prefix="/api/v1")
 router.include_router(agent_router, prefix="/api/v1")
+
+# FR-043: Include approval routers
+router.include_router(approval_router, prefix="/api/v1")
+router.include_router(run_approval_router, prefix="/api/v1")
+
+# FR-024: Include quota management routers
+router.include_router(quota_router, prefix="/api/v1")
+router.include_router(namespace_quota_router, prefix="/api/v1")
+
+# FR-063: Include webhook management router
+router.include_router(webhook_router, prefix="/api/v1")
 
 
 # =============================================================================
@@ -1609,5 +2737,18 @@ __all__ = [
     "pipeline_router",
     "run_router",
     "agent_router",
+    "approval_router",
+    "run_approval_router",
+    "quota_router",
+    "namespace_quota_router",
+    "webhook_router",
+    "get_quota_manager",
+    "set_quota_manager",
+    # FR-074: Checkpoint management
+    "get_checkpoint_manager",
+    "set_checkpoint_manager",
+    # FR-063: Alert management
+    "get_alert_manager",
+    "set_alert_manager",
     "GreenLangErrorCodes",
 ]

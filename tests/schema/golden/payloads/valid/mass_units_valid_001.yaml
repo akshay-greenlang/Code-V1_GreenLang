@@ -1,0 +1,20 @@
+# Valid Mass Units Payload 001
+# Tests: Valid mass unit values
+# Schema: units/mass_units.yaml
+
+_test_metadata:
+  schema: "units/mass_units.yaml"
+  description: "Valid payload with correct mass units"
+  expected_valid: true
+
+weight:
+  value: 1500
+  unit: "kg"
+
+emissions:
+  value: 250
+  unit: "tCO2e"
+
+fuel_mass:
+  value: 100
+  unit: "kg"

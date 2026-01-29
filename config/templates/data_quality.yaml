@@ -1,0 +1,116 @@
+# GreenLang Pipeline Template: Data Quality Checks
+# FR-005: Reusable Pipeline Template Module
+#
+# This template provides a standard data quality validation suite that can be
+# imported and reused across multiple pipelines.
+#
+# Usage in pipeline YAML:
+#   imports:
+#     - name: data-quality-checks
+#       version: "1.0.0"
+#       as: dq
+#   steps:
+#     - name: validate_input
+#       template: dq.standard_checks
+#       templateParams:
+#         dataset_uri: "{{ params.input_uri }}"
+#         threshold: 0.98
+
+name: data-quality-checks
+version: "1.0.0"
+description: Standard data quality validation suite for GreenLang pipelines
+author: GreenLang Framework Team
+tags:
+  - data-quality
+  - validation
+  - compliance
+
+parameters:
+  dataset_uri:
+    type: string
+    required: true
+    description: URI of the dataset to validate (S3, GCS, or local path)
+
+  threshold:
+    type: number
+    required: false
+    default: 0.95
+    minimum: 0.0
+    maximum: 1.0
+    description: Minimum acceptable data quality score (0.0 to 1.0)
+
+  schema_uri:
+    type: string
+    required: false
+    description: Optional URI to schema definition for validation
+
+  fail_on_warning:
+    type: boolean
+    required: false
+    default: false
+    description: Whether to fail the pipeline on quality warnings
+
+steps:
+  - id: validate_schema
+    agent: OPS.DATA.SchemaValidator
+    in:
+      uri: "{{ params.dataset_uri }}"
+      schema_uri: "{{ params.schema_uri }}"
+    outputs:
+      schema_valid: "$.result.valid"
+      schema_errors: "$.result.errors"
+    timeoutSeconds: 300
+    retries: 2
+
+  - id: check_completeness
+    agent: OPS.DATA.CompletenessCheck
+    dependsOn:
+      - validate_schema
+    in:
+      uri: "{{ params.dataset_uri }}"
+      threshold: "{{ params.threshold }}"
+    outputs:
+      completeness_score: "$.result.score"
+      missing_fields: "$.result.missing_fields"
+    timeoutSeconds: 600
+    retries: 1
+
+  - id: check_duplicates
+    agent: OPS.DATA.DuplicateCheck
+    dependsOn:
+      - validate_schema
+    in:
+      uri: "{{ params.dataset_uri }}"
+    outputs:
+      duplicate_count: "$.result.duplicate_count"
+      duplicate_rate: "$.result.duplicate_rate"
+    timeoutSeconds: 600
+    retries: 1
+
+  - id: check_consistency
+    agent: OPS.DATA.ConsistencyCheck
+    dependsOn:
+      - check_completeness
+      - check_duplicates
+    in:
+      uri: "{{ params.dataset_uri }}"
+      threshold: "{{ params.threshold }}"
+    outputs:
+      consistency_score: "$.result.score"
+      inconsistencies: "$.result.inconsistencies"
+    timeoutSeconds: 600
+    retries: 1
+
+  - id: generate_report
+    agent: OPS.DATA.QualityReporter
+    dependsOn:
+      - check_consistency
+    in:
+      dataset_uri: "{{ params.dataset_uri }}"
+      threshold: "{{ params.threshold }}"
+      fail_on_warning: "{{ params.fail_on_warning }}"
+    outputs:
+      overall_score: "$.result.overall_score"
+      passed: "$.result.passed"
+      report_uri: "$.result.report_uri"
+    timeoutSeconds: 300

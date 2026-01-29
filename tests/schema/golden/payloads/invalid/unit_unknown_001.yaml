@@ -1,0 +1,16 @@
+# Invalid Payload - Unit Unknown
+# Error Code: GLSCHEMA-E303 (UNIT_UNKNOWN)
+# Schema: units/energy_units.yaml
+
+_test_metadata:
+  schema: "units/energy_units.yaml"
+  description: "Unit unknown - unrecognized unit string"
+  expected_valid: false
+  expected_errors:
+    - code: "GLSCHEMA-E303"
+      path: "/energy_consumption/unit"
+      severity: "error"
+
+energy_consumption:
+  value: 1500
+  unit: "XYZ"  # Not a recognized unit

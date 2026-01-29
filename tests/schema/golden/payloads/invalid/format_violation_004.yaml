@@ -1,0 +1,16 @@
+# Invalid Payload - Format Violation (uri)
+# Error Code: GLSCHEMA-E206 (FORMAT_VIOLATION)
+# Schema: basic/string_constraints.yaml
+
+_test_metadata:
+  schema: "basic/string_constraints.yaml"
+  description: "Format violation - invalid URI format"
+  expected_valid: false
+  expected_errors:
+    - code: "GLSCHEMA-E206"
+      path: "/uri"
+      severity: "error"
+
+username: "valid_user"
+email: "user@example.com"
+uri: "not a valid uri"

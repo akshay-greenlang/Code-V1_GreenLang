@@ -689,6 +689,121 @@ async def shutdown_dependencies() -> None:
     logger.info("API dependencies shut down")
 
 
+
+
+# =============================================================================
+# APPROVAL WORKFLOW DEPENDENCY (FR-043)
+# =============================================================================
+
+
+_approval_workflow_instance = None
+
+
+async def get_approval_workflow():
+    """
+    Get the ApprovalWorkflow instance for signed approvals.
+
+    Returns:
+        ApprovalWorkflow instance
+
+    Raises:
+        HTTPException: If approval workflow is not available
+    """
+    global _approval_workflow_instance
+
+    if _approval_workflow_instance is None:
+        try:
+            from greenlang.orchestrator.governance.approvals import (
+                ApprovalWorkflow,
+                InMemoryApprovalStore,
+            )
+            from greenlang.orchestrator.audit.event_store import EventFactory
+
+            store = InMemoryApprovalStore()
+            event_store = await get_event_store()
+            event_factory = EventFactory(event_store) if event_store else None
+
+            _approval_workflow_instance = ApprovalWorkflow(
+                store=store,
+                event_factory=event_factory,
+                default_deadline_hours=24,
+            )
+            logger.info("ApprovalWorkflow initialized via dependency injection")
+        except ImportError as e:
+            logger.warning(f"ApprovalWorkflow not available: {e}")
+            _approval_workflow_instance = MockApprovalWorkflow()
+        except Exception as e:
+            logger.error(f"Failed to initialize approval workflow: {e}")
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Approval workflow service unavailable",
+            )
+
+    return _approval_workflow_instance
+
+
+def set_approval_workflow(workflow) -> None:
+    """
+    Set the approval workflow instance (for testing).
+
+    Args:
+        workflow: ApprovalWorkflow instance or compatible mock
+    """
+    global _approval_workflow_instance
+    _approval_workflow_instance = workflow
+
+
+class MockApprovalWorkflow:
+    """Mock approval workflow for development and testing."""
+
+    def __init__(self):
+        self._requests = {}
+        logger.info("MockApprovalWorkflow initialized")
+
+    async def request_approval(self, run_id, step_id, requirement, **kwargs):
+        from uuid import uuid4
+        request_id = f"apr-{uuid4().hex[:12]}"
+        self._requests[request_id] = {
+            "request_id": request_id,
+            "run_id": run_id,
+            "step_id": step_id,
+            "status": "pending",
+        }
+        return request_id
+
+    async def submit_approval(self, approval_id, approver_id, decision, **kwargs):
+        from dataclasses import dataclass
+        from datetime import datetime, timezone
+
+        @dataclass
+        class MockAttestation:
+            approver_id: str = approver_id
+            approver_name: str = None
+            approver_role: str = None
+            decision: type = None
+            reason: str = None
+            timestamp: datetime = None
+            signature: str = "mock-signature"
+            attestation_hash: str = "mock-hash"
+
+        return MockAttestation(timestamp=datetime.now(timezone.utc))
+
+    async def check_approval_status(self, approval_id):
+        return "pending"
+
+    async def verify_attestation(self, approval_id):
+        return True
+
+    async def get_pending_approvals(self, run_id=None):
+        return []
+
+    async def get_approval(self, approval_id):
+        return self._requests.get(approval_id)
+
+    async def get_step_approval(self, run_id, step_id):
+        return None
+
+
 # =============================================================================
 # EXPORTS
 # =============================================================================
@@ -723,4 +838,8 @@ __all__ = [
     # Lifecycle
     "startup_dependencies",
     "shutdown_dependencies",
+    # Approval Workflow
+    "get_approval_workflow",
+    "set_approval_workflow",
+    "MockApprovalWorkflow",
 ]

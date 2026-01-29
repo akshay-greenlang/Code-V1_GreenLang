@@ -1,0 +1,134 @@
+# =============================================================================
+# GreenLang Orchestrator Alerting Configuration
+# =============================================================================
+#
+# Configuration for webhook-based alert notifications (FR-063).
+#
+# Environment variables can be referenced using ${VAR_NAME} syntax.
+# Supported providers: slack, discord, pagerduty, custom
+#
+# Alert types: run_failed, step_timeout, policy_denial, slo_breach, run_succeeded
+# Severity levels: critical, high, medium, low, info
+#
+# Author: GreenLang Team
+# Version: 1.0.0
+# GL-FOUND-X-001: Alerting Configuration
+# =============================================================================
+
+alerting:
+  # Global alerting enable/disable
+  enabled: true
+
+  # Default severity threshold for all webhooks (can be overridden per webhook)
+  # Alerts below this threshold will not be sent
+  default_severity_threshold: medium
+
+  # Global retry settings (can be overridden per webhook)
+  default_retries: 3
+  default_timeout_seconds: 30
+
+  # Namespace-specific webhook configurations
+  namespaces:
+    # Production namespace - high-priority alerts
+    production:
+      webhooks:
+        # Slack webhook for team notifications
+        - name: slack-alerts
+          provider: slack
+          url: "${SLACK_WEBHOOK_URL}"
+          secret: "${SLACK_SIGNING_SECRET}"
+          events:
+            - run_failed
+            - step_timeout
+            - policy_denial
+          severity_threshold: high
+          retries: 3
+          timeout_seconds: 30
+          enabled: true
+          metadata:
+            channel: "#greenlang-alerts"
+            username: "GreenLang Bot"
+
+        # PagerDuty for critical on-call alerts
+        - name: pagerduty
+          provider: pagerduty
+          routing_key: "${PAGERDUTY_ROUTING_KEY}"
+          events:
+            - run_failed
+            - slo_breach
+          severity_threshold: critical
+          retries: 5
+          timeout_seconds: 60
+          enabled: true
+          metadata:
+            orchestrator_url: "https://greenlang.example.com"
+
+        # Custom webhook for audit logging
+        - name: audit-webhook
+          provider: custom
+          url: "${AUDIT_WEBHOOK_URL}"
+          secret: "${AUDIT_WEBHOOK_SECRET}"
+          events:
+            - run_failed
+            - run_succeeded
+            - policy_denial
+          severity_threshold: low
+          retries: 2
+          timeout_seconds: 15
+          enabled: true
+          headers:
+            X-Source: "greenlang-orchestrator"
+            X-Environment: "production"
+
+    # Staging namespace - moderate alerts
+    staging:
+      webhooks:
+        - name: slack-staging
+          provider: slack
+          url: "${SLACK_STAGING_WEBHOOK_URL}"
+          events:
+            - run_failed
+            - step_timeout
+          severity_threshold: high
+          enabled: true
+
+    # Development namespace - notifications only
+    development:
+      webhooks:
+        # Discord for dev team notifications
+        - name: discord-dev
+          provider: discord
+          url: "${DISCORD_WEBHOOK_URL}"
+          events:
+            - run_failed
+            - run_succeeded
+          severity_threshold: medium
+          enabled: true
+          metadata:
+            avatar_url: "https://greenlang.io/images/logo.png"
+            critical_role_id: "${DISCORD_CRITICAL_ROLE_ID}"
+
+        # Custom webhook for development testing
+        - name: dev-webhook
+          provider: custom
+          url: "http://localhost:8080/webhooks/alerts"
+          events:
+            - run_failed
+            - step_timeout
+            - policy_denial
+            - slo_breach
+            - run_succeeded
+          severity_threshold: info
+          retries: 1
+          timeout_seconds: 10
+          enabled: false  # Disabled by default
+
+    # Test namespace - all alerts for testing
+    test:
+      webhooks:
+        - name: test-webhook
+          provider: custom
+          url: "${TEST_WEBHOOK_URL}"
+          events: []  # Empty = subscribe to all events
+          severity_threshold: info
+          enabled: true

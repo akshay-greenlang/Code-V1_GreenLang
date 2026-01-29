@@ -1,0 +1,18 @@
+# Invalid Payload - Rule Violation (electricity requires grid_region)
+# Error Code: GLSCHEMA-E400 (RULE_VIOLATION)
+# Schema: rules/conditional_rules.yaml
+
+_test_metadata:
+  schema: "rules/conditional_rules.yaml"
+  description: "Rule violation - electricity requires grid_region"
+  expected_valid: false
+  expected_errors:
+    - code: "GLSCHEMA-E400"
+      path: ""
+      severity: "error"
+      rule_id: "RULE-003"
+
+fuel_type: "electricity"
+quantity: 1000
+quantity_unit: "kWh"
+# grid_region is missing but required when fuel_type is electricity

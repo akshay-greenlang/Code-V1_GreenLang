@@ -1,0 +1,16 @@
+# Invalid Payload - Unit Missing
+# Error Code: GLSCHEMA-E300 (UNIT_MISSING)
+# Schema: units/energy_units.yaml
+
+_test_metadata:
+  schema: "units/energy_units.yaml"
+  description: "Unit missing - energy_consumption missing unit field"
+  expected_valid: false
+  expected_errors:
+    - code: "GLSCHEMA-E300"
+      path: "/energy_consumption/unit"
+      severity: "error"
+
+energy_consumption:
+  value: 1500
+  # unit is missing

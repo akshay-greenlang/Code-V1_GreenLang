@@ -1,0 +1,21 @@
+# Invalid Payload - Array Item Constraint Error
+# Error Code: GLSCHEMA-E200 (RANGE_VIOLATION in array item)
+# Schema: basic/array_constraints.yaml
+
+_test_metadata:
+  schema: "basic/array_constraints.yaml"
+  description: "Range violation in measurements array item"
+  expected_valid: false
+  expected_errors:
+    - code: "GLSCHEMA-E200"
+      path: "/measurements/2"
+      severity: "error"
+
+tags:
+  - "valid"
+
+measurements:
+  - 100
+  - 50
+  - -25  # Must be >= 0
+  - 75

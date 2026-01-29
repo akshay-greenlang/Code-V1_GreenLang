@@ -1,0 +1,130 @@
+# Conditional Rules Test Schema
+# Tests: cross-field validation rules, dependencies
+# GL-FOUND-X-002 Golden Test
+
+$schema: "https://json-schema.org/draft/2020-12/schema"
+$id: "gl://schemas/test/conditional_rules@1.0.0"
+title: "Conditional Rules Test Schema"
+description: "Schema for testing cross-field validation rules"
+type: object
+
+required:
+  - fuel_type
+  - quantity
+
+properties:
+  fuel_type:
+    type: string
+    description: "Type of fuel"
+    enum:
+      - diesel
+      - gasoline
+      - natural_gas
+      - electricity
+      - biofuel
+
+  quantity:
+    type: number
+    description: "Amount of fuel consumed"
+    minimum: 0
+
+  quantity_unit:
+    type: string
+    description: "Unit of quantity"
+    enum:
+      - liters
+      - gallons
+      - kg
+      - kWh
+      - m3
+
+  # Required when fuel_type is natural_gas
+  methane_slip:
+    type: number
+    description: "Methane slip percentage (required for natural_gas)"
+    minimum: 0
+    maximum: 100
+
+  # Required when fuel_type is biofuel
+  biofuel_blend:
+    type: number
+    description: "Biofuel blend percentage (required for biofuel)"
+    minimum: 0
+    maximum: 100
+
+  # Required when fuel_type is electricity
+  grid_region:
+    type: string
+    description: "Grid region for electricity emissions factor"
+
+  # Conditional based on fuel_type
+  emission_factor_override:
+    type: number
+    description: "Custom emission factor (optional)"
+    minimum: 0
+
+  # Sum validation
+  scope1_emissions:
+    type: number
+    minimum: 0
+
+  scope2_emissions:
+    type: number
+    minimum: 0
+
+  total_emissions:
+    type: number
+    minimum: 0
+    description: "Must equal scope1 + scope2"
+
+x-gl-rules:
+  - id: "RULE-001"
+    description: "methane_slip required when fuel_type is natural_gas"
+    when:
+      eq:
+        - path: "/fuel_type"
+        - "natural_gas"
+    check:
+      exists: "/methane_slip"
+    severity: error
+    message: "methane_slip is required when fuel_type is natural_gas"
+
+  - id: "RULE-002"
+    description: "biofuel_blend required when fuel_type is biofuel"
+    when:
+      eq:
+        - path: "/fuel_type"
+        - "biofuel"
+    check:
+      exists: "/biofuel_blend"
+    severity: error
+    message: "biofuel_blend is required when fuel_type is biofuel"
+
+  - id: "RULE-003"
+    description: "grid_region required when fuel_type is electricity"
+    when:
+      eq:
+        - path: "/fuel_type"
+        - "electricity"
+    check:
+      exists: "/grid_region"
+    severity: error
+    message: "grid_region is required when fuel_type is electricity"
+
+  - id: "RULE-004"
+    description: "total_emissions must equal scope1 + scope2"
+    when:
+      and:
+        - exists: "/scope1_emissions"
+        - exists: "/scope2_emissions"
+        - exists: "/total_emissions"
+    check:
+      eq:
+        - path: "/total_emissions"
+        - sum:
+            - path: "/scope1_emissions"
+            - path: "/scope2_emissions"
+    severity: error
+    message: "total_emissions must equal scope1_emissions + scope2_emissions"
+
+additionalProperties: false

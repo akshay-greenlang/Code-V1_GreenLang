@@ -1,0 +1,76 @@
+# Mass Units Test Schema
+# Tests: unit validation for mass dimension
+# GL-FOUND-X-002 Golden Test
+
+$schema: "https://json-schema.org/draft/2020-12/schema"
+$id: "gl://schemas/test/mass_units@1.0.0"
+title: "Mass Units Test Schema"
+description: "Schema for testing mass unit validation"
+type: object
+
+required:
+  - weight
+
+properties:
+  weight:
+    type: object
+    description: "Weight/mass measurement"
+    required:
+      - value
+      - unit
+    properties:
+      value:
+        type: number
+        minimum: 0
+      unit:
+        type: string
+        enum:
+          - g
+          - kg
+          - t
+          - mt
+          - lb
+          - oz
+    x-gl-unit:
+      dimension: mass
+      canonical: kg
+      allowed:
+        - g
+        - kg
+        - t
+        - mt
+
+  emissions:
+    type: object
+    description: "CO2 equivalent emissions"
+    required:
+      - value
+      - unit
+    properties:
+      value:
+        type: number
+        minimum: 0
+      unit:
+        type: string
+        enum:
+          - kgCO2e
+          - tCO2e
+          - mtCO2e
+    x-gl-unit:
+      dimension: emissions
+      canonical: kgCO2e
+
+  fuel_mass:
+    type: object
+    description: "Fuel mass"
+    properties:
+      value:
+        type: number
+        minimum: 0
+      unit:
+        type: string
+    x-gl-unit:
+      dimension: mass
+      canonical: kg
+
+additionalProperties: false

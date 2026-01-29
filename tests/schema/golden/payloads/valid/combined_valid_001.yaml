@@ -1,0 +1,43 @@
+# Valid Combined Schema Payload 001
+# Tests: Complex schema with multiple constraints
+# Schema: basic/combined_schema.yaml
+
+_test_metadata:
+  schema: "basic/combined_schema.yaml"
+  description: "Valid payload for combined schema"
+  expected_valid: true
+
+activity_id: "ACT-2026-ABC-000001"
+
+reporting_period:
+  start_date: "2026-01-01"
+  end_date: "2026-03-31"
+  fiscal_year: 2026
+
+energy_data:
+  consumption:
+    value: 15000
+    unit: "kWh"
+  source: "grid"
+  renewable_percentage: 45.5
+
+emissions:
+  scope1: 1000
+  scope2: 2500
+  scope3: 500
+  total: 4000
+  unit: "kgCO2e"
+
+status: "submitted"
+
+tags:
+  - "quarterly"
+  - "energy"
+  - "verified"
+
+metadata:
+  created_by: "analyst@company.com"
+  created_at: "2026-01-15T10:00:00Z"
+  version: 1
+
+notes: "Q1 2026 energy consumption report for main facility."

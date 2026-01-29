@@ -1,0 +1,15 @@
+# Invalid Payload - Type Mismatch (integer expected, string provided)
+# Error Code: GLSCHEMA-E102 (TYPE_MISMATCH)
+# Schema: basic/numeric_constraints.yaml
+
+_test_metadata:
+  schema: "basic/numeric_constraints.yaml"
+  description: "Type mismatch - quantity should be integer, got string"
+  expected_valid: false
+  expected_errors:
+    - code: "GLSCHEMA-E102"
+      path: "/quantity"
+      severity: "error"
+
+temperature: 25.5
+quantity: "one hundred"

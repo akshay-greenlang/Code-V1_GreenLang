@@ -1,0 +1,13 @@
+# Valid Conditional Rules Payload 002
+# Tests: Electricity with grid_region
+# Schema: rules/conditional_rules.yaml
+
+_test_metadata:
+  schema: "rules/conditional_rules.yaml"
+  description: "Valid payload with electricity and required grid_region"
+  expected_valid: true
+
+fuel_type: "electricity"
+quantity: 5000
+quantity_unit: "kWh"
+grid_region: "US-CA"

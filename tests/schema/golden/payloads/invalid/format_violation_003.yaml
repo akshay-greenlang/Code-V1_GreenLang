@@ -1,0 +1,16 @@
+# Invalid Payload - Format Violation (uuid)
+# Error Code: GLSCHEMA-E206 (FORMAT_VIOLATION)
+# Schema: basic/string_constraints.yaml
+
+_test_metadata:
+  schema: "basic/string_constraints.yaml"
+  description: "Format violation - invalid UUID format"
+  expected_valid: false
+  expected_errors:
+    - code: "GLSCHEMA-E206"
+      path: "/uuid"
+      severity: "error"
+
+username: "valid_user"
+email: "user@example.com"
+uuid: "not-a-valid-uuid"

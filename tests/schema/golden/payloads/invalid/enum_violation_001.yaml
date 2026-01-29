@@ -1,0 +1,15 @@
+# Invalid Payload - Enum Violation
+# Error Code: GLSCHEMA-E202 (ENUM_VIOLATION)
+# Schema: basic/enum_constraints.yaml
+
+_test_metadata:
+  schema: "basic/enum_constraints.yaml"
+  description: "Enum violation - invalid status value"
+  expected_valid: false
+  expected_errors:
+    - code: "GLSCHEMA-E202"
+      path: "/status"
+      severity: "error"
+
+status: "invalid_status"  # Not in allowed enum values
+priority: 3

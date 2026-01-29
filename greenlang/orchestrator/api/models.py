@@ -671,4 +671,303 @@ __all__ = [
     "RunListParams",
     "LogsQueryParams",
     "AgentListParams",
+    # FR-074: Checkpoint and retry models
+    "CheckpointStatusEnum",
+    "StepCheckpointResponse",
+    "RunCheckpointResponse",
+    "RunRetryRequest",
+    "RunRetryResponse",
+    "NonIdempotentStepWarning",
+    "CheckpointClearResponse",
 ]
+
+
+# =============================================================================
+# APPROVAL MODELS (FR-043)
+# =============================================================================
+
+
+class ApprovalStatusEnum(str, Enum):
+    """Status of an approval request."""
+    PENDING = "pending"
+    APPROVED = "approved"
+    REJECTED = "rejected"
+    EXPIRED = "expired"
+
+
+class ApprovalDecisionEnum(str, Enum):
+    """Decision made by an approver."""
+    APPROVED = "approved"
+    REJECTED = "rejected"
+
+
+class ApprovalSubmitRequest(BaseModel):
+    """Request to submit an approval decision."""
+    decision: ApprovalDecisionEnum = Field(..., description="APPROVED or REJECTED")
+    reason: Optional[str] = Field(None, max_length=2000, description="Explanation for decision")
+    signature: str = Field(..., description="Base64-encoded Ed25519 signature")
+    public_key: str = Field(..., description="Base64-encoded public key")
+    approver_name: Optional[str] = Field(None, description="Human-readable name")
+    approver_role: Optional[str] = Field(None, description="Approver role")
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "decision": "approved",
+                "reason": "Verified calculation methodology is correct",
+                "signature": "base64-encoded-ed25519-signature",
+                "public_key": "base64-encoded-public-key",
+                "approver_name": "John Smith",
+                "approver_role": "Manager"
+            }
+        }
+    }
+
+
+class ApprovalAttestationResponse(BaseModel):
+    """Response containing signed attestation details."""
+    approver_id: str = Field(..., description="Approver identifier")
+    approver_name: Optional[str] = Field(None, description="Approver name")
+    approver_role: Optional[str] = Field(None, description="Approver role")
+    decision: ApprovalDecisionEnum = Field(..., description="Decision made")
+    reason: Optional[str] = Field(None, description="Decision reason")
+    timestamp: datetime = Field(..., description="Attestation timestamp")
+    signature: str = Field(..., description="Truncated signature for display")
+    attestation_hash: str = Field(..., description="SHA-256 hash of attestation")
+    signature_valid: Optional[bool] = Field(None, description="Whether signature verified")
+
+
+class ApprovalRequestResponse(BaseModel):
+    """Response for an approval request."""
+    request_id: str = Field(..., description="Unique request identifier")
+    run_id: str = Field(..., description="Associated run ID")
+    step_id: str = Field(..., description="Step requiring approval")
+    approval_type: str = Field(..., description="Type of approval required")
+    reason: str = Field(..., description="Why approval is required")
+    requested_by: Optional[str] = Field(None, description="Who requested approval")
+    requested_at: datetime = Field(..., description="Request timestamp")
+    deadline: datetime = Field(..., description="Approval deadline")
+    status: ApprovalStatusEnum = Field(..., description="Current status")
+    attestation: Optional[ApprovalAttestationResponse] = Field(None, description="Signed attestation if decided")
+    provenance_hash: str = Field(..., description="Provenance hash for audit")
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "request_id": "apr-abc123def456",
+                "run_id": "run-xyz789",
+                "step_id": "step-calculate",
+                "approval_type": "manager",
+                "reason": "High-value calculation requires manager approval",
+                "requested_by": "system",
+                "requested_at": "2026-01-28T10:00:00Z",
+                "deadline": "2026-01-29T10:00:00Z",
+                "status": "pending",
+                "attestation": None,
+                "provenance_hash": "abc123..."
+            }
+        }
+    }
+
+
+class ApprovalListResponse(BaseModel):
+    """Response for listing approvals."""
+    approvals: List[ApprovalRequestResponse] = Field(..., description="List of approvals")
+    total: int = Field(..., description="Total count")
+    run_id: str = Field(..., description="Run ID filter")
+
+
+class ApprovalSubmitResponse(BaseModel):
+    """Response after submitting an approval."""
+    request_id: str = Field(..., description="Approval request ID")
+    status: ApprovalStatusEnum = Field(..., description="New status")
+    attestation: ApprovalAttestationResponse = Field(..., description="Signed attestation")
+    message: str = Field(..., description="Confirmation message")
+
+
+# =============================================================================
+# CHECKPOINT AND RETRY MODELS (FR-074)
+# =============================================================================
+
+
+class CheckpointStatusEnum(str, Enum):
+    """Status of a step checkpoint."""
+    PENDING = "pending"
+    RUNNING = "running"
+    COMPLETED = "completed"
+    FAILED = "failed"
+    SKIPPED = "skipped"
+    CANCELED = "canceled"
+
+
+class StepCheckpointResponse(BaseModel):
+    """Response for a single step checkpoint state."""
+    step_id: str = Field(..., description="Step identifier")
+    status: CheckpointStatusEnum = Field(..., description="Checkpoint status")
+    outputs: Dict[str, Any] = Field(default_factory=dict, description="Step outputs")
+    artifacts: List[str] = Field(default_factory=list, description="Artifact URIs")
+    idempotency_key: str = Field(..., description="Idempotency key for deduplication")
+    attempt: int = Field(default=1, ge=1, description="Execution attempt number")
+    error_message: Optional[str] = Field(None, description="Error message if failed")
+    started_at: Optional[datetime] = Field(None, description="Execution start time")
+    completed_at: Optional[datetime] = Field(None, description="Execution completion time")
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "step_id": "step-calculate",
+                "status": "completed",
+                "outputs": {"emissions_total": 1500.5, "unit": "tCO2e"},
+                "artifacts": ["s3://bucket/artifacts/emissions-report.json"],
+                "idempotency_key": "abc123def456...",
+                "attempt": 1,
+                "started_at": "2026-01-28T10:00:00Z",
+                "completed_at": "2026-01-28T10:05:00Z"
+            }
+        }
+    }
+
+
+class RunCheckpointResponse(BaseModel):
+    """Response for run checkpoint state."""
+    run_id: str = Field(..., description="Run identifier")
+    plan_id: str = Field(..., description="Execution plan ID")
+    plan_hash: str = Field(..., description="SHA-256 hash of the execution plan")
+    pipeline_id: str = Field(..., description="Pipeline identifier")
+    step_checkpoints: Dict[str, StepCheckpointResponse] = Field(
+        default_factory=dict,
+        description="Checkpoint state for each step"
+    )
+    last_successful_step: Optional[str] = Field(None, description="Last successfully completed step")
+    retry_count: int = Field(default=0, ge=0, description="Number of retry attempts")
+    parent_run_id: Optional[str] = Field(None, description="Parent run ID if this is a retry")
+    created_at: datetime = Field(..., description="Checkpoint creation timestamp")
+    updated_at: datetime = Field(..., description="Last update timestamp")
+    expires_at: Optional[datetime] = Field(None, description="Checkpoint expiration timestamp")
+    is_expired: bool = Field(default=False, description="Whether checkpoint has expired")
+    completed_steps: List[str] = Field(default_factory=list, description="List of completed step IDs")
+    failed_steps: List[str] = Field(default_factory=list, description="List of failed step IDs")
+    state_hash: str = Field(..., description="SHA-256 hash of checkpoint state for integrity")
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "run_id": "run-xyz789",
+                "plan_id": "plan-abc123",
+                "plan_hash": "sha256-abc123...",
+                "pipeline_id": "pipe-abc123",
+                "step_checkpoints": {
+                    "step-ingest": {
+                        "step_id": "step-ingest",
+                        "status": "completed",
+                        "outputs": {"records_processed": 1000},
+                        "idempotency_key": "key-123",
+                        "attempt": 1
+                    }
+                },
+                "last_successful_step": "step-ingest",
+                "retry_count": 0,
+                "created_at": "2026-01-28T10:00:00Z",
+                "updated_at": "2026-01-28T10:05:00Z",
+                "is_expired": False,
+                "completed_steps": ["step-ingest"],
+                "failed_steps": [],
+                "state_hash": "sha256-def456..."
+            }
+        }
+    }
+
+
+class RunRetryRequest(BaseModel):
+    """Request to retry a failed run from checkpoint."""
+    from_checkpoint: bool = Field(
+        default=True,
+        description="Whether to resume from checkpoint (skip completed steps)"
+    )
+    skip_succeeded: bool = Field(
+        default=True,
+        description="Skip steps that succeeded in the original run"
+    )
+    force_rerun_steps: List[str] = Field(
+        default_factory=list,
+        description="List of step IDs to force re-run even if they succeeded"
+    )
+    new_parameters: Optional[Dict[str, Any]] = Field(
+        None,
+        description="Override parameters for the retry run"
+    )
+    reason: Optional[str] = Field(
+        None,
+        max_length=1000,
+        description="Reason for retry (for audit trail)"
+    )
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "from_checkpoint": True,
+                "skip_succeeded": True,
+                "force_rerun_steps": ["step-calculate"],
+                "new_parameters": {"reporting_year": 2026},
+                "reason": "Recalculating with updated emission factors"
+            }
+        }
+    }
+
+
+class NonIdempotentStepWarning(BaseModel):
+    """Warning about a non-idempotent step that may have side effects."""
+    step_id: str = Field(..., description="Step identifier")
+    warning_message: str = Field(..., description="Warning description")
+    idempotency_behavior: str = Field(..., description="Step's idempotency behavior")
+    recommendation: str = Field(..., description="Recommended action")
+
+
+class RunRetryResponse(BaseModel):
+    """Response for run retry operation."""
+    new_run_id: str = Field(..., description="New run identifier for the retry")
+    original_run_id: str = Field(..., description="Original run that is being retried")
+    skipped_steps: List[str] = Field(
+        default_factory=list,
+        description="Steps that will be skipped (using checkpoint outputs)"
+    )
+    steps_to_execute: List[str] = Field(
+        default_factory=list,
+        description="Steps that will be executed"
+    )
+    retry_count: int = Field(..., ge=1, description="Retry attempt number")
+    from_checkpoint: bool = Field(..., description="Whether resuming from checkpoint")
+    non_idempotent_warnings: List[NonIdempotentStepWarning] = Field(
+        default_factory=list,
+        description="Warnings about non-idempotent steps being re-run"
+    )
+    schema_compatible: bool = Field(
+        default=True,
+        description="Whether the current plan is compatible with checkpoint"
+    )
+    created_at: datetime = Field(..., description="Retry submission timestamp")
+    message: str = Field(..., description="Status message")
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "new_run_id": "run-retry-001",
+                "original_run_id": "run-xyz789",
+                "skipped_steps": ["step-ingest", "step-validate"],
+                "steps_to_execute": ["step-calculate", "step-report"],
+                "retry_count": 1,
+                "from_checkpoint": True,
+                "non_idempotent_warnings": [],
+                "schema_compatible": True,
+                "created_at": "2026-01-28T12:00:00Z",
+                "message": "Retry submitted successfully. Resuming from step 'step-calculate'."
+            }
+        }
+    }
+
+
+class CheckpointClearResponse(BaseModel):
+    """Response for checkpoint clear operation."""
+    run_id: str = Field(..., description="Run identifier")
+    cleared: bool = Field(..., description="Whether checkpoint was successfully cleared")
+    message: str = Field(..., description="Status message")

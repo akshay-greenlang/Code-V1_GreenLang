@@ -1,0 +1,84 @@
+# Reference Schema Test
+# Tests: $ref resolution, $defs
+# GL-FOUND-X-002 Golden Test
+
+$schema: "https://json-schema.org/draft/2020-12/schema"
+$id: "gl://schemas/test/ref_schema@1.0.0"
+title: "Reference Schema Test"
+description: "Schema for testing $ref resolution"
+type: object
+
+$defs:
+  Address:
+    type: object
+    required:
+      - street
+      - city
+      - country
+    properties:
+      street:
+        type: string
+        minLength: 1
+      city:
+        type: string
+        minLength: 1
+      country:
+        type: string
+        minLength: 2
+        maxLength: 2
+        pattern: "^[A-Z]{2}$"
+      postal_code:
+        type: string
+
+  Contact:
+    type: object
+    required:
+      - name
+    properties:
+      name:
+        type: string
+        minLength: 1
+      email:
+        type: string
+        format: email
+      phone:
+        type: string
+
+  Measurement:
+    type: object
+    required:
+      - value
+      - unit
+    properties:
+      value:
+        type: number
+      unit:
+        type: string
+
+required:
+  - company_name
+  - billing_address
+
+properties:
+  company_name:
+    type: string
+    minLength: 1
+
+  billing_address:
+    $ref: "#/$defs/Address"
+
+  shipping_address:
+    $ref: "#/$defs/Address"
+
+  primary_contact:
+    $ref: "#/$defs/Contact"
+
+  secondary_contact:
+    $ref: "#/$defs/Contact"
+
+  measurements:
+    type: array
+    items:
+      $ref: "#/$defs/Measurement"
+
+additionalProperties: false

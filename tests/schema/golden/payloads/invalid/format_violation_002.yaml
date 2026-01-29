@@ -1,0 +1,16 @@
+# Invalid Payload - Format Violation (date)
+# Error Code: GLSCHEMA-E206 (FORMAT_VIOLATION)
+# Schema: basic/string_constraints.yaml
+
+_test_metadata:
+  schema: "basic/string_constraints.yaml"
+  description: "Format violation - invalid date format"
+  expected_valid: false
+  expected_errors:
+    - code: "GLSCHEMA-E206"
+      path: "/date"
+      severity: "error"
+
+username: "valid_user"
+email: "user@example.com"
+date: "01-15-2026"  # Should be ISO format YYYY-MM-DD

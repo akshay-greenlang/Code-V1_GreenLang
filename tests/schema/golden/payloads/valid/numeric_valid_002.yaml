@@ -1,0 +1,18 @@
+# Valid Numeric Constraints Payload 002
+# Tests: Boundary values
+# Schema: basic/numeric_constraints.yaml
+
+_test_metadata:
+  schema: "basic/numeric_constraints.yaml"
+  description: "Valid payload with boundary values"
+  expected_valid: true
+
+temperature: -273.15  # Minimum allowed
+quantity: 1           # Minimum allowed
+percentage: 0         # Minimum allowed
+positive_number: 0.0000001  # Just above 0
+price: 0              # Minimum allowed
+score: 0.01           # Just above exclusive minimum
+batch_size: 10        # Minimum allowed
+latitude: -90         # Minimum allowed
+longitude: -180       # Minimum allowed

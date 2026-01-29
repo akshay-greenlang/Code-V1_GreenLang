@@ -1,0 +1,121 @@
+# =============================================================================
+# GreenLang Orchestrator - Namespace Concurrency Quotas Configuration
+# =============================================================================
+#
+# FR-024: Namespace Concurrency Quotas
+# GL-FOUND-X-001: GreenLang Orchestrator
+#
+# This configuration file defines quota limits for multi-tenant resource
+# isolation and fair scheduling in the GreenLang Orchestrator.
+#
+# Quotas control:
+# - max_concurrent_runs: Maximum simultaneous pipeline runs per namespace
+# - max_concurrent_steps: Maximum simultaneous steps across all runs
+# - max_queued_runs: Maximum runs waiting in queue when quota is exceeded
+# - priority_weight: Scheduling priority multiplier (higher = more priority)
+# - queue_timeout_seconds: How long a run can wait in queue before timeout
+#
+# Usage:
+#   from greenlang.orchestrator.quotas import QuotaManager
+#   manager = QuotaManager()
+#   manager.load_from_yaml("config/namespace_quotas.yaml")
+#
+# =============================================================================
+
+quotas:
+  # Default quota applied to any namespace without explicit configuration
+  default:
+    max_concurrent_runs: 20
+    max_concurrent_steps: 100
+    max_queued_runs: 50
+    priority_weight: 1.0
+    queue_timeout_seconds: 300.0  # 5 minutes
+
+  # Namespace-specific quota configurations
+  namespaces:
+    # Production namespace - highest priority and capacity
+    # Used for production workloads that require high throughput
+    production:
+      max_concurrent_runs: 50
+      max_concurrent_steps: 200
+      max_queued_runs: 100
+      priority_weight: 2.0
+      queue_timeout_seconds: 600.0  # 10 minutes - more lenient for production
+
+    # Development namespace - lower limits to prevent resource hogging
+    # Used for development and testing of new pipelines
+    development:
+      max_concurrent_runs: 10
+      max_concurrent_steps: 50
+      max_queued_runs: 20
+      priority_weight: 0.5
+      queue_timeout_seconds: 180.0  # 3 minutes
+
+    # Testing namespace - minimal resources for CI/CD testing
+    # Used for automated testing and validation
+    testing:
+      max_concurrent_runs: 5
+      max_concurrent_steps: 25
+      max_queued_runs: 10
+      priority_weight: 0.3
+      queue_timeout_seconds: 120.0  # 2 minutes - fast fail for tests
+
+    # Staging namespace - moderate capacity for pre-production validation
+    # Used for staging environment testing before production deployment
+    staging:
+      max_concurrent_runs: 20
+      max_concurrent_steps: 100
+      max_queued_runs: 30
+      priority_weight: 1.5
+      queue_timeout_seconds: 300.0  # 5 minutes
+
+    # Compliance namespace - dedicated resources for regulatory reporting
+    # Used for compliance and audit workloads with guaranteed capacity
+    compliance:
+      max_concurrent_runs: 30
+      max_concurrent_steps: 150
+      max_queued_runs: 50
+      priority_weight: 2.5  # Highest priority for compliance workloads
+      queue_timeout_seconds: 900.0  # 15 minutes - compliance can't be rushed
+
+    # Analytics namespace - batch processing for analytics workloads
+    # Used for data analytics and reporting pipelines
+    analytics:
+      max_concurrent_runs: 15
+      max_concurrent_steps: 75
+      max_queued_runs: 40
+      priority_weight: 0.8
+      queue_timeout_seconds: 600.0  # 10 minutes
+
+    # System namespace - internal system operations
+    # Reserved for orchestrator internal operations
+    system:
+      max_concurrent_runs: 10
+      max_concurrent_steps: 50
+      max_queued_runs: 20
+      priority_weight: 3.0  # Highest priority for system operations
+      queue_timeout_seconds: 60.0  # 1 minute - system ops should be fast
+
+# =============================================================================
+# Configuration Notes
+# =============================================================================
+#
+# Priority Weight Explained:
+# - Higher weight = higher scheduling priority
+# - When dequeuing runs, effective_priority = (10 - base_priority) / weight
+# - Lower effective_priority = processed first
+# - Example: production (weight=2.0) with priority 5 gets effective priority 2.5
+#            development (weight=0.5) with priority 5 gets effective priority 10.0
+#            So production runs are processed first
+#
+# Queue Timeout:
+# - Runs waiting longer than queue_timeout_seconds are removed from queue
+# - A CONCURRENCY_QUEUE_TIMEOUT event is emitted
+# - Set higher timeouts for critical namespaces
+#
+# Capacity Planning:
+# - Total concurrent runs across all namespaces = sum of max_concurrent_runs
+# - Ensure your infrastructure can handle the total capacity
+# - Monitor quota_usage_percent and queue_depth metrics
+#
+# =============================================================================

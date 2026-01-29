@@ -4,16 +4,18 @@ GreenLang Orchestrator
 ======================
 
 Orchestrates the execution of agent workflows with policy enforcement,
-retry logic, and comprehensive execution tracking.
+retry logic, checkpoint-based recovery (FR-074), and comprehensive execution tracking.
 
 Author: GreenLang Framework Team
 """
 
 from typing import Dict, Any, List, Optional
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 import uuid
+import hashlib
+import json
 
 from greenlang.agents.base import BaseAgent
 from greenlang.execution.core.workflow import Workflow
@@ -21,6 +23,27 @@ import logging
 import ast
 
 from greenlang.exceptions import ValidationError, ExecutionError, MissingData
+
+# FR-074: Import checkpoint management
+try:
+    from greenlang.execution.core.checkpoint_manager import (
+        CheckpointManager,
+        CheckpointState,
+        CheckpointStatus,
+        CheckpointExecutionContract,
+        InMemoryCheckpointStore,
+    )
+    CHECKPOINT_AVAILABLE = True
+except ImportError:
+    CHECKPOINT_AVAILABLE = False
+
+# FR-063: Import alert management
+try:
+    from greenlang.orchestrator.alerting import AlertManager, AlertType, AlertSeverity
+    ALERTING_AVAILABLE = True
+except ImportError:
+    ALERTING_AVAILABLE = False
+    AlertManager = None
 
 
 class ExecutionState(str, Enum):
@@ -168,13 +191,195 @@ logger = logging.getLogger(__name__)
 
 
 class Orchestrator:
-    """Orchestrates the execution of agent workflows"""
+    """
+    Orchestrates the execution of agent workflows.
 
-    def __init__(self) -> None:
+    Features:
+    - Policy enforcement before execution
+    - Retry logic with configurable attempts
+    - FR-074: Checkpoint-based recovery for long-running pipelines
+    - Comprehensive execution tracking and history
+
+    Attributes:
+        agents: Registered agents available for workflow steps
+        workflows: Registered workflow definitions
+        execution_history: History of executed workflows
+        checkpoint_manager: Optional checkpoint manager for FR-074
+        checkpoint_enabled: Whether checkpointing is enabled
+    """
+
+    def __init__(
+        self,
+        checkpoint_manager: Optional["CheckpointManager"] = None,
+        checkpoint_enabled: bool = True,
+        alert_manager: Optional["AlertManager"] = None,
+        alerting_enabled: bool = True,
+        default_namespace: str = "default",
+    ) -> None:
+        """
+        Initialize the Orchestrator.
+
+        Args:
+            checkpoint_manager: Optional CheckpointManager for FR-074 checkpoint support.
+                               If None and checkpoint_enabled=True, creates InMemoryCheckpointStore.
+            checkpoint_enabled: Whether to enable checkpoint-based recovery (FR-074)
+            alert_manager: Optional AlertManager for FR-063 alert webhooks.
+                          If None and alerting_enabled=True, creates default AlertManager.
+            alerting_enabled: Whether to enable alert webhooks (FR-063)
+            default_namespace: Default namespace for alerts
+        """
         self.agents: Dict[str, BaseAgent] = {}
         self.workflows: Dict[str, Workflow] = {}
         self.execution_history: List[Dict[str, Any]] = []
         self.logger = logger
+        self.default_namespace = default_namespace
+
+        # FR-074: Checkpoint management
+        self.checkpoint_enabled = checkpoint_enabled and CHECKPOINT_AVAILABLE
+        self._checkpoint_manager = checkpoint_manager
+
+        if self.checkpoint_enabled and self._checkpoint_manager is None:
+            try:
+                store = InMemoryCheckpointStore()
+                self._checkpoint_manager = CheckpointManager(store=store)
+                self.logger.info("Initialized Orchestrator with InMemoryCheckpointStore")
+            except Exception as e:
+                self.logger.warning(f"Failed to initialize checkpoint manager: {e}")
+                self.checkpoint_enabled = False
+
+        # FR-063: Alert management
+        self.alerting_enabled = alerting_enabled and ALERTING_AVAILABLE
+        self._alert_manager = alert_manager
+
+        if self.alerting_enabled and self._alert_manager is None:
+            try:
+                self._alert_manager = AlertManager()
+                self.logger.info("Initialized Orchestrator with AlertManager")
+            except Exception as e:
+                self.logger.warning(f"Failed to initialize alert manager: {e}")
+                self.alerting_enabled = False
+
+    @property
+    def checkpoint_manager(self) -> Optional["CheckpointManager"]:
+        """Get the checkpoint manager if available."""
+        return self._checkpoint_manager
+
+    def set_checkpoint_manager(self, manager: "CheckpointManager") -> None:
+        """Set a custom checkpoint manager."""
+        self._checkpoint_manager = manager
+        self.checkpoint_enabled = manager is not None
+
+    @property
+    def alert_manager(self) -> Optional["AlertManager"]:
+        """Get the alert manager if available (FR-063)."""
+        return self._alert_manager
+
+    def set_alert_manager(self, manager: "AlertManager") -> None:
+        """Set a custom alert manager (FR-063)."""
+        self._alert_manager = manager
+        self.alerting_enabled = manager is not None
+
+    async def _emit_alert_async(
+        self,
+        alert_type: "AlertType",
+        severity: "AlertSeverity",
+        run_id: str,
+        message: str,
+        step_id: Optional[str] = None,
+        pipeline_id: Optional[str] = None,
+        details: Optional[Dict[str, Any]] = None,
+        namespace: Optional[str] = None,
+    ) -> None:
+        """
+        Emit an alert asynchronously (FR-063).
+
+        This is a helper method for emitting alerts from async contexts.
+        """
+        if not self.alerting_enabled or self._alert_manager is None:
+            return
+
+        try:
+            await self._alert_manager.emit_alert(
+                namespace=namespace or self.default_namespace,
+                alert_type=alert_type,
+                severity=severity,
+                run_id=run_id,
+                message=message,
+                step_id=step_id,
+                pipeline_id=pipeline_id,
+                details=details,
+            )
+        except Exception as e:
+            self.logger.warning(f"Failed to emit alert: {e}")
+
+    def _emit_alert_sync(
+        self,
+        alert_type: "AlertType",
+        severity: "AlertSeverity",
+        run_id: str,
+        message: str,
+        step_id: Optional[str] = None,
+        pipeline_id: Optional[str] = None,
+        details: Optional[Dict[str, Any]] = None,
+        namespace: Optional[str] = None,
+    ) -> None:
+        """
+        Emit an alert synchronously (FR-063).
+
+        This is a helper method for emitting alerts from sync contexts.
+        It schedules the async emission in a fire-and-forget manner.
+        """
+        if not self.alerting_enabled or self._alert_manager is None:
+            return
+
+        import asyncio
+
+        try:
+            loop = asyncio.get_event_loop()
+            if loop.is_running():
+                # Schedule as a task if loop is running
+                asyncio.create_task(
+                    self._emit_alert_async(
+                        alert_type=alert_type,
+                        severity=severity,
+                        run_id=run_id,
+                        message=message,
+                        step_id=step_id,
+                        pipeline_id=pipeline_id,
+                        details=details,
+                        namespace=namespace,
+                    )
+                )
+            else:
+                # Run synchronously if no loop
+                loop.run_until_complete(
+                    self._emit_alert_async(
+                        alert_type=alert_type,
+                        severity=severity,
+                        run_id=run_id,
+                        message=message,
+                        step_id=step_id,
+                        pipeline_id=pipeline_id,
+                        details=details,
+                        namespace=namespace,
+                    )
+                )
+        except RuntimeError:
+            # No event loop, create one
+            asyncio.run(
+                self._emit_alert_async(
+                    alert_type=alert_type,
+                    severity=severity,
+                    run_id=run_id,
+                    message=message,
+                    step_id=step_id,
+                    pipeline_id=pipeline_id,
+                    details=details,
+                    namespace=namespace,
+                )
+            )
+        except Exception as e:
+            self.logger.warning(f"Failed to emit alert: {e}")
 
     def register_agent(self, agent_id: str, agent: BaseAgent) -> None:
         """Register an agent for use in workflows.
@@ -197,8 +402,24 @@ class Orchestrator:
         self.logger.info(f"Registered workflow: {workflow_id}")
 
     def execute_workflow(
-        self, workflow_id: str, input_data: Dict[str, Any]
+        self,
+        workflow_id: str,
+        input_data: Dict[str, Any],
+        resume_from_checkpoint: bool = False,
+        run_checkpoint: Optional[Any] = None,
     ) -> Dict[str, Any]:
+        """
+        Execute a workflow with optional checkpoint-based recovery.
+
+        Args:
+            workflow_id: ID of the workflow to execute
+            input_data: Input data for the workflow
+            resume_from_checkpoint: Whether to resume from checkpoint (FR-074)
+            run_checkpoint: Optional RunCheckpoint to resume from (FR-074)
+
+        Returns:
+            Workflow execution result with results, errors, and checkpoint info
+        """
         if workflow_id not in self.workflows:
             raise MissingData(
                 message=f"Workflow '{workflow_id}' not found",
@@ -215,6 +436,53 @@ class Orchestrator:
 
         self.logger.info(f"Starting workflow execution: {execution_id}")
 
+        # FR-074: Compute plan hash for checkpoint integrity
+        plan_hash = self._compute_plan_hash(workflow)
+
+        # FR-074: Initialize or load checkpoint
+        checkpoint_run = None
+        skipped_steps = set()
+
+        if self.checkpoint_enabled and self._checkpoint_manager:
+            import asyncio
+            try:
+                if resume_from_checkpoint and run_checkpoint:
+                    # Use provided checkpoint for retry
+                    checkpoint_run = run_checkpoint
+                    skipped_steps = set(checkpoint_run.get_completed_steps())
+                    self.logger.info(
+                        f"Resuming from checkpoint: {len(skipped_steps)} steps will be skipped"
+                    )
+                else:
+                    # Create new checkpoint for this run
+                    loop = asyncio.get_event_loop()
+                    if loop.is_running():
+                        # We're in an async context, schedule the coroutine
+                        import concurrent.futures
+                        with concurrent.futures.ThreadPoolExecutor() as executor:
+                            future = executor.submit(
+                                asyncio.run,
+                                self._checkpoint_manager.create_run_checkpoint(
+                                    run_id=execution_id,
+                                    plan_id=workflow_id,
+                                    plan_hash=plan_hash,
+                                    pipeline_id=workflow_id,
+                                )
+                            )
+                            checkpoint_run = future.result()
+                    else:
+                        checkpoint_run = loop.run_until_complete(
+                            self._checkpoint_manager.create_run_checkpoint(
+                                run_id=execution_id,
+                                plan_id=workflow_id,
+                                plan_hash=plan_hash,
+                                pipeline_id=workflow_id,
+                            )
+                        )
+                    self.logger.info(f"Created checkpoint for run: {execution_id}")
+            except Exception as e:
+                self.logger.warning(f"Failed to initialize checkpoint: {e}")
+
         # Policy enforcement check before execution
         if POLICY_AVAILABLE:
             try:
@@ -229,6 +497,16 @@ class Orchestrator:
             except RuntimeError as e:
                 error_msg = f"Runtime policy check failed: {e}"
                 self.logger.error(error_msg)
+                # FR-063: Emit policy denial alert
+                if self.alerting_enabled and ALERTING_AVAILABLE:
+                    self._emit_alert_sync(
+                        alert_type=AlertType.POLICY_DENIAL,
+                        severity=AlertSeverity.MEDIUM,
+                        run_id=execution_id,
+                        message=f"Policy check failed for workflow '{workflow_id}': {e}",
+                        pipeline_id=workflow_id,
+                        details={"policy_error": str(e), "workflow_id": workflow_id},
+                    )
                 return {
                     "workflow_id": workflow_id,
                     "execution_id": execution_id,
@@ -247,18 +525,41 @@ class Orchestrator:
             "execution_id": execution_id,
         }
 
+        # FR-074: Load results from skipped steps into context
+        if skipped_steps and checkpoint_run:
+            for step_id in skipped_steps:
+                step_checkpoint = checkpoint_run.get_step_checkpoint(step_id)
+                if step_checkpoint and step_checkpoint.outputs:
+                    context["results"][step_id] = step_checkpoint.outputs
+                    self.logger.info(f"Loaded checkpoint outputs for step: {step_id}")
+
         for step in workflow.steps:
+            # FR-074: Skip steps that completed successfully in previous run
+            if step.name in skipped_steps:
+                self.logger.info(f"Skipping step (from checkpoint): {step.name}")
+                continue
+
             if not self._should_execute_step(step, context):
-                self.logger.info(f"Skipping step: {step.name}")
+                self.logger.info(f"Skipping step (condition): {step.name}")
                 continue
 
             self.logger.info(f"Executing step: {step.name}")
+
+            # FR-074: Generate idempotency key for this step
+            idempotency_key = ""
+            if self.checkpoint_enabled and CHECKPOINT_AVAILABLE:
+                idempotency_key = CheckpointState.generate_idempotency_key(
+                    plan_hash=plan_hash,
+                    step_id=step.name,
+                    attempt=1,
+                )
 
             # Implement retry logic
             max_retries = step.retry_count if step.retry_count > 0 else 0
             attempt = 0
             step_succeeded = False
             last_error = None
+            step_outputs = {}
 
             while attempt <= max_retries:
                 try:
@@ -266,8 +567,27 @@ class Orchestrator:
                         self.logger.info(
                             f"Retrying step {step.name} (attempt {attempt}/{max_retries})"
                         )
+                        # FR-074: Update idempotency key for retry attempt
+                        if self.checkpoint_enabled and CHECKPOINT_AVAILABLE:
+                            idempotency_key = CheckpointState.generate_idempotency_key(
+                                plan_hash=plan_hash,
+                                step_id=step.name,
+                                attempt=attempt + 1,
+                            )
 
                     step_input = self._prepare_step_input(step, context)
+
+                    # FR-074: Add execution contract to step input
+                    if self.checkpoint_enabled:
+                        step_input["_checkpoint_contract"] = {
+                            "run_id": execution_id,
+                            "step_id": step.name,
+                            "idempotency_key": idempotency_key,
+                            "attempt": attempt + 1,
+                            "is_retry": attempt > 0,
+                            "checkpoint_enabled": True,
+                        }
+
                     agent = self.agents.get(step.agent_id)
 
                     if not agent:
@@ -288,21 +608,36 @@ class Orchestrator:
                     if isinstance(result, dict):
                         # Convert dict to AgentResult-like structure
                         success = result.get("success", False)
+                        step_outputs = result
                         context["results"][step.name] = result
                     else:
                         # Assume it's an AgentResult or has success attribute
                         success = getattr(result, "success", False)
                         # Store the data from the AgentResult, not the object itself
                         if hasattr(result, "data"):
-                            context["results"][step.name] = {
+                            step_outputs = {
                                 "success": success,
                                 "data": result.data,
                             }
+                            context["results"][step.name] = step_outputs
                         else:
+                            step_outputs = {"success": success}
                             context["results"][step.name] = result
 
                     if success:
                         step_succeeded = True
+
+                        # FR-074: Save checkpoint after successful step
+                        if self.checkpoint_enabled and self._checkpoint_manager and checkpoint_run:
+                            self._save_step_checkpoint(
+                                run_id=execution_id,
+                                step_id=step.name,
+                                status=CheckpointStatus.COMPLETED,
+                                outputs=step_outputs,
+                                idempotency_key=idempotency_key,
+                                attempt=attempt + 1,
+                            )
+
                         break  # Success, exit retry loop
                     else:
                         # Step failed but returned normally
@@ -345,10 +680,38 @@ class Orchestrator:
                         }
                     )
 
+                # FR-074: Save failed checkpoint
+                if self.checkpoint_enabled and self._checkpoint_manager and checkpoint_run:
+                    self._save_step_checkpoint(
+                        run_id=execution_id,
+                        step_id=step.name,
+                        status=CheckpointStatus.FAILED,
+                        outputs={},
+                        idempotency_key=idempotency_key,
+                        attempt=attempt + 1,
+                        error_message=last_error,
+                    )
+
                 if step.on_failure == "stop":
                     self.logger.error(
                         f"Step failed after {attempt + 1} attempts, stopping workflow: {step.name}"
                     )
+                    # FR-063: Emit step failure alert that stops workflow
+                    if self.alerting_enabled and ALERTING_AVAILABLE:
+                        self._emit_alert_sync(
+                            alert_type=AlertType.RUN_FAILED,
+                            severity=AlertSeverity.HIGH,
+                            run_id=execution_id,
+                            message=f"Step '{step.name}' failed after {attempt + 1} attempts: {last_error}",
+                            step_id=step.name,
+                            pipeline_id=workflow_id,
+                            details={
+                                "step_name": step.name,
+                                "error": last_error,
+                                "attempts": attempt + 1,
+                                "on_failure": step.on_failure,
+                            },
+                        )
                     break
                 elif step.on_failure == "skip":
                     self.logger.warning(
@@ -366,6 +729,30 @@ class Orchestrator:
         }
 
         self.execution_history.append(execution_record)
+
+        # FR-063: Emit run completion/failure alert
+        if self.alerting_enabled and ALERTING_AVAILABLE:
+            if execution_record["success"]:
+                self._emit_alert_sync(
+                    alert_type=AlertType.RUN_SUCCEEDED,
+                    severity=AlertSeverity.INFO,
+                    run_id=execution_id,
+                    message=f"Workflow '{workflow_id}' completed successfully",
+                    pipeline_id=workflow_id,
+                    details={"steps_executed": len(context["results"])},
+                )
+            else:
+                self._emit_alert_sync(
+                    alert_type=AlertType.RUN_FAILED,
+                    severity=AlertSeverity.HIGH,
+                    run_id=execution_id,
+                    message=f"Workflow '{workflow_id}' failed with {len(context['errors'])} error(s)",
+                    pipeline_id=workflow_id,
+                    details={
+                        "error_count": len(context["errors"]),
+                        "errors": context["errors"][:5],
+                    },
+                )
 
         return self._format_workflow_output(workflow, context)
 
@@ -596,6 +983,151 @@ class Orchestrator:
             ],
         }
 
+    # =========================================================================
+    # FR-074: Checkpoint Helper Methods
+    # =========================================================================
+
+    def _compute_plan_hash(self, workflow: Workflow) -> str:
+        """
+        Compute SHA-256 hash of the workflow plan for checkpoint integrity.
+
+        Args:
+            workflow: Workflow to hash
+
+        Returns:
+            SHA-256 hex digest of the workflow structure
+        """
+        plan_data = {
+            "name": workflow.name,
+            "description": workflow.description,
+            "steps": [
+                {
+                    "name": step.name,
+                    "agent_id": step.agent_id,
+                    "condition": step.condition,
+                    "retry_count": step.retry_count,
+                    "on_failure": step.on_failure,
+                }
+                for step in workflow.steps
+            ],
+        }
+        plan_str = json.dumps(plan_data, sort_keys=True)
+        return hashlib.sha256(plan_str.encode()).hexdigest()
+
+    def _save_step_checkpoint(
+        self,
+        run_id: str,
+        step_id: str,
+        status: "CheckpointStatus",
+        outputs: Dict[str, Any],
+        idempotency_key: str,
+        attempt: int,
+        error_message: Optional[str] = None,
+    ) -> None:
+        """
+        Save checkpoint state for a step.
+
+        Args:
+            run_id: Run identifier
+            step_id: Step identifier
+            status: Checkpoint status (COMPLETED, FAILED, etc.)
+            outputs: Step outputs to checkpoint
+            idempotency_key: Idempotency key for the step
+            attempt: Attempt number
+            error_message: Error message if step failed
+        """
+        if not self.checkpoint_enabled or not self._checkpoint_manager:
+            return
+
+        try:
+            import asyncio
+
+            state = CheckpointState(
+                run_id=run_id,
+                step_id=step_id,
+                status=status,
+                outputs=outputs,
+                idempotency_key=idempotency_key,
+                attempt=attempt,
+                error_message=error_message,
+            )
+
+            if status == CheckpointStatus.COMPLETED:
+                state.mark_completed(outputs)
+            elif status == CheckpointStatus.FAILED:
+                state.mark_failed(error_message or "Unknown error")
+
+            # Handle async in sync context
+            try:
+                loop = asyncio.get_event_loop()
+                if loop.is_running():
+                    # We're in an async context - schedule as task
+                    import concurrent.futures
+                    with concurrent.futures.ThreadPoolExecutor() as executor:
+                        future = executor.submit(
+                            asyncio.run,
+                            self._checkpoint_manager.save_checkpoint(run_id, step_id, state)
+                        )
+                        future.result(timeout=5.0)
+                else:
+                    loop.run_until_complete(
+                        self._checkpoint_manager.save_checkpoint(run_id, step_id, state)
+                    )
+            except RuntimeError:
+                # No event loop, create one
+                asyncio.run(
+                    self._checkpoint_manager.save_checkpoint(run_id, step_id, state)
+                )
+
+            self.logger.debug(f"Saved checkpoint for step {step_id}: {status.value}")
+
+        except Exception as e:
+            self.logger.warning(f"Failed to save step checkpoint: {e}")
+
+    async def get_run_checkpoint(self, run_id: str) -> Optional[Any]:
+        """
+        Get checkpoint for a run (async).
+
+        Args:
+            run_id: Run identifier
+
+        Returns:
+            RunCheckpoint if exists, None otherwise
+        """
+        if not self.checkpoint_enabled or not self._checkpoint_manager:
+            return None
+
+        return await self._checkpoint_manager.get_run_checkpoint(run_id)
+
+    async def prepare_retry_checkpoint(
+        self,
+        original_run_id: str,
+        new_run_id: str,
+        skip_succeeded: bool = True,
+        force_rerun_steps: Optional[List[str]] = None,
+    ) -> Optional[Any]:
+        """
+        Prepare a checkpoint for a retry run.
+
+        Args:
+            original_run_id: Original failed run ID
+            new_run_id: New retry run ID
+            skip_succeeded: Whether to skip succeeded steps
+            force_rerun_steps: Steps to force re-run
+
+        Returns:
+            New RunCheckpoint for retry, or None if preparation failed
+        """
+        if not self.checkpoint_enabled or not self._checkpoint_manager:
+            return None
+
+        return await self._checkpoint_manager.prepare_retry(
+            original_run_id=original_run_id,
+            new_run_id=new_run_id,
+            skip_succeeded=skip_succeeded,
+            force_rerun_steps=force_rerun_steps,
+        )
+
 
 # Alias for backward compatibility and alternative naming convention
 WorkflowOrchestrator = Orchestrator
@@ -606,4 +1138,6 @@ __all__ = [
     "WorkflowOrchestrator",
     "ExecutionState",
     "PolicyExecutionContext",
+    # FR-074: Checkpoint support
+    "CHECKPOINT_AVAILABLE",
 ]

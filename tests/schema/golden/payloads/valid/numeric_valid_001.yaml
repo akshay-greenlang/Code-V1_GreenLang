@@ -1,0 +1,18 @@
+# Valid Numeric Constraints Payload 001
+# Tests: All numeric constraints satisfied
+# Schema: basic/numeric_constraints.yaml
+
+_test_metadata:
+  schema: "basic/numeric_constraints.yaml"
+  description: "Valid payload with all numeric constraints satisfied"
+  expected_valid: true
+
+temperature: 25.5
+quantity: 100
+percentage: 75.5
+positive_number: 0.001
+price: 99.99
+score: 85.5
+batch_size: 100
+latitude: 37.7749
+longitude: -122.4194

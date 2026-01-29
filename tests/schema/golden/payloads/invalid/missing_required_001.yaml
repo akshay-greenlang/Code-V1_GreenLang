@@ -1,0 +1,15 @@
+# Invalid Payload - Missing Required Field
+# Error Code: GLSCHEMA-E100 (MISSING_REQUIRED)
+# Schema: basic/string_constraints.yaml
+
+_test_metadata:
+  schema: "basic/string_constraints.yaml"
+  description: "Missing required 'email' field"
+  expected_valid: false
+  expected_errors:
+    - code: "GLSCHEMA-E100"
+      path: "/email"
+      severity: "error"
+
+username: "valid_user"
+# email is missing - required field

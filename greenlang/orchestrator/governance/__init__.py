@@ -11,6 +11,7 @@ Components:
     - PolicyBundle: Versioned policy collections
     - OPAClient: HTTP client for OPA server
     - YAMLRulesParser: Declarative YAML rule evaluation
+    - ApprovalWorkflow: Signed approval workflow (FR-043)
 
 Evaluation Points:
     - Pre-run: Pipeline + plan validation
@@ -53,6 +54,30 @@ from greenlang.orchestrator.governance.policy_engine import (
     OPAError,
 )
 
+from greenlang.orchestrator.governance.approvals import (
+    # Enums
+    ApprovalStatus,
+    ApprovalDecision,
+    # Models
+    ApprovalAttestation,
+    ApprovalRequest,
+    # Store
+    ApprovalStore,
+    InMemoryApprovalStore,
+    # Utilities
+    SignatureUtils,
+    # Workflow
+    ApprovalWorkflow,
+    # Exceptions
+    ApprovalError,
+    ApprovalNotFoundError,
+    ApprovalExpiredError,
+    ApprovalAlreadyDecidedError,
+    SignatureVerificationError,
+    # Constants
+    CRYPTO_AVAILABLE,
+)
+
 __all__ = [
     # Main classes
     "PolicyEngine",
@@ -76,4 +101,19 @@ __all__ = [
     "PolicyBundle",
     # Exceptions
     "OPAError",
+    # FR-043: Approval Workflow
+    "ApprovalStatus",
+    "ApprovalDecision",
+    "ApprovalAttestation",
+    "ApprovalRequest",
+    "ApprovalStore",
+    "InMemoryApprovalStore",
+    "SignatureUtils",
+    "ApprovalWorkflow",
+    "ApprovalError",
+    "ApprovalNotFoundError",
+    "ApprovalExpiredError",
+    "ApprovalAlreadyDecidedError",
+    "SignatureVerificationError",
+    "CRYPTO_AVAILABLE",
 ]

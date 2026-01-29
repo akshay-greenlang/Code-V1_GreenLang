@@ -1,0 +1,84 @@
+# Object Constraints Test Schema
+# Tests: required, additionalProperties, minProperties, maxProperties, propertyNames
+# GL-FOUND-X-002 Golden Test
+
+$schema: "https://json-schema.org/draft/2020-12/schema"
+$id: "gl://schemas/test/object_constraints@1.0.0"
+title: "Object Constraints Test Schema"
+description: "Schema for testing object validation constraints"
+type: object
+
+required:
+  - id
+  - name
+  - metadata
+
+properties:
+  id:
+    type: string
+    description: "Unique identifier"
+    pattern: "^[A-Z]{3}-[0-9]{6}$"
+
+  name:
+    type: string
+    description: "Display name"
+    minLength: 1
+    maxLength: 100
+
+  metadata:
+    type: object
+    description: "Metadata object with constraints"
+    required:
+      - created_at
+    properties:
+      created_at:
+        type: string
+        format: date-time
+      updated_at:
+        type: string
+        format: date-time
+      version:
+        type: integer
+        minimum: 1
+    additionalProperties: false
+
+  tags_map:
+    type: object
+    description: "String-keyed map with property name pattern"
+    propertyNames:
+      pattern: "^[a-z][a-z0-9_]*$"
+    additionalProperties:
+      type: string
+      maxLength: 100
+    minProperties: 0
+    maxProperties: 20
+
+  config:
+    type: object
+    description: "Configuration with nested object"
+    properties:
+      enabled:
+        type: boolean
+      settings:
+        type: object
+        properties:
+          timeout_ms:
+            type: integer
+            minimum: 0
+            maximum: 60000
+          retry_count:
+            type: integer
+            minimum: 0
+            maximum: 10
+        additionalProperties: false
+    additionalProperties: false
+
+  attributes:
+    type: object
+    description: "Dynamic attributes with min/max properties"
+    additionalProperties:
+      type: string
+    minProperties: 1
+    maxProperties: 50
+
+additionalProperties: false

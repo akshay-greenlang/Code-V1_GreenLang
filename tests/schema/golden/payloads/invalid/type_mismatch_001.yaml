@@ -1,0 +1,15 @@
+# Invalid Payload - Type Mismatch (string expected, number provided)
+# Error Code: GLSCHEMA-E102 (TYPE_MISMATCH)
+# Schema: basic/string_constraints.yaml
+
+_test_metadata:
+  schema: "basic/string_constraints.yaml"
+  description: "Type mismatch - username should be string, got number"
+  expected_valid: false
+  expected_errors:
+    - code: "GLSCHEMA-E102"
+      path: "/username"
+      severity: "error"
+
+username: 12345
+email: "user@example.com"

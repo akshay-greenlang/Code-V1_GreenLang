@@ -1,0 +1,16 @@
+# Invalid Payload - Range Violation (above maximum)
+# Error Code: GLSCHEMA-E200 (RANGE_VIOLATION)
+# Schema: basic/numeric_constraints.yaml
+
+_test_metadata:
+  schema: "basic/numeric_constraints.yaml"
+  description: "Range violation - percentage above 100"
+  expected_valid: false
+  expected_errors:
+    - code: "GLSCHEMA-E200"
+      path: "/percentage"
+      severity: "error"
+
+temperature: 25
+quantity: 100
+percentage: 150  # Above maximum of 100

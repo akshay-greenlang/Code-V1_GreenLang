@@ -1,0 +1,17 @@
+# Invalid Payload - Array Min Items Violation
+# Error Code: GLSCHEMA-E203 (LENGTH_VIOLATION)
+# Schema: basic/array_constraints.yaml
+
+_test_metadata:
+  schema: "basic/array_constraints.yaml"
+  description: "Array min items violation - tags array is empty"
+  expected_valid: false
+  expected_errors:
+    - code: "GLSCHEMA-E203"
+      path: "/tags"
+      severity: "error"
+
+tags: []  # minItems is 1
+
+measurements:
+  - 100

@@ -1,0 +1,15 @@
+# Valid Conditional Rules Payload 003
+# Tests: Sum validation (total = scope1 + scope2)
+# Schema: rules/conditional_rules.yaml
+
+_test_metadata:
+  schema: "rules/conditional_rules.yaml"
+  description: "Valid payload with correct emissions total"
+  expected_valid: true
+
+fuel_type: "diesel"
+quantity: 500
+quantity_unit: "liters"
+scope1_emissions: 1000
+scope2_emissions: 500
+total_emissions: 1500

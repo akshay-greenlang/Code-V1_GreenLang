@@ -1,0 +1,17 @@
+# Invalid Payload - OneOf Violation (previously AnyOf - schema uses oneOf)
+# Error Code: GLSCHEMA-E405 (ONE_OF_VIOLATION)
+# Schema: rules/dependency_rules.yaml
+
+_test_metadata:
+  schema: "rules/dependency_rules.yaml"
+  description: "OneOf violation - type is individual but missing first_name/last_name (matches 0 schemas)"
+  expected_valid: false
+  expected_errors:
+    - code: "GLSCHEMA-E405"
+      path: ""
+      severity: "error"
+
+id: "ABCD1234"
+type: "individual"
+# Missing both individual fields (first_name, last_name)
+# Type const matches individual but required fields missing → no match

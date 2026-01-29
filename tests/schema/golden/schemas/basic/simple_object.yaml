@@ -1,0 +1,78 @@
+# Simple Object Schema for Golden Tests
+# This schema defines a basic object with various field types for testing.
+
+$schema: "https://json-schema.org/draft/2020-12/schema"
+$id: "urn:greenlang:test:schemas:basic:simple_object"
+title: "Simple Object"
+description: "A simple object schema for basic validation testing"
+type: object
+
+properties:
+  # Required string field
+  name:
+    type: string
+    description: "Name of the object"
+    minLength: 1
+    maxLength: 100
+
+  # Required integer field with range constraint
+  quantity:
+    type: integer
+    description: "Quantity value"
+    minimum: 0
+    maximum: 1000
+
+  # Optional string with enum constraint
+  status:
+    type: string
+    description: "Current status"
+    enum:
+      - active
+      - inactive
+      - pending
+
+  # Optional number with precision
+  price:
+    type: number
+    description: "Price value"
+    minimum: 0
+    exclusiveMaximum: 1000000
+
+  # Optional boolean
+  is_verified:
+    type: boolean
+    description: "Verification status"
+    default: false
+
+  # Optional array of strings
+  tags:
+    type: array
+    description: "Associated tags"
+    items:
+      type: string
+      minLength: 1
+    minItems: 0
+    maxItems: 10
+    uniqueItems: true
+
+  # Optional nested object
+  metadata:
+    type: object
+    description: "Additional metadata"
+    properties:
+      created_at:
+        type: string
+        format: date-time
+      updated_at:
+        type: string
+        format: date-time
+      version:
+        type: integer
+        minimum: 1
+    additionalProperties: false
+
+required:
+  - name
+  - quantity
+
+additionalProperties: false

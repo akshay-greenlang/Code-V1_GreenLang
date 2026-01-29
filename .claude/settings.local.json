@@ -312,7 +312,8 @@
       "Bash(npm install -g ralphy-cli)",
       "Bash(do)",
       "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\aksha\\\\Code-V1_GreenLang\\\\greenlang\\\\agents\\\\mrv\\\\energy\" -Filter \"*.py\")",
-      "Bash(Select-Object Name)"
+      "Bash(Select-Object Name)",
+      "Bash(git branch:*)"
     ],
     "deny": [],
     "ask": []

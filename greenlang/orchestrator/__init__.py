@@ -14,6 +14,7 @@ This module provides:
 - Hash-chained audit trail
 - FastAPI control plane API
 - CLI interface
+- Pipeline Template Engine (FR-005)
 
 Submodules:
     - executors: Execution backends (K8s, local, legacy)
@@ -24,9 +25,10 @@ Submodules:
     - adapters: Legacy agent adapters
     - api: FastAPI routes
     - schemas: JSON schemas for validation
+    - template_engine: Pipeline templates and modules (FR-005)
 
 Author: GreenLang Team
-Version: 2.0.0
+Version: 2.1.0
 """
 
 from greenlang.orchestrator.pipeline_schema import (
@@ -175,6 +177,29 @@ except ImportError:
     AdapterConfig = None
     ADAPTERS_AVAILABLE = False
 
+# Template Engine (FR-005)
+from greenlang.orchestrator.template_engine import (
+    # Core models
+    PipelineTemplate,
+    TemplateParameter,
+    TemplateStep,
+    TemplateImport,
+    ExpandedStep,
+    TemplateExpansionResult,
+    # Enums
+    TemplateParameterType,
+    TemplateStatus,
+    # Registry and resolver
+    TemplateRegistry,
+    TemplateResolver,
+    # Constants
+    MAX_TEMPLATE_NESTING_DEPTH,
+    # Functions
+    load_template_yaml,
+    load_template_file,
+    create_template_registry,
+)
+
 __all__ = [
     # Pipeline Schema - Core Models
     "PipelineDefinition",
@@ -257,6 +282,21 @@ __all__ = [
     "S3_AVAILABLE",
     "AUDIT_AVAILABLE",
     "ADAPTERS_AVAILABLE",
+    # Template Engine (FR-005)
+    "PipelineTemplate",
+    "TemplateParameter",
+    "TemplateStep",
+    "TemplateImport",
+    "ExpandedStep",
+    "TemplateExpansionResult",
+    "TemplateParameterType",
+    "TemplateStatus",
+    "TemplateRegistry",
+    "TemplateResolver",
+    "MAX_TEMPLATE_NESTING_DEPTH",
+    "load_template_yaml",
+    "load_template_file",
+    "create_template_registry",
 ]
 
-__version__ = "2.0.0"
+__version__ = "2.1.0"

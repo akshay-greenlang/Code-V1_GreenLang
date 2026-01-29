@@ -1,0 +1,70 @@
+# Numeric Constraints Test Schema
+# Tests: minimum, maximum, exclusiveMinimum, exclusiveMaximum, multipleOf
+# GL-FOUND-X-002 Golden Test
+
+$schema: "https://json-schema.org/draft/2020-12/schema"
+$id: "gl://schemas/test/numeric_constraints@1.0.0"
+title: "Numeric Constraints Test Schema"
+description: "Schema for testing numeric validation constraints"
+type: object
+
+required:
+  - temperature
+  - quantity
+
+properties:
+  temperature:
+    type: number
+    description: "Temperature in Celsius with range constraints"
+    minimum: -273.15
+    maximum: 1000
+
+  quantity:
+    type: integer
+    description: "Quantity must be positive"
+    minimum: 1
+    maximum: 10000
+
+  percentage:
+    type: number
+    description: "Percentage between 0 and 100"
+    minimum: 0
+    maximum: 100
+
+  positive_number:
+    type: number
+    description: "Must be strictly positive (exclusive)"
+    exclusiveMinimum: 0
+
+  price:
+    type: number
+    description: "Price in cents (must be multiple of 0.01)"
+    minimum: 0
+    multipleOf: 0.01
+
+  score:
+    type: number
+    description: "Score with exclusive bounds"
+    exclusiveMinimum: 0
+    exclusiveMaximum: 100
+
+  batch_size:
+    type: integer
+    description: "Batch size must be multiple of 10"
+    minimum: 10
+    maximum: 1000
+    multipleOf: 10
+
+  latitude:
+    type: number
+    description: "Geographic latitude"
+    minimum: -90
+    maximum: 90
+
+  longitude:
+    type: number
+    description: "Geographic longitude"
+    minimum: -180
+    maximum: 180
+
+additionalProperties: false

@@ -1,0 +1,23 @@
+# Valid Type Constraints Payload 001
+# Tests: All type constraints satisfied
+# Schema: basic/type_constraints.yaml
+
+_test_metadata:
+  schema: "basic/type_constraints.yaml"
+  description: "Valid payload with all type constraints satisfied"
+  expected_valid: true
+
+string_field: "hello world"
+number_field: 3.14159
+integer_field: 42
+boolean_field: true
+array_field:
+  - "item1"
+  - "item2"
+  - "item3"
+object_field:
+  nested_string: "nested value"
+  nested_number: 123.456
+null_field: null
+nullable_string: "not null"
+multi_type: "string value"
