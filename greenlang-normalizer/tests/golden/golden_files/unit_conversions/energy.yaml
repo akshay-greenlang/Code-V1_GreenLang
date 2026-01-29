@@ -1,0 +1,366 @@
+# =============================================================================
+# Golden Tests: Energy Unit Conversions
+# =============================================================================
+# GL-FOUND-X-003: Unit & Reference Normalizer
+# Canonical Unit: MJ (megajoule)
+#
+# These tests verify energy conversions to the canonical MJ unit.
+# All conversion factors are derived from authoritative sources (SI, IEA, ISO).
+# =============================================================================
+
+schema_version: "1.0"
+dimension: energy
+canonical_unit: MJ
+test_count: 25
+
+test_cases:
+  # ---------------------------------------------------------------------------
+  # SI Energy Units
+  # ---------------------------------------------------------------------------
+  - name: "J to MJ conversion"
+    description: "Convert joules to megajoules (SI base)"
+    input:
+      value: 1000000
+      unit: "J"
+      target_unit: "MJ"
+    expected:
+      canonical_value: 1.0
+      canonical_unit: "MJ"
+      confidence: 1.0
+      exact: true
+    tags: ["si", "base"]
+
+  - name: "kJ to MJ conversion"
+    description: "Convert kilojoules to megajoules"
+    input:
+      value: 1000
+      unit: "kJ"
+      target_unit: "MJ"
+    expected:
+      canonical_value: 1.0
+      canonical_unit: "MJ"
+      confidence: 1.0
+      exact: true
+    tags: ["si"]
+
+  - name: "GJ to MJ conversion"
+    description: "Convert gigajoules to megajoules"
+    input:
+      value: 1
+      unit: "GJ"
+      target_unit: "MJ"
+    expected:
+      canonical_value: 1000.0
+      canonical_unit: "MJ"
+      confidence: 1.0
+      exact: true
+    tags: ["si"]
+
+  - name: "TJ to MJ conversion"
+    description: "Convert terajoules to megajoules"
+    input:
+      value: 1
+      unit: "TJ"
+      target_unit: "MJ"
+    expected:
+      canonical_value: 1000000.0
+      canonical_unit: "MJ"
+      confidence: 1.0
+      exact: true
+    tags: ["si"]
+
+  # ---------------------------------------------------------------------------
+  # Electrical Energy Units
+  # ---------------------------------------------------------------------------
+  - name: "kWh to MJ conversion"
+    description: "Convert kilowatt-hours to megajoules (1 kWh = 3.6 MJ exactly)"
+    input:
+      value: 100
+      unit: "kWh"
+      target_unit: "MJ"
+    expected:
+      canonical_value: 360.0
+      canonical_unit: "MJ"
+      confidence: 1.0
+      exact: true
+    tags: ["electrical", "common"]
+
+  - name: "Wh to MJ conversion"
+    description: "Convert watt-hours to megajoules"
+    input:
+      value: 1000
+      unit: "Wh"
+      target_unit: "MJ"
+    expected:
+      canonical_value: 3.6
+      canonical_unit: "MJ"
+      confidence: 1.0
+      exact: true
+    tags: ["electrical"]
+
+  - name: "MWh to MJ conversion"
+    description: "Convert megawatt-hours to megajoules"
+    input:
+      value: 1
+      unit: "MWh"
+      target_unit: "MJ"
+    expected:
+      canonical_value: 3600.0
+      canonical_unit: "MJ"
+      confidence: 1.0
+      exact: true
+    tags: ["electrical", "common"]
+
+  - name: "GWh to MJ conversion"
+    description: "Convert gigawatt-hours to megajoules"
+    input:
+      value: 1
+      unit: "GWh"
+      target_unit: "MJ"
+    expected:
+      canonical_value: 3600000.0
+      canonical_unit: "MJ"
+      confidence: 1.0
+      exact: true
+    tags: ["electrical"]
+
+  - name: "Large kWh to MJ"
+    description: "Convert large kWh value to MJ"
+    input:
+      value: 1500
+      unit: "kWh"
+      target_unit: "MJ"
+    expected:
+      canonical_value: 5400.0
+      canonical_unit: "MJ"
+      confidence: 1.0
+      exact: true
+    tags: ["electrical", "common"]
+
+  # ---------------------------------------------------------------------------
+  # BTU and Imperial Units
+  # ---------------------------------------------------------------------------
+  - name: "BTU to MJ conversion"
+    description: "Convert British thermal units (IT) to megajoules"
+    input:
+      value: 1000
+      unit: "BTU"
+      target_unit: "MJ"
+    expected:
+      canonical_value: 1.055056
+      canonical_unit: "MJ"
+      tolerance: 0.000001
+      exact: false
+    source: "ISO 31-4, 1 BTU_IT = 1055.056 J"
+    tags: ["imperial", "common"]
+
+  - name: "MMBtu to MJ conversion"
+    description: "Convert million BTU to megajoules"
+    input:
+      value: 1
+      unit: "MMBtu"
+      target_unit: "MJ"
+    expected:
+      canonical_value: 1055.056
+      canonical_unit: "MJ"
+      tolerance: 0.001
+      exact: false
+    tags: ["imperial", "natural_gas"]
+
+  - name: "therm to MJ conversion"
+    description: "Convert US therms to megajoules"
+    input:
+      value: 1
+      unit: "therm"
+      target_unit: "MJ"
+    expected:
+      canonical_value: 105.5056
+      canonical_unit: "MJ"
+      tolerance: 0.0001
+      exact: false
+    tags: ["imperial", "natural_gas"]
+
+  - name: "quad to MJ conversion"
+    description: "Convert quadrillion BTU to megajoules"
+    input:
+      value: 1
+      unit: "quad"
+      target_unit: "MJ"
+    expected:
+      canonical_value: 1055056000.0
+      canonical_unit: "MJ"
+      tolerance: 1000.0
+      exact: false
+    tags: ["imperial", "large_scale"]
+
+  # ---------------------------------------------------------------------------
+  # Calorie-based Units
+  # ---------------------------------------------------------------------------
+  - name: "cal to MJ conversion"
+    description: "Convert thermochemical calories to megajoules"
+    input:
+      value: 1000000
+      unit: "cal"
+      target_unit: "MJ"
+    expected:
+      canonical_value: 4.184
+      canonical_unit: "MJ"
+      confidence: 1.0
+      exact: true
+    tags: ["calorie"]
+
+  - name: "kcal to MJ conversion"
+    description: "Convert kilocalories to megajoules"
+    input:
+      value: 1000
+      unit: "kcal"
+      target_unit: "MJ"
+    expected:
+      canonical_value: 4.184
+      canonical_unit: "MJ"
+      confidence: 1.0
+      exact: true
+    tags: ["calorie", "food_energy"]
+
+  # ---------------------------------------------------------------------------
+  # Oil and Coal Equivalents
+  # ---------------------------------------------------------------------------
+  - name: "toe to MJ conversion"
+    description: "Convert tonnes of oil equivalent to megajoules"
+    input:
+      value: 1
+      unit: "toe"
+      target_unit: "MJ"
+    expected:
+      canonical_value: 41868.0
+      canonical_unit: "MJ"
+      tolerance: 1.0
+      exact: false
+    source: "IEA definition: 1 toe = 41.868 GJ"
+    tags: ["fossil_equivalent"]
+
+  - name: "ktoe to MJ conversion"
+    description: "Convert kilotonnes of oil equivalent to megajoules"
+    input:
+      value: 1
+      unit: "ktoe"
+      target_unit: "MJ"
+    expected:
+      canonical_value: 41868000.0
+      canonical_unit: "MJ"
+      tolerance: 1000.0
+      exact: false
+    tags: ["fossil_equivalent", "large_scale"]
+
+  - name: "tce to MJ conversion"
+    description: "Convert tonnes of coal equivalent to megajoules"
+    input:
+      value: 1
+      unit: "tce"
+      target_unit: "MJ"
+    expected:
+      canonical_value: 29307.6
+      canonical_unit: "MJ"
+      tolerance: 0.1
+      exact: false
+    source: "IEA definition: 1 tce = 29.3076 GJ"
+    tags: ["fossil_equivalent"]
+
+  # ---------------------------------------------------------------------------
+  # Edge Cases
+  # ---------------------------------------------------------------------------
+  - name: "Zero energy conversion"
+    description: "Zero value should remain zero"
+    input:
+      value: 0
+      unit: "kWh"
+      target_unit: "MJ"
+    expected:
+      canonical_value: 0.0
+      canonical_unit: "MJ"
+      confidence: 1.0
+    tags: ["edge_case"]
+
+  - name: "Very small energy value"
+    description: "Handle very small energy values (millijoules scale)"
+    input:
+      value: 0.000001
+      unit: "kWh"
+      target_unit: "MJ"
+    expected:
+      canonical_value: 0.0000036
+      canonical_unit: "MJ"
+      tolerance: 1e-12
+    tags: ["edge_case", "precision"]
+
+  - name: "Very large energy value"
+    description: "Handle very large energy values (petajoule scale)"
+    input:
+      value: 1000000000
+      unit: "GJ"
+      target_unit: "MJ"
+    expected:
+      canonical_value: 1000000000000.0
+      canonical_unit: "MJ"
+      confidence: 1.0
+    tags: ["edge_case", "large_scale"]
+
+  - name: "Decimal precision test"
+    description: "Test decimal precision in conversion"
+    input:
+      value: 123.456789
+      unit: "kWh"
+      target_unit: "MJ"
+    expected:
+      canonical_value: 444.4444404
+      canonical_unit: "MJ"
+      tolerance: 0.0000001
+    tags: ["precision"]
+
+  # ---------------------------------------------------------------------------
+  # Compound and Multi-step Conversions
+  # ---------------------------------------------------------------------------
+  - name: "BTU to kWh (multi-step)"
+    description: "Convert BTU to kWh through intermediate MJ"
+    input:
+      value: 3412.14
+      unit: "BTU"
+      target_unit: "kWh"
+    expected:
+      canonical_value: 1.0
+      canonical_unit: "kWh"
+      tolerance: 0.001
+    tags: ["multi_step", "imperial_to_si"]
+
+  - name: "therm to kWh (multi-step)"
+    description: "Convert US therm to kWh"
+    input:
+      value: 1
+      unit: "therm"
+      target_unit: "kWh"
+    expected:
+      canonical_value: 29.3071
+      canonical_unit: "kWh"
+      tolerance: 0.001
+    tags: ["multi_step"]
+
+  - name: "toe to GJ (multi-step)"
+    description: "Convert tonnes of oil equivalent to gigajoules"
+    input:
+      value: 1
+      unit: "toe"
+      target_unit: "GJ"
+    expected:
+      canonical_value: 41.868
+      canonical_unit: "GJ"
+      tolerance: 0.001
+    tags: ["multi_step", "fossil_equivalent"]
+
+# -----------------------------------------------------------------------------
+# Validation Rules
+# -----------------------------------------------------------------------------
+validation:
+  min_value: 0.0
+  max_value: 1.0e15
+  allow_negative: false
+  default_tolerance: 1e-9

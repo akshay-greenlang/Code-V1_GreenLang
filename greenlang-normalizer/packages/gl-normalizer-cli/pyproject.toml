@@ -1,0 +1,70 @@
+[project]
+name = "gl-normalizer-cli"
+version = "0.1.0"
+description = "GreenLang Unit & Reference Normalizer - Command Line Interface"
+readme = "README.md"
+requires-python = ">=3.11"
+license = {text = "Proprietary"}
+authors = [
+    {name = "GreenLang Team", email = "engineering@greenlang.io"}
+]
+keywords = ["greenlang", "unit-conversion", "normalization", "cli", "sustainability"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: Other/Proprietary License",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Utilities",
+]
+
+dependencies = [
+    "gl-normalizer-core>=0.1.0",
+    "typer[all]>=0.9.0",
+    "rich>=13.7.0",
+    "pyyaml>=6.0.1",
+    "httpx>=0.25.0",
+    "pydantic>=2.5.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "ruff>=0.1.0",
+    "mypy>=1.5.0",
+]
+
+[project.scripts]
+glnorm = "gl_normalizer_cli.main:app"
+
+[project.urls]
+Homepage = "https://github.com/greenlang/greenlang-normalizer"
+Documentation = "https://docs.greenlang.io/normalizer/cli"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/gl_normalizer_cli"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/src",
+    "/tests",
+    "README.md",
+]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+select = ["E", "F", "I", "N", "W", "UP", "B", "C4", "SIM"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_return_any = true
+warn_unused_ignores = true

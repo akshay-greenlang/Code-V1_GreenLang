@@ -1,0 +1,193 @@
+# service.yaml - GreenLang Normalizer Services
+# Component: GL-FOUND-X-003 - Unit & Reference Normalizer
+# Purpose: Kubernetes Service definitions for internal and external access
+
+# =============================================================================
+# Main Normalizer Service
+# =============================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-normalizer-service
+  namespace: gl-normalizer
+  labels:
+    app.kubernetes.io/name: gl-normalizer-service
+    app.kubernetes.io/component: api
+    app.kubernetes.io/part-of: greenlang-platform
+  annotations:
+    description: "GreenLang Normalizer API Service"
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8000"
+    prometheus.io/path: "/metrics"
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: gl-normalizer-service
+    app.kubernetes.io/component: api
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8000
+      protocol: TCP
+    - name: http-direct
+      port: 8000
+      targetPort: 8000
+      protocol: TCP
+    - name: metrics
+      port: 9090
+      targetPort: 9090
+      protocol: TCP
+  sessionAffinity: None
+
+---
+# =============================================================================
+# Review Console Service
+# =============================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-normalizer-review-console
+  namespace: gl-normalizer
+  labels:
+    app.kubernetes.io/name: gl-normalizer-review-console
+    app.kubernetes.io/component: web-ui
+    app.kubernetes.io/part-of: greenlang-platform
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: gl-normalizer-review-console
+    app.kubernetes.io/component: web-ui
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
+      protocol: TCP
+    - name: http-direct
+      port: 8080
+      targetPort: 8080
+      protocol: TCP
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 3600
+
+---
+# =============================================================================
+# Headless Service for StatefulSet (if needed for direct pod access)
+# =============================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-normalizer-service-headless
+  namespace: gl-normalizer
+  labels:
+    app.kubernetes.io/name: gl-normalizer-service
+    app.kubernetes.io/component: api-headless
+spec:
+  type: ClusterIP
+  clusterIP: None
+  selector:
+    app.kubernetes.io/name: gl-normalizer-service
+    app.kubernetes.io/component: api
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000
+      protocol: TCP
+
+---
+# =============================================================================
+# Ingress for External Access
+# =============================================================================
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: gl-normalizer-ingress
+  namespace: gl-normalizer
+  labels:
+    app.kubernetes.io/name: gl-normalizer
+    app.kubernetes.io/component: ingress
+    app.kubernetes.io/part-of: greenlang-platform
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    # Security headers
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+    # Rate limiting
+    nginx.ingress.kubernetes.io/limit-rps: "100"
+    nginx.ingress.kubernetes.io/limit-connections: "50"
+    # Security
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      more_set_headers "X-Content-Type-Options: nosniff";
+      more_set_headers "X-Frame-Options: DENY";
+      more_set_headers "X-XSS-Protection: 1; mode=block";
+      more_set_headers "Strict-Transport-Security: max-age=31536000; includeSubDomains";
+      more_set_headers "Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'";
+    # CORS (configure as needed)
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "https://app.greenlang.io"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, DELETE, OPTIONS"
+    nginx.ingress.kubernetes.io/cors-allow-headers: "Authorization, Content-Type, X-Request-ID"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - normalizer-api.greenlang.io
+        - normalizer-console.greenlang.io
+      secretName: gl-normalizer-tls
+  rules:
+    # API endpoint
+    - host: normalizer-api.greenlang.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: gl-normalizer-service
+                port:
+                  number: 80
+    # Review Console
+    - host: normalizer-console.greenlang.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: gl-normalizer-review-console
+                port:
+                  number: 80
+
+---
+# =============================================================================
+# Internal API Gateway (for service mesh / internal routing)
+# =============================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-normalizer-internal
+  namespace: gl-normalizer
+  labels:
+    app.kubernetes.io/name: gl-normalizer-service
+    app.kubernetes.io/component: internal-api
+  annotations:
+    # AWS ALB annotations (if using AWS Load Balancer Controller)
+    service.beta.kubernetes.io/aws-load-balancer-internal: "true"
+    service.beta.kubernetes.io/aws-load-balancer-scheme: internal
+    service.beta.kubernetes.io/aws-load-balancer-type: nlb
+spec:
+  type: LoadBalancer
+  loadBalancerClass: service.k8s.aws/nlb
+  selector:
+    app.kubernetes.io/name: gl-normalizer-service
+    app.kubernetes.io/component: api
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8000
+      protocol: TCP

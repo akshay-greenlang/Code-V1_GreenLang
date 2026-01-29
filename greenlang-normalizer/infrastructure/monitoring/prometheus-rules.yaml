@@ -1,0 +1,143 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: gl-normalizer-alerts
+  namespace: greenlang
+  labels:
+    app: gl-normalizer
+    prometheus: kube-prometheus
+spec:
+  groups:
+  - name: gl-normalizer.rules
+    rules:
+    # High error rate alert
+    - alert: NormalizerHighErrorRate
+      expr: |
+        (
+          sum(rate(glnorm_requests_total{status=~"5.."}[5m]))
+          /
+          sum(rate(glnorm_requests_total[5m]))
+        ) > 0.01
+      for: 5m
+      labels:
+        severity: critical
+        team: platform
+      annotations:
+        summary: "High error rate in GL Normalizer"
+        description: "Error rate is {{ $value | humanizePercentage }} which is above 1% threshold"
+        runbook_url: "https://docs.greenlang.io/runbooks/normalizer-high-error-rate"
+
+    # High latency alert
+    - alert: NormalizerHighLatency
+      expr: |
+        histogram_quantile(0.99,
+          sum(rate(glnorm_request_duration_seconds_bucket[5m])) by (le)
+        ) > 0.5
+      for: 5m
+      labels:
+        severity: warning
+        team: platform
+      annotations:
+        summary: "High latency in GL Normalizer"
+        description: "p99 latency is {{ $value | humanizeDuration }} which is above 500ms threshold"
+        runbook_url: "https://docs.greenlang.io/runbooks/normalizer-high-latency"
+
+    # Low cache hit rate
+    - alert: NormalizerLowCacheHitRate
+      expr: |
+        (
+          sum(rate(glnorm_cache_hits_total[5m]))
+          /
+          (sum(rate(glnorm_cache_hits_total[5m])) + sum(rate(glnorm_cache_misses_total[5m])))
+        ) < 0.8
+      for: 15m
+      labels:
+        severity: warning
+        team: platform
+      annotations:
+        summary: "Low cache hit rate in GL Normalizer"
+        description: "Cache hit rate is {{ $value | humanizePercentage }} which is below 80%"
+        runbook_url: "https://docs.greenlang.io/runbooks/normalizer-cache-issues"
+
+    # Pod availability
+    - alert: NormalizerPodUnavailable
+      expr: |
+        kube_deployment_status_replicas_available{deployment="gl-normalizer-service"}
+        <
+        kube_deployment_spec_replicas{deployment="gl-normalizer-service"}
+      for: 5m
+      labels:
+        severity: critical
+        team: platform
+      annotations:
+        summary: "GL Normalizer pods unavailable"
+        description: "Only {{ $value }} pods available out of desired replicas"
+        runbook_url: "https://docs.greenlang.io/runbooks/normalizer-pod-unavailable"
+
+    # Memory usage high
+    - alert: NormalizerHighMemoryUsage
+      expr: |
+        (
+          container_memory_working_set_bytes{container="normalizer"}
+          /
+          container_spec_memory_limit_bytes{container="normalizer"}
+        ) > 0.9
+      for: 5m
+      labels:
+        severity: warning
+        team: platform
+      annotations:
+        summary: "High memory usage in GL Normalizer"
+        description: "Memory usage is {{ $value | humanizePercentage }}"
+        runbook_url: "https://docs.greenlang.io/runbooks/normalizer-resource-issues"
+
+    # Vocabulary sync failure
+    - alert: NormalizerVocabSyncFailed
+      expr: |
+        increase(glnorm_vocab_sync_failures_total[1h]) > 0
+      for: 0m
+      labels:
+        severity: critical
+        team: data
+      annotations:
+        summary: "Vocabulary sync failed in GL Normalizer"
+        description: "{{ $value }} vocabulary sync failures in the last hour"
+        runbook_url: "https://docs.greenlang.io/runbooks/normalizer-vocab-sync"
+
+    # Audit publishing failures
+    - alert: NormalizerAuditPublishFailed
+      expr: |
+        increase(glnorm_audit_publish_failures_total[5m]) > 0
+      for: 0m
+      labels:
+        severity: critical
+        team: compliance
+      annotations:
+        summary: "Audit publishing failed in GL Normalizer"
+        description: "{{ $value }} audit publish failures in the last 5 minutes"
+        runbook_url: "https://docs.greenlang.io/runbooks/normalizer-audit-failure"
+
+  - name: gl-normalizer.slos
+    rules:
+    # SLO: 99.9% availability
+    - record: glnorm:availability:ratio_rate5m
+      expr: |
+        sum(rate(glnorm_requests_total{status!~"5.."}[5m]))
+        /
+        sum(rate(glnorm_requests_total[5m]))
+
+    # SLO: p99 latency under 200ms
+    - record: glnorm:latency:p99_5m
+      expr: |
+        histogram_quantile(0.99,
+          sum(rate(glnorm_request_duration_seconds_bucket[5m])) by (le)
+        )
+
+    # Error budget consumption
+    - record: glnorm:error_budget:consumption_rate
+      expr: |
+        1 - (
+          sum(rate(glnorm_requests_total{status!~"5.."}[1h]))
+          /
+          sum(rate(glnorm_requests_total[1h]))
+        ) / 0.001  # 99.9% SLO

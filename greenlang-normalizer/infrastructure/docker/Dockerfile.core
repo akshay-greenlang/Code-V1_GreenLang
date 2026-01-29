@@ -1,0 +1,120 @@
+# Dockerfile.core - GreenLang Normalizer Core Library
+# Multi-stage build for optimized image size and security
+# Component: gl-normalizer-core (GL-FOUND-X-003)
+
+# =============================================================================
+# Stage 1: Build stage
+# =============================================================================
+FROM python:3.11-slim AS builder
+
+# Set build-time labels
+LABEL maintainer="GreenLang Platform Team <platform@greenlang.io>"
+LABEL org.opencontainers.image.title="GL Normalizer Core Builder"
+LABEL org.opencontainers.image.description="Build stage for GreenLang Unit & Reference Normalizer Core"
+
+# Prevent Python from writing bytecode and buffering stdout/stderr
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    g++ \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+# Create virtual environment
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Upgrade pip
+RUN pip install --upgrade pip setuptools wheel
+
+# Set working directory for build
+WORKDIR /build
+
+# Copy dependency specifications first (layer caching optimization)
+COPY packages/gl-normalizer-core/pyproject.toml ./
+COPY pyproject.toml ./pyproject-root.toml
+
+# Install dependencies
+RUN pip install hatchling && \
+    pip install pint>=0.23 pydantic>=2.5.0 pyyaml>=6.0.1 structlog>=23.2.0 \
+    rapidfuzz>=3.5.0 numpy>=1.26.0 httpx>=0.25.0
+
+# Copy application source code
+COPY packages/gl-normalizer-core/src/ ./src/
+COPY packages/gl-normalizer-core/README.md ./
+COPY config/ ./config/
+
+# Build the wheel
+RUN pip install build && \
+    python -m build --wheel --outdir /dist
+
+# =============================================================================
+# Stage 2: Runtime stage
+# =============================================================================
+FROM python:3.11-slim AS runtime
+
+# Runtime labels
+LABEL maintainer="GreenLang Platform Team <platform@greenlang.io>"
+LABEL org.opencontainers.image.title="GL Normalizer Core"
+LABEL org.opencontainers.image.description="GreenLang Unit & Reference Normalizer Core Library"
+LABEL org.opencontainers.image.source="https://github.com/greenlang/greenlang-normalizer"
+LABEL org.opencontainers.image.vendor="GreenLang"
+LABEL org.opencontainers.image.licenses="Proprietary"
+
+# Runtime environment
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONFAULTHANDLER=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    # GreenLang environment variables
+    GL_NORMALIZER_ENV=production \
+    GL_NORMALIZER_LOG_LEVEL=INFO \
+    GL_NORMALIZER_LOG_FORMAT=json
+
+# Install runtime dependencies only
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpq5 \
+    curl \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+# Create virtual environment in runtime
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Copy virtual environment from builder
+COPY --from=builder /opt/venv /opt/venv
+
+# Copy built wheel and install
+COPY --from=builder /dist/*.whl /tmp/
+RUN pip install /tmp/*.whl && rm -rf /tmp/*.whl
+
+# Create non-root user for security (UID 1000 for compatibility)
+RUN groupadd --gid 1000 greenlang && \
+    useradd --uid 1000 --gid 1000 --shell /bin/bash --create-home greenlang && \
+    mkdir -p /app /app/config /app/data /app/logs && \
+    chown -R greenlang:greenlang /app
+
+# Set working directory
+WORKDIR /app
+
+# Copy configuration files
+COPY --chown=greenlang:greenlang config/ /app/config/
+
+# Switch to non-root user
+USER greenlang
+
+# Health check (for library, check Python import)
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD python -c "from gl_normalizer_core import __version__; print(__version__)" || exit 1
+
+# Default command (Python REPL for library)
+CMD ["python", "-c", "from gl_normalizer_core import __version__; print(f'GL Normalizer Core v{__version__}')"]

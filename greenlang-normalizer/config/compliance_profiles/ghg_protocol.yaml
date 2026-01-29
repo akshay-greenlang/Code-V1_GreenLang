@@ -1,0 +1,101 @@
+# GHG Protocol Corporate Standard Compliance Profile
+# Version: 2024.1
+
+id: ghg_protocol
+name: GHG Protocol Corporate Standard
+version: "2024.1"
+description: |
+  Compliance profile for GHG Protocol Corporate Standard.
+  Implements requirements for Scope 1, 2, and 3 emissions reporting.
+
+# Default GWP version for this profile
+gwp_version: AR5
+
+# Default reference conditions
+reference_conditions:
+  temperature_celsius: 15.0
+  pressure_kpa: 101.325
+  basis: NTP
+
+# Confidence thresholds
+thresholds:
+  min_unit_confidence: 0.85
+  min_entity_confidence: 0.80
+  requires_review_below: 0.90
+
+# Precision requirements
+precision:
+  emissions_digits: 6
+  energy_digits: 4
+  activity_data_digits: 4
+
+# Required fields for compliance
+required_fields:
+  - source_unit
+  - target_unit
+  - gwp_version
+  - emission_scope
+
+# Allowed emission scopes
+allowed_scopes:
+  - scope_1
+  - scope_2_location
+  - scope_2_market
+  - scope_3
+
+# Canonical units for each measurement type
+canonical_units:
+  emissions: metric_ton_co2e
+  energy: megajoule
+  electricity: kilowatt_hour
+  fuel_mass: kilogram
+  fuel_volume: liter
+  distance: kilometer
+
+# Unit conversion policies
+conversion_policies:
+  # Emissions must always be in metric tons CO2e
+  emissions:
+    required_target: metric_ton_co2e
+    allow_intermediate: true
+
+  # Energy conversions
+  energy:
+    allowed_targets:
+      - megajoule
+      - gigajoule
+      - kilowatt_hour
+      - megawatt_hour
+    require_gwp_for_emissions: true
+
+# Validation rules
+rules:
+  - id: GHG_001
+    name: Emissions Unit Required
+    description: All emissions must be expressed in CO2 equivalent units
+    severity: error
+    condition: emissions_unit_is_co2e
+
+  - id: GHG_002
+    name: GWP Version Required
+    description: GWP version must be specified for GHG conversions
+    severity: error
+    condition: gwp_version_specified
+
+  - id: GHG_003
+    name: Scope Classification Required
+    description: Emissions must be classified by scope
+    severity: warning
+    condition: scope_classified
+
+  - id: GHG_004
+    name: Activity Data Source
+    description: Activity data should have documented source
+    severity: info
+    condition: activity_data_documented
+
+# Metadata
+metadata:
+  standard_url: https://ghgprotocol.org/corporate-standard
+  last_updated: "2024-01-15"
+  maintainer: GreenLang Team

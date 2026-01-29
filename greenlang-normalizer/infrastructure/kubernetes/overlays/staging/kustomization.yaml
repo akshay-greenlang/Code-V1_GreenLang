@@ -1,0 +1,152 @@
+# kustomization.yaml - Staging Environment Overlay
+# Component: GL-FOUND-X-003 - Unit & Reference Normalizer
+# Usage: kubectl apply -k infrastructure/kubernetes/overlays/staging/
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+metadata:
+  name: gl-normalizer-staging
+
+# Reference base configuration
+resources:
+  - ../../base
+
+# Namespace for staging
+namespace: gl-normalizer-staging
+
+# Name prefix for staging resources
+namePrefix: staging-
+
+# Common labels for staging
+commonLabels:
+  environment: staging
+  tier: non-production
+
+# Image customization for staging (uses release candidates)
+images:
+  - name: ghcr.io/greenlang/gl-normalizer-service
+    newTag: "1.0.0-rc1"
+  - name: ghcr.io/greenlang/gl-normalizer-review-console
+    newTag: "1.0.0-rc1"
+
+# ConfigMap patches for staging
+configMapGenerator:
+  - name: gl-normalizer-config
+    behavior: merge
+    literals:
+      - GL_NORMALIZER_ENV=staging
+      - GL_NORMALIZER_LOG_LEVEL=INFO
+      - GL_NORMALIZER_LOG_FORMAT=json
+      - GL_NORMALIZER_DEBUG=false
+      - GL_NORMALIZER_WORKERS=3
+      - GL_NORMALIZER_RATE_LIMIT_ENABLED=true
+      - GL_NORMALIZER_API_KEY_ENABLED=true
+      - OTEL_TRACES_SAMPLER_ARG=0.5
+
+# Patches for staging-specific modifications
+patches:
+  # Staging replicas (between dev and prod)
+  - patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: gl-normalizer-service
+      spec:
+        replicas: 2
+  - patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: gl-normalizer-review-console
+      spec:
+        replicas: 1
+
+  # Moderate resource limits for staging
+  - patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: gl-normalizer-service
+      spec:
+        template:
+          spec:
+            containers:
+              - name: gl-normalizer-service
+                resources:
+                  requests:
+                    cpu: 200m
+                    memory: 384Mi
+                  limits:
+                    cpu: 750m
+                    memory: 768Mi
+
+  # HPA settings for staging
+  - patch: |-
+      apiVersion: autoscaling/v2
+      kind: HorizontalPodAutoscaler
+      metadata:
+        name: gl-normalizer-service-hpa
+      spec:
+        minReplicas: 2
+        maxReplicas: 8
+
+  # PDB for staging (at least 1 available)
+  - patch: |-
+      apiVersion: policy/v1
+      kind: PodDisruptionBudget
+      metadata:
+        name: gl-normalizer-service-pdb
+      spec:
+        minAvailable: 1
+
+  # Update ingress for staging
+  - patch: |-
+      apiVersion: networking.k8s.io/v1
+      kind: Ingress
+      metadata:
+        name: gl-normalizer-ingress
+        annotations:
+          cert-manager.io/cluster-issuer: letsencrypt-staging
+          nginx.ingress.kubernetes.io/limit-rps: "50"
+      spec:
+        tls:
+          - hosts:
+              - staging-normalizer-api.greenlang.io
+              - staging-normalizer-console.greenlang.io
+            secretName: staging-gl-normalizer-tls
+        rules:
+          - host: staging-normalizer-api.greenlang.io
+            http:
+              paths:
+                - path: /
+                  pathType: Prefix
+                  backend:
+                    service:
+                      name: staging-gl-normalizer-service
+                      port:
+                        number: 80
+          - host: staging-normalizer-console.greenlang.io
+            http:
+              paths:
+                - path: /
+                  pathType: Prefix
+                  backend:
+                    service:
+                      name: staging-gl-normalizer-review-console
+                      port:
+                        number: 80
+
+  # Moderate resource quota for staging
+  - patch: |-
+      apiVersion: v1
+      kind: ResourceQuota
+      metadata:
+        name: gl-normalizer-quota
+      spec:
+        hard:
+          requests.cpu: "10"
+          requests.memory: 20Gi
+          limits.cpu: "20"
+          limits.memory: 40Gi
+          pods: "25"

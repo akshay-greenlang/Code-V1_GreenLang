@@ -1,0 +1,387 @@
+# =============================================================================
+# Golden Tests: Emissions Mass Unit Conversions
+# =============================================================================
+# GL-FOUND-X-003: Unit & Reference Normalizer
+# Canonical Unit: kgCO2e (kilograms CO2 equivalent)
+#
+# These tests verify emissions mass conversions to the canonical kgCO2e unit.
+# Includes GWP-based conversions for different greenhouse gases.
+# =============================================================================
+
+schema_version: "1.0"
+dimension: emissions_mass
+canonical_unit: kgCO2e
+test_count: 22
+
+test_cases:
+  # ---------------------------------------------------------------------------
+  # Direct CO2e Conversions (No GWP lookup required)
+  # ---------------------------------------------------------------------------
+  - name: "gCO2e to kgCO2e conversion"
+    description: "Convert grams CO2 equivalent to kilograms"
+    input:
+      value: 1000
+      unit: "gCO2e"
+      target_unit: "kgCO2e"
+    expected:
+      canonical_value: 1.0
+      canonical_unit: "kgCO2e"
+      confidence: 1.0
+      exact: true
+    tags: ["direct", "si"]
+
+  - name: "kgCO2e identity"
+    description: "Kilogram CO2e to kilogram CO2e (identity)"
+    input:
+      value: 100
+      unit: "kgCO2e"
+      target_unit: "kgCO2e"
+    expected:
+      canonical_value: 100.0
+      canonical_unit: "kgCO2e"
+      confidence: 1.0
+      exact: true
+    tags: ["direct", "identity"]
+
+  - name: "tCO2e to kgCO2e conversion"
+    description: "Convert tonnes CO2 equivalent to kilograms"
+    input:
+      value: 1
+      unit: "tCO2e"
+      target_unit: "kgCO2e"
+    expected:
+      canonical_value: 1000.0
+      canonical_unit: "kgCO2e"
+      confidence: 1.0
+      exact: true
+    tags: ["direct", "common"]
+
+  - name: "ktCO2e to kgCO2e conversion"
+    description: "Convert kilotonnes CO2 equivalent to kilograms"
+    input:
+      value: 1
+      unit: "ktCO2e"
+      target_unit: "kgCO2e"
+    expected:
+      canonical_value: 1000000.0
+      canonical_unit: "kgCO2e"
+      confidence: 1.0
+      exact: true
+    tags: ["direct", "large_scale"]
+
+  - name: "MtCO2e to kgCO2e conversion"
+    description: "Convert megatonnes CO2 equivalent to kilograms"
+    input:
+      value: 1
+      unit: "MtCO2e"
+      target_unit: "kgCO2e"
+    expected:
+      canonical_value: 1000000000.0
+      canonical_unit: "kgCO2e"
+      confidence: 1.0
+      exact: true
+    tags: ["direct", "large_scale"]
+
+  - name: "GtCO2e to kgCO2e conversion"
+    description: "Convert gigatonnes CO2 equivalent to kilograms"
+    input:
+      value: 1
+      unit: "GtCO2e"
+      target_unit: "kgCO2e"
+    expected:
+      canonical_value: 1000000000000.0
+      canonical_unit: "kgCO2e"
+      confidence: 1.0
+      exact: true
+    tags: ["direct", "large_scale", "global_scale"]
+
+  # ---------------------------------------------------------------------------
+  # Direct CO2 Conversions (GWP = 1)
+  # ---------------------------------------------------------------------------
+  - name: "kgCO2 to kgCO2e (GWP = 1)"
+    description: "Convert kilograms pure CO2 to CO2 equivalent"
+    input:
+      value: 100
+      unit: "kgCO2"
+      target_unit: "kgCO2e"
+    expected:
+      canonical_value: 100.0
+      canonical_unit: "kgCO2e"
+      confidence: 1.0
+      exact: true
+    metadata:
+      gwp_profile_id: "AR5_100yr"
+      gwp_value: 1
+    tags: ["direct", "pure_gas"]
+
+  # ---------------------------------------------------------------------------
+  # GWP-based Conversions (AR5 100-year)
+  # ---------------------------------------------------------------------------
+  - name: "kgCH4 to kgCO2e (AR5 100yr)"
+    description: "Convert kilograms methane to CO2e using AR5 GWP"
+    input:
+      value: 1
+      unit: "kgCH4"
+      target_unit: "kgCO2e"
+      metadata:
+        gwp_profile_id: "AR5_100yr"
+    expected:
+      canonical_value: 28.0
+      canonical_unit: "kgCO2e"
+      confidence: 1.0
+      exact: true
+    source: "IPCC AR5: GWP(CH4) = 28 (100-year)"
+    tags: ["gwp", "ar5"]
+
+  - name: "kgN2O to kgCO2e (AR5 100yr)"
+    description: "Convert kilograms nitrous oxide to CO2e using AR5 GWP"
+    input:
+      value: 1
+      unit: "kgN2O"
+      target_unit: "kgCO2e"
+      metadata:
+        gwp_profile_id: "AR5_100yr"
+    expected:
+      canonical_value: 265.0
+      canonical_unit: "kgCO2e"
+      confidence: 1.0
+      exact: true
+    source: "IPCC AR5: GWP(N2O) = 265 (100-year)"
+    tags: ["gwp", "ar5"]
+
+  - name: "kgCH4 fossil to kgCO2e (AR5 100yr)"
+    description: "Convert fossil methane to CO2e with climate-carbon feedback"
+    input:
+      value: 1
+      unit: "kgCH4"
+      target_unit: "kgCO2e"
+      metadata:
+        gwp_profile_id: "AR5_100yr"
+        source_type: "fossil"
+    expected:
+      canonical_value: 30.0
+      canonical_unit: "kgCO2e"
+      confidence: 1.0
+      exact: true
+    source: "IPCC AR5: GWP(CH4_fossil) = 30 (100-year, with feedback)"
+    tags: ["gwp", "ar5", "fossil"]
+
+  # ---------------------------------------------------------------------------
+  # GWP-based Conversions (AR6 100-year)
+  # ---------------------------------------------------------------------------
+  - name: "kgCH4 to kgCO2e (AR6 100yr)"
+    description: "Convert kilograms methane to CO2e using AR6 GWP"
+    input:
+      value: 1
+      unit: "kgCH4"
+      target_unit: "kgCO2e"
+      metadata:
+        gwp_profile_id: "AR6_100yr"
+    expected:
+      canonical_value: 27.9
+      canonical_unit: "kgCO2e"
+      tolerance: 0.1
+      exact: false
+    source: "IPCC AR6: GWP(CH4) = 27.9 (100-year)"
+    tags: ["gwp", "ar6"]
+
+  - name: "kgN2O to kgCO2e (AR6 100yr)"
+    description: "Convert kilograms nitrous oxide to CO2e using AR6 GWP"
+    input:
+      value: 1
+      unit: "kgN2O"
+      target_unit: "kgCO2e"
+      metadata:
+        gwp_profile_id: "AR6_100yr"
+    expected:
+      canonical_value: 273.0
+      canonical_unit: "kgCO2e"
+      confidence: 1.0
+      exact: true
+    source: "IPCC AR6: GWP(N2O) = 273 (100-year)"
+    tags: ["gwp", "ar6"]
+
+  # ---------------------------------------------------------------------------
+  # GWP-based Conversions (20-year horizons)
+  # ---------------------------------------------------------------------------
+  - name: "kgCH4 to kgCO2e (AR5 20yr)"
+    description: "Convert methane using 20-year GWP (higher impact)"
+    input:
+      value: 1
+      unit: "kgCH4"
+      target_unit: "kgCO2e"
+      metadata:
+        gwp_profile_id: "AR5_20yr"
+    expected:
+      canonical_value: 84.0
+      canonical_unit: "kgCO2e"
+      confidence: 1.0
+      exact: true
+    source: "IPCC AR5: GWP(CH4) = 84 (20-year)"
+    tags: ["gwp", "ar5", "20yr"]
+
+  - name: "kgCH4 to kgCO2e (AR6 20yr)"
+    description: "Convert methane using AR6 20-year GWP"
+    input:
+      value: 1
+      unit: "kgCH4"
+      target_unit: "kgCO2e"
+      metadata:
+        gwp_profile_id: "AR6_20yr"
+    expected:
+      canonical_value: 82.5
+      canonical_unit: "kgCO2e"
+      tolerance: 0.1
+      exact: false
+    source: "IPCC AR6: GWP(CH4) = 82.5 (20-year)"
+    tags: ["gwp", "ar6", "20yr"]
+
+  # ---------------------------------------------------------------------------
+  # F-gas Conversions (High GWP)
+  # ---------------------------------------------------------------------------
+  - name: "kgSF6 to kgCO2e (AR5 100yr)"
+    description: "Convert sulfur hexafluoride to CO2e"
+    input:
+      value: 1
+      unit: "kgSF6"
+      target_unit: "kgCO2e"
+      metadata:
+        gwp_profile_id: "AR5_100yr"
+    expected:
+      canonical_value: 23500.0
+      canonical_unit: "kgCO2e"
+      confidence: 1.0
+      exact: true
+    source: "IPCC AR5: GWP(SF6) = 23500 (100-year)"
+    tags: ["gwp", "f-gas", "high_gwp"]
+
+  - name: "kgHFC-134a to kgCO2e (AR5 100yr)"
+    description: "Convert HFC-134a to CO2e (common refrigerant)"
+    input:
+      value: 1
+      unit: "kgHFC-134a"
+      target_unit: "kgCO2e"
+      metadata:
+        gwp_profile_id: "AR5_100yr"
+    expected:
+      canonical_value: 1300.0
+      canonical_unit: "kgCO2e"
+      confidence: 1.0
+      exact: true
+    source: "IPCC AR5: GWP(HFC-134a) = 1300 (100-year)"
+    tags: ["gwp", "hfc", "refrigerant"]
+
+  - name: "kgNF3 to kgCO2e (AR5 100yr)"
+    description: "Convert nitrogen trifluoride to CO2e"
+    input:
+      value: 1
+      unit: "kgNF3"
+      target_unit: "kgCO2e"
+      metadata:
+        gwp_profile_id: "AR5_100yr"
+    expected:
+      canonical_value: 16100.0
+      canonical_unit: "kgCO2e"
+      confidence: 1.0
+      exact: true
+    source: "IPCC AR5: GWP(NF3) = 16100 (100-year)"
+    tags: ["gwp", "f-gas"]
+
+  # ---------------------------------------------------------------------------
+  # Edge Cases
+  # ---------------------------------------------------------------------------
+  - name: "Zero emissions"
+    description: "Zero emissions should remain zero"
+    input:
+      value: 0
+      unit: "tCO2e"
+      target_unit: "kgCO2e"
+    expected:
+      canonical_value: 0.0
+      canonical_unit: "kgCO2e"
+      confidence: 1.0
+    tags: ["edge_case"]
+
+  - name: "Very small emissions"
+    description: "Handle very small emission values"
+    input:
+      value: 0.001
+      unit: "gCO2e"
+      target_unit: "kgCO2e"
+    expected:
+      canonical_value: 0.000001
+      canonical_unit: "kgCO2e"
+      tolerance: 1e-12
+    tags: ["edge_case", "precision"]
+
+  - name: "Global-scale emissions"
+    description: "Handle global-scale emissions (Gt level)"
+    input:
+      value: 50
+      unit: "GtCO2e"
+      target_unit: "kgCO2e"
+    expected:
+      canonical_value: 50000000000000.0
+      canonical_unit: "kgCO2e"
+      confidence: 1.0
+    tags: ["edge_case", "global_scale"]
+
+  - name: "Decimal precision in GWP"
+    description: "Test precision with non-integer GWP values"
+    input:
+      value: 123.456
+      unit: "kgCH4"
+      target_unit: "kgCO2e"
+      metadata:
+        gwp_profile_id: "AR6_100yr"
+    expected:
+      canonical_value: 3444.4224
+      canonical_unit: "kgCO2e"
+      tolerance: 0.01
+    tags: ["precision", "gwp"]
+
+  # ---------------------------------------------------------------------------
+  # Cross-tonne Conversions
+  # ---------------------------------------------------------------------------
+  - name: "tCH4 to tCO2e (AR5)"
+    description: "Convert tonnes of methane to tonnes CO2e"
+    input:
+      value: 1
+      unit: "tCH4"
+      target_unit: "tCO2e"
+      metadata:
+        gwp_profile_id: "AR5_100yr"
+    expected:
+      canonical_value: 28.0
+      canonical_unit: "tCO2e"
+      confidence: 1.0
+    tags: ["gwp", "ar5", "tonnes"]
+
+# -----------------------------------------------------------------------------
+# GWP Profile Reference
+# -----------------------------------------------------------------------------
+gwp_profiles:
+  AR5_100yr:
+    CO2: 1
+    CH4: 28
+    CH4_fossil: 30
+    N2O: 265
+    SF6: 23500
+  AR6_100yr:
+    CO2: 1
+    CH4: 27.9
+    N2O: 273
+    SF6: 25200
+
+# -----------------------------------------------------------------------------
+# Validation Rules
+# -----------------------------------------------------------------------------
+validation:
+  min_value: 0.0
+  max_value: 1.0e15
+  allow_negative: false
+  default_tolerance: 1e-9
+  requires_gwp_for:
+    - "kgCH4"
+    - "kgN2O"
+    - "kgSF6"

@@ -1,0 +1,283 @@
+# docker-compose.test.yaml - GreenLang Normalizer CI/CD Testing Environment
+# Component: GL-FOUND-X-003 - Unit & Reference Normalizer
+# Usage: docker compose -f docker-compose.test.yaml up --build --exit-code-from tests
+# Purpose: Ephemeral environment for running integration and E2E tests
+
+version: '3.9'
+
+# =============================================================================
+# Service Definitions (Test Mode)
+# =============================================================================
+services:
+  # ---------------------------------------------------------------------------
+  # Test Runner
+  # ---------------------------------------------------------------------------
+  tests:
+    build:
+      context: ../../
+      dockerfile: infrastructure/docker/Dockerfile.test
+    container_name: gl-normalizer-tests
+    environment:
+      # Test configuration
+      GL_NORMALIZER_ENV: test
+      GL_NORMALIZER_LOG_LEVEL: WARNING
+      GL_NORMALIZER_LOG_FORMAT: console
+      # Database
+      GL_NORMALIZER_DATABASE_URL: postgresql://test_user:test_pass@postgres-test:5432/normalizer_test
+      # Redis
+      GL_NORMALIZER_REDIS_URL: redis://redis-test:6379/0
+      # Kafka
+      GL_NORMALIZER_KAFKA_BOOTSTRAP_SERVERS: kafka-test:9092
+      GL_NORMALIZER_KAFKA_AUDIT_TOPIC: gl-normalizer-audit-events-test
+      # Service URLs
+      GL_NORMALIZER_SERVICE_URL: http://gl-normalizer-service-test:8000
+      # Test options
+      PYTEST_ADDOPTS: "-v --tb=short --junitxml=/test-results/junit.xml --cov=gl_normalizer_core --cov=gl_normalizer_service --cov-report=xml:/test-results/coverage.xml --cov-report=html:/test-results/coverage-html"
+    volumes:
+      - ../../:/app:ro
+      - test-results:/test-results
+    networks:
+      - gl-normalizer-test-network
+    depends_on:
+      gl-normalizer-service-test:
+        condition: service_healthy
+      postgres-test:
+        condition: service_healthy
+      redis-test:
+        condition: service_healthy
+      kafka-test:
+        condition: service_healthy
+    command: ["pytest", "tests/", "-v", "--tb=short"]
+
+  # ---------------------------------------------------------------------------
+  # GL Normalizer Service (Test Instance)
+  # ---------------------------------------------------------------------------
+  gl-normalizer-service-test:
+    build:
+      context: ../../
+      dockerfile: infrastructure/docker/Dockerfile.service
+    container_name: gl-normalizer-service-test
+    hostname: gl-normalizer-service-test
+    environment:
+      GL_NORMALIZER_ENV: test
+      GL_NORMALIZER_HOST: 0.0.0.0
+      GL_NORMALIZER_PORT: 8000
+      GL_NORMALIZER_WORKERS: 1
+      GL_NORMALIZER_LOG_LEVEL: WARNING
+      GL_NORMALIZER_LOG_FORMAT: console
+      GL_NORMALIZER_DEBUG: "false"
+      GL_NORMALIZER_DATABASE_URL: postgresql://test_user:test_pass@postgres-test:5432/normalizer_test
+      GL_NORMALIZER_REDIS_URL: redis://redis-test:6379/0
+      GL_NORMALIZER_KAFKA_BOOTSTRAP_SERVERS: kafka-test:9092
+      GL_NORMALIZER_KAFKA_AUDIT_TOPIC: gl-normalizer-audit-events-test
+      GL_NORMALIZER_VOCABULARY_PATH: /app/config
+      GL_NORMALIZER_VOCABULARY_VERSION: "2026.01.0"
+      GL_NORMALIZER_CORS_ORIGINS: '["*"]'
+      GL_NORMALIZER_API_KEY_ENABLED: "false"
+    volumes:
+      - ../../config:/app/config:ro
+    networks:
+      - gl-normalizer-test-network
+    depends_on:
+      postgres-test:
+        condition: service_healthy
+      redis-test:
+        condition: service_healthy
+      kafka-test:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+
+  # ---------------------------------------------------------------------------
+  # PostgreSQL (Test Instance)
+  # ---------------------------------------------------------------------------
+  postgres-test:
+    image: postgres:15-alpine
+    container_name: gl-normalizer-postgres-test
+    hostname: postgres-test
+    environment:
+      POSTGRES_USER: test_user
+      POSTGRES_PASSWORD: test_pass
+      POSTGRES_DB: normalizer_test
+    tmpfs:
+      - /var/lib/postgresql/data
+    networks:
+      - gl-normalizer-test-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U test_user -d normalizer_test"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+
+  # ---------------------------------------------------------------------------
+  # Redis (Test Instance)
+  # ---------------------------------------------------------------------------
+  redis-test:
+    image: redis:7-alpine
+    container_name: gl-normalizer-redis-test
+    hostname: redis-test
+    command: redis-server --appendonly no --save ""
+    tmpfs:
+      - /data
+    networks:
+      - gl-normalizer-test-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 3s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
+
+  # ---------------------------------------------------------------------------
+  # Kafka (Test Instance - Lightweight)
+  # ---------------------------------------------------------------------------
+  zookeeper-test:
+    image: confluentinc/cp-zookeeper:7.5.3
+    container_name: gl-normalizer-zookeeper-test
+    hostname: zookeeper-test
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    tmpfs:
+      - /var/lib/zookeeper/data
+      - /var/lib/zookeeper/log
+    networks:
+      - gl-normalizer-test-network
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "2181"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256M
+
+  kafka-test:
+    image: confluentinc/cp-kafka:7.5.3
+    container_name: gl-normalizer-kafka-test
+    hostname: kafka-test
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper-test:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-test:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_LOG_RETENTION_MS: 300000
+      KAFKA_LOG_RETENTION_CHECK_INTERVAL_MS: 60000
+    tmpfs:
+      - /var/lib/kafka/data
+    networks:
+      - gl-normalizer-test-network
+    depends_on:
+      zookeeper-test:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "kafka-topics", "--bootstrap-server", "localhost:9092", "--list"]
+      interval: 5s
+      timeout: 10s
+      retries: 15
+      start_period: 20s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+  # ---------------------------------------------------------------------------
+  # Load Testing (Optional)
+  # ---------------------------------------------------------------------------
+  load-tests:
+    image: grafana/k6:0.48.0
+    container_name: gl-normalizer-load-tests
+    volumes:
+      - ../../tests/load:/scripts:ro
+      - test-results:/results
+    networks:
+      - gl-normalizer-test-network
+    depends_on:
+      gl-normalizer-service-test:
+        condition: service_healthy
+    command: ["run", "--out", "json=/results/load-test-results.json", "/scripts/normalizer-load-test.js"]
+    profiles:
+      - load-testing
+    environment:
+      K6_NORMALIZER_URL: http://gl-normalizer-service-test:8000
+
+  # ---------------------------------------------------------------------------
+  # Security Scanning
+  # ---------------------------------------------------------------------------
+  security-scan:
+    image: aquasec/trivy:latest
+    container_name: gl-normalizer-security-scan
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - test-results:/results
+    networks:
+      - gl-normalizer-test-network
+    command: ["image", "--format", "json", "--output", "/results/trivy-scan.json", "gl-normalizer-service-test:latest"]
+    profiles:
+      - security
+
+  # ---------------------------------------------------------------------------
+  # Contract Testing
+  # ---------------------------------------------------------------------------
+  contract-tests:
+    build:
+      context: ../../
+      dockerfile: infrastructure/docker/Dockerfile.test
+    container_name: gl-normalizer-contract-tests
+    environment:
+      GL_NORMALIZER_ENV: test
+      GL_NORMALIZER_SERVICE_URL: http://gl-normalizer-service-test:8000
+    volumes:
+      - ../../:/app:ro
+      - test-results:/test-results
+    networks:
+      - gl-normalizer-test-network
+    depends_on:
+      gl-normalizer-service-test:
+        condition: service_healthy
+    command: ["pytest", "tests/contract/", "-v", "--tb=short", "--junitxml=/test-results/contract-junit.xml"]
+    profiles:
+      - contract
+
+# =============================================================================
+# Networks
+# =============================================================================
+networks:
+  gl-normalizer-test-network:
+    name: gl-normalizer-test-network
+    driver: bridge
+
+# =============================================================================
+# Volumes
+# =============================================================================
+volumes:
+  test-results:
+    name: gl-normalizer-test-results

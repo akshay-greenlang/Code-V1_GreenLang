@@ -1,0 +1,1140 @@
+# GreenLang Common Materials Vocabulary
+# Version: 1.0.0
+# Last Updated: 2026-01-30
+# Schema: vocabulary_entry.v1.yaml
+# Description: Standard material vocabulary entries for GreenLang Normalizer (GL-FOUND-X-003)
+#
+# Reference Sources:
+# - IPCC 2006 Guidelines for National Greenhouse Gas Inventories
+# - GHG Protocol Scope 3 Guidance
+# - worldsteel CO2 Emissions Data Collection
+# - Global Cement and Concrete Association (GCCA)
+# - International Aluminium Institute (IAI)
+
+---
+# ============================================================================
+# STEEL
+# ============================================================================
+- reference_id: GL-MAT-STEEL
+  canonical_name: "Steel"
+  entity_type: material
+  status: active
+  replaced_by: null
+
+  aliases:
+    - alias: "Steel"
+      locale: en
+      source: ghgp
+      priority: 100
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Carbon Steel"
+      locale: en
+      source: industry
+      priority: 90
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Mild Steel"
+      locale: en
+      source: industry
+      priority: 85
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Structural Steel"
+      locale: en
+      source: industry
+      priority: 80
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Hot Rolled Steel"
+      locale: en
+      source: industry
+      priority: 75
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Cold Rolled Steel"
+      locale: en
+      source: industry
+      priority: 75
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "HRC"
+      locale: universal
+      source: industry
+      priority: 70
+      case_sensitive: true
+      exact_match_only: true
+
+    - alias: "CRC"
+      locale: universal
+      source: industry
+      priority: 70
+      case_sensitive: true
+      exact_match_only: true
+
+    - alias: "Stahl"
+      locale: de
+      source: regional
+      priority: 90
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Acier"
+      locale: fr
+      source: regional
+      priority: 90
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "鋼材"
+      locale: ja
+      source: regional
+      priority: 90
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "钢"
+      locale: zh
+      source: regional
+      priority: 90
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Iron and Steel"
+      locale: en
+      source: ipcc
+      priority: 70
+      case_sensitive: false
+      exact_match_only: false
+
+  attributes:
+    grade: "Generic Carbon Steel"
+    density_kg_m3: 7850
+    typical_ef_kgCO2e_t_global_avg: 1850
+    typical_ef_kgCO2e_t_bof: 2100
+    typical_ef_kgCO2e_t_eaf: 650
+    recycled_content_global_avg: 0.30
+    composition:
+      iron: 0.98
+      carbon: 0.02
+
+  effective_from: "2024-01-01"
+  effective_to: null
+
+  notes: |
+    Generic carbon steel. Emission factors vary significantly by production
+    route (BF-BOF vs EAF) and regional grid carbon intensity. For specific
+    steel grades, use GL-MAT-STEEL-* variants. worldsteel 2023 global average
+    is 1.85 tCO2e/t crude steel.
+
+  provenance:
+    created_at: "2026-01-30T00:00:00Z"
+    created_by: "GL-FOUND-X-003"
+    last_modified_at: "2026-01-30T00:00:00Z"
+    last_modified_by: "GL-FOUND-X-003"
+    version: 1
+    source_references:
+      - "worldsteel CO2 Emissions Data Collection, 2023"
+      - "GHG Protocol Scope 3 Category 1 Guidance"
+      - "IPCC 2006 Guidelines, Vol. 3, Ch. 4"
+
+---
+# ============================================================================
+# STAINLESS STEEL
+# ============================================================================
+- reference_id: GL-MAT-STEEL-SS
+  canonical_name: "Stainless Steel"
+  entity_type: material
+  status: active
+  replaced_by: null
+
+  aliases:
+    - alias: "Stainless Steel"
+      locale: en
+      source: industry
+      priority: 100
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Stainless"
+      locale: en
+      source: industry
+      priority: 85
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "SS"
+      locale: universal
+      source: industry
+      priority: 80
+      case_sensitive: true
+      exact_match_only: true
+
+    - alias: "Inox"
+      locale: universal
+      source: industry
+      priority: 85
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "304 Stainless"
+      locale: en
+      source: industry
+      priority: 75
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "316 Stainless"
+      locale: en
+      source: industry
+      priority: 75
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Edelstahl"
+      locale: de
+      source: regional
+      priority: 90
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Acier inoxydable"
+      locale: fr
+      source: regional
+      priority: 90
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "ステンレス鋼"
+      locale: ja
+      source: regional
+      priority: 90
+      case_sensitive: false
+      exact_match_only: false
+
+  attributes:
+    grade: "304/316 Austenitic Stainless Steel"
+    density_kg_m3: 8000
+    typical_ef_kgCO2e_t: 5300
+    recycled_content_avg: 0.60
+    composition:
+      iron: 0.70
+      chromium: 0.18
+      nickel: 0.10
+      carbon: 0.02
+
+  effective_from: "2024-01-01"
+  effective_to: null
+
+  notes: |
+    Austenitic stainless steel (300-series). Higher embodied carbon than
+    carbon steel due to alloying elements (Cr, Ni). Typical recycled content
+    is 60%+ due to high scrap value.
+
+  provenance:
+    created_at: "2026-01-30T00:00:00Z"
+    created_by: "GL-FOUND-X-003"
+    last_modified_at: "2026-01-30T00:00:00Z"
+    last_modified_by: "GL-FOUND-X-003"
+    version: 1
+    source_references:
+      - "ISSF Stainless Steel and CO2, 2022"
+      - "ICE Database v3.0"
+
+---
+# ============================================================================
+# CEMENT
+# ============================================================================
+- reference_id: GL-MAT-CEMENT
+  canonical_name: "Portland Cement"
+  entity_type: material
+  status: active
+  replaced_by: null
+
+  aliases:
+    - alias: "Cement"
+      locale: en
+      source: ghgp
+      priority: 100
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Portland cement"
+      locale: en
+      source: industry
+      priority: 95
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "OPC"
+      locale: universal
+      source: industry
+      priority: 90
+      case_sensitive: true
+      exact_match_only: true
+
+    - alias: "Ordinary Portland Cement"
+      locale: en
+      source: industry
+      priority: 90
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "CEM I"
+      locale: universal
+      source: iso
+      priority: 85
+      case_sensitive: true
+      exact_match_only: true
+
+    - alias: "CEM I 42.5"
+      locale: universal
+      source: iso
+      priority: 80
+      case_sensitive: true
+      exact_match_only: false
+
+    - alias: "CEM I 52.5"
+      locale: universal
+      source: iso
+      priority: 80
+      case_sensitive: true
+      exact_match_only: false
+
+    - alias: "Type I Cement"
+      locale: en-US
+      source: industry
+      priority: 80
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Type I/II Cement"
+      locale: en-US
+      source: industry
+      priority: 75
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Portland Clinker"
+      locale: en
+      source: ipcc
+      priority: 70
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Zement"
+      locale: de
+      source: regional
+      priority: 90
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Ciment"
+      locale: fr
+      source: regional
+      priority: 90
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "セメント"
+      locale: ja
+      source: regional
+      priority: 90
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "水泥"
+      locale: zh
+      source: regional
+      priority: 90
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Grey Cement"
+      locale: en
+      source: industry
+      priority: 65
+      case_sensitive: false
+      exact_match_only: false
+
+  attributes:
+    grade: "CEM I 42.5N"
+    density_kg_m3: 1500
+    typical_ef_kgCO2_t_clinker: 866
+    typical_ef_kgCO2_t_cement: 620
+    clinker_ratio: 0.73
+    composition:
+      calcium_oxide: 0.65
+      silicon_dioxide: 0.22
+      aluminum_oxide: 0.05
+      iron_oxide: 0.03
+
+  effective_from: "2024-01-01"
+  effective_to: null
+
+  notes: |
+    Ordinary Portland Cement (OPC / CEM I) with >95% clinker content.
+    Clinker production is the main emission source (~866 kgCO2/t clinker).
+    For blended cements with SCMs, use GL-MAT-CEMENT-* variants.
+    GCCA 2023 global average cement is 0.62 tCO2/t.
+
+  provenance:
+    created_at: "2026-01-30T00:00:00Z"
+    created_by: "GL-FOUND-X-003"
+    last_modified_at: "2026-01-30T00:00:00Z"
+    last_modified_by: "GL-FOUND-X-003"
+    version: 1
+    source_references:
+      - "GCCA Getting the Numbers Right (GNR) Database, 2023"
+      - "IPCC 2006 Guidelines, Vol. 3, Ch. 2"
+      - "EN 197-1:2011 Cement Composition"
+
+---
+# ============================================================================
+# BLENDED CEMENT
+# ============================================================================
+- reference_id: GL-MAT-CEMENT-BLEND
+  canonical_name: "Blended Cement"
+  entity_type: material
+  status: active
+  replaced_by: null
+
+  aliases:
+    - alias: "Blended Cement"
+      locale: en
+      source: industry
+      priority: 100
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "CEM II"
+      locale: universal
+      source: iso
+      priority: 90
+      case_sensitive: true
+      exact_match_only: true
+
+    - alias: "CEM III"
+      locale: universal
+      source: iso
+      priority: 85
+      case_sensitive: true
+      exact_match_only: true
+
+    - alias: "Portland Composite Cement"
+      locale: en
+      source: iso
+      priority: 85
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Slag Cement"
+      locale: en
+      source: industry
+      priority: 80
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "PPC"
+      locale: universal
+      source: industry
+      priority: 80
+      case_sensitive: true
+      exact_match_only: true
+
+    - alias: "Portland Pozzolana Cement"
+      locale: en
+      source: industry
+      priority: 80
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Fly Ash Cement"
+      locale: en
+      source: industry
+      priority: 75
+      case_sensitive: false
+      exact_match_only: false
+
+  attributes:
+    grade: "CEM II/B-S 42.5N"
+    density_kg_m3: 1450
+    typical_ef_kgCO2_t_cement: 450
+    clinker_ratio: 0.55
+    scm_content: 0.40
+
+  effective_from: "2024-01-01"
+  effective_to: null
+
+  notes: |
+    Blended cement with supplementary cementitious materials (SCMs).
+    Lower clinker ratio reduces embodied carbon. Includes CEM II (6-35% SCM)
+    and CEM III (36-95% slag) per EN 197-1.
+
+  provenance:
+    created_at: "2026-01-30T00:00:00Z"
+    created_by: "GL-FOUND-X-003"
+    last_modified_at: "2026-01-30T00:00:00Z"
+    last_modified_by: "GL-FOUND-X-003"
+    version: 1
+    source_references:
+      - "EN 197-1:2011 Cement Composition"
+      - "GCCA Roadmap to Net Zero"
+
+---
+# ============================================================================
+# ALUMINUM
+# ============================================================================
+- reference_id: GL-MAT-ALUMINUM
+  canonical_name: "Aluminum"
+  entity_type: material
+  status: active
+  replaced_by: null
+
+  aliases:
+    - alias: "Aluminum"
+      locale: en-US
+      source: ghgp
+      priority: 100
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Aluminium"
+      locale: en-GB
+      source: defra
+      priority: 100
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Primary Aluminum"
+      locale: en
+      source: industry
+      priority: 90
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Primary Aluminium"
+      locale: en-GB
+      source: industry
+      priority: 90
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Al"
+      locale: universal
+      source: industry
+      priority: 80
+      case_sensitive: true
+      exact_match_only: true
+
+    - alias: "Aluminium Ingot"
+      locale: en
+      source: industry
+      priority: 85
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Aluminum Ingot"
+      locale: en-US
+      source: industry
+      priority: 85
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Aluminiumbarren"
+      locale: de
+      source: regional
+      priority: 85
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "アルミニウム"
+      locale: ja
+      source: regional
+      priority: 90
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "铝"
+      locale: zh
+      source: regional
+      priority: 90
+      case_sensitive: false
+      exact_match_only: false
+
+  attributes:
+    grade: "Primary Aluminum (99.7%)"
+    density_kg_m3: 2700
+    typical_ef_kgCO2e_t_primary_global: 16500
+    typical_ef_kgCO2e_t_primary_hydro: 4500
+    typical_ef_kgCO2e_t_secondary: 650
+    recycled_content_global_avg: 0.33
+    composition:
+      aluminum: 0.997
+
+  effective_from: "2024-01-01"
+  effective_to: null
+
+  notes: |
+    Primary aluminum from electrolytic smelting. Extremely energy-intensive
+    process; emissions vary greatly by electricity source (16.5 global avg
+    vs 4.5 hydro-powered). Secondary (recycled) aluminum uses ~5% of energy.
+    IAI 2022 global average primary production.
+
+  provenance:
+    created_at: "2026-01-30T00:00:00Z"
+    created_by: "GL-FOUND-X-003"
+    last_modified_at: "2026-01-30T00:00:00Z"
+    last_modified_by: "GL-FOUND-X-003"
+    version: 1
+    source_references:
+      - "International Aluminium Institute (IAI) Statistics, 2023"
+      - "IPCC 2006 Guidelines, Vol. 3, Ch. 4"
+      - "GHG Protocol Scope 3 Category 1 Guidance"
+
+---
+# ============================================================================
+# GLASS
+# ============================================================================
+- reference_id: GL-MAT-GLASS
+  canonical_name: "Glass"
+  entity_type: material
+  status: active
+  replaced_by: null
+
+  aliases:
+    - alias: "Glass"
+      locale: en
+      source: ghgp
+      priority: 100
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Float Glass"
+      locale: en
+      source: industry
+      priority: 90
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Flat Glass"
+      locale: en
+      source: industry
+      priority: 90
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Container Glass"
+      locale: en
+      source: industry
+      priority: 85
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Bottle Glass"
+      locale: en
+      source: industry
+      priority: 75
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Soda-lime Glass"
+      locale: en
+      source: industry
+      priority: 80
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Window Glass"
+      locale: en
+      source: industry
+      priority: 75
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Glas"
+      locale: de
+      source: regional
+      priority: 90
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Verre"
+      locale: fr
+      source: regional
+      priority: 90
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "ガラス"
+      locale: ja
+      source: regional
+      priority: 90
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "玻璃"
+      locale: zh
+      source: regional
+      priority: 90
+      case_sensitive: false
+      exact_match_only: false
+
+  attributes:
+    grade: "Soda-lime Float Glass"
+    density_kg_m3: 2500
+    typical_ef_kgCO2e_t: 850
+    recycled_content_avg: 0.25
+    composition:
+      silicon_dioxide: 0.72
+      sodium_oxide: 0.14
+      calcium_oxide: 0.10
+
+  effective_from: "2024-01-01"
+  effective_to: null
+
+  notes: |
+    Standard soda-lime glass for containers and flat glass applications.
+    Main emissions from natural gas combustion in furnaces and carbonate
+    decomposition. Cullet (recycled glass) reduces both energy and process
+    emissions.
+
+  provenance:
+    created_at: "2026-01-30T00:00:00Z"
+    created_by: "GL-FOUND-X-003"
+    last_modified_at: "2026-01-30T00:00:00Z"
+    last_modified_by: "GL-FOUND-X-003"
+    version: 1
+    source_references:
+      - "IPCC 2006 Guidelines, Vol. 3, Ch. 2"
+      - "Glass Alliance Europe Environmental Data"
+
+---
+# ============================================================================
+# PLASTIC (GENERIC)
+# ============================================================================
+- reference_id: GL-MAT-PLASTIC
+  canonical_name: "Plastic (Generic)"
+  entity_type: material
+  status: active
+  replaced_by: null
+
+  aliases:
+    - alias: "Plastic"
+      locale: en
+      source: ghgp
+      priority: 100
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Plastics"
+      locale: en
+      source: industry
+      priority: 95
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Polymer"
+      locale: en
+      source: industry
+      priority: 80
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Synthetic Polymer"
+      locale: en
+      source: industry
+      priority: 75
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Resin"
+      locale: en
+      source: industry
+      priority: 70
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Kunststoff"
+      locale: de
+      source: regional
+      priority: 90
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Plastique"
+      locale: fr
+      source: regional
+      priority: 90
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "プラスチック"
+      locale: ja
+      source: regional
+      priority: 90
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "塑料"
+      locale: zh
+      source: regional
+      priority: 90
+      case_sensitive: false
+      exact_match_only: false
+
+  attributes:
+    grade: "Mixed Plastics Average"
+    density_kg_m3: 1000
+    typical_ef_kgCO2e_t: 3500
+    fossil_carbon_content: 0.75
+    recycled_content_global_avg: 0.09
+
+  effective_from: "2024-01-01"
+  effective_to: null
+
+  notes: |
+    Generic plastic/polymer material. Emission factors vary significantly
+    by polymer type. For specific polymers, use GL-MAT-PLASTIC-* variants
+    (PE, PP, PET, PVC, PS, etc.). Average is weighted by global production.
+
+  provenance:
+    created_at: "2026-01-30T00:00:00Z"
+    created_by: "GL-FOUND-X-003"
+    last_modified_at: "2026-01-30T00:00:00Z"
+    last_modified_by: "GL-FOUND-X-003"
+    version: 1
+    source_references:
+      - "PlasticsEurope Eco-profiles, 2022"
+      - "GHG Protocol Scope 3 Category 1 Guidance"
+
+---
+# ============================================================================
+# POLYETHYLENE (PE)
+# ============================================================================
+- reference_id: GL-MAT-PLASTIC-PE
+  canonical_name: "Polyethylene"
+  entity_type: material
+  status: active
+  replaced_by: null
+
+  aliases:
+    - alias: "Polyethylene"
+      locale: en
+      source: industry
+      priority: 100
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "PE"
+      locale: universal
+      source: industry
+      priority: 95
+      case_sensitive: true
+      exact_match_only: true
+
+    - alias: "HDPE"
+      locale: universal
+      source: industry
+      priority: 90
+      case_sensitive: true
+      exact_match_only: true
+
+    - alias: "High Density Polyethylene"
+      locale: en
+      source: industry
+      priority: 85
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "LDPE"
+      locale: universal
+      source: industry
+      priority: 90
+      case_sensitive: true
+      exact_match_only: true
+
+    - alias: "Low Density Polyethylene"
+      locale: en
+      source: industry
+      priority: 85
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "LLDPE"
+      locale: universal
+      source: industry
+      priority: 85
+      case_sensitive: true
+      exact_match_only: true
+
+    - alias: "Polythene"
+      locale: en-GB
+      source: regional
+      priority: 80
+      case_sensitive: false
+      exact_match_only: false
+
+  attributes:
+    grade: "HDPE"
+    density_kg_m3: 950
+    typical_ef_kgCO2e_t_hdpe: 1900
+    typical_ef_kgCO2e_t_ldpe: 2100
+    fossil_carbon_content: 0.86
+    recycling_code: 2
+
+  effective_from: "2024-01-01"
+  effective_to: null
+
+  notes: |
+    Polyethylene - most widely produced plastic globally.
+    HDPE (resin code 2) typically used for bottles, pipes.
+    LDPE/LLDPE (resin code 4) for films and bags.
+
+  provenance:
+    created_at: "2026-01-30T00:00:00Z"
+    created_by: "GL-FOUND-X-003"
+    last_modified_at: "2026-01-30T00:00:00Z"
+    last_modified_by: "GL-FOUND-X-003"
+    version: 1
+    source_references:
+      - "PlasticsEurope Eco-profiles, 2022"
+
+---
+# ============================================================================
+# POLYPROPYLENE (PP)
+# ============================================================================
+- reference_id: GL-MAT-PLASTIC-PP
+  canonical_name: "Polypropylene"
+  entity_type: material
+  status: active
+  replaced_by: null
+
+  aliases:
+    - alias: "Polypropylene"
+      locale: en
+      source: industry
+      priority: 100
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "PP"
+      locale: universal
+      source: industry
+      priority: 95
+      case_sensitive: true
+      exact_match_only: true
+
+    - alias: "Polyprop"
+      locale: en
+      source: industry
+      priority: 70
+      case_sensitive: false
+      exact_match_only: false
+
+  attributes:
+    grade: "Polypropylene Homopolymer"
+    density_kg_m3: 905
+    typical_ef_kgCO2e_t: 1980
+    fossil_carbon_content: 0.86
+    recycling_code: 5
+
+  effective_from: "2024-01-01"
+  effective_to: null
+
+  notes: |
+    Polypropylene - second most produced plastic. Used for packaging,
+    automotive parts, textiles. Resin code 5.
+
+  provenance:
+    created_at: "2026-01-30T00:00:00Z"
+    created_by: "GL-FOUND-X-003"
+    last_modified_at: "2026-01-30T00:00:00Z"
+    last_modified_by: "GL-FOUND-X-003"
+    version: 1
+    source_references:
+      - "PlasticsEurope Eco-profiles, 2022"
+
+---
+# ============================================================================
+# PET
+# ============================================================================
+- reference_id: GL-MAT-PLASTIC-PET
+  canonical_name: "Polyethylene Terephthalate"
+  entity_type: material
+  status: active
+  replaced_by: null
+
+  aliases:
+    - alias: "PET"
+      locale: universal
+      source: industry
+      priority: 100
+      case_sensitive: true
+      exact_match_only: true
+
+    - alias: "Polyethylene Terephthalate"
+      locale: en
+      source: industry
+      priority: 95
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "PETE"
+      locale: universal
+      source: industry
+      priority: 85
+      case_sensitive: true
+      exact_match_only: true
+
+    - alias: "Polyester"
+      locale: en
+      source: industry
+      priority: 75
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "rPET"
+      locale: universal
+      source: industry
+      priority: 80
+      case_sensitive: false
+      exact_match_only: true
+
+  attributes:
+    grade: "Bottle Grade PET"
+    density_kg_m3: 1380
+    typical_ef_kgCO2e_t_virgin: 2900
+    typical_ef_kgCO2e_t_rpet: 1200
+    fossil_carbon_content: 0.63
+    recycling_code: 1
+
+  effective_from: "2024-01-01"
+  effective_to: null
+
+  notes: |
+    PET - commonly used for beverage bottles and food packaging.
+    Highest recycling rate among plastics. Resin code 1.
+    rPET (recycled PET) has significantly lower embodied carbon.
+
+  provenance:
+    created_at: "2026-01-30T00:00:00Z"
+    created_by: "GL-FOUND-X-003"
+    last_modified_at: "2026-01-30T00:00:00Z"
+    last_modified_by: "GL-FOUND-X-003"
+    version: 1
+    source_references:
+      - "PlasticsEurope Eco-profiles, 2022"
+
+---
+# ============================================================================
+# CONCRETE
+# ============================================================================
+- reference_id: GL-MAT-CONCRETE
+  canonical_name: "Concrete"
+  entity_type: material
+  status: active
+  replaced_by: null
+
+  aliases:
+    - alias: "Concrete"
+      locale: en
+      source: ghgp
+      priority: 100
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Ready-mix Concrete"
+      locale: en
+      source: industry
+      priority: 90
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "RMC"
+      locale: universal
+      source: industry
+      priority: 85
+      case_sensitive: true
+      exact_match_only: true
+
+    - alias: "Ready Mixed Concrete"
+      locale: en
+      source: industry
+      priority: 85
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "C30"
+      locale: universal
+      source: industry
+      priority: 70
+      case_sensitive: true
+      exact_match_only: true
+
+    - alias: "C40"
+      locale: universal
+      source: industry
+      priority: 70
+      case_sensitive: true
+      exact_match_only: true
+
+    - alias: "Beton"
+      locale: de
+      source: regional
+      priority: 90
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Béton"
+      locale: fr
+      source: regional
+      priority: 90
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "コンクリート"
+      locale: ja
+      source: regional
+      priority: 90
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "混凝土"
+      locale: zh
+      source: regional
+      priority: 90
+      case_sensitive: false
+      exact_match_only: false
+
+  attributes:
+    grade: "C30/37 (30 MPa)"
+    density_kg_m3: 2400
+    typical_ef_kgCO2e_m3: 300
+    typical_ef_kgCO2e_t: 125
+    cement_content_kg_m3: 350
+    water_cement_ratio: 0.50
+
+  effective_from: "2024-01-01"
+  effective_to: null
+
+  notes: |
+    Standard structural concrete. Embodied carbon dominated by cement content.
+    C30/37 is typical for structural applications. EF varies significantly
+    with cement type, SCM content, and local mix designs.
+
+  provenance:
+    created_at: "2026-01-30T00:00:00Z"
+    created_by: "GL-FOUND-X-003"
+    last_modified_at: "2026-01-30T00:00:00Z"
+    last_modified_by: "GL-FOUND-X-003"
+    version: 1
+    source_references:
+      - "GCCA EPD Programme"
+      - "ICE Database v3.0"

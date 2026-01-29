@@ -1,0 +1,360 @@
+# =============================================================================
+# Golden Tests: Volume Unit Conversions
+# =============================================================================
+# GL-FOUND-X-003: Unit & Reference Normalizer
+# Canonical Unit: m3 (cubic meter)
+#
+# These tests verify volume conversions to the canonical m3 unit.
+# Includes both standard volume and standard condition volume tests.
+# =============================================================================
+
+schema_version: "1.0"
+dimension: volume
+canonical_unit: m3
+test_count: 24
+
+test_cases:
+  # ---------------------------------------------------------------------------
+  # SI Volume Units
+  # ---------------------------------------------------------------------------
+  - name: "mL to m3 conversion"
+    description: "Convert milliliters to cubic meters"
+    input:
+      value: 1000000
+      unit: "mL"
+      target_unit: "m3"
+    expected:
+      canonical_value: 1.0
+      canonical_unit: "m3"
+      confidence: 1.0
+      exact: true
+    tags: ["si"]
+
+  - name: "cL to m3 conversion"
+    description: "Convert centiliters to cubic meters"
+    input:
+      value: 100000
+      unit: "cL"
+      target_unit: "m3"
+    expected:
+      canonical_value: 1.0
+      canonical_unit: "m3"
+      confidence: 1.0
+      exact: true
+    tags: ["si"]
+
+  - name: "dL to m3 conversion"
+    description: "Convert deciliters to cubic meters"
+    input:
+      value: 10000
+      unit: "dL"
+      target_unit: "m3"
+    expected:
+      canonical_value: 1.0
+      canonical_unit: "m3"
+      confidence: 1.0
+      exact: true
+    tags: ["si"]
+
+  - name: "L to m3 conversion"
+    description: "Convert liters to cubic meters"
+    input:
+      value: 1000
+      unit: "L"
+      target_unit: "m3"
+    expected:
+      canonical_value: 1.0
+      canonical_unit: "m3"
+      confidence: 1.0
+      exact: true
+    source: "1 L = 1 dm^3 = 0.001 m^3"
+    tags: ["si", "common"]
+
+  - name: "hL to m3 conversion"
+    description: "Convert hectoliters to cubic meters"
+    input:
+      value: 10
+      unit: "hL"
+      target_unit: "m3"
+    expected:
+      canonical_value: 1.0
+      canonical_unit: "m3"
+      confidence: 1.0
+      exact: true
+    tags: ["si"]
+
+  - name: "kL to m3 conversion"
+    description: "Convert kiloliters to cubic meters (identity)"
+    input:
+      value: 1
+      unit: "kL"
+      target_unit: "m3"
+    expected:
+      canonical_value: 1.0
+      canonical_unit: "m3"
+      confidence: 1.0
+      exact: true
+    source: "1 kL = 1 m^3"
+    tags: ["si"]
+
+  # ---------------------------------------------------------------------------
+  # Imperial/US Volume Units
+  # ---------------------------------------------------------------------------
+  - name: "US fluid ounce to m3"
+    description: "Convert US fluid ounces to cubic meters"
+    input:
+      value: 1000
+      unit: "fl_oz_us"
+      target_unit: "m3"
+    expected:
+      canonical_value: 0.0295735295625
+      canonical_unit: "m3"
+      tolerance: 1e-12
+      exact: true
+    source: "1 US fl oz = 29.5735295625 mL"
+    tags: ["imperial", "us"]
+
+  - name: "US cup to m3"
+    description: "Convert US cups to cubic meters"
+    input:
+      value: 100
+      unit: "cup_us"
+      target_unit: "m3"
+    expected:
+      canonical_value: 0.02365882365
+      canonical_unit: "m3"
+      tolerance: 1e-12
+      exact: true
+    tags: ["imperial", "us"]
+
+  - name: "US pint to m3"
+    description: "Convert US pints to cubic meters"
+    input:
+      value: 100
+      unit: "pt_us"
+      target_unit: "m3"
+    expected:
+      canonical_value: 0.0473176473
+      canonical_unit: "m3"
+      tolerance: 1e-12
+      exact: true
+    tags: ["imperial", "us"]
+
+  - name: "US quart to m3"
+    description: "Convert US quarts to cubic meters"
+    input:
+      value: 100
+      unit: "qt_us"
+      target_unit: "m3"
+    expected:
+      canonical_value: 0.0946352946
+      canonical_unit: "m3"
+      tolerance: 1e-12
+      exact: true
+    tags: ["imperial", "us"]
+
+  - name: "US gallon to m3"
+    description: "Convert US gallons to cubic meters"
+    input:
+      value: 100
+      unit: "gal_us"
+      target_unit: "m3"
+    expected:
+      canonical_value: 0.3785411784
+      canonical_unit: "m3"
+      tolerance: 1e-12
+      exact: true
+    source: "1 US gal = 231 in^3 = 3.785411784 L (exact)"
+    tags: ["imperial", "us", "common"]
+
+  - name: "Barrel (petroleum) to m3"
+    description: "Convert petroleum barrels to cubic meters"
+    input:
+      value: 1
+      unit: "bbl"
+      target_unit: "m3"
+    expected:
+      canonical_value: 0.158987294928
+      canonical_unit: "m3"
+      tolerance: 1e-12
+      exact: true
+    source: "1 bbl = 42 US gal"
+    tags: ["imperial", "petroleum", "common"]
+
+  # ---------------------------------------------------------------------------
+  # UK Imperial Volume
+  # ---------------------------------------------------------------------------
+  - name: "UK fluid ounce to m3"
+    description: "Convert UK fluid ounces to cubic meters"
+    input:
+      value: 1000
+      unit: "fl_oz_uk"
+      target_unit: "m3"
+    expected:
+      canonical_value: 0.0284130625
+      canonical_unit: "m3"
+      tolerance: 1e-12
+      exact: true
+    tags: ["imperial", "uk"]
+
+  - name: "UK pint to m3"
+    description: "Convert UK pints to cubic meters"
+    input:
+      value: 100
+      unit: "pt_uk"
+      target_unit: "m3"
+    expected:
+      canonical_value: 0.056826125
+      canonical_unit: "m3"
+      tolerance: 1e-12
+      exact: true
+    tags: ["imperial", "uk"]
+
+  - name: "UK gallon to m3"
+    description: "Convert UK gallons to cubic meters"
+    input:
+      value: 100
+      unit: "gal_uk"
+      target_unit: "m3"
+    expected:
+      canonical_value: 0.454609
+      canonical_unit: "m3"
+      tolerance: 1e-12
+      exact: true
+    source: "1 UK gal = 4.54609 L (exact since 1985)"
+    tags: ["imperial", "uk"]
+
+  # ---------------------------------------------------------------------------
+  # Cubic Length Units
+  # ---------------------------------------------------------------------------
+  - name: "Cubic inch to m3"
+    description: "Convert cubic inches to cubic meters"
+    input:
+      value: 1000
+      unit: "in3"
+      target_unit: "m3"
+    expected:
+      canonical_value: 0.016387064
+      canonical_unit: "m3"
+      tolerance: 1e-12
+      exact: true
+    tags: ["imperial", "cubic"]
+
+  - name: "Cubic foot to m3"
+    description: "Convert cubic feet to cubic meters"
+    input:
+      value: 100
+      unit: "ft3"
+      target_unit: "m3"
+    expected:
+      canonical_value: 2.8316846592
+      canonical_unit: "m3"
+      tolerance: 1e-12
+      exact: true
+    source: "1 ft^3 = 28.316846592 L"
+    tags: ["imperial", "cubic", "common"]
+
+  - name: "Cubic yard to m3"
+    description: "Convert cubic yards to cubic meters"
+    input:
+      value: 10
+      unit: "yd3"
+      target_unit: "m3"
+    expected:
+      canonical_value: 7.64554857984
+      canonical_unit: "m3"
+      tolerance: 1e-12
+      exact: true
+    source: "1 yd^3 = 27 ft^3"
+    tags: ["imperial", "cubic"]
+
+  # ---------------------------------------------------------------------------
+  # Large Volume Units
+  # ---------------------------------------------------------------------------
+  - name: "Acre-foot to m3"
+    description: "Convert acre-feet to cubic meters"
+    input:
+      value: 1
+      unit: "acre_ft"
+      target_unit: "m3"
+    expected:
+      canonical_value: 1233.48183754752
+      canonical_unit: "m3"
+      tolerance: 1e-10
+      exact: true
+    source: "1 acre-ft = 43560 ft^3"
+    tags: ["large_scale", "water"]
+
+  - name: "Thousand barrels to m3"
+    description: "Convert thousand barrels to cubic meters"
+    input:
+      value: 1
+      unit: "Mbbl"
+      target_unit: "m3"
+    expected:
+      canonical_value: 158.987294928
+      canonical_unit: "m3"
+      tolerance: 1e-10
+      exact: true
+    tags: ["large_scale", "petroleum"]
+
+  - name: "Million barrels to m3"
+    description: "Convert million barrels to cubic meters"
+    input:
+      value: 1
+      unit: "MMbbl"
+      target_unit: "m3"
+    expected:
+      canonical_value: 158987.294928
+      canonical_unit: "m3"
+      tolerance: 0.01
+      exact: true
+    tags: ["large_scale", "petroleum"]
+
+  # ---------------------------------------------------------------------------
+  # Edge Cases
+  # ---------------------------------------------------------------------------
+  - name: "Zero volume conversion"
+    description: "Zero value should remain zero"
+    input:
+      value: 0
+      unit: "L"
+      target_unit: "m3"
+    expected:
+      canonical_value: 0.0
+      canonical_unit: "m3"
+      confidence: 1.0
+    tags: ["edge_case"]
+
+  - name: "Very small volume"
+    description: "Handle very small volume values (microliter scale)"
+    input:
+      value: 0.001
+      unit: "mL"
+      target_unit: "m3"
+    expected:
+      canonical_value: 1.0e-9
+      canonical_unit: "m3"
+      tolerance: 1e-15
+    tags: ["edge_case", "precision"]
+
+  - name: "Gallon to Liter cross-check"
+    description: "Verify US gallon to liter relationship"
+    input:
+      value: 1
+      unit: "gal_us"
+      target_unit: "L"
+    expected:
+      canonical_value: 3.785411784
+      canonical_unit: "L"
+      tolerance: 1e-10
+    tags: ["cross_check"]
+
+# -----------------------------------------------------------------------------
+# Validation Rules
+# -----------------------------------------------------------------------------
+validation:
+  min_value: 0.0
+  max_value: 1.0e12
+  allow_negative: false
+  default_tolerance: 1e-9

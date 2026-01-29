@@ -1,0 +1,68 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gl-normalizer-config
+  namespace: greenlang
+  labels:
+    app: gl-normalizer
+data:
+  GL_NORMALIZER_ENV: "production"
+  GL_NORMALIZER_LOG_LEVEL: "INFO"
+  GL_NORMALIZER_LOG_FORMAT: "json"
+  GL_NORMALIZER_RATE_LIMIT_ENABLED: "true"
+  GL_NORMALIZER_RATE_LIMIT_REQUESTS: "100"
+  GL_NORMALIZER_RATE_LIMIT_WINDOW: "60"
+  GL_NORMALIZER_BATCH_MAX_ITEMS: "10000"
+  GL_NORMALIZER_CACHE_TTL: "3600"
+  GL_NORMALIZER_AUDIT_ENABLED: "true"
+  GL_NORMALIZER_METRICS_ENABLED: "true"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: gl-normalizer-secrets
+  namespace: greenlang
+  labels:
+    app: gl-normalizer
+type: Opaque
+stringData:
+  # Replace with actual values in production
+  database-url: "postgresql://user:password@postgres:5432/normalizer"
+  redis-url: "redis://redis:6379/0"
+  jwt-secret: "your-production-jwt-secret-at-least-32-characters"
+  api-key-salt: "your-api-key-salt-value"
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: gl-normalizer
+  namespace: greenlang
+  labels:
+    app: gl-normalizer
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: gl-normalizer-ingress
+  namespace: greenlang
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+    nginx.ingress.kubernetes.io/rate-limit-window: "1m"
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  tls:
+  - hosts:
+    - normalizer.greenlang.io
+    secretName: gl-normalizer-tls
+  rules:
+  - host: normalizer.greenlang.io
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: gl-normalizer-service
+            port:
+              number: 8000

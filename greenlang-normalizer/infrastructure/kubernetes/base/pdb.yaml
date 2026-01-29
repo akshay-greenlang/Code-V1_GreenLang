@@ -1,0 +1,111 @@
+# pdb.yaml - GreenLang Normalizer Pod Disruption Budgets
+# Component: GL-FOUND-X-003 - Unit & Reference Normalizer
+# Purpose: Ensure high availability during voluntary disruptions
+
+# =============================================================================
+# PDB for Normalizer Service
+# =============================================================================
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: gl-normalizer-service-pdb
+  namespace: gl-normalizer
+  labels:
+    app.kubernetes.io/name: gl-normalizer-service
+    app.kubernetes.io/component: pdb
+    app.kubernetes.io/part-of: greenlang-platform
+  annotations:
+    description: "Pod Disruption Budget for GL Normalizer Service - ensures at least 2 pods are always available"
+spec:
+  # Minimum number of pods that must be available during disruptions
+  minAvailable: 2
+
+  # Alternative: Maximum number of pods that can be unavailable
+  # maxUnavailable: 1
+
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: gl-normalizer-service
+      app.kubernetes.io/component: api
+
+  # Unhealthy pod eviction policy (Kubernetes 1.27+)
+  # unhealthyPodEvictionPolicy: IfHealthyBudget
+
+---
+# =============================================================================
+# PDB for Review Console
+# =============================================================================
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: gl-normalizer-review-console-pdb
+  namespace: gl-normalizer
+  labels:
+    app.kubernetes.io/name: gl-normalizer-review-console
+    app.kubernetes.io/component: pdb
+  annotations:
+    description: "Pod Disruption Budget for GL Normalizer Review Console"
+spec:
+  # At least 1 pod must always be available
+  minAvailable: 1
+
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: gl-normalizer-review-console
+      app.kubernetes.io/component: web-ui
+
+---
+# =============================================================================
+# Priority Classes for workload prioritization
+# =============================================================================
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: gl-normalizer-critical
+  labels:
+    app.kubernetes.io/name: gl-normalizer
+    app.kubernetes.io/component: priority-class
+description: "Priority class for critical GL Normalizer workloads"
+value: 1000000
+preemptionPolicy: PreemptLowerPriority
+globalDefault: false
+
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: gl-normalizer-standard
+  labels:
+    app.kubernetes.io/name: gl-normalizer
+    app.kubernetes.io/component: priority-class
+description: "Priority class for standard GL Normalizer workloads"
+value: 100000
+preemptionPolicy: PreemptLowerPriority
+globalDefault: false
+
+---
+# =============================================================================
+# Pod Anti-Affinity Rules (alternative to deployment spec)
+# =============================================================================
+# Note: These are typically included in the Deployment spec, but documented
+# here for reference. The deployment.yaml already includes these.
+
+# Example anti-affinity config for spreading pods across nodes and zones:
+#
+# affinity:
+#   podAntiAffinity:
+#     requiredDuringSchedulingIgnoredDuringExecution:
+#       - labelSelector:
+#           matchExpressions:
+#             - key: app.kubernetes.io/name
+#               operator: In
+#               values:
+#                 - gl-normalizer-service
+#         topologyKey: kubernetes.io/hostname
+#     preferredDuringSchedulingIgnoredDuringExecution:
+#       - weight: 100
+#         podAffinityTerm:
+#           labelSelector:
+#             matchLabels:
+#               app.kubernetes.io/name: gl-normalizer-service
+#           topologyKey: topology.kubernetes.io/zone

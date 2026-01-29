@@ -1,0 +1,178 @@
+# hpa.yaml - GreenLang Normalizer Horizontal Pod Autoscaler
+# Component: GL-FOUND-X-003 - Unit & Reference Normalizer
+# Purpose: Automatic scaling based on CPU and memory utilization
+
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: gl-normalizer-service-hpa
+  namespace: gl-normalizer
+  labels:
+    app.kubernetes.io/name: gl-normalizer-service
+    app.kubernetes.io/component: hpa
+    app.kubernetes.io/part-of: greenlang-platform
+  annotations:
+    description: "HPA for GreenLang Normalizer API Service"
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: gl-normalizer-service
+
+  # Scaling boundaries
+  minReplicas: 3
+  maxReplicas: 20
+
+  # Metrics for scaling decisions
+  metrics:
+    # CPU-based scaling (target 70%)
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+
+    # Memory-based scaling (target 80%)
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+
+    # Custom metric: requests per second (if using Prometheus adapter)
+    # - type: Pods
+    #   pods:
+    #     metric:
+    #       name: http_requests_per_second
+    #     target:
+    #       type: AverageValue
+    #       averageValue: "1000"
+
+    # Custom metric: request latency p95
+    # - type: Pods
+    #   pods:
+    #     metric:
+    #       name: http_request_duration_seconds_p95
+    #     target:
+    #       type: AverageValue
+    #       averageValue: "50m"
+
+  # Scaling behavior controls
+  behavior:
+    # Scale up behavior
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+        # Allow scaling up by 100% of current pods
+        - type: Percent
+          value: 100
+          periodSeconds: 60
+        # Or at most 4 pods at a time
+        - type: Pods
+          value: 4
+          periodSeconds: 60
+      selectPolicy: Max
+
+    # Scale down behavior (more conservative)
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        # Allow scaling down by 50% of current pods
+        - type: Percent
+          value: 50
+          periodSeconds: 120
+        # Or at most 2 pods at a time
+        - type: Pods
+          value: 2
+          periodSeconds: 120
+      selectPolicy: Min
+
+---
+# HPA for Review Console
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: gl-normalizer-review-console-hpa
+  namespace: gl-normalizer
+  labels:
+    app.kubernetes.io/name: gl-normalizer-review-console
+    app.kubernetes.io/component: hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: gl-normalizer-review-console
+
+  minReplicas: 2
+  maxReplicas: 10
+
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+        - type: Percent
+          value: 100
+          periodSeconds: 60
+        - type: Pods
+          value: 2
+          periodSeconds: 60
+      selectPolicy: Max
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Percent
+          value: 50
+          periodSeconds: 120
+      selectPolicy: Min
+
+---
+# VerticalPodAutoscaler (optional, requires VPA controller)
+# Recommends resource requests/limits based on actual usage
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: gl-normalizer-service-vpa
+  namespace: gl-normalizer
+  labels:
+    app.kubernetes.io/name: gl-normalizer-service
+    app.kubernetes.io/component: vpa
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: gl-normalizer-service
+
+  # UpdateMode: "Off" means VPA only provides recommendations
+  # Use "Auto" to actually update pods (requires careful consideration)
+  updatePolicy:
+    updateMode: "Off"
+
+  resourcePolicy:
+    containerPolicies:
+      - containerName: gl-normalizer-service
+        minAllowed:
+          cpu: 100m
+          memory: 256Mi
+        maxAllowed:
+          cpu: 4
+          memory: 8Gi
+        controlledResources:
+          - cpu
+          - memory
+        controlledValues: RequestsAndLimits

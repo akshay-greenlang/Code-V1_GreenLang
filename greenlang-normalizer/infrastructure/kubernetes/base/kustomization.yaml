@@ -1,0 +1,51 @@
+# kustomization.yaml - Base Kustomization for GL Normalizer
+# Component: GL-FOUND-X-003 - Unit & Reference Normalizer
+# Usage: kubectl apply -k infrastructure/kubernetes/base/
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+metadata:
+  name: gl-normalizer-base
+
+# Common labels applied to all resources
+commonLabels:
+  app.kubernetes.io/part-of: greenlang-platform
+  app.kubernetes.io/managed-by: kustomize
+
+# Common annotations
+commonAnnotations:
+  app.kubernetes.io/version: "1.0.0"
+
+# Namespace for all resources
+namespace: gl-normalizer
+
+# Resources to include
+resources:
+  - namespace.yaml
+  - configmap.yaml
+  - secrets.yaml
+  - deployment.yaml
+  - service.yaml
+  - hpa.yaml
+  - pdb.yaml
+
+# ConfigMap generator (for dynamic config)
+configMapGenerator:
+  - name: gl-normalizer-app-config
+    behavior: create
+    literals:
+      - GL_NORMALIZER_VERSION=1.0.0
+
+# Image customization (can be overridden in overlays)
+images:
+  - name: ghcr.io/greenlang/gl-normalizer-service
+    newTag: "1.0.0"
+  - name: ghcr.io/greenlang/gl-normalizer-review-console
+    newTag: "1.0.0"
+
+# Patches for common modifications
+patches: []
+
+# Replacements for field substitution
+replacements: []

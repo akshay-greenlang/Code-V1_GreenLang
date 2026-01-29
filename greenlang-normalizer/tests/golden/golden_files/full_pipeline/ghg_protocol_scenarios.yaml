@@ -1,0 +1,411 @@
+# =============================================================================
+# Golden Tests: GHG Protocol Full Pipeline Scenarios
+# =============================================================================
+# GL-FOUND-X-003: Unit & Reference Normalizer
+#
+# End-to-end scenarios based on GHG Protocol reporting requirements.
+# Tests cover Scope 1, 2, and 3 emissions calculations.
+# =============================================================================
+
+schema_version: "1.0"
+framework: "GHG Protocol"
+test_count: 15
+
+test_cases:
+  # ---------------------------------------------------------------------------
+  # Scope 1 - Direct Emissions
+  # ---------------------------------------------------------------------------
+  - name: "Scope 1 - Stationary combustion (natural gas)"
+    description: "Calculate emissions from natural gas combustion in a boiler"
+    input:
+      source_record_id: "ghg-sc1-001"
+      policy_mode: "STRICT"
+      measurements:
+        - field: "fuel_consumption"
+          value: 1500
+          unit: "MMBtu"
+          expected_dimension: "energy"
+      entities:
+        - field: "fuel_type"
+          entity_type: "fuel"
+          raw_name: "Natural Gas"
+        - field: "combustion_process"
+          entity_type: "process"
+          raw_name: "Stationary combustion"
+    expected:
+      status: "success"
+      canonical_measurements:
+        - field: "fuel_consumption"
+          canonical_value: 1582584.0
+          canonical_unit: "MJ"
+          tolerance: 10.0
+      normalized_entities:
+        - field: "fuel_type"
+          reference_id: "GL-FUEL-NATGAS"
+          confidence: 1.0
+        - field: "combustion_process"
+          reference_id: "GL-PROC-COMB-STATIONARY"
+          confidence: 1.0
+      audit:
+        status: "success"
+    tags: ["scope1", "stationary", "natural_gas"]
+
+  - name: "Scope 1 - Mobile combustion (diesel fleet)"
+    description: "Calculate emissions from diesel fleet vehicles"
+    input:
+      source_record_id: "ghg-sc1-002"
+      policy_mode: "STRICT"
+      measurements:
+        - field: "fuel_consumed"
+          value: 5000
+          unit: "gal_us"
+          expected_dimension: "volume"
+      entities:
+        - field: "fuel_type"
+          entity_type: "fuel"
+          raw_name: "Diesel"
+        - field: "combustion_process"
+          entity_type: "process"
+          raw_name: "Mobile combustion"
+    expected:
+      status: "success"
+      canonical_measurements:
+        - field: "fuel_consumed"
+          canonical_value: 18.927
+          canonical_unit: "m3"
+          tolerance: 0.001
+      normalized_entities:
+        - field: "fuel_type"
+          reference_id: "GL-FUEL-DIESEL"
+          confidence: 1.0
+        - field: "combustion_process"
+          reference_id: "GL-PROC-COMB-MOBILE"
+          confidence: 1.0
+    tags: ["scope1", "mobile", "diesel"]
+
+  - name: "Scope 1 - Fugitive emissions (refrigerant)"
+    description: "Calculate emissions from refrigerant leakage"
+    input:
+      source_record_id: "ghg-sc1-003"
+      policy_mode: "STRICT"
+      measurements:
+        - field: "refrigerant_loss"
+          value: 25
+          unit: "lb"
+          expected_dimension: "mass"
+        - field: "emissions_co2e"
+          value: 0
+          unit: "kgCO2e"
+          expected_dimension: "emissions_mass"
+          metadata:
+            gwp_profile_id: "AR5_100yr"
+      entities:
+        - field: "refrigerant_type"
+          entity_type: "material"
+          raw_name: "HFC-134a"
+    expected:
+      status: "success"
+      canonical_measurements:
+        - field: "refrigerant_loss"
+          canonical_value: 11.34
+          canonical_unit: "kg"
+          tolerance: 0.01
+    tags: ["scope1", "fugitive", "refrigerant"]
+
+  - name: "Scope 1 - Process emissions (cement)"
+    description: "Calculate process CO2 from cement clinker production"
+    input:
+      source_record_id: "ghg-sc1-004"
+      policy_mode: "STRICT"
+      measurements:
+        - field: "clinker_produced"
+          value: 1000
+          unit: "t"
+          expected_dimension: "mass"
+      entities:
+        - field: "material"
+          entity_type: "material"
+          raw_name: "Clinker"
+        - field: "process"
+          entity_type: "process"
+          raw_name: "Clinker production"
+    expected:
+      status: "success"
+      canonical_measurements:
+        - field: "clinker_produced"
+          canonical_value: 1000000.0
+          canonical_unit: "kg"
+    tags: ["scope1", "process", "cement"]
+
+  # ---------------------------------------------------------------------------
+  # Scope 2 - Indirect Emissions (Electricity)
+  # ---------------------------------------------------------------------------
+  - name: "Scope 2 - Location-based electricity"
+    description: "Calculate location-based emissions from grid electricity"
+    input:
+      source_record_id: "ghg-sc2-001"
+      policy_mode: "STRICT"
+      measurements:
+        - field: "electricity_consumption"
+          value: 500000
+          unit: "kWh"
+          expected_dimension: "energy"
+      entities:
+        - field: "energy_source"
+          entity_type: "fuel"
+          raw_name: "Grid electricity"
+          hints:
+            region: "US-WECC"
+    expected:
+      status: "success"
+      canonical_measurements:
+        - field: "electricity_consumption"
+          canonical_value: 1800000.0
+          canonical_unit: "MJ"
+      normalized_entities:
+        - field: "energy_source"
+          reference_id: "GL-FUEL-ELEC"
+          confidence: 1.0
+    tags: ["scope2", "location_based", "electricity"]
+
+  - name: "Scope 2 - Market-based electricity (renewable)"
+    description: "Calculate market-based emissions with renewable certificates"
+    input:
+      source_record_id: "ghg-sc2-002"
+      policy_mode: "STRICT"
+      measurements:
+        - field: "electricity_consumption"
+          value: 100
+          unit: "MWh"
+          expected_dimension: "energy"
+      entities:
+        - field: "energy_source"
+          entity_type: "fuel"
+          raw_name: "Renewable electricity"
+          hints:
+            certificate_type: "GO"
+    expected:
+      status: "success"
+      canonical_measurements:
+        - field: "electricity_consumption"
+          canonical_value: 360000.0
+          canonical_unit: "MJ"
+    tags: ["scope2", "market_based", "renewable"]
+
+  # ---------------------------------------------------------------------------
+  # Scope 3 - Upstream and Downstream
+  # ---------------------------------------------------------------------------
+  - name: "Scope 3.1 - Purchased goods (steel)"
+    description: "Embodied emissions in purchased steel"
+    input:
+      source_record_id: "ghg-sc3-001"
+      policy_mode: "STRICT"
+      measurements:
+        - field: "material_purchased"
+          value: 500
+          unit: "ton_short"
+          expected_dimension: "mass"
+      entities:
+        - field: "material"
+          entity_type: "material"
+          raw_name: "Carbon steel"
+        - field: "production_process"
+          entity_type: "process"
+          raw_name: "BOF"
+    expected:
+      status: "success"
+      canonical_measurements:
+        - field: "material_purchased"
+          canonical_value: 453592.37
+          canonical_unit: "kg"
+          tolerance: 0.01
+      normalized_entities:
+        - field: "material"
+          reference_id: "GL-MAT-STEEL-CARBON"
+          confidence: 1.0
+        - field: "production_process"
+          reference_id: "GL-PROC-STEEL-BOF"
+          confidence: 1.0
+    tags: ["scope3", "cat1", "steel"]
+
+  - name: "Scope 3.4 - Upstream transportation"
+    description: "Emissions from inbound freight"
+    input:
+      source_record_id: "ghg-sc3-004"
+      policy_mode: "STRICT"
+      measurements:
+        - field: "fuel_consumed"
+          value: 1000
+          unit: "L"
+          expected_dimension: "volume"
+        - field: "distance"
+          value: 500
+          unit: "km"
+          expected_dimension: "length"
+      entities:
+        - field: "fuel_type"
+          entity_type: "fuel"
+          raw_name: "Diesel"
+        - field: "transport_mode"
+          entity_type: "process"
+          raw_name: "Road freight"
+    expected:
+      status: "success"
+      canonical_measurements:
+        - field: "fuel_consumed"
+          canonical_value: 1.0
+          canonical_unit: "m3"
+    tags: ["scope3", "cat4", "transport"]
+
+  - name: "Scope 3.6 - Business travel (air)"
+    description: "Emissions from business air travel"
+    input:
+      source_record_id: "ghg-sc3-006"
+      policy_mode: "STRICT"
+      measurements:
+        - field: "distance_traveled"
+          value: 10000
+          unit: "nmi"
+          expected_dimension: "length"
+      entities:
+        - field: "travel_mode"
+          entity_type: "process"
+          raw_name: "Air travel"
+          hints:
+            travel_class: "economy"
+    expected:
+      status: "success"
+    tags: ["scope3", "cat6", "air_travel"]
+
+  # ---------------------------------------------------------------------------
+  # Multi-unit Normalization
+  # ---------------------------------------------------------------------------
+  - name: "Multi-unit - Energy mix normalization"
+    description: "Normalize mixed energy units to MJ"
+    input:
+      source_record_id: "ghg-multi-001"
+      policy_mode: "STRICT"
+      measurements:
+        - field: "electricity"
+          value: 1000
+          unit: "kWh"
+          expected_dimension: "energy"
+        - field: "natural_gas"
+          value: 100
+          unit: "therm"
+          expected_dimension: "energy"
+        - field: "diesel"
+          value: 500
+          unit: "L"
+          expected_dimension: "volume"
+    expected:
+      status: "success"
+      canonical_measurements:
+        - field: "electricity"
+          canonical_value: 3600.0
+          canonical_unit: "MJ"
+        - field: "natural_gas"
+          canonical_value: 10550.56
+          canonical_unit: "MJ"
+          tolerance: 0.1
+    tags: ["multi_unit", "energy_mix"]
+
+  # ---------------------------------------------------------------------------
+  # Error Scenarios
+  # ---------------------------------------------------------------------------
+  - name: "Error - Dimension mismatch"
+    description: "Mass unit provided where energy expected"
+    input:
+      source_record_id: "ghg-err-001"
+      policy_mode: "STRICT"
+      measurements:
+        - field: "energy_consumption"
+          value: 100
+          unit: "kg"
+          expected_dimension: "energy"
+    expected:
+      status: "failed"
+      errors:
+        - code: "GLNORM-E200"
+          severity: "error"
+          path: "/measurements/0"
+    tags: ["error", "dimension_mismatch"]
+
+  - name: "Error - Unknown entity (STRICT mode)"
+    description: "Unknown fuel type in STRICT mode"
+    input:
+      source_record_id: "ghg-err-002"
+      policy_mode: "STRICT"
+      entities:
+        - field: "fuel_type"
+          entity_type: "fuel"
+          raw_name: "Unknown Fuel XYZ"
+    expected:
+      status: "failed"
+      errors:
+        - code: "GLNORM-E400"
+          severity: "error"
+    tags: ["error", "unknown_entity"]
+
+  - name: "Warning - Low confidence match (LENIENT mode)"
+    description: "Low confidence entity match in LENIENT mode"
+    input:
+      source_record_id: "ghg-warn-001"
+      policy_mode: "LENIENT"
+      entities:
+        - field: "fuel_type"
+          entity_type: "fuel"
+          raw_name: "Natral Gass"
+    expected:
+      status: "warning"
+      normalized_entities:
+        - field: "fuel_type"
+          reference_id: "GL-FUEL-NATGAS"
+          needs_review: true
+      warnings:
+        - code: "GLNORM-E403"
+    tags: ["warning", "low_confidence"]
+
+  # ---------------------------------------------------------------------------
+  # Batch Processing
+  # ---------------------------------------------------------------------------
+  - name: "Batch - Multiple facilities"
+    description: "Normalize data from multiple facilities"
+    input:
+      source_record_id: "ghg-batch-001"
+      policy_mode: "LENIENT"
+      batch_records:
+        - facility_id: "FAC-001"
+          measurements:
+            - field: "electricity"
+              value: 50000
+              unit: "kWh"
+        - facility_id: "FAC-002"
+          measurements:
+            - field: "electricity"
+              value: 75000
+              unit: "kWh"
+    expected:
+      status: "success"
+      summary:
+        total: 2
+        success: 2
+        failed: 0
+    tags: ["batch", "multi_facility"]
+
+# -----------------------------------------------------------------------------
+# GHG Protocol Reference
+# -----------------------------------------------------------------------------
+ghg_protocol_scopes:
+  scope1: "Direct GHG emissions from sources owned or controlled by the company"
+  scope2: "Indirect GHG emissions from purchased electricity, steam, heating, cooling"
+  scope3: "All other indirect emissions in the value chain"
+
+scope3_categories:
+  cat1: "Purchased goods and services"
+  cat2: "Capital goods"
+  cat3: "Fuel and energy-related activities"
+  cat4: "Upstream transportation and distribution"
+  cat5: "Waste generated in operations"
+  cat6: "Business travel"
+  cat7: "Employee commuting"

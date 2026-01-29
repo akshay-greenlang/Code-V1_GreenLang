@@ -1,0 +1,292 @@
+# =============================================================================
+# Golden Tests: Process Entity Resolution
+# =============================================================================
+# GL-FOUND-X-003: Unit & Reference Normalizer
+# Entity Type: process
+#
+# These tests verify industrial process entity resolution for emissions
+# calculations and sustainability reporting.
+# =============================================================================
+
+schema_version: "1.0"
+entity_type: process
+vocabulary_version: "2026.01.0"
+test_count: 18
+
+test_cases:
+  # ---------------------------------------------------------------------------
+  # Steel Production Processes
+  # ---------------------------------------------------------------------------
+  - name: "Exact match - EAF"
+    description: "Electric Arc Furnace abbreviation"
+    input:
+      raw_name: "EAF"
+      entity_type: "process"
+    expected:
+      reference_id: "GL-PROC-STEEL-EAF"
+      canonical_name: "Electric arc furnace"
+      match_method: "alias"
+      confidence: 1.0
+      needs_review: false
+    tags: ["exact", "steel", "abbreviation"]
+
+  - name: "Exact match - Electric Arc Furnace"
+    description: "Full name for EAF"
+    input:
+      raw_name: "Electric Arc Furnace"
+      entity_type: "process"
+    expected:
+      reference_id: "GL-PROC-STEEL-EAF"
+      canonical_name: "Electric arc furnace"
+      match_method: "exact"
+      confidence: 1.0
+      needs_review: false
+    tags: ["exact", "steel"]
+
+  - name: "Exact match - BOF"
+    description: "Basic Oxygen Furnace abbreviation"
+    input:
+      raw_name: "BOF"
+      entity_type: "process"
+    expected:
+      reference_id: "GL-PROC-STEEL-BOF"
+      canonical_name: "Basic oxygen furnace"
+      match_method: "alias"
+      confidence: 1.0
+      needs_review: false
+    tags: ["exact", "steel", "abbreviation"]
+
+  - name: "Alias match - BOS"
+    description: "Basic Oxygen Steelmaking (UK term)"
+    input:
+      raw_name: "BOS"
+      entity_type: "process"
+    expected:
+      reference_id: "GL-PROC-STEEL-BOF"
+      canonical_name: "Basic oxygen furnace"
+      match_method: "alias"
+      confidence: 1.0
+      needs_review: false
+    tags: ["alias", "steel", "uk_term"]
+
+  - name: "Alias match - LD converter"
+    description: "Linz-Donawitz process (historical)"
+    input:
+      raw_name: "LD converter"
+      entity_type: "process"
+    expected:
+      reference_id: "GL-PROC-STEEL-BOF"
+      canonical_name: "Basic oxygen furnace"
+      match_method: "alias"
+      confidence: 1.0
+      needs_review: false
+    tags: ["alias", "steel", "historical"]
+
+  - name: "Exact match - Blast furnace"
+    description: "Blast furnace for iron making"
+    input:
+      raw_name: "Blast furnace"
+      entity_type: "process"
+    expected:
+      reference_id: "GL-PROC-IRON-BF"
+      canonical_name: "Blast furnace"
+      match_method: "exact"
+      confidence: 1.0
+      needs_review: false
+    tags: ["exact", "iron"]
+
+  - name: "Alias match - BF"
+    description: "Blast Furnace abbreviation"
+    input:
+      raw_name: "BF"
+      entity_type: "process"
+    expected:
+      reference_id: "GL-PROC-IRON-BF"
+      canonical_name: "Blast furnace"
+      match_method: "alias"
+      confidence: 1.0
+      needs_review: false
+    tags: ["alias", "iron"]
+
+  # ---------------------------------------------------------------------------
+  # Aluminum Production Processes
+  # ---------------------------------------------------------------------------
+  - name: "Alias match - Hall-Heroult"
+    description: "Primary aluminum smelting process (partial name is alias)"
+    input:
+      raw_name: "Hall-Heroult"
+      entity_type: "process"
+    expected:
+      reference_id: "GL-PROC-ALUM-HALLHEROULT"
+      canonical_name: "Hall-Heroult process"
+      match_method: "alias"
+      confidence: 1.0
+      needs_review: false
+    tags: ["alias", "aluminum"]
+
+  - name: "Alias match - Electrolysis (aluminum)"
+    description: "Aluminum electrolysis"
+    input:
+      raw_name: "Aluminum electrolysis"
+      entity_type: "process"
+      hints:
+        sector: "aluminum"
+    expected:
+      reference_id: "GL-PROC-ALUM-HALLHEROULT"
+      canonical_name: "Hall-Heroult process"
+      match_method: "alias"
+      confidence: 1.0
+      needs_review: false
+    tags: ["alias", "aluminum"]
+
+  - name: "Exact match - Bayer process"
+    description: "Alumina refining process"
+    input:
+      raw_name: "Bayer process"
+      entity_type: "process"
+    expected:
+      reference_id: "GL-PROC-ALUM-BAYER"
+      canonical_name: "Bayer process"
+      match_method: "exact"
+      confidence: 1.0
+      needs_review: false
+    tags: ["exact", "aluminum"]
+
+  # ---------------------------------------------------------------------------
+  # Cement Production Processes
+  # ---------------------------------------------------------------------------
+  - name: "Exact match - Clinker production"
+    description: "Cement clinker manufacturing"
+    input:
+      raw_name: "Clinker production"
+      entity_type: "process"
+    expected:
+      reference_id: "GL-PROC-CEMENT-CLINKER"
+      canonical_name: "Clinker production"
+      match_method: "exact"
+      confidence: 1.0
+      needs_review: false
+    tags: ["exact", "cement"]
+
+  - name: "Alias match - Calcination"
+    description: "Limestone calcination"
+    input:
+      raw_name: "Calcination"
+      entity_type: "process"
+      hints:
+        sector: "cement"
+    expected:
+      reference_id: "GL-PROC-CEMENT-CALCINATION"
+      canonical_name: "Calcination"
+      match_method: "exact"
+      confidence: 1.0
+      needs_review: false
+    tags: ["exact", "cement"]
+
+  # ---------------------------------------------------------------------------
+  # Combustion Processes
+  # ---------------------------------------------------------------------------
+  - name: "Exact match - Stationary combustion"
+    description: "Stationary source fuel combustion"
+    input:
+      raw_name: "Stationary combustion"
+      entity_type: "process"
+    expected:
+      reference_id: "GL-PROC-COMB-STATIONARY"
+      canonical_name: "Stationary combustion"
+      match_method: "exact"
+      confidence: 1.0
+      needs_review: false
+    tags: ["exact", "combustion"]
+
+  - name: "Exact match - Mobile combustion"
+    description: "Transportation fuel combustion"
+    input:
+      raw_name: "Mobile combustion"
+      entity_type: "process"
+    expected:
+      reference_id: "GL-PROC-COMB-MOBILE"
+      canonical_name: "Mobile combustion"
+      match_method: "exact"
+      confidence: 1.0
+      needs_review: false
+    tags: ["exact", "combustion"]
+
+  # ---------------------------------------------------------------------------
+  # Fuzzy and Rule-based Matches
+  # ---------------------------------------------------------------------------
+  - name: "Alias match - lowercase EAF"
+    description: "eaf in lowercase (case-insensitive alias match)"
+    input:
+      raw_name: "eaf"
+      entity_type: "process"
+    expected:
+      reference_id: "GL-PROC-STEEL-EAF"
+      canonical_name: "Electric arc furnace"
+      match_method: "alias"
+      confidence: 1.0
+      needs_review: false
+    tags: ["alias", "case"]
+
+  - name: "Fuzzy match - Electric Arc Furnac (typo)"
+    description: "Missing 'e' at end - requires review"
+    input:
+      raw_name: "Electric Arc Furnac"
+      entity_type: "process"
+    expected:
+      reference_id: "GL-PROC-STEEL-EAF"
+      canonical_name: "Electric arc furnace"
+      match_method: "fuzzy"
+      confidence_min: 0.70
+      needs_review: true
+    tags: ["fuzzy", "typo"]
+
+  # ---------------------------------------------------------------------------
+  # Edge Cases
+  # ---------------------------------------------------------------------------
+  - name: "Ambiguous process"
+    description: "Smelting (could be multiple materials)"
+    input:
+      raw_name: "Smelting"
+      entity_type: "process"
+    expected:
+      match_method: "fuzzy"
+      confidence_max: 0.80
+      needs_review: true
+      candidates_count_min: 2
+    tags: ["ambiguous", "needs_review"]
+
+  - name: "Unknown process"
+    description: "Process not in vocabulary"
+    input:
+      raw_name: "Flux capacitor synthesis"
+      entity_type: "process"
+    expected:
+      error_code: "GLNORM-E400"
+      needs_review: true
+    tags: ["edge_case", "no_match"]
+
+# -----------------------------------------------------------------------------
+# Vocabulary Reference
+# -----------------------------------------------------------------------------
+vocabulary_entries:
+  - id: "GL-PROC-STEEL-EAF"
+    name: "Electric arc furnace"
+    aliases: ["EAF", "Arc furnace", "Electric furnace"]
+    sector: "steel"
+  - id: "GL-PROC-STEEL-BOF"
+    name: "Basic oxygen furnace"
+    aliases: ["BOF", "BOS", "LD converter", "Oxygen converter"]
+    sector: "steel"
+  - id: "GL-PROC-IRON-BF"
+    name: "Blast furnace"
+    aliases: ["BF", "Iron blast furnace"]
+    sector: "iron"
+  - id: "GL-PROC-ALUM-HALLHEROULT"
+    name: "Hall-Heroult process"
+    aliases: ["Aluminum electrolysis", "Primary smelting"]
+    sector: "aluminum"
+  - id: "GL-PROC-CEMENT-CLINKER"
+    name: "Clinker production"
+    aliases: ["Clinker burning", "Kiln operation"]
+    sector: "cement"

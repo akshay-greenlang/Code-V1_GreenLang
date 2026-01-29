@@ -1,0 +1,152 @@
+# Dockerfile.review-console - GreenLang Normalizer Review Console
+# Web UI for reviewing low-confidence matches and managing vocabularies
+# Component: gl-normalizer-review-console (GL-FOUND-X-003)
+
+# =============================================================================
+# Stage 1: Node.js build stage for frontend
+# =============================================================================
+FROM node:20-alpine AS frontend-builder
+
+# Set working directory
+WORKDIR /app/frontend
+
+# Copy package files for dependency caching
+COPY packages/gl-normalizer-review-console/frontend/package*.json ./
+
+# Install dependencies
+RUN npm ci --only=production=false
+
+# Copy frontend source
+COPY packages/gl-normalizer-review-console/frontend/ ./
+
+# Build production assets
+RUN npm run build
+
+# =============================================================================
+# Stage 2: Python build stage for backend
+# =============================================================================
+FROM python:3.11-slim AS backend-builder
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    g++ \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create virtual environment
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Upgrade pip
+RUN pip install --upgrade pip setuptools wheel
+
+# Install backend dependencies for review console
+RUN pip install \
+    "fastapi>=0.109.0" \
+    "uvicorn[standard]>=0.27.0" \
+    "pydantic>=2.5.0" \
+    "pydantic-settings>=2.1.0" \
+    "sqlalchemy>=2.0.25" \
+    "asyncpg>=0.29.0" \
+    "alembic>=1.13.0" \
+    "python-jose[cryptography]>=3.3.0" \
+    "passlib[bcrypt]>=1.7.4" \
+    "python-multipart>=0.0.6" \
+    "aiofiles>=23.2.1" \
+    "jinja2>=3.1.2" \
+    "httpx>=0.26.0" \
+    "structlog>=24.1.0" \
+    "opentelemetry-api>=1.22.0" \
+    "opentelemetry-sdk>=1.22.0" \
+    "prometheus-client>=0.19.0" \
+    "redis>=5.0.0"
+
+# Copy and prepare backend source
+WORKDIR /build
+COPY packages/gl-normalizer-review-console/backend/ ./
+
+# =============================================================================
+# Stage 3: Runtime stage
+# =============================================================================
+FROM python:3.11-slim AS runtime
+
+# Labels
+LABEL maintainer="GreenLang Platform Team <platform@greenlang.io>"
+LABEL org.opencontainers.image.title="GL Normalizer Review Console"
+LABEL org.opencontainers.image.description="Web UI for reviewing normalization results and managing vocabularies"
+LABEL org.opencontainers.image.source="https://github.com/greenlang/greenlang-normalizer"
+LABEL org.opencontainers.image.vendor="GreenLang"
+LABEL org.opencontainers.image.version="1.0.0"
+
+# Runtime environment
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONFAULTHANDLER=1 \
+    # Application settings
+    GL_REVIEW_CONSOLE_ENV=production \
+    GL_REVIEW_CONSOLE_HOST=0.0.0.0 \
+    GL_REVIEW_CONSOLE_PORT=8080 \
+    GL_REVIEW_CONSOLE_WORKERS=2 \
+    GL_REVIEW_CONSOLE_LOG_LEVEL=INFO \
+    # Database
+    GL_REVIEW_CONSOLE_DATABASE_URL=postgresql+asyncpg://user:pass@localhost/review_console \
+    # Redis session store
+    GL_REVIEW_CONSOLE_REDIS_URL=redis://localhost:6379/1 \
+    # Normalizer service
+    GL_NORMALIZER_SERVICE_URL=http://gl-normalizer-service:8000
+
+# Install runtime dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpq5 \
+    curl \
+    ca-certificates \
+    tini \
+    nginx \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+# Create virtual environment
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Copy virtual environment from builder
+COPY --from=backend-builder /opt/venv /opt/venv
+
+# Create non-root user
+RUN groupadd --gid 1000 greenlang && \
+    useradd --uid 1000 --gid 1000 --shell /bin/bash --create-home greenlang && \
+    mkdir -p /app /app/static /app/templates /var/log/nginx /var/cache/nginx && \
+    chown -R greenlang:greenlang /app /var/log/nginx /var/cache/nginx /run
+
+# Set working directory
+WORKDIR /app
+
+# Copy built frontend assets
+COPY --from=frontend-builder --chown=greenlang:greenlang /app/frontend/dist/ /app/static/
+
+# Copy backend source
+COPY --from=backend-builder --chown=greenlang:greenlang /build/ /app/
+
+# Copy nginx configuration
+COPY --chown=greenlang:greenlang infrastructure/docker/nginx-review-console.conf /etc/nginx/nginx.conf
+
+# Switch to non-root user
+USER greenlang
+
+# Expose ports (nginx: 8080, backend: 8081)
+EXPOSE 8080 8081
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+    CMD curl -f http://localhost:8080/api/health || exit 1
+
+# Use tini as init system
+ENTRYPOINT ["/usr/bin/tini", "--"]
+
+# Start both nginx and uvicorn
+CMD ["/bin/sh", "-c", "nginx && uvicorn main:app --host 0.0.0.0 --port 8081 --workers 2"]

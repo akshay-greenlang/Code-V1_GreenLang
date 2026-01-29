@@ -1,0 +1,133 @@
+# EU CSRD/ESRS Compliance Profile
+# Corporate Sustainability Reporting Directive
+# Version: 2024.1
+
+id: csrd_esrs
+name: EU CSRD - ESRS E1 Climate
+version: "2024.1"
+description: |
+  Compliance profile for EU Corporate Sustainability Reporting Directive (CSRD)
+  European Sustainability Reporting Standards - E1 Climate Change.
+
+# Default GWP version (ESRS requires AR5)
+gwp_version: AR5
+
+# Reference conditions per EU standards
+reference_conditions:
+  temperature_celsius: 15.0
+  pressure_kpa: 101.325
+  basis: NTP
+
+# Confidence thresholds
+thresholds:
+  min_unit_confidence: 0.90
+  min_entity_confidence: 0.85
+  requires_review_below: 0.95
+
+# Precision requirements (stricter for EU reporting)
+precision:
+  emissions_digits: 6
+  energy_digits: 6
+  activity_data_digits: 4
+
+# Required fields for ESRS E1 compliance
+required_fields:
+  - source_unit
+  - target_unit
+  - gwp_version
+  - emission_scope
+  - reporting_period
+  - methodology_reference
+
+# Emission categories per ESRS E1
+emission_categories:
+  scope_1:
+    - stationary_combustion
+    - mobile_combustion
+    - process_emissions
+    - fugitive_emissions
+  scope_2:
+    - electricity
+    - heat
+    - steam
+    - cooling
+  scope_3:
+    - purchased_goods_services
+    - capital_goods
+    - fuel_energy_activities
+    - upstream_transport
+    - waste
+    - business_travel
+    - employee_commuting
+    - upstream_leased_assets
+    - downstream_transport
+    - processing_sold_products
+    - use_sold_products
+    - end_of_life_treatment
+    - downstream_leased_assets
+    - franchises
+    - investments
+
+# Canonical units (SI preferred for EU)
+canonical_units:
+  emissions: metric_ton_co2e
+  energy: megajoule
+  electricity: megawatt_hour
+  fuel_mass: metric_ton
+  fuel_volume: cubic_meter
+  distance: kilometer
+  area: square_meter
+  revenue: euro
+
+# Double materiality thresholds
+materiality:
+  financial_threshold_percent: 5.0
+  impact_threshold: significant
+  stakeholder_relevance: high
+
+# Transition plan requirements
+transition_requirements:
+  require_baseline_year: true
+  require_targets: true
+  require_methodology: true
+  require_assumptions: true
+
+# Validation rules
+rules:
+  - id: ESRS_E1_001
+    name: GWP Version AR5 Required
+    description: ESRS E1 requires AR5 GWP values
+    severity: error
+    condition: gwp_version == "AR5"
+
+  - id: ESRS_E1_002
+    name: Complete Scope Coverage
+    description: All three scopes must be reported
+    severity: error
+    condition: all_scopes_reported
+
+  - id: ESRS_E1_003
+    name: Methodology Disclosure
+    description: Calculation methodology must be disclosed
+    severity: error
+    condition: methodology_documented
+
+  - id: ESRS_E1_004
+    name: Base Year Comparability
+    description: Data must be comparable to base year
+    severity: warning
+    condition: base_year_comparable
+
+  - id: ESRS_E1_005
+    name: SI Units Preferred
+    description: SI units should be used where possible
+    severity: info
+    condition: si_units_used
+
+# Metadata
+metadata:
+  standard_url: https://www.efrag.org/lab6
+  directive: 2022/2464/EU
+  effective_date: "2024-01-01"
+  last_updated: "2024-01-15"
+  maintainer: GreenLang Team

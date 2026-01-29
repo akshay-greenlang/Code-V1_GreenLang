@@ -1,0 +1,360 @@
+# GreenLang Vocabulary Entry Schema
+# Version: 1.0.0
+# Last Updated: 2026-01-30
+# Description: JSON Schema defining the structure for all vocabulary entries
+#              in the GreenLang Normalizer system (GL-FOUND-X-003)
+
+$schema: "https://json-schema.org/draft/2020-12/schema"
+$id: "https://greenlang.io/schemas/vocabulary_entry.v1.yaml"
+
+title: "GreenLang Vocabulary Entry"
+description: |
+  Defines the canonical structure for vocabulary entries used in entity normalization.
+  All fuels, materials, and processes must conform to this schema.
+
+  Key Features:
+  - Unique reference_id with type-specific prefixes
+  - Multi-locale alias support with priority ranking
+  - Flexible attributes for domain-specific data
+  - Deprecation support with replacement tracking
+  - Temporal validity with effective dates
+
+type: object
+
+required:
+  - reference_id
+  - canonical_name
+  - entity_type
+  - status
+  - aliases
+  - effective_from
+
+properties:
+  reference_id:
+    type: string
+    description: |
+      Unique identifier for the vocabulary entry.
+      Must follow GreenLang naming convention with type-specific prefix.
+    pattern: "^GL-(FUEL|MAT|PROC|UNIT)-[A-Z0-9]+(-[A-Z0-9]+)*$"
+    examples:
+      - "GL-FUEL-NATGAS"
+      - "GL-MAT-STEEL"
+      - "GL-PROC-EAF"
+      - "GL-UNIT-KWH"
+
+  canonical_name:
+    type: string
+    description: |
+      The official, standardized name for this entity.
+      Used as the primary display name in reports and outputs.
+    minLength: 1
+    maxLength: 200
+    examples:
+      - "Natural Gas"
+      - "Portland Cement"
+      - "Electric Arc Furnace"
+
+  entity_type:
+    type: string
+    description: "The category of this vocabulary entry"
+    enum:
+      - fuel
+      - material
+      - process
+      - unit
+
+  status:
+    type: string
+    description: |
+      Current lifecycle status of the vocabulary entry.
+      - active: Currently valid and should be used
+      - deprecated: Replaced by another entry, kept for backward compatibility
+    enum:
+      - active
+      - deprecated
+    default: active
+
+  replaced_by:
+    type:
+      - string
+      - "null"
+    description: |
+      Reference ID of the entry that replaces this one (when deprecated).
+      Must be null for active entries.
+    pattern: "^GL-(FUEL|MAT|PROC|UNIT)-[A-Z0-9]+(-[A-Z0-9]+)*$"
+    default: null
+    examples:
+      - "GL-FUEL-BIODIESEL-HVO"
+      - null
+
+  aliases:
+    type: array
+    description: |
+      List of alternative names/terms that map to this canonical entry.
+      Used for fuzzy matching and normalization from various input sources.
+    minItems: 1
+    items:
+      type: object
+      required:
+        - alias
+        - locale
+        - source
+        - priority
+      properties:
+        alias:
+          type: string
+          description: "The alternative name or term"
+          minLength: 1
+          maxLength: 200
+          examples:
+            - "Nat Gas"
+            - "NG"
+            - "Natural-gas"
+
+        locale:
+          type: string
+          description: |
+            ISO 639-1 language code or BCP 47 locale tag.
+            Use 'universal' for language-agnostic aliases (codes, abbreviations).
+          pattern: "^(universal|[a-z]{2}(-[A-Z]{2})?)$"
+          examples:
+            - "universal"
+            - "en"
+            - "en-US"
+            - "ja"
+            - "de"
+
+        source:
+          type: string
+          description: |
+            Origin of this alias mapping.
+            - ipcc: IPCC Guidelines terminology
+            - ghgp: GHG Protocol terminology
+            - epa: US EPA terminology
+            - defra: UK DEFRA terminology
+            - iso: ISO standards terminology
+            - eia: US Energy Information Administration
+            - industry: Common industry terminology
+            - regional: Regional/country-specific terminology
+            - greenlang: GreenLang curated terminology
+          enum:
+            - ipcc
+            - ghgp
+            - epa
+            - defra
+            - iso
+            - eia
+            - industry
+            - regional
+            - greenlang
+
+        priority:
+          type: integer
+          description: |
+            Priority for disambiguation when multiple entries match.
+            Higher values = higher priority (used first in tie-breaking).
+            Range: 1-100
+          minimum: 1
+          maximum: 100
+          default: 50
+
+        case_sensitive:
+          type: boolean
+          description: "Whether matching should be case-sensitive"
+          default: false
+
+        exact_match_only:
+          type: boolean
+          description: |
+            If true, only exact matches are allowed (no fuzzy matching).
+            Use for abbreviations and codes that could have false positives.
+          default: false
+
+  attributes:
+    type: object
+    description: |
+      Domain-specific attributes for this vocabulary entry.
+      Structure varies by entity_type. All numeric values should include
+      units in the key name for clarity.
+    additionalProperties: true
+    properties:
+      # Fuel-specific attributes
+      NCV_MJ_kg:
+        type: number
+        description: "Net Calorific Value (Lower Heating Value) in MJ/kg"
+        minimum: 0
+        examples: [48.0, 42.3]
+
+      GCV_MJ_kg:
+        type: number
+        description: "Gross Calorific Value (Higher Heating Value) in MJ/kg"
+        minimum: 0
+        examples: [53.0, 45.5]
+
+      density_kg_L:
+        type: number
+        description: "Density in kg per liter (for liquids)"
+        minimum: 0
+        examples: [0.84, 0.95]
+
+      density_kg_m3:
+        type: number
+        description: "Density in kg per cubic meter (for gases)"
+        minimum: 0
+        examples: [0.717, 1.977]
+
+      carbon_content_fraction:
+        type: number
+        description: "Mass fraction of carbon (0-1)"
+        minimum: 0
+        maximum: 1
+        examples: [0.75, 0.87]
+
+      sulfur_content_ppm:
+        type: number
+        description: "Sulfur content in parts per million"
+        minimum: 0
+        examples: [10, 500]
+
+      # Material-specific attributes
+      grade:
+        type: string
+        description: "Material grade or specification"
+        examples: ["ASTM A36", "CEM I 42.5N"]
+
+      composition:
+        type: object
+        description: "Chemical composition (mass fractions)"
+        additionalProperties:
+          type: number
+          minimum: 0
+          maximum: 1
+
+      # Process-specific attributes
+      typical_energy_intensity_MJ_t:
+        type: number
+        description: "Typical energy intensity in MJ per tonne output"
+        minimum: 0
+
+      typical_emissions_kgCO2e_t:
+        type: number
+        description: "Typical emissions in kg CO2e per tonne output"
+        minimum: 0
+
+      process_category:
+        type: string
+        description: "Category of industrial process"
+        enum:
+          - combustion
+          - chemical_transformation
+          - physical_transformation
+          - thermal_treatment
+          - electrochemical
+
+      input_materials:
+        type: array
+        description: "Reference IDs of typical input materials"
+        items:
+          type: string
+          pattern: "^GL-MAT-[A-Z0-9]+(-[A-Z0-9]+)*$"
+
+      output_materials:
+        type: array
+        description: "Reference IDs of typical output materials"
+        items:
+          type: string
+          pattern: "^GL-MAT-[A-Z0-9]+(-[A-Z0-9]+)*$"
+
+  effective_from:
+    type: string
+    format: date
+    description: |
+      Date from which this vocabulary entry is valid (inclusive).
+      Format: YYYY-MM-DD
+    examples:
+      - "2024-01-01"
+      - "2026-01-01"
+
+  effective_to:
+    type:
+      - string
+      - "null"
+    format: date
+    description: |
+      Date until which this vocabulary entry is valid (inclusive).
+      Null means no end date (currently valid).
+      Format: YYYY-MM-DD
+    default: null
+    examples:
+      - "2025-12-31"
+      - null
+
+  notes:
+    type: string
+    description: "Additional notes or documentation for this entry"
+    maxLength: 2000
+
+  provenance:
+    type: object
+    description: "Tracking information for audit and governance"
+    properties:
+      created_at:
+        type: string
+        format: date-time
+        description: "ISO 8601 timestamp of creation"
+      created_by:
+        type: string
+        description: "Identifier of the creator (user or system)"
+      last_modified_at:
+        type: string
+        format: date-time
+        description: "ISO 8601 timestamp of last modification"
+      last_modified_by:
+        type: string
+        description: "Identifier of the last modifier"
+      version:
+        type: integer
+        description: "Version number for optimistic locking"
+        minimum: 1
+        default: 1
+      source_references:
+        type: array
+        description: "References to source documentation"
+        items:
+          type: string
+        examples:
+          - "IPCC 2006 Guidelines, Vol. 2, Ch. 1, Table 1.2"
+          - "GHG Protocol Scope 2 Guidance, Appendix A"
+
+# Conditional validation based on entity_type
+allOf:
+  - if:
+      properties:
+        entity_type:
+          const: fuel
+    then:
+      properties:
+        attributes:
+          required:
+            - NCV_MJ_kg
+
+  - if:
+      properties:
+        status:
+          const: deprecated
+    then:
+      required:
+        - replaced_by
+      properties:
+        replaced_by:
+          type: string
+          minLength: 1
+
+  - if:
+      properties:
+        status:
+          const: active
+    then:
+      properties:
+        replaced_by:
+          const: null

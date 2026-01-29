@@ -1,0 +1,937 @@
+# GreenLang Common Fuels Vocabulary
+# Version: 1.0.0
+# Last Updated: 2026-01-30
+# Schema: vocabulary_entry.v1.yaml
+# Description: Standard fuel vocabulary entries for GreenLang Normalizer (GL-FOUND-X-003)
+#
+# Reference Sources:
+# - IPCC 2006 Guidelines for National Greenhouse Gas Inventories
+# - GHG Protocol Cross-Sector Guidance
+# - US EPA Emission Factors Hub
+# - UK DEFRA Conversion Factors
+# - US EIA Monthly Energy Review
+
+---
+# ============================================================================
+# NATURAL GAS
+# ============================================================================
+- reference_id: GL-FUEL-NATGAS
+  canonical_name: "Natural Gas"
+  entity_type: fuel
+  status: active
+  replaced_by: null
+
+  aliases:
+    - alias: "Natural Gas"
+      locale: en
+      source: ghgp
+      priority: 100
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Nat Gas"
+      locale: en
+      source: industry
+      priority: 80
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "NG"
+      locale: universal
+      source: industry
+      priority: 70
+      case_sensitive: true
+      exact_match_only: true
+
+    - alias: "Natural-gas"
+      locale: en
+      source: greenlang
+      priority: 60
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "天然ガス"
+      locale: ja
+      source: regional
+      priority: 90
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Erdgas"
+      locale: de
+      source: regional
+      priority: 90
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Gaz naturel"
+      locale: fr
+      source: regional
+      priority: 90
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Pipeline Natural Gas"
+      locale: en
+      source: eia
+      priority: 75
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Methane"
+      locale: en
+      source: industry
+      priority: 40
+      case_sensitive: false
+      exact_match_only: false
+
+  attributes:
+    NCV_MJ_kg: 48.0
+    GCV_MJ_kg: 53.6
+    density_kg_m3: 0.717
+    carbon_content_fraction: 0.75
+    sulfur_content_ppm: 5
+    methane_content_fraction: 0.95
+    default_ef_kgCO2_GJ: 56.1
+
+  effective_from: "2024-01-01"
+  effective_to: null
+
+  notes: |
+    Standard pipeline-quality natural gas. Composition may vary by region.
+    NCV based on IPCC 2006 default value. Actual values should be obtained
+    from gas supplier when available for improved accuracy.
+
+  provenance:
+    created_at: "2026-01-30T00:00:00Z"
+    created_by: "GL-FOUND-X-003"
+    last_modified_at: "2026-01-30T00:00:00Z"
+    last_modified_by: "GL-FOUND-X-003"
+    version: 1
+    source_references:
+      - "IPCC 2006 Guidelines, Vol. 2, Ch. 1, Table 1.2"
+      - "GHG Protocol Stationary Combustion Tool, v4.1"
+
+---
+# ============================================================================
+# DIESEL
+# ============================================================================
+- reference_id: GL-FUEL-DIESEL
+  canonical_name: "Diesel"
+  entity_type: fuel
+  status: active
+  replaced_by: null
+
+  aliases:
+    - alias: "Diesel"
+      locale: en
+      source: ghgp
+      priority: 100
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "ULSD"
+      locale: universal
+      source: industry
+      priority: 85
+      case_sensitive: true
+      exact_match_only: true
+
+    - alias: "Ultra Low Sulfur Diesel"
+      locale: en
+      source: epa
+      priority: 80
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "HSD"
+      locale: universal
+      source: industry
+      priority: 75
+      case_sensitive: true
+      exact_match_only: true
+
+    - alias: "High Speed Diesel"
+      locale: en
+      source: regional
+      priority: 70
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Diesel Fuel"
+      locale: en
+      source: ghgp
+      priority: 90
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Gas Oil"
+      locale: en
+      source: ipcc
+      priority: 85
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Distillate Fuel Oil No. 2"
+      locale: en
+      source: eia
+      priority: 70
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "DERV"
+      locale: en-GB
+      source: defra
+      priority: 80
+      case_sensitive: true
+      exact_match_only: true
+
+    - alias: "AGO"
+      locale: universal
+      source: industry
+      priority: 65
+      case_sensitive: true
+      exact_match_only: true
+
+    - alias: "Automotive Gas Oil"
+      locale: en
+      source: industry
+      priority: 60
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "ディーゼル"
+      locale: ja
+      source: regional
+      priority: 90
+      case_sensitive: false
+      exact_match_only: false
+
+  attributes:
+    NCV_MJ_kg: 43.0
+    GCV_MJ_kg: 45.6
+    NCV_MJ_L: 36.12
+    density_kg_L: 0.84
+    carbon_content_fraction: 0.87
+    sulfur_content_ppm: 10
+    default_ef_kgCO2_GJ: 74.1
+
+  effective_from: "2024-01-01"
+  effective_to: null
+
+  notes: |
+    Standard automotive diesel / gas oil. ULSD specification (<15 ppm sulfur)
+    is now standard in most developed markets. For older/regional diesel with
+    higher sulfur, adjust emission factors accordingly.
+
+  provenance:
+    created_at: "2026-01-30T00:00:00Z"
+    created_by: "GL-FOUND-X-003"
+    last_modified_at: "2026-01-30T00:00:00Z"
+    last_modified_by: "GL-FOUND-X-003"
+    version: 1
+    source_references:
+      - "IPCC 2006 Guidelines, Vol. 2, Ch. 1, Table 1.2"
+      - "US EPA Emission Factors Hub, 2024"
+
+---
+# ============================================================================
+# HEAVY FUEL OIL (HFO)
+# ============================================================================
+- reference_id: GL-FUEL-HFO
+  canonical_name: "Heavy Fuel Oil"
+  entity_type: fuel
+  status: active
+  replaced_by: null
+
+  aliases:
+    - alias: "Heavy Fuel Oil"
+      locale: en
+      source: ghgp
+      priority: 100
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "HFO"
+      locale: universal
+      source: industry
+      priority: 95
+      case_sensitive: true
+      exact_match_only: true
+
+    - alias: "Furnace Oil"
+      locale: en
+      source: industry
+      priority: 85
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "FO"
+      locale: universal
+      source: industry
+      priority: 70
+      case_sensitive: true
+      exact_match_only: true
+
+    - alias: "Residual Fuel"
+      locale: en
+      source: ipcc
+      priority: 80
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Residual Fuel Oil"
+      locale: en
+      source: eia
+      priority: 85
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Bunker C"
+      locale: en
+      source: industry
+      priority: 75
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Fuel Oil No. 6"
+      locale: en
+      source: eia
+      priority: 70
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "HSFO"
+      locale: universal
+      source: industry
+      priority: 80
+      case_sensitive: true
+      exact_match_only: true
+
+    - alias: "High Sulfur Fuel Oil"
+      locale: en
+      source: industry
+      priority: 75
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "IFO 380"
+      locale: universal
+      source: industry
+      priority: 70
+      case_sensitive: true
+      exact_match_only: true
+
+    - alias: "IFO 180"
+      locale: universal
+      source: industry
+      priority: 70
+      case_sensitive: true
+      exact_match_only: true
+
+    - alias: "重油"
+      locale: ja
+      source: regional
+      priority: 90
+      case_sensitive: false
+      exact_match_only: false
+
+  attributes:
+    NCV_MJ_kg: 40.4
+    GCV_MJ_kg: 42.5
+    NCV_MJ_L: 39.19
+    density_kg_L: 0.97
+    carbon_content_fraction: 0.85
+    sulfur_content_ppm: 35000
+    viscosity_cSt_50C: 380
+    default_ef_kgCO2_GJ: 77.4
+
+  effective_from: "2024-01-01"
+  effective_to: null
+
+  notes: |
+    Heavy residual fuel oil typically used in industrial boilers and marine
+    applications. High sulfur content (3.5%) unless LSFO variant. IMO 2020
+    regulations have reduced marine HFO use without scrubbers.
+
+  provenance:
+    created_at: "2026-01-30T00:00:00Z"
+    created_by: "GL-FOUND-X-003"
+    last_modified_at: "2026-01-30T00:00:00Z"
+    last_modified_by: "GL-FOUND-X-003"
+    version: 1
+    source_references:
+      - "IPCC 2006 Guidelines, Vol. 2, Ch. 1, Table 1.2"
+      - "IMO MEPC.320(74) - 2020 Sulfur Regulations"
+
+---
+# ============================================================================
+# LIQUEFIED PETROLEUM GAS (LPG)
+# ============================================================================
+- reference_id: GL-FUEL-LPG
+  canonical_name: "Liquefied Petroleum Gas"
+  entity_type: fuel
+  status: active
+  replaced_by: null
+
+  aliases:
+    - alias: "LPG"
+      locale: universal
+      source: ghgp
+      priority: 100
+      case_sensitive: true
+      exact_match_only: true
+
+    - alias: "Liquefied Petroleum Gas"
+      locale: en
+      source: ghgp
+      priority: 95
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Propane"
+      locale: en
+      source: industry
+      priority: 80
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Butane"
+      locale: en
+      source: industry
+      priority: 75
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "LP Gas"
+      locale: en
+      source: industry
+      priority: 85
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Autogas"
+      locale: en
+      source: industry
+      priority: 70
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Cooking Gas"
+      locale: en
+      source: regional
+      priority: 50
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Bottled Gas"
+      locale: en
+      source: regional
+      priority: 45
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "GPL"
+      locale: fr
+      source: regional
+      priority: 90
+      case_sensitive: true
+      exact_match_only: true
+
+    - alias: "Flüssiggas"
+      locale: de
+      source: regional
+      priority: 90
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "LPガス"
+      locale: ja
+      source: regional
+      priority: 90
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "プロパン"
+      locale: ja
+      source: regional
+      priority: 85
+      case_sensitive: false
+      exact_match_only: false
+
+  attributes:
+    NCV_MJ_kg: 47.3
+    GCV_MJ_kg: 50.0
+    NCV_MJ_L: 25.3
+    density_kg_L: 0.535
+    carbon_content_fraction: 0.82
+    sulfur_content_ppm: 50
+    propane_fraction: 0.60
+    butane_fraction: 0.40
+    default_ef_kgCO2_GJ: 63.1
+
+  effective_from: "2024-01-01"
+  effective_to: null
+
+  notes: |
+    Typical commercial LPG blend (60% propane, 40% butane). Actual composition
+    varies by region and season. For pure propane or butane, use specific
+    entries GL-FUEL-PROPANE or GL-FUEL-BUTANE.
+
+  provenance:
+    created_at: "2026-01-30T00:00:00Z"
+    created_by: "GL-FOUND-X-003"
+    last_modified_at: "2026-01-30T00:00:00Z"
+    last_modified_by: "GL-FOUND-X-003"
+    version: 1
+    source_references:
+      - "IPCC 2006 Guidelines, Vol. 2, Ch. 1, Table 1.2"
+      - "World LP Gas Association Technical Guidelines"
+
+---
+# ============================================================================
+# COAL (BITUMINOUS)
+# ============================================================================
+- reference_id: GL-FUEL-COAL
+  canonical_name: "Coal (Bituminous)"
+  entity_type: fuel
+  status: active
+  replaced_by: null
+
+  aliases:
+    - alias: "Coal"
+      locale: en
+      source: ghgp
+      priority: 100
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Bituminous Coal"
+      locale: en
+      source: ipcc
+      priority: 95
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Sub-bituminous"
+      locale: en
+      source: ipcc
+      priority: 70
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Sub-bituminous Coal"
+      locale: en
+      source: ipcc
+      priority: 75
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Steam Coal"
+      locale: en
+      source: industry
+      priority: 85
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Thermal Coal"
+      locale: en
+      source: industry
+      priority: 85
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Hard Coal"
+      locale: en
+      source: ipcc
+      priority: 80
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Black Coal"
+      locale: en
+      source: regional
+      priority: 70
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Steinkohle"
+      locale: de
+      source: regional
+      priority: 90
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "石炭"
+      locale: ja
+      source: regional
+      priority: 90
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "瀝青炭"
+      locale: ja
+      source: regional
+      priority: 85
+      case_sensitive: false
+      exact_match_only: false
+
+  attributes:
+    NCV_MJ_kg: 25.8
+    GCV_MJ_kg: 27.0
+    carbon_content_fraction: 0.746
+    sulfur_content_ppm: 10000
+    ash_content_fraction: 0.10
+    moisture_content_fraction: 0.08
+    volatile_matter_fraction: 0.35
+    default_ef_kgCO2_GJ: 94.6
+
+  effective_from: "2024-01-01"
+  effective_to: null
+
+  notes: |
+    Generic bituminous coal. Actual properties vary significantly by source.
+    For accurate calculations, obtain specific coal analysis from supplier.
+    NCV can range from 24-32 MJ/kg depending on rank and quality.
+
+  provenance:
+    created_at: "2026-01-30T00:00:00Z"
+    created_by: "GL-FOUND-X-003"
+    last_modified_at: "2026-01-30T00:00:00Z"
+    last_modified_by: "GL-FOUND-X-003"
+    version: 1
+    source_references:
+      - "IPCC 2006 Guidelines, Vol. 2, Ch. 1, Table 1.2"
+      - "IPCC 2006 Guidelines, Vol. 2, Ch. 2, Table 2.2"
+
+---
+# ============================================================================
+# GASOLINE / PETROL
+# ============================================================================
+- reference_id: GL-FUEL-GASOLINE
+  canonical_name: "Gasoline"
+  entity_type: fuel
+  status: active
+  replaced_by: null
+
+  aliases:
+    - alias: "Gasoline"
+      locale: en-US
+      source: ghgp
+      priority: 100
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Petrol"
+      locale: en-GB
+      source: defra
+      priority: 100
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Motor Spirit"
+      locale: en
+      source: ipcc
+      priority: 80
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Motor Gasoline"
+      locale: en
+      source: eia
+      priority: 90
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Mogas"
+      locale: universal
+      source: industry
+      priority: 75
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Premium Gasoline"
+      locale: en
+      source: industry
+      priority: 70
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Regular Gasoline"
+      locale: en
+      source: industry
+      priority: 70
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Unleaded"
+      locale: en
+      source: industry
+      priority: 60
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "ULP"
+      locale: universal
+      source: industry
+      priority: 65
+      case_sensitive: true
+      exact_match_only: true
+
+    - alias: "Benzin"
+      locale: de
+      source: regional
+      priority: 90
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Essence"
+      locale: fr
+      source: regional
+      priority: 90
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "ガソリン"
+      locale: ja
+      source: regional
+      priority: 90
+      case_sensitive: false
+      exact_match_only: false
+
+  attributes:
+    NCV_MJ_kg: 44.3
+    GCV_MJ_kg: 47.3
+    NCV_MJ_L: 32.18
+    density_kg_L: 0.726
+    carbon_content_fraction: 0.85
+    sulfur_content_ppm: 10
+    octane_ron: 95
+    default_ef_kgCO2_GJ: 69.3
+
+  effective_from: "2024-01-01"
+  effective_to: null
+
+  notes: |
+    Standard automotive gasoline/petrol. Modern formulations contain up to
+    10% ethanol (E10) in many markets - use GL-FUEL-E10 for explicit E10 fuel.
+    Properties shown are for pure gasoline.
+
+  provenance:
+    created_at: "2026-01-30T00:00:00Z"
+    created_by: "GL-FOUND-X-003"
+    last_modified_at: "2026-01-30T00:00:00Z"
+    last_modified_by: "GL-FOUND-X-003"
+    version: 1
+    source_references:
+      - "IPCC 2006 Guidelines, Vol. 2, Ch. 1, Table 1.2"
+      - "US EPA Emission Factors Hub, 2024"
+
+---
+# ============================================================================
+# JET FUEL
+# ============================================================================
+- reference_id: GL-FUEL-JET
+  canonical_name: "Jet Fuel (Kerosene-type)"
+  entity_type: fuel
+  status: active
+  replaced_by: null
+
+  aliases:
+    - alias: "Jet A"
+      locale: en
+      source: industry
+      priority: 95
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Jet A-1"
+      locale: en
+      source: industry
+      priority: 100
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Aviation Fuel"
+      locale: en
+      source: ghgp
+      priority: 90
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Jet Fuel"
+      locale: en
+      source: ghgp
+      priority: 95
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Aviation Turbine Fuel"
+      locale: en
+      source: industry
+      priority: 85
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "ATF"
+      locale: universal
+      source: industry
+      priority: 80
+      case_sensitive: true
+      exact_match_only: true
+
+    - alias: "Kerosene-type Jet Fuel"
+      locale: en
+      source: eia
+      priority: 85
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Aviation Kerosene"
+      locale: en
+      source: ipcc
+      priority: 85
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "JP-8"
+      locale: universal
+      source: industry
+      priority: 75
+      case_sensitive: true
+      exact_match_only: true
+
+    - alias: "JET A1"
+      locale: universal
+      source: industry
+      priority: 90
+      case_sensitive: true
+      exact_match_only: true
+
+    - alias: "Kérosène aviation"
+      locale: fr
+      source: regional
+      priority: 85
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "ジェット燃料"
+      locale: ja
+      source: regional
+      priority: 90
+      case_sensitive: false
+      exact_match_only: false
+
+  attributes:
+    NCV_MJ_kg: 43.5
+    GCV_MJ_kg: 46.4
+    NCV_MJ_L: 34.80
+    density_kg_L: 0.80
+    carbon_content_fraction: 0.86
+    sulfur_content_ppm: 3000
+    flash_point_C: 38
+    freeze_point_C: -47
+    default_ef_kgCO2_GJ: 71.5
+
+  effective_from: "2024-01-01"
+  effective_to: null
+
+  notes: |
+    Kerosene-type jet fuel (Jet A / Jet A-1) as used in commercial aviation.
+    Jet A-1 has lower freeze point (-47C vs -40C) for international use.
+    For Sustainable Aviation Fuel blends, use GL-FUEL-SAF entries.
+
+  provenance:
+    created_at: "2026-01-30T00:00:00Z"
+    created_by: "GL-FOUND-X-003"
+    last_modified_at: "2026-01-30T00:00:00Z"
+    last_modified_by: "GL-FOUND-X-003"
+    version: 1
+    source_references:
+      - "IPCC 2006 Guidelines, Vol. 2, Ch. 1, Table 1.2"
+      - "ICAO Carbon Emissions Calculator Methodology, v12"
+
+---
+# ============================================================================
+# KEROSENE (NON-AVIATION)
+# ============================================================================
+- reference_id: GL-FUEL-KEROSENE
+  canonical_name: "Kerosene"
+  entity_type: fuel
+  status: active
+  replaced_by: null
+
+  aliases:
+    - alias: "Kerosene"
+      locale: en
+      source: ghgp
+      priority: 100
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Paraffin"
+      locale: en-GB
+      source: defra
+      priority: 85
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Paraffin Oil"
+      locale: en
+      source: regional
+      priority: 75
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Burning Oil"
+      locale: en
+      source: industry
+      priority: 70
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Lamp Oil"
+      locale: en
+      source: regional
+      priority: 60
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Heating Kerosene"
+      locale: en
+      source: industry
+      priority: 80
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "灯油"
+      locale: ja
+      source: regional
+      priority: 90
+      case_sensitive: false
+      exact_match_only: false
+
+  attributes:
+    NCV_MJ_kg: 43.8
+    GCV_MJ_kg: 46.5
+    NCV_MJ_L: 35.04
+    density_kg_L: 0.80
+    carbon_content_fraction: 0.86
+    sulfur_content_ppm: 500
+    default_ef_kgCO2_GJ: 71.9
+
+  effective_from: "2024-01-01"
+  effective_to: null
+
+  notes: |
+    Non-aviation kerosene for heating and industrial use.
+    Lower quality specification than aviation kerosene.
+
+  provenance:
+    created_at: "2026-01-30T00:00:00Z"
+    created_by: "GL-FOUND-X-003"
+    last_modified_at: "2026-01-30T00:00:00Z"
+    last_modified_by: "GL-FOUND-X-003"
+    version: 1
+    source_references:
+      - "IPCC 2006 Guidelines, Vol. 2, Ch. 1, Table 1.2"

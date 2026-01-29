@@ -1,0 +1,173 @@
+# Dockerfile.service - GreenLang Normalizer API Service
+# Multi-stage build for optimized image size and security
+# Component: gl-normalizer-service (GL-FOUND-X-003)
+
+# =============================================================================
+# Stage 1: Build stage
+# =============================================================================
+FROM python:3.11-slim AS builder
+
+# Build-time labels
+LABEL maintainer="GreenLang Platform Team <platform@greenlang.io>"
+LABEL org.opencontainers.image.title="GL Normalizer Service Builder"
+
+# Prevent Python from writing bytecode and buffering stdout/stderr
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    g++ \
+    libpq-dev \
+    libffi-dev \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+# Create virtual environment
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Upgrade pip and install build tools
+RUN pip install --upgrade pip setuptools wheel hatchling build
+
+# Set working directory
+WORKDIR /build
+
+# Copy dependency specifications (layer caching)
+COPY packages/gl-normalizer-core/pyproject.toml ./packages/gl-normalizer-core/
+COPY packages/gl-normalizer-service/pyproject.toml ./packages/gl-normalizer-service/
+
+# Install core library dependencies first
+RUN pip install pint>=0.23 pydantic>=2.5.0 pyyaml>=6.0.1 structlog>=23.2.0 \
+    rapidfuzz>=3.5.0 numpy>=1.26.0 httpx>=0.25.0
+
+# Install service dependencies
+RUN pip install \
+    "fastapi>=0.109.0,<1.0.0" \
+    "uvicorn[standard]>=0.27.0,<1.0.0" \
+    "pydantic>=2.5.0,<3.0.0" \
+    "pydantic-settings>=2.1.0,<3.0.0" \
+    "python-jose[cryptography]>=3.3.0,<4.0.0" \
+    "slowapi>=0.1.9,<1.0.0" \
+    "redis>=5.0.0,<6.0.0" \
+    "httpx>=0.26.0,<1.0.0" \
+    "structlog>=24.1.0,<25.0.0" \
+    "opentelemetry-api>=1.22.0,<2.0.0" \
+    "opentelemetry-sdk>=1.22.0,<2.0.0" \
+    "opentelemetry-instrumentation-fastapi>=0.43b0,<1.0.0" \
+    "prometheus-client>=0.19.0,<1.0.0" \
+    "psycopg2-binary>=2.9.9" \
+    "aiokafka>=0.9.0"
+
+# Copy and build core library
+COPY packages/gl-normalizer-core/src/ ./packages/gl-normalizer-core/src/
+COPY packages/gl-normalizer-core/README.md ./packages/gl-normalizer-core/
+WORKDIR /build/packages/gl-normalizer-core
+RUN python -m build --wheel --outdir /dist/core
+
+# Copy and build service
+WORKDIR /build/packages/gl-normalizer-service
+COPY packages/gl-normalizer-service/src/ ./src/
+COPY packages/gl-normalizer-service/README.md ./
+RUN python -m build --wheel --outdir /dist/service || pip install -e .
+
+# Install built packages
+RUN pip install /dist/core/*.whl || true
+# Note: Service might not have full setup, so we install from source
+WORKDIR /build/packages/gl-normalizer-service
+RUN pip install -e . || pip install --no-deps -e . || true
+
+# =============================================================================
+# Stage 2: Runtime stage
+# =============================================================================
+FROM python:3.11-slim AS runtime
+
+# Runtime labels with OCI spec
+LABEL maintainer="GreenLang Platform Team <platform@greenlang.io>"
+LABEL org.opencontainers.image.title="GL Normalizer Service"
+LABEL org.opencontainers.image.description="GreenLang Unit & Reference Normalizer REST API Service"
+LABEL org.opencontainers.image.source="https://github.com/greenlang/greenlang-normalizer"
+LABEL org.opencontainers.image.vendor="GreenLang"
+LABEL org.opencontainers.image.licenses="MIT"
+LABEL org.opencontainers.image.version="1.0.0"
+
+# Runtime environment
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONFAULTHANDLER=1 \
+    PIP_NO_CACHE_DIR=1 \
+    # Application settings
+    GL_NORMALIZER_ENV=production \
+    GL_NORMALIZER_HOST=0.0.0.0 \
+    GL_NORMALIZER_PORT=8000 \
+    GL_NORMALIZER_WORKERS=4 \
+    GL_NORMALIZER_LOG_LEVEL=INFO \
+    GL_NORMALIZER_LOG_FORMAT=json \
+    # Security settings
+    GL_NORMALIZER_CORS_ORIGINS="[]" \
+    # Observability
+    OTEL_SERVICE_NAME=gl-normalizer-service \
+    OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317 \
+    PROMETHEUS_MULTIPROC_DIR=/tmp/prometheus_multiproc
+
+# Install runtime dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpq5 \
+    curl \
+    ca-certificates \
+    tini \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+# Create virtual environment
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Copy virtual environment from builder
+COPY --from=builder /opt/venv /opt/venv
+
+# Create non-root user
+RUN groupadd --gid 1000 greenlang && \
+    useradd --uid 1000 --gid 1000 --shell /bin/bash --create-home greenlang && \
+    mkdir -p /app /app/config /app/data /app/logs /tmp/prometheus_multiproc && \
+    chown -R greenlang:greenlang /app /tmp/prometheus_multiproc
+
+# Set working directory
+WORKDIR /app
+
+# Copy configuration files
+COPY --chown=greenlang:greenlang config/ /app/config/
+
+# Copy service source for runtime (if not wheel-installed)
+COPY --chown=greenlang:greenlang packages/gl-normalizer-service/src/ /app/src/
+
+# Set Python path
+ENV PYTHONPATH="/app/src:${PYTHONPATH}"
+
+# Switch to non-root user
+USER greenlang
+
+# Expose API port
+EXPOSE 8000
+
+# Health check endpoint
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+# Use tini as init system for proper signal handling
+ENTRYPOINT ["/usr/bin/tini", "--"]
+
+# Run uvicorn with production settings
+CMD ["python", "-m", "uvicorn", "gl_normalizer_service.main:app", \
+     "--host", "0.0.0.0", \
+     "--port", "8000", \
+     "--workers", "4", \
+     "--loop", "uvloop", \
+     "--http", "httptools", \
+     "--proxy-headers", \
+     "--forwarded-allow-ips", "*", \
+     "--access-log", \
+     "--log-level", "info"]

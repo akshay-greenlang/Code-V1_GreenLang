@@ -1,0 +1,220 @@
+# kustomization.yaml - Production Environment Overlay
+# Component: GL-FOUND-X-003 - Unit & Reference Normalizer
+# Usage: kubectl apply -k infrastructure/kubernetes/overlays/prod/
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+metadata:
+  name: gl-normalizer-prod
+
+# Reference base configuration
+resources:
+  - ../../base
+
+# Namespace for production
+namespace: gl-normalizer
+
+# No name prefix for production (cleaner naming)
+# namePrefix: prod-
+
+# Common labels for production
+commonLabels:
+  environment: production
+  tier: production
+  criticality: high
+
+# Common annotations for production
+commonAnnotations:
+  support.greenlang.io/team: platform-team
+  support.greenlang.io/slack: "#platform-alerts"
+  support.greenlang.io/pagerduty: "PXXXXXX"
+
+# Production images (specific versions, never :latest)
+images:
+  - name: ghcr.io/greenlang/gl-normalizer-service
+    newTag: "1.0.0"
+    digest: sha256:PLACEHOLDER_DIGEST
+  - name: ghcr.io/greenlang/gl-normalizer-review-console
+    newTag: "1.0.0"
+    digest: sha256:PLACEHOLDER_DIGEST
+
+# ConfigMap patches for production
+configMapGenerator:
+  - name: gl-normalizer-config
+    behavior: merge
+    literals:
+      - GL_NORMALIZER_ENV=production
+      - GL_NORMALIZER_LOG_LEVEL=INFO
+      - GL_NORMALIZER_LOG_FORMAT=json
+      - GL_NORMALIZER_DEBUG=false
+      - GL_NORMALIZER_WORKERS=4
+      - GL_NORMALIZER_RATE_LIMIT_ENABLED=true
+      - GL_NORMALIZER_RATE_LIMIT_REQUESTS=1000
+      - GL_NORMALIZER_API_KEY_ENABLED=true
+      - GL_NORMALIZER_FUZZY_MATCHING_ENABLED=true
+      - GL_NORMALIZER_LLM_CANDIDATES_ENABLED=false
+      - OTEL_TRACES_SAMPLER_ARG=0.1
+
+# Patches for production-specific modifications
+patches:
+  # Production replicas (high availability)
+  - patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: gl-normalizer-service
+      spec:
+        replicas: 3
+        template:
+          spec:
+            # Add priority class for production
+            priorityClassName: gl-normalizer-critical
+            # Stricter pod anti-affinity
+            affinity:
+              podAntiAffinity:
+                requiredDuringSchedulingIgnoredDuringExecution:
+                  - labelSelector:
+                      matchLabels:
+                        app.kubernetes.io/name: gl-normalizer-service
+                    topologyKey: kubernetes.io/hostname
+                preferredDuringSchedulingIgnoredDuringExecution:
+                  - weight: 100
+                    podAffinityTerm:
+                      labelSelector:
+                        matchLabels:
+                          app.kubernetes.io/name: gl-normalizer-service
+                      topologyKey: topology.kubernetes.io/zone
+            # Node affinity for production nodes
+            nodeSelector:
+              node-type: production
+              workload-type: api
+            tolerations:
+              - key: "production"
+                operator: "Equal"
+                value: "true"
+                effect: "NoSchedule"
+
+  - patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: gl-normalizer-review-console
+      spec:
+        replicas: 2
+        template:
+          spec:
+            priorityClassName: gl-normalizer-standard
+            nodeSelector:
+              node-type: production
+              workload-type: web
+
+  # Production resource limits (generous for performance)
+  - patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: gl-normalizer-service
+      spec:
+        template:
+          spec:
+            containers:
+              - name: gl-normalizer-service
+                resources:
+                  requests:
+                    cpu: 500m
+                    memory: 1Gi
+                  limits:
+                    cpu: 2
+                    memory: 2Gi
+
+  # Production HPA settings
+  - patch: |-
+      apiVersion: autoscaling/v2
+      kind: HorizontalPodAutoscaler
+      metadata:
+        name: gl-normalizer-service-hpa
+      spec:
+        minReplicas: 3
+        maxReplicas: 20
+        behavior:
+          scaleUp:
+            stabilizationWindowSeconds: 30
+            policies:
+              - type: Percent
+                value: 100
+                periodSeconds: 30
+              - type: Pods
+                value: 4
+                periodSeconds: 30
+          scaleDown:
+            stabilizationWindowSeconds: 600
+            policies:
+              - type: Percent
+                value: 25
+                periodSeconds: 120
+
+  # Production PDB (high availability)
+  - patch: |-
+      apiVersion: policy/v1
+      kind: PodDisruptionBudget
+      metadata:
+        name: gl-normalizer-service-pdb
+      spec:
+        minAvailable: 2
+
+  # Production ingress
+  - patch: |-
+      apiVersion: networking.k8s.io/v1
+      kind: Ingress
+      metadata:
+        name: gl-normalizer-ingress
+        annotations:
+          cert-manager.io/cluster-issuer: letsencrypt-prod
+          nginx.ingress.kubernetes.io/limit-rps: "100"
+          nginx.ingress.kubernetes.io/limit-connections: "100"
+          # WAF integration
+          nginx.ingress.kubernetes.io/modsecurity-snippet: |
+            SecRuleEngine On
+            SecRequestBodyAccess On
+      spec:
+        tls:
+          - hosts:
+              - normalizer-api.greenlang.io
+              - normalizer-console.greenlang.io
+            secretName: gl-normalizer-tls
+        rules:
+          - host: normalizer-api.greenlang.io
+            http:
+              paths:
+                - path: /
+                  pathType: Prefix
+                  backend:
+                    service:
+                      name: gl-normalizer-service
+                      port:
+                        number: 80
+          - host: normalizer-console.greenlang.io
+            http:
+              paths:
+                - path: /
+                  pathType: Prefix
+                  backend:
+                    service:
+                      name: gl-normalizer-review-console
+                      port:
+                        number: 80
+
+  # Full production resource quota
+  - patch: |-
+      apiVersion: v1
+      kind: ResourceQuota
+      metadata:
+        name: gl-normalizer-quota
+      spec:
+        hard:
+          requests.cpu: "20"
+          requests.memory: 40Gi
+          limits.cpu: "40"
+          limits.memory: 80Gi
+          pods: "50"

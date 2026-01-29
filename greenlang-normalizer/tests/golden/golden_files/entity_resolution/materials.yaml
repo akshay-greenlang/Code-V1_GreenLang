@@ -1,0 +1,335 @@
+# =============================================================================
+# Golden Tests: Material Entity Resolution
+# =============================================================================
+# GL-FOUND-X-003: Unit & Reference Normalizer
+# Entity Type: material
+#
+# These tests verify material entity resolution for CBAM-relevant materials
+# and common industrial materials used in sustainability reporting.
+# =============================================================================
+
+schema_version: "1.0"
+entity_type: material
+vocabulary_version: "2026.01.0"
+test_count: 20
+
+test_cases:
+  # ---------------------------------------------------------------------------
+  # Steel and Metals - Exact Matches
+  # ---------------------------------------------------------------------------
+  - name: "Exact match - Steel"
+    description: "Generic steel canonical name"
+    input:
+      raw_name: "Steel"
+      entity_type: "material"
+    expected:
+      reference_id: "GL-MAT-STEEL"
+      canonical_name: "Steel"
+      match_method: "exact"
+      confidence: 1.0
+      needs_review: false
+    tags: ["exact", "metal", "cbam"]
+
+  - name: "Exact match - Aluminum"
+    description: "Aluminum (US spelling)"
+    input:
+      raw_name: "Aluminum"
+      entity_type: "material"
+    expected:
+      reference_id: "GL-MAT-ALUM"
+      canonical_name: "Aluminum"
+      match_method: "exact"
+      confidence: 1.0
+      needs_review: false
+    tags: ["exact", "metal", "cbam"]
+
+  - name: "Alias match - Aluminium (UK)"
+    description: "Aluminium (UK spelling)"
+    input:
+      raw_name: "Aluminium"
+      entity_type: "material"
+    expected:
+      reference_id: "GL-MAT-ALUM"
+      canonical_name: "Aluminum"
+      match_method: "alias"
+      confidence: 1.0
+      needs_review: false
+    tags: ["alias", "metal", "cbam", "uk_spelling"]
+
+  - name: "Alias match - Carbon steel"
+    description: "Carbon steel is a steel variant"
+    input:
+      raw_name: "Carbon steel"
+      entity_type: "material"
+    expected:
+      reference_id: "GL-MAT-STEEL-CARBON"
+      canonical_name: "Carbon steel"
+      match_method: "exact"
+      confidence: 1.0
+      needs_review: false
+    tags: ["exact", "metal"]
+
+  - name: "Alias match - Stainless steel"
+    description: "Stainless steel"
+    input:
+      raw_name: "Stainless steel"
+      entity_type: "material"
+    expected:
+      reference_id: "GL-MAT-STEEL-STAINLESS"
+      canonical_name: "Stainless steel"
+      match_method: "exact"
+      confidence: 1.0
+      needs_review: false
+    tags: ["exact", "metal"]
+
+  # ---------------------------------------------------------------------------
+  # Cement and Construction Materials
+  # ---------------------------------------------------------------------------
+  - name: "Exact match - Cement"
+    description: "Generic cement"
+    input:
+      raw_name: "Cement"
+      entity_type: "material"
+    expected:
+      reference_id: "GL-MAT-CEMENT"
+      canonical_name: "Cement"
+      match_method: "exact"
+      confidence: 1.0
+      needs_review: false
+    tags: ["exact", "construction", "cbam"]
+
+  - name: "Alias match - Portland cement"
+    description: "Portland cement is standard cement"
+    input:
+      raw_name: "Portland cement"
+      entity_type: "material"
+    expected:
+      reference_id: "GL-MAT-CEMENT-PORTLAND"
+      canonical_name: "Portland cement"
+      match_method: "exact"
+      confidence: 1.0
+      needs_review: false
+    tags: ["exact", "construction", "cbam"]
+
+  - name: "Alias match - OPC"
+    description: "Ordinary Portland Cement abbreviation"
+    input:
+      raw_name: "OPC"
+      entity_type: "material"
+    expected:
+      reference_id: "GL-MAT-CEMENT-PORTLAND"
+      canonical_name: "Portland cement"
+      match_method: "alias"
+      confidence: 1.0
+      needs_review: false
+    tags: ["alias", "construction", "cbam"]
+
+  - name: "Alias match - CEM I"
+    description: "European cement classification"
+    input:
+      raw_name: "CEM I"
+      entity_type: "material"
+    expected:
+      reference_id: "GL-MAT-CEMENT-PORTLAND"
+      canonical_name: "Portland cement"
+      match_method: "alias"
+      confidence: 1.0
+      needs_review: false
+    tags: ["alias", "construction", "eu_classification"]
+
+  - name: "Alias match - CEM II"
+    description: "Portland-composite cement (EU)"
+    input:
+      raw_name: "CEM II"
+      entity_type: "material"
+    expected:
+      reference_id: "GL-MAT-CEMENT-COMPOSITE"
+      canonical_name: "Portland-composite cement"
+      match_method: "alias"
+      confidence: 1.0
+      needs_review: false
+    tags: ["alias", "construction", "eu_classification"]
+
+  - name: "Exact match - Concrete"
+    description: "Ready-mix concrete"
+    input:
+      raw_name: "Concrete"
+      entity_type: "material"
+    expected:
+      reference_id: "GL-MAT-CONCRETE"
+      canonical_name: "Concrete"
+      match_method: "exact"
+      confidence: 1.0
+      needs_review: false
+    tags: ["exact", "construction"]
+
+  # ---------------------------------------------------------------------------
+  # Fertilizers
+  # ---------------------------------------------------------------------------
+  - name: "Exact match - Urea"
+    description: "Urea fertilizer"
+    input:
+      raw_name: "Urea"
+      entity_type: "material"
+    expected:
+      reference_id: "GL-MAT-FERT-UREA"
+      canonical_name: "Urea"
+      match_method: "exact"
+      confidence: 1.0
+      needs_review: false
+    tags: ["exact", "fertilizer", "cbam"]
+
+  - name: "Alias match - Ammonia"
+    description: "Anhydrous ammonia"
+    input:
+      raw_name: "Ammonia"
+      entity_type: "material"
+    expected:
+      reference_id: "GL-MAT-CHEM-AMMONIA"
+      canonical_name: "Ammonia"
+      match_method: "exact"
+      confidence: 1.0
+      needs_review: false
+    tags: ["exact", "chemical", "cbam"]
+
+  # ---------------------------------------------------------------------------
+  # Fuzzy Matches (require human review)
+  # ---------------------------------------------------------------------------
+  - name: "Fuzzy match - Alumin (partial)"
+    description: "Partial aluminum match - requires review"
+    input:
+      raw_name: "Alumin"
+      entity_type: "material"
+    expected:
+      reference_id: "GL-MAT-ALUM"
+      canonical_name: "Aluminum"
+      match_method: "fuzzy"
+      confidence_min: 0.60
+      needs_review: true
+    tags: ["fuzzy", "partial"]
+
+  - name: "Fuzzy match - Stainless Steal (typo)"
+    description: "Typo in stainless steel - requires review"
+    input:
+      raw_name: "Stainless Steal"
+      entity_type: "material"
+    expected:
+      reference_id: "GL-MAT-STEEL-STAINLESS"
+      canonical_name: "Stainless steel"
+      match_method: "fuzzy"
+      confidence_min: 0.60
+      needs_review: true
+    tags: ["fuzzy", "typo"]
+
+  # ---------------------------------------------------------------------------
+  # CBAM-specific Materials
+  # ---------------------------------------------------------------------------
+  - name: "CBAM - Iron ore"
+    description: "Iron ore for CBAM reporting"
+    input:
+      raw_name: "Iron ore"
+      entity_type: "material"
+      hints:
+        regulation: "CBAM"
+    expected:
+      reference_id: "GL-MAT-IRON-ORE"
+      canonical_name: "Iron ore"
+      match_method: "exact"
+      confidence: 1.0
+      metadata:
+        cbam_category: "iron_and_steel"
+    tags: ["exact", "cbam"]
+
+  - name: "CBAM - Hydrogen"
+    description: "Hydrogen for CBAM reporting"
+    input:
+      raw_name: "Hydrogen"
+      entity_type: "material"
+      hints:
+        regulation: "CBAM"
+    expected:
+      reference_id: "GL-MAT-HYDROGEN"
+      canonical_name: "Hydrogen"
+      match_method: "exact"
+      confidence: 1.0
+      metadata:
+        cbam_category: "hydrogen"
+    tags: ["exact", "cbam"]
+
+  # ---------------------------------------------------------------------------
+  # Edge Cases
+  # ---------------------------------------------------------------------------
+  - name: "Material with grade specification"
+    description: "Steel with grade in name - complex parsing, needs review"
+    input:
+      raw_name: "Steel Grade 304"
+      entity_type: "material"
+    expected:
+      reference_id: "GL-MAT-STEEL-STAINLESS-304"
+      canonical_name: "Stainless steel 304"
+      match_method: "fuzzy"
+      confidence_min: 0.50
+      needs_review: true
+    tags: ["fuzzy", "grade"]
+
+  - name: "Ambiguous material"
+    description: "Iron (could be iron ore, pig iron, etc.)"
+    input:
+      raw_name: "Iron"
+      entity_type: "material"
+    expected:
+      match_method: "fuzzy"
+      confidence_max: 0.85
+      needs_review: true
+      candidates_count_min: 2
+    tags: ["ambiguous", "needs_review"]
+
+  - name: "Unknown material"
+    description: "Material not in vocabulary"
+    input:
+      raw_name: "Vibranium"
+      entity_type: "material"
+    expected:
+      error_code: "GLNORM-E400"
+      needs_review: true
+    tags: ["edge_case", "no_match"]
+
+# -----------------------------------------------------------------------------
+# Vocabulary Reference (CBAM-relevant subset)
+# -----------------------------------------------------------------------------
+vocabulary_entries:
+  - id: "GL-MAT-STEEL"
+    name: "Steel"
+    aliases: ["Mild steel", "Structural steel"]
+    cbam_category: "iron_and_steel"
+  - id: "GL-MAT-ALUM"
+    name: "Aluminum"
+    aliases: ["Aluminium", "Al", "Alu"]
+    cbam_category: "aluminium"
+  - id: "GL-MAT-CEMENT"
+    name: "Cement"
+    aliases: ["Hydraulic cement"]
+    cbam_category: "cement"
+  - id: "GL-MAT-CEMENT-PORTLAND"
+    name: "Portland cement"
+    aliases: ["OPC", "CEM I", "Type I cement"]
+    cbam_category: "cement"
+  - id: "GL-MAT-FERT-UREA"
+    name: "Urea"
+    aliases: ["CO(NH2)2", "Carbamide"]
+    cbam_category: "fertilisers"
+  - id: "GL-MAT-HYDROGEN"
+    name: "Hydrogen"
+    aliases: ["H2", "Hydrogen gas"]
+    cbam_category: "hydrogen"
+
+# -----------------------------------------------------------------------------
+# CBAM Categories Reference
+# -----------------------------------------------------------------------------
+cbam_categories:
+  - cement
+  - iron_and_steel
+  - aluminium
+  - fertilisers
+  - electricity
+  - hydrogen

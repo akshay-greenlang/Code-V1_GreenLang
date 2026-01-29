@@ -1,0 +1,329 @@
+# =============================================================================
+# Golden Tests: Mass Unit Conversions
+# =============================================================================
+# GL-FOUND-X-003: Unit & Reference Normalizer
+# Canonical Unit: kg (kilogram)
+#
+# These tests verify mass conversions to the canonical kg unit.
+# All conversion factors are exact (since 1959 international agreement).
+# =============================================================================
+
+schema_version: "1.0"
+dimension: mass
+canonical_unit: kg
+test_count: 22
+
+test_cases:
+  # ---------------------------------------------------------------------------
+  # SI Mass Units
+  # ---------------------------------------------------------------------------
+  - name: "mg to kg conversion"
+    description: "Convert milligrams to kilograms"
+    input:
+      value: 1000000
+      unit: "mg"
+      target_unit: "kg"
+    expected:
+      canonical_value: 1.0
+      canonical_unit: "kg"
+      confidence: 1.0
+      exact: true
+    tags: ["si"]
+
+  - name: "g to kg conversion"
+    description: "Convert grams to kilograms"
+    input:
+      value: 1000
+      unit: "g"
+      target_unit: "kg"
+    expected:
+      canonical_value: 1.0
+      canonical_unit: "kg"
+      confidence: 1.0
+      exact: true
+    tags: ["si"]
+
+  - name: "kg to kg identity"
+    description: "Kilogram to kilogram (identity conversion)"
+    input:
+      value: 100
+      unit: "kg"
+      target_unit: "kg"
+    expected:
+      canonical_value: 100.0
+      canonical_unit: "kg"
+      confidence: 1.0
+      exact: true
+    tags: ["si", "identity"]
+
+  - name: "t (tonne) to kg conversion"
+    description: "Convert metric tonnes to kilograms"
+    input:
+      value: 1
+      unit: "t"
+      target_unit: "kg"
+    expected:
+      canonical_value: 1000.0
+      canonical_unit: "kg"
+      confidence: 1.0
+      exact: true
+    tags: ["si", "common"]
+
+  - name: "kt (kilotonne) to kg conversion"
+    description: "Convert kilotonnes to kilograms"
+    input:
+      value: 1
+      unit: "kt"
+      target_unit: "kg"
+    expected:
+      canonical_value: 1000000.0
+      canonical_unit: "kg"
+      confidence: 1.0
+      exact: true
+    tags: ["si", "large_scale"]
+
+  - name: "Mt (megatonne) to kg conversion"
+    description: "Convert megatonnes to kilograms"
+    input:
+      value: 1
+      unit: "Mt"
+      target_unit: "kg"
+    expected:
+      canonical_value: 1000000000.0
+      canonical_unit: "kg"
+      confidence: 1.0
+      exact: true
+    tags: ["si", "large_scale"]
+
+  - name: "Gt (gigatonne) to kg conversion"
+    description: "Convert gigatonnes to kilograms"
+    input:
+      value: 1
+      unit: "Gt"
+      target_unit: "kg"
+    expected:
+      canonical_value: 1000000000000.0
+      canonical_unit: "kg"
+      confidence: 1.0
+      exact: true
+    tags: ["si", "large_scale"]
+
+  # ---------------------------------------------------------------------------
+  # Imperial/US Mass Units
+  # ---------------------------------------------------------------------------
+  - name: "oz to kg conversion"
+    description: "Convert ounces (avoirdupois) to kilograms"
+    input:
+      value: 100
+      unit: "oz"
+      target_unit: "kg"
+    expected:
+      canonical_value: 2.8349523125
+      canonical_unit: "kg"
+      tolerance: 1e-10
+      exact: true
+    source: "1 oz = 28.349523125 g (exact since 1959)"
+    tags: ["imperial"]
+
+  - name: "lb to kg conversion"
+    description: "Convert pounds (avoirdupois) to kilograms"
+    input:
+      value: 100
+      unit: "lb"
+      target_unit: "kg"
+    expected:
+      canonical_value: 45.359237
+      canonical_unit: "kg"
+      tolerance: 1e-10
+      exact: true
+    source: "1 lb = 0.45359237 kg (exact since 1959)"
+    tags: ["imperial", "common"]
+
+  - name: "lbs alias to kg"
+    description: "Test lbs alias for pounds"
+    input:
+      value: 10
+      unit: "lbs"
+      target_unit: "kg"
+    expected:
+      canonical_value: 4.5359237
+      canonical_unit: "kg"
+      tolerance: 1e-10
+      exact: true
+    tags: ["imperial", "alias"]
+
+  - name: "stone to kg conversion"
+    description: "Convert stones to kilograms"
+    input:
+      value: 1
+      unit: "st"
+      target_unit: "kg"
+    expected:
+      canonical_value: 6.35029318
+      canonical_unit: "kg"
+      tolerance: 1e-10
+      exact: true
+    source: "1 stone = 14 lb"
+    tags: ["imperial", "uk"]
+
+  - name: "hundredweight (US) to kg"
+    description: "Convert US hundredweight to kilograms"
+    input:
+      value: 1
+      unit: "cwt_us"
+      target_unit: "kg"
+    expected:
+      canonical_value: 45.359237
+      canonical_unit: "kg"
+      tolerance: 1e-10
+      exact: true
+    source: "1 cwt_US = 100 lb"
+    tags: ["imperial", "us"]
+
+  - name: "hundredweight (UK) to kg"
+    description: "Convert UK hundredweight to kilograms"
+    input:
+      value: 1
+      unit: "cwt_uk"
+      target_unit: "kg"
+    expected:
+      canonical_value: 50.80234544
+      canonical_unit: "kg"
+      tolerance: 1e-10
+      exact: true
+    source: "1 cwt_UK = 112 lb"
+    tags: ["imperial", "uk"]
+
+  - name: "short ton (US) to kg"
+    description: "Convert US short tons to kilograms"
+    input:
+      value: 1
+      unit: "ton_short"
+      target_unit: "kg"
+    expected:
+      canonical_value: 907.18474
+      canonical_unit: "kg"
+      tolerance: 1e-10
+      exact: true
+    source: "1 short ton = 2000 lb"
+    tags: ["imperial", "us", "common"]
+
+  - name: "long ton (UK) to kg"
+    description: "Convert UK long tons to kilograms"
+    input:
+      value: 1
+      unit: "ton_long"
+      target_unit: "kg"
+    expected:
+      canonical_value: 1016.0469088
+      canonical_unit: "kg"
+      tolerance: 1e-10
+      exact: true
+    source: "1 long ton = 2240 lb"
+    tags: ["imperial", "uk"]
+
+  # ---------------------------------------------------------------------------
+  # Troy Units (Precious Metals)
+  # ---------------------------------------------------------------------------
+  - name: "troy ounce to kg"
+    description: "Convert troy ounces to kilograms"
+    input:
+      value: 100
+      unit: "oz_troy"
+      target_unit: "kg"
+    expected:
+      canonical_value: 3.11034768
+      canonical_unit: "kg"
+      tolerance: 1e-10
+      exact: true
+    source: "1 oz_t = 31.1034768 g"
+    tags: ["troy", "precious_metals"]
+
+  - name: "troy pound to kg"
+    description: "Convert troy pounds to kilograms"
+    input:
+      value: 1
+      unit: "lb_troy"
+      target_unit: "kg"
+    expected:
+      canonical_value: 0.3732417216
+      canonical_unit: "kg"
+      tolerance: 1e-10
+      exact: true
+    source: "1 lb_t = 12 oz_t"
+    tags: ["troy", "precious_metals"]
+
+  # ---------------------------------------------------------------------------
+  # Edge Cases
+  # ---------------------------------------------------------------------------
+  - name: "Zero mass conversion"
+    description: "Zero value should remain zero"
+    input:
+      value: 0
+      unit: "t"
+      target_unit: "kg"
+    expected:
+      canonical_value: 0.0
+      canonical_unit: "kg"
+      confidence: 1.0
+    tags: ["edge_case"]
+
+  - name: "Very small mass (microgram scale)"
+    description: "Handle very small mass values"
+    input:
+      value: 0.001
+      unit: "mg"
+      target_unit: "kg"
+    expected:
+      canonical_value: 1.0e-9
+      canonical_unit: "kg"
+      tolerance: 1e-15
+    tags: ["edge_case", "precision"]
+
+  - name: "Very large mass (Gt scale)"
+    description: "Handle very large mass values"
+    input:
+      value: 1000
+      unit: "Gt"
+      target_unit: "kg"
+    expected:
+      canonical_value: 1.0e15
+      canonical_unit: "kg"
+      confidence: 1.0
+    tags: ["edge_case", "large_scale"]
+
+  - name: "Decimal precision test"
+    description: "Test decimal precision in lb to kg"
+    input:
+      value: 123.456789
+      unit: "lb"
+      target_unit: "kg"
+    expected:
+      canonical_value: 56.0003119928393
+      canonical_unit: "kg"
+      tolerance: 1e-10
+    tags: ["precision"]
+
+  # ---------------------------------------------------------------------------
+  # Cross-system Conversions
+  # ---------------------------------------------------------------------------
+  - name: "Short ton to metric tonne"
+    description: "Convert US short ton to metric tonnes"
+    input:
+      value: 1
+      unit: "ton_short"
+      target_unit: "t"
+    expected:
+      canonical_value: 0.90718474
+      canonical_unit: "t"
+      tolerance: 1e-8
+    tags: ["cross_system"]
+
+# -----------------------------------------------------------------------------
+# Validation Rules
+# -----------------------------------------------------------------------------
+validation:
+  min_value: 0.0
+  max_value: 1.0e15
+  allow_negative: false
+  default_tolerance: 1e-9

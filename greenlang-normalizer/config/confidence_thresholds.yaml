@@ -1,0 +1,397 @@
+# =============================================================================
+# GL Confidence Thresholds Configuration v1.0
+# =============================================================================
+# GreenLang Foundation Module GL-FOUND-X-003: Unit Normalization
+#
+# This configuration defines confidence thresholds for LLM-assisted
+# classification and matching operations. These thresholds ensure
+# deterministic behavior while allowing intelligent processing.
+#
+# ZERO-HALLUCINATION PRINCIPLE:
+# - Thresholds apply ONLY to classification/matching, NOT calculations
+# - All numeric calculations use deterministic formulas
+# - LLM outputs below threshold trigger manual review or rejection
+#
+# Version: 1.0.0
+# Last Updated: 2026-01-30
+# Maintainer: GreenLang Foundation Team
+# =============================================================================
+
+schema_version: "1.0"
+config_id: "gl-confidence-thresholds-v1"
+effective_date: "2026-01-30"
+
+# -----------------------------------------------------------------------------
+# ENTITY CLASSIFICATION THRESHOLDS
+# -----------------------------------------------------------------------------
+# These thresholds apply to LLM-based classification of input entities
+# Values represent minimum confidence scores (0.0 to 1.0) required to
+# accept an LLM classification without human review.
+# -----------------------------------------------------------------------------
+
+classification_thresholds:
+
+  # ---------------------------------------------------------------------------
+  # FUEL CLASSIFICATION
+  # ---------------------------------------------------------------------------
+  # High threshold due to significant emission factor variations between fuels
+  # Misclassification can cause 10-50% error in emissions calculations
+  # ---------------------------------------------------------------------------
+  fuel:
+    threshold: 0.95
+    description: "Fuel type classification (natural gas, diesel, coal, etc.)"
+    rationale: |
+      Fuel classification requires 95% confidence because:
+      - Emission factors vary significantly between fuel types (e.g., coal vs. gas)
+      - Regulatory reporting requires accurate fuel categorization
+      - Misclassification impacts Scope 1 calculations directly
+    fallback_action: "manual_review"
+    retry_with_context: true
+    max_retries: 2
+
+    sub_categories:
+      natural_gas:
+        threshold: 0.95
+        aliases_require_confirmation: ["NG", "nat gas", "methane"]
+      diesel:
+        threshold: 0.95
+        aliases_require_confirmation: ["ULSD", "gasoil", "diesel #2"]
+      coal:
+        threshold: 0.93
+        sub_types_require_extra_validation: ["anthracite", "bituminous", "sub-bituminous", "lignite"]
+      lpg:
+        threshold: 0.94
+        aliases_require_confirmation: ["propane", "butane", "LPG"]
+      fuel_oil:
+        threshold: 0.94
+        grades: ["HFO", "RFO", "#2", "#4", "#6", "bunker"]
+      biofuel:
+        threshold: 0.96
+        rationale: "Higher threshold due to GHG accounting implications"
+        sub_types: ["biodiesel", "bioethanol", "biogas", "HVO", "SAF"]
+      electricity:
+        threshold: 0.98
+        rationale: "Must distinguish from fuel for Scope 2 classification"
+
+  # ---------------------------------------------------------------------------
+  # MATERIAL CLASSIFICATION
+  # ---------------------------------------------------------------------------
+  # Moderate-high threshold for raw materials, products, and waste streams
+  # ---------------------------------------------------------------------------
+  material:
+    threshold: 0.90
+    description: "Material type classification for Scope 3 calculations"
+    rationale: |
+      Material classification at 90% confidence because:
+      - Emission factors vary by material category but less than fuels
+      - Scope 3 has inherent uncertainty; classification is one component
+      - Large volume of transactions requires practical threshold
+    fallback_action: "flag_for_review"
+    retry_with_context: true
+    max_retries: 1
+
+    sub_categories:
+      metals:
+        threshold: 0.90
+        sub_types: ["steel", "aluminum", "copper", "zinc", "nickel"]
+      plastics:
+        threshold: 0.88
+        sub_types: ["PE", "PP", "PVC", "PET", "PS", "ABS"]
+      chemicals:
+        threshold: 0.92
+        rationale: "Higher due to wide emission factor range"
+      paper_packaging:
+        threshold: 0.88
+      concrete_cement:
+        threshold: 0.91
+      glass:
+        threshold: 0.89
+      textiles:
+        threshold: 0.87
+      food_agricultural:
+        threshold: 0.85
+        rationale: "Lower threshold acceptable; high variability expected"
+      electronics:
+        threshold: 0.90
+
+  # ---------------------------------------------------------------------------
+  # PROCESS CLASSIFICATION
+  # ---------------------------------------------------------------------------
+  # Lower threshold for industrial process identification
+  # Used for activity-based emission calculations
+  # ---------------------------------------------------------------------------
+  process:
+    threshold: 0.85
+    description: "Industrial process classification"
+    rationale: |
+      Process classification at 85% confidence because:
+      - Often requires domain expertise for accurate classification
+      - Process boundaries can be ambiguous
+      - Multiple valid classifications may exist
+    fallback_action: "flag_for_review"
+    retry_with_context: true
+    max_retries: 2
+    context_enhancement:
+      - "industry_sector"
+      - "facility_type"
+      - "equipment_description"
+
+    sub_categories:
+      combustion:
+        threshold: 0.88
+        types: ["stationary", "mobile", "flaring"]
+      chemical_reaction:
+        threshold: 0.83
+      physical_transformation:
+        threshold: 0.82
+      waste_treatment:
+        threshold: 0.85
+      transportation:
+        threshold: 0.87
+      refrigeration_ac:
+        threshold: 0.86
+
+# -----------------------------------------------------------------------------
+# UNIT MATCHING THRESHOLDS
+# -----------------------------------------------------------------------------
+# Thresholds for matching input units to canonical units
+# -----------------------------------------------------------------------------
+
+unit_matching_thresholds:
+
+  exact_match:
+    threshold: 1.0
+    description: "Exact string match with canonical or alias"
+    action: "accept"
+
+  normalized_match:
+    threshold: 0.98
+    description: "Match after case/whitespace normalization"
+    action: "accept"
+    normalizations:
+      - lowercase
+      - strip_whitespace
+      - remove_special_chars
+
+  fuzzy_match:
+    threshold: 0.92
+    description: "Fuzzy string matching for typos"
+    action: "accept_with_log"
+    algorithm: "levenshtein"
+    max_distance: 2
+
+  semantic_match:
+    threshold: 0.88
+    description: "LLM-based semantic unit matching"
+    action: "accept_with_confirmation"
+    require_human_confirmation: false
+
+  low_confidence_match:
+    threshold: 0.70
+    description: "Low confidence matches flagged for review"
+    action: "flag_for_review"
+    require_human_confirmation: true
+
+  no_match:
+    threshold_below: 0.70
+    description: "No acceptable match found"
+    action: "reject"
+    error_code: "UNIT_UNRECOGNIZED"
+
+# -----------------------------------------------------------------------------
+# ENTITY RESOLUTION THRESHOLDS
+# -----------------------------------------------------------------------------
+# Thresholds for matching entities to master data
+# -----------------------------------------------------------------------------
+
+entity_resolution_thresholds:
+
+  supplier:
+    threshold: 0.90
+    description: "Supplier name matching to master data"
+    fallback_action: "create_new_if_unmatched"
+    dedup_threshold: 0.95
+
+  facility:
+    threshold: 0.92
+    description: "Facility/site matching"
+    fallback_action: "flag_for_review"
+
+  product:
+    threshold: 0.88
+    description: "Product matching to catalog"
+    fallback_action: "flag_for_review"
+
+  emission_factor:
+    threshold: 0.94
+    description: "Emission factor database matching"
+    fallback_action: "reject"
+    rationale: "High threshold to prevent incorrect EF assignment"
+
+# -----------------------------------------------------------------------------
+# MARGIN RULES
+# -----------------------------------------------------------------------------
+# Margin/buffer rules for threshold decisions
+# -----------------------------------------------------------------------------
+
+margin_rules:
+
+  margin_rule:
+    value: 0.07
+    description: "Default margin below threshold for escalation"
+    rationale: |
+      When confidence is within 7% of threshold, additional review
+      mechanisms are triggered. This catches borderline cases that
+      might flip with minor context changes.
+
+  escalation_behavior:
+    within_margin:
+      action: "escalate_to_secondary_review"
+      description: "Confidence within margin triggers additional validation"
+      methods:
+        - "request_additional_context"
+        - "compare_against_historical"
+        - "secondary_llm_call"
+
+    above_threshold:
+      action: "accept"
+      log_level: "INFO"
+
+    below_margin:
+      action: "reject_or_flag"
+      log_level: "WARNING"
+
+# -----------------------------------------------------------------------------
+# ADAPTIVE THRESHOLD CONFIGURATION
+# -----------------------------------------------------------------------------
+# Settings for threshold adjustment based on operational data
+# -----------------------------------------------------------------------------
+
+adaptive_thresholds:
+
+  enabled: false  # Set to true to enable adaptive adjustments
+
+  learning_rate: 0.01
+  min_samples: 1000
+  adjustment_interval_days: 30
+  max_adjustment_percent: 5.0
+
+  metrics_tracked:
+    - "false_positive_rate"
+    - "false_negative_rate"
+    - "human_override_rate"
+    - "rejection_rate"
+
+  guardrails:
+    fuel_min: 0.90
+    fuel_max: 0.99
+    material_min: 0.85
+    material_max: 0.95
+    process_min: 0.80
+    process_max: 0.92
+
+# -----------------------------------------------------------------------------
+# THRESHOLD OVERRIDE RULES
+# -----------------------------------------------------------------------------
+# Conditions under which thresholds can be overridden
+# -----------------------------------------------------------------------------
+
+override_rules:
+
+  high_value_transaction:
+    description: "Transactions above value threshold get stricter review"
+    value_threshold_usd: 1000000
+    threshold_increase: 0.03
+
+  regulated_entity:
+    description: "Entities under regulatory scrutiny get stricter review"
+    threshold_increase: 0.05
+    regulated_frameworks:
+      - "EU_ETS"
+      - "CBAM"
+      - "SEC_Climate"
+      - "CA_Cap_Trade"
+
+  historical_accuracy:
+    description: "Entities with poor history get stricter thresholds"
+    lookback_days: 365
+    error_rate_trigger: 0.05
+    threshold_increase: 0.04
+
+  audit_mode:
+    description: "During audit periods, increase all thresholds"
+    threshold_increase: 0.05
+    log_all_decisions: true
+
+# -----------------------------------------------------------------------------
+# CONFIDENCE SCORE CALCULATION
+# -----------------------------------------------------------------------------
+# How confidence scores are computed and combined
+# -----------------------------------------------------------------------------
+
+confidence_calculation:
+
+  primary_score_weight: 0.7
+  context_score_weight: 0.2
+  historical_score_weight: 0.1
+
+  combination_method: "weighted_average"
+
+  minimum_context_for_boost: 3
+  context_boost_max: 0.05
+
+  decay_function:
+    type: "exponential"
+    half_life_days: 90
+    description: "Historical confidence decays over time"
+
+# -----------------------------------------------------------------------------
+# LOGGING AND AUDIT
+# -----------------------------------------------------------------------------
+
+logging:
+
+  log_all_classifications: true
+  log_threshold_decisions: true
+  log_overrides: true
+
+  retention_days: 2555  # ~7 years for regulatory compliance
+
+  audit_fields:
+    - "timestamp"
+    - "entity_type"
+    - "input_value"
+    - "matched_value"
+    - "confidence_score"
+    - "threshold_applied"
+    - "decision"
+    - "override_reason"
+    - "reviewer_id"
+
+# -----------------------------------------------------------------------------
+# METADATA
+# -----------------------------------------------------------------------------
+
+metadata:
+  schema_version: "1.0"
+  created_date: "2026-01-30"
+  last_modified: "2026-01-30"
+  author: "GreenLang Foundation Team"
+  license: "Proprietary - GreenLang"
+
+  references:
+    - document: "GL-FOUND-X-003 Interview Decisions"
+      date: "2026-01-30"
+    - document: "GreenLang Zero-Hallucination Architecture"
+      version: "2.0"
+
+  changelog:
+    - version: "1.0.0"
+      date: "2026-01-30"
+      changes:
+        - "Initial release of confidence thresholds configuration"
+        - "Fuel threshold: 0.95, Material: 0.90, Process: 0.85"
+        - "Margin rule: 0.07"
+        - "Unit matching thresholds defined"
+        - "Entity resolution thresholds defined"
+        - "Adaptive threshold framework included (disabled by default)"

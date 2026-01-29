@@ -1,0 +1,393 @@
+# deployment.yaml - GreenLang Normalizer Deployment
+# Component: GL-FOUND-X-003 - Unit & Reference Normalizer
+# Purpose: Kubernetes Deployment for the normalizer service
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gl-normalizer-service
+  namespace: gl-normalizer
+  labels:
+    app.kubernetes.io/name: gl-normalizer-service
+    app.kubernetes.io/component: api
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: kustomize
+  annotations:
+    description: "GreenLang Unit & Reference Normalizer API Service"
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8000"
+    prometheus.io/path: "/metrics"
+spec:
+  replicas: 3
+  revisionHistoryLimit: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: gl-normalizer-service
+      app.kubernetes.io/component: api
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: gl-normalizer-service
+        app.kubernetes.io/component: api
+        app.kubernetes.io/part-of: greenlang-platform
+        app.kubernetes.io/version: "1.0.0"
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8000"
+        prometheus.io/path: "/metrics"
+        # Force rolling update when config changes
+        checksum/config: "TO_BE_REPLACED_BY_KUSTOMIZE"
+    spec:
+      serviceAccountName: gl-normalizer-sa
+      automountServiceAccountToken: true
+
+      # Security context for pod
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+
+      # Pod scheduling
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/name: gl-normalizer-service
+                topologyKey: kubernetes.io/hostname
+            - weight: 50
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/name: gl-normalizer-service
+                topologyKey: topology.kubernetes.io/zone
+
+      # Topology spread for HA
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: gl-normalizer-service
+
+      # Graceful termination
+      terminationGracePeriodSeconds: 60
+
+      # Init container for database migrations
+      initContainers:
+        - name: wait-for-dependencies
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              echo "Waiting for dependencies..."
+              # Add actual dependency checks here
+              sleep 5
+              echo "Dependencies ready"
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+
+      containers:
+        - name: gl-normalizer-service
+          image: ghcr.io/greenlang/gl-normalizer-service:1.0.0
+          imagePullPolicy: Always
+
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+            - name: metrics
+              containerPort: 9090
+              protocol: TCP
+
+          # Environment from ConfigMap
+          envFrom:
+            - configMapRef:
+                name: gl-normalizer-config
+
+          # Environment from Secrets
+          env:
+            - name: GL_NORMALIZER_DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: gl-normalizer-secrets
+                  key: GL_NORMALIZER_DATABASE_URL
+            - name: GL_NORMALIZER_REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: gl-normalizer-secrets
+                  key: GL_NORMALIZER_REDIS_URL
+            - name: GL_NORMALIZER_KAFKA_BOOTSTRAP_SERVERS
+              valueFrom:
+                secretKeyRef:
+                  name: gl-normalizer-secrets
+                  key: GL_NORMALIZER_KAFKA_BOOTSTRAP_SERVERS
+            - name: GL_NORMALIZER_API_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: gl-normalizer-secrets
+                  key: GL_NORMALIZER_API_SECRET_KEY
+            - name: GL_NORMALIZER_JWT_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: gl-normalizer-secrets
+                  key: GL_NORMALIZER_JWT_SECRET_KEY
+            # OpenTelemetry
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: "http://otel-collector.monitoring:4317"
+            # Pod info for observability
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+
+          # Resource limits
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+              ephemeral-storage: 100Mi
+            limits:
+              cpu: "1"
+              memory: 1Gi
+              ephemeral-storage: 500Mi
+
+          # Security context for container
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            capabilities:
+              drop:
+                - ALL
+
+          # Probes
+          startupProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 5
+            failureThreshold: 30
+
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            successThreshold: 1
+            failureThreshold: 3
+
+          # Volume mounts
+          volumeMounts:
+            - name: config-volume
+              mountPath: /app/config
+              readOnly: true
+            - name: canonical-units
+              mountPath: /app/config/canonical_units.yaml
+              subPath: canonical_units.yaml
+              readOnly: true
+            - name: confidence-thresholds
+              mountPath: /app/config/confidence_thresholds.yaml
+              subPath: confidence_thresholds.yaml
+              readOnly: true
+            - name: tmp
+              mountPath: /tmp
+            - name: prometheus-multiproc
+              mountPath: /tmp/prometheus_multiproc
+
+          # Lifecycle hooks
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - /bin/sh
+                  - -c
+                  - "sleep 15"
+
+      # Volumes
+      volumes:
+        - name: config-volume
+          configMap:
+            name: gl-normalizer-config
+        - name: canonical-units
+          configMap:
+            name: gl-normalizer-canonical-units
+        - name: confidence-thresholds
+          configMap:
+            name: gl-normalizer-confidence-thresholds
+        - name: tmp
+          emptyDir:
+            sizeLimit: 100Mi
+        - name: prometheus-multiproc
+          emptyDir:
+            sizeLimit: 50Mi
+
+      # Image pull secrets
+      imagePullSecrets:
+        - name: gl-normalizer-registry-credentials
+
+---
+# Deployment for Review Console
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gl-normalizer-review-console
+  namespace: gl-normalizer
+  labels:
+    app.kubernetes.io/name: gl-normalizer-review-console
+    app.kubernetes.io/component: web-ui
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/version: "1.0.0"
+spec:
+  replicas: 2
+  revisionHistoryLimit: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: gl-normalizer-review-console
+      app.kubernetes.io/component: web-ui
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: gl-normalizer-review-console
+        app.kubernetes.io/component: web-ui
+        app.kubernetes.io/part-of: greenlang-platform
+    spec:
+      serviceAccountName: gl-normalizer-sa
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+
+      terminationGracePeriodSeconds: 30
+
+      containers:
+        - name: review-console
+          image: ghcr.io/greenlang/gl-normalizer-review-console:1.0.0
+          imagePullPolicy: Always
+
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+
+          envFrom:
+            - configMapRef:
+                name: gl-normalizer-review-console-config
+
+          env:
+            - name: GL_REVIEW_CONSOLE_DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: gl-normalizer-review-console-secrets
+                  key: GL_REVIEW_CONSOLE_DATABASE_URL
+            - name: GL_REVIEW_CONSOLE_REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: gl-normalizer-review-console-secrets
+                  key: GL_REVIEW_CONSOLE_REDIS_URL
+            - name: GL_REVIEW_CONSOLE_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: gl-normalizer-review-console-secrets
+                  key: GL_REVIEW_CONSOLE_SECRET_KEY
+
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            capabilities:
+              drop:
+                - ALL
+
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            failureThreshold: 3
+
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            failureThreshold: 3
+
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+            - name: nginx-cache
+              mountPath: /var/cache/nginx
+
+      volumes:
+        - name: tmp
+          emptyDir:
+            sizeLimit: 50Mi
+        - name: nginx-cache
+          emptyDir:
+            sizeLimit: 100Mi
+
+      imagePullSecrets:
+        - name: gl-normalizer-registry-credentials

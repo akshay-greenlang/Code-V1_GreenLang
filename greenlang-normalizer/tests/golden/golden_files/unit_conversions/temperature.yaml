@@ -1,0 +1,318 @@
+# =============================================================================
+# Golden Tests: Temperature Unit Conversions
+# =============================================================================
+# GL-FOUND-X-003: Unit & Reference Normalizer
+# Canonical Unit: degC (degrees Celsius)
+#
+# IMPORTANT: Temperature uses AFFINE conversion (y = scale*x + offset)
+# Do NOT use these factors for temperature DIFFERENCES.
+# =============================================================================
+
+schema_version: "1.0"
+dimension: temperature
+canonical_unit: degC
+conversion_type: affine
+test_count: 20
+
+test_cases:
+  # ---------------------------------------------------------------------------
+  # Celsius (Identity and Basic)
+  # ---------------------------------------------------------------------------
+  - name: "degC identity"
+    description: "Celsius to Celsius (identity)"
+    input:
+      value: 25.0
+      unit: "degC"
+      target_unit: "degC"
+    expected:
+      canonical_value: 25.0
+      canonical_unit: "degC"
+      confidence: 1.0
+      exact: true
+    tags: ["celsius", "identity"]
+
+  - name: "degC zero point"
+    description: "0 Celsius remains 0 Celsius"
+    input:
+      value: 0.0
+      unit: "degC"
+      target_unit: "degC"
+    expected:
+      canonical_value: 0.0
+      canonical_unit: "degC"
+      confidence: 1.0
+      exact: true
+    tags: ["celsius", "reference_point"]
+
+  - name: "degC boiling point"
+    description: "100 Celsius (water boiling)"
+    input:
+      value: 100.0
+      unit: "degC"
+      target_unit: "degC"
+    expected:
+      canonical_value: 100.0
+      canonical_unit: "degC"
+      confidence: 1.0
+      exact: true
+    tags: ["celsius", "reference_point"]
+
+  # ---------------------------------------------------------------------------
+  # Fahrenheit to Celsius
+  # ---------------------------------------------------------------------------
+  - name: "degF to degC - freezing point"
+    description: "32F = 0C (water freezing point)"
+    input:
+      value: 32.0
+      unit: "degF"
+      target_unit: "degC"
+    expected:
+      canonical_value: 0.0
+      canonical_unit: "degC"
+      tolerance: 1e-10
+      exact: true
+    source: "degC = (degF - 32) * 5/9"
+    tags: ["fahrenheit", "reference_point"]
+
+  - name: "degF to degC - boiling point"
+    description: "212F = 100C (water boiling point)"
+    input:
+      value: 212.0
+      unit: "degF"
+      target_unit: "degC"
+    expected:
+      canonical_value: 100.0
+      canonical_unit: "degC"
+      tolerance: 1e-10
+      exact: true
+    tags: ["fahrenheit", "reference_point"]
+
+  - name: "degF to degC - room temperature"
+    description: "68F = 20C (typical room temperature)"
+    input:
+      value: 68.0
+      unit: "degF"
+      target_unit: "degC"
+    expected:
+      canonical_value: 20.0
+      canonical_unit: "degC"
+      tolerance: 1e-10
+      exact: true
+    tags: ["fahrenheit", "common"]
+
+  - name: "degF to degC - body temperature"
+    description: "98.6F = 37C (normal body temperature)"
+    input:
+      value: 98.6
+      unit: "degF"
+      target_unit: "degC"
+    expected:
+      canonical_value: 37.0
+      canonical_unit: "degC"
+      tolerance: 1e-10
+    tags: ["fahrenheit", "common"]
+
+  - name: "degF to degC - crossover point"
+    description: "-40F = -40C (scales cross)"
+    input:
+      value: -40.0
+      unit: "degF"
+      target_unit: "degC"
+    expected:
+      canonical_value: -40.0
+      canonical_unit: "degC"
+      tolerance: 1e-10
+      exact: true
+    tags: ["fahrenheit", "reference_point"]
+
+  - name: "degF to degC - negative temperature"
+    description: "0F = -17.78C"
+    input:
+      value: 0.0
+      unit: "degF"
+      target_unit: "degC"
+    expected:
+      canonical_value: -17.77777777777778
+      canonical_unit: "degC"
+      tolerance: 1e-10
+    tags: ["fahrenheit", "negative"]
+
+  # ---------------------------------------------------------------------------
+  # Kelvin to Celsius
+  # ---------------------------------------------------------------------------
+  - name: "K to degC - absolute zero"
+    description: "0K = -273.15C (absolute zero)"
+    input:
+      value: 0.0
+      unit: "K"
+      target_unit: "degC"
+    expected:
+      canonical_value: -273.15
+      canonical_unit: "degC"
+      tolerance: 1e-10
+      exact: true
+    source: "degC = K - 273.15"
+    tags: ["kelvin", "reference_point"]
+
+  - name: "K to degC - water freezing"
+    description: "273.15K = 0C"
+    input:
+      value: 273.15
+      unit: "K"
+      target_unit: "degC"
+    expected:
+      canonical_value: 0.0
+      canonical_unit: "degC"
+      tolerance: 1e-10
+      exact: true
+    tags: ["kelvin", "reference_point"]
+
+  - name: "K to degC - water boiling"
+    description: "373.15K = 100C"
+    input:
+      value: 373.15
+      unit: "K"
+      target_unit: "degC"
+    expected:
+      canonical_value: 100.0
+      canonical_unit: "degC"
+      tolerance: 1e-10
+      exact: true
+    tags: ["kelvin", "reference_point"]
+
+  - name: "K to degC - room temperature"
+    description: "298.15K = 25C (standard temperature)"
+    input:
+      value: 298.15
+      unit: "K"
+      target_unit: "degC"
+    expected:
+      canonical_value: 25.0
+      canonical_unit: "degC"
+      tolerance: 1e-10
+      exact: true
+    tags: ["kelvin", "common"]
+
+  # ---------------------------------------------------------------------------
+  # Rankine to Celsius
+  # ---------------------------------------------------------------------------
+  - name: "degR to degC - absolute zero"
+    description: "0R = -273.15C (absolute zero)"
+    input:
+      value: 0.0
+      unit: "degR"
+      target_unit: "degC"
+    expected:
+      canonical_value: -273.15
+      canonical_unit: "degC"
+      tolerance: 1e-10
+      exact: true
+    source: "degC = (degR * 5/9) - 273.15"
+    tags: ["rankine", "reference_point"]
+
+  - name: "degR to degC - water freezing"
+    description: "491.67R = 0C"
+    input:
+      value: 491.67
+      unit: "degR"
+      target_unit: "degC"
+    expected:
+      canonical_value: 0.0
+      canonical_unit: "degC"
+      tolerance: 0.01
+    tags: ["rankine", "reference_point"]
+
+  - name: "degR to degC - water boiling"
+    description: "671.67R = 100C"
+    input:
+      value: 671.67
+      unit: "degR"
+      target_unit: "degC"
+    expected:
+      canonical_value: 100.0
+      canonical_unit: "degC"
+      tolerance: 0.01
+    tags: ["rankine", "reference_point"]
+
+  # ---------------------------------------------------------------------------
+  # Cross-scale Conversions
+  # ---------------------------------------------------------------------------
+  - name: "degF to K"
+    description: "Convert Fahrenheit directly to Kelvin"
+    input:
+      value: 32.0
+      unit: "degF"
+      target_unit: "K"
+    expected:
+      canonical_value: 273.15
+      canonical_unit: "K"
+      tolerance: 0.01
+    tags: ["cross_scale"]
+
+  - name: "K to degF"
+    description: "Convert Kelvin to Fahrenheit"
+    input:
+      value: 273.15
+      unit: "K"
+      target_unit: "degF"
+    expected:
+      canonical_value: 32.0
+      canonical_unit: "degF"
+      tolerance: 0.01
+    tags: ["cross_scale"]
+
+  # ---------------------------------------------------------------------------
+  # Edge Cases
+  # ---------------------------------------------------------------------------
+  - name: "Very low temperature (cryogenic)"
+    description: "Handle cryogenic temperatures"
+    input:
+      value: -196.0
+      unit: "degC"
+      target_unit: "K"
+    expected:
+      canonical_value: 77.15
+      canonical_unit: "K"
+      tolerance: 0.01
+    notes: "Liquid nitrogen boiling point"
+    tags: ["edge_case", "cryogenic"]
+
+  - name: "Very high temperature"
+    description: "Handle very high temperatures"
+    input:
+      value: 1000.0
+      unit: "degC"
+      target_unit: "K"
+    expected:
+      canonical_value: 1273.15
+      canonical_unit: "K"
+      tolerance: 0.01
+    tags: ["edge_case", "high_temp"]
+
+# -----------------------------------------------------------------------------
+# Conversion Formulas (for reference)
+# -----------------------------------------------------------------------------
+conversion_formulas:
+  degF_to_degC: "degC = (degF - 32) * 5/9"
+  K_to_degC: "degC = K - 273.15"
+  degR_to_degC: "degC = (degR * 5/9) - 273.15"
+  degC_to_degF: "degF = degC * 9/5 + 32"
+  degC_to_K: "K = degC + 273.15"
+
+# -----------------------------------------------------------------------------
+# Validation Rules
+# -----------------------------------------------------------------------------
+validation:
+  min_value: -273.15  # Absolute zero in Celsius
+  max_value: 1.0e6    # Practical upper limit
+  allow_negative: true
+
+# -----------------------------------------------------------------------------
+# Temperature Delta (Separate Dimension)
+# -----------------------------------------------------------------------------
+temperature_delta_notes: |
+  IMPORTANT: These conversions are for ABSOLUTE temperatures only.
+  For temperature DIFFERENCES (delta-T), use the temperature_delta dimension:
+  - 1 degC delta = 1 K delta (equal magnitudes)
+  - 1 degF delta = 5/9 K delta
+  Do NOT apply the offset for temperature differences!

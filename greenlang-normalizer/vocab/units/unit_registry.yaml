@@ -1,0 +1,1600 @@
+# GreenLang Unit Registry
+# Version: 1.0.0
+# Last Updated: 2026-01-30
+# Description: Unit definitions for GreenLang Normalizer (GL-FOUND-X-003)
+#
+# This registry defines all units recognized by the GreenLang system including:
+# - SI Base Units
+# - SI Derived Units
+# - Non-SI Units accepted for use
+# - Industry-specific units
+# - GreenLang custom units for emissions reporting
+#
+# Reference Sources:
+# - BIPM SI Brochure (9th edition, 2019)
+# - IPCC 2006 Guidelines
+# - GHG Protocol Guidance
+# - ISO 80000 series
+
+---
+# ============================================================================
+# METADATA
+# ============================================================================
+metadata:
+  schema_version: "1.0.0"
+  last_updated: "2026-01-30"
+  maintained_by: "GL-FOUND-X-003"
+
+---
+# ============================================================================
+# SI BASE UNITS
+# ============================================================================
+base_units:
+  # Length
+  - reference_id: GL-UNIT-M
+    canonical_name: "metre"
+    symbol: "m"
+    quantity: length
+    unit_system: SI
+    is_base_unit: true
+    dimension: "L"
+    aliases:
+      - alias: "meter"
+        locale: en-US
+        priority: 100
+      - alias: "metre"
+        locale: en-GB
+        priority: 100
+      - alias: "m"
+        locale: universal
+        priority: 95
+
+  # Mass
+  - reference_id: GL-UNIT-KG
+    canonical_name: "kilogram"
+    symbol: "kg"
+    quantity: mass
+    unit_system: SI
+    is_base_unit: true
+    dimension: "M"
+    aliases:
+      - alias: "kilogram"
+        locale: en
+        priority: 100
+      - alias: "kg"
+        locale: universal
+        priority: 95
+      - alias: "kilo"
+        locale: en
+        priority: 70
+      - alias: "kilogramme"
+        locale: en-GB
+        priority: 90
+
+  # Time
+  - reference_id: GL-UNIT-S
+    canonical_name: "second"
+    symbol: "s"
+    quantity: time
+    unit_system: SI
+    is_base_unit: true
+    dimension: "T"
+    aliases:
+      - alias: "second"
+        locale: en
+        priority: 100
+      - alias: "sec"
+        locale: en
+        priority: 80
+      - alias: "s"
+        locale: universal
+        priority: 95
+
+  # Electric current
+  - reference_id: GL-UNIT-A
+    canonical_name: "ampere"
+    symbol: "A"
+    quantity: electric_current
+    unit_system: SI
+    is_base_unit: true
+    dimension: "I"
+    aliases:
+      - alias: "ampere"
+        locale: en
+        priority: 100
+      - alias: "amp"
+        locale: en
+        priority: 80
+      - alias: "A"
+        locale: universal
+        priority: 95
+
+  # Temperature
+  - reference_id: GL-UNIT-K
+    canonical_name: "kelvin"
+    symbol: "K"
+    quantity: thermodynamic_temperature
+    unit_system: SI
+    is_base_unit: true
+    dimension: "Θ"
+    aliases:
+      - alias: "kelvin"
+        locale: en
+        priority: 100
+      - alias: "K"
+        locale: universal
+        priority: 95
+
+  # Amount of substance
+  - reference_id: GL-UNIT-MOL
+    canonical_name: "mole"
+    symbol: "mol"
+    quantity: amount_of_substance
+    unit_system: SI
+    is_base_unit: true
+    dimension: "N"
+    aliases:
+      - alias: "mole"
+        locale: en
+        priority: 100
+      - alias: "mol"
+        locale: universal
+        priority: 95
+
+---
+# ============================================================================
+# SI DERIVED UNITS - ENERGY
+# ============================================================================
+derived_units_energy:
+  - reference_id: GL-UNIT-J
+    canonical_name: "joule"
+    symbol: "J"
+    quantity: energy
+    unit_system: SI
+    is_base_unit: false
+    dimension: "M.L2.T-2"
+    definition: "kg.m2.s-2"
+    to_base_factor: 1.0
+    base_unit: GL-UNIT-J
+    aliases:
+      - alias: "joule"
+        locale: en
+        priority: 100
+      - alias: "J"
+        locale: universal
+        priority: 95
+
+  - reference_id: GL-UNIT-KJ
+    canonical_name: "kilojoule"
+    symbol: "kJ"
+    quantity: energy
+    unit_system: SI
+    is_base_unit: false
+    dimension: "M.L2.T-2"
+    to_base_factor: 1000.0
+    base_unit: GL-UNIT-J
+    aliases:
+      - alias: "kilojoule"
+        locale: en
+        priority: 100
+      - alias: "kJ"
+        locale: universal
+        priority: 95
+
+  - reference_id: GL-UNIT-MJ
+    canonical_name: "megajoule"
+    symbol: "MJ"
+    quantity: energy
+    unit_system: SI
+    is_base_unit: false
+    dimension: "M.L2.T-2"
+    to_base_factor: 1000000.0
+    base_unit: GL-UNIT-J
+    aliases:
+      - alias: "megajoule"
+        locale: en
+        priority: 100
+      - alias: "MJ"
+        locale: universal
+        priority: 95
+
+  - reference_id: GL-UNIT-GJ
+    canonical_name: "gigajoule"
+    symbol: "GJ"
+    quantity: energy
+    unit_system: SI
+    is_base_unit: false
+    dimension: "M.L2.T-2"
+    to_base_factor: 1000000000.0
+    base_unit: GL-UNIT-J
+    aliases:
+      - alias: "gigajoule"
+        locale: en
+        priority: 100
+      - alias: "GJ"
+        locale: universal
+        priority: 95
+
+  - reference_id: GL-UNIT-TJ
+    canonical_name: "terajoule"
+    symbol: "TJ"
+    quantity: energy
+    unit_system: SI
+    is_base_unit: false
+    dimension: "M.L2.T-2"
+    to_base_factor: 1000000000000.0
+    base_unit: GL-UNIT-J
+    aliases:
+      - alias: "terajoule"
+        locale: en
+        priority: 100
+      - alias: "TJ"
+        locale: universal
+        priority: 95
+
+  - reference_id: GL-UNIT-WH
+    canonical_name: "watt-hour"
+    symbol: "Wh"
+    quantity: energy
+    unit_system: SI_derived
+    is_base_unit: false
+    dimension: "M.L2.T-2"
+    to_base_factor: 3600.0
+    base_unit: GL-UNIT-J
+    aliases:
+      - alias: "watt-hour"
+        locale: en
+        priority: 100
+      - alias: "watt hour"
+        locale: en
+        priority: 95
+      - alias: "Wh"
+        locale: universal
+        priority: 95
+
+  - reference_id: GL-UNIT-KWH
+    canonical_name: "kilowatt-hour"
+    symbol: "kWh"
+    quantity: energy
+    unit_system: SI_derived
+    is_base_unit: false
+    dimension: "M.L2.T-2"
+    to_base_factor: 3600000.0
+    base_unit: GL-UNIT-J
+    to_mj_factor: 3.6
+    aliases:
+      - alias: "kilowatt-hour"
+        locale: en
+        priority: 100
+      - alias: "kilowatt hour"
+        locale: en
+        priority: 95
+      - alias: "kWh"
+        locale: universal
+        priority: 95
+      - alias: "KWH"
+        locale: universal
+        priority: 70
+      - alias: "kwh"
+        locale: universal
+        priority: 70
+
+  - reference_id: GL-UNIT-MWH
+    canonical_name: "megawatt-hour"
+    symbol: "MWh"
+    quantity: energy
+    unit_system: SI_derived
+    is_base_unit: false
+    dimension: "M.L2.T-2"
+    to_base_factor: 3600000000.0
+    base_unit: GL-UNIT-J
+    to_gj_factor: 3.6
+    aliases:
+      - alias: "megawatt-hour"
+        locale: en
+        priority: 100
+      - alias: "megawatt hour"
+        locale: en
+        priority: 95
+      - alias: "MWh"
+        locale: universal
+        priority: 95
+      - alias: "MWH"
+        locale: universal
+        priority: 70
+
+  - reference_id: GL-UNIT-GWH
+    canonical_name: "gigawatt-hour"
+    symbol: "GWh"
+    quantity: energy
+    unit_system: SI_derived
+    is_base_unit: false
+    dimension: "M.L2.T-2"
+    to_base_factor: 3600000000000.0
+    base_unit: GL-UNIT-J
+    aliases:
+      - alias: "gigawatt-hour"
+        locale: en
+        priority: 100
+      - alias: "GWh"
+        locale: universal
+        priority: 95
+
+  - reference_id: GL-UNIT-TWH
+    canonical_name: "terawatt-hour"
+    symbol: "TWh"
+    quantity: energy
+    unit_system: SI_derived
+    is_base_unit: false
+    dimension: "M.L2.T-2"
+    to_base_factor: 3600000000000000.0
+    base_unit: GL-UNIT-J
+    aliases:
+      - alias: "terawatt-hour"
+        locale: en
+        priority: 100
+      - alias: "TWh"
+        locale: universal
+        priority: 95
+
+---
+# ============================================================================
+# NON-SI ENERGY UNITS
+# ============================================================================
+non_si_energy_units:
+  - reference_id: GL-UNIT-BTU
+    canonical_name: "British thermal unit"
+    symbol: "Btu"
+    quantity: energy
+    unit_system: Imperial
+    is_base_unit: false
+    dimension: "M.L2.T-2"
+    to_base_factor: 1055.06
+    base_unit: GL-UNIT-J
+    to_mj_factor: 0.00105506
+    aliases:
+      - alias: "British thermal unit"
+        locale: en
+        priority: 100
+      - alias: "BTU"
+        locale: universal
+        priority: 95
+      - alias: "Btu"
+        locale: universal
+        priority: 95
+      - alias: "btu"
+        locale: universal
+        priority: 80
+
+  - reference_id: GL-UNIT-MMBTU
+    canonical_name: "million British thermal units"
+    symbol: "MMBtu"
+    quantity: energy
+    unit_system: Imperial
+    is_base_unit: false
+    dimension: "M.L2.T-2"
+    to_base_factor: 1055060000.0
+    base_unit: GL-UNIT-J
+    to_gj_factor: 1.05506
+    aliases:
+      - alias: "million BTU"
+        locale: en
+        priority: 100
+      - alias: "MMBtu"
+        locale: universal
+        priority: 95
+      - alias: "MMBTU"
+        locale: universal
+        priority: 90
+      - alias: "mmBtu"
+        locale: universal
+        priority: 85
+      - alias: "dekatherm"
+        locale: en
+        priority: 70
+      - alias: "therm"
+        locale: en
+        priority: 60
+
+  - reference_id: GL-UNIT-THERM
+    canonical_name: "therm"
+    symbol: "therm"
+    quantity: energy
+    unit_system: Imperial
+    is_base_unit: false
+    dimension: "M.L2.T-2"
+    to_base_factor: 105506000.0
+    base_unit: GL-UNIT-J
+    to_mj_factor: 105.506
+    aliases:
+      - alias: "therm"
+        locale: en
+        priority: 100
+      - alias: "therms"
+        locale: en
+        priority: 95
+      - alias: "thm"
+        locale: universal
+        priority: 80
+
+  - reference_id: GL-UNIT-CAL
+    canonical_name: "calorie"
+    symbol: "cal"
+    quantity: energy
+    unit_system: non_SI
+    is_base_unit: false
+    dimension: "M.L2.T-2"
+    to_base_factor: 4.184
+    base_unit: GL-UNIT-J
+    aliases:
+      - alias: "calorie"
+        locale: en
+        priority: 100
+      - alias: "cal"
+        locale: universal
+        priority: 95
+      - alias: "gram calorie"
+        locale: en
+        priority: 70
+
+  - reference_id: GL-UNIT-KCAL
+    canonical_name: "kilocalorie"
+    symbol: "kcal"
+    quantity: energy
+    unit_system: non_SI
+    is_base_unit: false
+    dimension: "M.L2.T-2"
+    to_base_factor: 4184.0
+    base_unit: GL-UNIT-J
+    aliases:
+      - alias: "kilocalorie"
+        locale: en
+        priority: 100
+      - alias: "kcal"
+        locale: universal
+        priority: 95
+      - alias: "Cal"
+        locale: universal
+        priority: 80
+      - alias: "large calorie"
+        locale: en
+        priority: 70
+
+  - reference_id: GL-UNIT-TOE
+    canonical_name: "tonne of oil equivalent"
+    symbol: "toe"
+    quantity: energy
+    unit_system: industry
+    is_base_unit: false
+    dimension: "M.L2.T-2"
+    to_base_factor: 41868000000.0
+    base_unit: GL-UNIT-J
+    to_gj_factor: 41.868
+    aliases:
+      - alias: "tonne of oil equivalent"
+        locale: en
+        priority: 100
+      - alias: "toe"
+        locale: universal
+        priority: 95
+      - alias: "TOE"
+        locale: universal
+        priority: 90
+      - alias: "tonne oil equivalent"
+        locale: en
+        priority: 85
+
+  - reference_id: GL-UNIT-MTOE
+    canonical_name: "million tonnes of oil equivalent"
+    symbol: "Mtoe"
+    quantity: energy
+    unit_system: industry
+    is_base_unit: false
+    dimension: "M.L2.T-2"
+    to_base_factor: 41868000000000000.0
+    base_unit: GL-UNIT-J
+    aliases:
+      - alias: "million tonnes of oil equivalent"
+        locale: en
+        priority: 100
+      - alias: "Mtoe"
+        locale: universal
+        priority: 95
+      - alias: "MTOE"
+        locale: universal
+        priority: 90
+
+  - reference_id: GL-UNIT-TCE
+    canonical_name: "tonne of coal equivalent"
+    symbol: "tce"
+    quantity: energy
+    unit_system: industry
+    is_base_unit: false
+    dimension: "M.L2.T-2"
+    to_base_factor: 29307600000.0
+    base_unit: GL-UNIT-J
+    to_gj_factor: 29.3076
+    aliases:
+      - alias: "tonne of coal equivalent"
+        locale: en
+        priority: 100
+      - alias: "tce"
+        locale: universal
+        priority: 95
+      - alias: "TCE"
+        locale: universal
+        priority: 90
+
+---
+# ============================================================================
+# MASS UNITS
+# ============================================================================
+mass_units:
+  - reference_id: GL-UNIT-G
+    canonical_name: "gram"
+    symbol: "g"
+    quantity: mass
+    unit_system: SI
+    is_base_unit: false
+    dimension: "M"
+    to_base_factor: 0.001
+    base_unit: GL-UNIT-KG
+    aliases:
+      - alias: "gram"
+        locale: en
+        priority: 100
+      - alias: "gramme"
+        locale: en-GB
+        priority: 95
+      - alias: "g"
+        locale: universal
+        priority: 95
+
+  - reference_id: GL-UNIT-MG
+    canonical_name: "milligram"
+    symbol: "mg"
+    quantity: mass
+    unit_system: SI
+    is_base_unit: false
+    dimension: "M"
+    to_base_factor: 0.000001
+    base_unit: GL-UNIT-KG
+    aliases:
+      - alias: "milligram"
+        locale: en
+        priority: 100
+      - alias: "mg"
+        locale: universal
+        priority: 95
+
+  - reference_id: GL-UNIT-T
+    canonical_name: "tonne"
+    symbol: "t"
+    quantity: mass
+    unit_system: SI
+    is_base_unit: false
+    dimension: "M"
+    to_base_factor: 1000.0
+    base_unit: GL-UNIT-KG
+    aliases:
+      - alias: "tonne"
+        locale: en
+        priority: 100
+      - alias: "metric ton"
+        locale: en-US
+        priority: 95
+      - alias: "metric tonne"
+        locale: en
+        priority: 90
+      - alias: "t"
+        locale: universal
+        priority: 95
+      - alias: "MT"
+        locale: universal
+        priority: 80
+      - alias: "te"
+        locale: universal
+        priority: 70
+
+  - reference_id: GL-UNIT-KT
+    canonical_name: "kilotonne"
+    symbol: "kt"
+    quantity: mass
+    unit_system: SI
+    is_base_unit: false
+    dimension: "M"
+    to_base_factor: 1000000.0
+    base_unit: GL-UNIT-KG
+    aliases:
+      - alias: "kilotonne"
+        locale: en
+        priority: 100
+      - alias: "kiloton"
+        locale: en-US
+        priority: 95
+      - alias: "kt"
+        locale: universal
+        priority: 95
+      - alias: "kT"
+        locale: universal
+        priority: 80
+
+  - reference_id: GL-UNIT-MT
+    canonical_name: "megatonne"
+    symbol: "Mt"
+    quantity: mass
+    unit_system: SI
+    is_base_unit: false
+    dimension: "M"
+    to_base_factor: 1000000000.0
+    base_unit: GL-UNIT-KG
+    aliases:
+      - alias: "megatonne"
+        locale: en
+        priority: 100
+      - alias: "megaton"
+        locale: en-US
+        priority: 95
+      - alias: "million tonnes"
+        locale: en
+        priority: 90
+      - alias: "Mt"
+        locale: universal
+        priority: 95
+      - alias: "Mte"
+        locale: universal
+        priority: 80
+
+  - reference_id: GL-UNIT-LB
+    canonical_name: "pound"
+    symbol: "lb"
+    quantity: mass
+    unit_system: Imperial
+    is_base_unit: false
+    dimension: "M"
+    to_base_factor: 0.453592
+    base_unit: GL-UNIT-KG
+    aliases:
+      - alias: "pound"
+        locale: en
+        priority: 100
+      - alias: "lb"
+        locale: universal
+        priority: 95
+      - alias: "lbs"
+        locale: universal
+        priority: 90
+      - alias: "pound mass"
+        locale: en
+        priority: 70
+
+  - reference_id: GL-UNIT-SHORTTON
+    canonical_name: "short ton"
+    symbol: "st"
+    quantity: mass
+    unit_system: US_customary
+    is_base_unit: false
+    dimension: "M"
+    to_base_factor: 907.185
+    base_unit: GL-UNIT-KG
+    aliases:
+      - alias: "short ton"
+        locale: en-US
+        priority: 100
+      - alias: "US ton"
+        locale: en
+        priority: 90
+      - alias: "ton"
+        locale: en-US
+        priority: 85
+      - alias: "st"
+        locale: universal
+        priority: 80
+
+  - reference_id: GL-UNIT-LONGTON
+    canonical_name: "long ton"
+    symbol: "lt"
+    quantity: mass
+    unit_system: Imperial
+    is_base_unit: false
+    dimension: "M"
+    to_base_factor: 1016.05
+    base_unit: GL-UNIT-KG
+    aliases:
+      - alias: "long ton"
+        locale: en-GB
+        priority: 100
+      - alias: "imperial ton"
+        locale: en
+        priority: 90
+      - alias: "lt"
+        locale: universal
+        priority: 80
+
+---
+# ============================================================================
+# VOLUME UNITS
+# ============================================================================
+volume_units:
+  - reference_id: GL-UNIT-L
+    canonical_name: "litre"
+    symbol: "L"
+    quantity: volume
+    unit_system: SI_accepted
+    is_base_unit: false
+    dimension: "L3"
+    to_base_factor: 0.001
+    base_unit: GL-UNIT-M3
+    aliases:
+      - alias: "litre"
+        locale: en-GB
+        priority: 100
+      - alias: "liter"
+        locale: en-US
+        priority: 100
+      - alias: "L"
+        locale: universal
+        priority: 95
+      - alias: "l"
+        locale: universal
+        priority: 90
+
+  - reference_id: GL-UNIT-ML
+    canonical_name: "millilitre"
+    symbol: "mL"
+    quantity: volume
+    unit_system: SI_accepted
+    is_base_unit: false
+    dimension: "L3"
+    to_base_factor: 0.000001
+    base_unit: GL-UNIT-M3
+    aliases:
+      - alias: "millilitre"
+        locale: en-GB
+        priority: 100
+      - alias: "milliliter"
+        locale: en-US
+        priority: 100
+      - alias: "mL"
+        locale: universal
+        priority: 95
+      - alias: "ml"
+        locale: universal
+        priority: 90
+
+  - reference_id: GL-UNIT-M3
+    canonical_name: "cubic metre"
+    symbol: "m3"
+    quantity: volume
+    unit_system: SI
+    is_base_unit: true
+    dimension: "L3"
+    aliases:
+      - alias: "cubic metre"
+        locale: en-GB
+        priority: 100
+      - alias: "cubic meter"
+        locale: en-US
+        priority: 100
+      - alias: "m3"
+        locale: universal
+        priority: 95
+      - alias: "m^3"
+        locale: universal
+        priority: 90
+      - alias: "cbm"
+        locale: universal
+        priority: 80
+
+  - reference_id: GL-UNIT-GAL-US
+    canonical_name: "US gallon"
+    symbol: "gal"
+    quantity: volume
+    unit_system: US_customary
+    is_base_unit: false
+    dimension: "L3"
+    to_base_factor: 0.00378541
+    base_unit: GL-UNIT-M3
+    to_liters: 3.78541
+    aliases:
+      - alias: "US gallon"
+        locale: en-US
+        priority: 100
+      - alias: "gallon"
+        locale: en-US
+        priority: 95
+      - alias: "gal"
+        locale: universal
+        priority: 90
+
+  - reference_id: GL-UNIT-GAL-UK
+    canonical_name: "Imperial gallon"
+    symbol: "gal(UK)"
+    quantity: volume
+    unit_system: Imperial
+    is_base_unit: false
+    dimension: "L3"
+    to_base_factor: 0.00454609
+    base_unit: GL-UNIT-M3
+    to_liters: 4.54609
+    aliases:
+      - alias: "Imperial gallon"
+        locale: en-GB
+        priority: 100
+      - alias: "UK gallon"
+        locale: en
+        priority: 95
+      - alias: "gallon"
+        locale: en-GB
+        priority: 90
+
+  - reference_id: GL-UNIT-BBL
+    canonical_name: "barrel (petroleum)"
+    symbol: "bbl"
+    quantity: volume
+    unit_system: industry
+    is_base_unit: false
+    dimension: "L3"
+    to_base_factor: 0.158987
+    base_unit: GL-UNIT-M3
+    to_liters: 158.987
+    aliases:
+      - alias: "barrel"
+        locale: en
+        priority: 100
+      - alias: "bbl"
+        locale: universal
+        priority: 95
+      - alias: "oil barrel"
+        locale: en
+        priority: 85
+      - alias: "petroleum barrel"
+        locale: en
+        priority: 80
+
+---
+# ============================================================================
+# GREENLANG CUSTOM UNITS - GAS VOLUMES
+# ============================================================================
+greenlang_gas_volume_units:
+  - reference_id: GL-UNIT-NM3
+    canonical_name: "normal cubic metre"
+    symbol: "Nm3"
+    quantity: gas_volume
+    unit_system: greenlang
+    is_base_unit: false
+    dimension: "L3"
+    reference_conditions:
+      temperature_C: 0
+      pressure_kPa: 101.325
+    description: |
+      Volume of gas at normal conditions (0°C, 101.325 kPa).
+      Standard in European gas industry and IPCC guidelines.
+    conversion_to_sm3: 1.0554
+    aliases:
+      - alias: "normal cubic metre"
+        locale: en-GB
+        priority: 100
+      - alias: "normal cubic meter"
+        locale: en-US
+        priority: 100
+      - alias: "Nm3"
+        locale: universal
+        priority: 95
+      - alias: "Nm³"
+        locale: universal
+        priority: 90
+      - alias: "normal m3"
+        locale: en
+        priority: 85
+      - alias: "ncm"
+        locale: universal
+        priority: 70
+
+  - reference_id: GL-UNIT-SM3
+    canonical_name: "standard cubic metre"
+    symbol: "Sm3"
+    quantity: gas_volume
+    unit_system: greenlang
+    is_base_unit: false
+    dimension: "L3"
+    reference_conditions:
+      temperature_C: 15
+      pressure_kPa: 101.325
+    description: |
+      Volume of gas at standard conditions (15°C, 101.325 kPa).
+      ISO standard reference conditions.
+    conversion_to_nm3: 0.9475
+    aliases:
+      - alias: "standard cubic metre"
+        locale: en-GB
+        priority: 100
+      - alias: "standard cubic meter"
+        locale: en-US
+        priority: 100
+      - alias: "Sm3"
+        locale: universal
+        priority: 95
+      - alias: "Sm³"
+        locale: universal
+        priority: 90
+      - alias: "scm"
+        locale: universal
+        priority: 80
+
+  - reference_id: GL-UNIT-SCF
+    canonical_name: "standard cubic foot"
+    symbol: "scf"
+    quantity: gas_volume
+    unit_system: greenlang
+    is_base_unit: false
+    dimension: "L3"
+    reference_conditions:
+      temperature_F: 60
+      pressure_psia: 14.696
+    description: |
+      Volume of gas at US standard conditions (60°F, 14.696 psia).
+      Common in US oil and gas industry.
+    to_base_factor: 0.0283168
+    base_unit: GL-UNIT-M3
+    conversion_to_nm3: 0.02679
+    aliases:
+      - alias: "standard cubic foot"
+        locale: en-US
+        priority: 100
+      - alias: "scf"
+        locale: universal
+        priority: 95
+      - alias: "SCF"
+        locale: universal
+        priority: 90
+      - alias: "std cu ft"
+        locale: en
+        priority: 70
+
+  - reference_id: GL-UNIT-MSCF
+    canonical_name: "thousand standard cubic feet"
+    symbol: "Mscf"
+    quantity: gas_volume
+    unit_system: greenlang
+    is_base_unit: false
+    dimension: "L3"
+    reference_conditions:
+      temperature_F: 60
+      pressure_psia: 14.696
+    to_base_factor: 28.3168
+    base_unit: GL-UNIT-M3
+    aliases:
+      - alias: "thousand standard cubic feet"
+        locale: en
+        priority: 100
+      - alias: "Mscf"
+        locale: universal
+        priority: 95
+      - alias: "MSCF"
+        locale: universal
+        priority: 90
+      - alias: "MCF"
+        locale: universal
+        priority: 85
+      - alias: "kscf"
+        locale: universal
+        priority: 80
+
+  - reference_id: GL-UNIT-MMSCF
+    canonical_name: "million standard cubic feet"
+    symbol: "MMscf"
+    quantity: gas_volume
+    unit_system: greenlang
+    is_base_unit: false
+    dimension: "L3"
+    reference_conditions:
+      temperature_F: 60
+      pressure_psia: 14.696
+    to_base_factor: 28316.8
+    base_unit: GL-UNIT-M3
+    aliases:
+      - alias: "million standard cubic feet"
+        locale: en
+        priority: 100
+      - alias: "MMscf"
+        locale: universal
+        priority: 95
+      - alias: "MMSCF"
+        locale: universal
+        priority: 90
+      - alias: "mmcf"
+        locale: universal
+        priority: 80
+
+---
+# ============================================================================
+# GREENLANG CUSTOM UNITS - EMISSIONS
+# ============================================================================
+greenlang_emissions_units:
+  - reference_id: GL-UNIT-KG-CO2E
+    canonical_name: "kilogram CO2 equivalent"
+    symbol: "kgCO2e"
+    quantity: ghg_emissions
+    unit_system: greenlang
+    is_base_unit: true
+    dimension: "M"
+    description: |
+      Mass of greenhouse gas emissions expressed as CO2 equivalent.
+      Uses Global Warming Potentials to convert other GHGs to CO2e.
+    aliases:
+      - alias: "kilogram CO2 equivalent"
+        locale: en
+        priority: 100
+      - alias: "kgCO2e"
+        locale: universal
+        priority: 95
+      - alias: "kg CO2e"
+        locale: universal
+        priority: 90
+      - alias: "kgCO2eq"
+        locale: universal
+        priority: 85
+      - alias: "kg CO2eq"
+        locale: universal
+        priority: 80
+      - alias: "kgCO2-e"
+        locale: universal
+        priority: 75
+      - alias: "kg CO2-e"
+        locale: universal
+        priority: 70
+
+  - reference_id: GL-UNIT-T-CO2E
+    canonical_name: "tonne CO2 equivalent"
+    symbol: "tCO2e"
+    quantity: ghg_emissions
+    unit_system: greenlang
+    is_base_unit: false
+    dimension: "M"
+    to_base_factor: 1000.0
+    base_unit: GL-UNIT-KG-CO2E
+    aliases:
+      - alias: "tonne CO2 equivalent"
+        locale: en
+        priority: 100
+      - alias: "tCO2e"
+        locale: universal
+        priority: 95
+      - alias: "t CO2e"
+        locale: universal
+        priority: 90
+      - alias: "tCO2eq"
+        locale: universal
+        priority: 85
+      - alias: "tonnes CO2e"
+        locale: en
+        priority: 80
+      - alias: "metric ton CO2e"
+        locale: en-US
+        priority: 80
+      - alias: "MTCO2e"
+        locale: universal
+        priority: 70
+
+  - reference_id: GL-UNIT-KT-CO2E
+    canonical_name: "kilotonne CO2 equivalent"
+    symbol: "ktCO2e"
+    quantity: ghg_emissions
+    unit_system: greenlang
+    is_base_unit: false
+    dimension: "M"
+    to_base_factor: 1000000.0
+    base_unit: GL-UNIT-KG-CO2E
+    aliases:
+      - alias: "kilotonne CO2 equivalent"
+        locale: en
+        priority: 100
+      - alias: "ktCO2e"
+        locale: universal
+        priority: 95
+      - alias: "kt CO2e"
+        locale: universal
+        priority: 90
+      - alias: "thousand tonnes CO2e"
+        locale: en
+        priority: 80
+
+  - reference_id: GL-UNIT-MT-CO2E
+    canonical_name: "megatonne CO2 equivalent"
+    symbol: "MtCO2e"
+    quantity: ghg_emissions
+    unit_system: greenlang
+    is_base_unit: false
+    dimension: "M"
+    to_base_factor: 1000000000.0
+    base_unit: GL-UNIT-KG-CO2E
+    aliases:
+      - alias: "megatonne CO2 equivalent"
+        locale: en
+        priority: 100
+      - alias: "MtCO2e"
+        locale: universal
+        priority: 95
+      - alias: "Mt CO2e"
+        locale: universal
+        priority: 90
+      - alias: "million tonnes CO2e"
+        locale: en
+        priority: 85
+      - alias: "MMTCO2e"
+        locale: universal
+        priority: 70
+
+  - reference_id: GL-UNIT-GT-CO2E
+    canonical_name: "gigatonne CO2 equivalent"
+    symbol: "GtCO2e"
+    quantity: ghg_emissions
+    unit_system: greenlang
+    is_base_unit: false
+    dimension: "M"
+    to_base_factor: 1000000000000.0
+    base_unit: GL-UNIT-KG-CO2E
+    aliases:
+      - alias: "gigatonne CO2 equivalent"
+        locale: en
+        priority: 100
+      - alias: "GtCO2e"
+        locale: universal
+        priority: 95
+      - alias: "Gt CO2e"
+        locale: universal
+        priority: 90
+      - alias: "billion tonnes CO2e"
+        locale: en
+        priority: 80
+
+  - reference_id: GL-UNIT-KG-CO2
+    canonical_name: "kilogram CO2"
+    symbol: "kgCO2"
+    quantity: ghg_emissions
+    unit_system: greenlang
+    is_base_unit: false
+    dimension: "M"
+    description: |
+      Mass of carbon dioxide emissions (CO2 only, not CO2 equivalent).
+      Use for direct CO2 measurements without GWP conversion.
+    to_base_factor: 1.0
+    base_unit: GL-UNIT-KG-CO2E
+    aliases:
+      - alias: "kilogram CO2"
+        locale: en
+        priority: 100
+      - alias: "kgCO2"
+        locale: universal
+        priority: 95
+      - alias: "kg CO2"
+        locale: universal
+        priority: 90
+      - alias: "kg carbon dioxide"
+        locale: en
+        priority: 75
+
+  - reference_id: GL-UNIT-T-CO2
+    canonical_name: "tonne CO2"
+    symbol: "tCO2"
+    quantity: ghg_emissions
+    unit_system: greenlang
+    is_base_unit: false
+    dimension: "M"
+    to_base_factor: 1000.0
+    base_unit: GL-UNIT-KG-CO2E
+    aliases:
+      - alias: "tonne CO2"
+        locale: en
+        priority: 100
+      - alias: "tCO2"
+        locale: universal
+        priority: 95
+      - alias: "t CO2"
+        locale: universal
+        priority: 90
+      - alias: "tonnes CO2"
+        locale: en
+        priority: 85
+
+---
+# ============================================================================
+# EMISSION INTENSITY UNITS
+# ============================================================================
+emission_intensity_units:
+  - reference_id: GL-UNIT-KG-CO2E-KWH
+    canonical_name: "kgCO2e per kWh"
+    symbol: "kgCO2e/kWh"
+    quantity: emission_intensity_energy
+    unit_system: greenlang
+    is_base_unit: true
+    dimension: "M.L-2.T2"
+    description: "Grid emission factor unit - kg CO2e per kilowatt-hour"
+    aliases:
+      - alias: "kgCO2e/kWh"
+        locale: universal
+        priority: 100
+      - alias: "kg CO2e/kWh"
+        locale: universal
+        priority: 95
+      - alias: "kgCO2e per kWh"
+        locale: en
+        priority: 85
+
+  - reference_id: GL-UNIT-G-CO2E-KWH
+    canonical_name: "gCO2e per kWh"
+    symbol: "gCO2e/kWh"
+    quantity: emission_intensity_energy
+    unit_system: greenlang
+    is_base_unit: false
+    dimension: "M.L-2.T2"
+    to_base_factor: 0.001
+    base_unit: GL-UNIT-KG-CO2E-KWH
+    aliases:
+      - alias: "gCO2e/kWh"
+        locale: universal
+        priority: 100
+      - alias: "g CO2e/kWh"
+        locale: universal
+        priority: 95
+      - alias: "grams CO2e per kWh"
+        locale: en
+        priority: 80
+
+  - reference_id: GL-UNIT-KG-CO2E-GJ
+    canonical_name: "kgCO2e per GJ"
+    symbol: "kgCO2e/GJ"
+    quantity: emission_intensity_energy
+    unit_system: greenlang
+    is_base_unit: false
+    dimension: "M.L-2.T2"
+    description: "Fuel emission factor unit - kg CO2e per gigajoule"
+    aliases:
+      - alias: "kgCO2e/GJ"
+        locale: universal
+        priority: 100
+      - alias: "kg CO2e/GJ"
+        locale: universal
+        priority: 95
+      - alias: "kgCO2/GJ"
+        locale: universal
+        priority: 85
+
+  - reference_id: GL-UNIT-KG-CO2E-T
+    canonical_name: "kgCO2e per tonne"
+    symbol: "kgCO2e/t"
+    quantity: emission_intensity_mass
+    unit_system: greenlang
+    is_base_unit: true
+    dimension: "1"
+    description: "Material emission factor unit - kg CO2e per tonne of material"
+    aliases:
+      - alias: "kgCO2e/t"
+        locale: universal
+        priority: 100
+      - alias: "kg CO2e/t"
+        locale: universal
+        priority: 95
+      - alias: "kgCO2e/tonne"
+        locale: en
+        priority: 85
+      - alias: "kg CO2e per tonne"
+        locale: en
+        priority: 80
+
+  - reference_id: GL-UNIT-T-CO2E-T
+    canonical_name: "tCO2e per tonne"
+    symbol: "tCO2e/t"
+    quantity: emission_intensity_mass
+    unit_system: greenlang
+    is_base_unit: false
+    dimension: "1"
+    to_base_factor: 1000.0
+    base_unit: GL-UNIT-KG-CO2E-T
+    aliases:
+      - alias: "tCO2e/t"
+        locale: universal
+        priority: 100
+      - alias: "t CO2e/t"
+        locale: universal
+        priority: 95
+      - alias: "tonnes CO2e per tonne"
+        locale: en
+        priority: 80
+
+---
+# ============================================================================
+# TIME UNITS (EXTENDED)
+# ============================================================================
+time_units:
+  - reference_id: GL-UNIT-MIN
+    canonical_name: "minute"
+    symbol: "min"
+    quantity: time
+    unit_system: SI_accepted
+    is_base_unit: false
+    dimension: "T"
+    to_base_factor: 60.0
+    base_unit: GL-UNIT-S
+    aliases:
+      - alias: "minute"
+        locale: en
+        priority: 100
+      - alias: "min"
+        locale: universal
+        priority: 95
+
+  - reference_id: GL-UNIT-H
+    canonical_name: "hour"
+    symbol: "h"
+    quantity: time
+    unit_system: SI_accepted
+    is_base_unit: false
+    dimension: "T"
+    to_base_factor: 3600.0
+    base_unit: GL-UNIT-S
+    aliases:
+      - alias: "hour"
+        locale: en
+        priority: 100
+      - alias: "hr"
+        locale: en
+        priority: 90
+      - alias: "h"
+        locale: universal
+        priority: 95
+
+  - reference_id: GL-UNIT-D
+    canonical_name: "day"
+    symbol: "d"
+    quantity: time
+    unit_system: SI_accepted
+    is_base_unit: false
+    dimension: "T"
+    to_base_factor: 86400.0
+    base_unit: GL-UNIT-S
+    aliases:
+      - alias: "day"
+        locale: en
+        priority: 100
+      - alias: "d"
+        locale: universal
+        priority: 95
+
+  - reference_id: GL-UNIT-Y
+    canonical_name: "year"
+    symbol: "y"
+    quantity: time
+    unit_system: SI_accepted
+    is_base_unit: false
+    dimension: "T"
+    to_base_factor: 31536000.0
+    base_unit: GL-UNIT-S
+    aliases:
+      - alias: "year"
+        locale: en
+        priority: 100
+      - alias: "yr"
+        locale: en
+        priority: 90
+      - alias: "y"
+        locale: universal
+        priority: 85
+      - alias: "a"
+        locale: universal
+        priority: 80
+      - alias: "annum"
+        locale: en
+        priority: 75
+      - alias: "per annum"
+        locale: en
+        priority: 70
+
+---
+# ============================================================================
+# TEMPERATURE UNITS (NON-SI)
+# ============================================================================
+temperature_units:
+  - reference_id: GL-UNIT-C
+    canonical_name: "degree Celsius"
+    symbol: "°C"
+    quantity: temperature
+    unit_system: SI_accepted
+    is_base_unit: false
+    dimension: "Θ"
+    to_kelvin_offset: 273.15
+    aliases:
+      - alias: "degree Celsius"
+        locale: en
+        priority: 100
+      - alias: "Celsius"
+        locale: en
+        priority: 95
+      - alias: "°C"
+        locale: universal
+        priority: 95
+      - alias: "C"
+        locale: universal
+        priority: 85
+      - alias: "degC"
+        locale: universal
+        priority: 80
+      - alias: "deg C"
+        locale: universal
+        priority: 75
+
+  - reference_id: GL-UNIT-F
+    canonical_name: "degree Fahrenheit"
+    symbol: "°F"
+    quantity: temperature
+    unit_system: US_customary
+    is_base_unit: false
+    dimension: "Θ"
+    to_celsius_formula: "(F - 32) * 5/9"
+    aliases:
+      - alias: "degree Fahrenheit"
+        locale: en
+        priority: 100
+      - alias: "Fahrenheit"
+        locale: en
+        priority: 95
+      - alias: "°F"
+        locale: universal
+        priority: 95
+      - alias: "F"
+        locale: universal
+        priority: 85
+      - alias: "degF"
+        locale: universal
+        priority: 80
+
+---
+# ============================================================================
+# POWER UNITS
+# ============================================================================
+power_units:
+  - reference_id: GL-UNIT-W
+    canonical_name: "watt"
+    symbol: "W"
+    quantity: power
+    unit_system: SI
+    is_base_unit: true
+    dimension: "M.L2.T-3"
+    definition: "J/s"
+    aliases:
+      - alias: "watt"
+        locale: en
+        priority: 100
+      - alias: "W"
+        locale: universal
+        priority: 95
+
+  - reference_id: GL-UNIT-KW
+    canonical_name: "kilowatt"
+    symbol: "kW"
+    quantity: power
+    unit_system: SI
+    is_base_unit: false
+    dimension: "M.L2.T-3"
+    to_base_factor: 1000.0
+    base_unit: GL-UNIT-W
+    aliases:
+      - alias: "kilowatt"
+        locale: en
+        priority: 100
+      - alias: "kW"
+        locale: universal
+        priority: 95
+
+  - reference_id: GL-UNIT-MW
+    canonical_name: "megawatt"
+    symbol: "MW"
+    quantity: power
+    unit_system: SI
+    is_base_unit: false
+    dimension: "M.L2.T-3"
+    to_base_factor: 1000000.0
+    base_unit: GL-UNIT-W
+    aliases:
+      - alias: "megawatt"
+        locale: en
+        priority: 100
+      - alias: "MW"
+        locale: universal
+        priority: 95
+
+  - reference_id: GL-UNIT-GW
+    canonical_name: "gigawatt"
+    symbol: "GW"
+    quantity: power
+    unit_system: SI
+    is_base_unit: false
+    dimension: "M.L2.T-3"
+    to_base_factor: 1000000000.0
+    base_unit: GL-UNIT-W
+    aliases:
+      - alias: "gigawatt"
+        locale: en
+        priority: 100
+      - alias: "GW"
+        locale: universal
+        priority: 95
+
+---
+# ============================================================================
+# CONVERSION FACTORS (COMMON)
+# ============================================================================
+common_conversions:
+  energy:
+    - from: GL-UNIT-KWH
+      to: GL-UNIT-MJ
+      factor: 3.6
+      exact: true
+
+    - from: GL-UNIT-MWH
+      to: GL-UNIT-GJ
+      factor: 3.6
+      exact: true
+
+    - from: GL-UNIT-MMBTU
+      to: GL-UNIT-GJ
+      factor: 1.05506
+      exact: false
+      source: "EIA"
+
+    - from: GL-UNIT-TOE
+      to: GL-UNIT-GJ
+      factor: 41.868
+      exact: false
+      source: "IEA"
+
+    - from: GL-UNIT-TCE
+      to: GL-UNIT-GJ
+      factor: 29.3076
+      exact: false
+      source: "IEA"
+
+  mass:
+    - from: GL-UNIT-SHORTTON
+      to: GL-UNIT-T
+      factor: 0.907185
+      exact: false
+
+    - from: GL-UNIT-LONGTON
+      to: GL-UNIT-T
+      factor: 1.01605
+      exact: false
+
+    - from: GL-UNIT-LB
+      to: GL-UNIT-KG
+      factor: 0.453592
+      exact: false
+
+  volume:
+    - from: GL-UNIT-BBL
+      to: GL-UNIT-L
+      factor: 158.987
+      exact: false
+
+    - from: GL-UNIT-GAL-US
+      to: GL-UNIT-L
+      factor: 3.78541
+      exact: false
+
+    - from: GL-UNIT-GAL-UK
+      to: GL-UNIT-L
+      factor: 4.54609
+      exact: false
+
+  gas_volume:
+    - from: GL-UNIT-NM3
+      to: GL-UNIT-SM3
+      factor: 1.0554
+      exact: false
+      note: "Temperature conversion 0°C to 15°C"
+
+    - from: GL-UNIT-SCF
+      to: GL-UNIT-NM3
+      factor: 0.02679
+      exact: false

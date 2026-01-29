@@ -1,0 +1,234 @@
+# configmap.yaml - GreenLang Normalizer Configuration
+# Component: GL-FOUND-X-003 - Unit & Reference Normalizer
+# Purpose: Application configuration that is not sensitive
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gl-normalizer-config
+  namespace: gl-normalizer
+  labels:
+    app.kubernetes.io/name: gl-normalizer
+    app.kubernetes.io/component: config
+    app.kubernetes.io/part-of: greenlang-platform
+  annotations:
+    description: "Application configuration for GL Normalizer Service"
+data:
+  # Application settings
+  GL_NORMALIZER_ENV: "production"
+  GL_NORMALIZER_HOST: "0.0.0.0"
+  GL_NORMALIZER_PORT: "8000"
+  GL_NORMALIZER_WORKERS: "4"
+  GL_NORMALIZER_LOG_LEVEL: "INFO"
+  GL_NORMALIZER_LOG_FORMAT: "json"
+  GL_NORMALIZER_DEBUG: "false"
+
+  # Vocabulary settings
+  GL_NORMALIZER_VOCABULARY_PATH: "/app/config"
+  GL_NORMALIZER_VOCABULARY_VERSION: "2026.01.0"
+  GL_NORMALIZER_VOCABULARY_CACHE_TTL: "3600"
+
+  # Policy settings
+  GL_NORMALIZER_DEFAULT_POLICY_MODE: "STRICT"
+  GL_NORMALIZER_FUZZY_MATCHING_ENABLED: "true"
+  GL_NORMALIZER_LLM_CANDIDATES_ENABLED: "false"
+  GL_NORMALIZER_CONFIDENCE_THRESHOLD: "0.85"
+  GL_NORMALIZER_NEEDS_REVIEW_THRESHOLD: "0.70"
+
+  # Rate limiting
+  GL_NORMALIZER_RATE_LIMIT_ENABLED: "true"
+  GL_NORMALIZER_RATE_LIMIT_REQUESTS: "1000"
+  GL_NORMALIZER_RATE_LIMIT_WINDOW: "60"
+
+  # Batch processing
+  GL_NORMALIZER_BATCH_MAX_SIZE: "10000"
+  GL_NORMALIZER_BATCH_TIMEOUT: "300"
+
+  # Observability
+  OTEL_SERVICE_NAME: "gl-normalizer-service"
+  OTEL_TRACES_SAMPLER: "parentbased_traceidratio"
+  OTEL_TRACES_SAMPLER_ARG: "0.1"
+  OTEL_METRICS_EXPORTER: "prometheus"
+
+  # Kafka settings (non-sensitive)
+  GL_NORMALIZER_KAFKA_AUDIT_TOPIC: "gl-normalizer-audit-events"
+  GL_NORMALIZER_KAFKA_CONSUMER_GROUP: "gl-normalizer-audit-consumer"
+  GL_NORMALIZER_KAFKA_AUTO_OFFSET_RESET: "earliest"
+  GL_NORMALIZER_KAFKA_ENABLE_IDEMPOTENCE: "true"
+
+  # Redis settings (non-sensitive)
+  GL_NORMALIZER_REDIS_DB: "0"
+  GL_NORMALIZER_REDIS_MAX_CONNECTIONS: "20"
+  GL_NORMALIZER_REDIS_SOCKET_TIMEOUT: "5"
+  GL_NORMALIZER_REDIS_RETRY_ON_TIMEOUT: "true"
+
+  # Health check settings
+  GL_NORMALIZER_HEALTH_CHECK_INTERVAL: "30"
+  GL_NORMALIZER_STARTUP_PROBE_DELAY: "10"
+  GL_NORMALIZER_LIVENESS_PROBE_DELAY: "30"
+  GL_NORMALIZER_READINESS_PROBE_DELAY: "5"
+
+---
+# ConfigMap for Review Console
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gl-normalizer-review-console-config
+  namespace: gl-normalizer
+  labels:
+    app.kubernetes.io/name: gl-normalizer-review-console
+    app.kubernetes.io/component: config
+    app.kubernetes.io/part-of: greenlang-platform
+data:
+  GL_REVIEW_CONSOLE_ENV: "production"
+  GL_REVIEW_CONSOLE_HOST: "0.0.0.0"
+  GL_REVIEW_CONSOLE_PORT: "8080"
+  GL_REVIEW_CONSOLE_WORKERS: "2"
+  GL_REVIEW_CONSOLE_LOG_LEVEL: "INFO"
+  GL_NORMALIZER_SERVICE_URL: "http://gl-normalizer-service:8000"
+  GL_REVIEW_CONSOLE_SESSION_TIMEOUT: "3600"
+  GL_REVIEW_CONSOLE_MAX_REVIEW_BATCH: "100"
+
+---
+# ConfigMap for canonical units configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gl-normalizer-canonical-units
+  namespace: gl-normalizer
+  labels:
+    app.kubernetes.io/name: gl-normalizer
+    app.kubernetes.io/component: vocabulary
+data:
+  canonical_units.yaml: |
+    # Canonical Unit Policy for GreenLang Normalizer
+    # Version: 2026.01.0
+    # Last Updated: 2026-01-29
+
+    version: "2026.01.0"
+
+    dimensions:
+      energy:
+        canonical_unit: MJ
+        display_precision: 6
+        allowed_units:
+          - kWh
+          - MWh
+          - GJ
+          - MMBtu
+          - therm
+          - BTU
+          - J
+          - kJ
+
+      mass:
+        canonical_unit: kg
+        display_precision: 6
+        allowed_units:
+          - g
+          - mg
+          - t
+          - lb
+          - oz
+          - ton
+
+      volume:
+        canonical_unit: m3
+        display_precision: 6
+        allowed_units:
+          - L
+          - mL
+          - gal
+          - bbl
+          - scf
+          - Nm3
+
+      emissions_mass:
+        canonical_unit: kgCO2e
+        display_precision: 6
+        allowed_units:
+          - tCO2e
+          - gCO2e
+          - lbCO2e
+          - kgCO2
+          - tCO2
+
+      power:
+        canonical_unit: kW
+        display_precision: 3
+        allowed_units:
+          - W
+          - MW
+          - GW
+          - hp
+
+      time:
+        canonical_unit: h
+        display_precision: 2
+        allowed_units:
+          - s
+          - min
+          - day
+          - week
+          - month
+          - year
+
+---
+# ConfigMap for confidence thresholds
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gl-normalizer-confidence-thresholds
+  namespace: gl-normalizer
+  labels:
+    app.kubernetes.io/name: gl-normalizer
+    app.kubernetes.io/component: vocabulary
+data:
+  confidence_thresholds.yaml: |
+    # Confidence Threshold Configuration
+    # Version: 2026.01.0
+
+    version: "2026.01.0"
+
+    # Global defaults
+    defaults:
+      exact_match: 1.0
+      alias_match: 1.0
+      rule_match: 0.95
+      fuzzy_match_high: 0.85
+      fuzzy_match_medium: 0.70
+      needs_review_threshold: 0.70
+      reject_threshold: 0.50
+
+    # Entity-type specific overrides
+    entity_types:
+      fuel:
+        needs_review_threshold: 0.75
+        reject_threshold: 0.55
+        fuzzy_weights:
+          token_overlap: 0.4
+          edit_distance: 0.3
+          phonetic_similarity: 0.3
+
+      material:
+        needs_review_threshold: 0.70
+        reject_threshold: 0.50
+        fuzzy_weights:
+          token_overlap: 0.5
+          edit_distance: 0.3
+          phonetic_similarity: 0.2
+
+      process:
+        needs_review_threshold: 0.80
+        reject_threshold: 0.60
+        fuzzy_weights:
+          token_overlap: 0.6
+          edit_distance: 0.2
+          phonetic_similarity: 0.2
+
+    # Alias weight boosting
+    alias_boosting:
+      preferred_synonyms: 1.0
+      regional_variants: 0.95
+      abbreviations: 0.90
+      historical_names: 0.85

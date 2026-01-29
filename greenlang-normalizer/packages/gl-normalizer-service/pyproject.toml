@@ -1,0 +1,82 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "gl-normalizer-service"
+version = "1.0.0"
+description = "FastAPI-based REST API service for GreenLang Normalizer (GL-FOUND-X-003)"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.11"
+authors = [
+    { name = "GreenLang Team", email = "engineering@greenlang.io" }
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Framework :: FastAPI",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+keywords = ["greenlang", "normalization", "climate", "esg", "api", "fastapi"]
+
+dependencies = [
+    "fastapi>=0.109.0,<1.0.0",
+    "uvicorn[standard]>=0.27.0,<1.0.0",
+    "pydantic>=2.5.0,<3.0.0",
+    "pydantic-settings>=2.1.0,<3.0.0",
+    "python-jose[cryptography]>=3.3.0,<4.0.0",
+    "slowapi>=0.1.9,<1.0.0",
+    "redis>=5.0.0,<6.0.0",
+    "httpx>=0.26.0,<1.0.0",
+    "structlog>=24.1.0,<25.0.0",
+    "opentelemetry-api>=1.22.0,<2.0.0",
+    "opentelemetry-sdk>=1.22.0,<2.0.0",
+    "opentelemetry-instrumentation-fastapi>=0.43b0,<1.0.0",
+    "prometheus-client>=0.19.0,<1.0.0",
+    "gl-normalizer-core>=1.0.0,<2.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0,<9.0.0",
+    "pytest-asyncio>=0.23.0,<1.0.0",
+    "pytest-cov>=4.1.0,<6.0.0",
+    "httpx>=0.26.0,<1.0.0",
+    "ruff>=0.1.9,<1.0.0",
+    "mypy>=1.8.0,<2.0.0",
+    "pre-commit>=3.6.0,<4.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/greenlang/greenlang-normalizer"
+Documentation = "https://docs.greenlang.io/normalizer/api"
+Repository = "https://github.com/greenlang/greenlang-normalizer"
+
+[project.scripts]
+gl-normalizer-service = "gl_normalizer_service.main:run"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/gl_normalizer_service"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+addopts = "-v --cov=gl_normalizer_service --cov-report=term-missing"
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+select = ["E", "F", "W", "I", "N", "D", "UP", "ANN", "B", "C4", "SIM"]
+ignore = ["D100", "D104", "ANN101", "ANN102"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_return_any = true
+warn_unused_configs = true

@@ -1,33 +1,13 @@
-# Product Requirements Document (PRD)
-## GreenLang - Unit & Reference Normalizer (GL-FOUND-X-003)
+# PRD: GreenLang Unit & Reference Normalizer (GL-FOUND-X-003)
 
-**Agent Name:** Unit & Reference Normalizer  
-**Agent ID:** GL-FOUND-X-003  
-**Family:** NormalizationFamily  
-**Layer:** Foundation & Governance  
-**Priority:** High  
-**Status:** Draft v0.2  
-**Date:** January 28, 2026  
-**Upstream Dependency:** Schema Validator  
-**Downstream Consumers (typical):** Emissions calculators, factor selectors, aggregators, reporting services
-
----
-
-## 0. Document Control
-
-| Field | Value |
-|---|---|
-| Owner | GreenLang Foundation & Governance |
-| Reviewers | Data Engineering, ESG Analytics, Governance/Audit, Domain SMEs |
-| Change policy | Any change to canonical unit set or vocabulary resolution rules requires version bump + regression tests |
-| Target release | v1 (production-ready) after M5 milestone |
-
-### 0.1 Revision History
-
-| Version | Date | Notes |
-|---|---|---|
-| v0.1 | January 28, 2026 | Initial draft |
-| v0.2 | January 28, 2026 | Expanded “in-depth” technical requirements, governance workflow, and audit schema |
+**Agent family:** NormalizationFamily
+**Layer:** Foundation & Governance
+**Primary domains:** Unit normalization, entity resolution, reference data governance (cross-cutting)
+**Priority:** P0 (cross-cutting; blocks downstream calculations)
+**Doc version:** 1.0
+**Last updated:** 2026-01-29 (Asia/Kolkata)
+**Owner:** (TBD)
+**Reviewers:** Data Engineering, ESG Analytics, Governance/Audit, Domain SMEs, Platform Eng
 
 ---
 
@@ -123,6 +103,28 @@ Without standardization:
 - OCR / extraction from documents
 - Emissions factor selection and application
 - Human workflow tooling (ticketing/MDM UI) beyond emitting review artifacts
+
+### 5.3 Definitions and Glossary
+
+| Term | Definition |
+|------|------------|
+| **Canonical Unit** | The schema-specified standard unit for a dimension (e.g., kWh for energy, kg for mass). |
+| **Dimension Signature** | Unique identifier for a physical quantity type (e.g., `energy`, `mass`, `volume_flow`). |
+| **Reference ID** | Stable, immutable identifier for a controlled vocabulary entity (e.g., `GL-FUEL-NATGAS`). |
+| **Controlled Vocabulary** | Versioned registry of allowed entities (fuels, materials, processes) with aliases. |
+| **Entity Resolution** | Process of mapping raw input strings/codes to controlled vocabulary Reference IDs. |
+| **Match Method** | Resolution technique used: `exact`, `alias`, `rule`, `fuzzy`, or `llm_candidate`. |
+| **Confidence Score** | Numeric value (0.0-1.0) indicating certainty of entity resolution match. |
+| **Policy Mode** | Validation strictness level: `STRICT` (fail fast) or `LENIENT` (warn and continue). |
+| **Vocabulary Version** | Semantic version of the controlled vocabulary used for resolution (e.g., `2026.01.0`). |
+| **Deprecation Workflow** | Process for marking vocabulary entities as deprecated with `replaced_by` references. |
+| **Unit AST** | Abstract Syntax Tree representing parsed unit structure (numerator, denominator, prefixes). |
+| **Normalization Event** | Immutable audit record capturing all transformations applied to a single input. |
+| **Audit Payload** | Detailed JSON structure within an audit event containing conversion steps and metadata. |
+| **Fuzzy Matching** | Non-deterministic resolution using token overlap, edit distance, and similarity scoring. |
+| **LLM Candidate** | Entity match suggested by language model; requires human review before acceptance. |
+| **Reference Conditions** | Standard temperature/pressure values for volume-based unit conversions (e.g., Nm³). |
+| **GWP Version** | Global Warming Potential assessment report version (AR5, AR6) affecting CO2e conversions. |
 
 ---
 
@@ -312,134 +314,131 @@ Each vocabulary entry must contain:
 
 ---
 
-## 9. Functional Requirements (Detailed)
+## 9. Functional Requirements
 
-### FR-1 Unit Parsing & Normalization
-**Goal:** Convert raw unit strings into normalized, machine-readable units.
+> **Priority legend:** P0 = must-have (MVP/GA critical), P1 = should-have, P2 = nice-to-have.
 
-**Requirements**
-- Handle casing/whitespace/punctuation variations.
-- Handle common synonyms (`"lbs"` → `lb`, `"litre"` → `L`).
-- Output:
-  - `normalized_unit_string`
-  - `parsed_unit_ast`
-  - `dimension_signature`
-- Provide `UNIT_PARSE_FAILED` with suggestions on failure.
+### 9.1 Unit Parsing & Normalization
 
-**Acceptance Criteria**
-- Top unit list coverage hits KPI (≥ 99.9% parse success).
-- Parser behavior is deterministic.
+#### Intake and Preprocessing
+- **FR-001 (P0):** Accept raw unit strings via API/CLI with support for Unicode normalization.
+- **FR-002 (P0):** Normalize whitespace, casing, and punctuation before parsing.
+- **FR-003 (P0):** Handle common unit synonyms (`"lbs"` → `lb`, `"litre"` → `L`, `"kilograms"` → `kg`).
+- **FR-004 (P0):** Support SI prefixes (`k`, `M`, `G`, `m`, `µ`, `n`).
+- **FR-005 (P0):** Support exponent notation (`m2`, `m^2`, `m²`).
 
----
+#### Unit Parsing
+- **FR-006 (P0):** Parse unit strings into structured AST with numerator/denominator terms.
+- **FR-007 (P0):** Support compound units (`kg/m3`, `MJ/kg`, `kgCO2e/kWh`).
+- **FR-008 (P0):** Support separator variations (`per`, `/`, `·`, `*`).
+- **FR-009 (P0):** Compute dimension signature from parsed unit.
+- **FR-010 (P0):** Emit `GLNORM-E100` (UNIT_PARSE_FAILED) with suggestions on parse failure.
+- **FR-011 (P1):** Provide "did you mean?" suggestions for close-match units.
+- **FR-012 (P1):** Support locale-aware parsing (decimal separators, unit names).
 
-### FR-2 Dimensional Validation
-**Goal:** Ensure units match the schema’s expected dimension.
+### 9.2 Dimensional Validation
 
-**Requirements**
-- Compare computed dimension signature with `expected_dimension`.
-- If mismatch:
-  - STRICT: fail record (no conversion)
-  - LENIENT: emit warning and mark measurement `needs_review`
-- Emit `DIMENSION_MISMATCH` with expected vs actual.
+- **FR-020 (P0):** Compare computed dimension signature with schema's `expected_dimension`.
+- **FR-021 (P0):** Emit `GLNORM-E200` (DIMENSION_MISMATCH) with expected vs actual on mismatch.
+- **FR-022 (P0):** In STRICT mode, fail record on dimension mismatch (no conversion attempt).
+- **FR-023 (P0):** In LENIENT mode, emit warning and mark measurement `needs_review`.
+- **FR-024 (P0):** Maintain versioned dimension registry with all supported dimensions.
+- **FR-025 (P1):** Support domain-specific dimensions (`emissions_mass`, `volume_flow`, `energy_intensity`).
+- **FR-026 (P1):** Detect dimensionless quantities and handle appropriately.
 
-**Acceptance Criteria**
-- No silent conversions across incompatible dimensions.
+### 9.3 Canonical Conversion Engine
 
----
+- **FR-030 (P0):** Convert scalar values to canonical units with full conversion trace.
+- **FR-031 (P0):** Support array/batch conversion with per-element audit.
+- **FR-032 (P0):** Support multi-step conversions (`MWh` → `kWh` → `MJ`) with step-by-step trace.
+- **FR-033 (P0):** Support temperature affine conversions (°C ↔ °F ↔ K).
+- **FR-034 (P0):** Require reference conditions (T, P) for basis-dependent conversions (`Nm3`, `scf`).
+- **FR-035 (P0):** Emit `GLNORM-E201` (MISSING_REFERENCE_CONDITIONS) when required metadata absent.
+- **FR-036 (P0):** Apply configurable precision rules per dimension/field.
+- **FR-037 (P0):** Ensure numerical tolerance bounds (default `1e-9` relative).
+- **FR-038 (P0):** Version and log all conversion factors used.
+- **FR-039 (P1):** Support GWP version metadata (AR5/AR6) for CO2e conversions.
+- **FR-040 (P1):** Support energy basis conversions (LHV/HHV) with explicit metadata.
+- **FR-041 (P2):** Support custom conversion factor overrides with governance approval.
 
-### FR-3 Canonical Conversion Engine
-**Goal:** Convert values to canonical units, with full trace.
+### 9.4 Entity Resolution (Fuels, Materials, Processes)
 
-**Requirements**
-- Support scalar and array conversion.
-- Support multi-step conversions (e.g., `MWh` → `kWh` → `MJ`), but audit must reflect steps.
-- Support temperature affine conversions.
-- Basis conversions (e.g., `Nm3`) only with required metadata:
-  - reference temperature/pressure conditions
-- Apply consistent rounding rules:
-  - configurable precision per dimension/field
-  - no implicit rounding beyond policy
+#### Resolution Pipeline
+- **FR-050 (P0):** Resolve entities using deterministic priority order:
+  1. Exact Reference ID match
+  2. Exact canonical name match
+  3. Exact alias match
+  4. Rule-based normalization match
+  5. Fuzzy match candidate retrieval
+  6. LLM candidate suggestion (requires review)
+- **FR-051 (P0):** Return best match with confidence score (0.0-1.0) and match method.
+- **FR-052 (P0):** Emit `GLNORM-E400` (REFERENCE_NOT_FOUND) when no match found.
+- **FR-053 (P0):** Emit `GLNORM-E401` (REFERENCE_AMBIGUOUS) when multiple high-confidence matches.
+- **FR-054 (P0):** Flag low-confidence matches as `needs_review` (configurable threshold).
+- **FR-055 (P0):** In STRICT mode, reject non-deterministic matches (fuzzy/LLM).
 
-**Acceptance Criteria**
-- Conversion factors used are versioned and logged.
-- Numerical tolerance bounds are defined (e.g., `1e-9` relative).
+#### Scoring and Matching
+- **FR-056 (P0):** Compute token overlap score for fuzzy matching.
+- **FR-057 (P0):** Compute normalized edit distance for candidate ranking.
+- **FR-058 (P1):** Apply alias weight boosting for preferred synonyms.
+- **FR-059 (P1):** Use domain hints (sector/region) to disambiguate matches.
+- **FR-060 (P1):** Return top-N candidates for review workflows.
+- **FR-061 (P2):** Support LLM-assisted candidate generation with sandbox isolation.
 
----
+#### Vocabulary Management
+- **FR-062 (P0):** Load vocabularies by version with pinning support.
+- **FR-063 (P0):** Handle deprecated entities: return `replaced_by` ID with warning.
+- **FR-064 (P0):** Emit `GLNORM-E402` (ENTITY_DEPRECATED) when deprecated entity matched.
+- **FR-065 (P0):** Include vocabulary_version in all resolution outputs.
+- **FR-066 (P1):** Support vocabulary version rollback for historical replay.
+- **FR-067 (P1):** Detect alias collisions across entity types with governance alerts.
 
-### FR-4 Entity Resolution (Fuels, Materials, Processes)
-**Goal:** Map raw strings/codes → controlled vocabulary IDs.
+### 9.5 Conversion Audit Log
 
-**Resolution pipeline**
-1. Exact ID match
-2. Exact canonical name match
-3. Exact alias match
-4. Rule normalization (tokenization, punctuation removal, known abbreviation expansions)
-5. Fuzzy match candidate retrieval + scoring
-6. Optional LLM candidate generation (suggest only)
+- **FR-070 (P0):** Emit one audit event per normalization request.
+- **FR-071 (P0):** Ensure audit log is append-only (immutable).
+- **FR-072 (P0):** Include in audit: raw inputs, parsed AST, dimension signature.
+- **FR-073 (P0):** Include in audit: all conversion steps with factors and intermediate values.
+- **FR-074 (P0):** Include in audit: entity resolution method, confidence, vocabulary version.
+- **FR-075 (P0):** Include in audit: agent version, policy mode, any overrides.
+- **FR-076 (P0):** Generate stable `normalization_event_id` for correlation.
+- **FR-077 (P0):** Ensure 100% audit coverage (every output has corresponding audit event).
+- **FR-078 (P1):** Support tamper-evident hashing of audit events.
+- **FR-079 (P1):** Enable audit replay to reproduce identical outputs with pinned versions.
+- **FR-080 (P2):** Support audit event streaming to external systems (Kafka, etc.).
 
-**Scoring features (minimum)**
-- token overlap score
-- normalized edit distance
-- alias weight
-- domain hints (sector/region) if provided
+### 9.6 Policy Modes and Error Strategy
 
-**Outputs**
-- best match + confidence
-- top-N candidates (optional) for review workflows
-- `REFERENCE_NOT_FOUND` or `REFERENCE_AMBIGUOUS` errors as needed
+- **FR-081 (P0):** Support STRICT mode: fail fast, reject ambiguous outputs.
+- **FR-082 (P0):** Support LENIENT mode: emit warnings, output `needs_review` flags.
+- **FR-083 (P0):** Classify errors as hard (blocking) or soft (warning).
+- **FR-084 (P0):** Use stable error codes (GLNORM-Exxx) for all errors/warnings.
+- **FR-085 (P0):** Include structured payload in all error responses.
+- **FR-086 (P1):** Support per-field policy overrides via configuration.
+- **FR-087 (P1):** Allow configurable confidence thresholds for `needs_review` flagging.
 
-**Acceptance Criteria**
-- Deterministic match methods have priority over fuzzy/LLM methods.
-- Low-confidence outputs are flagged `needs_review` and never auto-committed as final IDs in STRICT mode.
+### 9.7 Interfaces
 
----
+#### Synchronous API
+- **FR-090 (P0):** `POST /v1/normalize` endpoint accepting single normalization request.
+- **FR-091 (P0):** Return canonical measurements, normalized entities, audit event ID.
+- **FR-092 (P0):** Return structured errors with GLNORM-Exxx codes on failure.
 
-### FR-5 Conversion Audit Log
-**Goal:** Provide governance traceability and replay.
+#### Batch API
+- **FR-093 (P0):** `POST /v1/normalize/batch` endpoint accepting JSONL input.
+- **FR-094 (P1):** Support Parquet input/output for large datasets.
+- **FR-095 (P1):** Return per-record results with partial success handling.
+- **FR-096 (P1):** Output canonical dataset + separate audit dataset.
 
-**Requirements**
-- Emit one audit event per record (or per measurement + entity; configurable).
-- Audit log must be **append-only** (immutable).
-- Audit must include:
-  - raw inputs
-  - parsed unit AST and dimension signature
-  - conversion steps and factors
-  - reference resolution method + confidence
-  - versions: agent, vocabulary, factor set
-  - policy mode and any overrides
+#### Library API
+- **FR-097 (P1):** Provide in-process SDK for Python pipelines.
+- **FR-098 (P1):** SDK functions: `normalize()`, `normalize_batch()`, `resolve_entity()`.
+- **FR-099 (P2):** TypeScript SDK for frontend/Node.js integration.
 
-**Acceptance Criteria**
-- 100% coverage: every normalized output has an audit event.
-- Replays produce identical outputs when pinned to the same versions.
-
----
-
-### FR-6 Policy Modes and Error Strategy
-**Policy Modes**
-- STRICT: fail fast, no ambiguous outputs
-- LENIENT: output `needs_review` + warnings where safe
-
-**Error Types**
-- Hard errors: block output (e.g., unit parse failure in STRICT)
-- Soft warnings: allow output but flag (e.g., deprecated ID replaced)
-
-**Acceptance Criteria**
-- Each error/warning uses a stable code and structured payload.
-
----
-
-### FR-7 Interfaces
-**Synchronous API**
-- `POST /normalize` returns canonical measurements, normalized entities, and audit event id.
-
-**Batch API**
-- Accept JSONL/Parquet; output canonical dataset + audit dataset.
-
-**Library API**
-- In-process SDK for pipelines.
-
-**Acceptance Criteria**
-- Backward-compatible schema evolution (additive changes) for v1.
+#### CLI
+- **FR-100 (P1):** `greenlang normalize --input <file> --output <file> --policy <mode>`.
+- **FR-101 (P1):** `greenlang resolve-entity --name <name> --type <fuel|material|process>`.
+- **FR-102 (P2):** `greenlang vocab diff --v1 <ver1> --v2 <ver2>` for vocabulary comparison.
 
 ---
 
@@ -542,6 +541,47 @@ Each vocabulary entry must contain:
 - All unit conversion factors and vocabulary versions must be explicit inputs to the normalization run (directly or via pinned configuration).
 - LLM-assisted steps must not directly determine final output unless governance explicitly enables it (recommended default: suggestions only).
 
+### 11.5 Data Model (Core Entities)
+
+| Entity | Description | Key Fields |
+|--------|-------------|------------|
+| **NormalizationRequest** | Incoming normalization request | request_id, source_record_id, policy_mode, measurements[], entities[] |
+| **CanonicalMeasurement** | Normalized measurement output | field, dimension, value, unit, raw_value, raw_unit, conversion_trace |
+| **NormalizedEntity** | Resolved entity output | field, entity_type, reference_id, canonical_name, match_method, confidence |
+| **ConversionStep** | Single step in conversion trace | from_unit, to_unit, factor, method, factor_version |
+| **AuditEvent** | Immutable audit record | event_id, timestamp, request_id, status, payload, prev_event_hash |
+| **VocabularyEntry** | Controlled vocabulary entity | reference_id, canonical_name, entity_type, status, aliases[], attributes{} |
+| **UnitDefinition** | Unit registry entry | unit_symbol, canonical_symbol, dimension, conversion_factor, prefixes[] |
+| **ResolutionCandidate** | Entity resolution candidate | reference_id, canonical_name, score, match_method |
+
+### 11.6 Normalization State Machine
+
+```
+Request → PARSING → VALIDATING → CONVERTING → RESOLVING → AUDITING → COMPLETE
+                        ↓              ↓           ↓           ↓
+                     FAILED         FAILED      FAILED      FAILED
+```
+
+**States:**
+- `PARSING`: Parsing input request, validating structure
+- `VALIDATING`: Validating units against registry, checking dimensions
+- `CONVERTING`: Converting measurements to canonical units
+- `RESOLVING`: Resolving entities to vocabulary IDs
+- `AUDITING`: Writing audit event to persistent store
+- `COMPLETE`: Returning successful response
+- `FAILED`: Error occurred; partial results may be available
+
+**Transitions:**
+- `PARSING` → `VALIDATING`: Input validated and parsed
+- `VALIDATING` → `CONVERTING`: All units recognized, dimensions valid
+- `VALIDATING` → `FAILED`: Unit parse failure or dimension mismatch (STRICT)
+- `CONVERTING` → `RESOLVING`: All conversions complete
+- `CONVERTING` → `FAILED`: Missing reference conditions or unsupported conversion
+- `RESOLVING` → `AUDITING`: Entity resolution complete (or flagged needs_review)
+- `RESOLVING` → `FAILED`: Required entity not found (STRICT)
+- `AUDITING` → `COMPLETE`: Audit event persisted
+- `AUDITING` → `FAILED`: Audit store unavailable
+
 ---
 
 ## 12. Dependency: Schema Validator
@@ -561,37 +601,77 @@ Schema Validator must provide:
 
 ## 13. Non-Functional Requirements
 
-### 13.1 Accuracy
-- Factor sets are curated, reviewed, versioned.
-- Conversion correctness for supported units must be provable via tests.
+> **Priority legend:** P0 = must-have (MVP/GA critical), P1 = should-have, P2 = nice-to-have.
 
-### 13.2 Performance
-- p95 latency target (service mode): < 100 ms for a typical single record
-- Must support horizontal scaling
+### 13.1 Accuracy and Correctness
+
+- **NFR-001 (P0):** Conversion factors must be curated, reviewed, and versioned.
+- **NFR-002 (P0):** Conversion correctness for all supported units must be provable via golden tests.
+- **NFR-003 (P0):** Normalization must be deterministic (same input + versions → same output).
+- **NFR-004 (P0):** No silent data loss or transformation without audit trail.
+- **NFR-005 (P0):** Entity resolution determinism: same input + vocabulary version → same reference ID.
+- **NFR-006 (P1):** Numerical precision: maintain at least 15 significant digits during conversion.
+- **NFR-007 (P1):** Confidence scores must be calibrated (predicted vs actual accuracy alignment).
+
+### 13.2 Performance and Scale
+
+- **NFR-010 (P0):** P95 latency for single-record normalization: < 50 ms.
+- **NFR-011 (P0):** P95 latency for batch normalization (100 records): < 500 ms.
+- **NFR-012 (P0):** P99 latency for single-record normalization: < 150 ms.
+- **NFR-013 (P0):** Support horizontal scaling of normalization service.
+- **NFR-014 (P1):** Vocabulary cache hit rate > 90% under steady traffic.
+- **NFR-015 (P1):** Unit registry cache hit rate > 95%.
+- **NFR-016 (P1):** Batch throughput: > 10,000 records/second per node.
+- **NFR-017 (P2):** Entity resolution latency: < 10 ms for exact/alias matches.
 
 ### 13.3 Reliability
-- 99.9% service availability target
-- Degraded mode if vocabulary store unavailable (use cached pinned versions)
+
+- **NFR-020 (P0):** Service availability target: 99.9% monthly.
+- **NFR-021 (P0):** Graceful degradation if vocabulary store unavailable (use cached pinned versions).
+- **NFR-022 (P0):** No data corruption on service crash or restart.
+- **NFR-023 (P0):** Audit events must be durably persisted before returning success.
+- **NFR-024 (P1):** Mean time to recovery (MTTR): < 5 minutes.
+- **NFR-025 (P1):** Automatic failover for vocabulary store connections.
+- **NFR-026 (P2):** Support read replicas for vocabulary queries.
 
 ### 13.4 Security and Compliance
-- Encryption in transit + at rest
-- RBAC for audit log access
-- Audit immutability (append-only), optional tamper-evident hashing
-- Data retention configurable by environment
+
+- **NFR-030 (P0):** Encryption in transit (TLS 1.2+) for all communications.
+- **NFR-031 (P0):** Encryption at rest for audit logs and vocabulary data.
+- **NFR-032 (P0):** RBAC for audit log access (read/write separation).
+- **NFR-033 (P0):** Audit immutability: append-only storage, no update/delete.
+- **NFR-034 (P0):** No sensitive data in error messages or logs.
+- **NFR-035 (P1):** Tamper-evident audit hashing with hash chaining.
+- **NFR-036 (P1):** Data retention configurable by environment/namespace.
+- **NFR-037 (P1):** Support for compliance hold (prevent deletion during legal hold).
+- **NFR-038 (P2):** Audit log signing with platform key.
 
 ### 13.5 Observability
-- Metrics:
-  - parse_success_rate
-  - unknown_unit_rate
-  - conversion_failure_rate
-  - ambiguous_reference_rate
-  - needs_review_rate
-  - latency histograms
-- Tracing: `source_record_id`, `normalization_event_id`
-- Alerts:
-  - spikes in unknown units
-  - spikes in ambiguous references
-  - vocabulary version mismatch events
+
+- **NFR-040 (P0):** Structured logs with `source_record_id`, `normalization_event_id`, `request_id`.
+- **NFR-041 (P0):** Metrics: `parse_success_rate`, `unknown_unit_rate`, `conversion_failure_rate`.
+- **NFR-042 (P0):** Metrics: `ambiguous_reference_rate`, `needs_review_rate`, `vocabulary_cache_hit_rate`.
+- **NFR-043 (P0):** Metrics: latency histograms (p50, p95, p99) for normalize and resolve operations.
+- **NFR-044 (P0):** Tracing spans: parse, convert, resolve, audit (OpenTelemetry-compatible).
+- **NFR-045 (P1):** Alert hooks for: unknown unit spikes, ambiguous reference surges, audit failures.
+- **NFR-046 (P1):** Alert hooks for: vocabulary version mismatch, conversion factor drift.
+- **NFR-047 (P2):** Dashboard templates for Grafana/similar.
+
+### 13.6 Operability
+
+- **NFR-050 (P0):** Health endpoints: `/health`, `/ready`, `/live`.
+- **NFR-051 (P0):** Clear error codes (GLNORM-Exxx) with documented remediation actions.
+- **NFR-052 (P0):** Vocabulary reload without service restart.
+- **NFR-053 (P1):** Cache invalidation API for vocabulary and unit registry.
+- **NFR-054 (P1):** Graceful shutdown with request draining.
+- **NFR-055 (P1):** Configuration hot-reload for policy thresholds.
+- **NFR-056 (P2):** Blue-green deployment support for vocabulary updates.
+
+### 13.7 SLO Targets
+
+- **NFR-060 (P0):** Availability SLO: 99.9% monthly.
+- **NFR-061 (P0):** Latency SLO: 95% of requests < 50ms.
+- **NFR-062 (P1):** Error budget policy: escalation after 0.1% error rate.
 
 ---
 
@@ -626,7 +706,33 @@ Schema Validator must provide:
 
 ---
 
-## 16. Risks and Mitigations
+## 16. Acceptance Criteria (P0)
+
+The following criteria must be satisfied for GA readiness:
+
+1. **Determinism:** Given the same input + vocabulary version + unit registry version, normalization output hash is identical across runs.
+
+2. **Unit Parsing Coverage:** ≥ 99.9% parse success rate for the top 200 units in production datasets, verified via golden tests.
+
+3. **Conversion Accuracy:** 100% correctness for all supported unit conversions (within defined numerical tolerance of 1e-9 relative), verified via conversion matrix tests.
+
+4. **Reference Resolution Rate:** ≥ 95% of raw entity values resolved deterministically (exact/alias/rule match) in initial target datasets.
+
+5. **Audit Completeness:** 100% of normalized outputs have corresponding audit events with full conversion trace.
+
+6. **Ambiguity Rate:** ≤ 2% of records flagged as `needs_review` after vocabulary stabilization period.
+
+7. **Performance:** P95 latency < 50ms for single-record normalization with warm caches.
+
+8. **Reproducibility:** Audit replay with pinned versions produces byte-identical outputs.
+
+9. **Vocabulary Pinning:** Can pin vocabulary version and reproduce historical results within 0.001% tolerance.
+
+10. **Error Detection:** All GLNORM-Exxx error codes have test coverage; golden tests for each error category passing.
+
+---
+
+## 17. Risks and Mitigations
 
 | Risk | Impact | Mitigation |
 |---|---|---|
@@ -638,7 +744,7 @@ Schema Validator must provide:
 
 ---
 
-## 17. Open Questions
+## 18. Open Questions
 1. Final canonical unit per dimension (energy/emissions especially).
 2. Required support for `GWP` versioning (AR5/AR6) in output schema and audit.
 3. Where will vocabularies be authored and published (repo vs service)?
@@ -647,7 +753,358 @@ Schema Validator must provide:
 
 ---
 
-## Appendix A: Draft Reference ID Pattern
+## 19. Security Model
+
+### 19.1 Input Sanitization
+- All unit strings and entity names are sanitized before processing.
+- Unicode normalization (NFC) applied to prevent homoglyph attacks.
+- Input length limits enforced: max 500 characters for unit strings, max 1000 characters for entity names.
+- Special characters and control characters stripped or escaped.
+
+### 19.2 Vocabulary Access Control
+- **Read access:** All authenticated services can query vocabularies.
+- **Write access:** Only governance-approved roles can modify vocabularies.
+- **Version publishing:** Requires dual approval (data steward + domain SME).
+- **Alias management:** Changes to alias mappings require audit trail entry.
+
+### 19.3 Audit Log Security
+- Audit logs are append-only; no update or delete operations permitted.
+- Audit store access requires explicit RBAC permission.
+- Write access limited to normalization service identity.
+- Read access tiered: full access for auditors, filtered access for operators.
+- Tamper-evident hash chaining: each event includes hash of previous event.
+- Optional cryptographic signing of audit batches with platform key.
+
+### 19.4 LLM Candidate Sandbox
+- LLM-assisted entity resolution runs in isolated sandbox.
+- No network access from LLM evaluation context.
+- Timeout limits: max 5 seconds per LLM query.
+- LLM suggestions are never auto-accepted; always flagged as `needs_review`.
+- LLM prompts contain no sensitive data beyond the entity name being resolved.
+
+### 19.5 Secrets Handling
+- Vocabulary store credentials managed via secrets manager (Vault/KMS).
+- API keys for external services never stored in configuration files.
+- Credentials rotated automatically per environment policy.
+- No secrets in error messages, logs, or audit payloads.
+- Service-to-service authentication via mTLS or short-lived tokens.
+
+### 19.6 Data Residency
+- Vocabulary data location configurable per namespace.
+- Audit logs stored in region-compliant storage.
+- Cross-region vocabulary replication requires explicit policy approval.
+- Data classification tags respected for vocabulary entities.
+
+### 19.7 Rate Limiting and Abuse Prevention
+- Per-client rate limits for API endpoints.
+- Batch size limits: max 10,000 records per batch request.
+- Vocabulary query rate limits to prevent enumeration attacks.
+- Automatic blocking of clients exceeding error rate thresholds.
+
+---
+
+## 20. Operational Runbook
+
+### 20.1 Common Failure Modes
+
+| Failure | Symptoms | Remediation |
+|---------|----------|-------------|
+| Unit parse failure spike | GLNORM-E100 errors surge, alerts fire | Check for new data sources with non-standard units; add to unit registry |
+| Vocabulary store outage | GLNORM-E501 errors, increased latency | Verify cached versions active; check store connectivity; failover to replica |
+| Ambiguous reference surge | GLNORM-E401 errors spike, needs_review rate increases | Review new vocabulary entries; check for alias collisions |
+| Audit log write failures | GLNORM-E600 errors, requests timeout | Check audit store capacity; verify network connectivity; scale audit writers |
+| Conversion factor drift | Regression tests failing, output changes | Audit conversion factor changes; rollback if unapproved; notify governance |
+| Cache invalidation lag | Stale vocabulary data served | Force cache invalidation; check TTL settings; verify cache replication |
+
+### 20.2 On-Call Actions
+
+- **Vocabulary Reload:** `POST /admin/vocabulary/reload?version=<ver>`
+- **Cache Invalidation:** `POST /admin/cache/invalidate?scope=vocabulary|units|all`
+- **Emergency Vocabulary Rollback:** `POST /admin/vocabulary/rollback?to_version=<ver>`
+- **Rate Limit Override:** `POST /admin/rate-limits/override?client_id=<id>&limit=<n>`
+- **Fuzzy Matching Disable:** Set feature flag `fuzzy_matching_enabled=false` in config.
+- **LLM Resolution Disable:** Set feature flag `llm_candidates_enabled=false` in config.
+
+### 20.3 Health Check Endpoints
+
+- `GET /health` - Basic liveness check (returns 200 if service running)
+- `GET /ready` - Readiness including:
+  - Vocabulary store connectivity
+  - Unit registry loaded
+  - Audit store connectivity
+  - Cache warm status
+- `GET /metrics` - Prometheus-format metrics endpoint
+
+### 20.4 Monitoring Dashboards
+
+Recommended dashboard panels:
+- Unit parse success rate (target: > 99.9%)
+- Reference resolution success rate (target: > 95%)
+- Needs review rate (target: < 2%)
+- Normalization latency percentiles (p50, p95, p99)
+- Vocabulary cache hit rate (target: > 90%)
+- Audit event write latency
+- Error rate by error code
+
+### 20.5 Incident Response Playbook
+
+1. **P1 - Service Down:** Escalate immediately; check health endpoints; verify dependencies.
+2. **P2 - High Error Rate:** Check error distribution by code; identify root cause; apply mitigation.
+3. **P3 - Performance Degradation:** Check cache hit rates; review recent vocabulary changes; scale if needed.
+4. **P4 - Data Quality Issues:** Investigate affected records; notify downstream consumers; prepare correction plan.
+
+---
+
+## 21. Detailed API Examples
+
+### 21.1 Normalize Request (Single Record)
+```json
+{
+  "source_record_id": "meter-2026-001",
+  "policy_mode": "STRICT",
+  "vocabulary_version": "2026.01.0",
+  "measurements": [
+    {
+      "field": "energy_consumption",
+      "value": 1500,
+      "unit": "kWh",
+      "expected_dimension": "energy"
+    },
+    {
+      "field": "fuel_volume",
+      "value": 250,
+      "unit": "Nm3",
+      "expected_dimension": "volume",
+      "metadata": {
+        "reference_conditions": {
+          "temperature_C": 0,
+          "pressure_kPa": 101.325
+        }
+      }
+    }
+  ],
+  "entities": [
+    {
+      "field": "fuel_type",
+      "entity_type": "fuel",
+      "raw_name": "Nat Gas",
+      "hints": {
+        "region": "EU",
+        "sector": "energy"
+      }
+    }
+  ]
+}
+```
+
+### 21.2 Normalize Response (Success)
+```json
+{
+  "source_record_id": "meter-2026-001",
+  "status": "success",
+  "canonical_measurements": [
+    {
+      "field": "energy_consumption",
+      "dimension": "energy",
+      "value": 5400.0,
+      "unit": "MJ",
+      "raw_value": 1500,
+      "raw_unit": "kWh",
+      "conversion_trace": {
+        "steps": [
+          {"from": "kWh", "to": "MJ", "factor": 3.6, "method": "multiply"}
+        ],
+        "factor_version": "2026.01.0"
+      },
+      "warnings": []
+    },
+    {
+      "field": "fuel_volume",
+      "dimension": "volume",
+      "value": 250.0,
+      "unit": "m3",
+      "raw_value": 250,
+      "raw_unit": "Nm3",
+      "conversion_trace": {
+        "steps": [
+          {"from": "Nm3", "to": "m3", "factor": 1.0, "method": "basis_conversion", "reference_conditions": {"T": 273.15, "P": 101.325}}
+        ],
+        "factor_version": "2026.01.0"
+      },
+      "warnings": []
+    }
+  ],
+  "normalized_entities": [
+    {
+      "field": "fuel_type",
+      "entity_type": "fuel",
+      "raw_name": "Nat Gas",
+      "reference_id": "GL-FUEL-NATGAS",
+      "canonical_name": "Natural gas",
+      "vocabulary_version": "2026.01.0",
+      "match_method": "alias",
+      "confidence": 1.0,
+      "needs_review": false,
+      "warnings": []
+    }
+  ],
+  "audit": {
+    "normalization_event_id": "norm-evt-abc123",
+    "status": "success"
+  }
+}
+```
+
+### 21.3 Normalize Response (Failure - Dimension Mismatch)
+```json
+{
+  "source_record_id": "meter-2026-002",
+  "status": "failed",
+  "canonical_measurements": [],
+  "normalized_entities": [],
+  "errors": [
+    {
+      "code": "GLNORM-E200",
+      "severity": "error",
+      "path": "/measurements/0",
+      "message": "Dimension mismatch: expected 'energy', got 'mass'",
+      "expected": {"dimension": "energy"},
+      "actual": {"dimension": "mass", "unit": "kg", "value": 100},
+      "hint": {
+        "suggestion": "Use energy units like kWh, MJ, or GJ",
+        "docs": "gl://docs/units#energy"
+      }
+    }
+  ],
+  "audit": {
+    "normalization_event_id": "norm-evt-def456",
+    "status": "failed"
+  }
+}
+```
+
+### 21.4 Batch Normalize Request
+```json
+{
+  "policy_mode": "LENIENT",
+  "vocabulary_version": "2026.01.0",
+  "records": [
+    {
+      "source_record_id": "batch-001",
+      "measurements": [
+        {"field": "energy", "value": 100, "unit": "kWh", "expected_dimension": "energy"}
+      ],
+      "entities": [
+        {"field": "fuel", "entity_type": "fuel", "raw_name": "Diesel"}
+      ]
+    },
+    {
+      "source_record_id": "batch-002",
+      "measurements": [
+        {"field": "energy", "value": 200, "unit": "MWh", "expected_dimension": "energy"}
+      ],
+      "entities": [
+        {"field": "fuel", "entity_type": "fuel", "raw_name": "Heavy Fuel Oil"}
+      ]
+    }
+  ]
+}
+```
+
+### 21.5 Batch Normalize Response
+```json
+{
+  "summary": {
+    "total": 2,
+    "success": 2,
+    "failed": 0,
+    "warnings": 1
+  },
+  "results": [
+    {
+      "source_record_id": "batch-001",
+      "status": "success",
+      "canonical_measurements": [
+        {"field": "energy", "value": 360.0, "unit": "MJ", "dimension": "energy"}
+      ],
+      "normalized_entities": [
+        {"field": "fuel", "reference_id": "GL-FUEL-DIESEL", "confidence": 1.0, "match_method": "exact"}
+      ],
+      "audit": {"normalization_event_id": "norm-evt-batch-001"}
+    },
+    {
+      "source_record_id": "batch-002",
+      "status": "warning",
+      "canonical_measurements": [
+        {"field": "energy", "value": 720000.0, "unit": "MJ", "dimension": "energy"}
+      ],
+      "normalized_entities": [
+        {
+          "field": "fuel",
+          "reference_id": "GL-FUEL-HFO",
+          "confidence": 0.85,
+          "match_method": "fuzzy",
+          "needs_review": true
+        }
+      ],
+      "warnings": [
+        {
+          "code": "GLNORM-E403",
+          "severity": "warning",
+          "path": "/entities/0",
+          "message": "Low confidence match (0.85) for entity resolution"
+        }
+      ],
+      "audit": {"normalization_event_id": "norm-evt-batch-002"}
+    }
+  ]
+}
+```
+
+### 21.6 Entity Resolution Request
+```json
+{
+  "entity_type": "fuel",
+  "raw_name": "Natural-gas",
+  "vocabulary_version": "2026.01.0",
+  "hints": {
+    "region": "NA",
+    "sector": "utilities"
+  },
+  "options": {
+    "return_candidates": true,
+    "max_candidates": 5
+  }
+}
+```
+
+### 21.7 Entity Resolution Response
+```json
+{
+  "best_match": {
+    "reference_id": "GL-FUEL-NATGAS",
+    "canonical_name": "Natural gas",
+    "match_method": "rule",
+    "confidence": 0.98,
+    "needs_review": false
+  },
+  "candidates": [
+    {"reference_id": "GL-FUEL-NATGAS", "canonical_name": "Natural gas", "score": 0.98},
+    {"reference_id": "GL-FUEL-LNG", "canonical_name": "Liquefied natural gas", "score": 0.65},
+    {"reference_id": "GL-FUEL-CNG", "canonical_name": "Compressed natural gas", "score": 0.60}
+  ],
+  "resolution_trace": {
+    "input_normalized": "natural gas",
+    "methods_tried": ["exact_id", "exact_name", "alias", "rule"],
+    "matched_at": "rule",
+    "rule_applied": "hyphen_removal + case_normalization"
+  }
+}
+```
+
+---
+
+## Appendix A: Reference ID Pattern
 
 - Fuels: `GL-FUEL-<TOKEN>`
 - Materials: `GL-MAT-<TOKEN>`
@@ -657,13 +1114,100 @@ Schema Validator must provide:
 
 ---
 
-## Appendix B: Error Codes (Draft)
+## Appendix B: Error Code Taxonomy (GLNORM-Exxx)
 
-- `UNIT_PARSE_FAILED`
-- `DIMENSION_MISMATCH`
-- `UNKNOWN_UNIT`
-- `CONVERSION_NOT_SUPPORTED`
-- `MISSING_REQUIRED_METADATA`
-- `REFERENCE_NOT_FOUND`
-- `REFERENCE_AMBIGUOUS`
-- `REFERENCE_DEPRECATED_REPLACED`
+> **Error code format:** `GLNORM-Exxx` where the first digit indicates category.
+
+### B.1 Unit Parsing Errors (E1xx)
+
+| Code | Name | Description | Default Retry? |
+|------|------|-------------|----------------|
+| `GLNORM-E100` | UNIT_PARSE_FAILED | Unit string could not be parsed | no |
+| `GLNORM-E101` | UNKNOWN_UNIT | Unit not found in unit registry | no |
+| `GLNORM-E102` | INVALID_PREFIX | Unrecognized SI prefix | no |
+| `GLNORM-E103` | INVALID_EXPONENT | Malformed exponent notation | no |
+| `GLNORM-E104` | AMBIGUOUS_UNIT | Unit string matches multiple units | no |
+| `GLNORM-E105` | UNSUPPORTED_COMPOUND | Compound unit structure not supported | no |
+| `GLNORM-E106` | LOCALE_PARSE_ERROR | Locale-specific parsing failed | no |
+
+### B.2 Dimension Errors (E2xx)
+
+| Code | Name | Description | Default Retry? |
+|------|------|-------------|----------------|
+| `GLNORM-E200` | DIMENSION_MISMATCH | Computed dimension doesn't match expected | no |
+| `GLNORM-E201` | DIMENSION_UNKNOWN | Dimension not recognized | no |
+| `GLNORM-E202` | DIMENSION_INCOMPATIBLE | Cannot convert between incompatible dimensions | no |
+| `GLNORM-E203` | DIMENSIONLESS_EXPECTED | Expected dimensionless but got dimension | no |
+| `GLNORM-E204` | DIMENSION_EXPECTED | Expected dimension but got dimensionless | no |
+
+### B.3 Conversion Errors (E3xx)
+
+| Code | Name | Description | Default Retry? |
+|------|------|-------------|----------------|
+| `GLNORM-E300` | CONVERSION_NOT_SUPPORTED | Conversion path not available | no |
+| `GLNORM-E301` | MISSING_REFERENCE_CONDITIONS | Temperature/pressure conditions required but missing | no |
+| `GLNORM-E302` | INVALID_REFERENCE_CONDITIONS | Reference conditions out of valid range | no |
+| `GLNORM-E303` | CONVERSION_FACTOR_MISSING | Required conversion factor not found | no |
+| `GLNORM-E304` | PRECISION_OVERFLOW | Result exceeds precision bounds | no |
+| `GLNORM-E305` | GWP_VERSION_MISSING | GWP version required for CO2e conversion | no |
+| `GLNORM-E306` | BASIS_MISSING | Energy basis (LHV/HHV) required but not provided | no |
+| `GLNORM-E307` | CONVERSION_FACTOR_DEPRECATED | Using deprecated conversion factor (warning) | n/a |
+
+### B.4 Entity Resolution Errors (E4xx)
+
+| Code | Name | Description | Default Retry? |
+|------|------|-------------|----------------|
+| `GLNORM-E400` | REFERENCE_NOT_FOUND | No matching entity in vocabulary | no |
+| `GLNORM-E401` | REFERENCE_AMBIGUOUS | Multiple high-confidence matches | no |
+| `GLNORM-E402` | ENTITY_DEPRECATED | Matched entity is deprecated (warning) | n/a |
+| `GLNORM-E403` | LOW_CONFIDENCE_MATCH | Match confidence below threshold | no |
+| `GLNORM-E404` | VOCABULARY_NOT_FOUND | Requested vocabulary version not available | no |
+| `GLNORM-E405` | ENTITY_TYPE_MISMATCH | Entity found but wrong type (fuel vs material) | no |
+| `GLNORM-E406` | ALIAS_COLLISION | Alias maps to multiple entities | no |
+| `GLNORM-E407` | LLM_CANDIDATE_ONLY | Only LLM-suggested match available (needs review) | no |
+
+### B.5 Vocabulary Errors (E5xx)
+
+| Code | Name | Description | Default Retry? |
+|------|------|-------------|----------------|
+| `GLNORM-E500` | VOCABULARY_VERSION_MISMATCH | Requested version incompatible | no |
+| `GLNORM-E501` | VOCABULARY_LOAD_FAILED | Failed to load vocabulary from store | yes |
+| `GLNORM-E502` | VOCABULARY_CORRUPTED | Vocabulary data integrity check failed | no |
+| `GLNORM-E503` | VOCABULARY_EXPIRED | Pinned vocabulary version no longer available | no |
+| `GLNORM-E504` | GOVERNANCE_REQUIRED | Operation requires governance approval | no |
+
+### B.6 Audit Errors (E6xx)
+
+| Code | Name | Description | Default Retry? |
+|------|------|-------------|----------------|
+| `GLNORM-E600` | AUDIT_WRITE_FAILED | Failed to write audit event | yes |
+| `GLNORM-E601` | AUDIT_STORE_UNAVAILABLE | Audit store not reachable | yes |
+| `GLNORM-E602` | AUDIT_INTEGRITY_VIOLATION | Audit chain integrity check failed | no |
+| `GLNORM-E603` | REPLAY_MISMATCH | Audit replay produced different result | no |
+
+### B.7 System/Limit Errors (E9xx)
+
+| Code | Name | Description | Default Retry? |
+|------|------|-------------|----------------|
+| `GLNORM-E900` | LIMIT_EXCEEDED | Input size/complexity limit exceeded | no |
+| `GLNORM-E901` | TIMEOUT | Operation timed out | yes (bounded) |
+| `GLNORM-E902` | RESOURCE_EXHAUSTED | Memory/CPU quota exceeded | yes (bounded) |
+| `GLNORM-E903` | SERVICE_UNAVAILABLE | Normalizer service unavailable | yes |
+| `GLNORM-E904` | INTERNAL_ERROR | Unexpected internal error | no |
+
+### B.8 Error Response Structure
+
+Every error response MUST include:
+```json
+{
+  "code": "GLNORM-E200",
+  "severity": "error",
+  "path": "/measurements/0",
+  "message": "Dimension mismatch: expected 'energy', got 'mass'",
+  "expected": {"dimension": "energy"},
+  "actual": {"dimension": "mass", "unit": "kg"},
+  "hint": {
+    "suggestion": "Use energy units like kWh, MJ, or GJ",
+    "docs": "gl://docs/units#energy"
+  }
+}

@@ -1,0 +1,1100 @@
+# GreenLang Common Processes Vocabulary
+# Version: 1.0.0
+# Last Updated: 2026-01-30
+# Schema: vocabulary_entry.v1.yaml
+# Description: Standard industrial process vocabulary entries for GreenLang Normalizer (GL-FOUND-X-003)
+#
+# Reference Sources:
+# - IPCC 2006 Guidelines for National Greenhouse Gas Inventories
+# - worldsteel CO2 Emissions Data Collection
+# - Global Cement and Concrete Association (GCCA)
+# - International Aluminium Institute (IAI)
+# - Best Available Techniques (BAT) Reference Documents
+
+---
+# ============================================================================
+# ELECTRIC ARC FURNACE (EAF)
+# ============================================================================
+- reference_id: GL-PROC-EAF
+  canonical_name: "Electric Arc Furnace Steelmaking"
+  entity_type: process
+  status: active
+  replaced_by: null
+
+  aliases:
+    - alias: "Electric Arc Furnace"
+      locale: en
+      source: industry
+      priority: 100
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "EAF"
+      locale: universal
+      source: industry
+      priority: 95
+      case_sensitive: true
+      exact_match_only: true
+
+    - alias: "EAF Steelmaking"
+      locale: en
+      source: industry
+      priority: 90
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Electric Steelmaking"
+      locale: en
+      source: industry
+      priority: 85
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Electric Furnace"
+      locale: en
+      source: industry
+      priority: 80
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Secondary Steelmaking"
+      locale: en
+      source: industry
+      priority: 75
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Scrap-based Steelmaking"
+      locale: en
+      source: industry
+      priority: 70
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Mini Mill"
+      locale: en
+      source: industry
+      priority: 65
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Elektrolichtbogenofen"
+      locale: de
+      source: regional
+      priority: 90
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Four à arc électrique"
+      locale: fr
+      source: regional
+      priority: 90
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "電気炉製鋼"
+      locale: ja
+      source: regional
+      priority: 90
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "电弧炉"
+      locale: zh
+      source: regional
+      priority: 90
+      case_sensitive: false
+      exact_match_only: false
+
+  attributes:
+    process_category: electrochemical
+    typical_energy_intensity_MJ_t: 2000
+    typical_electricity_kWh_t: 400
+    typical_emissions_kgCO2e_t_direct: 150
+    typical_emissions_kgCO2e_t_total: 650
+    scrap_input_fraction: 0.90
+    dri_input_fraction: 0.10
+    input_materials:
+      - "GL-MAT-STEEL-SCRAP"
+      - "GL-MAT-DRI"
+    output_materials:
+      - "GL-MAT-STEEL"
+    electrode_consumption_kg_t: 2.5
+
+  effective_from: "2024-01-01"
+  effective_to: null
+
+  notes: |
+    Electric Arc Furnace (EAF) steelmaking process using electric arcs to melt
+    scrap steel and/or DRI. Lower direct emissions than BF-BOF route, but total
+    emissions depend heavily on electricity grid carbon intensity. Typical EAF
+    uses ~90% scrap, 10% DRI. worldsteel 2023 average EAF route: 0.65 tCO2e/t.
+
+  provenance:
+    created_at: "2026-01-30T00:00:00Z"
+    created_by: "GL-FOUND-X-003"
+    last_modified_at: "2026-01-30T00:00:00Z"
+    last_modified_by: "GL-FOUND-X-003"
+    version: 1
+    source_references:
+      - "worldsteel CO2 Emissions Data Collection, 2023"
+      - "IPCC 2006 Guidelines, Vol. 3, Ch. 4"
+      - "EU BAT Reference Document for Iron and Steel, 2013"
+
+---
+# ============================================================================
+# BASIC OXYGEN FURNACE (BOF)
+# ============================================================================
+- reference_id: GL-PROC-BOF
+  canonical_name: "Basic Oxygen Furnace Steelmaking"
+  entity_type: process
+  status: active
+  replaced_by: null
+
+  aliases:
+    - alias: "Basic Oxygen Furnace"
+      locale: en
+      source: industry
+      priority: 100
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "BOF"
+      locale: universal
+      source: industry
+      priority: 95
+      case_sensitive: true
+      exact_match_only: true
+
+    - alias: "BOS"
+      locale: universal
+      source: industry
+      priority: 90
+      case_sensitive: true
+      exact_match_only: true
+
+    - alias: "Basic Oxygen Steelmaking"
+      locale: en
+      source: industry
+      priority: 90
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Oxygen Converter"
+      locale: en
+      source: industry
+      priority: 80
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "LD Process"
+      locale: en
+      source: industry
+      priority: 75
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "LD Converter"
+      locale: en
+      source: industry
+      priority: 75
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Linz-Donawitz"
+      locale: en
+      source: industry
+      priority: 65
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Primary Steelmaking"
+      locale: en
+      source: industry
+      priority: 70
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Integrated Steelmaking"
+      locale: en
+      source: industry
+      priority: 70
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "BF-BOF"
+      locale: universal
+      source: industry
+      priority: 85
+      case_sensitive: true
+      exact_match_only: true
+
+    - alias: "BF-BOF Route"
+      locale: en
+      source: industry
+      priority: 85
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Oxygenstahlkonverter"
+      locale: de
+      source: regional
+      priority: 90
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Convertisseur à oxygène"
+      locale: fr
+      source: regional
+      priority: 90
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "転炉製鋼"
+      locale: ja
+      source: regional
+      priority: 90
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "氧气转炉"
+      locale: zh
+      source: regional
+      priority: 90
+      case_sensitive: false
+      exact_match_only: false
+
+  attributes:
+    process_category: chemical_transformation
+    typical_energy_intensity_MJ_t: 18000
+    typical_emissions_kgCO2e_t_direct: 1800
+    typical_emissions_kgCO2e_t_total: 2100
+    hot_metal_input_fraction: 0.75
+    scrap_input_fraction: 0.25
+    oxygen_consumption_m3_t: 55
+    input_materials:
+      - "GL-MAT-PIG-IRON"
+      - "GL-MAT-STEEL-SCRAP"
+    output_materials:
+      - "GL-MAT-STEEL"
+
+  effective_from: "2024-01-01"
+  effective_to: null
+
+  notes: |
+    Basic Oxygen Furnace (BOF) steelmaking using hot metal from blast furnace.
+    Part of integrated BF-BOF route - dominant global production method (~70%).
+    High direct emissions from coke consumption in blast furnace. worldsteel
+    2023 average BF-BOF route: 2.1 tCO2e/t crude steel.
+
+  provenance:
+    created_at: "2026-01-30T00:00:00Z"
+    created_by: "GL-FOUND-X-003"
+    last_modified_at: "2026-01-30T00:00:00Z"
+    last_modified_by: "GL-FOUND-X-003"
+    version: 1
+    source_references:
+      - "worldsteel CO2 Emissions Data Collection, 2023"
+      - "IPCC 2006 Guidelines, Vol. 3, Ch. 4"
+      - "EU BAT Reference Document for Iron and Steel, 2013"
+
+---
+# ============================================================================
+# BLAST FURNACE
+# ============================================================================
+- reference_id: GL-PROC-BF
+  canonical_name: "Blast Furnace Ironmaking"
+  entity_type: process
+  status: active
+  replaced_by: null
+
+  aliases:
+    - alias: "Blast Furnace"
+      locale: en
+      source: industry
+      priority: 100
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "BF"
+      locale: universal
+      source: industry
+      priority: 95
+      case_sensitive: true
+      exact_match_only: true
+
+    - alias: "Blast Furnace Ironmaking"
+      locale: en
+      source: industry
+      priority: 90
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Ironmaking"
+      locale: en
+      source: industry
+      priority: 75
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Hot Metal Production"
+      locale: en
+      source: industry
+      priority: 80
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Pig Iron Production"
+      locale: en
+      source: industry
+      priority: 80
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Hochofen"
+      locale: de
+      source: regional
+      priority: 90
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Haut fourneau"
+      locale: fr
+      source: regional
+      priority: 90
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "高炉"
+      locale: ja
+      source: regional
+      priority: 90
+      case_sensitive: false
+      exact_match_only: false
+
+  attributes:
+    process_category: chemical_transformation
+    typical_energy_intensity_MJ_t: 14000
+    typical_emissions_kgCO2e_t: 1500
+    coke_rate_kg_t: 350
+    coal_injection_kg_t: 150
+    input_materials:
+      - "GL-MAT-IRON-ORE"
+      - "GL-MAT-COKE"
+      - "GL-MAT-LIMESTONE"
+    output_materials:
+      - "GL-MAT-PIG-IRON"
+      - "GL-MAT-SLAG"
+
+  effective_from: "2024-01-01"
+  effective_to: null
+
+  notes: |
+    Blast Furnace process for reducing iron ore to pig iron (hot metal).
+    Coke serves as both fuel and reducing agent. Main source of emissions
+    in BF-BOF steelmaking route.
+
+  provenance:
+    created_at: "2026-01-30T00:00:00Z"
+    created_by: "GL-FOUND-X-003"
+    last_modified_at: "2026-01-30T00:00:00Z"
+    last_modified_by: "GL-FOUND-X-003"
+    version: 1
+    source_references:
+      - "worldsteel CO2 Emissions Data Collection, 2023"
+      - "IPCC 2006 Guidelines, Vol. 3, Ch. 4"
+
+---
+# ============================================================================
+# GRINDING / MILLING
+# ============================================================================
+- reference_id: GL-PROC-GRINDING
+  canonical_name: "Grinding/Milling"
+  entity_type: process
+  status: active
+  replaced_by: null
+
+  aliases:
+    - alias: "Grinding"
+      locale: en
+      source: industry
+      priority: 100
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Milling"
+      locale: en
+      source: industry
+      priority: 95
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Pulverizing"
+      locale: en
+      source: industry
+      priority: 85
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Comminution"
+      locale: en
+      source: industry
+      priority: 80
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Ball Milling"
+      locale: en
+      source: industry
+      priority: 85
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Vertical Roller Mill"
+      locale: en
+      source: industry
+      priority: 80
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "VRM"
+      locale: universal
+      source: industry
+      priority: 75
+      case_sensitive: true
+      exact_match_only: true
+
+    - alias: "Cement Grinding"
+      locale: en
+      source: industry
+      priority: 80
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Finish Grinding"
+      locale: en
+      source: industry
+      priority: 75
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Raw Material Grinding"
+      locale: en
+      source: industry
+      priority: 75
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Mahlen"
+      locale: de
+      source: regional
+      priority: 90
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Broyage"
+      locale: fr
+      source: regional
+      priority: 90
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "粉砕"
+      locale: ja
+      source: regional
+      priority: 90
+      case_sensitive: false
+      exact_match_only: false
+
+  attributes:
+    process_category: physical_transformation
+    typical_energy_intensity_MJ_t: 180
+    typical_electricity_kWh_t: 50
+    typical_emissions_kgCO2e_t: 25
+    fineness_blaine_cm2_g: 3500
+
+  effective_from: "2024-01-01"
+  effective_to: null
+
+  notes: |
+    Grinding/milling process for size reduction of materials. Common in cement
+    (raw meal and finish grinding), mining (ore grinding), and various
+    manufacturing. Energy-intensive electrical process; no direct process
+    emissions. Ball mills being replaced by more efficient vertical roller mills.
+
+  provenance:
+    created_at: "2026-01-30T00:00:00Z"
+    created_by: "GL-FOUND-X-003"
+    last_modified_at: "2026-01-30T00:00:00Z"
+    last_modified_by: "GL-FOUND-X-003"
+    version: 1
+    source_references:
+      - "EU BAT Reference Document for Cement, 2013"
+      - "GCCA Getting the Numbers Right Database"
+
+---
+# ============================================================================
+# CALCINATION
+# ============================================================================
+- reference_id: GL-PROC-CALCINATION
+  canonical_name: "Calcination"
+  entity_type: process
+  status: active
+  replaced_by: null
+
+  aliases:
+    - alias: "Calcination"
+      locale: en
+      source: industry
+      priority: 100
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Calcining"
+      locale: en
+      source: industry
+      priority: 95
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Thermal Decomposition"
+      locale: en
+      source: industry
+      priority: 80
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Decarbonation"
+      locale: en
+      source: industry
+      priority: 85
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Limestone Calcination"
+      locale: en
+      source: ipcc
+      priority: 85
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Clinker Production"
+      locale: en
+      source: industry
+      priority: 80
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Lime Burning"
+      locale: en
+      source: industry
+      priority: 75
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Quickite Production"
+      locale: en
+      source: industry
+      priority: 70
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Kalzinierung"
+      locale: de
+      source: regional
+      priority: 90
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Calcination"
+      locale: fr
+      source: regional
+      priority: 90
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "焼成"
+      locale: ja
+      source: regional
+      priority: 90
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "煅烧"
+      locale: zh
+      source: regional
+      priority: 90
+      case_sensitive: false
+      exact_match_only: false
+
+  attributes:
+    process_category: thermal_treatment
+    typical_temperature_C: 900
+    typical_energy_intensity_MJ_t: 3500
+    typical_emissions_kgCO2_t_process: 440
+    typical_emissions_kgCO2_t_fuel: 300
+    carbonate_decomposition_ef: 0.44
+    input_materials:
+      - "GL-MAT-LIMESTONE"
+      - "GL-MAT-RAW-MEAL"
+    output_materials:
+      - "GL-MAT-QUICKITE"
+      - "GL-MAT-CLINKER"
+
+  effective_from: "2024-01-01"
+  effective_to: null
+
+  notes: |
+    Calcination process - thermal decomposition of carbonates (primarily
+    limestone CaCO3 -> CaO + CO2). Critical process in cement clinker and
+    lime production. ~60% of cement emissions are from calcination (process
+    emissions), not fuel combustion. Temperature typically 850-950C.
+
+  provenance:
+    created_at: "2026-01-30T00:00:00Z"
+    created_by: "GL-FOUND-X-003"
+    last_modified_at: "2026-01-30T00:00:00Z"
+    last_modified_by: "GL-FOUND-X-003"
+    version: 1
+    source_references:
+      - "IPCC 2006 Guidelines, Vol. 3, Ch. 2.3"
+      - "GCCA Getting the Numbers Right Database"
+      - "EU BAT Reference Document for Cement, 2013"
+
+---
+# ============================================================================
+# CLINKER BURNING (CEMENT KILN)
+# ============================================================================
+- reference_id: GL-PROC-CLINKER-KILN
+  canonical_name: "Clinker Kiln Burning"
+  entity_type: process
+  status: active
+  replaced_by: null
+
+  aliases:
+    - alias: "Clinker Burning"
+      locale: en
+      source: industry
+      priority: 100
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Cement Kiln"
+      locale: en
+      source: industry
+      priority: 95
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Rotary Kiln"
+      locale: en
+      source: industry
+      priority: 85
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Kiln Firing"
+      locale: en
+      source: industry
+      priority: 80
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Clinker Production"
+      locale: en
+      source: industry
+      priority: 90
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Clinkering"
+      locale: en
+      source: industry
+      priority: 85
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Pyroprocessing"
+      locale: en
+      source: industry
+      priority: 75
+      case_sensitive: false
+      exact_match_only: false
+
+  attributes:
+    process_category: thermal_treatment
+    typical_temperature_C: 1450
+    typical_energy_intensity_MJ_t_clinker: 3500
+    specific_heat_consumption_MJ_t: 3200
+    typical_emissions_kgCO2_t_clinker: 866
+    process_emissions_kgCO2_t: 525
+    fuel_emissions_kgCO2_t: 341
+    input_materials:
+      - "GL-MAT-RAW-MEAL"
+    output_materials:
+      - "GL-MAT-CLINKER"
+
+  effective_from: "2024-01-01"
+  effective_to: null
+
+  notes: |
+    Cement clinker production in rotary kiln. Includes preheating, calcination,
+    and sintering zones. Temperatures reach 1450C in burning zone. Total
+    emissions ~866 kgCO2/t clinker (GCCA 2023), split between process emissions
+    (calcination) and fuel combustion.
+
+  provenance:
+    created_at: "2026-01-30T00:00:00Z"
+    created_by: "GL-FOUND-X-003"
+    last_modified_at: "2026-01-30T00:00:00Z"
+    last_modified_by: "GL-FOUND-X-003"
+    version: 1
+    source_references:
+      - "GCCA Getting the Numbers Right (GNR) Database, 2023"
+      - "IPCC 2006 Guidelines, Vol. 3, Ch. 2"
+      - "EU BAT Reference Document for Cement, 2013"
+
+---
+# ============================================================================
+# ALUMINUM SMELTING (HALL-HEROULT)
+# ============================================================================
+- reference_id: GL-PROC-AL-SMELTING
+  canonical_name: "Aluminum Smelting (Hall-Heroult)"
+  entity_type: process
+  status: active
+  replaced_by: null
+
+  aliases:
+    - alias: "Aluminum Smelting"
+      locale: en-US
+      source: industry
+      priority: 100
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Aluminium Smelting"
+      locale: en-GB
+      source: industry
+      priority: 100
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Hall-Heroult Process"
+      locale: en
+      source: industry
+      priority: 95
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Hall-Héroult"
+      locale: en
+      source: industry
+      priority: 90
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Electrolytic Reduction"
+      locale: en
+      source: industry
+      priority: 85
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Primary Aluminum Production"
+      locale: en
+      source: industry
+      priority: 85
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Potline"
+      locale: en
+      source: industry
+      priority: 70
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Reduction Cell"
+      locale: en
+      source: industry
+      priority: 75
+      case_sensitive: false
+      exact_match_only: false
+
+  attributes:
+    process_category: electrochemical
+    typical_energy_intensity_MJ_t: 50000
+    typical_electricity_kWh_t: 13500
+    typical_emissions_kgCO2e_t_direct: 1650
+    typical_emissions_kgCO2e_t_total_global: 16500
+    typical_emissions_kgCO2e_t_total_hydro: 4500
+    anode_consumption_kg_t: 450
+    current_efficiency: 0.95
+    input_materials:
+      - "GL-MAT-ALUMINA"
+      - "GL-MAT-CARBON-ANODE"
+    output_materials:
+      - "GL-MAT-ALUMINUM"
+
+  effective_from: "2024-01-01"
+  effective_to: null
+
+  notes: |
+    Hall-Heroult electrolytic process for primary aluminum production.
+    Extremely electricity-intensive (~13.5 MWh/t). Direct emissions from
+    anode consumption (~1.65 tCO2/t Al). Total emissions vary greatly by
+    electricity source - global average ~16.5 tCO2e/t vs ~4.5 for hydro-powered.
+
+  provenance:
+    created_at: "2026-01-30T00:00:00Z"
+    created_by: "GL-FOUND-X-003"
+    last_modified_at: "2026-01-30T00:00:00Z"
+    last_modified_by: "GL-FOUND-X-003"
+    version: 1
+    source_references:
+      - "International Aluminium Institute (IAI) Statistics, 2023"
+      - "IPCC 2006 Guidelines, Vol. 3, Ch. 4"
+
+---
+# ============================================================================
+# BAYER PROCESS (ALUMINA REFINING)
+# ============================================================================
+- reference_id: GL-PROC-BAYER
+  canonical_name: "Bayer Process (Alumina Refining)"
+  entity_type: process
+  status: active
+  replaced_by: null
+
+  aliases:
+    - alias: "Bayer Process"
+      locale: en
+      source: industry
+      priority: 100
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Alumina Refining"
+      locale: en
+      source: industry
+      priority: 95
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Bauxite Refining"
+      locale: en
+      source: industry
+      priority: 85
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Alumina Production"
+      locale: en
+      source: industry
+      priority: 90
+      case_sensitive: false
+      exact_match_only: false
+
+  attributes:
+    process_category: chemical_transformation
+    typical_energy_intensity_MJ_t_alumina: 14000
+    typical_emissions_kgCO2_t_alumina: 1000
+    bauxite_consumption_t_per_t: 2.5
+    caustic_consumption_kg_t: 80
+    input_materials:
+      - "GL-MAT-BAUXITE"
+    output_materials:
+      - "GL-MAT-ALUMINA"
+
+  effective_from: "2024-01-01"
+  effective_to: null
+
+  notes: |
+    Bayer process for refining bauxite ore into alumina (Al2O3).
+    Precursor to Hall-Heroult smelting. ~2.5 tonnes bauxite per tonne alumina.
+    Energy primarily from steam/heat (digestion and calcination).
+
+  provenance:
+    created_at: "2026-01-30T00:00:00Z"
+    created_by: "GL-FOUND-X-003"
+    last_modified_at: "2026-01-30T00:00:00Z"
+    last_modified_by: "GL-FOUND-X-003"
+    version: 1
+    source_references:
+      - "International Aluminium Institute (IAI) Statistics, 2023"
+
+---
+# ============================================================================
+# GLASS MELTING
+# ============================================================================
+- reference_id: GL-PROC-GLASS-MELTING
+  canonical_name: "Glass Melting"
+  entity_type: process
+  status: active
+  replaced_by: null
+
+  aliases:
+    - alias: "Glass Melting"
+      locale: en
+      source: industry
+      priority: 100
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Glass Furnace"
+      locale: en
+      source: industry
+      priority: 90
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Glass Manufacturing"
+      locale: en
+      source: industry
+      priority: 85
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Float Glass Production"
+      locale: en
+      source: industry
+      priority: 80
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Container Glass Production"
+      locale: en
+      source: industry
+      priority: 80
+      case_sensitive: false
+      exact_match_only: false
+
+  attributes:
+    process_category: thermal_treatment
+    typical_temperature_C: 1550
+    typical_energy_intensity_MJ_t: 6500
+    typical_emissions_kgCO2_t_fuel: 450
+    typical_emissions_kgCO2_t_process: 200
+    typical_emissions_kgCO2_t_total: 650
+    cullet_ratio_avg: 0.25
+    input_materials:
+      - "GL-MAT-SILICA-SAND"
+      - "GL-MAT-SODA-ASH"
+      - "GL-MAT-LIMESTONE"
+      - "GL-MAT-CULLET"
+    output_materials:
+      - "GL-MAT-GLASS"
+
+  effective_from: "2024-01-01"
+  effective_to: null
+
+  notes: |
+    Glass melting process in regenerative or oxy-fuel furnace. Process emissions
+    from carbonate decomposition (soda ash, limestone). Each 10% increase in
+    cullet (recycled glass) reduces energy by ~2.5%. Temperatures reach 1550C.
+
+  provenance:
+    created_at: "2026-01-30T00:00:00Z"
+    created_by: "GL-FOUND-X-003"
+    last_modified_at: "2026-01-30T00:00:00Z"
+    last_modified_by: "GL-FOUND-X-003"
+    version: 1
+    source_references:
+      - "IPCC 2006 Guidelines, Vol. 3, Ch. 2"
+      - "Glass Alliance Europe Environmental Data"
+
+---
+# ============================================================================
+# DIRECT REDUCED IRON (DRI)
+# ============================================================================
+- reference_id: GL-PROC-DRI
+  canonical_name: "Direct Reduced Iron Production"
+  entity_type: process
+  status: active
+  replaced_by: null
+
+  aliases:
+    - alias: "Direct Reduced Iron"
+      locale: en
+      source: industry
+      priority: 100
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "DRI"
+      locale: universal
+      source: industry
+      priority: 95
+      case_sensitive: true
+      exact_match_only: true
+
+    - alias: "DRI Production"
+      locale: en
+      source: industry
+      priority: 90
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Direct Reduction"
+      locale: en
+      source: industry
+      priority: 85
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "Sponge Iron"
+      locale: en
+      source: industry
+      priority: 80
+      case_sensitive: false
+      exact_match_only: false
+
+    - alias: "MIDREX"
+      locale: universal
+      source: industry
+      priority: 75
+      case_sensitive: true
+      exact_match_only: true
+
+    - alias: "HYL"
+      locale: universal
+      source: industry
+      priority: 75
+      case_sensitive: true
+      exact_match_only: true
+
+    - alias: "ENERGIRON"
+      locale: universal
+      source: industry
+      priority: 70
+      case_sensitive: true
+      exact_match_only: true
+
+  attributes:
+    process_category: chemical_transformation
+    typical_energy_intensity_MJ_t: 12000
+    typical_emissions_kgCO2_t_natural_gas: 600
+    typical_emissions_kgCO2_t_hydrogen: 50
+    natural_gas_consumption_GJ_t: 10.5
+    input_materials:
+      - "GL-MAT-IRON-ORE"
+    output_materials:
+      - "GL-MAT-DRI"
+
+  effective_from: "2024-01-01"
+  effective_to: null
+
+  notes: |
+    Direct reduction of iron ore using natural gas (MIDREX, HYL/ENERGIRON).
+    Lower emissions than blast furnace route. Key pathway for green steel
+    when using hydrogen instead of natural gas (H2-DRI). DRI used as EAF
+    feedstock for high-quality steel production.
+
+  provenance:
+    created_at: "2026-01-30T00:00:00Z"
+    created_by: "GL-FOUND-X-003"
+    last_modified_at: "2026-01-30T00:00:00Z"
+    last_modified_by: "GL-FOUND-X-003"
+    version: 1
+    source_references:
+      - "worldsteel CO2 Emissions Data Collection, 2023"
+      - "MIDREX Technologies Statistics"

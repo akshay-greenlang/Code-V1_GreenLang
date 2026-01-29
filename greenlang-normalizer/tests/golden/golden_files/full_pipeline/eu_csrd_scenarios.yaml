@@ -1,0 +1,462 @@
+# =============================================================================
+# Golden Tests: EU CSRD/CBAM Full Pipeline Scenarios
+# =============================================================================
+# GL-FOUND-X-003: Unit & Reference Normalizer
+#
+# End-to-end scenarios based on EU Corporate Sustainability Reporting Directive
+# (CSRD) and Carbon Border Adjustment Mechanism (CBAM) requirements.
+# =============================================================================
+
+schema_version: "1.0"
+framework: "EU CSRD/CBAM"
+test_count: 12
+
+test_cases:
+  # ---------------------------------------------------------------------------
+  # CBAM - Iron and Steel
+  # ---------------------------------------------------------------------------
+  - name: "CBAM - Steel import (EAF route)"
+    description: "Normalize CBAM declaration for EAF steel import"
+    input:
+      source_record_id: "cbam-steel-001"
+      policy_mode: "STRICT"
+      vocabulary_version: "2026.01.0"
+      measurements:
+        - field: "product_mass"
+          value: 500
+          unit: "t"
+          expected_dimension: "mass"
+        - field: "electricity_consumption"
+          value: 250000
+          unit: "kWh"
+          expected_dimension: "energy"
+        - field: "direct_emissions"
+          value: 150
+          unit: "tCO2e"
+          expected_dimension: "emissions_mass"
+          metadata:
+            gwp_profile_id: "AR5_100yr"
+      entities:
+        - field: "product"
+          entity_type: "material"
+          raw_name: "Carbon steel"
+          hints:
+            regulation: "CBAM"
+            cn_code: "7208"
+        - field: "production_route"
+          entity_type: "process"
+          raw_name: "EAF"
+    expected:
+      status: "success"
+      canonical_measurements:
+        - field: "product_mass"
+          canonical_value: 500000.0
+          canonical_unit: "kg"
+        - field: "electricity_consumption"
+          canonical_value: 900000.0
+          canonical_unit: "MJ"
+        - field: "direct_emissions"
+          canonical_value: 150000.0
+          canonical_unit: "kgCO2e"
+      normalized_entities:
+        - field: "product"
+          reference_id: "GL-MAT-STEEL-CARBON"
+          confidence: 1.0
+          metadata:
+            cbam_category: "iron_and_steel"
+        - field: "production_route"
+          reference_id: "GL-PROC-STEEL-EAF"
+          confidence: 1.0
+    tags: ["cbam", "steel", "eaf"]
+
+  - name: "CBAM - Steel import (BOF route)"
+    description: "Normalize CBAM declaration for integrated steel (BF-BOF)"
+    input:
+      source_record_id: "cbam-steel-002"
+      policy_mode: "STRICT"
+      measurements:
+        - field: "product_mass"
+          value: 1000
+          unit: "t"
+          expected_dimension: "mass"
+        - field: "direct_emissions"
+          value: 1800
+          unit: "tCO2e"
+          expected_dimension: "emissions_mass"
+      entities:
+        - field: "product"
+          entity_type: "material"
+          raw_name: "Steel"
+        - field: "production_route"
+          entity_type: "process"
+          raw_name: "Blast furnace-Basic oxygen furnace"
+    expected:
+      status: "success"
+      canonical_measurements:
+        - field: "product_mass"
+          canonical_value: 1000000.0
+          canonical_unit: "kg"
+        - field: "direct_emissions"
+          canonical_value: 1800000.0
+          canonical_unit: "kgCO2e"
+    tags: ["cbam", "steel", "bof"]
+
+  # ---------------------------------------------------------------------------
+  # CBAM - Aluminum
+  # ---------------------------------------------------------------------------
+  - name: "CBAM - Primary aluminum import"
+    description: "Normalize CBAM declaration for primary aluminum"
+    input:
+      source_record_id: "cbam-alum-001"
+      policy_mode: "STRICT"
+      measurements:
+        - field: "product_mass"
+          value: 100
+          unit: "t"
+          expected_dimension: "mass"
+        - field: "electricity_consumption"
+          value: 1500
+          unit: "MWh"
+          expected_dimension: "energy"
+        - field: "pfc_emissions"
+          value: 50
+          unit: "tCO2e"
+          expected_dimension: "emissions_mass"
+      entities:
+        - field: "product"
+          entity_type: "material"
+          raw_name: "Aluminium"
+          hints:
+            cn_code: "7601"
+        - field: "process"
+          entity_type: "process"
+          raw_name: "Hall-Heroult"
+    expected:
+      status: "success"
+      canonical_measurements:
+        - field: "electricity_consumption"
+          canonical_value: 5400000.0
+          canonical_unit: "MJ"
+      normalized_entities:
+        - field: "product"
+          reference_id: "GL-MAT-ALUM"
+          canonical_name: "Aluminum"
+          confidence: 1.0
+        - field: "process"
+          reference_id: "GL-PROC-ALUM-HALLHEROULT"
+          confidence: 1.0
+    tags: ["cbam", "aluminum"]
+
+  # ---------------------------------------------------------------------------
+  # CBAM - Cement
+  # ---------------------------------------------------------------------------
+  - name: "CBAM - Cement import"
+    description: "Normalize CBAM declaration for Portland cement"
+    input:
+      source_record_id: "cbam-cement-001"
+      policy_mode: "STRICT"
+      measurements:
+        - field: "product_mass"
+          value: 2000
+          unit: "t"
+          expected_dimension: "mass"
+        - field: "clinker_content"
+          value: 95
+          unit: "%"
+          expected_dimension: "dimensionless"
+        - field: "process_emissions"
+          value: 1200
+          unit: "tCO2"
+          expected_dimension: "emissions_mass"
+      entities:
+        - field: "product"
+          entity_type: "material"
+          raw_name: "CEM I"
+          hints:
+            cn_code: "2523"
+    expected:
+      status: "success"
+      canonical_measurements:
+        - field: "product_mass"
+          canonical_value: 2000000.0
+          canonical_unit: "kg"
+        - field: "clinker_content"
+          canonical_value: 0.95
+          canonical_unit: "1"
+      normalized_entities:
+        - field: "product"
+          reference_id: "GL-MAT-CEMENT-PORTLAND"
+          confidence: 1.0
+    tags: ["cbam", "cement"]
+
+  # ---------------------------------------------------------------------------
+  # CBAM - Fertilizers
+  # ---------------------------------------------------------------------------
+  - name: "CBAM - Urea import"
+    description: "Normalize CBAM declaration for urea fertilizer"
+    input:
+      source_record_id: "cbam-fert-001"
+      policy_mode: "STRICT"
+      measurements:
+        - field: "product_mass"
+          value: 5000
+          unit: "t"
+          expected_dimension: "mass"
+        - field: "direct_emissions"
+          value: 3500
+          unit: "tCO2e"
+          expected_dimension: "emissions_mass"
+      entities:
+        - field: "product"
+          entity_type: "material"
+          raw_name: "Urea"
+          hints:
+            cn_code: "3102"
+    expected:
+      status: "success"
+      canonical_measurements:
+        - field: "product_mass"
+          canonical_value: 5000000.0
+          canonical_unit: "kg"
+      normalized_entities:
+        - field: "product"
+          reference_id: "GL-MAT-FERT-UREA"
+          confidence: 1.0
+          metadata:
+            cbam_category: "fertilisers"
+    tags: ["cbam", "fertilizer"]
+
+  # ---------------------------------------------------------------------------
+  # CBAM - Hydrogen
+  # ---------------------------------------------------------------------------
+  - name: "CBAM - Green hydrogen import"
+    description: "Normalize CBAM declaration for green hydrogen"
+    input:
+      source_record_id: "cbam-h2-001"
+      policy_mode: "STRICT"
+      measurements:
+        - field: "product_mass"
+          value: 100
+          unit: "t"
+          expected_dimension: "mass"
+        - field: "electricity_consumption"
+          value: 5000
+          unit: "MWh"
+          expected_dimension: "energy"
+      entities:
+        - field: "product"
+          entity_type: "material"
+          raw_name: "Hydrogen"
+          hints:
+            production_method: "electrolysis"
+    expected:
+      status: "success"
+      canonical_measurements:
+        - field: "product_mass"
+          canonical_value: 100000.0
+          canonical_unit: "kg"
+        - field: "electricity_consumption"
+          canonical_value: 18000000.0
+          canonical_unit: "MJ"
+      normalized_entities:
+        - field: "product"
+          reference_id: "GL-MAT-HYDROGEN"
+          confidence: 1.0
+    tags: ["cbam", "hydrogen"]
+
+  # ---------------------------------------------------------------------------
+  # CSRD - E1 Climate Metrics
+  # ---------------------------------------------------------------------------
+  - name: "CSRD E1 - Scope 1+2 emissions"
+    description: "Normalize CSRD E1 climate disclosure metrics"
+    input:
+      source_record_id: "csrd-e1-001"
+      policy_mode: "STRICT"
+      measurements:
+        - field: "scope1_emissions"
+          value: 50000
+          unit: "tCO2e"
+          expected_dimension: "emissions_mass"
+        - field: "scope2_location"
+          value: 25000
+          unit: "tCO2e"
+          expected_dimension: "emissions_mass"
+        - field: "scope2_market"
+          value: 15000
+          unit: "tCO2e"
+          expected_dimension: "emissions_mass"
+        - field: "total_energy"
+          value: 500
+          unit: "TJ"
+          expected_dimension: "energy"
+    expected:
+      status: "success"
+      canonical_measurements:
+        - field: "scope1_emissions"
+          canonical_value: 50000000.0
+          canonical_unit: "kgCO2e"
+        - field: "scope2_location"
+          canonical_value: 25000000.0
+          canonical_unit: "kgCO2e"
+        - field: "total_energy"
+          canonical_value: 500000000.0
+          canonical_unit: "MJ"
+    tags: ["csrd", "e1", "climate"]
+
+  - name: "CSRD E1 - Energy intensity"
+    description: "Normalize CSRD energy intensity metrics"
+    input:
+      source_record_id: "csrd-e1-002"
+      policy_mode: "STRICT"
+      measurements:
+        - field: "revenue"
+          value: 1000000000
+          unit: "EUR"
+          expected_dimension: "currency"
+        - field: "total_energy"
+          value: 100
+          unit: "GWh"
+          expected_dimension: "energy"
+    expected:
+      status: "success"
+      canonical_measurements:
+        - field: "total_energy"
+          canonical_value: 360000000.0
+          canonical_unit: "MJ"
+    tags: ["csrd", "e1", "intensity"]
+
+  # ---------------------------------------------------------------------------
+  # CSRD - E2 Pollution Metrics
+  # ---------------------------------------------------------------------------
+  - name: "CSRD E2 - Air pollutants"
+    description: "Normalize CSRD E2 pollution disclosure"
+    input:
+      source_record_id: "csrd-e2-001"
+      policy_mode: "STRICT"
+      measurements:
+        - field: "nox_emissions"
+          value: 500
+          unit: "t"
+          expected_dimension: "mass"
+        - field: "sox_emissions"
+          value: 200
+          unit: "t"
+          expected_dimension: "mass"
+        - field: "pm_emissions"
+          value: 50
+          unit: "t"
+          expected_dimension: "mass"
+    expected:
+      status: "success"
+      canonical_measurements:
+        - field: "nox_emissions"
+          canonical_value: 500000.0
+          canonical_unit: "kg"
+        - field: "sox_emissions"
+          canonical_value: 200000.0
+          canonical_unit: "kg"
+    tags: ["csrd", "e2", "pollution"]
+
+  # ---------------------------------------------------------------------------
+  # CSRD - E5 Circular Economy
+  # ---------------------------------------------------------------------------
+  - name: "CSRD E5 - Waste management"
+    description: "Normalize CSRD E5 waste metrics"
+    input:
+      source_record_id: "csrd-e5-001"
+      policy_mode: "STRICT"
+      measurements:
+        - field: "total_waste"
+          value: 10000
+          unit: "t"
+          expected_dimension: "mass"
+        - field: "recycled_waste"
+          value: 6000
+          unit: "t"
+          expected_dimension: "mass"
+        - field: "hazardous_waste"
+          value: 500
+          unit: "t"
+          expected_dimension: "mass"
+    expected:
+      status: "success"
+      canonical_measurements:
+        - field: "total_waste"
+          canonical_value: 10000000.0
+          canonical_unit: "kg"
+        - field: "recycled_waste"
+          canonical_value: 6000000.0
+          canonical_unit: "kg"
+    tags: ["csrd", "e5", "circular"]
+
+  # ---------------------------------------------------------------------------
+  # Edge Cases - EU Specific
+  # ---------------------------------------------------------------------------
+  - name: "CBAM - Missing required metadata"
+    description: "CBAM declaration missing CN code"
+    input:
+      source_record_id: "cbam-err-001"
+      policy_mode: "STRICT"
+      measurements:
+        - field: "product_mass"
+          value: 100
+          unit: "t"
+          expected_dimension: "mass"
+      entities:
+        - field: "product"
+          entity_type: "material"
+          raw_name: "Steel"
+    expected:
+      status: "warning"
+      warnings:
+        - code: "GLNORM-W001"
+          message: "Missing CN code for CBAM product"
+    tags: ["cbam", "warning", "metadata"]
+
+  - name: "CBAM - Non-CBAM product"
+    description: "Product not covered by CBAM regulation"
+    input:
+      source_record_id: "cbam-err-002"
+      policy_mode: "LENIENT"
+      entities:
+        - field: "product"
+          entity_type: "material"
+          raw_name: "Plastic pellets"
+    expected:
+      status: "warning"
+      warnings:
+        - message: "Product not in CBAM scope"
+    tags: ["cbam", "out_of_scope"]
+
+# -----------------------------------------------------------------------------
+# EU Regulatory Reference
+# -----------------------------------------------------------------------------
+cbam_categories:
+  cement:
+    cn_codes: ["2507", "2523"]
+    description: "Cement and clinker"
+  iron_and_steel:
+    cn_codes: ["7201-7229", "7301-7326"]
+    description: "Iron and steel products"
+  aluminium:
+    cn_codes: ["7601-7616"]
+    description: "Aluminum and products"
+  fertilisers:
+    cn_codes: ["2808", "2814", "2834", "3102", "3105"]
+    description: "Nitrogen fertilizers"
+  electricity:
+    cn_codes: ["2716"]
+    description: "Electrical energy"
+  hydrogen:
+    cn_codes: ["2804"]
+    description: "Hydrogen"
+
+csrd_e1_metrics:
+  - scope1_emissions
+  - scope2_location_emissions
+  - scope2_market_emissions
+  - scope3_emissions_by_category
+  - total_ghg_emissions
+  - ghg_intensity
+  - energy_consumption
+  - energy_intensity

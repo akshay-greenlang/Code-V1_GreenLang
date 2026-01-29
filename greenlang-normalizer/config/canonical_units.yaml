@@ -1,0 +1,1506 @@
+# =============================================================================
+# GL Canonical Units Registry v1.0
+# =============================================================================
+# GreenLang Foundation Module GL-FOUND-X-003: Unit Normalization
+#
+# This configuration defines the canonical unit system for all GreenLang
+# calculations. All input values MUST be converted to canonical units before
+# any calculation to ensure deterministic, auditable results.
+#
+# ZERO-HALLUCINATION PRINCIPLE:
+# - All conversion factors are exact or derived from authoritative sources
+# - No LLM-generated conversion factors allowed
+# - All conversions must be reproducible and auditable
+#
+# Version: 1.0.0
+# Last Updated: 2026-01-30
+# Maintainer: GreenLang Foundation Team
+# =============================================================================
+
+schema_version: "1.0"
+registry_id: "gl-canonical-units-v1"
+effective_date: "2026-01-30"
+
+# -----------------------------------------------------------------------------
+# DIMENSION DEFINITIONS
+# -----------------------------------------------------------------------------
+# Each dimension specifies:
+#   - canonical_unit: The GL standard unit for this dimension
+#   - conversion_type: linear (y = mx) or affine (y = mx + b)
+#   - input_units: Map of accepted input units with conversion parameters
+#   - required_metadata: Fields required for certain conversions
+#   - validation: Constraints and range checks
+# -----------------------------------------------------------------------------
+
+dimensions:
+
+  # ===========================================================================
+  # ENERGY
+  # ===========================================================================
+  # Canonical: MJ (megajoule)
+  # Rationale: MJ provides good precision for industrial energy flows while
+  # avoiding floating-point issues common with smaller units (J, kJ)
+  # ===========================================================================
+  energy:
+    canonical_unit: MJ
+    canonical_unit_symbol: MJ
+    si_base_equivalent: "1e6 J"
+    conversion_type: linear
+    description: "Energy quantity for fuel consumption, electricity usage, heat flows"
+
+    input_units:
+      # SI Energy Units
+      J:
+        name: "joule"
+        factor: 1.0e-6
+        exact: true
+        source: "SI definition"
+      kJ:
+        name: "kilojoule"
+        factor: 1.0e-3
+        exact: true
+        source: "SI definition"
+      MJ:
+        name: "megajoule"
+        factor: 1.0
+        exact: true
+        source: "canonical unit"
+      GJ:
+        name: "gigajoule"
+        factor: 1.0e3
+        exact: true
+        source: "SI definition"
+      TJ:
+        name: "terajoule"
+        factor: 1.0e6
+        exact: true
+        source: "SI definition"
+
+      # Electrical Energy Units
+      Wh:
+        name: "watt-hour"
+        factor: 3.6e-3
+        exact: true
+        source: "1 Wh = 3600 J = 3.6e-3 MJ"
+      kWh:
+        name: "kilowatt-hour"
+        factor: 3.6
+        exact: true
+        source: "1 kWh = 3.6 MJ (exact by definition)"
+      MWh:
+        name: "megawatt-hour"
+        factor: 3600.0
+        exact: true
+        source: "1 MWh = 3600 MJ"
+      GWh:
+        name: "gigawatt-hour"
+        factor: 3.6e6
+        exact: true
+        source: "1 GWh = 3.6e6 MJ"
+
+      # Imperial/US Energy Units
+      BTU:
+        name: "British thermal unit (IT)"
+        factor: 1.055056e-3
+        exact: false
+        source: "ISO 31-4, 1 BTU_IT = 1055.056 J"
+        notes: "Using International Table BTU"
+      MMBtu:
+        name: "million BTU"
+        factor: 1055.056
+        exact: false
+        source: "1 MMBtu = 1e6 BTU_IT"
+        aliases: ["MMBTU", "mmBtu", "dekatherm"]
+      therm:
+        name: "therm (US)"
+        factor: 105.5056
+        exact: false
+        source: "1 therm = 100,000 BTU_IT"
+      quad:
+        name: "quadrillion BTU"
+        factor: 1.055056e9
+        exact: false
+        source: "1 quad = 1e15 BTU"
+
+      # Calorie-based Units
+      cal:
+        name: "calorie (thermochemical)"
+        factor: 4.184e-6
+        exact: true
+        source: "1 cal_th = 4.184 J (exact)"
+      kcal:
+        name: "kilocalorie"
+        factor: 4.184e-3
+        exact: true
+        source: "1 kcal = 4.184 kJ"
+        aliases: ["Cal", "food_calorie"]
+
+      # Ton of Oil Equivalent
+      toe:
+        name: "tonne of oil equivalent"
+        factor: 41868.0
+        exact: false
+        source: "IEA definition: 1 toe = 41.868 GJ"
+      ktoe:
+        name: "kilotonne of oil equivalent"
+        factor: 4.1868e7
+        exact: false
+        source: "1 ktoe = 1000 toe"
+      Mtoe:
+        name: "megatonne of oil equivalent"
+        factor: 4.1868e10
+        exact: false
+        source: "1 Mtoe = 1e6 toe"
+
+      # Ton of Coal Equivalent
+      tce:
+        name: "tonne of coal equivalent"
+        factor: 29307.6
+        exact: false
+        source: "IEA definition: 1 tce = 29.3076 GJ"
+
+    validation:
+      min_value: 0.0
+      max_value: 1.0e15  # 1 EJ practical limit for single records
+      allow_negative: false
+
+    required_metadata: []
+
+  # ===========================================================================
+  # MASS
+  # ===========================================================================
+  # Canonical: kg (kilogram)
+  # Rationale: SI base unit for mass, universally understood
+  # ===========================================================================
+  mass:
+    canonical_unit: kg
+    canonical_unit_symbol: kg
+    si_base_equivalent: "1 kg"
+    conversion_type: linear
+    description: "Mass quantity for materials, fuels, products, waste"
+
+    input_units:
+      # SI Mass Units
+      mg:
+        name: "milligram"
+        factor: 1.0e-6
+        exact: true
+        source: "SI definition"
+      g:
+        name: "gram"
+        factor: 1.0e-3
+        exact: true
+        source: "SI definition"
+      kg:
+        name: "kilogram"
+        factor: 1.0
+        exact: true
+        source: "canonical unit"
+      t:
+        name: "metric tonne"
+        factor: 1000.0
+        exact: true
+        source: "1 t = 1000 kg"
+        aliases: ["tonne", "metric_ton", "MT"]
+      kt:
+        name: "kilotonne"
+        factor: 1.0e6
+        exact: true
+        source: "1 kt = 1000 t"
+      Mt:
+        name: "megatonne"
+        factor: 1.0e9
+        exact: true
+        source: "1 Mt = 1e6 t"
+      Gt:
+        name: "gigatonne"
+        factor: 1.0e12
+        exact: true
+        source: "1 Gt = 1e9 t"
+
+      # Imperial/US Mass Units
+      oz:
+        name: "ounce (avoirdupois)"
+        factor: 0.028349523125
+        exact: true
+        source: "1 oz = 28.349523125 g (exact since 1959)"
+      lb:
+        name: "pound (avoirdupois)"
+        factor: 0.45359237
+        exact: true
+        source: "1 lb = 0.45359237 kg (exact since 1959)"
+        aliases: ["lbs", "pound"]
+      st:
+        name: "stone"
+        factor: 6.35029318
+        exact: true
+        source: "1 stone = 14 lb"
+      cwt_us:
+        name: "hundredweight (US)"
+        factor: 45.359237
+        exact: true
+        source: "1 cwt_US = 100 lb"
+      cwt_uk:
+        name: "hundredweight (UK)"
+        factor: 50.80234544
+        exact: true
+        source: "1 cwt_UK = 112 lb"
+      ton_short:
+        name: "short ton (US)"
+        factor: 907.18474
+        exact: true
+        source: "1 short ton = 2000 lb"
+        aliases: ["US_ton", "short_ton"]
+      ton_long:
+        name: "long ton (UK)"
+        factor: 1016.0469088
+        exact: true
+        source: "1 long ton = 2240 lb"
+        aliases: ["UK_ton", "long_ton"]
+
+      # Troy Units (precious metals)
+      oz_troy:
+        name: "troy ounce"
+        factor: 0.0311034768
+        exact: true
+        source: "1 oz_t = 31.1034768 g"
+      lb_troy:
+        name: "troy pound"
+        factor: 0.3732417216
+        exact: true
+        source: "1 lb_t = 12 oz_t"
+
+    validation:
+      min_value: 0.0
+      max_value: 1.0e15  # 1 Gt practical limit
+      allow_negative: false
+
+    required_metadata: []
+
+  # ===========================================================================
+  # EMISSIONS MASS (CO2 equivalent)
+  # ===========================================================================
+  # Canonical: kgCO2e (kilograms CO2 equivalent)
+  # Rationale: Standard unit for GHG reporting, requires GWP profile
+  # ===========================================================================
+  emissions_mass:
+    canonical_unit: kgCO2e
+    canonical_unit_symbol: "kg CO2e"
+    si_base_equivalent: "1 kg"
+    conversion_type: linear
+    description: "GHG emissions in CO2 equivalent, requires GWP profile specification"
+
+    input_units:
+      gCO2e:
+        name: "grams CO2 equivalent"
+        factor: 1.0e-3
+        exact: true
+        source: "SI definition"
+      kgCO2e:
+        name: "kilograms CO2 equivalent"
+        factor: 1.0
+        exact: true
+        source: "canonical unit"
+      tCO2e:
+        name: "tonnes CO2 equivalent"
+        factor: 1000.0
+        exact: true
+        source: "1 tCO2e = 1000 kgCO2e"
+        aliases: ["tonne_CO2e", "metric_ton_CO2e"]
+      ktCO2e:
+        name: "kilotonnes CO2 equivalent"
+        factor: 1.0e6
+        exact: true
+        source: "1 ktCO2e = 1000 tCO2e"
+      MtCO2e:
+        name: "megatonnes CO2 equivalent"
+        factor: 1.0e9
+        exact: true
+        source: "1 MtCO2e = 1e6 tCO2e"
+      GtCO2e:
+        name: "gigatonnes CO2 equivalent"
+        factor: 1.0e12
+        exact: true
+        source: "1 GtCO2e = 1e9 tCO2e"
+
+      # Direct gas masses (require GWP conversion)
+      kgCO2:
+        name: "kilograms CO2"
+        factor: 1.0
+        exact: true
+        source: "GWP of CO2 = 1 by definition"
+        notes: "Direct CO2, no GWP conversion needed"
+      kgCH4:
+        name: "kilograms CH4"
+        factor: null  # Requires GWP lookup
+        exact: false
+        source: "Requires gwp_profile_id"
+        requires_gwp: true
+      kgN2O:
+        name: "kilograms N2O"
+        factor: null  # Requires GWP lookup
+        exact: false
+        source: "Requires gwp_profile_id"
+        requires_gwp: true
+
+    validation:
+      min_value: 0.0
+      max_value: 1.0e15
+      allow_negative: false  # Negative emissions tracked separately
+
+    required_metadata:
+      - field: gwp_profile_id
+        description: "GWP profile identifier (e.g., AR5_100yr, AR6_100yr)"
+        required_for: ["kgCH4", "kgN2O"]
+        default: "AR5_100yr"
+        allowed_values:
+          - "AR4_100yr"
+          - "AR5_100yr"
+          - "AR5_20yr"
+          - "AR6_100yr"
+          - "AR6_20yr"
+
+  # ===========================================================================
+  # VOLUME
+  # ===========================================================================
+  # Canonical: m3 (cubic meter)
+  # Rationale: SI derived unit, appropriate scale for industrial volumes
+  # ===========================================================================
+  volume:
+    canonical_unit: m3
+    canonical_unit_symbol: "m^3"
+    si_base_equivalent: "1 m^3"
+    conversion_type: linear
+    description: "Volume quantity for liquids, bulk materials, storage"
+
+    input_units:
+      # SI Volume Units
+      mL:
+        name: "milliliter"
+        factor: 1.0e-6
+        exact: true
+        source: "SI definition"
+        aliases: ["ml", "cc", "cm3"]
+      cL:
+        name: "centiliter"
+        factor: 1.0e-5
+        exact: true
+        source: "SI definition"
+      dL:
+        name: "deciliter"
+        factor: 1.0e-4
+        exact: true
+        source: "SI definition"
+      L:
+        name: "liter"
+        factor: 1.0e-3
+        exact: true
+        source: "1 L = 1 dm^3 = 0.001 m^3"
+        aliases: ["l", "litre", "dm3"]
+      hL:
+        name: "hectoliter"
+        factor: 0.1
+        exact: true
+        source: "1 hL = 100 L"
+      kL:
+        name: "kiloliter"
+        factor: 1.0
+        exact: true
+        source: "1 kL = 1 m^3"
+      m3:
+        name: "cubic meter"
+        factor: 1.0
+        exact: true
+        source: "canonical unit"
+        aliases: ["cbm", "m^3"]
+
+      # Imperial/US Volume Units
+      fl_oz_us:
+        name: "US fluid ounce"
+        factor: 2.95735295625e-5
+        exact: true
+        source: "1 US fl oz = 29.5735295625 mL"
+      cup_us:
+        name: "US cup"
+        factor: 2.365882365e-4
+        exact: true
+        source: "1 US cup = 8 US fl oz"
+      pt_us:
+        name: "US pint"
+        factor: 4.73176473e-4
+        exact: true
+        source: "1 US pt = 16 US fl oz"
+      qt_us:
+        name: "US quart"
+        factor: 9.46352946e-4
+        exact: true
+        source: "1 US qt = 32 US fl oz"
+      gal_us:
+        name: "US gallon"
+        factor: 3.785411784e-3
+        exact: true
+        source: "1 US gal = 231 in^3 = 3.785411784 L (exact)"
+        aliases: ["gallon_us", "USG"]
+      bbl:
+        name: "barrel (petroleum)"
+        factor: 0.158987294928
+        exact: true
+        source: "1 bbl = 42 US gal"
+        aliases: ["barrel", "oil_barrel"]
+
+      # UK Imperial Volume
+      fl_oz_uk:
+        name: "UK fluid ounce"
+        factor: 2.84130625e-5
+        exact: true
+        source: "1 UK fl oz = 28.4130625 mL"
+      pt_uk:
+        name: "UK pint"
+        factor: 5.6826125e-4
+        exact: true
+        source: "1 UK pt = 20 UK fl oz"
+      qt_uk:
+        name: "UK quart"
+        factor: 1.1365225e-3
+        exact: true
+        source: "1 UK qt = 40 UK fl oz"
+      gal_uk:
+        name: "UK gallon"
+        factor: 4.54609e-3
+        exact: true
+        source: "1 UK gal = 4.54609 L (exact since 1985)"
+        aliases: ["gallon_uk", "imperial_gallon"]
+
+      # Cubic Length Units
+      in3:
+        name: "cubic inch"
+        factor: 1.6387064e-5
+        exact: true
+        source: "1 in^3 = 16.387064 mL"
+      ft3:
+        name: "cubic foot"
+        factor: 0.028316846592
+        exact: true
+        source: "1 ft^3 = 28.316846592 L"
+        aliases: ["cf", "cuft"]
+      yd3:
+        name: "cubic yard"
+        factor: 0.764554857984
+        exact: true
+        source: "1 yd^3 = 27 ft^3"
+
+      # Large Volume Units
+      acre_ft:
+        name: "acre-foot"
+        factor: 1233.48183754752
+        exact: true
+        source: "1 acre-ft = 43560 ft^3"
+      Mbbl:
+        name: "thousand barrels"
+        factor: 158.987294928
+        exact: true
+        source: "1 Mbbl = 1000 bbl"
+      MMbbl:
+        name: "million barrels"
+        factor: 158987.294928
+        exact: true
+        source: "1 MMbbl = 1e6 bbl"
+
+    validation:
+      min_value: 0.0
+      max_value: 1.0e12  # 1 trillion m3 practical limit
+      allow_negative: false
+
+    required_metadata: []
+
+  # ===========================================================================
+  # VOLUME (STANDARD CONDITIONS)
+  # ===========================================================================
+  # Canonical: Nm3 (normal cubic meter at 0C, 101.325 kPa)
+  # Rationale: Gas volumes must specify reference conditions
+  # ===========================================================================
+  volume_standard:
+    canonical_unit: Nm3
+    canonical_unit_symbol: "Nm^3"
+    si_base_equivalent: "1 m^3 at STP"
+    conversion_type: linear
+    description: "Gas volume at standard/normal conditions (requires T, P reference)"
+
+    input_units:
+      Nm3:
+        name: "normal cubic meter"
+        factor: 1.0
+        exact: true
+        source: "canonical unit"
+        reference_conditions:
+          temperature_degC: 0.0
+          pressure_kPa: 101.325
+        aliases: ["normal_m3"]
+
+      Sm3:
+        name: "standard cubic meter (ISO)"
+        factor: 1.0  # Adjusted by reference conditions
+        exact: false
+        source: "ISO 13443 standard conditions"
+        reference_conditions:
+          temperature_degC: 15.0
+          pressure_kPa: 101.325
+        notes: "Must convert using ideal gas law"
+
+      scf:
+        name: "standard cubic foot (US)"
+        factor: 0.02831685  # Base factor, adjusted by conditions
+        exact: false
+        source: "US petroleum standard"
+        reference_conditions:
+          temperature_degF: 60.0
+          pressure_psia: 14.696
+        aliases: ["SCF", "standard_cf"]
+
+      Mscf:
+        name: "thousand standard cubic feet"
+        factor: 28.31685
+        exact: false
+        source: "1 Mscf = 1000 scf"
+        reference_conditions:
+          temperature_degF: 60.0
+          pressure_psia: 14.696
+
+      MMscf:
+        name: "million standard cubic feet"
+        factor: 28316.85
+        exact: false
+        source: "1 MMscf = 1e6 scf"
+        reference_conditions:
+          temperature_degF: 60.0
+          pressure_psia: 14.696
+
+      Bcf:
+        name: "billion standard cubic feet"
+        factor: 2.831685e7
+        exact: false
+        source: "1 Bcf = 1e9 scf"
+
+      NL:
+        name: "normal liter"
+        factor: 1.0e-3
+        exact: true
+        source: "1 NL = 0.001 Nm3"
+        reference_conditions:
+          temperature_degC: 0.0
+          pressure_kPa: 101.325
+
+    validation:
+      min_value: 0.0
+      max_value: 1.0e15
+      allow_negative: false
+
+    required_metadata:
+      - field: reference_conditions
+        description: "Reference T and P for standard volume"
+        required_for: ["Sm3", "scf", "Mscf", "MMscf"]
+        subfields:
+          - field: temperature
+            unit: degC
+            description: "Reference temperature"
+          - field: pressure
+            unit: kPa_abs
+            description: "Reference absolute pressure"
+
+  # ===========================================================================
+  # PRESSURE
+  # ===========================================================================
+  # Canonical: kPa_abs (kilopascal absolute)
+  # Rationale: SI-derived, absolute scale avoids gauge ambiguity
+  # ===========================================================================
+  pressure:
+    canonical_unit: kPa_abs
+    canonical_unit_symbol: "kPa(a)"
+    si_base_equivalent: "1000 Pa"
+    conversion_type: linear
+    description: "Pressure in absolute terms (gauge pressures require atmospheric offset)"
+
+    input_units:
+      # SI Pressure Units (Absolute)
+      Pa:
+        name: "pascal"
+        factor: 1.0e-3
+        exact: true
+        source: "SI definition"
+        pressure_type: absolute
+      hPa:
+        name: "hectopascal"
+        factor: 0.1
+        exact: true
+        source: "1 hPa = 100 Pa"
+        pressure_type: absolute
+        aliases: ["mbar"]
+      kPa:
+        name: "kilopascal"
+        factor: 1.0
+        exact: true
+        source: "canonical unit"
+        pressure_type: absolute
+        aliases: ["kPa_abs"]
+      MPa:
+        name: "megapascal"
+        factor: 1000.0
+        exact: true
+        source: "1 MPa = 1000 kPa"
+        pressure_type: absolute
+      GPa:
+        name: "gigapascal"
+        factor: 1.0e6
+        exact: true
+        source: "1 GPa = 1e6 kPa"
+        pressure_type: absolute
+
+      # Bar Units
+      bar:
+        name: "bar"
+        factor: 100.0
+        exact: true
+        source: "1 bar = 100 kPa (exact)"
+        pressure_type: absolute
+        aliases: ["bara"]
+      mbar:
+        name: "millibar"
+        factor: 0.1
+        exact: true
+        source: "1 mbar = 0.1 kPa"
+        pressure_type: absolute
+
+      # Gauge Pressures (require atmospheric offset)
+      kPag:
+        name: "kilopascal gauge"
+        factor: 1.0
+        exact: true
+        source: "kPa_abs = kPag + P_atm"
+        pressure_type: gauge
+        offset_source: atmospheric_pressure
+      barg:
+        name: "bar gauge"
+        factor: 100.0
+        exact: true
+        source: "kPa_abs = barg * 100 + P_atm"
+        pressure_type: gauge
+        offset_source: atmospheric_pressure
+
+      # Imperial Pressure Units
+      psi:
+        name: "pounds per square inch"
+        factor: 6.894757293168
+        exact: false
+        source: "1 psi = 6894.757293168 Pa"
+        pressure_type: absolute
+        aliases: ["psia", "lbf/in2"]
+      psig:
+        name: "psi gauge"
+        factor: 6.894757293168
+        exact: false
+        source: "psia = psig + P_atm"
+        pressure_type: gauge
+        offset_source: atmospheric_pressure
+
+      # Atmosphere-based Units
+      atm:
+        name: "standard atmosphere"
+        factor: 101.325
+        exact: true
+        source: "1 atm = 101.325 kPa (exact by definition)"
+        pressure_type: absolute
+      at:
+        name: "technical atmosphere"
+        factor: 98.0665
+        exact: true
+        source: "1 at = 1 kgf/cm^2 = 98.0665 kPa"
+        pressure_type: absolute
+
+      # Column-based Units
+      mmHg:
+        name: "millimeters of mercury"
+        factor: 0.1333224
+        exact: false
+        source: "1 mmHg = 133.3224 Pa"
+        pressure_type: absolute
+        aliases: ["torr"]
+      inHg:
+        name: "inches of mercury"
+        factor: 3.38639
+        exact: false
+        source: "1 inHg = 3386.39 Pa"
+        pressure_type: absolute
+      mmH2O:
+        name: "millimeters of water"
+        factor: 9.80665e-3
+        exact: true
+        source: "1 mmH2O = 9.80665 Pa"
+        pressure_type: absolute
+      inH2O:
+        name: "inches of water"
+        factor: 0.2490889
+        exact: false
+        source: "1 inH2O = 249.0889 Pa"
+        pressure_type: absolute
+
+    validation:
+      min_value: 0.0  # Absolute pressure cannot be negative
+      max_value: 1.0e9  # 1 GPa practical limit
+      allow_negative: false
+
+    required_metadata:
+      - field: atmospheric_pressure_kPa
+        description: "Local atmospheric pressure for gauge conversions"
+        required_for_pressure_type: gauge
+        default: 101.325
+        typical_range: [95.0, 105.0]
+
+  # ===========================================================================
+  # TEMPERATURE
+  # ===========================================================================
+  # Canonical: degC (degrees Celsius)
+  # Rationale: Most common in industrial/environmental contexts
+  # NOTE: This is an AFFINE conversion (y = mx + b)
+  # ===========================================================================
+  temperature:
+    canonical_unit: degC
+    canonical_unit_symbol: "C"
+    si_base_equivalent: "K - 273.15"
+    conversion_type: affine
+    description: "Absolute temperature (NOT temperature differences)"
+
+    input_units:
+      degC:
+        name: "degrees Celsius"
+        scale: 1.0
+        offset: 0.0
+        exact: true
+        source: "canonical unit"
+        aliases: ["C", "celsius"]
+
+      degF:
+        name: "degrees Fahrenheit"
+        scale: 0.5555555555555556  # 5/9
+        offset: -17.77777777777778  # -32 * 5/9
+        exact: true
+        source: "degC = (degF - 32) * 5/9"
+        aliases: ["F", "fahrenheit"]
+        conversion_formula: "degC = (degF - 32) * 5/9"
+
+      K:
+        name: "kelvin"
+        scale: 1.0
+        offset: -273.15
+        exact: true
+        source: "degC = K - 273.15"
+        aliases: ["kelvin"]
+        conversion_formula: "degC = K - 273.15"
+
+      degR:
+        name: "degrees Rankine"
+        scale: 0.5555555555555556  # 5/9
+        offset: -273.15
+        exact: true
+        source: "degC = (degR - 491.67) * 5/9"
+        aliases: ["R", "rankine"]
+        conversion_formula: "degC = (degR * 5/9) - 273.15"
+
+    validation:
+      min_value: -273.15  # Absolute zero
+      max_value: 1.0e6    # Practical limit
+      allow_negative: true
+
+    required_metadata: []
+
+    notes: |
+      IMPORTANT: Temperature conversions are AFFINE (y = scale*x + offset).
+      Do NOT use these factors for temperature DIFFERENCES.
+      For delta-T, use the temperature_delta dimension.
+
+  # ===========================================================================
+  # TEMPERATURE DELTA (Difference)
+  # ===========================================================================
+  # Canonical: K (kelvin delta)
+  # Rationale: K and degC deltas are identical; keeps math clean
+  # ===========================================================================
+  temperature_delta:
+    canonical_unit: K
+    canonical_unit_symbol: "K"
+    si_base_equivalent: "1 K"
+    conversion_type: linear
+    description: "Temperature difference/change (NOT absolute temperature)"
+
+    input_units:
+      K:
+        name: "kelvin (delta)"
+        factor: 1.0
+        exact: true
+        source: "canonical unit"
+        aliases: ["delta_K"]
+
+      delta_degC:
+        name: "degrees Celsius (delta)"
+        factor: 1.0
+        exact: true
+        source: "1 degC delta = 1 K delta"
+        aliases: ["degC_delta", "C_delta"]
+
+      delta_degF:
+        name: "degrees Fahrenheit (delta)"
+        factor: 0.5555555555555556  # 5/9
+        exact: true
+        source: "1 degF delta = 5/9 K delta"
+        aliases: ["degF_delta", "F_delta"]
+
+      delta_degR:
+        name: "degrees Rankine (delta)"
+        factor: 0.5555555555555556  # 5/9
+        exact: true
+        source: "1 degR delta = 5/9 K delta"
+
+    validation:
+      min_value: -1.0e6
+      max_value: 1.0e6
+      allow_negative: true  # Temperature can decrease
+
+    required_metadata: []
+
+  # ===========================================================================
+  # POWER
+  # ===========================================================================
+  # Canonical: kW (kilowatt)
+  # Rationale: Common industrial scale, avoids very small/large numbers
+  # ===========================================================================
+  power:
+    canonical_unit: kW
+    canonical_unit_symbol: kW
+    si_base_equivalent: "1000 W"
+    conversion_type: linear
+    description: "Power/rate of energy transfer"
+
+    input_units:
+      # SI Power Units
+      mW:
+        name: "milliwatt"
+        factor: 1.0e-6
+        exact: true
+        source: "SI definition"
+      W:
+        name: "watt"
+        factor: 1.0e-3
+        exact: true
+        source: "SI definition"
+      kW:
+        name: "kilowatt"
+        factor: 1.0
+        exact: true
+        source: "canonical unit"
+      MW:
+        name: "megawatt"
+        factor: 1000.0
+        exact: true
+        source: "1 MW = 1000 kW"
+      GW:
+        name: "gigawatt"
+        factor: 1.0e6
+        exact: true
+        source: "1 GW = 1e6 kW"
+      TW:
+        name: "terawatt"
+        factor: 1.0e9
+        exact: true
+        source: "1 TW = 1e9 kW"
+
+      # Imperial/Other Power Units
+      hp:
+        name: "horsepower (mechanical)"
+        factor: 0.7456998716
+        exact: false
+        source: "1 hp = 745.6998716 W"
+        aliases: ["HP", "horsepower"]
+      hp_metric:
+        name: "horsepower (metric)"
+        factor: 0.73549875
+        exact: true
+        source: "1 PS = 735.49875 W"
+        aliases: ["PS", "CV", "pk"]
+      hp_boiler:
+        name: "boiler horsepower"
+        factor: 9.8095
+        exact: false
+        source: "1 bhp = 9809.5 W"
+
+      # BTU-based Power
+      BTU_per_h:
+        name: "BTU per hour"
+        factor: 2.930711e-4
+        exact: false
+        source: "1 BTU/h = 0.2930711 W"
+        aliases: ["BTU/h", "BTUH"]
+      MMBTU_per_h:
+        name: "MMBTU per hour"
+        factor: 293.0711
+        exact: false
+        source: "1 MMBtu/h = 293.0711 kW"
+
+      # Refrigeration
+      ton_refrig:
+        name: "ton of refrigeration"
+        factor: 3.5168525
+        exact: false
+        source: "1 TR = 12000 BTU/h"
+        aliases: ["TR", "RT"]
+
+      # Calorie-based Power
+      kcal_per_h:
+        name: "kilocalories per hour"
+        factor: 1.163e-3
+        exact: false
+        source: "1 kcal/h = 1.163 W"
+
+    validation:
+      min_value: 0.0
+      max_value: 1.0e12  # 1 TW practical limit
+      allow_negative: false  # Power generation tracked separately from consumption
+
+    required_metadata: []
+
+  # ===========================================================================
+  # TIME
+  # ===========================================================================
+  # Canonical: s (second)
+  # Rationale: SI base unit
+  # ===========================================================================
+  time:
+    canonical_unit: s
+    canonical_unit_symbol: s
+    si_base_equivalent: "1 s"
+    conversion_type: linear
+    description: "Time duration"
+
+    input_units:
+      # SI Time Units
+      ns:
+        name: "nanosecond"
+        factor: 1.0e-9
+        exact: true
+        source: "SI definition"
+      us:
+        name: "microsecond"
+        factor: 1.0e-6
+        exact: true
+        source: "SI definition"
+        aliases: ["microsecond"]
+      ms:
+        name: "millisecond"
+        factor: 1.0e-3
+        exact: true
+        source: "SI definition"
+      s:
+        name: "second"
+        factor: 1.0
+        exact: true
+        source: "canonical unit"
+        aliases: ["sec"]
+
+      # Common Time Units
+      min:
+        name: "minute"
+        factor: 60.0
+        exact: true
+        source: "1 min = 60 s"
+        aliases: ["minute"]
+      h:
+        name: "hour"
+        factor: 3600.0
+        exact: true
+        source: "1 h = 3600 s"
+        aliases: ["hr", "hour"]
+      day:
+        name: "day"
+        factor: 86400.0
+        exact: true
+        source: "1 day = 86400 s"
+        aliases: ["d"]
+      week:
+        name: "week"
+        factor: 604800.0
+        exact: true
+        source: "1 week = 7 days"
+        aliases: ["wk"]
+
+      # Calendar Units (approximate)
+      month:
+        name: "month (average)"
+        factor: 2629746.0  # 365.2425/12 days
+        exact: false
+        source: "Average Gregorian month"
+        notes: "Use exact date ranges for precise calculations"
+      year:
+        name: "year (Gregorian average)"
+        factor: 31556952.0  # 365.2425 days
+        exact: false
+        source: "Average Gregorian year"
+        aliases: ["yr", "a"]
+        notes: "Use exact date ranges for precise calculations"
+
+    validation:
+      min_value: 0.0
+      max_value: 1.0e15  # ~31 million years
+      allow_negative: false
+
+    required_metadata: []
+
+  # ===========================================================================
+  # MASS FLOW RATE
+  # ===========================================================================
+  # Canonical: kg_per_s (kilograms per second)
+  # Rationale: Derived from SI base units
+  # ===========================================================================
+  mass_flow:
+    canonical_unit: kg_per_s
+    canonical_unit_symbol: "kg/s"
+    si_base_equivalent: "1 kg/s"
+    conversion_type: linear
+    description: "Mass flow rate"
+
+    input_units:
+      # SI-based Mass Flow
+      g_per_s:
+        name: "grams per second"
+        factor: 1.0e-3
+        exact: true
+        source: "1 g/s = 0.001 kg/s"
+        aliases: ["g/s"]
+      kg_per_s:
+        name: "kilograms per second"
+        factor: 1.0
+        exact: true
+        source: "canonical unit"
+        aliases: ["kg/s"]
+      kg_per_min:
+        name: "kilograms per minute"
+        factor: 0.016666666666667  # 1/60
+        exact: true
+        source: "1 kg/min = 1/60 kg/s"
+        aliases: ["kg/min"]
+      kg_per_h:
+        name: "kilograms per hour"
+        factor: 2.777777777778e-4  # 1/3600
+        exact: true
+        source: "1 kg/h = 1/3600 kg/s"
+        aliases: ["kg/h", "kg/hr"]
+      kg_per_day:
+        name: "kilograms per day"
+        factor: 1.157407407407e-5  # 1/86400
+        exact: true
+        source: "1 kg/day = 1/86400 kg/s"
+        aliases: ["kg/d"]
+
+      # Tonne-based Mass Flow
+      t_per_h:
+        name: "tonnes per hour"
+        factor: 0.2777777777778  # 1000/3600
+        exact: true
+        source: "1 t/h = 1000/3600 kg/s"
+        aliases: ["t/h", "tph"]
+      t_per_day:
+        name: "tonnes per day"
+        factor: 0.011574074074  # 1000/86400
+        exact: true
+        source: "1 t/d = 1000/86400 kg/s"
+        aliases: ["t/d", "tpd"]
+      t_per_year:
+        name: "tonnes per year"
+        factor: 3.168873850681e-5  # 1000/31556952
+        exact: false
+        source: "Using average year"
+        aliases: ["t/a", "tpy", "tpa"]
+
+      # Imperial Mass Flow
+      lb_per_s:
+        name: "pounds per second"
+        factor: 0.45359237
+        exact: true
+        source: "1 lb/s = 0.45359237 kg/s"
+        aliases: ["lb/s"]
+      lb_per_h:
+        name: "pounds per hour"
+        factor: 1.259978805556e-4  # 0.45359237/3600
+        exact: true
+        source: "1 lb/h = 0.45359237/3600 kg/s"
+        aliases: ["lb/h", "lb/hr"]
+      ton_short_per_h:
+        name: "short tons per hour"
+        factor: 0.251995761111  # 907.18474/3600
+        exact: true
+        source: "1 short ton/h"
+        aliases: ["US_ton/h"]
+
+    validation:
+      min_value: 0.0
+      max_value: 1.0e9
+      allow_negative: false
+
+    required_metadata: []
+
+  # ===========================================================================
+  # VOLUME FLOW RATE
+  # ===========================================================================
+  # Canonical: m3_per_s (cubic meters per second)
+  # Rationale: Derived from SI base units
+  # ===========================================================================
+  volume_flow:
+    canonical_unit: m3_per_s
+    canonical_unit_symbol: "m^3/s"
+    si_base_equivalent: "1 m^3/s"
+    conversion_type: linear
+    description: "Volume flow rate (actual conditions unless otherwise specified)"
+
+    input_units:
+      # SI-based Volume Flow
+      mL_per_s:
+        name: "milliliters per second"
+        factor: 1.0e-6
+        exact: true
+        source: "SI definition"
+        aliases: ["mL/s"]
+      L_per_s:
+        name: "liters per second"
+        factor: 1.0e-3
+        exact: true
+        source: "1 L/s = 0.001 m^3/s"
+        aliases: ["L/s", "l/s"]
+      L_per_min:
+        name: "liters per minute"
+        factor: 1.666666666667e-5  # 0.001/60
+        exact: true
+        source: "1 L/min = 0.001/60 m^3/s"
+        aliases: ["L/min", "LPM"]
+      L_per_h:
+        name: "liters per hour"
+        factor: 2.777777777778e-7  # 0.001/3600
+        exact: true
+        source: "1 L/h = 0.001/3600 m^3/s"
+        aliases: ["L/h", "LPH"]
+      m3_per_s:
+        name: "cubic meters per second"
+        factor: 1.0
+        exact: true
+        source: "canonical unit"
+        aliases: ["m^3/s"]
+      m3_per_min:
+        name: "cubic meters per minute"
+        factor: 0.016666666666667  # 1/60
+        exact: true
+        source: "1 m^3/min = 1/60 m^3/s"
+        aliases: ["m^3/min"]
+      m3_per_h:
+        name: "cubic meters per hour"
+        factor: 2.777777777778e-4  # 1/3600
+        exact: true
+        source: "1 m^3/h = 1/3600 m^3/s"
+        aliases: ["m^3/h", "CMH"]
+      m3_per_day:
+        name: "cubic meters per day"
+        factor: 1.157407407407e-5  # 1/86400
+        exact: true
+        source: "1 m^3/d = 1/86400 m^3/s"
+        aliases: ["m^3/d"]
+
+      # US/Imperial Volume Flow
+      gpm:
+        name: "US gallons per minute"
+        factor: 6.30901964e-5  # 3.785411784e-3/60
+        exact: true
+        source: "1 gpm = 3.785411784/60000 m^3/s"
+        aliases: ["gal/min", "GPM"]
+      gph:
+        name: "US gallons per hour"
+        factor: 1.051503273e-6  # 3.785411784e-3/3600
+        exact: true
+        source: "1 gph = 3.785411784/3600000 m^3/s"
+        aliases: ["gal/h", "GPH"]
+      cfm:
+        name: "cubic feet per minute"
+        factor: 4.71947443e-4  # 0.028316846592/60
+        exact: true
+        source: "1 cfm = 0.028316846592/60 m^3/s"
+        aliases: ["ft^3/min", "CFM"]
+      cfs:
+        name: "cubic feet per second"
+        factor: 0.028316846592
+        exact: true
+        source: "1 cfs = 0.028316846592 m^3/s"
+        aliases: ["ft^3/s", "CFS"]
+
+      # Petroleum Industry
+      bpd:
+        name: "barrels per day"
+        factor: 1.84013e-6  # 0.158987294928/86400
+        exact: true
+        source: "1 bpd = 1 bbl/86400 s"
+        aliases: ["bbl/d", "BPD"]
+      Mbpd:
+        name: "thousand barrels per day"
+        factor: 1.84013e-3
+        exact: true
+        source: "1 Mbpd = 1000 bpd"
+        aliases: ["kbpd", "MBPD"]
+      MMbpd:
+        name: "million barrels per day"
+        factor: 1.84013
+        exact: true
+        source: "1 MMbpd = 1e6 bpd"
+
+    validation:
+      min_value: 0.0
+      max_value: 1.0e6
+      allow_negative: false
+
+    required_metadata: []
+
+  # ===========================================================================
+  # DIMENSIONLESS
+  # ===========================================================================
+  # Canonical: 1 (unity)
+  # Rationale: Fractions, percentages, and concentrations normalized to unity
+  # ===========================================================================
+  dimensionless:
+    canonical_unit: "1"
+    canonical_unit_symbol: ""
+    si_base_equivalent: "1"
+    conversion_type: linear
+    description: "Dimensionless quantities (ratios, fractions, concentrations)"
+
+    input_units:
+      "1":
+        name: "unity (fraction)"
+        factor: 1.0
+        exact: true
+        source: "canonical unit"
+        aliases: ["fraction", "ratio"]
+
+      "%":
+        name: "percent"
+        factor: 0.01
+        exact: true
+        source: "1% = 0.01"
+        aliases: ["percent", "pct"]
+
+      "permille":
+        name: "per mille"
+        factor: 0.001
+        exact: true
+        source: "1 permille = 0.001"
+        aliases: ["per_mille", "ppt_mille"]
+
+      ppm:
+        name: "parts per million"
+        factor: 1.0e-6
+        exact: true
+        source: "1 ppm = 1e-6"
+        aliases: ["parts_per_million"]
+
+      ppb:
+        name: "parts per billion"
+        factor: 1.0e-9
+        exact: true
+        source: "1 ppb = 1e-9"
+        aliases: ["parts_per_billion"]
+
+      ppt:
+        name: "parts per trillion"
+        factor: 1.0e-12
+        exact: true
+        source: "1 ppt = 1e-12"
+        aliases: ["parts_per_trillion"]
+
+      ppq:
+        name: "parts per quadrillion"
+        factor: 1.0e-15
+        exact: true
+        source: "1 ppq = 1e-15"
+
+    validation:
+      min_value: 0.0
+      max_value: 1.0e6  # Allow >100% for certain ratios
+      allow_negative: false
+
+    required_metadata: []
+
+# -----------------------------------------------------------------------------
+# GWP PROFILES
+# -----------------------------------------------------------------------------
+# Global Warming Potential values from IPCC Assessment Reports
+# Used for emissions_mass conversions
+# -----------------------------------------------------------------------------
+
+gwp_profiles:
+  AR4_100yr:
+    source: "IPCC Fourth Assessment Report (2007)"
+    time_horizon_years: 100
+    reference_gas: CO2
+    values:
+      CO2: 1
+      CH4: 25
+      N2O: 298
+      SF6: 22800
+      NF3: 17200
+      HFC-23: 14800
+      HFC-32: 675
+      HFC-125: 3500
+      HFC-134a: 1430
+      HFC-143a: 4470
+      HFC-152a: 124
+      HFC-227ea: 3220
+      HFC-236fa: 9810
+      HFC-245fa: 1030
+      HFC-365mfc: 794
+      HFC-43-10mee: 1640
+      CF4: 7390
+      C2F6: 12200
+      C3F8: 8830
+      c-C4F8: 10300
+      C4F10: 8860
+      C5F12: 9160
+      C6F14: 9300
+
+  AR5_100yr:
+    source: "IPCC Fifth Assessment Report (2013)"
+    time_horizon_years: 100
+    reference_gas: CO2
+    default: true
+    values:
+      CO2: 1
+      CH4: 28
+      CH4_fossil: 30  # Including climate-carbon feedback
+      N2O: 265
+      SF6: 23500
+      NF3: 16100
+      HFC-23: 12400
+      HFC-32: 677
+      HFC-125: 3170
+      HFC-134a: 1300
+      HFC-143a: 4800
+      HFC-152a: 138
+      HFC-227ea: 3350
+      HFC-236fa: 8060
+      HFC-245fa: 858
+      HFC-365mfc: 804
+      HFC-43-10mee: 1650
+      CF4: 6630
+      C2F6: 11100
+      C3F8: 8900
+      c-C4F8: 9540
+      C4F10: 9200
+      C5F12: 8550
+      C6F14: 7910
+
+  AR5_20yr:
+    source: "IPCC Fifth Assessment Report (2013)"
+    time_horizon_years: 20
+    reference_gas: CO2
+    values:
+      CO2: 1
+      CH4: 84
+      CH4_fossil: 86
+      N2O: 264
+      SF6: 17500
+      NF3: 12800
+
+  AR6_100yr:
+    source: "IPCC Sixth Assessment Report (2021)"
+    time_horizon_years: 100
+    reference_gas: CO2
+    values:
+      CO2: 1
+      CH4: 27.9
+      CH4_fossil: 29.8
+      N2O: 273
+      SF6: 25200
+      NF3: 17400
+      HFC-23: 14600
+      HFC-32: 771
+      HFC-125: 3740
+      HFC-134a: 1530
+      HFC-143a: 5810
+      HFC-152a: 164
+      CF4: 7380
+      C2F6: 12400
+      C3F8: 9290
+
+  AR6_20yr:
+    source: "IPCC Sixth Assessment Report (2021)"
+    time_horizon_years: 20
+    reference_gas: CO2
+    values:
+      CO2: 1
+      CH4: 82.5
+      CH4_fossil: 82.5
+      N2O: 273
+      SF6: 18300
+
+# -----------------------------------------------------------------------------
+# CONVERSION FUNCTIONS
+# -----------------------------------------------------------------------------
+# Mathematical definitions for programmatic implementation
+# -----------------------------------------------------------------------------
+
+conversion_functions:
+  linear:
+    description: "Linear conversion: canonical_value = input_value * factor"
+    formula: "y = x * factor"
+    inverse: "x = y / factor"
+    parameters: ["factor"]
+
+  affine:
+    description: "Affine conversion: canonical_value = input_value * scale + offset"
+    formula: "y = x * scale + offset"
+    inverse: "x = (y - offset) / scale"
+    parameters: ["scale", "offset"]
+
+  gauge_to_absolute:
+    description: "Convert gauge pressure to absolute"
+    formula: "P_abs = P_gauge + P_atmospheric"
+    inverse: "P_gauge = P_abs - P_atmospheric"
+    parameters: ["atmospheric_pressure_kPa"]
+    default_atmospheric: 101.325
+
+# -----------------------------------------------------------------------------
+# VALIDATION RULES
+# -----------------------------------------------------------------------------
+
+validation_rules:
+  strict_mode:
+    require_exact_match: true
+    allow_aliases: true
+    require_metadata: true
+    reject_unknown_units: true
+
+  lenient_mode:
+    require_exact_match: false
+    allow_aliases: true
+    require_metadata: false
+    reject_unknown_units: false
+    flag_missing_metadata: true
+
+# -----------------------------------------------------------------------------
+# METADATA
+# -----------------------------------------------------------------------------
+
+metadata:
+  schema_version: "1.0"
+  created_date: "2026-01-30"
+  last_modified: "2026-01-30"
+  author: "GreenLang Foundation Team"
+  license: "Proprietary - GreenLang"
+  changelog:
+    - version: "1.0.0"
+      date: "2026-01-30"
+      changes:
+        - "Initial release of GL Canonical Units Registry"
+        - "12 dimensions defined with complete conversion factors"
+        - "GWP profiles AR4, AR5, AR6 included"
+        - "Affine conversions supported for temperature"
+        - "Gauge/absolute pressure handling included"

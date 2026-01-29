@@ -1,0 +1,401 @@
+# =============================================================================
+# Golden Tests: Fuel Entity Resolution
+# =============================================================================
+# GL-FOUND-X-003: Unit & Reference Normalizer
+# Entity Type: fuel
+#
+# These tests verify fuel entity resolution against controlled vocabularies.
+# Tests cover exact matching, alias matching, fuzzy matching, and edge cases.
+# =============================================================================
+
+schema_version: "1.0"
+entity_type: fuel
+vocabulary_version: "2026.01.0"
+test_count: 25
+
+test_cases:
+  # ---------------------------------------------------------------------------
+  # Exact Matches
+  # ---------------------------------------------------------------------------
+  - name: "Exact match - Natural Gas"
+    description: "Canonical name matches exactly"
+    input:
+      raw_name: "Natural Gas"
+      entity_type: "fuel"
+    expected:
+      reference_id: "GL-FUEL-NATGAS"
+      canonical_name: "Natural gas"
+      match_method: "exact"
+      confidence: 1.0
+      needs_review: false
+    tags: ["exact", "common"]
+
+  - name: "Exact match - Diesel"
+    description: "Canonical name matches exactly"
+    input:
+      raw_name: "Diesel"
+      entity_type: "fuel"
+    expected:
+      reference_id: "GL-FUEL-DIESEL"
+      canonical_name: "Diesel"
+      match_method: "exact"
+      confidence: 1.0
+      needs_review: false
+    tags: ["exact", "common"]
+
+  - name: "Exact match - Electricity"
+    description: "Canonical name matches exactly"
+    input:
+      raw_name: "Electricity"
+      entity_type: "fuel"
+    expected:
+      reference_id: "GL-FUEL-ELEC"
+      canonical_name: "Electricity"
+      match_method: "exact"
+      confidence: 1.0
+      needs_review: false
+    tags: ["exact", "common"]
+
+  # ---------------------------------------------------------------------------
+  # Alias Matches (100% confidence)
+  # ---------------------------------------------------------------------------
+  - name: "Alias match - Nat Gas"
+    description: "Common abbreviation for natural gas"
+    input:
+      raw_name: "Nat Gas"
+      entity_type: "fuel"
+    expected:
+      reference_id: "GL-FUEL-NATGAS"
+      canonical_name: "Natural gas"
+      match_method: "alias"
+      confidence: 1.0
+      needs_review: false
+    tags: ["alias", "common"]
+
+  - name: "Alias match - NG"
+    description: "Two-letter abbreviation for natural gas"
+    input:
+      raw_name: "NG"
+      entity_type: "fuel"
+    expected:
+      reference_id: "GL-FUEL-NATGAS"
+      canonical_name: "Natural gas"
+      match_method: "alias"
+      confidence: 1.0
+      needs_review: false
+    tags: ["alias"]
+
+  - name: "Alias match - Gasoline"
+    description: "US term for petrol"
+    input:
+      raw_name: "Gasoline"
+      entity_type: "fuel"
+    expected:
+      reference_id: "GL-FUEL-PETROL"
+      canonical_name: "Petrol"
+      match_method: "alias"
+      confidence: 1.0
+      needs_review: false
+    tags: ["alias", "us_term"]
+
+  - name: "Alias match - DERV"
+    description: "UK diesel road vehicle fuel"
+    input:
+      raw_name: "DERV"
+      entity_type: "fuel"
+    expected:
+      reference_id: "GL-FUEL-DIESEL"
+      canonical_name: "Diesel"
+      match_method: "alias"
+      confidence: 1.0
+      needs_review: false
+    tags: ["alias", "uk_term"]
+
+  - name: "Alias match - HFO"
+    description: "Heavy Fuel Oil abbreviation"
+    input:
+      raw_name: "HFO"
+      entity_type: "fuel"
+    expected:
+      reference_id: "GL-FUEL-HFO"
+      canonical_name: "Heavy fuel oil"
+      match_method: "alias"
+      confidence: 1.0
+      needs_review: false
+    tags: ["alias"]
+
+  - name: "Alias match - LPG"
+    description: "Liquefied Petroleum Gas"
+    input:
+      raw_name: "LPG"
+      entity_type: "fuel"
+    expected:
+      reference_id: "GL-FUEL-LPG"
+      canonical_name: "Liquefied petroleum gas"
+      match_method: "alias"
+      confidence: 1.0
+      needs_review: false
+    tags: ["alias", "common"]
+
+  # ---------------------------------------------------------------------------
+  # Normalization Matches (treated as exact after normalization)
+  # ---------------------------------------------------------------------------
+  - name: "Normalization match - hyphen removal"
+    description: "Natural-gas with hyphen normalizes to exact match"
+    input:
+      raw_name: "Natural-gas"
+      entity_type: "fuel"
+    expected:
+      reference_id: "GL-FUEL-NATGAS"
+      canonical_name: "Natural gas"
+      match_method: "exact"
+      confidence: 1.0
+      needs_review: false
+    tags: ["normalization"]
+
+  - name: "Normalization match - underscore to space"
+    description: "Natural_gas with underscore normalizes to exact match"
+    input:
+      raw_name: "Natural_gas"
+      entity_type: "fuel"
+    expected:
+      reference_id: "GL-FUEL-NATGAS"
+      canonical_name: "Natural gas"
+      match_method: "exact"
+      confidence: 1.0
+      needs_review: false
+    tags: ["normalization"]
+
+  - name: "Normalization match - case normalization"
+    description: "NATURAL GAS in uppercase normalizes to exact match"
+    input:
+      raw_name: "NATURAL GAS"
+      entity_type: "fuel"
+    expected:
+      reference_id: "GL-FUEL-NATGAS"
+      canonical_name: "Natural gas"
+      match_method: "exact"
+      confidence: 1.0
+      needs_review: false
+    tags: ["normalization", "case"]
+
+  - name: "Normalization match - extra whitespace"
+    description: "Natural  Gas with extra spaces normalizes to exact match"
+    input:
+      raw_name: "  Natural   Gas  "
+      entity_type: "fuel"
+    expected:
+      reference_id: "GL-FUEL-NATGAS"
+      canonical_name: "Natural gas"
+      match_method: "exact"
+      confidence: 1.0
+      needs_review: false
+    tags: ["normalization", "whitespace"]
+
+  # ---------------------------------------------------------------------------
+  # Fuzzy Matches (lower confidence, may need review)
+  # ---------------------------------------------------------------------------
+  - name: "Fuzzy match - typo"
+    description: "Natual Gas (missing 'r') - fuzzy match with review"
+    input:
+      raw_name: "Natual Gas"
+      entity_type: "fuel"
+    expected:
+      reference_id: "GL-FUEL-NATGAS"
+      canonical_name: "Natural gas"
+      match_method: "fuzzy"
+      confidence_min: 0.75
+      confidence_max: 0.95
+      needs_review: true
+    tags: ["fuzzy", "typo"]
+
+  - name: "Fuzzy match - spelling variant"
+    description: "Deisel (misspelled diesel) - fuzzy match with review"
+    input:
+      raw_name: "Deisel"
+      entity_type: "fuel"
+    expected:
+      reference_id: "GL-FUEL-DIESEL"
+      canonical_name: "Diesel"
+      match_method: "fuzzy"
+      confidence_min: 0.70
+      confidence_max: 0.95
+      needs_review: true
+    tags: ["fuzzy", "typo"]
+
+  - name: "Fuzzy match - partial name"
+    description: "Heavy Fuel (partial match) - lower confidence"
+    input:
+      raw_name: "Heavy Fuel"
+      entity_type: "fuel"
+    expected:
+      reference_id: "GL-FUEL-HFO"
+      canonical_name: "Heavy fuel oil"
+      match_method: "fuzzy"
+      confidence_min: 0.60
+      confidence_max: 0.85
+      needs_review: true
+    tags: ["fuzzy", "partial"]
+
+  # ---------------------------------------------------------------------------
+  # Alias Matches (short forms defined in vocabulary)
+  # ---------------------------------------------------------------------------
+  - name: "Alias match - Gas abbreviation"
+    description: "Gas as short alias for Natural gas"
+    input:
+      raw_name: "Gas"
+      entity_type: "fuel"
+    expected:
+      reference_id: "GL-FUEL-NATGAS"
+      canonical_name: "Natural gas"
+      match_method: "alias"
+      confidence: 1.0
+      needs_review: false
+    tags: ["alias"]
+
+  - name: "Alias match - Bunker C"
+    description: "Bunker C as alias for Heavy fuel oil"
+    input:
+      raw_name: "Bunker C"
+      entity_type: "fuel"
+      hints:
+        sector: "maritime"
+    expected:
+      reference_id: "GL-FUEL-HFO"
+      canonical_name: "Heavy fuel oil"
+      match_method: "alias"
+      confidence: 1.0
+      needs_review: false
+    tags: ["alias", "regional"]
+
+  # ---------------------------------------------------------------------------
+  # Deprecated Entity Handling
+  # ---------------------------------------------------------------------------
+  - name: "Deprecated entity - returns replaced_by"
+    description: "Old fuel ID now deprecated"
+    input:
+      raw_name: "Fuel Oil No. 6"
+      entity_type: "fuel"
+    expected:
+      reference_id: "GL-FUEL-HFO"
+      canonical_name: "Heavy fuel oil"
+      match_method: "alias"
+      original_deprecated: true
+      warning_code: "GLNORM-E402"
+    tags: ["deprecated"]
+
+  # ---------------------------------------------------------------------------
+  # Regional Hints
+  # ---------------------------------------------------------------------------
+  - name: "Regional hint - EU natural gas"
+    description: "Natural gas with EU region hint"
+    input:
+      raw_name: "Natural Gas"
+      entity_type: "fuel"
+      hints:
+        region: "EU"
+    expected:
+      reference_id: "GL-FUEL-NATGAS"
+      canonical_name: "Natural gas"
+      match_method: "exact"
+      confidence: 1.0
+    tags: ["regional", "eu"]
+
+  - name: "Regional hint - US gasoline"
+    description: "Gasoline with US region hint"
+    input:
+      raw_name: "Gasoline"
+      entity_type: "fuel"
+      hints:
+        region: "US"
+    expected:
+      reference_id: "GL-FUEL-PETROL"
+      canonical_name: "Petrol"
+      match_method: "alias"
+      confidence: 1.0
+    tags: ["regional", "us"]
+
+  # ---------------------------------------------------------------------------
+  # Sector Hints
+  # ---------------------------------------------------------------------------
+  - name: "Sector hint - aviation fuel"
+    description: "Jet fuel for aviation sector"
+    input:
+      raw_name: "Jet Fuel"
+      entity_type: "fuel"
+      hints:
+        sector: "aviation"
+    expected:
+      reference_id: "GL-FUEL-JETFUEL"
+      canonical_name: "Aviation fuel (jet)"
+      match_method: "alias"
+      confidence: 1.0
+    tags: ["sector", "aviation"]
+
+  - name: "Sector hint - marine fuel"
+    description: "Marine gas oil for maritime"
+    input:
+      raw_name: "MGO"
+      entity_type: "fuel"
+      hints:
+        sector: "maritime"
+    expected:
+      reference_id: "GL-FUEL-MGO"
+      canonical_name: "Marine gas oil"
+      match_method: "alias"
+      confidence: 1.0
+    tags: ["sector", "maritime"]
+
+  # ---------------------------------------------------------------------------
+  # Edge Cases
+  # ---------------------------------------------------------------------------
+  - name: "Empty input"
+    description: "Empty string should fail"
+    input:
+      raw_name: ""
+      entity_type: "fuel"
+    expected:
+      error_code: "GLNORM-E400"
+      error_message: "Empty input for entity resolution"
+    tags: ["edge_case", "error"]
+
+  - name: "No match found"
+    description: "Unknown fuel type"
+    input:
+      raw_name: "Unobtainium Fuel"
+      entity_type: "fuel"
+    expected:
+      error_code: "GLNORM-E400"
+      needs_review: true
+    tags: ["edge_case", "no_match"]
+
+# -----------------------------------------------------------------------------
+# Vocabulary Reference (subset)
+# -----------------------------------------------------------------------------
+vocabulary_entries:
+  - id: "GL-FUEL-NATGAS"
+    name: "Natural gas"
+    aliases: ["Nat Gas", "NG", "Natural-gas", "Methane"]
+  - id: "GL-FUEL-DIESEL"
+    name: "Diesel"
+    aliases: ["DERV", "Diesel oil", "Red diesel", "AGO"]
+  - id: "GL-FUEL-PETROL"
+    name: "Petrol"
+    aliases: ["Gasoline", "Motor spirit", "Mogas"]
+  - id: "GL-FUEL-HFO"
+    name: "Heavy fuel oil"
+    aliases: ["HFO", "Fuel Oil No. 6", "Bunker C", "Residual fuel"]
+  - id: "GL-FUEL-LPG"
+    name: "Liquefied petroleum gas"
+    aliases: ["LPG", "Propane-butane", "Autogas"]
+
+# -----------------------------------------------------------------------------
+# Confidence Thresholds
+# -----------------------------------------------------------------------------
+thresholds:
+  exact_match: 1.0
+  alias_match: 1.0
+  rule_match_min: 0.95
+  fuzzy_high: 0.90
+  fuzzy_medium: 0.70
+  needs_review: 0.80

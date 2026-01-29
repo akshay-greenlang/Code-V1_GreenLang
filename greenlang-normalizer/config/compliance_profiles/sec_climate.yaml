@@ -1,0 +1,148 @@
+# US SEC Climate Disclosure Compliance Profile
+# Version: 2024.1
+
+id: sec_climate
+name: US SEC Climate Disclosure
+version: "2024.1"
+description: |
+  Compliance profile for US SEC Climate-Related Disclosures rule.
+  Supports both large accelerated filers and smaller reporting companies.
+
+# Default GWP version
+gwp_version: AR5
+
+# Reference conditions (US standards)
+reference_conditions:
+  temperature_fahrenheit: 60.0
+  pressure_psi: 14.696
+  basis: STP_US
+
+# Confidence thresholds
+thresholds:
+  min_unit_confidence: 0.90
+  min_entity_confidence: 0.85
+  requires_review_below: 0.95
+
+# Precision requirements
+precision:
+  emissions_digits: 4
+  energy_digits: 4
+  financial_digits: 2
+
+# Required fields
+required_fields:
+  - source_unit
+  - target_unit
+  - gwp_version
+  - emission_scope
+  - fiscal_year
+  - filer_category
+
+# Filer categories
+filer_categories:
+  large_accelerated_filer:
+    scope_1_required: true
+    scope_2_required: true
+    scope_3_required: true  # If material
+    attestation_required: true
+  accelerated_filer:
+    scope_1_required: true
+    scope_2_required: true
+    scope_3_required: false
+    attestation_required: true
+  non_accelerated_filer:
+    scope_1_required: true
+    scope_2_required: true
+    scope_3_required: false
+    attestation_required: false
+  smaller_reporting_company:
+    scope_1_required: true
+    scope_2_required: true
+    scope_3_required: false
+    attestation_required: false
+
+# Canonical units (US customary allowed)
+canonical_units:
+  emissions: metric_ton_co2e
+  energy: mmbtu
+  electricity: kilowatt_hour
+  fuel_volume: gallon
+  distance: mile
+  revenue: usd
+
+# Safe harbor provisions
+safe_harbor:
+  applies_to:
+    - forward_looking_statements
+    - scope_3_estimates
+    - transition_plan_targets
+  exclusions:
+    - historical_scope_1
+    - historical_scope_2
+
+# Materiality thresholds
+materiality:
+  quantitative_threshold_percent: 1.0
+  qualitative_factors:
+    - investor_decision_relevance
+    - total_mix_of_information
+
+# Validation rules
+rules:
+  - id: SEC_001
+    name: Scope 1 & 2 Required
+    description: Scope 1 and 2 emissions are required for all filers
+    severity: error
+    condition: scope_1_and_2_reported
+
+  - id: SEC_002
+    name: GHG Protocol Methodology
+    description: GHG Protocol methodology should be followed
+    severity: warning
+    condition: ghg_protocol_methodology
+
+  - id: SEC_003
+    name: Fiscal Year Alignment
+    description: Emissions should align with fiscal year
+    severity: error
+    condition: fiscal_year_aligned
+
+  - id: SEC_004
+    name: Attestation Required
+    description: LAF and AF require attestation for emissions data
+    severity: warning
+    condition: attestation_for_required_filers
+
+  - id: SEC_005
+    name: Consistent Methodology
+    description: Methodology should be consistent year over year
+    severity: warning
+    condition: methodology_consistent
+
+  - id: SEC_006
+    name: Scope 3 Materiality
+    description: Scope 3 required if material for LAF
+    severity: info
+    condition: scope_3_materiality_assessed
+
+# Phase-in schedule
+phase_in:
+  large_accelerated_filers:
+    scope_1_2: "FY 2025"
+    scope_3: "FY 2026"
+    attestation: "FY 2026"
+  accelerated_filers:
+    scope_1_2: "FY 2026"
+    attestation: "FY 2027"
+  non_accelerated_filers:
+    scope_1_2: "FY 2027"
+  smaller_reporting_companies:
+    scope_1_2: "FY 2028"
+
+# Metadata
+metadata:
+  standard_url: https://www.sec.gov/rules/final/2024/33-11275.pdf
+  rule_number: 33-11275
+  effective_date: "2024-03-28"
+  last_updated: "2024-03-30"
+  maintainer: GreenLang Team

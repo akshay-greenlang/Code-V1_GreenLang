@@ -1,0 +1,151 @@
+# kustomization.yaml - Development Environment Overlay
+# Component: GL-FOUND-X-003 - Unit & Reference Normalizer
+# Usage: kubectl apply -k infrastructure/kubernetes/overlays/dev/
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+metadata:
+  name: gl-normalizer-dev
+
+# Reference base configuration
+resources:
+  - ../../base
+
+# Namespace override for dev
+namespace: gl-normalizer-dev
+
+# Name prefix for all resources
+namePrefix: dev-
+
+# Common labels for dev environment
+commonLabels:
+  environment: development
+  tier: non-production
+
+# Image customization for dev
+images:
+  - name: ghcr.io/greenlang/gl-normalizer-service
+    newTag: "dev-latest"
+  - name: ghcr.io/greenlang/gl-normalizer-review-console
+    newTag: "dev-latest"
+
+# ConfigMap patches for dev
+configMapGenerator:
+  - name: gl-normalizer-config
+    behavior: merge
+    literals:
+      - GL_NORMALIZER_ENV=development
+      - GL_NORMALIZER_LOG_LEVEL=DEBUG
+      - GL_NORMALIZER_LOG_FORMAT=console
+      - GL_NORMALIZER_DEBUG=true
+      - GL_NORMALIZER_WORKERS=2
+      - GL_NORMALIZER_RATE_LIMIT_ENABLED=false
+      - GL_NORMALIZER_API_KEY_ENABLED=false
+      - OTEL_TRACES_SAMPLER_ARG=1.0
+
+# Patches for dev-specific modifications
+patches:
+  # Reduce replicas for dev
+  - patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: gl-normalizer-service
+      spec:
+        replicas: 1
+  - patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: gl-normalizer-review-console
+      spec:
+        replicas: 1
+
+  # Reduce resource limits for dev
+  - patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: gl-normalizer-service
+      spec:
+        template:
+          spec:
+            containers:
+              - name: gl-normalizer-service
+                resources:
+                  requests:
+                    cpu: 100m
+                    memory: 256Mi
+                  limits:
+                    cpu: 500m
+                    memory: 512Mi
+
+  # Reduce HPA min replicas for dev
+  - patch: |-
+      apiVersion: autoscaling/v2
+      kind: HorizontalPodAutoscaler
+      metadata:
+        name: gl-normalizer-service-hpa
+      spec:
+        minReplicas: 1
+        maxReplicas: 3
+
+  # Adjust PDB for single replica
+  - patch: |-
+      apiVersion: policy/v1
+      kind: PodDisruptionBudget
+      metadata:
+        name: gl-normalizer-service-pdb
+      spec:
+        minAvailable: 0
+
+  # Update ingress hosts for dev
+  - patch: |-
+      apiVersion: networking.k8s.io/v1
+      kind: Ingress
+      metadata:
+        name: gl-normalizer-ingress
+        annotations:
+          cert-manager.io/cluster-issuer: letsencrypt-staging
+      spec:
+        tls:
+          - hosts:
+              - dev-normalizer-api.greenlang.io
+              - dev-normalizer-console.greenlang.io
+            secretName: dev-gl-normalizer-tls
+        rules:
+          - host: dev-normalizer-api.greenlang.io
+            http:
+              paths:
+                - path: /
+                  pathType: Prefix
+                  backend:
+                    service:
+                      name: dev-gl-normalizer-service
+                      port:
+                        number: 80
+          - host: dev-normalizer-console.greenlang.io
+            http:
+              paths:
+                - path: /
+                  pathType: Prefix
+                  backend:
+                    service:
+                      name: dev-gl-normalizer-review-console
+                      port:
+                        number: 80
+
+  # Reduce resource quota for dev namespace
+  - patch: |-
+      apiVersion: v1
+      kind: ResourceQuota
+      metadata:
+        name: gl-normalizer-quota
+      spec:
+        hard:
+          requests.cpu: "4"
+          requests.memory: 8Gi
+          limits.cpu: "8"
+          limits.memory: 16Gi
+          pods: "10"

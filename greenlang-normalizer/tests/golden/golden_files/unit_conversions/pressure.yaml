@@ -1,0 +1,308 @@
+# =============================================================================
+# Golden Tests: Pressure Unit Conversions
+# =============================================================================
+# GL-FOUND-X-003: Unit & Reference Normalizer
+# Canonical Unit: kPa_abs (kilopascal absolute)
+#
+# These tests verify pressure conversions to the canonical kPa unit.
+# Note: Gauge pressures require atmospheric pressure offset.
+# =============================================================================
+
+schema_version: "1.0"
+dimension: pressure
+canonical_unit: kPa_abs
+test_count: 20
+
+test_cases:
+  # ---------------------------------------------------------------------------
+  # SI Pressure Units (Absolute)
+  # ---------------------------------------------------------------------------
+  - name: "Pa to kPa conversion"
+    description: "Convert pascals to kilopascals"
+    input:
+      value: 1000
+      unit: "Pa"
+      target_unit: "kPa"
+    expected:
+      canonical_value: 1.0
+      canonical_unit: "kPa"
+      confidence: 1.0
+      exact: true
+    tags: ["si", "base"]
+
+  - name: "hPa to kPa conversion"
+    description: "Convert hectopascals to kilopascals"
+    input:
+      value: 10
+      unit: "hPa"
+      target_unit: "kPa"
+    expected:
+      canonical_value: 1.0
+      canonical_unit: "kPa"
+      confidence: 1.0
+      exact: true
+    tags: ["si"]
+
+  - name: "kPa identity"
+    description: "Kilopascal to kilopascal (identity)"
+    input:
+      value: 101.325
+      unit: "kPa"
+      target_unit: "kPa"
+    expected:
+      canonical_value: 101.325
+      canonical_unit: "kPa"
+      confidence: 1.0
+      exact: true
+    tags: ["si", "identity"]
+
+  - name: "MPa to kPa conversion"
+    description: "Convert megapascals to kilopascals"
+    input:
+      value: 1
+      unit: "MPa"
+      target_unit: "kPa"
+    expected:
+      canonical_value: 1000.0
+      canonical_unit: "kPa"
+      confidence: 1.0
+      exact: true
+    tags: ["si"]
+
+  - name: "GPa to kPa conversion"
+    description: "Convert gigapascals to kilopascals"
+    input:
+      value: 1
+      unit: "GPa"
+      target_unit: "kPa"
+    expected:
+      canonical_value: 1000000.0
+      canonical_unit: "kPa"
+      confidence: 1.0
+      exact: true
+    tags: ["si"]
+
+  # ---------------------------------------------------------------------------
+  # Bar Units
+  # ---------------------------------------------------------------------------
+  - name: "bar to kPa conversion"
+    description: "Convert bar to kilopascals"
+    input:
+      value: 1
+      unit: "bar"
+      target_unit: "kPa"
+    expected:
+      canonical_value: 100.0
+      canonical_unit: "kPa"
+      confidence: 1.0
+      exact: true
+    source: "1 bar = 100 kPa (exact)"
+    tags: ["bar", "common"]
+
+  - name: "mbar to kPa conversion"
+    description: "Convert millibar to kilopascals"
+    input:
+      value: 1000
+      unit: "mbar"
+      target_unit: "kPa"
+    expected:
+      canonical_value: 100.0
+      canonical_unit: "kPa"
+      confidence: 1.0
+      exact: true
+    tags: ["bar"]
+
+  - name: "Standard atmosphere in bar"
+    description: "1 atm = 1.01325 bar"
+    input:
+      value: 1.01325
+      unit: "bar"
+      target_unit: "kPa"
+    expected:
+      canonical_value: 101.325
+      canonical_unit: "kPa"
+      tolerance: 1e-10
+      exact: true
+    tags: ["bar", "cross_check"]
+
+  # ---------------------------------------------------------------------------
+  # Atmosphere-based Units
+  # ---------------------------------------------------------------------------
+  - name: "atm to kPa conversion"
+    description: "Convert standard atmospheres to kilopascals"
+    input:
+      value: 1
+      unit: "atm"
+      target_unit: "kPa"
+    expected:
+      canonical_value: 101.325
+      canonical_unit: "kPa"
+      confidence: 1.0
+      exact: true
+    source: "1 atm = 101.325 kPa (exact by definition)"
+    tags: ["atmosphere", "common"]
+
+  - name: "Technical atmosphere to kPa"
+    description: "Convert technical atmospheres to kilopascals"
+    input:
+      value: 1
+      unit: "at"
+      target_unit: "kPa"
+    expected:
+      canonical_value: 98.0665
+      canonical_unit: "kPa"
+      confidence: 1.0
+      exact: true
+    source: "1 at = 1 kgf/cm^2 = 98.0665 kPa"
+    tags: ["atmosphere"]
+
+  # ---------------------------------------------------------------------------
+  # Imperial Pressure Units
+  # ---------------------------------------------------------------------------
+  - name: "psi to kPa conversion"
+    description: "Convert pounds per square inch to kilopascals"
+    input:
+      value: 1
+      unit: "psi"
+      target_unit: "kPa"
+    expected:
+      canonical_value: 6.894757293168
+      canonical_unit: "kPa"
+      tolerance: 1e-9
+      exact: false
+    source: "1 psi = 6894.757293168 Pa"
+    tags: ["imperial", "common"]
+
+  - name: "14.696 psi (1 atm)"
+    description: "Standard atmosphere in psi"
+    input:
+      value: 14.6959
+      unit: "psi"
+      target_unit: "kPa"
+    expected:
+      canonical_value: 101.325
+      canonical_unit: "kPa"
+      tolerance: 0.01
+    tags: ["imperial", "cross_check"]
+
+  # ---------------------------------------------------------------------------
+  # Column-based Units
+  # ---------------------------------------------------------------------------
+  - name: "mmHg to kPa conversion"
+    description: "Convert millimeters of mercury to kilopascals"
+    input:
+      value: 760
+      unit: "mmHg"
+      target_unit: "kPa"
+    expected:
+      canonical_value: 101.325024
+      canonical_unit: "kPa"
+      tolerance: 0.001
+      exact: false
+    source: "1 mmHg = 133.3224 Pa"
+    tags: ["column", "medical"]
+
+  - name: "torr to kPa conversion"
+    description: "Torr is equivalent to mmHg"
+    input:
+      value: 760
+      unit: "torr"
+      target_unit: "kPa"
+    expected:
+      canonical_value: 101.325024
+      canonical_unit: "kPa"
+      tolerance: 0.001
+      exact: false
+    tags: ["column"]
+
+  - name: "inHg to kPa conversion"
+    description: "Convert inches of mercury to kilopascals"
+    input:
+      value: 29.92
+      unit: "inHg"
+      target_unit: "kPa"
+    expected:
+      canonical_value: 101.320888
+      canonical_unit: "kPa"
+      tolerance: 0.001
+    tags: ["column", "aviation"]
+
+  - name: "mmH2O to kPa conversion"
+    description: "Convert millimeters of water to kilopascals"
+    input:
+      value: 1000
+      unit: "mmH2O"
+      target_unit: "kPa"
+    expected:
+      canonical_value: 9.80665
+      canonical_unit: "kPa"
+      tolerance: 0.00001
+      exact: true
+    tags: ["column"]
+
+  - name: "inH2O to kPa conversion"
+    description: "Convert inches of water to kilopascals"
+    input:
+      value: 100
+      unit: "inH2O"
+      target_unit: "kPa"
+    expected:
+      canonical_value: 24.90889
+      canonical_unit: "kPa"
+      tolerance: 0.001
+    tags: ["column", "hvac"]
+
+  # ---------------------------------------------------------------------------
+  # Gauge to Absolute Conversions
+  # ---------------------------------------------------------------------------
+  - name: "kPag to kPa (gauge to absolute)"
+    description: "Convert gauge pressure to absolute (at sea level)"
+    input:
+      value: 100
+      unit: "kPag"
+      target_unit: "kPa"
+      metadata:
+        atmospheric_pressure_kPa: 101.325
+    expected:
+      canonical_value: 201.325
+      canonical_unit: "kPa"
+      tolerance: 0.001
+    tags: ["gauge", "absolute"]
+
+  - name: "psig to kPa (gauge to absolute)"
+    description: "Convert psi gauge to kPa absolute"
+    input:
+      value: 100
+      unit: "psig"
+      target_unit: "kPa"
+      metadata:
+        atmospheric_pressure_kPa: 101.325
+    expected:
+      canonical_value: 790.801
+      canonical_unit: "kPa"
+      tolerance: 0.01
+    tags: ["gauge", "absolute", "imperial"]
+
+  # ---------------------------------------------------------------------------
+  # Edge Cases
+  # ---------------------------------------------------------------------------
+  - name: "Vacuum pressure (near zero)"
+    description: "Handle near-vacuum pressures"
+    input:
+      value: 0.001
+      unit: "kPa"
+      target_unit: "kPa"
+    expected:
+      canonical_value: 0.001
+      canonical_unit: "kPa"
+      tolerance: 1e-9
+    tags: ["edge_case", "vacuum"]
+
+# -----------------------------------------------------------------------------
+# Validation Rules
+# -----------------------------------------------------------------------------
+validation:
+  min_value: 0.0  # Absolute pressure cannot be negative
+  max_value: 1.0e9
+  allow_negative: false
+  default_tolerance: 1e-9

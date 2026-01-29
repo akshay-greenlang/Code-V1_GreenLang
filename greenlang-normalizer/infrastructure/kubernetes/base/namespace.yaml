@@ -1,0 +1,215 @@
+# namespace.yaml - GreenLang Normalizer Namespace Configuration
+# Component: GL-FOUND-X-003 - Unit & Reference Normalizer
+# Purpose: Namespace isolation for multi-tenancy and resource management
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gl-normalizer
+  labels:
+    app.kubernetes.io/name: gl-normalizer
+    app.kubernetes.io/component: namespace
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/managed-by: kustomize
+    # Security labels
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/enforce-version: latest
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/audit-version: latest
+    pod-security.kubernetes.io/warn: restricted
+    pod-security.kubernetes.io/warn-version: latest
+  annotations:
+    # Metadata
+    description: "GreenLang Unit & Reference Normalizer (GL-FOUND-X-003)"
+    owner: "platform-team@greenlang.io"
+    team: "platform"
+    cost-center: "engineering"
+    # Network policies
+    network-policy.kubernetes.io/ingress: "allow-internal"
+    network-policy.kubernetes.io/egress: "allow-all"
+
+---
+# ResourceQuota - Namespace-level resource limits
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: gl-normalizer-quota
+  namespace: gl-normalizer
+  labels:
+    app.kubernetes.io/name: gl-normalizer
+    app.kubernetes.io/component: resource-quota
+spec:
+  hard:
+    # Compute resources
+    requests.cpu: "20"
+    requests.memory: 40Gi
+    limits.cpu: "40"
+    limits.memory: 80Gi
+    # Object counts
+    pods: "50"
+    services: "20"
+    secrets: "50"
+    configmaps: "50"
+    persistentvolumeclaims: "20"
+    # Ephemeral storage
+    requests.ephemeral-storage: 50Gi
+    limits.ephemeral-storage: 100Gi
+
+---
+# LimitRange - Default resource limits for pods
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: gl-normalizer-limits
+  namespace: gl-normalizer
+  labels:
+    app.kubernetes.io/name: gl-normalizer
+    app.kubernetes.io/component: limit-range
+spec:
+  limits:
+    # Container defaults
+    - type: Container
+      default:
+        cpu: 500m
+        memory: 512Mi
+      defaultRequest:
+        cpu: 100m
+        memory: 128Mi
+      max:
+        cpu: "4"
+        memory: 8Gi
+      min:
+        cpu: 50m
+        memory: 64Mi
+    # Pod defaults
+    - type: Pod
+      max:
+        cpu: "8"
+        memory: 16Gi
+    # PVC limits
+    - type: PersistentVolumeClaim
+      max:
+        storage: 100Gi
+      min:
+        storage: 1Gi
+
+---
+# NetworkPolicy - Restrict ingress to namespace
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: gl-normalizer-default-deny
+  namespace: gl-normalizer
+  labels:
+    app.kubernetes.io/name: gl-normalizer
+    app.kubernetes.io/component: network-policy
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+
+---
+# NetworkPolicy - Allow internal namespace traffic
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: gl-normalizer-allow-internal
+  namespace: gl-normalizer
+  labels:
+    app.kubernetes.io/name: gl-normalizer
+    app.kubernetes.io/component: network-policy
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Allow traffic from within namespace
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: gl-normalizer
+    # Allow traffic from ingress controller
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 8000
+        - protocol: TCP
+          port: 8080
+    # Allow Prometheus scraping
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+      ports:
+        - protocol: TCP
+          port: 8000
+        - protocol: TCP
+          port: 9090
+  egress:
+    # Allow DNS
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+    # Allow traffic within namespace
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: gl-normalizer
+    # Allow external HTTPS
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 10.0.0.0/8
+              - 172.16.0.0/12
+              - 192.168.0.0/16
+      ports:
+        - protocol: TCP
+          port: 443
+    # Allow Kafka (MSK)
+    - to:
+        - ipBlock:
+            cidr: 10.0.0.0/8
+      ports:
+        - protocol: TCP
+          port: 9092
+        - protocol: TCP
+          port: 9094
+    # Allow RDS PostgreSQL
+    - to:
+        - ipBlock:
+            cidr: 10.0.0.0/8
+      ports:
+        - protocol: TCP
+          port: 5432
+    # Allow ElastiCache Redis
+    - to:
+        - ipBlock:
+            cidr: 10.0.0.0/8
+      ports:
+        - protocol: TCP
+          port: 6379
+
+---
+# ServiceAccount for the normalizer service
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: gl-normalizer-sa
+  namespace: gl-normalizer
+  labels:
+    app.kubernetes.io/name: gl-normalizer
+    app.kubernetes.io/component: service-account
+  annotations:
+    # AWS IAM Role for Service Account (IRSA)
+    eks.amazonaws.com/role-arn: arn:aws:iam::ACCOUNT_ID:role/gl-normalizer-role
+automountServiceAccountToken: true

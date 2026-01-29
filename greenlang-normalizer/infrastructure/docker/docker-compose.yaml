@@ -1,0 +1,376 @@
+# docker-compose.yaml - GreenLang Normalizer Local Development Environment
+# Component: GL-FOUND-X-003 - Unit & Reference Normalizer
+# Usage: docker compose up -d
+# Access: http://localhost:8000 (API), http://localhost:8080 (Review Console)
+
+version: '3.9'
+
+# =============================================================================
+# Service Definitions
+# =============================================================================
+services:
+  # ---------------------------------------------------------------------------
+  # GL Normalizer Service (Main API)
+  # ---------------------------------------------------------------------------
+  gl-normalizer-service:
+    build:
+      context: ../../
+      dockerfile: infrastructure/docker/Dockerfile.service
+    container_name: gl-normalizer-service
+    hostname: gl-normalizer-service
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      # Application
+      GL_NORMALIZER_ENV: development
+      GL_NORMALIZER_HOST: 0.0.0.0
+      GL_NORMALIZER_PORT: 8000
+      GL_NORMALIZER_WORKERS: 2
+      GL_NORMALIZER_LOG_LEVEL: DEBUG
+      GL_NORMALIZER_LOG_FORMAT: console
+      GL_NORMALIZER_DEBUG: "true"
+      # Database
+      GL_NORMALIZER_DATABASE_URL: postgresql://greenlang:greenlang_dev@postgres:5432/normalizer
+      # Redis
+      GL_NORMALIZER_REDIS_URL: redis://redis:6379/0
+      # Kafka
+      GL_NORMALIZER_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      GL_NORMALIZER_KAFKA_AUDIT_TOPIC: gl-normalizer-audit-events
+      # Vocabulary
+      GL_NORMALIZER_VOCABULARY_PATH: /app/config
+      GL_NORMALIZER_VOCABULARY_VERSION: "2026.01.0"
+      # Security
+      GL_NORMALIZER_CORS_ORIGINS: '["http://localhost:8080", "http://localhost:3000"]'
+      GL_NORMALIZER_API_KEY_ENABLED: "false"
+      # Observability
+      OTEL_SERVICE_NAME: gl-normalizer-service
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+      OTEL_TRACES_SAMPLER: parentbased_traceidratio
+      OTEL_TRACES_SAMPLER_ARG: "1.0"
+    volumes:
+      - ../../config:/app/config:ro
+      - ../../packages/gl-normalizer-service/src:/app/src:ro
+      - normalizer-logs:/app/logs
+    networks:
+      - gl-normalizer-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+
+  # ---------------------------------------------------------------------------
+  # GL Normalizer Review Console (Web UI)
+  # ---------------------------------------------------------------------------
+  gl-normalizer-review-console:
+    build:
+      context: ../../
+      dockerfile: infrastructure/docker/Dockerfile.review-console
+    container_name: gl-normalizer-review-console
+    hostname: gl-normalizer-review-console
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      GL_REVIEW_CONSOLE_ENV: development
+      GL_REVIEW_CONSOLE_LOG_LEVEL: DEBUG
+      GL_REVIEW_CONSOLE_DATABASE_URL: postgresql+asyncpg://greenlang:greenlang_dev@postgres:5432/review_console
+      GL_REVIEW_CONSOLE_REDIS_URL: redis://redis:6379/1
+      GL_NORMALIZER_SERVICE_URL: http://gl-normalizer-service:8000
+      GL_REVIEW_CONSOLE_SECRET_KEY: dev-secret-key-change-in-production
+    volumes:
+      - review-console-data:/app/data
+    networks:
+      - gl-normalizer-network
+    depends_on:
+      - gl-normalizer-service
+      - postgres
+      - redis
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+
+  # ---------------------------------------------------------------------------
+  # PostgreSQL Database
+  # ---------------------------------------------------------------------------
+  postgres:
+    image: postgres:15-alpine
+    container_name: gl-normalizer-postgres
+    hostname: postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: greenlang
+      POSTGRES_PASSWORD: greenlang_dev
+      POSTGRES_DB: normalizer
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./init-scripts/postgres:/docker-entrypoint-initdb.d:ro
+    networks:
+      - gl-normalizer-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U greenlang -d normalizer"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+
+  # ---------------------------------------------------------------------------
+  # Redis Cache
+  # ---------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: gl-normalizer-redis
+    hostname: redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis-data:/data
+    networks:
+      - gl-normalizer-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+
+  # ---------------------------------------------------------------------------
+  # Apache Kafka (for Audit Events)
+  # ---------------------------------------------------------------------------
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.3
+    container_name: gl-normalizer-zookeeper
+    hostname: zookeeper
+    restart: unless-stopped
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    volumes:
+      - zookeeper-data:/var/lib/zookeeper/data
+      - zookeeper-logs:/var/lib/zookeeper/log
+    networks:
+      - gl-normalizer-network
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "2181"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.3
+    container_name: gl-normalizer-kafka
+    hostname: kafka
+    restart: unless-stopped
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+    networks:
+      - gl-normalizer-network
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "kafka-topics", "--bootstrap-server", "localhost:9092", "--list"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+
+  # ---------------------------------------------------------------------------
+  # Kafka UI (Optional - Development Only)
+  # ---------------------------------------------------------------------------
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: gl-normalizer-kafka-ui
+    hostname: kafka-ui
+    restart: unless-stopped
+    ports:
+      - "8082:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+      KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
+    networks:
+      - gl-normalizer-network
+    depends_on:
+      - kafka
+    profiles:
+      - dev-tools
+
+  # ---------------------------------------------------------------------------
+  # OpenTelemetry Collector
+  # ---------------------------------------------------------------------------
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.92.0
+    container_name: gl-normalizer-otel-collector
+    hostname: otel-collector
+    restart: unless-stopped
+    ports:
+      - "4317:4317"   # OTLP gRPC
+      - "4318:4318"   # OTLP HTTP
+      - "8888:8888"   # Prometheus metrics
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml:ro
+    networks:
+      - gl-normalizer-network
+    profiles:
+      - observability
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+
+  # ---------------------------------------------------------------------------
+  # Prometheus (Metrics)
+  # ---------------------------------------------------------------------------
+  prometheus:
+    image: prom/prometheus:v2.48.1
+    container_name: gl-normalizer-prometheus
+    hostname: prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.enable-lifecycle'
+    volumes:
+      - ./prometheus.yaml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    networks:
+      - gl-normalizer-network
+    profiles:
+      - observability
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+  # ---------------------------------------------------------------------------
+  # Grafana (Dashboards)
+  # ---------------------------------------------------------------------------
+  grafana:
+    image: grafana/grafana:10.2.3
+    container_name: gl-normalizer-grafana
+    hostname: grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+    networks:
+      - gl-normalizer-network
+    profiles:
+      - observability
+    depends_on:
+      - prometheus
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+
+# =============================================================================
+# Networks
+# =============================================================================
+networks:
+  gl-normalizer-network:
+    name: gl-normalizer-network
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.28.0.0/16
+
+# =============================================================================
+# Volumes
+# =============================================================================
+volumes:
+  postgres-data:
+    name: gl-normalizer-postgres-data
+  redis-data:
+    name: gl-normalizer-redis-data
+  kafka-data:
+    name: gl-normalizer-kafka-data
+  zookeeper-data:
+    name: gl-normalizer-zookeeper-data
+  zookeeper-logs:
+    name: gl-normalizer-zookeeper-logs
+  normalizer-logs:
+    name: gl-normalizer-logs
+  review-console-data:
+    name: gl-normalizer-review-console-data
+  prometheus-data:
+    name: gl-normalizer-prometheus-data
+  grafana-data:
+    name: gl-normalizer-grafana-data

@@ -1,0 +1,657 @@
+# =============================================================================
+# GL Policy Defaults Configuration v1.0
+# =============================================================================
+# GreenLang Foundation Module GL-FOUND-X-003: Unit Normalization
+#
+# This configuration defines STRICT and LENIENT policy modes for the
+# GreenLang normalizer. Policies control validation behavior, error handling,
+# and data quality enforcement across the normalization pipeline.
+#
+# POLICY SELECTION GUIDANCE:
+# - STRICT: Use for regulatory reporting, audited disclosures, verified data
+# - LENIENT: Use for exploratory analysis, data discovery, initial imports
+#
+# Version: 1.0.0
+# Last Updated: 2026-01-30
+# Maintainer: GreenLang Foundation Team
+# =============================================================================
+
+schema_version: "1.0"
+config_id: "gl-policy-defaults-v1"
+effective_date: "2026-01-30"
+
+# -----------------------------------------------------------------------------
+# POLICY DEFINITIONS
+# -----------------------------------------------------------------------------
+
+policies:
+
+  # ===========================================================================
+  # STRICT POLICY
+  # ===========================================================================
+  # Use for: Regulatory reporting, audited disclosures, financial submissions
+  # Behavior: Reject invalid data, require complete metadata, full audit trail
+  # ===========================================================================
+
+  STRICT:
+    name: "Strict Validation Policy"
+    description: |
+      Maximum data quality enforcement for regulatory and audited contexts.
+      All validation rules are enforced, missing data causes rejection,
+      and complete audit trails are maintained.
+
+    use_cases:
+      - "SEC Climate Disclosure submissions"
+      - "EU CSRD/ESRS reporting"
+      - "CDP questionnaire responses"
+      - "Third-party verified inventories"
+      - "Financial audit supporting schedules"
+      - "EU ETS compliance reporting"
+      - "CBAM import declarations"
+
+    # -------------------------------------------------------------------------
+    # Input Validation
+    # -------------------------------------------------------------------------
+    input_validation:
+
+      require_unit_specification: true
+      description: "All numeric values MUST have explicit units"
+      on_missing_unit: "reject"
+
+      require_source_metadata: true
+      description: "Source system, timestamp, and provenance required"
+      required_fields:
+        - "source_system"
+        - "source_timestamp"
+        - "source_record_id"
+      on_missing_metadata: "reject"
+
+      require_reporting_period: true
+      description: "Temporal bounds must be specified"
+      required_period_fields:
+        - "period_start"
+        - "period_end"
+      on_missing_period: "reject"
+
+      allow_estimated_data: true
+      require_estimation_flag: true
+      require_estimation_methodology: true
+      description: "Estimates allowed but must be flagged and documented"
+
+      allow_proxy_data: true
+      require_proxy_justification: true
+      max_proxy_percentage: 0.20
+      description: "Proxy data limited to 20% of total, must justify"
+
+    # -------------------------------------------------------------------------
+    # Unit Conversion
+    # -------------------------------------------------------------------------
+    unit_conversion:
+
+      require_exact_unit_match: true
+      description: "Units must match canonical or registered aliases exactly"
+
+      allow_fuzzy_matching: false
+      description: "No fuzzy unit matching in strict mode"
+
+      allow_semantic_matching: false
+      description: "No LLM-based unit inference in strict mode"
+
+      require_conversion_factor_source: true
+      description: "All conversion factors must have documented source"
+
+      reject_unknown_units: true
+      description: "Unknown units cause immediate rejection"
+      on_unknown_unit: "reject"
+
+      require_dimensional_consistency: true
+      description: "Dimensional analysis must pass"
+      on_dimension_mismatch: "reject"
+
+      precision_handling:
+        maintain_significant_figures: true
+        max_decimal_places: 10
+        rounding_mode: "HALF_EVEN"  # Banker's rounding
+
+    # -------------------------------------------------------------------------
+    # Emission Factor Selection
+    # -------------------------------------------------------------------------
+    emission_factor:
+
+      require_ef_source: true
+      allowed_sources:
+        - "EPA"
+        - "IPCC"
+        - "GHG_Protocol"
+        - "DEFRA"
+        - "ecoinvent"
+        - "EXIOBASE"
+        - "client_verified"
+
+      require_ef_vintage: true
+      max_ef_age_years: 5
+      description: "Emission factors must be <5 years old"
+
+      require_geographic_match: true
+      geographic_fallback_allowed: false
+      description: "EF region must match activity region"
+
+      require_temporal_match: true
+      temporal_tolerance_years: 2
+
+      allow_default_ef: false
+      description: "No default/generic emission factors in strict mode"
+
+      require_gwp_profile: true
+      default_gwp_profile: "AR5_100yr"
+      allowed_gwp_profiles:
+        - "AR4_100yr"
+        - "AR5_100yr"
+        - "AR5_20yr"
+        - "AR6_100yr"
+        - "AR6_20yr"
+
+    # -------------------------------------------------------------------------
+    # GWP and Gas Handling
+    # -------------------------------------------------------------------------
+    gwp_handling:
+
+      require_gas_specification: true
+      description: "Individual GHGs must be specified, not just CO2e"
+
+      allow_aggregated_co2e_input: false
+      description: "Cannot accept pre-aggregated CO2e without gas breakdown"
+      exception: "third_party_verified_total"
+
+      require_gwp_disclosure: true
+      description: "GWP profile must be disclosed in output"
+
+    # -------------------------------------------------------------------------
+    # Data Quality
+    # -------------------------------------------------------------------------
+    data_quality:
+
+      require_quality_score: true
+      minimum_quality_score: 0.70
+
+      require_uncertainty_quantification: true
+      uncertainty_method: "IPCC_Tier1"
+      allowed_uncertainty_methods:
+        - "IPCC_Tier1"
+        - "IPCC_Tier2"
+        - "Monte_Carlo"
+        - "Expert_Judgment_Documented"
+
+      require_completeness_check: true
+      minimum_completeness: 0.95
+      description: "95% of expected data points must be present"
+
+      outlier_handling:
+        detect_outliers: true
+        method: "IQR"
+        iqr_multiplier: 3.0
+        on_outlier: "flag_for_review"
+        auto_reject_extreme: true
+        extreme_threshold_sigma: 6.0
+
+    # -------------------------------------------------------------------------
+    # Audit Trail
+    # -------------------------------------------------------------------------
+    audit_trail:
+
+      generate_provenance_hash: true
+      hash_algorithm: "SHA-256"
+
+      log_all_transformations: true
+      log_level: "DEBUG"
+
+      maintain_input_snapshot: true
+      description: "Keep copy of original input for audit"
+
+      require_processing_timestamp: true
+      timestamp_format: "ISO8601"
+      include_timezone: true
+
+      sign_outputs: true
+      signature_method: "HMAC-SHA256"
+
+      retention_period_years: 10
+      description: "Regulatory retention requirement"
+
+    # -------------------------------------------------------------------------
+    # Error Handling
+    # -------------------------------------------------------------------------
+    error_handling:
+
+      on_validation_error: "reject"
+      on_conversion_error: "reject"
+      on_missing_data: "reject"
+      on_quality_failure: "reject"
+
+      allow_partial_success: false
+      description: "Entire batch fails if any record fails"
+
+      require_error_documentation: true
+      error_detail_level: "full"
+
+      notify_on_rejection: true
+      notification_channels:
+        - "log"
+        - "webhook"
+
+    # -------------------------------------------------------------------------
+    # Output Format
+    # -------------------------------------------------------------------------
+    output_format:
+
+      include_metadata: true
+      include_provenance: true
+      include_quality_metrics: true
+      include_uncertainty: true
+      include_conversion_details: true
+
+      decimal_precision: 6
+      scientific_notation_threshold: 1.0e6
+
+      timestamp_all_outputs: true
+      version_outputs: true
+
+  # ===========================================================================
+  # LENIENT POLICY
+  # ===========================================================================
+  # Use for: Data exploration, initial imports, historical data, estimates
+  # Behavior: Accept with warnings, use defaults, flag issues without rejecting
+  # ===========================================================================
+
+  LENIENT:
+    name: "Lenient Validation Policy"
+    description: |
+      Relaxed validation for exploratory analysis and data discovery.
+      Missing data triggers defaults and warnings rather than rejection.
+      Suitable for initial data imports and historical data processing.
+
+    use_cases:
+      - "Initial data exploration"
+      - "Historical data backfill"
+      - "Scope 3 screening assessments"
+      - "Supplier data onboarding"
+      - "Materiality assessments"
+      - "Internal planning scenarios"
+      - "Training and testing environments"
+
+    # -------------------------------------------------------------------------
+    # Input Validation
+    # -------------------------------------------------------------------------
+    input_validation:
+
+      require_unit_specification: false
+      description: "Units can be inferred from context if missing"
+      on_missing_unit: "infer_and_flag"
+      inference_method: "contextual_llm"
+      inference_confidence_threshold: 0.85
+
+      require_source_metadata: false
+      description: "Source metadata optional but recommended"
+      on_missing_metadata: "flag_and_continue"
+      default_source: "unspecified"
+
+      require_reporting_period: false
+      description: "Period can be inferred or defaulted"
+      on_missing_period: "infer_from_context"
+      default_period: "calendar_year"
+
+      allow_estimated_data: true
+      require_estimation_flag: false
+      require_estimation_methodology: false
+      description: "Estimates accepted without documentation"
+
+      allow_proxy_data: true
+      require_proxy_justification: false
+      max_proxy_percentage: 1.0
+      description: "No limit on proxy data percentage"
+
+    # -------------------------------------------------------------------------
+    # Unit Conversion
+    # -------------------------------------------------------------------------
+    unit_conversion:
+
+      require_exact_unit_match: false
+      description: "Fuzzy and semantic matching allowed"
+
+      allow_fuzzy_matching: true
+      fuzzy_threshold: 0.85
+      description: "Accept fuzzy matches above threshold"
+
+      allow_semantic_matching: true
+      semantic_threshold: 0.80
+      description: "LLM can infer units from context"
+
+      require_conversion_factor_source: false
+      description: "Standard factors used without explicit sourcing"
+
+      reject_unknown_units: false
+      description: "Unknown units flagged but processing continues"
+      on_unknown_unit: "flag_and_skip"
+
+      require_dimensional_consistency: true
+      description: "Dimensional analysis still required"
+      on_dimension_mismatch: "flag_and_skip"
+
+      precision_handling:
+        maintain_significant_figures: false
+        max_decimal_places: 4
+        rounding_mode: "HALF_UP"
+
+    # -------------------------------------------------------------------------
+    # Emission Factor Selection
+    # -------------------------------------------------------------------------
+    emission_factor:
+
+      require_ef_source: false
+      allowed_sources: "any"
+
+      require_ef_vintage: false
+      max_ef_age_years: 15
+      description: "Older emission factors accepted with flag"
+
+      require_geographic_match: false
+      geographic_fallback_allowed: true
+      geographic_fallback_order:
+        - "regional"
+        - "national"
+        - "continental"
+        - "global"
+      description: "Geographic proxies allowed"
+
+      require_temporal_match: false
+      temporal_tolerance_years: 10
+
+      allow_default_ef: true
+      default_ef_source: "IPCC_Tier1"
+      description: "Default emission factors allowed"
+
+      require_gwp_profile: false
+      default_gwp_profile: "AR5_100yr"
+      allowed_gwp_profiles: "any"
+
+    # -------------------------------------------------------------------------
+    # GWP and Gas Handling
+    # -------------------------------------------------------------------------
+    gwp_handling:
+
+      require_gas_specification: false
+      description: "Aggregated CO2e accepted"
+
+      allow_aggregated_co2e_input: true
+      description: "Pre-aggregated CO2e values accepted"
+      assume_gwp_profile: "AR5_100yr"
+
+      require_gwp_disclosure: false
+      description: "GWP profile disclosed if known"
+
+    # -------------------------------------------------------------------------
+    # Data Quality
+    # -------------------------------------------------------------------------
+    data_quality:
+
+      require_quality_score: false
+      minimum_quality_score: 0.0
+
+      require_uncertainty_quantification: false
+      default_uncertainty_percent: 50.0
+      description: "Apply 50% default uncertainty if not specified"
+
+      require_completeness_check: false
+      minimum_completeness: 0.0
+      description: "No completeness requirement"
+
+      outlier_handling:
+        detect_outliers: true
+        method: "IQR"
+        iqr_multiplier: 3.0
+        on_outlier: "flag_and_continue"
+        auto_reject_extreme: false
+        extreme_threshold_sigma: 10.0
+
+    # -------------------------------------------------------------------------
+    # Audit Trail
+    # -------------------------------------------------------------------------
+    audit_trail:
+
+      generate_provenance_hash: true
+      hash_algorithm: "SHA-256"
+      description: "Provenance tracking still enabled"
+
+      log_all_transformations: false
+      log_level: "INFO"
+
+      maintain_input_snapshot: false
+      description: "Input snapshot optional"
+
+      require_processing_timestamp: true
+      timestamp_format: "ISO8601"
+      include_timezone: true
+
+      sign_outputs: false
+
+      retention_period_years: 3
+      description: "Shorter retention for non-regulatory data"
+
+    # -------------------------------------------------------------------------
+    # Error Handling
+    # -------------------------------------------------------------------------
+    error_handling:
+
+      on_validation_error: "flag_and_continue"
+      on_conversion_error: "skip_field"
+      on_missing_data: "use_default"
+      on_quality_failure: "flag_and_continue"
+
+      allow_partial_success: true
+      description: "Process valid records even if some fail"
+      minimum_success_rate: 0.50
+
+      require_error_documentation: false
+      error_detail_level: "summary"
+
+      notify_on_rejection: false
+
+    # -------------------------------------------------------------------------
+    # Output Format
+    # -------------------------------------------------------------------------
+    output_format:
+
+      include_metadata: true
+      include_provenance: true
+      include_quality_metrics: false
+      include_uncertainty: false
+      include_conversion_details: false
+
+      decimal_precision: 2
+      scientific_notation_threshold: 1.0e9
+
+      timestamp_all_outputs: true
+      version_outputs: false
+
+# -----------------------------------------------------------------------------
+# CUSTOM POLICY TEMPLATE
+# -----------------------------------------------------------------------------
+# Use this template to create application-specific policies
+# -----------------------------------------------------------------------------
+
+CUSTOM_TEMPLATE:
+  name: "Custom Policy (Template)"
+  description: "Template for creating custom policies"
+  base_policy: "LENIENT"  # Inherit from STRICT or LENIENT
+
+  # Override specific settings
+  overrides:
+    input_validation:
+      require_unit_specification: true
+    emission_factor:
+      max_ef_age_years: 3
+    data_quality:
+      minimum_quality_score: 0.60
+
+# -----------------------------------------------------------------------------
+# POLICY SELECTION RULES
+# -----------------------------------------------------------------------------
+# Automatic policy selection based on context
+# -----------------------------------------------------------------------------
+
+policy_selection:
+
+  default_policy: "LENIENT"
+
+  automatic_selection:
+    enabled: true
+
+    rules:
+      - condition:
+          reporting_framework:
+            - "SEC_Climate"
+            - "EU_CSRD"
+            - "EU_ETS"
+            - "CBAM"
+            - "CDP_Verified"
+        policy: "STRICT"
+        priority: 100
+
+      - condition:
+          data_use:
+            - "regulatory_submission"
+            - "external_disclosure"
+            - "third_party_audit"
+        policy: "STRICT"
+        priority: 90
+
+      - condition:
+          verification_status: "third_party_verified"
+        policy: "STRICT"
+        priority: 85
+
+      - condition:
+          data_use:
+            - "internal_planning"
+            - "scenario_analysis"
+            - "training"
+        policy: "LENIENT"
+        priority: 50
+
+      - condition:
+          data_age_years_gt: 5
+        policy: "LENIENT"
+        priority: 40
+        rationale: "Historical data often lacks metadata"
+
+  override_allowed: true
+  override_requires_justification: true
+  log_policy_decisions: true
+
+# -----------------------------------------------------------------------------
+# POLICY TRANSITIONS
+# -----------------------------------------------------------------------------
+# Rules for upgrading data from LENIENT to STRICT
+# -----------------------------------------------------------------------------
+
+policy_transitions:
+
+  lenient_to_strict:
+    description: "Requirements for promoting data to STRICT quality"
+
+    required_actions:
+      - action: "add_source_metadata"
+        description: "Document data sources"
+
+      - action: "verify_units"
+        description: "Confirm all unit specifications"
+
+      - action: "update_emission_factors"
+        description: "Replace defaults with verified EFs"
+        max_ef_age_years: 5
+
+      - action: "add_uncertainty"
+        description: "Quantify uncertainty for all values"
+
+      - action: "completeness_review"
+        description: "Verify data completeness >95%"
+
+      - action: "quality_assessment"
+        description: "Generate quality scores"
+        minimum_score: 0.70
+
+    validation_required: true
+    reviewer_approval_required: true
+
+    output:
+      include_promotion_audit_trail: true
+      log_all_changes: true
+
+# -----------------------------------------------------------------------------
+# REPORTING FRAMEWORK MAPPINGS
+# -----------------------------------------------------------------------------
+# Default policies for specific reporting frameworks
+# -----------------------------------------------------------------------------
+
+framework_defaults:
+
+  SEC_Climate:
+    policy: "STRICT"
+    additional_requirements:
+      - "materiality_assessment"
+      - "sox_controls"
+      - "auditor_review"
+
+  EU_CSRD:
+    policy: "STRICT"
+    additional_requirements:
+      - "double_materiality"
+      - "limited_assurance"
+      - "esrs_taxonomy"
+
+  CDP:
+    base_policy: "STRICT"
+    allow_estimates: true
+    verification_optional: true
+
+  GHG_Protocol_Corporate:
+    policy: "STRICT"
+    allow_estimates: true
+    require_scope_separation: true
+
+  TCFD:
+    policy: "STRICT"
+    require_scenario_analysis: true
+
+  Internal_Only:
+    policy: "LENIENT"
+    audit_retention_years: 1
+
+# -----------------------------------------------------------------------------
+# METADATA
+# -----------------------------------------------------------------------------
+
+metadata:
+  schema_version: "1.0"
+  created_date: "2026-01-30"
+  last_modified: "2026-01-30"
+  author: "GreenLang Foundation Team"
+  license: "Proprietary - GreenLang"
+
+  references:
+    - document: "GL-FOUND-X-003 Interview Decisions"
+      date: "2026-01-30"
+    - document: "GreenLang Data Quality Framework"
+      version: "1.5"
+    - document: "PCAF Data Quality Scores"
+      version: "2022"
+
+  changelog:
+    - version: "1.0.0"
+      date: "2026-01-30"
+      changes:
+        - "Initial release of policy defaults configuration"
+        - "STRICT and LENIENT policies defined"
+        - "Policy selection rules implemented"
+        - "Framework mappings included"
+        - "Policy transition requirements documented"
