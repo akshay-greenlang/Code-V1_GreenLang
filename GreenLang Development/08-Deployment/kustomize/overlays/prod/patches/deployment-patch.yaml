@@ -1,0 +1,131 @@
+# Production resources with anti-affinity
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fuel-analyzer
+spec:
+  template:
+    spec:
+      priorityClassName: standard-priority
+      containers:
+        - name: fuel-analyzer
+          resources:
+            requests:
+              cpu: 500m
+              memory: 1Gi
+            limits:
+              cpu: 2000m
+              memory: 4Gi
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: fuel-analyzer
+                topologyKey: topology.kubernetes.io/zone
+      nodeSelector:
+        node-type: agent-runtime
+      tolerations:
+        - key: dedicated
+          value: agent
+          effect: NoSchedule
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: carbon-intensity
+spec:
+  template:
+    spec:
+      priorityClassName: standard-priority
+      containers:
+        - name: carbon-intensity
+          resources:
+            requests:
+              cpu: 500m
+              memory: 1Gi
+            limits:
+              cpu: 2000m
+              memory: 4Gi
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: carbon-intensity
+                topologyKey: topology.kubernetes.io/zone
+      nodeSelector:
+        node-type: agent-runtime
+      tolerations:
+        - key: dedicated
+          value: agent
+          effect: NoSchedule
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: energy-performance
+spec:
+  template:
+    spec:
+      priorityClassName: standard-priority
+      containers:
+        - name: energy-performance
+          resources:
+            requests:
+              cpu: 500m
+              memory: 1Gi
+            limits:
+              cpu: 2000m
+              memory: 4Gi
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: energy-performance
+                topologyKey: topology.kubernetes.io/zone
+      nodeSelector:
+        node-type: agent-runtime
+      tolerations:
+        - key: dedicated
+          value: agent
+          effect: NoSchedule
+---
+# EUDR Compliance - Critical agent with high priority and strict anti-affinity
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: eudr-compliance
+spec:
+  template:
+    spec:
+      priorityClassName: high-priority
+      containers:
+        - name: eudr-compliance
+          resources:
+            requests:
+              cpu: 1000m
+              memory: 2Gi
+            limits:
+              cpu: 4000m
+              memory: 8Gi
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  app: eudr-compliance
+              topologyKey: topology.kubernetes.io/zone
+      nodeSelector:
+        node-type: agent-runtime
+      tolerations:
+        - key: dedicated
+          value: agent
+          effect: NoSchedule

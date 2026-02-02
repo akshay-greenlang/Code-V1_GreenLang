@@ -1,0 +1,541 @@
+{
+  "metadata": {
+    "source": "IPCC 2006 Guidelines for National GHG Inventories (2019 Refinement)",
+    "source_url": "https://www.ipcc-nggip.iges.or.jp/public/2019rf/index.html",
+    "version": "2019 Refinement to 2006 IPCC Guidelines",
+    "last_updated": "2019-05-12",
+    "units_note": "All factors in specified units - check each factor",
+    "scope": "Default Tier 1 emission factors for various sectors",
+    "methodology": "IPCC default factors for countries without specific national data",
+    "gwp_basis": "Use with appropriate GWP values from AR5 or AR6"
+  },
+  "energy_stationary_combustion": {
+    "natural_gas": {
+      "factor_id": "IPCC_2019_STAT_NG",
+      "name": "Natural Gas - Default",
+      "unit": "TJ",
+      "kgCO2_per_TJ": 56100,
+      "kgCH4_per_TJ": 1.0,
+      "kgN2O_per_TJ": 0.1,
+      "category": "Stationary Combustion",
+      "sector": "Energy Industries",
+      "uncertainty_range_co2": "+-5%",
+      "tier": 1
+    },
+    "crude_oil": {
+      "factor_id": "IPCC_2019_STAT_CRUDE",
+      "name": "Crude Oil - Default",
+      "unit": "TJ",
+      "kgCO2_per_TJ": 73300,
+      "kgCH4_per_TJ": 3.0,
+      "kgN2O_per_TJ": 0.6,
+      "category": "Stationary Combustion",
+      "sector": "Energy Industries",
+      "uncertainty_range_co2": "+-5%",
+      "tier": 1
+    },
+    "residual_fuel_oil": {
+      "factor_id": "IPCC_2019_STAT_RFO",
+      "name": "Residual Fuel Oil - Default",
+      "unit": "TJ",
+      "kgCO2_per_TJ": 77400,
+      "kgCH4_per_TJ": 3.0,
+      "kgN2O_per_TJ": 0.6,
+      "category": "Stationary Combustion",
+      "sector": "Energy Industries",
+      "uncertainty_range_co2": "+-5%",
+      "tier": 1
+    },
+    "diesel_oil": {
+      "factor_id": "IPCC_2019_STAT_DIESEL",
+      "name": "Diesel Oil/Gas Oil - Default",
+      "unit": "TJ",
+      "kgCO2_per_TJ": 74100,
+      "kgCH4_per_TJ": 3.0,
+      "kgN2O_per_TJ": 0.6,
+      "category": "Stationary Combustion",
+      "sector": "Energy Industries",
+      "uncertainty_range_co2": "+-5%",
+      "tier": 1
+    },
+    "lpg": {
+      "factor_id": "IPCC_2019_STAT_LPG",
+      "name": "Liquefied Petroleum Gas - Default",
+      "unit": "TJ",
+      "kgCO2_per_TJ": 63100,
+      "kgCH4_per_TJ": 1.0,
+      "kgN2O_per_TJ": 0.1,
+      "category": "Stationary Combustion",
+      "sector": "Energy Industries",
+      "uncertainty_range_co2": "+-5%",
+      "tier": 1
+    },
+    "anthracite": {
+      "factor_id": "IPCC_2019_STAT_ANTH",
+      "name": "Anthracite Coal - Default",
+      "unit": "TJ",
+      "kgCO2_per_TJ": 98300,
+      "kgCH4_per_TJ": 1.0,
+      "kgN2O_per_TJ": 1.5,
+      "category": "Stationary Combustion",
+      "sector": "Energy Industries",
+      "uncertainty_range_co2": "+-5%",
+      "tier": 1
+    },
+    "bituminous_coal": {
+      "factor_id": "IPCC_2019_STAT_BIT",
+      "name": "Bituminous Coal - Default",
+      "unit": "TJ",
+      "kgCO2_per_TJ": 94600,
+      "kgCH4_per_TJ": 1.0,
+      "kgN2O_per_TJ": 1.5,
+      "category": "Stationary Combustion",
+      "sector": "Energy Industries",
+      "uncertainty_range_co2": "+-5%",
+      "tier": 1
+    },
+    "subbituminous_coal": {
+      "factor_id": "IPCC_2019_STAT_SUBB",
+      "name": "Sub-bituminous Coal - Default",
+      "unit": "TJ",
+      "kgCO2_per_TJ": 96100,
+      "kgCH4_per_TJ": 1.0,
+      "kgN2O_per_TJ": 1.5,
+      "category": "Stationary Combustion",
+      "sector": "Energy Industries",
+      "uncertainty_range_co2": "+-5%",
+      "tier": 1
+    },
+    "lignite": {
+      "factor_id": "IPCC_2019_STAT_LIG",
+      "name": "Lignite - Default",
+      "unit": "TJ",
+      "kgCO2_per_TJ": 101000,
+      "kgCH4_per_TJ": 1.0,
+      "kgN2O_per_TJ": 1.5,
+      "category": "Stationary Combustion",
+      "sector": "Energy Industries",
+      "uncertainty_range_co2": "+-5%",
+      "tier": 1
+    },
+    "peat": {
+      "factor_id": "IPCC_2019_STAT_PEAT",
+      "name": "Peat - Default",
+      "unit": "TJ",
+      "kgCO2_per_TJ": 106000,
+      "kgCH4_per_TJ": 1.0,
+      "kgN2O_per_TJ": 1.4,
+      "category": "Stationary Combustion",
+      "sector": "Energy Industries",
+      "uncertainty_range_co2": "+-10%",
+      "tier": 1
+    },
+    "coke_oven_coke": {
+      "factor_id": "IPCC_2019_STAT_COKE",
+      "name": "Coke Oven Coke - Default",
+      "unit": "TJ",
+      "kgCO2_per_TJ": 107000,
+      "kgCH4_per_TJ": 1.0,
+      "kgN2O_per_TJ": 1.5,
+      "category": "Stationary Combustion",
+      "sector": "Energy Industries",
+      "uncertainty_range_co2": "+-5%",
+      "tier": 1
+    },
+    "wood_biomass": {
+      "factor_id": "IPCC_2019_STAT_WOOD",
+      "name": "Wood/Wood Waste - Default",
+      "unit": "TJ",
+      "kgCO2_per_TJ": 112000,
+      "kgCH4_per_TJ": 30.0,
+      "kgN2O_per_TJ": 4.0,
+      "category": "Stationary Combustion - Biomass",
+      "sector": "Energy Industries",
+      "notes": "CO2 is biogenic - reported separately",
+      "tier": 1
+    }
+  },
+  "energy_mobile_combustion": {
+    "road_gasoline": {
+      "factor_id": "IPCC_2019_MOB_GAS",
+      "name": "Road Transport - Gasoline",
+      "unit": "TJ",
+      "kgCO2_per_TJ": 69300,
+      "kgCH4_per_TJ": 25.0,
+      "kgN2O_per_TJ": 8.0,
+      "category": "Mobile Combustion",
+      "sector": "Transport",
+      "vehicle_type": "Road - Gasoline Vehicles",
+      "tier": 1
+    },
+    "road_diesel": {
+      "factor_id": "IPCC_2019_MOB_DIE",
+      "name": "Road Transport - Diesel",
+      "unit": "TJ",
+      "kgCO2_per_TJ": 74100,
+      "kgCH4_per_TJ": 3.9,
+      "kgN2O_per_TJ": 3.9,
+      "category": "Mobile Combustion",
+      "sector": "Transport",
+      "vehicle_type": "Road - Diesel Vehicles",
+      "tier": 1
+    },
+    "road_lpg": {
+      "factor_id": "IPCC_2019_MOB_LPG",
+      "name": "Road Transport - LPG",
+      "unit": "TJ",
+      "kgCO2_per_TJ": 63100,
+      "kgCH4_per_TJ": 62.0,
+      "kgN2O_per_TJ": 0.2,
+      "category": "Mobile Combustion",
+      "sector": "Transport",
+      "vehicle_type": "Road - LPG Vehicles",
+      "tier": 1
+    },
+    "road_cng": {
+      "factor_id": "IPCC_2019_MOB_CNG",
+      "name": "Road Transport - CNG",
+      "unit": "TJ",
+      "kgCO2_per_TJ": 56100,
+      "kgCH4_per_TJ": 92.0,
+      "kgN2O_per_TJ": 3.0,
+      "category": "Mobile Combustion",
+      "sector": "Transport",
+      "vehicle_type": "Road - CNG Vehicles",
+      "tier": 1
+    },
+    "aviation_jet_kerosene": {
+      "factor_id": "IPCC_2019_MOB_JET",
+      "name": "Aviation - Jet Kerosene",
+      "unit": "TJ",
+      "kgCO2_per_TJ": 71500,
+      "kgCH4_per_TJ": 0.5,
+      "kgN2O_per_TJ": 2.0,
+      "category": "Mobile Combustion",
+      "sector": "Aviation",
+      "tier": 1
+    },
+    "aviation_gasoline": {
+      "factor_id": "IPCC_2019_MOB_AVGAS",
+      "name": "Aviation - Aviation Gasoline",
+      "unit": "TJ",
+      "kgCO2_per_TJ": 70000,
+      "kgCH4_per_TJ": 0.5,
+      "kgN2O_per_TJ": 2.0,
+      "category": "Mobile Combustion",
+      "sector": "Aviation",
+      "tier": 1
+    },
+    "marine_residual_fuel": {
+      "factor_id": "IPCC_2019_MOB_MARINE_RES",
+      "name": "Marine - Residual Fuel Oil",
+      "unit": "TJ",
+      "kgCO2_per_TJ": 77400,
+      "kgCH4_per_TJ": 7.0,
+      "kgN2O_per_TJ": 2.0,
+      "category": "Mobile Combustion",
+      "sector": "Navigation",
+      "tier": 1
+    },
+    "marine_diesel": {
+      "factor_id": "IPCC_2019_MOB_MARINE_DIE",
+      "name": "Marine - Gas/Diesel Oil",
+      "unit": "TJ",
+      "kgCO2_per_TJ": 74100,
+      "kgCH4_per_TJ": 7.0,
+      "kgN2O_per_TJ": 2.0,
+      "category": "Mobile Combustion",
+      "sector": "Navigation",
+      "tier": 1
+    },
+    "rail_diesel": {
+      "factor_id": "IPCC_2019_MOB_RAIL",
+      "name": "Railways - Diesel",
+      "unit": "TJ",
+      "kgCO2_per_TJ": 74100,
+      "kgCH4_per_TJ": 4.15,
+      "kgN2O_per_TJ": 28.6,
+      "category": "Mobile Combustion",
+      "sector": "Railways",
+      "tier": 1
+    }
+  },
+  "industrial_processes": {
+    "cement_clinker": {
+      "factor_id": "IPCC_2019_IND_CEMENT",
+      "name": "Cement Production - Clinker",
+      "unit": "tonne clinker",
+ite      "kgCO2_per_unit": 520,
+      "category": "Industrial Processes",
+      "sector": "Mineral Industry",
+      "process": "Calcination of limestone",
+      "uncertainty_range": "+-5%",
+      "tier": 1,
+      "notes": "Process emissions only; combustion emissions separate"
+    },
+    "lime_production": {
+      "factor_id": "IPCC_2019_IND_LIME",
+      "name": "Lime Production",
+      "unit": "tonne CaO",
+      "kgCO2_per_unit": 750,
+      "category": "Industrial Processes",
+      "sector": "Mineral Industry",
+      "process": "Calcination of limestone/dolomite",
+      "uncertainty_range": "+-5%",
+      "tier": 1
+    },
+    "glass_production": {
+      "factor_id": "IPCC_2019_IND_GLASS",
+      "name": "Glass Production",
+      "unit": "tonne glass",
+      "kgCO2_per_unit": 200,
+      "category": "Industrial Processes",
+      "sector": "Mineral Industry",
+      "process": "Decomposition of carbonates",
+      "uncertainty_range": "+-10%",
+      "tier": 1
+    },
+    "ammonia_production": {
+      "factor_id": "IPCC_2019_IND_AMMONIA",
+      "name": "Ammonia Production",
+      "unit": "tonne NH3",
+      "kgCO2_per_unit": 1500,
+      "category": "Industrial Processes",
+      "sector": "Chemical Industry",
+      "process": "Steam reforming of natural gas",
+      "uncertainty_range": "+-10%",
+      "tier": 1
+    },
+    "nitric_acid_n2o": {
+      "factor_id": "IPCC_2019_IND_NITRIC",
+      "name": "Nitric Acid Production - N2O",
+      "unit": "tonne HNO3",
+      "kgN2O_per_unit": 5.0,
+      "category": "Industrial Processes",
+      "sector": "Chemical Industry",
+      "process": "Oxidation of ammonia",
+      "uncertainty_range": "+-30%",
+      "tier": 1,
+      "notes": "Default for plants without abatement"
+    },
+    "adipic_acid_n2o": {
+      "factor_id": "IPCC_2019_IND_ADIPIC",
+      "name": "Adipic Acid Production - N2O",
+      "unit": "tonne adipic acid",
+      "kgN2O_per_unit": 300,
+      "category": "Industrial Processes",
+      "sector": "Chemical Industry",
+      "process": "Oxidation of cyclohexanone",
+      "uncertainty_range": "+-20%",
+      "tier": 1,
+      "notes": "Default for plants without abatement"
+    },
+    "iron_steel_bof": {
+      "factor_id": "IPCC_2019_IND_STEEL_BOF",
+      "name": "Iron and Steel - BOF Route",
+      "unit": "tonne crude steel",
+      "kgCO2_per_unit": 1850,
+      "category": "Industrial Processes",
+      "sector": "Metal Industry",
+      "process": "Integrated BF-BOF steelmaking",
+      "uncertainty_range": "+-15%",
+      "tier": 1,
+      "notes": "Includes coke production and sinter/pellet"
+    },
+    "iron_steel_eaf": {
+      "factor_id": "IPCC_2019_IND_STEEL_EAF",
+      "name": "Iron and Steel - EAF Route",
+      "unit": "tonne crude steel",
+      "kgCO2_per_unit": 150,
+      "category": "Industrial Processes",
+      "sector": "Metal Industry",
+      "process": "Electric arc furnace from scrap",
+      "uncertainty_range": "+-25%",
+      "tier": 1,
+      "notes": "Direct process emissions only; excludes electricity"
+    },
+    "aluminum_primary": {
+      "factor_id": "IPCC_2019_IND_ALUMINUM",
+      "name": "Primary Aluminum Production",
+      "unit": "tonne Al",
+      "kgCO2_per_unit": 1650,
+      "category": "Industrial Processes",
+      "sector": "Metal Industry",
+      "process": "Hall-Heroult electrolysis (anode consumption)",
+      "uncertainty_range": "+-10%",
+      "tier": 1,
+      "notes": "CO2 from anode carbon consumption; excludes electricity"
+    },
+    "magnesium_primary": {
+      "factor_id": "IPCC_2019_IND_MAGNESIUM",
+      "name": "Primary Magnesium Production",
+      "unit": "tonne Mg",
+      "kgCO2_per_unit": 3800,
+      "category": "Industrial Processes",
+      "sector": "Metal Industry",
+      "process": "Pidgeon/electrolytic process",
+      "uncertainty_range": "+-15%",
+      "tier": 1
+    }
+  },
+  "agriculture": {
+    "enteric_fermentation_dairy_cattle": {
+      "factor_id": "IPCC_2019_AG_ENTERIC_DAIRY",
+      "name": "Enteric Fermentation - Dairy Cattle",
+      "unit": "head per year",
+      "kgCH4_per_unit": 128,
+      "category": "Agriculture",
+      "sector": "Livestock",
+      "region": "Western Europe",
+      "uncertainty_range": "+-20%",
+      "tier": 1
+    },
+    "enteric_fermentation_beef_cattle": {
+      "factor_id": "IPCC_2019_AG_ENTERIC_BEEF",
+      "name": "Enteric Fermentation - Non-Dairy Cattle",
+      "unit": "head per year",
+      "kgCH4_per_unit": 60,
+      "category": "Agriculture",
+      "sector": "Livestock",
+      "region": "Western Europe",
+      "uncertainty_range": "+-20%",
+      "tier": 1
+    },
+    "enteric_fermentation_sheep": {
+      "factor_id": "IPCC_2019_AG_ENTERIC_SHEEP",
+      "name": "Enteric Fermentation - Sheep",
+      "unit": "head per year",
+      "kgCH4_per_unit": 8,
+      "category": "Agriculture",
+      "sector": "Livestock",
+      "region": "Developed Countries",
+      "uncertainty_range": "+-30%",
+      "tier": 1
+    },
+    "enteric_fermentation_swine": {
+      "factor_id": "IPCC_2019_AG_ENTERIC_SWINE",
+      "name": "Enteric Fermentation - Swine",
+      "unit": "head per year",
+      "kgCH4_per_unit": 1.5,
+      "category": "Agriculture",
+      "sector": "Livestock",
+      "region": "Developed Countries",
+      "uncertainty_range": "+-50%",
+      "tier": 1
+    },
+    "manure_management_dairy_cattle": {
+      "factor_id": "IPCC_2019_AG_MANURE_DAIRY",
+      "name": "Manure Management - Dairy Cattle",
+      "unit": "head per year",
+      "kgCH4_per_unit": 20,
+      "kgN2O_direct_per_unit": 1.0,
+      "category": "Agriculture",
+      "sector": "Livestock",
+      "region": "Western Europe",
+      "management_system": "Liquid/Slurry",
+      "tier": 1
+    },
+    "direct_n2o_fertilizer": {
+      "factor_id": "IPCC_2019_AG_N2O_FERT",
+      "name": "Direct N2O from Synthetic Fertilizers",
+      "unit": "kg N applied",
+      "kgN2O_N_per_unit": 0.01,
+      "category": "Agriculture",
+      "sector": "Agricultural Soils",
+      "notes": "EF1 = 1% of N applied converted to N2O-N",
+      "tier": 1
+    },
+    "rice_cultivation": {
+      "factor_id": "IPCC_2019_AG_RICE",
+      "name": "Rice Cultivation - Continuously Flooded",
+      "unit": "hectare per day",
+      "kgCH4_per_unit": 1.30,
+      "category": "Agriculture",
+      "sector": "Rice Cultivation",
+      "water_regime": "Continuously flooded",
+      "tier": 1
+    }
+  },
+  "waste": {
+    "solid_waste_disposal": {
+      "factor_id": "IPCC_2019_WASTE_SWDS",
+      "name": "Solid Waste Disposal - Managed Landfill",
+      "unit": "tonne MSW",
+      "doc_kg_per_tonne": 180,
+      "mcf": 1.0,
+      "category": "Waste",
+      "sector": "Solid Waste Disposal",
+      "site_type": "Managed, anaerobic",
+      "notes": "DOC = Degradable Organic Carbon; MCF = Methane Correction Factor",
+      "tier": 1
+    },
+    "wastewater_domestic": {
+      "factor_id": "IPCC_2019_WASTE_WW_DOM",
+      "name": "Domestic Wastewater - Untreated",
+      "unit": "kg BOD",
+      "kgCH4_per_unit": 0.6,
+      "category": "Waste",
+      "sector": "Wastewater",
+      "treatment_type": "Untreated domestic sewage",
+      "tier": 1
+    },
+    "wastewater_industrial": {
+      "factor_id": "IPCC_2019_WASTE_WW_IND",
+      "name": "Industrial Wastewater - Anaerobic",
+      "unit": "kg COD removed",
+      "kgCH4_per_unit": 0.25,
+      "category": "Waste",
+      "sector": "Wastewater",
+      "treatment_type": "Anaerobic treatment",
+      "tier": 1
+    },
+    "incineration_msw": {
+      "factor_id": "IPCC_2019_WASTE_INCIN",
+      "name": "Incineration - Municipal Solid Waste",
+      "unit": "tonne MSW",
+      "kgCO2_per_unit": 350,
+      "kgCH4_per_unit": 0.0095,
+      "kgN2O_per_unit": 0.05,
+      "category": "Waste",
+      "sector": "Incineration",
+      "notes": "Fossil carbon fraction; biogenic reported separately",
+      "tier": 1
+    }
+  },
+  "lulucf": {
+    "forest_land_remaining": {
+      "factor_id": "IPCC_2019_LULUCF_FOREST",
+      "name": "Forest Land Remaining Forest Land - Temperate",
+      "unit": "hectare per year",
+      "tC_change_per_unit": 0.5,
+      "category": "LULUCF",
+      "sector": "Forest Land",
+      "climate_zone": "Temperate, oceanic",
+      "notes": "Net carbon stock change - varies significantly by forest type",
+      "tier": 1
+    },
+    "cropland_to_forest": {
+      "factor_id": "IPCC_2019_LULUCF_CROP_FOR",
+      "name": "Cropland Converted to Forest",
+      "unit": "hectare per year",
+      "tC_change_per_unit": 2.1,
+      "category": "LULUCF",
+      "sector": "Land Use Change",
+      "climate_zone": "Temperate",
+      "notes": "Carbon accumulation during forest regrowth",
+      "tier": 1
+    },
+    "deforestation": {
+      "factor_id": "IPCC_2019_LULUCF_DEFOR",
+      "name": "Deforestation - Tropical Moist",
+      "unit": "hectare",
+      "tC_loss_per_unit": 200,
+      "category": "LULUCF",
+      "sector": "Land Use Change",
+      "climate_zone": "Tropical moist",
+      "notes": "One-time carbon stock loss from forest conversion",
+      "tier": 1
+    }
+  },
+  "total_factor_count": 52
+}

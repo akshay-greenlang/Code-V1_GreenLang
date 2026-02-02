@@ -1,0 +1,392 @@
+# -*- coding: utf-8 -*-
+# Security Test Configuration for GreenLang
+#
+# This configuration file defines settings for security penetration tests.
+# All tests are designed to be safe and non-destructive.
+#
+# Author: GreenLang Test Engineering
+# Date: December 2025
+
+# =============================================================================
+# General Settings
+# =============================================================================
+general:
+  # Test environment (test, staging, production-readonly)
+  environment: test
+
+  # Base URL for API testing
+  base_url: "http://localhost:8000"
+
+  # Request timeout in seconds
+  request_timeout: 30
+
+  # Maximum concurrent requests
+  max_concurrent: 10
+
+  # Enable verbose logging
+  verbose: true
+
+  # Generate detailed reports
+  generate_reports: true
+
+  # Report output directory
+  report_dir: "./security_reports"
+
+# =============================================================================
+# Authentication Settings
+# =============================================================================
+authentication:
+  # Test credentials (for authenticated endpoint testing)
+  test_user:
+    username: "security_test_user"
+    password: "${SECURITY_TEST_PASSWORD}"  # From environment variable
+
+  # Admin credentials for privilege escalation tests
+  admin_user:
+    username: "security_test_admin"
+    password: "${SECURITY_TEST_ADMIN_PASSWORD}"
+
+  # JWT settings
+  jwt:
+    # Known valid token for testing (test environment only)
+    test_token: "${SECURITY_TEST_JWT}"
+    # Token expiration buffer for timing tests (seconds)
+    expiry_buffer: 300
+
+# =============================================================================
+# Injection Test Settings
+# =============================================================================
+injection:
+  sql_injection:
+    enabled: true
+    # Maximum payloads to test per endpoint
+    max_payloads: 50
+    # Time-based detection threshold (seconds)
+    time_threshold: 5.0
+    # Endpoints to test
+    endpoints:
+      - "/api/v1/calculations"
+      - "/api/v1/users"
+      - "/api/v1/reports"
+      - "/api/v1/agents"
+
+  command_injection:
+    enabled: true
+    max_payloads: 30
+    # Patterns indicating successful injection
+    detection_patterns:
+      - "uid="
+      - "root:"
+      - "/bin/bash"
+      - "Windows NT"
+
+  nosql_injection:
+    enabled: true
+    max_payloads: 20
+    # MongoDB operator patterns to test
+    operators:
+      - "$ne"
+      - "$gt"
+      - "$lt"
+      - "$regex"
+      - "$where"
+
+  template_injection:
+    enabled: true
+    # Template engines to test
+    engines:
+      - jinja2
+      - mako
+      - freemarker
+    # Arithmetic detection value (7*7=49)
+    detection_value: "49"
+
+  ldap_injection:
+    enabled: true
+    max_payloads: 15
+    # Threshold for detecting information disclosure
+    disclosure_threshold: 10
+
+# =============================================================================
+# XSS Test Settings
+# =============================================================================
+xss:
+  reflected:
+    enabled: true
+    max_payloads: 40
+    # Endpoints likely to reflect input
+    endpoints:
+      - "/api/v1/search"
+      - "/api/v1/error"
+      - "/api/v1/debug"
+
+  stored:
+    enabled: true
+    max_payloads: 30
+    # Endpoints that store and display user input
+    storage_endpoints:
+      - "/api/v1/users/profile"
+      - "/api/v1/comments"
+      - "/api/v1/calculations"
+
+  dom_based:
+    enabled: true
+    # Check hash fragments, postMessage, etc.
+    check_fragments: true
+    check_postmessage: true
+
+  # CSP bypass attempts
+  csp_bypass:
+    enabled: true
+    max_attempts: 20
+
+# =============================================================================
+# Authentication Bypass Settings
+# =============================================================================
+auth_bypass:
+  jwt_attacks:
+    enabled: true
+    # Test none algorithm attack
+    test_none_algorithm: true
+    # Test algorithm confusion (RS256 -> HS256)
+    test_algorithm_confusion: true
+    # Test expired token acceptance
+    test_expiry_bypass: true
+    # Test signature manipulation
+    test_signature_manipulation: true
+
+  session_attacks:
+    enabled: true
+    # Test session fixation
+    test_fixation: true
+    # Test cookie security flags
+    test_cookie_flags: true
+    # Required cookie flags
+    required_flags:
+      - HttpOnly
+      - Secure
+      - SameSite
+
+  brute_force:
+    enabled: true
+    # Maximum login attempts before lockout expected
+    lockout_threshold: 5
+    # Delay between attempts (seconds)
+    attempt_delay: 1.0
+
+  privilege_escalation:
+    enabled: true
+    # Test horizontal escalation (access other users' data)
+    test_horizontal: true
+    # Test vertical escalation (access admin functions)
+    test_vertical: true
+
+# =============================================================================
+# API Security Settings
+# =============================================================================
+api_security:
+  rate_limiting:
+    enabled: true
+    # Expected rate limit (requests per minute)
+    expected_limit: 100
+    # Test burst capacity
+    burst_size: 150
+    # Header names for rate limit info
+    headers:
+      remaining: "X-RateLimit-Remaining"
+      limit: "X-RateLimit-Limit"
+      reset: "X-RateLimit-Reset"
+
+  cors:
+    enabled: true
+    # Test origins
+    test_origins:
+      - "https://evil.com"
+      - "null"
+      - "https://trusted.greenlang.io"
+    # Expected allowed origins
+    allowed_origins:
+      - "https://app.greenlang.io"
+      - "https://admin.greenlang.io"
+
+  security_headers:
+    enabled: true
+    # Required security headers
+    required_headers:
+      - name: "X-Content-Type-Options"
+        value: "nosniff"
+      - name: "X-Frame-Options"
+        values: ["DENY", "SAMEORIGIN"]
+      - name: "X-XSS-Protection"
+        value: "1; mode=block"
+      - name: "Strict-Transport-Security"
+        min_max_age: 31536000
+      - name: "Content-Security-Policy"
+        required: true
+      - name: "Referrer-Policy"
+        values: ["no-referrer", "strict-origin-when-cross-origin"]
+
+  request_validation:
+    enabled: true
+    # Maximum payload size (bytes)
+    max_payload_size: 10485760  # 10MB
+    # Required content types
+    required_content_types:
+      - "application/json"
+      - "multipart/form-data"
+
+# =============================================================================
+# Secrets Exposure Settings
+# =============================================================================
+secrets_exposure:
+  error_messages:
+    enabled: true
+    # Patterns to detect in error messages
+    sensitive_patterns:
+      - "password"
+      - "api[_-]?key"
+      - "secret"
+      - "token"
+      - "-----BEGIN.*PRIVATE KEY-----"
+      - "aws_access_key"
+      - "aws_secret"
+
+  stack_traces:
+    enabled: true
+    # Patterns indicating stack trace exposure
+    stack_patterns:
+      - "Traceback"
+      - 'File ".*\.py", line \d+'
+      - "at .*\\.java:\\d+"
+      - "Exception in thread"
+
+  internal_paths:
+    enabled: true
+    # Path patterns that should not be exposed
+    path_patterns:
+      - "/home/"
+      - "/var/www/"
+      - "/opt/app/"
+      - "C:\\\\Users"
+      - "C:\\\\Program Files"
+
+  configuration_endpoints:
+    enabled: true
+    # Endpoints that should return 404 or 403
+    blocked_endpoints:
+      - "/config"
+      - "/.env"
+      - "/config.json"
+      - "/settings.yaml"
+      - "/debug"
+      - "/actuator/env"
+      - "/__debug__/"
+
+  vcs_exposure:
+    enabled: true
+    # VCS paths that should be blocked
+    vcs_paths:
+      - "/.git/"
+      - "/.git/config"
+      - "/.git/HEAD"
+      - "/.svn/"
+      - "/.hg/"
+
+  backup_files:
+    enabled: true
+    # Backup file patterns to check
+    backup_patterns:
+      - ".bak"
+      - ".old"
+      - ".backup"
+      - ".sql"
+      - ".zip"
+      - ".swp"
+      - "~"
+
+# =============================================================================
+# Reporting Settings
+# =============================================================================
+reporting:
+  # Output formats
+  formats:
+    - json
+    - html
+    - markdown
+
+  # Severity thresholds for failing the test suite
+  fail_on:
+    critical: true
+    high: true
+    medium: false
+    low: false
+
+  # Include evidence in reports
+  include_evidence: true
+
+  # Maximum evidence length
+  max_evidence_length: 500
+
+  # Include remediation guidance
+  include_remediation: true
+
+  # CWE mapping
+  include_cwe: true
+
+  # CVSS scores
+  include_cvss: true
+
+# =============================================================================
+# Test Execution Settings
+# =============================================================================
+execution:
+  # Run tests in parallel
+  parallel: true
+
+  # Number of parallel workers
+  workers: 4
+
+  # Retry failed tests
+  retry_count: 1
+
+  # Delay between retries (seconds)
+  retry_delay: 2.0
+
+  # Test categories to run (all if empty)
+  categories: []
+
+  # Test categories to skip
+  skip_categories: []
+
+  # Markers for pytest
+  markers:
+    - security
+    - injection
+    - xss
+    - auth
+    - secrets
+    - api_security
+
+# =============================================================================
+# Safety Guards
+# =============================================================================
+safety:
+  # Never run destructive tests in production
+  block_production: true
+
+  # Rate limit test requests
+  self_rate_limit: 50  # requests per second
+
+  # Maximum total requests per test run
+  max_total_requests: 10000
+
+  # Stop on first critical finding
+  stop_on_critical: false
+
+  # Excluded endpoints (never test these)
+  excluded_endpoints:
+    - "/api/v1/admin/delete-all"
+    - "/api/v1/system/shutdown"
+
+  # IP allowlist for testing (empty = all allowed in test env)
+  ip_allowlist: []

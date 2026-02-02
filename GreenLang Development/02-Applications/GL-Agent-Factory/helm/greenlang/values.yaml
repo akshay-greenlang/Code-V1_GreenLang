@@ -1,0 +1,897 @@
+# =============================================================================
+# GreenLang Helm Chart - Default Values
+# =============================================================================
+# This is a YAML-formatted file for configuring the GreenLang Agent Factory
+# Helm chart deployment. Declare variables to be passed into your templates.
+#
+# IMPORTANT: Review and customize these values before deploying to production.
+# See the documentation for detailed configuration options.
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Global Settings
+# -----------------------------------------------------------------------------
+# These settings apply across all components of the deployment
+global:
+  # Container image registry (e.g., gcr.io, ecr, docker.io)
+  imageRegistry: "gcr.io/greenlang"
+
+  # Image pull secrets for private registries
+  # Example: imagePullSecrets: ["gcr-pull-secret", "ecr-pull-secret"]
+  imagePullSecrets: []
+
+  # Default storage class for persistent volumes
+  # Common values: "standard", "gp2", "gp3", "premium-rwo"
+  storageClass: "standard"
+
+# -----------------------------------------------------------------------------
+# Namespace Configuration
+# -----------------------------------------------------------------------------
+namespace:
+  # Create namespace if it doesn't exist
+  create: true
+
+  # Namespace name for all resources
+  name: "greenlang-production"
+
+  # Labels applied to the namespace
+  labels:
+    environment: production
+    team: greenlang
+    managed-by: helm
+
+# -----------------------------------------------------------------------------
+# Agent Runtime Configuration
+# -----------------------------------------------------------------------------
+# The agent runtime executes AI agents and handles task processing
+agentRuntime:
+  enabled: true
+  replicaCount: 3
+
+  image:
+    repository: agent-runtime
+    tag: "1.0.0"
+    pullPolicy: Always
+
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: 8000
+    metricsPort: 9090
+
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "512Mi"
+    limits:
+      cpu: "2000m"
+      memory: "2Gi"
+
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: 80
+
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 2
+
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+  # Health probes configuration
+  livenessProbe:
+    httpGet:
+      path: /health
+      port: 8000
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+
+  readinessProbe:
+    httpGet:
+      path: /ready
+      port: 8000
+    initialDelaySeconds: 10
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 3
+
+# -----------------------------------------------------------------------------
+# API Server Configuration
+# -----------------------------------------------------------------------------
+# The API server handles REST API requests and client communications
+apiServer:
+  enabled: true
+  replicaCount: 3
+
+  image:
+    repository: api-server
+    tag: "1.0.0"
+    pullPolicy: Always
+
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: 8000
+    metricsPort: 9090
+
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "512Mi"
+    limits:
+      cpu: "2000m"
+      memory: "2Gi"
+
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: 80
+
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 2
+
+  # Gunicorn/Uvicorn worker settings
+  gunicorn:
+    workers: 4
+    threads: 2
+    timeout: 120
+    keepalive: 5
+
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+# -----------------------------------------------------------------------------
+# Registry Configuration
+# -----------------------------------------------------------------------------
+# The registry manages agent definitions and version control
+registry:
+  enabled: true
+  replicaCount: 2
+
+  image:
+    repository: registry
+    tag: "1.0.0"
+    pullPolicy: Always
+
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: 8001
+    metricsPort: 9091
+
+  resources:
+    requests:
+      cpu: "250m"
+      memory: "256Mi"
+    limits:
+      cpu: "1000m"
+      memory: "1Gi"
+
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 60
+    targetMemoryUtilizationPercentage: 70
+
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 1
+
+  # Database migrations
+  migrations:
+    enabled: true
+    runOnUpgrade: true
+
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+# -----------------------------------------------------------------------------
+# Ingress Configuration
+# -----------------------------------------------------------------------------
+# Configure external access to the application
+ingress:
+  enabled: true
+  className: "nginx"
+
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    nginx.ingress.kubernetes.io/limit-rps: "100"
+
+  hosts:
+    - host: api.greenlang.ai
+      paths:
+        - path: /
+          pathType: Prefix
+          service: api-server
+
+  tls:
+    - secretName: greenlang-tls-secret
+      hosts:
+        - api.greenlang.ai
+        - "*.greenlang.ai"
+
+# -----------------------------------------------------------------------------
+# Service Account Configuration
+# -----------------------------------------------------------------------------
+serviceAccount:
+  create: true
+  name: "greenlang-app-sa"
+
+  # Annotations for cloud provider integrations
+  # AWS EKS (IRSA): eks.amazonaws.com/role-arn: arn:aws:iam::ACCOUNT:role/greenlang-role
+  # GCP GKE: iam.gke.io/gcp-service-account: greenlang@project.iam.gserviceaccount.com
+  annotations: {}
+
+# -----------------------------------------------------------------------------
+# RBAC Configuration
+# -----------------------------------------------------------------------------
+rbac:
+  create: true
+
+# -----------------------------------------------------------------------------
+# Application Configuration (Non-Sensitive)
+# -----------------------------------------------------------------------------
+# These values are stored in ConfigMaps (not sensitive)
+config:
+  # Environment name (production, staging, development)
+  appEnv: "production"
+
+  # Debug mode (set to "false" in production)
+  debug: "false"
+
+  # Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+  logLevel: "INFO"
+
+  # Allowed CORS origins
+  corsOrigins: "https://app.greenlang.ai,https://api.greenlang.ai"
+
+  # Database connection pool settings
+  databasePoolSize: "20"
+  databaseMaxOverflow: "10"
+  databasePoolTimeout: "30"
+
+  # Redis connection settings
+  redisMaxConnections: "10"
+
+  # Rate limiting configuration
+  rateLimitPerMinute: "100"
+  rateLimitBurst: "20"
+
+  # Agent execution settings
+  executionTimeoutDefault: "300"
+  executionTimeoutMax: "3600"
+  executionMaxConcurrent: "100"
+
+  # S3/Object storage settings
+  s3Bucket: "greenlang-artifacts-production"
+  s3Region: "us-east-1"
+
+  # Observability settings
+  metricsEnabled: "true"
+  tracingEnabled: "true"
+  otlpEndpoint: "http://otel-collector:4317"
+
+# =============================================================================
+# SECRETS CONFIGURATION
+# =============================================================================
+# This section configures how secrets are managed in the deployment.
+#
+# IMPORTANT SECURITY NOTICE:
+# - NEVER commit real secrets to version control
+# - Use External Secrets Operator in production environments
+# - The placeholder values below are for development/testing only
+#
+# Supported Secrets Providers:
+# - "none": Use inline secrets (development only)
+# - "aws": AWS Secrets Manager via External Secrets Operator
+# - "vault": HashiCorp Vault via External Secrets Operator
+# - "azure": Azure Key Vault via External Secrets Operator (coming soon)
+# - "gcp": Google Secret Manager via External Secrets Operator (coming soon)
+# =============================================================================
+
+secrets:
+  # ---------------------------------------------------------------------------
+  # External Secrets Configuration
+  # ---------------------------------------------------------------------------
+  # Enable External Secrets Operator integration
+  # When enabled, secrets are fetched from external secret stores
+  useExternalSecrets: false
+
+  # Secrets provider to use
+  # Options: "none", "aws", "vault", "azure", "gcp"
+  provider: "none"
+
+  # How often to sync secrets from the external provider
+  # Format: Go duration string (e.g., "1h", "30m", "24h")
+  refreshInterval: "1h"
+
+  # ---------------------------------------------------------------------------
+  # AWS Secrets Manager Configuration
+  # ---------------------------------------------------------------------------
+  # Used when secrets.provider = "aws"
+  #
+  # Prerequisites:
+  #   1. External Secrets Operator installed
+  #   2. IAM role with SecretsManager permissions
+  #   3. IRSA configured (recommended) or static credentials
+  #
+  # AWS Secrets Structure:
+  #   {secretsPath}/{environment}/database  -> {"url": "...", "password": "..."}
+  #   {secretsPath}/{environment}/redis     -> {"url": "...", "password": "..."}
+  #   {secretsPath}/{environment}/jwt       -> {"secret": "..."}
+  #   {secretsPath}/{environment}/llm       -> {"anthropic_key": "...", "openai_key": "..."}
+  #   {secretsPath}/{environment}/encryption -> {"key": "..."}
+  # ---------------------------------------------------------------------------
+  aws:
+    # AWS region where secrets are stored
+    region: "us-east-1"
+
+    # Base path for secrets in AWS Secrets Manager
+    # Secrets will be at: {secretsPath}/{environment}/{secret-name}
+    secretsPath: "greenlang"
+
+    # IAM role ARN for IRSA (recommended authentication method)
+    # Example: arn:aws:iam::123456789012:role/greenlang-secrets-reader
+    role: ""
+
+    # Alternative: Static credentials secret name (not recommended for production)
+    # This secret should contain 'access-key-id' and 'secret-access-key' keys
+    accessKeySecret: ""
+
+    # Include S3 credentials in secrets (prefer IRSA instead)
+    includeS3Credentials: false
+
+    # Enable TLS certificate management via AWS Secrets Manager
+    tlsSecretEnabled: false
+
+  # ---------------------------------------------------------------------------
+  # HashiCorp Vault Configuration
+  # ---------------------------------------------------------------------------
+  # Used when secrets.provider = "vault"
+  #
+  # Prerequisites:
+  #   1. External Secrets Operator installed
+  #   2. Vault server accessible from the cluster
+  #   3. Vault authentication method configured
+  #   4. Appropriate Vault policies
+  #
+  # Vault Secrets Structure (KV v2):
+  #   {secretsEngine}/data/{secretsPath}/{environment}/database
+  #   {secretsEngine}/data/{secretsPath}/{environment}/redis
+  #   {secretsEngine}/data/{secretsPath}/{environment}/jwt
+  #   {secretsEngine}/data/{secretsPath}/{environment}/llm
+  #   {secretsEngine}/data/{secretsPath}/{environment}/encryption
+  # ---------------------------------------------------------------------------
+  vault:
+    # Vault server address
+    address: "https://vault.vault.svc.cluster.local:8200"
+
+    # Vault namespace (for Vault Enterprise)
+    namespace: ""
+
+    # Secrets engine path (default: "secret" for KV v2)
+    secretsEngine: "secret"
+
+    # KV secrets engine version ("v1" or "v2")
+    kvVersion: "v2"
+
+    # Base path for secrets within the secrets engine
+    secretsPath: "greenlang"
+
+    # TLS CA bundle for Vault server verification (base64 encoded)
+    caBundle: ""
+
+    # Alternative: CA certificate from a Kubernetes secret
+    caProvider:
+      type: ""  # "Secret" or "ConfigMap"
+      name: ""
+      key: ""
+      namespace: ""
+
+    # Authentication method: "kubernetes", "approle", or "token"
+    authMethod: "kubernetes"
+
+    # Kubernetes authentication configuration (recommended)
+    kubernetes:
+      # Vault auth mount path
+      mountPath: "kubernetes"
+      # Vault role name for the service account
+      role: "greenlang-app"
+
+    # AppRole authentication configuration
+    appRole:
+      # Vault auth mount path
+      path: "approle"
+      # Role ID (can be stored in values or fetched from secret)
+      roleId: ""
+      # Secret ID reference
+      secretRef:
+        name: "vault-approle-secret"
+        key: "secret-id"
+
+    # Token authentication configuration (not recommended for production)
+    token:
+      secretRef:
+        name: "vault-token"
+        key: "token"
+
+    # Enable TLS certificate management via Vault PKI
+    tlsSecretEnabled: false
+    tlsRefreshInterval: "24h"
+    tlsIncludeCA: false
+
+    # Enable dynamic database credentials (Vault database secrets engine)
+    dynamicDatabaseCredentials: false
+    dynamicDbRole: "greenlang-app"
+    dynamicDbHost: "postgresql:5432"
+    dynamicDbName: "greenlang"
+    dynamicDbRefreshInterval: "5m"
+
+  # ---------------------------------------------------------------------------
+  # Azure Key Vault Configuration (Coming Soon)
+  # ---------------------------------------------------------------------------
+  azure:
+    # Azure Key Vault URI
+    vaultUri: ""
+    # Tenant ID
+    tenantId: ""
+    # Client ID for authentication
+    clientId: ""
+
+  # ---------------------------------------------------------------------------
+  # Google Secret Manager Configuration (Coming Soon)
+  # ---------------------------------------------------------------------------
+  gcp:
+    # GCP project ID
+    projectId: ""
+
+  # ---------------------------------------------------------------------------
+  # Inline Secrets (Development Only)
+  # ---------------------------------------------------------------------------
+  # WARNING: These are placeholder values for development/testing only.
+  # NEVER use these in production. Set useExternalSecrets=true and configure
+  # the appropriate provider for production deployments.
+  #
+  # To generate secure values:
+  #   JWT Secret: openssl rand -base64 64
+  #   Encryption Key: openssl rand -hex 32
+  # ---------------------------------------------------------------------------
+
+  # Database connection URL
+  # Format: postgresql://user:password@host:port/database
+  # NOTE: Leave empty when using external secrets
+  databaseUrl: ""
+
+  # Redis connection URL
+  # Format: redis://:password@host:port/db
+  # NOTE: Leave empty when using external secrets
+  redisUrl: ""
+
+  # JWT signing secret (min 64 characters recommended)
+  # Generate: openssl rand -base64 64
+  # NOTE: Leave empty when using external secrets
+  jwtSecret: ""
+
+  # Anthropic API key for Claude models
+  # NOTE: Leave empty when using external secrets
+  anthropicApiKey: ""
+
+  # OpenAI API key
+  # NOTE: Leave empty when using external secrets
+  openaiApiKey: ""
+
+  # Data encryption key (AES-256, 32 bytes hex)
+  # Generate: openssl rand -hex 32
+  # NOTE: Leave empty when using external secrets
+  dataEncryptionKey: ""
+
+# -----------------------------------------------------------------------------
+# PostgreSQL Subchart Configuration
+# -----------------------------------------------------------------------------
+# Bitnami PostgreSQL Helm chart configuration
+# https://github.com/bitnami/charts/tree/main/bitnami/postgresql
+postgresql:
+  enabled: true
+
+  auth:
+    username: greenlang_app
+    database: greenlang
+    # When using external secrets, reference the external secret
+    existingSecret: ""
+    # Only used when external secrets are disabled and existingSecret is empty
+    password: ""
+
+  primary:
+    persistence:
+      enabled: true
+      size: 100Gi
+    resources:
+      requests:
+        cpu: "500m"
+        memory: "512Mi"
+      limits:
+        cpu: "2000m"
+        memory: "2Gi"
+
+  readReplicas:
+    replicaCount: 1
+
+# -----------------------------------------------------------------------------
+# Redis Subchart Configuration
+# -----------------------------------------------------------------------------
+# Bitnami Redis Helm chart configuration
+# https://github.com/bitnami/charts/tree/main/bitnami/redis
+redis:
+  enabled: true
+
+  auth:
+    enabled: true
+    # When using external secrets, reference the external secret
+    existingSecret: ""
+    # Only used when external secrets are disabled and existingSecret is empty
+    password: ""
+
+  master:
+    persistence:
+      enabled: true
+      size: 10Gi
+    resources:
+      requests:
+        cpu: "250m"
+        memory: "256Mi"
+      limits:
+        cpu: "1000m"
+        memory: "1Gi"
+
+  replica:
+    replicaCount: 1
+
+# -----------------------------------------------------------------------------
+# Prometheus Subchart Configuration
+# -----------------------------------------------------------------------------
+prometheus:
+  enabled: false
+  server:
+    retention: "15d"
+    persistentVolume:
+      size: 50Gi
+  alertmanager:
+    enabled: true
+
+# -----------------------------------------------------------------------------
+# Network Policies - Zero Trust Security Model
+# -----------------------------------------------------------------------------
+# Enable Kubernetes NetworkPolicies for pod-to-pod communication control
+# Implements a zero-trust security model with default deny and explicit allows
+networkPolicies:
+  enabled: true
+  # Default deny all traffic (recommended for production)
+  defaultDenyAll: true
+  # Allow DNS resolution (required for service discovery)
+  allowDNS: true
+  # Allow external HTTPS egress for AI APIs (Anthropic, OpenAI)
+  allowExternalHTTPS: true
+  # Custom CIDR blocks for internal networks (excluded from external egress)
+  internalCIDRs:
+    - 10.0.0.0/8
+    - 172.16.0.0/12
+    - 192.168.0.0/16
+  # Ingress controller namespace (for API server ingress)
+  ingressNamespace: ingress-nginx
+  # Monitoring namespace (for Prometheus scraping)
+  monitoringNamespace: monitoring
+
+# -----------------------------------------------------------------------------
+# Pod Security Context
+# -----------------------------------------------------------------------------
+# Security settings applied at the pod level
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
+  fsGroup: 1000
+  seccompProfile:
+    type: RuntimeDefault
+
+# -----------------------------------------------------------------------------
+# Container Security Context
+# -----------------------------------------------------------------------------
+# Security settings applied at the container level
+containerSecurityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL
+
+# -----------------------------------------------------------------------------
+# Monitoring Configuration
+# -----------------------------------------------------------------------------
+monitoring:
+  enabled: true
+
+  # Prometheus ServiceMonitor configuration
+  serviceMonitor:
+    enabled: true
+    interval: 30s
+    scrapeTimeout: 10s
+
+  # PrometheusRule for alerting
+  prometheusRule:
+    enabled: true
+
+  # Grafana dashboard ConfigMap
+  grafanaDashboard:
+    enabled: true
+
+# =============================================================================
+# POSTGRESQL BACKUP CONFIGURATION
+# =============================================================================
+# Automated daily PostgreSQL backups with S3 upload and configurable retention.
+# Implements disaster recovery best practices for GreenLang production data.
+# =============================================================================
+
+backup:
+  # ---------------------------------------------------------------------------
+  # Enable/Disable Backup CronJob
+  # ---------------------------------------------------------------------------
+  enabled: true
+
+  # ---------------------------------------------------------------------------
+  # Schedule Configuration
+  # ---------------------------------------------------------------------------
+  # Cron schedule expression (default: daily at 2:00 AM UTC)
+  # Format: minute hour day-of-month month day-of-week
+  schedule: "0 2 * * *"
+
+  # Timezone for schedule (requires Kubernetes 1.27+)
+  # Example: "America/New_York", "Europe/London", "UTC"
+  # timeZone: "UTC"
+
+  # Suspend the CronJob (useful during maintenance windows)
+  suspend: false
+
+  # ---------------------------------------------------------------------------
+  # Job Configuration
+  # ---------------------------------------------------------------------------
+  # How to handle concurrent backup jobs
+  # Options: "Allow", "Forbid", "Replace"
+  concurrencyPolicy: Forbid
+
+  # Number of successful job history entries to retain
+  successfulJobsHistoryLimit: 7
+
+  # Number of failed job history entries to retain
+  failedJobsHistoryLimit: 3
+
+  # Deadline (seconds) for starting the job if it misses scheduled time
+  startingDeadlineSeconds: 3600
+
+  # Maximum time (seconds) for the backup job to complete
+  activeDeadlineSeconds: 7200  # 2 hours
+
+  # Number of retries before marking job as failed
+  backoffLimit: 3
+
+  # Time (seconds) to keep completed jobs before automatic deletion
+  ttlSecondsAfterFinished: 86400  # 24 hours
+
+  # ---------------------------------------------------------------------------
+  # Container Image
+  # ---------------------------------------------------------------------------
+  image:
+    repository: postgres
+    tag: "15-alpine"
+    pullPolicy: IfNotPresent
+
+  # Image pull secrets for private registries
+  imagePullSecrets: []
+
+  # ---------------------------------------------------------------------------
+  # Service Account
+  # ---------------------------------------------------------------------------
+  serviceAccount:
+    # Annotations for the backup service account
+    annotations: {}
+    # AWS IRSA example:
+    # eks.amazonaws.com/role-arn: "arn:aws:iam::123456789012:role/GreenLangBackupRole"
+    # GCP Workload Identity example:
+    # iam.gke.io/gcp-service-account: backup@project.iam.gserviceaccount.com
+
+  # ---------------------------------------------------------------------------
+  # Database Connection
+  # ---------------------------------------------------------------------------
+  database:
+    # PostgreSQL host (service name within the cluster)
+    host: "postgresql-service"
+    # PostgreSQL port
+    port: "5432"
+    # Database name to backup
+    name: "greenlang"
+    # Kubernetes secret containing database credentials
+    secretName: "db-credentials"
+    # Key in secret for database username
+    userKey: "DATABASE_USER"
+    # Key in secret for database password
+    passwordKey: "DATABASE_PASSWORD"
+
+  # ---------------------------------------------------------------------------
+  # S3 Storage Configuration
+  # ---------------------------------------------------------------------------
+  s3:
+    # S3 bucket for storing backups
+    bucket: "greenlang-backups-production"
+    # AWS region
+    region: "us-east-1"
+    # Prefix/folder path within the bucket
+    prefix: "postgres/daily"
+    # S3 storage class for backups
+    # Options: STANDARD, STANDARD_IA, INTELLIGENT_TIERING, GLACIER
+    storageClass: "STANDARD_IA"
+
+    # Use IAM Roles for Service Accounts (IRSA) instead of static credentials
+    # RECOMMENDED for AWS EKS deployments
+    useIRSA: false
+
+    # Static credentials (only used if useIRSA is false)
+    # WARNING: Change these values - NEVER use defaults in production
+    accessKeyId: "CHANGE_ME"
+    secretAccessKey: "CHANGE_ME"
+
+  # ---------------------------------------------------------------------------
+  # Backup Settings
+  # ---------------------------------------------------------------------------
+  # Compression algorithm for backups
+  compression: "gzip"
+
+  # ---------------------------------------------------------------------------
+  # Retention Policy
+  # ---------------------------------------------------------------------------
+  retention:
+    # Number of days to keep backups before automatic deletion
+    days: 30
+
+  # ---------------------------------------------------------------------------
+  # Temporary Storage
+  # ---------------------------------------------------------------------------
+  storage:
+    # Size limit for backup staging area
+    size: "10Gi"
+
+  # ---------------------------------------------------------------------------
+  # Notifications
+  # ---------------------------------------------------------------------------
+  notifications:
+    # Enable Slack notifications for backup status
+    enabled: false
+    # Slack channel for notifications
+    slackChannel: "#greenlang-alerts"
+    # Slack webhook URL (store in secrets for production)
+    slackWebhookUrl: ""
+
+  # ---------------------------------------------------------------------------
+  # Resource Limits
+  # ---------------------------------------------------------------------------
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "512Mi"
+    limits:
+      cpu: "2000m"
+      memory: "2Gi"
+
+  # ---------------------------------------------------------------------------
+  # Pod Scheduling
+  # ---------------------------------------------------------------------------
+  # Pod annotations (e.g., for monitoring, service mesh)
+  podAnnotations: {}
+
+  # Node selector for pod placement
+  nodeSelector: {}
+
+  # Tolerations for node taints
+  tolerations: []
+  # Example for dedicated backup nodes:
+  # - key: "dedicated"
+  #   operator: "Equal"
+  #   value: "backup"
+  #   effect: "NoSchedule"
+
+  # Affinity rules for pod placement
+  affinity:
+    nodeAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          preference:
+            matchExpressions:
+              - key: node.kubernetes.io/instance-type
+                operator: In
+                values:
+                  - m5.large
+                  - m5.xlarge
+                  - r5.large
+
+# =============================================================================
+# POSTGRESQL RESTORE CONFIGURATION
+# =============================================================================
+# Configuration for point-in-time recovery from S3 backups.
+# Use with the postgres-restore-job.yaml for disaster recovery.
+# =============================================================================
+
+restore:
+  # ---------------------------------------------------------------------------
+  # Restore Mode
+  # ---------------------------------------------------------------------------
+  # Options:
+  #   - "latest": Restore from the most recent backup
+  #   - "timestamp": Restore to a specific point in time
+  #   - "specific_file": Restore from a specific backup file
+  mode: "latest"
+
+  # Target timestamp for point-in-time recovery
+  # Format: YYYYMMDD_HHMMSS (e.g., "20241209_140000")
+  # Only used when mode is "timestamp"
+  timestamp: ""
+
+  # Specific backup filename to restore
+  # Only used when mode is "specific_file"
+  file: ""
+
+  # Skip creating a backup before restore (NOT recommended)
+  skipPreRestoreBackup: false
+
+  # ---------------------------------------------------------------------------
+  # Resource Limits
+  # ---------------------------------------------------------------------------
+  resources:
+    requests:
+      cpu: "1000m"
+      memory: "1Gi"
+    limits:
+      cpu: "4000m"
+      memory: "4Gi"
+
+  # ---------------------------------------------------------------------------
+  # Temporary Storage
+  # ---------------------------------------------------------------------------
+  storage:
+    # Size limit for restore staging area
+    size: "20Gi"
+
+# -----------------------------------------------------------------------------
+# Extra Configuration
+# -----------------------------------------------------------------------------
+# Additional environment variables for all containers
+extraEnvVars: []
+# Example:
+# - name: EXTRA_VAR
+#   value: "extra-value"
+
+# Additional volumes to mount
+extraVolumes: []
+# Example:
+# - name: extra-config
+#   configMap:
+#     name: extra-configmap
+
+# Additional volume mounts for containers
+extraVolumeMounts: []
+# Example:
+# - name: extra-config
+#   mountPath: /app/config/extra
+#   readOnly: true

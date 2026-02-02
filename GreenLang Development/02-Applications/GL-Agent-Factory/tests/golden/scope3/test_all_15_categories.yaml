@@ -1,0 +1,621 @@
+# Golden Tests: All 15 Categories - Scope 3 Emissions Agent (GL-006)
+# Test Count: 45 tests (3 per category)
+# Description: Comprehensive coverage of all GHG Protocol Scope 3 categories
+
+test_suite:
+  name: "All 15 Categories Golden Tests"
+  agent_id: "emissions/scope3_v1"
+  version: "1.0.0"
+  description: "Validates all 15 Scope 3 categories per GHG Protocol"
+
+tests:
+  # Category 1: Purchased Goods and Services (1-3)
+  - test_id: "scope3_all_cat1_001"
+    test_name: "Cat 1 Standard Purchase"
+    tags: ["scope3", "category1"]
+    input:
+      category: "purchased_goods"
+      reporting_year: 2024
+      spend_data:
+        - category: "steel"
+          spend_usd: 500000
+    expected:
+      category_number: 1
+      category_name: "Purchased Goods and Services"
+      total_emissions_kgco2e: 425000.0
+
+  - test_id: "scope3_all_cat1_002"
+    test_name: "Cat 1 Mixed Materials"
+    tags: ["scope3", "category1"]
+    input:
+      category: "purchased_goods"
+      reporting_year: 2024
+      spend_data:
+        - category: "electronics"
+          spend_usd: 200000
+        - category: "services"
+          spend_usd: 300000
+    expected:
+      total_emissions_kgco2e: 155000.0
+
+  - test_id: "scope3_all_cat1_003"
+    test_name: "Cat 1 Services Only"
+    tags: ["scope3", "category1"]
+    input:
+      category: "purchased_goods"
+      reporting_year: 2024
+      spend_data:
+        - category: "professional_services"
+          spend_usd: 1000000
+    expected:
+      total_emissions_kgco2e: 120000.0
+
+  # Category 2: Capital Goods (4-6)
+  - test_id: "scope3_all_cat2_004"
+    test_name: "Cat 2 Machinery Purchase"
+    tags: ["scope3", "category2"]
+    input:
+      category: "capital_goods"
+      reporting_year: 2024
+      spend_data:
+        - category: "machinery"
+          spend_usd: 2000000
+    expected:
+      category_number: 2
+      category_name: "Capital Goods"
+      total_emissions_kgco2e: 800000.0
+
+  - test_id: "scope3_all_cat2_005"
+    test_name: "Cat 2 IT Equipment"
+    tags: ["scope3", "category2"]
+    input:
+      category: "capital_goods"
+      reporting_year: 2024
+      spend_data:
+        - category: "electronics"
+          spend_usd: 500000
+    expected:
+      total_emissions_kgco2e: 275000.0
+
+  - test_id: "scope3_all_cat2_006"
+    test_name: "Cat 2 Building Investment"
+    tags: ["scope3", "category2"]
+    input:
+      category: "capital_goods"
+      reporting_year: 2024
+      spend_data:
+        - category: "construction"
+          spend_usd: 5000000
+    expected:
+      total_emissions_kgco2e: 1750000.0
+
+  # Category 3: Fuel and Energy (7-9)
+  - test_id: "scope3_all_cat3_007"
+    test_name: "Cat 3 Upstream Electricity"
+    tags: ["scope3", "category3"]
+    input:
+      category: "fuel_energy_activities"
+      reporting_year: 2024
+      spend_data:
+        - category: "electricity_upstream"
+          spend_usd: 100000
+    expected:
+      category_number: 3
+      category_name: "Fuel- and Energy-Related Activities"
+
+  - test_id: "scope3_all_cat3_008"
+    test_name: "Cat 3 T&D Losses"
+    tags: ["scope3", "category3"]
+    input:
+      category: "fuel_energy_activities"
+      reporting_year: 2024
+      spend_data:
+        - category: "electricity_td_losses"
+          spend_usd: 50000
+    expected:
+      category_number: 3
+
+  - test_id: "scope3_all_cat3_009"
+    test_name: "Cat 3 Fuel Production"
+    tags: ["scope3", "category3"]
+    input:
+      category: "fuel_energy_activities"
+      reporting_year: 2024
+      spend_data:
+        - category: "fuel_production"
+          spend_usd: 200000
+    expected:
+      category_number: 3
+
+  # Category 4: Upstream Transportation (10-12)
+  - test_id: "scope3_all_cat4_010"
+    test_name: "Cat 4 Inbound Logistics"
+    tags: ["scope3", "category4"]
+    input:
+      category: "upstream_transport"
+      reporting_year: 2024
+      transport_data:
+        - mode: "road_truck"
+          distance_km: 1000
+          weight_tonnes: 50
+    expected:
+      category_number: 4
+      category_name: "Upstream Transportation and Distribution"
+      total_emissions_kgco2e: 4450.0
+
+  - test_id: "scope3_all_cat4_011"
+    test_name: "Cat 4 Sea Freight"
+    tags: ["scope3", "category4"]
+    input:
+      category: "upstream_transport"
+      reporting_year: 2024
+      transport_data:
+        - mode: "sea_container"
+          distance_km: 5000
+          weight_tonnes: 200
+    expected:
+      total_emissions_kgco2e: 16000.0
+
+  - test_id: "scope3_all_cat4_012"
+    test_name: "Cat 4 Multimodal"
+    tags: ["scope3", "category4"]
+    input:
+      category: "upstream_transport"
+      reporting_year: 2024
+      transport_data:
+        - mode: "sea_container"
+          distance_km: 8000
+          weight_tonnes: 100
+        - mode: "road_truck"
+          distance_km: 300
+          weight_tonnes: 100
+    expected:
+      total_emissions_kgco2e: 15470.0
+
+  # Category 5: Waste (13-15)
+  - test_id: "scope3_all_cat5_013"
+    test_name: "Cat 5 Landfill Waste"
+    tags: ["scope3", "category5"]
+    input:
+      category: "waste_generated"
+      reporting_year: 2024
+      activity_data:
+        - activity_type: "landfill_mixed"
+          quantity: 50000
+          unit: "kg"
+    expected:
+      category_number: 5
+      category_name: "Waste Generated in Operations"
+      total_emissions_kgco2e: 29300.0
+
+  - test_id: "scope3_all_cat5_014"
+    test_name: "Cat 5 Recycling"
+    tags: ["scope3", "category5"]
+    input:
+      category: "waste_generated"
+      reporting_year: 2024
+      activity_data:
+        - activity_type: "recycling_paper"
+          quantity: 10000
+          unit: "kg"
+        - activity_type: "recycling_plastic"
+          quantity: 5000
+          unit: "kg"
+    expected:
+      total_emissions_kgco2e: -16000.0
+
+  - test_id: "scope3_all_cat5_015"
+    test_name: "Cat 5 Mixed Waste"
+    tags: ["scope3", "category5"]
+    input:
+      category: "waste_generated"
+      reporting_year: 2024
+      activity_data:
+        - activity_type: "landfill_mixed"
+          quantity: 30000
+          unit: "kg"
+        - activity_type: "recycling_metal"
+          quantity: 5000
+          unit: "kg"
+    expected:
+      total_emissions_kgco2e: 8580.0
+
+  # Category 6: Business Travel (16-18)
+  - test_id: "scope3_all_cat6_016"
+    test_name: "Cat 6 Air Travel"
+    tags: ["scope3", "category6"]
+    input:
+      category: "business_travel"
+      reporting_year: 2024
+      travel_data:
+        - mode: "air"
+          distance_km: 5000
+          trip_type: "round_trip"
+    expected:
+      category_number: 6
+      category_name: "Business Travel"
+      total_emissions_kgco2e: 1950.0
+
+  - test_id: "scope3_all_cat6_017"
+    test_name: "Cat 6 Rail Travel"
+    tags: ["scope3", "category6"]
+    input:
+      category: "business_travel"
+      reporting_year: 2024
+      travel_data:
+        - mode: "rail_highspeed"
+          distance_km: 1000
+          trip_type: "round_trip"
+    expected:
+      total_emissions_kgco2e: 12.0
+
+  - test_id: "scope3_all_cat6_018"
+    test_name: "Cat 6 Mixed Travel"
+    tags: ["scope3", "category6"]
+    input:
+      category: "business_travel"
+      reporting_year: 2024
+      travel_data:
+        - mode: "air"
+          distance_km: 3000
+          trip_type: "round_trip"
+        - mode: "taxi"
+          distance_km: 50
+          trip_type: "round_trip"
+    expected:
+      total_emissions_kgco2e: 956.3
+
+  # Category 7: Employee Commuting (19-21)
+  - test_id: "scope3_all_cat7_019"
+    test_name: "Cat 7 Car Commuting"
+    tags: ["scope3", "category7"]
+    input:
+      category: "employee_commuting"
+      reporting_year: 2024
+      activity_data:
+        - activity_type: "car_alone"
+          quantity: 500000
+          unit: "km"
+    expected:
+      category_number: 7
+      category_name: "Employee Commuting"
+
+  - test_id: "scope3_all_cat7_020"
+    test_name: "Cat 7 Public Transit"
+    tags: ["scope3", "category7"]
+    input:
+      category: "employee_commuting"
+      reporting_year: 2024
+      activity_data:
+        - activity_type: "public_transit"
+          quantity: 200000
+          unit: "km"
+    expected:
+      category_number: 7
+
+  - test_id: "scope3_all_cat7_021"
+    test_name: "Cat 7 Remote Work"
+    tags: ["scope3", "category7"]
+    input:
+      category: "employee_commuting"
+      reporting_year: 2024
+      activity_data:
+        - activity_type: "remote"
+          quantity: 100000
+          unit: "days"
+    expected:
+      category_number: 7
+
+  # Category 8: Upstream Leased Assets (22-24)
+  - test_id: "scope3_all_cat8_022"
+    test_name: "Cat 8 Leased Vehicles"
+    tags: ["scope3", "category8"]
+    input:
+      category: "upstream_leased_assets"
+      reporting_year: 2024
+      spend_data:
+        - category: "leased_vehicles"
+          spend_usd: 100000
+    expected:
+      category_number: 8
+      category_name: "Upstream Leased Assets"
+
+  - test_id: "scope3_all_cat8_023"
+    test_name: "Cat 8 Leased Equipment"
+    tags: ["scope3", "category8"]
+    input:
+      category: "upstream_leased_assets"
+      reporting_year: 2024
+      spend_data:
+        - category: "leased_equipment"
+          spend_usd: 500000
+    expected:
+      category_number: 8
+
+  - test_id: "scope3_all_cat8_024"
+    test_name: "Cat 8 Leased Buildings"
+    tags: ["scope3", "category8"]
+    input:
+      category: "upstream_leased_assets"
+      reporting_year: 2024
+      spend_data:
+        - category: "leased_buildings"
+          spend_usd: 2000000
+    expected:
+      category_number: 8
+
+  # Category 9: Downstream Transportation (25-27)
+  - test_id: "scope3_all_cat9_025"
+    test_name: "Cat 9 Product Delivery"
+    tags: ["scope3", "category9"]
+    input:
+      category: "downstream_transport"
+      reporting_year: 2024
+      transport_data:
+        - mode: "road_truck"
+          distance_km: 500
+          weight_tonnes: 20
+    expected:
+      category_number: 9
+      category_name: "Downstream Transportation and Distribution"
+      total_emissions_kgco2e: 890.0
+
+  - test_id: "scope3_all_cat9_026"
+    test_name: "Cat 9 Customer Delivery"
+    tags: ["scope3", "category9"]
+    input:
+      category: "downstream_transport"
+      reporting_year: 2024
+      transport_data:
+        - mode: "road_van"
+          distance_km: 100
+          weight_tonnes: 5
+    expected:
+      total_emissions_kgco2e: 97.5
+
+  - test_id: "scope3_all_cat9_027"
+    test_name: "Cat 9 Distribution"
+    tags: ["scope3", "category9"]
+    input:
+      category: "downstream_transport"
+      reporting_year: 2024
+      transport_data:
+        - mode: "road_truck"
+          distance_km: 300
+          weight_tonnes: 30
+        - mode: "road_van"
+          distance_km: 200
+          weight_tonnes: 10
+    expected:
+      total_emissions_kgco2e: 1191.0
+
+  # Category 10: Processing of Sold Products (28-30)
+  - test_id: "scope3_all_cat10_028"
+    test_name: "Cat 10 Component Processing"
+    tags: ["scope3", "category10"]
+    input:
+      category: "processing_of_products"
+      reporting_year: 2024
+      spend_data:
+        - category: "downstream_processing"
+          spend_usd: 1000000
+    expected:
+      category_number: 10
+      category_name: "Processing of Sold Products"
+
+  - test_id: "scope3_all_cat10_029"
+    test_name: "Cat 10 Assembly Operations"
+    tags: ["scope3", "category10"]
+    input:
+      category: "processing_of_products"
+      reporting_year: 2024
+      spend_data:
+        - category: "assembly"
+          spend_usd: 500000
+    expected:
+      category_number: 10
+
+  - test_id: "scope3_all_cat10_030"
+    test_name: "Cat 10 Finishing"
+    tags: ["scope3", "category10"]
+    input:
+      category: "processing_of_products"
+      reporting_year: 2024
+      spend_data:
+        - category: "finishing"
+          spend_usd: 300000
+    expected:
+      category_number: 10
+
+  # Category 11: Use of Sold Products (31-33)
+  - test_id: "scope3_all_cat11_031"
+    test_name: "Cat 11 Product Use Phase"
+    tags: ["scope3", "category11"]
+    input:
+      category: "use_of_sold_products"
+      reporting_year: 2024
+      spend_data:
+        - category: "product_use_energy"
+          spend_usd: 5000000
+    expected:
+      category_number: 11
+      category_name: "Use of Sold Products"
+
+  - test_id: "scope3_all_cat11_032"
+    test_name: "Cat 11 Vehicle Use"
+    tags: ["scope3", "category11"]
+    input:
+      category: "use_of_sold_products"
+      reporting_year: 2024
+      spend_data:
+        - category: "vehicle_fuel"
+          spend_usd: 10000000
+    expected:
+      category_number: 11
+
+  - test_id: "scope3_all_cat11_033"
+    test_name: "Cat 11 Appliance Use"
+    tags: ["scope3", "category11"]
+    input:
+      category: "use_of_sold_products"
+      reporting_year: 2024
+      spend_data:
+        - category: "appliance_electricity"
+          spend_usd: 2000000
+    expected:
+      category_number: 11
+
+  # Category 12: End of Life Treatment (34-36)
+  - test_id: "scope3_all_cat12_034"
+    test_name: "Cat 12 Product Disposal"
+    tags: ["scope3", "category12"]
+    input:
+      category: "end_of_life_treatment"
+      reporting_year: 2024
+      activity_data:
+        - activity_type: "landfill_mixed"
+          quantity: 100000
+          unit: "kg"
+    expected:
+      category_number: 12
+      category_name: "End-of-Life Treatment of Sold Products"
+
+  - test_id: "scope3_all_cat12_035"
+    test_name: "Cat 12 Recycling"
+    tags: ["scope3", "category12"]
+    input:
+      category: "end_of_life_treatment"
+      reporting_year: 2024
+      activity_data:
+        - activity_type: "recycling_metal"
+          quantity: 50000
+          unit: "kg"
+    expected:
+      category_number: 12
+
+  - test_id: "scope3_all_cat12_036"
+    test_name: "Cat 12 Incineration"
+    tags: ["scope3", "category12"]
+    input:
+      category: "end_of_life_treatment"
+      reporting_year: 2024
+      activity_data:
+        - activity_type: "incineration"
+          quantity: 25000
+          unit: "kg"
+    expected:
+      category_number: 12
+
+  # Category 13: Downstream Leased Assets (37-39)
+  - test_id: "scope3_all_cat13_037"
+    test_name: "Cat 13 Leased Properties"
+    tags: ["scope3", "category13"]
+    input:
+      category: "downstream_leased_assets"
+      reporting_year: 2024
+      spend_data:
+        - category: "leased_properties"
+          spend_usd: 3000000
+    expected:
+      category_number: 13
+      category_name: "Downstream Leased Assets"
+
+  - test_id: "scope3_all_cat13_038"
+    test_name: "Cat 13 Leased Equipment"
+    tags: ["scope3", "category13"]
+    input:
+      category: "downstream_leased_assets"
+      reporting_year: 2024
+      spend_data:
+        - category: "leased_equipment"
+          spend_usd: 1000000
+    expected:
+      category_number: 13
+
+  - test_id: "scope3_all_cat13_039"
+    test_name: "Cat 13 Fleet Leasing"
+    tags: ["scope3", "category13"]
+    input:
+      category: "downstream_leased_assets"
+      reporting_year: 2024
+      spend_data:
+        - category: "fleet_leasing"
+          spend_usd: 500000
+    expected:
+      category_number: 13
+
+  # Category 14: Franchises (40-42)
+  - test_id: "scope3_all_cat14_040"
+    test_name: "Cat 14 Franchise Operations"
+    tags: ["scope3", "category14"]
+    input:
+      category: "franchises"
+      reporting_year: 2024
+      spend_data:
+        - category: "franchise_energy"
+          spend_usd: 5000000
+    expected:
+      category_number: 14
+      category_name: "Franchises"
+
+  - test_id: "scope3_all_cat14_041"
+    test_name: "Cat 14 Franchise Network"
+    tags: ["scope3", "category14"]
+    input:
+      category: "franchises"
+      reporting_year: 2024
+      spend_data:
+        - category: "franchise_operations"
+          spend_usd: 10000000
+    expected:
+      category_number: 14
+
+  - test_id: "scope3_all_cat14_042"
+    test_name: "Cat 14 Small Franchises"
+    tags: ["scope3", "category14"]
+    input:
+      category: "franchises"
+      reporting_year: 2024
+      spend_data:
+        - category: "franchise_energy"
+          spend_usd: 1000000
+    expected:
+      category_number: 14
+
+  # Category 15: Investments (43-45)
+  - test_id: "scope3_all_cat15_043"
+    test_name: "Cat 15 Equity Investments"
+    tags: ["scope3", "category15"]
+    input:
+      category: "investments"
+      reporting_year: 2024
+      spend_data:
+        - category: "equity_investments"
+          spend_usd: 50000000
+    expected:
+      category_number: 15
+      category_name: "Investments"
+
+  - test_id: "scope3_all_cat15_044"
+    test_name: "Cat 15 Project Finance"
+    tags: ["scope3", "category15"]
+    input:
+      category: "investments"
+      reporting_year: 2024
+      spend_data:
+        - category: "project_finance"
+          spend_usd: 100000000
+    expected:
+      category_number: 15
+
+  - test_id: "scope3_all_cat15_045"
+    test_name: "Cat 15 Managed Assets"
+    tags: ["scope3", "category15"]
+    input:
+      category: "investments"
+      reporting_year: 2024
+      spend_data:
+        - category: "managed_assets"
+          spend_usd: 200000000
+    expected:
+      category_number: 15

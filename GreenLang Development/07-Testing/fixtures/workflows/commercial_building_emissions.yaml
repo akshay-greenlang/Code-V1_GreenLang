@@ -1,0 +1,82 @@
+name: commercial_building_emissions
+description: Calculate emissions for commercial building with full analysis
+version: 0.0.1
+
+inputs:
+  building_data:
+    type: object
+    required: true
+    schema:
+      type: object
+      properties:
+        location:
+          type: object
+          properties:
+            country: {type: string}
+            city: {type: string}
+        area_sqft: {type: number}
+        occupancy_hours: {type: number}
+        consumption:
+          type: object
+
+outputs:
+  emissions_report:
+    type: object
+    schema:
+      type: object
+      properties:
+        total_co2e_kg: {type: number}
+        total_co2e_tons: {type: number}
+        by_fuel: {type: object}
+        intensity: {type: object}
+        benchmark: {type: object}
+        recommendations: {type: array}
+
+steps:
+  - id: parse_input
+    name: Parse Building Data
+    agent: DataParserAgent
+    inputs:
+      data: $building_data
+    outputs:
+      parsed_data: object
+
+  - id: calculate_emissions
+    name: Calculate Emissions
+    agent: EmissionCalculatorAgent
+    inputs:
+      building: $steps.parse_input.parsed_data
+      dataset_version: latest
+    outputs:
+      emissions: object
+      provenance: object
+
+  - id: benchmark
+    name: Benchmark Performance
+    agent: BenchmarkAgent
+    inputs:
+      emissions: $steps.calculate_emissions.emissions
+      building: $steps.parse_input.parsed_data
+    outputs:
+      rating: string
+      comparison: object
+
+  - id: generate_recommendations
+    name: Generate Recommendations
+    agent: RecommendationAgent
+    inputs:
+      emissions: $steps.calculate_emissions.emissions
+      benchmark: $steps.benchmark
+    outputs:
+      recommendations: array
+
+  - id: compile_report
+    name: Compile Final Report
+    agent: ReportAgent
+    inputs:
+      emissions: $steps.calculate_emissions.emissions
+      benchmark: $steps.benchmark
+      recommendations: $steps.generate_recommendations.recommendations
+      provenance: $steps.calculate_emissions.provenance
+    outputs:
+      report: object

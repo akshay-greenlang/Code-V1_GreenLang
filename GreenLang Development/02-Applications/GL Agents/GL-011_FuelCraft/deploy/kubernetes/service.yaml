@@ -1,0 +1,57 @@
+# GL-011 FuelCraft Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-011-fuelcraft
+  namespace: greenlang
+  labels:
+    app: gl-011-fuelcraft
+    agent-id: GL-011
+    codename: FUELCRAFT
+spec:
+  type: ClusterIP
+  selector:
+    app: gl-011-fuelcraft
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+      protocol: TCP
+    - name: metrics
+      port: 9090
+      targetPort: 9090
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-011-fuelcraft-headless
+  namespace: greenlang
+  labels:
+    app: gl-011-fuelcraft
+spec:
+  type: ClusterIP
+  clusterIP: None
+  selector:
+    app: gl-011-fuelcraft
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-011-fuelcraft-metrics
+  namespace: greenlang
+  labels:
+    app: gl-011-fuelcraft
+    monitoring: prometheus
+spec:
+  type: ClusterIP
+  selector:
+    app: gl-011-fuelcraft
+  ports:
+    - name: metrics
+      port: 9090
+      targetPort: 9090

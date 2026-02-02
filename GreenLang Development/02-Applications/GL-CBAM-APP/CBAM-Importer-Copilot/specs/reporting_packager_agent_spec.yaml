@@ -1,0 +1,94 @@
+apiVersion: greenlang.io/v2
+kind: AgentSpec
+metadata:
+  name: ReportingPackagerAgent_AI
+  version: 1.0.0
+  labels:
+    type: report_generator
+    category: cbam
+    id: cbam-reporting-packager-v1
+    tags: cbam,reporting,eu-registry,compliance,validation
+  annotations:
+    description: Aggregates shipment emissions, performs final validations, and generates
+      EU CBAM Transitional Registry report in required format.
+    created_by: GreenLang CBAM Team
+    created_date: '2025-10-15'
+spec:
+  inputs:
+  - name: shipments_with_emissions
+    type: data
+    format: json
+    schema: ''
+    required: true
+    description: Shipments with calculated emissions from EmissionsCalculatorAgent_AI
+    validation:
+      required_fields:
+      - shipment_id
+      - import_date
+      - quarter
+      - cn_code
+      - product_group
+      - origin_iso
+      - net_mass_kg
+      - emissions_calculation object
+      optional_fields: []
+  - name: reference_data
+    type: data
+    format: json
+    schema: ''
+    required: true
+    description: ''
+  outputs:
+  - name: cbam_transitional_report
+    type: data
+    format: JSON
+    schema: ../schemas/registry_output.schema.json
+    description: Complete CBAM Transitional Registry report
+  - name: secondary_outputs
+    type: data
+    format: json
+    schema: ''
+    description: ''
+  capabilities:
+  - name: capability_1
+    description: Aggregate emissions across all shipments
+  - name: capability_2
+    description: Generate report metadata and declarations
+  - name: capability_3
+    description: Create goods summary (by product group, origin country)
+  - name: capability_4
+    description: Create emissions summary (totals, breakdowns)
+  - name: capability_5
+    description: Perform final CBAM compliance validations
+  - name: capability_6
+    description: Check complex goods 20% threshold
+  - name: capability_7
+    description: Generate validation report with errors/warnings
+  - name: capability_8
+    description: Add provenance and audit trail
+  - name: capability_9
+    description: Output report in JSON format matching registry schema
+  - name: capability_10
+    description: Generate human-readable summary for importer
+  requirements:
+    performance:
+    - Report generation time <1 second for 10,000 shipments
+    quality:
+    - Report passes all CBAM validation rules
+    - 100% completeness (all required sections present)
+    - Summary totals match detailed goods (within rounding tolerance)
+    - Complex goods check performed correctly
+    - Validation errors clearly identified
+    - Output JSON validates against registry_output.schema.json
+  description: Generate submission-ready CBAM Transitional Registry report with all
+    required sections, validations, and documentation
+  dependencies:
+    python_version: '>=3.9'
+    required_packages:
+    - pandas>=2.0.0
+    - jsonschema>=4.0.0
+    - pyyaml>=6.0
+    - pydantic>=2.0.0
+    optional_packages:
+    - markdown>=3.0 (for Markdown summary)
+    - weasyprint>=60.0 (for PDF generation)

@@ -1,0 +1,96 @@
+name: Fuel Emissions Agent (AI-Powered)
+version: 1.0.0
+kind: pack
+pack_schema_version: '1.0'
+author:
+  name: GreenLang Team
+  email: support@greenlang.io
+  organization: GreenLang
+license: MIT
+tags:
+- emissions
+- fuel
+- scope1
+- ai-agent
+- citations
+id: emissions/fuel_ai_v1
+summary: AI-powered fuel emissions calculation with deterministic tool runtime and
+  citation tracking
+owners:
+- greenlang-team
+ai:
+  json_mode: true
+  system_prompt: 'You are a climate emissions expert specialized in calculating fuel-based
+    greenhouse gas emissions.
+
+
+    Your role:
+
+    - Calculate emissions using ONLY the provided tools
+
+    - NEVER guess emission factors or numbers
+
+    - Always cite data sources with EF CIDs
+
+    - Follow GHG Protocol Corporate Standard
+
+    - Use appropriate GWP sets (default: AR6GWP100)
+
+
+    Rules:
+
+    1. Use lookup_emission_factor() to get EFs - NEVER hardcode
+
+    2. Use calculate_emissions() to compute results
+
+    3. Include citations for all emission factors
+
+    4. Validate input units before calculation
+
+    5. Return results with full provenance
+
+    '
+  budget:
+    max_cost_usd: 1.0
+    max_input_tokens: 12000
+    max_output_tokens: 3000
+    max_retries: 3
+  rag_collections:
+  - ghg_protocol_corp
+  - ipcc_ar6_wg3
+  - epa_ghg_inventory
+  tools:
+  - name: lookup_emission_factor
+    description: 'Tool: lookup_emission_factor'
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:lookup_emission_factor
+    safe: true
+  - name: calculate_emissions
+    description: 'Tool: calculate_emissions'
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:calculate_emissions
+    safe: true
+realtime:
+  default_mode: replay
+  snapshot_path: ./snapshots/
+  connectors: []
+provenance:
+  pin_ef: true
+  gwp_set: AR6GWP100
+  record:
+  - seed
+  - temperature
+  - tool_calls
+  - ef_cids
+  - calculation_steps
+  - citations

@@ -1,0 +1,565 @@
+# GL-007 FURNACEPULSE - GreenLang Pack Configuration
+# Furnace Performance Monitoring Agent
+
+name: gl-007-furnacepulse
+version: 1.0.0
+description: |
+  Furnace Performance Monitoring Agent for industrial furnace optimization.
+  Implements real-time TMT monitoring, hotspot detection via IR feeds,
+  efficiency KPI tracking, RUL predictions, and NFPA 86 compliance with
+  deterministic, zero-hallucination calculations per safety standards.
+
+metadata:
+  agent_id: GL-007
+  agent_name: FURNACEPULSE
+  full_name: FurnacePerformanceMonitor
+  category: furnaces
+  tier: 1
+  status: development
+  program_value: "$9B"
+  priority: P1
+  target_quarter: Q1 2026
+  readiness_score: 75
+
+  # Regulatory standards
+  standards:
+    - NFPA 86      # Standard for Ovens and Furnaces
+    - API 560      # Fired Heaters for General Refinery Service
+    - API 530      # Calculation of Heater-Tube Thickness
+    - ISO 13705    # Petroleum and Petrochemical Industries Heaters
+    - ASME PTC 4   # Fired Steam Generators
+
+  # Core methods
+  methods:
+    - TMT (Tube Metal Temperature) Monitoring
+    - Hotspot Detection via IR Camera Feeds
+    - Thermal Efficiency Calculation
+    - Specific Fuel Consumption (SFC) Analysis
+    - Excess Air Optimization
+    - Stack Loss Analysis
+    - RUL (Remaining Useful Life) Prediction
+    - HAZOP/LOPA Safety Integration
+    - SHAP/LIME Explainability
+    - Causal Inference for Root Cause
+
+  # GreenLang compliance
+  greenlang:
+    zero_hallucination: true
+    provenance_tracking: true
+    deterministic_calculations: true
+    audit_logging: true
+    fail_closed: true
+
+# Runtime configuration
+runtime:
+  language: python
+  python_version: ">=3.10"
+  entrypoint: core.orchestrator:FurnacePulseOrchestrator
+
+  # Resource requirements
+  resources:
+    cpu_min: "1000m"
+    cpu_max: "4000m"
+    memory_min: "2Gi"
+    memory_max: "16Gi"
+
+# Dependencies
+dependencies:
+  python:
+    # Core
+    - pydantic>=2.0.0
+    - fastapi>=0.100.0
+    - uvicorn>=0.22.0
+    - aiohttp>=3.8.0
+
+    # Numerical/Scientific
+    - numpy>=1.24.0
+    - scipy>=1.10.0
+    - pandas>=2.0.0
+
+    # ML/Explainability
+    - scikit-learn>=1.2.0
+    - shap>=0.42.0
+    - lime>=0.2.0
+
+    # Time Series / RUL
+    - prophet>=1.1.0
+    - lifelines>=0.27.0
+
+    # Image Processing (IR feeds)
+    - opencv-python>=4.8.0
+    - pillow>=10.0.0
+
+    # Streaming
+    - aiokafka>=0.8.0
+
+    # OPC-UA
+    - asyncua>=1.0.0
+
+    # Metrics
+    - prometheus-client>=0.17.0
+
+    # Visualization
+    - matplotlib>=3.7.0
+    - plotly>=5.15.0
+
+# Inputs (Policy Inputs)
+inputs:
+  furnace_temperature:
+    type: object
+    description: Furnace zone temperature readings
+    properties:
+      zone_id:
+        type: string
+      temperature_C:
+        type: number
+        range: [0, 1500]
+      timestamp:
+        type: string
+        format: datetime
+      signal_quality:
+        type: string
+        enum: [GOOD, BAD, SUSPECT, MISSING]
+
+  fuel_consumption:
+    type: object
+    description: Fuel flow and consumption data
+    properties:
+      fuel_type:
+        type: string
+        enum: [natural_gas, fuel_oil, hydrogen, mixed]
+      flow_rate_kg_h:
+        type: number
+        range: [0, 100000]
+      heating_value_MJ_kg:
+        type: number
+        range: [10, 150]
+      pressure_kPa:
+        type: number
+      temperature_C:
+        type: number
+
+  production_output:
+    type: object
+    description: Production throughput data
+    properties:
+      product_type:
+        type: string
+      throughput_kg_h:
+        type: number
+        range: [0, 1000000]
+      quality_grade:
+        type: string
+
+  tube_temps_tmt:
+    type: array
+    description: Tube Metal Temperature readings
+    items:
+      type: object
+      properties:
+        tube_id:
+          type: string
+        temperature_C:
+          type: number
+          range: [0, 1200]
+        rate_of_rise_C_min:
+          type: number
+          range: [-50, 50]
+        zone:
+          type: string
+          enum: [RADIANT, CONVECTION, SHIELD, CROSSOVER]
+        design_limit_C:
+          type: number
+
+  flame_detection:
+    type: object
+    description: Flame detection sensor data
+    properties:
+      burner_id:
+        type: string
+      flame_present:
+        type: boolean
+      uv_intensity:
+        type: number
+      ir_intensity:
+        type: number
+      flame_quality:
+        type: string
+        enum: [STABLE, UNSTABLE, LIFTING, IMPINGING]
+
+  draft_pressure:
+    type: object
+    description: Furnace draft pressure readings
+    properties:
+      location:
+        type: string
+      pressure_Pa:
+        type: number
+        range: [-500, 500]
+      is_balanced:
+        type: boolean
+
+  refractory_condition:
+    type: object
+    description: Refractory inspection data
+    properties:
+      section_id:
+        type: string
+      condition_score:
+        type: number
+        range: [0, 100]
+      last_inspection_date:
+        type: string
+        format: date
+      hot_spots_detected:
+        type: integer
+
+  ir_camera_feeds:
+    type: array
+    description: Infrared camera thermal imaging data
+    items:
+      type: object
+      properties:
+        camera_id:
+          type: string
+        image_url:
+          type: string
+        max_temperature_C:
+          type: number
+        min_temperature_C:
+          type: number
+        hotspot_count:
+          type: integer
+        timestamp:
+          type: string
+          format: datetime
+
+# Outputs
+outputs:
+  performance_kpis:
+    type: object
+    description: Furnace performance KPIs
+    properties:
+      thermal_efficiency_percent:
+        type: number
+      specific_fuel_consumption_MJ_kg:
+        type: number
+      excess_air_percent:
+        type: number
+      stack_loss_percent:
+        type: number
+      availability_percent:
+        type: number
+      calculation_hash:
+        type: string
+
+  maintenance_alerts:
+    type: array
+    description: Maintenance alert notifications
+    items:
+      type: object
+      properties:
+        alert_id:
+          type: string
+        tier:
+          type: string
+          enum: [ADVISORY, WARNING, URGENT]
+        component:
+          type: string
+        description:
+          type: string
+        recommended_action:
+          type: string
+        due_date:
+          type: string
+          format: date
+
+  efficiency_trends:
+    type: object
+    description: Historical efficiency trend analysis
+    properties:
+      trend_period_days:
+        type: integer
+      efficiency_trend:
+        type: string
+        enum: [IMPROVING, STABLE, DEGRADING]
+      degradation_rate_percent_month:
+        type: number
+      forecast_30d:
+        type: number
+
+  hotspot_detection:
+    type: array
+    description: Detected thermal hotspots
+    items:
+      type: object
+      properties:
+        hotspot_id:
+          type: string
+        location:
+          type: string
+        temperature_C:
+          type: number
+        severity:
+          type: string
+          enum: [LOW, MEDIUM, HIGH, CRITICAL]
+        confidence_percent:
+          type: number
+        ir_snapshot_ref:
+          type: string
+
+  compliance_status:
+    type: object
+    description: NFPA 86 compliance status
+    properties:
+      overall_status:
+        type: string
+        enum: [COMPLIANT, NON_COMPLIANT, PENDING_REVIEW]
+      checklist_items_passed:
+        type: integer
+      checklist_items_failed:
+        type: integer
+      last_audit_date:
+        type: string
+        format: date
+      next_audit_due:
+        type: string
+        format: date
+
+  safety_reports:
+    type: array
+    description: Safety event reports with HAZOP/LOPA references
+    items:
+      type: object
+      properties:
+        event_id:
+          type: string
+        event_type:
+          type: string
+        hazop_reference:
+          type: string
+        lopa_layer:
+          type: string
+        evidence_package_id:
+          type: string
+        timestamp:
+          type: string
+          format: datetime
+
+  explainability_dashboards:
+    type: object
+    description: SHAP/LIME explainability outputs
+    properties:
+      feature_importance:
+        type: array
+      shap_values:
+        type: array
+      lime_explanations:
+        type: array
+      causal_factors:
+        type: array
+
+  rul_predictions:
+    type: array
+    description: Remaining Useful Life predictions
+    items:
+      type: object
+      properties:
+        component_id:
+          type: string
+        component_type:
+          type: string
+        remaining_hours:
+          type: number
+        confidence_lower:
+          type: number
+        confidence_upper:
+          type: number
+        prediction_date:
+          type: string
+          format: datetime
+
+# Connectors
+connectors:
+  opcua:
+    type: opc_ua
+    description: OPC-UA for OT data ingestion (TMT, temperatures, pressures)
+    protocols:
+      - opc_ua
+    security:
+      certificate_required: true
+      network_segmentation: true
+    tags:
+      - furnace.temperature.*
+      - furnace.tmt.*
+      - furnace.draft.*
+      - furnace.fuel.*
+      - furnace.flame.*
+
+  kafka:
+    type: kafka
+    description: Event streaming for real-time data and alerts
+    topics:
+      - furnacepulse.telemetry.raw
+      - furnacepulse.telemetry.canonical
+      - furnacepulse.alerts.generated
+      - furnacepulse.kpis.calculated
+      - furnacepulse.rul.predictions
+      - furnacepulse.compliance.events
+      - furnacepulse.hotspots.detected
+
+  cmms:
+    type: rest
+    description: CMMS integration for work order management
+    endpoints:
+      - /workorders
+      - /assets
+      - /maintenance-schedules
+    authentication:
+      type: oauth2
+
+  graphql:
+    type: graphql
+    description: GraphQL API for dashboards
+    entities:
+      - Furnace
+      - TMTReading
+      - EfficiencyKPI
+      - HotspotAlert
+      - RULPrediction
+      - ComplianceReport
+      - SafetyEvent
+
+  rest:
+    type: rest
+    description: REST API
+    endpoints:
+      - /health
+      - /furnaces
+      - /tmt
+      - /kpis
+      - /alerts
+      - /hotspots
+      - /rul
+      - /compliance
+      - /explain
+
+# Safety configuration
+safety:
+  constraints:
+    - tag: TMT_MAX
+      max_value: 950.0
+      unit: C
+      description: Maximum allowable tube metal temperature
+
+    - tag: TMT_RATE_OF_RISE
+      max_value: 10.0
+      unit: C/min
+      description: Maximum TMT rate of rise before alarm
+
+    - tag: DRAFT_MIN
+      min_value: -250.0
+      unit: Pa
+      description: Minimum draft pressure (negative = suction)
+
+    - tag: DRAFT_MAX
+      max_value: 25.0
+      unit: Pa
+      description: Maximum draft pressure to prevent puffing
+
+    - tag: EXCESS_AIR_MIN
+      min_value: 10.0
+      unit: percent
+      description: Minimum excess air for complete combustion
+
+    - tag: EXCESS_AIR_MAX
+      max_value: 30.0
+      unit: percent
+      description: Maximum excess air before efficiency loss
+
+    - tag: STACK_TEMP_MAX
+      max_value: 450.0
+      unit: C
+      description: Maximum stack temperature
+
+  nfpa_86:
+    flame_supervision: true
+    combustion_air_interlock: true
+    fuel_shutoff_interlock: true
+    purge_verification: true
+    emergency_shutdown: true
+
+  hazop_integration:
+    enabled: true
+    deviation_tracking: true
+    consequence_analysis: true
+
+  lopa_layers:
+    - BPCS (Basic Process Control System)
+    - Operator Response
+    - Safety Instrumented Function (SIF)
+    - Mechanical Relief
+    - Emergency Shutdown
+
+# Monitoring
+monitoring:
+  metrics:
+    enabled: true
+    port: 9090
+    path: /metrics
+
+  health:
+    enabled: true
+    port: 8080
+    path: /health
+
+  alerting:
+    enabled: true
+    channels:
+      - type: log
+      - type: webhook
+        url: "${ALERT_WEBHOOK_URL}"
+      - type: cmms
+        url: "${CMMS_WEBHOOK_URL}"
+
+# Audit configuration
+audit:
+  enabled: true
+  retention_days: 730  # 2 years for safety records
+  tamper_detection: true
+
+  events:
+    - kpi_calculated
+    - hotspot_detected
+    - alert_generated
+    - rul_predicted
+    - compliance_checked
+    - safety_event_logged
+    - setpoint_recommendation
+    - work_order_created
+
+# Deployment
+deployment:
+  replicas: 2
+
+  environment:
+    FURNACEPULSE_LOG_LEVEL: INFO
+    FURNACEPULSE_OPCUA_HOST: "${OPCUA_HOST}"
+    FURNACEPULSE_KAFKA_BROKERS: "${KAFKA_BROKERS}"
+    FURNACEPULSE_DB_CONNECTION: "${DATABASE_URL}"
+    FURNACEPULSE_CMMS_URL: "${CMMS_URL}"
+
+  health_check:
+    http_get:
+      path: /health
+      port: 8080
+    initial_delay_seconds: 30
+    period_seconds: 10
+
+  resources:
+    requests:
+      cpu: "1000m"
+      memory: "2Gi"
+    limits:
+      cpu: "4000m"
+      memory: "16Gi"

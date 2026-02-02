@@ -1,0 +1,39 @@
+{{- if .Values.rbac.create -}}
+{{/*
+RoleBinding - Binds Role to ServiceAccount
+*/}}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "greenlang-agents.fullname" . }}-rolebinding
+  namespace: {{ include "greenlang-agents.namespace" . }}
+  labels:
+    {{- include "greenlang-agents.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "greenlang-agents.fullname" . }}-role
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "greenlang-agents.serviceAccountName" . }}
+    namespace: {{ include "greenlang-agents.namespace" . }}
+---
+{{/*
+RoleBinding for leader election
+*/}}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "greenlang-agents.fullname" . }}-leader-election-rolebinding
+  namespace: {{ include "greenlang-agents.namespace" . }}
+  labels:
+    {{- include "greenlang-agents.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "greenlang-agents.fullname" . }}-leader-election
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "greenlang-agents.serviceAccountName" . }}
+    namespace: {{ include "greenlang-agents.namespace" . }}
+{{- end }}

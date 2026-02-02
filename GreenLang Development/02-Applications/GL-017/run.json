@@ -1,0 +1,570 @@
+{
+  "apiVersion": "greenlang.io/v1",
+  "kind": "AgentRunConfig",
+  "agent_id": "GL-017",
+  "codename": "CONDENSYNC",
+  "name": "CondenserOptimizationAgent",
+  "version": "1.0.0",
+  "description": "Optimizes steam turbine condenser performance through vacuum control, cooling water flow optimization, heat transfer analysis, air inleakage detection, and fouling prediction",
+  "operation_modes": [
+    "monitor",
+    "optimize",
+    "control",
+    "report"
+  ],
+  "ai_config": {
+    "provider": "anthropic",
+    "model": "claude-sonnet-4-20250514",
+    "temperature": 0.0,
+    "seed": 42,
+    "max_tokens": 4096,
+    "top_p": 1.0,
+    "frequency_penalty": 0.0,
+    "presence_penalty": 0.0,
+    "allowed_operations": [
+      "classification",
+      "entity_resolution",
+      "natural_language_generation",
+      "recommendation_explanation",
+      "incident_description",
+      "performance_narrative",
+      "maintenance_guidance",
+      "best_practice_guidance"
+    ],
+    "prohibited_operations": [
+      "numeric_calculation",
+      "heat_transfer_calculation",
+      "lmtd_calculation",
+      "u_value_calculation",
+      "vacuum_pressure_calculation",
+      "flow_optimization_calculation",
+      "fouling_factor_calculation",
+      "cleanliness_factor_calculation",
+      "heat_rate_penalty_calculation"
+    ]
+  },
+  "determinism": {
+    "enabled": true,
+    "provenance_tracking": true,
+    "sha256_hashing": true,
+    "audit_trail": true,
+    "reproducible_results": true,
+    "fixed_seed": 42
+  },
+  "execution": {
+    "timeout_seconds": 120,
+    "max_retries": 3,
+    "retry_delay_seconds": 5,
+    "max_parallel_calculations": 10,
+    "batch_size": 1000,
+    "cache_ttl_seconds": 300,
+    "optimization_interval_seconds": 300
+  },
+  "memory": {
+    "short_term_capacity": 1000,
+    "long_term_enabled": true,
+    "storage_path": "./gl017_memory",
+    "persistence_interval": 100
+  },
+  "integrations": {
+    "scada": {
+      "enabled": true,
+      "protocol": "opc_ua",
+      "polling_interval_seconds": 5,
+      "data_quality_threshold": 0.95,
+      "endpoints": {
+        "primary": "${SCADA_PRIMARY_ENDPOINT}",
+        "backup": "${SCADA_BACKUP_ENDPOINT}"
+      },
+      "tags": {
+        "cooling_water": [
+          "COND.CW.INLET_TEMP",
+          "COND.CW.OUTLET_TEMP",
+          "COND.CW.FLOW",
+          "COND.CW.INLET_PRESSURE",
+          "COND.CW.OUTLET_PRESSURE",
+          "COND.CW.PH",
+          "COND.CW.CONDUCTIVITY"
+        ],
+        "vacuum": [
+          "COND.VAC.PRESSURE_HG",
+          "COND.VAC.AIR_INLEAKAGE",
+          "COND.VAC.EJECTOR1_STATUS",
+          "COND.VAC.EJECTOR2_STATUS",
+          "COND.VAC.LRVP_STATUS"
+        ],
+        "condensate": [
+          "COND.HOTWELL.LEVEL",
+          "COND.HOTWELL.TEMP",
+          "COND.COND.FLOW",
+          "COND.COND.DO",
+          "COND.COND.CONDUCTIVITY"
+        ],
+        "cooling_tower": [
+          "CT.BASIN_TEMP",
+          "CT.WET_BULB",
+          "CT.FAN1_SPEED",
+          "CT.FAN2_SPEED",
+          "CT.FAN3_SPEED",
+          "CT.FAN4_SPEED"
+        ]
+      }
+    },
+    "historian": {
+      "enabled": true,
+      "protocol": "opc_hda",
+      "endpoint": "${HISTORIAN_ENDPOINT}",
+      "query_interval_minutes": 15,
+      "max_rows": 10000
+    },
+    "cmms": {
+      "enabled": true,
+      "protocol": "rest_api",
+      "system_type": "sap_pm",
+      "base_url": "${CMMS_API_URL}",
+      "auth_type": "oauth2",
+      "work_order_generation": true
+    },
+    "cooling_tower_control": {
+      "enabled": true,
+      "protocol": "modbus_tcp",
+      "endpoint": "${CT_CONTROL_ENDPOINT}",
+      "setpoint_tags": [
+        "CT.BASIN_TEMP_SP",
+        "CT.FAN_SPEED_SP"
+      ]
+    },
+    "turbine_control": {
+      "enabled": true,
+      "protocol": "opc_ua",
+      "endpoint": "${TURBINE_CONTROL_ENDPOINT}",
+      "coordination_enabled": true,
+      "backpressure_limit_tag": "ST.BACKPRESSURE_LIMIT"
+    },
+    "message_bus": {
+      "enabled": true,
+      "type": "internal",
+      "topics": [
+        "agent.GL-001",
+        "agent.GL-002",
+        "agent.GL-013",
+        "agent.GL-016"
+      ]
+    }
+  },
+  "monitoring": {
+    "enabled": true,
+    "metrics_collection_interval": 30,
+    "prometheus_enabled": true,
+    "prometheus_port": 9090,
+    "health_check_port": 8080,
+    "log_level": "INFO",
+    "custom_metrics": [
+      "gl017_vacuum_in_hg_abs",
+      "gl017_vacuum_deviation_in_hg",
+      "gl017_cw_inlet_temp_f",
+      "gl017_cw_outlet_temp_f",
+      "gl017_cw_flow_gpm",
+      "gl017_ttd_f",
+      "gl017_lmtd_f",
+      "gl017_u_value_actual",
+      "gl017_cleanliness_factor_pct",
+      "gl017_air_inleakage_scfm",
+      "gl017_heat_rate_penalty_btu_kwh",
+      "gl017_performance_score",
+      "gl017_optimizations_total",
+      "gl017_alerts_total"
+    ]
+  },
+  "compliance": {
+    "standards": [
+      "HEI",
+      "ASME_PTC_12.2",
+      "EPRI",
+      "VGB",
+      "ISO_5151"
+    ],
+    "audit_trail_retention_days": 2555,
+    "reporting_enabled": true,
+    "performance_standards": {
+      "hei_cleanliness_factor": {
+        "excellent": 90,
+        "good": 80,
+        "marginal": 70,
+        "poor": 60
+      },
+      "max_ttd_f": 15,
+      "max_air_inleakage_scfm": 20,
+      "target_vacuum_deviation_in_hg": 0.5
+    },
+    "validation_rules": {
+      "input_validation": true,
+      "output_validation": true,
+      "heat_balance_validation": true,
+      "mass_balance_validation": true,
+      "regulatory_compliance_checks": true
+    }
+  },
+  "optimization": {
+    "vacuum_optimization": {
+      "enabled": true,
+      "optimization_interval_minutes": 5,
+      "target_vacuum_in_hg_abs": 1.5,
+      "max_vacuum_deviation_in_hg": 0.5,
+      "air_inleakage_target_scfm": 5.0,
+      "heat_rate_improvement_factor": 80
+    },
+    "cooling_water_optimization": {
+      "enabled": true,
+      "flow_optimization_enabled": true,
+      "pump_cycling_enabled": true,
+      "vfd_optimization_enabled": true,
+      "min_flow_percent_of_design": 60,
+      "max_flow_percent_of_design": 110,
+      "target_temp_rise_f": 18,
+      "max_temp_rise_f": 25
+    },
+    "heat_transfer_optimization": {
+      "enabled": true,
+      "target_cleanliness_factor_pct": 85,
+      "min_cleanliness_factor_pct": 70,
+      "fouling_prediction_enabled": true,
+      "cleaning_optimization_enabled": true
+    },
+    "cooling_tower_coordination": {
+      "enabled": true,
+      "target_approach_f": 10,
+      "fan_optimization_enabled": true,
+      "basin_temp_control_enabled": true
+    },
+    "turbine_coordination": {
+      "enabled": true,
+      "backpressure_limit_protection": true,
+      "heat_rate_correction_enabled": true,
+      "load_based_optimization": true
+    }
+  },
+  "alerts": {
+    "email_recipients": [
+      "condenser-ops@company.com",
+      "turbine-ops@company.com",
+      "plant-engineering@company.com"
+    ],
+    "slack_webhook": "${SLACK_WEBHOOK_URL}",
+    "pagerduty_key": "${PAGERDUTY_INTEGRATION_KEY}",
+    "thresholds": {
+      "vacuum": {
+        "warning_deviation_in_hg": 0.5,
+        "critical_deviation_in_hg": 1.0,
+        "alarm_low_in_hg_abs": 3.0,
+        "alarm_high_in_hg_abs": 0.5
+      },
+      "cooling_water": {
+        "temp_warning_f": 90,
+        "temp_critical_f": 95,
+        "flow_warning_pct": 80,
+        "flow_critical_pct": 60,
+        "temp_rise_warning_f": 22,
+        "temp_rise_critical_f": 28
+      },
+      "air_inleakage": {
+        "warning_scfm": 10,
+        "critical_scfm": 20,
+        "alarm_scfm": 30
+      },
+      "fouling": {
+        "cleanliness_warning_pct": 75,
+        "cleanliness_critical_pct": 60,
+        "ttd_warning_f": 12,
+        "ttd_critical_f": 18
+      },
+      "heat_rate": {
+        "penalty_warning_btu_kwh": 50,
+        "penalty_critical_btu_kwh": 100,
+        "penalty_alarm_btu_kwh": 150
+      },
+      "performance": {
+        "latency_warning_ms": 500,
+        "latency_critical_ms": 1000,
+        "error_rate_warning": 0.01,
+        "error_rate_critical": 0.05
+      }
+    },
+    "notification_rules": {
+      "critical_alerts": {
+        "channels": ["email", "slack", "pagerduty", "sms"],
+        "throttle_minutes": 30
+      },
+      "high_alerts": {
+        "channels": ["email", "slack", "pagerduty"],
+        "throttle_minutes": 60
+      },
+      "medium_alerts": {
+        "channels": ["email", "slack"],
+        "throttle_minutes": 120
+      },
+      "low_alerts": {
+        "channels": ["email"],
+        "throttle_minutes": 240
+      }
+    }
+  },
+  "security": {
+    "authentication_required": true,
+    "encryption": "TLS_1_3",
+    "audit_logging": true,
+    "rbac_enabled": true,
+    "allowed_roles": [
+      "admin",
+      "plant_engineer",
+      "turbine_engineer",
+      "condenser_engineer",
+      "operator",
+      "viewer"
+    ],
+    "role_permissions": {
+      "admin": [
+        "read",
+        "write",
+        "delete",
+        "configure",
+        "setpoint_write",
+        "alert_acknowledge",
+        "optimization_override"
+      ],
+      "plant_engineer": [
+        "read",
+        "write",
+        "setpoint_write",
+        "alert_acknowledge",
+        "report_generate",
+        "optimization_configure"
+      ],
+      "turbine_engineer": [
+        "read",
+        "write",
+        "setpoint_write",
+        "alert_acknowledge",
+        "turbine_coordination"
+      ],
+      "condenser_engineer": [
+        "read",
+        "write",
+        "setpoint_write",
+        "alert_acknowledge",
+        "cleaning_schedule"
+      ],
+      "operator": [
+        "read",
+        "alert_acknowledge",
+        "setpoint_read"
+      ],
+      "viewer": [
+        "read"
+      ]
+    },
+    "secrets_management": {
+      "provider": "hashicorp_vault",
+      "vault_addr": "${VAULT_ADDR}",
+      "vault_namespace": "greenlang",
+      "secret_path": "secret/gl-017"
+    },
+    "encryption_at_rest": {
+      "enabled": true,
+      "algorithm": "AES-256-GCM"
+    },
+    "encryption_in_transit": {
+      "enabled": true,
+      "protocol": "TLS",
+      "min_version": "1.3"
+    }
+  },
+  "performance": {
+    "targets": {
+      "calculation_latency_p50_ms": 50,
+      "calculation_latency_p95_ms": 200,
+      "calculation_latency_p99_ms": 500,
+      "throughput_calculations_per_second": 100,
+      "error_rate_percent": 0.1,
+      "availability_percent": 99.9
+    },
+    "connection_pools": {
+      "database": {
+        "min_size": 5,
+        "max_size": 20,
+        "timeout_seconds": 30
+      },
+      "redis": {
+        "min_size": 3,
+        "max_size": 10,
+        "timeout_seconds": 5
+      },
+      "http": {
+        "max_connections": 100,
+        "timeout_seconds": 30
+      }
+    },
+    "rate_limiting": {
+      "enabled": true,
+      "requests_per_minute": 600,
+      "burst": 100
+    },
+    "circuit_breakers": {
+      "scada_connection": {
+        "failure_threshold": 5,
+        "timeout_seconds": 30,
+        "recovery_timeout_seconds": 60
+      },
+      "historian_connection": {
+        "failure_threshold": 3,
+        "timeout_seconds": 10,
+        "recovery_timeout_seconds": 30
+      },
+      "cooling_tower_connection": {
+        "failure_threshold": 5,
+        "timeout_seconds": 10,
+        "recovery_timeout_seconds": 30
+      }
+    }
+  },
+  "data_retention": {
+    "real_time_measurements": {
+      "retention_days": 90,
+      "compression": true,
+      "archive_location": "s3"
+    },
+    "hourly_aggregates": {
+      "retention_days": 365,
+      "compression": true
+    },
+    "daily_summaries": {
+      "retention_days": 2555,
+      "compression": true
+    },
+    "optimization_results": {
+      "retention_days": 2555,
+      "compression": true,
+      "immutable": true
+    },
+    "cleanliness_history": {
+      "retention_days": 2555,
+      "compression": true
+    },
+    "audit_logs": {
+      "retention_days": 2555,
+      "compression": false,
+      "immutable": true,
+      "encryption": true
+    },
+    "reports": {
+      "retention_days": 2555,
+      "compression": true
+    }
+  },
+  "calculations": {
+    "heat_transfer": {
+      "lmtd": {
+        "formula": "LMTD = (dT2 - dT1) / ln(dT2 / dT1)",
+        "where": {
+          "dT1": "Steam_temp - CW_outlet_temp (TTD)",
+          "dT2": "Steam_temp - CW_inlet_temp (ITD)"
+        }
+      },
+      "u_value": {
+        "formula": "U = Q / (A * LMTD)",
+        "where": {
+          "Q": "Heat duty in BTU/hr",
+          "A": "Surface area in sq ft",
+          "LMTD": "Log mean temperature difference in F"
+        }
+      },
+      "cleanliness_factor": {
+        "formula": "CF = (U_actual / U_design) * 100",
+        "unit": "percent"
+      },
+      "fouling_factor": {
+        "formula": "Rf = (1/U_actual) - (1/U_clean)",
+        "unit": "hr-sqft-F/BTU"
+      }
+    },
+    "vacuum": {
+      "saturation_temperature": {
+        "formula": "T_sat = (7256 / (21.744 - ln(P_psia))) - 459.67",
+        "where": {
+          "P_psia": "Pressure in psia (in_Hg * 0.491154)"
+        }
+      },
+      "expected_vacuum": {
+        "formula": "Vacuum_expected = 0.95 + 0.02 * max(0, CW_inlet - 70)",
+        "unit": "in Hg abs"
+      }
+    },
+    "cooling_water": {
+      "heat_duty": {
+        "formula": "Q = m * Cp * dT",
+        "where": {
+          "m": "Mass flow rate (gpm * 8.34 * 60) lb/hr",
+          "Cp": "Specific heat (1 BTU/lb-F for water)",
+          "dT": "Temperature rise in F"
+        }
+      },
+      "pump_power": {
+        "formula": "P_hp = (Q * H) / (3960 * eff)",
+        "where": {
+          "Q": "Flow rate in GPM",
+          "H": "Head in feet",
+          "eff": "Pump efficiency (decimal)"
+        }
+      }
+    },
+    "heat_rate": {
+      "penalty_from_vacuum": {
+        "formula": "Penalty = dP * 80",
+        "where": {
+          "dP": "Vacuum deviation in Hg from design"
+        },
+        "unit": "BTU/kWh"
+      },
+      "penalty_from_fouling": {
+        "formula": "Penalty = (100 - CF) * 2",
+        "where": {
+          "CF": "Cleanliness factor percentage"
+        },
+        "unit": "BTU/kWh"
+      }
+    }
+  },
+  "metadata": {
+    "author": "GreenLang Team",
+    "created_date": "2024-12-02",
+    "last_modified": "2024-12-02",
+    "documentation_url": "https://greenlang.io/agents/GL-017",
+    "support_contact": "support@greenlang.io",
+    "repository": "https://github.com/greenlang/gl-017-condensync",
+    "tags": [
+      "condenser",
+      "steam_turbine",
+      "vacuum_optimization",
+      "heat_transfer",
+      "cooling_water",
+      "fouling_prediction",
+      "air_inleakage",
+      "cooling_tower",
+      "backpressure",
+      "energy_efficiency",
+      "power_generation",
+      "industrial"
+    ],
+    "business_metrics": {
+      "tam": "$8B",
+      "target_date": "Q2 2026",
+      "priority": "P1",
+      "target_vacuum_improvement_percent": 15,
+      "target_heat_rate_improvement_btu_kwh": 50,
+      "target_cw_pump_power_reduction_percent": 10,
+      "target_fouling_prediction_accuracy_percent": 90,
+      "target_air_leak_detection_rate_percent": 95,
+      "target_cleaning_schedule_optimization_percent": 20
+    }
+  }
+}

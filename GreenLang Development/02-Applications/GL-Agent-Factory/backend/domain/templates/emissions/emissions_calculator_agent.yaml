@@ -1,0 +1,838 @@
+# =============================================================================
+# Emissions Calculator Agent Template
+# GreenLang Agent Factory - Process Heat Applications
+# =============================================================================
+# Standards: EPA, IPCC, EU ETS
+# Version: 1.0.0
+# =============================================================================
+
+metadata:
+  template_id: emissions_calculator_agent
+  name: Process Heat Emissions Calculator Agent
+  description: >
+    Calculates CO2, NOx, SOx, CO, and particulate emissions from process heat
+    equipment using EPA, IPCC, and EU ETS emission factors. Supports mass
+    balance, emission factor, and CEMS-based calculations.
+  category: emissions
+  version: "1.0.0"
+  status: production
+  author: GreenLang Engineering Team
+  created_at: "2024-12-01T00:00:00Z"
+  updated_at: "2024-12-11T00:00:00Z"
+
+  tags:
+    - emissions
+    - CO2
+    - NOx
+    - SOx
+    - EPA
+    - IPCC
+    - GHG
+
+  equipment_types:
+    - boiler
+    - fired_heater
+    - furnace
+    - kiln
+    - dryer
+
+  industries:
+    - all
+
+  applicable_standards:
+    - EPA 40 CFR Part 60
+    - EPA 40 CFR Part 98
+    - IPCC Guidelines
+    - EU ETS MRR
+
+  compliance_frameworks:
+    - EPA GHG Reporting
+    - EU ETS
+    - CBAM
+    - ISO 14064
+
+# =============================================================================
+# Input Schema
+# =============================================================================
+
+input_schema:
+  name: EmissionsCalculatorInput
+  description: Emissions calculation input parameters
+  version: "1.0.0"
+
+  fields:
+    # Equipment identification
+    equipment_tag:
+      type: string
+      description: Equipment tag
+      required: true
+
+    equipment_type:
+      type: enum
+      description: Type of combustion equipment
+      required: true
+      allowed_values:
+        - boiler
+        - fired_heater
+        - furnace
+        - kiln
+        - dryer
+        - turbine
+        - engine
+
+    # Calculation method
+    calculation_method:
+      type: enum
+      description: Emissions calculation method
+      required: true
+      allowed_values:
+        - emission_factor
+        - mass_balance
+        - cems
+        - material_balance
+
+    # Fuel parameters
+    fuel_type:
+      type: enum
+      description: Fuel type
+      required: true
+      allowed_values:
+        - natural_gas
+        - fuel_oil_no2
+        - fuel_oil_no6
+        - coal_bituminous
+        - coal_subbituminous
+        - coal_lignite
+        - propane
+        - diesel
+        - biomass_wood
+        - biomass_bagasse
+        - refinery_gas
+        - hydrogen
+        - mixed
+
+    fuel_consumption:
+      type: float
+      description: Fuel consumption rate or total
+      required: true
+      unit: kg/hr
+
+    fuel_heating_value:
+      type: float
+      description: Fuel heating value (HHV or LHV)
+      required: true
+      unit: MJ/kg
+
+    heating_value_basis:
+      type: enum
+      description: Heating value basis
+      required: false
+      allowed_values:
+        - HHV
+        - LHV
+      default: HHV
+
+    # Fuel analysis (for mass balance)
+    carbon_content:
+      type: float
+      description: Carbon content of fuel
+      required: false
+      unit: percent_by_mass
+
+    hydrogen_content:
+      type: float
+      description: Hydrogen content of fuel
+      required: false
+      unit: percent_by_mass
+
+    sulfur_content:
+      type: float
+      description: Sulfur content of fuel
+      required: false
+      unit: percent_by_mass
+
+    nitrogen_content:
+      type: float
+      description: Nitrogen content of fuel
+      required: false
+      unit: percent_by_mass
+
+    ash_content:
+      type: float
+      description: Ash content of fuel
+      required: false
+      unit: percent_by_mass
+
+    moisture_content:
+      type: float
+      description: Moisture content of fuel
+      required: false
+      unit: percent_by_mass
+
+    # Operating conditions
+    excess_air:
+      type: float
+      description: Excess air percentage
+      required: false
+      unit: percent
+      default: 15
+
+    flue_gas_temperature:
+      type: float
+      description: Flue gas exit temperature
+      required: false
+      unit: celsius
+
+    operating_hours:
+      type: float
+      description: Operating hours for period
+      required: false
+      unit: hours
+
+    # CEMS data (if applicable)
+    cems_co2:
+      type: float
+      description: CEMS CO2 concentration
+      required: false
+      unit: percent
+
+    cems_nox:
+      type: float
+      description: CEMS NOx concentration
+      required: false
+      unit: ppm
+
+    cems_so2:
+      type: float
+      description: CEMS SO2 concentration
+      required: false
+      unit: ppm
+
+    cems_co:
+      type: float
+      description: CEMS CO concentration
+      required: false
+      unit: ppm
+
+    cems_o2:
+      type: float
+      description: CEMS O2 concentration
+      required: false
+      unit: percent
+
+    flue_gas_flow:
+      type: float
+      description: Measured flue gas flow rate
+      required: false
+      unit: Nm3/hr
+
+    # Control equipment
+    nox_control:
+      type: enum
+      description: NOx control technology
+      required: false
+      allowed_values:
+        - none
+        - low_nox_burner
+        - scr
+        - sncr
+        - lnb_plus_scr
+
+    sox_control:
+      type: enum
+      description: SOx control technology
+      required: false
+      allowed_values:
+        - none
+        - fgd_wet
+        - fgd_dry
+        - seawater_scrubbing
+
+    particulate_control:
+      type: enum
+      description: Particulate control technology
+      required: false
+      allowed_values:
+        - none
+        - esp
+        - baghouse
+        - cyclone
+        - wet_scrubber
+
+    # Regulatory framework
+    regulatory_framework:
+      type: enum
+      description: Applicable regulatory framework
+      required: false
+      allowed_values:
+        - EPA_GHGRP
+        - EU_ETS
+        - IPCC
+        - custom
+      default: EPA_GHGRP
+
+    reporting_period:
+      type: string
+      description: Reporting period
+      required: false
+      default: annual
+
+# =============================================================================
+# Output Schema
+# =============================================================================
+
+output_schema:
+  name: EmissionsCalculatorOutput
+  description: Emissions calculation results
+  version: "1.0.0"
+
+  fields:
+    # CO2 emissions
+    co2_emissions_rate:
+      type: float
+      description: CO2 emission rate
+      unit: kg/hr
+
+    co2_emissions_total:
+      type: float
+      description: Total CO2 emissions for period
+      unit: tonnes
+
+    co2_emission_factor_used:
+      type: float
+      description: CO2 emission factor used
+      unit: kg_CO2/GJ
+
+    # Methane emissions
+    ch4_emissions_rate:
+      type: float
+      description: Methane emission rate
+      unit: kg/hr
+
+    ch4_emissions_total:
+      type: float
+      description: Total methane emissions
+      unit: kg
+
+    # N2O emissions
+    n2o_emissions_rate:
+      type: float
+      description: N2O emission rate
+      unit: kg/hr
+
+    n2o_emissions_total:
+      type: float
+      description: Total N2O emissions
+      unit: kg
+
+    # Total GHG (CO2e)
+    ghg_emissions_total:
+      type: float
+      description: Total GHG emissions (CO2 equivalent)
+      unit: tonnes_CO2e
+
+    # NOx emissions
+    nox_emissions_rate:
+      type: float
+      description: NOx emission rate
+      unit: kg/hr
+
+    nox_emissions_total:
+      type: float
+      description: Total NOx emissions
+      unit: kg
+
+    nox_concentration:
+      type: float
+      description: NOx concentration at reference O2
+      unit: mg/Nm3
+
+    # SOx emissions
+    sox_emissions_rate:
+      type: float
+      description: SOx emission rate
+      unit: kg/hr
+
+    sox_emissions_total:
+      type: float
+      description: Total SOx emissions
+      unit: kg
+
+    sox_concentration:
+      type: float
+      description: SOx concentration at reference O2
+      unit: mg/Nm3
+
+    # CO emissions
+    co_emissions_rate:
+      type: float
+      description: CO emission rate
+      unit: kg/hr
+
+    co_emissions_total:
+      type: float
+      description: Total CO emissions
+      unit: kg
+
+    # Particulates
+    pm_emissions_rate:
+      type: float
+      description: Particulate emission rate
+      unit: kg/hr
+
+    pm_emissions_total:
+      type: float
+      description: Total particulate emissions
+      unit: kg
+
+    # Emission factors
+    emission_factors_used:
+      type: dict
+      description: All emission factors used
+
+    # Flue gas analysis
+    flue_gas_flow_calculated:
+      type: float
+      description: Calculated flue gas flow
+      unit: Nm3/hr
+
+    flue_gas_composition:
+      type: dict
+      description: Flue gas composition
+
+    # Emission intensity
+    co2_intensity_fuel:
+      type: float
+      description: CO2 intensity per fuel input
+      unit: kg_CO2/GJ
+
+    co2_intensity_output:
+      type: float
+      description: CO2 intensity per unit output
+      unit: kg_CO2/MWh
+
+    # Uncertainty
+    uncertainty_co2:
+      type: float
+      description: Uncertainty in CO2 calculation
+      unit: percent
+
+    # Regulatory compliance
+    regulatory_compliance:
+      type: dict
+      description: Compliance with applicable limits
+
+    # Recommendations
+    recommendations:
+      type: list
+      description: Emission reduction recommendations
+
+    # Provenance
+    provenance_hash:
+      type: string
+      description: SHA-256 calculation hash
+
+    calculation_timestamp:
+      type: datetime
+      description: Calculation timestamp
+
+    source_references:
+      type: list
+      description: Emission factors and standards used
+
+# =============================================================================
+# Formulas
+# =============================================================================
+
+formulas:
+  - id: CO2_EMISSION_FACTOR
+    name: CO2 from Emission Factor
+    description: Calculate CO2 using standard emission factors
+    equation: "CO2 = Fuel * HV * EF_CO2"
+    variables:
+      CO2:
+        description: CO2 emissions
+        unit: kg
+        type: float
+      Fuel:
+        description: Fuel consumption
+        unit: kg
+        type: float
+      HV:
+        description: Heating value
+        unit: MJ/kg
+        type: float
+      EF_CO2:
+        description: CO2 emission factor
+        unit: kg_CO2/GJ
+        type: float
+    source:
+      standard: EPA 40 CFR Part 98
+      section: "Subpart C"
+      edition: "2024"
+    application: Standard emission factor method
+
+  - id: CO2_MASS_BALANCE
+    name: CO2 from Mass Balance
+    description: Calculate CO2 from fuel carbon content
+    equation: "CO2 = Fuel * C_content * (44/12) * oxidation_factor"
+    variables:
+      CO2:
+        description: CO2 emissions
+        unit: kg
+        type: float
+      Fuel:
+        description: Fuel consumption
+        unit: kg
+        type: float
+      C_content:
+        description: Carbon content
+        unit: fraction
+        type: float
+      oxidation_factor:
+        description: Carbon oxidation factor
+        unit: dimensionless
+        type: float
+    source:
+      standard: IPCC Guidelines
+      section: "Volume 2, Chapter 2"
+      edition: "2006"
+    application: Mass balance method
+
+  - id: SOX_FROM_SULFUR
+    name: SOx from Sulfur Content
+    description: Calculate SOx from fuel sulfur content
+    equation: "SO2 = Fuel * S_content * (64/32) * (1 - control_eff)"
+    variables:
+      SO2:
+        description: SO2 emissions
+        unit: kg
+        type: float
+      Fuel:
+        description: Fuel consumption
+        unit: kg
+        type: float
+      S_content:
+        description: Sulfur content
+        unit: fraction
+        type: float
+      control_eff:
+        description: Control efficiency
+        unit: fraction
+        type: float
+    source:
+      standard: EPA AP-42
+      section: "Chapter 1"
+      edition: "2023"
+    application: SOx calculation from fuel sulfur
+
+  - id: CO2_FROM_CEMS
+    name: CO2 from CEMS Data
+    description: Calculate CO2 from CEMS measurements
+    equation: "CO2 = Q_fg * [CO2] * (44/22.4) * 1e-6"
+    variables:
+      CO2:
+        description: CO2 emissions
+        unit: kg/hr
+        type: float
+      Q_fg:
+        description: Flue gas flow rate
+        unit: Nm3/hr
+        type: float
+      "[CO2]":
+        description: CO2 concentration
+        unit: ppm
+        type: float
+    source:
+      standard: EPA 40 CFR Part 75
+      section: "Appendix F"
+      edition: "2024"
+    application: CEMS-based calculation
+
+  - id: CO2E_CALCULATION
+    name: CO2 Equivalent
+    description: Calculate total GHG as CO2 equivalent
+    equation: "CO2e = CO2 + CH4*GWP_CH4 + N2O*GWP_N2O"
+    variables:
+      CO2e:
+        description: CO2 equivalent
+        unit: kg
+        type: float
+      CO2:
+        description: CO2 emissions
+        unit: kg
+        type: float
+      CH4:
+        description: Methane emissions
+        unit: kg
+        type: float
+      N2O:
+        description: N2O emissions
+        unit: kg
+        type: float
+      GWP_CH4:
+        description: GWP for methane (28)
+        unit: dimensionless
+        type: float
+      GWP_N2O:
+        description: GWP for N2O (265)
+        unit: dimensionless
+        type: float
+    source:
+      standard: IPCC AR5
+      section: "GWP values"
+      edition: "2014"
+    application: Total GHG calculation
+
+# =============================================================================
+# Standards References
+# =============================================================================
+
+standards:
+  - code: EPA 40 CFR Part 98
+    title: Mandatory Greenhouse Gas Reporting
+    edition: "2024"
+    sections:
+      - "Subpart C: Stationary Combustion"
+    requirements:
+      - CO2 emission factors
+      - Calculation methods
+    compliance_level: required
+
+  - code: IPCC Guidelines
+    title: IPCC Guidelines for National Greenhouse Gas Inventories
+    edition: "2006"
+    sections:
+      - "Volume 2: Energy"
+    requirements:
+      - Tier 1, 2, 3 methods
+      - Default emission factors
+    compliance_level: required
+
+  - code: EU ETS MRR
+    title: EU ETS Monitoring and Reporting Regulation
+    edition: "2023"
+    sections:
+      - "Annex IV"
+    requirements:
+      - Calculation-based approach
+      - Uncertainty requirements
+    compliance_level: required
+
+# =============================================================================
+# Safety Constraints
+# =============================================================================
+
+safety_constraints:
+  - id: SC_MASS_BALANCE_CLOSURE
+    name: Mass Balance Closure
+    description: Mass balance must close within tolerance
+    condition: "mass_balance_error <= 5"
+    action: warn
+    severity: warning
+    message: "Mass balance error {mass_balance_error}% exceeds 5%"
+
+  - id: SC_EMISSION_FACTOR_RANGE
+    name: Emission Factor Range
+    description: Emission factor must be within valid range
+    condition: "co2_emission_factor_used >= 50 and co2_emission_factor_used <= 110"
+    action: warn
+    severity: warning
+    message: "CO2 emission factor {co2_emission_factor_used} outside typical range"
+
+# =============================================================================
+# Processing Pipeline
+# =============================================================================
+
+processing:
+  steps:
+    - id: STEP_01_VALIDATE_INPUTS
+      name: Input Validation
+      type: validation
+      inputs:
+        - all_input_fields
+      outputs:
+        - validation_status
+      error_handling: reject
+
+    - id: STEP_02_SELECT_METHOD
+      name: Select Calculation Method
+      type: classification
+      inputs:
+        - calculation_method
+        - fuel_type
+        - regulatory_framework
+      outputs:
+        - method_selected
+        - emission_factors_used
+      error_handling: propagate
+
+    - id: STEP_03_CALCULATE_CO2
+      name: Calculate CO2 Emissions
+      type: calculation
+      inputs:
+        - fuel_consumption
+        - fuel_heating_value
+        - carbon_content
+        - emission_factors_used
+      outputs:
+        - co2_emissions_rate
+        - co2_emissions_total
+        - co2_emission_factor_used
+      formula_refs:
+        - CO2_EMISSION_FACTOR
+        - CO2_MASS_BALANCE
+      error_handling: propagate
+
+    - id: STEP_04_CALCULATE_OTHER_GHG
+      name: Calculate CH4 and N2O
+      type: calculation
+      inputs:
+        - fuel_consumption
+        - fuel_type
+        - equipment_type
+      outputs:
+        - ch4_emissions_rate
+        - ch4_emissions_total
+        - n2o_emissions_rate
+        - n2o_emissions_total
+      error_handling: propagate
+
+    - id: STEP_05_CALCULATE_CO2E
+      name: Calculate Total GHG
+      type: calculation
+      inputs:
+        - co2_emissions_total
+        - ch4_emissions_total
+        - n2o_emissions_total
+      outputs:
+        - ghg_emissions_total
+      formula_refs:
+        - CO2E_CALCULATION
+      error_handling: propagate
+
+    - id: STEP_06_CALCULATE_NOX
+      name: Calculate NOx Emissions
+      type: calculation
+      inputs:
+        - fuel_consumption
+        - fuel_type
+        - nox_control
+      outputs:
+        - nox_emissions_rate
+        - nox_emissions_total
+        - nox_concentration
+      error_handling: propagate
+
+    - id: STEP_07_CALCULATE_SOX
+      name: Calculate SOx Emissions
+      type: calculation
+      inputs:
+        - fuel_consumption
+        - sulfur_content
+        - sox_control
+      outputs:
+        - sox_emissions_rate
+        - sox_emissions_total
+        - sox_concentration
+      formula_refs:
+        - SOX_FROM_SULFUR
+      error_handling: propagate
+
+    - id: STEP_08_CALCULATE_CO_PM
+      name: Calculate CO and PM
+      type: calculation
+      inputs:
+        - fuel_consumption
+        - fuel_type
+        - particulate_control
+      outputs:
+        - co_emissions_rate
+        - co_emissions_total
+        - pm_emissions_rate
+        - pm_emissions_total
+      error_handling: propagate
+
+    - id: STEP_09_INTENSITY_METRICS
+      name: Calculate Intensity Metrics
+      type: calculation
+      inputs:
+        - co2_emissions_total
+        - fuel_consumption
+        - fuel_heating_value
+      outputs:
+        - co2_intensity_fuel
+        - co2_intensity_output
+      error_handling: propagate
+
+    - id: STEP_10_COMPLIANCE_CHECK
+      name: Regulatory Compliance Check
+      type: validation
+      inputs:
+        - all_emissions
+        - regulatory_framework
+      outputs:
+        - regulatory_compliance
+      error_handling: default
+
+    - id: STEP_11_RECOMMENDATIONS
+      name: Generate Recommendations
+      type: decision
+      inputs:
+        - all_emissions
+        - regulatory_compliance
+      outputs:
+        - recommendations
+      error_handling: default
+
+    - id: STEP_12_PROVENANCE
+      name: Provenance Tracking
+      type: output
+      inputs:
+        - all_inputs
+        - all_outputs
+      outputs:
+        - provenance_hash
+        - calculation_timestamp
+        - source_references
+      error_handling: propagate
+
+# =============================================================================
+# Zero-Hallucination Configuration
+# =============================================================================
+
+zero_hallucination:
+  enabled: true
+  calculation_mode: deterministic
+  allowed_operations:
+    - arithmetic
+    - formula_evaluation
+    - emission_factor_lookup
+    - unit_conversion
+  forbidden_operations:
+    - llm_emission_estimation
+    - ml_emission_prediction
+  require_formula_citation: true
+  require_provenance: true
+  llm_allowed_for:
+    - recommendation_narrative
+
+# =============================================================================
+# Test Cases
+# =============================================================================
+
+test_cases:
+  - name: Natural Gas Boiler Emissions
+    inputs:
+      equipment_tag: B-101
+      equipment_type: boiler
+      calculation_method: emission_factor
+      fuel_type: natural_gas
+      fuel_consumption: 1000
+      fuel_heating_value: 52.2
+      operating_hours: 8760
+      regulatory_framework: EPA_GHGRP
+    expected_outputs:
+      co2_emission_factor_used:
+        min: 50
+        max: 60

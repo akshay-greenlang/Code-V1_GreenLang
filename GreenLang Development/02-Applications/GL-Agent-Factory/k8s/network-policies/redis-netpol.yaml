@@ -1,0 +1,105 @@
+# GreenLang Redis Network Policy
+# Allows:
+#   - Ingress: From API Server, Agent Runtime, and Registry ONLY
+#   - Egress: Restricted (replication only)
+#
+# Redis is used for caching, session management, and task queues
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: redis-netpol
+  namespace: greenlang-production
+  labels:
+    app.kubernetes.io/name: redis-netpol
+    app.kubernetes.io/component: network-policy
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/managed-by: kubectl
+    security.greenlang.ai/policy-type: allow
+    security.greenlang.ai/data-tier: cache
+  annotations:
+    description: "Network policy for Redis - Caching and task queue"
+    security.greenlang.ai/compliance: "SOC2,ISO27001"
+    security.greenlang.ai/data-classification: "internal"
+spec:
+  # Select Redis pods
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: redis
+  policyTypes:
+    - Ingress
+    - Egress
+
+  ingress:
+    # Allow traffic from API Server
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: api-server
+              app.kubernetes.io/component: api
+      ports:
+        - protocol: TCP
+          port: 6379
+
+    # Allow traffic from Agent Runtime
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: agent-runtime
+              app.kubernetes.io/component: agent-runtime
+      ports:
+        - protocol: TCP
+          port: 6379
+
+    # Allow traffic from Registry
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: registry
+              app.kubernetes.io/component: registry
+      ports:
+        - protocol: TCP
+          port: 6379
+
+    # Allow Redis Sentinel communication
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: redis
+      ports:
+        - protocol: TCP
+          port: 6379
+        - protocol: TCP
+          port: 26379
+
+    # Allow Redis replication
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: redis
+      ports:
+        - protocol: TCP
+          port: 6379
+
+    # Allow Prometheus Redis Exporter metrics
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: prometheus
+      ports:
+        - protocol: TCP
+          port: 9121
+
+  egress:
+    # Allow Redis replication traffic (master to replica)
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: redis
+      ports:
+        - protocol: TCP
+          port: 6379
+        - protocol: TCP
+          port: 26379

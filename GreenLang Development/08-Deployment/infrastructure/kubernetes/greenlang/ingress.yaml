@@ -1,0 +1,51 @@
+# Ingress for GreenLang API with TLS termination
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: greenlang-ingress
+  namespace: greenlang
+  labels:
+    app: greenlang
+    component: ingress
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+    nginx.ingress.kubernetes.io/limit-connections: "20"
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - api.greenlang.io
+    - app.greenlang.io
+    secretName: greenlang-tls
+  rules:
+  - host: api.greenlang.io
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: greenlang-api
+            port:
+              number: 8000
+      - path: /graphql
+        pathType: Prefix
+        backend:
+          service:
+            name: greenlang-graphql
+            port:
+              number: 8001
+  - host: app.greenlang.io
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: greenlang-frontend
+            port:
+              number: 3000

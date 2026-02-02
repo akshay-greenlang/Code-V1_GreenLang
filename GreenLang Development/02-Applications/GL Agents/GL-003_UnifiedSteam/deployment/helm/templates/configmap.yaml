@@ -1,0 +1,96 @@
+{{/*
+GL-003 UNIFIEDSTEAM - ConfigMap Template
+*/}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "unifiedsteam.fullname" . }}-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "unifiedsteam.labels" . | nindent 4 }}
+data:
+  # Application settings
+  log-level: {{ .Values.env.UNIFIEDSTEAM_LOG_LEVEL | default "INFO" | quote }}
+  api-port: {{ .Values.containerPorts.http | quote }}
+  grpc-port: {{ .Values.containerPorts.grpc | quote }}
+  metrics-port: {{ .Values.containerPorts.metrics | quote }}
+
+  # Kafka configuration
+  kafka-brokers: {{ include "unifiedsteam.kafkaBrokers" . | quote }}
+  kafka-consumer-group: {{ .Values.config.kafka.consumerGroup | quote }}
+  kafka-auto-offset-reset: {{ .Values.config.kafka.autoOffsetReset | quote }}
+
+  # OPC-UA configuration
+  opcua-endpoint: {{ .Values.config.opcua.endpoint | quote }}
+  opcua-security-mode: {{ .Values.config.opcua.securityMode | quote }}
+  opcua-security-policy: {{ .Values.config.opcua.securityPolicy | quote }}
+  opcua-subscription-interval: {{ .Values.config.opcua.subscriptionInterval | quote }}
+
+  # Redis configuration
+  redis-host: {{ include "unifiedsteam.redisHost" . | quote }}
+  redis-port: {{ .Values.config.redis.port | quote }}
+  redis-db: {{ .Values.config.redis.db | quote }}
+  redis-max-connections: {{ .Values.config.redis.maxConnections | quote }}
+
+  # Optimization settings
+  optimization-interval: {{ .Values.config.optimization.interval | quote }}
+  optimization-horizon: {{ .Values.config.optimization.horizon | quote }}
+  optimization-min-efficiency: {{ .Values.config.optimization.minEfficiency | quote }}
+  optimization-max-iterations: {{ .Values.config.optimization.maxIterations | quote }}
+
+  # Safety limits
+  safety-max-pressure: {{ .Values.config.safety.maxPressure | quote }}
+  safety-min-pressure: {{ .Values.config.safety.minPressure | quote }}
+  safety-max-temperature: {{ .Values.config.safety.maxTemperature | quote }}
+  safety-min-temperature: {{ .Values.config.safety.minTemperature | quote }}
+
+  # OpenTelemetry
+  otel-endpoint: {{ .Values.config.otel.endpoint | quote }}
+  otel-trace-ratio: {{ .Values.config.otel.traceRatio | quote }}
+
+  # Feature flags
+  feature-flags: |
+    {
+      "enable_real_time_optimization": {{ .Values.config.features.enableRealTimeOptimization }},
+      "enable_predictive_maintenance": {{ .Values.config.features.enablePredictiveMaintenance }},
+      "enable_causal_analysis": {{ .Values.config.features.enableCausalAnalysis }},
+      "enable_explainability": {{ .Values.config.features.enableExplainability }},
+      "enable_automatic_control": {{ .Values.config.features.enableAutomaticControl }}
+    }
+
+  # Application configuration
+  application.yaml: |
+    application:
+      name: unifiedsteam
+      version: {{ .Chart.AppVersion | quote }}
+      environment: {{ .Values.global.environment | quote }}
+
+    server:
+      http:
+        port: {{ .Values.containerPorts.http }}
+        host: "0.0.0.0"
+        workers: 4
+      grpc:
+        port: {{ .Values.containerPorts.grpc }}
+        max_workers: 10
+      metrics:
+        port: {{ .Values.containerPorts.metrics }}
+        enabled: true
+
+    logging:
+      level: {{ .Values.env.UNIFIEDSTEAM_LOG_LEVEL | default "INFO" }}
+      format: json
+      include_trace_id: true
+
+    optimization:
+      enabled: {{ .Values.config.features.enableRealTimeOptimization }}
+      interval_seconds: {{ .Values.config.optimization.interval }}
+      prediction_horizon: {{ .Values.config.optimization.horizon }}
+
+    safety:
+      enabled: true
+      limits:
+        pressure_max: {{ .Values.config.safety.maxPressure }}
+        pressure_min: {{ .Values.config.safety.minPressure }}
+        temperature_max: {{ .Values.config.safety.maxTemperature }}
+        temperature_min: {{ .Values.config.safety.minTemperature }}

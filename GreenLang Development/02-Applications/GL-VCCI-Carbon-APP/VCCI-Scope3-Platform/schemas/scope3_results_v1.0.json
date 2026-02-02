@@ -1,0 +1,757 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://vcci.greenlang.com/schemas/scope3_results_v1.0.json",
+  "title": "Scope 3 Emissions Results Schema",
+  "description": "JSON Schema for Scope 3 emissions calculation results. Supports GHG Protocol Category 1/4/6, multi-standard reporting (ESRS, CDP, IFRS S2), uncertainty quantification, and provenance tracking.",
+  "version": "1.0.0",
+  "type": "object",
+  "required": [
+    "result_id",
+    "tenant_id",
+    "reporting_year",
+    "calculation_date",
+    "scope3_category",
+    "total_emissions_tco2e"
+  ],
+  "properties": {
+    "result_id": {
+      "type": "string",
+      "description": "Unique identifier for calculation result",
+      "pattern": "^RESULT-[0-9A-Z]{8,16}$",
+      "examples": ["RESULT-20250125001", "RESULT-ABC123DEF456"]
+    },
+    "tenant_id": {
+      "type": "string",
+      "description": "Multi-tenant identifier (automatic, set by system)",
+      "pattern": "^tenant-[a-z0-9-]+$",
+      "examples": ["tenant-acme-corp", "tenant-global-manufacturing"]
+    },
+    "reporting_year": {
+      "type": "integer",
+      "description": "Reporting year for emissions (fiscal or calendar)",
+      "minimum": 2020,
+      "maximum": 2100,
+      "examples": [2024, 2025]
+    },
+    "reporting_period": {
+      "type": "object",
+      "description": "Reporting period definition",
+      "properties": {
+        "start_date": {
+          "type": "string",
+          "format": "date",
+          "examples": ["2024-01-01", "2024-07-01"]
+        },
+        "end_date": {
+          "type": "string",
+          "format": "date",
+          "examples": ["2024-12-31", "2025-06-30"]
+        },
+        "period_type": {
+          "type": "string",
+          "enum": ["Calendar_Year", "Fiscal_Year", "Quarter", "Month", "Custom"],
+          "examples": ["Calendar_Year", "Fiscal_Year"]
+        }
+      },
+      "required": ["start_date", "end_date", "period_type"]
+    },
+    "calculation_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when calculation was performed",
+      "examples": ["2025-01-25T15:30:00Z"]
+    },
+    "scope3_category": {
+      "type": "string",
+      "description": "GHG Protocol Scope 3 category",
+      "enum": [
+        "Category_1_Purchased_Goods",
+        "Category_4_Upstream_Transportation",
+        "Category_6_Business_Travel",
+        "Multiple_Categories"
+      ],
+      "examples": ["Category_1_Purchased_Goods", "Multiple_Categories"]
+    },
+    "total_emissions_tco2e": {
+      "type": "number",
+      "description": "Total Scope 3 emissions in metric tonnes CO2e",
+      "minimum": 0,
+      "examples": [12500.5, 45000, 100000]
+    },
+    "emissions_by_category": {
+      "type": "object",
+      "description": "Emissions breakdown by GHG Protocol category",
+      "properties": {
+        "category_1_tco2e": {
+          "type": "number",
+          "minimum": 0,
+          "examples": [10000, 50000]
+        },
+        "category_4_tco2e": {
+          "type": "number",
+          "minimum": 0,
+          "examples": [2000, 8000]
+        },
+        "category_6_tco2e": {
+          "type": "number",
+          "minimum": 0,
+          "examples": [500, 1500]
+        }
+      }
+    },
+    "emissions_by_gas": {
+      "type": "object",
+      "description": "Emissions breakdown by greenhouse gas type",
+      "properties": {
+        "co2_tco2e": {
+          "type": "number",
+          "description": "CO2 emissions (in CO2e using GWP factors)",
+          "minimum": 0,
+          "examples": [11000, 42000]
+        },
+        "ch4_tco2e": {
+          "type": "number",
+          "description": "CH4 emissions converted to CO2e",
+          "minimum": 0,
+          "examples": [1000, 2500]
+        },
+        "n2o_tco2e": {
+          "type": "number",
+          "description": "N2O emissions converted to CO2e",
+          "minimum": 0,
+          "examples": [500, 1000]
+        },
+        "gwp_version": {
+          "type": "string",
+          "description": "GWP version used for conversion",
+          "enum": ["AR5", "AR6"],
+          "examples": ["AR5", "AR6"]
+        }
+      }
+    },
+    "emissions_by_calculation_method": {
+      "type": "object",
+      "description": "Emissions breakdown by calculation tier/method",
+      "properties": {
+        "tier_1_supplier_specific_tco2e": {
+          "type": "number",
+          "description": "Emissions calculated using supplier-specific PCF data",
+          "minimum": 0,
+          "examples": [8000, 25000]
+        },
+        "tier_1_coverage_percent": {
+          "type": "number",
+          "description": "% of emissions from Tier 1 data",
+          "minimum": 0,
+          "maximum": 100,
+          "examples": [30, 50, 75]
+        },
+        "tier_2_average_data_tco2e": {
+          "type": "number",
+          "description": "Emissions calculated using average emission factors",
+          "minimum": 0,
+          "examples": [3500, 15000]
+        },
+        "tier_2_coverage_percent": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "examples": [50, 30, 20]
+        },
+        "tier_3_spend_based_tco2e": {
+          "type": "number",
+          "description": "Emissions calculated using spend-based method",
+          "minimum": 0,
+          "examples": [1000, 5000]
+        },
+        "tier_3_coverage_percent": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "examples": [20, 15, 5]
+        }
+      }
+    },
+    "emissions_by_supplier": {
+      "type": "array",
+      "description": "Top N suppliers by emissions contribution (hotspot analysis)",
+      "items": {
+        "type": "object",
+        "properties": {
+          "supplier_id": {
+            "type": "string",
+            "pattern": "^SUPP-[0-9A-Z]{8,16}$",
+            "examples": ["SUPP-20250125001"]
+          },
+          "supplier_name": {
+            "type": "string",
+            "examples": ["Global Steel Manufacturing Ltd"]
+          },
+          "emissions_tco2e": {
+            "type": "number",
+            "minimum": 0,
+            "examples": [5000, 12000]
+          },
+          "emissions_percent": {
+            "type": "number",
+            "description": "% of total Scope 3 emissions",
+            "minimum": 0,
+            "maximum": 100,
+            "examples": [15.5, 8.3]
+          },
+          "spend_usd": {
+            "type": "number",
+            "minimum": 0,
+            "examples": [1000000, 5000000]
+          },
+          "data_quality_score": {
+            "type": "number",
+            "minimum": 1.0,
+            "maximum": 5.0,
+            "examples": [5.0, 4.2]
+          }
+        },
+        "required": ["supplier_id", "supplier_name", "emissions_tco2e", "emissions_percent"]
+      },
+      "examples": [
+        [
+          {
+            "supplier_id": "SUPP-20250125001",
+            "supplier_name": "Global Steel Manufacturing Ltd",
+            "emissions_tco2e": 5000,
+            "emissions_percent": 40.0,
+            "spend_usd": 5000000,
+            "data_quality_score": 5.0
+          }
+        ]
+      ]
+    },
+    "emissions_by_product_category": {
+      "type": "array",
+      "description": "Emissions breakdown by product category",
+      "items": {
+        "type": "object",
+        "properties": {
+          "product_category": {
+            "type": "string",
+            "enum": [
+              "Metals_Steel",
+              "Metals_Aluminum",
+              "Plastics_PE",
+              "Electronics",
+              "Chemicals",
+              "Services_Professional",
+              "Other"
+            ],
+            "examples": ["Metals_Steel", "Electronics"]
+          },
+          "emissions_tco2e": {
+            "type": "number",
+            "minimum": 0,
+            "examples": [8000, 3000]
+          },
+          "emissions_percent": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100,
+            "examples": [64.0, 24.0]
+          }
+        },
+        "required": ["product_category", "emissions_tco2e", "emissions_percent"]
+      }
+    },
+    "emissions_by_facility": {
+      "type": "array",
+      "description": "Emissions breakdown by facility/location",
+      "items": {
+        "type": "object",
+        "properties": {
+          "facility_id": {
+            "type": "string",
+            "examples": ["FAC-001", "DC-NYC-01"]
+          },
+          "facility_name": {
+            "type": "string",
+            "examples": ["Manufacturing Plant A", "Distribution Center NYC"]
+          },
+          "emissions_tco2e": {
+            "type": "number",
+            "minimum": 0,
+            "examples": [6000, 4500]
+          },
+          "emissions_percent": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100,
+            "examples": [48.0, 36.0]
+          }
+        },
+        "required": ["facility_id", "facility_name", "emissions_tco2e", "emissions_percent"]
+      }
+    },
+    "uncertainty_analysis": {
+      "type": "object",
+      "description": "Uncertainty quantification via Monte Carlo simulation",
+      "properties": {
+        "uncertainty_method": {
+          "type": "string",
+          "enum": ["Monte_Carlo", "Pedigree_Matrix", "Conservative_Estimate"],
+          "examples": ["Monte_Carlo"]
+        },
+        "monte_carlo_iterations": {
+          "type": "integer",
+          "description": "Number of Monte Carlo iterations",
+          "minimum": 1000,
+          "examples": [10000, 50000]
+        },
+        "p5_tco2e": {
+          "type": "number",
+          "description": "5th percentile (lower bound)",
+          "minimum": 0,
+          "examples": [10000, 38000]
+        },
+        "p50_median_tco2e": {
+          "type": "number",
+          "description": "50th percentile (median)",
+          "minimum": 0,
+          "examples": [12500, 45000]
+        },
+        "p95_tco2e": {
+          "type": "number",
+          "description": "95th percentile (upper bound)",
+          "minimum": 0,
+          "examples": [15000, 52000]
+        },
+        "uncertainty_range_percent": {
+          "type": "number",
+          "description": "Uncertainty range as % of median ((p95-p5)/p50)",
+          "minimum": 0,
+          "examples": [40.0, 31.1]
+        },
+        "confidence_interval": {
+          "type": "string",
+          "examples": ["90%", "95%"]
+        }
+      }
+    },
+    "data_quality_assessment": {
+      "type": "object",
+      "description": "Overall data quality assessment",
+      "properties": {
+        "overall_dqi_score": {
+          "type": "number",
+          "description": "Weighted average DQI score (1.0-5.0)",
+          "minimum": 1.0,
+          "maximum": 5.0,
+          "examples": [4.5, 3.8]
+        },
+        "overall_dqi_rating": {
+          "type": "string",
+          "enum": ["Excellent", "Good", "Fair", "Poor"],
+          "examples": ["Excellent", "Good"]
+        },
+        "tier_1_data_percent": {
+          "type": "number",
+          "description": "% of emissions from Tier 1 (supplier-specific) data",
+          "minimum": 0,
+          "maximum": 100,
+          "examples": [30, 50]
+        },
+        "records_with_high_quality": {
+          "type": "integer",
+          "description": "Count of records with DQI >= 4.0",
+          "minimum": 0,
+          "examples": [850, 1200]
+        },
+        "records_with_low_quality": {
+          "type": "integer",
+          "description": "Count of records with DQI < 3.0",
+          "minimum": 0,
+          "examples": [50, 100]
+        },
+        "total_records": {
+          "type": "integer",
+          "minimum": 1,
+          "examples": [1000, 1500]
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "description": "Provenance chain reference for audit trail",
+      "properties": {
+        "provenance_chain_hash": {
+          "type": "string",
+          "description": "SHA-256 hash of provenance chain",
+          "pattern": "^[a-f0-9]{64}$",
+          "examples": ["a3b2c1d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2"]
+        },
+        "provenance_s3_uri": {
+          "type": "string",
+          "description": "S3 URI for full provenance chain JSON",
+          "format": "uri",
+          "examples": ["s3://vcci-provenance/tenant-acme/2024/result-20250125001-provenance.json"]
+        },
+        "policy_version": {
+          "type": "string",
+          "description": "OPA policy version used for calculation",
+          "pattern": "^v[0-9]+\\.[0-9]+\\.[0-9]+$",
+          "examples": ["v1.0.0", "v1.2.3"]
+        },
+        "factor_sources": {
+          "type": "array",
+          "description": "Emission factor sources used",
+          "items": {
+            "type": "string",
+            "enum": [
+              "ecoinvent_v3.10",
+              "DESNZ_2024",
+              "EPA_2024",
+              "PACT_Pathfinder",
+              "Catena-X",
+              "SAP_SDX"
+            ]
+          },
+          "examples": [["ecoinvent_v3.10", "PACT_Pathfinder"]]
+        },
+        "calculation_engine_version": {
+          "type": "string",
+          "description": "Version of calculation engine/agent",
+          "examples": ["v2.0.0", "v2.1.5"]
+        }
+      }
+    },
+    "compliance_mappings": {
+      "type": "object",
+      "description": "Mappings to reporting standards",
+      "properties": {
+        "ghg_protocol_conformant": {
+          "type": "boolean",
+          "description": "Whether calculation conforms to GHG Protocol Scope 3 Standard",
+          "examples": [true, false]
+        },
+        "esrs_e1_disclosure": {
+          "type": "object",
+          "description": "ESRS E1 Climate Change disclosure mappings",
+          "properties": {
+            "e1_6_compliant": {
+              "type": "boolean",
+              "description": "ESRS E1-6: Gross Scope 3 emissions",
+              "examples": [true]
+            },
+            "ar_47_pcf_coverage": {
+              "type": "number",
+              "description": "ESRS AR 47: % of procurement covered by supplier PCF",
+              "minimum": 0,
+              "maximum": 100,
+              "examples": [30, 50]
+            }
+          }
+        },
+        "cdp_climate_mappings": {
+          "type": "object",
+          "description": "CDP Climate Change questionnaire mappings",
+          "properties": {
+            "c6_5_scope3_cat1": {
+              "type": "number",
+              "description": "C6.5 - Category 1 emissions (tCO2e)",
+              "minimum": 0,
+              "examples": [10000]
+            },
+            "c6_5_scope3_cat4": {
+              "type": "number",
+              "description": "C6.5 - Category 4 emissions (tCO2e)",
+              "minimum": 0,
+              "examples": [2000]
+            },
+            "c6_5c_pcf_coverage": {
+              "type": "number",
+              "description": "C6.5c - % of emissions calculated using product-level data",
+              "minimum": 0,
+              "maximum": 100,
+              "examples": [30]
+            }
+          }
+        },
+        "ifrs_s2_mappings": {
+          "type": "object",
+          "description": "IFRS S2 Climate-related Disclosures mappings",
+          "properties": {
+            "scope3_upstream_tco2e": {
+              "type": "number",
+              "description": "Scope 3 upstream emissions (Cat 1-8)",
+              "minimum": 0,
+              "examples": [12500]
+            },
+            "disclosure_quality_tier": {
+              "type": "string",
+              "enum": ["Tier_1_Primary", "Tier_2_Secondary", "Tier_3_Estimates"],
+              "examples": ["Tier_2_Secondary"]
+            }
+          }
+        },
+        "iso_14083_conformant": {
+          "type": "boolean",
+          "description": "Whether transport emissions conform to ISO 14083:2023",
+          "examples": [true, false]
+        }
+      }
+    },
+    "comparison_to_baseline": {
+      "type": "object",
+      "description": "Comparison to baseline year and targets",
+      "properties": {
+        "baseline_year": {
+          "type": "integer",
+          "examples": [2022, 2023]
+        },
+        "baseline_emissions_tco2e": {
+          "type": "number",
+          "minimum": 0,
+          "examples": [15000, 50000]
+        },
+        "change_from_baseline_tco2e": {
+          "type": "number",
+          "description": "Absolute change (negative = reduction)",
+          "examples": [-2500, 1000]
+        },
+        "change_from_baseline_percent": {
+          "type": "number",
+          "description": "% change (negative = reduction)",
+          "examples": [-16.7, 5.0]
+        },
+        "sbti_target_year": {
+          "type": "integer",
+          "description": "Science-Based Target year (if applicable)",
+          "examples": [2030, 2035]
+        },
+        "sbti_target_reduction_percent": {
+          "type": "number",
+          "description": "SBTi target reduction % by target year",
+          "minimum": 0,
+          "maximum": 100,
+          "examples": [42, 50]
+        },
+        "on_track_for_target": {
+          "type": "boolean",
+          "description": "Whether current trajectory meets SBTi target",
+          "examples": [true, false]
+        }
+      }
+    },
+    "hotspot_analysis": {
+      "type": "object",
+      "description": "Hotspot analysis results for reduction prioritization",
+      "properties": {
+        "top_20_percent_suppliers_emissions_tco2e": {
+          "type": "number",
+          "description": "Emissions from top 20% of suppliers by spend",
+          "minimum": 0,
+          "examples": [10000, 35000]
+        },
+        "top_20_percent_coverage": {
+          "type": "number",
+          "description": "% of total emissions from top 20% suppliers",
+          "minimum": 0,
+          "maximum": 100,
+          "examples": [80, 75]
+        },
+        "high_priority_suppliers_count": {
+          "type": "integer",
+          "description": "Count of suppliers flagged for engagement (high emissions + low PCF coverage)",
+          "minimum": 0,
+          "examples": [25, 50]
+        },
+        "reduction_potential_tco2e": {
+          "type": "number",
+          "description": "Estimated reduction potential from supplier engagement",
+          "minimum": 0,
+          "examples": [3000, 10000]
+        }
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Metadata for traceability and audit",
+      "properties": {
+        "calculation_agent": {
+          "type": "string",
+          "enum": ["Scope3CalculatorAgent", "Manual_Calculation", "External_Tool"],
+          "examples": ["Scope3CalculatorAgent"]
+        },
+        "calculation_status": {
+          "type": "string",
+          "enum": ["Completed", "Failed", "In_Progress", "Pending_Review"],
+          "examples": ["Completed"]
+        },
+        "validation_status": {
+          "type": "string",
+          "enum": ["Validated", "Validation_Failed", "Pending_Review", "Approved"],
+          "examples": ["Validated"]
+        },
+        "validation_errors": {
+          "type": "array",
+          "items": {"type": "string"},
+          "examples": [[]]
+        },
+        "manual_review_required": {
+          "type": "boolean",
+          "examples": [false, true]
+        },
+        "manual_review_reason": {
+          "type": "string",
+          "examples": ["High uncertainty (>50%)", "Missing data for top suppliers"]
+        },
+        "approved_by": {
+          "type": "string",
+          "description": "User who approved results for reporting",
+          "examples": ["user-sustainability.manager@acme.com"]
+        },
+        "approval_date": {
+          "type": "string",
+          "format": "date-time",
+          "examples": ["2025-01-26T10:00:00Z"]
+        },
+        "created_by": {
+          "type": "string",
+          "examples": ["system-scope3-calculator"]
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "examples": ["2025-01-25T15:30:00Z"]
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time",
+          "examples": ["2025-01-26T10:00:00Z"]
+        }
+      }
+    },
+    "custom_fields": {
+      "type": "object",
+      "description": "Customer-specific custom fields (flexible schema)",
+      "additionalProperties": true,
+      "examples": [
+        {
+          "business_unit": "North America Operations",
+          "report_type": "Annual Sustainability Report",
+          "auditor": "Ernst & Young"
+        }
+      ]
+    }
+  },
+  "examples": [
+    {
+      "result_id": "RESULT-20250125001",
+      "tenant_id": "tenant-acme-corp",
+      "reporting_year": 2024,
+      "reporting_period": {
+        "start_date": "2024-01-01",
+        "end_date": "2024-12-31",
+        "period_type": "Calendar_Year"
+      },
+      "calculation_date": "2025-01-25T15:30:00Z",
+      "scope3_category": "Multiple_Categories",
+      "total_emissions_tco2e": 12500,
+      "emissions_by_category": {
+        "category_1_tco2e": 10000,
+        "category_4_tco2e": 2000,
+        "category_6_tco2e": 500
+      },
+      "emissions_by_gas": {
+        "co2_tco2e": 11000,
+        "ch4_tco2e": 1000,
+        "n2o_tco2e": 500,
+        "gwp_version": "AR5"
+      },
+      "emissions_by_calculation_method": {
+        "tier_1_supplier_specific_tco2e": 3750,
+        "tier_1_coverage_percent": 30.0,
+        "tier_2_average_data_tco2e": 6250,
+        "tier_2_coverage_percent": 50.0,
+        "tier_3_spend_based_tco2e": 2500,
+        "tier_3_coverage_percent": 20.0
+      },
+      "emissions_by_supplier": [
+        {
+          "supplier_id": "SUPP-20250125001",
+          "supplier_name": "Global Steel Manufacturing Ltd",
+          "emissions_tco2e": 5000,
+          "emissions_percent": 40.0,
+          "spend_usd": 5000000,
+          "data_quality_score": 5.0
+        }
+      ],
+      "uncertainty_analysis": {
+        "uncertainty_method": "Monte_Carlo",
+        "monte_carlo_iterations": 10000,
+        "p5_tco2e": 10000,
+        "p50_median_tco2e": 12500,
+        "p95_tco2e": 15000,
+        "uncertainty_range_percent": 40.0,
+        "confidence_interval": "90%"
+      },
+      "data_quality_assessment": {
+        "overall_dqi_score": 4.2,
+        "overall_dqi_rating": "Good",
+        "tier_1_data_percent": 30.0,
+        "records_with_high_quality": 850,
+        "records_with_low_quality": 50,
+        "total_records": 1000
+      },
+      "provenance": {
+        "provenance_chain_hash": "a3b2c1d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2",
+        "provenance_s3_uri": "s3://vcci-provenance/tenant-acme/2024/result-20250125001-provenance.json",
+        "policy_version": "v1.0.0",
+        "factor_sources": ["ecoinvent_v3.10", "PACT_Pathfinder"],
+        "calculation_engine_version": "v2.0.0"
+      },
+      "compliance_mappings": {
+        "ghg_protocol_conformant": true,
+        "esrs_e1_disclosure": {
+          "e1_6_compliant": true,
+          "ar_47_pcf_coverage": 30.0
+        },
+        "cdp_climate_mappings": {
+          "c6_5_scope3_cat1": 10000,
+          "c6_5_scope3_cat4": 2000,
+          "c6_5c_pcf_coverage": 30.0
+        },
+        "ifrs_s2_mappings": {
+          "scope3_upstream_tco2e": 12500,
+          "disclosure_quality_tier": "Tier_2_Secondary"
+        },
+        "iso_14083_conformant": true
+      },
+      "comparison_to_baseline": {
+        "baseline_year": 2022,
+        "baseline_emissions_tco2e": 15000,
+        "change_from_baseline_tco2e": -2500,
+        "change_from_baseline_percent": -16.7,
+        "sbti_target_year": 2030,
+        "sbti_target_reduction_percent": 42,
+        "on_track_for_target": true
+      },
+      "hotspot_analysis": {
+        "top_20_percent_suppliers_emissions_tco2e": 10000,
+        "top_20_percent_coverage": 80.0,
+        "high_priority_suppliers_count": 25,
+        "reduction_potential_tco2e": 3000
+      },
+      "metadata": {
+        "calculation_agent": "Scope3CalculatorAgent",
+        "calculation_status": "Completed",
+        "validation_status": "Validated",
+        "validation_errors": [],
+        "manual_review_required": false,
+        "created_by": "system-scope3-calculator",
+        "created_at": "2025-01-25T15:30:00Z",
+        "updated_at": "2025-01-25T15:30:00Z"
+      }
+    }
+  ],
+  "definitions": {
+    "comment": "JSON Schema definitions for reusable components"
+  }
+}

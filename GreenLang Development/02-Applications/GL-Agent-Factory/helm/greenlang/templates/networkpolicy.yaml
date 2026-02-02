@@ -1,0 +1,642 @@
+{{/*
+GreenLang Network Policies - Zero Trust Security Model
+This template creates all network policies when networkPolicies.enabled is true
+*/}}
+{{- if .Values.networkPolicies.enabled }}
+# =============================================================================
+# DEFAULT DENY ALL - Zero Trust Foundation
+# =============================================================================
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "greenlang.fullname" . }}-default-deny-all
+  namespace: {{ include "greenlang.namespace" . }}
+  labels:
+    {{- include "greenlang.labels" . | nindent 4 }}
+    app.kubernetes.io/component: network-policy
+    security.greenlang.ai/policy-type: deny-all
+  annotations:
+    description: "Default deny all ingress and egress traffic - Zero Trust"
+    security.greenlang.ai/compliance: "SOC2,ISO27001"
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress: []
+  egress: []
+---
+# =============================================================================
+# ALLOW DNS - Required for Service Discovery
+# =============================================================================
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "greenlang.fullname" . }}-allow-dns
+  namespace: {{ include "greenlang.namespace" . }}
+  labels:
+    {{- include "greenlang.labels" . | nindent 4 }}
+    app.kubernetes.io/component: network-policy
+    security.greenlang.ai/policy-type: allow-dns
+  annotations:
+    description: "Allow DNS resolution for all pods"
+spec:
+  podSelector: {}
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+        - podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+---
+# =============================================================================
+# API SERVER NETWORK POLICY
+# =============================================================================
+{{- if .Values.apiServer.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "greenlang.fullname" . }}-api-server-netpol
+  namespace: {{ include "greenlang.namespace" . }}
+  labels:
+    {{- include "greenlang.apiServer.labels" . | nindent 4 }}
+    app.kubernetes.io/component: network-policy
+    security.greenlang.ai/policy-type: allow
+  annotations:
+    description: "Network policy for API Server"
+    security.greenlang.ai/compliance: "SOC2,ISO27001"
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "greenlang.apiServer.selectorLabels" . | nindent 6 }}
+  policyTypes:
+    - Ingress
+    - Egress
+
+  ingress:
+    # Allow from Ingress Controller
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: ingress-nginx
+              app.kubernetes.io/component: controller
+      ports:
+        - protocol: TCP
+          port: {{ .Values.apiServer.service.targetPort }}
+
+    # Allow from any ingress controller namespace
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              app.kubernetes.io/name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: {{ .Values.apiServer.service.targetPort }}
+
+    # Allow Prometheus scraping
+    {{- if .Values.monitoring.enabled }}
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: prometheus
+      ports:
+        - protocol: TCP
+          port: {{ .Values.apiServer.service.targetPort }}
+        - protocol: TCP
+          port: {{ .Values.apiServer.service.metricsPort }}
+    {{- end }}
+
+    # Allow kubelet health checks
+    - from:
+        - ipBlock:
+            cidr: 10.0.0.0/8
+      ports:
+        - protocol: TCP
+          port: {{ .Values.apiServer.service.targetPort }}
+
+  egress:
+    # Allow to PostgreSQL
+    {{- if .Values.postgresql.enabled }}
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: postgresql
+      ports:
+        - protocol: TCP
+          port: 5432
+    {{- end }}
+
+    # Allow to Redis
+    {{- if .Values.redis.enabled }}
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: redis
+      ports:
+        - protocol: TCP
+          port: 6379
+    {{- end }}
+
+    # Allow to Agent Runtime
+    {{- if .Values.agentRuntime.enabled }}
+    - to:
+        - podSelector:
+            matchLabels:
+              {{- include "greenlang.agentRuntime.selectorLabels" . | nindent 14 }}
+      ports:
+        - protocol: TCP
+          port: {{ .Values.agentRuntime.service.targetPort }}
+    {{- end }}
+
+    # Allow to Registry
+    {{- if .Values.registry.enabled }}
+    - to:
+        - podSelector:
+            matchLabels:
+              {{- include "greenlang.registry.selectorLabels" . | nindent 14 }}
+      ports:
+        - protocol: TCP
+          port: {{ .Values.registry.service.targetPort }}
+    {{- end }}
+
+    # Allow to external APIs (HTTPS only)
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 10.0.0.0/8
+              - 172.16.0.0/12
+              - 192.168.0.0/16
+      ports:
+        - protocol: TCP
+          port: 443
+
+    # Allow to OTEL Collector
+    {{- if .Values.monitoring.enabled }}
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: otel-collector
+      ports:
+        - protocol: TCP
+          port: 4317
+        - protocol: TCP
+          port: 4318
+    {{- end }}
+{{- end }}
+---
+# =============================================================================
+# AGENT RUNTIME NETWORK POLICY
+# =============================================================================
+{{- if .Values.agentRuntime.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "greenlang.fullname" . }}-agent-runtime-netpol
+  namespace: {{ include "greenlang.namespace" . }}
+  labels:
+    {{- include "greenlang.agentRuntime.labels" . | nindent 4 }}
+    app.kubernetes.io/component: network-policy
+    security.greenlang.ai/policy-type: allow
+  annotations:
+    description: "Network policy for Agent Runtime - Internal only"
+    security.greenlang.ai/exposure: "internal-only"
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "greenlang.agentRuntime.selectorLabels" . | nindent 6 }}
+  policyTypes:
+    - Ingress
+    - Egress
+
+  ingress:
+    # ONLY from API Server
+    {{- if .Values.apiServer.enabled }}
+    - from:
+        - podSelector:
+            matchLabels:
+              {{- include "greenlang.apiServer.selectorLabels" . | nindent 14 }}
+      ports:
+        - protocol: TCP
+          port: {{ .Values.agentRuntime.service.targetPort }}
+    {{- end }}
+
+    # Allow Prometheus scraping
+    {{- if .Values.monitoring.enabled }}
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: prometheus
+      ports:
+        - protocol: TCP
+          port: {{ .Values.agentRuntime.service.targetPort }}
+        - protocol: TCP
+          port: {{ .Values.agentRuntime.service.metricsPort }}
+    {{- end }}
+
+    # Allow kubelet health checks
+    - from:
+        - ipBlock:
+            cidr: 10.0.0.0/8
+      ports:
+        - protocol: TCP
+          port: {{ .Values.agentRuntime.service.targetPort }}
+
+  egress:
+    # Allow to PostgreSQL
+    {{- if .Values.postgresql.enabled }}
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: postgresql
+      ports:
+        - protocol: TCP
+          port: 5432
+    {{- end }}
+
+    # Allow to Redis
+    {{- if .Values.redis.enabled }}
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: redis
+      ports:
+        - protocol: TCP
+          port: 6379
+    {{- end }}
+
+    # Allow to Registry
+    {{- if .Values.registry.enabled }}
+    - to:
+        - podSelector:
+            matchLabels:
+              {{- include "greenlang.registry.selectorLabels" . | nindent 14 }}
+      ports:
+        - protocol: TCP
+          port: {{ .Values.registry.service.targetPort }}
+    {{- end }}
+
+    # Allow to external APIs (HTTPS only)
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 10.0.0.0/8
+              - 172.16.0.0/12
+              - 192.168.0.0/16
+      ports:
+        - protocol: TCP
+          port: 443
+
+    # Allow to OTEL Collector
+    {{- if .Values.monitoring.enabled }}
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: otel-collector
+      ports:
+        - protocol: TCP
+          port: 4317
+        - protocol: TCP
+          port: 4318
+    {{- end }}
+{{- end }}
+---
+# =============================================================================
+# REGISTRY NETWORK POLICY
+# =============================================================================
+{{- if .Values.registry.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "greenlang.fullname" . }}-registry-netpol
+  namespace: {{ include "greenlang.namespace" . }}
+  labels:
+    {{- include "greenlang.registry.labels" . | nindent 4 }}
+    app.kubernetes.io/component: network-policy
+    security.greenlang.ai/policy-type: allow
+  annotations:
+    description: "Network policy for Registry - Internal only"
+    security.greenlang.ai/exposure: "internal-only"
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "greenlang.registry.selectorLabels" . | nindent 6 }}
+  policyTypes:
+    - Ingress
+    - Egress
+
+  ingress:
+    # From API Server
+    {{- if .Values.apiServer.enabled }}
+    - from:
+        - podSelector:
+            matchLabels:
+              {{- include "greenlang.apiServer.selectorLabels" . | nindent 14 }}
+      ports:
+        - protocol: TCP
+          port: {{ .Values.registry.service.targetPort }}
+    {{- end }}
+
+    # From Agent Runtime
+    {{- if .Values.agentRuntime.enabled }}
+    - from:
+        - podSelector:
+            matchLabels:
+              {{- include "greenlang.agentRuntime.selectorLabels" . | nindent 14 }}
+      ports:
+        - protocol: TCP
+          port: {{ .Values.registry.service.targetPort }}
+    {{- end }}
+
+    # Allow Prometheus scraping
+    {{- if .Values.monitoring.enabled }}
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: prometheus
+      ports:
+        - protocol: TCP
+          port: {{ .Values.registry.service.targetPort }}
+        - protocol: TCP
+          port: {{ .Values.registry.service.metricsPort }}
+    {{- end }}
+
+    # Allow kubelet health checks
+    - from:
+        - ipBlock:
+            cidr: 10.0.0.0/8
+      ports:
+        - protocol: TCP
+          port: {{ .Values.registry.service.targetPort }}
+
+  egress:
+    # Allow to PostgreSQL ONLY
+    {{- if .Values.postgresql.enabled }}
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: postgresql
+      ports:
+        - protocol: TCP
+          port: 5432
+    {{- end }}
+
+    # Allow to Redis
+    {{- if .Values.redis.enabled }}
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: redis
+      ports:
+        - protocol: TCP
+          port: 6379
+    {{- end }}
+
+    # Allow to OTEL Collector
+    {{- if .Values.monitoring.enabled }}
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: otel-collector
+      ports:
+        - protocol: TCP
+          port: 4317
+        - protocol: TCP
+          port: 4318
+    {{- end }}
+{{- end }}
+---
+# =============================================================================
+# POSTGRESQL NETWORK POLICY
+# =============================================================================
+{{- if .Values.postgresql.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "greenlang.fullname" . }}-postgresql-netpol
+  namespace: {{ include "greenlang.namespace" . }}
+  labels:
+    {{- include "greenlang.labels" . | nindent 4 }}
+    app.kubernetes.io/component: network-policy
+    security.greenlang.ai/policy-type: allow
+    security.greenlang.ai/data-tier: database
+  annotations:
+    description: "Network policy for PostgreSQL"
+    security.greenlang.ai/compliance: "SOC2,ISO27001,GDPR"
+    security.greenlang.ai/data-classification: "confidential"
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: postgresql
+  policyTypes:
+    - Ingress
+    - Egress
+
+  ingress:
+    # From API Server
+    {{- if .Values.apiServer.enabled }}
+    - from:
+        - podSelector:
+            matchLabels:
+              {{- include "greenlang.apiServer.selectorLabels" . | nindent 14 }}
+      ports:
+        - protocol: TCP
+          port: 5432
+    {{- end }}
+
+    # From Agent Runtime
+    {{- if .Values.agentRuntime.enabled }}
+    - from:
+        - podSelector:
+            matchLabels:
+              {{- include "greenlang.agentRuntime.selectorLabels" . | nindent 14 }}
+      ports:
+        - protocol: TCP
+          port: 5432
+    {{- end }}
+
+    # From Registry
+    {{- if .Values.registry.enabled }}
+    - from:
+        - podSelector:
+            matchLabels:
+              {{- include "greenlang.registry.selectorLabels" . | nindent 14 }}
+      ports:
+        - protocol: TCP
+          port: 5432
+    {{- end }}
+
+    # PostgreSQL replication
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: postgresql
+      ports:
+        - protocol: TCP
+          port: 5432
+
+    # Prometheus PostgreSQL Exporter
+    {{- if .Values.monitoring.enabled }}
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: prometheus
+      ports:
+        - protocol: TCP
+          port: 9187
+    {{- end }}
+
+  egress:
+    # PostgreSQL replication
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: postgresql
+      ports:
+        - protocol: TCP
+          port: 5432
+
+    # S3 backup (HTTPS)
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 10.0.0.0/8
+              - 172.16.0.0/12
+              - 192.168.0.0/16
+      ports:
+        - protocol: TCP
+          port: 443
+{{- end }}
+---
+# =============================================================================
+# REDIS NETWORK POLICY
+# =============================================================================
+{{- if .Values.redis.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "greenlang.fullname" . }}-redis-netpol
+  namespace: {{ include "greenlang.namespace" . }}
+  labels:
+    {{- include "greenlang.labels" . | nindent 4 }}
+    app.kubernetes.io/component: network-policy
+    security.greenlang.ai/policy-type: allow
+    security.greenlang.ai/data-tier: cache
+  annotations:
+    description: "Network policy for Redis"
+    security.greenlang.ai/compliance: "SOC2,ISO27001"
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: redis
+  policyTypes:
+    - Ingress
+    - Egress
+
+  ingress:
+    # From API Server
+    {{- if .Values.apiServer.enabled }}
+    - from:
+        - podSelector:
+            matchLabels:
+              {{- include "greenlang.apiServer.selectorLabels" . | nindent 14 }}
+      ports:
+        - protocol: TCP
+          port: 6379
+    {{- end }}
+
+    # From Agent Runtime
+    {{- if .Values.agentRuntime.enabled }}
+    - from:
+        - podSelector:
+            matchLabels:
+              {{- include "greenlang.agentRuntime.selectorLabels" . | nindent 14 }}
+      ports:
+        - protocol: TCP
+          port: 6379
+    {{- end }}
+
+    # From Registry
+    {{- if .Values.registry.enabled }}
+    - from:
+        - podSelector:
+            matchLabels:
+              {{- include "greenlang.registry.selectorLabels" . | nindent 14 }}
+      ports:
+        - protocol: TCP
+          port: 6379
+    {{- end }}
+
+    # Redis replication and Sentinel
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: redis
+      ports:
+        - protocol: TCP
+          port: 6379
+        - protocol: TCP
+          port: 26379
+
+    # Prometheus Redis Exporter
+    {{- if .Values.monitoring.enabled }}
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: prometheus
+      ports:
+        - protocol: TCP
+          port: 9121
+    {{- end }}
+
+  egress:
+    # Redis replication
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: redis
+      ports:
+        - protocol: TCP
+          port: 6379
+        - protocol: TCP
+          port: 26379
+{{- end }}
+{{- end }}

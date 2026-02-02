@@ -1,0 +1,749 @@
+{
+  "$defs": {
+    "AIBudget": {
+      "additionalProperties": false,
+      "description": "AI cost and token budget constraints.\n\nPrevents runaway LLM costs in production agents.\nAll constraints are optional (None = unlimited, use with caution!).\n\nExample:\n    >>> AIBudget(\n    ...     max_cost_usd=1.00,\n    ...     max_input_tokens=15000,\n    ...     max_output_tokens=2000,\n    ...     max_retries=3\n    ... )",
+      "properties": {
+        "max_cost_usd": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Maximum USD cost for LLM calls (cumulative per agent run)",
+          "title": "Max Cost Usd"
+        },
+        "max_input_tokens": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Maximum input tokens (cumulative)",
+          "title": "Max Input Tokens"
+        },
+        "max_output_tokens": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Maximum output tokens (cumulative)",
+          "title": "Max Output Tokens"
+        },
+        "max_retries": {
+          "anyOf": [
+            {
+              "maximum": 10,
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": 3,
+          "description": "Maximum retries for failed LLM calls (default: 3)",
+          "title": "Max Retries"
+        }
+      },
+      "title": "AIBudget",
+      "type": "object"
+    },
+    "AISpec": {
+      "additionalProperties": false,
+      "description": "AI section: LLM configuration, tools, RAG, budget.\n\nDefines how the agent uses AI capabilities:\n- JSON mode (structured output)\n- System prompt (instructions for LLM)\n- Budget constraints (cost, tokens, retries)\n- RAG collections (document retrieval)\n- Tools (function calling)\n\nExample:\n    >>> AISpec(\n    ...     json_mode=True,\n    ...     system_prompt=\"You are a climate advisor. Use tools; never guess numbers.\",\n    ...     budget=AIBudget(max_cost_usd=1.00, max_input_tokens=15000),\n    ...     rag_collections=[\"ghg_protocol_corp\", \"ipcc_ar6\"],\n    ...     tools=[\n    ...         AITool(\n    ...             name=\"select_emission_factor\",\n    ...             schema_in={...},\n    ...             schema_out={...},\n    ...             impl=\"python://gl.ai.tools.ef:select\"\n    ...         )\n    ...     ]\n    ... )",
+      "properties": {
+        "budget": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/AIBudget"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Cost and token budget constraints"
+        },
+        "json_mode": {
+          "default": true,
+          "description": "Whether to use JSON mode for structured output (default: true)",
+          "title": "Json Mode",
+          "type": "boolean"
+        },
+        "rag_collections": {
+          "description": "RAG collection names for document retrieval",
+          "items": {
+            "type": "string"
+          },
+          "title": "Rag Collections",
+          "type": "array"
+        },
+        "system_prompt": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "System prompt for LLM (instructions, context, constraints)",
+          "title": "System Prompt"
+        },
+        "tools": {
+          "description": "AI tools for function calling",
+          "items": {
+            "$ref": "#/$defs/AITool"
+          },
+          "title": "Tools",
+          "type": "array"
+        }
+      },
+      "title": "AISpec",
+      "type": "object"
+    },
+    "AITool": {
+      "additionalProperties": false,
+      "description": "AI tool specification for LLM function calling.\n\nDefines a tool that the LLM can call during agent execution.\nTools have input/output schemas (JSON Schema draft-2020-12) and Python implementations.\n\nSecurity: Tools marked 'safe=true' undergo AST analysis to prevent unsafe operations.\n\nExample:\n    >>> AITool(\n    ...     name=\"select_emission_factor\",\n    ...     description=\"Select appropriate emission factor based on region and year\",\n    ...     schema_in={\n    ...         \"type\": \"object\",\n    ...         \"properties\": {\n    ...             \"region\": {\"type\": \"string\"},\n    ...             \"year\": {\"type\": \"integer\"}\n    ...         },\n    ...         \"required\": [\"region\", \"year\"]\n    ...     },\n    ...     schema_out={\n    ...         \"type\": \"object\",\n    ...         \"properties\": {\n    ...             \"ef_uri\": {\"type\": \"string\", \"pattern\": \"^ef://\"}\n    ...         },\n    ...         \"required\": [\"ef_uri\"]\n    ...     },\n    ...     impl=\"python://gl.ai.tools.ef:select\",\n    ...     safe=True\n    ... )",
+      "properties": {
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Human-readable description of tool purpose",
+          "title": "Description"
+        },
+        "impl": {
+          "description": "Python URI for tool implementation (python://module:function)",
+          "title": "Impl",
+          "type": "string"
+        },
+        "name": {
+          "description": "Tool name (valid Python identifier)",
+          "pattern": "^[a-zA-Z_][a-zA-Z0-9_]*$",
+          "title": "Name",
+          "type": "string"
+        },
+        "safe": {
+          "default": true,
+          "description": "Whether tool is safe (pure function, no side effects). Enforced via AST analysis.",
+          "title": "Safe",
+          "type": "boolean"
+        },
+        "schema_in": {
+          "additionalProperties": true,
+          "description": "JSON Schema (draft-2020-12) for tool input parameters",
+          "title": "Schema In",
+          "type": "object"
+        },
+        "schema_out": {
+          "additionalProperties": true,
+          "description": "JSON Schema (draft-2020-12) for tool output",
+          "title": "Schema Out",
+          "type": "object"
+        }
+      },
+      "required": [
+        "name",
+        "schema_in",
+        "schema_out",
+        "impl"
+      ],
+      "title": "AITool",
+      "type": "object"
+    },
+    "ComputeSpec": {
+      "additionalProperties": false,
+      "description": "Compute section: entrypoint, inputs/outputs, factors, determinism.\n\nDefines the core computational logic of the agent:\n- Python entrypoint (function to execute)\n- Input parameters with types, units, constraints\n- Output parameters with types, units\n- Emission factors (optional)\n- Determinism flag (default: true)\n\nExample:\n    >>> ComputeSpec(\n    ...     entrypoint=\"python://gl.agents.boiler.ng:compute\",\n    ...     deterministic=True,\n    ...     inputs={\n    ...         \"fuel_volume\": IOField(dtype=\"float64\", unit=\"m^3\", required=True, ge=0),\n    ...         \"efficiency\": IOField(dtype=\"float64\", unit=\"1\", required=True, gt=0, le=1)\n    ...     },\n    ...     outputs={\n    ...         \"co2e_kg\": OutputField(dtype=\"float64\", unit=\"kgCO2e\")\n    ...     },\n    ...     factors={\n    ...         \"co2e_factor\": FactorRef(ref=\"ef://ipcc_ar6/combustion/ng/co2e_kg_per_mj\")\n    ...     }\n    ... )",
+      "properties": {
+        "dependencies": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Python package dependencies with versions (e.g., ['pandas==2.1.4', 'numpy==1.26.0'])",
+          "title": "Dependencies"
+        },
+        "deterministic": {
+          "default": true,
+          "description": "Whether computation is deterministic (same inputs → same outputs). Default: true.",
+          "title": "Deterministic",
+          "type": "boolean"
+        },
+        "entrypoint": {
+          "description": "Python URI for compute entrypoint (python://module:function)",
+          "title": "Entrypoint",
+          "type": "string"
+        },
+        "factors": {
+          "additionalProperties": {
+            "$ref": "#/$defs/FactorRef"
+          },
+          "description": "Emission factor references (optional)",
+          "title": "Factors",
+          "type": "object"
+        },
+        "inputs": {
+          "additionalProperties": {
+            "$ref": "#/$defs/IOField"
+          },
+          "description": "Input parameters (name → IOField spec)",
+          "title": "Inputs",
+          "type": "object"
+        },
+        "memory_limit_mb": {
+          "default": 512,
+          "description": "Maximum memory usage in MB (default: 512MB, max: 16GB)",
+          "maximum": 16384,
+          "minimum": 128,
+          "title": "Memory Limit Mb",
+          "type": "integer"
+        },
+        "outputs": {
+          "additionalProperties": {
+            "$ref": "#/$defs/OutputField"
+          },
+          "description": "Output parameters (name → OutputField spec)",
+          "title": "Outputs",
+          "type": "object"
+        },
+        "python_version": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Required Python version (e.g., '3.11', '3.11.5')",
+          "title": "Python Version"
+        },
+        "timeout_s": {
+          "default": 30,
+          "description": "Maximum execution time in seconds (default: 30s, max: 1 hour)",
+          "maximum": 3600,
+          "minimum": 1,
+          "title": "Timeout S",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "entrypoint",
+        "inputs",
+        "outputs"
+      ],
+      "title": "ComputeSpec",
+      "type": "object"
+    },
+    "ConnectorRef": {
+      "additionalProperties": false,
+      "description": "Realtime connector reference for live data streams.\n\nConnectors fetch external data (grid intensity, weather, commodity prices).\nOnly active in 'live' mode; 'replay' mode uses cached snapshots.\n\nExample:\n    >>> ConnectorRef(\n    ...     name=\"grid_intensity\",\n    ...     topic=\"region_hourly_ci\",\n    ...     window=\"1h\",\n    ...     ttl=\"6h\",\n    ...     required=False\n    ... )",
+      "properties": {
+        "name": {
+          "description": "Connector name (must match registered connector)",
+          "title": "Name",
+          "type": "string"
+        },
+        "required": {
+          "default": false,
+          "description": "Whether connector is required (agent fails if unavailable)",
+          "title": "Required",
+          "type": "boolean"
+        },
+        "topic": {
+          "description": "Data topic/stream identifier",
+          "title": "Topic",
+          "type": "string"
+        },
+        "ttl": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Time-to-live for cached data (e.g., '6h', '1d')",
+          "title": "Ttl"
+        },
+        "window": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Time window for data aggregation (e.g., '1h', '15min')",
+          "title": "Window"
+        }
+      },
+      "required": [
+        "name",
+        "topic"
+      ],
+      "title": "ConnectorRef",
+      "type": "object"
+    },
+    "FactorRef": {
+      "additionalProperties": false,
+      "description": "Emission factor reference for compute section.\n\nPoints to an emission factor in the factor registry using ef:// URI.\nOptionally specifies GWP set (AR6GWP100, AR5GWP100, etc.).\n\nExample:\n    >>> FactorRef(\n    ...     ref=\"ef://ipcc_ar6/combustion/ng/co2e_kg_per_mj\",\n    ...     gwp_set=\"AR6GWP100\",\n    ...     description=\"Natural gas combustion emission factor (IPCC AR6)\"\n    ... )",
+      "properties": {
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Human-readable description of emission factor",
+          "title": "Description"
+        },
+        "gwp_set": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "GWP set for CH4/N2O conversion (AR6GWP100, AR5GWP100, SAR, etc.)",
+          "title": "Gwp Set"
+        },
+        "ref": {
+          "description": "Emission factor URI (ef:// scheme)",
+          "title": "Ref",
+          "type": "string"
+        }
+      },
+      "required": [
+        "ref"
+      ],
+      "title": "FactorRef",
+      "type": "object"
+    },
+    "IOField": {
+      "additionalProperties": false,
+      "description": "Input field specification for compute section.\n\nDefines a single input parameter with:\n- Data type (float32, float64, int32, int64, string, bool)\n- Physical unit (validated against climate units whitelist)\n- Required flag (default true)\n- Optional constraints (ge, gt, le, lt, enum)\n- Optional default value\n\nExample:\n    >>> IOField(\n    ...     dtype=\"float64\",\n    ...     unit=\"m^3\",\n    ...     required=True,\n    ...     ge=0,\n    ...     description=\"Natural gas volume consumed\"\n    ... )",
+      "properties": {
+        "default": {
+          "anyOf": [
+            {},
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Default value if input not provided (only valid if required=false)",
+          "title": "Default"
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Human-readable description of input parameter",
+          "title": "Description"
+        },
+        "dtype": {
+          "description": "Data type of input parameter",
+          "enum": [
+            "float32",
+            "float64",
+            "int32",
+            "int64",
+            "string",
+            "bool"
+          ],
+          "title": "Dtype",
+          "type": "string"
+        },
+        "enum": {
+          "anyOf": [
+            {
+              "items": {},
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Allowed values (enum constraint)",
+          "title": "Enum"
+        },
+        "ge": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Greater than or equal (≥)",
+          "title": "Ge"
+        },
+        "gt": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Greater than (>)",
+          "title": "Gt"
+        },
+        "le": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Less than or equal (≤)",
+          "title": "Le"
+        },
+        "lt": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Less than (<)",
+          "title": "Lt"
+        },
+        "required": {
+          "default": true,
+          "description": "Whether input is required (default: true)",
+          "title": "Required",
+          "type": "boolean"
+        },
+        "unit": {
+          "description": "Physical unit (validated against climate units whitelist). Use '1' for dimensionless.",
+          "title": "Unit",
+          "type": "string"
+        }
+      },
+      "required": [
+        "dtype",
+        "unit"
+      ],
+      "title": "IOField",
+      "type": "object"
+    },
+    "OutputField": {
+      "additionalProperties": false,
+      "description": "Output field specification for compute section.\n\nSimpler than IOField: only dtype and unit (outputs are always required).\n\nExample:\n    >>> OutputField(\n    ...     dtype=\"float64\",\n    ...     unit=\"kgCO2e\",\n    ...     description=\"Total CO2 equivalent emissions\"\n    ... )",
+      "properties": {
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Human-readable description of output parameter",
+          "title": "Description"
+        },
+        "dtype": {
+          "description": "Data type of output parameter",
+          "enum": [
+            "float32",
+            "float64",
+            "int32",
+            "int64",
+            "string",
+            "bool"
+          ],
+          "title": "Dtype",
+          "type": "string"
+        },
+        "unit": {
+          "description": "Physical unit (validated against climate units whitelist)",
+          "title": "Unit",
+          "type": "string"
+        }
+      },
+      "required": [
+        "dtype",
+        "unit"
+      ],
+      "title": "OutputField",
+      "type": "object"
+    },
+    "ProvenanceSpec": {
+      "additionalProperties": false,
+      "description": "Provenance section: factor pinning, reproducibility, audit trails.\n\nEnsures agent runs are reproducible and auditable:\n- pin_ef: Whether to pin emission factor versions (default: true)\n- gwp_set: GWP set for CH4/N2O conversion (AR6GWP100, etc.)\n- record: Fields to include in provenance hash\n\nExample:\n    >>> ProvenanceSpec(\n    ...     pin_ef=True,\n    ...     gwp_set=\"AR6GWP100\",\n    ...     record=[\"inputs\", \"outputs\", \"factors\", \"ef_uri\", \"ef_cid\", \"code_sha\", \"seed\"]\n    ... )",
+      "properties": {
+        "gwp_set": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": "AR6GWP100",
+          "description": "GWP set for GHG conversions (AR6GWP100, AR5GWP100, SAR, etc.). Default: AR6GWP100 (P0 enhancement)",
+          "title": "Gwp Set"
+        },
+        "pin_ef": {
+          "default": true,
+          "description": "Whether to pin emission factor versions (default: true)",
+          "title": "Pin Ef",
+          "type": "boolean"
+        },
+        "record": {
+          "description": "Fields to include in provenance record (e.g., inputs, outputs, factors, code_sha, seed)",
+          "items": {
+            "type": "string"
+          },
+          "title": "Record",
+          "type": "array"
+        }
+      },
+      "required": [
+        "record"
+      ],
+      "title": "ProvenanceSpec",
+      "type": "object"
+    },
+    "RealtimeSpec": {
+      "additionalProperties": false,
+      "description": "Realtime section: replay/live modes, connector configuration.\n\nControls how agent handles external data:\n- replay: Use cached snapshots (deterministic, auditable)\n- live: Fetch fresh data from connectors (non-deterministic)\n\nExample:\n    >>> RealtimeSpec(\n    ...     default_mode=\"replay\",\n    ...     snapshot_path=\"snapshots/2024-10-06_grid_intensity.json\",\n    ...     connectors=[\n    ...         ConnectorRef(\n    ...             name=\"grid_intensity\",\n    ...             topic=\"region_hourly_ci\",\n    ...             window=\"1h\",\n    ...             required=False\n    ...         )\n    ...     ]\n    ... )",
+      "properties": {
+        "connectors": {
+          "description": "Realtime connector configurations",
+          "items": {
+            "$ref": "#/$defs/ConnectorRef"
+          },
+          "title": "Connectors",
+          "type": "array"
+        },
+        "default_mode": {
+          "default": "replay",
+          "description": "Default realtime mode (replay=cached, live=fresh data). Default: replay.",
+          "enum": [
+            "replay",
+            "live"
+          ],
+          "title": "Default Mode",
+          "type": "string"
+        },
+        "snapshot_path": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Path to cached data snapshot for replay mode (P1 enhancement)",
+          "title": "Snapshot Path"
+        }
+      },
+      "title": "RealtimeSpec",
+      "type": "object"
+    }
+  },
+  "$id": "https://greenlang.io/specs/agentspec_v2.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "GreenLang AgentSpec v2 - Top-Level Schema\n\nThis is the authoritative specification for GreenLang agent packs.\nEvery agent pack MUST conform to this schema.\n\nSchema Sections:\n- Metadata: schema_version, id, name, version, summary, tags, owners, license\n- compute: Computational logic (entrypoint, inputs/outputs, factors)\n- ai: AI capabilities (LLM, tools, RAG, budget)\n- realtime: Data streaming (replay/live, connectors)\n- provenance: Reproducibility and audit (factor pinning, record fields)\n- tests: Golden tests and property-based tests (optional)\n\nExample:\n    >>> spec = AgentSpecV2(\n    ...     schema_version=\"2.0.0\",\n    ...     id=\"buildings/boiler_ng_v1\",\n    ...     name=\"Boiler – Natural Gas (LHV)\",\n    ...     version=\"2.1.3\",\n    ...     summary=\"Computes CO2e from NG boiler fuel using LHV.\",\n    ...     compute=ComputeSpec(...),\n    ...     ai=AISpec(...),\n    ...     realtime=RealtimeSpec(...),\n    ...     provenance=ProvenanceSpec(...)\n    ... )",
+  "properties": {
+    "ai": {
+      "$ref": "#/$defs/AISpec",
+      "description": "AI specification (LLM, tools, RAG, budget)"
+    },
+    "compute": {
+      "$ref": "#/$defs/ComputeSpec",
+      "description": "Compute specification (entrypoint, inputs/outputs, factors)"
+    },
+    "id": {
+      "description": "Agent ID slug (e.g., 'buildings/boiler_ng_v1'). Format: segment/segment/...",
+      "title": "Id",
+      "type": "string"
+    },
+    "license": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "License identifier (e.g., 'Apache-2.0', 'MIT')",
+      "title": "License"
+    },
+    "name": {
+      "description": "Human-readable agent name",
+      "minLength": 3,
+      "title": "Name",
+      "type": "string"
+    },
+    "owners": {
+      "anyOf": [
+        {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Agent owners (e.g., ['@gl/industry-buildings'])",
+      "title": "Owners"
+    },
+    "provenance": {
+      "$ref": "#/$defs/ProvenanceSpec",
+      "description": "Provenance specification (factor pinning, audit trails)"
+    },
+    "realtime": {
+      "$ref": "#/$defs/RealtimeSpec",
+      "description": "Realtime specification (replay/live, connectors)"
+    },
+    "schema_version": {
+      "const": "2.0.0",
+      "description": "AgentSpec schema version (MUST be '2.0.0')",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "security": {
+      "anyOf": [
+        {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Security configuration (P1 enhancement: allowlist_hosts, etc.)",
+      "title": "Security"
+    },
+    "summary": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Short description of agent purpose",
+      "title": "Summary"
+    },
+    "tags": {
+      "description": "Tags for categorization and search",
+      "items": {
+        "type": "string"
+      },
+      "title": "Tags",
+      "type": "array"
+    },
+    "tests": {
+      "anyOf": [
+        {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Test configuration (golden tests, property-based tests)",
+      "title": "Tests"
+    },
+    "version": {
+      "description": "Agent version (semantic versioning 2.0.0)",
+      "title": "Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "id",
+    "name",
+    "version",
+    "compute",
+    "ai",
+    "realtime",
+    "provenance"
+  ],
+  "title": "GreenLang AgentSpec v2",
+  "type": "object"
+}

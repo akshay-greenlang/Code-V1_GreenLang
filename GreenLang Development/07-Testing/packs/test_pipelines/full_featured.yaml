@@ -1,0 +1,52 @@
+name: "full-featured-pipeline"
+version: "1.0.0"
+description: "A comprehensive pipeline demonstrating all v1.0 features"
+
+vars:
+  region: "IN"
+  ef_vintage: 2025
+
+inputs:
+  country:
+    type: string
+    required: true
+  site_id:
+    type: string
+    required: true
+
+steps:
+  - name: "validate"
+    agent: "greenlang.agents.InputValidator"
+    action: "validate"
+    inputs:
+      country: "IN"
+      site_id: "site-001"
+    with:
+      schema: "input.schema.json"
+    on_error: "stop"
+
+  - name: "fetch"
+    agent: "greenlang.agents.DataFetcher"
+    inputsRef: ${steps.validate.output}
+    when: "${inputs.country} == 'IN'"
+    retry:
+      max: 3
+      backoff_seconds: 2.0
+    tags: ["network:era5"]
+
+  - name: "analyze"
+    agent: "greenlang.agents.Analyzer"
+    inputsRef: ${steps.fetch.data}
+    with:
+      ef_vintage: ${vars.ef_vintage}
+    on_error:
+      policy: "fail"
+      max: 2
+      backoff_seconds: 1.0
+    outputs:
+      csv: "results.csv"
+      json: "metrics.json"
+
+outputs:
+  report: "results.csv"
+  metrics: "metrics.json"

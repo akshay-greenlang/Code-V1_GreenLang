@@ -1,0 +1,12 @@
+# ============================================================================
+# Development Environment - Replica Patch
+# ============================================================================
+# Set replicas to 3 for development
+# ============================================================================
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cbam-api
+spec:
+  replicas: 3

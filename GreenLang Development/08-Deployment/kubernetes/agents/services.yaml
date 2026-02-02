@@ -1,0 +1,160 @@
+# =============================================================================
+# GreenLang Agents - Kubernetes Services
+# =============================================================================
+# ClusterIP services for all 3 agents
+# =============================================================================
+
+---
+# =============================================================================
+# Fuel Analyzer Service
+# =============================================================================
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: fuel-analyzer
+  namespace: greenlang-dev
+  labels:
+    app: fuel-analyzer
+    app.kubernetes.io/name: fuel-analyzer
+    app.kubernetes.io/component: service
+    app.kubernetes.io/part-of: greenlang-platform
+  annotations:
+    description: "Fuel Emissions Analyzer Agent service"
+spec:
+  type: ClusterIP
+  selector:
+    app: fuel-analyzer
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8000
+      protocol: TCP
+    - name: metrics
+      port: 9090
+      targetPort: 9090
+      protocol: TCP
+  sessionAffinity: None
+
+---
+# =============================================================================
+# Carbon Intensity Service
+# =============================================================================
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: carbon-intensity
+  namespace: greenlang-dev
+  labels:
+    app: carbon-intensity
+    app.kubernetes.io/name: carbon-intensity
+    app.kubernetes.io/component: service
+    app.kubernetes.io/part-of: greenlang-platform
+  annotations:
+    description: "CBAM Carbon Intensity Calculator service"
+spec:
+  type: ClusterIP
+  selector:
+    app: carbon-intensity
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8000
+      protocol: TCP
+    - name: metrics
+      port: 9090
+      targetPort: 9090
+      protocol: TCP
+  sessionAffinity: None
+
+---
+# =============================================================================
+# Energy Performance Service
+# =============================================================================
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: energy-performance
+  namespace: greenlang-dev
+  labels:
+    app: energy-performance
+    app.kubernetes.io/name: energy-performance
+    app.kubernetes.io/component: service
+    app.kubernetes.io/part-of: greenlang-platform
+  annotations:
+    description: "Building Energy Performance Calculator service"
+spec:
+  type: ClusterIP
+  selector:
+    app: energy-performance
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8000
+      protocol: TCP
+    - name: metrics
+      port: 9090
+      targetPort: 9090
+      protocol: TCP
+  sessionAffinity: None
+
+---
+# =============================================================================
+# EUDR Compliance Service
+# =============================================================================
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: eudr-compliance
+  namespace: greenlang-dev
+  labels:
+    app: eudr-compliance
+    app.kubernetes.io/name: eudr-compliance
+    app.kubernetes.io/component: service
+    app.kubernetes.io/part-of: greenlang-platform
+    agent-tier: "1-extreme-urgency"
+  annotations:
+    description: "EUDR Deforestation Compliance Agent service"
+    regulation: "EU 2023/1115"
+    deadline: "2025-12-30"
+spec:
+  type: ClusterIP
+  selector:
+    app: eudr-compliance
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8000
+      protocol: TCP
+    - name: metrics
+      port: 9090
+      targetPort: 9090
+      protocol: TCP
+  sessionAffinity: None
+
+---
+# =============================================================================
+# Headless Service for StatefulSet (if needed)
+# =============================================================================
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: greenlang-agents-headless
+  namespace: greenlang-dev
+  labels:
+    app.kubernetes.io/name: greenlang-agents
+    app.kubernetes.io/component: headless-service
+    app.kubernetes.io/part-of: greenlang-platform
+spec:
+  type: ClusterIP
+  clusterIP: None
+  selector:
+    app.kubernetes.io/part-of: greenlang-platform
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000

@@ -1,0 +1,130 @@
+{{- if .Values.apiServer.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "greenlang.fullname" . }}-api-server
+  namespace: {{ include "greenlang.namespace" . }}
+  labels:
+    {{- include "greenlang.apiServer.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.apiServer.replicaCount }}
+  revisionHistoryLimit: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      {{- include "greenlang.apiServer.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "greenlang.apiServer.selectorLabels" . | nindent 8 }}
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8000"
+        prometheus.io/path: "/metrics"
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
+    spec:
+      serviceAccountName: {{ include "greenlang.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+      - name: api-server
+        image: {{ .Values.global.imageRegistry }}/{{ .Values.apiServer.image.repository }}:{{ .Values.apiServer.image.tag | default .Chart.AppVersion }}
+        imagePullPolicy: {{ .Values.apiServer.image.pullPolicy }}
+        ports:
+        - name: http
+          containerPort: 8000
+          protocol: TCP
+        - name: metrics
+          containerPort: 9090
+          protocol: TCP
+        env:
+        - name: GUNICORN_WORKERS
+          value: {{ .Values.apiServer.gunicorn.workers | quote }}
+        - name: GUNICORN_THREADS
+          value: {{ .Values.apiServer.gunicorn.threads | quote }}
+        - name: GUNICORN_TIMEOUT
+          value: {{ .Values.apiServer.gunicorn.timeout | quote }}
+        - name: GUNICORN_KEEPALIVE
+          value: {{ .Values.apiServer.gunicorn.keepalive | quote }}
+        envFrom:
+        - configMapRef:
+            name: {{ include "greenlang.fullname" . }}-config
+        - secretRef:
+            name: {{ include "greenlang.fullname" . }}-secrets
+        resources:
+          {{- toYaml .Values.apiServer.resources | nindent 10 }}
+        securityContext:
+          {{- toYaml .Values.containerSecurityContext | nindent 10 }}
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+        - name: app-tmp
+          mountPath: /app/tmp
+        - name: app-logs
+          mountPath: /app/logs
+      volumes:
+      - name: tmp
+        emptyDir:
+          medium: Memory
+          sizeLimit: 100Mi
+      - name: app-tmp
+        emptyDir:
+          sizeLimit: 500Mi
+      - name: app-logs
+        emptyDir:
+          sizeLimit: 1Gi
+      {{- with .Values.apiServer.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.apiServer.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.apiServer.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "greenlang.fullname" . }}-api-server
+  namespace: {{ include "greenlang.namespace" . }}
+  labels:
+    {{- include "greenlang.apiServer.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.apiServer.service.type }}
+  ports:
+  - name: http
+    port: {{ .Values.apiServer.service.port }}
+    targetPort: {{ .Values.apiServer.service.targetPort }}
+    protocol: TCP
+  - name: metrics
+    port: {{ .Values.apiServer.service.metricsPort }}
+    targetPort: {{ .Values.apiServer.service.metricsPort }}
+    protocol: TCP
+  selector:
+    {{- include "greenlang.apiServer.selectorLabels" . | nindent 4 }}
+{{- end }}

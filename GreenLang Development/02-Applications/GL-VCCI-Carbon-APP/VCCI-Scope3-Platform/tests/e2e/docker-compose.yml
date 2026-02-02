@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  # PostgreSQL database for E2E tests
+  postgres:
+    image: postgres:15-alpine
+    container_name: vcci-e2e-postgres
+    environment:
+      POSTGRES_DB: vcci_test
+      POSTGRES_USER: test_user
+      POSTGRES_PASSWORD: test_pass
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U test_user -d vcci_test"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - vcci-e2e-network
+
+  # Redis for caching
+  redis:
+    image: redis:7-alpine
+    container_name: vcci-e2e-redis
+    ports:
+      - "6380:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - vcci-e2e-network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  vcci-e2e-network:
+    driver: bridge

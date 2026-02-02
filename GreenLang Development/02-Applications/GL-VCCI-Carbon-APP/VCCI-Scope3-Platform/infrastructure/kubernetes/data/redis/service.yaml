@@ -1,0 +1,69 @@
+---
+# Headless service for StatefulSet
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-headless
+  namespace: vcci-platform
+  labels:
+    app: redis
+    component: cache
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+    - name: redis
+      port: 6379
+      targetPort: redis
+      protocol: TCP
+  selector:
+    app: redis
+  publishNotReadyAddresses: true
+
+---
+# Regular service for client connections
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+  namespace: vcci-platform
+  labels:
+    app: redis
+    component: cache
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9121"
+spec:
+  type: ClusterIP
+  ports:
+    - name: redis
+      port: 6379
+      targetPort: redis
+      protocol: TCP
+    - name: metrics
+      port: 9121
+      targetPort: metrics
+      protocol: TCP
+  selector:
+    app: redis
+
+---
+# Sentinel service
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-sentinel
+  namespace: vcci-platform
+  labels:
+    app: redis-sentinel
+    component: cache
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+    - name: sentinel
+      port: 26379
+      targetPort: sentinel
+      protocol: TCP
+  selector:
+    app: redis-sentinel

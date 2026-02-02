@@ -1,0 +1,187 @@
+# =============================================================================
+# GreenLang Helm Chart - AWS Production Values
+# =============================================================================
+# This file contains production configuration for deploying GreenLang on
+# AWS EKS with secrets managed by AWS Secrets Manager.
+#
+# Prerequisites:
+#   1. External Secrets Operator installed:
+#      helm install external-secrets external-secrets/external-secrets \
+#        --namespace external-secrets --create-namespace
+#
+#   2. IAM Role for Service Account (IRSA) configured:
+#      - Create IAM role with SecretsManager:GetSecretValue permission
+#      - Associate role with Kubernetes service account
+#
+#   3. AWS Secrets created in Secrets Manager:
+#      - greenlang/production/database
+#      - greenlang/production/redis
+#      - greenlang/production/jwt
+#      - greenlang/production/llm
+#      - greenlang/production/encryption
+#
+# Usage:
+#   helm upgrade --install greenlang ./greenlang \
+#     -f values-aws-production.yaml \
+#     --namespace greenlang-production
+# =============================================================================
+
+# Environment-specific namespace
+namespace:
+  name: "greenlang-production"
+  labels:
+    environment: production
+    cloud-provider: aws
+
+# Application environment
+config:
+  appEnv: "production"
+  debug: "false"
+  logLevel: "INFO"
+
+  # Production S3 configuration
+  s3Bucket: "greenlang-artifacts-production"
+  s3Region: "us-east-1"
+
+# -----------------------------------------------------------------------------
+# Secrets Configuration - AWS Secrets Manager
+# -----------------------------------------------------------------------------
+secrets:
+  # Enable External Secrets Operator
+  useExternalSecrets: true
+
+  # Use AWS Secrets Manager as the provider
+  provider: "aws"
+
+  # Sync secrets every hour
+  refreshInterval: "1h"
+
+  # AWS Secrets Manager configuration
+  aws:
+    # AWS region where secrets are stored
+    region: "us-east-1"
+
+    # Base path for secrets
+    # Full path: greenlang/production/{secret-name}
+    secretsPath: "greenlang"
+
+    # IAM role ARN for IRSA (REQUIRED for production)
+    # Replace with your actual IAM role ARN
+    role: "arn:aws:iam::123456789012:role/greenlang-secrets-reader"
+
+    # Do not use static credentials in production
+    accessKeySecret: ""
+
+    # Use IRSA for S3 access instead of explicit credentials
+    includeS3Credentials: false
+
+    # TLS certificates managed by cert-manager, not Secrets Manager
+    tlsSecretEnabled: false
+
+  # Leave inline secrets empty when using external secrets
+  databaseUrl: ""
+  redisUrl: ""
+  jwtSecret: ""
+  anthropicApiKey: ""
+  openaiApiKey: ""
+  dataEncryptionKey: ""
+
+# -----------------------------------------------------------------------------
+# Service Account with IRSA Annotation
+# -----------------------------------------------------------------------------
+serviceAccount:
+  create: true
+  name: "greenlang-app-sa"
+  annotations:
+    # Replace with your actual IAM role ARN
+    eks.amazonaws.com/role-arn: "arn:aws:iam::123456789012:role/greenlang-app-role"
+
+# -----------------------------------------------------------------------------
+# PostgreSQL Configuration
+# -----------------------------------------------------------------------------
+postgresql:
+  enabled: true
+  auth:
+    username: greenlang_app
+    database: greenlang
+    # Use external secret for PostgreSQL credentials
+    existingSecret: "greenlang-postgresql-credentials"
+    password: ""
+
+  primary:
+    persistence:
+      enabled: true
+      size: 100Gi
+      storageClass: "gp3"
+
+# -----------------------------------------------------------------------------
+# Redis Configuration
+# -----------------------------------------------------------------------------
+redis:
+  enabled: true
+  auth:
+    enabled: true
+    # Use external secret for Redis credentials
+    existingSecret: "greenlang-redis-credentials"
+    password: ""
+
+  master:
+    persistence:
+      enabled: true
+      size: 10Gi
+      storageClass: "gp3"
+
+# -----------------------------------------------------------------------------
+# Ingress with ALB
+# -----------------------------------------------------------------------------
+ingress:
+  enabled: true
+  className: "alb"
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/certificate-arn: "arn:aws:acm:us-east-1:123456789012:certificate/xxxxx"
+    alb.ingress.kubernetes.io/ssl-policy: "ELBSecurityPolicy-TLS-1-2-2017-01"
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'
+    alb.ingress.kubernetes.io/ssl-redirect: "443"
+  hosts:
+    - host: api.greenlang.ai
+      paths:
+        - path: /
+          pathType: Prefix
+          service: api-server
+  tls:
+    - secretName: greenlang-tls-secret
+      hosts:
+        - api.greenlang.ai
+
+# -----------------------------------------------------------------------------
+# Production Resource Limits
+# -----------------------------------------------------------------------------
+agentRuntime:
+  replicaCount: 5
+  resources:
+    requests:
+      cpu: "1000m"
+      memory: "1Gi"
+    limits:
+      cpu: "4000m"
+      memory: "4Gi"
+  autoscaling:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 20
+
+apiServer:
+  replicaCount: 5
+  resources:
+    requests:
+      cpu: "1000m"
+      memory: "1Gi"
+    limits:
+      cpu: "4000m"
+      memory: "4Gi"
+  autoscaling:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 20

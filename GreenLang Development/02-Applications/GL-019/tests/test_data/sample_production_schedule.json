@@ -1,0 +1,229 @@
+{
+  "description": "Sample Production Schedules for GL-019 HEATSCHEDULER Testing",
+  "version": "1.0.0",
+  "equipment": [
+    {
+      "equipment_id": "FURN-001",
+      "name": "Heat Treat Furnace #1",
+      "equipment_type": "furnace",
+      "power_kw": 500.0,
+      "min_power_kw": 100.0,
+      "max_temp_c": 1200.0,
+      "min_temp_c": 20.0,
+      "ramp_rate_c_per_min": 15.0,
+      "thermal_mass_kwh_per_c": 2.5,
+      "efficiency": 0.88,
+      "is_interruptible": false,
+      "priority": 1,
+      "operating_hours": {
+        "start": 6,
+        "end": 22
+      }
+    },
+    {
+      "equipment_id": "FURN-002",
+      "name": "Heat Treat Furnace #2",
+      "equipment_type": "furnace",
+      "power_kw": 750.0,
+      "min_power_kw": 150.0,
+      "max_temp_c": 1000.0,
+      "min_temp_c": 20.0,
+      "ramp_rate_c_per_min": 12.0,
+      "thermal_mass_kwh_per_c": 3.0,
+      "efficiency": 0.85,
+      "is_interruptible": true,
+      "max_interruption_min": 15,
+      "priority": 2
+    },
+    {
+      "equipment_id": "OVEN-001",
+      "name": "Curing Oven #1",
+      "equipment_type": "oven",
+      "power_kw": 200.0,
+      "min_power_kw": 50.0,
+      "max_temp_c": 350.0,
+      "min_temp_c": 20.0,
+      "ramp_rate_c_per_min": 5.0,
+      "thermal_mass_kwh_per_c": 1.0,
+      "efficiency": 0.92,
+      "is_interruptible": true,
+      "max_interruption_min": 30,
+      "priority": 3
+    },
+    {
+      "equipment_id": "BOIL-001",
+      "name": "Steam Boiler #1",
+      "equipment_type": "boiler",
+      "power_kw": 1000.0,
+      "min_power_kw": 300.0,
+      "max_temp_c": 180.0,
+      "min_temp_c": 80.0,
+      "ramp_rate_c_per_min": 2.0,
+      "thermal_mass_kwh_per_c": 10.0,
+      "efficiency": 0.82,
+      "is_interruptible": false,
+      "priority": 1
+    }
+  ],
+  "sample_jobs": [
+    {
+      "job_id": "JOB-HT-001",
+      "product_name": "Steel Gear Set A",
+      "equipment_id": "FURN-001",
+      "target_temp_c": 850.0,
+      "hold_time_min": 120,
+      "energy_kwh": 1000.0,
+      "priority": 1,
+      "is_flexible": true,
+      "process_requirements": {
+        "ramp_time_min": 45,
+        "soak_time_min": 120,
+        "cool_time_min": 60,
+        "atmosphere": "nitrogen"
+      }
+    },
+    {
+      "job_id": "JOB-HT-002",
+      "product_name": "Aluminum Casting B",
+      "equipment_id": "FURN-002",
+      "target_temp_c": 550.0,
+      "hold_time_min": 90,
+      "energy_kwh": 750.0,
+      "priority": 2,
+      "is_flexible": true,
+      "process_requirements": {
+        "ramp_time_min": 30,
+        "soak_time_min": 90,
+        "cool_time_min": 45,
+        "atmosphere": "air"
+      }
+    },
+    {
+      "job_id": "JOB-CUR-001",
+      "product_name": "Composite Panel C",
+      "equipment_id": "OVEN-001",
+      "target_temp_c": 180.0,
+      "hold_time_min": 240,
+      "energy_kwh": 400.0,
+      "priority": 3,
+      "is_flexible": true,
+      "process_requirements": {
+        "ramp_time_min": 20,
+        "cure_time_min": 240,
+        "cool_time_min": 30
+      }
+    },
+    {
+      "job_id": "JOB-URG-001",
+      "product_name": "Rush Order Steel Part",
+      "equipment_id": "FURN-001",
+      "target_temp_c": 900.0,
+      "hold_time_min": 60,
+      "energy_kwh": 500.0,
+      "priority": 1,
+      "is_flexible": false,
+      "min_continuous_run_min": 60,
+      "notes": "Customer rush order - must meet deadline"
+    }
+  ],
+  "scheduling_scenarios": [
+    {
+      "scenario_id": "DAILY-NORMAL",
+      "name": "Normal Daily Schedule",
+      "description": "Typical daily production with flexible jobs",
+      "job_ids": ["JOB-HT-001", "JOB-HT-002", "JOB-CUR-001"],
+      "schedule_horizon_hours": 24,
+      "expected_energy_kwh": 2150.0,
+      "expected_savings_potential_pct": 18.0
+    },
+    {
+      "scenario_id": "RUSH-ORDER",
+      "name": "Rush Order Priority",
+      "description": "Include priority rush order with tight deadline",
+      "job_ids": ["JOB-URG-001", "JOB-HT-002"],
+      "schedule_horizon_hours": 8,
+      "expected_energy_kwh": 1250.0,
+      "constraints": {
+        "rush_order_deadline_hours": 4
+      }
+    },
+    {
+      "scenario_id": "WEEKEND-BATCH",
+      "name": "Weekend Batch Processing",
+      "description": "Large batch processing during weekend off-peak",
+      "job_ids": ["JOB-HT-001", "JOB-HT-001", "JOB-HT-002", "JOB-CUR-001"],
+      "schedule_horizon_hours": 48,
+      "expected_energy_kwh": 3150.0,
+      "expected_savings_potential_pct": 28.0,
+      "notes": "All jobs shifted to weekend off-peak periods"
+    },
+    {
+      "scenario_id": "DEMAND-RESPONSE",
+      "name": "Demand Response Event",
+      "description": "Schedule with demand response event window",
+      "job_ids": ["JOB-HT-001", "JOB-CUR-001"],
+      "schedule_horizon_hours": 24,
+      "demand_response_event": {
+        "start_hour": 14,
+        "end_hour": 18,
+        "target_reduction_kw": 500,
+        "incentive_per_kwh": 0.50
+      }
+    }
+  ],
+  "test_cases": {
+    "single_job_optimization": {
+      "description": "Single job optimization to off-peak",
+      "job": {
+        "job_id": "TEST-001",
+        "equipment_id": "FURN-001",
+        "target_temp_c": 850.0,
+        "hold_time_min": 60,
+        "energy_kwh": 500.0,
+        "earliest_start_hour_offset": 0,
+        "deadline_hour_offset": 24,
+        "is_flexible": true
+      },
+      "expected": {
+        "scheduled_period": "off_peak",
+        "savings_pct_min": 10.0
+      }
+    },
+    "multiple_equipment_balance": {
+      "description": "Balance load across multiple equipment",
+      "jobs": [
+        {"equipment_id": "FURN-001", "energy_kwh": 500.0},
+        {"equipment_id": "FURN-002", "energy_kwh": 750.0},
+        {"equipment_id": "OVEN-001", "energy_kwh": 200.0}
+      ],
+      "expected": {
+        "no_equipment_overlap": true,
+        "all_deadlines_met": true
+      }
+    },
+    "tight_deadline_constraint": {
+      "description": "Tight deadline forces on-peak scheduling",
+      "job": {
+        "job_id": "TIGHT-001",
+        "equipment_id": "FURN-001",
+        "hold_time_min": 120,
+        "energy_kwh": 1000.0,
+        "earliest_start_hour_offset": 12,
+        "deadline_hour_offset": 16,
+        "is_flexible": false
+      },
+      "expected": {
+        "scheduled_during_deadline_window": true,
+        "may_schedule_on_peak": true
+      }
+    }
+  },
+  "known_values": {
+    "furnace_001_power_kw": 500.0,
+    "furnace_002_power_kw": 750.0,
+    "oven_001_power_kw": 200.0,
+    "boiler_001_power_kw": 1000.0,
+    "total_interruptible_power_kw": 950.0,
+    "total_non_interruptible_power_kw": 1500.0
+  }
+}

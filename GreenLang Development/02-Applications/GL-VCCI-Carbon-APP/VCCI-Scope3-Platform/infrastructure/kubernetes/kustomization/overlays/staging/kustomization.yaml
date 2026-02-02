@@ -1,0 +1,91 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Reference base
+bases:
+  - ../../base
+
+# Namespace for staging
+namespace: vcci-staging
+
+# Name prefix for all resources
+namePrefix: staging-
+
+# Common labels for staging environment
+commonLabels:
+  environment: staging
+  tier: staging
+
+# Replicas for staging (moderate)
+replicas:
+  - name: vcci-api-gateway
+    count: 2
+  - name: vcci-backend-api
+    count: 2
+  - name: vcci-worker
+    count: 1
+  - name: vcci-frontend
+    count: 2
+  - name: postgresql
+    count: 2
+  - name: redis
+    count: 2
+  - name: weaviate
+    count: 2
+
+# Patches for staging environment
+patches:
+  # Moderate resource requests for staging
+  - target:
+      kind: Deployment
+      name: vcci-backend-api
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/cpu
+        value: 300m
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/memory
+        value: 768Mi
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/cpu
+        value: 1500m
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/memory
+        value: 3Gi
+
+  # Use staging TLS issuer
+  - target:
+      kind: Ingress
+    patch: |-
+      - op: replace
+        path: /metadata/annotations/cert-manager.io~1cluster-issuer
+        value: letsencrypt-staging
+
+  # Moderate HPA settings
+  - target:
+      kind: HorizontalPodAutoscaler
+      name: vcci-backend-api
+    patch: |-
+      - op: replace
+        path: /spec/minReplicas
+        value: 2
+      - op: replace
+        path: /spec/maxReplicas
+        value: 5
+
+# ConfigMap patches
+configMapGenerator:
+  - name: platform-config
+    behavior: merge
+    literals:
+      - ENVIRONMENT=staging
+      - LOG_LEVEL=INFO
+
+# Image tag overrides for staging
+images:
+  - name: greenlang/vcci-backend-api
+    newTag: staging-latest
+  - name: greenlang/vcci-worker
+    newTag: staging-latest
+  - name: greenlang/vcci-frontend
+    newTag: staging-latest

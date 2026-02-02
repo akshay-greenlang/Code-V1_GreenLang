@@ -1,0 +1,892 @@
+# HashiCorp Vault Configuration for GreenLang Process Heat Platform
+# TASK-154/155: Secrets Engines and Policies Configuration
+# Includes: PKI, KV, Database, AWS, and Transit secrets engines
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vault-secrets-engines-config
+  namespace: vault
+  labels:
+    app.kubernetes.io/name: vault
+    app.kubernetes.io/component: configuration
+    app.kubernetes.io/part-of: greenlang-security
+data:
+  # PKI Secrets Engine Configuration
+  pki-config.sh: |
+    #!/bin/bash
+    set -e
+
+    echo "Configuring PKI Secrets Engine..."
+
+    # Enable PKI secrets engine for root CA
+    vault secrets enable -path=pki pki || true
+
+    # Configure root CA with 10 year max TTL
+    vault secrets tune -max-lease-ttl=87600h pki
+
+    # Generate root CA certificate
+    vault write -format=json pki/root/generate/internal \
+      common_name="GreenLang Root CA" \
+      organization="GreenLang Inc" \
+      ou="Process Heat Platform" \
+      country="US" \
+      ttl=87600h \
+      key_bits=4096 \
+      exclude_cn_from_sans=true > /tmp/root-ca.json
+
+    # Configure CA and CRL URLs
+    vault write pki/config/urls \
+      issuing_certificates="https://vault.vault.svc.cluster.local:8200/v1/pki/ca" \
+      crl_distribution_points="https://vault.vault.svc.cluster.local:8200/v1/pki/crl"
+
+    # Enable intermediate PKI for issuing certificates
+    vault secrets enable -path=pki_int pki || true
+    vault secrets tune -max-lease-ttl=43800h pki_int
+
+    # Generate intermediate CSR
+    vault write -format=json pki_int/intermediate/generate/internal \
+      common_name="GreenLang Intermediate CA" \
+      organization="GreenLang Inc" \
+      ou="Process Heat Platform" \
+      country="US" \
+      key_bits=4096 > /tmp/intermediate-csr.json
+
+    # Sign intermediate with root
+    CSR=$(cat /tmp/intermediate-csr.json | jq -r '.data.csr')
+    vault write -format=json pki/root/sign-intermediate \
+      csr="$CSR" \
+      format=pem_bundle \
+      ttl=43800h > /tmp/intermediate-cert.json
+
+    # Set intermediate certificate
+    CERT=$(cat /tmp/intermediate-cert.json | jq -r '.data.certificate')
+    vault write pki_int/intermediate/set-signed certificate="$CERT"
+
+    # Configure intermediate CA URLs
+    vault write pki_int/config/urls \
+      issuing_certificates="https://vault.vault.svc.cluster.local:8200/v1/pki_int/ca" \
+      crl_distribution_points="https://vault.vault.svc.cluster.local:8200/v1/pki_int/crl"
+
+    # Create role for Process Heat services
+    vault write pki_int/roles/process-heat-services \
+      allowed_domains="greenlang.svc.cluster.local,greenlang.internal,process-heat.greenlang.svc.cluster.local" \
+      allow_subdomains=true \
+      allow_bare_domains=true \
+      allow_localhost=true \
+      allow_ip_sans=true \
+      server_flag=true \
+      client_flag=true \
+      enforce_hostnames=true \
+      require_cn=false \
+      key_type=rsa \
+      key_bits=2048 \
+      max_ttl=720h \
+      ttl=168h \
+      generate_lease=true \
+      no_store=false \
+      organization="GreenLang Inc" \
+      ou="Process Heat Platform"
+
+    # Create role for internal mTLS
+    vault write pki_int/roles/internal-mtls \
+      allowed_domains="svc.cluster.local,greenlang.internal" \
+      allow_subdomains=true \
+      allow_bare_domains=false \
+      allow_localhost=false \
+      server_flag=true \
+      client_flag=true \
+      key_type=ecdsa \
+      key_bits=256 \
+      max_ttl=24h \
+      ttl=1h \
+      generate_lease=true
+
+    echo "PKI Secrets Engine configured successfully"
+
+  # KV Secrets Engine Configuration
+  kv-config.sh: |
+    #!/bin/bash
+    set -e
+
+    echo "Configuring KV Secrets Engine..."
+
+    # Enable KV v2 secrets engine
+    vault secrets enable -path=secret -version=2 kv || true
+
+    # Create initial secret structure for Process Heat
+    # Database credentials
+    vault kv put secret/process-heat/database \
+      host="postgresql.greenlang.svc.cluster.local" \
+      port="5432" \
+      database="process_heat" \
+      username="PLACEHOLDER_ROTATE_ME" \
+      password="PLACEHOLDER_ROTATE_ME" \
+      ssl_mode="require"
+
+    # Redis credentials
+    vault kv put secret/process-heat/redis \
+      host="redis-master.greenlang.svc.cluster.local" \
+      port="6379" \
+      password="PLACEHOLDER_ROTATE_ME" \
+      database="0" \
+      ssl="true"
+
+    # API keys structure
+    vault kv put secret/process-heat/api-keys \
+      internal_api_key="PLACEHOLDER_ROTATE_ME" \
+      external_api_key="PLACEHOLDER_ROTATE_ME" \
+      webhook_secret="PLACEHOLDER_ROTATE_ME"
+
+    # Encryption keys
+    vault kv put secret/process-heat/encryption \
+      data_encryption_key="PLACEHOLDER_ROTATE_ME" \
+      signing_key="PLACEHOLDER_ROTATE_ME"
+
+    # Third-party integrations
+    vault kv put secret/process-heat/integrations/aws \
+      access_key_id="PLACEHOLDER_ROTATE_ME" \
+      secret_access_key="PLACEHOLDER_ROTATE_ME" \
+      region="us-west-2"
+
+    vault kv put secret/process-heat/integrations/satellite \
+      api_key="PLACEHOLDER_ROTATE_ME" \
+      api_secret="PLACEHOLDER_ROTATE_ME" \
+      endpoint="https://api.satellite-provider.com"
+
+    # ML/AI service credentials
+    vault kv put secret/process-heat/ml-services \
+      model_api_key="PLACEHOLDER_ROTATE_ME" \
+      inference_endpoint="https://ml.greenlang.internal"
+
+    echo "KV Secrets Engine configured successfully"
+
+  # Database Secrets Engine Configuration
+  database-config.sh: |
+    #!/bin/bash
+    set -e
+
+    echo "Configuring Database Secrets Engine..."
+
+    # Enable database secrets engine
+    vault secrets enable database || true
+
+    # Configure PostgreSQL connection for Process Heat
+    vault write database/config/process-heat-postgresql \
+      plugin_name=postgresql-database-plugin \
+      allowed_roles="process-heat-readonly,process-heat-readwrite,process-heat-admin" \
+      connection_url="postgresql://{{username}}:{{password}}@postgresql.greenlang.svc.cluster.local:5432/process_heat?sslmode=require" \
+      username="vault_admin" \
+      password="PLACEHOLDER_ADMIN_PASSWORD" \
+      password_authentication="scram-sha-256" \
+      max_open_connections=10 \
+      max_idle_connections=5 \
+      max_connection_lifetime="5m"
+
+    # Create readonly role
+    vault write database/roles/process-heat-readonly \
+      db_name=process-heat-postgresql \
+      creation_statements="CREATE ROLE \"{{name}}\" WITH LOGIN PASSWORD '{{password}}' VALID UNTIL '{{expiration}}' INHERIT; \
+        GRANT CONNECT ON DATABASE process_heat TO \"{{name}}\"; \
+        GRANT USAGE ON SCHEMA public TO \"{{name}}\"; \
+        GRANT SELECT ON ALL TABLES IN SCHEMA public TO \"{{name}}\"; \
+        ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO \"{{name}}\";" \
+      revocation_statements="REVOKE ALL PRIVILEGES ON ALL TABLES IN SCHEMA public FROM \"{{name}}\"; \
+        REVOKE ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public FROM \"{{name}}\"; \
+        REVOKE USAGE ON SCHEMA public FROM \"{{name}}\"; \
+        REVOKE CONNECT ON DATABASE process_heat FROM \"{{name}}\"; \
+        DROP ROLE IF EXISTS \"{{name}}\";" \
+      default_ttl="1h" \
+      max_ttl="24h"
+
+    # Create readwrite role
+    vault write database/roles/process-heat-readwrite \
+      db_name=process-heat-postgresql \
+      creation_statements="CREATE ROLE \"{{name}}\" WITH LOGIN PASSWORD '{{password}}' VALID UNTIL '{{expiration}}' INHERIT; \
+        GRANT CONNECT ON DATABASE process_heat TO \"{{name}}\"; \
+        GRANT USAGE ON SCHEMA public TO \"{{name}}\"; \
+        GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO \"{{name}}\"; \
+        GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO \"{{name}}\"; \
+        ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO \"{{name}}\"; \
+        ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT USAGE, SELECT ON SEQUENCES TO \"{{name}}\";" \
+      revocation_statements="REVOKE ALL PRIVILEGES ON ALL TABLES IN SCHEMA public FROM \"{{name}}\"; \
+        REVOKE ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public FROM \"{{name}}\"; \
+        REVOKE USAGE ON SCHEMA public FROM \"{{name}}\"; \
+        REVOKE CONNECT ON DATABASE process_heat FROM \"{{name}}\"; \
+        DROP ROLE IF EXISTS \"{{name}}\";" \
+      default_ttl="1h" \
+      max_ttl="8h"
+
+    # Create admin role (for migrations)
+    vault write database/roles/process-heat-admin \
+      db_name=process-heat-postgresql \
+      creation_statements="CREATE ROLE \"{{name}}\" WITH LOGIN PASSWORD '{{password}}' VALID UNTIL '{{expiration}}' INHERIT CREATEROLE; \
+        GRANT ALL PRIVILEGES ON DATABASE process_heat TO \"{{name}}\"; \
+        GRANT ALL PRIVILEGES ON SCHEMA public TO \"{{name}}\"; \
+        GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO \"{{name}}\"; \
+        GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO \"{{name}}\";" \
+      revocation_statements="REVOKE ALL PRIVILEGES ON ALL TABLES IN SCHEMA public FROM \"{{name}}\"; \
+        REVOKE ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public FROM \"{{name}}\"; \
+        REVOKE ALL PRIVILEGES ON SCHEMA public FROM \"{{name}}\"; \
+        REVOKE ALL PRIVILEGES ON DATABASE process_heat FROM \"{{name}}\"; \
+        DROP ROLE IF EXISTS \"{{name}}\";" \
+      default_ttl="15m" \
+      max_ttl="1h"
+
+    # Configure rotation for static accounts
+    vault write database/static-roles/process-heat-app \
+      db_name=process-heat-postgresql \
+      username="process_heat_app" \
+      rotation_period="24h"
+
+    echo "Database Secrets Engine configured successfully"
+
+  # AWS Secrets Engine Configuration
+  aws-config.sh: |
+    #!/bin/bash
+    set -e
+
+    echo "Configuring AWS Secrets Engine..."
+
+    # Enable AWS secrets engine
+    vault secrets enable aws || true
+
+    # Configure root credentials (should be replaced with IAM role in production)
+    vault write aws/config/root \
+      access_key="PLACEHOLDER_AWS_ACCESS_KEY" \
+      secret_key="PLACEHOLDER_AWS_SECRET_KEY" \
+      region="us-west-2"
+
+    # Configure lease settings
+    vault write aws/config/lease \
+      lease="1h" \
+      lease_max="24h"
+
+    # Create role for S3 access (Process Heat data storage)
+    vault write aws/roles/process-heat-s3 \
+      credential_type=iam_user \
+      policy_document=-<<EOF
+    {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Effect": "Allow",
+          "Action": [
+            "s3:GetObject",
+            "s3:PutObject",
+            "s3:DeleteObject",
+            "s3:ListBucket"
+          ],
+          "Resource": [
+            "arn:aws:s3:::greenlang-process-heat-*",
+            "arn:aws:s3:::greenlang-process-heat-*/*"
+          ]
+        }
+      ]
+    }
+    EOF
+
+    # Create role for STS assumed role (preferred for EKS)
+    vault write aws/roles/process-heat-sts \
+      credential_type=assumed_role \
+      role_arns="arn:aws:iam::ACCOUNT_ID:role/greenlang-process-heat-role" \
+      default_sts_ttl="1h" \
+      max_sts_ttl="4h"
+
+    # Create role for CloudWatch access
+    vault write aws/roles/process-heat-cloudwatch \
+      credential_type=iam_user \
+      policy_document=-<<EOF
+    {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Effect": "Allow",
+          "Action": [
+            "cloudwatch:PutMetricData",
+            "cloudwatch:GetMetricData",
+            "cloudwatch:ListMetrics",
+            "logs:CreateLogGroup",
+            "logs:CreateLogStream",
+            "logs:PutLogEvents",
+            "logs:DescribeLogStreams"
+          ],
+          "Resource": "*",
+          "Condition": {
+            "StringEquals": {
+              "aws:ResourceTag/Application": "greenlang-process-heat"
+            }
+          }
+        }
+      ]
+    }
+    EOF
+
+    # Create role for Secrets Manager access
+    vault write aws/roles/process-heat-secrets-manager \
+      credential_type=iam_user \
+      policy_document=-<<EOF
+    {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Effect": "Allow",
+          "Action": [
+            "secretsmanager:GetSecretValue",
+            "secretsmanager:DescribeSecret"
+          ],
+          "Resource": "arn:aws:secretsmanager:*:*:secret:greenlang/process-heat/*"
+        }
+      ]
+    }
+    EOF
+
+    echo "AWS Secrets Engine configured successfully"
+
+  # Transit Secrets Engine Configuration
+  transit-config.sh: |
+    #!/bin/bash
+    set -e
+
+    echo "Configuring Transit Secrets Engine..."
+
+    # Enable Transit secrets engine
+    vault secrets enable transit || true
+
+    # Create encryption key for Process Heat data at rest
+    vault write -f transit/keys/process-heat-data-key \
+      type=aes256-gcm96 \
+      exportable=false \
+      allow_plaintext_backup=false \
+      deletion_allowed=false \
+      derived=false \
+      convergent_encryption=false
+
+    # Create encryption key for PII data (with stricter controls)
+    vault write -f transit/keys/process-heat-pii-key \
+      type=aes256-gcm96 \
+      exportable=false \
+      allow_plaintext_backup=false \
+      deletion_allowed=false \
+      min_decryption_version=1 \
+      min_encryption_version=1
+
+    # Create signing key for data integrity
+    vault write -f transit/keys/process-heat-signing-key \
+      type=ecdsa-p384 \
+      exportable=false \
+      allow_plaintext_backup=false \
+      deletion_allowed=false
+
+    # Create HMAC key for API signatures
+    vault write -f transit/keys/process-heat-hmac-key \
+      type=aes256-gcm96 \
+      exportable=false \
+      allow_plaintext_backup=false
+
+    # Create key for database field encryption
+    vault write -f transit/keys/process-heat-db-field-key \
+      type=aes256-gcm96 \
+      exportable=false \
+      convergent_encryption=true \
+      derived=true
+
+    # Configure automatic key rotation (90 days)
+    vault write transit/keys/process-heat-data-key/config \
+      auto_rotate_period=2160h
+
+    vault write transit/keys/process-heat-pii-key/config \
+      auto_rotate_period=720h
+
+    echo "Transit Secrets Engine configured successfully"
+
+  # Kubernetes Auth Method Configuration
+  kubernetes-auth-config.sh: |
+    #!/bin/bash
+    set -e
+
+    echo "Configuring Kubernetes Auth Method..."
+
+    # Enable Kubernetes auth method
+    vault auth enable kubernetes || true
+
+    # Configure Kubernetes auth
+    vault write auth/kubernetes/config \
+      kubernetes_host="https://kubernetes.default.svc:443" \
+      kubernetes_ca_cert=@/var/run/secrets/kubernetes.io/serviceaccount/ca.crt \
+      token_reviewer_jwt=@/var/run/secrets/kubernetes.io/serviceaccount/token \
+      issuer="https://kubernetes.default.svc.cluster.local"
+
+    # Create role for Process Heat API service
+    vault write auth/kubernetes/role/process-heat-api \
+      bound_service_account_names="process-heat-api" \
+      bound_service_account_namespaces="greenlang,greenlang-staging" \
+      policies="process-heat-api" \
+      ttl=1h \
+      max_ttl=4h \
+      audience="vault"
+
+    # Create role for Process Heat Worker service
+    vault write auth/kubernetes/role/process-heat-worker \
+      bound_service_account_names="process-heat-worker" \
+      bound_service_account_namespaces="greenlang,greenlang-staging" \
+      policies="process-heat-worker" \
+      ttl=1h \
+      max_ttl=4h \
+      audience="vault"
+
+    # Create role for Process Heat Scheduler service
+    vault write auth/kubernetes/role/process-heat-scheduler \
+      bound_service_account_names="process-heat-scheduler" \
+      bound_service_account_namespaces="greenlang,greenlang-staging" \
+      policies="process-heat-scheduler" \
+      ttl=1h \
+      max_ttl=4h \
+      audience="vault"
+
+    # Create role for ML Pipeline service
+    vault write auth/kubernetes/role/process-heat-ml \
+      bound_service_account_names="process-heat-ml" \
+      bound_service_account_namespaces="greenlang,greenlang-staging,greenlang-ml" \
+      policies="process-heat-ml" \
+      ttl=1h \
+      max_ttl=4h \
+      audience="vault"
+
+    # Create role for Migration jobs
+    vault write auth/kubernetes/role/process-heat-migration \
+      bound_service_account_names="process-heat-migration" \
+      bound_service_account_namespaces="greenlang,greenlang-staging" \
+      policies="process-heat-admin" \
+      ttl=15m \
+      max_ttl=30m \
+      audience="vault"
+
+    echo "Kubernetes Auth Method configured successfully"
+
+---
+# Vault Policies ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vault-policies
+  namespace: vault
+  labels:
+    app.kubernetes.io/name: vault
+    app.kubernetes.io/component: policies
+    app.kubernetes.io/part-of: greenlang-security
+data:
+  # Process Heat API Policy (least-privilege)
+  process-heat-api.hcl: |
+    # Process Heat API Service Policy
+    # Provides access to secrets needed by the API service
+
+    # KV Secrets - Read only for configuration
+    path "secret/data/process-heat/database" {
+      capabilities = ["read"]
+    }
+
+    path "secret/data/process-heat/redis" {
+      capabilities = ["read"]
+    }
+
+    path "secret/data/process-heat/api-keys" {
+      capabilities = ["read"]
+    }
+
+    path "secret/data/process-heat/integrations/*" {
+      capabilities = ["read"]
+    }
+
+    # Database - Dynamic credentials (readonly for most operations)
+    path "database/creds/process-heat-readonly" {
+      capabilities = ["read"]
+    }
+
+    path "database/creds/process-heat-readwrite" {
+      capabilities = ["read"]
+    }
+
+    # AWS - S3 access for data storage
+    path "aws/creds/process-heat-s3" {
+      capabilities = ["read"]
+    }
+
+    path "aws/sts/process-heat-sts" {
+      capabilities = ["read"]
+    }
+
+    # Transit - Encryption/decryption for data at rest
+    path "transit/encrypt/process-heat-data-key" {
+      capabilities = ["update"]
+    }
+
+    path "transit/decrypt/process-heat-data-key" {
+      capabilities = ["update"]
+    }
+
+    path "transit/encrypt/process-heat-pii-key" {
+      capabilities = ["update"]
+    }
+
+    path "transit/decrypt/process-heat-pii-key" {
+      capabilities = ["update"]
+    }
+
+    # HMAC for API signatures
+    path "transit/hmac/process-heat-hmac-key" {
+      capabilities = ["update"]
+    }
+
+    path "transit/verify/process-heat-hmac-key" {
+      capabilities = ["update"]
+    }
+
+    # PKI - Issue certificates for mTLS
+    path "pki_int/issue/process-heat-services" {
+      capabilities = ["create", "update"]
+    }
+
+    path "pki_int/issue/internal-mtls" {
+      capabilities = ["create", "update"]
+    }
+
+    # Token self-management
+    path "auth/token/renew-self" {
+      capabilities = ["update"]
+    }
+
+    path "auth/token/lookup-self" {
+      capabilities = ["read"]
+    }
+
+  # Process Heat Worker Policy
+  process-heat-worker.hcl: |
+    # Process Heat Worker Service Policy
+    # Background job processing with limited access
+
+    # KV Secrets - Read only for configuration
+    path "secret/data/process-heat/database" {
+      capabilities = ["read"]
+    }
+
+    path "secret/data/process-heat/redis" {
+      capabilities = ["read"]
+    }
+
+    path "secret/data/process-heat/integrations/*" {
+      capabilities = ["read"]
+    }
+
+    path "secret/data/process-heat/ml-services" {
+      capabilities = ["read"]
+    }
+
+    # Database - Read-write for job processing
+    path "database/creds/process-heat-readwrite" {
+      capabilities = ["read"]
+    }
+
+    # AWS - S3 and CloudWatch access
+    path "aws/creds/process-heat-s3" {
+      capabilities = ["read"]
+    }
+
+    path "aws/creds/process-heat-cloudwatch" {
+      capabilities = ["read"]
+    }
+
+    # Transit - Encryption for data processing
+    path "transit/encrypt/process-heat-data-key" {
+      capabilities = ["update"]
+    }
+
+    path "transit/decrypt/process-heat-data-key" {
+      capabilities = ["update"]
+    }
+
+    path "transit/encrypt/process-heat-db-field-key" {
+      capabilities = ["update"]
+    }
+
+    path "transit/decrypt/process-heat-db-field-key" {
+      capabilities = ["update"]
+    }
+
+    # Token self-management
+    path "auth/token/renew-self" {
+      capabilities = ["update"]
+    }
+
+    path "auth/token/lookup-self" {
+      capabilities = ["read"]
+    }
+
+  # Process Heat Scheduler Policy
+  process-heat-scheduler.hcl: |
+    # Process Heat Scheduler Service Policy
+    # Minimal access for job scheduling
+
+    # KV Secrets - Read only for configuration
+    path "secret/data/process-heat/redis" {
+      capabilities = ["read"]
+    }
+
+    # Database - Readonly for job status
+    path "database/creds/process-heat-readonly" {
+      capabilities = ["read"]
+    }
+
+    # Token self-management
+    path "auth/token/renew-self" {
+      capabilities = ["update"]
+    }
+
+    path "auth/token/lookup-self" {
+      capabilities = ["read"]
+    }
+
+  # Process Heat ML Pipeline Policy
+  process-heat-ml.hcl: |
+    # Process Heat ML Pipeline Policy
+    # ML model training and inference access
+
+    # KV Secrets - Read for ML configuration
+    path "secret/data/process-heat/database" {
+      capabilities = ["read"]
+    }
+
+    path "secret/data/process-heat/ml-services" {
+      capabilities = ["read"]
+    }
+
+    path "secret/data/process-heat/integrations/satellite" {
+      capabilities = ["read"]
+    }
+
+    # Database - Read-write for ML data
+    path "database/creds/process-heat-readwrite" {
+      capabilities = ["read"]
+    }
+
+    # AWS - Full S3 access for model artifacts
+    path "aws/creds/process-heat-s3" {
+      capabilities = ["read"]
+    }
+
+    path "aws/sts/process-heat-sts" {
+      capabilities = ["read"]
+    }
+
+    # Transit - Encryption for model data
+    path "transit/encrypt/process-heat-data-key" {
+      capabilities = ["update"]
+    }
+
+    path "transit/decrypt/process-heat-data-key" {
+      capabilities = ["update"]
+    }
+
+    # Token self-management
+    path "auth/token/renew-self" {
+      capabilities = ["update"]
+    }
+
+    path "auth/token/lookup-self" {
+      capabilities = ["read"]
+    }
+
+  # Process Heat Admin Policy (for migrations)
+  process-heat-admin.hcl: |
+    # Process Heat Admin Policy
+    # Full database access for migrations and admin tasks
+    # Short-lived tokens only
+
+    # Database - Admin access
+    path "database/creds/process-heat-admin" {
+      capabilities = ["read"]
+    }
+
+    # KV Secrets - Full access for setup
+    path "secret/data/process-heat/*" {
+      capabilities = ["create", "read", "update", "delete", "list"]
+    }
+
+    path "secret/metadata/process-heat/*" {
+      capabilities = ["read", "list"]
+    }
+
+    # Token self-management
+    path "auth/token/renew-self" {
+      capabilities = ["update"]
+    }
+
+    path "auth/token/lookup-self" {
+      capabilities = ["read"]
+    }
+
+  # Secrets Rotation Policy
+  secrets-rotation.hcl: |
+    # Secrets Rotation Service Policy
+    # Used by the rotation service for credential rotation
+
+    # KV Secrets - Full access for rotation
+    path "secret/data/process-heat/*" {
+      capabilities = ["create", "read", "update"]
+    }
+
+    path "secret/metadata/process-heat/*" {
+      capabilities = ["read", "list"]
+    }
+
+    # Database - Rotate credentials
+    path "database/rotate-root/process-heat-postgresql" {
+      capabilities = ["update"]
+    }
+
+    path "database/static-roles/process-heat-app" {
+      capabilities = ["read"]
+    }
+
+    path "database/static-creds/process-heat-app" {
+      capabilities = ["read"]
+    }
+
+    # AWS - Rotate credentials
+    path "aws/config/root" {
+      capabilities = ["update"]
+    }
+
+    # Transit - Key rotation
+    path "transit/keys/process-heat-data-key/rotate" {
+      capabilities = ["update"]
+    }
+
+    path "transit/keys/process-heat-pii-key/rotate" {
+      capabilities = ["update"]
+    }
+
+    # PKI - Certificate renewal
+    path "pki_int/issue/*" {
+      capabilities = ["create", "update"]
+    }
+
+    path "pki_int/revoke" {
+      capabilities = ["update"]
+    }
+
+    # Token self-management
+    path "auth/token/renew-self" {
+      capabilities = ["update"]
+    }
+
+    path "auth/token/lookup-self" {
+      capabilities = ["read"]
+    }
+
+---
+# Job to initialize Vault with secrets engines and policies
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: vault-init-config
+  namespace: vault
+  labels:
+    app.kubernetes.io/name: vault
+    app.kubernetes.io/component: init
+spec:
+  ttlSecondsAfterFinished: 3600
+  backoffLimit: 3
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: vault
+        app.kubernetes.io/component: init
+    spec:
+      serviceAccountName: vault
+      restartPolicy: OnFailure
+      containers:
+        - name: vault-init
+          image: hashicorp/vault:1.15.4
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: VAULT_ADDR
+              value: "https://vault.vault.svc.cluster.local:8200"
+            - name: VAULT_CACERT
+              value: "/vault/tls/ca.crt"
+            - name: VAULT_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: vault-root-token
+                  key: token
+          command:
+            - /bin/sh
+            - -c
+          args:
+            - |
+              set -e
+              echo "Waiting for Vault to be ready..."
+              until vault status; do
+                echo "Vault not ready, waiting..."
+                sleep 5
+              done
+
+              echo "Applying Vault policies..."
+              vault policy write process-heat-api /vault/policies/process-heat-api.hcl
+              vault policy write process-heat-worker /vault/policies/process-heat-worker.hcl
+              vault policy write process-heat-scheduler /vault/policies/process-heat-scheduler.hcl
+              vault policy write process-heat-ml /vault/policies/process-heat-ml.hcl
+              vault policy write process-heat-admin /vault/policies/process-heat-admin.hcl
+              vault policy write secrets-rotation /vault/policies/secrets-rotation.hcl
+
+              echo "Configuring secrets engines..."
+              /vault/config/pki-config.sh
+              /vault/config/kv-config.sh
+              /vault/config/database-config.sh
+              /vault/config/aws-config.sh
+              /vault/config/transit-config.sh
+              /vault/config/kubernetes-auth-config.sh
+
+              echo "Vault initialization complete!"
+          volumeMounts:
+            - name: vault-tls
+              mountPath: /vault/tls
+              readOnly: true
+            - name: vault-config
+              mountPath: /vault/config
+              readOnly: true
+            - name: vault-policies
+              mountPath: /vault/policies
+              readOnly: true
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            runAsNonRoot: true
+            runAsUser: 100
+            capabilities:
+              drop:
+                - ALL
+      volumes:
+        - name: vault-tls
+          secret:
+            secretName: vault-tls
+        - name: vault-config
+          configMap:
+            name: vault-secrets-engines-config
+            defaultMode: 0755
+        - name: vault-policies
+          configMap:
+            name: vault-policies
+
+---
+# Secret for Vault root token (placeholder - should be created during init)
+apiVersion: v1
+kind: Secret
+metadata:
+  name: vault-root-token
+  namespace: vault
+  labels:
+    app.kubernetes.io/name: vault
+type: Opaque
+stringData:
+  token: "PLACEHOLDER_ROOT_TOKEN"

@@ -1,0 +1,620 @@
+# ============================================================================
+# GreenLang Platform - Unified Docker Compose
+# ============================================================================
+# Full platform deployment with all three applications + shared infrastructure
+# Version: 1.0.0
+# Last Updated: 2025-11-08
+# ============================================================================
+#
+# SERVICES:
+#   - Shared Infrastructure: PostgreSQL, Redis, RabbitMQ, Weaviate
+#   - CBAM API (port 8001)
+#   - CSRD Web (port 8002)
+#   - VCCI Backend (port 8000)
+#   - Monitoring: Prometheus (9090), Grafana (3000)
+#
+# NETWORK: greenlang-platform (172.26.0.0/16)
+#
+# ============================================================================
+
+version: '3.9'
+
+# ============================================================================
+# SHARED INFRASTRUCTURE SERVICES
+# ============================================================================
+services:
+
+  # --------------------------------------------------------------------------
+  # Shared PostgreSQL Database (ALL APPS)
+  # --------------------------------------------------------------------------
+  postgres:
+    image: postgres:15-alpine
+    container_name: greenlang-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: greenlang_admin
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-greenlang_secure_2024}
+      POSTGRES_DB: greenlang_platform
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=en_US.UTF-8 --lc-ctype=en_US.UTF-8"
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./init/shared_db_schema.sql:/docker-entrypoint-initdb.d/01-init-schema.sql:ro
+    networks:
+      greenlang-platform:
+        ipv4_address: 172.26.0.10
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U greenlang_admin -d greenlang_platform"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    command:
+      - "postgres"
+      - "-c"
+      - "max_connections=300"
+      - "-c"
+      - "shared_buffers=512MB"
+      - "-c"
+      - "effective_cache_size=1536MB"
+      - "-c"
+      - "maintenance_work_mem=128MB"
+      - "-c"
+      - "checkpoint_completion_target=0.9"
+      - "-c"
+      - "wal_buffers=16MB"
+      - "-c"
+      - "default_statistics_target=100"
+      - "-c"
+      - "random_page_cost=1.1"
+      - "-c"
+      - "effective_io_concurrency=200"
+      - "-c"
+      - "work_mem=4MB"
+      - "-c"
+      - "min_wal_size=1GB"
+      - "-c"
+      - "max_wal_size=4GB"
+
+  # --------------------------------------------------------------------------
+  # Shared Redis Cache (ALL APPS)
+  # --------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: greenlang-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-greenlang_redis_2024}
+    volumes:
+      - redis-data:/data
+    networks:
+      greenlang-platform:
+        ipv4_address: 172.26.0.11
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    command: >
+      redis-server
+      --appendonly yes
+      --appendfsync everysec
+      --maxmemory 1gb
+      --maxmemory-policy allkeys-lru
+      --requirepass ${REDIS_PASSWORD:-greenlang_redis_2024}
+
+  # --------------------------------------------------------------------------
+  # RabbitMQ Message Queue (Cross-App Events)
+  # --------------------------------------------------------------------------
+  rabbitmq:
+    image: rabbitmq:3.12-management-alpine
+    container_name: greenlang-rabbitmq
+    restart: unless-stopped
+    ports:
+      - "5672:5672"   # AMQP port
+      - "15672:15672" # Management UI
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-greenlang}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-greenlang_rabbit_2024}
+      RABBITMQ_DEFAULT_VHOST: greenlang_platform
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    networks:
+      greenlang-platform:
+        ipv4_address: 172.26.0.12
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+
+  # --------------------------------------------------------------------------
+  # Weaviate Vector Database (Shared for RAG)
+  # --------------------------------------------------------------------------
+  weaviate:
+    image: semitechnologies/weaviate:1.23.0
+    container_name: greenlang-weaviate
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      QUERY_DEFAULTS_LIMIT: 25
+      AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED: "true"
+      PERSISTENCE_DATA_PATH: /var/lib/weaviate
+      DEFAULT_VECTORIZER_MODULE: none
+      ENABLE_MODULES: text2vec-openai,text2vec-transformers
+      CLUSTER_HOSTNAME: weaviate-node1
+    volumes:
+      - weaviate-data:/var/lib/weaviate
+    networks:
+      greenlang-platform:
+        ipv4_address: 172.26.0.13
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/v1/.well-known/ready"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+# ============================================================================
+# APPLICATION SERVICES
+# ============================================================================
+
+  # --------------------------------------------------------------------------
+  # CBAM API (Port 8001)
+  # --------------------------------------------------------------------------
+  cbam-api:
+    build:
+      context: ../GL-CBAM-APP/CBAM-Importer-Copilot
+      dockerfile: Dockerfile
+    image: greenlang/cbam-app:latest
+    container_name: cbam-api
+    restart: unless-stopped
+    ports:
+      - "8001:8000"
+    environment:
+      # Application
+      APP_ENV: ${APP_ENV:-production}
+      APP_VERSION: ${APP_VERSION:-1.0.0}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+
+      # Shared Database
+      DATABASE_URL: postgresql://greenlang_admin:${POSTGRES_PASSWORD:-greenlang_secure_2024}@postgres:5432/greenlang_platform?options=-c%20search_path=cbam,public
+      DB_POOL_SIZE: 20
+      DB_MAX_OVERFLOW: 40
+
+      # Shared Redis
+      REDIS_URL: redis://:${REDIS_PASSWORD:-greenlang_redis_2024}@redis:6379/0
+
+      # Shared Message Queue
+      RABBITMQ_URL: amqp://${RABBITMQ_USER:-greenlang}:${RABBITMQ_PASSWORD:-greenlang_rabbit_2024}@rabbitmq:5672/greenlang_platform
+
+      # Security (Shared JWT Secret)
+      SECRET_KEY: ${SHARED_SECRET_KEY:-greenlang_platform_secret_2024_change_in_production}
+      JWT_SECRET_KEY: ${SHARED_JWT_SECRET:-greenlang_jwt_secret_2024_change_in_production}
+      JWT_ALGORITHM: HS256
+      ACCESS_TOKEN_EXPIRE_MINUTES: 30
+
+      # CORS
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000,http://localhost:8080,http://localhost:8001,http://localhost:8002}
+
+      # Metrics
+      ENABLE_METRICS: "true"
+      METRICS_PORT: 8000
+
+      # Cross-App Integration
+      CSRD_API_URL: http://csrd-web:8000
+      VCCI_API_URL: http://vcci-backend:8000
+
+    volumes:
+      - cbam-data:/app/data
+      - cbam-logs:/app/logs
+      - cbam-uploads:/app/uploads
+      - cbam-output:/app/output
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      greenlang-platform:
+        ipv4_address: 172.26.0.101
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # --------------------------------------------------------------------------
+  # CSRD Web (Port 8002)
+  # --------------------------------------------------------------------------
+  csrd-web:
+    build:
+      context: ../GL-CSRD-APP/CSRD-Reporting-Platform
+      dockerfile: Dockerfile
+    image: greenlang/csrd-app:latest
+    container_name: csrd-web
+    restart: unless-stopped
+    ports:
+      - "8002:8000"
+    environment:
+      # Shared Database
+      DATABASE_URL: postgresql://greenlang_admin:${POSTGRES_PASSWORD:-greenlang_secure_2024}@postgres:5432/greenlang_platform?options=-c%20search_path=csrd,public
+
+      # Shared Redis
+      REDIS_URL: redis://:${REDIS_PASSWORD:-greenlang_redis_2024}@redis:6379/1
+
+      # Shared Weaviate
+      WEAVIATE_URL: http://weaviate:8080
+
+      # Shared Message Queue
+      RABBITMQ_URL: amqp://${RABBITMQ_USER:-greenlang}:${RABBITMQ_PASSWORD:-greenlang_rabbit_2024}@rabbitmq:5672/greenlang_platform
+
+      # AI Keys
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      PINECONE_API_KEY: ${PINECONE_API_KEY}
+
+      # Security (Shared JWT Secret)
+      SECRET_KEY: ${SHARED_SECRET_KEY:-greenlang_platform_secret_2024_change_in_production}
+      JWT_SECRET_KEY: ${SHARED_JWT_SECRET:-greenlang_jwt_secret_2024_change_in_production}
+      CSRD_ENCRYPTION_KEY: ${CSRD_ENCRYPTION_KEY}
+
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      WORKERS: 4
+      ENVIRONMENT: production
+      ENABLE_METRICS: "true"
+
+      # Cross-App Integration
+      CBAM_API_URL: http://cbam-api:8000
+      VCCI_API_URL: http://vcci-backend:8000
+
+    volumes:
+      - csrd-data:/app/data
+      - csrd-output:/app/output
+      - csrd-logs:/app/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      weaviate:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      greenlang-platform:
+        ipv4_address: 172.26.0.102
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # --------------------------------------------------------------------------
+  # VCCI Backend (Port 8000)
+  # --------------------------------------------------------------------------
+  vcci-backend:
+    build:
+      context: ../GL-VCCI-Carbon-APP/VCCI-Scope3-Platform
+      dockerfile: backend/Dockerfile
+    image: greenlang/vcci-backend:latest
+    container_name: vcci-backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      APP_ENV: production
+
+      # Shared Database
+      DATABASE_URL: postgresql://greenlang_admin:${POSTGRES_PASSWORD:-greenlang_secure_2024}@postgres:5432/greenlang_platform?options=-c%20search_path=vcci,public
+
+      # Shared Redis
+      REDIS_URL: redis://:${REDIS_PASSWORD:-greenlang_redis_2024}@redis:6379/2
+
+      # Shared Weaviate
+      WEAVIATE_URL: http://weaviate:8080
+
+      # Celery (uses Redis)
+      CELERY_BROKER_URL: redis://:${REDIS_PASSWORD:-greenlang_redis_2024}@redis:6379/3
+      CELERY_RESULT_BACKEND: redis://:${REDIS_PASSWORD:-greenlang_redis_2024}@redis:6379/4
+
+      # Shared Message Queue
+      RABBITMQ_URL: amqp://${RABBITMQ_USER:-greenlang}:${RABBITMQ_PASSWORD:-greenlang_rabbit_2024}@rabbitmq:5672/greenlang_platform
+
+      # Security (Shared JWT Secret)
+      JWT_SECRET: ${SHARED_JWT_SECRET:-greenlang_jwt_secret_2024_change_in_production}
+      SECRET_KEY: ${SHARED_SECRET_KEY:-greenlang_platform_secret_2024_change_in_production}
+
+      # AI Keys
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      ENABLE_METRICS: "true"
+
+      # Cross-App Integration
+      CBAM_API_URL: http://cbam-api:8000
+      CSRD_API_URL: http://csrd-web:8000
+
+    volumes:
+      - vcci-data:/app/data
+      - vcci-logs:/app/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      weaviate:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      greenlang-platform:
+        ipv4_address: 172.26.0.103
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # --------------------------------------------------------------------------
+  # VCCI Celery Worker
+  # --------------------------------------------------------------------------
+  vcci-worker:
+    build:
+      context: ../GL-VCCI-Carbon-APP/VCCI-Scope3-Platform
+      dockerfile: worker/Dockerfile
+    image: greenlang/vcci-worker:latest
+    container_name: vcci-worker
+    restart: unless-stopped
+    environment:
+      APP_ENV: production
+      DATABASE_URL: postgresql://greenlang_admin:${POSTGRES_PASSWORD:-greenlang_secure_2024}@postgres:5432/greenlang_platform?options=-c%20search_path=vcci,public
+      REDIS_URL: redis://:${REDIS_PASSWORD:-greenlang_redis_2024}@redis:6379/2
+      WEAVIATE_URL: http://weaviate:8080
+      CELERY_BROKER_URL: redis://:${REDIS_PASSWORD:-greenlang_redis_2024}@redis:6379/3
+      CELERY_RESULT_BACKEND: redis://:${REDIS_PASSWORD:-greenlang_redis_2024}@redis:6379/4
+      RABBITMQ_URL: amqp://${RABBITMQ_USER:-greenlang}:${RABBITMQ_PASSWORD:-greenlang_rabbit_2024}@rabbitmq:5672/greenlang_platform
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      C_FORCE_ROOT: "true"
+    volumes:
+      - vcci-data:/app/data
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      vcci-backend:
+        condition: service_healthy
+    networks:
+      greenlang-platform:
+        ipv4_address: 172.26.0.104
+
+# ============================================================================
+# MONITORING SERVICES
+# ============================================================================
+
+  # --------------------------------------------------------------------------
+  # Prometheus (Metrics Collection)
+  # --------------------------------------------------------------------------
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: greenlang-prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus-unified.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/alerts-unified.yml:/etc/prometheus/alerts.yml:ro
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=30d'
+      - '--web.enable-lifecycle'
+    networks:
+      greenlang-platform:
+        ipv4_address: 172.26.0.201
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:9090/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # --------------------------------------------------------------------------
+  # Grafana (Dashboards)
+  # --------------------------------------------------------------------------
+  grafana:
+    image: grafana/grafana:latest
+    container_name: greenlang-grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-greenlang2024}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_SERVER_ROOT_URL: http://localhost:3000
+      GF_INSTALL_PLUGINS: grafana-piechart-panel,grafana-clock-panel
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./monitoring/grafana-provisioning:/etc/grafana/provisioning:ro
+      - ../monitoring/unified-dashboard.json:/var/lib/grafana/dashboards/unified-dashboard.json:ro
+    depends_on:
+      - prometheus
+    networks:
+      greenlang-platform:
+        ipv4_address: 172.26.0.202
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # --------------------------------------------------------------------------
+  # pgAdmin (Database Management)
+  # --------------------------------------------------------------------------
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: greenlang-pgadmin
+    restart: unless-stopped
+    ports:
+      - "5050:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@greenlang.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-greenlang_admin_2024}
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False"
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+    depends_on:
+      - postgres
+    networks:
+      greenlang-platform:
+        ipv4_address: 172.26.0.203
+    profiles:
+      - admin
+
+# ============================================================================
+# VOLUMES (Persistent Data)
+# ============================================================================
+volumes:
+  # Shared Infrastructure
+  postgres-data:
+    driver: local
+    name: greenlang-postgres-data
+  redis-data:
+    driver: local
+    name: greenlang-redis-data
+  rabbitmq-data:
+    driver: local
+    name: greenlang-rabbitmq-data
+  weaviate-data:
+    driver: local
+    name: greenlang-weaviate-data
+
+  # CBAM Volumes
+  cbam-data:
+    driver: local
+    name: cbam-data
+  cbam-logs:
+    driver: local
+    name: cbam-logs
+  cbam-uploads:
+    driver: local
+    name: cbam-uploads
+  cbam-output:
+    driver: local
+    name: cbam-output
+
+  # CSRD Volumes
+  csrd-data:
+    driver: local
+    name: csrd-data
+  csrd-output:
+    driver: local
+    name: csrd-output
+  csrd-logs:
+    driver: local
+    name: csrd-logs
+
+  # VCCI Volumes
+  vcci-data:
+    driver: local
+    name: vcci-data
+  vcci-logs:
+    driver: local
+    name: vcci-logs
+
+  # Monitoring Volumes
+  prometheus-data:
+    driver: local
+    name: greenlang-prometheus-data
+  grafana-data:
+    driver: local
+    name: greenlang-grafana-data
+  pgadmin-data:
+    driver: local
+    name: greenlang-pgadmin-data
+
+# ============================================================================
+# NETWORKS
+# ============================================================================
+networks:
+  greenlang-platform:
+    driver: bridge
+    name: greenlang-platform
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.26.0.0/16
+          gateway: 172.26.0.1
+
+# ============================================================================
+# USAGE INSTRUCTIONS
+# ============================================================================
+#
+# Prerequisites:
+#   1. Copy .env.example to .env and configure secrets
+#   2. Ensure Docker and Docker Compose are installed
+#   3. Build individual app images first (optional)
+#
+# Commands:
+#   # Start entire platform
+#   docker-compose -f deployment/docker-compose-unified.yml up -d
+#
+#   # Start with admin tools
+#   docker-compose -f deployment/docker-compose-unified.yml --profile admin up -d
+#
+#   # View logs
+#   docker-compose -f deployment/docker-compose-unified.yml logs -f
+#   docker-compose -f deployment/docker-compose-unified.yml logs -f cbam-api
+#   docker-compose -f deployment/docker-compose-unified.yml logs -f csrd-web
+#   docker-compose -f deployment/docker-compose-unified.yml logs -f vcci-backend
+#
+#   # Stop platform
+#   docker-compose -f deployment/docker-compose-unified.yml down
+#
+#   # Stop and remove volumes (CAUTION)
+#   docker-compose -f deployment/docker-compose-unified.yml down -v
+#
+#   # Rebuild and restart
+#   docker-compose -f deployment/docker-compose-unified.yml up -d --build
+#
+#   # View running services
+#   docker-compose -f deployment/docker-compose-unified.yml ps
+#
+#   # View resource usage
+#   docker-compose -f deployment/docker-compose-unified.yml stats
+#
+# Access Points:
+#   - CBAM API:         http://localhost:8001
+#   - CSRD Web:         http://localhost:8002
+#   - VCCI Backend:     http://localhost:8000
+#   - Prometheus:       http://localhost:9090
+#   - Grafana:          http://localhost:3000 (admin/greenlang2024)
+#   - RabbitMQ UI:      http://localhost:15672 (greenlang/greenlang_rabbit_2024)
+#   - pgAdmin:          http://localhost:5050 (admin@greenlang.com/greenlang_admin_2024)
+#   - PostgreSQL:       localhost:5432 (greenlang_admin/greenlang_secure_2024)
+#   - Redis:            localhost:6379
+#   - Weaviate:         http://localhost:8080
+#
+# Health Checks:
+#   curl http://localhost:8001/health  # CBAM
+#   curl http://localhost:8002/health  # CSRD
+#   curl http://localhost:8000/health/live  # VCCI
+#
+# ============================================================================

@@ -1,0 +1,64 @@
+# GreenLang Default Deny All Network Policy
+# Zero-trust security model: Deny all traffic by default
+# All allowed traffic must be explicitly defined in component-specific policies
+#
+# IMPORTANT: This policy blocks ALL ingress and egress traffic for pods
+# in the greenlang-production namespace unless explicitly allowed
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+  namespace: greenlang-production
+  labels:
+    app.kubernetes.io/name: default-deny-all
+    app.kubernetes.io/component: network-policy
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/managed-by: kubectl
+    security.greenlang.ai/policy-type: deny-all
+  annotations:
+    description: "Default deny all ingress and egress traffic - Zero Trust"
+    security.greenlang.ai/compliance: "SOC2,ISO27001"
+spec:
+  # Apply to ALL pods in the namespace
+  podSelector: {}
+  # Block both ingress and egress by default
+  policyTypes:
+    - Ingress
+    - Egress
+  # Empty rules = deny all (no traffic allowed)
+  ingress: []
+  egress: []
+---
+# Allow DNS resolution for all pods (required for service discovery)
+# Without this, pods cannot resolve service names
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-dns-egress
+  namespace: greenlang-production
+  labels:
+    app.kubernetes.io/name: allow-dns-egress
+    app.kubernetes.io/component: network-policy
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/managed-by: kubectl
+    security.greenlang.ai/policy-type: allow-dns
+  annotations:
+    description: "Allow DNS resolution for all pods in namespace"
+spec:
+  podSelector: {}
+  policyTypes:
+    - Egress
+  egress:
+    # Allow DNS queries to kube-dns/CoreDNS
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+        - podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53

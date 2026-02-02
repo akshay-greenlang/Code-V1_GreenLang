@@ -1,0 +1,135 @@
+# syntax=docker/dockerfile:1.7
+# Multi-stage production Dockerfile for GreenLang FastAPI Application
+# Optimized for size, security, and performance
+
+ARG PYTHON_VERSION=3.11-slim
+
+# ============================================================================
+# Stage 1: Builder - Compile dependencies and build wheels
+# ============================================================================
+FROM python:${PYTHON_VERSION} AS builder
+
+# Build arguments
+ARG GL_VERSION=0.3.0
+
+# Prevent Python from writing pyc files and buffering stdout/stderr
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    PIP_DEFAULT_TIMEOUT=100 \
+    VIRTUAL_ENV=/opt/venv
+
+# Create virtual environment
+RUN python -m venv $VIRTUAL_ENV
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+
+# Install system build dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    gcc \
+    g++ \
+    git \
+    curl \
+    pkg-config \
+    libssl-dev \
+    libffi-dev \
+    libpq-dev \
+    ca-certificates \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy only dependency files first for better caching
+COPY pyproject.toml README.md ./
+COPY core/ ./core/
+COPY greenlang/ ./greenlang/
+
+# Install Python dependencies
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install --upgrade pip setuptools wheel && \
+    pip install --no-deps -e ".[server,data,analytics,security]"
+
+# ============================================================================
+# Stage 2: Runtime - Minimal production image
+# ============================================================================
+FROM python:${PYTHON_VERSION}
+
+# Runtime arguments
+ARG GL_VERSION=0.3.0
+ARG BUILD_DATE
+ARG VCS_REF
+
+# Runtime environment variables
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    VIRTUAL_ENV=/opt/venv \
+    PATH="/opt/venv/bin:$PATH" \
+    GL_HOME=/var/lib/greenlang \
+    GL_CACHE_DIR=/var/cache/greenlang \
+    GL_LOG_DIR=/var/log/greenlang \
+    GL_CONFIG_DIR=/etc/greenlang \
+    WORKERS=4 \
+    PORT=8000 \
+    LOG_LEVEL=info
+
+# Install minimal runtime dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    tini \
+    curl \
+    libpq5 \
+    && apt-get upgrade -y \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* \
+    && rm -rf /var/cache/apt/* \
+    && rm -rf /tmp/*
+
+# Copy virtual environment from builder
+COPY --from=builder ${VIRTUAL_ENV} ${VIRTUAL_ENV}
+
+# Copy application code
+COPY --chown=10001:10001 greenlang/ /app/greenlang/
+COPY --chown=10001:10001 core/ /app/core/
+
+# Create non-root user with specific UID/GID for Kubernetes compatibility
+RUN groupadd -g 10001 appuser && \
+    useradd -u 10001 -g 10001 -m -s /bin/bash appuser && \
+    mkdir -p ${GL_HOME} ${GL_CACHE_DIR} ${GL_LOG_DIR} ${GL_CONFIG_DIR} /app && \
+    chown -R appuser:appuser ${GL_HOME} ${GL_CACHE_DIR} ${GL_LOG_DIR} ${GL_CONFIG_DIR} /app
+
+# Security: Remove unnecessary capabilities
+RUN setcap -r ${VIRTUAL_ENV}/bin/python* 2>/dev/null || true
+
+# Switch to non-root user
+USER appuser
+WORKDIR /app
+
+# Expose application port
+EXPOSE 8000
+
+# OCI standard labels
+LABEL org.opencontainers.image.title="GreenLang API" \
+      org.opencontainers.image.description="GreenLang FastAPI REST API for climate intelligence" \
+      org.opencontainers.image.version="${GL_VERSION}" \
+      org.opencontainers.image.created="${BUILD_DATE}" \
+      org.opencontainers.image.revision="${VCS_REF}" \
+      org.opencontainers.image.source="https://github.com/greenlang/greenlang" \
+      org.opencontainers.image.url="https://greenlang.io" \
+      org.opencontainers.image.licenses="MIT" \
+      org.opencontainers.image.vendor="GreenLang Team" \
+      org.opencontainers.image.documentation="https://greenlang.io/docs" \
+      security.capabilities.drop="ALL" \
+      security.no-new-privileges="true"
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost:${PORT}/api/v1/health || exit 1
+
+# Volume mounts
+VOLUME ["${GL_CACHE_DIR}", "${GL_LOG_DIR}"]
+
+# Use Tini for proper signal handling
+ENTRYPOINT ["/usr/bin/tini", "--"]
+
+# Run with Uvicorn (FastAPI ASGI server)
+CMD ["uvicorn", "greenlang.api.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]

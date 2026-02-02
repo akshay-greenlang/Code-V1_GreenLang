@@ -1,0 +1,421 @@
+# GreenLang Monitoring Stack ArgoCD Application
+# Deploys Prometheus, Grafana, Alertmanager, and related components
+# Author: GL-DevOpsEngineer
+# Version: 1.0.0
+
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: greenlang-monitoring
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: greenlang-monitoring
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: monitoring
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+    notifications.argoproj.io/subscribe.on-sync-failed.slack: greenlang-alerts
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: greenlang
+
+  source:
+    repoURL: https://prometheus-community.github.io/helm-charts
+    chart: kube-prometheus-stack
+    targetRevision: 55.5.0
+    helm:
+      releaseName: greenlang-monitoring
+      values: |
+        # Global Configuration
+        fullnameOverride: greenlang-monitoring
+
+        # Prometheus Configuration
+        prometheus:
+          enabled: true
+          prometheusSpec:
+            replicas: 2
+            retention: 30d
+            retentionSize: 50GB
+
+            resources:
+              requests:
+                memory: 2Gi
+                cpu: 500m
+              limits:
+                memory: 8Gi
+                cpu: 2000m
+
+            storageSpec:
+              volumeClaimTemplate:
+                spec:
+                  storageClassName: gp3
+                  accessModes: ["ReadWriteOnce"]
+                  resources:
+                    requests:
+                      storage: 100Gi
+
+            # Service discovery for GreenLang services
+            additionalScrapeConfigs:
+              - job_name: 'greenlang-agents'
+                kubernetes_sd_configs:
+                  - role: pod
+                    namespaces:
+                      names:
+                        - greenlang-agents
+                relabel_configs:
+                  - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+                    action: keep
+                    regex: true
+                  - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+                    action: replace
+                    target_label: __metrics_path__
+                    regex: (.+)
+                  - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_port, __meta_kubernetes_pod_ip]
+                    action: replace
+                    regex: (\d+);(([A-Fa-f0-9]{1,4}::?){1,7}[A-Fa-f0-9]{1,4}|(\d{1,3}\.){3}\d{1,3})
+                    replacement: '[$2]:$1'
+                    target_label: __address__
+
+              - job_name: 'greenlang-api'
+                kubernetes_sd_configs:
+                  - role: pod
+                    namespaces:
+                      names:
+                        - greenlang-api
+                relabel_configs:
+                  - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+                    action: keep
+                    regex: true
+
+            # Remote write for long-term storage
+            remoteWrite:
+              - url: "https://prometheus-remote.greenlang.io/api/v1/write"
+                writeRelabelConfigs:
+                  - sourceLabels: [__name__]
+                    regex: '(greenlang_.*|http_.*|process_.*)'
+                    action: keep
+
+            # Pod metadata for better labeling
+            podMetadata:
+              labels:
+                app.kubernetes.io/name: prometheus
+                app.kubernetes.io/part-of: greenlang-monitoring
+
+            # Affinity for high availability
+            affinity:
+              podAntiAffinity:
+                requiredDuringSchedulingIgnoredDuringExecution:
+                  - labelSelector:
+                      matchExpressions:
+                        - key: app.kubernetes.io/name
+                          operator: In
+                          values:
+                            - prometheus
+                    topologyKey: kubernetes.io/hostname
+
+          service:
+            type: ClusterIP
+
+          serviceMonitor:
+            enabled: true
+
+        # Alertmanager Configuration
+        alertmanager:
+          enabled: true
+          alertmanagerSpec:
+            replicas: 3
+            retention: 120h
+
+            resources:
+              requests:
+                memory: 256Mi
+                cpu: 100m
+              limits:
+                memory: 512Mi
+                cpu: 500m
+
+            storage:
+              volumeClaimTemplate:
+                spec:
+                  storageClassName: gp3
+                  accessModes: ["ReadWriteOnce"]
+                  resources:
+                    requests:
+                      storage: 10Gi
+
+          config:
+            global:
+              resolve_timeout: 5m
+              slack_api_url_file: /etc/alertmanager/secrets/slack-webhook-url
+              pagerduty_url: https://events.pagerduty.com/v2/enqueue
+
+            route:
+              group_by: ['alertname', 'cluster', 'service']
+              group_wait: 30s
+              group_interval: 5m
+              repeat_interval: 4h
+              receiver: 'default-receiver'
+              routes:
+                - match:
+                    severity: critical
+                  receiver: 'pagerduty-critical'
+                  continue: true
+                - match:
+                    severity: critical
+                  receiver: 'slack-critical'
+                - match:
+                    severity: warning
+                  receiver: 'slack-warning'
+                - match_re:
+                    service: greenlang-.*
+                  receiver: 'greenlang-team'
+
+            receivers:
+              - name: 'default-receiver'
+                slack_configs:
+                  - channel: '#alerts-default'
+                    send_resolved: true
+
+              - name: 'pagerduty-critical'
+                pagerduty_configs:
+                  - service_key_file: /etc/alertmanager/secrets/pagerduty-service-key
+                    severity: critical
+                    description: '{{ .CommonAnnotations.summary }}'
+                    details:
+                      firing: '{{ template "pagerduty.default.instances" .Alerts.Firing }}'
+                      resolved: '{{ template "pagerduty.default.instances" .Alerts.Resolved }}'
+
+              - name: 'slack-critical'
+                slack_configs:
+                  - channel: '#alerts-critical'
+                    send_resolved: true
+                    title: '[CRITICAL] {{ .CommonAnnotations.summary }}'
+                    text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+
+              - name: 'slack-warning'
+                slack_configs:
+                  - channel: '#alerts-warning'
+                    send_resolved: true
+
+              - name: 'greenlang-team'
+                slack_configs:
+                  - channel: '#greenlang-alerts'
+                    send_resolved: true
+
+            inhibit_rules:
+              - source_match:
+                  severity: 'critical'
+                target_match:
+                  severity: 'warning'
+                equal: ['alertname', 'cluster', 'service']
+
+        # Grafana Configuration
+        grafana:
+          enabled: true
+          replicas: 2
+
+          adminPassword: null
+          admin:
+            existingSecret: grafana-admin-credentials
+            userKey: admin-user
+            passwordKey: admin-password
+
+          persistence:
+            enabled: true
+            type: pvc
+            storageClassName: gp3
+            size: 20Gi
+
+          resources:
+            requests:
+              memory: 256Mi
+              cpu: 100m
+            limits:
+              memory: 1Gi
+              cpu: 500m
+
+          ingress:
+            enabled: true
+            ingressClassName: nginx
+            annotations:
+              cert-manager.io/cluster-issuer: letsencrypt-prod
+              nginx.ingress.kubernetes.io/ssl-redirect: "true"
+            hosts:
+              - grafana.greenlang.io
+            tls:
+              - secretName: grafana-tls
+                hosts:
+                  - grafana.greenlang.io
+
+          grafana.ini:
+            server:
+              root_url: https://grafana.greenlang.io
+            auth:
+              disable_login_form: false
+            auth.generic_oauth:
+              enabled: true
+              name: Okta
+              allow_sign_up: true
+              client_id: $__file{/etc/grafana/secrets/oauth-client-id}
+              client_secret: $__file{/etc/grafana/secrets/oauth-client-secret}
+              scopes: openid profile email groups
+              auth_url: https://greenlang.okta.com/oauth2/v1/authorize
+              token_url: https://greenlang.okta.com/oauth2/v1/token
+              api_url: https://greenlang.okta.com/oauth2/v1/userinfo
+              role_attribute_path: contains(groups[*], 'grafana-admins') && 'Admin' || contains(groups[*], 'grafana-editors') && 'Editor' || 'Viewer'
+            security:
+              admin_password: $__file{/etc/grafana/secrets/admin-password}
+              secret_key: $__file{/etc/grafana/secrets/secret-key}
+            analytics:
+              reporting_enabled: false
+              check_for_updates: false
+
+          dashboardProviders:
+            dashboardproviders.yaml:
+              apiVersion: 1
+              providers:
+                - name: 'greenlang'
+                  orgId: 1
+                  folder: 'GreenLang'
+                  type: file
+                  disableDeletion: true
+                  editable: false
+                  options:
+                    path: /var/lib/grafana/dashboards/greenlang
+
+          dashboards:
+            greenlang:
+              greenlang-overview:
+                gnetId: 0
+                datasource: Prometheus
+                json: |
+                  {
+                    "title": "GreenLang Platform Overview",
+                    "uid": "greenlang-overview",
+                    "panels": []
+                  }
+
+          sidecar:
+            dashboards:
+              enabled: true
+              searchNamespace: ALL
+              label: grafana_dashboard
+              labelValue: "1"
+            datasources:
+              enabled: true
+              searchNamespace: ALL
+
+        # Node Exporter
+        nodeExporter:
+          enabled: true
+
+        # Kube State Metrics
+        kubeStateMetrics:
+          enabled: true
+
+        # Prometheus Operator
+        prometheusOperator:
+          enabled: true
+          resources:
+            requests:
+              memory: 256Mi
+              cpu: 100m
+            limits:
+              memory: 512Mi
+              cpu: 500m
+
+        # Custom PrometheusRules for GreenLang
+        additionalPrometheusRulesMap:
+          greenlang-rules:
+            groups:
+              - name: greenlang-agents
+                rules:
+                  - alert: GreenLangAgentDown
+                    expr: up{job="greenlang-agents"} == 0
+                    for: 5m
+                    labels:
+                      severity: critical
+                      service: greenlang-agents
+                    annotations:
+                      summary: "GreenLang Agent is down"
+                      description: "Agent {{ $labels.instance }} has been down for more than 5 minutes."
+
+                  - alert: GreenLangAgentHighLatency
+                    expr: histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket{job="greenlang-agents"}[5m])) by (le)) > 2
+                    for: 10m
+                    labels:
+                      severity: warning
+                      service: greenlang-agents
+                    annotations:
+                      summary: "High latency on GreenLang agents"
+                      description: "P99 latency is above 2 seconds for the last 10 minutes."
+
+                  - alert: GreenLangAgentHighErrorRate
+                    expr: sum(rate(http_requests_total{job="greenlang-agents", status=~"5.."}[5m])) / sum(rate(http_requests_total{job="greenlang-agents"}[5m])) > 0.05
+                    for: 5m
+                    labels:
+                      severity: critical
+                      service: greenlang-agents
+                    annotations:
+                      summary: "High error rate on GreenLang agents"
+                      description: "Error rate is above 5% for the last 5 minutes."
+
+              - name: greenlang-api
+                rules:
+                  - alert: GreenLangAPIDown
+                    expr: up{job="greenlang-api"} == 0
+                    for: 2m
+                    labels:
+                      severity: critical
+                      service: greenlang-api
+                    annotations:
+                      summary: "GreenLang API is down"
+                      description: "API {{ $labels.instance }} has been down for more than 2 minutes."
+
+                  - alert: GreenLangAPIHighLatency
+                    expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job="greenlang-api"}[5m])) by (le)) > 1
+                    for: 5m
+                    labels:
+                      severity: warning
+                      service: greenlang-api
+                    annotations:
+                      summary: "High latency on GreenLang API"
+                      description: "P95 latency is above 1 second for the last 5 minutes."
+
+              - name: greenlang-slo
+                rules:
+                  - alert: GreenLangSLOBudgetBurn
+                    expr: |
+                      (
+                        sum(rate(http_requests_total{job=~"greenlang-.*", status!~"5.."}[1h]))
+                        /
+                        sum(rate(http_requests_total{job=~"greenlang-.*"}[1h]))
+                      ) < 0.995
+                    for: 15m
+                    labels:
+                      severity: warning
+                      service: greenlang-platform
+                    annotations:
+                      summary: "SLO budget burning too fast"
+                      description: "Current success rate {{ $value | humanizePercentage }} is below 99.5% SLO target."
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+    retry:
+      limit: 3
+      backoff:
+        duration: 10s
+        factor: 2
+        maxDuration: 5m
+
+  revisionHistoryLimit: 5

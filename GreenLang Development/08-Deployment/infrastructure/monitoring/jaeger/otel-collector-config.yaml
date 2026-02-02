@@ -1,0 +1,212 @@
+# GreenLang OpenTelemetry Collector Configuration
+# Unified telemetry collection for traces, metrics, and logs
+
+receivers:
+  # OTLP receiver for traces, metrics, and logs
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+        max_recv_msg_size_mib: 4
+      http:
+        endpoint: 0.0.0.0:4318
+        cors:
+          allowed_origins:
+            - "https://*.greenlang.io"
+          allowed_headers:
+            - "*"
+
+  # Jaeger receiver for legacy compatibility
+  jaeger:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:14250
+      thrift_binary:
+        endpoint: 0.0.0.0:6832
+      thrift_compact:
+        endpoint: 0.0.0.0:6831
+      thrift_http:
+        endpoint: 0.0.0.0:14268
+
+  # Zipkin receiver
+  zipkin:
+    endpoint: 0.0.0.0:9411
+
+  # Prometheus receiver for metrics
+  prometheus:
+    config:
+      scrape_configs:
+        - job_name: 'otel-collector'
+          scrape_interval: 15s
+          static_configs:
+            - targets: ['localhost:8888']
+
+processors:
+  # Batch processor to improve throughput
+  batch:
+    timeout: 1s
+    send_batch_size: 1024
+    send_batch_max_size: 2048
+
+  # Memory limiter to prevent OOM
+  memory_limiter:
+    check_interval: 1s
+    limit_mib: 1024
+    spike_limit_mib: 256
+
+  # Resource processor to add common attributes
+  resource:
+    attributes:
+      - key: service.environment
+        value: production
+        action: insert
+      - key: service.cluster
+        value: greenlang-production
+        action: insert
+
+  # Attributes processor for span enrichment
+  attributes:
+    actions:
+      - key: http.method
+        action: hash
+      - key: db.statement
+        action: hash
+      # Redact sensitive data
+      - key: http.request.header.authorization
+        action: delete
+      - key: http.request.header.cookie
+        action: delete
+
+  # Span processor for filtering
+  filter/health:
+    spans:
+      exclude:
+        match_type: regexp
+        span_names:
+          - "health.*"
+          - "ready.*"
+          - "ping.*"
+        attributes:
+          - key: http.target
+            value: "/health|/ready|/ping"
+
+  # Probabilistic sampler
+  probabilistic_sampler:
+    sampling_percentage: 50
+
+  # Tail-based sampler for intelligent sampling
+  tail_sampling:
+    decision_wait: 10s
+    num_traces: 100
+    expected_new_traces_per_sec: 100
+    policies:
+      # Always sample errors
+      - name: errors-policy
+        type: status_code
+        status_code:
+          status_codes: [ERROR]
+      # Always sample slow traces
+      - name: latency-policy
+        type: latency
+        latency:
+          threshold_ms: 1000
+      # Sample by service for compliance agents
+      - name: compliance-services
+        type: string_attribute
+        string_attribute:
+          key: service.name
+          values:
+            - eudr-agent
+            - cbam-agent
+            - sb253-agent
+      # Probabilistic sampling for everything else
+      - name: probabilistic-policy
+        type: probabilistic
+        probabilistic:
+          sampling_percentage: 10
+
+exporters:
+  # Jaeger exporter for traces
+  jaeger:
+    endpoint: jaeger-collector:14250
+    tls:
+      insecure: true
+
+  # OTLP exporter for traces (to Tempo or similar)
+  otlp/traces:
+    endpoint: tempo:4317
+    tls:
+      insecure: true
+
+  # Prometheus exporter for metrics
+  prometheus:
+    endpoint: 0.0.0.0:8889
+    namespace: greenlang
+    const_labels:
+      cluster: greenlang-production
+
+  # Prometheus remote write
+  prometheusremotewrite:
+    endpoint: http://prometheus:9090/api/v1/write
+    tls:
+      insecure: true
+
+  # Loki exporter for logs
+  loki:
+    endpoint: http://loki:3100/loki/api/v1/push
+    labels:
+      attributes:
+        service.name: "service"
+        service.namespace: "namespace"
+        severity: "level"
+
+  # Debug exporter for troubleshooting
+  debug:
+    verbosity: detailed
+
+  # Logging exporter
+  logging:
+    loglevel: info
+
+extensions:
+  # Health check extension
+  health_check:
+    endpoint: 0.0.0.0:13133
+    path: /health
+
+  # Performance profiler
+  pprof:
+    endpoint: 0.0.0.0:1777
+
+  # zPages for debugging
+  zpages:
+    endpoint: 0.0.0.0:55679
+
+service:
+  extensions: [health_check, pprof, zpages]
+
+  pipelines:
+    # Traces pipeline
+    traces:
+      receivers: [otlp, jaeger, zipkin]
+      processors: [memory_limiter, resource, attributes, filter/health, tail_sampling, batch]
+      exporters: [jaeger, otlp/traces, logging]
+
+    # Metrics pipeline
+    metrics:
+      receivers: [otlp, prometheus]
+      processors: [memory_limiter, resource, batch]
+      exporters: [prometheus, prometheusremotewrite]
+
+    # Logs pipeline
+    logs:
+      receivers: [otlp]
+      processors: [memory_limiter, resource, batch]
+      exporters: [loki, logging]
+
+  telemetry:
+    logs:
+      level: info
+    metrics:
+      level: detailed
+      address: 0.0.0.0:8888

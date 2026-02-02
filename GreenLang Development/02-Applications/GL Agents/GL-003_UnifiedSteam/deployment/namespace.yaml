@@ -1,0 +1,206 @@
+# =============================================================================
+# GL-003 UNIFIEDSTEAM - Kubernetes Namespace
+# Steam System Optimization Agent
+# =============================================================================
+# Namespace configuration with:
+# - Resource quotas
+# - Limit ranges
+# - Network isolation labels
+# - Pod security standards
+# =============================================================================
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: greenlang-steam
+  labels:
+    # Standard Kubernetes labels
+    kubernetes.io/metadata.name: greenlang-steam
+    # Application labels
+    app.kubernetes.io/name: greenlang-steam
+    app.kubernetes.io/part-of: greenlang
+    app.kubernetes.io/managed-by: kubectl
+    # Environment
+    environment: production
+    tier: industrial-systems
+    # Network policies
+    network-policy: strict
+    # Istio injection
+    istio-injection: enabled
+    # Pod Security Standards (Kubernetes 1.25+)
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/enforce-version: latest
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/audit-version: latest
+    pod-security.kubernetes.io/warn: restricted
+    pod-security.kubernetes.io/warn-version: latest
+  annotations:
+    description: "Namespace for GL-003 UNIFIEDSTEAM Steam System Optimization"
+    owner: "steam-optimization-team"
+    contact: "steam-team@greenlang.io"
+    # Resource management
+    scheduler.alpha.kubernetes.io/defaultTolerations: '[{"key":"dedicated","operator":"Equal","value":"greenlang","effect":"NoSchedule"}]'
+    # Cost allocation
+    cost-center: "engineering"
+    project: "gl-003-unifiedsteam"
+
+---
+# =============================================================================
+# Resource Quota - Namespace Resource Limits
+# =============================================================================
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: greenlang-steam-quota
+  namespace: greenlang-steam
+  labels:
+    app.kubernetes.io/name: resource-quota
+    app.kubernetes.io/component: governance
+spec:
+  hard:
+    # Compute resources
+    requests.cpu: "20"
+    requests.memory: "40Gi"
+    limits.cpu: "40"
+    limits.memory: "80Gi"
+    requests.ephemeral-storage: "50Gi"
+    limits.ephemeral-storage: "100Gi"
+
+    # Object counts
+    pods: "50"
+    services: "20"
+    secrets: "30"
+    configmaps: "30"
+    persistentvolumeclaims: "20"
+    replicationcontrollers: "10"
+    resourcequotas: "1"
+    services.loadbalancers: "5"
+    services.nodeports: "0"  # Disable NodePort services
+
+    # Storage
+    requests.storage: "500Gi"
+
+---
+# =============================================================================
+# Limit Range - Default Container Limits
+# =============================================================================
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: greenlang-steam-limits
+  namespace: greenlang-steam
+  labels:
+    app.kubernetes.io/name: limit-range
+    app.kubernetes.io/component: governance
+spec:
+  limits:
+    # Container defaults and limits
+    - type: Container
+      # Default requests (if not specified)
+      defaultRequest:
+        cpu: "100m"
+        memory: "256Mi"
+        ephemeral-storage: "256Mi"
+      # Default limits (if not specified)
+      default:
+        cpu: "500m"
+        memory: "512Mi"
+        ephemeral-storage: "1Gi"
+      # Minimum allowed values
+      min:
+        cpu: "10m"
+        memory: "32Mi"
+        ephemeral-storage: "16Mi"
+      # Maximum allowed values
+      max:
+        cpu: "8000m"
+        memory: "16Gi"
+        ephemeral-storage: "20Gi"
+      # Maximum ratio of limits to requests
+      maxLimitRequestRatio:
+        cpu: "10"
+        memory: "4"
+
+    # Pod-level limits
+    - type: Pod
+      max:
+        cpu: "16000m"
+        memory: "32Gi"
+      min:
+        cpu: "20m"
+        memory: "64Mi"
+
+    # PVC limits
+    - type: PersistentVolumeClaim
+      min:
+        storage: "1Gi"
+      max:
+        storage: "100Gi"
+
+---
+# =============================================================================
+# Network Policy - Namespace Default
+# =============================================================================
+# Apply default deny policy at namespace creation
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+  namespace: greenlang-steam
+  labels:
+    app.kubernetes.io/name: network-policy
+    app.kubernetes.io/component: security
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+
+---
+# =============================================================================
+# Priority Class for Critical Workloads
+# =============================================================================
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: greenlang-steam-critical
+  labels:
+    app.kubernetes.io/name: priority-class
+    app.kubernetes.io/component: scheduling
+globalDefault: false
+value: 1000000
+preemptionPolicy: PreemptLowerPriority
+description: "Priority class for critical GL-003 UNIFIEDSTEAM workloads"
+
+---
+# =============================================================================
+# Priority Class for Standard Workloads
+# =============================================================================
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: greenlang-steam-standard
+  labels:
+    app.kubernetes.io/name: priority-class
+    app.kubernetes.io/component: scheduling
+globalDefault: false
+value: 500000
+preemptionPolicy: PreemptLowerPriority
+description: "Priority class for standard GL-003 UNIFIEDSTEAM workloads"
+
+---
+# =============================================================================
+# Priority Class for Background Workloads
+# =============================================================================
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: greenlang-steam-background
+  labels:
+    app.kubernetes.io/name: priority-class
+    app.kubernetes.io/component: scheduling
+globalDefault: false
+value: 100000
+preemptionPolicy: PreemptLowerPriority
+description: "Priority class for background/batch GL-003 UNIFIEDSTEAM workloads"

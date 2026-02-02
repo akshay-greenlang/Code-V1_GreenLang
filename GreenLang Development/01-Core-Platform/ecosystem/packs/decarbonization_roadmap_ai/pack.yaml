@@ -1,0 +1,175 @@
+name: Decarbonization Roadmap Agent (AI-Powered)
+version: 1.0.0
+kind: pack
+pack_schema_version: '1.0'
+author:
+  name: GreenLang Team
+  email: support@greenlang.io
+  organization: GreenLang
+license: MIT
+tags:
+- industrial
+- decarbonization
+- roadmap
+- net-zero
+- master-coordinator
+- multi-scenario
+- IRA-2022
+- compliance
+- ai-agent
+- citations
+id: industrial/decarbonization_roadmap_ai_v1
+summary: Master planning agent for comprehensive industrial decarbonization strategy
+  with multi-scenario modeling, phased implementation, financial optimization, and
+  compliance analysis
+owners:
+- greenlang-team
+ai:
+  system_prompt: 'You are a master strategist for industrial decarbonization planning.
+
+
+    Your role:
+
+    1. Orchestrate comprehensive facility assessments across all technologies
+
+    2. Model multiple decarbonization scenarios (BAU, Conservative, Aggressive)
+
+    3. Optimize multi-year implementation pathways with financial constraints
+
+    4. Assess compliance gaps and regulatory risks
+
+    5. Provide executive-level strategic guidance
+
+
+    Guidelines:
+
+    - Use sub-agents for specialized analysis (boilers, process heat, solar, etc.)
+
+    - All calculations must use exact tools (never hallucinate numbers)
+
+    - Model 3 scenarios minimum: Business As Usual, Conservative, Aggressive
+
+    - Create 3-phase implementation plans (Quick Wins, Core, Deep Decarbonization)
+
+    - Include IRA 2022 incentives (30% ITC, 179D, 45Q, 48C)
+
+    - Assess CBAM, CSRD, and SEC Climate Rule compliance
+
+    - Prioritize projects by: NPV, payback, emissions impact, implementation risk
+
+    - Identify technology interdependencies and sequencing constraints
+
+    - Flag regulatory and technical risks proactively
+
+
+    Remember: This is a strategic planning exercise requiring multi-year coordination.
+
+    Focus on actionable roadmaps with clear milestones and decision points.
+
+    '
+  budget:
+    max_cost_usd: 2.0
+    max_input_tokens: 30000
+    max_output_tokens: 8000
+    max_retries: 3
+  rag_collections:
+  - ira_2022_incentives
+  - ghg_protocol_standards
+  - cbam_compliance_requirements
+  - sec_climate_disclosure_rules
+  - industrial_decarbonization_case_studies
+  tools:
+  - name: calculate_ghg_inventory
+    description: Calculate comprehensive Scope 1, 2, 3 GHG inventory
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:calculate_ghg_inventory
+    safe: true
+  - name: model_bau_scenario
+    description: Model Business As Usual emissions trajectory
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:model_bau_scenario
+    safe: true
+  - name: generate_pathways
+    description: Generate multiple decarbonization pathways (Conservative, Balanced,
+      Aggressive)
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:generate_pathways
+    safe: true
+  - name: optimize_pathway
+    description: Optimize pathway selection based on budget, timeline, risk tolerance
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:optimize_pathway
+    safe: true
+  - name: calculate_financial_metrics
+    description: Calculate comprehensive financial metrics with IRA incentives
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:calculate_financial_metrics
+    safe: true
+  - name: assess_compliance_gaps
+    description: Assess compliance gaps (CBAM, CSRD, SEC Climate Rule)
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:assess_compliance_gaps
+    safe: true
+  - name: assess_risks
+    description: Assess technical, financial, operational, regulatory risks
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:assess_risks
+    safe: true
+  - name: create_implementation_roadmap
+    description: Create detailed 3-phase implementation roadmap with milestones
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:create_implementation_roadmap
+    safe: true
+realtime:
+  default_mode: replay
+  snapshot_path: null
+  connectors: []
+provenance:
+  gwp_set: AR6GWP100
+  pin_ef: false
+  record:
+  - inputs
+  - outputs
+  - factors
+  - code_sha
+  - seed

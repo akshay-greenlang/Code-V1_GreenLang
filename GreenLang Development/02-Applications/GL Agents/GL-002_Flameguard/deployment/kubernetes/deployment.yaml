@@ -1,0 +1,176 @@
+# GL-002 FLAMEGUARD - Kubernetes Deployment
+# Boiler Efficiency Optimization Agent
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flameguard
+  namespace: greenlang
+  labels:
+    app: flameguard
+    agent-id: gl-002
+    tier: process-heat
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: flameguard
+  template:
+    metadata:
+      labels:
+        app: flameguard
+        agent-id: gl-002
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: flameguard
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+
+      containers:
+        - name: flameguard
+          image: greenlang/gl-002-flameguard:1.0.0
+          imagePullPolicy: IfNotPresent
+
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+            - name: metrics
+              containerPort: 9090
+              protocol: TCP
+
+          env:
+            - name: FLAMEGUARD_LOG_LEVEL
+              value: "INFO"
+            - name: FLAMEGUARD_SCADA_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: flameguard-config
+                  key: scada-host
+            - name: FLAMEGUARD_KAFKA_BROKERS
+              valueFrom:
+                configMapKeyRef:
+                  name: flameguard-config
+                  key: kafka-brokers
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "512Mi"
+            limits:
+              cpu: "2000m"
+              memory: "2Gi"
+
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+
+          volumeMounts:
+            - name: config
+              mountPath: /app/config
+              readOnly: true
+            - name: data
+              mountPath: /app/data
+
+      volumes:
+        - name: config
+          configMap:
+            name: flameguard-config
+        - name: data
+          persistentVolumeClaim:
+            claimName: flameguard-data
+
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - flameguard
+                topologyKey: kubernetes.io/hostname
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: flameguard
+  namespace: greenlang
+  labels:
+    app: flameguard
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+      protocol: TCP
+    - name: metrics
+      port: 9090
+      targetPort: metrics
+      protocol: TCP
+  selector:
+    app: flameguard
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: flameguard
+  namespace: greenlang
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: flameguard-config
+  namespace: greenlang
+data:
+  scada-host: "scada.industrial.local"
+  kafka-brokers: "kafka-0.kafka:9092,kafka-1.kafka:9092"
+  optimization-interval: "60"
+  efficiency-interval: "300"
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: flameguard-data
+  namespace: greenlang
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: standard

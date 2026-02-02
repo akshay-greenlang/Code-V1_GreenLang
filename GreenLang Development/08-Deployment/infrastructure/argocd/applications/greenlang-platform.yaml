@@ -1,0 +1,336 @@
+# ArgoCD Application for GreenLang Platform
+# Production-grade GitOps deployment configuration
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: greenlang-platform
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: greenlang-platform
+    app.kubernetes.io/part-of: greenlang
+    app.kubernetes.io/managed-by: argocd
+  annotations:
+    # Notification annotations for sync status
+    notifications.argoproj.io/subscribe.on-sync-succeeded.slack: greenlang-deployments
+    notifications.argoproj.io/subscribe.on-sync-failed.slack: greenlang-alerts
+    notifications.argoproj.io/subscribe.on-health-degraded.slack: greenlang-alerts
+    notifications.argoproj.io/subscribe.on-deployed.slack: greenlang-deployments
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: greenlang-production
+
+  source:
+    repoURL: https://github.com/greenlang/greenlang-platform.git
+    targetRevision: main
+    path: k8s/production
+
+    # Kustomize configuration
+    kustomize:
+      namePrefix: gl-
+      commonLabels:
+        environment: production
+        managed-by: argocd
+      images:
+        - name: greenlang/api
+          newTag: latest
+        - name: greenlang/worker
+          newTag: latest
+        - name: greenlang/frontend
+          newTag: latest
+
+    # Helm configuration (if using Helm charts)
+    # helm:
+    #   releaseName: greenlang-platform
+    #   valueFiles:
+    #     - values-production.yaml
+    #   parameters:
+    #     - name: image.tag
+    #       value: $ARGOCD_APP_REVISION
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: greenlang-production
+
+  # Sync Policy with auto-heal and prune
+  syncPolicy:
+    automated:
+      # Auto-prune resources that are no longer in Git
+      prune: true
+      # Auto-heal when cluster state deviates from Git
+      selfHeal: true
+      # Allow empty resources (for initial deployment)
+      allowEmpty: false
+
+    syncOptions:
+      # Create namespace if it doesn't exist
+      - CreateNamespace=true
+      # Validate manifests before applying
+      - Validate=true
+      # Use server-side apply for better conflict resolution
+      - ServerSideApply=true
+      # Prune resources in correct order
+      - PrunePropagationPolicy=foreground
+      # Wait for resources to become healthy
+      - ApplyOutOfSyncOnly=true
+      # Replace resources instead of patch (for immutable fields)
+      - Replace=false
+      # Fail the sync if shared resources have drifted
+      - FailOnSharedResource=true
+
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
+
+  # Ignored differences (for dynamic fields)
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      jsonPointers:
+        - /spec/replicas
+    - group: autoscaling
+      kind: HorizontalPodAutoscaler
+      jsonPointers:
+        - /status
+    - kind: Secret
+      jsonPointers:
+        - /data
+    - group: ""
+      kind: ConfigMap
+      jsonPointers:
+        - /metadata/annotations/kubectl.kubernetes.io~1last-applied-configuration
+
+  # Revision history limit
+  revisionHistoryLimit: 10
+
+---
+# ArgoCD Project for GreenLang Production
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: greenlang-production
+  namespace: argocd
+  labels:
+    app.kubernetes.io/part-of: greenlang
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  description: GreenLang Production Environment
+
+  # Source repositories
+  sourceRepos:
+    - https://github.com/greenlang/greenlang-platform.git
+    - https://github.com/greenlang/greenlang-infra.git
+    - https://charts.helm.sh/stable
+
+  # Destination clusters and namespaces
+  destinations:
+    - namespace: greenlang-production
+      server: https://kubernetes.default.svc
+    - namespace: greenlang-monitoring
+      server: https://kubernetes.default.svc
+    - namespace: greenlang-ingress
+      server: https://kubernetes.default.svc
+
+  # Cluster resource whitelist
+  clusterResourceWhitelist:
+    - group: ''
+      kind: Namespace
+    - group: rbac.authorization.k8s.io
+      kind: ClusterRole
+    - group: rbac.authorization.k8s.io
+      kind: ClusterRoleBinding
+    - group: networking.k8s.io
+      kind: IngressClass
+    - group: cert-manager.io
+      kind: ClusterIssuer
+
+  # Namespace resource blacklist (security)
+  namespaceResourceBlacklist:
+    - group: ''
+      kind: ResourceQuota
+    - group: ''
+      kind: LimitRange
+
+  # Namespace resource whitelist
+  namespaceResourceWhitelist:
+    - group: '*'
+      kind: '*'
+
+  # Roles for team access
+  roles:
+    - name: platform-admin
+      description: Full access to GreenLang platform
+      policies:
+        - p, proj:greenlang-production:platform-admin, applications, *, greenlang-production/*, allow
+      groups:
+        - greenlang-platform-admins
+
+    - name: developer
+      description: Read-only access with sync capability
+      policies:
+        - p, proj:greenlang-production:developer, applications, get, greenlang-production/*, allow
+        - p, proj:greenlang-production:developer, applications, sync, greenlang-production/*, allow
+      groups:
+        - greenlang-developers
+
+    - name: viewer
+      description: Read-only access
+      policies:
+        - p, proj:greenlang-production:viewer, applications, get, greenlang-production/*, allow
+      groups:
+        - greenlang-viewers
+
+  # Orphaned resources monitoring
+  orphanedResources:
+    warn: true
+    ignore:
+      - group: ""
+        kind: ConfigMap
+        name: kube-root-ca.crt
+
+---
+# Health checks configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-cm-greenlang
+  namespace: argocd
+  labels:
+    app.kubernetes.io/part-of: argocd
+data:
+  # Custom health checks for GreenLang resources
+  resource.customizations.health.greenlang.io_CarbonCalculation: |
+    hs = {}
+    if obj.status ~= nil then
+      if obj.status.phase == "Completed" then
+        hs.status = "Healthy"
+        hs.message = "Carbon calculation completed successfully"
+      elseif obj.status.phase == "Failed" then
+        hs.status = "Degraded"
+        hs.message = obj.status.message or "Carbon calculation failed"
+      elseif obj.status.phase == "Running" then
+        hs.status = "Progressing"
+        hs.message = "Carbon calculation in progress"
+      else
+        hs.status = "Unknown"
+        hs.message = "Unknown status"
+      end
+    else
+      hs.status = "Progressing"
+      hs.message = "Waiting for status"
+    end
+    return hs
+
+  # Custom health check for database migrations
+  resource.customizations.health.batch_Job: |
+    hs = {}
+    if obj.status ~= nil then
+      if obj.status.succeeded ~= nil and obj.status.succeeded > 0 then
+        hs.status = "Healthy"
+        hs.message = "Job completed successfully"
+      elseif obj.status.failed ~= nil and obj.status.failed > 0 then
+        hs.status = "Degraded"
+        hs.message = "Job failed"
+      elseif obj.status.active ~= nil and obj.status.active > 0 then
+        hs.status = "Progressing"
+        hs.message = "Job is running"
+      else
+        hs.status = "Progressing"
+        hs.message = "Waiting for job to start"
+      end
+    else
+      hs.status = "Progressing"
+      hs.message = "Waiting for status"
+    end
+    return hs
+
+  # Ignore differences for specific resources
+  resource.customizations.ignoreDifferences.admissionregistration.k8s.io_MutatingWebhookConfiguration: |
+    jqPathExpressions:
+      - '.webhooks[]?.clientConfig.caBundle'
+      - '.webhooks[]?.failurePolicy'
+
+---
+# ArgoCD Notifications ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-notifications-cm
+  namespace: argocd
+data:
+  # Slack integration
+  service.slack: |
+    token: $slack-token
+    signingSecret: $slack-signing-secret
+
+  # Notification templates
+  template.app-deployed: |
+    message: |
+      Application {{.app.metadata.name}} has been deployed.
+      Sync Status: {{.app.status.sync.status}}
+      Health Status: {{.app.status.health.status}}
+      Revision: {{.app.status.sync.revision}}
+    slack:
+      attachments: |
+        [{
+          "color": "#18be52",
+          "title": "{{.app.metadata.name}} Deployed",
+          "fields": [
+            {"title": "Environment", "value": "Production", "short": true},
+            {"title": "Revision", "value": "{{.app.status.sync.revision | trunc 7}}", "short": true},
+            {"title": "Sync Status", "value": "{{.app.status.sync.status}}", "short": true},
+            {"title": "Health", "value": "{{.app.status.health.status}}", "short": true}
+          ]
+        }]
+
+  template.app-sync-failed: |
+    message: |
+      Application {{.app.metadata.name}} sync failed!
+      Error: {{.app.status.conditions | first | default "" | toString}}
+    slack:
+      attachments: |
+        [{
+          "color": "#E96D76",
+          "title": "ALERT: {{.app.metadata.name}} Sync Failed",
+          "fields": [
+            {"title": "Environment", "value": "Production", "short": true},
+            {"title": "Revision", "value": "{{.app.status.sync.revision | trunc 7}}", "short": true}
+          ],
+          "text": "{{.app.status.conditions | first | default \"Unknown error\" | toString}}"
+        }]
+
+  template.app-health-degraded: |
+    message: |
+      Application {{.app.metadata.name}} health is degraded!
+      Health Status: {{.app.status.health.status}}
+    slack:
+      attachments: |
+        [{
+          "color": "#f4c030",
+          "title": "WARNING: {{.app.metadata.name}} Health Degraded",
+          "fields": [
+            {"title": "Environment", "value": "Production", "short": true},
+            {"title": "Health", "value": "{{.app.status.health.status}}", "short": true}
+          ]
+        }]
+
+  # Triggers
+  trigger.on-deployed: |
+    - when: app.status.operationState.phase in ['Succeeded'] and app.status.health.status == 'Healthy'
+      send: [app-deployed]
+
+  trigger.on-sync-failed: |
+    - when: app.status.operationState.phase in ['Error', 'Failed']
+      send: [app-sync-failed]
+
+  trigger.on-health-degraded: |
+    - when: app.status.health.status == 'Degraded'
+      send: [app-health-degraded]
+
+  trigger.on-sync-succeeded: |
+    - when: app.status.operationState.phase in ['Succeeded']
+      send: [app-deployed]

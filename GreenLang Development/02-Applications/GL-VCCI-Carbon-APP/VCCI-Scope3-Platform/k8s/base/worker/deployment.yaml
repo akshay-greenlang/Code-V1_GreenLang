@@ -1,0 +1,284 @@
+# ==============================================================================
+# GL-VCCI Worker (Calculator Agent) - Kubernetes Deployment
+# ==============================================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vcci-worker
+  namespace: vcci-production
+  labels:
+    app: vcci-worker
+    app.kubernetes.io/name: gl-vcci
+    app.kubernetes.io/component: worker
+    app.kubernetes.io/part-of: vcci-platform
+    app.kubernetes.io/version: "2.0.0"
+    tier: worker
+spec:
+  replicas: 2
+  revisionHistoryLimit: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+
+  selector:
+    matchLabels:
+      app: vcci-worker
+      tier: worker
+
+  template:
+    metadata:
+      labels:
+        app: vcci-worker
+        tier: worker
+        app.kubernetes.io/name: gl-vcci
+        app.kubernetes.io/component: worker
+        version: "2.0.0"
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "5555"
+
+    spec:
+      serviceAccountName: vcci-worker-sa
+      priorityClassName: vcci-medium-priority
+
+      # Anti-affinity: Spread workers across nodes
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - vcci-worker
+                topologyKey: kubernetes.io/hostname
+
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+
+      containers:
+        - name: celery-worker
+          image: YOUR_REGISTRY/vcci-worker:2.0.0
+          imagePullPolicy: IfNotPresent
+
+          command:
+            - celery
+            - -A
+            - celery_app
+            - worker
+            - --loglevel=info
+            - --concurrency=4
+            - --pool=prefork
+            - --max-tasks-per-child=100
+            - --task-events
+            - --time-limit=3600
+            - --soft-time-limit=3000
+
+          env:
+            - name: APP_ENV
+              value: "production"
+            - name: C_FORCE_ROOT
+              value: "true"
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: WORKER_NAME
+              value: "$(POD_NAME)"
+
+          envFrom:
+            - secretRef:
+                name: postgres-credentials
+            - secretRef:
+                name: redis-credentials
+            - secretRef:
+                name: api-keys
+            - configMapRef:
+                name: worker-config
+
+          resources:
+            requests:
+              cpu: 1000m
+              memory: 2Gi
+            limits:
+              cpu: 4000m
+              memory: 8Gi
+
+          # Health Checks (using celery inspect)
+          livenessProbe:
+            exec:
+              command:
+                - celery
+                - -A
+                - celery_app
+                - inspect
+                - ping
+                - -d
+                - celery@$(POD_NAME)
+            initialDelaySeconds: 120
+            periodSeconds: 60
+            timeoutSeconds: 30
+            failureThreshold: 3
+
+          readinessProbe:
+            exec:
+              command:
+                - celery
+                - -A
+                - celery_app
+                - inspect
+                - active
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 15
+            failureThreshold: 3
+
+          volumeMounts:
+            - name: logs
+              mountPath: /app/logs
+            - name: cache
+              mountPath: /app/cache
+            - name: tmp
+              mountPath: /tmp
+            - name: model-cache
+              mountPath: /home/appuser/.cache
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1000
+            capabilities:
+              drop:
+                - ALL
+
+      volumes:
+        - name: logs
+          emptyDir: {}
+        - name: cache
+          emptyDir: {}
+        - name: tmp
+          emptyDir: {}
+        - name: model-cache
+          emptyDir:
+            sizeLimit: 5Gi  # Cache for ML models
+
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 120  # Allow tasks to complete
+
+---
+# ==============================================================================
+# Celery Beat (Scheduler) - Deployment
+# ==============================================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vcci-beat
+  namespace: vcci-production
+  labels:
+    app: vcci-beat
+    app.kubernetes.io/name: gl-vcci
+    app.kubernetes.io/component: scheduler
+    tier: worker
+spec:
+  replicas: 1  # Only one beat scheduler needed
+  strategy:
+    type: Recreate  # Only one beat should run at a time
+
+  selector:
+    matchLabels:
+      app: vcci-beat
+
+  template:
+    metadata:
+      labels:
+        app: vcci-beat
+        app.kubernetes.io/name: gl-vcci
+        app.kubernetes.io/component: scheduler
+
+    spec:
+      serviceAccountName: vcci-worker-sa
+      priorityClassName: vcci-medium-priority
+
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+
+      containers:
+        - name: celery-beat
+          image: YOUR_REGISTRY/vcci-worker:2.0.0
+          imagePullPolicy: IfNotPresent
+
+          command:
+            - celery
+            - -A
+            - celery_app
+            - beat
+            - --loglevel=info
+
+          env:
+            - name: APP_ENV
+              value: "production"
+            - name: C_FORCE_ROOT
+              value: "true"
+
+          envFrom:
+            - secretRef:
+                name: redis-credentials
+            - configMapRef:
+                name: worker-config
+
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+
+          volumeMounts:
+            - name: beat-schedule
+              mountPath: /app/celerybeat-schedule.db
+            - name: tmp
+              mountPath: /tmp
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1000
+            capabilities:
+              drop:
+                - ALL
+
+      volumes:
+        - name: beat-schedule
+          emptyDir: {}
+        - name: tmp
+          emptyDir: {}
+
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+
+---
+# ==============================================================================
+# Service Account
+# ==============================================================================
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: vcci-worker-sa
+  namespace: vcci-production
+  labels:
+    app.kubernetes.io/name: gl-vcci
+    app.kubernetes.io/component: worker

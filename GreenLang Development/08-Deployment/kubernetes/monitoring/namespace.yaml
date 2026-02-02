@@ -1,0 +1,144 @@
+# ============================================================================
+# GreenLang Agent Factory - Monitoring Namespace
+# ============================================================================
+# Kubernetes namespace for all monitoring infrastructure components
+# including Prometheus, Grafana, Alertmanager, and related services.
+#
+# Created: 2025-12-03
+# Team: Monitoring & Observability
+# ============================================================================
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: monitoring
+  labels:
+    name: monitoring
+    purpose: observability
+    team: platform
+    app.kubernetes.io/name: monitoring
+    app.kubernetes.io/part-of: greenlang-agent-factory
+  annotations:
+    description: "GreenLang Agent Factory Monitoring Stack"
+    maintainer: "DevOps/SRE Team"
+
+---
+# ============================================================================
+# Resource Quotas for Monitoring Namespace
+# ============================================================================
+
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: monitoring-quota
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: monitoring-quota
+spec:
+  hard:
+    # Compute resources
+    requests.cpu: "16"
+    requests.memory: "32Gi"
+    limits.cpu: "32"
+    limits.memory: "64Gi"
+    # Storage
+    requests.storage: "500Gi"
+    persistentvolumeclaims: "20"
+    # Object counts
+    pods: "50"
+    services: "20"
+    configmaps: "50"
+    secrets: "30"
+
+---
+# ============================================================================
+# Limit Range for Monitoring Namespace
+# ============================================================================
+
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: monitoring-limits
+  namespace: monitoring
+spec:
+  limits:
+    # Default container limits
+    - default:
+        cpu: "1000m"
+        memory: "2Gi"
+      defaultRequest:
+        cpu: "100m"
+        memory: "256Mi"
+      max:
+        cpu: "4000m"
+        memory: "8Gi"
+      min:
+        cpu: "50m"
+        memory: "64Mi"
+      type: Container
+
+---
+# ============================================================================
+# Network Policy - Allow Prometheus to Scrape All Namespaces
+# ============================================================================
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-prometheus-scrape
+  namespace: monitoring
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: prometheus
+  policyTypes:
+    - Egress
+  egress:
+    # Allow Prometheus to scrape metrics from any namespace
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: TCP
+          port: 8000
+        - protocol: TCP
+          port: 9090
+        - protocol: TCP
+          port: 9100
+        - protocol: TCP
+          port: 9093
+
+---
+# ============================================================================
+# Network Policy - Allow Grafana Access
+# ============================================================================
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-grafana-access
+  namespace: monitoring
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: grafana
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Allow ingress traffic
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 3000
+  egress:
+    # Allow Grafana to query Prometheus
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: prometheus
+      ports:
+        - protocol: TCP
+          port: 9090

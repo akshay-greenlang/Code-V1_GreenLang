@@ -1,0 +1,27 @@
+{{ define "slack.greenlang.title" }}
+[{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}] {{ .CommonLabels.alertname }}
+{{ end }}
+
+{{ define "slack.greenlang.text" }}
+{{ range .Alerts }}
+*Alert:* {{ .Annotations.summary }}
+*Description:* {{ .Annotations.description }}
+*Severity:* {{ .Labels.severity }}
+*Service:* {{ .Labels.service }}
+*Namespace:* {{ .Labels.namespace }}
+{{ if .Labels.pod }}*Pod:* {{ .Labels.pod }}{{ end }}
+*Started:* {{ .StartsAt.Format "2006-01-02 15:04:05 MST" }}
+{{ if .Annotations.runbook_url }}*Runbook:* <{{ .Annotations.runbook_url }}|View Runbook>{{ end }}
+---
+{{ end }}
+{{ end }}
+
+{{ define "slack.greenlang.grafana_url" }}
+https://grafana.greenlang.io/d/greenlang-agent-overview?orgId=1&from=now-1h&to=now
+{{ end }}
+
+{{ define "slack.greenlang.color" }}
+{{ if eq .Status "firing" }}
+{{ if eq .CommonLabels.severity "critical" }}danger{{ else if eq .CommonLabels.severity "warning" }}warning{{ else }}#439FE0{{ end }}
+{{ else }}good{{ end }}
+{{ end }}

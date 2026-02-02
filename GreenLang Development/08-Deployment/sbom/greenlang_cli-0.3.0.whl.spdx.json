@@ -1,0 +1,22 @@
+{
+  "spdxVersion": "SPDX-2.3",
+  "dataLicense": "CC0-1.0",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "greenlang_cli-0.3.0",
+  "documentNamespace": "https://github.com/akshay-greenlang/greenlang/sbom-0.3.0",
+  "creationInfo": {
+    "created": "2025-09-24T11:39:44.355030Z",
+    "creators": [
+      "Tool: manual-generation"
+    ]
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Package-greenlang-cli",
+      "name": "greenlang_cli",
+      "downloadLocation": "https://pypi.org/project/greenlang-cli/0.3.0/",
+      "filesAnalyzed": false,
+      "version": "0.3.0"
+    }
+  ]
+}

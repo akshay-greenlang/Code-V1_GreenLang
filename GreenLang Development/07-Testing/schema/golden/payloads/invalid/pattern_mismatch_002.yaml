@@ -1,0 +1,16 @@
+# Invalid Payload - Pattern Mismatch (phone)
+# Error Code: GLSCHEMA-E201 (PATTERN_MISMATCH)
+# Schema: basic/string_constraints.yaml
+
+_test_metadata:
+  schema: "basic/string_constraints.yaml"
+  description: "Pattern mismatch - invalid phone format"
+  expected_valid: false
+  expected_errors:
+    - code: "GLSCHEMA-E201"
+      path: "/phone"
+      severity: "error"
+
+username: "valid_user"
+email: "user@example.com"
+phone: "555-1234"  # Missing country code format

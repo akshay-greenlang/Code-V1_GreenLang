@@ -1,0 +1,209 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: weaviate
+  namespace: vcci-platform
+  labels:
+    app: weaviate
+    component: vector-db
+spec:
+  serviceName: weaviate-headless
+  replicas: 3
+  selector:
+    matchLabels:
+      app: weaviate
+  template:
+    metadata:
+      labels:
+        app: weaviate
+        component: vector-db
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "2112"
+    spec:
+      # Anti-affinity for high availability
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                      - weaviate
+              topologyKey: topology.kubernetes.io/zone
+
+      # Node affinity for memory-optimized nodes
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              preference:
+                matchExpressions:
+                  - key: workload-type
+                    operator: In
+                    values:
+                      - memory
+                      - general
+
+      containers:
+        - name: weaviate
+          image: semitechnologies/weaviate:1.23.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+            - name: grpc
+              containerPort: 50051
+              protocol: TCP
+            - name: metrics
+              containerPort: 2112
+              protocol: TCP
+
+          # Resource limits (memory-intensive)
+          resources:
+            requests:
+              cpu: 2000m
+              memory: 8Gi
+            limits:
+              cpu: 8000m
+              memory: 32Gi
+
+          # Health checks
+          livenessProbe:
+            httpGet:
+              path: /v1/.well-known/live
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
+
+          readinessProbe:
+            httpGet:
+              path: /v1/.well-known/ready
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 5
+            timeoutSeconds: 3
+            successThreshold: 1
+            failureThreshold: 3
+
+          # Environment variables
+          env:
+            # Cluster configuration
+            - name: CLUSTER_HOSTNAME
+              value: "weaviate"
+            - name: CLUSTER_GOSSIP_BIND_PORT
+              value: "7100"
+            - name: CLUSTER_DATA_BIND_PORT
+              value: "7101"
+
+            # Authentication
+            - name: AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED
+              value: "false"
+            - name: AUTHENTICATION_APIKEY_ENABLED
+              value: "true"
+            - name: AUTHENTICATION_APIKEY_ALLOWED_KEYS
+              valueFrom:
+                secretKeyRef:
+                  name: vcci-backend-secrets
+                  key: weaviate-api-key
+            - name: AUTHENTICATION_APIKEY_USERS
+              value: "admin"
+
+            # Authorization
+            - name: AUTHORIZATION_ADMINLIST_ENABLED
+              value: "true"
+            - name: AUTHORIZATION_ADMINLIST_USERS
+              value: "admin"
+
+            # Performance settings
+            - name: QUERY_DEFAULTS_LIMIT
+              value: "100"
+            - name: QUERY_MAXIMUM_RESULTS
+              value: "10000"
+            - name: PERSISTENCE_DATA_PATH
+              value: "/var/lib/weaviate"
+
+            # HNSW index settings
+            - name: DEFAULT_VECTORIZER_MODULE
+              value: "none"
+            - name: ENABLE_MODULES
+              value: "text2vec-openai,text2vec-huggingface,generative-openai"
+
+            # Monitoring
+            - name: PROMETHEUS_MONITORING_ENABLED
+              value: "true"
+
+            # OpenAI integration
+            - name: OPENAI_APIKEY
+              valueFrom:
+                secretKeyRef:
+                  name: vcci-backend-secrets
+                  key: openai-api-key
+
+            # Pod metadata
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+
+          # Volume mounts
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/weaviate
+
+          # Security context
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: false
+
+      # Security context for pod
+      securityContext:
+        fsGroup: 1000
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+
+      # Termination grace period
+      terminationGracePeriodSeconds: 60
+
+  # Volume claim templates
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+        labels:
+          app: weaviate
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        storageClassName: fast-ssd
+        resources:
+          requests:
+            storage: 50Gi
+
+---
+# PodDisruptionBudget
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: weaviate-pdb
+  namespace: vcci-platform
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: weaviate

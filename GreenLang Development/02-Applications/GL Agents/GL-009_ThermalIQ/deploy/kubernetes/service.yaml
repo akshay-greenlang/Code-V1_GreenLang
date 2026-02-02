@@ -1,0 +1,57 @@
+# GL-009 ThermalIQ Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-009-thermaliq
+  namespace: greenlang
+  labels:
+    app: gl-009-thermaliq
+    agent-id: GL-009
+    codename: THERMALIQ
+spec:
+  type: ClusterIP
+  selector:
+    app: gl-009-thermaliq
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+      protocol: TCP
+    - name: metrics
+      port: 9090
+      targetPort: 9090
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-009-thermaliq-headless
+  namespace: greenlang
+  labels:
+    app: gl-009-thermaliq
+spec:
+  type: ClusterIP
+  clusterIP: None
+  selector:
+    app: gl-009-thermaliq
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-009-thermaliq-metrics
+  namespace: greenlang
+  labels:
+    app: gl-009-thermaliq
+    monitoring: prometheus
+spec:
+  type: ClusterIP
+  selector:
+    app: gl-009-thermaliq
+  ports:
+    - name: metrics
+      port: 9090
+      targetPort: 9090

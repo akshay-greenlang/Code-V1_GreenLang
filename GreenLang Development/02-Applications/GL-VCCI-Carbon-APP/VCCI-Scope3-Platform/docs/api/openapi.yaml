@@ -1,0 +1,104 @@
+openapi: 3.0.3
+info:
+  title: GL-VCCI Scope 3 Carbon Intelligence API
+  version: 2.0.0
+  description: Enterprise Scope 3 emissions tracking with AI-powered supplier intelligence
+  contact:
+    name: GreenLang VCCI Team
+    email: vcci-support@greenlang.io
+servers:
+  - url: https://vcci-api.greenlang.io
+    description: Production
+  - url: http://localhost:8000
+    description: Development
+tags:
+  - name: Health
+  - name: Intake
+  - name: Calculator
+  - name: Hotspot
+  - name: Engagement
+  - name: Reporting
+security:
+  - BearerAuth: []
+paths:
+  /:
+    get:
+      summary: API root
+      tags: [Health]
+      security: []
+      responses:
+        '200':
+          description: OK
+  /health/live:
+    get:
+      summary: Liveness probe
+      tags: [Health]
+      security: []
+      responses:
+        '200':
+          description: Alive
+  /health/ready:
+    get:
+      summary: Readiness probe
+      tags: [Health]
+      security: []
+      responses:
+        '200':
+          description: Ready
+  /health/detailed:
+    get:
+      summary: Detailed health with circuit breaker status
+      tags: [Health]
+      security: []
+      responses:
+        '200':
+          description: Health details
+  /api/v1/intake/suppliers:
+    post:
+      summary: Submit supplier emission data
+      tags: [Intake]
+      responses:
+        '201':
+          description: Created
+  /api/v1/calculator/calculate:
+    post:
+      summary: Calculate Scope 3 emissions
+      tags: [Calculator]
+      responses:
+        '200':
+          description: Calculated
+  /api/v1/hotspot/analyze:
+    post:
+      summary: AI-powered hotspot analysis
+      tags: [Hotspot]
+      responses:
+        '200':
+          description: Analysis complete
+  /api/v1/engagement/campaigns:
+    post:
+      summary: Create supplier engagement campaign
+      tags: [Engagement]
+      responses:
+        '201':
+          description: Campaign created
+  /api/v1/reporting/generate:
+    post:
+      summary: Generate CDP/TCFD/SBTi report
+      tags: [Reporting]
+      responses:
+        '200':
+          description: Report generated
+  /metrics:
+    get:
+      summary: Prometheus metrics
+      tags: [Health]
+      security: []
+      responses:
+        '200':
+          description: Metrics
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

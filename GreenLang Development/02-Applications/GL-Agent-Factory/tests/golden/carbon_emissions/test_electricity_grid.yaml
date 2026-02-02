@@ -1,0 +1,775 @@
+# Golden Tests: Electricity Grid - Carbon Emissions Agent (GL-001)
+# Test Count: 50 tests
+# Emission Factors (kgCO2e/kWh):
+#   - US: 0.417 (EPA eGRID 2024)
+#   - EU: 0.276 (IEA 2024)
+#   - DE: 0.366 (IEA 2024)
+#   - FR: 0.052 (IEA 2024) - Low due to nuclear
+# Formula: emissions = quantity * emission_factor
+
+test_suite:
+  name: "Electricity Grid Golden Tests"
+  agent_id: "emissions/carbon_calculator_v1"
+  version: "1.0.0"
+  description: "Validates grid electricity emission calculations (Scope 2) across regions"
+
+tests:
+  # US Grid Tests (1-15)
+  - test_id: "elec_us_001"
+    test_name: "Electricity 1 kWh US"
+    description: "Minimum US grid calculation"
+    tags: ["electricity", "us", "scope2", "basic"]
+    input:
+      fuel_type: "electricity_grid"
+      quantity: 1
+      unit: "kWh"
+      region: "US"
+      scope: 2
+    expected:
+      emissions_kgco2e: 0.417
+      emission_factor_used: 0.417
+      emission_factor_unit: "kgCO2e/kWh"
+      emission_factor_source: "EPA eGRID"
+      scope: 2
+
+  - test_id: "elec_us_002"
+    test_name: "Electricity 100 kWh US"
+    description: "Small office daily usage"
+    tags: ["electricity", "us", "scope2", "basic"]
+    input:
+      fuel_type: "electricity_grid"
+      quantity: 100
+      unit: "kWh"
+      region: "US"
+      scope: 2
+    expected:
+      emissions_kgco2e: 41.7
+      emission_factor_used: 0.417
+      scope: 2
+
+  - test_id: "elec_us_003"
+    test_name: "Electricity 500 kWh US"
+    description: "Residential monthly average"
+    tags: ["electricity", "us", "scope2", "residential"]
+    input:
+      fuel_type: "electricity_grid"
+      quantity: 500
+      unit: "kWh"
+      region: "US"
+      scope: 2
+    expected:
+      emissions_kgco2e: 208.5
+      emission_factor_used: 0.417
+      scope: 2
+
+  - test_id: "elec_us_004"
+    test_name: "Electricity 1000 kWh US (Reference)"
+    description: "Reference calculation - 1 MWh"
+    tags: ["electricity", "us", "scope2", "reference"]
+    input:
+      fuel_type: "electricity_grid"
+      quantity: 1000
+      unit: "kWh"
+      region: "US"
+      scope: 2
+    expected:
+      emissions_kgco2e: 417.0
+      emission_factor_used: 0.417
+      scope: 2
+
+  - test_id: "elec_us_005"
+    test_name: "Electricity 2500 kWh US"
+    description: "Small business monthly"
+    tags: ["electricity", "us", "scope2", "commercial"]
+    input:
+      fuel_type: "electricity_grid"
+      quantity: 2500
+      unit: "kWh"
+      region: "US"
+      scope: 2
+    expected:
+      emissions_kgco2e: 1042.5
+      emission_factor_used: 0.417
+      scope: 2
+
+  - test_id: "elec_us_006"
+    test_name: "Electricity 5000 kWh US"
+    description: "Medium office monthly"
+    tags: ["electricity", "us", "scope2", "commercial"]
+    input:
+      fuel_type: "electricity_grid"
+      quantity: 5000
+      unit: "kWh"
+      region: "US"
+      scope: 2
+    expected:
+      emissions_kgco2e: 2085.0
+      emission_factor_used: 0.417
+      scope: 2
+
+  - test_id: "elec_us_007"
+    test_name: "Electricity 10000 kWh US"
+    description: "Large office monthly"
+    tags: ["electricity", "us", "scope2", "commercial"]
+    input:
+      fuel_type: "electricity_grid"
+      quantity: 10000
+      unit: "kWh"
+      region: "US"
+      scope: 2
+    expected:
+      emissions_kgco2e: 4170.0
+      emission_factor_used: 0.417
+      scope: 2
+
+  - test_id: "elec_us_008"
+    test_name: "Electricity 25000 kWh US"
+    description: "Small facility monthly"
+    tags: ["electricity", "us", "scope2", "facility"]
+    input:
+      fuel_type: "electricity_grid"
+      quantity: 25000
+      unit: "kWh"
+      region: "US"
+      scope: 2
+    expected:
+      emissions_kgco2e: 10425.0
+      emission_factor_used: 0.417
+      scope: 2
+
+  - test_id: "elec_us_009"
+    test_name: "Electricity 50000 kWh US"
+    description: "Medium facility monthly"
+    tags: ["electricity", "us", "scope2", "facility"]
+    input:
+      fuel_type: "electricity_grid"
+      quantity: 50000
+      unit: "kWh"
+      region: "US"
+      scope: 2
+    expected:
+      emissions_kgco2e: 20850.0
+      emission_factor_used: 0.417
+      scope: 2
+
+  - test_id: "elec_us_010"
+    test_name: "Electricity 100000 kWh US"
+    description: "Large facility monthly (100 MWh)"
+    tags: ["electricity", "us", "scope2", "facility"]
+    input:
+      fuel_type: "electricity_grid"
+      quantity: 100000
+      unit: "kWh"
+      region: "US"
+      scope: 2
+    expected:
+      emissions_kgco2e: 41700.0
+      emission_factor_used: 0.417
+      scope: 2
+
+  # MWh conversion tests (11-15)
+  - test_id: "elec_us_011"
+    test_name: "Electricity 1 MWh US"
+    description: "MWh conversion (1 MWh = 1000 kWh)"
+    tags: ["electricity", "us", "scope2", "conversion"]
+    input:
+      fuel_type: "electricity_grid"
+      quantity: 1
+      unit: "MWh"
+      region: "US"
+      scope: 2
+    expected:
+      emissions_kgco2e: 417.0
+      emission_factor_used: 0.417
+      scope: 2
+
+  - test_id: "elec_us_012"
+    test_name: "Electricity 10 MWh US"
+    description: "Medium MWh quantity"
+    tags: ["electricity", "us", "scope2", "conversion"]
+    input:
+      fuel_type: "electricity_grid"
+      quantity: 10
+      unit: "MWh"
+      region: "US"
+      scope: 2
+    expected:
+      emissions_kgco2e: 4170.0
+      emission_factor_used: 0.417
+      scope: 2
+
+  - test_id: "elec_us_013"
+    test_name: "Electricity 100 MWh US"
+    description: "Large facility monthly"
+    tags: ["electricity", "us", "scope2", "conversion"]
+    input:
+      fuel_type: "electricity_grid"
+      quantity: 100
+      unit: "MWh"
+      region: "US"
+      scope: 2
+    expected:
+      emissions_kgco2e: 41700.0
+      emission_factor_used: 0.417
+      scope: 2
+
+  - test_id: "elec_us_014"
+    test_name: "Electricity 500 MWh US"
+    description: "Industrial facility monthly"
+    tags: ["electricity", "us", "scope2", "industrial"]
+    input:
+      fuel_type: "electricity_grid"
+      quantity: 500
+      unit: "MWh"
+      region: "US"
+      scope: 2
+    expected:
+      emissions_kgco2e: 208500.0
+      emission_factor_used: 0.417
+      scope: 2
+
+  - test_id: "elec_us_015"
+    test_name: "Electricity 1000 MWh US (1 GWh)"
+    description: "Enterprise annual or large industrial"
+    tags: ["electricity", "us", "scope2", "enterprise"]
+    input:
+      fuel_type: "electricity_grid"
+      quantity: 1000
+      unit: "MWh"
+      region: "US"
+      scope: 2
+    expected:
+      emissions_kgco2e: 417000.0
+      emission_factor_used: 0.417
+      scope: 2
+
+  # EU Grid Tests (16-25)
+  - test_id: "elec_eu_016"
+    test_name: "Electricity 1000 kWh EU"
+    description: "EU reference (1 MWh)"
+    tags: ["electricity", "eu", "scope2", "reference"]
+    input:
+      fuel_type: "electricity_grid"
+      quantity: 1000
+      unit: "kWh"
+      region: "EU"
+      scope: 2
+    expected:
+      emissions_kgco2e: 276.0
+      emission_factor_used: 0.276
+      emission_factor_source: "IEA"
+      scope: 2
+
+  - test_id: "elec_eu_017"
+    test_name: "Electricity 5000 kWh EU"
+    description: "EU office monthly"
+    tags: ["electricity", "eu", "scope2", "commercial"]
+    input:
+      fuel_type: "electricity_grid"
+      quantity: 5000
+      unit: "kWh"
+      region: "EU"
+      scope: 2
+    expected:
+      emissions_kgco2e: 1380.0
+      emission_factor_used: 0.276
+      scope: 2
+
+  - test_id: "elec_eu_018"
+    test_name: "Electricity 10000 kWh EU"
+    description: "EU large office"
+    tags: ["electricity", "eu", "scope2", "commercial"]
+    input:
+      fuel_type: "electricity_grid"
+      quantity: 10000
+      unit: "kWh"
+      region: "EU"
+      scope: 2
+    expected:
+      emissions_kgco2e: 2760.0
+      emission_factor_used: 0.276
+      scope: 2
+
+  - test_id: "elec_eu_019"
+    test_name: "Electricity 50000 kWh EU"
+    description: "EU facility monthly"
+    tags: ["electricity", "eu", "scope2", "facility"]
+    input:
+      fuel_type: "electricity_grid"
+      quantity: 50000
+      unit: "kWh"
+      region: "EU"
+      scope: 2
+    expected:
+      emissions_kgco2e: 13800.0
+      emission_factor_used: 0.276
+      scope: 2
+
+  - test_id: "elec_eu_020"
+    test_name: "Electricity 100000 kWh EU"
+    description: "EU large facility"
+    tags: ["electricity", "eu", "scope2", "facility"]
+    input:
+      fuel_type: "electricity_grid"
+      quantity: 100000
+      unit: "kWh"
+      region: "EU"
+      scope: 2
+    expected:
+      emissions_kgco2e: 27600.0
+      emission_factor_used: 0.276
+      scope: 2
+
+  - test_id: "elec_eu_021"
+    test_name: "Electricity 100 MWh EU"
+    description: "EU industrial monthly"
+    tags: ["electricity", "eu", "scope2", "industrial"]
+    input:
+      fuel_type: "electricity_grid"
+      quantity: 100
+      unit: "MWh"
+      region: "EU"
+      scope: 2
+    expected:
+      emissions_kgco2e: 27600.0
+      emission_factor_used: 0.276
+      scope: 2
+
+  - test_id: "elec_eu_022"
+    test_name: "Electricity 500 MWh EU"
+    description: "EU major industrial"
+    tags: ["electricity", "eu", "scope2", "industrial"]
+    input:
+      fuel_type: "electricity_grid"
+      quantity: 500
+      unit: "MWh"
+      region: "EU"
+      scope: 2
+    expected:
+      emissions_kgco2e: 138000.0
+      emission_factor_used: 0.276
+      scope: 2
+
+  - test_id: "elec_eu_023"
+    test_name: "Electricity 250 kWh EU"
+    description: "EU residential monthly low"
+    tags: ["electricity", "eu", "scope2", "residential"]
+    input:
+      fuel_type: "electricity_grid"
+      quantity: 250
+      unit: "kWh"
+      region: "EU"
+      scope: 2
+    expected:
+      emissions_kgco2e: 69.0
+      emission_factor_used: 0.276
+      scope: 2
+
+  - test_id: "elec_eu_024"
+    test_name: "Electricity 350 kWh EU"
+    description: "EU residential monthly average"
+    tags: ["electricity", "eu", "scope2", "residential"]
+    input:
+      fuel_type: "electricity_grid"
+      quantity: 350
+      unit: "kWh"
+      region: "EU"
+      scope: 2
+    expected:
+      emissions_kgco2e: 96.6
+      emission_factor_used: 0.276
+      scope: 2
+
+  - test_id: "elec_eu_025"
+    test_name: "Electricity 2500 kWh EU"
+    description: "EU small business"
+    tags: ["electricity", "eu", "scope2", "commercial"]
+    input:
+      fuel_type: "electricity_grid"
+      quantity: 2500
+      unit: "kWh"
+      region: "EU"
+      scope: 2
+    expected:
+      emissions_kgco2e: 690.0
+      emission_factor_used: 0.276
+      scope: 2
+
+  # Germany specific tests (26-30)
+  - test_id: "elec_de_026"
+    test_name: "Electricity 1000 kWh Germany"
+    description: "Germany reference"
+    tags: ["electricity", "de", "scope2", "reference"]
+    input:
+      fuel_type: "electricity_grid"
+      quantity: 1000
+      unit: "kWh"
+      region: "DE"
+      scope: 2
+    expected:
+      emissions_kgco2e: 366.0
+      emission_factor_used: 0.366
+      emission_factor_source: "IEA"
+      scope: 2
+
+  - test_id: "elec_de_027"
+    test_name: "Electricity 5000 kWh Germany"
+    description: "German office monthly"
+    tags: ["electricity", "de", "scope2", "commercial"]
+    input:
+      fuel_type: "electricity_grid"
+      quantity: 5000
+      unit: "kWh"
+      region: "DE"
+      scope: 2
+    expected:
+      emissions_kgco2e: 1830.0
+      emission_factor_used: 0.366
+      scope: 2
+
+  - test_id: "elec_de_028"
+    test_name: "Electricity 25000 kWh Germany"
+    description: "German facility monthly"
+    tags: ["electricity", "de", "scope2", "facility"]
+    input:
+      fuel_type: "electricity_grid"
+      quantity: 25000
+      unit: "kWh"
+      region: "DE"
+      scope: 2
+    expected:
+      emissions_kgco2e: 9150.0
+      emission_factor_used: 0.366
+      scope: 2
+
+  - test_id: "elec_de_029"
+    test_name: "Electricity 100 MWh Germany"
+    description: "German industrial"
+    tags: ["electricity", "de", "scope2", "industrial"]
+    input:
+      fuel_type: "electricity_grid"
+      quantity: 100
+      unit: "MWh"
+      region: "DE"
+      scope: 2
+    expected:
+      emissions_kgco2e: 36600.0
+      emission_factor_used: 0.366
+      scope: 2
+
+  - test_id: "elec_de_030"
+    test_name: "Electricity 3500 kWh Germany"
+    description: "German household annual"
+    tags: ["electricity", "de", "scope2", "residential"]
+    input:
+      fuel_type: "electricity_grid"
+      quantity: 3500
+      unit: "kWh"
+      region: "DE"
+      scope: 2
+    expected:
+      emissions_kgco2e: 1281.0
+      emission_factor_used: 0.366
+      scope: 2
+
+  # France specific tests (31-35) - Low carbon due to nuclear
+  - test_id: "elec_fr_031"
+    test_name: "Electricity 1000 kWh France"
+    description: "France reference (low carbon grid)"
+    tags: ["electricity", "fr", "scope2", "reference", "low_carbon"]
+    input:
+      fuel_type: "electricity_grid"
+      quantity: 1000
+      unit: "kWh"
+      region: "FR"
+      scope: 2
+    expected:
+      emissions_kgco2e: 52.0
+      emission_factor_used: 0.052
+      emission_factor_source: "IEA"
+      scope: 2
+
+  - test_id: "elec_fr_032"
+    test_name: "Electricity 10000 kWh France"
+    description: "French office - demonstrating low EF"
+    tags: ["electricity", "fr", "scope2", "commercial", "low_carbon"]
+    input:
+      fuel_type: "electricity_grid"
+      quantity: 10000
+      unit: "kWh"
+      region: "FR"
+      scope: 2
+    expected:
+      emissions_kgco2e: 520.0
+      emission_factor_used: 0.052
+      scope: 2
+
+  - test_id: "elec_fr_033"
+    test_name: "Electricity 50000 kWh France"
+    description: "French facility - nuclear benefit"
+    tags: ["electricity", "fr", "scope2", "facility", "low_carbon"]
+    input:
+      fuel_type: "electricity_grid"
+      quantity: 50000
+      unit: "kWh"
+      region: "FR"
+      scope: 2
+    expected:
+      emissions_kgco2e: 2600.0
+      emission_factor_used: 0.052
+      scope: 2
+
+  - test_id: "elec_fr_034"
+    test_name: "Electricity 100 MWh France"
+    description: "French industrial - low emissions"
+    tags: ["electricity", "fr", "scope2", "industrial", "low_carbon"]
+    input:
+      fuel_type: "electricity_grid"
+      quantity: 100
+      unit: "MWh"
+      region: "FR"
+      scope: 2
+    expected:
+      emissions_kgco2e: 5200.0
+      emission_factor_used: 0.052
+      scope: 2
+
+  - test_id: "elec_fr_035"
+    test_name: "Electricity 1000 MWh France"
+    description: "French major industrial - compare to US"
+    tags: ["electricity", "fr", "scope2", "enterprise", "low_carbon"]
+    input:
+      fuel_type: "electricity_grid"
+      quantity: 1000
+      unit: "MWh"
+      region: "FR"
+      scope: 2
+    expected:
+      emissions_kgco2e: 52000.0
+      emission_factor_used: 0.052
+      scope: 2
+
+  # Comparison and scenario tests (36-50)
+  - test_id: "elec_compare_036"
+    test_name: "Comparison 1 MWh US vs EU"
+    description: "Same usage, US grid (higher carbon)"
+    tags: ["electricity", "comparison", "scope2"]
+    input:
+      fuel_type: "electricity_grid"
+      quantity: 1000
+      unit: "kWh"
+      region: "US"
+      scope: 2
+    expected:
+      emissions_kgco2e: 417.0
+      emission_factor_used: 0.417
+
+  - test_id: "elec_scenario_037"
+    test_name: "Data Center Monthly US"
+    description: "Data center monthly (500 MWh)"
+    tags: ["electricity", "us", "scope2", "scenario", "datacenter"]
+    input:
+      fuel_type: "electricity_grid"
+      quantity: 500
+      unit: "MWh"
+      region: "US"
+      scope: 2
+    expected:
+      emissions_kgco2e: 208500.0
+      emission_factor_used: 0.417
+      scope: 2
+
+  - test_id: "elec_scenario_038"
+    test_name: "Data Center Monthly France"
+    description: "Same data center in France"
+    tags: ["electricity", "fr", "scope2", "scenario", "datacenter", "low_carbon"]
+    input:
+      fuel_type: "electricity_grid"
+      quantity: 500
+      unit: "MWh"
+      region: "FR"
+      scope: 2
+    expected:
+      emissions_kgco2e: 26000.0
+      emission_factor_used: 0.052
+      scope: 2
+
+  - test_id: "elec_scenario_039"
+    test_name: "EV Charging Station Monthly"
+    description: "Public charging station (15000 kWh)"
+    tags: ["electricity", "us", "scope2", "scenario", "ev"]
+    input:
+      fuel_type: "electricity_grid"
+      quantity: 15000
+      unit: "kWh"
+      region: "US"
+      scope: 2
+    expected:
+      emissions_kgco2e: 6255.0
+      emission_factor_used: 0.417
+      scope: 2
+
+  - test_id: "elec_scenario_040"
+    test_name: "Manufacturing Plant Daily"
+    description: "Manufacturing daily usage (8000 kWh)"
+    tags: ["electricity", "de", "scope2", "scenario", "manufacturing"]
+    input:
+      fuel_type: "electricity_grid"
+      quantity: 8000
+      unit: "kWh"
+      region: "DE"
+      scope: 2
+    expected:
+      emissions_kgco2e: 2928.0
+      emission_factor_used: 0.366
+      scope: 2
+
+  - test_id: "elec_scenario_041"
+    test_name: "Retail Store Chain Monthly"
+    description: "100-store chain monthly (250 MWh)"
+    tags: ["electricity", "us", "scope2", "scenario", "retail"]
+    input:
+      fuel_type: "electricity_grid"
+      quantity: 250
+      unit: "MWh"
+      region: "US"
+      scope: 2
+    expected:
+      emissions_kgco2e: 104250.0
+      emission_factor_used: 0.417
+      scope: 2
+
+  - test_id: "elec_scenario_042"
+    test_name: "Hospital Annual"
+    description: "Hospital annual usage (12000 MWh)"
+    tags: ["electricity", "us", "scope2", "scenario", "healthcare"]
+    input:
+      fuel_type: "electricity_grid"
+      quantity: 12000
+      unit: "MWh"
+      region: "US"
+      scope: 2
+    expected:
+      emissions_kgco2e: 5004000.0
+      emission_factor_used: 0.417
+      scope: 2
+
+  - test_id: "elec_scenario_043"
+    test_name: "University Campus Annual EU"
+    description: "Campus annual (8500 MWh)"
+    tags: ["electricity", "eu", "scope2", "scenario", "education"]
+    input:
+      fuel_type: "electricity_grid"
+      quantity: 8500
+      unit: "MWh"
+      region: "EU"
+      scope: 2
+    expected:
+      emissions_kgco2e: 2346000.0
+      emission_factor_used: 0.276
+      scope: 2
+
+  - test_id: "elec_scenario_044"
+    test_name: "Cold Storage Facility"
+    description: "Refrigerated warehouse (75 MWh/month)"
+    tags: ["electricity", "us", "scope2", "scenario", "coldchain"]
+    input:
+      fuel_type: "electricity_grid"
+      quantity: 75
+      unit: "MWh"
+      region: "US"
+      scope: 2
+    expected:
+      emissions_kgco2e: 31275.0
+      emission_factor_used: 0.417
+      scope: 2
+
+  - test_id: "elec_scenario_045"
+    test_name: "Airport Terminal Monthly"
+    description: "Airport terminal (150 MWh)"
+    tags: ["electricity", "eu", "scope2", "scenario", "aviation"]
+    input:
+      fuel_type: "electricity_grid"
+      quantity: 150
+      unit: "MWh"
+      region: "EU"
+      scope: 2
+    expected:
+      emissions_kgco2e: 41400.0
+      emission_factor_used: 0.276
+      scope: 2
+
+  - test_id: "elec_scenario_046"
+    test_name: "Steel Mill Monthly"
+    description: "Steel production facility (2000 MWh)"
+    tags: ["electricity", "de", "scope2", "scenario", "steel"]
+    input:
+      fuel_type: "electricity_grid"
+      quantity: 2000
+      unit: "MWh"
+      region: "DE"
+      scope: 2
+    expected:
+      emissions_kgco2e: 732000.0
+      emission_factor_used: 0.366
+      scope: 2
+
+  - test_id: "elec_scenario_047"
+    test_name: "Water Treatment Plant"
+    description: "Municipal water plant (45 MWh/month)"
+    tags: ["electricity", "us", "scope2", "scenario", "utilities"]
+    input:
+      fuel_type: "electricity_grid"
+      quantity: 45
+      unit: "MWh"
+      region: "US"
+      scope: 2
+    expected:
+      emissions_kgco2e: 18765.0
+      emission_factor_used: 0.417
+      scope: 2
+
+  - test_id: "elec_scenario_048"
+    test_name: "Semiconductor Fab Monthly"
+    description: "Chip fabrication (800 MWh)"
+    tags: ["electricity", "us", "scope2", "scenario", "semiconductor"]
+    input:
+      fuel_type: "electricity_grid"
+      quantity: 800
+      unit: "MWh"
+      region: "US"
+      scope: 2
+    expected:
+      emissions_kgco2e: 333600.0
+      emission_factor_used: 0.417
+      scope: 2
+
+  - test_id: "elec_scenario_049"
+    test_name: "Aluminum Smelter Daily"
+    description: "Aluminum production (300 MWh/day)"
+    tags: ["electricity", "fr", "scope2", "scenario", "aluminum"]
+    input:
+      fuel_type: "electricity_grid"
+      quantity: 300
+      unit: "MWh"
+      region: "FR"
+      scope: 2
+    expected:
+      emissions_kgco2e: 15600.0
+      emission_factor_used: 0.052
+      scope: 2
+
+  - test_id: "elec_scenario_050"
+    test_name: "Chemical Plant Annual"
+    description: "Chemical production annual (15000 MWh)"
+    tags: ["electricity", "de", "scope2", "scenario", "chemical"]
+    input:
+      fuel_type: "electricity_grid"
+      quantity: 15000
+      unit: "MWh"
+      region: "DE"
+      scope: 2
+    expected:
+      emissions_kgco2e: 5490000.0
+      emission_factor_used: 0.366
+      scope: 2

@@ -1,0 +1,68 @@
+# Reduced resources for development
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fuel-analyzer
+spec:
+  template:
+    spec:
+      containers:
+        - name: fuel-analyzer
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: carbon-intensity
+spec:
+  template:
+    spec:
+      containers:
+        - name: carbon-intensity
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: energy-performance
+spec:
+  template:
+    spec:
+      containers:
+        - name: energy-performance
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: eudr-compliance
+spec:
+  template:
+    spec:
+      containers:
+        - name: eudr-compliance
+          resources:
+            requests:
+              cpu: 200m
+              memory: 512Mi
+            limits:
+              cpu: 1000m
+              memory: 2Gi

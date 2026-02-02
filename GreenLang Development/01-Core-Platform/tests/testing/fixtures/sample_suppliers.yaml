@@ -1,0 +1,95 @@
+suppliers:
+  - id: sup_001
+    name: "Steel Corp International"
+    industry: "Manufacturing"
+    products:
+      - "Steel"
+      - "Aluminum"
+      - "Copper"
+    location:
+      country: "USA"
+      city: "Pittsburgh"
+      region: "North America"
+    certifications:
+      - "ISO 14001"
+      - "ISO 50001"
+    sustainability_score: 8.5
+    emission_intensity: 2.5  # kg CO2e per kg product
+    annual_spend: 500000
+    risk_level: "low"
+
+  - id: sup_002
+    name: "Global Logistics Inc"
+    industry: "Transportation"
+    services:
+      - "Freight Transport"
+      - "Warehousing"
+      - "Last Mile Delivery"
+    location:
+      country: "USA"
+      city: "Chicago"
+      region: "North America"
+    certifications:
+      - "SmartWay"
+      - "ISO 14001"
+    sustainability_score: 7.8
+    emission_intensity: 0.12  # kg CO2e per km
+    annual_spend: 250000
+    risk_level: "medium"
+
+  - id: sup_003
+    name: "Clean Energy Solutions"
+    industry: "Energy"
+    services:
+      - "Solar Panels"
+      - "Wind Turbines"
+      - "Energy Storage"
+    location:
+      country: "Germany"
+      city: "Berlin"
+      region: "Europe"
+    certifications:
+      - "ISO 14001"
+      - "B Corp"
+      - "RE100"
+    sustainability_score: 9.2
+    emission_intensity: 0.05  # kg CO2e per kWh
+    annual_spend: 800000
+    risk_level: "low"
+
+  - id: sup_004
+    name: "Plastic Manufacturing Ltd"
+    industry: "Manufacturing"
+    products:
+      - "Plastic Packaging"
+      - "Plastic Components"
+    location:
+      country: "China"
+      city: "Shanghai"
+      region: "Asia"
+    certifications:
+      - "ISO 9001"
+    sustainability_score: 5.5
+    emission_intensity: 3.2  # kg CO2e per kg product
+    annual_spend: 300000
+    risk_level: "high"
+
+  - id: sup_005
+    name: "Sustainable Textiles Co"
+    industry: "Textiles"
+    products:
+      - "Organic Cotton"
+      - "Recycled Polyester"
+      - "Hemp Fabric"
+    location:
+      country: "India"
+      city: "Mumbai"
+      region: "Asia"
+    certifications:
+      - "GOTS"
+      - "Fair Trade"
+      - "ISO 14001"
+    sustainability_score: 8.8
+    emission_intensity: 1.5  # kg CO2e per kg product
+    annual_spend: 400000
+    risk_level: "low"

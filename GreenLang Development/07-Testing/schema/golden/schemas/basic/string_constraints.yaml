@@ -1,0 +1,65 @@
+# String Constraints Test Schema
+# Tests: minLength, maxLength, pattern, format
+# GL-FOUND-X-002 Golden Test
+
+$schema: "https://json-schema.org/draft/2020-12/schema"
+$id: "gl://schemas/test/string_constraints@1.0.0"
+title: "String Constraints Test Schema"
+description: "Schema for testing string validation constraints"
+type: object
+
+required:
+  - username
+  - email
+
+properties:
+  username:
+    type: string
+    description: "Username with length constraints"
+    minLength: 3
+    maxLength: 20
+    pattern: "^[a-zA-Z][a-zA-Z0-9_]*$"
+
+  email:
+    type: string
+    description: "Email with format validation"
+    format: email
+
+  phone:
+    type: string
+    description: "Phone number with pattern"
+    pattern: "^\\+?[1-9]\\d{1,14}$"
+
+  country_code:
+    type: string
+    description: "ISO 3166-1 alpha-2 country code"
+    minLength: 2
+    maxLength: 2
+    pattern: "^[A-Z]{2}$"
+
+  description:
+    type: string
+    description: "Optional description with max length"
+    maxLength: 500
+
+  uuid:
+    type: string
+    description: "UUID format validation"
+    format: uuid
+
+  uri:
+    type: string
+    description: "URI format validation"
+    format: uri
+
+  date:
+    type: string
+    description: "Date format validation"
+    format: date
+
+  datetime:
+    type: string
+    description: "DateTime format validation"
+    format: date-time
+
+additionalProperties: false

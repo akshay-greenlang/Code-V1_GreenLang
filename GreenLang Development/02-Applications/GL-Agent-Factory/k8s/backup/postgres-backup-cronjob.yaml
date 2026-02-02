@@ -1,0 +1,489 @@
+# GreenLang PostgreSQL Backup CronJob
+# Automated daily backups with S3 upload and 30-day retention
+# Schedule: Daily at 2:00 AM UTC
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: postgres-backup-sa
+  namespace: greenlang-production
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: backup
+    app.kubernetes.io/part-of: greenlang-platform
+  annotations:
+    description: "Service account for PostgreSQL backup jobs"
+---
+# RBAC Role for backup operations
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: postgres-backup-role
+  namespace: greenlang-production
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: backup
+rules:
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "list"]
+    resourceNames:
+      - "db-credentials"
+      - "postgres-backup-s3-credentials"
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["get", "list", "create", "update", "patch"]
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list"]
+  - apiGroups: ["batch"]
+    resources: ["jobs"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: postgres-backup-rolebinding
+  namespace: greenlang-production
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: backup
+subjects:
+  - kind: ServiceAccount
+    name: postgres-backup-sa
+    namespace: greenlang-production
+roleRef:
+  kind: Role
+  name: postgres-backup-role
+  apiGroup: rbac.authorization.k8s.io
+---
+# ConfigMap for backup configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-backup-config
+  namespace: greenlang-production
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: backup
+data:
+  # Backup settings
+  BACKUP_RETENTION_DAYS: "30"
+  BACKUP_COMPRESSION: "gzip"
+  BACKUP_FORMAT: "custom"  # custom format for pg_restore compatibility
+  S3_BUCKET: "greenlang-backups-production"
+  S3_REGION: "us-east-1"
+  S3_PREFIX: "postgres/daily"
+  # PostgreSQL connection settings
+  PGHOST: "postgresql-service"
+  PGPORT: "5432"
+  PGDATABASE: "greenlang"
+  # Notification settings
+  SLACK_CHANNEL: "#greenlang-alerts"
+  ENABLE_NOTIFICATIONS: "true"
+---
+# CronJob for daily PostgreSQL backup
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: postgres-backup
+  namespace: greenlang-production
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: backup
+    app.kubernetes.io/part-of: greenlang-platform
+  annotations:
+    description: "Daily PostgreSQL backup to S3 with 30-day retention"
+spec:
+  # Schedule: Daily at 2:00 AM UTC
+  schedule: "0 2 * * *"
+  # Timezone support (requires Kubernetes 1.27+)
+  # timeZone: "UTC"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 7
+  failedJobsHistoryLimit: 3
+  startingDeadlineSeconds: 3600
+  suspend: false
+  jobTemplate:
+    metadata:
+      labels:
+        app.kubernetes.io/name: greenlang
+        app.kubernetes.io/component: backup
+    spec:
+      activeDeadlineSeconds: 7200  # 2 hour timeout
+      backoffLimit: 3
+      ttlSecondsAfterFinished: 86400  # Clean up completed jobs after 24 hours
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: greenlang
+            app.kubernetes.io/component: backup
+          annotations:
+            sidecar.istio.io/inject: "false"
+        spec:
+          serviceAccountName: postgres-backup-sa
+          restartPolicy: OnFailure
+
+          # Security context
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            fsGroup: 1000
+            seccompProfile:
+              type: RuntimeDefault
+
+          # Init container to verify connectivity
+          initContainers:
+            - name: check-postgres
+              image: postgres:15-alpine
+              imagePullPolicy: IfNotPresent
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  echo "Checking PostgreSQL connectivity..."
+                  until pg_isready -h $PGHOST -p $PGPORT -U $PGUSER; do
+                    echo "Waiting for PostgreSQL to be ready..."
+                    sleep 5
+                  done
+                  echo "PostgreSQL is ready!"
+              env:
+                - name: PGHOST
+                  valueFrom:
+                    configMapKeyRef:
+                      name: postgres-backup-config
+                      key: PGHOST
+                - name: PGPORT
+                  valueFrom:
+                    configMapKeyRef:
+                      name: postgres-backup-config
+                      key: PGPORT
+                - name: PGUSER
+                  valueFrom:
+                    secretKeyRef:
+                      name: db-credentials
+                      key: DATABASE_USER
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop:
+                    - ALL
+              resources:
+                requests:
+                  cpu: "50m"
+                  memory: "64Mi"
+                limits:
+                  cpu: "100m"
+                  memory: "128Mi"
+
+          containers:
+            - name: postgres-backup
+              image: postgres:15-alpine
+              imagePullPolicy: IfNotPresent
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  set -e
+
+                  # Generate timestamp for backup filename
+                  TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+                  BACKUP_FILENAME="greenlang_${PGDATABASE}_${TIMESTAMP}.sql.gz"
+                  BACKUP_PATH="/backups/${BACKUP_FILENAME}"
+
+                  echo "=========================================="
+                  echo "GreenLang PostgreSQL Backup"
+                  echo "=========================================="
+                  echo "Timestamp: ${TIMESTAMP}"
+                  echo "Database: ${PGDATABASE}"
+                  echo "Host: ${PGHOST}:${PGPORT}"
+                  echo "Backup file: ${BACKUP_FILENAME}"
+                  echo "S3 destination: s3://${S3_BUCKET}/${S3_PREFIX}/"
+                  echo "=========================================="
+
+                  # Create backup directory
+                  mkdir -p /backups
+
+                  # Perform full database backup with pg_dump
+                  echo "[$(date)] Starting pg_dump..."
+                  pg_dump \
+                    -h "${PGHOST}" \
+                    -p "${PGPORT}" \
+                    -U "${PGUSER}" \
+                    -d "${PGDATABASE}" \
+                    --verbose \
+                    --no-password \
+                    --format=plain \
+                    --no-owner \
+                    --no-privileges \
+                    --clean \
+                    --if-exists \
+                    --create \
+                    --encoding=UTF8 \
+                    | gzip -9 > "${BACKUP_PATH}"
+
+                  # Verify backup was created and has content
+                  if [ ! -f "${BACKUP_PATH}" ]; then
+                    echo "[ERROR] Backup file was not created!"
+                    exit 1
+                  fi
+
+                  BACKUP_SIZE=$(du -h "${BACKUP_PATH}" | cut -f1)
+                  BACKUP_SIZE_BYTES=$(stat -f%z "${BACKUP_PATH}" 2>/dev/null || stat -c%s "${BACKUP_PATH}")
+
+                  if [ "${BACKUP_SIZE_BYTES}" -lt 1000 ]; then
+                    echo "[ERROR] Backup file is too small (${BACKUP_SIZE_BYTES} bytes). Possible failure!"
+                    exit 1
+                  fi
+
+                  echo "[$(date)] Backup completed: ${BACKUP_SIZE}"
+
+                  # Generate checksum for integrity verification
+                  CHECKSUM=$(sha256sum "${BACKUP_PATH}" | cut -d' ' -f1)
+                  echo "${CHECKSUM}" > "${BACKUP_PATH}.sha256"
+                  echo "[$(date)] Checksum: ${CHECKSUM}"
+
+                  # Install AWS CLI if not present (Alpine)
+                  if ! command -v aws &> /dev/null; then
+                    echo "[$(date)] Installing AWS CLI..."
+                    apk add --no-cache aws-cli
+                  fi
+
+                  # Configure AWS credentials
+                  export AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}"
+                  export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}"
+                  export AWS_DEFAULT_REGION="${S3_REGION}"
+
+                  # Upload backup to S3
+                  echo "[$(date)] Uploading backup to S3..."
+                  aws s3 cp "${BACKUP_PATH}" "s3://${S3_BUCKET}/${S3_PREFIX}/${BACKUP_FILENAME}" \
+                    --storage-class STANDARD_IA \
+                    --metadata "checksum=${CHECKSUM},database=${PGDATABASE},timestamp=${TIMESTAMP}"
+
+                  # Upload checksum file
+                  aws s3 cp "${BACKUP_PATH}.sha256" "s3://${S3_BUCKET}/${S3_PREFIX}/${BACKUP_FILENAME}.sha256"
+
+                  # Verify upload
+                  echo "[$(date)] Verifying upload..."
+                  aws s3 ls "s3://${S3_BUCKET}/${S3_PREFIX}/${BACKUP_FILENAME}"
+
+                  # Create latest symlink/copy for easy restore
+                  aws s3 cp "s3://${S3_BUCKET}/${S3_PREFIX}/${BACKUP_FILENAME}" \
+                    "s3://${S3_BUCKET}/${S3_PREFIX}/latest.sql.gz"
+
+                  # Cleanup old backups (retention policy)
+                  echo "[$(date)] Applying retention policy (${BACKUP_RETENTION_DAYS} days)..."
+                  CUTOFF_DATE=$(date -d "-${BACKUP_RETENTION_DAYS} days" +%Y-%m-%d 2>/dev/null || \
+                    date -v-${BACKUP_RETENTION_DAYS}d +%Y-%m-%d)
+
+                  aws s3 ls "s3://${S3_BUCKET}/${S3_PREFIX}/" | while read -r line; do
+                    FILE_DATE=$(echo "$line" | awk '{print $1}')
+                    FILE_NAME=$(echo "$line" | awk '{print $4}')
+
+                    # Skip if not a backup file or latest
+                    if [[ ! "$FILE_NAME" =~ ^greenlang_.*\.sql\.gz$ ]] || [ "$FILE_NAME" == "latest.sql.gz" ]; then
+                      continue
+                    fi
+
+                    if [[ "$FILE_DATE" < "$CUTOFF_DATE" ]]; then
+                      echo "[$(date)] Deleting old backup: ${FILE_NAME} (dated ${FILE_DATE})"
+                      aws s3 rm "s3://${S3_BUCKET}/${S3_PREFIX}/${FILE_NAME}"
+                      aws s3 rm "s3://${S3_BUCKET}/${S3_PREFIX}/${FILE_NAME}.sha256" 2>/dev/null || true
+                    fi
+                  done
+
+                  # Clean up local backup
+                  rm -f "${BACKUP_PATH}" "${BACKUP_PATH}.sha256"
+
+                  # Generate backup report
+                  echo "=========================================="
+                  echo "Backup Summary"
+                  echo "=========================================="
+                  echo "Status: SUCCESS"
+                  echo "File: ${BACKUP_FILENAME}"
+                  echo "Size: ${BACKUP_SIZE}"
+                  echo "Checksum: ${CHECKSUM}"
+                  echo "S3 Location: s3://${S3_BUCKET}/${S3_PREFIX}/${BACKUP_FILENAME}"
+                  echo "Retention: ${BACKUP_RETENTION_DAYS} days"
+                  echo "Completed: $(date)"
+                  echo "=========================================="
+
+                  # Send success notification (if configured)
+                  if [ "${ENABLE_NOTIFICATIONS}" = "true" ] && [ -n "${SLACK_WEBHOOK_URL}" ]; then
+                    curl -X POST -H 'Content-type: application/json' \
+                      --data "{\"channel\":\"${SLACK_CHANNEL}\",\"text\":\"PostgreSQL Backup SUCCESS: ${BACKUP_FILENAME} (${BACKUP_SIZE})\"}" \
+                      "${SLACK_WEBHOOK_URL}" || true
+                  fi
+
+                  echo "[$(date)] Backup job completed successfully!"
+
+              env:
+                # PostgreSQL connection
+                - name: PGHOST
+                  valueFrom:
+                    configMapKeyRef:
+                      name: postgres-backup-config
+                      key: PGHOST
+                - name: PGPORT
+                  valueFrom:
+                    configMapKeyRef:
+                      name: postgres-backup-config
+                      key: PGPORT
+                - name: PGDATABASE
+                  valueFrom:
+                    configMapKeyRef:
+                      name: postgres-backup-config
+                      key: PGDATABASE
+                - name: PGUSER
+                  valueFrom:
+                    secretKeyRef:
+                      name: db-credentials
+                      key: DATABASE_USER
+                - name: PGPASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: db-credentials
+                      key: DATABASE_PASSWORD
+                # S3 configuration
+                - name: S3_BUCKET
+                  valueFrom:
+                    configMapKeyRef:
+                      name: postgres-backup-config
+                      key: S3_BUCKET
+                - name: S3_REGION
+                  valueFrom:
+                    configMapKeyRef:
+                      name: postgres-backup-config
+                      key: S3_REGION
+                - name: S3_PREFIX
+                  valueFrom:
+                    configMapKeyRef:
+                      name: postgres-backup-config
+                      key: S3_PREFIX
+                - name: AWS_ACCESS_KEY_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: postgres-backup-s3-credentials
+                      key: AWS_ACCESS_KEY_ID
+                - name: AWS_SECRET_ACCESS_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: postgres-backup-s3-credentials
+                      key: AWS_SECRET_ACCESS_KEY
+                # Backup settings
+                - name: BACKUP_RETENTION_DAYS
+                  valueFrom:
+                    configMapKeyRef:
+                      name: postgres-backup-config
+                      key: BACKUP_RETENTION_DAYS
+                # Notification settings
+                - name: ENABLE_NOTIFICATIONS
+                  valueFrom:
+                    configMapKeyRef:
+                      name: postgres-backup-config
+                      key: ENABLE_NOTIFICATIONS
+                - name: SLACK_CHANNEL
+                  valueFrom:
+                    configMapKeyRef:
+                      name: postgres-backup-config
+                      key: SLACK_CHANNEL
+                - name: SLACK_WEBHOOK_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: postgres-backup-s3-credentials
+                      key: SLACK_WEBHOOK_URL
+                      optional: true
+
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: false  # Need to write backup temporarily
+                capabilities:
+                  drop:
+                    - ALL
+
+              resources:
+                requests:
+                  cpu: "500m"
+                  memory: "512Mi"
+                limits:
+                  cpu: "2000m"
+                  memory: "2Gi"
+
+              volumeMounts:
+                - name: backup-storage
+                  mountPath: /backups
+                - name: tmp
+                  mountPath: /tmp
+
+          volumes:
+            - name: backup-storage
+              emptyDir:
+                sizeLimit: 10Gi
+            - name: tmp
+              emptyDir:
+                sizeLimit: 1Gi
+
+          # Node affinity (prefer nodes with SSD storage)
+          affinity:
+            nodeAffinity:
+              preferredDuringSchedulingIgnoredDuringExecution:
+                - weight: 100
+                  preference:
+                    matchExpressions:
+                      - key: node.kubernetes.io/instance-type
+                        operator: In
+                        values:
+                          - m5.large
+                          - m5.xlarge
+                          - r5.large
+
+          # Tolerations for dedicated backup nodes
+          tolerations:
+            - key: "dedicated"
+              operator: "Equal"
+              value: "backup"
+              effect: "NoSchedule"
+---
+# Network Policy for backup jobs
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: postgres-backup-netpol
+  namespace: greenlang-production
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: backup
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/component: backup
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress: []  # No ingress needed for backup jobs
+  egress:
+    # Allow DNS resolution
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+    # Allow PostgreSQL connection
+    - to:
+        - podSelector:
+            matchLabels:
+              app: postgresql
+      ports:
+        - protocol: TCP
+          port: 5432
+    # Allow S3 HTTPS egress
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+      ports:
+        - protocol: TCP
+          port: 443

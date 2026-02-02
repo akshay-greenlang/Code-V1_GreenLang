@@ -1,0 +1,207 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vcci-backend-api-config
+  namespace: vcci-platform
+  labels:
+    app: vcci-backend-api
+data:
+  # Application configuration
+  app.yaml: |
+    app:
+      name: "VCCI Scope 3 Carbon Intelligence Platform"
+      version: "1.0.0"
+      environment: "production"
+      debug: false
+
+    server:
+      host: "0.0.0.0"
+      port: 8000
+      workers: 4
+      worker_class: "uvicorn.workers.UvicornWorker"
+      max_requests: 1000
+      max_requests_jitter: 100
+      timeout: 60
+      keepalive: 5
+
+    logging:
+      level: "INFO"
+      format: "json"
+      handlers:
+        - console
+        - file
+      file:
+        path: "/var/log/vcci/app.log"
+        max_bytes: 104857600  # 100MB
+        backup_count: 10
+
+    cors:
+      enabled: true
+      allow_origins:
+        - "https://app.vcci.greenlang.io"
+        - "https://*.vcci.greenlang.io"
+      allow_methods:
+        - GET
+        - POST
+        - PUT
+        - DELETE
+        - OPTIONS
+        - PATCH
+      allow_headers:
+        - "*"
+      allow_credentials: true
+      max_age: 3600
+
+    rate_limiting:
+      enabled: true
+      default_limit: "100/minute"
+      by_endpoint:
+        "/api/v1/auth/login": "10/minute"
+        "/api/v1/auth/register": "5/minute"
+        "/api/v1/calculations": "50/minute"
+        "/api/v1/reports": "20/minute"
+
+    cache:
+      enabled: true
+      default_ttl: 300
+      by_endpoint:
+        "/api/v1/factors": 3600
+        "/api/v1/standards": 7200
+
+    feature_flags:
+      ml_recommendations: true
+      real_time_calculations: true
+      advanced_analytics: true
+      multi_tenant: true
+      api_versioning: true
+
+  # Database configuration
+  database.yaml: |
+    database:
+      pool_size: 20
+      max_overflow: 40
+      pool_timeout: 30
+      pool_recycle: 3600
+      pool_pre_ping: true
+      echo: false
+      isolation_level: "READ_COMMITTED"
+
+    read_replicas:
+      enabled: true
+      urls:
+        - "postgresql://vcci-read-replica-1:5432/vcci"
+        - "postgresql://vcci-read-replica-2:5432/vcci"
+
+  # ML configuration
+  ml.yaml: |
+    ml:
+      models:
+        hotspot_detection:
+          enabled: true
+          model_path: "/models/hotspot_detector_v1"
+          batch_size: 32
+          confidence_threshold: 0.75
+
+        recommendation_engine:
+          enabled: true
+          model_path: "/models/recommender_v1"
+          top_k: 10
+          diversity_weight: 0.3
+
+        anomaly_detection:
+          enabled: true
+          sensitivity: 0.95
+          window_size: 30
+
+      vector_db:
+        enabled: true
+        embedding_model: "text-embedding-ada-002"
+        dimension: 1536
+        similarity_metric: "cosine"
+
+  # Integration configuration
+  integrations.yaml: |
+    integrations:
+      sap:
+        enabled: true
+        timeout: 60
+        retry_attempts: 3
+        retry_delay: 5
+
+      oracle:
+        enabled: true
+        timeout: 60
+        retry_attempts: 3
+        retry_delay: 5
+
+      workday:
+        enabled: true
+        timeout: 60
+        retry_attempts: 3
+        retry_delay: 5
+
+      external_apis:
+        ghg_protocol:
+          base_url: "https://api.ghgprotocol.org/v1"
+          timeout: 30
+
+        epa:
+          base_url: "https://api.epa.gov/v1"
+          timeout: 30
+
+        defra:
+          base_url: "https://api.defra.gov.uk/v1"
+          timeout: 30
+
+  # Security configuration
+  security.yaml: |
+    security:
+      jwt:
+        algorithm: "HS256"
+        expiry: 86400  # 24 hours
+        refresh_expiry: 2592000  # 30 days
+
+      password:
+        min_length: 12
+        require_uppercase: true
+        require_lowercase: true
+        require_digit: true
+        require_special: true
+
+      api_keys:
+        rotation_days: 90
+        max_keys_per_user: 5
+
+      session:
+        timeout: 3600
+        max_concurrent: 5
+
+      rate_limiting:
+        max_failed_logins: 5
+        lockout_duration: 900  # 15 minutes
+
+  # Monitoring configuration
+  monitoring.yaml: |
+    monitoring:
+      metrics:
+        enabled: true
+        port: 9090
+        path: "/metrics"
+        interval: 15
+
+      tracing:
+        enabled: true
+        sample_rate: 0.1
+        jaeger_endpoint: "http://jaeger-collector:14268/api/traces"
+
+      health_checks:
+        liveness:
+          path: "/health/live"
+          timeout: 5
+        readiness:
+          path: "/health/ready"
+          timeout: 3
+        startup:
+          path: "/health/startup"
+          timeout: 10

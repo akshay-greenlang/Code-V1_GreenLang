@@ -1,0 +1,19 @@
+# ==============================================================================
+# Production Backend API - Resource Patches
+# ==============================================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vcci-backend-api
+spec:
+  template:
+    spec:
+      containers:
+        - name: backend-api
+          resources:
+            requests:
+              cpu: 1000m
+              memory: 2Gi
+            limits:
+              cpu: 4000m
+              memory: 8Gi

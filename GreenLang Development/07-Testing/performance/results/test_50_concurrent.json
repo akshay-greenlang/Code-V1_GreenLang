@@ -1,0 +1,30 @@
+{
+  "test_name": "concurrent_50",
+  "pattern": "concurrent",
+  "target_rps": 50,
+  "duration_seconds": 0.22492159996181726,
+  "total_requests": 50,
+  "successful_requests": 50,
+  "failed_requests": 0,
+  "error_rate": 0.0,
+  "latency_ms": {
+    "min": 219.0486000617966,
+    "max": 220.30960000120103,
+    "mean": 219.56365199759603,
+    "median": 219.5824999944307,
+    "p95": 220.28810007032007,
+    "p99": 220.30960000120103
+  },
+  "throughput": {
+    "target_rps": 50,
+    "actual_rps": 222.96563924241826,
+    "total_duration_seconds": 0.22424979996867478
+  },
+  "resources": {
+    "peak_cpu_percent": 25.8,
+    "peak_memory_mb": 61.6953125,
+    "avg_cpu_percent": 8.6,
+    "avg_memory_mb": 61.295572916666664
+  },
+  "timestamp": "2025-11-07T16:28:40.022759"
+}

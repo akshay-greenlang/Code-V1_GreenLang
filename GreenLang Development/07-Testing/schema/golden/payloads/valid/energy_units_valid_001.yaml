@@ -1,0 +1,20 @@
+# Valid Energy Units Payload 001
+# Tests: Valid energy unit values
+# Schema: units/energy_units.yaml
+
+_test_metadata:
+  schema: "units/energy_units.yaml"
+  description: "Valid payload with correct energy units"
+  expected_valid: true
+
+energy_consumption:
+  value: 1500
+  unit: "kWh"
+
+electricity_used:
+  value: 250
+  unit: "MWh"
+
+fuel_energy:
+  value: 500
+  unit: "GJ"

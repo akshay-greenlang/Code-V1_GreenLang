@@ -1,0 +1,44 @@
+# ============================================================================
+# GL-CBAM-APP - Production Environment
+# ============================================================================
+# Kustomize overlay for production environment
+# ============================================================================
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: gl-cbam
+
+# Base resources
+bases:
+  - ../../base
+
+# Environment-specific labels
+commonLabels:
+  environment: production
+
+# Patches
+patchesStrategicMerge:
+  - patches/replica-patch.yaml
+  - patches/resource-patch.yaml
+  - patches/ingress-patch.yaml
+
+# ConfigMap generator (environment-specific values)
+configMapGenerator:
+  - name: cbam-api-config
+    behavior: merge
+    literals:
+      - APP_ENV=production
+      - LOG_LEVEL=INFO
+      - ENABLE_API_DOCS=false
+      - ENABLE_TRACING=false
+      - CORS_ORIGINS=https://cbam.greenlang.io,https://app.greenlang.io
+
+# Image tags
+images:
+  - name: cbam-api
+    newName: ghcr.io/greenlang/gl-cbam-app
+    newTag: v1.0.0
+
+# Namespace
+namespace: gl-cbam

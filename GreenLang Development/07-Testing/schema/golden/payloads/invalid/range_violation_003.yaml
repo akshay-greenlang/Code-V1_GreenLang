@@ -1,0 +1,16 @@
+# Invalid Payload - Range Violation (exclusive minimum)
+# Error Code: GLSCHEMA-E200 (RANGE_VIOLATION)
+# Schema: basic/numeric_constraints.yaml
+
+_test_metadata:
+  schema: "basic/numeric_constraints.yaml"
+  description: "Range violation - positive_number at exclusive minimum"
+  expected_valid: false
+  expected_errors:
+    - code: "GLSCHEMA-E200"
+      path: "/positive_number"
+      severity: "error"
+
+temperature: 25
+quantity: 100
+positive_number: 0  # Must be > 0, not >= 0

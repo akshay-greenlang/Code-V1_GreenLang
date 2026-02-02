@@ -1,0 +1,79 @@
+name: "demo-pipeline"
+version: "1"
+description: "A GreenLang pipeline for climate data processing"
+
+# Variables available to all steps
+vars:
+  default_region: "IN"
+  ef_vintage: 2025
+
+# External input schema
+inputs:
+  country:
+    type: string
+    required: true
+    description: "Country code (ISO 3166-1 alpha-2)"
+  site_id:
+    type: string
+    required: true
+    description: "Unique site identifier"
+  start_date:
+    type: string
+    format: date
+    description: "Analysis start date"
+
+# Pipeline steps
+steps:
+  - id: "validate_inputs"
+    agent: "greenlang.agents.InputValidatorAgent:InputValidatorAgent"
+    action: "run"
+    inputs: ${inputs}
+    with:
+      schema: "schemas/input.schema.json"
+    on_error: "stop"
+
+  - id: "fetch_data"
+    agent: "greenlang.agents.DataFetchAgent:DataFetchAgent"
+    inputsRef: ${steps.validate_inputs.output}
+    with:
+      source: "era5"
+      region: ${vars.default_region}
+    when: "${inputs.country} in ['IN', 'EU', 'US']"
+    retry:
+      max: 3
+      backoff_seconds: 2.0
+    tags: ["era5:rad", "network:https"]
+
+  - id: "analyze"
+    agent: "greenlang.agents.AnalysisAgent:AnalysisAgent"
+    inputsRef: ${steps.fetch_data.data}
+    with:
+      ef_vintage: ${vars.ef_vintage}
+      method: "ipcc_2021"
+    on_error:
+      policy: "retry"
+      max: 2
+      backoff_seconds: 1.0
+    outputs:
+      csv: "datasets/analysis_results.csv"
+      metrics: "metrics/site_metrics.json"
+
+  - id: "generate_report"
+    agent: "greenlang.agents.ReportAgent:ReportAgent"
+    inputs:
+      data: ${steps.analyze.metrics}
+      site_id: ${inputs.site_id}
+    with:
+      template: "reports/site_report.html.j2"
+      format: "pdf"
+    when: "${steps.analyze.status} == 'success'"
+    on_error: "continue"
+    outputs:
+      pdf: "reports/site_report.pdf"
+      summary: "reports/summary.json"
+
+# Final outputs mapping
+outputs:
+  report: "reports/site_report.pdf"
+  metrics: "metrics/site_metrics.json"
+  data: "datasets/analysis_results.csv"

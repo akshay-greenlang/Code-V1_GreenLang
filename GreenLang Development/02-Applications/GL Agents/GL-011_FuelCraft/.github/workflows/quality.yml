@@ -1,0 +1,349 @@
+# GL-011 FUELCRAFT - Quality & Security Pipeline
+# Security scanning (bandit, safety), dependency audit, SBOM generation
+name: GL-011 FUELCRAFT Quality & Security
+
+on:
+  push:
+    branches: [main, master, develop]
+    paths:
+      - 'GL Agents/GL-011_FuelCraft/**'
+      - '.github/workflows/quality.yml'
+  pull_request:
+    branches: [main, master]
+    paths:
+      - 'GL Agents/GL-011_FuelCraft/**'
+  schedule:
+    # Run daily at 2 AM UTC for dependency vulnerability scanning
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+env:
+  PYTHON_VERSION: "3.11"
+  COVERAGE_THRESHOLD: 85
+
+defaults:
+  run:
+    working-directory: GL Agents/GL-011_FuelCraft
+
+jobs:
+  # ==========================================================================
+  # Security Scanning - Bandit
+  # ==========================================================================
+  security-bandit:
+    name: Security Scan (Bandit)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install Bandit
+        run: pip install bandit[toml]
+
+      - name: Run Bandit security scan
+        run: |
+          bandit -r . \
+            -x tests,./tests \
+            -ll \
+            -ii \
+            -f json \
+            -o bandit-results.json || true
+
+      - name: Upload Bandit results
+        uses: actions/upload-artifact@v4
+        with:
+          name: bandit-results
+          path: GL Agents/GL-011_FuelCraft/bandit-results.json
+
+      - name: Check for high severity issues
+        run: |
+          bandit -r . -x tests,./tests -ll -ii -f txt
+          if bandit -r . -x tests,./tests -ll -ii -f txt | grep -q "High:"; then
+            echo "High severity security issues found!"
+            exit 1
+          fi
+
+  # ==========================================================================
+  # Dependency Vulnerability Scanning - Safety
+  # ==========================================================================
+  security-safety:
+    name: Dependency Audit (Safety)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install Safety
+        run: pip install safety
+
+      - name: Run Safety check
+        continue-on-error: true
+        run: |
+          safety check \
+            -r requirements.txt \
+            --json \
+            --output safety-results.json || true
+
+      - name: Upload Safety results
+        uses: actions/upload-artifact@v4
+        with:
+          name: safety-results
+          path: GL Agents/GL-011_FuelCraft/safety-results.json
+
+      - name: Check for critical vulnerabilities
+        run: |
+          pip install -r requirements.txt
+          safety check -r requirements.txt --short-report || echo "Vulnerabilities found - review required"
+
+  # ==========================================================================
+  # Dependency Review - GitHub Native
+  # ==========================================================================
+  dependency-review:
+    name: Dependency Review
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Dependency Review
+        uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high
+          deny-licenses: GPL-3.0, AGPL-3.0
+
+  # ==========================================================================
+  # SAST - CodeQL Analysis
+  # ==========================================================================
+  codeql-analysis:
+    name: CodeQL Analysis
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: python
+          queries: security-and-quality
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:python"
+
+  # ==========================================================================
+  # License Compliance Check
+  # ==========================================================================
+  license-check:
+    name: License Compliance
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install pip-licenses
+        run: pip install pip-licenses
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Generate license report
+        run: |
+          pip-licenses \
+            --format=json \
+            --output-file=licenses.json \
+            --with-urls \
+            --with-description
+
+      - name: Check for problematic licenses
+        run: |
+          pip-licenses --format=csv | tee licenses.csv
+          # Fail if GPL licenses are found (example - adjust as needed)
+          if grep -i "GPL" licenses.csv | grep -v "LGPL"; then
+            echo "WARNING: GPL licensed dependencies found - review required"
+          fi
+
+      - name: Upload license report
+        uses: actions/upload-artifact@v4
+        with:
+          name: license-report
+          path: |
+            GL Agents/GL-011_FuelCraft/licenses.json
+            GL Agents/GL-011_FuelCraft/licenses.csv
+
+  # ==========================================================================
+  # SBOM Generation
+  # ==========================================================================
+  sbom-generation:
+    name: SBOM Generation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Install CycloneDX
+        run: pip install cyclonedx-bom
+
+      - name: Generate CycloneDX SBOM
+        run: |
+          cyclonedx-py requirements \
+            -i requirements.txt \
+            -o sbom-cyclonedx.json \
+            --format json
+
+      - name: Upload SBOM artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-artifacts
+          path: |
+            GL Agents/GL-011_FuelCraft/sbom-cyclonedx.json
+
+  # ==========================================================================
+  # Secrets Scanning
+  # ==========================================================================
+  secrets-scan:
+    name: Secrets Scanning
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ==========================================================================
+  # Infrastructure as Code Security
+  # ==========================================================================
+  iac-security:
+    name: IaC Security (Kubernetes)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Checkov
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: GL Agents/GL-011_FuelCraft/deploy/kubernetes/
+          framework: kubernetes
+          output_format: sarif
+          output_file_path: checkov-results.sarif
+          soft_fail: true
+
+      - name: Upload Checkov results
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: checkov-results.sarif
+
+  # ==========================================================================
+  # Code Coverage Analysis
+  # ==========================================================================
+  coverage-analysis:
+    name: Code Coverage Analysis
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_DB: fuelcraft_test
+          POSTGRES_USER: fuelcraft
+          POSTGRES_PASSWORD: test_password
+        ports:
+          - 5432:5432
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+          cache-dependency-path: 'GL Agents/GL-011_FuelCraft/requirements.txt'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install pytest pytest-cov coverage
+
+      - name: Run tests with coverage
+        env:
+          DATABASE_URL: postgresql://fuelcraft:test_password@localhost:5432/fuelcraft_test
+          REDIS_URL: redis://localhost:6379/0
+          GL_TEST_MODE: "true"
+        run: |
+          pytest tests/ \
+            --cov=. \
+            --cov-report=xml \
+            --cov-report=html \
+            --cov-report=term-missing \
+            --cov-fail-under=${{ env.COVERAGE_THRESHOLD }}
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: GL Agents/GL-011_FuelCraft/htmlcov/
+
+  # ==========================================================================
+  # Quality Summary
+  # ==========================================================================
+  quality-summary:
+    name: Quality Summary
+    runs-on: ubuntu-latest
+    needs: [security-bandit, security-safety, codeql-analysis, license-check, sbom-generation, iac-security, coverage-analysis]
+    if: always()
+    steps:
+      - name: Check quality status
+        run: |
+          echo "## Quality Check Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Check | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Bandit Security | ${{ needs.security-bandit.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Safety Dependency | ${{ needs.security-safety.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| CodeQL Analysis | ${{ needs.codeql-analysis.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| License Check | ${{ needs.license-check.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| SBOM Generation | ${{ needs.sbom-generation.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| IaC Security | ${{ needs.iac-security.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Coverage Analysis | ${{ needs.coverage-analysis.result }} |" >> $GITHUB_STEP_SUMMARY

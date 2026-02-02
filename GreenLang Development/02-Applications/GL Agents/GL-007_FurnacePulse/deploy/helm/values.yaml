@@ -1,0 +1,491 @@
+# GL-007 FURNACEPULSE - Helm Chart Values
+# Furnace Performance Monitoring Agent
+#
+# Usage:
+#   helm install furnacepulse ./deploy/helm -f deploy/helm/values.yaml
+#   helm upgrade furnacepulse ./deploy/helm -f deploy/helm/values-prod.yaml
+
+# ========================================
+# Global Configuration
+# ========================================
+global:
+  environment: production
+  clusterDomain: cluster.local
+  imagePullSecrets:
+    - name: ghcr-secret
+
+# ========================================
+# Image Configuration
+# ========================================
+image:
+  repository: ghcr.io/greenlang/gl-007-furnacepulse
+  tag: "latest"
+  pullPolicy: Always
+  digest: ""  # Use digest for immutable deployments
+
+# ========================================
+# Replica Configuration
+# ========================================
+replicaCount: 2
+
+# ========================================
+# Resource Limits
+# ========================================
+resources:
+  requests:
+    cpu: "1000m"      # 1 core minimum
+    memory: "1Gi"     # 1GB minimum
+  limits:
+    cpu: "4000m"      # 4 cores maximum
+    memory: "8Gi"     # 8GB maximum
+
+# ========================================
+# Agent Configuration
+# ========================================
+agent:
+  id: "GL-007"
+  name: "FURNACEPULSE"
+  fullName: "FurnacePerformanceMonitor"
+  category: "furnaces"
+  tier: 1
+  logLevel: "INFO"
+  debug: false
+
+# ========================================
+# Application Configuration
+# ========================================
+config:
+  # Python Configuration
+  pythonPath: "/app"
+  pythonUnbuffered: "1"
+
+  # API Configuration
+  apiPort: 8080
+  metricsPort: 9090
+
+  # Processing Configuration
+  processingThreads: 4
+  maxQueueSize: 10000
+  batchSize: 100
+
+# ========================================
+# Kafka Configuration
+# ========================================
+kafka:
+  enabled: true
+  bootstrapServers: "kafka:9092"
+  consumerGroup: "furnacepulse-consumer"
+  autoOffsetReset: "latest"
+  enableAutoCommit: false
+  sessionTimeoutMs: 30000
+  heartbeatIntervalMs: 10000
+
+  # Topic Configuration
+  topics:
+    telemetryRaw: "furnacepulse.telemetry.raw"
+    telemetryCanonical: "furnacepulse.telemetry.canonical"
+    alerts: "furnacepulse.alerts.generated"
+    kpis: "furnacepulse.kpis.calculated"
+    rul: "furnacepulse.rul.predictions"
+    compliance: "furnacepulse.compliance.events"
+    hotspots: "furnacepulse.hotspots.detected"
+
+  # Kafka Security (optional)
+  security:
+    enabled: false
+    protocol: "SASL_SSL"
+    mechanism: "SCRAM-SHA-512"
+    # Credentials from secret
+    secretName: "kafka-credentials"
+    usernameKey: "username"
+    passwordKey: "password"
+
+# ========================================
+# OPC-UA Configuration
+# ========================================
+opcua:
+  enabled: true
+  endpoint: "opc.tcp://opcua-gateway:4840"
+  securityPolicy: "Basic256Sha256"
+  messageSecurityMode: "SignAndEncrypt"
+  subscriptionIntervalMs: 1000
+  publishingIntervalMs: 1000
+  samplingIntervalMs: 500
+  queueSize: 10
+
+  # OPC-UA Authentication
+  authentication:
+    type: "username"  # none, username, certificate
+    # Credentials from secret
+    secretName: "opcua-credentials"
+    usernameKey: "username"
+    passwordKey: "password"
+
+  # Certificate Configuration
+  certificates:
+    enabled: false
+    secretName: "opcua-certificates"
+    certKey: "client.crt"
+    keyKey: "client.key"
+    caKey: "ca.crt"
+
+  # Node Subscriptions
+  nodes:
+    - prefix: "ns=2;s=Furnace.Temperature"
+    - prefix: "ns=2;s=Furnace.TMT"
+    - prefix: "ns=2;s=Furnace.Draft"
+    - prefix: "ns=2;s=Furnace.Fuel"
+    - prefix: "ns=2;s=Furnace.Flame"
+
+# ========================================
+# CMMS Integration
+# ========================================
+cmms:
+  enabled: true
+  url: "https://cmms.example.com"
+  apiVersion: "v1"
+  timeout: 30
+  retryAttempts: 3
+  retryDelayMs: 1000
+
+  # Authentication
+  authentication:
+    type: "apiKey"  # apiKey, oauth2, basic
+    # Credentials from secret
+    secretName: "cmms-credentials"
+    apiKeyKey: "api-key"
+
+  # Sync Configuration
+  sync:
+    workOrdersEnabled: true
+    assetsEnabled: true
+    maintenanceSchedulesEnabled: true
+    syncIntervalMinutes: 15
+
+# ========================================
+# Database Configuration
+# ========================================
+database:
+  type: "timescaledb"
+  host: "timescaledb"
+  port: 5432
+  name: "furnacepulse"
+  sslMode: "require"
+  maxConnections: 20
+  minConnections: 5
+  connectionTimeoutSeconds: 30
+
+  # Credentials from secret
+  secretName: "database-credentials"
+  usernameKey: "username"
+  passwordKey: "password"
+
+# ========================================
+# Redis Configuration
+# ========================================
+redis:
+  enabled: true
+  host: "redis"
+  port: 6379
+  database: 0
+  maxConnections: 10
+  connectTimeout: 5
+
+  # Optional authentication
+  auth:
+    enabled: false
+    secretName: "redis-credentials"
+    passwordKey: "password"
+
+# ========================================
+# Monitoring Configuration
+# ========================================
+monitoring:
+  # Prometheus Metrics
+  metrics:
+    enabled: true
+    port: 9090
+    path: "/metrics"
+    serviceMonitor:
+      enabled: true
+      interval: 30s
+      scrapeTimeout: 10s
+      labels:
+        release: prometheus
+
+  # Health Checks
+  health:
+    enabled: true
+    port: 8080
+    livenessPath: "/api/v1/health"
+    readinessPath: "/api/v1/ready"
+
+  # Alerting
+  alerting:
+    enabled: true
+    webhookUrl: ""  # From secret
+    channels:
+      - type: "log"
+      - type: "webhook"
+      - type: "cmms"
+
+# ========================================
+# Safety Configuration (NFPA 86 / API 560)
+# ========================================
+safety:
+  # TMT (Tube Metal Temperature) Limits
+  tmtMaxLimitC: 950
+  tmtRateOfRiseLimitCMin: 10
+
+  # Draft Pressure Limits
+  draftMinPa: -250
+  draftMaxPa: 25
+
+  # Combustion Limits
+  excessAirMinPercent: 10
+  excessAirMaxPercent: 30
+  stackTempMaxC: 450
+
+  # NFPA 86 Compliance
+  nfpa86:
+    flameSupervision: true
+    combustionAirInterlock: true
+    fuelShutoffInterlock: true
+    purgeVerification: true
+    emergencyShutdown: true
+
+  # HAZOP Integration
+  hazop:
+    enabled: true
+    deviationTracking: true
+    consequenceAnalysis: true
+
+  # LOPA Layers
+  lopaLayers:
+    - "BPCS"
+    - "OperatorResponse"
+    - "SIF"
+    - "MechanicalRelief"
+    - "EmergencyShutdown"
+
+# ========================================
+# Autoscaling Configuration
+# ========================================
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Pods
+          value: 1
+          periodSeconds: 60
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+        - type: Pods
+          value: 2
+          periodSeconds: 30
+        - type: Percent
+          value: 100
+          periodSeconds: 30
+
+# ========================================
+# Pod Disruption Budget
+# ========================================
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+
+# ========================================
+# Network Policy (OT/IT Segmentation)
+# ========================================
+networkPolicy:
+  enabled: true
+
+  # Ingress Rules
+  ingress:
+    # Allow from ingress controller
+    - namespaceSelector:
+        matchLabels:
+          name: ingress-nginx
+      ports:
+        - port: 8080
+    # Allow from Prometheus
+    - namespaceSelector:
+        matchLabels:
+          name: monitoring
+      ports:
+        - port: 9090
+
+  # Egress Rules
+  egress:
+    # DNS
+    - ports:
+        - port: 53
+          protocol: UDP
+    # Kafka
+    - namespaceSelector:
+        matchLabels:
+          name: kafka
+      ports:
+        - port: 9092
+    # Database
+    - namespaceSelector:
+        matchLabels:
+          name: databases
+      ports:
+        - port: 5432
+    # OPC-UA Gateway
+    - namespaceSelector:
+        matchLabels:
+          name: ot-gateway
+      ports:
+        - port: 4840
+
+# ========================================
+# Service Configuration
+# ========================================
+service:
+  type: ClusterIP
+  port: 8080
+  metricsPort: 9090
+  annotations: {}
+
+# ========================================
+# Ingress Configuration
+# ========================================
+ingress:
+  enabled: false
+  className: "nginx"
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+  hosts:
+    - host: furnacepulse.greenlang.io
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - hosts:
+        - furnacepulse.greenlang.io
+      secretName: gl-007-furnacepulse-tls
+
+# ========================================
+# ServiceAccount Configuration
+# ========================================
+serviceAccount:
+  create: true
+  name: "gl-007-furnacepulse-sa"
+  annotations: {}
+
+# ========================================
+# Pod Security Configuration
+# ========================================
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
+  fsGroup: 1000
+  seccompProfile:
+    type: RuntimeDefault
+
+containerSecurityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL
+
+# ========================================
+# Probes Configuration
+# ========================================
+probes:
+  liveness:
+    enabled: true
+    initialDelaySeconds: 30
+    periodSeconds: 30
+    timeoutSeconds: 10
+    failureThreshold: 3
+    successThreshold: 1
+
+  readiness:
+    enabled: true
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+    successThreshold: 1
+
+  startup:
+    enabled: true
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 30
+
+# ========================================
+# Node Selection
+# ========================================
+nodeSelector: {}
+
+tolerations: []
+
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchLabels:
+              app: gl-007-furnacepulse
+          topologyKey: kubernetes.io/hostname
+
+topologySpreadConstraints:
+  - maxSkew: 1
+    topologyKey: topology.kubernetes.io/zone
+    whenUnsatisfiable: ScheduleAnyway
+    labelSelector:
+      matchLabels:
+        app: gl-007-furnacepulse
+
+# ========================================
+# Extra Environment Variables
+# ========================================
+extraEnv: []
+# - name: CUSTOM_VAR
+#   value: "custom-value"
+
+# ========================================
+# Extra Volume Mounts
+# ========================================
+extraVolumeMounts: []
+# - name: custom-config
+#   mountPath: /app/config
+
+extraVolumes: []
+# - name: custom-config
+#   configMap:
+#     name: custom-config
+
+# ========================================
+# Annotations
+# ========================================
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "9090"
+  prometheus.io/path: "/metrics"
+
+# ========================================
+# Labels
+# ========================================
+additionalLabels:
+  agent-id: "GL-007"
+  agent-class: "monitor"
+  domain: "furnaces"

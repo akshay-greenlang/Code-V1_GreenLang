@@ -1,0 +1,327 @@
+# ==============================================================================
+# GL-VCCI Resource Quotas and Limits
+# Prevents resource exhaustion and ensures fair resource allocation
+# ==============================================================================
+
+# ==============================================================================
+# Resource Quota - Production Namespace
+# ==============================================================================
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: vcci-production-quota
+  namespace: vcci-production
+  labels:
+    app.kubernetes.io/name: gl-vcci
+    app.kubernetes.io/component: resource-management
+spec:
+  hard:
+    # Compute Resources
+    requests.cpu: "100"           # Total CPU requests
+    requests.memory: "200Gi"      # Total memory requests
+    limits.cpu: "200"             # Total CPU limits
+    limits.memory: "400Gi"        # Total memory limits
+
+    # Storage
+    requests.storage: "500Gi"     # Total storage requests
+    persistentvolumeclaims: "20"  # Max number of PVCs
+
+    # Object Counts
+    pods: "100"                   # Max number of pods
+    services: "30"                # Max number of services
+    configmaps: "50"              # Max number of ConfigMaps
+    secrets: "50"                 # Max number of Secrets
+    services.loadbalancers: "5"   # Max number of LoadBalancer services
+    services.nodeports: "10"      # Max number of NodePort services
+
+---
+# ==============================================================================
+# Resource Quota - Staging Namespace
+# ==============================================================================
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: vcci-staging-quota
+  namespace: vcci-staging
+  labels:
+    app.kubernetes.io/name: gl-vcci
+    app.kubernetes.io/component: resource-management
+spec:
+  hard:
+    # Compute Resources (50% of production)
+    requests.cpu: "50"
+    requests.memory: "100Gi"
+    limits.cpu: "100"
+    limits.memory: "200Gi"
+
+    # Storage
+    requests.storage: "250Gi"
+    persistentvolumeclaims: "15"
+
+    # Object Counts
+    pods: "50"
+    services: "20"
+    configmaps: "30"
+    secrets: "30"
+    services.loadbalancers: "2"
+    services.nodeports: "5"
+
+---
+# ==============================================================================
+# Resource Quota - Development Namespace
+# ==============================================================================
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: vcci-dev-quota
+  namespace: vcci-dev
+  labels:
+    app.kubernetes.io/name: gl-vcci
+    app.kubernetes.io/component: resource-management
+spec:
+  hard:
+    # Compute Resources (25% of production)
+    requests.cpu: "25"
+    requests.memory: "50Gi"
+    limits.cpu: "50"
+    limits.memory: "100Gi"
+
+    # Storage
+    requests.storage: "100Gi"
+    persistentvolumeclaims: "10"
+
+    # Object Counts
+    pods: "30"
+    services: "15"
+    configmaps: "20"
+    secrets: "20"
+    services.loadbalancers: "1"
+    services.nodeports: "3"
+
+---
+# ==============================================================================
+# LimitRange - Production Namespace
+# ==============================================================================
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: vcci-production-limitrange
+  namespace: vcci-production
+  labels:
+    app.kubernetes.io/name: gl-vcci
+    app.kubernetes.io/component: resource-management
+spec:
+  limits:
+    # Container Limits
+    - type: Container
+      max:
+        cpu: "8"          # Max CPU per container
+        memory: "16Gi"    # Max memory per container
+      min:
+        cpu: "100m"       # Min CPU per container
+        memory: "128Mi"   # Min memory per container
+      default:
+        cpu: "1"          # Default CPU limit
+        memory: "2Gi"     # Default memory limit
+      defaultRequest:
+        cpu: "500m"       # Default CPU request
+        memory: "1Gi"     # Default memory request
+      maxLimitRequestRatio:
+        cpu: "4"          # Max ratio of limit to request (limit <= 4 * request)
+        memory: "2"       # Max ratio of limit to request
+
+    # Pod Limits
+    - type: Pod
+      max:
+        cpu: "32"         # Max CPU per pod (all containers combined)
+        memory: "64Gi"    # Max memory per pod
+
+    # PersistentVolumeClaim Limits
+    - type: PersistentVolumeClaim
+      max:
+        storage: "100Gi"  # Max storage per PVC
+      min:
+        storage: "1Gi"    # Min storage per PVC
+
+---
+# ==============================================================================
+# LimitRange - Staging Namespace
+# ==============================================================================
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: vcci-staging-limitrange
+  namespace: vcci-staging
+  labels:
+    app.kubernetes.io/name: gl-vcci
+    app.kubernetes.io/component: resource-management
+spec:
+  limits:
+    # Container Limits
+    - type: Container
+      max:
+        cpu: "4"
+        memory: "8Gi"
+      min:
+        cpu: "50m"
+        memory: "64Mi"
+      default:
+        cpu: "500m"
+        memory: "1Gi"
+      defaultRequest:
+        cpu: "250m"
+        memory: "512Mi"
+      maxLimitRequestRatio:
+        cpu: "4"
+        memory: "2"
+
+    # Pod Limits
+    - type: Pod
+      max:
+        cpu: "16"
+        memory: "32Gi"
+
+    # PersistentVolumeClaim Limits
+    - type: PersistentVolumeClaim
+      max:
+        storage: "50Gi"
+      min:
+        storage: "1Gi"
+
+---
+# ==============================================================================
+# LimitRange - Development Namespace
+# ==============================================================================
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: vcci-dev-limitrange
+  namespace: vcci-dev
+  labels:
+    app.kubernetes.io/name: gl-vcci
+    app.kubernetes.io/component: resource-management
+spec:
+  limits:
+    # Container Limits
+    - type: Container
+      max:
+        cpu: "2"
+        memory: "4Gi"
+      min:
+        cpu: "50m"
+        memory: "64Mi"
+      default:
+        cpu: "250m"
+        memory: "512Mi"
+      defaultRequest:
+        cpu: "100m"
+        memory: "256Mi"
+      maxLimitRequestRatio:
+        cpu: "4"
+        memory: "2"
+
+    # Pod Limits
+    - type: Pod
+      max:
+        cpu: "8"
+        memory: "16Gi"
+
+    # PersistentVolumeClaim Limits
+    - type: PersistentVolumeClaim
+      max:
+        storage: "20Gi"
+      min:
+        storage: "1Gi"
+
+---
+# ==============================================================================
+# Priority Classes
+# ==============================================================================
+
+# High Priority - Critical Services (Database, Cache)
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: vcci-high-priority
+  labels:
+    app.kubernetes.io/name: gl-vcci
+value: 1000000
+globalDefault: false
+description: "High priority for critical services like databases"
+
+---
+# Medium Priority - Application Services (API, Workers)
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: vcci-medium-priority
+  labels:
+    app.kubernetes.io/name: gl-vcci
+value: 100000
+globalDefault: false
+description: "Medium priority for application services"
+
+---
+# Low Priority - Non-Critical Services (Monitoring, Logging)
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: vcci-low-priority
+  labels:
+    app.kubernetes.io/name: gl-vcci
+value: 10000
+globalDefault: false
+description: "Low priority for non-critical services"
+
+---
+# ==============================================================================
+# NOTES ON RESOURCE QUOTAS AND LIMITS
+# ==============================================================================
+#
+# 1. Resource Quota:
+#    - Namespace-level constraints on total resource consumption
+#    - Prevents resource exhaustion
+#    - Requires all pods to have resource requests/limits defined
+#
+# 2. LimitRange:
+#    - Default resource limits for containers/pods without explicit limits
+#    - Min/max constraints on individual resources
+#    - Prevents single pod from consuming too many resources
+#
+# 3. Priority Classes:
+#    - Determines pod scheduling and eviction order
+#    - Higher value = higher priority
+#    - Use for critical services that should not be evicted
+#
+# 4. Best Practices:
+#    - Always set requests and limits for production workloads
+#    - requests: Guaranteed resources (used for scheduling)
+#    - limits: Maximum resources (enforced by kernel)
+#    - Keep limit/request ratio reasonable (2-4x)
+#    - Monitor actual usage and adjust quotas accordingly
+#
+# 5. Resource Units:
+#    CPU:
+#      - 1 = 1 CPU core
+#      - 100m = 0.1 CPU core (100 millicores)
+#      - 1000m = 1 CPU core
+#    Memory:
+#      - Ki, Mi, Gi, Ti (binary)
+#      - K, M, G, T (decimal)
+#
+# 6. Monitoring Quotas:
+#    kubectl describe quota -n vcci-production
+#    kubectl describe limitrange -n vcci-production
+#    kubectl get resourcequota --all-namespaces
+#
+# 7. Common Issues:
+#    - Pod creation blocked: Quota exceeded or no resources defined
+#    - OOMKilled: Memory limit too low
+#    - CPU throttling: CPU limit too restrictive
+#
+# 8. Tuning Guidelines:
+#    Backend API: 500m-2 CPU, 1-4Gi memory
+#    Worker: 1-4 CPU, 2-8Gi memory (ML workloads need more)
+#    Frontend: 100m-500m CPU, 256Mi-1Gi memory
+#    Database: 2-8 CPU, 4-32Gi memory
+#    Cache: 500m-2 CPU, 1-8Gi memory

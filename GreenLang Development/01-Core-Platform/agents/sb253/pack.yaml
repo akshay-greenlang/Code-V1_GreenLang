@@ -1,0 +1,315 @@
+# SB 253 Climate Disclosure Agent Pack
+# =====================================
+#
+# California SB 253 (Climate Corporate Data Accountability Act) compliance agent.
+# Calculates Scope 1, 2, and 3 GHG emissions aligned with GHG Protocol standards.
+#
+# Deadlines:
+#   - June 30, 2026: Scope 1 & 2 reporting
+#   - June 30, 2027: Scope 3 reporting
+#
+# Version: 1.0.0
+# Date: 2025-12-04
+
+pack_id: gl-sb253-disclosure
+name: "California SB 253 Climate Disclosure Agent"
+version: "1.0.0"
+description: |
+  Automated GHG emissions calculation, verification, and reporting for
+  California SB 253 (Climate Corporate Data Accountability Act) compliance.
+
+  Key Features:
+    - Scope 1, 2, 3 calculations aligned with GHG Protocol
+    - California-specific grid factors (CAMX)
+    - Third-party assurance-ready audit trails
+    - CARB portal integration
+    - Multi-state support (CA, CO, WA)
+
+author: GreenLang Framework Team
+license: Proprietary
+min_greenlang_version: "0.5.0"
+
+# Regulatory Context
+regulatory_context:
+  regulation: "California SB 253 (Climate Corporate Data Accountability Act)"
+  jurisdiction: California
+  effective_date: "2024-01-01"
+  first_reporting_scope_1_2: "2026-06-30"
+  first_reporting_scope_3: "2027-06-30"
+  enforcement_agency: "California Air Resources Board (CARB)"
+
+  applicability:
+    revenue_threshold: 1000000000  # $1B+
+    criteria: "Doing business in California"
+    estimated_companies: 5400
+
+  assurance_requirements:
+    limited_assurance_start: 2026
+    reasonable_assurance_start: 2030
+    standards:
+      - ISAE 3410
+      - AT-C Section 105
+
+  penalties:
+    maximum_per_year: 500000
+
+# Agent Pipeline (5 agents)
+agents:
+  - id: data_collection_agent
+    name: "Data Collection Agent"
+    type: data_ingestion
+    priority: P0
+    description: "Automated Scope 1, 2, 3 data collection from ERP and utility APIs"
+    inputs:
+      - erp_connectors
+      - utility_apis
+      - travel_systems
+    outputs:
+      - fuel_consumption_data
+      - electricity_usage_data
+      - supply_chain_data
+
+  - id: calculation_agent
+    name: "GHG Calculation Agent"
+    type: calculator
+    priority: P0
+    description: "GHG Protocol calculations with zero hallucination"
+    methodology:
+      scope_1: "GHG Protocol Corporate Standard Chapter 4"
+      scope_2: "GHG Protocol Scope 2 Guidance 2015"
+      scope_3: "GHG Protocol Scope 3 Standard 2011"
+    outputs:
+      - scope_1_emissions
+      - scope_2_location_based
+      - scope_2_market_based
+      - scope_3_by_category
+
+  - id: assurance_ready_agent
+    name: "Assurance Ready Agent"
+    type: verification
+    priority: P0
+    description: "Complete audit trails for third-party assurance"
+    features:
+      - sha256_provenance_tracking
+      - complete_calculation_logs
+      - emission_factor_documentation
+      - reproducible_calculations
+
+  - id: multi_state_filing_agent
+    name: "Multi-State Filing Agent"
+    type: filing
+    priority: P1
+    description: "File to California CARB, Colorado CDPHE, Washington ECY"
+    portals:
+      - california_carb
+      - colorado_cdphe
+      - washington_ecology
+
+  - id: third_party_assurance_agent
+    name: "Third-Party Assurance Agent"
+    type: audit
+    priority: P1
+    description: "Generate audit packages for Big 4 verification"
+    supported_verifiers:
+      - Deloitte
+      - EY
+      - PwC
+      - KPMG
+
+# Tools
+tools:
+  - name: scope1_calculator
+    type: calculator
+    source: calculators/sb253/scope1
+    description: "Calculate Scope 1 direct emissions"
+    inputs: ["fuel_consumption", "refrigerant_data", "process_data"]
+    outputs: ["scope_1_emissions"]
+
+  - name: scope2_calculator
+    type: calculator
+    source: calculators/sb253/scope2
+    description: "Calculate Scope 2 indirect emissions (location and market-based)"
+    inputs: ["electricity_usage", "egrid_factors", "market_instruments"]
+    outputs: ["scope_2_location", "scope_2_market"]
+
+  - name: scope3_calculator
+    type: calculator
+    source: calculators/sb253/scope3
+    description: "Calculate Scope 3 value chain emissions (all 15 categories)"
+    inputs: ["supply_chain_data"]
+    outputs: ["scope_3_by_category"]
+
+  - name: egrid_factor_lookup
+    type: data_lookup
+    source: emission_factors/sb253/california_grid_factors
+    description: "Retrieve EPA eGRID emission factors by subregion"
+    key_factor: "CAMX (California): 0.254 kg CO2e/kWh"
+
+  - name: carb_filing_generator
+    type: report_generator
+    source: reports/sb253/carb_filing_generator
+    description: "Generate CARB SB 253 filing report"
+    outputs: ["sb253_report", "filing_xml", "filing_json"]
+
+  - name: assurance_package_generator
+    type: report_generator
+    source: reports/sb253/assurance_package_generator
+    description: "Generate third-party assurance package"
+    standard: "ISAE 3410"
+
+  - name: provenance_tracker
+    type: utility
+    source: provenance/sb253/audit_trail
+    description: "Track SHA-256 provenance for all calculations"
+
+# Datasets
+datasets:
+  - id: epa_egrid_2023
+    name: "EPA eGRID 2023"
+    source: "https://www.epa.gov/egrid"
+    description: "US electricity grid emission factors by subregion"
+    data_year: 2022
+    last_updated: "2024-11-01"
+    key_california_factor: 0.254
+
+  - id: epa_ghg_ef_hub_2024
+    name: "EPA GHG Emission Factors Hub 2024"
+    source: "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+    description: "Fuel combustion emission factors"
+    key_factors:
+      natural_gas: "5.30 kg CO2e/therm"
+      diesel: "10.21 kg CO2e/gallon"
+      gasoline: "8.78 kg CO2e/gallon"
+
+  - id: ipcc_ar6_gwp
+    name: "IPCC AR6 GWP-100 Values"
+    source: "https://www.ipcc.ch/assessment-report/ar6/"
+    description: "Global Warming Potentials for refrigerants"
+    key_values:
+      r134a: 1530
+      r410a: 2088
+
+  - id: epa_eeio
+    name: "EPA EEIO"
+    source: "https://www.epa.gov/land-research/us-environmentally-extended-input-output-useeio-technical-content"
+    description: "Spend-based emission factors by NAICS code"
+
+# Evaluation Requirements
+evaluation:
+  golden_tests:
+    total_count: 300
+    categories:
+      scope_1: 60
+      scope_2: 70
+      scope_3: 120
+      verification: 50
+
+  accuracy_thresholds:
+    scope_1: 0.01  # +/- 1%
+    scope_2: 0.02  # +/- 2%
+    scope_3: 0.05  # +/- 5%
+
+  benchmarks:
+    latency_p95_seconds: 30
+    cost_per_analysis_usd: 0.50
+
+  domain_validation:
+    validator: "GHGProtocolValidator"
+    compliance_checks:
+      - scope_1_methodology
+      - scope_2_dual_reporting
+      - scope_3_completeness
+      - organizational_boundary
+      - audit_trail_completeness
+
+# Certification Requirements
+certification:
+  required_approvals:
+    - climate_science_team
+    - compliance_team
+    - security_team
+
+  compliance_checks:
+    - ghg_protocol_alignment
+    - sb253_requirements
+    - assurance_readiness
+    - carb_schema_compliance
+
+  deployment_gates:
+    - golden_test_pass_rate: 100%
+    - security_scan: "no_critical_issues"
+    - performance_benchmark: "meets_targets"
+    - documentation: "complete"
+
+# Multi-State Support
+multi_state_support:
+  california_sb253:
+    threshold: "$1B revenue doing business in CA"
+    first_reporting: "2026-06-30"
+    scope_coverage: ["1", "2", "3"]
+
+  colorado_sb23_016:
+    threshold: "$500M revenue, 500+ employees in CO"
+    first_reporting: "2028"
+    scope_coverage: ["1", "2", "3"]
+
+  washington_hb1589:
+    status: "proposed"
+    threshold: "$1B revenue"
+
+# Development Timeline
+development:
+  total_weeks: 36
+  phases:
+    q4_2025:
+      weeks: "1-8"
+      focus: "California CARB portal integration"
+      deliverables:
+        - CARB schema mapping
+        - Filing XML generator
+        - Scope 1 & 2 calculators
+
+    q1_2026:
+      weeks: "9-20"
+      focus: "Multi-state compliance engine"
+      deliverables:
+        - Colorado portal integration
+        - Washington portal integration
+        - Unified data model
+
+    q2_2026:
+      weeks: "21-28"
+      focus: "Third-party assurance module"
+      deliverables:
+        - Assurance package generator
+        - Big 4 audit support
+        - DQI scoring
+
+    q3_2026:
+      weeks: "29-36"
+      focus: "Beta with pilot companies"
+      deliverables:
+        - 10 California company pilots
+        - Production deployment
+
+# Success Metrics
+success_metrics:
+  technical:
+    calculation_accuracy_scope1: "+/- 1%"
+    calculation_accuracy_scope2: "+/- 2%"
+    calculation_accuracy_scope3: "+/- 5%"
+    audit_trail_completeness: "100%"
+    golden_test_pass_rate: "100%"
+    system_uptime: "99.9%"
+
+  business:
+    filing_compliance: "100% on-time filings"
+    assurance_pass_rate: "95%+ first-time pass"
+    customer_satisfaction: "4.5/5 rating"
+    time_to_report: "<2 weeks from data collection"
+
+  revenue:
+    year_1_customers: 50
+    year_2_customers: 500
+    year_3_customers: 2000
+    year_3_arr: "$60M"

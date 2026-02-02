@@ -315,7 +315,9 @@
       "Bash(Select-Object Name)",
       "Bash(git branch:*)",
       "Bash(pip show:*)",
-      "Bash(while read d)"
+      "Bash(while read d)",
+      "Bash(xcopy \"C:\\\\Users\\\\aksha\\\\Code-V1_GreenLang\\\\docs\\\\GL-PRD-FINAL\\\\*\" \"C:\\\\Users\\\\aksha\\\\Code-V1_GreenLang\\\\GreenLang Development\\\\05-Documentation\"\" /E /Y /I 2>nul || copy \"C:UsersakshaCode-V1_GreenLangdocsGL-PRD-FINAL*\" \"C:UsersakshaCode-V1_GreenLangGreenLang Development05-Documentation\"\")",
+      "Bash(robocopy:*)"
     ],
     "deny": [],
     "ask": []

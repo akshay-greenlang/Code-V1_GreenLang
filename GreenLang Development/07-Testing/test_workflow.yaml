@@ -1,0 +1,25 @@
+description: Comprehensive building emissions analysis
+name: commercial_building_analysis
+steps:
+- agent_id: validator
+  description: Validate input data
+  name: validate_input
+- agent_id: building_profile
+  description: Analyze building characteristics
+  name: profile_building
+- agent_id: grid_factor
+  description: Calculate emissions with regional factors
+  name: calculate_emissions
+- agent_id: intensity
+  description: Calculate intensity metrics
+  name: calculate_intensity
+- agent_id: benchmark
+  description: Compare to standards
+  name: benchmark
+- agent_id: recommendation
+  description: Generate recommendations
+  name: recommendations
+- agent_id: report
+  description: Generate final report
+  name: report
+version: 0.0.1

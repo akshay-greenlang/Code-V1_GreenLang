@@ -1,0 +1,76 @@
+# GL-014 Exchangerpro ConfigMap
+# Heat Exchanger Performance Optimization Agent Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gl-014-exchangerpro-config
+  namespace: greenlang
+  labels:
+    app: gl-014-exchangerpro
+    component: thermal-optimizer
+    agent-id: GL-014
+    codename: EXCHANGERPRO
+data:
+  # Core Agent Configuration
+  ENVIRONMENT: "production"
+  GL014_AGENT_ID: "GL-014"
+  GL014_AGENT_NAME: "Exchangerpro"
+  GL014_VERSION: "1.0.0"
+  LOG_LEVEL: "INFO"
+  TRACK_PROVENANCE: "true"
+
+  # Thermal Engine Configuration
+  THERMAL_ENGINE_VERSION: "2.0.0"
+  HEAT_TRANSFER_MODEL: "ntu-effectiveness"
+  FOULING_PREDICTION_MODEL: "ml-enhanced"
+
+  # Service URLs
+  ML_SERVICE_URL: "http://ml-inference-service.greenlang.svc.cluster.local:8080"
+  OPTIMIZER_SERVICE_URL: "http://optimizer-service.greenlang.svc.cluster.local:8080"
+
+  # Kafka Configuration
+  KAFKA_BOOTSTRAP_SERVERS: "kafka-cluster-kafka-bootstrap.kafka.svc.cluster.local:9092"
+  KAFKA_TOPIC_PREFIX: "gl014-exchangerpro"
+  KAFKA_CONSUMER_GROUP: "gl014-exchangerpro-group"
+
+  # Heat Exchanger Parameters
+  EXCHANGER_TYPES_SUPPORTED: "shell-tube,plate,air-cooled,double-pipe,spiral"
+  MONITORING_INTERVAL_SECONDS: "30"
+  THERMAL_EFFICIENCY_THRESHOLD: "0.85"
+  APPROACH_TEMPERATURE_MIN_C: "5.0"
+
+  # Fouling Detection Parameters
+  FOULING_DETECTION_ENABLED: "true"
+  FOULING_THRESHOLD_RESISTANCE: "0.0002"
+  CLEANING_RECOMMENDATION_THRESHOLD: "0.0005"
+  FOULING_PREDICTION_HORIZON_DAYS: "30"
+
+  # Optimization Parameters
+  OPTIMIZATION_OBJECTIVE: "energy-efficiency"
+  OPTIMIZATION_FREQUENCY_HOURS: "1"
+  SETPOINT_ADJUSTMENT_LIMIT_PERCENT: "10"
+  BYPASS_VALVE_OPTIMIZATION: "true"
+
+  # Safety Parameters
+  MAX_OUTLET_TEMPERATURE_C: "150.0"
+  MIN_FLOW_RATE_PERCENT: "20"
+  PRESSURE_DROP_ALARM_KPA: "50.0"
+  EMERGENCY_SHUTDOWN_ENABLED: "true"
+
+  # Feature Flags
+  FEATURE_FOULING_PREDICTION: "true"
+  FEATURE_CLEANING_SCHEDULING: "true"
+  FEATURE_PERFORMANCE_OPTIMIZATION: "true"
+  FEATURE_THERMAL_STRESS_ANALYSIS: "true"
+  FEATURE_BYPASS_OPTIMIZATION: "true"
+  FEATURE_CAUSAL_ANALYSIS: "true"
+  FEATURE_EXPLAINABLE_RECOMMENDATIONS: "true"
+
+  # Data Retention
+  DATA_RETENTION_DAYS: "90"
+  METRICS_AGGREGATION_INTERVAL: "60"
+
+  # API Configuration
+  API_RATE_LIMIT: "1000"
+  API_TIMEOUT_SECONDS: "30"
+  API_MAX_BATCH_SIZE: "100"

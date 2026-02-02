@@ -1,0 +1,28 @@
+# ============================================================================
+# Staging Environment - Ingress Patch
+# ============================================================================
+# Set staging hostname
+# ============================================================================
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: cbam-api-ingress
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  tls:
+    - hosts:
+        - cbam-staging.greenlang.io
+      secretName: cbam-api-tls-cert-staging
+  rules:
+    - host: cbam-staging.greenlang.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: cbam-api
+                port:
+                  number: 8000

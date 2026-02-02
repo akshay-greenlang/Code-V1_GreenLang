@@ -1,0 +1,207 @@
+{
+  "metadata": {
+    "description": "Sample sensor readings for GL-020 ECONOPULSE testing",
+    "version": "1.0.0",
+    "created_date": "2025-01-01",
+    "economizer_id": "ECON-001",
+    "data_source": "simulated"
+  },
+  "clean_operation_readings": [
+    {
+      "timestamp": "2025-01-01T08:00:00Z",
+      "temperatures": {
+        "gas_inlet_c": 380.0,
+        "gas_outlet_c": 175.0,
+        "water_inlet_c": 105.0,
+        "water_outlet_c": 145.0
+      },
+      "flows": {
+        "water_kg_s": 12.5,
+        "flue_gas_kg_s": 18.0
+      },
+      "quality": {
+        "gas_inlet": 0.99,
+        "gas_outlet": 0.99,
+        "water_inlet": 0.99,
+        "water_outlet": 0.99
+      }
+    },
+    {
+      "timestamp": "2025-01-01T12:00:00Z",
+      "temperatures": {
+        "gas_inlet_c": 382.0,
+        "gas_outlet_c": 176.0,
+        "water_inlet_c": 106.0,
+        "water_outlet_c": 146.0
+      },
+      "flows": {
+        "water_kg_s": 12.8,
+        "flue_gas_kg_s": 18.5
+      },
+      "quality": {
+        "gas_inlet": 0.99,
+        "gas_outlet": 0.99,
+        "water_inlet": 0.99,
+        "water_outlet": 0.99
+      }
+    },
+    {
+      "timestamp": "2025-01-01T16:00:00Z",
+      "temperatures": {
+        "gas_inlet_c": 378.0,
+        "gas_outlet_c": 174.0,
+        "water_inlet_c": 104.0,
+        "water_outlet_c": 144.0
+      },
+      "flows": {
+        "water_kg_s": 12.2,
+        "flue_gas_kg_s": 17.5
+      },
+      "quality": {
+        "gas_inlet": 0.98,
+        "gas_outlet": 0.99,
+        "water_inlet": 0.99,
+        "water_outlet": 0.98
+      }
+    }
+  ],
+  "fouled_operation_readings": [
+    {
+      "timestamp": "2025-06-01T08:00:00Z",
+      "temperatures": {
+        "gas_inlet_c": 380.0,
+        "gas_outlet_c": 210.0,
+        "water_inlet_c": 105.0,
+        "water_outlet_c": 132.0
+      },
+      "flows": {
+        "water_kg_s": 12.5,
+        "flue_gas_kg_s": 18.0
+      },
+      "quality": {
+        "gas_inlet": 0.99,
+        "gas_outlet": 0.99,
+        "water_inlet": 0.99,
+        "water_outlet": 0.99
+      },
+      "notes": "Fouled operation - reduced heat transfer"
+    }
+  ],
+  "varying_load_readings": [
+    {
+      "load_percent": 100,
+      "timestamp": "2025-01-15T10:00:00Z",
+      "temperatures": {
+        "gas_inlet_c": 380.0,
+        "gas_outlet_c": 175.0,
+        "water_inlet_c": 105.0,
+        "water_outlet_c": 145.0
+      },
+      "flows": {
+        "water_kg_s": 12.5,
+        "flue_gas_kg_s": 18.0
+      }
+    },
+    {
+      "load_percent": 75,
+      "timestamp": "2025-01-15T14:00:00Z",
+      "temperatures": {
+        "gas_inlet_c": 350.0,
+        "gas_outlet_c": 170.0,
+        "water_inlet_c": 105.0,
+        "water_outlet_c": 138.0
+      },
+      "flows": {
+        "water_kg_s": 9.5,
+        "flue_gas_kg_s": 13.5
+      }
+    },
+    {
+      "load_percent": 50,
+      "timestamp": "2025-01-15T18:00:00Z",
+      "temperatures": {
+        "gas_inlet_c": 320.0,
+        "gas_outlet_c": 165.0,
+        "water_inlet_c": 105.0,
+        "water_outlet_c": 130.0
+      },
+      "flows": {
+        "water_kg_s": 6.5,
+        "flue_gas_kg_s": 9.0
+      }
+    },
+    {
+      "load_percent": 25,
+      "timestamp": "2025-01-15T22:00:00Z",
+      "temperatures": {
+        "gas_inlet_c": 280.0,
+        "gas_outlet_c": 160.0,
+        "water_inlet_c": 105.0,
+        "water_outlet_c": 120.0
+      },
+      "flows": {
+        "water_kg_s": 3.5,
+        "flue_gas_kg_s": 4.5
+      }
+    }
+  ],
+  "time_series_readings": {
+    "description": "Hourly readings over 24 hours",
+    "interval_minutes": 60,
+    "readings": [
+      {"hour": 0, "gas_inlet_c": 375.0, "gas_outlet_c": 172.0, "water_inlet_c": 104.0, "water_outlet_c": 142.0},
+      {"hour": 1, "gas_inlet_c": 374.0, "gas_outlet_c": 171.0, "water_inlet_c": 104.0, "water_outlet_c": 141.0},
+      {"hour": 2, "gas_inlet_c": 372.0, "gas_outlet_c": 170.0, "water_inlet_c": 103.0, "water_outlet_c": 140.0},
+      {"hour": 3, "gas_inlet_c": 370.0, "gas_outlet_c": 169.0, "water_inlet_c": 103.0, "water_outlet_c": 139.0},
+      {"hour": 4, "gas_inlet_c": 368.0, "gas_outlet_c": 168.0, "water_inlet_c": 103.0, "water_outlet_c": 138.0},
+      {"hour": 5, "gas_inlet_c": 370.0, "gas_outlet_c": 169.0, "water_inlet_c": 103.0, "water_outlet_c": 139.0},
+      {"hour": 6, "gas_inlet_c": 375.0, "gas_outlet_c": 172.0, "water_inlet_c": 104.0, "water_outlet_c": 142.0},
+      {"hour": 7, "gas_inlet_c": 380.0, "gas_outlet_c": 175.0, "water_inlet_c": 105.0, "water_outlet_c": 145.0},
+      {"hour": 8, "gas_inlet_c": 382.0, "gas_outlet_c": 176.0, "water_inlet_c": 106.0, "water_outlet_c": 146.0},
+      {"hour": 9, "gas_inlet_c": 385.0, "gas_outlet_c": 178.0, "water_inlet_c": 107.0, "water_outlet_c": 148.0},
+      {"hour": 10, "gas_inlet_c": 388.0, "gas_outlet_c": 180.0, "water_inlet_c": 108.0, "water_outlet_c": 150.0},
+      {"hour": 11, "gas_inlet_c": 390.0, "gas_outlet_c": 181.0, "water_inlet_c": 108.0, "water_outlet_c": 151.0},
+      {"hour": 12, "gas_inlet_c": 388.0, "gas_outlet_c": 180.0, "water_inlet_c": 108.0, "water_outlet_c": 150.0},
+      {"hour": 13, "gas_inlet_c": 386.0, "gas_outlet_c": 179.0, "water_inlet_c": 107.0, "water_outlet_c": 149.0},
+      {"hour": 14, "gas_inlet_c": 385.0, "gas_outlet_c": 178.0, "water_inlet_c": 107.0, "water_outlet_c": 148.0},
+      {"hour": 15, "gas_inlet_c": 383.0, "gas_outlet_c": 177.0, "water_inlet_c": 106.0, "water_outlet_c": 147.0},
+      {"hour": 16, "gas_inlet_c": 382.0, "gas_outlet_c": 176.0, "water_inlet_c": 106.0, "water_outlet_c": 146.0},
+      {"hour": 17, "gas_inlet_c": 380.0, "gas_outlet_c": 175.0, "water_inlet_c": 105.0, "water_outlet_c": 145.0},
+      {"hour": 18, "gas_inlet_c": 378.0, "gas_outlet_c": 174.0, "water_inlet_c": 105.0, "water_outlet_c": 144.0},
+      {"hour": 19, "gas_inlet_c": 377.0, "gas_outlet_c": 173.0, "water_inlet_c": 104.0, "water_outlet_c": 143.0},
+      {"hour": 20, "gas_inlet_c": 376.0, "gas_outlet_c": 172.0, "water_inlet_c": 104.0, "water_outlet_c": 142.0},
+      {"hour": 21, "gas_inlet_c": 375.0, "gas_outlet_c": 172.0, "water_inlet_c": 104.0, "water_outlet_c": 142.0},
+      {"hour": 22, "gas_inlet_c": 374.0, "gas_outlet_c": 171.0, "water_inlet_c": 104.0, "water_outlet_c": 141.0},
+      {"hour": 23, "gas_inlet_c": 373.0, "gas_outlet_c": 170.0, "water_inlet_c": 103.0, "water_outlet_c": 140.0}
+    ]
+  },
+  "asme_ptc_43_validation": {
+    "description": "Reference cases for ASME PTC 4.3 validation",
+    "cases": [
+      {
+        "name": "Counter Flow Standard",
+        "flow_arrangement": "counter_flow",
+        "gas_inlet_c": 400.0,
+        "gas_outlet_c": 200.0,
+        "water_inlet_c": 120.0,
+        "water_outlet_c": 180.0,
+        "gas_flow_kg_s": 20.0,
+        "water_flow_kg_s": 15.0,
+        "expected_lmtd_c": 138.26,
+        "expected_heat_duty_kw": 3780.0
+      },
+      {
+        "name": "Parallel Flow Standard",
+        "flow_arrangement": "parallel_flow",
+        "gas_inlet_c": 350.0,
+        "gas_outlet_c": 180.0,
+        "water_inlet_c": 100.0,
+        "water_outlet_c": 150.0,
+        "gas_flow_kg_s": 18.0,
+        "water_flow_kg_s": 12.0,
+        "expected_lmtd_c": 102.85,
+        "expected_heat_duty_kw": 2514.0
+      }
+    ]
+  }
+}

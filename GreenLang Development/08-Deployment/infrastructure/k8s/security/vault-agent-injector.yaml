@@ -1,0 +1,735 @@
+# Vault Agent Injector for GreenLang Process Heat Platform
+# TASK-154/155: Sidecar injection for automatic secrets management
+# Provides automatic secret injection and refresh for Process Heat pods
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: vault
+  labels:
+    app.kubernetes.io/name: vault
+    app.kubernetes.io/part-of: greenlang-security
+
+---
+# Service Account for Vault Agent Injector
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: vault-agent-injector
+  namespace: vault
+  labels:
+    app.kubernetes.io/name: vault-agent-injector
+    app.kubernetes.io/component: injector
+
+---
+# ClusterRole for Vault Agent Injector
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: vault-agent-injector
+  labels:
+    app.kubernetes.io/name: vault-agent-injector
+rules:
+  - apiGroups: ["admissionregistration.k8s.io"]
+    resources: ["mutatingwebhookconfigurations"]
+    verbs: ["get", "list", "watch", "patch"]
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["create", "patch"]
+
+---
+# ClusterRoleBinding for Vault Agent Injector
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: vault-agent-injector
+  labels:
+    app.kubernetes.io/name: vault-agent-injector
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: vault-agent-injector
+subjects:
+  - kind: ServiceAccount
+    name: vault-agent-injector
+    namespace: vault
+
+---
+# Service for Vault Agent Injector webhook
+apiVersion: v1
+kind: Service
+metadata:
+  name: vault-agent-injector-svc
+  namespace: vault
+  labels:
+    app.kubernetes.io/name: vault-agent-injector
+    app.kubernetes.io/component: injector
+spec:
+  type: ClusterIP
+  ports:
+    - name: https
+      port: 443
+      targetPort: 8080
+      protocol: TCP
+  selector:
+    app.kubernetes.io/name: vault-agent-injector
+
+---
+# Deployment for Vault Agent Injector
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vault-agent-injector
+  namespace: vault
+  labels:
+    app.kubernetes.io/name: vault-agent-injector
+    app.kubernetes.io/component: injector
+    app.kubernetes.io/part-of: greenlang-security
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: vault-agent-injector
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: vault-agent-injector
+        app.kubernetes.io/component: injector
+    spec:
+      serviceAccountName: vault-agent-injector
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/name: vault-agent-injector
+                topologyKey: kubernetes.io/hostname
+
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 100
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+
+      containers:
+        - name: injector
+          image: hashicorp/vault-k8s:1.3.1
+          imagePullPolicy: IfNotPresent
+
+          args:
+            - agent-inject
+            - 2>&1
+
+          env:
+            - name: AGENT_INJECT_LISTEN
+              value: ":8080"
+            - name: AGENT_INJECT_LOG_LEVEL
+              value: "info"
+            - name: AGENT_INJECT_LOG_FORMAT
+              value: "json"
+            - name: AGENT_INJECT_VAULT_ADDR
+              value: "https://vault.vault.svc.cluster.local:8200"
+            - name: AGENT_INJECT_VAULT_AUTH_PATH
+              value: "auth/kubernetes"
+            - name: AGENT_INJECT_VAULT_IMAGE
+              value: "hashicorp/vault:1.15.4"
+            - name: AGENT_INJECT_TLS_AUTO
+              value: "vault-agent-injector-cfg"
+            - name: AGENT_INJECT_TLS_AUTO_HOSTS
+              value: "vault-agent-injector-svc,vault-agent-injector-svc.vault,vault-agent-injector-svc.vault.svc"
+            - name: AGENT_INJECT_USE_LEADER_ELECTOR
+              value: "true"
+            - name: AGENT_INJECT_DEFAULT_TEMPLATE
+              value: "json"
+            - name: AGENT_INJECT_CPU_REQUEST
+              value: "50m"
+            - name: AGENT_INJECT_CPU_LIMIT
+              value: "100m"
+            - name: AGENT_INJECT_MEM_REQUEST
+              value: "64Mi"
+            - name: AGENT_INJECT_MEM_LIMIT
+              value: "128Mi"
+            - name: AGENT_INJECT_REVOKE_ON_SHUTDOWN
+              value: "true"
+            - name: AGENT_INJECT_SET_SECURITY_CONTEXT
+              value: "true"
+            - name: AGENT_INJECT_RUN_AS_USER
+              value: "100"
+            - name: AGENT_INJECT_RUN_AS_GROUP
+              value: "1000"
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+
+          ports:
+            - name: https
+              containerPort: 8080
+              protocol: TCP
+
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "50m"
+            limits:
+              memory: "128Mi"
+              cpu: "200m"
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+
+          livenessProbe:
+            httpGet:
+              path: /health/ready
+              port: 8080
+              scheme: HTTPS
+            initialDelaySeconds: 5
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 2
+
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: 8080
+              scheme: HTTPS
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 2
+
+---
+# MutatingWebhookConfiguration for Vault Agent Injector
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  name: vault-agent-injector-cfg
+  labels:
+    app.kubernetes.io/name: vault-agent-injector
+spec:
+  webhooks:
+    - name: vault.hashicorp.com
+      sideEffects: None
+      admissionReviewVersions:
+        - v1
+        - v1beta1
+      clientConfig:
+        service:
+          name: vault-agent-injector-svc
+          namespace: vault
+          path: /mutate
+          port: 443
+      rules:
+        - operations: ["CREATE", "UPDATE"]
+          apiGroups: [""]
+          apiVersions: ["v1"]
+          resources: ["pods"]
+      failurePolicy: Ignore
+      matchPolicy: Exact
+      namespaceSelector:
+        matchExpressions:
+          - key: vault-injection
+            operator: In
+            values:
+              - enabled
+      objectSelector:
+        matchExpressions:
+          - key: vault.hashicorp.com/agent-inject
+            operator: In
+            values:
+              - "true"
+      timeoutSeconds: 30
+      reinvocationPolicy: Never
+
+---
+# PodDisruptionBudget for Vault Agent Injector
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: vault-agent-injector-pdb
+  namespace: vault
+  labels:
+    app.kubernetes.io/name: vault-agent-injector
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: vault-agent-injector
+
+---
+# ConfigMap with Process Heat Vault Agent Templates
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vault-agent-templates
+  namespace: vault
+  labels:
+    app.kubernetes.io/name: vault-agent-injector
+    app.kubernetes.io/component: templates
+data:
+  # Database credentials template
+  database-credentials.ctmpl: |
+    {{- with secret "database/creds/process-heat-readwrite" -}}
+    {
+      "username": "{{ .Data.username }}",
+      "password": "{{ .Data.password }}",
+      "host": "postgresql.greenlang.svc.cluster.local",
+      "port": 5432,
+      "database": "process_heat",
+      "ssl_mode": "require"
+    }
+    {{- end -}}
+
+  # Database connection string template
+  database-url.ctmpl: |
+    {{- with secret "database/creds/process-heat-readwrite" -}}
+    postgresql://{{ .Data.username }}:{{ .Data.password }}@postgresql.greenlang.svc.cluster.local:5432/process_heat?sslmode=require
+    {{- end -}}
+
+  # Redis credentials template
+  redis-credentials.ctmpl: |
+    {{- with secret "secret/data/process-heat/redis" -}}
+    {
+      "host": "{{ .Data.data.host }}",
+      "port": {{ .Data.data.port }},
+      "password": "{{ .Data.data.password }}",
+      "database": {{ .Data.data.database }},
+      "ssl": {{ .Data.data.ssl }}
+    }
+    {{- end -}}
+
+  # API keys template
+  api-keys.ctmpl: |
+    {{- with secret "secret/data/process-heat/api-keys" -}}
+    {
+      "internal_api_key": "{{ .Data.data.internal_api_key }}",
+      "external_api_key": "{{ .Data.data.external_api_key }}",
+      "webhook_secret": "{{ .Data.data.webhook_secret }}"
+    }
+    {{- end -}}
+
+  # AWS credentials template
+  aws-credentials.ctmpl: |
+    {{- with secret "aws/creds/process-heat-s3" -}}
+    [default]
+    aws_access_key_id = {{ .Data.access_key }}
+    aws_secret_access_key = {{ .Data.secret_key }}
+    {{- if .Data.security_token }}
+    aws_session_token = {{ .Data.security_token }}
+    {{- end }}
+    {{- end -}}
+
+  # ML service credentials template
+  ml-credentials.ctmpl: |
+    {{- with secret "secret/data/process-heat/ml-services" -}}
+    {
+      "model_api_key": "{{ .Data.data.model_api_key }}",
+      "inference_endpoint": "{{ .Data.data.inference_endpoint }}"
+    }
+    {{- end -}}
+
+  # Environment variables template (for .env file format)
+  env-file.ctmpl: |
+    {{- with secret "secret/data/process-heat/database" -}}
+    DATABASE_HOST={{ .Data.data.host }}
+    DATABASE_PORT={{ .Data.data.port }}
+    DATABASE_NAME={{ .Data.data.database }}
+    {{- end }}
+    {{- with secret "database/creds/process-heat-readwrite" -}}
+    DATABASE_USER={{ .Data.username }}
+    DATABASE_PASSWORD={{ .Data.password }}
+    {{- end }}
+    {{- with secret "secret/data/process-heat/redis" -}}
+    REDIS_HOST={{ .Data.data.host }}
+    REDIS_PORT={{ .Data.data.port }}
+    REDIS_PASSWORD={{ .Data.data.password }}
+    {{- end }}
+    {{- with secret "secret/data/process-heat/api-keys" -}}
+    INTERNAL_API_KEY={{ .Data.data.internal_api_key }}
+    EXTERNAL_API_KEY={{ .Data.data.external_api_key }}
+    {{- end }}
+
+---
+# Example Process Heat API Deployment with Vault Agent Injection
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: process-heat-api
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: process-heat-api
+    app.kubernetes.io/component: api
+    app.kubernetes.io/part-of: greenlang-process-heat
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: process-heat-api
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: process-heat-api
+        app.kubernetes.io/component: api
+      annotations:
+        # Enable Vault Agent injection
+        vault.hashicorp.com/agent-inject: "true"
+        vault.hashicorp.com/role: "process-heat-api"
+        vault.hashicorp.com/agent-pre-populate-only: "false"
+
+        # Database credentials
+        vault.hashicorp.com/agent-inject-secret-database.json: "database/creds/process-heat-readwrite"
+        vault.hashicorp.com/agent-inject-template-database.json: |
+          {{- with secret "database/creds/process-heat-readwrite" -}}
+          {
+            "username": "{{ .Data.username }}",
+            "password": "{{ .Data.password }}",
+            "host": "postgresql.greenlang.svc.cluster.local",
+            "port": 5432,
+            "database": "process_heat",
+            "ssl_mode": "require"
+          }
+          {{- end -}}
+
+        # Database URL for convenience
+        vault.hashicorp.com/agent-inject-secret-database-url: "database/creds/process-heat-readwrite"
+        vault.hashicorp.com/agent-inject-template-database-url: |
+          {{- with secret "database/creds/process-heat-readwrite" -}}
+          postgresql://{{ .Data.username }}:{{ .Data.password }}@postgresql.greenlang.svc.cluster.local:5432/process_heat?sslmode=require
+          {{- end -}}
+
+        # Redis credentials
+        vault.hashicorp.com/agent-inject-secret-redis.json: "secret/data/process-heat/redis"
+        vault.hashicorp.com/agent-inject-template-redis.json: |
+          {{- with secret "secret/data/process-heat/redis" -}}
+          {
+            "host": "{{ .Data.data.host }}",
+            "port": {{ .Data.data.port }},
+            "password": "{{ .Data.data.password }}",
+            "database": {{ .Data.data.database }},
+            "ssl": {{ .Data.data.ssl }}
+          }
+          {{- end -}}
+
+        # API keys
+        vault.hashicorp.com/agent-inject-secret-api-keys.json: "secret/data/process-heat/api-keys"
+        vault.hashicorp.com/agent-inject-template-api-keys.json: |
+          {{- with secret "secret/data/process-heat/api-keys" -}}
+          {
+            "internal_api_key": "{{ .Data.data.internal_api_key }}",
+            "external_api_key": "{{ .Data.data.external_api_key }}",
+            "webhook_secret": "{{ .Data.data.webhook_secret }}"
+          }
+          {{- end -}}
+
+        # AWS credentials (for S3 access)
+        vault.hashicorp.com/agent-inject-secret-aws-credentials: "aws/creds/process-heat-s3"
+        vault.hashicorp.com/agent-inject-template-aws-credentials: |
+          {{- with secret "aws/creds/process-heat-s3" -}}
+          [default]
+          aws_access_key_id = {{ .Data.access_key }}
+          aws_secret_access_key = {{ .Data.secret_key }}
+          {{- if .Data.security_token }}
+          aws_session_token = {{ .Data.security_token }}
+          {{- end }}
+          {{- end -}}
+
+        # Secret file permissions
+        vault.hashicorp.com/agent-inject-perms-database.json: "0400"
+        vault.hashicorp.com/agent-inject-perms-redis.json: "0400"
+        vault.hashicorp.com/agent-inject-perms-api-keys.json: "0400"
+        vault.hashicorp.com/agent-inject-perms-aws-credentials: "0400"
+
+        # Agent configuration
+        vault.hashicorp.com/agent-limits-cpu: "100m"
+        vault.hashicorp.com/agent-limits-mem: "128Mi"
+        vault.hashicorp.com/agent-requests-cpu: "50m"
+        vault.hashicorp.com/agent-requests-mem: "64Mi"
+        vault.hashicorp.com/agent-revoke-on-shutdown: "true"
+
+        # TLS configuration
+        vault.hashicorp.com/tls-skip-verify: "false"
+        vault.hashicorp.com/ca-cert: "/vault/tls/ca.crt"
+
+    spec:
+      serviceAccountName: process-heat-api
+
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+
+      containers:
+        - name: api
+          image: gcr.io/greenlang/process-heat-api:latest
+          imagePullPolicy: Always
+
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+
+          env:
+            - name: ENVIRONMENT
+              value: "production"
+            - name: VAULT_SECRETS_PATH
+              value: "/vault/secrets"
+            - name: DATABASE_CREDENTIALS_FILE
+              value: "/vault/secrets/database.json"
+            - name: REDIS_CREDENTIALS_FILE
+              value: "/vault/secrets/redis.json"
+            - name: API_KEYS_FILE
+              value: "/vault/secrets/api-keys.json"
+            - name: AWS_SHARED_CREDENTIALS_FILE
+              value: "/vault/secrets/aws-credentials"
+
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "200m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+
+          livenessProbe:
+            httpGet:
+              path: /api/v1/health
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+          readinessProbe:
+            httpGet:
+              path: /api/v1/ready
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            successThreshold: 1
+            failureThreshold: 3
+
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+            - name: vault-tls
+              mountPath: /vault/tls
+              readOnly: true
+
+      volumes:
+        - name: tmp
+          emptyDir: {}
+        - name: vault-tls
+          secret:
+            secretName: vault-tls
+
+---
+# Example Process Heat Worker Deployment with Vault Agent Injection
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: process-heat-worker
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: process-heat-worker
+    app.kubernetes.io/component: worker
+    app.kubernetes.io/part-of: greenlang-process-heat
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: process-heat-worker
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: process-heat-worker
+        app.kubernetes.io/component: worker
+      annotations:
+        # Enable Vault Agent injection
+        vault.hashicorp.com/agent-inject: "true"
+        vault.hashicorp.com/role: "process-heat-worker"
+        vault.hashicorp.com/agent-pre-populate-only: "false"
+
+        # Database credentials (read-write for worker)
+        vault.hashicorp.com/agent-inject-secret-database.json: "database/creds/process-heat-readwrite"
+        vault.hashicorp.com/agent-inject-template-database.json: |
+          {{- with secret "database/creds/process-heat-readwrite" -}}
+          {
+            "username": "{{ .Data.username }}",
+            "password": "{{ .Data.password }}",
+            "host": "postgresql.greenlang.svc.cluster.local",
+            "port": 5432,
+            "database": "process_heat",
+            "ssl_mode": "require"
+          }
+          {{- end -}}
+
+        # Redis credentials
+        vault.hashicorp.com/agent-inject-secret-redis.json: "secret/data/process-heat/redis"
+        vault.hashicorp.com/agent-inject-template-redis.json: |
+          {{- with secret "secret/data/process-heat/redis" -}}
+          {
+            "host": "{{ .Data.data.host }}",
+            "port": {{ .Data.data.port }},
+            "password": "{{ .Data.data.password }}"
+          }
+          {{- end -}}
+
+        # AWS credentials for S3 and CloudWatch
+        vault.hashicorp.com/agent-inject-secret-aws-credentials: "aws/creds/process-heat-s3"
+        vault.hashicorp.com/agent-inject-template-aws-credentials: |
+          {{- with secret "aws/creds/process-heat-s3" -}}
+          [default]
+          aws_access_key_id = {{ .Data.access_key }}
+          aws_secret_access_key = {{ .Data.secret_key }}
+          {{- end -}}
+
+        # ML service credentials
+        vault.hashicorp.com/agent-inject-secret-ml-services.json: "secret/data/process-heat/ml-services"
+        vault.hashicorp.com/agent-inject-template-ml-services.json: |
+          {{- with secret "secret/data/process-heat/ml-services" -}}
+          {
+            "model_api_key": "{{ .Data.data.model_api_key }}",
+            "inference_endpoint": "{{ .Data.data.inference_endpoint }}"
+          }
+          {{- end -}}
+
+        # Secret file permissions
+        vault.hashicorp.com/agent-inject-perms-database.json: "0400"
+        vault.hashicorp.com/agent-inject-perms-redis.json: "0400"
+        vault.hashicorp.com/agent-inject-perms-aws-credentials: "0400"
+        vault.hashicorp.com/agent-inject-perms-ml-services.json: "0400"
+
+        # Agent configuration
+        vault.hashicorp.com/agent-revoke-on-shutdown: "true"
+
+    spec:
+      serviceAccountName: process-heat-worker
+
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+
+      containers:
+        - name: worker
+          image: gcr.io/greenlang/process-heat-worker:latest
+          imagePullPolicy: Always
+
+          env:
+            - name: ENVIRONMENT
+              value: "production"
+            - name: VAULT_SECRETS_PATH
+              value: "/vault/secrets"
+
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "1000m"
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+            - name: vault-tls
+              mountPath: /vault/tls
+              readOnly: true
+
+      volumes:
+        - name: tmp
+          emptyDir: {}
+        - name: vault-tls
+          secret:
+            secretName: vault-tls
+
+---
+# Service Account for Process Heat API
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: process-heat-api
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: process-heat-api
+
+---
+# Service Account for Process Heat Worker
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: process-heat-worker
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: process-heat-worker
+
+---
+# Service Account for Process Heat Scheduler
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: process-heat-scheduler
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: process-heat-scheduler
+
+---
+# Service Account for Process Heat ML
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: process-heat-ml
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: process-heat-ml
+
+---
+# Service Account for Process Heat Migration Jobs
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: process-heat-migration
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: process-heat-migration
+
+---
+# Namespace label for Vault injection
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: greenlang
+  labels:
+    vault-injection: enabled
+    app.kubernetes.io/part-of: greenlang

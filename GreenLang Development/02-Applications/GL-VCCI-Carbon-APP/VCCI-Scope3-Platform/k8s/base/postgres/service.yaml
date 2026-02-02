@@ -1,0 +1,51 @@
+# ==============================================================================
+# GL-VCCI PostgreSQL - Service
+# ==============================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: vcci-postgres
+  namespace: vcci-production
+  labels:
+    app: vcci-postgres
+    app.kubernetes.io/name: gl-vcci
+    app.kubernetes.io/component: database
+    tier: database
+spec:
+  type: ClusterIP
+  clusterIP: None  # Headless service for StatefulSet
+  selector:
+    app: vcci-postgres
+    tier: database
+
+  ports:
+    - name: postgres
+      port: 5432
+      targetPort: postgres
+      protocol: TCP
+
+---
+# ==============================================================================
+# PostgreSQL Read Service (for read replicas)
+# ==============================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: vcci-postgres-read
+  namespace: vcci-production
+  labels:
+    app: vcci-postgres
+    app.kubernetes.io/name: gl-vcci
+    app.kubernetes.io/component: database
+    tier: database
+spec:
+  type: ClusterIP
+  selector:
+    app: vcci-postgres
+    tier: database
+
+  ports:
+    - name: postgres
+      port: 5432
+      targetPort: postgres
+      protocol: TCP

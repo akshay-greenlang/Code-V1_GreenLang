@@ -1,0 +1,23 @@
+{{ define "pagerduty.greenlang.description" }}
+[{{ .Status | toUpper }}] {{ .CommonLabels.alertname }} - {{ .CommonAnnotations.summary }}
+{{ end }}
+
+{{ define "pagerduty.greenlang.firing" }}
+{{ range .Alerts.Firing }}
+Alert: {{ .Labels.alertname }}
+Service: {{ .Labels.service }}
+Severity: {{ .Labels.severity }}
+Summary: {{ .Annotations.summary }}
+Description: {{ .Annotations.description }}
+Runbook: {{ .Annotations.runbook_url }}
+Started: {{ .StartsAt }}
+{{ end }}
+{{ end }}
+
+{{ define "pagerduty.greenlang.resolved" }}
+{{ range .Alerts.Resolved }}
+Alert: {{ .Labels.alertname }}
+Service: {{ .Labels.service }}
+Resolved at: {{ .EndsAt }}
+{{ end }}
+{{ end }}

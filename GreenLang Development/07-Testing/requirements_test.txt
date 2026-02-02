@@ -1,0 +1,75 @@
+# Test Dependencies for GreenLang
+# Target: 85%+ test coverage
+# Week 1: 105+ unit tests for agents and core libraries
+
+# =============================================================================
+# Core Testing Framework
+# =============================================================================
+pytest>=7.4.0                  # Testing framework
+pytest-cov>=4.1.0              # Coverage reporting
+pytest-asyncio>=0.21.0         # Async test support
+pytest-timeout>=2.1.0          # Test timeout enforcement
+pytest-xdist>=3.3.0            # Parallel test execution
+pytest-mock>=3.11.0            # Mock support
+
+# =============================================================================
+# Performance Testing
+# =============================================================================
+pytest-benchmark>=4.0.0        # Performance benchmarking
+psutil>=5.9.0                  # System and process utilities
+numpy>=1.24.0                  # Numerical operations (Monte Carlo)
+
+# =============================================================================
+# API Testing
+# =============================================================================
+fastapi>=0.100.0               # FastAPI framework
+httpx>=0.24.0                  # Async HTTP client
+requests>=2.31.0               # HTTP library
+
+# =============================================================================
+# Data Generation and Validation
+# =============================================================================
+faker>=19.0.0                  # Fake data generation
+pyyaml>=6.0                    # YAML support
+pydantic>=2.0.0                # Data validation (required by agents)
+
+# =============================================================================
+# Code Quality
+# =============================================================================
+black>=23.7.0                  # Code formatting
+flake8>=6.1.0                  # Linting
+mypy>=1.5.0                    # Type checking
+isort>=5.12.0                  # Import sorting
+ruff>=0.1.0                    # Fast linter
+
+# =============================================================================
+# Documentation and Reporting
+# =============================================================================
+pytest-html>=3.2.0             # HTML test reports
+pytest-json-report>=1.5.0      # JSON test reports
+
+# =============================================================================
+# Continuous Integration
+# =============================================================================
+coverage[toml]>=7.3.0          # Coverage configuration
+codecov>=2.1.13                # Codecov integration
+
+# =============================================================================
+# Advanced Testing
+# =============================================================================
+hypothesis>=6.82.0             # Property-based testing
+freezegun>=1.2.2               # Time mocking
+responses>=0.23.0              # HTTP response mocking
+
+# =============================================================================
+# Golden Tests and Determinism Verification
+# =============================================================================
+deepdiff>=6.0.0                # Deep comparison for golden tests
+jsonschema>=4.17.0             # JSON schema validation
+
+# =============================================================================
+# Agent-specific Dependencies
+# =============================================================================
+# These are required to run agent tests
+langchain>=0.1.0               # LangChain for agent testing (if not already installed)
+langchain-core>=0.1.0          # Core LangChain components

@@ -1,0 +1,120 @@
+# =============================================================================
+# GL-003 UNIFIEDSTEAM - Vault Kubernetes Integration
+# =============================================================================
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: gl-003-unifiedsteam
+  namespace: greenlang
+  labels:
+    app: gl-003-unifiedsteam
+    agent-id: GL-003
+  annotations:
+    vault.hashicorp.com/agent-inject: "true"
+    vault.hashicorp.com/role: "gl-003-unifiedsteam"
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: gl-003-vault-auth-delegator
+subjects:
+  - kind: ServiceAccount
+    name: gl-003-unifiedsteam
+    namespace: greenlang
+roleRef:
+  kind: ClusterRole
+  name: system:auth-delegator
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gl-003-vault-agent-config
+  namespace: greenlang
+data:
+  vault-agent-config.hcl: |
+    pid_file = "/home/vault/.pid"
+    vault {
+      address = "https://vault.greenlang.local:8200"
+    }
+    auto_auth {
+      method "kubernetes" {
+        mount_path = "auth/kubernetes"
+        config = {
+          role = "gl-003-unifiedsteam"
+        }
+      }
+      sink "file" {
+        config = {
+          path = "/home/vault/.vault-token"
+          mode = 0640
+        }
+      }
+    }
+    template {
+      destination = "/vault/secrets/database.json"
+      contents = <<EOF
+    {
+      "username": "{{ with secret "database/creds/gl-003-postgres" }}{{ .Data.username }}{{ end }}",
+      "password": "{{ with secret "database/creds/gl-003-postgres" }}{{ .Data.password }}{{ end }}"
+    }
+    EOF
+    }
+    template {
+      destination = "/vault/secrets/steam-traps.json"
+      contents = <<EOF
+    {{ with secret "secret/data/greenlang/agents/GL-003/integrations/steam-traps" }}
+    {{ .Data.data | toJSON }}
+    {{ end }}
+    EOF
+    }
+    template {
+      destination = "/vault/secrets/jwt-secret"
+      contents = "{{ with secret \"secret/data/greenlang/agents/GL-003/auth/jwt\" }}{{ .Data.data.secret }}{{ end }}"
+      perms = "0400"
+    }
+---
+apiVersion: external-secrets.io/v1beta1
+kind: SecretStore
+metadata:
+  name: gl-003-vault-backend
+  namespace: greenlang
+spec:
+  provider:
+    vault:
+      server: "https://vault.greenlang.local:8200"
+      path: "secret"
+      version: "v2"
+      auth:
+        kubernetes:
+          mountPath: "kubernetes"
+          role: "gl-003-unifiedsteam"
+          serviceAccountRef:
+            name: "gl-003-unifiedsteam"
+---
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+  name: gl-003-secrets
+  namespace: greenlang
+spec:
+  refreshInterval: "5m"
+  secretStoreRef:
+    kind: SecretStore
+    name: gl-003-vault-backend
+  target:
+    name: gl-003-secrets
+    creationPolicy: Owner
+  data:
+    - secretKey: JWT_SECRET
+      remoteRef:
+        key: greenlang/agents/GL-003/auth/jwt
+        property: secret
+    - secretKey: OPCUA_USERNAME
+      remoteRef:
+        key: greenlang/agents/GL-003/integrations/opcua
+        property: username
+    - secretKey: OPCUA_PASSWORD
+      remoteRef:
+        key: greenlang/agents/GL-003/integrations/opcua
+        property: password

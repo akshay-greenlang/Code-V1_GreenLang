@@ -1,0 +1,289 @@
+# GreenLang Agent Factory - Default Values
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# Global settings
+global:
+  # Image registry
+  imageRegistry: ghcr.io
+  imagePullSecrets: []
+
+  # Common labels
+  labels:
+    app.kubernetes.io/part-of: greenlang
+    app.kubernetes.io/managed-by: helm
+
+  # Environment
+  environment: production
+
+# Namespace configuration
+namespace:
+  create: true
+  name: greenlang-agents
+
+# Service Account
+serviceAccount:
+  create: true
+  name: greenlang-agents-sa
+  annotations:
+    # IRSA annotation - set in environment-specific values
+    # eks.amazonaws.com/role-arn: arn:aws:iam::ACCOUNT:role/greenlang-agents-role
+
+# Common configuration
+common:
+  # Image settings
+  image:
+    repository: greenlang
+    pullPolicy: IfNotPresent
+    tag: latest
+
+  # Resource defaults
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 2Gi
+
+  # Pod settings
+  podSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    fsGroup: 1000
+
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    capabilities:
+      drop:
+        - ALL
+
+  # Probe settings
+  livenessProbe:
+    httpGet:
+      path: /health
+      port: http
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+
+  readinessProbe:
+    httpGet:
+      path: /ready
+      port: http
+    initialDelaySeconds: 10
+    periodSeconds: 5
+    timeoutSeconds: 3
+    successThreshold: 1
+
+  startupProbe:
+    httpGet:
+      path: /health
+      port: http
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    failureThreshold: 30
+
+# Ingress configuration
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+    nginx.ingress.kubernetes.io/rate-limit-window: "1s"
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+  hosts:
+    - host: api.greenlang.io
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: greenlang-tls
+      hosts:
+        - api.greenlang.io
+
+# ConfigMap
+config:
+  LOG_LEVEL: info
+  LOG_FORMAT: json
+  ENVIRONMENT: production
+  CACHE_TTL: "3600"
+  MAX_CONCURRENT_REQUESTS: "100"
+
+# External Secrets
+externalSecrets:
+  enabled: true
+  refreshInterval: 1h
+  secretStoreRef:
+    name: aws-secrets-manager
+    kind: ClusterSecretStore
+  data:
+    - secretKey: DATABASE_URL
+      remoteRef:
+        key: greenlang/database
+        property: url
+    - secretKey: REDIS_URL
+      remoteRef:
+        key: greenlang/redis
+        property: url
+    - secretKey: ANTHROPIC_API_KEY
+      remoteRef:
+        key: greenlang/api-keys
+        property: anthropic
+    - secretKey: OPENAI_API_KEY
+      remoteRef:
+        key: greenlang/api-keys
+        property: openai
+
+# Network Policies
+networkPolicy:
+  enabled: true
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: ingress-nginx
+      ports:
+        - port: 8000
+          protocol: TCP
+  egress:
+    - to:
+        - namespaceSelector: {}
+          podSelector:
+            matchLabels:
+              app: postgres
+      ports:
+        - port: 5432
+          protocol: TCP
+    - to:
+        - namespaceSelector: {}
+          podSelector:
+            matchLabels:
+              app: redis
+      ports:
+        - port: 6379
+          protocol: TCP
+
+# Pod Disruption Budget
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 2
+
+# Monitoring
+monitoring:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+    interval: 30s
+    scrapeTimeout: 10s
+    labels:
+      release: prometheus
+
+  prometheusRule:
+    enabled: true
+    labels:
+      release: prometheus
+    rules:
+      - alert: AgentHighErrorRate
+        expr: |
+          sum(rate(agent_requests_total{status="error"}[5m])) by (agent)
+          /
+          sum(rate(agent_requests_total[5m])) by (agent) > 0.01
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High error rate for {{ $labels.agent }}"
+          description: "Error rate is {{ $value | humanizePercentage }} for agent {{ $labels.agent }}"
+
+# Fuel Analyzer Agent
+fuel-analyzer:
+  enabled: true
+  replicaCount: 3
+  image:
+    repository: greenlang/fuel-analyzer
+    tag: latest
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 2Gi
+  autoscaling:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: 80
+
+# Carbon Intensity Agent
+carbon-intensity:
+  enabled: true
+  replicaCount: 3
+  image:
+    repository: greenlang/carbon-intensity
+    tag: latest
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 2Gi
+  autoscaling:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 70
+
+# Energy Performance Agent
+energy-performance:
+  enabled: true
+  replicaCount: 3
+  image:
+    repository: greenlang/energy-performance
+    tag: latest
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 2Gi
+  autoscaling:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 10
+
+# EUDR Compliance Agent (Critical - stricter SLOs)
+eudr-compliance:
+  enabled: true
+  replicaCount: 5  # Higher replica count for critical agent
+  image:
+    repository: greenlang/eudr-compliance
+    tag: latest
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+    limits:
+      cpu: 2000m
+      memory: 4Gi
+  autoscaling:
+    enabled: true
+    minReplicas: 5
+    maxReplicas: 20
+    targetCPUUtilizationPercentage: 60  # More aggressive scaling
+  podDisruptionBudget:
+    minAvailable: 3
+  # Stricter SLOs for EUDR
+  slo:
+    availability: 99.95
+    latencyP95: 250ms
+    errorRate: 0.005

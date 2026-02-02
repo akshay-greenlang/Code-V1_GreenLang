@@ -1,0 +1,518 @@
+# =============================================================================
+# GreenLang FinOps Cost Management Configuration
+# =============================================================================
+# FINOPS-001: Cost monitoring, budgets, and optimization setup
+#
+# This configuration provides:
+#   - Cost monitoring dashboards
+#   - Budget alerts
+#   - Resource tagging strategy
+#   - Cost allocation reports
+#
+# Author: GreenLang Platform Team
+# Version: 1.0.0
+# =============================================================================
+
+---
+# =============================================================================
+# COST ALLOCATION TAGS
+# =============================================================================
+# Standardized tags for cost attribution
+# =============================================================================
+tagging_strategy:
+  required_tags:
+    - name: "environment"
+      description: "Deployment environment"
+      values: ["production", "staging", "development", "dr"]
+      enforcement: "strict"
+
+    - name: "team"
+      description: "Owning team"
+      values: ["platform", "agents", "data", "ml", "frontend"]
+      enforcement: "strict"
+
+    - name: "service"
+      description: "Service name"
+      pattern: "^gl-[a-z]+-[a-z]+$"
+      enforcement: "strict"
+
+    - name: "cost-center"
+      description: "Finance cost center"
+      pattern: "^CC[0-9]{4}$"
+      enforcement: "strict"
+
+  optional_tags:
+    - name: "project"
+      description: "Project or initiative"
+
+    - name: "customer"
+      description: "Customer tenant (if applicable)"
+
+    - name: "temporary"
+      description: "Temporary resources with expiry"
+      pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+
+---
+# =============================================================================
+# AWS BUDGETS
+# =============================================================================
+# Budget definitions for AWS cost management
+# =============================================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: aws-budgets-config
+  namespace: greenlang-finops
+  labels:
+    app.kubernetes.io/name: finops
+    app.kubernetes.io/part-of: greenlang-platform
+  annotations:
+    finops-task: "FINOPS-001"
+data:
+  budgets.yaml: |
+    # Monthly infrastructure budget
+    budgets:
+      - name: "greenlang-monthly-total"
+        amount: 50000
+        currency: USD
+        time_unit: MONTHLY
+        budget_type: COST
+        notifications:
+          - threshold: 50
+            comparison: GREATER_THAN
+            notification_type: ACTUAL
+            subscribers:
+              - finance@greenlang.io
+              - platform-lead@greenlang.io
+            message: "GreenLang monthly spend has reached 50% of budget"
+
+          - threshold: 80
+            comparison: GREATER_THAN
+            notification_type: ACTUAL
+            subscribers:
+              - finance@greenlang.io
+              - platform-lead@greenlang.io
+              - vp-eng@greenlang.io
+            message: "WARNING: GreenLang monthly spend has reached 80% of budget"
+
+          - threshold: 100
+            comparison: GREATER_THAN
+            notification_type: ACTUAL
+            subscribers:
+              - finance@greenlang.io
+              - cto@greenlang.io
+            message: "ALERT: GreenLang monthly budget exceeded"
+
+          - threshold: 110
+            comparison: GREATER_THAN
+            notification_type: FORECASTED
+            subscribers:
+              - finance@greenlang.io
+              - platform-lead@greenlang.io
+            message: "FORECAST: GreenLang spend projected to exceed budget by 10%"
+
+      # Per-environment budgets
+      - name: "greenlang-production"
+        amount: 35000
+        currency: USD
+        time_unit: MONTHLY
+        cost_filters:
+          - dimension: TAG
+            key: environment
+            values: ["production"]
+
+      - name: "greenlang-staging"
+        amount: 8000
+        currency: USD
+        time_unit: MONTHLY
+        cost_filters:
+          - dimension: TAG
+            key: environment
+            values: ["staging"]
+
+      - name: "greenlang-development"
+        amount: 5000
+        currency: USD
+        time_unit: MONTHLY
+        cost_filters:
+          - dimension: TAG
+            key: environment
+            values: ["development"]
+
+      - name: "greenlang-dr"
+        amount: 2000
+        currency: USD
+        time_unit: MONTHLY
+        cost_filters:
+          - dimension: TAG
+            key: environment
+            values: ["dr"]
+
+      # Per-service budgets
+      - name: "greenlang-compute"
+        amount: 20000
+        currency: USD
+        time_unit: MONTHLY
+        cost_filters:
+          - dimension: SERVICE
+            values: ["Amazon Elastic Kubernetes Service", "Amazon EC2"]
+
+      - name: "greenlang-database"
+        amount: 10000
+        currency: USD
+        time_unit: MONTHLY
+        cost_filters:
+          - dimension: SERVICE
+            values: ["Amazon RDS", "Amazon ElastiCache"]
+
+      - name: "greenlang-storage"
+        amount: 5000
+        currency: USD
+        time_unit: MONTHLY
+        cost_filters:
+          - dimension: SERVICE
+            values: ["Amazon S3", "Amazon EBS"]
+
+---
+# =============================================================================
+# KUBECOST CONFIGURATION
+# =============================================================================
+# Kubernetes cost monitoring with Kubecost
+# =============================================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kubecost-config
+  namespace: kubecost
+  labels:
+    app.kubernetes.io/name: kubecost
+    app.kubernetes.io/part-of: greenlang-platform
+  annotations:
+    finops-task: "FINOPS-001"
+data:
+  kubecost-config.yaml: |
+    # Kubecost configuration
+    kubecostProductConfigs:
+      clusterName: "greenlang-production"
+      currencyCode: "USD"
+
+      # Cloud integration for accurate pricing
+      cloudIntegration:
+        aws:
+          enabled: true
+          athenaProjectID: "greenlang-cost-data"
+          athenaBucketName: "greenlang-cur-data"
+          athenaRegion: "us-east-1"
+          athenaDatabase: "cost_usage_report"
+          athenaTable: "cur"
+
+      # Savings recommendations
+      savings:
+        enabled: true
+        containerRightsizing:
+          enabled: true
+          recommendationBuffer: 0.15
+        clusterRightsizing:
+          enabled: true
+        spotInstanceRecommendations:
+          enabled: true
+
+      # Cost allocation
+      allocation:
+        enabled: true
+        defaultNamespace: "default"
+        shareNamespaces:
+          - "kube-system"
+          - "istio-system"
+          - "monitoring"
+        shareLabels:
+          - "shared-service"
+        shareCosts:
+          shareIdle: true
+          shareNamespaces: true
+          shareLabels: true
+
+      # Network costs
+      networkCosts:
+        enabled: true
+        zoneMappings:
+          - zone: "us-east-1a"
+            region: "us-east-1"
+          - zone: "us-east-1b"
+            region: "us-east-1"
+          - zone: "us-east-1c"
+            region: "us-east-1"
+
+---
+# =============================================================================
+# COST REPORTS CONFIGURATION
+# =============================================================================
+# Automated cost reporting setup
+# =============================================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cost-reports-config
+  namespace: greenlang-finops
+  labels:
+    app.kubernetes.io/name: cost-reports
+    app.kubernetes.io/part-of: greenlang-platform
+  annotations:
+    finops-task: "FINOPS-001"
+data:
+  reports.yaml: |
+    reports:
+      # Weekly cost summary
+      - name: "weekly-cost-summary"
+        schedule: "0 9 * * 1"  # Monday 9 AM
+        type: "summary"
+        period: "last_7_days"
+        recipients:
+          - finance@greenlang.io
+          - platform-team@greenlang.io
+        format: "html"
+        include:
+          - total_cost
+          - cost_by_service
+          - cost_by_team
+          - cost_trends
+          - anomalies
+          - recommendations
+
+      # Monthly detailed report
+      - name: "monthly-cost-report"
+        schedule: "0 9 1 * *"  # 1st of month 9 AM
+        type: "detailed"
+        period: "last_30_days"
+        recipients:
+          - finance@greenlang.io
+          - leadership@greenlang.io
+        format: "pdf"
+        include:
+          - executive_summary
+          - total_cost
+          - cost_by_service
+          - cost_by_team
+          - cost_by_environment
+          - month_over_month
+          - forecast
+          - recommendations
+          - untagged_resources
+
+      # Daily anomaly report
+      - name: "daily-anomaly-check"
+        schedule: "0 8 * * *"  # Daily 8 AM
+        type: "anomaly"
+        period: "last_24_hours"
+        recipients:
+          - platform-oncall@greenlang.io
+        format: "slack"
+        thresholds:
+          percentage_increase: 20
+          absolute_increase: 500
+        slack_channel: "#finops-alerts"
+
+---
+# =============================================================================
+# GRAFANA DASHBOARD: Cost Overview
+# =============================================================================
+# Grafana dashboard for cost visualization
+# =============================================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-cost-dashboard
+  namespace: monitoring
+  labels:
+    grafana_dashboard: "1"
+    app.kubernetes.io/name: grafana
+    app.kubernetes.io/part-of: greenlang-platform
+  annotations:
+    finops-task: "FINOPS-001"
+data:
+  cost-overview.json: |
+    {
+      "dashboard": {
+        "title": "GreenLang Cost Overview",
+        "uid": "cost-overview",
+        "tags": ["finops", "cost", "greenlang"],
+        "timezone": "browser",
+        "refresh": "1h",
+        "panels": [
+          {
+            "title": "Monthly Cost (MTD)",
+            "type": "stat",
+            "gridPos": {"x": 0, "y": 0, "w": 6, "h": 4},
+            "targets": [
+              {
+                "expr": "sum(kubecost_cluster_cost_total{cluster=\"greenlang-production\"})",
+                "legendFormat": "Total Cost"
+              }
+            ]
+          },
+          {
+            "title": "Daily Run Rate",
+            "type": "stat",
+            "gridPos": {"x": 6, "y": 0, "w": 6, "h": 4},
+            "targets": [
+              {
+                "expr": "sum(rate(kubecost_cluster_cost_total{cluster=\"greenlang-production\"}[24h])) * 86400",
+                "legendFormat": "Daily Rate"
+              }
+            ]
+          },
+          {
+            "title": "Projected Monthly",
+            "type": "stat",
+            "gridPos": {"x": 12, "y": 0, "w": 6, "h": 4},
+            "targets": [
+              {
+                "expr": "sum(rate(kubecost_cluster_cost_total{cluster=\"greenlang-production\"}[7d])) * 86400 * 30",
+                "legendFormat": "Projected"
+              }
+            ]
+          },
+          {
+            "title": "Budget Usage",
+            "type": "gauge",
+            "gridPos": {"x": 18, "y": 0, "w": 6, "h": 4},
+            "options": {
+              "showThresholdLabels": true,
+              "showThresholdMarkers": true
+            },
+            "fieldConfig": {
+              "defaults": {
+                "max": 100,
+                "thresholds": {
+                  "steps": [
+                    {"value": 0, "color": "green"},
+                    {"value": 70, "color": "yellow"},
+                    {"value": 90, "color": "red"}
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "title": "Cost by Service",
+            "type": "piechart",
+            "gridPos": {"x": 0, "y": 4, "w": 12, "h": 8},
+            "targets": [
+              {
+                "expr": "sum by (service) (kubecost_namespace_cost_total{cluster=\"greenlang-production\"})",
+                "legendFormat": "{{service}}"
+              }
+            ]
+          },
+          {
+            "title": "Cost by Team",
+            "type": "piechart",
+            "gridPos": {"x": 12, "y": 4, "w": 12, "h": 8},
+            "targets": [
+              {
+                "expr": "sum by (team) (kubecost_namespace_cost_total{cluster=\"greenlang-production\"})",
+                "legendFormat": "{{team}}"
+              }
+            ]
+          },
+          {
+            "title": "Daily Cost Trend",
+            "type": "timeseries",
+            "gridPos": {"x": 0, "y": 12, "w": 24, "h": 8},
+            "targets": [
+              {
+                "expr": "sum(increase(kubecost_cluster_cost_total{cluster=\"greenlang-production\"}[1d]))",
+                "legendFormat": "Daily Cost"
+              }
+            ]
+          },
+          {
+            "title": "Cost by Namespace",
+            "type": "table",
+            "gridPos": {"x": 0, "y": 20, "w": 24, "h": 8},
+            "targets": [
+              {
+                "expr": "sum by (namespace) (kubecost_namespace_cost_total{cluster=\"greenlang-production\"})",
+                "legendFormat": "{{namespace}}"
+              }
+            ]
+          }
+        ]
+      }
+    }
+
+---
+# =============================================================================
+# COST OPTIMIZATION POLICIES
+# =============================================================================
+# Automated cost optimization rules
+# =============================================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cost-optimization-policies
+  namespace: greenlang-finops
+  labels:
+    app.kubernetes.io/name: cost-optimization
+    app.kubernetes.io/part-of: greenlang-platform
+  annotations:
+    finops-task: "FINOPS-001"
+data:
+  policies.yaml: |
+    optimization_policies:
+      # Spot instance usage
+      spot_instances:
+        enabled: true
+        eligible_workloads:
+          - "greenlang-worker"
+          - "greenlang-ml-batch"
+        excluded_workloads:
+          - "greenlang-api"
+          - "greenlang-database"
+        max_spot_percentage: 70
+        fallback_to_on_demand: true
+
+      # Right-sizing recommendations
+      rightsizing:
+        enabled: true
+        check_interval: "7d"
+        cpu_threshold:
+          underutilized: 30  # < 30% avg usage
+          overutilized: 80   # > 80% avg usage
+        memory_threshold:
+          underutilized: 30
+          overutilized: 85
+        auto_apply: false
+        notification_channel: "#finops-recommendations"
+
+      # Unused resource cleanup
+      cleanup:
+        enabled: true
+        check_interval: "24h"
+        rules:
+          - resource_type: "PersistentVolumeClaim"
+            condition: "unbound for > 7 days"
+            action: "alert"
+
+          - resource_type: "LoadBalancer"
+            condition: "no traffic for > 3 days"
+            action: "alert"
+
+          - resource_type: "EBS Volume"
+            condition: "unattached for > 7 days"
+            action: "alert"
+
+      # Reserved instance recommendations
+      reserved_instances:
+        enabled: true
+        commitment_term: "1_year"
+        payment_option: "partial_upfront"
+        coverage_target: 70
+        analysis_period: "90d"
+
+      # Savings plans
+      savings_plans:
+        enabled: true
+        compute_savings_plan: true
+        ec2_instance_savings_plan: false
+        target_utilization: 80

@@ -1,0 +1,1334 @@
+# ==============================================================================
+# GL-018 FLUEFLOW Flue Gas Analyzer Agent
+# Production GreenLang Specification (gl.yaml)
+# ==============================================================================
+# This file defines the production deployment configuration for GL-018
+# Optimized for combustion systems flue gas analysis and optimization
+# ==============================================================================
+
+apiVersion: greenlang.io/v1
+kind: Agent
+
+# ==============================================================================
+# AGENT IDENTIFICATION
+# ==============================================================================
+metadata:
+  id: GL-018
+  codename: FLUEFLOW
+  name: FlueGasAnalyzer
+  version: "1.0.0"
+  category: analyzer
+  domain: combustion_systems
+
+  labels:
+    environment: production
+    tier: critical
+    team: combustion-optimization
+    compliance: EPA-ASME-ISO50001
+
+  annotations:
+    description: "Flue gas analysis and combustion optimization with zero-hallucination guarantees"
+    owner: greenlang-team
+    contact: support@greenlang.io
+    documentation: https://greenlang.io/agents/GL-018
+    jira: https://jira.greenlang.io/browse/GL-018
+    slack: "#gl-018-flueflow"
+
+# ==============================================================================
+# RUNTIME CONFIGURATION
+# ==============================================================================
+spec:
+  # ----------------------------------------------------------------------------
+  # Agent Runtime
+  # ----------------------------------------------------------------------------
+  runtime:
+    language: python
+    version: "3.11"
+    framework: fastapi
+    entry_point: "main:app"
+    working_directory: /app
+
+    # Deterministic Configuration
+    deterministic:
+      enabled: true
+      temperature: 0.0
+      seed: 42
+      provenance_tracking: true
+      hash_algorithm: SHA-256
+
+    # Execution Parameters
+    execution:
+      timeout_seconds: 90
+      max_retries: 3
+      retry_delay_seconds: 3
+      retry_backoff: exponential
+      max_parallel_tasks: 20
+
+    # Caching (shorter TTL for rapidly changing flue gas data)
+    cache:
+      enabled: true
+      ttl_seconds: 60
+      max_entries: 5000
+      strategy: lru
+      redis_enabled: true
+
+    # Batch Processing
+    batch:
+      enabled: true
+      max_batch_size: 500
+      parallel_workers: 4
+      chunk_size: 125
+
+  # ----------------------------------------------------------------------------
+  # AI Configuration
+  # ----------------------------------------------------------------------------
+  ai:
+    provider: anthropic
+    model: claude-sonnet-4-20250514
+    temperature: 0.0
+    seed: 42
+    max_tokens: 4096
+    top_p: 1.0
+
+    # Operation Boundaries
+    allowed_operations:
+      - text_classification
+      - entity_extraction
+      - narrative_generation
+      - recommendation_explanation
+      - incident_summarization
+      - combustion_diagnostics_narrative
+      - best_practice_guidance
+      - report_generation
+
+    prohibited_operations:
+      - numeric_calculation
+      - combustion_efficiency_calculation
+      - emissions_calculation
+      - heat_loss_calculation
+      - air_fuel_ratio_calculation
+      - stoichiometric_calculation
+      - mass_balance_calculation
+      - energy_balance_calculation
+
+    # Safety Guardrails
+    safety:
+      content_filtering: true
+      output_validation: true
+      hallucination_detection: true
+      confidence_threshold: 0.95
+
+  # ----------------------------------------------------------------------------
+  # Data Sources
+  # ----------------------------------------------------------------------------
+  data_sources:
+    # Flue Gas Analyzers
+    - id: flue_gas_analyzer_primary
+      name: "Primary Flue Gas Analyzer"
+      type: modbus_tcp
+      connection:
+        host: "${ANALYZER_PRIMARY_HOST}"
+        port: 502
+        unit_id: 1
+      polling:
+        interval_seconds: 5
+        batch_size: 20
+      health_check:
+        enabled: true
+        interval_seconds: 30
+      tags:
+        - o2_concentration
+        - co2_concentration
+        - co_concentration
+        - nox_concentration
+        - sox_concentration
+        - stack_temperature
+        - flue_gas_moisture
+
+    - id: flue_gas_analyzer_backup
+      name: "Backup Flue Gas Analyzer"
+      type: modbus_tcp
+      connection:
+        host: "${ANALYZER_BACKUP_HOST}"
+        port: 502
+        unit_id: 1
+      polling:
+        interval_seconds: 5
+        batch_size: 20
+      health_check:
+        enabled: true
+        interval_seconds: 30
+      failover: true
+
+    # SCADA/DCS Integration
+    - id: scada_primary
+      name: "Primary SCADA System"
+      type: opc_ua
+      connection:
+        endpoint: "${SCADA_PRIMARY_ENDPOINT}"
+        security_mode: SignAndEncrypt
+        security_policy: Basic256Sha256
+      polling:
+        interval_seconds: 5
+        batch_size: 100
+      health_check:
+        enabled: true
+        interval_seconds: 30
+      tags:
+        - combustion_air_parameters
+        - burner_operating_parameters
+        - fuel_flow_rate
+        - firing_rate
+        - load_percent
+
+    # CEMS (Continuous Emissions Monitoring System)
+    - id: cems_system
+      name: "Continuous Emissions Monitoring System"
+      type: opc_ua
+      connection:
+        endpoint: "${CEMS_ENDPOINT}"
+        security_mode: SignAndEncrypt
+      polling:
+        interval_seconds: 60
+        batch_size: 50
+      health_check:
+        enabled: true
+        interval_seconds: 60
+      tags:
+        - nox_emissions_lb_mmbtu
+        - co_emissions_lb_mmbtu
+        - sox_emissions_lb_mmbtu
+        - opacity_percent
+
+    # Historian
+    - id: historian
+      name: "Process Historian"
+      type: opc_hda
+      connection:
+        endpoint: "${HISTORIAN_ENDPOINT}"
+      query:
+        max_rows: 10000
+        aggregate_type: average
+
+    # Fuel Quality System
+    - id: fuel_quality_api
+      name: "Fuel Quality Laboratory API"
+      type: rest_api
+      connection:
+        base_url: "${FUEL_LAB_API_URL}"
+        auth_type: api_key
+        timeout_seconds: 30
+      polling:
+        interval_hours: 4
+        batch_size: 10
+      health_check:
+        enabled: true
+        interval_seconds: 300
+
+    # Weather Service
+    - id: weather
+      name: "Weather Data Service"
+      type: rest_api
+      connection:
+        base_url: "${WEATHER_API_URL}"
+        auth_type: api_key
+      polling:
+        interval_minutes: 30
+
+  # ----------------------------------------------------------------------------
+  # Data Sinks
+  # ----------------------------------------------------------------------------
+  data_sinks:
+    # Control System Outputs
+    - id: scada_setpoints
+      name: "SCADA Setpoint Writer"
+      type: opc_ua
+      connection:
+        endpoint: "${SCADA_PRIMARY_ENDPOINT}"
+        security_mode: SignAndEncrypt
+      write_strategy: verify_then_commit
+
+    # DCS Integration
+    - id: dcs_optimizer
+      name: "DCS Combustion Optimizer Interface"
+      type: opc_ua
+      connection:
+        endpoint: "${DCS_ENDPOINT}"
+        security_mode: SignAndEncrypt
+      write_strategy: advisory_only
+      tags:
+        - recommended_o2_setpoint
+        - recommended_excess_air
+        - recommended_fuel_flow
+        - recommended_air_flow
+
+    # CMMS Integration
+    - id: cmms
+      name: "Computerized Maintenance Management System"
+      type: rest_api
+      connection:
+        base_url: "${CMMS_API_URL}"
+        auth_type: oauth2
+      events:
+        - burner_fouling_detected
+        - burner_tuning_required
+        - analyzer_calibration_due
+        - high_emissions_alert
+        - efficiency_degradation
+
+    # Reporting Database
+    - id: reporting_db
+      name: "Reporting Database"
+      type: postgresql
+      connection:
+        host: "${REPORTING_DB_HOST}"
+        port: 5432
+        database: greenlang_reporting
+        ssl_mode: require
+      tables:
+        - combustion_efficiency_metrics
+        - emissions_compliance_data
+        - optimization_results
+        - performance_reports
+
+    # Emissions Reporting System
+    - id: emissions_reporting
+      name: "Emissions Reporting Portal"
+      type: rest_api
+      connection:
+        base_url: "${EMISSIONS_PORTAL_URL}"
+        auth_type: oauth2
+      events:
+        - emissions_violation
+        - quarterly_emissions_report
+        - annual_emissions_report
+
+    # Blob Storage
+    - id: blob_storage
+      name: "Document Storage"
+      type: s3
+      connection:
+        bucket: "${S3_BUCKET_REPORTS}"
+        region: "${AWS_REGION}"
+      content_types:
+        - reports/pdf
+        - reports/excel
+        - graphs/png
+        - compliance_reports/pdf
+
+  # ----------------------------------------------------------------------------
+  # Monitoring & Observability
+  # ----------------------------------------------------------------------------
+  monitoring:
+    # Metrics
+    metrics:
+      enabled: true
+      port: 9090
+      path: /metrics
+      exporter: prometheus
+
+      # Custom Metrics
+      custom:
+        - name: gl018_combustion_efficiency_percent
+          type: gauge
+          description: "Thermal efficiency (HHV basis) %"
+          labels: [combustion_unit_id, location]
+
+        - name: gl018_excess_air_percent
+          type: gauge
+          description: "Excess air percentage"
+          labels: [combustion_unit_id]
+
+        - name: gl018_o2_percent_dry
+          type: gauge
+          description: "Oxygen concentration (% dry)"
+          labels: [combustion_unit_id]
+
+        - name: gl018_co2_percent_dry
+          type: gauge
+          description: "CO2 concentration (% dry)"
+          labels: [combustion_unit_id]
+
+        - name: gl018_co_ppm_dry
+          type: gauge
+          description: "CO concentration (ppm dry)"
+          labels: [combustion_unit_id]
+
+        - name: gl018_nox_ppm_at_3pct_o2
+          type: gauge
+          description: "NOx concentration (ppm @ 3% O2)"
+          labels: [combustion_unit_id]
+
+        - name: gl018_stack_temperature_c
+          type: gauge
+          description: "Stack temperature (°C)"
+          labels: [combustion_unit_id]
+
+        - name: gl018_nox_compliance_status
+          type: gauge
+          description: "NOx compliance status (1=compliant, 0=non-compliant)"
+          labels: [combustion_unit_id]
+
+        - name: gl018_co_compliance_status
+          type: gauge
+          description: "CO compliance status (1=compliant, 0=non-compliant)"
+          labels: [combustion_unit_id]
+
+        - name: gl018_fuel_savings_usd_per_hr
+          type: gauge
+          description: "Potential fuel savings (USD/hr)"
+          labels: [combustion_unit_id]
+
+        - name: gl018_co2_emissions_kg_hr
+          type: gauge
+          description: "CO2 emissions rate (kg/hr)"
+          labels: [combustion_unit_id]
+
+        - name: gl018_combustion_quality_score
+          type: gauge
+          description: "Combustion quality score (0-100)"
+          labels: [combustion_unit_id]
+
+        - name: gl018_optimizations_total
+          type: counter
+          description: "Total optimizations performed"
+          labels: [combustion_unit_id, optimization_type]
+
+        - name: gl018_emissions_violations_total
+          type: counter
+          description: "Total emissions violations"
+          labels: [combustion_unit_id, pollutant, severity]
+
+        - name: gl018_alerts_total
+          type: counter
+          description: "Total alerts generated"
+          labels: [combustion_unit_id, severity, alert_type]
+
+        - name: gl018_calculation_duration_seconds
+          type: histogram
+          description: "Calculation duration"
+          labels: [calculation_type]
+          buckets: [0.001, 0.005, 0.01, 0.05, 0.1, 0.5, 1.0]
+
+        - name: gl018_analyzer_status
+          type: gauge
+          description: "Analyzer status (1=online, 0=offline)"
+          labels: [analyzer_id, analyzer_type]
+
+    # Distributed Tracing
+    tracing:
+      enabled: true
+      exporter: otlp
+      endpoint: "${OTEL_EXPORTER_OTLP_ENDPOINT}"
+      protocol: grpc
+      sampling:
+        strategy: probabilistic
+        rate: 0.1
+      service_name: gl-018-flueflow
+
+    # Structured Logging
+    logging:
+      level: "${LOG_LEVEL:INFO}"
+      format: json
+      structured: true
+      correlation_id: true
+
+      outputs:
+        - type: stdout
+          level: INFO
+        - type: file
+          level: DEBUG
+          path: /var/log/greenlang/gl-018.log
+          rotation:
+            max_size_mb: 100
+            max_files: 10
+        - type: syslog
+          level: WARNING
+          facility: local0
+
+    # Health Checks
+    health:
+      liveness:
+        enabled: true
+        path: /health/liveness
+        port: 8080
+        initial_delay_seconds: 30
+        period_seconds: 10
+        timeout_seconds: 5
+        failure_threshold: 3
+
+      readiness:
+        enabled: true
+        path: /health/readiness
+        port: 8080
+        initial_delay_seconds: 5
+        period_seconds: 5
+        timeout_seconds: 3
+        failure_threshold: 3
+
+      startup:
+        enabled: true
+        path: /health/startup
+        port: 8080
+        initial_delay_seconds: 0
+        period_seconds: 5
+        timeout_seconds: 3
+        failure_threshold: 30
+
+    # Grafana Dashboards
+    dashboards:
+      - name: combustion_efficiency_overview
+        refresh_interval: 30s
+        panels:
+          - efficiency_trend
+          - excess_air_trend
+          - stack_temperature
+          - fuel_savings
+          - co2_emissions
+
+      - name: flue_gas_composition
+        refresh_interval: 10s
+        panels:
+          - o2_trend
+          - co2_trend
+          - co_trend
+          - nox_trend
+          - sox_trend
+          - moisture_trend
+
+      - name: emissions_compliance
+        refresh_interval: 60s
+        panels:
+          - nox_compliance_status
+          - co_compliance_status
+          - sox_compliance_status
+          - opacity_status
+          - violations_log
+
+      - name: burner_performance
+        refresh_interval: 60s
+        panels:
+          - combustion_quality_score
+          - burner_fouling_indicators
+          - incomplete_combustion_alerts
+          - air_register_positions
+          - damper_positions
+
+      - name: economic_performance
+        refresh_interval: 300s
+        panels:
+          - fuel_cost_savings
+          - emissions_penalty_cost
+          - carbon_tax_impact
+          - total_savings_tracking
+          - roi_metrics
+
+  # ----------------------------------------------------------------------------
+  # Alerting
+  # ----------------------------------------------------------------------------
+  alerts:
+    # Alert Channels
+    channels:
+      - name: email
+        type: email
+        config:
+          smtp_host: "${SMTP_HOST}"
+          smtp_port: 587
+          from: alerts@greenlang.io
+          recipients:
+            - combustion-team@company.com
+            - operations@company.com
+            - environmental@company.com
+
+      - name: slack
+        type: slack
+        config:
+          webhook_url: "${SLACK_WEBHOOK_URL}"
+          channel: "#gl-018-alerts"
+
+      - name: pagerduty
+        type: pagerduty
+        config:
+          integration_key: "${PAGERDUTY_INTEGRATION_KEY}"
+          severity_mapping:
+            critical: critical
+            high: error
+            medium: warning
+            low: info
+
+      - name: sms
+        type: twilio
+        config:
+          account_sid: "${TWILIO_ACCOUNT_SID}"
+          auth_token: "${TWILIO_AUTH_TOKEN}"
+          from_number: "${TWILIO_FROM_NUMBER}"
+          to_numbers:
+            - "${ON_CALL_PHONE_1}"
+            - "${ON_CALL_PHONE_2}"
+
+    # Alert Rules
+    rules:
+      - name: critical_low_o2
+        condition: "oxygen_percent_dry < 1.5"
+        severity: critical
+        description: "Dangerously low O2 - risk of incomplete combustion and safety hazard"
+        channels: [email, slack, pagerduty, sms]
+        throttle_minutes: 5
+        auto_resolve: true
+
+      - name: high_co_emissions
+        condition: "carbon_monoxide_ppm_dry > 400"
+        severity: critical
+        description: "High CO indicates incomplete combustion - immediate action required"
+        channels: [email, slack, pagerduty, sms]
+        throttle_minutes: 10
+        auto_resolve: true
+
+      - name: nox_limit_exceeded
+        condition: "nox_ppm_at_3pct_o2 > nox_limit_ppm"
+        severity: high
+        description: "NOx emissions exceed permit limit - regulatory violation"
+        channels: [email, slack, pagerduty]
+        throttle_minutes: 15
+        auto_resolve: true
+
+      - name: co_limit_exceeded
+        condition: "co_ppm_at_3pct_o2 > co_limit_ppm"
+        severity: high
+        description: "CO emissions exceed permit limit - regulatory violation"
+        channels: [email, slack, pagerduty]
+        throttle_minutes: 15
+        auto_resolve: true
+
+      - name: nox_approaching_limit
+        condition: "nox_ppm_at_3pct_o2 > nox_limit_ppm * 0.9"
+        severity: medium
+        description: "NOx approaching permit limit (>90%)"
+        channels: [email, slack]
+        throttle_minutes: 30
+
+      - name: efficiency_degradation_severe
+        condition: "thermal_efficiency_hhv_percent < design_efficiency_percent - 5.0"
+        severity: high
+        description: "Efficiency >5 points below design - urgent tuning required"
+        channels: [email, slack, pagerduty]
+        throttle_minutes: 60
+
+      - name: efficiency_degradation_moderate
+        condition: "thermal_efficiency_hhv_percent < design_efficiency_percent - 3.0"
+        severity: medium
+        description: "Efficiency >3 points below design - combustion tune recommended"
+        channels: [email, slack]
+        throttle_minutes: 120
+
+      - name: excessive_excess_air
+        condition: "excess_air_percent > 50"
+        severity: medium
+        description: "Excessive excess air reducing efficiency"
+        channels: [email, slack]
+        throttle_minutes: 60
+
+      - name: insufficient_excess_air
+        condition: "excess_air_percent < 5"
+        severity: high
+        description: "Insufficient excess air - risk of incomplete combustion"
+        channels: [email, slack, pagerduty]
+        throttle_minutes: 15
+
+      - name: stack_temperature_very_high
+        condition: "stack_temperature_c > 400"
+        severity: high
+        description: "Very high stack temperature - significant heat loss"
+        channels: [email, slack, pagerduty]
+        throttle_minutes: 30
+
+      - name: stack_temperature_high
+        condition: "stack_temperature_c > 350"
+        severity: medium
+        description: "High stack temperature - heat recovery opportunity"
+        channels: [email, slack]
+        throttle_minutes: 60
+
+      - name: burner_fouling_detected
+        condition: "fouling_detected == true"
+        severity: medium
+        description: "Burner fouling detected - cleaning recommended"
+        channels: [email, slack]
+        throttle_minutes: 240
+
+      - name: incomplete_combustion_detected
+        condition: "incomplete_combustion_detected == true"
+        severity: high
+        description: "Incomplete combustion detected - tune or repair required"
+        channels: [email, slack, pagerduty]
+        throttle_minutes: 30
+
+      - name: fuel_quality_deviation_high
+        condition: "fuel_quality_deviation_percent > 15"
+        severity: high
+        description: "Fuel quality deviates >15% from specification - investigate supplier"
+        channels: [email, slack]
+        throttle_minutes: 120
+
+      - name: fuel_quality_deviation_moderate
+        condition: "fuel_quality_deviation_percent > 10"
+        severity: medium
+        description: "Fuel quality deviates >10% from specification"
+        channels: [email, slack]
+        throttle_minutes: 240
+
+      - name: analyzer_offline_primary
+        condition: "flue_gas_analyzer_primary.status == 'DISCONNECTED'"
+        severity: critical
+        description: "Primary flue gas analyzer offline - failover to backup"
+        channels: [email, slack, pagerduty, sms]
+        throttle_minutes: 5
+
+      - name: analyzer_offline_backup
+        condition: "flue_gas_analyzer_backup.status == 'DISCONNECTED'"
+        severity: high
+        description: "Backup flue gas analyzer offline"
+        channels: [email, slack, pagerduty]
+        throttle_minutes: 15
+
+      - name: all_analyzers_offline
+        condition: "flue_gas_analyzer_primary.status == 'DISCONNECTED' AND flue_gas_analyzer_backup.status == 'DISCONNECTED'"
+        severity: critical
+        description: "All flue gas analyzers offline - no combustion monitoring"
+        channels: [email, slack, pagerduty, sms]
+        throttle_minutes: 1
+
+      - name: cems_validation_failure
+        condition: "cems_validation_status == 'FAILED'"
+        severity: high
+        description: "CEMS validation failed - regulatory reporting at risk"
+        channels: [email, slack, pagerduty]
+        throttle_minutes: 30
+
+      - name: high_opacity
+        condition: "opacity_percent > opacity_limit_percent"
+        severity: high
+        description: "Opacity exceeds limit - visible emissions violation"
+        channels: [email, slack, pagerduty]
+        throttle_minutes: 15
+
+      - name: sox_limit_exceeded
+        condition: "sox_kg_per_hr > sox_limit_kg_hr"
+        severity: high
+        description: "SOx emissions exceed limit"
+        channels: [email, slack, pagerduty]
+        throttle_minutes: 30
+
+  # ----------------------------------------------------------------------------
+  # Security
+  # ----------------------------------------------------------------------------
+  security:
+    # Authentication
+    authentication:
+      type: oauth2
+      provider: keycloak
+      realm: greenlang
+      client_id: gl-018-flueflow
+      required: true
+      token_expiry_seconds: 3600
+
+    # Authorization (RBAC)
+    authorization:
+      type: rbac
+
+      roles:
+        - name: admin
+          description: "Full administrative access"
+          permissions:
+            - agent:read
+            - agent:write
+            - agent:delete
+            - agent:configure
+            - setpoint:write
+            - alert:acknowledge
+            - alert:configure
+            - report:generate
+
+        - name: combustion_engineer
+          description: "Combustion engineers and specialists"
+          permissions:
+            - agent:read
+            - agent:write
+            - setpoint:write
+            - alert:acknowledge
+            - report:generate
+            - tuning:execute
+
+        - name: environmental_engineer
+          description: "Environmental compliance engineers"
+          permissions:
+            - agent:read
+            - emissions:view
+            - emissions:report
+            - alert:acknowledge
+            - report:generate
+
+        - name: operations_engineer
+          description: "Operations engineers"
+          permissions:
+            - agent:read
+            - setpoint:write
+            - alert:acknowledge
+            - report:view
+
+        - name: operator
+          description: "Plant operators"
+          permissions:
+            - agent:read
+            - alert:acknowledge
+            - report:view
+
+        - name: viewer
+          description: "Read-only access"
+          permissions:
+            - agent:read
+            - report:view
+
+      role_mappings:
+        - user_group: "combustion-team"
+          role: combustion_engineer
+        - user_group: "environmental-team"
+          role: environmental_engineer
+        - user_group: "operations-team"
+          role: operations_engineer
+        - user_group: "operators"
+          role: operator
+        - user_group: "management"
+          role: viewer
+
+    # Encryption
+    encryption:
+      at_rest:
+        enabled: true
+        algorithm: AES-256-GCM
+        key_rotation_days: 90
+
+      in_transit:
+        enabled: true
+        protocol: TLS
+        min_version: "1.3"
+        cipher_suites:
+          - TLS_AES_256_GCM_SHA384
+          - TLS_CHACHA20_POLY1305_SHA256
+        mutual_tls: false
+
+    # Secrets Management
+    secrets:
+      provider: hashicorp_vault
+      vault_addr: "${VAULT_ADDR}"
+      vault_namespace: greenlang
+      auth_method: kubernetes
+      secret_path: secret/gl-018
+
+      # Secret Rotation
+      rotation:
+        enabled: true
+        check_interval_hours: 24
+
+    # Audit Logging
+    audit:
+      enabled: true
+      retention_days: 2555  # 7 years
+      log_level: INFO
+
+      events:
+        - authentication_success
+        - authentication_failure
+        - authorization_failure
+        - setpoint_change
+        - configuration_change
+        - alert_acknowledged
+        - data_access
+        - report_generation
+        - emissions_violation
+        - compliance_report_generated
+
+      storage:
+        type: postgresql
+        encryption: true
+        immutable: true
+
+    # Network Policies
+    network:
+      ingress:
+        - from:
+            - namespace: greenlang-platform
+            - namespace: monitoring
+          ports:
+            - protocol: TCP
+              port: 8080
+            - protocol: TCP
+              port: 9090
+
+      egress:
+        - to:
+            - namespace: greenlang-platform
+          ports:
+            - protocol: TCP
+              port: 5432  # PostgreSQL
+            - protocol: TCP
+              port: 6379  # Redis
+        - to:
+            - external: scada-system
+          ports:
+            - protocol: TCP
+              port: 4840  # OPC UA
+        - to:
+            - external: analyzer-network
+          ports:
+            - protocol: TCP
+              port: 502  # Modbus TCP
+
+  # ----------------------------------------------------------------------------
+  # Deployment
+  # ----------------------------------------------------------------------------
+  deployment:
+    # Replicas
+    replicas: 3
+
+    # Update Strategy
+    strategy:
+      type: RollingUpdate
+      rolling_update:
+        max_surge: 1
+        max_unavailable: 0
+
+    # Resource Requirements
+    resources:
+      requests:
+        cpu: "500m"
+        memory: "1Gi"
+        ephemeral_storage: "5Gi"
+      limits:
+        cpu: "2000m"
+        memory: "2Gi"
+        ephemeral_storage: "10Gi"
+
+    # Autoscaling
+    autoscaling:
+      enabled: true
+      min_replicas: 2
+      max_replicas: 10
+
+      metrics:
+        - type: cpu
+          target_utilization_percent: 70
+        - type: memory
+          target_utilization_percent: 80
+        - type: custom
+          metric_name: gl018_optimizations_per_second
+          target_value: 200
+
+      behavior:
+        scale_up:
+          stabilization_window_seconds: 60
+          policies:
+            - type: Percent
+              value: 50
+              period_seconds: 60
+        scale_down:
+          stabilization_window_seconds: 300
+          policies:
+            - type: Pods
+              value: 1
+              period_seconds: 120
+
+    # Pod Disruption Budget
+    pod_disruption_budget:
+      enabled: true
+      min_available: 1
+
+    # Scheduling
+    scheduling:
+      node_selector:
+        workload-type: computation
+        region: primary
+
+      tolerations:
+        - key: "dedicated"
+          operator: "Equal"
+          value: "greenlang"
+          effect: "NoSchedule"
+
+      affinity:
+        pod_anti_affinity:
+          preferred_during_scheduling_ignored_during_execution:
+            - weight: 100
+              pod_affinity_term:
+                label_selector:
+                  match_expressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - gl-018-flueflow
+                topology_key: kubernetes.io/hostname
+
+        node_affinity:
+          required_during_scheduling_ignored_during_execution:
+            node_selector_terms:
+              - match_expressions:
+                  - key: node.kubernetes.io/instance-type
+                    operator: In
+                    values:
+                      - c5.xlarge
+                      - c5.2xlarge
+
+    # Volumes
+    volumes:
+      - name: config
+        type: configmap
+        configmap_name: gl-018-config
+        mount_path: /app/config
+        read_only: true
+
+      - name: secrets
+        type: secret
+        secret_name: gl-018-secrets
+        mount_path: /app/secrets
+        read_only: true
+
+      - name: cache
+        type: emptydir
+        mount_path: /app/cache
+        size_limit: 5Gi
+
+      - name: logs
+        type: persistentvolumeclaim
+        claim_name: gl-018-logs-pvc
+        mount_path: /var/log/greenlang
+
+      - name: thermodynamic_data
+        type: configmap
+        configmap_name: gl-018-thermo-data
+        mount_path: /app/data/thermo
+        read_only: true
+
+    # Environment Variables
+    environment:
+      - name: LOG_LEVEL
+        value: "${LOG_LEVEL:INFO}"
+      - name: METRICS_ENABLED
+        value: "true"
+      - name: CACHE_TTL_SECONDS
+        value: "60"
+      - name: DETERMINISTIC_MODE
+        value: "true"
+      - name: ZERO_HALLUCINATION
+        value: "true"
+      - name: PYTHONUNBUFFERED
+        value: "1"
+      - name: TZ
+        value: "UTC"
+      - name: CANTERA_DATA_PATH
+        value: "/app/data/thermo"
+
+  # ----------------------------------------------------------------------------
+  # Compliance
+  # ----------------------------------------------------------------------------
+  compliance:
+    standards:
+      - name: EPA_METHOD_19
+        version: "2023"
+        description: "EPA Method 19 - SO2 Removal and PM, SO2, NOx Emission Rates"
+        applicable_sections:
+          - combustion_efficiency_calculation
+          - emissions_rate_calculation
+
+      - name: ASME_PTC_4_1
+        version: "2013 (R2019)"
+        description: "ASME PTC 4.1 - Steam Generating Units"
+        applicable_sections:
+          - efficiency_testing
+          - heat_loss_calculations
+
+      - name: ISO_12039
+        version: "2019"
+        description: "ISO 12039 - Stationary source emissions - CO, CO2, O2 measurement"
+
+      - name: ISO_50001
+        version: "2018"
+        description: "ISO 50001 - Energy Management Systems"
+
+      - name: EN_15259
+        version: "2007"
+        description: "EN 15259 - Air quality - Measurement of stationary source emissions"
+
+      - name: NFPA_85
+        version: "2023"
+        description: "NFPA 85 - Boiler and Combustion Systems Hazards Code"
+
+      - name: 40_CFR_PART_60
+        version: "2023"
+        description: "40 CFR Part 60 - Standards of Performance for New Stationary Sources (NSPS)"
+
+      - name: EU_IED
+        version: "2010/75/EU"
+        description: "EU Industrial Emissions Directive"
+
+    # Validation Rules
+    validation:
+      enabled: true
+      rule_count: 200
+
+      categories:
+        - input_validation
+        - output_validation
+        - flue_gas_composition_limits
+        - emissions_calculation_validation
+        - mass_balance_validation
+        - energy_balance_validation
+        - regulatory_compliance
+        - safety_limits
+
+      enforcement:
+        mode: strict
+        fail_on_violation: true
+        log_violations: true
+
+    # Audit Trail
+    audit_trail:
+      enabled: true
+      retention_days: 2555  # 7 years for regulatory compliance
+      storage_type: postgresql
+      encryption: true
+      immutable: true
+
+      tracked_events:
+        - calculation_execution
+        - optimization_performed
+        - setpoint_change
+        - alert_generated
+        - emissions_violation
+        - compliance_report_generated
+        - configuration_change
+        - data_access
+
+    # Provenance Tracking
+    provenance:
+      enabled: true
+      hash_algorithm: SHA-256
+      include_timestamps: true
+      include_inputs: true
+      include_model_version: true
+      include_calculation_path: true
+      include_standard_references: true
+
+    # Zero-Hallucination Guarantees
+    zero_hallucination:
+      enabled: true
+      enforcement: strict
+
+      llm_prohibited_for:
+        - numeric_calculations
+        - combustion_efficiency_calculations
+        - emissions_calculations
+        - heat_loss_calculations
+        - air_fuel_ratio_calculations
+        - stoichiometric_calculations
+        - mass_balance_calculations
+        - energy_balance_calculations
+        - thermodynamic_calculations
+
+      llm_allowed_for:
+        - natural_language_generation
+        - recommendation_explanation
+        - incident_description
+        - report_narrative
+        - best_practice_guidance
+        - combustion_diagnostics_narrative
+
+      validation:
+        cross_check_calculations: true
+        validate_against_physics: true
+        check_conservation_laws: true
+        verify_emissions_factors: true
+
+  # ----------------------------------------------------------------------------
+  # Performance
+  # ----------------------------------------------------------------------------
+  performance:
+    # Optimization Targets
+    targets:
+      calculation_latency_p50_ms: 30
+      calculation_latency_p95_ms: 100
+      calculation_latency_p99_ms: 300
+      throughput_calculations_per_second: 200
+      error_rate_percent: 0.1
+      availability_percent: 99.9
+
+    # Connection Pooling
+    connection_pools:
+      database:
+        min_size: 5
+        max_size: 20
+        timeout_seconds: 30
+        max_idle_seconds: 600
+
+      redis:
+        min_size: 3
+        max_size: 10
+        timeout_seconds: 5
+
+      http:
+        max_connections: 100
+        max_connections_per_host: 20
+        timeout_seconds: 30
+
+    # Rate Limiting
+    rate_limiting:
+      enabled: true
+      requests_per_minute: 1200
+      burst: 200
+
+    # Circuit Breakers
+    circuit_breakers:
+      - name: analyzer_connection
+        failure_threshold: 5
+        timeout_seconds: 30
+        recovery_timeout_seconds: 60
+
+      - name: scada_connection
+        failure_threshold: 5
+        timeout_seconds: 30
+        recovery_timeout_seconds: 60
+
+      - name: database_connection
+        failure_threshold: 3
+        timeout_seconds: 10
+        recovery_timeout_seconds: 30
+
+  # ----------------------------------------------------------------------------
+  # Data Retention
+  # ----------------------------------------------------------------------------
+  data_retention:
+    policies:
+      - data_type: real_time_measurements
+        retention_days: 90
+        compression: true
+        archive_after_days: 30
+        archive_location: s3
+
+      - data_type: hourly_aggregates
+        retention_days: 365
+        compression: true
+        archive_after_days: 90
+
+      - data_type: daily_summaries
+        retention_days: 2555  # 7 years for regulatory compliance
+        compression: true
+
+      - data_type: optimization_results
+        retention_days: 2555
+        compression: true
+        immutable: true
+
+      - data_type: emissions_data
+        retention_days: 2555  # 7 years regulatory requirement
+        compression: true
+        immutable: true
+
+      - data_type: compliance_reports
+        retention_days: 2555
+        compression: true
+        immutable: true
+
+      - data_type: audit_logs
+        retention_days: 2555
+        compression: false
+        immutable: true
+
+      - data_type: reports
+        retention_days: 2555
+        compression: true
+
+      - data_type: cache_data
+        retention_hours: 24
+        auto_cleanup: true
+
+  # ----------------------------------------------------------------------------
+  # Backup & Recovery
+  # ----------------------------------------------------------------------------
+  backup:
+    enabled: true
+
+    schedule:
+      full_backup: "0 2 * * 0"  # Weekly on Sunday at 2 AM
+      incremental_backup: "0 2 * * 1-6"  # Daily at 2 AM
+
+    retention:
+      full_backups: 4  # Keep 4 weekly full backups
+      incremental_backups: 14  # Keep 14 daily incremental backups
+
+    storage:
+      type: s3
+      bucket: "${S3_BUCKET_BACKUPS}"
+      region: "${AWS_REGION}"
+      encryption: true
+
+    disaster_recovery:
+      rto_minutes: 60  # Recovery Time Objective
+      rpo_minutes: 15  # Recovery Point Objective
+
+    testing:
+      schedule: "0 3 1 * *"  # Monthly on 1st at 3 AM
+      restore_validation: true
+
+# ==============================================================================
+# METADATA
+# ==============================================================================
+metadata_extended:
+  created_by: greenlang-team
+  created_date: "2024-12-02"
+  last_modified: "2024-12-02"
+  last_modified_by: greenlang-team
+
+  version_history:
+    - version: "1.0.0"
+      date: "2024-12-02"
+      changes: "Initial production release"
+
+  documentation:
+    user_guide: https://docs.greenlang.io/agents/GL-018/user-guide
+    api_reference: https://docs.greenlang.io/agents/GL-018/api
+    architecture: https://docs.greenlang.io/agents/GL-018/architecture
+    deployment: https://docs.greenlang.io/agents/GL-018/deployment
+    troubleshooting: https://docs.greenlang.io/agents/GL-018/troubleshooting
+    combustion_engineering: https://docs.greenlang.io/agents/GL-018/combustion-engineering
+    emissions_compliance: https://docs.greenlang.io/agents/GL-018/emissions-compliance
+
+  support:
+    primary_contact: support@greenlang.io
+    slack_channel: "#gl-018-flueflow"
+    jira_project: GL-018
+    on_call_rotation: https://pagerduty.com/schedules/gl-018
+
+  business:
+    tam: "$4B"
+    target_date: "Q1 2026"
+    priority: P1
+    business_owner: combustion-optimization-lead
+
+    kpis:
+      - name: fuel_savings_percent
+        target: 5
+        measurement: monthly
+      - name: efficiency_improvement_percentage_points
+        target: 3
+        measurement: monthly
+      - name: nox_reduction_percent
+        target: 20
+        measurement: monthly
+      - name: co_reduction_percent
+        target: 60
+        measurement: monthly
+      - name: compliance_violations_reduction_percent
+        target: 90
+        measurement: quarterly
+      - name: annual_savings_per_unit_usd
+        target: 150000
+        measurement: annual

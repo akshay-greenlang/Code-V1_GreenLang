@@ -1,0 +1,1362 @@
+# SOC 2 Security Policies
+# GL-VCCI Scope 3 Platform - SOC 2 Type II Compliance
+#
+# Version: 1.0.0
+# Date: January 2025
+# Audit Firm: [Big 4 Firm - TBD]
+# Audit Timeline: Week 1-44 (evidence collection), Week 45-48 (audit)
+
+# ============================================================================
+# DOCUMENT METADATA
+# ============================================================================
+metadata:
+  name: "SOC 2 Security Policies"
+  version: "1.0.0"
+  type: "security_compliance"
+  category: "soc2_type2"
+
+  description: >
+    Comprehensive security policies for SOC 2 Type II audit readiness.
+    Covers all five Trust Services Criteria (Security, Availability,
+    Processing Integrity, Confidentiality, Privacy).
+
+  purpose: >
+    Enable SOC 2 Type II certification for GL-VCCI platform by defining
+    security controls, procedures, and responsibilities. Required for
+    enterprise sales (Fortune 500 procurement requirement).
+
+  scope:
+    services_covered:
+      - "GL-VCCI Scope 3 Carbon Intelligence Platform"
+      - "All 5 agents (Intake, Calculator, Hotspot, Engagement, Reporting)"
+      - "4 core services (Factor Broker, Policy Engine, Entity MDM, PCF Exchange)"
+      - "ERP connectors (SAP, Oracle, Workday)"
+      - "Supplier portal (web application)"
+
+    trust_services_criteria:
+      - "CC (Common Criteria): Security, Availability"
+      - "PI (Processing Integrity): Calculation accuracy, provenance"
+      - "C (Confidentiality): Data protection, encryption"
+      - "P (Privacy): GDPR/CCPA compliance, consent management"
+
+  audit_timeline:
+    soc2_readiness_assessment: "Week 1-4"
+    evidence_collection_period: "Week 1-44 (11 months)"
+    soc2_type2_audit: "Week 45-48 (Month 12)"
+    audit_firm: "[Big 4 Firm - TBD]"
+    audit_cost: "$60,000"
+
+# ============================================================================
+# POLICY 1: INFORMATION SECURITY POLICY
+# ============================================================================
+- policy_id: "POL-001"
+  policy_name: "Information Security Policy"
+  category: "Security (CC)"
+  version: "1.0"
+  effective_date: "2025-01-25"
+  review_frequency: "Annually"
+  owner: "Chief Information Security Officer (CISO)"
+
+  purpose: >
+    Establish overarching information security framework to protect
+    confidentiality, integrity, and availability of customer data.
+
+  scope:
+    - "All employees, contractors, and third-party vendors"
+    - "All information systems (production, staging, development)"
+    - "All customer data (emissions data, supplier data, PCFs)"
+
+  policy_statements:
+    - statement: "Principle of Least Privilege"
+      description: >
+        Users shall be granted minimum access necessary to perform job functions.
+        Access rights reviewed quarterly.
+
+    - statement: "Defense in Depth"
+      description: >
+        Multiple layers of security controls (network, host, application, data).
+
+    - statement: "Encryption at Rest and in Transit"
+      description: >
+        All sensitive data encrypted using AES-256 (at rest) and TLS 1.3 (in transit).
+
+    - statement: "Security by Design"
+      description: >
+        Security requirements integrated into SDLC from design phase.
+
+    - statement: "Continuous Monitoring"
+      description: >
+        24/7 security monitoring via SIEM, automated alerts, incident response.
+
+  responsibilities:
+    ciso:
+      - "Define and enforce security policies"
+      - "Oversee security architecture and controls"
+      - "Coordinate SOC 2 audit preparation"
+
+    devops_security_engineer:
+      - "Implement security controls (firewalls, SIEM, IAM)"
+      - "Monitor security alerts and respond to incidents"
+      - "Conduct security assessments (SAST, DAST, pen tests)"
+
+    all_employees:
+      - "Complete annual security awareness training"
+      - "Report suspected security incidents within 2 hours"
+      - "Follow password policy and MFA requirements"
+
+  enforcement:
+    violations: "Security policy violations subject to disciplinary action, up to termination"
+    incident_response: "All suspected incidents reported to CISO within 2 hours"
+
+# ============================================================================
+# POLICY 2: ACCESS CONTROL POLICY
+# ============================================================================
+- policy_id: "POL-002"
+  policy_name: "Access Control Policy"
+  category: "Security (CC6.1, CC6.2)"
+  version: "1.0"
+  effective_date: "2025-01-25"
+  review_frequency: "Quarterly"
+  owner: "DevOps & Security Engineer"
+
+  purpose: >
+    Control access to systems, applications, and data based on principle
+    of least privilege and role-based access control (RBAC).
+
+  scope:
+    - "Production systems (Kubernetes clusters, databases)"
+    - "Development and staging environments"
+    - "Administrative tools (AWS Console, K8s dashboard, monitoring)"
+    - "Source code repositories (GitHub)"
+
+  policy_statements:
+    - statement: "Role-Based Access Control (RBAC)"
+      description: >
+        Access granted based on job role. Predefined roles:
+        - Admin (full access)
+        - Developer (code, staging)
+        - Data Analyst (read-only production data)
+        - Customer Success (customer dashboards, support tools)
+
+    - statement: "Multi-Factor Authentication (MFA) Required"
+      description: >
+        MFA mandatory for all production system access, VPN, AWS Console.
+        Acceptable MFA methods: Authenticator app (Google Authenticator, Authy),
+        Hardware token (YubiKey).
+
+    - statement: "Access Provisioning and Deprovisioning"
+      description: >
+        New hire access provisioned within 1 business day.
+        Terminated employee access revoked within 1 hour of termination notice.
+
+    - statement: "Quarterly Access Reviews"
+      description: >
+        All user access rights reviewed quarterly by managers and CISO.
+        Unnecessary access removed.
+
+    - statement: "Privileged Access Management (PAM)"
+      description: >
+        Privileged accounts (root, admin) require:
+        - Separate privileged account (no shared admin accounts)
+        - MFA required
+        - Session recording for audit trail
+        - Just-in-Time (JIT) access (temporary elevation)
+
+  implementation:
+    iam_system: "AWS IAM + Kubernetes RBAC"
+    mfa_enforcement: "Enforced via IAM policies"
+    access_reviews: "Quarterly (Jan, Apr, Jul, Oct)"
+
+    rbac_roles:
+      - role: "Admin"
+        permissions:
+          - "Full access to production systems"
+          - "Infrastructure provisioning (Terraform, K8s)"
+          - "Database write access (production)"
+
+      - role: "Developer"
+        permissions:
+          - "Code repository access (GitHub)"
+          - "Staging environment full access"
+          - "Production read-only (logs, metrics)"
+
+      - role: "DataAnalyst"
+        permissions:
+          - "Production database read-only"
+          - "Reporting dashboards access"
+          - "No infrastructure access"
+
+      - role: "CustomerSuccess"
+        permissions:
+          - "Customer dashboards (Grafana, Kibana)"
+          - "Support ticketing system"
+          - "No production database access"
+
+  monitoring:
+    - "All access attempts logged (successful and failed)"
+    - "Failed login alerts (5+ failures in 10 minutes)"
+    - "Privileged access alerts (any root/admin session)"
+    - "Access review audit trail (quarterly reviews documented)"
+
+# ============================================================================
+# POLICY 3: DATA CLASSIFICATION AND HANDLING POLICY
+# ============================================================================
+- policy_id: "POL-003"
+  policy_name: "Data Classification and Handling Policy"
+  category: "Confidentiality (C1.1, C1.2)"
+  version: "1.0"
+  effective_date: "2025-01-25"
+  review_frequency: "Annually"
+  owner: "Data Protection Officer (DPO)"
+
+  purpose: >
+    Classify data by sensitivity level and define handling procedures
+    to protect customer confidentiality and comply with GDPR/CCPA.
+
+  scope:
+    - "All data collected, stored, processed by GL-VCCI platform"
+    - "Customer procurement data, emissions data, supplier data, PCFs"
+    - "Employee personal data, authentication credentials"
+
+  data_classification_levels:
+    - level: "Public"
+      description: "Information intended for public disclosure"
+      examples:
+        - "Marketing materials"
+        - "Public case studies (anonymized)"
+        - "API documentation"
+      handling:
+        encryption_required: false
+        access_control: "Publicly accessible"
+        retention: "Indefinite"
+
+    - level: "Internal"
+      description: "Information for internal use only"
+      examples:
+        - "Internal documentation, runbooks"
+        - "Non-sensitive aggregate metrics"
+      handling:
+        encryption_required: false
+        access_control: "Employee access only"
+        retention: "7 years"
+
+    - level: "Confidential"
+      description: "Sensitive business information requiring protection"
+      examples:
+        - "Customer emissions data"
+        - "Supplier data (names, addresses, spend)"
+        - "PCF data (non-personal)"
+        - "Pricing information"
+      handling:
+        encryption_required: true
+        encryption_standard: "AES-256 (at rest), TLS 1.3 (in transit)"
+        access_control: "Role-based access (authorized employees only)"
+        retention: "7 years post-contract termination (audit requirement)"
+
+    - level: "Restricted"
+      description: "Highly sensitive data subject to strict controls"
+      examples:
+        - "Personal data (GDPR/CCPA): Employee names, emails, IP addresses"
+        - "Authentication credentials (passwords, API keys)"
+        - "Financial data (payment info)"
+      handling:
+        encryption_required: true
+        encryption_standard: "AES-256 (at rest), TLS 1.3 (in transit)"
+        access_control: "Need-to-know basis only, MFA required"
+        masking_required: true
+        logging: "All access logged and audited"
+        retention: "Minimum necessary per GDPR (typically 1-3 years)"
+
+  data_handling_procedures:
+    - procedure: "Data at Rest Encryption"
+      requirements:
+        - "PostgreSQL: Transparent Data Encryption (TDE) enabled"
+        - "S3: Default encryption (AES-256) enabled"
+        - "Redis: Encryption enabled (redis-encryption module)"
+
+    - procedure: "Data in Transit Encryption"
+      requirements:
+        - "TLS 1.3 mandatory for all API endpoints"
+        - "Certificate pinning for mobile apps"
+        - "No unencrypted HTTP traffic allowed"
+
+    - procedure: "Data Masking and Anonymization"
+      requirements:
+        - "Production data masked in staging/dev environments"
+        - "PII anonymized in logs (email → e***@example.com)"
+        - "Public reports use anonymized supplier names"
+
+    - procedure: "Data Retention and Deletion"
+      requirements:
+        - "Automated deletion after retention period expires"
+        - "Customer data deleted within 30 days of termination request (GDPR Right to Erasure)"
+        - "Backups encrypted and purged after 7 years"
+
+  compliance:
+    gdpr:
+      - "Data minimization: Collect only necessary data"
+      - "Purpose limitation: Use data only for stated purpose"
+      - "Storage limitation: Retain only as long as necessary"
+      - "Right to erasure: Delete upon customer request (Art. 17)"
+      - "Data portability: Export in machine-readable format (Art. 20)"
+
+    ccpa:
+      - "Right to know: Disclose data collection practices"
+      - "Right to delete: Delete upon consumer request"
+      - "Right to opt-out: Opt-out of data sale (N/A - we don't sell data)"
+
+# ============================================================================
+# POLICY 4: ENCRYPTION POLICY
+# ============================================================================
+- policy_id: "POL-004"
+  policy_name: "Encryption Policy"
+  category: "Confidentiality (C1.2)"
+  version: "1.0"
+  effective_date: "2025-01-25"
+  review_frequency: "Annually"
+  owner: "DevOps & Security Engineer"
+
+  purpose: >
+    Define encryption standards and key management procedures to protect
+    data confidentiality at rest and in transit.
+
+  scope:
+    - "All sensitive data (Confidential and Restricted classifications)"
+    - "All data stores (PostgreSQL, Redis, S3, Weaviate)"
+    - "All network communications (API, ERP connectors, supplier portal)"
+
+  encryption_standards:
+    at_rest:
+      algorithm: "AES-256-GCM"
+      key_size: 256
+      key_rotation: "Annually (or upon suspicion of compromise)"
+
+      implementations:
+        postgresql:
+          method: "Transparent Data Encryption (TDE)"
+          key_management: "AWS KMS"
+
+        s3:
+          method: "Server-Side Encryption (SSE-KMS)"
+          key_management: "AWS KMS"
+
+        redis:
+          method: "redis-encryption module"
+          key_management: "AWS KMS"
+
+        weaviate:
+          method: "Disk encryption (LUKS)"
+          key_management: "AWS KMS"
+
+    in_transit:
+      protocol: "TLS 1.3"
+      minimum_version: "TLS 1.2"
+      cipher_suites:
+        - "TLS_AES_256_GCM_SHA384"
+        - "TLS_CHACHA20_POLY1305_SHA256"
+        - "TLS_AES_128_GCM_SHA256"
+
+      certificate:
+        type: "X.509 certificates (Let's Encrypt)"
+        validity: "90 days (auto-renewed)"
+        key_size: "RSA 2048-bit or ECC 256-bit"
+
+  key_management:
+    kms_provider: "AWS Key Management Service (KMS)"
+
+    key_hierarchy:
+      - tier: "Master Key (CMK)"
+        location: "AWS KMS"
+        rotation: "Annually (automatic)"
+        access: "DevOps & Security Engineer only"
+
+      - tier: "Data Encryption Keys (DEKs)"
+        location: "Encrypted by CMK, stored with data"
+        rotation: "On-demand (per data key)"
+        access: "Application services only"
+
+    key_access_control:
+      - "IAM policies restrict CMK access to authorized services"
+      - "Audit logging: All key usage logged to CloudTrail"
+      - "Separation of duties: No single person can access both keys and data"
+
+  monitoring:
+    - "TLS certificate expiration alerts (14 days before expiry)"
+    - "Key rotation alerts (annual rotation due)"
+    - "Failed decryption attempts logged and alerted"
+
+# ============================================================================
+# POLICY 5: CHANGE MANAGEMENT POLICY
+# ============================================================================
+- policy_id: "POL-005"
+  policy_name: "Change Management Policy"
+  category: "Processing Integrity (PI1.1, PI1.2)"
+  version: "1.0"
+  effective_date: "2025-01-25"
+  review_frequency: "Annually"
+  owner: "Lead Architect"
+
+  purpose: >
+    Ensure all changes to production systems are authorized, tested,
+    and documented to maintain system integrity and availability.
+
+  scope:
+    - "All production infrastructure changes (K8s, databases, networking)"
+    - "All application code changes (agents, connectors, APIs)"
+    - "All configuration changes (OPA policies, emission factors)"
+
+  change_categories:
+    - category: "Standard Change"
+      description: "Low-risk, pre-approved changes"
+      examples:
+        - "Routine security patches"
+        - "Database index creation (read-only)"
+        - "Scaling adjustments (increase replicas)"
+      approval_required: false
+      testing_required: "Unit tests only"
+      change_window: "Anytime (24/7)"
+
+    - category: "Normal Change"
+      description: "Medium-risk changes requiring approval"
+      examples:
+        - "Application feature releases"
+        - "Database schema changes (non-breaking)"
+        - "OPA policy updates (new version)"
+      approval_required: true
+      approvers: ["Lead Architect", "DevOps Engineer"]
+      testing_required: "Unit + Integration + E2E tests"
+      change_window: "Maintenance window (Saturday 2-6am UTC)"
+
+    - category: "Emergency Change"
+      description: "High-urgency changes to resolve P0 incidents"
+      examples:
+        - "Security vulnerability patches"
+        - "Critical bug fixes (data corruption, outage)"
+      approval_required: true
+      approvers: ["CISO", "Lead Architect"]
+      testing_required: "Minimal (post-change validation)"
+      change_window: "Immediate (outside maintenance window)"
+      post_change_review: "Required within 24 hours"
+
+  change_process:
+    - step: 1
+      action: "Submit Change Request (CR)"
+      details: >
+        Create Jira ticket with: Description, Justification, Impact analysis,
+        Rollback plan, Testing evidence.
+
+    - step: 2
+      action: "Peer Review"
+      details: >
+        Code review (GitHub PR) by 2+ engineers. Automated checks:
+        Unit tests, SAST (SonarQube), linting.
+
+    - step: 3
+      action: "Approval"
+      details: >
+        Normal changes: Lead Architect + DevOps approve.
+        Emergency changes: CISO + Lead Architect approve.
+
+    - step: 4
+      action: "Testing"
+      details: >
+        Deploy to staging, run E2E tests, load tests (if applicable).
+        Verify rollback procedure works.
+
+    - step: 5
+      action: "Deployment"
+      details: >
+        GitOps workflow (ArgoCD): Merge PR → Auto-deploy to production.
+        Blue-green deployment (zero downtime).
+
+    - step: 6
+      action: "Validation"
+      details: >
+        Post-deployment smoke tests, monitoring dashboards, alert review.
+
+    - step: 7
+      action: "Documentation"
+      details: >
+        Update runbooks, API docs, CHANGELOG.md.
+        Close Jira CR ticket with deployment evidence.
+
+  rollback_procedures:
+    - "All changes require documented rollback plan"
+    - "Automated rollback triggered if health checks fail"
+    - "Manual rollback within 15 minutes if automated rollback fails"
+    - "GitOps: Revert Git commit, ArgoCD auto-deploys previous version"
+
+  monitoring:
+    - "All production changes logged to audit trail"
+    - "Change failure rate tracked (target: <5%)"
+    - "Mean time to recovery (MTTR) tracked (target: <15 minutes)"
+
+# ============================================================================
+# POLICY 6: INCIDENT RESPONSE POLICY
+# ============================================================================
+- policy_id: "POL-006"
+  policy_name: "Incident Response Policy"
+  category: "Security (CC7.1, CC7.2)"
+  version: "1.0"
+  effective_date: "2025-01-25"
+  review_frequency: "Annually"
+  owner: "CISO"
+
+  purpose: >
+    Define procedures for detecting, responding to, and recovering from
+    security incidents to minimize impact and prevent recurrence.
+
+  scope:
+    - "All security incidents (data breaches, unauthorized access, DDoS)"
+    - "All availability incidents (outages, performance degradation)"
+    - "All integrity incidents (data corruption, calculation errors)"
+
+  incident_severity_levels:
+    - severity: "P0 - Critical"
+      description: "System down, data breach, or active attack"
+      examples:
+        - "Production outage affecting all customers"
+        - "Confirmed data breach (customer data exfiltrated)"
+        - "Active DDoS attack"
+      response_time: "Immediate (15 minutes)"
+      escalation: "CISO, CTO, CEO notified immediately"
+      customer_notification: "Within 4 hours"
+
+    - severity: "P1 - High"
+      description: "Significant service degradation or potential breach"
+      examples:
+        - "Production performance degradation (API p95 >1s)"
+        - "Suspected unauthorized access (investigation required)"
+        - "Critical vulnerability discovered (CVSS ≥9.0)"
+      response_time: "1 hour"
+      escalation: "CISO, DevOps, Lead Architect"
+      customer_notification: "Within 24 hours (if customer-impacting)"
+
+    - severity: "P2 - Medium"
+      description: "Limited service impact or low-risk security event"
+      examples:
+        - "Single-tenant outage or error"
+        - "Failed login attempts (potential brute force)"
+        - "Non-critical vulnerability (CVSS 7.0-8.9)"
+      response_time: "4 hours"
+      escalation: "DevOps, on-call engineer"
+      customer_notification: "If customer-impacting, within 48 hours"
+
+    - severity: "P3 - Low"
+      description: "Minor issue with minimal impact"
+      examples:
+        - "Monitoring alert (non-critical)"
+        - "Low-severity vulnerability (CVSS <7.0)"
+      response_time: "Next business day"
+      escalation: "On-call engineer"
+      customer_notification: "Not required"
+
+  incident_response_process:
+    - phase: "1. Detection and Triage"
+      actions:
+        - "Security event detected via SIEM, monitoring, or user report"
+        - "On-call engineer assesses severity (P0-P3)"
+        - "Create incident ticket (Jira or PagerDuty)"
+
+    - phase: "2. Containment"
+      actions:
+        - "Isolate affected systems (network segmentation, firewall rules)"
+        - "Revoke compromised credentials (API keys, user accounts)"
+        - "Enable DDoS mitigation (CloudFlare, AWS Shield)"
+
+    - phase: "3. Eradication"
+      actions:
+        - "Remove malware, close vulnerabilities, patch systems"
+        - "Review logs for indicators of compromise (IOCs)"
+        - "Reset all potentially compromised credentials"
+
+    - phase: "4. Recovery"
+      actions:
+        - "Restore from clean backups (if data corruption)"
+        - "Re-enable isolated systems after validation"
+        - "Monitor for recurrence (24-48 hour elevated monitoring)"
+
+    - phase: "5. Post-Incident Review"
+      actions:
+        - "Conduct root cause analysis (RCA) within 48 hours"
+        - "Document lessons learned, update runbooks"
+        - "Implement preventive measures (code fixes, monitoring alerts)"
+        - "Share RCA with affected customers (transparency)"
+
+  notification_requirements:
+    internal:
+      - "P0/P1 incidents: CISO, CTO, CEO notified immediately"
+      - "All incidents: Incident response team notified via PagerDuty"
+
+    external:
+      - "Affected customers notified per SLA (P0: 4h, P1: 24h, P2: 48h)"
+      - "Data breach notification per GDPR (72 hours to supervisory authority)"
+      - "Data breach notification per CCPA (without unreasonable delay)"
+
+  evidence_preservation:
+    - "All logs, system snapshots, and forensic evidence preserved for 90 days"
+    - "Chain of custody maintained for legal/audit purposes"
+    - "Encrypted evidence storage (S3 with versioning)"
+
+# ============================================================================
+# POLICY 7: BUSINESS CONTINUITY AND DISASTER RECOVERY POLICY
+# ============================================================================
+- policy_id: "POL-007"
+  policy_name: "Business Continuity and Disaster Recovery Policy"
+  category: "Availability (A1.1, A1.2)"
+  version: "1.0"
+  effective_date: "2025-01-25"
+  review_frequency: "Annually"
+  owner: "DevOps & Security Engineer"
+
+  purpose: >
+    Ensure business continuity and rapid recovery from disasters
+    (natural disasters, cyberattacks, hardware failures).
+
+  scope:
+    - "All production systems (K8s, databases, storage)"
+    - "Critical business functions (emissions calculations, reporting)"
+
+  recovery_objectives:
+    rto: "4 hours"  # Recovery Time Objective
+    rpo: "1 hour"   # Recovery Point Objective
+    availability_target: "99.9%"  # 43 minutes downtime/month max
+
+  backup_strategy:
+    postgresql:
+      backup_frequency: "Daily (automated)"
+      backup_retention: "7 days (daily), 4 weeks (weekly), 12 months (monthly)"
+      backup_location: "AWS S3 (cross-region replication)"
+      backup_encryption: "AES-256"
+      recovery_testing: "Quarterly (restore from backup to staging)"
+
+    s3:
+      versioning: "Enabled (all buckets)"
+      cross_region_replication: "US-West-2 → EU-Central-1"
+      lifecycle_policy: "Transition to Glacier after 90 days, delete after 7 years"
+
+    redis:
+      backup_frequency: "Hourly (automated snapshots)"
+      backup_retention: "24 hours (hourly), 7 days (daily)"
+      persistence: "AOF (Append-Only File) enabled"
+
+    weaviate:
+      backup_frequency: "Daily (vector DB export)"
+      backup_retention: "7 days"
+      backup_location: "S3 (cross-region replication)"
+
+  disaster_recovery_scenarios:
+    - scenario: "AWS Region Failure (US-West-2)"
+      impact: "Total production outage"
+      recovery_procedure:
+        - step: 1
+          action: "Activate DR plan, notify incident response team"
+        - step: 2
+          action: "Failover to EU-Central-1 (secondary region)"
+        - step: 3
+          action: "Restore databases from cross-region backups (RDS automated failover)"
+        - step: 4
+          action: "Update DNS (Route53) to point to EU-Central-1 load balancer"
+        - step: 5
+          action: "Validate all services operational in secondary region"
+      rto: "4 hours"
+      rpo: "1 hour"
+
+    - scenario: "Database Corruption or Deletion"
+      impact: "Data loss, calculation errors"
+      recovery_procedure:
+        - step: 1
+          action: "Identify corruption scope (affected tables, time range)"
+        - step: 2
+          action: "Restore from most recent clean backup (RDS automated backups)"
+        - step: 3
+          action: "Replay transactions from WAL (Write-Ahead Log) if possible"
+        - step: 4
+          action: "Recalculate affected emissions calculations"
+      rto: "2 hours"
+      rpo: "1 hour"
+
+    - scenario: "Ransomware Attack"
+      impact: "Data encrypted, systems unavailable"
+      recovery_procedure:
+        - step: 1
+          action: "Isolate affected systems, prevent lateral movement"
+        - step: 2
+          action: "DO NOT pay ransom (company policy)"
+        - step: 3
+          action: "Restore from clean, offline backups (S3 versioning)"
+        - step: 4
+          action: "Rebuild compromised systems from scratch (Infrastructure as Code)"
+        - step: 5
+          action: "Forensic analysis, patch vulnerabilities"
+      rto: "8 hours"
+      rpo: "1 hour"
+
+  testing_and_drills:
+    - test: "Backup Restoration Test"
+      frequency: "Quarterly"
+      scope: "Restore production backup to staging, validate data integrity"
+
+    - test: "Disaster Recovery Drill"
+      frequency: "Annually"
+      scope: "Simulate region failure, execute full DR procedure"
+
+    - test: "Tabletop Exercise"
+      frequency: "Semi-annually"
+      scope: "Walk through DR scenarios with team, update runbooks"
+
+# ============================================================================
+# POLICY 8: SECURE SOFTWARE DEVELOPMENT LIFECYCLE (SSDLC) POLICY
+# ============================================================================
+- policy_id: "POL-008"
+  policy_name: "Secure Software Development Lifecycle (SSDLC) Policy"
+  category: "Processing Integrity (PI1.3), Security (CC8.1)"
+  version: "1.0"
+  effective_date: "2025-01-25"
+  review_frequency: "Annually"
+  owner: "Lead Architect"
+
+  purpose: >
+    Integrate security into every phase of SDLC to prevent vulnerabilities
+    and ensure code quality.
+
+  scope:
+    - "All application code (agents, connectors, APIs, supplier portal)"
+    - "All infrastructure code (Terraform, K8s manifests, Helm charts)"
+    - "All OPA policies (calculator logic)"
+
+  sdlc_security_phases:
+    - phase: "1. Requirements and Design"
+      security_activities:
+        - "Threat modeling (STRIDE methodology)"
+        - "Security requirements defined (authentication, encryption, access control)"
+        - "Data flow diagrams (identify sensitive data flows)"
+
+    - phase: "2. Development"
+      security_activities:
+        - "Secure coding standards (OWASP Top 10, CWE Top 25)"
+        - "Input validation (prevent SQL injection, XSS)"
+        - "Output encoding (prevent XSS)"
+        - "Parameterized queries (prevent SQL injection)"
+        - "Secrets management (no hardcoded credentials, use AWS Secrets Manager)"
+
+    - phase: "3. Code Review"
+      security_activities:
+        - "Peer code review (2+ reviewers, GitHub PR)"
+        - "Automated SAST (Static Application Security Testing): SonarQube, Semgrep"
+        - "Dependency scanning: Snyk, GitHub Dependabot"
+        - "Secret scanning: GitGuardian, TruffleHog"
+
+    - phase: "4. Testing"
+      security_activities:
+        - "Unit tests (≥90% coverage)"
+        - "Integration tests (E2E scenarios)"
+        - "DAST (Dynamic Application Security Testing): OWASP ZAP"
+        - "Penetration testing (external firm, annually)"
+
+    - phase: "5. Deployment"
+      security_activities:
+        - "Container scanning: Trivy (scan Docker images for vulnerabilities)"
+        - "Infrastructure scanning: Checkov (Terraform security)"
+        - "GitOps deployment (ArgoCD, immutable infrastructure)"
+
+    - phase: "6. Monitoring and Maintenance"
+      security_activities:
+        - "Vulnerability scanning (weekly)"
+        - "Security patch management (critical patches within 48 hours)"
+        - "Log monitoring (SIEM alerts)"
+
+  security_tools:
+    sast:
+      - "SonarQube (code quality and security)"
+      - "Semgrep (custom security rules)"
+
+    dependency_scanning:
+      - "Snyk (vulnerability database)"
+      - "GitHub Dependabot (automated PRs for updates)"
+
+    dast:
+      - "OWASP ZAP (dynamic scanning)"
+
+    container_scanning:
+      - "Trivy (Docker image vulnerabilities)"
+
+    secret_scanning:
+      - "GitGuardian (prevent credential leaks)"
+      - "TruffleHog (historical secret scanning)"
+
+  vulnerability_remediation:
+    - severity: "Critical (CVSS ≥9.0)"
+      sla: "Patch within 48 hours"
+
+    - severity: "High (CVSS 7.0-8.9)"
+      sla: "Patch within 7 days"
+
+    - severity: "Medium (CVSS 4.0-6.9)"
+      sla: "Patch within 30 days"
+
+    - severity: "Low (CVSS <4.0)"
+      sla: "Patch in next release cycle"
+
+# ============================================================================
+# ADDITIONAL POLICIES (SUMMARY)
+# ============================================================================
+additional_policies:
+  - policy_id: "POL-009"
+    policy_name: "Password and Authentication Policy"
+    category: "Security (CC6.1)"
+    summary: >
+      Password requirements: ≥16 characters, complexity (upper, lower, number, special).
+      MFA mandatory for all production access.
+      Password rotation: Annually or upon suspected compromise.
+
+  - policy_id: "POL-010"
+    policy_name: "Network Security Policy"
+    category: "Security (CC6.6)"
+    summary: >
+      Network segmentation: Production isolated from staging/dev.
+      Firewalls: Default deny, whitelist allowed traffic.
+      VPN required for remote access to internal networks.
+      DDoS protection: CloudFlare, AWS Shield.
+
+  - policy_id: "POL-011"
+    policy_name: "Monitoring and Logging Policy"
+    category: "Security (CC7.2)"
+    summary: >
+      All security events logged (authentication, authorization, access).
+      Logs retained for 90 days (hot), 7 years (cold storage).
+      SIEM: Centralized log aggregation, automated alerts.
+      Audit trail: Tamper-proof, immutable logs.
+
+  - policy_id: "POL-012"
+    policy_name: "Vendor and Third-Party Risk Management Policy"
+    category: "Security (CC9.1, CC9.2)"
+    summary: >
+      Vendor security assessment before engagement.
+      Critical vendors: Annual SOC 2 report review.
+      Data Processing Agreements (DPAs) required for GDPR compliance.
+      Vendor access: Temporary, MFA-protected, logged.
+
+  - policy_id: "POL-013"
+    policy_name: "Security Awareness Training Policy"
+    category: "Security (CC1.4)"
+    summary: >
+      Annual security training mandatory for all employees.
+      Topics: Phishing, password security, data handling, incident reporting.
+      Phishing simulations: Quarterly (track click rates).
+      Training completion tracked (HR system).
+
+  - policy_id: "POL-014"
+    policy_name: "Physical Security Policy"
+    category: "Security (CC6.4)"
+    summary: >
+      Cloud-only infrastructure (no on-premise data centers).
+      AWS data centers: SOC 2, ISO 27001 certified.
+      Employee devices: Full-disk encryption (BitLocker, FileVault).
+      Clean desk policy: No sensitive data left unattended.
+
+  - policy_id: "POL-015"
+    policy_name: "Risk Assessment Policy"
+    category: "Security (CC3.1, CC3.2)"
+    summary: >
+      Annual risk assessment (identify threats, vulnerabilities, impacts).
+      Risk register maintained (risks, mitigations, owners).
+      Quarterly risk review (update risk scores, add new risks).
+      Risk-based security controls (prioritize high-risk areas).
+
+  - policy_id: "POL-016"
+    policy_name: "Privacy and Consent Management Policy"
+    category: "Privacy (P1.1, P2.1, P3.1)"
+    summary: >
+      GDPR/CCPA compliance (consent registry, opt-out enforcement).
+      Consent required for email outreach (supplier engagement).
+      Privacy notices: Clear, accessible, updated annually.
+      Data subject rights: Right to access, delete, portability (automated).
+
+  - policy_id: "POL-017"
+    policy_name: "API Security Policy"
+    category: "Security (CC6.7)"
+    summary: >
+      API authentication: OAuth 2.0, API keys (rotated annually).
+      Rate limiting: Prevent abuse (100 requests/minute per client).
+      Input validation: All API inputs validated against JSON schemas.
+      API versioning: Backward compatibility maintained (v1, v2).
+
+  - policy_id: "POL-018"
+    policy_name: "Multi-Tenant Isolation Policy"
+    category: "Confidentiality (C1.1)"
+    summary: >
+      Namespace isolation: Each tenant has dedicated K8s namespace.
+      Database isolation: Row-level security (tenant_id column).
+      Key isolation: Separate encryption keys per tenant (AWS KMS).
+      Network isolation: Network policies prevent cross-tenant traffic.
+
+  - policy_id: "POL-019"
+    policy_name: "Data Integrity and Provenance Policy"
+    category: "Processing Integrity (PI1.4)"
+    summary: >
+      All calculations have provenance chain (input hash, factor hash, policy version).
+      Audit trail: Immutable record of all emissions calculations.
+      Recalculation on demand: Re-run calculations with new factors or policies.
+      Cryptographic hashing: SHA-256 for data integrity verification.
+
+  - policy_id: "POL-020"
+    policy_name: "Compliance and Audit Policy"
+    category: "Security (CC2.1, CC2.2)"
+    summary: >
+      SOC 2 Type II audit: Annual (evidence collected continuously).
+      Internal audits: Quarterly (access reviews, log reviews, policy compliance).
+      External audits: SOC 2 (Big 4 firm), pen test (annual).
+      Audit evidence: Automated collection (logs, screenshots, approvals).
+
+# ============================================================================
+# SOC 2 TRUST SERVICES CRITERIA MAPPING
+# ============================================================================
+soc2_tsc_mapping:
+  # Common Criteria (CC) - Security
+  cc1_control_environment:
+    - CC1.1: "Organization demonstrates commitment to integrity and ethical values"
+      policies: ["POL-001 Information Security Policy"]
+
+    - CC1.2: "Board exercises oversight of management's system of internal controls"
+      policies: ["POL-020 Compliance and Audit Policy"]
+
+    - CC1.4: "Organization demonstrates commitment to competence"
+      policies: ["POL-013 Security Awareness Training Policy"]
+
+  cc2_communication:
+    - CC2.1: "Organization communicates objectives supporting system quality"
+      policies: ["POL-001 Information Security Policy", "POL-020 Compliance and Audit Policy"]
+
+    - CC2.2: "Organization communicates policies externally (customers, partners)"
+      policies: ["POL-016 Privacy and Consent Management Policy"]
+
+  cc3_risk_assessment:
+    - CC3.1: "Organization identifies and analyzes risks"
+      policies: ["POL-015 Risk Assessment Policy"]
+
+    - CC3.2: "Organization assesses fraud risks"
+      policies: ["POL-015 Risk Assessment Policy", "POL-006 Incident Response Policy"]
+
+  cc6_logical_access:
+    - CC6.1: "Logical access controls restrict access to authorized users"
+      policies: ["POL-002 Access Control Policy", "POL-009 Password and Authentication Policy"]
+
+    - CC6.2: "New users provisioned, existing users modified/removed timely"
+      policies: ["POL-002 Access Control Policy"]
+
+    - CC6.4: "Physical access to facilities restricted to authorized personnel"
+      policies: ["POL-014 Physical Security Policy"]
+
+    - CC6.6: "Transmission of data protected"
+      policies: ["POL-004 Encryption Policy", "POL-010 Network Security Policy"]
+
+    - CC6.7: "System components protected from unauthorized software"
+      policies: ["POL-008 SSDLC Policy", "POL-017 API Security Policy"]
+
+  cc7_monitoring:
+    - CC7.1: "Organization monitors system to detect security events"
+      policies: ["POL-011 Monitoring and Logging Policy"]
+
+    - CC7.2: "Organization responds to security incidents"
+      policies: ["POL-006 Incident Response Policy"]
+
+  cc8_change_management:
+    - CC8.1: "Changes authorized, tested, and approved"
+      policies: ["POL-005 Change Management Policy", "POL-008 SSDLC Policy"]
+
+  cc9_vendor_management:
+    - CC9.1: "Vendor and business partner risks identified and assessed"
+      policies: ["POL-012 Vendor and Third-Party Risk Management Policy"]
+
+    - CC9.2: "Vendor compliance with commitments monitored"
+      policies: ["POL-012 Vendor and Third-Party Risk Management Policy"]
+
+  # Availability (A1)
+  a1_availability:
+    - A1.1: "Availability commitments in SLAs achieved"
+      policies: ["POL-007 Business Continuity and Disaster Recovery Policy"]
+
+    - A1.2: "Monitoring detects availability issues"
+      policies: ["POL-011 Monitoring and Logging Policy", "POL-007 BCDR Policy"]
+
+  # Processing Integrity (PI)
+  pi1_processing_integrity:
+    - PI1.1: "Processing is complete and accurate"
+      policies: ["POL-019 Data Integrity and Provenance Policy"]
+
+    - PI1.2: "Changes to processing are authorized"
+      policies: ["POL-005 Change Management Policy"]
+
+    - PI1.3: "Processing errors are detected and corrected"
+      policies: ["POL-008 SSDLC Policy", "POL-019 Data Integrity and Provenance Policy"]
+
+    - PI1.4: "Output is complete and accurate"
+      policies: ["POL-019 Data Integrity and Provenance Policy"]
+
+  # Confidentiality (C)
+  c1_confidentiality:
+    - C1.1: "Confidential information collected per objectives"
+      policies: ["POL-003 Data Classification and Handling Policy", "POL-018 Multi-Tenant Isolation Policy"]
+
+    - C1.2: "Confidential information protected during processing and storage"
+      policies: ["POL-004 Encryption Policy", "POL-003 Data Classification and Handling Policy"]
+
+  # Privacy (P)
+  p1_notice:
+    - P1.1: "Privacy notice provided to data subjects"
+      policies: ["POL-016 Privacy and Consent Management Policy"]
+
+  p2_choice:
+    - P2.1: "Data subjects can consent, modify, or withdraw consent"
+      policies: ["POL-016 Privacy and Consent Management Policy"]
+
+  p3_collection:
+    - P3.1: "Personal information collected per notice and consent"
+      policies: ["POL-016 Privacy and Consent Management Policy", "POL-003 Data Classification Policy"]
+
+# ============================================================================
+# EVIDENCE COLLECTION AUTOMATION
+# ============================================================================
+evidence_collection:
+  automated_evidence:
+    - evidence_type: "Access Control Reviews"
+      frequency: "Quarterly"
+      collection_method: "AWS IAM Access Analyzer report export"
+      storage_location: "s3://vcci-audit-evidence/access-reviews/"
+
+    - evidence_type: "Change Management Records"
+      frequency: "Continuous"
+      collection_method: "GitHub PR metadata + Jira CR tickets export"
+      storage_location: "s3://vcci-audit-evidence/change-management/"
+
+    - evidence_type: "Security Monitoring Logs"
+      frequency: "Continuous"
+      collection_method: "SIEM (Splunk/ELK) log export"
+      storage_location: "s3://vcci-audit-evidence/security-logs/"
+
+    - evidence_type: "Backup Restoration Tests"
+      frequency: "Quarterly"
+      collection_method: "Automated test scripts with screenshots"
+      storage_location: "s3://vcci-audit-evidence/backup-tests/"
+
+    - evidence_type: "Vulnerability Scan Reports"
+      frequency: "Weekly"
+      collection_method: "Snyk/Trivy automated reports"
+      storage_location: "s3://vcci-audit-evidence/vulnerability-scans/"
+
+    - evidence_type: "Security Training Completion"
+      frequency: "Annually"
+      collection_method: "LMS (KnowBe4) completion reports"
+      storage_location: "s3://vcci-audit-evidence/training-records/"
+
+  manual_evidence:
+    - evidence_type: "Policy Acknowledgment"
+      frequency: "Annually (or upon hire)"
+      collection_method: "Signed policy acknowledgment forms (DocuSign)"
+
+    - evidence_type: "Incident Response Drills"
+      frequency: "Annually"
+      collection_method: "Tabletop exercise notes, participant sign-in"
+
+    - evidence_type: "Risk Assessment"
+      frequency: "Annually"
+      collection_method: "Risk register spreadsheet with approvals"
+
+# ============================================================================
+# DETAILED EVIDENCE COLLECTION PROCEDURES
+# ============================================================================
+evidence_collection_procedures:
+  # Access Control Reviews (Quarterly)
+  - procedure_id: "EV-001"
+    procedure_name: "Quarterly Access Reviews"
+    tsc: "CC6.2"
+    frequency: "Quarterly (Jan, Apr, Jul, Oct)"
+
+    steps:
+      - step: 1
+        action: "Export AWS IAM user list + permissions (AWS Access Analyzer)"
+        automation: true
+        output: "s3://vcci-audit-evidence/access-reviews/{YYYY-MM}/iam_users.csv"
+
+      - step: 2
+        action: "Export Kubernetes RBAC roles + bindings"
+        automation: true
+        command: "kubectl get rolebindings,clusterrolebindings -A -o yaml"
+
+      - step: 3
+        action: "Manager reviews team members' access rights"
+        automation: false
+        deliverable: "Signed access review form (DocuSign)"
+
+      - step: 4
+        action: "DevOps removes unnecessary permissions"
+        automation: false
+        evidence: "Jira tickets for permission removals"
+
+      - step: 5
+        action: "CISO approves final review"
+        automation: false
+        evidence: "Signed approval (DocuSign)"
+
+  # Change Management Records (Continuous)
+  - procedure_id: "EV-002"
+    procedure_name: "Change Management Evidence Collection"
+    tsc: "CC8.1, PI1.2"
+    frequency: "Continuous (on every production change)"
+
+    steps:
+      - step: 1
+        action: "GitHub PR created with change description"
+        automation: true
+        evidence: "GitHub PR metadata (title, description, code diff)"
+
+      - step: 2
+        action: "Peer code review (2+ approvals)"
+        automation: true
+        evidence: "GitHub PR approval records"
+
+      - step: 3
+        action: "Automated tests run (unit + integration)"
+        automation: true
+        evidence: "CI/CD pipeline logs (GitHub Actions)"
+
+      - step: 4
+        action: "Lead Architect or DevOps approves deployment"
+        automation: true
+        evidence: "Jira CR ticket approval"
+
+      - step: 5
+        action: "ArgoCD deploys to production"
+        automation: true
+        evidence: "ArgoCD deployment logs + git commit SHA"
+
+      - step: 6
+        action: "Post-deployment validation"
+        automation: true
+        evidence: "Smoke test results, monitoring dashboard screenshots"
+
+  # Security Awareness Training (Annual)
+  - procedure_id: "EV-003"
+    procedure_name: "Security Awareness Training Evidence"
+    tsc: "CC1.4"
+    frequency: "Annual (or upon hire)"
+
+    steps:
+      - step: 1
+        action: "Assign training module to all employees (KnowBe4 LMS)"
+        automation: true
+
+      - step: 2
+        action: "Employee completes training + quiz (>=80% pass rate)"
+        automation: true
+        evidence: "KnowBe4 completion certificate (PDF)"
+
+      - step: 3
+        action: "Phishing simulation (quarterly)"
+        automation: true
+        evidence: "Phishing simulation results (click rate, report rate)"
+
+      - step: 4
+        action: "HR exports training completion report"
+        automation: true
+        output: "s3://vcci-audit-evidence/training-records/{YYYY}/completion_report.csv"
+
+  # Vulnerability Scan Reports (Weekly)
+  - procedure_id: "EV-004"
+    procedure_name: "Vulnerability Scan Evidence Collection"
+    tsc: "CC7.1, CC8.1"
+    frequency: "Weekly (automated)"
+
+    steps:
+      - step: 1
+        action: "Snyk scans dependencies for vulnerabilities"
+        automation: true
+        schedule: "Every Sunday 2am UTC"
+        evidence: "Snyk vulnerability report (JSON + PDF)"
+
+      - step: 2
+        action: "Trivy scans Docker images"
+        automation: true
+        schedule: "On every image build (CI/CD)"
+        evidence: "Trivy scan results (JSON)"
+
+      - step: 3
+        action: "DevOps reviews Critical + High vulnerabilities"
+        automation: false
+        sla: "48 hours for Critical, 7 days for High"
+        evidence: "Jira tickets for vulnerability remediation"
+
+      - step: 4
+        action: "Weekly vulnerability summary report"
+        automation: true
+        output: "s3://vcci-audit-evidence/vulnerability-scans/{YYYY-MM-DD}/weekly_summary.pdf"
+
+  # Backup Restoration Tests (Quarterly)
+  - procedure_id: "EV-005"
+    procedure_name: "Backup Restoration Test Evidence"
+    tsc: "A1.1, A1.2"
+    frequency: "Quarterly"
+
+    steps:
+      - step: 1
+        action: "Select random backup from past 7 days"
+        automation: false
+        responsible: "DevOps Engineer"
+
+      - step: 2
+        action: "Restore backup to staging environment"
+        automation: true
+        command: "aws rds restore-db-instance-from-db-snapshot"
+
+      - step: 3
+        action: "Validate restored data integrity"
+        automation: true
+        validation_checks:
+          - "Row count matches production (±0.1%)"
+          - "Schema integrity (all tables, indexes present)"
+          - "Sample queries return expected results"
+
+      - step: 4
+        action: "Screenshot staging environment + query results"
+        automation: false
+        evidence: "Screenshots uploaded to s3://vcci-audit-evidence/backup-tests/"
+
+      - step: 5
+        action: "Document test results + RTO/RPO achieved"
+        automation: false
+        evidence: "Test report (Markdown) signed by DevOps Engineer"
+
+  # Penetration Testing (Annual)
+  - procedure_id: "EV-006"
+    procedure_name: "Penetration Testing Evidence"
+    tsc: "CC7.1"
+    frequency: "Annual (Week 36)"
+
+    steps:
+      - step: 1
+        action: "Engage external pen test firm (e.g., Bishop Fox, NCC Group)"
+        responsible: "CISO"
+        budget: "$15,000 - $25,000"
+
+      - step: 2
+        action: "Pen test firm conducts assessment (1-2 weeks)"
+        scope: "Web application, APIs, infrastructure"
+
+      - step: 3
+        action: "Receive pen test report (vulnerabilities + recommendations)"
+        evidence: "Pen test report (PDF, confidential)"
+
+      - step: 4
+        action: "DevOps remediates Critical + High findings"
+        sla: "30 days"
+        evidence: "Jira tickets for remediation"
+
+      - step: 5
+        action: "Request re-test for Critical findings"
+        evidence: "Re-test results (confirmation of fix)"
+
+# ============================================================================
+# SOC 2 AUDIT PREPARATION CHECKLIST
+# ============================================================================
+audit_preparation_checklist:
+  phase_1_readiness_assessment: # Week 1-4
+    - task: "Engage Big 4 audit firm (Deloitte, PwC, EY, KPMG)"
+      status: "pending"
+      owner: "CEO + CFO"
+      cost: "$60,000"
+
+    - task: "Conduct gap analysis (current state vs SOC 2 requirements)"
+      status: "pending"
+      owner: "CISO + Audit firm"
+      deliverable: "Gap analysis report (identify missing controls)"
+
+    - task: "Define audit scope (services, Trust Services Criteria)"
+      status: "pending"
+      scope: "GL-VCCI Scope 3 platform - CC, A, PI, C, P"
+
+  phase_2_control_design: # Week 5-12
+    - task: "Document all 20 security policies (POL-001 to POL-020)"
+      status: "in_progress"
+      owner: "CISO"
+      progress: "8/20 detailed policies complete"
+
+    - task: "Implement access control (RBAC, MFA)"
+      status: "in_progress"
+      owner: "DevOps Engineer"
+      evidence: "AWS IAM policies, K8s RBAC configs"
+
+    - task: "Implement encryption (TLS 1.3, AES-256)"
+      status: "in_progress"
+      owner: "DevOps Engineer"
+      evidence: "TLS certificates, KMS configurations"
+
+    - task: "Set up automated evidence collection (logs, access reviews)"
+      status: "in_progress"
+      owner: "DevOps Engineer"
+      evidence: "S3 bucket: s3://vcci-audit-evidence/"
+
+  phase_3_evidence_collection: # Week 1-44 (11 months)
+    - task: "Collect quarterly access reviews (4 cycles)"
+      frequency: "Quarterly"
+      evidence_count: "4 access review reports"
+
+    - task: "Collect change management records (continuous)"
+      frequency: "Continuous"
+      evidence_count: "500+ GitHub PRs, Jira CR tickets"
+
+    - task: "Collect security awareness training records (annual)"
+      frequency: "Annual"
+      evidence_count: "100+ employee completion certificates"
+
+    - task: "Collect vulnerability scan reports (weekly)"
+      frequency: "Weekly"
+      evidence_count: "44 weekly reports"
+
+    - task: "Conduct backup restoration tests (quarterly)"
+      frequency: "Quarterly"
+      evidence_count: "4 test reports"
+
+  phase_4_pre_audit_review: # Week 40-44
+    - task: "CISO reviews all evidence (completeness check)"
+      owner: "CISO"
+      checklist: "80% of evidence collected and organized"
+
+    - task: "Mock audit (internal audit team simulates SOC 2 audit)"
+      owner: "Internal Audit or external consultant"
+      deliverable: "Mock audit findings + remediation plan"
+
+    - task: "Remediate any gaps found in mock audit"
+      owner: "CISO + DevOps"
+      sla: "Before Week 45 (audit start)"
+
+  phase_5_soc2_audit: # Week 45-48
+    - task: "SOC 2 Type II audit (Big 4 firm)"
+      duration: "4 weeks"
+      activities:
+        - "Kick-off meeting (Week 45 Day 1)"
+        - "Evidence review (Week 45-47)"
+        - "Control testing (Week 46-47)"
+        - "Management interviews (Week 47)"
+        - "Draft report review (Week 48)"
+
+    - task: "Receive SOC 2 Type II report"
+      deliverable: "SOC 2 Type II report (PDF, confidential)"
+      distribution: "Share with enterprise customers (procurement requirement)"
+
+# ============================================================================
+# CHANGELOG
+# ============================================================================
+changelog:
+  - version: "1.0.0"
+    date: "2025-01-25"
+    changes:
+      - "Initial SOC 2 security policies (20+ policies)"
+      - "Coverage: Security, Availability, Processing Integrity, Confidentiality, Privacy"
+      - "Detailed policies: POL-001 to POL-008 (full specifications)"
+      - "Summary policies: POL-009 to POL-020"
+      - "SOC 2 TSC mapping (CC, A, PI, C, P criteria)"
+      - "Evidence collection automation strategy"
+      - "Audit readiness timeline (Week 1-44 evidence, Week 45-48 audit)"
+      - "Detailed evidence collection procedures (6 procedures)"
+      - "SOC 2 audit preparation checklist (5 phases)"

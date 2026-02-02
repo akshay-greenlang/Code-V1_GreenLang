@@ -1,0 +1,472 @@
+# GreenLang Service Level Objectives (SLOs)
+# Comprehensive SLO definitions for carbon accounting platform
+
+# =============================================================================
+# SLO Framework Overview
+# =============================================================================
+# This document defines Service Level Objectives (SLOs) for GreenLang services.
+# Each SLO includes:
+# - Target: The percentage of "good" events expected
+# - Window: The rolling time window for measurement
+# - Error Budget: Allowed failure rate (100% - target)
+# - Burn Rate Alerts: Early warning when consuming budget too quickly
+
+metadata:
+  version: "1.0.0"
+  lastUpdated: "2024-01-01"
+  owner: "platform-team@greenlang.io"
+
+# =============================================================================
+# API Gateway SLOs
+# =============================================================================
+slos:
+  - name: api-availability
+    service: greenlang-api-gateway
+    description: "API Gateway should be available and responding successfully"
+    category: availability
+
+    target: 99.95  # Three nines and a half
+    window: 30d
+
+    # SLI (Service Level Indicator) definition
+    sli:
+      type: availability
+      good_events: |
+        sum(rate(http_requests_total{job="greenlang-api-gateway",status!~"5.."}[5m]))
+      total_events: |
+        sum(rate(http_requests_total{job="greenlang-api-gateway"}[5m]))
+
+    # Error budget
+    error_budget:
+      monthly_budget_minutes: 21.6  # 0.05% of 43200 minutes
+      alert_threshold_percent: 20   # Alert when 20% budget consumed
+
+    # Burn rate alerts
+    burn_rate_alerts:
+      - name: api-availability-burn-fast
+        description: "Fast burn - will exhaust budget in 2 hours"
+        long_window: 1h
+        short_window: 5m
+        burn_rate_threshold: 14.4
+        severity: critical
+
+      - name: api-availability-burn-medium
+        description: "Medium burn - will exhaust budget in 1 day"
+        long_window: 6h
+        short_window: 30m
+        burn_rate_threshold: 6
+        severity: warning
+
+      - name: api-availability-burn-slow
+        description: "Slow burn - will exhaust budget in 3 days"
+        long_window: 3d
+        short_window: 6h
+        burn_rate_threshold: 1
+        severity: info
+
+  - name: api-latency
+    service: greenlang-api-gateway
+    description: "API Gateway should respond within acceptable latency"
+    category: latency
+
+    target: 99.0  # 99% of requests under threshold
+    window: 30d
+    latency_threshold_ms: 100
+
+    sli:
+      type: latency
+      good_events: |
+        sum(rate(http_request_duration_seconds_bucket{job="greenlang-api-gateway",le="0.1"}[5m]))
+      total_events: |
+        sum(rate(http_request_duration_seconds_count{job="greenlang-api-gateway"}[5m]))
+
+    error_budget:
+      monthly_budget_minutes: 432  # 1% of 43200 minutes
+      alert_threshold_percent: 25
+
+    burn_rate_alerts:
+      - name: api-latency-burn-fast
+        long_window: 1h
+        short_window: 5m
+        burn_rate_threshold: 14.4
+        severity: critical
+
+      - name: api-latency-burn-medium
+        long_window: 6h
+        short_window: 30m
+        burn_rate_threshold: 6
+        severity: warning
+
+# =============================================================================
+# EUDR Agent SLOs
+# =============================================================================
+  - name: eudr-availability
+    service: eudr-agent
+    description: "EUDR Compliance Agent must be highly available for regulatory compliance"
+    category: availability
+
+    target: 99.9  # Three nines - critical compliance service
+    window: 30d
+
+    sli:
+      type: availability
+      good_events: |
+        sum(rate(eudr_requests_total{status!~"5.."}[5m]))
+      total_events: |
+        sum(rate(eudr_requests_total[5m]))
+
+    error_budget:
+      monthly_budget_minutes: 43.2  # 0.1% of 43200 minutes
+      alert_threshold_percent: 15   # More sensitive for compliance
+
+    burn_rate_alerts:
+      - name: eudr-availability-burn-fast
+        description: "EUDR fast burn - critical compliance risk"
+        long_window: 1h
+        short_window: 5m
+        burn_rate_threshold: 14.4
+        severity: critical
+
+      - name: eudr-availability-burn-medium
+        long_window: 6h
+        short_window: 30m
+        burn_rate_threshold: 6
+        severity: critical  # Higher severity for compliance
+
+  - name: eudr-latency
+    service: eudr-agent
+    description: "EUDR Agent should respond within 500ms for P95"
+    category: latency
+
+    target: 99.0
+    window: 30d
+    latency_threshold_ms: 500
+
+    sli:
+      type: latency
+      good_events: |
+        sum(rate(eudr_request_duration_seconds_bucket{le="0.5"}[5m]))
+      total_events: |
+        sum(rate(eudr_request_duration_seconds_count[5m]))
+
+    error_budget:
+      monthly_budget_minutes: 432
+      alert_threshold_percent: 25
+
+  - name: eudr-compliance-accuracy
+    service: eudr-agent
+    description: "EUDR compliance checks must be 100% accurate"
+    category: correctness
+
+    target: 100.0  # Zero tolerance for compliance errors
+    window: 30d
+
+    sli:
+      type: accuracy
+      good_events: |
+        sum(rate(eudr_compliance_checks_validated_total[5m]))
+      total_events: |
+        sum(rate(eudr_compliance_checks_total[5m]))
+
+    error_budget:
+      monthly_budget_minutes: 0  # No errors allowed
+      alert_threshold_percent: 0
+
+    burn_rate_alerts:
+      - name: eudr-accuracy-any-error
+        description: "Any compliance accuracy error is critical"
+        long_window: 5m
+        short_window: 1m
+        burn_rate_threshold: 0
+        severity: critical
+
+# =============================================================================
+# CBAM Agent SLOs
+# =============================================================================
+  - name: cbam-availability
+    service: cbam-agent
+    description: "CBAM Reporting Agent availability"
+    category: availability
+
+    target: 99.9
+    window: 30d
+
+    sli:
+      type: availability
+      good_events: |
+        sum(rate(cbam_requests_total{status!~"5.."}[5m]))
+      total_events: |
+        sum(rate(cbam_requests_total[5m]))
+
+    error_budget:
+      monthly_budget_minutes: 43.2
+      alert_threshold_percent: 15
+
+  - name: cbam-calculation-accuracy
+    service: cbam-agent
+    description: "CBAM embedded emissions calculations must be accurate"
+    category: correctness
+
+    target: 99.99  # Very high accuracy for financial reporting
+    window: 30d
+
+    sli:
+      type: accuracy
+      good_events: |
+        sum(rate(cbam_calculations_validated_total[5m]))
+      total_events: |
+        sum(rate(cbam_calculations_total[5m]))
+
+    error_budget:
+      monthly_budget_minutes: 4.32
+      alert_threshold_percent: 10
+
+  - name: cbam-report-generation
+    service: cbam-agent
+    description: "CBAM reports should generate within 30 seconds"
+    category: latency
+
+    target: 95.0
+    window: 30d
+    latency_threshold_seconds: 30
+
+    sli:
+      type: latency
+      good_events: |
+        sum(rate(cbam_report_generation_duration_seconds_bucket{le="30"}[5m]))
+      total_events: |
+        sum(rate(cbam_report_generation_duration_seconds_count[5m]))
+
+# =============================================================================
+# SB253 Agent SLOs
+# =============================================================================
+  - name: sb253-availability
+    service: sb253-agent
+    description: "SB253 California Climate Agent availability"
+    category: availability
+
+    target: 99.9
+    window: 30d
+
+    sli:
+      type: availability
+      good_events: |
+        sum(rate(sb253_requests_total{status!~"5.."}[5m]))
+      total_events: |
+        sum(rate(sb253_requests_total[5m]))
+
+    error_budget:
+      monthly_budget_minutes: 43.2
+      alert_threshold_percent: 15
+
+  - name: sb253-scope-calculation-accuracy
+    service: sb253-agent
+    description: "SB253 scope 1/2/3 calculations must be accurate"
+    category: correctness
+
+    target: 100.0
+    window: 30d
+
+    sli:
+      type: accuracy
+      good_events: |
+        sum(rate(sb253_scope_calculations_validated_total[5m]))
+      total_events: |
+        sum(rate(sb253_scope_calculations_total[5m]))
+
+# =============================================================================
+# Emission Calculator SLOs
+# =============================================================================
+  - name: calculator-availability
+    service: emission-calculator
+    description: "Emission Calculator service availability"
+    category: availability
+
+    target: 99.9
+    window: 30d
+
+    sli:
+      type: availability
+      good_events: |
+        sum(rate(emission_calculation_requests_total{status!~"5.."}[5m]))
+      total_events: |
+        sum(rate(emission_calculation_requests_total[5m]))
+
+  - name: calculator-accuracy
+    service: emission-calculator
+    description: "Emission calculations must be 100% accurate"
+    category: correctness
+
+    target: 100.0  # Zero tolerance for calculation errors
+    window: 30d
+
+    sli:
+      type: accuracy
+      good_events: |
+        sum(rate(emission_calculations_validated_total[5m]))
+      total_events: |
+        sum(rate(emission_calculations_total[5m]))
+
+    error_budget:
+      monthly_budget_minutes: 0
+      alert_threshold_percent: 0
+
+  - name: calculator-throughput
+    service: emission-calculator
+    description: "Calculator should handle at least 1000 calculations per minute"
+    category: throughput
+
+    target: 99.0
+    window: 30d
+    throughput_threshold: 1000
+
+    sli:
+      type: throughput
+      metric: |
+        sum(rate(emission_calculations_total[1m])) * 60
+
+# =============================================================================
+# Database SLOs
+# =============================================================================
+  - name: database-availability
+    service: postgresql
+    description: "PostgreSQL database availability"
+    category: availability
+
+    target: 99.99  # Four nines for database
+    window: 30d
+
+    sli:
+      type: availability
+      good_events: |
+        pg_up
+      total_events: |
+        1
+
+    error_budget:
+      monthly_budget_minutes: 4.32
+      alert_threshold_percent: 10
+
+  - name: database-query-latency
+    service: postgresql
+    description: "Database queries should complete within 100ms"
+    category: latency
+
+    target: 95.0
+    window: 30d
+    latency_threshold_ms: 100
+
+    sli:
+      type: latency
+      metric: |
+        rate(pg_stat_statements_seconds_total[5m]) /
+        rate(pg_stat_statements_calls_total[5m]) * 1000
+
+# =============================================================================
+# Redis Cache SLOs
+# =============================================================================
+  - name: cache-availability
+    service: redis
+    description: "Redis cache availability"
+    category: availability
+
+    target: 99.9
+    window: 30d
+
+    sli:
+      type: availability
+      good_events: |
+        redis_up
+      total_events: |
+        1
+
+  - name: cache-hit-ratio
+    service: redis
+    description: "Cache hit ratio should be above 90%"
+    category: efficiency
+
+    target: 90.0
+    window: 30d
+
+    sli:
+      type: ratio
+      metric: |
+        rate(redis_keyspace_hits_total[5m]) /
+        (rate(redis_keyspace_hits_total[5m]) + rate(redis_keyspace_misses_total[5m])) * 100
+
+# =============================================================================
+# Business SLOs
+# =============================================================================
+  - name: compliance-report-delivery
+    service: all-compliance-agents
+    description: "Compliance reports must be delivered before regulatory deadlines"
+    category: timeliness
+
+    target: 100.0
+    window: 30d
+
+    sli:
+      type: timeliness
+      good_events: |
+        sum(rate(compliance_reports_delivered_on_time_total[5m]))
+      total_events: |
+        sum(rate(compliance_reports_due_total[5m]))
+
+    error_budget:
+      monthly_budget_minutes: 0  # No late reports allowed
+      alert_threshold_percent: 0
+
+# =============================================================================
+# SLO Dashboard Configuration
+# =============================================================================
+dashboard:
+  refresh_interval: 30s
+  default_time_range: 30d
+
+  panels:
+    - name: "SLO Overview"
+      type: stat
+      metrics:
+        - greenlang:slo:api_availability_30d
+        - greenlang:slo:eudr_availability_30d
+        - greenlang:slo:api_latency_100ms_30d
+
+    - name: "Error Budget Status"
+      type: gauge
+      metrics:
+        - greenlang:slo:api_error_budget_remaining
+        - greenlang:slo:eudr_error_budget_remaining
+
+    - name: "Burn Rate"
+      type: timeseries
+      metrics:
+        - greenlang:slo:api_burn_rate_1h
+        - greenlang:slo:api_burn_rate_6h
+
+# =============================================================================
+# SLO Reporting Configuration
+# =============================================================================
+reporting:
+  weekly_report:
+    enabled: true
+    recipients:
+      - ops-team@greenlang.io
+      - engineering-leads@greenlang.io
+    day: Monday
+    time: "09:00"
+
+  monthly_report:
+    enabled: true
+    recipients:
+      - ops-team@greenlang.io
+      - engineering-leads@greenlang.io
+      - leadership@greenlang.io
+    day: 1
+    time: "09:00"
+
+  quarterly_review:
+    enabled: true
+    recipients:
+      - all-engineering@greenlang.io
+      - product@greenlang.io
+    include_recommendations: true

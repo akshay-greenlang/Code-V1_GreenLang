@@ -1,0 +1,178 @@
+# GreenLang Agent Pod Disruption Budget Template
+# Template Version: 1.0.0
+# Customize: Replace ${VARIABLE} placeholders with actual values
+#
+# Purpose: Ensures high availability during voluntary disruptions
+# (node maintenance, cluster upgrades, deployments)
+
+---
+# Pod Disruption Budget - Availability Based
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: ${AGENT_ID}-pdb
+  namespace: ${NAMESPACE}
+  labels:
+    app: ${AGENT_ID}
+    app.kubernetes.io/name: ${AGENT_ID}
+    app.kubernetes.io/component: availability
+spec:
+  # Option 1: Minimum pods that must be available (recommended for most cases)
+  minAvailable: 2
+
+  # Option 2: Maximum pods that can be unavailable
+  # maxUnavailable: 1
+
+  selector:
+    matchLabels:
+      app: ${AGENT_ID}
+
+  # Unhealthy Pod Eviction Policy (Kubernetes 1.27+)
+  # AlwaysAllow: Always allow eviction of unhealthy pods
+  # IfHealthyBudget: Only allow eviction of unhealthy pods if budget allows
+  unhealthyPodEvictionPolicy: IfHealthyBudget
+
+---
+# Pod Disruption Budget - Percentage Based (Alternative)
+# Use this for larger deployments where percentage is more meaningful
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: ${AGENT_ID}-pdb-percentage
+  namespace: ${NAMESPACE}
+  labels:
+    app: ${AGENT_ID}
+    app.kubernetes.io/name: ${AGENT_ID}
+spec:
+  # At least 80% of pods must be available
+  minAvailable: 80%
+
+  # Or: At most 20% of pods can be unavailable
+  # maxUnavailable: 20%
+
+  selector:
+    matchLabels:
+      app: ${AGENT_ID}
+
+---
+# Priority Class for Critical Workloads
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: greenlang-high-priority
+  labels:
+    app.kubernetes.io/part-of: greenlang
+globalDefault: false
+value: 1000000
+preemptionPolicy: PreemptLowerPriority
+description: "High priority class for GreenLang production agents"
+
+---
+# Priority Class for Standard Workloads
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: greenlang-standard-priority
+  labels:
+    app.kubernetes.io/part-of: greenlang
+globalDefault: false
+value: 500000
+preemptionPolicy: PreemptLowerPriority
+description: "Standard priority class for GreenLang agents"
+
+---
+# Priority Class for Batch/Background Jobs
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: greenlang-batch-priority
+  labels:
+    app.kubernetes.io/part-of: greenlang
+globalDefault: false
+value: 100000
+preemptionPolicy: Never
+description: "Low priority class for GreenLang batch jobs"
+
+---
+# Resource Quota (Namespace Level)
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: ${NAMESPACE}-quota
+  namespace: ${NAMESPACE}
+  labels:
+    app.kubernetes.io/part-of: greenlang
+spec:
+  hard:
+    # Compute Resources
+    requests.cpu: "50"
+    requests.memory: 100Gi
+    limits.cpu: "100"
+    limits.memory: 200Gi
+
+    # Storage
+    requests.storage: 500Gi
+    persistentvolumeclaims: "20"
+    requests.ephemeral-storage: 100Gi
+
+    # Object Counts
+    pods: "100"
+    services: "50"
+    secrets: "100"
+    configmaps: "100"
+    replicationcontrollers: "20"
+    services.loadbalancers: "5"
+    services.nodeports: "10"
+
+    # High Priority Pods
+    count/pods.high-priority: "20"
+
+  scopeSelector:
+    matchExpressions:
+      - operator: Exists
+        scopeName: PriorityClass
+
+---
+# Limit Range (Default Limits)
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: ${NAMESPACE}-limits
+  namespace: ${NAMESPACE}
+  labels:
+    app.kubernetes.io/part-of: greenlang
+spec:
+  limits:
+    # Container Defaults
+    - type: Container
+      default:
+        cpu: 500m
+        memory: 512Mi
+      defaultRequest:
+        cpu: 100m
+        memory: 128Mi
+      min:
+        cpu: 50m
+        memory: 64Mi
+      max:
+        cpu: 4
+        memory: 8Gi
+      maxLimitRequestRatio:
+        cpu: 10
+        memory: 4
+
+    # Pod Defaults
+    - type: Pod
+      max:
+        cpu: 8
+        memory: 16Gi
+      min:
+        cpu: 50m
+        memory: 64Mi
+
+    # PVC Defaults
+    - type: PersistentVolumeClaim
+      min:
+        storage: 1Gi
+      max:
+        storage: 100Gi

@@ -1,0 +1,719 @@
+{
+  "suite": "EUDR Due Diligence Statement Generation",
+  "version": "1.0.0",
+  "description": "Golden tests for DDS generation and compliance validation under EUDR",
+  "tests": [
+    {
+      "test_id": "DDS-COMP-001",
+      "description": "Compliant DDS - Low risk country, valid geolocation",
+      "tool_name": "generate_dds_report",
+      "input": {
+        "operator_info": {
+          "operator_id": "OP-DE-001",
+          "company_name": "German Foods GmbH",
+          "eori_number": "DE123456789000",
+          "country_code": "DE",
+          "contact_email": "compliance@germanfoods.de"
+        },
+        "commodity_data": {
+          "cn_code": "09011100",
+          "cn_description": "Green coffee beans",
+          "commodity_type": "coffee",
+          "quantity_kg": 25000.0,
+          "production_country": "CO",
+          "production_date": "2024-06-15"
+        },
+        "geolocation_data": {
+          "coordinates": [4.5, -74.0],
+          "coordinate_type": "point",
+          "precision_meters": 10.0,
+          "valid": true,
+          "in_protected_area": false
+        },
+        "risk_assessment": {
+          "risk_level": "low",
+          "risk_score": 25,
+          "due_diligence_level": "standard",
+          "satellite_verification_required": false
+        },
+        "traceability_data": {
+          "traceability_score": 95.0,
+          "chain_of_custody": "complete",
+          "origin_verified": true
+        }
+      },
+      "expected_output": {
+        "dds_status": "valid",
+        "compliance_status": "compliant",
+        "submission_ready": true
+      },
+      "tolerance": 0.01,
+      "tags": ["compliant", "coffee", "low_risk"]
+    },
+    {
+      "test_id": "DDS-COMP-002",
+      "description": "Compliant DDS - Low risk wood from Finland",
+      "tool_name": "generate_dds_report",
+      "input": {
+        "operator_info": {
+          "operator_id": "OP-IT-001",
+          "company_name": "Italian Furniture SpA",
+          "eori_number": "IT987654321000",
+          "country_code": "IT",
+          "contact_email": "import@italianfurniture.it"
+        },
+        "commodity_data": {
+          "cn_code": "44071100",
+          "cn_description": "Sawn pine wood",
+          "commodity_type": "wood",
+          "quantity_kg": 50000.0,
+          "production_country": "FI",
+          "production_date": "2024-03-20"
+        },
+        "geolocation_data": {
+          "coordinates": [64.0, 26.0],
+          "coordinate_type": "point",
+          "precision_meters": 15.0,
+          "valid": true,
+          "in_protected_area": false
+        },
+        "risk_assessment": {
+          "risk_level": "low",
+          "risk_score": 10,
+          "due_diligence_level": "standard",
+          "satellite_verification_required": false
+        },
+        "traceability_data": {
+          "traceability_score": 100.0,
+          "chain_of_custody": "complete",
+          "origin_verified": true
+        }
+      },
+      "expected_output": {
+        "dds_status": "valid",
+        "compliance_status": "compliant",
+        "submission_ready": true
+      },
+      "tolerance": 0.01,
+      "tags": ["compliant", "wood", "low_risk", "finland"]
+    },
+    {
+      "test_id": "DDS-COMP-003",
+      "description": "Compliant DDS - Cocoa with full traceability",
+      "tool_name": "generate_dds_report",
+      "input": {
+        "operator_info": {
+          "operator_id": "OP-BE-001",
+          "company_name": "Belgian Chocolates NV",
+          "eori_number": "BE567890123000",
+          "country_code": "BE",
+          "contact_email": "sourcing@belgianchocolates.be"
+        },
+        "commodity_data": {
+          "cn_code": "18010000",
+          "cn_description": "Raw cocoa beans",
+          "commodity_type": "cocoa",
+          "quantity_kg": 10000.0,
+          "production_country": "GH",
+          "production_date": "2024-05-01"
+        },
+        "geolocation_data": {
+          "coordinates": [6.5, -1.5],
+          "coordinate_type": "point",
+          "precision_meters": 8.0,
+          "valid": true,
+          "in_protected_area": false
+        },
+        "risk_assessment": {
+          "risk_level": "standard",
+          "risk_score": 65,
+          "due_diligence_level": "enhanced",
+          "satellite_verification_required": false
+        },
+        "traceability_data": {
+          "traceability_score": 92.0,
+          "chain_of_custody": "complete",
+          "origin_verified": true
+        }
+      },
+      "expected_output": {
+        "dds_status": "valid",
+        "compliance_status": "compliant",
+        "submission_ready": true
+      },
+      "tolerance": 0.01,
+      "tags": ["compliant", "cocoa", "standard_risk", "ghana"]
+    },
+    {
+      "test_id": "DDS-REV-001",
+      "description": "Requires review - High risk country, standard commodity risk",
+      "tool_name": "generate_dds_report",
+      "input": {
+        "operator_info": {
+          "operator_id": "OP-NL-001",
+          "company_name": "Dutch Trading BV",
+          "eori_number": "NL111222333000",
+          "country_code": "NL",
+          "contact_email": "compliance@dutchtrading.nl"
+        },
+        "commodity_data": {
+          "cn_code": "09012100",
+          "cn_description": "Roasted coffee",
+          "commodity_type": "coffee",
+          "quantity_kg": 15000.0,
+          "production_country": "BR",
+          "production_date": "2024-04-10"
+        },
+        "geolocation_data": {
+          "coordinates": [-21.5, -43.0],
+          "coordinate_type": "point",
+          "precision_meters": 12.0,
+          "valid": true,
+          "in_protected_area": false
+        },
+        "risk_assessment": {
+          "risk_level": "standard",
+          "risk_score": 55,
+          "due_diligence_level": "enhanced",
+          "satellite_verification_required": false
+        },
+        "traceability_data": {
+          "traceability_score": 78.0,
+          "chain_of_custody": "partial",
+          "origin_verified": true
+        }
+      },
+      "expected_output": {
+        "dds_status": "valid",
+        "compliance_status": "requires_review"
+      },
+      "tolerance": 0.01,
+      "tags": ["review", "coffee", "brazil", "partial_trace"]
+    },
+    {
+      "test_id": "DDS-REV-002",
+      "description": "Requires review - Traceability below threshold",
+      "tool_name": "generate_dds_report",
+      "input": {
+        "operator_info": {
+          "operator_id": "OP-ES-001",
+          "company_name": "Spanish Feeds SA",
+          "eori_number": "ES444555666000",
+          "country_code": "ES",
+          "contact_email": "imports@spanishfeeds.es"
+        },
+        "commodity_data": {
+          "cn_code": "23040000",
+          "cn_description": "Soya meal",
+          "commodity_type": "soya",
+          "quantity_kg": 100000.0,
+          "production_country": "AR",
+          "production_date": "2024-02-28"
+        },
+        "geolocation_data": {
+          "coordinates": [-33.0, -60.5],
+          "coordinate_type": "point",
+          "precision_meters": 20.0,
+          "valid": true,
+          "in_protected_area": false
+        },
+        "risk_assessment": {
+          "risk_level": "standard",
+          "risk_score": 55,
+          "due_diligence_level": "enhanced",
+          "satellite_verification_required": false
+        },
+        "traceability_data": {
+          "traceability_score": 65.0,
+          "chain_of_custody": "partial",
+          "origin_verified": true
+        }
+      },
+      "expected_output": {
+        "dds_status": "valid",
+        "compliance_status": "requires_review"
+      },
+      "tolerance": 0.01,
+      "tags": ["review", "soya", "argentina", "low_trace"]
+    },
+    {
+      "test_id": "DDS-NONC-001",
+      "description": "Non-compliant - High risk, low traceability",
+      "tool_name": "generate_dds_report",
+      "input": {
+        "operator_info": {
+          "operator_id": "OP-UK-001",
+          "company_name": "British Oils Ltd",
+          "eori_number": "GB777888999000",
+          "country_code": "GB",
+          "contact_email": "compliance@britishoils.co.uk"
+        },
+        "commodity_data": {
+          "cn_code": "15111000",
+          "cn_description": "Crude palm oil",
+          "commodity_type": "palm_oil",
+          "quantity_kg": 75000.0,
+          "production_country": "ID",
+          "production_date": "2024-01-15"
+        },
+        "geolocation_data": {
+          "coordinates": [0.5, 110.5],
+          "coordinate_type": "point",
+          "precision_meters": 25.0,
+          "valid": true,
+          "in_protected_area": false
+        },
+        "risk_assessment": {
+          "risk_level": "high",
+          "risk_score": 80,
+          "due_diligence_level": "full_verification",
+          "satellite_verification_required": true
+        },
+        "traceability_data": {
+          "traceability_score": 45.0,
+          "chain_of_custody": "broken",
+          "origin_verified": false
+        }
+      },
+      "expected_output": {
+        "dds_status": "valid",
+        "compliance_status": "non_compliant",
+        "submission_ready": false
+      },
+      "tolerance": 0.01,
+      "tags": ["non_compliant", "palm_oil", "indonesia", "high_risk"]
+    },
+    {
+      "test_id": "DDS-NONC-002",
+      "description": "Non-compliant - Protected area detected",
+      "tool_name": "generate_dds_report",
+      "input": {
+        "operator_info": {
+          "operator_id": "OP-FR-001",
+          "company_name": "French Cattle Imports SARL",
+          "eori_number": "FR222333444000",
+          "country_code": "FR",
+          "contact_email": "supply@frenchcattle.fr"
+        },
+        "commodity_data": {
+          "cn_code": "02013000",
+          "cn_description": "Boneless beef",
+          "commodity_type": "cattle",
+          "quantity_kg": 5000.0,
+          "production_country": "BR",
+          "production_date": "2024-03-01"
+        },
+        "geolocation_data": {
+          "coordinates": [-3.0, -62.0],
+          "coordinate_type": "point",
+          "precision_meters": 10.0,
+          "valid": true,
+          "in_protected_area": true,
+          "protected_area_name": "Amazon Protected Complex"
+        },
+        "risk_assessment": {
+          "risk_level": "high",
+          "risk_score": 85,
+          "due_diligence_level": "full_verification",
+          "satellite_verification_required": true
+        },
+        "traceability_data": {
+          "traceability_score": 88.0,
+          "chain_of_custody": "complete",
+          "origin_verified": true
+        }
+      },
+      "expected_output": {
+        "dds_status": "valid",
+        "compliance_status": "non_compliant",
+        "submission_ready": false
+      },
+      "tolerance": 0.01,
+      "tags": ["non_compliant", "cattle", "brazil", "protected_area"]
+    },
+    {
+      "test_id": "DDS-NONC-003",
+      "description": "Non-compliant - High risk soya from Brazil",
+      "tool_name": "generate_dds_report",
+      "input": {
+        "operator_info": {
+          "operator_id": "OP-PL-001",
+          "company_name": "Polish Agri Ltd",
+          "eori_number": "PL555666777000",
+          "country_code": "PL",
+          "contact_email": "import@polishagri.pl"
+        },
+        "commodity_data": {
+          "cn_code": "12010090",
+          "cn_description": "Soya beans",
+          "commodity_type": "soya",
+          "quantity_kg": 250000.0,
+          "production_country": "BR",
+          "production_date": "2024-02-01"
+        },
+        "geolocation_data": {
+          "coordinates": [-12.0, -55.0],
+          "coordinate_type": "point",
+          "precision_meters": 30.0,
+          "valid": true,
+          "in_protected_area": false
+        },
+        "risk_assessment": {
+          "risk_level": "high",
+          "risk_score": 85,
+          "due_diligence_level": "full_verification",
+          "satellite_verification_required": true
+        },
+        "traceability_data": {
+          "traceability_score": 50.0,
+          "chain_of_custody": "broken",
+          "origin_verified": false
+        }
+      },
+      "expected_output": {
+        "dds_status": "valid",
+        "compliance_status": "non_compliant",
+        "submission_ready": false
+      },
+      "tolerance": 0.01,
+      "tags": ["non_compliant", "soya", "brazil", "high_risk"]
+    },
+    {
+      "test_id": "DDS-INC-001",
+      "description": "Incomplete - Missing operator fields",
+      "tool_name": "generate_dds_report",
+      "input": {
+        "operator_info": {
+          "company_name": "Unnamed Company"
+        },
+        "commodity_data": {
+          "cn_code": "18040000",
+          "cn_description": "Cocoa butter",
+          "commodity_type": "cocoa",
+          "quantity_kg": 5000.0,
+          "production_country": "CI",
+          "production_date": "2024-04-01"
+        },
+        "geolocation_data": {
+          "coordinates": [6.0, -5.5],
+          "coordinate_type": "point",
+          "valid": true
+        },
+        "risk_assessment": {
+          "risk_level": "high",
+          "due_diligence_level": "full_verification"
+        }
+      },
+      "expected_output": {
+        "dds_status": "incomplete",
+        "submission_ready": false
+      },
+      "tolerance": 0.01,
+      "tags": ["incomplete", "missing_operator"]
+    },
+    {
+      "test_id": "DDS-INC-002",
+      "description": "Incomplete - Missing commodity fields",
+      "tool_name": "generate_dds_report",
+      "input": {
+        "operator_info": {
+          "operator_id": "OP-AT-001",
+          "company_name": "Austrian Coffee AG",
+          "eori_number": "AT888999000111"
+        },
+        "commodity_data": {
+          "cn_code": "09011100",
+          "product_description": "Coffee beans"
+        },
+        "geolocation_data": {
+          "coordinates": [9.0, 38.5],
+          "valid": true
+        },
+        "risk_assessment": {
+          "risk_level": "standard",
+          "due_diligence_level": "enhanced"
+        }
+      },
+      "expected_output": {
+        "dds_status": "incomplete",
+        "submission_ready": false
+      },
+      "tolerance": 0.01,
+      "tags": ["incomplete", "missing_commodity"]
+    },
+    {
+      "test_id": "DDS-INC-003",
+      "description": "Incomplete - Missing geolocation",
+      "tool_name": "generate_dds_report",
+      "input": {
+        "operator_info": {
+          "operator_id": "OP-CZ-001",
+          "company_name": "Czech Rubber AS",
+          "eori_number": "CZ111222333444"
+        },
+        "commodity_data": {
+          "cn_code": "40011000",
+          "cn_description": "Natural rubber latex",
+          "commodity_type": "rubber",
+          "quantity_kg": 20000.0,
+          "production_country": "TH"
+        },
+        "geolocation_data": {},
+        "risk_assessment": {
+          "risk_level": "standard",
+          "due_diligence_level": "enhanced"
+        }
+      },
+      "expected_output": {
+        "dds_status": "incomplete",
+        "submission_ready": false
+      },
+      "tolerance": 0.01,
+      "tags": ["incomplete", "missing_geolocation"]
+    },
+    {
+      "test_id": "DDS-INC-004",
+      "description": "Incomplete - Missing risk assessment",
+      "tool_name": "generate_dds_report",
+      "input": {
+        "operator_info": {
+          "operator_id": "OP-HU-001",
+          "company_name": "Hungarian Wood Kft",
+          "eori_number": "HU333444555666"
+        },
+        "commodity_data": {
+          "cn_code": "44072100",
+          "cn_description": "Sawn mahogany",
+          "commodity_type": "wood",
+          "quantity_kg": 3000.0,
+          "production_country": "CM"
+        },
+        "geolocation_data": {
+          "coordinates": [4.0, 11.5],
+          "valid": true
+        },
+        "risk_assessment": {}
+      },
+      "expected_output": {
+        "dds_status": "incomplete",
+        "submission_ready": false
+      },
+      "tolerance": 0.01,
+      "tags": ["incomplete", "missing_risk"]
+    },
+    {
+      "test_id": "DDS-HASH-001",
+      "description": "Hash verification - Valid DDS hash generated",
+      "tool_name": "generate_dds_report",
+      "input": {
+        "operator_info": {
+          "operator_id": "OP-SE-001",
+          "company_name": "Swedish Paper AB",
+          "eori_number": "SE444555666777",
+          "country_code": "SE"
+        },
+        "commodity_data": {
+          "cn_code": "48010000",
+          "cn_description": "Newsprint",
+          "commodity_type": "wood",
+          "quantity_kg": 100000.0,
+          "production_country": "FI"
+        },
+        "geolocation_data": {
+          "coordinates": [62.0, 26.0],
+          "valid": true,
+          "in_protected_area": false
+        },
+        "risk_assessment": {
+          "risk_level": "low",
+          "risk_score": 10,
+          "due_diligence_level": "standard"
+        },
+        "traceability_data": {
+          "traceability_score": 100.0,
+          "chain_of_custody": "complete",
+          "origin_verified": true
+        }
+      },
+      "expected_output": {
+        "dds_status": "valid",
+        "compliance_status": "compliant"
+      },
+      "tolerance": 0.01,
+      "tags": ["hash", "valid", "wood"]
+    },
+    {
+      "test_id": "DDS-WARN-001",
+      "description": "DDS with warnings - High precision warning",
+      "tool_name": "generate_dds_report",
+      "input": {
+        "operator_info": {
+          "operator_id": "OP-PT-001",
+          "company_name": "Portuguese Oils Lda",
+          "eori_number": "PT777888999000",
+          "country_code": "PT"
+        },
+        "commodity_data": {
+          "cn_code": "15119091",
+          "cn_description": "Palm oil fractions",
+          "commodity_type": "palm_oil",
+          "quantity_kg": 30000.0,
+          "production_country": "MY"
+        },
+        "geolocation_data": {
+          "coordinates": [5.5, 116.5],
+          "precision_meters": 150.0,
+          "valid": true,
+          "in_protected_area": false
+        },
+        "risk_assessment": {
+          "risk_level": "high",
+          "risk_score": 75,
+          "due_diligence_level": "full_verification",
+          "satellite_verification_required": true
+        },
+        "traceability_data": {
+          "traceability_score": 72.0,
+          "chain_of_custody": "partial",
+          "origin_verified": true
+        }
+      },
+      "expected_output": {
+        "dds_status": "valid",
+        "compliance_status": "requires_review"
+      },
+      "tolerance": 0.01,
+      "tags": ["warning", "palm_oil", "precision"]
+    },
+    {
+      "test_id": "DDS-ALL-001",
+      "description": "Complete DDS for cattle with all fields",
+      "tool_name": "generate_dds_report",
+      "input": {
+        "operator_info": {
+          "operator_id": "OP-IE-001",
+          "company_name": "Irish Beef Exports Ltd",
+          "eori_number": "IE123456789123",
+          "country_code": "IE",
+          "contact_email": "compliance@irishbeef.ie"
+        },
+        "commodity_data": {
+          "cn_code": "02012020",
+          "cn_description": "Bovine meat cuts with bone",
+          "commodity_type": "cattle",
+          "quantity_kg": 8000.0,
+          "production_country": "UY",
+          "production_date": "2024-05-15"
+        },
+        "geolocation_data": {
+          "coordinates": [-33.0, -56.0],
+          "coordinate_type": "point",
+          "precision_meters": 8.0,
+          "valid": true,
+          "in_protected_area": false
+        },
+        "risk_assessment": {
+          "risk_level": "low",
+          "risk_score": 20,
+          "due_diligence_level": "standard",
+          "satellite_verification_required": false
+        },
+        "traceability_data": {
+          "traceability_score": 98.0,
+          "chain_of_custody": "complete",
+          "origin_verified": true
+        }
+      },
+      "expected_output": {
+        "dds_status": "valid",
+        "compliance_status": "compliant",
+        "submission_ready": true
+      },
+      "tolerance": 0.01,
+      "tags": ["compliant", "cattle", "uruguay", "complete"]
+    },
+    {
+      "test_id": "DDS-ALL-002",
+      "description": "Complete DDS for rubber from Thailand",
+      "tool_name": "generate_dds_report",
+      "input": {
+        "operator_info": {
+          "operator_id": "OP-SK-001",
+          "company_name": "Slovak Tyres AS",
+          "eori_number": "SK987654321987",
+          "country_code": "SK",
+          "contact_email": "sourcing@slovaktyres.sk"
+        },
+        "commodity_data": {
+          "cn_code": "40012100",
+          "cn_description": "Smoked rubber sheets",
+          "commodity_type": "rubber",
+          "quantity_kg": 40000.0,
+          "production_country": "TH",
+          "production_date": "2024-04-20"
+        },
+        "geolocation_data": {
+          "coordinates": [8.0, 99.5],
+          "coordinate_type": "point",
+          "precision_meters": 12.0,
+          "valid": true,
+          "in_protected_area": false
+        },
+        "risk_assessment": {
+          "risk_level": "standard",
+          "risk_score": 48,
+          "due_diligence_level": "enhanced",
+          "satellite_verification_required": false
+        },
+        "traceability_data": {
+          "traceability_score": 85.0,
+          "chain_of_custody": "complete",
+          "origin_verified": true
+        }
+      },
+      "expected_output": {
+        "dds_status": "valid",
+        "compliance_status": "compliant",
+        "submission_ready": true
+      },
+      "tolerance": 0.01,
+      "tags": ["compliant", "rubber", "thailand"]
+    },
+    {
+      "test_id": "DDS-NOTRACE-001",
+      "description": "DDS without traceability data - still valid",
+      "tool_name": "generate_dds_report",
+      "input": {
+        "operator_info": {
+          "operator_id": "OP-DK-001",
+          "company_name": "Danish Cocoa AS",
+          "eori_number": "DK111222333444",
+          "country_code": "DK"
+        },
+        "commodity_data": {
+          "cn_code": "18031000",
+          "cn_description": "Cocoa paste",
+          "commodity_type": "cocoa",
+          "quantity_kg": 12000.0,
+          "production_country": "EC"
+        },
+        "geolocation_data": {
+          "coordinates": [-1.5, -79.0],
+          "valid": true,
+          "in_protected_area": false
+        },
+        "risk_assessment": {
+          "risk_level": "standard",
+          "risk_score": 55,
+          "due_diligence_level": "enhanced"
+        }
+      },
+      "expected_output": {
+        "dds_status": "valid",
+        "compliance_status": "requires_review"
+      },
+      "tolerance": 0.01,
+      "tags": ["valid", "cocoa", "no_trace"]
+    }
+  ]
+}

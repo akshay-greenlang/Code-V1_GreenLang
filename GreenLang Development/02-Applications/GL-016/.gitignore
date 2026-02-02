@@ -1,0 +1,186 @@
+# GL-016 WATERGUARD - Git Ignore File
+# Project: GreenLang Industrial Sustainability Framework
+
+# ============================================================================
+# Python
+# ============================================================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Distribution / packaging
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+test-results/
+
+# ============================================================================
+# Virtual Environments
+# ============================================================================
+venv/
+env/
+ENV/
+.venv/
+.pyenv/
+
+# ============================================================================
+# IDEs and Editors
+# ============================================================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.pydevproject
+.settings/
+*.sublime-project
+*.sublime-workspace
+
+# ============================================================================
+# Operating System
+# ============================================================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# ============================================================================
+# Environment Variables & Secrets
+# ============================================================================
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+*.pem
+*.key
+*.crt
+*.p12
+secrets/
+credentials/
+
+# ============================================================================
+# Logs
+# ============================================================================
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ============================================================================
+# Data & Databases
+# ============================================================================
+data/
+*.db
+*.sqlite
+*.sqlite3
+*.csv
+*.xlsx
+*.xls
+backups/
+archives/
+
+# ============================================================================
+# Cache & Temporary Files
+# ============================================================================
+.cache/
+*.cache
+tmp/
+temp/
+*.tmp
+*.bak
+*.backup
+
+# ============================================================================
+# Docker
+# ============================================================================
+.dockerignore
+
+# ============================================================================
+# Kubernetes
+# ============================================================================
+# Keep deployment files but ignore generated ones
+*-generated.yaml
+kustomization.yaml
+
+# ============================================================================
+# CI/CD
+# ============================================================================
+.gitlab-ci-local/
+
+# ============================================================================
+# ML Models (large files)
+# ============================================================================
+*.pkl
+*.h5
+*.pb
+*.onnx
+models/*.pkl
+
+# ============================================================================
+# Documentation builds
+# ============================================================================
+docs/_build/
+site/
+
+# ============================================================================
+# Pre-commit
+# ============================================================================
+.secrets.baseline
+
+# ============================================================================
+# Project Specific
+# ============================================================================
+# Local configuration overrides
+config.local.yaml
+
+# Performance test results
+performance-results/
+
+# Security scan results
+security-reports/
+
+# SBOM generated files
+sbom/*.json
+sbom/*.xml
+!sbom/README.md

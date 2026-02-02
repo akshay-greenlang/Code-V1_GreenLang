@@ -1,0 +1,80 @@
+# =============================================================================
+# GL-017 CONDENSYNC - Kustomization
+# Kubernetes resource management with Kustomize
+# =============================================================================
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Namespace for all resources
+namespace: greenlang
+
+# Common labels applied to all resources
+commonLabels:
+  app: gl-017-condensync
+  app.kubernetes.io/name: condensync
+  app.kubernetes.io/instance: gl-017
+  app.kubernetes.io/version: "1.0.0"
+  app.kubernetes.io/component: agent
+  app.kubernetes.io/part-of: greenlang
+  app.kubernetes.io/managed-by: kustomize
+  environment: production
+  team: greenlang-devops
+
+# Common annotations applied to all resources
+commonAnnotations:
+  owner: "greenlang-devops"
+  documentation: "https://docs.greenlang.io/agents/gl-017"
+  support: "devops@greenlang.io"
+
+# Resource list
+resources:
+  - deployment.yaml
+  - service.yaml
+  - configmap.yaml
+  - secret.yaml
+  - hpa.yaml
+  - networkpolicy.yaml
+  - ingress.yaml
+  - pvc.yaml
+  - serviceaccount.yaml
+
+# ConfigMap generator (alternative to static configmap.yaml)
+# configMapGenerator:
+#   - name: gl-017-condensync-config
+#     behavior: create
+#     files:
+#       - config/app-config.yaml
+
+# Secret generator (alternative to static secret.yaml)
+# secretGenerator:
+#   - name: gl-017-condensync-secrets
+#     behavior: create
+#     type: Opaque
+#     files:
+#       - secrets/database-url
+#       - secrets/redis-url
+
+# Image configuration
+images:
+  - name: greenlang/gl-017-condensync
+    newName: greenlang/gl-017-condensync
+    newTag: "1.0.0"
+
+# Replica count override
+replicas:
+  - name: gl-017-condensync
+    count: 3
+
+# Patches for environment-specific configurations
+patches:
+  # Add resource limits patch
+  - target:
+      kind: Deployment
+      name: gl-017-condensync
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/memory
+        value: 2Gi
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/cpu
+        value: 1000m

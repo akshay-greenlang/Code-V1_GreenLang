@@ -1,0 +1,86 @@
+name: emissions-core
+version: 1.0.0
+kind: pack
+pack_schema_version: '1.0'
+description: Core emissions calculation agents for fuel, electricity, and carbon accounting
+author:
+  name: GreenLang Team
+  email: support@greenlang.io
+  organization: GreenLang
+license: MIT
+contents:
+  agents:
+  - name: FuelEmissions
+    class_path: agents.fuel:FuelAgent
+    description: Calculate emissions from fuel consumption
+    inputs:
+      fuel_type: string
+      amount: number
+      unit: string
+    outputs:
+      co2e_kg: number
+      methodology: string
+  - name: ElectricityEmissions
+    class_path: agents.electricity:ElectricityAgent
+    description: Calculate grid electricity emissions
+    inputs:
+      consumption_kwh: number
+      region: string
+    outputs:
+      co2e_kg: number
+      grid_factor: number
+  - name: CarbonAggregator
+    class_path: agents.carbon:CarbonAgent
+    description: Aggregate emissions from multiple sources
+    inputs:
+      sources: array
+    outputs:
+      total_co2e_kg: number
+      breakdown: object
+  pipelines:
+  - name: simple-emissions
+    file: pipelines/simple.yaml
+    description: Basic emissions calculation pipeline
+  - name: multi-source
+    file: pipelines/multi_source.yaml
+    description: Calculate emissions from multiple sources
+  datasets:
+  - name: emission-factors
+    path: data/emission_factors.json
+    format: json
+    card: cards/emission_factors.md
+    size: 45KB
+  - name: global-grid-factors
+    path: data/grid_factors.json
+    format: json
+    card: cards/grid_factors.md
+    size: 12KB
+dependencies:
+- name: greenlang-sdk
+  version: '>=0.1.0'
+- pandas>=1.3.0
+- numpy>=1.20.0
+metadata:
+  authors:
+  - name: GreenLang Team
+    email: team@greenlang.io
+  homepage: https://greenlang.io/packs/emissions-core
+  repository: https://github.com/greenlang/emissions-core
+  publisher: greenlang-official
+capabilities:
+  fs:
+    allow: true
+policy:
+  install: policies/install.rego
+  runtime: policies/runtime.rego
+  network: []
+  data_residency:
+  - US
+  - EU
+  - APAC
+  ef_vintage_min: 2024
+provenance:
+  sbom: true
+  signing: true
+test_command: pytest tests/
+min_greenlang_version: 0.1.0

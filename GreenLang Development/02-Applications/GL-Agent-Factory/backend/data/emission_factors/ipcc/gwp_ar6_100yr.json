@@ -1,0 +1,353 @@
+{
+  "metadata": {
+    "source": "IPCC",
+    "source_name": "Intergovernmental Panel on Climate Change",
+    "source_document": "IPCC Sixth Assessment Report (AR6) - Working Group I",
+    "source_url": "https://www.ipcc.ch/report/ar6/wg1/",
+    "version": "AR6",
+    "last_updated": "2021-08-09",
+    "time_horizon": "100 years",
+    "description": "Global Warming Potentials (GWP) from IPCC AR6 for 100-year time horizon"
+  },
+  "reference_gas": {
+    "gas_name": "Carbon Dioxide",
+    "chemical_formula": "CO2",
+    "gwp_100": 1,
+    "notes": "Reference gas - all GWPs are relative to CO2"
+  },
+  "main_greenhouse_gases": [
+    {
+      "id": "ef://ipcc/gwp/co2/ar6_100yr",
+      "gas_name": "Carbon Dioxide",
+      "chemical_formula": "CO2",
+      "cas_number": "124-38-9",
+      "gwp_ar6_100yr": 1,
+      "gwp_ar5_100yr": 1,
+      "gwp_ar4_100yr": 1,
+      "atmospheric_lifetime_years": "variable",
+      "radiative_efficiency": 1.37e-5,
+      "radiative_efficiency_unit": "W m-2 ppb-1",
+      "notes": "Reference gas"
+    },
+    {
+      "id": "ef://ipcc/gwp/ch4/ar6_100yr",
+      "gas_name": "Methane",
+      "chemical_formula": "CH4",
+      "cas_number": "74-82-8",
+      "gwp_ar6_100yr": 27.9,
+      "gwp_ar6_100yr_with_feedback": 29.8,
+      "gwp_ar5_100yr": 28,
+      "gwp_ar4_100yr": 25,
+      "atmospheric_lifetime_years": 11.8,
+      "radiative_efficiency": 5.7e-4,
+      "radiative_efficiency_unit": "W m-2 ppb-1",
+      "notes": "Fossil methane has GWP of 29.8 (includes carbon cycle feedback)"
+    },
+    {
+      "id": "ef://ipcc/gwp/n2o/ar6_100yr",
+      "gas_name": "Nitrous Oxide",
+      "chemical_formula": "N2O",
+      "cas_number": "10024-97-2",
+      "gwp_ar6_100yr": 273,
+      "gwp_ar5_100yr": 265,
+      "gwp_ar4_100yr": 298,
+      "atmospheric_lifetime_years": 109,
+      "radiative_efficiency": 2.8e-3,
+      "radiative_efficiency_unit": "W m-2 ppb-1",
+      "notes": "Long-lived greenhouse gas"
+    }
+  ],
+  "hydrofluorocarbons": [
+    {
+      "id": "ef://ipcc/gwp/hfc-23/ar6_100yr",
+      "gas_name": "HFC-23",
+      "chemical_formula": "CHF3",
+      "cas_number": "75-46-7",
+      "gwp_ar6_100yr": 14600,
+      "gwp_ar5_100yr": 12400,
+      "atmospheric_lifetime_years": 228,
+      "radiative_efficiency": 0.18,
+      "radiative_efficiency_unit": "W m-2 ppb-1"
+    },
+    {
+      "id": "ef://ipcc/gwp/hfc-32/ar6_100yr",
+      "gas_name": "HFC-32",
+      "chemical_formula": "CH2F2",
+      "cas_number": "75-10-5",
+      "gwp_ar6_100yr": 771,
+      "gwp_ar5_100yr": 677,
+      "atmospheric_lifetime_years": 5.4,
+      "radiative_efficiency": 0.11,
+      "radiative_efficiency_unit": "W m-2 ppb-1"
+    },
+    {
+      "id": "ef://ipcc/gwp/hfc-125/ar6_100yr",
+      "gas_name": "HFC-125",
+      "chemical_formula": "CHF2CF3",
+      "cas_number": "354-33-6",
+      "gwp_ar6_100yr": 3740,
+      "gwp_ar5_100yr": 3170,
+      "atmospheric_lifetime_years": 30,
+      "radiative_efficiency": 0.23,
+      "radiative_efficiency_unit": "W m-2 ppb-1"
+    },
+    {
+      "id": "ef://ipcc/gwp/hfc-134a/ar6_100yr",
+      "gas_name": "HFC-134a",
+      "chemical_formula": "CH2FCF3",
+      "cas_number": "811-97-2",
+      "gwp_ar6_100yr": 1530,
+      "gwp_ar5_100yr": 1300,
+      "atmospheric_lifetime_years": 14,
+      "radiative_efficiency": 0.16,
+      "radiative_efficiency_unit": "W m-2 ppb-1"
+    },
+    {
+      "id": "ef://ipcc/gwp/hfc-143a/ar6_100yr",
+      "gas_name": "HFC-143a",
+      "chemical_formula": "CH3CF3",
+      "cas_number": "420-46-2",
+      "gwp_ar6_100yr": 5810,
+      "gwp_ar5_100yr": 4800,
+      "atmospheric_lifetime_years": 51,
+      "radiative_efficiency": 0.16,
+      "radiative_efficiency_unit": "W m-2 ppb-1"
+    },
+    {
+      "id": "ef://ipcc/gwp/hfc-152a/ar6_100yr",
+      "gas_name": "HFC-152a",
+      "chemical_formula": "CH3CHF2",
+      "cas_number": "75-37-6",
+      "gwp_ar6_100yr": 164,
+      "gwp_ar5_100yr": 138,
+      "atmospheric_lifetime_years": 1.6,
+      "radiative_efficiency": 0.10,
+      "radiative_efficiency_unit": "W m-2 ppb-1"
+    },
+    {
+      "id": "ef://ipcc/gwp/hfc-227ea/ar6_100yr",
+      "gas_name": "HFC-227ea",
+      "chemical_formula": "CF3CHFCF3",
+      "cas_number": "431-89-0",
+      "gwp_ar6_100yr": 3600,
+      "gwp_ar5_100yr": 3350,
+      "atmospheric_lifetime_years": 36,
+      "radiative_efficiency": 0.26,
+      "radiative_efficiency_unit": "W m-2 ppb-1"
+    },
+    {
+      "id": "ef://ipcc/gwp/hfc-236fa/ar6_100yr",
+      "gas_name": "HFC-236fa",
+      "chemical_formula": "CF3CH2CF3",
+      "cas_number": "690-39-1",
+      "gwp_ar6_100yr": 8690,
+      "gwp_ar5_100yr": 8060,
+      "atmospheric_lifetime_years": 213,
+      "radiative_efficiency": 0.24,
+      "radiative_efficiency_unit": "W m-2 ppb-1"
+    },
+    {
+      "id": "ef://ipcc/gwp/hfc-245fa/ar6_100yr",
+      "gas_name": "HFC-245fa",
+      "chemical_formula": "CHF2CH2CF3",
+      "cas_number": "460-73-1",
+      "gwp_ar6_100yr": 962,
+      "gwp_ar5_100yr": 858,
+      "atmospheric_lifetime_years": 7.9,
+      "radiative_efficiency": 0.24,
+      "radiative_efficiency_unit": "W m-2 ppb-1"
+    },
+    {
+      "id": "ef://ipcc/gwp/hfc-365mfc/ar6_100yr",
+      "gas_name": "HFC-365mfc",
+      "chemical_formula": "CH3CF2CH2CF3",
+      "cas_number": "406-58-6",
+      "gwp_ar6_100yr": 914,
+      "gwp_ar5_100yr": 804,
+      "atmospheric_lifetime_years": 8.7,
+      "radiative_efficiency": 0.22,
+      "radiative_efficiency_unit": "W m-2 ppb-1"
+    },
+    {
+      "id": "ef://ipcc/gwp/hfc-43-10mee/ar6_100yr",
+      "gas_name": "HFC-43-10mee",
+      "chemical_formula": "CF3CHFCHFCF2CF3",
+      "cas_number": "138495-42-8",
+      "gwp_ar6_100yr": 1600,
+      "gwp_ar5_100yr": 1650,
+      "atmospheric_lifetime_years": 17,
+      "radiative_efficiency": 0.42,
+      "radiative_efficiency_unit": "W m-2 ppb-1"
+    }
+  ],
+  "perfluorocarbons": [
+    {
+      "id": "ef://ipcc/gwp/pfc-14/ar6_100yr",
+      "gas_name": "PFC-14 (Tetrafluoromethane)",
+      "chemical_formula": "CF4",
+      "cas_number": "75-73-0",
+      "gwp_ar6_100yr": 7380,
+      "gwp_ar5_100yr": 6630,
+      "atmospheric_lifetime_years": 50000,
+      "radiative_efficiency": 0.09,
+      "radiative_efficiency_unit": "W m-2 ppb-1"
+    },
+    {
+      "id": "ef://ipcc/gwp/pfc-116/ar6_100yr",
+      "gas_name": "PFC-116 (Hexafluoroethane)",
+      "chemical_formula": "C2F6",
+      "cas_number": "76-16-4",
+      "gwp_ar6_100yr": 12400,
+      "gwp_ar5_100yr": 11100,
+      "atmospheric_lifetime_years": 10000,
+      "radiative_efficiency": 0.25,
+      "radiative_efficiency_unit": "W m-2 ppb-1"
+    },
+    {
+      "id": "ef://ipcc/gwp/pfc-218/ar6_100yr",
+      "gas_name": "PFC-218 (Octafluoropropane)",
+      "chemical_formula": "C3F8",
+      "cas_number": "76-19-7",
+      "gwp_ar6_100yr": 9290,
+      "gwp_ar5_100yr": 8900,
+      "atmospheric_lifetime_years": 2600,
+      "radiative_efficiency": 0.28,
+      "radiative_efficiency_unit": "W m-2 ppb-1"
+    },
+    {
+      "id": "ef://ipcc/gwp/pfc-318/ar6_100yr",
+      "gas_name": "PFC-318 (Perfluorocyclobutane)",
+      "chemical_formula": "c-C4F8",
+      "cas_number": "115-25-3",
+      "gwp_ar6_100yr": 10200,
+      "gwp_ar5_100yr": 9540,
+      "atmospheric_lifetime_years": 3200,
+      "radiative_efficiency": 0.32,
+      "radiative_efficiency_unit": "W m-2 ppb-1"
+    },
+    {
+      "id": "ef://ipcc/gwp/pfc-3-1-10/ar6_100yr",
+      "gas_name": "PFC-3-1-10 (Perfluorobutane)",
+      "chemical_formula": "C4F10",
+      "cas_number": "355-25-9",
+      "gwp_ar6_100yr": 10000,
+      "gwp_ar5_100yr": 9200,
+      "atmospheric_lifetime_years": 2600,
+      "radiative_efficiency": 0.37,
+      "radiative_efficiency_unit": "W m-2 ppb-1"
+    },
+    {
+      "id": "ef://ipcc/gwp/pfc-4-1-12/ar6_100yr",
+      "gas_name": "PFC-4-1-12 (Perfluoropentane)",
+      "chemical_formula": "C5F12",
+      "cas_number": "678-26-2",
+      "gwp_ar6_100yr": 9220,
+      "gwp_ar5_100yr": 8550,
+      "atmospheric_lifetime_years": 4100,
+      "radiative_efficiency": 0.41,
+      "radiative_efficiency_unit": "W m-2 ppb-1"
+    },
+    {
+      "id": "ef://ipcc/gwp/pfc-5-1-14/ar6_100yr",
+      "gas_name": "PFC-5-1-14 (Perfluorohexane)",
+      "chemical_formula": "C6F14",
+      "cas_number": "355-42-0",
+      "gwp_ar6_100yr": 8620,
+      "gwp_ar5_100yr": 7910,
+      "atmospheric_lifetime_years": 3100,
+      "radiative_efficiency": 0.44,
+      "radiative_efficiency_unit": "W m-2 ppb-1"
+    }
+  ],
+  "fluorinated_compounds": [
+    {
+      "id": "ef://ipcc/gwp/sf6/ar6_100yr",
+      "gas_name": "Sulfur Hexafluoride",
+      "chemical_formula": "SF6",
+      "cas_number": "2551-62-4",
+      "gwp_ar6_100yr": 25200,
+      "gwp_ar5_100yr": 23500,
+      "atmospheric_lifetime_years": 3200,
+      "radiative_efficiency": 0.57,
+      "radiative_efficiency_unit": "W m-2 ppb-1"
+    },
+    {
+      "id": "ef://ipcc/gwp/nf3/ar6_100yr",
+      "gas_name": "Nitrogen Trifluoride",
+      "chemical_formula": "NF3",
+      "cas_number": "7783-54-2",
+      "gwp_ar6_100yr": 17400,
+      "gwp_ar5_100yr": 16100,
+      "atmospheric_lifetime_years": 569,
+      "radiative_efficiency": 0.20,
+      "radiative_efficiency_unit": "W m-2 ppb-1"
+    },
+    {
+      "id": "ef://ipcc/gwp/so2f2/ar6_100yr",
+      "gas_name": "Sulfuryl Fluoride",
+      "chemical_formula": "SO2F2",
+      "cas_number": "2699-79-8",
+      "gwp_ar6_100yr": 4630,
+      "gwp_ar5_100yr": 4090,
+      "atmospheric_lifetime_years": 36,
+      "radiative_efficiency": 0.20,
+      "radiative_efficiency_unit": "W m-2 ppb-1"
+    }
+  ],
+  "hydrofluoroolefins": [
+    {
+      "id": "ef://ipcc/gwp/hfo-1234yf/ar6_100yr",
+      "gas_name": "HFO-1234yf",
+      "chemical_formula": "CF3CF=CH2",
+      "cas_number": "754-12-1",
+      "gwp_ar6_100yr": 0.501,
+      "gwp_ar5_100yr": 1,
+      "atmospheric_lifetime_years": 0.029,
+      "radiative_efficiency": 0.022,
+      "radiative_efficiency_unit": "W m-2 ppb-1",
+      "notes": "Low GWP refrigerant alternative"
+    },
+    {
+      "id": "ef://ipcc/gwp/hfo-1234ze/ar6_100yr",
+      "gas_name": "HFO-1234ze(E)",
+      "chemical_formula": "trans-CF3CH=CHF",
+      "cas_number": "29118-24-9",
+      "gwp_ar6_100yr": 1.37,
+      "gwp_ar5_100yr": 1,
+      "atmospheric_lifetime_years": 0.045,
+      "radiative_efficiency": 0.045,
+      "radiative_efficiency_unit": "W m-2 ppb-1",
+      "notes": "Low GWP foam blowing/refrigerant"
+    }
+  ],
+  "common_blends_gwp": [
+    {
+      "id": "ef://ipcc/gwp/r-404a/ar6_100yr",
+      "blend_name": "R-404A",
+      "components": "HFC-125 (44%), HFC-143a (52%), HFC-134a (4%)",
+      "gwp_ar6_100yr": 4728,
+      "gwp_ar5_100yr": 3922
+    },
+    {
+      "id": "ef://ipcc/gwp/r-407c/ar6_100yr",
+      "blend_name": "R-407C",
+      "components": "HFC-32 (23%), HFC-125 (25%), HFC-134a (52%)",
+      "gwp_ar6_100yr": 1908,
+      "gwp_ar5_100yr": 1624
+    },
+    {
+      "id": "ef://ipcc/gwp/r-410a/ar6_100yr",
+      "blend_name": "R-410A",
+      "components": "HFC-32 (50%), HFC-125 (50%)",
+      "gwp_ar6_100yr": 2256,
+      "gwp_ar5_100yr": 1924
+    },
+    {
+      "id": "ef://ipcc/gwp/r-507a/ar6_100yr",
+      "blend_name": "R-507A",
+      "components": "HFC-125 (50%), HFC-143a (50%)",
+      "gwp_ar6_100yr": 4775,
+      "gwp_ar5_100yr": 3985
+    }
+  ]
+}

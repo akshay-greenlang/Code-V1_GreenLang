@@ -1,0 +1,18 @@
+# Invalid Payload - Rule Violation (conditional required)
+# Error Code: GLSCHEMA-E400 (RULE_VIOLATION)
+# Schema: rules/conditional_rules.yaml
+
+_test_metadata:
+  schema: "rules/conditional_rules.yaml"
+  description: "Rule violation - natural_gas requires methane_slip"
+  expected_valid: false
+  expected_errors:
+    - code: "GLSCHEMA-E400"
+      path: ""
+      severity: "error"
+      rule_id: "RULE-001"
+
+fuel_type: "natural_gas"
+quantity: 1000
+quantity_unit: "m3"
+# methane_slip is missing but required when fuel_type is natural_gas

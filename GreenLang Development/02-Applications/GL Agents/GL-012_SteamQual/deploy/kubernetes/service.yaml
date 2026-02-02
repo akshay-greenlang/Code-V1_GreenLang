@@ -1,0 +1,57 @@
+# GL-012 SteamQual Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-012-steamqual
+  namespace: greenlang
+  labels:
+    app: gl-012-steamqual
+    agent-id: GL-012
+    codename: STEAMQUAL
+spec:
+  type: ClusterIP
+  selector:
+    app: gl-012-steamqual
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+      protocol: TCP
+    - name: metrics
+      port: 9090
+      targetPort: 9090
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-012-steamqual-headless
+  namespace: greenlang
+  labels:
+    app: gl-012-steamqual
+spec:
+  type: ClusterIP
+  clusterIP: None
+  selector:
+    app: gl-012-steamqual
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-012-steamqual-metrics
+  namespace: greenlang
+  labels:
+    app: gl-012-steamqual
+    monitoring: prometheus
+spec:
+  type: ClusterIP
+  selector:
+    app: gl-012-steamqual
+  ports:
+    - name: metrics
+      port: 9090
+      targetPort: 9090

@@ -1,0 +1,21 @@
+{
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "spdxVersion": "SPDX-2.3",
+  "creationInfo": {
+    "created": "2024-09-12T17:05:00Z",
+    "creators": ["Tool: GreenLang"]
+  },
+  "name": "test-gpl-pack",
+  "documentNamespace": "https://greenlang.ai/test-gpl-pack",
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Package",
+      "name": "test-gpl-pack",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "versionInfo": "1.0.0",
+      "copyrightText": "NOASSERTION",
+      "licenseConcluded": "GPL-3.0"
+    }
+  ]
+}

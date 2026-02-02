@@ -1,0 +1,77 @@
+# GreenLang Prometheus Configuration
+# Metrics collection for Agent Factory
+# Version: 2.0.0
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    monitor: 'greenlang-agent-factory'
+    environment: development
+    project: greenlang
+
+# Alerting configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          # - alertmanager:9093
+
+# Load rules once and periodically evaluate them
+rule_files:
+  - "alert_rules.yml"
+
+# Scrape configurations
+scrape_configs:
+  # Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+        labels:
+          service: prometheus
+
+  # GreenLang API Server
+  - job_name: 'api-server'
+    static_configs:
+      - targets: ['api-server:8000']
+        labels:
+          service: api-server
+    metrics_path: /metrics
+    scrape_interval: 15s
+    scrape_timeout: 10s
+
+  # GreenLang Agent Runtime
+  - job_name: 'agent-runtime'
+    static_configs:
+      - targets: ['agent-runtime:8000']
+        labels:
+          service: agent-runtime
+    metrics_path: /metrics
+    scrape_interval: 15s
+    scrape_timeout: 10s
+
+  # GreenLang Registry
+  - job_name: 'registry'
+    static_configs:
+      - targets: ['registry:8001']
+        labels:
+          service: registry
+    metrics_path: /metrics
+    scrape_interval: 15s
+    scrape_timeout: 10s
+
+  # PostgreSQL (if postgres_exporter is running)
+  - job_name: 'postgres'
+    static_configs:
+      - targets: ['postgres-exporter:9187']
+        labels:
+          service: postgres
+    scrape_interval: 30s
+
+  # Redis (if redis_exporter is running)
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis-exporter:9121']
+        labels:
+          service: redis
+    scrape_interval: 15s

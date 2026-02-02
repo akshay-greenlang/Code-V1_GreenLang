@@ -1,0 +1,21 @@
+# Calculation Application Configuration
+
+application:
+  name: "calculation-app"
+  version: "1.0.0"
+
+cache:
+  enable_l1: true
+  enable_l2: false
+  enable_l3: false
+
+calculation:
+  thread_workers: 4
+  process_workers: 2
+  enable_validation: true
+  track_provenance: true
+
+telemetry:
+  enable_logging: true
+  enable_metrics: true
+  log_level: "INFO"

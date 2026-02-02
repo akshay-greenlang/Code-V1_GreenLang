@@ -1,0 +1,66 @@
+# ==============================================================================
+# GL-VCCI Istio Gateway Configuration
+# ==============================================================================
+
+# ==============================================================================
+# Production Gateway
+# ==============================================================================
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: vcci-gateway
+  namespace: vcci-production
+  labels:
+    app.kubernetes.io/name: gl-vcci
+    app.kubernetes.io/component: gateway
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+    # HTTPS
+    - port:
+        number: 443
+        name: https
+        protocol: HTTPS
+      tls:
+        mode: SIMPLE
+        credentialName: vcci-tls-cert  # K8s secret with TLS cert
+      hosts:
+        - "api.vcci.greenlang.ai"
+        - "*.vcci.greenlang.ai"
+
+    # HTTP (redirect to HTTPS)
+    - port:
+        number: 80
+        name: http
+        protocol: HTTP
+      hosts:
+        - "api.vcci.greenlang.ai"
+        - "*.vcci.greenlang.ai"
+      tls:
+        httpsRedirect: true
+
+---
+# ==============================================================================
+# Internal Gateway (for inter-service communication)
+# ==============================================================================
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: vcci-internal-gateway
+  namespace: vcci-production
+  labels:
+    app.kubernetes.io/name: gl-vcci
+    app.kubernetes.io/component: gateway
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+    - port:
+        number: 15443
+        name: tls
+        protocol: TLS
+      tls:
+        mode: ISTIO_MUTUAL  # mTLS for internal services
+      hosts:
+        - "*.vcci-production.svc.cluster.local"

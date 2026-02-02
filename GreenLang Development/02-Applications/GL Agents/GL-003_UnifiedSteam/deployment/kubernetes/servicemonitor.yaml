@@ -1,0 +1,302 @@
+# GL-003 UNIFIEDSTEAM - Prometheus ServiceMonitor
+# Steam System Optimization Agent
+#
+# Requires: prometheus-operator (kube-prometheus-stack)
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: unifiedsteam-monitor
+  namespace: greenlang-steam
+  labels:
+    app.kubernetes.io/name: unifiedsteam
+    app.kubernetes.io/component: monitoring
+    app.kubernetes.io/part-of: greenlang
+    agent-id: gl-003
+    # Label to be discovered by Prometheus
+    release: prometheus
+spec:
+  # Service selector
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: unifiedsteam
+
+  # Namespace selector
+  namespaceSelector:
+    matchNames:
+      - greenlang-steam
+
+  # Endpoint configuration
+  endpoints:
+    - port: metrics
+      path: /metrics
+      interval: 15s
+      scrapeTimeout: 10s
+
+      # TLS configuration (if metrics endpoint uses TLS)
+      # scheme: https
+      # tlsConfig:
+      #   insecureSkipVerify: false
+      #   caFile: /etc/prometheus/secrets/ca.crt
+
+      # Basic auth (if required)
+      # basicAuth:
+      #   username:
+      #     name: prometheus-basic-auth
+      #     key: username
+      #   password:
+      #     name: prometheus-basic-auth
+      #     key: password
+
+      # Bearer token (if required)
+      # bearerTokenSecret:
+      #   name: prometheus-bearer-token
+      #   key: token
+
+      # Metric relabeling
+      metricRelabelings:
+        # Drop high-cardinality metrics
+        - sourceLabels: [__name__]
+          regex: 'go_gc_.*'
+          action: drop
+
+        # Add agent ID label
+        - targetLabel: agent_id
+          replacement: gl-003
+
+        # Add tier label
+        - targetLabel: tier
+          replacement: steam-systems
+
+      # Relabeling for target labels
+      relabelings:
+        # Add pod name
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod
+
+        # Add node name
+        - sourceLabels: [__meta_kubernetes_pod_node_name]
+          targetLabel: node
+
+        # Add namespace
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace
+
+  # Job label
+  jobLabel: app.kubernetes.io/name
+
+  # Target labels
+  targetLabels:
+    - app.kubernetes.io/version
+    - agent-id
+---
+# ==============================================================================
+# PrometheusRule - Alerting Rules
+# ==============================================================================
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: unifiedsteam-alerts
+  namespace: greenlang-steam
+  labels:
+    app.kubernetes.io/name: unifiedsteam
+    app.kubernetes.io/component: alerting
+    release: prometheus
+spec:
+  groups:
+    # ==============================================================================
+    # Availability Alerts
+    # ==============================================================================
+    - name: unifiedsteam.availability
+      rules:
+        - alert: UnifiedSteamDown
+          expr: |
+            up{job="unifiedsteam"} == 0
+          for: 1m
+          labels:
+            severity: critical
+            agent_id: gl-003
+            tier: steam-systems
+          annotations:
+            summary: "GL-003 UnifiedSteam is down"
+            description: "UnifiedSteam instance {{ $labels.instance }} has been down for more than 1 minute."
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-003/down"
+
+        - alert: UnifiedSteamHighRestartRate
+          expr: |
+            increase(kube_pod_container_status_restarts_total{container="unifiedsteam"}[1h]) > 3
+          for: 5m
+          labels:
+            severity: warning
+            agent_id: gl-003
+          annotations:
+            summary: "GL-003 UnifiedSteam high restart rate"
+            description: "UnifiedSteam pod {{ $labels.pod }} has restarted {{ $value }} times in the last hour."
+
+        - alert: UnifiedSteamReplicasMismatch
+          expr: |
+            kube_deployment_spec_replicas{deployment="unifiedsteam"}
+            != kube_deployment_status_replicas_available{deployment="unifiedsteam"}
+          for: 5m
+          labels:
+            severity: warning
+            agent_id: gl-003
+          annotations:
+            summary: "GL-003 UnifiedSteam replicas mismatch"
+            description: "Deployment replicas do not match available replicas."
+
+    # ==============================================================================
+    # Performance Alerts
+    # ==============================================================================
+    - name: unifiedsteam.performance
+      rules:
+        - alert: UnifiedSteamHighCPU
+          expr: |
+            avg(rate(container_cpu_usage_seconds_total{container="unifiedsteam"}[5m]))
+            / avg(kube_pod_container_resource_limits{container="unifiedsteam", resource="cpu"}) > 0.9
+          for: 10m
+          labels:
+            severity: warning
+            agent_id: gl-003
+          annotations:
+            summary: "GL-003 UnifiedSteam high CPU usage"
+            description: "UnifiedSteam CPU usage is above 90% of limit for more than 10 minutes."
+
+        - alert: UnifiedSteamHighMemory
+          expr: |
+            avg(container_memory_working_set_bytes{container="unifiedsteam"})
+            / avg(kube_pod_container_resource_limits{container="unifiedsteam", resource="memory"}) > 0.9
+          for: 10m
+          labels:
+            severity: warning
+            agent_id: gl-003
+          annotations:
+            summary: "GL-003 UnifiedSteam high memory usage"
+            description: "UnifiedSteam memory usage is above 90% of limit for more than 10 minutes."
+
+        - alert: UnifiedSteamHighLatency
+          expr: |
+            histogram_quantile(0.99,
+              sum(rate(http_request_duration_seconds_bucket{job="unifiedsteam"}[5m])) by (le)
+            ) > 2
+          for: 5m
+          labels:
+            severity: warning
+            agent_id: gl-003
+          annotations:
+            summary: "GL-003 UnifiedSteam high request latency"
+            description: "99th percentile latency is above 2 seconds."
+
+        - alert: UnifiedSteamHighErrorRate
+          expr: |
+            sum(rate(http_requests_total{job="unifiedsteam", status=~"5.."}[5m]))
+            / sum(rate(http_requests_total{job="unifiedsteam"}[5m])) > 0.05
+          for: 5m
+          labels:
+            severity: critical
+            agent_id: gl-003
+          annotations:
+            summary: "GL-003 UnifiedSteam high error rate"
+            description: "Error rate is above 5% for more than 5 minutes."
+
+    # ==============================================================================
+    # Business Logic Alerts
+    # ==============================================================================
+    - name: unifiedsteam.business
+      rules:
+        - alert: UnifiedSteamOptimizationFailure
+          expr: |
+            increase(steam_optimization_failures_total[15m]) > 5
+          for: 5m
+          labels:
+            severity: critical
+            agent_id: gl-003
+          annotations:
+            summary: "GL-003 UnifiedSteam optimization failures"
+            description: "More than 5 optimization failures in the last 15 minutes."
+
+        - alert: UnifiedSteamKafkaLag
+          expr: |
+            kafka_consumergroup_lag{consumergroup="unifiedsteam-consumer-group"} > 10000
+          for: 5m
+          labels:
+            severity: warning
+            agent_id: gl-003
+          annotations:
+            summary: "GL-003 UnifiedSteam Kafka consumer lag"
+            description: "Kafka consumer lag is above 10000 messages."
+
+        - alert: UnifiedSteamOPCUADisconnected
+          expr: |
+            opcua_connection_status{job="unifiedsteam"} == 0
+          for: 2m
+          labels:
+            severity: critical
+            agent_id: gl-003
+          annotations:
+            summary: "GL-003 UnifiedSteam OPC-UA disconnected"
+            description: "OPC-UA connection to SCADA system has been down for more than 2 minutes."
+
+        - alert: UnifiedSteamSafetyLimitBreach
+          expr: |
+            steam_safety_limit_breaches_total > 0
+          for: 0m
+          labels:
+            severity: critical
+            agent_id: gl-003
+          annotations:
+            summary: "GL-003 UnifiedSteam safety limit breach"
+            description: "A safety limit has been breached. Immediate attention required."
+
+    # ==============================================================================
+    # SLA Alerts
+    # ==============================================================================
+    - name: unifiedsteam.sla
+      rules:
+        - alert: UnifiedSteamSLAAvailabilityAtRisk
+          expr: |
+            avg_over_time(up{job="unifiedsteam"}[24h]) < 0.999
+          for: 30m
+          labels:
+            severity: warning
+            agent_id: gl-003
+          annotations:
+            summary: "GL-003 UnifiedSteam SLA availability at risk"
+            description: "24-hour availability is below 99.9% SLA target."
+
+        - alert: UnifiedSteamSLALatencyAtRisk
+          expr: |
+            histogram_quantile(0.95,
+              sum(rate(http_request_duration_seconds_bucket{job="unifiedsteam"}[24h])) by (le)
+            ) > 0.5
+          for: 1h
+          labels:
+            severity: warning
+            agent_id: gl-003
+          annotations:
+            summary: "GL-003 UnifiedSteam SLA latency at risk"
+            description: "24-hour 95th percentile latency is above 500ms SLA target."
+---
+# ==============================================================================
+# PodMonitor - For pods without Services
+# ==============================================================================
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: unifiedsteam-pod-monitor
+  namespace: greenlang-steam
+  labels:
+    app.kubernetes.io/name: unifiedsteam
+    app.kubernetes.io/component: monitoring
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: unifiedsteam
+  namespaceSelector:
+    matchNames:
+      - greenlang-steam
+  podMetricsEndpoints:
+    - port: metrics
+      path: /metrics
+      interval: 15s

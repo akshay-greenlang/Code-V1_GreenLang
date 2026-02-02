@@ -1,0 +1,153 @@
+{{- if .Values.ingress.enabled -}}
+{{/*
+NGINX Ingress with TLS and advanced routing
+*/}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "greenlang-agents.fullname" . }}
+  namespace: {{ include "greenlang-agents.namespace" . }}
+  labels:
+    {{- include "greenlang-agents.labels" . | nindent 4 }}
+  annotations:
+    # Ingress class
+    kubernetes.io/ingress.class: {{ .Values.ingress.className | default "nginx" }}
+
+    # TLS/SSL
+    cert-manager.io/cluster-issuer: {{ .Values.ingress.clusterIssuer | default "letsencrypt-prod" }}
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+
+    # HSTS Security Headers
+    nginx.ingress.kubernetes.io/hsts: "true"
+    nginx.ingress.kubernetes.io/hsts-max-age: "31536000"
+    nginx.ingress.kubernetes.io/hsts-include-subdomains: "true"
+    nginx.ingress.kubernetes.io/hsts-preload: "true"
+
+    # Rate Limiting
+    nginx.ingress.kubernetes.io/rate-limit: {{ .Values.ingress.rateLimit | default "100" | quote }}
+    nginx.ingress.kubernetes.io/rate-limit-window: {{ .Values.ingress.rateLimitWindow | default "1s" | quote }}
+    nginx.ingress.kubernetes.io/rate-limit-connections: "50"
+
+    # Proxy Settings
+    nginx.ingress.kubernetes.io/proxy-body-size: {{ .Values.ingress.proxyBodySize | default "10m" | quote }}
+    nginx.ingress.kubernetes.io/proxy-read-timeout: {{ .Values.ingress.proxyReadTimeout | default "60" | quote }}
+    nginx.ingress.kubernetes.io/proxy-send-timeout: {{ .Values.ingress.proxySendTimeout | default "60" | quote }}
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "10"
+    nginx.ingress.kubernetes.io/proxy-buffer-size: "16k"
+
+    # Connection limits
+    nginx.ingress.kubernetes.io/limit-connections: "100"
+    nginx.ingress.kubernetes.io/limit-rps: "50"
+
+    # Backend protocol
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+
+    # Custom headers
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      more_set_headers "X-Content-Type-Options: nosniff";
+      more_set_headers "X-Frame-Options: DENY";
+      more_set_headers "X-XSS-Protection: 1; mode=block";
+      more_set_headers "Referrer-Policy: strict-origin-when-cross-origin";
+      more_set_headers "Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'";
+
+    # CORS (if needed)
+    nginx.ingress.kubernetes.io/enable-cors: {{ .Values.ingress.enableCors | default "true" | quote }}
+    nginx.ingress.kubernetes.io/cors-allow-origin: {{ .Values.ingress.corsAllowOrigin | default "*" | quote }}
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, DELETE, OPTIONS"
+    nginx.ingress.kubernetes.io/cors-allow-headers: "DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization"
+
+    {{- with .Values.ingress.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  ingressClassName: {{ .Values.ingress.className | default "nginx" }}
+  {{- if .Values.ingress.tls }}
+  tls:
+    {{- range .Values.ingress.tls }}
+    - hosts:
+        {{- range .hosts }}
+        - {{ . | quote }}
+        {{- end }}
+      secretName: {{ .secretName }}
+    {{- end }}
+  {{- end }}
+  rules:
+    {{- range .Values.ingress.hosts }}
+    - host: {{ .host | quote }}
+      http:
+        paths:
+          {{- range .paths }}
+          - path: {{ .path }}
+            pathType: {{ .pathType | default "Prefix" }}
+            backend:
+              service:
+                name: {{ include "greenlang-agents.fullname" $ }}-api-gateway
+                port:
+                  number: 80
+          {{- end }}
+    {{- end }}
+---
+{{/*
+Separate ingress for agent-specific routes
+*/}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "greenlang-agents.fullname" . }}-agents
+  namespace: {{ include "greenlang-agents.namespace" . }}
+  labels:
+    {{- include "greenlang-agents.labels" . | nindent 4 }}
+  annotations:
+    kubernetes.io/ingress.class: {{ .Values.ingress.className | default "nginx" }}
+    cert-manager.io/cluster-issuer: {{ .Values.ingress.clusterIssuer | default "letsencrypt-prod" }}
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    # Agent-specific rate limits (more permissive for batch operations)
+    nginx.ingress.kubernetes.io/rate-limit: "200"
+    nginx.ingress.kubernetes.io/rate-limit-window: "1s"
+spec:
+  ingressClassName: {{ .Values.ingress.className | default "nginx" }}
+  {{- if .Values.ingress.tls }}
+  tls:
+    {{- range .Values.ingress.tls }}
+    - hosts:
+        {{- range .hosts }}
+        - {{ . | quote }}
+        {{- end }}
+      secretName: {{ .secretName }}
+    {{- end }}
+  {{- end }}
+  rules:
+    {{- range .Values.ingress.hosts }}
+    - host: {{ .host | quote }}
+      http:
+        paths:
+          # Agent execution endpoints
+          - path: /api/v1/agents
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "greenlang-agents.fullname" $ }}-agent-runner
+                port:
+                  number: 8000
+          # Task/Job endpoints
+          - path: /api/v1/tasks
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "greenlang-agents.fullname" $ }}-scheduler
+                port:
+                  number: 8000
+          # Batch operations
+          - path: /api/v1/batch
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "greenlang-agents.fullname" $ }}-worker
+                port:
+                  number: 8000
+    {{- end }}
+{{- end }}

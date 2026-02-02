@@ -1,0 +1,1033 @@
+---
+# GL-VCCI Scope 3 Carbon Intelligence Platform
+# Team Onboarding & Tooling Setup Guide v1.0.0
+#
+# Purpose: Comprehensive guide for onboarding 12 FTE engineering team and
+#          provisioning all development, infrastructure, and collaboration tools.
+#
+# Target Audience: Engineering Manager, DevOps/SRE, IT/InfoSec teams
+# Timeline: Week 2 (setup) -> Week 3+ (team onboarding begins)
+
+version: "1.0.0"
+last_updated: "2025-01-25"
+document_owner: "Engineering Manager & Head of DevOps"
+
+# ============================================================================
+# TEAM STRUCTURE (12 FTE)
+# ============================================================================
+
+team_structure:
+  total_fte: 12
+  description: "Cross-functional engineering team for GL-VCCI platform development"
+
+  # ---------------------------------------------------------------------------
+  # Product & Leadership (1 FTE)
+  # ---------------------------------------------------------------------------
+  product_leadership:
+    - role: "Product Manager"
+      fte: 1
+      responsibilities:
+        - "Product roadmap and prioritization"
+        - "Design partner liaison and feedback collection"
+        - "Feature specification (user stories, acceptance criteria)"
+        - "Multi-standard compliance tracking (ESRS, CDP, IFRS S2, GHG Protocol)"
+      qualifications:
+        - "5+ years product management experience (B2B SaaS)"
+        - "Sustainability/carbon accounting domain knowledge (preferred)"
+        - "Technical background (can read code, understand APIs)"
+      reporting_to: "Head of Product"
+      key_tools: ["Jira", "Figma", "Miro", "Notion"]
+
+  # ---------------------------------------------------------------------------
+  # Backend Engineering (4 FTE)
+  # ---------------------------------------------------------------------------
+  backend_engineering:
+    - role: "Senior Backend Engineer (Tech Lead)"
+      fte: 1
+      responsibilities:
+        - "Architecture decisions and technical leadership"
+        - "OPA policy engine development (category_1_purchased_goods.rego, etc.)"
+        - "Core service implementation (Factor Broker, Policy Engine)"
+        - "Code reviews and mentorship"
+      qualifications:
+        - "7+ years backend engineering (Python preferred)"
+        - "Distributed systems experience"
+        - "OPA/Rego expertise (or willingness to learn)"
+      reporting_to: "VP of Engineering"
+      key_tools: ["Python", "FastAPI", "OPA", "PostgreSQL", "Redis", "Docker"]
+
+    - role: "Backend Engineer (API & Integrations)"
+      fte: 1
+      responsibilities:
+        - "ERP integrations (SAP OData, Oracle REST, Workday RaaS)"
+        - "REST API development (FastAPI endpoints)"
+        - "PCF Exchange integration (PACT Pathfinder, Catena-X, SAP SDX)"
+        - "API documentation (OpenAPI/Swagger)"
+      qualifications:
+        - "4+ years backend engineering"
+        - "API integration experience (ERP systems preferred)"
+        - "Authentication protocols (OAuth 2.0, SAML)"
+      reporting_to: "Senior Backend Engineer"
+      key_tools: ["Python", "FastAPI", "SAP APIs", "OAuth 2.0", "Postman"]
+
+    - role: "Backend Engineer (ML & Entity MDM)"
+      fte: 1
+      responsibilities:
+        - "Entity MDM two-stage resolution (Weaviate + BERT)"
+        - "Sentence Transformers model fine-tuning"
+        - "ML model deployment and monitoring"
+        - "Data quality scoring (ILCD pedigree matrix)"
+      qualifications:
+        - "4+ years backend + ML engineering"
+        - "NLP/sentence embeddings experience"
+        - "Vector databases (Weaviate, Pinecone, etc.)"
+      reporting_to: "Senior Backend Engineer"
+      key_tools: ["Python", "Sentence Transformers", "PyTorch", "Weaviate", "MLflow"]
+
+    - role: "Backend Engineer (Calculations & Provenance)"
+      fte: 1
+      responsibilities:
+        - "Scope3CalculatorAgent implementation"
+        - "Monte Carlo uncertainty quantification (10,000 iterations)"
+        - "Provenance chain generation (SHA-256 hashing)"
+        - "Calculation performance optimization"
+      qualifications:
+        - "3+ years backend engineering"
+        - "Scientific computing (NumPy, SciPy)"
+        - "Performance optimization experience"
+      reporting_to: "Senior Backend Engineer"
+      key_tools: ["Python", "NumPy", "SciPy", "Celery", "Redis"]
+
+  # ---------------------------------------------------------------------------
+  # Frontend Engineering (2 FTE)
+  # ---------------------------------------------------------------------------
+  frontend_engineering:
+    - role: "Senior Frontend Engineer (Tech Lead)"
+      fte: 1
+      responsibilities:
+        - "Frontend architecture (React, TypeScript)"
+        - "UI component library development (Shadcn UI, Tailwind)"
+        - "Data visualization (emissions charts, hotspot analysis)"
+        - "Code reviews and mentorship"
+      qualifications:
+        - "6+ years frontend engineering"
+        - "React ecosystem expertise (Next.js, TypeScript)"
+        - "Data visualization (D3.js, Recharts)"
+      reporting_to: "VP of Engineering"
+      key_tools: ["React", "Next.js", "TypeScript", "Tailwind CSS", "Figma"]
+
+    - role: "Frontend Engineer (Dashboard & Reporting)"
+      fte: 1
+      responsibilities:
+        - "Dashboard development (emissions overview, KPIs)"
+        - "Multi-standard report exports (ESRS, CDP, IFRS S2)"
+        - "Supplier engagement UI (email templates, tracking)"
+        - "Responsive design (mobile/tablet support)"
+      qualifications:
+        - "3+ years frontend engineering"
+        - "React experience"
+        - "Report generation (PDF, Excel, XBRL)"
+      reporting_to: "Senior Frontend Engineer"
+      key_tools: ["React", "Next.js", "TypeScript", "jsPDF", "ExcelJS"]
+
+  # ---------------------------------------------------------------------------
+  # Data Engineering (2 FTE)
+  # ---------------------------------------------------------------------------
+  data_engineering:
+    - role: "Senior Data Engineer"
+      fte: 1
+      responsibilities:
+        - "Data pipeline architecture (Airflow DAGs)"
+        - "PostgreSQL schema design and optimization"
+        - "Data warehouse design (Snowflake or Redshift)"
+        - "ETL development (ERP -> VCCI platform)"
+      qualifications:
+        - "5+ years data engineering"
+        - "SQL expertise (PostgreSQL, query optimization)"
+        - "Data modeling (star schema, normalization)"
+      reporting_to: "VP of Engineering"
+      key_tools: ["Python", "Airflow", "PostgreSQL", "dbt", "Snowflake"]
+
+    - role: "Data Engineer (Integrations & Quality)"
+      fte: 1
+      responsibilities:
+        - "ERP connector development (data extraction)"
+        - "Data quality validation (312 validation rules)"
+        - "Emission factor database management (ecoinvent, DESNZ, EPA)"
+        - "Data lineage tracking"
+      qualifications:
+        - "3+ years data engineering"
+        - "API integration experience"
+        - "Data quality frameworks (Great Expectations)"
+      reporting_to: "Senior Data Engineer"
+      key_tools: ["Python", "Airflow", "Great Expectations", "AWS S3", "PostgreSQL"]
+
+  # ---------------------------------------------------------------------------
+  # DevOps & SRE (1 FTE)
+  # ---------------------------------------------------------------------------
+  devops_sre:
+    - role: "DevOps/SRE Engineer"
+      fte: 1
+      responsibilities:
+        - "Kubernetes cluster management (AWS EKS)"
+        - "CI/CD pipeline development (GitHub Actions)"
+        - "Infrastructure as Code (Terraform)"
+        - "Monitoring and alerting (Datadog, Sentry)"
+        - "Security scanning (Snyk, SonarQube)"
+        - "Incident response and on-call rotation"
+      qualifications:
+        - "4+ years DevOps/SRE experience"
+        - "Kubernetes expertise (CKA certification preferred)"
+        - "Terraform and GitOps workflows"
+      reporting_to: "Head of Infrastructure"
+      key_tools: ["Kubernetes", "Terraform", "GitHub Actions", "Datadog", "AWS"]
+
+  # ---------------------------------------------------------------------------
+  # Quality Assurance (1 FTE)
+  # ---------------------------------------------------------------------------
+  qa_engineering:
+    - role: "QA Engineer (Automation)"
+      fte: 1
+      responsibilities:
+        - "Test automation (Pytest, Playwright)"
+        - "Integration testing (API tests, ERP connector tests)"
+        - "Performance testing (load testing with Locust)"
+        - "Regression testing (automated test suites)"
+        - "Test case documentation"
+      qualifications:
+        - "3+ years QA engineering (automation focus)"
+        - "Python testing frameworks (Pytest, unittest)"
+        - "CI/CD integration (GitHub Actions)"
+      reporting_to: "Senior Backend Engineer"
+      key_tools: ["Pytest", "Playwright", "Locust", "Postman", "GitHub Actions"]
+
+  # ---------------------------------------------------------------------------
+  # Technical Writing (1 FTE)
+  # ---------------------------------------------------------------------------
+  technical_writing:
+    - role: "Technical Writer"
+      fte: 1
+      responsibilities:
+        - "API documentation (OpenAPI/Swagger)"
+        - "User guides and tutorials"
+        - "GreenLang pack documentation (pack.yaml, gl.yaml)"
+        - "Design partner training materials"
+        - "SOC 2 documentation (policies, procedures)"
+      qualifications:
+        - "3+ years technical writing (developer-focused)"
+        - "API documentation experience"
+        - "Carbon accounting knowledge (nice-to-have)"
+      reporting_to: "Product Manager"
+      key_tools: ["Markdown", "Notion", "Swagger", "Figma", "Loom"]
+
+# ============================================================================
+# DEVELOPMENT TOOLS & INFRASTRUCTURE
+# ============================================================================
+
+development_tools:
+  description: "Standard tooling for all engineering team members"
+
+  # ---------------------------------------------------------------------------
+  # Version Control & Code Hosting
+  # ---------------------------------------------------------------------------
+  version_control:
+    tool: "GitHub"
+    plan: "GitHub Team"
+    cost: "$4/user/month = $48/month (12 users)"
+    repositories:
+      - repo: "vcci-platform"
+        description: "Main monorepo (backend, frontend, data pipelines)"
+        visibility: "Private"
+
+      - repo: "vcci-infrastructure"
+        description: "Infrastructure as Code (Terraform, Kubernetes manifests)"
+        visibility: "Private"
+
+      - repo: "vcci-docs"
+        description: "Documentation (user guides, API docs, internal docs)"
+        visibility: "Private"
+
+    branch_protection:
+      - "main branch requires 2 approvals before merge"
+      - "Require status checks to pass (CI/CD tests)"
+      - "No force pushes allowed"
+
+    github_actions:
+      runners: "GitHub-hosted (Linux, macOS, Windows)"
+      workflows:
+        - "ci.yml: Lint, test, security scan on every PR"
+        - "cd-staging.yml: Deploy to staging on merge to main"
+        - "cd-production.yml: Deploy to production on Git tag"
+
+  # ---------------------------------------------------------------------------
+  # IDEs & Code Editors
+  # ---------------------------------------------------------------------------
+  ides_editors:
+    recommended:
+      - editor: "Visual Studio Code"
+        cost: "Free"
+        extensions:
+          - "Python (Microsoft)"
+          - "ESLint + Prettier (frontend)"
+          - "Docker"
+          - "Kubernetes"
+          - "Open Policy Agent (OPA/Rego)"
+          - "GitLens"
+        settings: "Shared team settings.json in repo (.vscode/settings.json)"
+
+      - editor: "PyCharm Professional"
+        cost: "$89/user/year = $1,068/year (12 users)"
+        use_case: "Backend engineers (optional, Python-heavy workflows)"
+        features: "Advanced debugging, database tools, scientific mode"
+
+      - editor: "DataGrip"
+        cost: "$89/user/year (subset of team, 4 users) = $356/year"
+        use_case: "Data engineers, backend engineers (database work)"
+        features: "SQL editor, query optimization, schema visualization"
+
+  # ---------------------------------------------------------------------------
+  # Communication & Collaboration
+  # ---------------------------------------------------------------------------
+  communication:
+    - tool: "Slack"
+      plan: "Slack Pro"
+      cost: "$7.25/user/month = $87/month (12 users)"
+      channels:
+        - "#engineering-general"
+        - "#backend-dev"
+        - "#frontend-dev"
+        - "#data-eng"
+        - "#devops-sre"
+        - "#incidents"
+        - "#design-partners"
+        - "#random"
+      integrations: ["GitHub (PR/commit notifications)", "Datadog (alerts)", "Jira", "Zoom"]
+
+    - tool: "Zoom"
+      plan: "Zoom Pro"
+      cost: "$15.99/user/month = $191.88/month (12 users)"
+      use_case: "Video meetings, design partner calls, standups"
+
+    - tool: "Notion"
+      plan: "Notion Plus"
+      cost: "$8/user/month = $96/month (12 users)"
+      use_case: "Wiki, meeting notes, project plans, runbooks"
+      workspaces:
+        - "Engineering Wiki (architecture, runbooks, postmortems)"
+        - "Product Roadmap"
+        - "Design Partner Tracker"
+
+  # ---------------------------------------------------------------------------
+  # Project Management
+  # ---------------------------------------------------------------------------
+  project_management:
+    - tool: "Jira Software"
+      plan: "Jira Standard"
+      cost: "$7.75/user/month = $93/month (12 users)"
+      use_case: "Sprint planning, issue tracking, backlog grooming"
+      boards:
+        - "VCCI Sprint Board (2-week sprints)"
+        - "Bug Backlog"
+        - "Design Partner Requests"
+      integrations: ["GitHub (PR linking)", "Slack", "Confluence"]
+
+    - tool: "Linear"
+      plan: "Linear Standard"
+      cost: "$8/user/month = $96/month (12 users)"
+      use_case: "Alternative to Jira (simpler, faster, modern UX)"
+      note: "Choose Linear OR Jira (not both)"
+
+  # ---------------------------------------------------------------------------
+  # Design & Prototyping
+  # ---------------------------------------------------------------------------
+  design_tools:
+    - tool: "Figma"
+      plan: "Figma Professional"
+      cost: "$12/editor/month (3 editors: PM, 2 frontend) = $36/month"
+      use_case: "UI/UX design, prototypes, design system"
+      files:
+        - "VCCI Design System (component library)"
+        - "Dashboard Prototypes"
+        - "Supplier Engagement UI"
+
+    - tool: "Miro"
+      plan: "Miro Team"
+      cost: "$8/user/month = $96/month (12 users)"
+      use_case: "Whiteboarding, architecture diagrams, retrospectives"
+
+# ============================================================================
+# CLOUD INFRASTRUCTURE & CI/CD
+# ============================================================================
+
+infrastructure:
+  description: "Cloud infrastructure and CI/CD setup"
+
+  # ---------------------------------------------------------------------------
+  # Cloud Provider
+  # ---------------------------------------------------------------------------
+  cloud_provider:
+    provider: "Amazon Web Services (AWS)"
+    account_structure:
+      - account: "vcci-dev"
+        purpose: "Development and testing"
+        cost: "~$2,000/month"
+
+      - account: "vcci-staging"
+        purpose: "Staging environment (design partner pilot)"
+        cost: "~$5,000/month"
+
+      - account: "vcci-prod"
+        purpose: "Production (post-GA)"
+        cost: "~$15,000/month (estimated at scale)"
+
+    regions:
+      primary: "us-east-1 (N. Virginia)"
+      secondary: "eu-west-1 (Ireland)"
+      rationale: "us-east-1 for US customers, eu-west-1 for GDPR compliance (EU customers)"
+
+  # ---------------------------------------------------------------------------
+  # Kubernetes (Container Orchestration)
+  # ---------------------------------------------------------------------------
+  kubernetes:
+    service: "Amazon EKS (Elastic Kubernetes Service)"
+    cluster_setup:
+      - cluster: "vcci-dev-eks"
+        environment: "Development"
+        nodes: "3 t3.large (2 vCPU, 8 GB RAM each)"
+        cost: "~$200/month"
+
+      - cluster: "vcci-staging-eks"
+        environment: "Staging"
+        nodes: "5 t3.xlarge (4 vCPU, 16 GB RAM each)"
+        cost: "~$600/month"
+
+      - cluster: "vcci-prod-eks"
+        environment: "Production"
+        nodes: "10 m5.2xlarge (8 vCPU, 32 GB RAM each)"
+        cost: "~$3,000/month"
+
+    namespaces:
+      - "vcci-core (Factor Broker, Policy Engine, Entity MDM, PCF Exchange)"
+      - "vcci-agents (5 GreenLang agents)"
+      - "vcci-data (PostgreSQL, Redis, Weaviate)"
+      - "vcci-monitoring (Datadog, Prometheus, Grafana)"
+
+    networking:
+      cni: "Amazon VPC CNI"
+      service_mesh: "Istio (for multi-tenant isolation)"
+      ingress: "AWS ALB Ingress Controller"
+
+  # ---------------------------------------------------------------------------
+  # Databases & Data Stores
+  # ---------------------------------------------------------------------------
+  databases:
+    - service: "Amazon RDS for PostgreSQL"
+      version: "PostgreSQL 15.x"
+      instances:
+        - instance: "vcci-dev-db"
+          size: "db.t3.medium (2 vCPU, 4 GB RAM)"
+          storage: "100 GB SSD"
+          cost: "~$100/month"
+
+        - instance: "vcci-staging-db"
+          size: "db.r6g.xlarge (4 vCPU, 32 GB RAM)"
+          storage: "500 GB SSD"
+          cost: "~$500/month"
+
+        - instance: "vcci-prod-db"
+          size: "db.r6g.4xlarge (16 vCPU, 128 GB RAM)"
+          storage: "2 TB SSD"
+          high_availability: "Multi-AZ deployment"
+          cost: "~$3,000/month"
+
+      features:
+        - "Automated backups (7-day retention)"
+        - "Point-in-time recovery"
+        - "Encryption at rest (AWS KMS)"
+        - "Row-level security (RLS) for multi-tenancy"
+
+    - service: "Amazon ElastiCache for Redis"
+      version: "Redis 7.x"
+      instances:
+        - instance: "vcci-staging-redis"
+          size: "cache.r6g.large (2 vCPU, 13.07 GB RAM)"
+          cost: "~$150/month"
+
+        - instance: "vcci-prod-redis"
+          size: "cache.r6g.4xlarge (16 vCPU, 104.58 GB RAM)"
+          high_availability: "Multi-AZ with automatic failover"
+          cost: "~$1,200/month"
+
+      use_cases:
+        - "Emission factor caching (24h TTL)"
+        - "Session management"
+        - "Rate limiting"
+        - "Celery task queue backend"
+
+    - service: "Weaviate Vector Database (Self-Hosted on EKS)"
+      deployment: "Kubernetes StatefulSet on EKS"
+      storage: "AWS EBS (io2 volumes, 1 TB)"
+      instances:
+        - "3 replicas (for high availability)"
+        - "m5.2xlarge instances (8 vCPU, 32 GB RAM each)"
+      cost: "~$800/month (compute + storage)"
+      use_case: "Entity MDM two-stage resolution (sentence embeddings)"
+
+  # ---------------------------------------------------------------------------
+  # Object Storage
+  # ---------------------------------------------------------------------------
+  object_storage:
+    service: "Amazon S3"
+    buckets:
+      - bucket: "vcci-provenance-staging"
+        purpose: "Provenance chains (SHA-256 hashes, immutable audit trail)"
+        retention: "7 years (SOC 2 requirement)"
+        cost: "~$50/month"
+
+      - bucket: "vcci-reports-staging"
+        purpose: "Generated reports (ESRS XBRL, CDP Excel, PDF)"
+        retention: "3 years"
+        cost: "~$30/month"
+
+      - bucket: "vcci-raw-data-staging"
+        purpose: "Raw ERP data (before processing)"
+        retention: "1 year"
+        cost: "~$100/month"
+
+    features:
+      - "Versioning enabled (immutability)"
+      - "Server-side encryption (SSE-S3)"
+      - "Lifecycle policies (auto-archive to Glacier after 1 year)"
+
+  # ---------------------------------------------------------------------------
+  # CI/CD Pipeline
+  # ---------------------------------------------------------------------------
+  cicd:
+    tool: "GitHub Actions"
+    workflows:
+      - workflow: "ci.yml (Continuous Integration)"
+        triggers: ["Pull request", "Push to any branch"]
+        stages:
+          - stage: "Lint"
+            tools: ["Ruff (Python)", "ESLint (JavaScript)", "Prettier"]
+            duration: "~2 min"
+
+          - stage: "Unit Tests"
+            tools: ["Pytest (backend)", "Jest (frontend)"]
+            coverage: ">=80% required to pass"
+            duration: "~5 min"
+
+          - stage: "Integration Tests"
+            tools: ["Pytest (API tests)", "Testcontainers (PostgreSQL, Redis)"]
+            duration: "~10 min"
+
+          - stage: "Security Scan"
+            tools: ["Snyk (dependency vulnerabilities)", "Trivy (container images)", "Semgrep (SAST)"]
+            duration: "~3 min"
+
+          - stage: "Build Docker Images"
+            registries: ["AWS ECR"]
+            duration: "~5 min"
+
+        total_duration: "~25 min"
+        fail_conditions: ["Lint errors", "Test failures", "Coverage < 80%", "High-severity vulnerabilities"]
+
+      - workflow: "cd-staging.yml (Deploy to Staging)"
+        triggers: ["Merge to main branch"]
+        stages:
+          - "Build and push Docker images (tagged: main-{SHA})"
+          - "Update Kubernetes manifests (Kustomize overlays)"
+          - "Deploy to vcci-staging-eks (rolling update)"
+          - "Run smoke tests"
+          - "Notify Slack (#engineering-general)"
+        duration: "~10 min"
+
+      - workflow: "cd-production.yml (Deploy to Production)"
+        triggers: ["Git tag (e.g., v1.0.0)"]
+        stages:
+          - "Build and push Docker images (tagged: v1.0.0)"
+          - "Deploy to vcci-prod-eks (blue-green deployment)"
+          - "Run comprehensive smoke tests"
+          - "Notify Slack (#incidents) and PagerDuty"
+        duration: "~15 min"
+        approvals: "Manual approval required from VP of Engineering"
+
+  # ---------------------------------------------------------------------------
+  # Monitoring & Observability
+  # ---------------------------------------------------------------------------
+  monitoring:
+    - tool: "Datadog"
+      plan: "Datadog Pro"
+      cost: "$15/host/month (20 hosts) = $300/month"
+      features:
+        - "Infrastructure monitoring (CPU, memory, disk, network)"
+        - "Application Performance Monitoring (APM)"
+        - "Log aggregation and search"
+        - "Custom dashboards (emissions calculation latency, Entity MDM accuracy)"
+        - "Alerting (PagerDuty integration)"
+
+    - tool: "Sentry"
+      plan: "Sentry Business"
+      cost: "$26/month (up to 50K errors/month)"
+      use_case: "Error tracking and crash reporting (frontend + backend)"
+      features:
+        - "Source map support (React error stack traces)"
+        - "Release tracking"
+        - "Issue assignment and triage"
+
+    - tool: "Prometheus + Grafana (Self-Hosted)"
+      deployment: "Kubernetes StatefulSet on EKS"
+      cost: "~$100/month (compute + storage)"
+      use_case: "Kubernetes cluster monitoring, custom metrics"
+      dashboards:
+        - "Kubernetes Cluster Health"
+        - "OPA Policy Engine Performance"
+        - "Celery Task Queue Metrics"
+
+  # ---------------------------------------------------------------------------
+  # Security & Compliance
+  # ---------------------------------------------------------------------------
+  security_tools:
+    - tool: "Snyk"
+      plan: "Snyk Team"
+      cost: "$52/developer/month (12 devs) = $624/month"
+      features:
+        - "Dependency vulnerability scanning (Python, JavaScript)"
+        - "Container image scanning (Docker)"
+        - "Infrastructure as Code scanning (Terraform)"
+        - "GitHub integration (PR checks)"
+
+    - tool: "SonarQube"
+      plan: "SonarCloud"
+      cost: "$10/developer/month (12 devs) = $120/month"
+      features:
+        - "Code quality and code smells"
+        - "Static Application Security Testing (SAST)"
+        - "Code coverage tracking"
+
+    - tool: "AWS Secrets Manager"
+      cost: "$0.40/secret/month + $0.05/10,000 API calls"
+      estimated_cost: "~$50/month"
+      use_case: "Store database passwords, API keys, OAuth tokens"
+      features:
+        - "Automatic rotation (90 days)"
+        - "Encryption with AWS KMS"
+        - "IAM integration"
+
+    - tool: "AWS Identity and Access Management (IAM)"
+      cost: "Free"
+      policies:
+        - "Least privilege principle (role-based access)"
+        - "MFA required for all console access"
+        - "Service accounts for applications (IAM roles for EKS pods)"
+
+# ============================================================================
+# ONBOARDING PROCESS
+# ============================================================================
+
+onboarding_process:
+  description: "4-week onboarding timeline for new engineering hires"
+
+  # ---------------------------------------------------------------------------
+  # Pre-Day 1: IT Provisioning
+  # ---------------------------------------------------------------------------
+  pre_day_1:
+    timeline: "1 week before start date"
+    activities:
+      - activity: "Hardware Provisioning"
+        items:
+          - "MacBook Pro 16-inch (M3 Max, 64 GB RAM, 2 TB SSD)"
+          - "External monitor (27-inch 4K)"
+          - "Mechanical keyboard + mouse"
+          - "Laptop stand + USB-C hub"
+        cost_per_engineer: "~$5,000"
+
+      - activity: "Software Licenses"
+        items:
+          - "GitHub account (added to vcci-platform org)"
+          - "Slack workspace invite"
+          - "Zoom Pro license"
+          - "Notion workspace access"
+          - "Jira/Linear account"
+          - "Figma viewer access (non-editors)"
+
+      - activity: "AWS Access"
+        items:
+          - "IAM user creation (vcci-dev account)"
+          - "MFA setup instructions (sent via email)"
+          - "AWS CLI configuration guide"
+
+      - activity: "Welcome Email"
+        sent_by: "Engineering Manager"
+        content:
+          - "Welcome message and team introduction"
+          - "Day 1 agenda and Zoom link (10:00 AM PT)"
+          - "Pre-reading: VCCI platform overview (Notion page)"
+          - "IT setup instructions (laptop, accounts)"
+
+  # ---------------------------------------------------------------------------
+  # Day 1: Welcome & Setup
+  # ---------------------------------------------------------------------------
+  day_1:
+    timeline: "8:00 AM - 5:00 PM"
+    schedule:
+      - time: "08:00-09:00"
+        activity: "IT Setup (self-service)"
+        tasks:
+          - "Laptop unboxing and OS setup"
+          - "Install core tools: VS Code, Docker, Git, AWS CLI, kubectl"
+          - "GitHub SSH key setup"
+          - "Slack + Zoom installation"
+
+      - time: "09:00-10:00"
+        activity: "HR Onboarding (with HR team)"
+        tasks:
+          - "Benefits enrollment"
+          - "Payroll setup"
+          - "Policies and handbook"
+
+      - time: "10:00-11:00"
+        activity: "Welcome Meeting (with Engineering Manager)"
+        attendees: ["Engineering Manager", "All new hires (cohort)"]
+        agenda:
+          - "Company mission and values (15 min)"
+          - "VCCI platform overview and vision (20 min)"
+          - "Team structure and roles (10 min)"
+          - "Q&A (15 min)"
+
+      - time: "11:00-12:00"
+        activity: "1-on-1 with Manager"
+        agenda:
+          - "Personal background and interests"
+          - "Role expectations and success criteria"
+          - "30-60-90 day goals"
+          - "Questions and concerns"
+
+      - time: "12:00-13:00"
+        activity: "Lunch Break (optional team lunch)"
+
+      - time: "13:00-15:00"
+        activity: "Development Environment Setup"
+        tasks:
+          - "Clone vcci-platform repository"
+          - "Install Python dependencies (requirements.txt)"
+          - "Install Node.js dependencies (package.json)"
+          - "Run local development server (Docker Compose)"
+          - "Verify: http://localhost:3000 (frontend) and http://localhost:8000 (backend API)"
+
+      - time: "15:00-16:00"
+        activity: "Codebase Tour (with Tech Lead)"
+        topics:
+          - "Repository structure (monorepo layout)"
+          - "Backend: agents/, policy/, services/, data/"
+          - "Frontend: components/, pages/, hooks/"
+          - "Infrastructure: terraform/, kubernetes/"
+          - "Documentation: docs/, README.md"
+
+      - time: "16:00-17:00"
+        activity: "Security & Compliance Training"
+        topics:
+          - "SOC 2 requirements (data handling, access control)"
+          - "GDPR/CCPA privacy rules"
+          - "Secure coding practices (OWASP Top 10)"
+          - "Incident response procedures"
+
+  # ---------------------------------------------------------------------------
+  # Week 1: Codebase Orientation
+  # ---------------------------------------------------------------------------
+  week_1:
+    timeline: "Days 2-5"
+    objectives:
+      - "Understand system architecture"
+      - "Read codebase and documentation"
+      - "Attend team meetings (standups, sprint planning)"
+      - "Complete first 'good first issue'"
+
+    daily_schedule:
+      - time: "09:00-09:15"
+        activity: "Daily Standup"
+        format: "Zoom call, 15 min"
+
+      - time: "09:15-12:00"
+        activity: "Self-Paced Learning"
+        tasks:
+          - "Read architecture docs (docs/ARCHITECTURE.md)"
+          - "Study GreenLang pack specification (pack.yaml)"
+          - "Review OPA policies (policy/*.rego)"
+          - "Watch recorded design partner demos (Loom videos)"
+
+      - time: "13:00-15:00"
+        activity: "Pairing Sessions (with Tech Lead or Senior Engineer)"
+        topics:
+          - "Day 2: OPA Policy Engine deep dive"
+          - "Day 3: Entity MDM two-stage resolution"
+          - "Day 4: ERP integrations (SAP, Oracle, Workday)"
+          - "Day 5: Frontend architecture (React, Next.js)"
+
+      - time: "15:00-17:00"
+        activity: "First Contribution"
+        task: "Complete 'good first issue' (small bug fix or documentation update)"
+        examples:
+          - "Fix typo in API documentation"
+          - "Add unit test for edge case"
+          - "Update README with new setup instructions"
+        goal: "Open PR by end of Week 1"
+
+    week_1_deliverables:
+      - "Local dev environment fully working"
+      - "First PR opened (even if not merged yet)"
+      - "Architecture diagram drawn (personal notes)"
+      - "Questions list (for Week 2 Q&A session)"
+
+  # ---------------------------------------------------------------------------
+  # Week 2: First Real Contribution
+  # ---------------------------------------------------------------------------
+  week_2:
+    timeline: "Days 6-10"
+    objectives:
+      - "Complete first substantial feature or bug fix"
+      - "Participate in code reviews"
+      - "Attend team ceremonies (sprint planning, retro)"
+
+    tasks:
+      - task: "Take on 'small' or 'medium' story from sprint backlog"
+        story_points: "3-5 points"
+        examples:
+          - "Add new validation rule to validation_rules_catalog.yaml"
+          - "Implement new API endpoint for supplier consent status"
+          - "Add data quality indicator to procurement schema"
+        goal: "Feature merged to main by end of Week 2"
+
+      - task: "Code Review Participation"
+        instructions:
+          - "Review at least 2 PRs from teammates"
+          - "Focus on: correctness, readability, test coverage"
+          - "Use PR template checklist"
+
+      - task: "Attend Sprint Planning (Monday)"
+        duration: "2 hours"
+        agenda:
+          - "Review sprint goals"
+          - "Story estimation (Planning Poker)"
+          - "Assign stories to engineers"
+
+      - task: "Attend Retrospective (Friday)"
+        duration: "1 hour"
+        format: "Start-Stop-Continue"
+
+  # ---------------------------------------------------------------------------
+  # Week 3-4: Ramp to Full Productivity
+  # ---------------------------------------------------------------------------
+  weeks_3_4:
+    timeline: "Days 11-20"
+    objectives:
+      - "Work on medium-sized features independently"
+      - "Mentor future new hires (if applicable)"
+      - "Propose improvements to codebase or process"
+
+    expectations:
+      - "Take on 8-13 story points per sprint"
+      - "Lead daily standup (rotate)"
+      - "Write technical design doc for 1 feature"
+      - "Participate in on-call rotation (if SRE/backend)"
+
+    graduation:
+      - "30-day check-in with manager"
+      - "Feedback survey (onboarding experience)"
+      - "Remove 'new hire' label from Slack profile"
+      - "Fully ramped: capable of independent work"
+
+# ============================================================================
+# ACCESS PROVISIONING CHECKLIST
+# ============================================================================
+
+access_provisioning:
+  description: "Checklist for provisioning access to all systems (by IT/DevOps)"
+
+  github:
+    - "Add user to GitHub organization: vcci-platform"
+    - "Add to teams: @vcci-platform/engineering, @vcci-platform/backend (or frontend/data)"
+    - "Grant repository access: vcci-platform (write), vcci-infrastructure (read), vcci-docs (write)"
+
+  aws:
+    - "Create IAM user in vcci-dev account"
+    - "Assign IAM group: Developers (managed policy: PowerUserAccess - vcci-dev only)"
+    - "Require MFA setup (AWS Authenticator app)"
+    - "Provide AWS CLI configuration guide (AWS SSO or access keys)"
+
+  kubernetes:
+    - "Create Kubernetes RBAC user (kubectl config)"
+    - "Grant namespace access: vcci-core (read), vcci-agents (read), vcci-data (read)"
+    - "Provide kubeconfig file (kubectl config)"
+
+  databases:
+    - "Create PostgreSQL user (role: readonly for prod, readwrite for dev/staging)"
+    - "Create Redis ACL user (if applicable)"
+    - "Provide connection strings (via AWS Secrets Manager)"
+
+  monitoring_tools:
+    - "Datadog: Add user, assign role: Standard"
+    - "Sentry: Add user, assign role: Member"
+    - "PagerDuty: Add to on-call rotation (if SRE/backend)"
+
+  collaboration_tools:
+    - "Slack: Add to workspace, invite to channels"
+    - "Zoom: Assign Pro license"
+    - "Notion: Add to Engineering workspace, grant edit access"
+    - "Jira/Linear: Create account, assign to project"
+    - "Figma: Add as viewer (or editor for frontend/PM)"
+
+  api_keys:
+    - "Generate API keys (if needed for local development)"
+    - "Provide .env.example file (copy to .env and populate)"
+
+# ============================================================================
+# COST SUMMARY
+# ============================================================================
+
+cost_summary:
+  description: "Estimated monthly and annual costs for 12 FTE team"
+
+  tooling_costs:
+    monthly:
+      - category: "GitHub Team"
+        cost: "$48/month"
+
+      - category: "Slack Pro"
+        cost: "$87/month"
+
+      - category: "Zoom Pro"
+        cost: "$192/month"
+
+      - category: "Notion Plus"
+        cost: "$96/month"
+
+      - category: "Jira Software"
+        cost: "$93/month"
+
+      - category: "Figma Professional"
+        cost: "$36/month"
+
+      - category: "Miro Team"
+        cost: "$96/month"
+
+      - category: "PyCharm Professional"
+        cost: "$89/month (amortized)"
+
+      - category: "DataGrip"
+        cost: "$30/month (amortized)"
+
+      - category: "Datadog Pro"
+        cost: "$300/month"
+
+      - category: "Sentry Business"
+        cost: "$26/month"
+
+      - category: "Snyk Team"
+        cost: "$624/month"
+
+      - category: "SonarCloud"
+        cost: "$120/month"
+
+      total_monthly_tooling: "$1,837/month"
+
+    annual:
+      total_annual_tooling: "$22,044/year"
+
+  infrastructure_costs:
+    staging_environment:
+      - "AWS EKS (Kubernetes): $600/month"
+      - "RDS PostgreSQL: $500/month"
+      - "ElastiCache Redis: $150/month"
+      - "Weaviate (self-hosted): $800/month"
+      - "S3 Storage: $180/month"
+      - "Other (NAT Gateway, ALB, etc.): $300/month"
+      total_staging: "$2,530/month = $30,360/year"
+
+    production_environment:
+      note: "Post-GA (Week 44+), not included in pilot budget"
+      estimated: "$15,000/month = $180,000/year"
+
+  personnel_costs:
+    note: "Salaries vary by role and location; estimates below are US market rates"
+    annual_salaries:
+      - "Product Manager: $150,000"
+      - "Senior Backend Engineer (Tech Lead): $180,000"
+      - "Backend Engineer x3: $150,000 each = $450,000"
+      - "Senior Frontend Engineer (Tech Lead): $170,000"
+      - "Frontend Engineer: $140,000"
+      - "Senior Data Engineer: $170,000"
+      - "Data Engineer: $140,000"
+      - "DevOps/SRE Engineer: $160,000"
+      - "QA Engineer: $130,000"
+      - "Technical Writer: $110,000"
+      total_annual_salaries: "$1,800,000"
+      with_benefits_35_percent: "$2,430,000"
+
+  total_annual_cost:
+    tooling: "$22,044"
+    infrastructure_staging: "$30,360"
+    personnel: "$2,430,000"
+    total: "$2,482,404/year"
+    note: "Does not include production infrastructure ($180K/year post-GA)"
+
+# ============================================================================
+# TRAINING & DEVELOPMENT
+# ============================================================================
+
+training_development:
+  description: "Ongoing learning and skill development for engineering team"
+
+  carbon_accounting_training:
+    - "GHG Protocol Scope 3 Standard (self-paced course)"
+    - "ESRS E1 Climate Change Disclosure (webinar)"
+    - "ISO 14083:2023 Transport Emissions (certification course)"
+    - "SBTi Scope 3 Target Setting (1-day workshop)"
+    budget: "$5,000/year"
+
+  technical_training:
+    - "Open Policy Agent (OPA) certification (1 engineer)"
+    - "AWS Certified Solutions Architect (DevOps/SRE)"
+    - "CKA (Certified Kubernetes Administrator)"
+    - "Machine Learning for NLP (Entity MDM engineer)"
+    budget: "$10,000/year"
+
+  conferences:
+    - "AWS re:Invent (2 engineers)"
+    - "KubeCon + CloudNativeCon (1 engineer)"
+    - "SustainableUX Conference (1 frontend engineer + PM)"
+    budget: "$15,000/year"
+
+  total_training_budget: "$30,000/year"
+
+# ============================================================================
+# SUCCESS METRICS (30-60-90 DAY GOALS)
+# ============================================================================
+
+success_metrics:
+  description: "Measurable goals for engineering team ramp-up"
+
+  30_day_goals:
+    - "All 12 FTE onboarded and productive"
+    - "100% of engineers have merged >= 1 PR"
+    - "Development environment setup time < 4 hours"
+    - "CI/CD pipeline fully functional (GitHub Actions)"
+    - "Staging environment deployed (vcci-staging-eks)"
+
+  60_day_goals:
+    - "Week 1-2 deliverables complete (privacy model, schemas, validation rules)"
+    - "Design partner onboarding (2 partners live)"
+    - "Code coverage >= 70%"
+    - "Monitoring dashboards operational (Datadog)"
+    - "First retrospective completed (process improvements identified)"
+
+  90_day_goals:
+    - "All 6 design partners onboarded"
+    - "30% PCF coverage achieved (aggregate across partners)"
+    - "Code coverage >= 80%"
+    - "Zero high-severity security vulnerabilities"
+    - "Team velocity stabilized (predictable sprint throughput)"
+
+# ============================================================================
+# END OF ONBOARDING & TOOLING GUIDE
+# ============================================================================

@@ -1,0 +1,82 @@
+{{/*
+API Gateway Service - LoadBalancer for external access
+*/}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "greenlang-agents.fullname" . }}-api-gateway
+  namespace: {{ include "greenlang-agents.namespace" . }}
+  labels:
+    {{- include "greenlang-agents.labels" . | nindent 4 }}
+    app.kubernetes.io/component: api-gateway
+  annotations:
+    # AWS NLB annotations for production
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+    service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+    service.beta.kubernetes.io/aws-load-balancer-backend-protocol: "tcp"
+    service.beta.kubernetes.io/aws-load-balancer-connection-idle-timeout: "60"
+    # Health check configuration
+    service.beta.kubernetes.io/aws-load-balancer-healthcheck-healthy-threshold: "2"
+    service.beta.kubernetes.io/aws-load-balancer-healthcheck-unhealthy-threshold: "2"
+    service.beta.kubernetes.io/aws-load-balancer-healthcheck-interval: "10"
+    # Prometheus metrics
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9090"
+    {{- with .Values.apiGateway.service.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  type: {{ .Values.apiGateway.service.type | default "LoadBalancer" }}
+  {{- if eq .Values.apiGateway.service.type "LoadBalancer" }}
+  externalTrafficPolicy: Local
+  {{- end }}
+  selector:
+    {{- include "greenlang-agents.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: api-gateway
+  ports:
+    - name: http
+      port: {{ .Values.apiGateway.service.port | default 80 }}
+      targetPort: http
+      protocol: TCP
+    - name: https
+      port: {{ .Values.apiGateway.service.httpsPort | default 443 }}
+      targetPort: http
+      protocol: TCP
+    - name: metrics
+      port: 9090
+      targetPort: metrics
+      protocol: TCP
+  sessionAffinity: None
+---
+{{/*
+API Gateway Service - ClusterIP for internal access
+*/}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "greenlang-agents.fullname" . }}-api-gateway-internal
+  namespace: {{ include "greenlang-agents.namespace" . }}
+  labels:
+    {{- include "greenlang-agents.labels" . | nindent 4 }}
+    app.kubernetes.io/component: api-gateway
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9090"
+spec:
+  type: ClusterIP
+  selector:
+    {{- include "greenlang-agents.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: api-gateway
+  ports:
+    - name: http
+      port: 8000
+      targetPort: http
+      protocol: TCP
+    - name: metrics
+      port: 9090
+      targetPort: metrics
+      protocol: TCP
+    - name: health
+      port: 8001
+      targetPort: health
+      protocol: TCP

@@ -1,0 +1,164 @@
+name: Boiler Replacement Agent (AI-Powered)
+version: 1.0.0
+kind: pack
+pack_schema_version: '1.0'
+author:
+  name: GreenLang Team
+  email: support@greenlang.io
+  organization: GreenLang
+license: MIT
+tags:
+- industrial
+- boiler
+- replacement
+- efficiency
+- solar-thermal
+- heat-pump
+- IRA-2022
+- ai-agent
+- citations
+id: industrial/boiler_replacement_ai_v1
+summary: AI-powered industrial boiler replacement analysis with ASME PTC 4.1 calculations,
+  solar thermal integration, heat pump COP analysis, and IRA 2022 incentives
+owners:
+- greenlang-team
+ai:
+  system_prompt: 'You are an expert in industrial boiler systems, solar thermal integration,
+    and heat pump technology.
+
+
+    Your role:
+
+    1. Analyze current boiler performance using ASME PTC 4.1 methods (via tools)
+
+    2. Evaluate replacement technologies (condensing boilers, solar thermal, heat
+    pumps, hybrids)
+
+    3. Calculate financial metrics with IRA 2022 incentives
+
+    4. Assess retrofit requirements and integration challenges
+
+    5. Provide clear recommendations with implementation roadmap
+
+
+    Guidelines:
+
+    - Always use provided tools for calculations (zero hallucinated numbers)
+
+    - Consider efficiency degradation, stack losses, radiation losses
+
+    - Evaluate solar thermal potential based on latitude and load profile
+
+    - Calculate heat pump COP using Carnot efficiency method
+
+    - Include IRA 2022 30% ITC for solar thermal and heat pump systems
+
+    - Assess retrofit complexity (piping, controls, space requirements)
+
+    - Rank technologies by NPV, payback, and emissions reduction
+
+
+    Remember: All calculations must use tools. Focus on clear, actionable guidance.
+
+    '
+  budget:
+    max_cost_usd: 1.0
+  rag_collections:
+  - asme_ptc_4_standards
+  - solar_thermal_design
+  - heat_pump_cop_data
+  - ira_2022_incentives
+  tools:
+  - name: calculate_current_efficiency
+    description: Calculate current boiler efficiency with degradation (ASME PTC 4.1)
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:calculate_current_efficiency
+    safe: true
+  - name: calculate_stack_loss
+    description: Calculate stack loss based on flue gas temperature
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:calculate_stack_loss
+    safe: true
+  - name: calculate_radiation_loss
+    description: Calculate radiation and convection losses
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:calculate_radiation_loss
+    safe: true
+  - name: calculate_solar_fraction
+    description: Calculate solar thermal contribution based on latitude and load
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:calculate_solar_fraction
+    safe: true
+  - name: calculate_heat_pump_cop
+    description: Calculate heat pump COP using Carnot method
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:calculate_heat_pump_cop
+    safe: true
+  - name: calculate_hybrid_performance
+    description: Optimize hybrid system performance (solar + conventional)
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:calculate_hybrid_performance
+    safe: true
+  - name: calculate_financial_metrics
+    description: Calculate NPV, IRR, payback with IRA incentives
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:calculate_financial_metrics
+    safe: true
+  - name: assess_retrofit_requirements
+    description: Assess integration requirements and complexity
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:assess_retrofit_requirements
+    safe: true
+realtime:
+  default_mode: replay
+  snapshot_path: null
+  connectors: []
+provenance:
+  gwp_set: AR6GWP100
+  pin_ef: false
+  record:
+  - inputs
+  - outputs
+  - factors
+  - code_sha
+  - seed

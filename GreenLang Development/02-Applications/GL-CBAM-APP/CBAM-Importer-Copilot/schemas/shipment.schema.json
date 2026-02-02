@@ -1,0 +1,191 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://greenlang.io/schemas/cbam/shipment/v1",
+  "title": "CBAM Shipment Record",
+  "description": "Schema for a single CBAM-covered goods shipment imported into the EU. This represents one row/record in the import data that needs CBAM reporting.",
+  "type": "object",
+  "required": [
+    "shipment_id",
+    "import_date",
+    "quarter",
+    "cn_code",
+    "product_group",
+    "origin_iso",
+    "importer_country",
+    "net_mass_kg"
+  ],
+  "properties": {
+    "shipment_id": {
+      "type": "string",
+      "description": "Unique identifier for this shipment (customs reference, importer reference, or generated ID)",
+      "minLength": 1,
+      "maxLength": 100,
+      "examples": ["DEMO-2025Q4-00001", "IMP-2025-782341", "CBAM-2025-Q4-12345"]
+    },
+    "import_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date the goods were imported into the EU (YYYY-MM-DD format)",
+      "examples": ["2025-10-15", "2025-11-03"]
+    },
+    "quarter": {
+      "type": "string",
+      "pattern": "^20[2-9][0-9]Q[1-4]$",
+      "description": "CBAM reporting quarter in format YYYYQN (e.g., 2025Q4)",
+      "examples": ["2025Q4", "2026Q1", "2026Q2"]
+    },
+    "cn_code": {
+      "type": "string",
+      "pattern": "^[0-9]{8}$",
+      "description": "8-digit EU Combined Nomenclature code identifying the product type",
+      "examples": ["72031000", "25232900", "76011000", "28141000"]
+    },
+    "product_group": {
+      "type": "string",
+      "enum": ["cement", "steel", "aluminum", "fertilizers", "hydrogen", "electricity"],
+      "description": "CBAM product group category per Annex I of CBAM Regulation"
+    },
+    "product_description": {
+      "type": "string",
+      "description": "Human-readable description of the product",
+      "maxLength": 500,
+      "examples": ["Hot-rolled flat steel", "Grey portland cement", "Anhydrous ammonia"]
+    },
+    "origin_iso": {
+      "type": "string",
+      "pattern": "^[A-Z]{2}$",
+      "description": "ISO 3166-1 alpha-2 country code of origin (where goods were produced)",
+      "examples": ["CN", "RU", "IN", "TR", "UA"]
+    },
+    "origin_country": {
+      "type": "string",
+      "description": "Human-readable country name of origin",
+      "examples": ["China", "Russia", "India", "Turkey", "Ukraine"]
+    },
+    "importer_name": {
+      "type": "string",
+      "description": "Name of the EU company importing the goods",
+      "maxLength": 200,
+      "examples": ["Acme Steel EU BV", "Mediterranean Cement SA", "Nordic Aluminum AB"]
+    },
+    "importer_country": {
+      "type": "string",
+      "pattern": "^[A-Z]{2}$",
+      "description": "ISO 3166-1 alpha-2 country code of the EU importer",
+      "examples": ["NL", "DE", "FR", "SE", "ES", "IT"]
+    },
+    "net_mass_kg": {
+      "type": "number",
+      "minimum": 0,
+      "exclusiveMinimum": true,
+      "description": "Net mass of goods in kilograms (must be positive)",
+      "examples": [12450, 19800, 5420]
+    },
+    "port_of_entry": {
+      "type": "string",
+      "description": "EU port or border crossing where goods entered",
+      "maxLength": 100,
+      "examples": ["Rotterdam", "Hamburg", "Antwerp", "Le Havre", "Barcelona"]
+    },
+    "importer_reference": {
+      "type": "string",
+      "description": "Internal reference number from the importer's system",
+      "maxLength": 100,
+      "examples": ["IMP-2025-782341", "ORDER-2025-1234", "REF-Q4-00123"]
+    },
+    "has_actual_emissions": {
+      "type": "string",
+      "enum": ["YES", "NO", "PARTIAL"],
+      "description": "Whether actual emissions data from supplier is available (YES) or defaults will be used (NO), or partially available (PARTIAL)",
+      "default": "NO"
+    },
+    "supplier_id": {
+      "type": "string",
+      "description": "Reference to supplier record if actual emissions data is available",
+      "maxLength": 50,
+      "examples": ["SUP-0001", "SUP-0007", "SUP-0010"]
+    },
+    "customs_declaration_number": {
+      "type": "string",
+      "description": "Official EU customs declaration number (MRN - Movement Reference Number)",
+      "pattern": "^[0-9]{2}[A-Z]{2}[A-Z0-9]{14}$",
+      "examples": ["25NL123456789012345"]
+    },
+    "invoice_number": {
+      "type": "string",
+      "description": "Commercial invoice number for the shipment",
+      "maxLength": 100
+    },
+    "invoice_currency": {
+      "type": "string",
+      "pattern": "^[A-Z]{3}$",
+      "description": "ISO 4217 currency code for invoice value",
+      "examples": ["EUR", "USD", "CNY"]
+    },
+    "invoice_value": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Customs value in invoice currency"
+    },
+    "transport_method": {
+      "type": "string",
+      "enum": ["sea", "air", "rail", "road", "pipeline", "unknown"],
+      "description": "Primary mode of transport used for import"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional notes or comments about this shipment",
+      "maxLength": 2000
+    },
+    "data_quality_flag": {
+      "type": "string",
+      "enum": ["verified", "estimated", "incomplete", "unknown"],
+      "description": "Quality assessment of this shipment record",
+      "default": "verified"
+    },
+    "complex_goods_indicator": {
+      "type": "boolean",
+      "description": "True if this is a complex good requiring special emissions calculation (e.g., contains multiple CBAM materials)",
+      "default": false
+    }
+  },
+  "additionalProperties": true,
+  "examples": [
+    {
+      "shipment_id": "DEMO-2025Q4-00001",
+      "import_date": "2025-10-15",
+      "quarter": "2025Q4",
+      "cn_code": "72031000",
+      "product_group": "steel",
+      "product_description": "Hot-rolled flat steel",
+      "origin_iso": "CN",
+      "origin_country": "China",
+      "importer_name": "Acme Steel EU BV",
+      "importer_country": "NL",
+      "net_mass_kg": 12450,
+      "port_of_entry": "Rotterdam",
+      "importer_reference": "IMP-2025-782341",
+      "has_actual_emissions": "NO",
+      "supplier_id": "",
+      "notes": "Demo data - synthetic"
+    },
+    {
+      "shipment_id": "DEMO-2025Q4-00002",
+      "import_date": "2025-11-03",
+      "quarter": "2025Q4",
+      "cn_code": "25232900",
+      "product_group": "cement",
+      "product_description": "Grey portland cement",
+      "origin_iso": "CN",
+      "origin_country": "China",
+      "importer_name": "Mediterranean Cement SA",
+      "importer_country": "FR",
+      "net_mass_kg": 19800,
+      "port_of_entry": "Le Havre",
+      "importer_reference": "IMP-2025-634829",
+      "has_actual_emissions": "YES",
+      "supplier_id": "SUP-0001",
+      "notes": "Demo data - with supplier actuals"
+    }
+  ]
+}

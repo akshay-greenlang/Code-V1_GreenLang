@@ -1,0 +1,86 @@
+# Dependency Rules Test Schema
+# Tests: property dependencies, oneOf, anyOf, allOf
+# GL-FOUND-X-002 Golden Test
+
+$schema: "https://json-schema.org/draft/2020-12/schema"
+$id: "gl://schemas/test/dependency_rules@1.0.0"
+title: "Dependency Rules Test Schema"
+description: "Schema for testing dependency and composition rules"
+type: object
+
+required:
+  - id
+  - type
+
+properties:
+  id:
+    type: string
+    pattern: "^[A-Z0-9]{8}$"
+
+  type:
+    type: string
+    enum:
+      - individual
+      - organization
+      - government
+
+  # Dependencies: if name is present, email must also be present
+  name:
+    type: string
+    minLength: 1
+
+  email:
+    type: string
+    format: email
+
+  # For organization type
+  organization_name:
+    type: string
+
+  registration_number:
+    type: string
+
+  # For individual type
+  first_name:
+    type: string
+
+  last_name:
+    type: string
+
+  date_of_birth:
+    type: string
+    format: date
+
+# Property dependencies
+dependentRequired:
+  name:
+    - email
+  organization_name:
+    - registration_number
+
+# oneOf example - must match exactly one
+oneOf:
+  - # Individual schema
+    properties:
+      type:
+        const: individual
+    required:
+      - first_name
+      - last_name
+
+  - # Organization schema
+    properties:
+      type:
+        const: organization
+    required:
+      - organization_name
+      - registration_number
+
+  - # Government schema
+    properties:
+      type:
+        const: government
+    required:
+      - organization_name
+
+additionalProperties: false

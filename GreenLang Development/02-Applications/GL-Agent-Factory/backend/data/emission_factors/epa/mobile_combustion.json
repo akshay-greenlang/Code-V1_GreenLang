@@ -1,0 +1,451 @@
+{
+  "metadata": {
+    "source": "EPA",
+    "source_name": "U.S. Environmental Protection Agency",
+    "source_document": "Emission Factors for Greenhouse Gas Inventories - Mobile Combustion",
+    "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+    "version": "2024.1",
+    "last_updated": "2024-04-01",
+    "gwp_set": "AR5",
+    "region": "US",
+    "description": "EPA emission factors for mobile combustion sources by vehicle type and fuel"
+  },
+  "factors": {
+    "on_road_vehicles": {
+      "passenger_cars": [
+        {
+          "id": "ef://epa/mobile/passenger_car_gasoline/2024",
+          "vehicle_type": "passenger_car",
+          "fuel_type": "gasoline",
+          "co2_factor": 8.78,
+          "co2_unit": "kg CO2/gallon",
+          "ch4_factor": 0.00024,
+          "ch4_unit": "kg CH4/mile",
+          "n2o_factor": 0.00007,
+          "n2o_unit": "kg N2O/mile",
+          "co2e_per_gallon": 8.89,
+          "co2e_unit": "kg CO2e/gallon",
+          "typical_fuel_economy": 24.2,
+          "fuel_economy_unit": "mpg",
+          "uncertainty_lower_pct": -3,
+          "uncertainty_upper_pct": 3,
+          "notes": "Passenger cars - gasoline"
+        },
+        {
+          "id": "ef://epa/mobile/passenger_car_diesel/2024",
+          "vehicle_type": "passenger_car",
+          "fuel_type": "diesel",
+          "co2_factor": 10.21,
+          "co2_unit": "kg CO2/gallon",
+          "ch4_factor": 0.00001,
+          "ch4_unit": "kg CH4/mile",
+          "n2o_factor": 0.00001,
+          "n2o_unit": "kg N2O/mile",
+          "co2e_per_gallon": 10.29,
+          "co2e_unit": "kg CO2e/gallon",
+          "typical_fuel_economy": 30.5,
+          "fuel_economy_unit": "mpg",
+          "uncertainty_lower_pct": -3,
+          "uncertainty_upper_pct": 3,
+          "notes": "Passenger cars - diesel"
+        }
+      ],
+      "light_duty_trucks": [
+        {
+          "id": "ef://epa/mobile/light_truck_gasoline/2024",
+          "vehicle_type": "light_duty_truck",
+          "fuel_type": "gasoline",
+          "co2_factor": 8.78,
+          "co2_unit": "kg CO2/gallon",
+          "ch4_factor": 0.00037,
+          "ch4_unit": "kg CH4/mile",
+          "n2o_factor": 0.00009,
+          "n2o_unit": "kg N2O/mile",
+          "co2e_per_gallon": 8.89,
+          "co2e_unit": "kg CO2e/gallon",
+          "typical_fuel_economy": 17.5,
+          "fuel_economy_unit": "mpg",
+          "uncertainty_lower_pct": -3,
+          "uncertainty_upper_pct": 3,
+          "notes": "Light-duty trucks - gasoline"
+        },
+        {
+          "id": "ef://epa/mobile/light_truck_diesel/2024",
+          "vehicle_type": "light_duty_truck",
+          "fuel_type": "diesel",
+          "co2_factor": 10.21,
+          "co2_unit": "kg CO2/gallon",
+          "ch4_factor": 0.00001,
+          "ch4_unit": "kg CH4/mile",
+          "n2o_factor": 0.00001,
+          "n2o_unit": "kg N2O/mile",
+          "co2e_per_gallon": 10.29,
+          "co2e_unit": "kg CO2e/gallon",
+          "typical_fuel_economy": 22.5,
+          "fuel_economy_unit": "mpg",
+          "uncertainty_lower_pct": -3,
+          "uncertainty_upper_pct": 3,
+          "notes": "Light-duty trucks - diesel"
+        }
+      ],
+      "medium_heavy_duty_trucks": [
+        {
+          "id": "ef://epa/mobile/medium_truck_gasoline/2024",
+          "vehicle_type": "medium_duty_truck",
+          "fuel_type": "gasoline",
+          "co2_factor": 8.78,
+          "co2_unit": "kg CO2/gallon",
+          "ch4_factor": 0.00052,
+          "ch4_unit": "kg CH4/mile",
+          "n2o_factor": 0.00011,
+          "n2o_unit": "kg N2O/mile",
+          "co2e_per_gallon": 8.89,
+          "co2e_unit": "kg CO2e/gallon",
+          "typical_fuel_economy": 8.5,
+          "fuel_economy_unit": "mpg",
+          "uncertainty_lower_pct": -5,
+          "uncertainty_upper_pct": 5,
+          "notes": "Medium-duty trucks - gasoline"
+        },
+        {
+          "id": "ef://epa/mobile/medium_truck_diesel/2024",
+          "vehicle_type": "medium_duty_truck",
+          "fuel_type": "diesel",
+          "co2_factor": 10.21,
+          "co2_unit": "kg CO2/gallon",
+          "ch4_factor": 0.00005,
+          "ch4_unit": "kg CH4/mile",
+          "n2o_factor": 0.00005,
+          "n2o_unit": "kg N2O/mile",
+          "co2e_per_gallon": 10.29,
+          "co2e_unit": "kg CO2e/gallon",
+          "typical_fuel_economy": 7.5,
+          "fuel_economy_unit": "mpg",
+          "uncertainty_lower_pct": -5,
+          "uncertainty_upper_pct": 5,
+          "notes": "Medium-duty trucks - diesel"
+        },
+        {
+          "id": "ef://epa/mobile/heavy_truck_diesel/2024",
+          "vehicle_type": "heavy_duty_truck",
+          "fuel_type": "diesel",
+          "co2_factor": 10.21,
+          "co2_unit": "kg CO2/gallon",
+          "ch4_factor": 0.00005,
+          "ch4_unit": "kg CH4/mile",
+          "n2o_factor": 0.00005,
+          "n2o_unit": "kg N2O/mile",
+          "co2e_per_gallon": 10.29,
+          "co2e_unit": "kg CO2e/gallon",
+          "typical_fuel_economy": 5.9,
+          "fuel_economy_unit": "mpg",
+          "uncertainty_lower_pct": -5,
+          "uncertainty_upper_pct": 5,
+          "notes": "Heavy-duty trucks - diesel"
+        }
+      ],
+      "motorcycles": [
+        {
+          "id": "ef://epa/mobile/motorcycle_gasoline/2024",
+          "vehicle_type": "motorcycle",
+          "fuel_type": "gasoline",
+          "co2_factor": 8.78,
+          "co2_unit": "kg CO2/gallon",
+          "ch4_factor": 0.00041,
+          "ch4_unit": "kg CH4/mile",
+          "n2o_factor": 0.00004,
+          "n2o_unit": "kg N2O/mile",
+          "co2e_per_gallon": 8.89,
+          "co2e_unit": "kg CO2e/gallon",
+          "typical_fuel_economy": 44.0,
+          "fuel_economy_unit": "mpg",
+          "uncertainty_lower_pct": -5,
+          "uncertainty_upper_pct": 5,
+          "notes": "Motorcycles - gasoline"
+        }
+      ],
+      "buses": [
+        {
+          "id": "ef://epa/mobile/bus_diesel/2024",
+          "vehicle_type": "bus",
+          "fuel_type": "diesel",
+          "co2_factor": 10.21,
+          "co2_unit": "kg CO2/gallon",
+          "ch4_factor": 0.00005,
+          "ch4_unit": "kg CH4/mile",
+          "n2o_factor": 0.00005,
+          "n2o_unit": "kg N2O/mile",
+          "co2e_per_gallon": 10.29,
+          "co2e_unit": "kg CO2e/gallon",
+          "typical_fuel_economy": 6.1,
+          "fuel_economy_unit": "mpg",
+          "uncertainty_lower_pct": -5,
+          "uncertainty_upper_pct": 5,
+          "notes": "Transit buses - diesel"
+        },
+        {
+          "id": "ef://epa/mobile/bus_cng/2024",
+          "vehicle_type": "bus",
+          "fuel_type": "cng",
+          "co2_factor": 0.0545,
+          "co2_unit": "kg CO2/scf",
+          "ch4_factor": 0.00134,
+          "ch4_unit": "kg CH4/mile",
+          "n2o_factor": 0.00013,
+          "n2o_unit": "kg N2O/mile",
+          "co2e_per_scf": 0.055,
+          "co2e_unit": "kg CO2e/scf",
+          "typical_fuel_economy": 2.75,
+          "fuel_economy_unit": "miles/therm",
+          "uncertainty_lower_pct": -5,
+          "uncertainty_upper_pct": 5,
+          "notes": "Transit buses - CNG"
+        }
+      ]
+    },
+    "off_road_vehicles": {
+      "construction_equipment": [
+        {
+          "id": "ef://epa/mobile/construction_diesel/2024",
+          "equipment_type": "construction_equipment",
+          "fuel_type": "diesel",
+          "co2_factor": 10.21,
+          "co2_unit": "kg CO2/gallon",
+          "ch4_factor": 0.00058,
+          "ch4_unit": "kg CH4/gallon",
+          "n2o_factor": 0.00026,
+          "n2o_unit": "kg N2O/gallon",
+          "co2e_per_gallon": 10.33,
+          "co2e_unit": "kg CO2e/gallon",
+          "uncertainty_lower_pct": -5,
+          "uncertainty_upper_pct": 5,
+          "notes": "Construction and mining equipment - diesel"
+        },
+        {
+          "id": "ef://epa/mobile/construction_gasoline/2024",
+          "equipment_type": "construction_equipment",
+          "fuel_type": "gasoline",
+          "co2_factor": 8.78,
+          "co2_unit": "kg CO2/gallon",
+          "ch4_factor": 0.00196,
+          "ch4_unit": "kg CH4/gallon",
+          "n2o_factor": 0.00018,
+          "n2o_unit": "kg N2O/gallon",
+          "co2e_per_gallon": 8.91,
+          "co2e_unit": "kg CO2e/gallon",
+          "uncertainty_lower_pct": -5,
+          "uncertainty_upper_pct": 5,
+          "notes": "Construction and mining equipment - gasoline"
+        }
+      ],
+      "agricultural_equipment": [
+        {
+          "id": "ef://epa/mobile/agricultural_diesel/2024",
+          "equipment_type": "agricultural_equipment",
+          "fuel_type": "diesel",
+          "co2_factor": 10.21,
+          "co2_unit": "kg CO2/gallon",
+          "ch4_factor": 0.00058,
+          "ch4_unit": "kg CH4/gallon",
+          "n2o_factor": 0.00026,
+          "n2o_unit": "kg N2O/gallon",
+          "co2e_per_gallon": 10.33,
+          "co2e_unit": "kg CO2e/gallon",
+          "uncertainty_lower_pct": -5,
+          "uncertainty_upper_pct": 5,
+          "notes": "Agricultural equipment - diesel"
+        },
+        {
+          "id": "ef://epa/mobile/agricultural_gasoline/2024",
+          "equipment_type": "agricultural_equipment",
+          "fuel_type": "gasoline",
+          "co2_factor": 8.78,
+          "co2_unit": "kg CO2/gallon",
+          "ch4_factor": 0.00196,
+          "ch4_unit": "kg CH4/gallon",
+          "n2o_factor": 0.00018,
+          "n2o_unit": "kg N2O/gallon",
+          "co2e_per_gallon": 8.91,
+          "co2e_unit": "kg CO2e/gallon",
+          "uncertainty_lower_pct": -5,
+          "uncertainty_upper_pct": 5,
+          "notes": "Agricultural equipment - gasoline"
+        }
+      ],
+      "forklifts": [
+        {
+          "id": "ef://epa/mobile/forklift_lpg/2024",
+          "equipment_type": "forklift",
+          "fuel_type": "lpg",
+          "co2_factor": 5.68,
+          "co2_unit": "kg CO2/gallon",
+          "ch4_factor": 0.00054,
+          "ch4_unit": "kg CH4/gallon",
+          "n2o_factor": 0.00011,
+          "n2o_unit": "kg N2O/gallon",
+          "co2e_per_gallon": 5.75,
+          "co2e_unit": "kg CO2e/gallon",
+          "uncertainty_lower_pct": -5,
+          "uncertainty_upper_pct": 5,
+          "notes": "Forklifts - LPG"
+        },
+        {
+          "id": "ef://epa/mobile/forklift_diesel/2024",
+          "equipment_type": "forklift",
+          "fuel_type": "diesel",
+          "co2_factor": 10.21,
+          "co2_unit": "kg CO2/gallon",
+          "ch4_factor": 0.00058,
+          "ch4_unit": "kg CH4/gallon",
+          "n2o_factor": 0.00026,
+          "n2o_unit": "kg N2O/gallon",
+          "co2e_per_gallon": 10.33,
+          "co2e_unit": "kg CO2e/gallon",
+          "uncertainty_lower_pct": -5,
+          "uncertainty_upper_pct": 5,
+          "notes": "Forklifts - diesel"
+        }
+      ]
+    },
+    "marine_vessels": [
+      {
+        "id": "ef://epa/mobile/marine_residual_fuel/2024",
+        "vessel_type": "large_vessel",
+        "fuel_type": "residual_fuel_oil",
+        "co2_factor": 11.27,
+        "co2_unit": "kg CO2/gallon",
+        "ch4_factor": 0.00066,
+        "ch4_unit": "kg CH4/gallon",
+        "n2o_factor": 0.00031,
+        "n2o_unit": "kg N2O/gallon",
+        "co2e_per_gallon": 11.43,
+        "co2e_unit": "kg CO2e/gallon",
+        "uncertainty_lower_pct": -5,
+        "uncertainty_upper_pct": 5,
+        "notes": "Ocean-going vessels - residual fuel oil"
+      },
+      {
+        "id": "ef://epa/mobile/marine_diesel/2024",
+        "vessel_type": "medium_vessel",
+        "fuel_type": "diesel",
+        "co2_factor": 10.21,
+        "co2_unit": "kg CO2/gallon",
+        "ch4_factor": 0.00058,
+        "ch4_unit": "kg CH4/gallon",
+        "n2o_factor": 0.00026,
+        "n2o_unit": "kg N2O/gallon",
+        "co2e_per_gallon": 10.33,
+        "co2e_unit": "kg CO2e/gallon",
+        "uncertainty_lower_pct": -5,
+        "uncertainty_upper_pct": 5,
+        "notes": "Medium and harbor vessels - diesel"
+      },
+      {
+        "id": "ef://epa/mobile/marine_gasoline/2024",
+        "vessel_type": "small_vessel",
+        "fuel_type": "gasoline",
+        "co2_factor": 8.78,
+        "co2_unit": "kg CO2/gallon",
+        "ch4_factor": 0.00196,
+        "ch4_unit": "kg CH4/gallon",
+        "n2o_factor": 0.00018,
+        "n2o_unit": "kg N2O/gallon",
+        "co2e_per_gallon": 8.91,
+        "co2e_unit": "kg CO2e/gallon",
+        "uncertainty_lower_pct": -5,
+        "uncertainty_upper_pct": 5,
+        "notes": "Recreational and small boats - gasoline"
+      }
+    ],
+    "aviation": [
+      {
+        "id": "ef://epa/mobile/aviation_jet_fuel/2024",
+        "aircraft_type": "commercial_aircraft",
+        "fuel_type": "jet_fuel",
+        "co2_factor": 9.57,
+        "co2_unit": "kg CO2/gallon",
+        "ch4_factor": 0.00002,
+        "ch4_unit": "kg CH4/gallon",
+        "n2o_factor": 0.00008,
+        "n2o_unit": "kg N2O/gallon",
+        "co2e_per_gallon": 9.60,
+        "co2e_unit": "kg CO2e/gallon",
+        "uncertainty_lower_pct": -3,
+        "uncertainty_upper_pct": 3,
+        "notes": "Commercial aviation - jet fuel"
+      },
+      {
+        "id": "ef://epa/mobile/aviation_gasoline_small/2024",
+        "aircraft_type": "small_aircraft",
+        "fuel_type": "aviation_gasoline",
+        "co2_factor": 8.31,
+        "co2_unit": "kg CO2/gallon",
+        "ch4_factor": 0.00058,
+        "ch4_unit": "kg CH4/gallon",
+        "n2o_factor": 0.00011,
+        "n2o_unit": "kg N2O/gallon",
+        "co2e_per_gallon": 8.40,
+        "co2e_unit": "kg CO2e/gallon",
+        "uncertainty_lower_pct": -3,
+        "uncertainty_upper_pct": 3,
+        "notes": "General aviation - aviation gasoline"
+      }
+    ],
+    "rail": [
+      {
+        "id": "ef://epa/mobile/rail_diesel/2024",
+        "vehicle_type": "locomotive",
+        "fuel_type": "diesel",
+        "co2_factor": 10.21,
+        "co2_unit": "kg CO2/gallon",
+        "ch4_factor": 0.00058,
+        "ch4_unit": "kg CH4/gallon",
+        "n2o_factor": 0.00026,
+        "n2o_unit": "kg N2O/gallon",
+        "co2e_per_gallon": 10.33,
+        "co2e_unit": "kg CO2e/gallon",
+        "uncertainty_lower_pct": -3,
+        "uncertainty_upper_pct": 3,
+        "notes": "Freight and passenger rail - diesel"
+      }
+    ]
+  },
+  "distance_based_factors": {
+    "passenger_car_gasoline": {
+      "id": "ef://epa/mobile/passenger_car_gasoline_distance/2024",
+      "co2e_factor": 0.403,
+      "co2e_unit": "kg CO2e/mile",
+      "notes": "Based on average fuel economy of 24.2 mpg"
+    },
+    "light_truck_gasoline": {
+      "id": "ef://epa/mobile/light_truck_gasoline_distance/2024",
+      "co2e_factor": 0.521,
+      "co2e_unit": "kg CO2e/mile",
+      "notes": "Based on average fuel economy of 17.5 mpg"
+    },
+    "heavy_truck_diesel": {
+      "id": "ef://epa/mobile/heavy_truck_diesel_distance/2024",
+      "co2e_factor": 1.746,
+      "co2e_unit": "kg CO2e/mile",
+      "notes": "Based on average fuel economy of 5.9 mpg"
+    },
+    "domestic_flight": {
+      "id": "ef://epa/mobile/domestic_flight_distance/2024",
+      "co2e_factor": 0.255,
+      "co2e_unit": "kg CO2e/passenger-mile",
+      "notes": "Average for domestic flights"
+    },
+    "short_haul_flight": {
+      "id": "ef://epa/mobile/short_haul_flight_distance/2024",
+      "co2e_factor": 0.275,
+      "co2e_unit": "kg CO2e/passenger-mile",
+      "notes": "Flights under 300 miles"
+    },
+    "long_haul_flight": {
+      "id": "ef://epa/mobile/long_haul_flight_distance/2024",
+      "co2e_factor": 0.195,
+      "co2e_unit": "kg CO2e/passenger-mile",
+      "notes": "Flights over 2,300 miles"
+    }
+  }
+}

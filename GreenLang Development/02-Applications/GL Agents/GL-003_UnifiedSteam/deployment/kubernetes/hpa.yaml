@@ -1,0 +1,157 @@
+# GL-003 UNIFIEDSTEAM - Horizontal Pod Autoscaler
+# Steam System Optimization Agent
+
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: unifiedsteam-hpa
+  namespace: greenlang-steam
+  labels:
+    app.kubernetes.io/name: unifiedsteam
+    app.kubernetes.io/component: autoscaler
+    app.kubernetes.io/part-of: greenlang
+    agent-id: gl-003
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: unifiedsteam
+
+  # Replica bounds
+  minReplicas: 3
+  maxReplicas: 10
+
+  # Scaling metrics
+  metrics:
+    # ==============================================================================
+    # Resource-based metrics
+    # ==============================================================================
+    # CPU utilization
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+
+    # Memory utilization
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+
+    # ==============================================================================
+    # Custom metrics (Prometheus Adapter required)
+    # ==============================================================================
+    # HTTP request rate per second
+    - type: Pods
+      pods:
+        metric:
+          name: http_requests_per_second
+        target:
+          type: AverageValue
+          averageValue: "1000"
+
+    # gRPC request rate per second
+    - type: Pods
+      pods:
+        metric:
+          name: grpc_requests_per_second
+        target:
+          type: AverageValue
+          averageValue: "500"
+
+    # Kafka consumer lag (messages behind)
+    - type: External
+      external:
+        metric:
+          name: kafka_consumergroup_lag
+          selector:
+            matchLabels:
+              consumergroup: "unifiedsteam-consumer-group"
+        target:
+          type: Value
+          value: "10000"
+
+    # Optimization queue depth
+    - type: Pods
+      pods:
+        metric:
+          name: optimization_queue_depth
+        target:
+          type: AverageValue
+          averageValue: "50"
+
+  # Scaling behavior configuration
+  behavior:
+    # Scale up behavior
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+        # Scale up by 2 pods per 60 seconds
+        - type: Pods
+          value: 2
+          periodSeconds: 60
+        # Or scale up by 50% of current replicas per 60 seconds
+        - type: Percent
+          value: 50
+          periodSeconds: 60
+      selectPolicy: Max
+
+    # Scale down behavior (more conservative)
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        # Scale down by 1 pod per 120 seconds
+        - type: Pods
+          value: 1
+          periodSeconds: 120
+        # Or scale down by 25% of current replicas per 120 seconds
+        - type: Percent
+          value: 25
+          periodSeconds: 120
+      selectPolicy: Min
+---
+# ==============================================================================
+# Vertical Pod Autoscaler (VPA) - Optional
+# Requires VPA controller to be installed
+# ==============================================================================
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: unifiedsteam-vpa
+  namespace: greenlang-steam
+  labels:
+    app.kubernetes.io/name: unifiedsteam
+    app.kubernetes.io/component: autoscaler-vertical
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: unifiedsteam
+
+  updatePolicy:
+    # Options: Off, Initial, Recreate, Auto
+    # "Off" - VPA only provides recommendations, doesn't auto-update
+    # "Auto" - VPA automatically updates pod resources
+    updateMode: "Off"
+
+  resourcePolicy:
+    containerPolicies:
+      - containerName: unifiedsteam
+        # Minimum allowed resources
+        minAllowed:
+          cpu: "250m"
+          memory: "512Mi"
+        # Maximum allowed resources
+        maxAllowed:
+          cpu: "4000m"
+          memory: "8Gi"
+        # Control mode for each resource
+        controlledResources:
+          - cpu
+          - memory
+        # Control what VPA can change
+        controlledValues: RequestsAndLimits

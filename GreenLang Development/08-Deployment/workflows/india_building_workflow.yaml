@@ -1,0 +1,120 @@
+name: india_commercial_building
+description: Carbon audit workflow optimized for Indian commercial buildings
+version: 0.0.1
+author: GreenLang Framework
+tags:
+  - india
+  - BEE
+  - commercial
+  - PAT
+
+parameters:
+  state:
+    type: string
+    default: Maharashtra
+    description: Indian state for grid factor variations
+  bee_rating_target:
+    type: string
+    default: 4_star
+    description: Target BEE star rating (1_star to 5_star)
+
+steps:
+  - name: validate_input
+    agent_id: validator
+    description: Validate building data per BEE requirements
+    on_failure: stop
+
+  - name: get_india_grid_factor
+    agent_id: grid_factor
+    description: Get India-specific grid emission factor
+    input_mapping:
+      country: "'IN'"
+      fuel_type: "'electricity'"
+      unit: input.energy_consumption.electricity.unit
+
+  - name: calculate_dg_emissions
+    agent_id: grid_factor
+    description: Calculate diesel generator emissions (common in India)
+    condition: input.energy_consumption.diesel
+    input_mapping:
+      country: "'IN'"
+      fuel_type: "'diesel'"
+      unit: "'liters'"
+
+  - name: calculate_lpg_emissions
+    agent_id: grid_factor
+    description: Calculate LPG cylinder emissions
+    condition: input.energy_consumption.lpg_propane
+    input_mapping:
+      country: "'IN'"
+      fuel_type: "'lpg_propane'"
+      unit: input.energy_consumption.lpg_propane.unit
+
+  - name: aggregate_emissions
+    agent_id: carbon
+    description: Aggregate all emission sources
+    dependencies:
+      - get_india_grid_factor
+      - calculate_dg_emissions
+      - calculate_lpg_emissions
+
+  - name: calculate_epi
+    agent_id: intensity
+    description: Calculate Energy Performance Index (EPI) per BEE
+    input_mapping:
+      total_emissions_kg: results.aggregate_emissions.data.total_co2e_kg
+      area: input.metadata.area
+      area_unit: "'sqm'"  # BEE uses sqm
+      period_months: 12
+      building_type: input.metadata.building_type
+      country: "'IN'"
+
+  - name: bee_benchmark
+    agent_id: benchmark
+    description: Compare with BEE star rating thresholds
+    input_mapping:
+      total_emissions_kg: results.aggregate_emissions.data.total_co2e_kg
+      building_area: input.metadata.area
+      building_type: input.metadata.building_type
+      period_months: 12
+      country: "'IN'"
+
+  - name: india_specific_recommendations
+    agent_id: recommendation
+    description: Generate India-specific recommendations
+    input_mapping:
+      country: "'IN'"
+      building_type: input.metadata.building_type
+      performance_rating: results.bee_benchmark.data.rating
+      emissions_by_source: results.aggregate_emissions.data.emissions_by_source
+    post_process:
+      - add_subsidy_info: true
+      - include_pat_scheme: true
+      - solar_rooftop_viability: true
+
+  - name: generate_bee_report
+    agent_id: report
+    description: Generate BEE-compliant report
+    input_mapping:
+      carbon_data: results.aggregate_emissions.data
+      epi_data: results.calculate_epi.data
+      bee_rating: results.bee_benchmark.data.star_rating
+      recommendations: results.india_specific_recommendations.data
+      format: "'markdown'"
+
+output_mapping:
+  total_emissions_tons: results.aggregate_emissions.data.total_co2e_tons
+  epi_kwh_per_sqm: results.calculate_epi.data.energy_performance_index
+  bee_star_rating: results.bee_benchmark.data.star_rating
+  compliance_status: results.bee_benchmark.data.compliance
+  subsidy_eligible: results.india_specific_recommendations.data.subsidy_eligibility
+  report: results.generate_bee_report.data.report
+
+compliance_checks:
+  - name: ecbc_compliance
+    description: Check Energy Conservation Building Code compliance
+    threshold: 
+      epi_max: 180  # kWh/sqm/year for office buildings
+  - name: pat_cycle_target
+    description: Check PAT cycle specific targets
+    applicable_if: input.metadata.area > 100000  # sqft

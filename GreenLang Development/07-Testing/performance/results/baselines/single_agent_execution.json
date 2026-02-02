@@ -1,0 +1,14 @@
+{
+  "test_name": "single_agent_execution",
+  "version": "1.0.0",
+  "timestamp": "2025-11-07T16:29:00.688139",
+  "mean_latency_ms": 203.3120720158331,
+  "median_latency_ms": 202.32459995895624,
+  "p95_latency_ms": 211.19880001060665,
+  "p99_latency_ms": 216.56079997774214,
+  "throughput_rps": 0,
+  "memory_mb": 0,
+  "cpu_percent": 0,
+  "error_rate": 0.0,
+  "raw_metrics": {}
+}

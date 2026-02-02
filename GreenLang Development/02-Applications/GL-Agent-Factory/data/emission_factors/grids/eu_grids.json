@@ -1,0 +1,417 @@
+{
+  "metadata": {
+    "source": "European Environment Agency (EEA), Association of Issuing Bodies (AIB)",
+    "source_url": "https://www.eea.europa.eu/data-and-maps/daviz/co2-emission-intensity",
+    "version": "2024",
+    "last_updated": "2024-02-15",
+    "units_note": "All factors in kgCO2e per kWh unless otherwise specified",
+    "scope": "Scope 2 - Indirect Emissions from Purchased Electricity",
+    "methodology": "Location-based factors from EEA; Market-based residual mix from AIB",
+    "gwp_basis": "AR5 100-year GWP values"
+  },
+  "eu27_average": {
+    "factor_id": "EU_GRID_2024_EU27",
+    "name": "EU-27 Average",
+    "unit": "kWh",
+    "kgCO2e_per_unit": 0.251,
+    "kgCO2_per_unit": 0.248,
+    "gCO2e_per_kWh": 251,
+    "category": "Regional Average",
+    "scope": "Scope 2",
+    "year": 2023,
+    "generation_mix": {
+      "nuclear_pct": 22.7,
+      "wind_pct": 17.5,
+      "hydro_pct": 11.2,
+      "solar_pct": 8.9,
+      "natural_gas_pct": 17.4,
+      "coal_pct": 12.5,
+      "biomass_pct": 5.8,
+      "other_pct": 4.0
+    }
+  },
+  "member_states": {
+    "AT": {
+      "factor_id": "EU_GRID_2024_AT",
+      "name": "Austria",
+      "kgCO2e_per_unit": 0.089,
+      "gCO2e_per_kWh": 89,
+      "category": "Member State",
+      "notes": "High hydro share",
+      "renewable_share_pct": 78
+    },
+    "BE": {
+      "factor_id": "EU_GRID_2024_BE",
+      "name": "Belgium",
+      "kgCO2e_per_unit": 0.156,
+      "gCO2e_per_kWh": 156,
+      "category": "Member State",
+      "notes": "Nuclear and gas dominated"
+    },
+    "BG": {
+      "factor_id": "EU_GRID_2024_BG",
+      "name": "Bulgaria",
+      "kgCO2e_per_unit": 0.412,
+      "gCO2e_per_kWh": 412,
+      "category": "Member State",
+      "notes": "High coal and nuclear"
+    },
+    "HR": {
+      "factor_id": "EU_GRID_2024_HR",
+      "name": "Croatia",
+      "kgCO2e_per_unit": 0.198,
+      "gCO2e_per_kWh": 198,
+      "category": "Member State"
+    },
+    "CY": {
+      "factor_id": "EU_GRID_2024_CY",
+      "name": "Cyprus",
+      "kgCO2e_per_unit": 0.612,
+      "gCO2e_per_kWh": 612,
+      "category": "Member State",
+      "notes": "Oil-dependent isolated grid"
+    },
+    "CZ": {
+      "factor_id": "EU_GRID_2024_CZ",
+      "name": "Czech Republic",
+      "kgCO2e_per_unit": 0.378,
+      "gCO2e_per_kWh": 378,
+      "category": "Member State",
+      "notes": "Coal and nuclear"
+    },
+    "DK": {
+      "factor_id": "EU_GRID_2024_DK",
+      "name": "Denmark",
+      "kgCO2e_per_unit": 0.112,
+      "gCO2e_per_kWh": 112,
+      "category": "Member State",
+      "notes": "High wind share (>50%)",
+      "renewable_share_pct": 84
+    },
+    "EE": {
+      "factor_id": "EU_GRID_2024_EE",
+      "name": "Estonia",
+      "kgCO2e_per_unit": 0.523,
+      "gCO2e_per_kWh": 523,
+      "category": "Member State",
+      "notes": "High oil shale use"
+    },
+    "FI": {
+      "factor_id": "EU_GRID_2024_FI",
+      "name": "Finland",
+      "kgCO2e_per_unit": 0.078,
+      "gCO2e_per_kWh": 78,
+      "category": "Member State",
+      "notes": "Nuclear, hydro, and biomass",
+      "renewable_share_pct": 52
+    },
+    "FR": {
+      "factor_id": "EU_GRID_2024_FR",
+      "name": "France",
+      "kgCO2e_per_unit": 0.052,
+      "gCO2e_per_kWh": 52,
+      "category": "Member State",
+      "notes": "70%+ nuclear power",
+      "nuclear_share_pct": 70
+    },
+    "DE": {
+      "factor_id": "EU_GRID_2024_DE",
+      "name": "Germany",
+      "kgCO2e_per_unit": 0.378,
+      "gCO2e_per_kWh": 378,
+      "category": "Member State",
+      "notes": "Coal and renewables; nuclear phase-out",
+      "renewable_share_pct": 46
+    },
+    "GR": {
+      "factor_id": "EU_GRID_2024_GR",
+      "name": "Greece",
+      "kgCO2e_per_unit": 0.312,
+      "gCO2e_per_kWh": 312,
+      "category": "Member State",
+      "notes": "Transitioning from lignite"
+    },
+    "HU": {
+      "factor_id": "EU_GRID_2024_HU",
+      "name": "Hungary",
+      "kgCO2e_per_unit": 0.234,
+      "gCO2e_per_kWh": 234,
+      "category": "Member State"
+    },
+    "IE": {
+      "factor_id": "EU_GRID_2024_IE",
+      "name": "Ireland",
+      "kgCO2e_per_unit": 0.289,
+      "gCO2e_per_kWh": 289,
+      "category": "Member State",
+      "notes": "Gas and wind"
+    },
+    "IT": {
+      "factor_id": "EU_GRID_2024_IT",
+      "name": "Italy",
+      "kgCO2e_per_unit": 0.289,
+      "gCO2e_per_kWh": 289,
+      "category": "Member State",
+      "notes": "Gas-dominated, no nuclear"
+    },
+    "LV": {
+      "factor_id": "EU_GRID_2024_LV",
+      "name": "Latvia",
+      "kgCO2e_per_unit": 0.112,
+      "gCO2e_per_kWh": 112,
+      "category": "Member State",
+      "notes": "High hydro share"
+    },
+    "LT": {
+      "factor_id": "EU_GRID_2024_LT",
+      "name": "Lithuania",
+      "kgCO2e_per_unit": 0.167,
+      "gCO2e_per_kWh": 167,
+      "category": "Member State"
+    },
+    "LU": {
+      "factor_id": "EU_GRID_2024_LU",
+      "name": "Luxembourg",
+      "kgCO2e_per_unit": 0.089,
+      "gCO2e_per_kWh": 89,
+      "category": "Member State",
+      "notes": "High imports from France"
+    },
+    "MT": {
+      "factor_id": "EU_GRID_2024_MT",
+      "name": "Malta",
+      "kgCO2e_per_unit": 0.378,
+      "gCO2e_per_kWh": 378,
+      "category": "Member State",
+      "notes": "Interconnected with Italy"
+    },
+    "NL": {
+      "factor_id": "EU_GRID_2024_NL",
+      "name": "Netherlands",
+      "kgCO2e_per_unit": 0.328,
+      "gCO2e_per_kWh": 328,
+      "category": "Member State",
+      "notes": "Gas-dominated, growing offshore wind"
+    },
+    "PL": {
+      "factor_id": "EU_GRID_2024_PL",
+      "name": "Poland",
+      "kgCO2e_per_unit": 0.689,
+      "gCO2e_per_kWh": 689,
+      "category": "Member State",
+      "notes": "Highest coal dependency in EU",
+      "coal_share_pct": 70
+    },
+    "PT": {
+      "factor_id": "EU_GRID_2024_PT",
+      "name": "Portugal",
+      "kgCO2e_per_unit": 0.178,
+      "gCO2e_per_kWh": 178,
+      "category": "Member State",
+      "notes": "High renewables (wind, hydro, solar)",
+      "renewable_share_pct": 61
+    },
+    "RO": {
+      "factor_id": "EU_GRID_2024_RO",
+      "name": "Romania",
+      "kgCO2e_per_unit": 0.289,
+      "gCO2e_per_kWh": 289,
+      "category": "Member State",
+      "notes": "Diverse mix including nuclear and hydro"
+    },
+    "SK": {
+      "factor_id": "EU_GRID_2024_SK",
+      "name": "Slovakia",
+      "kgCO2e_per_unit": 0.134,
+      "gCO2e_per_kWh": 134,
+      "category": "Member State",
+      "notes": "High nuclear share"
+    },
+    "SI": {
+      "factor_id": "EU_GRID_2024_SI",
+      "name": "Slovenia",
+      "kgCO2e_per_unit": 0.234,
+      "gCO2e_per_kWh": 234,
+      "category": "Member State"
+    },
+    "ES": {
+      "factor_id": "EU_GRID_2024_ES",
+      "name": "Spain",
+      "kgCO2e_per_unit": 0.167,
+      "gCO2e_per_kWh": 167,
+      "category": "Member State",
+      "notes": "Growing solar and wind",
+      "renewable_share_pct": 50
+    },
+    "SE": {
+      "factor_id": "EU_GRID_2024_SE",
+      "name": "Sweden",
+      "kgCO2e_per_unit": 0.023,
+      "gCO2e_per_kWh": 23,
+      "category": "Member State",
+      "notes": "Nuclear, hydro dominated - lowest in EU",
+      "renewable_share_pct": 69
+    }
+  },
+  "non_eu_europe": {
+    "GB": {
+      "factor_id": "EU_GRID_2024_GB",
+      "name": "United Kingdom",
+      "kgCO2e_per_unit": 0.207,
+      "gCO2e_per_kWh": 207,
+      "category": "Non-EU Europe",
+      "notes": "Offshore wind growth; coal phase-out complete"
+    },
+    "NO": {
+      "factor_id": "EU_GRID_2024_NO",
+      "name": "Norway",
+      "kgCO2e_per_unit": 0.008,
+      "gCO2e_per_kWh": 8,
+      "category": "Non-EU Europe",
+      "notes": "98%+ hydropower - lowest grid intensity globally",
+      "renewable_share_pct": 98
+    },
+    "CH": {
+      "factor_id": "EU_GRID_2024_CH",
+      "name": "Switzerland",
+      "kgCO2e_per_unit": 0.024,
+      "gCO2e_per_kWh": 24,
+      "category": "Non-EU Europe",
+      "notes": "Hydro and nuclear dominated"
+    },
+    "IS": {
+      "factor_id": "EU_GRID_2024_IS",
+      "name": "Iceland",
+      "kgCO2e_per_unit": 0.012,
+      "gCO2e_per_kWh": 12,
+      "category": "Non-EU Europe",
+      "notes": "Nearly 100% hydro and geothermal"
+    },
+    "UA": {
+      "factor_id": "EU_GRID_2024_UA",
+      "name": "Ukraine",
+      "kgCO2e_per_unit": 0.378,
+      "gCO2e_per_kWh": 378,
+      "category": "Non-EU Europe",
+      "notes": "Nuclear and coal"
+    },
+    "TR": {
+      "factor_id": "EU_GRID_2024_TR",
+      "name": "Turkey",
+      "kgCO2e_per_unit": 0.423,
+      "gCO2e_per_kWh": 423,
+      "category": "Non-EU Europe",
+      "notes": "Coal, gas, and growing renewables"
+    },
+    "RS": {
+      "factor_id": "EU_GRID_2024_RS",
+      "name": "Serbia",
+      "kgCO2e_per_unit": 0.689,
+      "gCO2e_per_kWh": 689,
+      "category": "Non-EU Europe",
+      "notes": "High lignite use"
+    },
+    "BA": {
+      "factor_id": "EU_GRID_2024_BA",
+      "name": "Bosnia and Herzegovina",
+      "kgCO2e_per_unit": 0.723,
+      "gCO2e_per_kWh": 723,
+      "category": "Non-EU Europe"
+    },
+    "XK": {
+      "factor_id": "EU_GRID_2024_XK",
+      "name": "Kosovo",
+      "kgCO2e_per_unit": 0.812,
+      "gCO2e_per_kWh": 812,
+      "category": "Non-EU Europe",
+      "notes": "Highest in Europe - lignite dominated"
+    },
+    "AL": {
+      "factor_id": "EU_GRID_2024_AL_EUR",
+      "name": "Albania",
+      "kgCO2e_per_unit": 0.034,
+      "gCO2e_per_kWh": 34,
+      "category": "Non-EU Europe",
+      "notes": "Nearly 100% hydropower"
+    },
+    "MK": {
+      "factor_id": "EU_GRID_2024_MK",
+      "name": "North Macedonia",
+      "kgCO2e_per_unit": 0.556,
+      "gCO2e_per_kWh": 556,
+      "category": "Non-EU Europe"
+    },
+    "ME": {
+      "factor_id": "EU_GRID_2024_ME_EUR",
+      "name": "Montenegro",
+      "kgCO2e_per_unit": 0.423,
+      "gCO2e_per_kWh": 423,
+      "category": "Non-EU Europe"
+    }
+  },
+  "residual_mix_market_based": {
+    "description": "AIB European Residual Mixes for market-based Scope 2 reporting",
+    "methodology": "Production mix minus tracked instruments (GOs/RECs)",
+    "EU_average": {
+      "factor_id": "EU_GRID_2024_RESID_EU",
+      "name": "EU Residual Mix Average",
+      "kgCO2e_per_unit": 0.412,
+      "gCO2e_per_kWh": 412,
+      "category": "Market-Based Residual Mix",
+      "year": 2023,
+      "notes": "Higher than production mix due to renewable GO exports"
+    },
+    "AT_residual": {"kgCO2e_per_unit": 0.312, "notes": "Austria residual"},
+    "DE_residual": {"kgCO2e_per_unit": 0.567, "notes": "Germany residual"},
+    "FR_residual": {"kgCO2e_per_unit": 0.089, "notes": "France residual - still low due to nuclear"},
+    "NL_residual": {"kgCO2e_per_unit": 0.478, "notes": "Netherlands residual"},
+    "PL_residual": {"kgCO2e_per_unit": 0.778, "notes": "Poland residual"},
+    "SE_residual": {"kgCO2e_per_unit": 0.412, "notes": "Sweden residual - much higher than production"},
+    "GB_residual": {"kgCO2e_per_unit": 0.356, "notes": "UK residual"}
+  },
+  "guarantees_of_origin": {
+    "go_renewable": {
+      "factor_id": "EU_GRID_2024_GO",
+      "name": "Guarantee of Origin (Renewable)",
+      "kgCO2e_per_unit": 0.0,
+      "category": "Market-Based Instrument",
+      "notes": "European renewable electricity certificate"
+    },
+    "go_wind": {
+      "factor_id": "EU_GRID_2024_GO_WIND",
+      "name": "GO - Wind",
+      "kgCO2e_per_unit": 0.0,
+      "notes": "Technology-specific GO"
+    },
+    "go_solar": {
+      "factor_id": "EU_GRID_2024_GO_SOLAR",
+      "name": "GO - Solar",
+      "kgCO2e_per_unit": 0.0
+    },
+    "go_hydro": {
+      "factor_id": "EU_GRID_2024_GO_HYDRO",
+      "name": "GO - Hydro",
+      "kgCO2e_per_unit": 0.0
+    },
+    "go_nuclear": {
+      "factor_id": "EU_GRID_2024_GO_NUCLEAR",
+      "name": "GO - Nuclear",
+      "kgCO2e_per_unit": 0.0,
+      "notes": "Low-carbon but not renewable"
+    }
+  },
+  "transmission_losses": {
+    "EU_average": {
+      "factor_id": "EU_GRID_2024_TDL",
+      "loss_rate_pct": 6.0,
+      "notes": "EU average transmission and distribution losses"
+    }
+  },
+  "projections": {
+    "2025": {"eu27_kgCO2e": 0.220, "notes": "Expected from coal phase-out"},
+    "2030": {"eu27_kgCO2e": 0.150, "notes": "Fit for 55 targets"},
+    "2040": {"eu27_kgCO2e": 0.080, "notes": "Climate-neutral by 2050 pathway"},
+    "2050": {"eu27_kgCO2e": 0.020, "notes": "Near-zero carbon grid"}
+  },
+  "total_factor_count": 55
+}

@@ -1,0 +1,886 @@
+# GreenLang Agent Exit Bar Criteria Checklist
+# Machine-Readable Validation Specification
+# Version: 1.0.0
+# Based on GL_agent_requirement.md 12-dimension framework
+# Date: 2025-10-16
+
+# ============================================================================
+# AGENT METADATA
+# ============================================================================
+agent_metadata:
+  agent_name: "{agent_name}"  # e.g., "CarbonAgentAI"
+  agent_id: "{agent_id}"      # e.g., "crosscutting/carbon_agent"
+  spec_path: "{spec_path}"    # Path to AgentSpec V2.0 YAML
+  version: "1.0.0"
+  evaluation_date: "{date}"
+  evaluator: "{evaluator_name}"
+  environment: "pre-production"  # pre-production | production
+
+# ============================================================================
+# SCORING CONFIGURATION
+# ============================================================================
+scoring:
+  total_points: 100
+  pass_threshold: 95  # Minimum score for production deployment
+
+  dimension_weights:
+    d1_specification: 10
+    d2_implementation: 15
+    d3_test_coverage: 15
+    d4_deterministic_ai: 10
+    d5_documentation: 5
+    d6_compliance: 10
+    d7_deployment: 10
+    d8_exit_bar: 10
+    d9_integration: 5
+    d10_business_impact: 5
+    d11_operations: 5
+    d12_improvement: 5
+
+# ============================================================================
+# D1: SPECIFICATION COMPLETENESS (10 points)
+# ============================================================================
+d1_specification:
+  weight: 10
+  max_score: 10
+
+  criteria:
+    - id: "D1.1"
+      name: "AgentSpec V2.0 YAML file exists"
+      required: true
+      points: 2
+      validation_type: "file_exists"
+      config:
+        path_template: "specs/{domain}/{subdomain}/agent_{id}_{name}.yaml"
+        error_message: "AgentSpec V2.0 YAML file not found"
+
+    - id: "D1.2"
+      name: "All 11 mandatory sections present"
+      required: true
+      points: 2
+      validation_type: "yaml_sections"
+      config:
+        required_sections:
+          - "agent_metadata"
+          - "description"
+          - "tools"
+          - "ai_integration"
+          - "sub_agents"
+          - "inputs"
+          - "outputs"
+          - "testing"
+          - "deployment"
+          - "documentation"
+          - "compliance"
+          - "metadata"
+        pass_threshold: "11/11"
+        error_message: "Missing required sections in AgentSpec"
+
+    - id: "D1.3"
+      name: "Specification validation passes with zero errors"
+      required: true
+      points: 2
+      validation_type: "command"
+      config:
+        command: "python scripts/validate_agent_specs.py {spec_path}"
+        success_pattern: "0 ERRORS|VALIDATION PASSED"
+        error_pattern: "ERROR|FAIL"
+        timeout_seconds: 30
+        error_message: "Specification validation failed"
+
+    - id: "D1.4"
+      name: "AI temperature=0.0 configured"
+      required: true
+      points: 2
+      validation_type: "yaml_value"
+      config:
+        yaml_path: "ai_integration.temperature"
+        expected_value: 0.0
+        exact_match: true
+        error_message: "temperature must be exactly 0.0 for determinism"
+
+    - id: "D1.5"
+      name: "AI seed=42 configured"
+      required: true
+      points: 2
+      validation_type: "yaml_value"
+      config:
+        yaml_path: "ai_integration.seed"
+        expected_value: 42
+        exact_match: true
+        error_message: "seed must be exactly 42 for reproducibility"
+
+# ============================================================================
+# D2: CODE IMPLEMENTATION (15 points)
+# ============================================================================
+d2_implementation:
+  weight: 15
+  max_score: 15
+
+  criteria:
+    - id: "D2.1"
+      name: "Implementation file exists"
+      required: true
+      points: 3
+      validation_type: "file_exists"
+      config:
+        path_template: "greenlang/agents/{agent_name}_ai.py"
+        error_message: "Agent implementation file not found"
+
+    - id: "D2.2"
+      name: "Tool-first architecture (3+ tool implementations)"
+      required: true
+      points: 3
+      validation_type: "code_pattern"
+      config:
+        file_path: "greenlang/agents/{agent_name}_ai.py"
+        pattern: "def _.*_impl\\(self"
+        min_count: 3
+        error_message: "Insufficient tool implementations (need 3+)"
+
+    - id: "D2.3"
+      name: "ChatSession integration present"
+      required: true
+      points: 3
+      validation_type: "code_pattern"
+      config:
+        file_path: "greenlang/agents/{agent_name}_ai.py"
+        pattern: "ChatSession\\(self\\.provider\\)|ChatSession\\("
+        min_count: 1
+        error_message: "ChatSession integration not found"
+
+    - id: "D2.4"
+      name: "Type hints complete (mypy passes)"
+      required: true
+      points: 3
+      validation_type: "command"
+      config:
+        command: "mypy greenlang/agents/{agent_name}_ai.py --strict"
+        success_pattern: "Success: no issues found"
+        error_pattern: "error:"
+        timeout_seconds: 60
+        allow_warnings: true
+        error_message: "Type checking failed"
+
+    - id: "D2.5"
+      name: "No hardcoded secrets (secret scan passes)"
+      required: true
+      points: 3
+      validation_type: "command"
+      config:
+        command: "grep -rn 'sk-|api_key.*=.*[\"''].*[\"'']|password.*=.*[\"'']' greenlang/agents/{agent_name}_ai.py || echo 'CLEAN'"
+        success_pattern: "CLEAN"
+        error_pattern: "sk-|api_key|password"
+        timeout_seconds: 10
+        error_message: "Hardcoded secrets detected"
+
+# ============================================================================
+# D3: TEST COVERAGE (15 points)
+# ============================================================================
+d3_test_coverage:
+  weight: 15
+  max_score: 15
+
+  criteria:
+    - id: "D3.1"
+      name: "Test file exists"
+      required: true
+      points: 2
+      validation_type: "file_exists"
+      config:
+        path_template: "tests/agents/test_{agent_name}_ai.py"
+        error_message: "Test file not found"
+
+    - id: "D3.2"
+      name: "Line coverage ≥80%"
+      required: true
+      points: 5
+      validation_type: "command"
+      config:
+        command: "pytest tests/agents/test_{agent_name}_ai.py --cov=greenlang.agents.{agent_name}_ai --cov-report=term --cov-fail-under=80"
+        success_pattern: "Required test coverage of 80% reached|PASSED"
+        error_pattern: "FAILED|ERROR"
+        timeout_seconds: 300
+        error_message: "Test coverage below 80%"
+
+    - id: "D3.3"
+      name: "Unit tests present (10+ tests)"
+      required: true
+      points: 2
+      validation_type: "test_count"
+      config:
+        file_path: "tests/agents/test_{agent_name}_ai.py"
+        test_pattern: "def test_.*_tool|def test_.*_impl"
+        category: "unit"
+        min_count: 10
+        error_message: "Insufficient unit tests (need 10+)"
+
+    - id: "D3.4"
+      name: "Integration tests present (5+ tests)"
+      required: true
+      points: 2
+      validation_type: "test_count"
+      config:
+        file_path: "tests/agents/test_{agent_name}_ai.py"
+        test_pattern: "def test_.*_workflow|def test_.*_integration|def test_full_"
+        category: "integration"
+        min_count: 5
+        error_message: "Insufficient integration tests (need 5+)"
+
+    - id: "D3.5"
+      name: "Determinism tests present (3+ tests)"
+      required: true
+      points: 2
+      validation_type: "test_count"
+      config:
+        file_path: "tests/agents/test_{agent_name}_ai.py"
+        test_pattern: "def test_.*_determinism|def test_.*_reproducible|def test_same_input"
+        category: "determinism"
+        min_count: 3
+        error_message: "Insufficient determinism tests (need 3+)"
+
+    - id: "D3.6"
+      name: "Boundary tests present (5+ tests)"
+      required: true
+      points: 1
+      validation_type: "test_count"
+      config:
+        file_path: "tests/agents/test_{agent_name}_ai.py"
+        test_pattern: "def test_.*_empty|def test_.*_zero|def test_.*_negative|def test_.*_boundary|def test_.*_edge"
+        category: "boundary"
+        min_count: 5
+        error_message: "Insufficient boundary tests (need 5+)"
+
+    - id: "D3.7"
+      name: "All tests passing"
+      required: true
+      points: 1
+      validation_type: "command"
+      config:
+        command: "pytest tests/agents/test_{agent_name}_ai.py -v"
+        success_pattern: "passed|PASSED"
+        error_pattern: "FAILED|ERROR|failed"
+        timeout_seconds: 300
+        error_message: "Some tests are failing"
+
+# ============================================================================
+# D4: DETERMINISTIC AI GUARANTEES (10 points)
+# ============================================================================
+d4_deterministic_ai:
+  weight: 10
+  max_score: 10
+
+  criteria:
+    - id: "D4.1"
+      name: "temperature=0.0 in code"
+      required: true
+      points: 3
+      validation_type: "code_pattern"
+      config:
+        file_path: "greenlang/agents/{agent_name}_ai.py"
+        pattern: "temperature=0\\.0"
+        min_count: 1
+        error_message: "temperature=0.0 not found in code"
+
+    - id: "D4.2"
+      name: "seed=42 in code"
+      required: true
+      points: 3
+      validation_type: "code_pattern"
+      config:
+        file_path: "greenlang/agents/{agent_name}_ai.py"
+        pattern: "seed=42"
+        min_count: 1
+        error_message: "seed=42 not found in code"
+
+    - id: "D4.3"
+      name: "All tools are deterministic (no randomness)"
+      required: true
+      points: 2
+      validation_type: "code_pattern"
+      config:
+        file_path: "greenlang/agents/{agent_name}_ai.py"
+        pattern: "random\\.|np\\.random\\.|torch\\.rand"
+        max_count: 0
+        invert: true
+        error_message: "Non-deterministic code detected (random operations)"
+
+    - id: "D4.4"
+      name: "Provenance tracking enabled"
+      required: true
+      points: 2
+      validation_type: "code_pattern"
+      config:
+        file_path: "greenlang/agents/{agent_name}_ai.py"
+        pattern: "provenance|metadata\\[\"provenance\"\\]|tool_calls"
+        min_count: 1
+        error_message: "Provenance tracking not implemented"
+
+# ============================================================================
+# D5: DOCUMENTATION COMPLETENESS (5 points)
+# ============================================================================
+d5_documentation:
+  weight: 5
+  max_score: 5
+
+  criteria:
+    - id: "D5.1"
+      name: "Module docstring present"
+      required: true
+      points: 1
+      validation_type: "code_pattern"
+      config:
+        file_path: "greenlang/agents/{agent_name}_ai.py"
+        pattern: '""".*AI-powered.*"""'
+        min_count: 1
+        multiline: true
+        error_message: "Module docstring missing"
+
+    - id: "D5.2"
+      name: "Class docstring present"
+      required: true
+      points: 1
+      validation_type: "code_pattern"
+      config:
+        file_path: "greenlang/agents/{agent_name}_ai.py"
+        pattern: "class.*AI.*:.*\"\"\".*Features:"
+        min_count: 1
+        multiline: true
+        error_message: "Class docstring missing or incomplete"
+
+    - id: "D5.3"
+      name: "Method docstrings present (90%+ coverage)"
+      required: true
+      points: 1
+      validation_type: "docstring_coverage"
+      config:
+        file_path: "greenlang/agents/{agent_name}_ai.py"
+        min_coverage: 0.90
+        error_message: "Insufficient docstring coverage (need 90%+)"
+
+    - id: "D5.4"
+      name: "README or documentation file exists"
+      required: false
+      points: 1
+      validation_type: "file_exists"
+      config:
+        path_options:
+          - "docs/agents/{agent_name}_ai.md"
+          - "greenlang/agents/README_{agent_name}.md"
+        any_exists: true
+        error_message: "Agent-specific documentation file not found"
+
+    - id: "D5.5"
+      name: "Example use cases documented"
+      required: false
+      points: 1
+      validation_type: "yaml_value"
+      config:
+        yaml_path: "documentation.example_use_cases"
+        min_count: 3
+        error_message: "Need 3+ example use cases in spec"
+
+# ============================================================================
+# D6: COMPLIANCE & SECURITY (10 points)
+# ============================================================================
+d6_compliance:
+  weight: 10
+  max_score: 10
+
+  criteria:
+    - id: "D6.1"
+      name: "zero_secrets=true in spec"
+      required: true
+      points: 3
+      validation_type: "yaml_value"
+      config:
+        yaml_path: "compliance.zero_secrets"
+        expected_value: true
+        exact_match: true
+        error_message: "zero_secrets must be true"
+
+    - id: "D6.2"
+      name: "SBOM required flag set"
+      required: true
+      points: 2
+      validation_type: "yaml_value"
+      config:
+        yaml_path: "compliance.sbom_required"
+        expected_value: true
+        exact_match: true
+        error_message: "sbom_required must be true"
+
+    - id: "D6.3"
+      name: "Digital signature flag set"
+      required: true
+      points: 1
+      validation_type: "yaml_value"
+      config:
+        yaml_path: "compliance.digital_signature"
+        expected_value: true
+        exact_match: true
+        error_message: "digital_signature must be true"
+
+    - id: "D6.4"
+      name: "Standards compliance declared (2+ standards)"
+      required: true
+      points: 2
+      validation_type: "yaml_value"
+      config:
+        yaml_path: "compliance.standards"
+        min_count: 2
+        error_message: "Need 2+ compliance standards declared"
+
+    - id: "D6.5"
+      name: "No hardcoded credentials in code"
+      required: true
+      points: 2
+      validation_type: "command"
+      config:
+        command: "grep -rn 'API_KEY.*=.*[\"'']|SECRET.*=.*[\"'']|PASSWORD.*=.*[\"'']|TOKEN.*=.*[\"'']' greenlang/agents/{agent_name}_ai.py || echo 'CLEAN'"
+        success_pattern: "CLEAN"
+        error_pattern: "API_KEY|SECRET|PASSWORD|TOKEN"
+        timeout_seconds: 10
+        error_message: "Hardcoded credentials detected"
+
+# ============================================================================
+# D7: DEPLOYMENT READINESS (10 points)
+# ============================================================================
+d7_deployment:
+  weight: 10
+  max_score: 10
+
+  criteria:
+    - id: "D7.1"
+      name: "Deployment pack configuration exists"
+      required: true
+      points: 3
+      validation_type: "yaml_sections"
+      config:
+        required_sections:
+          - "deployment.pack_id"
+          - "deployment.pack_version"
+          - "deployment.dependencies"
+          - "deployment.resource_requirements"
+        pass_threshold: "4/4"
+        error_message: "Incomplete deployment configuration"
+
+    - id: "D7.2"
+      name: "Python dependencies declared"
+      required: true
+      points: 2
+      validation_type: "yaml_value"
+      config:
+        yaml_path: "deployment.dependencies.python_packages"
+        min_count: 1
+        error_message: "No Python dependencies declared"
+
+    - id: "D7.3"
+      name: "GreenLang module dependencies declared"
+      required: true
+      points: 2
+      validation_type: "yaml_value"
+      config:
+        yaml_path: "deployment.dependencies.greenlang_modules"
+        min_count: 1
+        error_message: "No GreenLang module dependencies declared"
+
+    - id: "D7.4"
+      name: "Resource requirements specified"
+      required: true
+      points: 2
+      validation_type: "yaml_sections"
+      config:
+        required_sections:
+          - "deployment.resource_requirements.memory_mb"
+          - "deployment.resource_requirements.cpu_cores"
+          - "deployment.resource_requirements.gpu_required"
+        pass_threshold: "3/3"
+        error_message: "Incomplete resource requirements"
+
+    - id: "D7.5"
+      name: "API endpoints defined"
+      required: false
+      points: 1
+      validation_type: "yaml_value"
+      config:
+        yaml_path: "deployment.api_endpoints"
+        min_count: 1
+        error_message: "No API endpoints defined"
+
+# ============================================================================
+# D8: EXIT BAR CRITERIA (10 points)
+# ============================================================================
+d8_exit_bar:
+  weight: 10
+  max_score: 10
+
+  criteria:
+    - id: "D8.1"
+      name: "All tests passing (zero failures)"
+      required: true
+      points: 3
+      validation_type: "command"
+      config:
+        command: "pytest tests/agents/test_{agent_name}_ai.py --tb=short"
+        success_pattern: "passed"
+        error_pattern: "failed|FAILED"
+        timeout_seconds: 300
+        error_message: "Tests are failing"
+
+    - id: "D8.2"
+      name: "Test coverage ≥80%"
+      required: true
+      points: 3
+      validation_type: "command"
+      config:
+        command: "pytest tests/agents/test_{agent_name}_ai.py --cov=greenlang.agents.{agent_name}_ai --cov-report=term | grep 'TOTAL'"
+        success_pattern: "8[0-9]%|9[0-9]%|100%"
+        error_pattern: "[0-7][0-9]%"
+        timeout_seconds: 300
+        error_message: "Coverage below 80%"
+
+    - id: "D8.3"
+      name: "No critical or high security issues"
+      required: true
+      points: 2
+      validation_type: "command"
+      config:
+        command: "grep -rn 'TODO.*SECURITY|FIXME.*SECURITY|XXX.*SECURITY' greenlang/agents/{agent_name}_ai.py || echo 'CLEAN'"
+        success_pattern: "CLEAN"
+        error_pattern: "TODO.*SECURITY|FIXME.*SECURITY"
+        timeout_seconds: 10
+        error_message: "Security issues marked in code"
+
+    - id: "D8.4"
+      name: "Specification validation passes"
+      required: true
+      points: 2
+      validation_type: "command"
+      config:
+        command: "python scripts/validate_agent_specs.py {spec_path}"
+        success_pattern: "0 ERRORS|VALIDATION PASSED"
+        error_pattern: "ERROR"
+        timeout_seconds: 30
+        error_message: "Specification validation failed"
+
+# ============================================================================
+# D9: INTEGRATION & COORDINATION (5 points)
+# ============================================================================
+d9_integration:
+  weight: 5
+  max_score: 5
+
+  criteria:
+    - id: "D9.1"
+      name: "Dependencies declared in spec"
+      required: true
+      points: 2
+      validation_type: "yaml_value"
+      config:
+        yaml_path: "description.dependencies"
+        min_count: 0
+        allow_empty: true
+        error_message: "Dependencies section missing"
+
+    - id: "D9.2"
+      name: "BaseAgent inheritance present"
+      required: true
+      points: 2
+      validation_type: "code_pattern"
+      config:
+        file_path: "greenlang/agents/{agent_name}_ai.py"
+        pattern: "class.*\\(BaseAgent\\)"
+        min_count: 1
+        error_message: "Agent must inherit from BaseAgent"
+
+    - id: "D9.3"
+      name: "AgentResult return type used"
+      required: true
+      points: 1
+      validation_type: "code_pattern"
+      config:
+        file_path: "greenlang/agents/{agent_name}_ai.py"
+        pattern: "-> AgentResult:|return AgentResult\\("
+        min_count: 1
+        error_message: "Must use AgentResult return type"
+
+# ============================================================================
+# D10: BUSINESS IMPACT & METRICS (5 points)
+# ============================================================================
+d10_business_impact:
+  weight: 5
+  max_score: 5
+
+  criteria:
+    - id: "D10.1"
+      name: "Strategic context documented"
+      required: true
+      points: 2
+      validation_type: "yaml_sections"
+      config:
+        required_sections:
+          - "description.strategic_context"
+        pass_threshold: "1/1"
+        error_message: "Strategic context missing"
+
+    - id: "D10.2"
+      name: "Business impact section present"
+      required: false
+      points: 2
+      validation_type: "yaml_sections"
+      config:
+        required_sections:
+          - "business_impact"
+        pass_threshold: "1/1"
+        error_message: "Business impact section missing"
+
+    - id: "D10.3"
+      name: "Performance requirements defined"
+      required: true
+      points: 1
+      validation_type: "yaml_sections"
+      config:
+        required_sections:
+          - "testing.performance_requirements"
+        pass_threshold: "1/1"
+        error_message: "Performance requirements missing"
+
+# ============================================================================
+# D11: OPERATIONAL EXCELLENCE (5 points)
+# ============================================================================
+d11_operations:
+  weight: 5
+  max_score: 5
+
+  criteria:
+    - id: "D11.1"
+      name: "Logging implementation present"
+      required: true
+      points: 2
+      validation_type: "code_pattern"
+      config:
+        file_path: "greenlang/agents/{agent_name}_ai.py"
+        pattern: "logger\\.|logging\\."
+        min_count: 3
+        error_message: "Insufficient logging (need 3+ log statements)"
+
+    - id: "D11.2"
+      name: "Error handling implemented"
+      required: true
+      points: 2
+      validation_type: "code_pattern"
+      config:
+        file_path: "greenlang/agents/{agent_name}_ai.py"
+        pattern: "try:|except.*:"
+        min_count: 2
+        error_message: "Insufficient error handling (need 2+ try-except blocks)"
+
+    - id: "D11.3"
+      name: "Performance tracking present"
+      required: false
+      points: 1
+      validation_type: "code_pattern"
+      config:
+        file_path: "greenlang/agents/{agent_name}_ai.py"
+        pattern: "_ai_call_count|_tool_call_count|_total_cost_usd|metadata\\[.*cost"
+        min_count: 1
+        error_message: "Performance tracking not implemented"
+
+# ============================================================================
+# D12: CONTINUOUS IMPROVEMENT (5 points)
+# ============================================================================
+d12_improvement:
+  weight: 5
+  max_score: 5
+
+  criteria:
+    - id: "D12.1"
+      name: "Version control in spec"
+      required: true
+      points: 2
+      validation_type: "yaml_sections"
+      config:
+        required_sections:
+          - "metadata.version"
+          - "metadata.created_date"
+          - "metadata.last_modified"
+        pass_threshold: "3/3"
+        error_message: "Version control metadata missing"
+
+    - id: "D12.2"
+      name: "Change log present"
+      required: true
+      points: 2
+      validation_type: "yaml_value"
+      config:
+        yaml_path: "metadata.change_log"
+        min_count: 1
+        error_message: "Change log missing (need 1+ entry)"
+
+    - id: "D12.3"
+      name: "Review status documented"
+      required: true
+      points: 1
+      validation_type: "yaml_value"
+      config:
+        yaml_path: "metadata.review_status"
+        allowed_values: ["Approved", "In Review", "Draft"]
+        error_message: "Review status missing or invalid"
+
+# ============================================================================
+# AUTOMATED VALIDATION CONFIGURATION
+# ============================================================================
+automated_checks:
+  - check_id: "spec_validation"
+    name: "Specification Validation"
+    command: "python scripts/validate_agent_specs.py {spec_path}"
+    timeout_seconds: 30
+
+  - check_id: "test_coverage"
+    name: "Test Coverage Analysis"
+    command: "pytest tests/agents/test_{agent_name}_ai.py --cov=greenlang.agents.{agent_name}_ai --cov-report=term --cov-report=html"
+    timeout_seconds: 300
+
+  - check_id: "type_checking"
+    name: "Type Checking (mypy)"
+    command: "mypy greenlang/agents/{agent_name}_ai.py"
+    timeout_seconds: 60
+
+  - check_id: "linting"
+    name: "Code Linting (ruff)"
+    command: "ruff check greenlang/agents/{agent_name}_ai.py"
+    timeout_seconds: 30
+
+  - check_id: "secret_scanning"
+    name: "Secret Detection"
+    command: "grep -rn 'sk-|api_key|password|secret|token' greenlang/agents/{agent_name}_ai.py || echo 'CLEAN'"
+    timeout_seconds: 10
+
+  - check_id: "test_execution"
+    name: "Test Execution"
+    command: "pytest tests/agents/test_{agent_name}_ai.py -v"
+    timeout_seconds: 300
+
+# ============================================================================
+# MANUAL REVIEW REQUIREMENTS
+# ============================================================================
+manual_review:
+  - dimension: "D5"
+    aspect: "Documentation Quality"
+    reviewer_role: "Technical Writer"
+    review_checklist:
+      - "Documentation is clear and comprehensive"
+      - "Examples are accurate and helpful"
+      - "API documentation is complete"
+      - "User guide covers common use cases"
+
+  - dimension: "D10"
+    aspect: "Business Impact Validation"
+    reviewer_role: "Product Manager"
+    review_checklist:
+      - "Market opportunity is realistic"
+      - "Carbon impact calculations are sound"
+      - "Economic value is quantified"
+      - "Target customers are well-defined"
+
+  - dimension: "D8"
+    aspect: "Production Readiness Review"
+    reviewer_role: "SRE Team"
+    review_checklist:
+      - "Monitoring and alerting configured"
+      - "Resource requirements are appropriate"
+      - "Scalability considerations addressed"
+      - "Failure modes identified and handled"
+
+  - dimension: "D6"
+    aspect: "Security & Compliance Review"
+    reviewer_role: "Security Team"
+    review_checklist:
+      - "No security vulnerabilities detected"
+      - "Secrets management is proper"
+      - "SBOM is complete and accurate"
+      - "Compliance standards are met"
+
+# ============================================================================
+# REPORT CONFIGURATION
+# ============================================================================
+report_config:
+  output_formats:
+    - "markdown"
+    - "html"
+    - "json"
+    - "yaml"
+
+  include_sections:
+    - "executive_summary"
+    - "dimension_breakdown"
+    - "blockers_to_production"
+    - "recommended_actions"
+    - "timeline_estimate"
+    - "detailed_results"
+
+  severity_levels:
+    blocker: "Required criterion failed - blocks production"
+    critical: "Important criterion failed - should fix before production"
+    warning: "Optional criterion failed - nice to have"
+    info: "Informational item"
+
+  templates:
+    markdown_template: "templates/exit_bar_report.md.j2"
+    html_template: "templates/exit_bar_report.html.j2"
+
+# ============================================================================
+# PRODUCTION DEPLOYMENT GATES
+# ============================================================================
+deployment_gates:
+  minimum_score: 95
+
+  required_dimensions:
+    - "D1"  # Specification
+    - "D2"  # Implementation
+    - "D3"  # Test Coverage
+    - "D4"  # Deterministic AI
+    - "D6"  # Compliance
+    - "D8"  # Exit Bar
+
+  blocker_criteria:
+    - "All required criteria must pass"
+    - "Test coverage must be ≥80%"
+    - "Zero security issues"
+    - "All tests passing"
+    - "Specification validation passing"
+
+  approval_required:
+    - role: "Engineering Lead"
+      dimensions: ["D2", "D3", "D4"]
+    - role: "Security Lead"
+      dimensions: ["D6"]
+    - role: "Product Lead"
+      dimensions: ["D10"]
+    - role: "SRE Lead"
+      dimensions: ["D7", "D11"]
+
+# ============================================================================
+# THRESHOLDS AND SCORING
+# ============================================================================
+score_thresholds:
+  production_ready: 95      # ≥95% = Production ready
+  pre_production: 80        # 80-94% = Pre-production
+  development: 60           # 60-79% = Development
+  early_development: 40     # 40-59% = Early development
+  spec_only: 20             # 20-39% = Specification only
+  not_started: 0            # 0-19% = Not started
+
+status_mapping:
+  100: "PRODUCTION - Fully developed, all dimensions passed"
+  95: "PRODUCTION READY - Minor polish needed"
+  80: "PRE-PRODUCTION - Testing and refinement phase"
+  60: "DEVELOPMENT - Major features complete, gaps remain"
+  40: "EARLY DEVELOPMENT - Basic implementation started"
+  20: "SPECIFICATION ONLY - Planning phase"
+  0: "NOT STARTED - No work completed"
+
+# ============================================================================
+# END OF EXIT BAR CHECKLIST CONFIGURATION
+# ============================================================================

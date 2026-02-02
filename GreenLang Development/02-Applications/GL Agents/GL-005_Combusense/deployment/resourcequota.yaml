@@ -1,0 +1,108 @@
+# GL-005 CombustionControlAgent - ResourceQuota
+# Limits resource consumption at namespace level
+# Prevents resource exhaustion and ensures fair sharing
+
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: gl-005-resource-quota
+  namespace: greenlang
+  labels:
+    app: gl-005-combustion-control
+    agent: "GL-005"
+  annotations:
+    description: "Resource quota for greenlang namespace (includes GL-005)"
+
+spec:
+  hard:
+    # Compute resources
+    requests.cpu: "32"       # Total CPU requests across all pods
+    requests.memory: "64Gi"  # Total memory requests across all pods
+    limits.cpu: "64"         # Total CPU limits across all pods
+    limits.memory: "128Gi"   # Total memory limits across all pods
+
+    # Storage resources
+    requests.storage: "100Gi"              # Total storage requests
+    persistentvolumeclaims: "10"           # Max PVCs
+
+    # Object counts
+    pods: "50"                             # Max pods in namespace
+    services: "20"                         # Max services
+    configmaps: "30"                       # Max configmaps
+    secrets: "30"                          # Max secrets
+    replicationcontrollers: "20"           # Max RCs
+    resourcequotas: "2"                    # Max resource quotas
+
+    # Load balancers
+    services.loadbalancers: "5"            # Max LoadBalancer services
+    services.nodeports: "10"               # Max NodePort services
+
+---
+# ResourceQuota specifically for GL-005 (if isolated namespace)
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: gl-005-specific-quota
+  namespace: greenlang
+  labels:
+    app: gl-005-combustion-control
+    agent: "GL-005"
+  annotations:
+    description: "Resource quota specifically for GL-005 workloads"
+
+spec:
+  hard:
+    # GL-005 specific limits (15 pods max × 2 CPU × 2 Gi memory)
+    requests.cpu: "20"       # 15 pods × 1 CPU + overhead
+    requests.memory: "20Gi"  # 15 pods × 1 Gi + overhead
+    limits.cpu: "40"         # 15 pods × 2 CPU + overhead
+    limits.memory: "40Gi"    # 15 pods × 2 Gi + overhead
+
+  # Scope: Apply only to GL-005 pods
+  scopeSelector:
+    matchExpressions:
+      - operator: In
+        scopeName: PriorityClass
+        values: ["high-priority", "default"]
+
+---
+# LimitRange is defined in limitrange.yaml
+# ResourceQuota works at namespace level, LimitRange at pod/container level
+
+---
+# Notes on ResourceQuota for real-time control:
+#
+# 1. **Why these limits?**
+#    - 32 CPU / 64Gi memory: Supports 15 GL-005 pods + other services
+#    - 50 pods: Allows for GL-005, databases, monitoring, etc.
+#    - 100Gi storage: Logs, data, backups
+#
+# 2. **ResourceQuota vs LimitRange:**
+#    - ResourceQuota: Namespace-level limits (total resources)
+#    - LimitRange: Pod/container-level defaults and limits
+#    - Use both for complete resource governance
+#
+# 3. **Monitoring quota usage:**
+#    kubectl get resourcequota -n greenlang
+#    kubectl describe resourcequota gl-005-resource-quota -n greenlang
+#
+# 4. **Quota exceeded errors:**
+#    # If deployment fails with "exceeded quota", check:
+#    kubectl describe resourcequota -n greenlang
+#    # Adjust quota or reduce resource requests
+#
+# 5. **Best practices:**
+#    - Set quota higher than expected peak usage
+#    - Monitor usage trends over time
+#    - Alert when usage exceeds 80% of quota
+#    - Review and adjust quarterly based on actual usage
+#
+# 6. **Multi-tenancy considerations:**
+#    - If sharing namespace, use separate quotas per application
+#    - Use scopeSelector to apply quota only to specific workloads
+#    - Consider dedicated namespace for critical control systems
+#
+# 7. **Quota for different environments:**
+#    - Dev: Lower limits (save costs)
+#    - Staging: 50% of production
+#    - Production: Full limits as defined above

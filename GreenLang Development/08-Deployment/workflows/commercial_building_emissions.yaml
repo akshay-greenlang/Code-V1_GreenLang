@@ -1,0 +1,143 @@
+name: commercial_building_emissions
+description: Complete carbon audit for commercial buildings with benchmarking and recommendations
+version: 0.0.1
+author: GreenLang Framework
+tags:
+  - commercial
+  - building
+  - emissions
+  - global
+
+parameters:
+  region:
+    type: string
+    default: US
+    description: Country/region code (US, IN, EU, CN, JP, BR, KR)
+  report_format:
+    type: string
+    default: markdown
+    description: Output format (text, markdown, json)
+
+steps:
+  - name: validate_input
+    agent_id: validator
+    description: Validate building and energy data
+    on_failure: stop
+    input_mapping:
+      data: input
+
+  - name: analyze_building_profile
+    agent_id: building_profile
+    description: Analyze building characteristics and expected performance
+    input_mapping:
+      building_type: input.metadata.building_type
+      area: input.metadata.area
+      area_unit: input.metadata.area_unit
+      occupancy: input.metadata.occupancy
+      floor_count: input.metadata.floor_count
+      building_age: input.metadata.building_age
+      climate_zone: input.metadata.climate_zone
+      country: input.metadata.location.country
+
+  - name: calculate_electricity_emissions
+    agent_id: grid_factor
+    description: Get electricity emission factor
+    condition: input.energy_consumption.electricity
+    input_mapping:
+      country: input.metadata.location.country
+      fuel_type: "'electricity'"
+      unit: input.energy_consumption.electricity.unit
+    parallel: true
+
+  - name: calculate_gas_emissions
+    agent_id: grid_factor
+    description: Get natural gas emission factor
+    condition: input.energy_consumption.natural_gas
+    input_mapping:
+      country: input.metadata.location.country
+      fuel_type: "'natural_gas'"
+      unit: input.energy_consumption.natural_gas.unit
+    parallel: true
+
+  - name: calculate_diesel_emissions
+    agent_id: grid_factor
+    description: Get diesel emission factor
+    condition: input.energy_consumption.diesel
+    input_mapping:
+      country: input.metadata.location.country
+      fuel_type: "'diesel'"
+      unit: input.energy_consumption.diesel.unit
+    parallel: true
+
+  - name: aggregate_all_emissions
+    agent_id: carbon
+    description: Aggregate emissions from all sources
+    dependencies:
+      - calculate_electricity_emissions
+      - calculate_gas_emissions
+      - calculate_diesel_emissions
+    input_mapping:
+      emissions: results.emissions_list
+
+  - name: calculate_intensity_metrics
+    agent_id: intensity
+    description: Calculate emission intensity metrics
+    input_mapping:
+      total_emissions_kg: results.aggregate_all_emissions.data.total_co2e_kg
+      area: input.metadata.area
+      area_unit: input.metadata.area_unit
+      occupancy: input.metadata.occupancy
+      floor_count: input.metadata.floor_count
+      period_months: 12
+      building_type: input.metadata.building_type
+      country: input.metadata.location.country
+
+  - name: benchmark_performance
+    agent_id: benchmark
+    description: Compare against regional benchmarks
+    input_mapping:
+      total_emissions_kg: results.aggregate_all_emissions.data.total_co2e_kg
+      building_area: input.metadata.area
+      building_type: input.metadata.building_type
+      period_months: 12
+
+  - name: generate_recommendations
+    agent_id: recommendation
+    description: Generate optimization recommendations
+    input_mapping:
+      emissions_by_source: results.aggregate_all_emissions.data.emissions_by_source
+      intensity: results.calculate_intensity_metrics.data.intensities
+      building_type: input.metadata.building_type
+      building_age: input.metadata.building_age
+      performance_rating: results.calculate_intensity_metrics.data.performance_rating
+      load_breakdown: results.analyze_building_profile.data.load_breakdown
+      country: input.metadata.location.country
+
+  - name: generate_final_report
+    agent_id: report
+    description: Generate comprehensive report
+    input_mapping:
+      carbon_data: results.aggregate_all_emissions.data
+      intensity_data: results.calculate_intensity_metrics.data
+      benchmark_data: results.benchmark_performance.data
+      recommendations: results.generate_recommendations.data
+      building_info: results.analyze_building_profile.data
+      format: parameters.report_format
+
+output_mapping:
+  total_emissions_tons: results.aggregate_all_emissions.data.total_co2e_tons
+  total_emissions_kg: results.aggregate_all_emissions.data.total_co2e_kg
+  intensity_per_sqft: results.calculate_intensity_metrics.data.intensities.per_sqft_year
+  performance_rating: results.calculate_intensity_metrics.data.performance_rating
+  benchmark_rating: results.benchmark_performance.data.rating
+  top_recommendations: results.generate_recommendations.data.quick_wins
+  report: results.generate_final_report.data.report
+
+hooks:
+  on_start:
+    - log: "Starting commercial building emissions analysis for {input.metadata.location.country}"
+  on_complete:
+    - log: "Analysis complete. Rating: {results.benchmark_performance.data.rating}"
+  on_error:
+    - log: "Error in workflow: {error}"
+    - notify: admin@greenlang.com

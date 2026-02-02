@@ -1,0 +1,23 @@
+# Invalid Payload - Contains Violation
+# Error Code: GLSCHEMA-E208 (CONTAINS_VIOLATION)
+# Schema: basic/array_constraints.yaml
+
+_test_metadata:
+  schema: "basic/array_constraints.yaml"
+  description: "Contains violation - priorities must contain at least one 1"
+  expected_valid: false
+  expected_errors:
+    - code: "GLSCHEMA-E208"
+      path: "/priorities"
+      severity: "error"
+
+tags:
+  - "energy"
+
+measurements:
+  - 100
+
+priorities:
+  - 2
+  - 3
+  - 4  # Missing required value 1

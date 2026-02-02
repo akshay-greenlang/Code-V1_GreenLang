@@ -1,0 +1,1065 @@
+{
+  "dashboard": {
+    "title": "GL-016 WATERGUARD - Water Chemistry Trends",
+    "uid": "waterguard-chemistry",
+    "timezone": "browser",
+    "schemaVersion": 38,
+    "version": 1,
+    "refresh": "1m",
+    "editable": true,
+    "tags": ["waterguard", "gl-016", "water-chemistry", "trends"],
+    "templating": {
+      "list": [
+        {
+          "name": "datasource",
+          "type": "datasource",
+          "query": "prometheus",
+          "current": {
+            "text": "Prometheus",
+            "value": "Prometheus"
+          }
+        },
+        {
+          "name": "boiler_id",
+          "type": "query",
+          "datasource": "${datasource}",
+          "query": "label_values(water_treatment_ph_value, boiler_id)",
+          "multi": false,
+          "includeAll": false,
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "refresh": 1,
+          "sort": 1
+        },
+        {
+          "name": "facility",
+          "type": "query",
+          "datasource": "${datasource}",
+          "query": "label_values(water_treatment_ph_value{boiler_id=\"$boiler_id\"}, facility)",
+          "multi": false,
+          "includeAll": false,
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "refresh": 1,
+          "sort": 1
+        }
+      ]
+    },
+    "time": {
+      "from": "now-24h",
+      "to": "now"
+    },
+    "timepicker": {
+      "refresh_intervals": ["30s", "1m", "5m", "15m", "30m", "1h", "2h"]
+    },
+    "panels": [
+      {
+        "id": 1,
+        "type": "row",
+        "title": "pH Monitoring",
+        "gridPos": {
+          "h": 1,
+          "w": 24,
+          "x": 0,
+          "y": 0
+        },
+        "collapsed": false
+      },
+      {
+        "id": 2,
+        "type": "timeseries",
+        "title": "pH Trending with Control Limits",
+        "datasource": "${datasource}",
+        "gridPos": {
+          "h": 10,
+          "w": 18,
+          "x": 0,
+          "y": 1
+        },
+        "targets": [
+          {
+            "expr": "water_treatment_ph_value{boiler_id=\"$boiler_id\", facility=\"$facility\"}",
+            "legendFormat": "pH Actual",
+            "refId": "A"
+          },
+          {
+            "expr": "water_treatment_ph_setpoint{boiler_id=\"$boiler_id\", facility=\"$facility\"}",
+            "legendFormat": "pH Setpoint",
+            "refId": "B"
+          },
+          {
+            "expr": "water_treatment_ph_upper_limit{boiler_id=\"$boiler_id\", facility=\"$facility\"}",
+            "legendFormat": "pH Upper Limit",
+            "refId": "C"
+          },
+          {
+            "expr": "water_treatment_ph_lower_limit{boiler_id=\"$boiler_id\", facility=\"$facility\"}",
+            "legendFormat": "pH Lower Limit",
+            "refId": "D"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
+              "axisLabel": "pH",
+              "axisPlacement": "auto",
+              "fillOpacity": 10,
+              "gradientMode": "none",
+              "lineInterpolation": "smooth",
+              "lineWidth": 2,
+              "pointSize": 5,
+              "showPoints": "never",
+              "spanNulls": 300000
+            },
+            "unit": "none",
+            "min": 9,
+            "max": 12.5
+          },
+          "overrides": [
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "pH Upper Limit"
+              },
+              "properties": [
+                {
+                  "id": "color",
+                  "value": {
+                    "fixedColor": "red",
+                    "mode": "fixed"
+                  }
+                },
+                {
+                  "id": "custom.lineStyle",
+                  "value": {
+                    "dash": [10, 10],
+                    "fill": "dash"
+                  }
+                },
+                {
+                  "id": "custom.lineWidth",
+                  "value": 1
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "pH Lower Limit"
+              },
+              "properties": [
+                {
+                  "id": "color",
+                  "value": {
+                    "fixedColor": "red",
+                    "mode": "fixed"
+                  }
+                },
+                {
+                  "id": "custom.lineStyle",
+                  "value": {
+                    "dash": [10, 10],
+                    "fill": "dash"
+                  }
+                },
+                {
+                  "id": "custom.lineWidth",
+                  "value": 1
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "pH Setpoint"
+              },
+              "properties": [
+                {
+                  "id": "color",
+                  "value": {
+                    "fixedColor": "blue",
+                    "mode": "fixed"
+                  }
+                },
+                {
+                  "id": "custom.lineStyle",
+                  "value": {
+                    "dash": [5, 5],
+                    "fill": "dash"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "options": {
+          "legend": {
+            "displayMode": "list",
+            "placement": "bottom"
+          },
+          "tooltip": {
+            "mode": "multi"
+          }
+        }
+      },
+      {
+        "id": 3,
+        "type": "stat",
+        "title": "Current pH",
+        "datasource": "${datasource}",
+        "gridPos": {
+          "h": 5,
+          "w": 6,
+          "x": 18,
+          "y": 1
+        },
+        "targets": [
+          {
+            "expr": "water_treatment_ph_value{boiler_id=\"$boiler_id\", facility=\"$facility\"}",
+            "legendFormat": "pH",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "decimals": 2,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "red",
+                  "value": null
+                },
+                {
+                  "color": "yellow",
+                  "value": 10.5
+                },
+                {
+                  "color": "green",
+                  "value": 11
+                },
+                {
+                  "color": "yellow",
+                  "value": 11.8
+                },
+                {
+                  "color": "red",
+                  "value": 12
+                }
+              ]
+            }
+          }
+        },
+        "options": {
+          "colorMode": "background",
+          "graphMode": "area",
+          "textMode": "value_and_name"
+        }
+      },
+      {
+        "id": 4,
+        "type": "gauge",
+        "title": "pH Gauge",
+        "datasource": "${datasource}",
+        "gridPos": {
+          "h": 5,
+          "w": 6,
+          "x": 18,
+          "y": 6
+        },
+        "targets": [
+          {
+            "expr": "water_treatment_ph_value{boiler_id=\"$boiler_id\", facility=\"$facility\"}",
+            "legendFormat": "pH",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "min": 8,
+            "max": 13,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "red",
+                  "value": null
+                },
+                {
+                  "color": "yellow",
+                  "value": 10.5
+                },
+                {
+                  "color": "green",
+                  "value": 11
+                },
+                {
+                  "color": "yellow",
+                  "value": 11.8
+                },
+                {
+                  "color": "red",
+                  "value": 12
+                }
+              ]
+            }
+          }
+        },
+        "options": {
+          "showThresholdLabels": true,
+          "showThresholdMarkers": true
+        }
+      },
+      {
+        "id": 5,
+        "type": "row",
+        "title": "Conductivity & TDS",
+        "gridPos": {
+          "h": 1,
+          "w": 24,
+          "x": 0,
+          "y": 11
+        },
+        "collapsed": false
+      },
+      {
+        "id": 6,
+        "type": "timeseries",
+        "title": "Conductivity Trending",
+        "datasource": "${datasource}",
+        "gridPos": {
+          "h": 9,
+          "w": 12,
+          "x": 0,
+          "y": 12
+        },
+        "targets": [
+          {
+            "expr": "water_treatment_conductivity_microsiemens{boiler_id=\"$boiler_id\", facility=\"$facility\"}",
+            "legendFormat": "Conductivity",
+            "refId": "A"
+          },
+          {
+            "expr": "water_treatment_conductivity_setpoint{boiler_id=\"$boiler_id\", facility=\"$facility\"}",
+            "legendFormat": "Setpoint",
+            "refId": "B"
+          },
+          {
+            "expr": "water_treatment_conductivity_alarm_limit{boiler_id=\"$boiler_id\", facility=\"$facility\"}",
+            "legendFormat": "Alarm Limit",
+            "refId": "C"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisLabel": "µS/cm",
+              "fillOpacity": 10,
+              "lineInterpolation": "smooth",
+              "lineWidth": 2
+            },
+            "unit": "µS/cm",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "yellow",
+                  "value": 2500
+                },
+                {
+                  "color": "red",
+                  "value": 3000
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 7,
+        "type": "timeseries",
+        "title": "Total Dissolved Solids",
+        "datasource": "${datasource}",
+        "gridPos": {
+          "h": 9,
+          "w": 12,
+          "x": 12,
+          "y": 12
+        },
+        "targets": [
+          {
+            "expr": "water_treatment_tds_ppm{boiler_id=\"$boiler_id\", facility=\"$facility\"}",
+            "legendFormat": "TDS",
+            "refId": "A"
+          },
+          {
+            "expr": "water_treatment_tds_limit{boiler_id=\"$boiler_id\", facility=\"$facility\"}",
+            "legendFormat": "TDS Limit",
+            "refId": "B"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisLabel": "ppm",
+              "fillOpacity": 10,
+              "lineInterpolation": "smooth",
+              "lineWidth": 2
+            },
+            "unit": "ppm",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "yellow",
+                  "value": 1500
+                },
+                {
+                  "color": "red",
+                  "value": 2000
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 8,
+        "type": "row",
+        "title": "Silica & Phosphate",
+        "gridPos": {
+          "h": 1,
+          "w": 24,
+          "x": 0,
+          "y": 21
+        },
+        "collapsed": false
+      },
+      {
+        "id": 9,
+        "type": "timeseries",
+        "title": "Silica Concentration",
+        "datasource": "${datasource}",
+        "gridPos": {
+          "h": 9,
+          "w": 12,
+          "x": 0,
+          "y": 22
+        },
+        "targets": [
+          {
+            "expr": "water_treatment_silica_ppm{boiler_id=\"$boiler_id\", facility=\"$facility\"}",
+            "legendFormat": "Silica",
+            "refId": "A"
+          },
+          {
+            "expr": "water_treatment_silica_limit{boiler_id=\"$boiler_id\", facility=\"$facility\"}",
+            "legendFormat": "Silica Limit",
+            "refId": "B"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisLabel": "ppm SiO₂",
+              "fillOpacity": 10,
+              "lineInterpolation": "smooth",
+              "lineWidth": 2
+            },
+            "unit": "ppm",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "yellow",
+                  "value": 120
+                },
+                {
+                  "color": "red",
+                  "value": 150
+                }
+              ]
+            }
+          }
+        },
+        "options": {
+          "legend": {
+            "displayMode": "list",
+            "placement": "bottom"
+          }
+        }
+      },
+      {
+        "id": 10,
+        "type": "timeseries",
+        "title": "Phosphate Residual",
+        "datasource": "${datasource}",
+        "gridPos": {
+          "h": 9,
+          "w": 12,
+          "x": 12,
+          "y": 22
+        },
+        "targets": [
+          {
+            "expr": "water_treatment_phosphate_residual_ppm{boiler_id=\"$boiler_id\", facility=\"$facility\"}",
+            "legendFormat": "Phosphate Residual",
+            "refId": "A"
+          },
+          {
+            "expr": "water_treatment_phosphate_target_min{boiler_id=\"$boiler_id\", facility=\"$facility\"}",
+            "legendFormat": "Target Min",
+            "refId": "B"
+          },
+          {
+            "expr": "water_treatment_phosphate_target_max{boiler_id=\"$boiler_id\", facility=\"$facility\"}",
+            "legendFormat": "Target Max",
+            "refId": "C"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisLabel": "ppm PO₄",
+              "fillOpacity": 10,
+              "lineInterpolation": "smooth",
+              "lineWidth": 2
+            },
+            "unit": "ppm",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "red",
+                  "value": null
+                },
+                {
+                  "color": "yellow",
+                  "value": 15
+                },
+                {
+                  "color": "green",
+                  "value": 20
+                },
+                {
+                  "color": "yellow",
+                  "value": 35
+                },
+                {
+                  "color": "red",
+                  "value": 40
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 11,
+        "type": "row",
+        "title": "Dissolved Oxygen & Oxygen Scavenger",
+        "gridPos": {
+          "h": 1,
+          "w": 24,
+          "x": 0,
+          "y": 31
+        },
+        "collapsed": false
+      },
+      {
+        "id": 12,
+        "type": "timeseries",
+        "title": "Dissolved Oxygen",
+        "datasource": "${datasource}",
+        "gridPos": {
+          "h": 9,
+          "w": 12,
+          "x": 0,
+          "y": 32
+        },
+        "targets": [
+          {
+            "expr": "water_treatment_dissolved_oxygen_ppb{boiler_id=\"$boiler_id\", facility=\"$facility\"}",
+            "legendFormat": "DO Level",
+            "refId": "A"
+          },
+          {
+            "expr": "water_treatment_dissolved_oxygen_limit{boiler_id=\"$boiler_id\", facility=\"$facility\"}",
+            "legendFormat": "DO Limit",
+            "refId": "B"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisLabel": "ppb O₂",
+              "fillOpacity": 10,
+              "lineInterpolation": "smooth",
+              "lineWidth": 2
+            },
+            "unit": "ppb",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "yellow",
+                  "value": 5
+                },
+                {
+                  "color": "red",
+                  "value": 7
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 13,
+        "type": "timeseries",
+        "title": "Sulfite Residual (O₂ Scavenger)",
+        "datasource": "${datasource}",
+        "gridPos": {
+          "h": 9,
+          "w": 12,
+          "x": 12,
+          "y": 32
+        },
+        "targets": [
+          {
+            "expr": "water_treatment_sulfite_residual_ppm{boiler_id=\"$boiler_id\", facility=\"$facility\"}",
+            "legendFormat": "Sulfite Residual",
+            "refId": "A"
+          },
+          {
+            "expr": "water_treatment_sulfite_target_min{boiler_id=\"$boiler_id\", facility=\"$facility\"}",
+            "legendFormat": "Target Min",
+            "refId": "B"
+          },
+          {
+            "expr": "water_treatment_sulfite_target_max{boiler_id=\"$boiler_id\", facility=\"$facility\"}",
+            "legendFormat": "Target Max",
+            "refId": "C"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisLabel": "ppm SO₃",
+              "fillOpacity": 10,
+              "lineInterpolation": "smooth",
+              "lineWidth": 2
+            },
+            "unit": "ppm",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "red",
+                  "value": null
+                },
+                {
+                  "color": "yellow",
+                  "value": 15
+                },
+                {
+                  "color": "green",
+                  "value": 20
+                },
+                {
+                  "color": "yellow",
+                  "value": 35
+                },
+                {
+                  "color": "red",
+                  "value": 40
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 14,
+        "type": "row",
+        "title": "Hardness & Alkalinity",
+        "gridPos": {
+          "h": 1,
+          "w": 24,
+          "x": 0,
+          "y": 41
+        },
+        "collapsed": false
+      },
+      {
+        "id": 15,
+        "type": "timeseries",
+        "title": "Total Hardness",
+        "datasource": "${datasource}",
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 42
+        },
+        "targets": [
+          {
+            "expr": "water_treatment_total_hardness_ppm{boiler_id=\"$boiler_id\", facility=\"$facility\"}",
+            "legendFormat": "Total Hardness",
+            "refId": "A"
+          },
+          {
+            "expr": "water_treatment_hardness_limit{boiler_id=\"$boiler_id\", facility=\"$facility\"}",
+            "legendFormat": "Hardness Limit",
+            "refId": "B"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisLabel": "ppm CaCO₃",
+              "fillOpacity": 10,
+              "lineInterpolation": "smooth",
+              "lineWidth": 2
+            },
+            "unit": "ppm"
+          }
+        }
+      },
+      {
+        "id": 16,
+        "type": "timeseries",
+        "title": "Total Alkalinity",
+        "datasource": "${datasource}",
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 42
+        },
+        "targets": [
+          {
+            "expr": "water_treatment_total_alkalinity_ppm{boiler_id=\"$boiler_id\", facility=\"$facility\"}",
+            "legendFormat": "Total Alkalinity",
+            "refId": "A"
+          },
+          {
+            "expr": "water_treatment_alkalinity_target{boiler_id=\"$boiler_id\", facility=\"$facility\"}",
+            "legendFormat": "Alkalinity Target",
+            "refId": "B"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisLabel": "ppm CaCO₃",
+              "fillOpacity": 10,
+              "lineInterpolation": "smooth",
+              "lineWidth": 2
+            },
+            "unit": "ppm"
+          }
+        }
+      },
+      {
+        "id": 17,
+        "type": "row",
+        "title": "Chloride & Sulfate",
+        "gridPos": {
+          "h": 1,
+          "w": 24,
+          "x": 0,
+          "y": 50
+        },
+        "collapsed": false
+      },
+      {
+        "id": 18,
+        "type": "timeseries",
+        "title": "Chloride Concentration",
+        "datasource": "${datasource}",
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 51
+        },
+        "targets": [
+          {
+            "expr": "water_treatment_chloride_ppm{boiler_id=\"$boiler_id\", facility=\"$facility\"}",
+            "legendFormat": "Chloride",
+            "refId": "A"
+          },
+          {
+            "expr": "water_treatment_chloride_limit{boiler_id=\"$boiler_id\", facility=\"$facility\"}",
+            "legendFormat": "Chloride Limit",
+            "refId": "B"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisLabel": "ppm Cl",
+              "fillOpacity": 10,
+              "lineInterpolation": "smooth",
+              "lineWidth": 2
+            },
+            "unit": "ppm",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "yellow",
+                  "value": 300
+                },
+                {
+                  "color": "red",
+                  "value": 400
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 19,
+        "type": "timeseries",
+        "title": "Sulfate Concentration",
+        "datasource": "${datasource}",
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 51
+        },
+        "targets": [
+          {
+            "expr": "water_treatment_sulfate_ppm{boiler_id=\"$boiler_id\", facility=\"$facility\"}",
+            "legendFormat": "Sulfate",
+            "refId": "A"
+          },
+          {
+            "expr": "water_treatment_sulfate_limit{boiler_id=\"$boiler_id\", facility=\"$facility\"}",
+            "legendFormat": "Sulfate Limit",
+            "refId": "B"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisLabel": "ppm SO₄",
+              "fillOpacity": 10,
+              "lineInterpolation": "smooth",
+              "lineWidth": 2
+            },
+            "unit": "ppm",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "yellow",
+                  "value": 300
+                },
+                {
+                  "color": "red",
+                  "value": 400
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 20,
+        "type": "row",
+        "title": "Metal Content (Iron & Copper)",
+        "gridPos": {
+          "h": 1,
+          "w": 24,
+          "x": 0,
+          "y": 59
+        },
+        "collapsed": false
+      },
+      {
+        "id": 21,
+        "type": "timeseries",
+        "title": "Iron Content",
+        "datasource": "${datasource}",
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 60
+        },
+        "targets": [
+          {
+            "expr": "water_treatment_iron_ppm{boiler_id=\"$boiler_id\", facility=\"$facility\"}",
+            "legendFormat": "Iron",
+            "refId": "A"
+          },
+          {
+            "expr": "water_treatment_iron_limit{boiler_id=\"$boiler_id\", facility=\"$facility\"}",
+            "legendFormat": "Iron Limit",
+            "refId": "B"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisLabel": "ppm Fe",
+              "fillOpacity": 10,
+              "lineInterpolation": "smooth",
+              "lineWidth": 2
+            },
+            "unit": "ppm",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "yellow",
+                  "value": 0.05
+                },
+                {
+                  "color": "red",
+                  "value": 0.1
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 22,
+        "type": "timeseries",
+        "title": "Copper Content",
+        "datasource": "${datasource}",
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 60
+        },
+        "targets": [
+          {
+            "expr": "water_treatment_copper_ppm{boiler_id=\"$boiler_id\", facility=\"$facility\"}",
+            "legendFormat": "Copper",
+            "refId": "A"
+          },
+          {
+            "expr": "water_treatment_copper_limit{boiler_id=\"$boiler_id\", facility=\"$facility\"}",
+            "legendFormat": "Copper Limit",
+            "refId": "B"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisLabel": "ppm Cu",
+              "fillOpacity": 10,
+              "lineInterpolation": "smooth",
+              "lineWidth": 2
+            },
+            "unit": "ppm",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "yellow",
+                  "value": 0.02
+                },
+                {
+                  "color": "red",
+                  "value": 0.05
+                }
+              ]
+            }
+          }
+        }
+      }
+    ]
+  }
+}

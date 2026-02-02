@@ -1,0 +1,81 @@
+# Enum Constraints Test Schema
+# Tests: enum, const
+# GL-FOUND-X-002 Golden Test
+
+$schema: "https://json-schema.org/draft/2020-12/schema"
+$id: "gl://schemas/test/enum_constraints@1.0.0"
+title: "Enum Constraints Test Schema"
+description: "Schema for testing enum and const validation"
+type: object
+
+required:
+  - status
+  - priority
+
+properties:
+  status:
+    type: string
+    description: "Status must be one of the allowed values"
+    enum:
+      - draft
+      - pending
+      - approved
+      - rejected
+      - archived
+
+  priority:
+    type: integer
+    description: "Priority level (1-5)"
+    enum:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+
+  region:
+    type: string
+    description: "Geographic region"
+    enum:
+      - north_america
+      - europe
+      - asia_pacific
+      - latin_america
+      - middle_east_africa
+
+  fuel_type:
+    type: string
+    description: "Fuel type for emissions calculation"
+    enum:
+      - diesel
+      - gasoline
+      - natural_gas
+      - electricity
+      - hydrogen
+      - biofuel
+
+  schema_version:
+    type: string
+    description: "Schema version must be exactly this value"
+    const: "1.0.0"
+
+  api_version:
+    type: integer
+    description: "API version constant"
+    const: 2
+
+  boolean_flag:
+    type: boolean
+    description: "Boolean enum example"
+    enum:
+      - true
+      - false
+
+  nullable_status:
+    description: "Status that can be null"
+    enum:
+      - active
+      - inactive
+      - null
+
+additionalProperties: false

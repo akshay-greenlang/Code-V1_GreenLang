@@ -1,0 +1,505 @@
+# GreenLang Production Horizontal Pod Autoscalers
+# Aggressive scaling configuration for high availability
+---
+# API Service HPA - Primary autoscaler with multiple metrics
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: greenlang-api-hpa
+  namespace: greenlang-production
+  labels:
+    app: greenlang-api
+    environment: production
+  annotations:
+    autoscaling.kubernetes.io/metrics: "cpu,memory,custom"
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: greenlang-api-blue
+  minReplicas: 5
+  maxReplicas: 50
+  metrics:
+    # CPU-based scaling
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 60
+
+    # Memory-based scaling
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 70
+
+    # Custom metric: requests per second
+    - type: Pods
+      pods:
+        metric:
+          name: http_requests_per_second
+        target:
+          type: AverageValue
+          averageValue: "1000"
+
+    # Custom metric: request latency (scale up if latency increases)
+    - type: Pods
+      pods:
+        metric:
+          name: http_request_duration_seconds_p99
+        target:
+          type: AverageValue
+          averageValue: "500m"  # 500ms target
+
+    # External metric: queue depth from Redis
+    - type: External
+      external:
+        metric:
+          name: redis_queue_length
+          selector:
+            matchLabels:
+              queue: greenlang-api-tasks
+        target:
+          type: AverageValue
+          averageValue: "100"
+
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 30
+      policies:
+        # Aggressive scale up: add 100% of current pods
+        - type: Percent
+          value: 100
+          periodSeconds: 15
+        # Or add 10 pods, whichever is higher
+        - type: Pods
+          value: 10
+          periodSeconds: 15
+      selectPolicy: Max
+
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        # Conservative scale down: remove 10% every minute
+        - type: Percent
+          value: 10
+          periodSeconds: 60
+        # Or remove max 5 pods
+        - type: Pods
+          value: 5
+          periodSeconds: 60
+      selectPolicy: Min
+
+---
+# Worker Service HPA - Queue-based scaling
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: greenlang-worker-hpa
+  namespace: greenlang-production
+  labels:
+    app: greenlang-worker
+    environment: production
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: greenlang-worker
+  minReplicas: 3
+  maxReplicas: 30
+  metrics:
+    # CPU utilization
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+
+    # Memory utilization
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 75
+
+    # Queue depth - primary scaling metric for workers
+    - type: External
+      external:
+        metric:
+          name: celery_queue_length
+          selector:
+            matchLabels:
+              queue: greenlang-default
+        target:
+          type: Value
+          value: "500"
+
+    # Active tasks metric
+    - type: Pods
+      pods:
+        metric:
+          name: celery_active_tasks
+        target:
+          type: AverageValue
+          averageValue: "10"
+
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+        - type: Percent
+          value: 50
+          periodSeconds: 30
+        - type: Pods
+          value: 5
+          periodSeconds: 30
+      selectPolicy: Max
+
+    scaleDown:
+      stabilizationWindowSeconds: 600
+      policies:
+        - type: Percent
+          value: 10
+          periodSeconds: 120
+      selectPolicy: Min
+
+---
+# ML Inference HPA - GPU and latency aware
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: greenlang-ml-inference-hpa
+  namespace: greenlang-production
+  labels:
+    app: greenlang-ml-inference
+    environment: production
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: greenlang-ml-inference
+  minReplicas: 2
+  maxReplicas: 20
+  metrics:
+    # GPU utilization (if using NVIDIA GPUs)
+    - type: Pods
+      pods:
+        metric:
+          name: DCGM_FI_DEV_GPU_UTIL
+        target:
+          type: AverageValue
+          averageValue: "70"
+
+    # GPU memory utilization
+    - type: Pods
+      pods:
+        metric:
+          name: DCGM_FI_DEV_MEM_COPY_UTIL
+        target:
+          type: AverageValue
+          averageValue: "80"
+
+    # Inference latency
+    - type: Pods
+      pods:
+        metric:
+          name: ml_inference_latency_seconds_p95
+        target:
+          type: AverageValue
+          averageValue: "200m"  # 200ms target
+
+    # Inference queue depth
+    - type: External
+      external:
+        metric:
+          name: ml_inference_queue_depth
+          selector:
+            matchLabels:
+              service: greenlang-ml-inference
+        target:
+          type: Value
+          value: "50"
+
+    # CPU fallback
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 60
+
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+        - type: Pods
+          value: 2
+          periodSeconds: 60
+        - type: Percent
+          value: 25
+          periodSeconds: 60
+      selectPolicy: Max
+
+    scaleDown:
+      stabilizationWindowSeconds: 900
+      policies:
+        - type: Pods
+          value: 1
+          periodSeconds: 300
+      selectPolicy: Min
+
+---
+# Frontend HPA - Traffic based
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: greenlang-frontend-hpa
+  namespace: greenlang-production
+  labels:
+    app: greenlang-frontend
+    environment: production
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: greenlang-frontend
+  minReplicas: 3
+  maxReplicas: 20
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 60
+
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 70
+
+    # Requests per second
+    - type: Pods
+      pods:
+        metric:
+          name: nginx_http_requests_total
+        target:
+          type: AverageValue
+          averageValue: "2000"
+
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 30
+      policies:
+        - type: Percent
+          value: 100
+          periodSeconds: 15
+      selectPolicy: Max
+
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Percent
+          value: 20
+          periodSeconds: 60
+      selectPolicy: Min
+
+---
+# Scheduler HPA - Limited scaling (single leader preferred)
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: greenlang-scheduler-hpa
+  namespace: greenlang-production
+  labels:
+    app: greenlang-scheduler
+    environment: production
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: greenlang-scheduler
+  minReplicas: 2
+  maxReplicas: 5
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 120
+      policies:
+        - type: Pods
+          value: 1
+          periodSeconds: 120
+      selectPolicy: Max
+
+    scaleDown:
+      stabilizationWindowSeconds: 600
+      policies:
+        - type: Pods
+          value: 1
+          periodSeconds: 300
+      selectPolicy: Min
+
+---
+# KEDA ScaledObject for event-driven autoscaling
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: greenlang-worker-keda
+  namespace: greenlang-production
+  labels:
+    app: greenlang-worker
+    environment: production
+spec:
+  scaleTargetRef:
+    name: greenlang-worker
+  pollingInterval: 15
+  cooldownPeriod: 300
+  minReplicaCount: 3
+  maxReplicaCount: 30
+  fallback:
+    failureThreshold: 3
+    replicas: 5
+  advanced:
+    restoreToOriginalReplicaCount: false
+    horizontalPodAutoscalerConfig:
+      name: greenlang-worker-keda-hpa
+      behavior:
+        scaleUp:
+          stabilizationWindowSeconds: 30
+          policies:
+            - type: Percent
+              value: 100
+              periodSeconds: 15
+        scaleDown:
+          stabilizationWindowSeconds: 300
+          policies:
+            - type: Percent
+              value: 10
+              periodSeconds: 60
+  triggers:
+    # Redis queue length
+    - type: redis
+      metadata:
+        address: redis-master.greenlang-production.svc.cluster.local:6379
+        listName: celery-default
+        listLength: "100"
+        activationListLength: "10"
+      authenticationRef:
+        name: redis-auth
+
+    # Prometheus metrics
+    - type: prometheus
+      metadata:
+        serverAddress: http://prometheus.monitoring.svc.cluster.local:9090
+        metricName: celery_queue_length
+        query: sum(celery_queue_length{namespace="greenlang-production"})
+        threshold: "500"
+        activationThreshold: "50"
+
+    # AWS SQS (if using)
+    - type: aws-sqs-queue
+      metadata:
+        queueURL: https://sqs.us-east-1.amazonaws.com/123456789012/greenlang-tasks
+        queueLength: "100"
+        awsRegion: us-east-1
+      authenticationRef:
+        name: aws-credentials
+
+---
+# KEDA TriggerAuthentication
+apiVersion: keda.sh/v1alpha1
+kind: TriggerAuthentication
+metadata:
+  name: redis-auth
+  namespace: greenlang-production
+spec:
+  secretTargetRef:
+    - parameter: password
+      name: redis-credentials
+      key: password
+
+---
+apiVersion: keda.sh/v1alpha1
+kind: TriggerAuthentication
+metadata:
+  name: aws-credentials
+  namespace: greenlang-production
+spec:
+  podIdentity:
+    provider: aws-eks
+
+---
+# Vertical Pod Autoscaler for recommendations
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: greenlang-api-vpa
+  namespace: greenlang-production
+  labels:
+    app: greenlang-api
+    environment: production
+spec:
+  targetRef:
+    apiVersion: "apps/v1"
+    kind: Deployment
+    name: greenlang-api-blue
+  updatePolicy:
+    updateMode: "Off"  # Recommendation only, don't auto-update
+  resourcePolicy:
+    containerPolicies:
+      - containerName: api
+        minAllowed:
+          cpu: 100m
+          memory: 256Mi
+        maxAllowed:
+          cpu: 4000m
+          memory: 8Gi
+        controlledResources: ["cpu", "memory"]
+        controlledValues: RequestsAndLimits
+
+---
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: greenlang-worker-vpa
+  namespace: greenlang-production
+  labels:
+    app: greenlang-worker
+    environment: production
+spec:
+  targetRef:
+    apiVersion: "apps/v1"
+    kind: Deployment
+    name: greenlang-worker
+  updatePolicy:
+    updateMode: "Off"
+  resourcePolicy:
+    containerPolicies:
+      - containerName: worker
+        minAllowed:
+          cpu: 200m
+          memory: 512Mi
+        maxAllowed:
+          cpu: 4000m
+          memory: 8Gi

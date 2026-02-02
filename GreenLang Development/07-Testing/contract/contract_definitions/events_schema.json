@@ -1,0 +1,171 @@
+{
+  "name": "events-schema-contract",
+  "version": "1.0.0",
+  "contract_type": "event",
+  "provider": "event_bus",
+  "consumer": "all_services",
+  "schema": {
+    "event_envelope": {
+      "type": "object",
+      "required": ["event_id", "event_type", "version", "timestamp", "source", "data"],
+      "properties": {
+        "event_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique identifier for this event"
+        },
+        "event_type": {
+          "type": "string",
+          "description": "Type of event (e.g., calculation.completed)"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$",
+          "description": "Schema version for this event type"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the event occurred"
+        },
+        "source": {
+          "type": "string",
+          "description": "Service that produced this event"
+        },
+        "correlation_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "ID to correlate related events"
+        },
+        "causation_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "ID of event that caused this event"
+        },
+        "data": {
+          "type": "object",
+          "description": "Event-specific payload"
+        },
+        "metadata": {
+          "type": "object",
+          "description": "Additional metadata"
+        }
+      }
+    },
+    "events": {
+      "calculation.completed": {
+        "description": "Emitted when a calculation completes successfully",
+        "data_schema": {
+          "type": "object",
+          "required": ["calculation_id", "result", "provenance_hash"],
+          "properties": {
+            "calculation_id": {"type": "string"},
+            "result": {
+              "type": "object",
+              "required": ["emissions_kg_co2e"],
+              "properties": {
+                "emissions_kg_co2e": {"type": "number"},
+                "emissions_tonnes_co2e": {"type": "number"},
+                "emission_factor": {"type": "number"},
+                "emission_factor_source": {"type": "string"}
+              }
+            },
+            "provenance_hash": {"type": "string", "minLength": 64, "maxLength": 64},
+            "execution_time_ms": {"type": "number"}
+          }
+        }
+      },
+      "calculation.failed": {
+        "description": "Emitted when a calculation fails",
+        "data_schema": {
+          "type": "object",
+          "required": ["calculation_id", "error", "error_code"],
+          "properties": {
+            "calculation_id": {"type": "string"},
+            "error": {"type": "string"},
+            "error_code": {"type": "string"},
+            "is_retriable": {"type": "boolean"},
+            "retry_count": {"type": "integer"}
+          }
+        }
+      },
+      "alarm.triggered": {
+        "description": "Emitted when an alarm is triggered",
+        "data_schema": {
+          "type": "object",
+          "required": ["alarm_id", "severity", "message", "source"],
+          "properties": {
+            "alarm_id": {"type": "string"},
+            "severity": {
+              "type": "string",
+              "enum": ["critical", "high", "medium", "low", "info"]
+            },
+            "message": {"type": "string"},
+            "source": {"type": "string"},
+            "value": {"type": "number"},
+            "threshold": {"type": "number"},
+            "unit": {"type": "string"},
+            "acknowledged": {"type": "boolean"}
+          }
+        }
+      },
+      "alarm.cleared": {
+        "description": "Emitted when an alarm is cleared",
+        "data_schema": {
+          "type": "object",
+          "required": ["alarm_id", "duration_seconds"],
+          "properties": {
+            "alarm_id": {"type": "string"},
+            "duration_seconds": {"type": "number"},
+            "cleared_by": {"type": "string"},
+            "resolution_notes": {"type": "string"}
+          }
+        }
+      },
+      "model.deployed": {
+        "description": "Emitted when a model is deployed",
+        "data_schema": {
+          "type": "object",
+          "required": ["model_id", "version", "deployment_type"],
+          "properties": {
+            "model_id": {"type": "string"},
+            "version": {"type": "string"},
+            "deployment_type": {
+              "type": "string",
+              "enum": ["champion", "challenger", "shadow"]
+            },
+            "traffic_percentage": {"type": "number"},
+            "rollback_version": {"type": "string"}
+          }
+        }
+      },
+      "compliance.violation": {
+        "description": "Emitted when a compliance violation is detected",
+        "data_schema": {
+          "type": "object",
+          "required": ["violation_id", "rule_id", "severity", "details"],
+          "properties": {
+            "violation_id": {"type": "string"},
+            "rule_id": {"type": "string"},
+            "rule_name": {"type": "string"},
+            "severity": {"type": "string"},
+            "details": {
+              "type": "object",
+              "required": ["expected", "actual"],
+              "properties": {
+                "expected": {"type": "string"},
+                "actual": {"type": "string"},
+                "deviation_percent": {"type": "number"}
+              }
+            },
+            "remediation_steps": {
+              "type": "array",
+              "items": {"type": "string"}
+            },
+            "auto_remediated": {"type": "boolean"}
+          }
+        }
+      }
+    }
+  }
+}

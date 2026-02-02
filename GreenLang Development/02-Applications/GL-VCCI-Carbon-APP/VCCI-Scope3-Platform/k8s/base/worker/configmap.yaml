@@ -1,0 +1,33 @@
+# ==============================================================================
+# GL-VCCI Worker - ConfigMap
+# ==============================================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: worker-config
+  namespace: vcci-production
+  labels:
+    app.kubernetes.io/name: gl-vcci
+    app.kubernetes.io/component: worker
+data:
+  # Celery Configuration
+  CELERY_CONCURRENCY: "4"
+  CELERY_MAX_TASKS_PER_CHILD: "100"
+  CELERY_TASK_TIMEOUT: "3600"
+  CELERY_SOFT_TIMEOUT: "3000"
+  CELERY_RESULT_EXPIRES: "86400"
+  CELERY_TASK_ACKS_LATE: "true"
+  CELERY_WORKER_PREFETCH_MULTIPLIER: "4"
+
+  # ML Model Configuration
+  MODEL_CACHE_DIR: "/home/appuser/.cache"
+  HUGGINGFACE_HUB_CACHE: "/home/appuser/.cache/huggingface"
+  TRANSFORMERS_CACHE: "/home/appuser/.cache/transformers"
+
+  # Calculator Agent Configuration
+  CALCULATION_BATCH_SIZE: "100"
+  ENABLE_GPU: "false"
+
+  # Logging
+  LOG_LEVEL: "info"
+  LOG_FORMAT: "json"

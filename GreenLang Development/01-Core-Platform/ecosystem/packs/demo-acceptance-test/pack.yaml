@@ -1,0 +1,26 @@
+name: demo-acceptance-test
+version: 0.1.0
+kind: pack
+pack_schema_version: '1.0'
+description: A GreenLang pack for packs/demo-acceptance-test
+author:
+  name: GreenLang Team
+  email: support@greenlang.io
+  organization: GreenLang
+license: MIT
+contents:
+  pipelines:
+  - gl.yaml
+  agents: []
+  datasets: []
+dependencies:
+- name: greenlang-sdk
+  version: '>=0.1.0'
+authors:
+- name: GreenLang Demo
+  email: demo@greenlang.ai
+security:
+  sbom: sbom.spdx.json
+  signatures: signatures/
+tests:
+- tests/test_*.py

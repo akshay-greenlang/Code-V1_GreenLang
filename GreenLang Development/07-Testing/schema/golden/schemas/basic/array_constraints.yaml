@@ -1,0 +1,85 @@
+# Array Constraints Test Schema
+# Tests: minItems, maxItems, uniqueItems, contains
+# GL-FOUND-X-002 Golden Test
+
+$schema: "https://json-schema.org/draft/2020-12/schema"
+$id: "gl://schemas/test/array_constraints@1.0.0"
+title: "Array Constraints Test Schema"
+description: "Schema for testing array validation constraints"
+type: object
+
+required:
+  - tags
+  - measurements
+
+properties:
+  tags:
+    type: array
+    description: "Tags must be unique strings"
+    items:
+      type: string
+      minLength: 1
+      maxLength: 50
+    minItems: 1
+    maxItems: 10
+    uniqueItems: true
+
+  measurements:
+    type: array
+    description: "List of numeric measurements"
+    items:
+      type: number
+      minimum: 0
+    minItems: 1
+    maxItems: 100
+
+  categories:
+    type: array
+    description: "Categories from allowed enum"
+    items:
+      type: string
+      enum:
+        - energy
+        - transport
+        - waste
+        - water
+        - materials
+    minItems: 1
+    uniqueItems: true
+
+  readings:
+    type: array
+    description: "Sensor readings with object items"
+    items:
+      type: object
+      required:
+        - timestamp
+        - value
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        value:
+          type: number
+        unit:
+          type: string
+    maxItems: 1000
+
+  priorities:
+    type: array
+    description: "Priority numbers (must contain at least one 1)"
+    items:
+      type: integer
+      minimum: 1
+      maximum: 5
+    contains:
+      const: 1
+
+  empty_allowed:
+    type: array
+    description: "Array that can be empty"
+    items:
+      type: string
+    minItems: 0
+
+additionalProperties: false

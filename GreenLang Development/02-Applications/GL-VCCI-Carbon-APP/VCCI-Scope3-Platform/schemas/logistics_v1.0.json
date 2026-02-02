@@ -1,0 +1,729 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://vcci.greenlang.com/schemas/logistics_v1.0.json",
+  "title": "Logistics Data Schema",
+  "description": "JSON Schema for Category 4 (Upstream Transportation and Distribution) logistics data. Supports distance-based and spend-based methods per ISO 14083:2023. Enables multi-standard reporting (GHG Protocol, ESRS, CDP, IFRS S2).",
+  "version": "1.0.0",
+  "type": "object",
+  "required": [
+    "shipment_id",
+    "shipment_date",
+    "transport_mode",
+    "calculation_method"
+  ],
+  "properties": {
+    "shipment_id": {
+      "type": "string",
+      "description": "Unique identifier for shipment/transport leg",
+      "pattern": "^SHIP-[0-9A-Z]{8,16}$",
+      "examples": ["SHIP-20250125001", "SHIP-ABC123DEF456"]
+    },
+    "tenant_id": {
+      "type": "string",
+      "description": "Multi-tenant identifier (automatic, set by system)",
+      "pattern": "^tenant-[a-z0-9-]+$",
+      "examples": ["tenant-acme-corp", "tenant-global-logistics"]
+    },
+    "shipment_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of shipment (ISO 8601 format: YYYY-MM-DD)",
+      "examples": ["2024-01-15", "2024-12-31"]
+    },
+    "reporting_year": {
+      "type": "integer",
+      "description": "Reporting year for emissions accounting",
+      "minimum": 2020,
+      "maximum": 2100,
+      "examples": [2024, 2025]
+    },
+    "transport_mode": {
+      "type": "string",
+      "description": "Mode of transport (ISO 14083:2023 classification)",
+      "enum": [
+        "Road_Truck_LessThan7.5t",
+        "Road_Truck_7.5to17t",
+        "Road_Truck_GreaterThan17t",
+        "Rail_Freight",
+        "Air_Freight_ShortHaul",
+        "Air_Freight_LongHaul",
+        "Sea_Freight_Container",
+        "Sea_Freight_Bulk",
+        "Pipeline",
+        "Multimodal"
+      ],
+      "examples": ["Road_Truck_GreaterThan17t", "Sea_Freight_Container"]
+    },
+    "calculation_method": {
+      "type": "string",
+      "description": "Method used for emissions calculation",
+      "enum": [
+        "distance_based",
+        "spend_based",
+        "fuel_based",
+        "site_specific"
+      ],
+      "examples": ["distance_based", "spend_based"]
+    },
+    "origin": {
+      "type": "object",
+      "description": "Shipment origin location",
+      "properties": {
+        "location_name": {
+          "type": "string",
+          "description": "Origin facility/port name",
+          "maxLength": 200,
+          "examples": ["Port of Los Angeles", "Manufacturing Plant A", "Distribution Center NYC"]
+        },
+        "city": {
+          "type": "string",
+          "maxLength": 100,
+          "examples": ["Los Angeles", "Shanghai", "Rotterdam"]
+        },
+        "state_province": {
+          "type": "string",
+          "maxLength": 100,
+          "examples": ["California", "Bavaria", "Tokyo Prefecture"]
+        },
+        "country": {
+          "type": "string",
+          "description": "ISO 3166-1 alpha-2 code",
+          "pattern": "^[A-Z]{2}$",
+          "examples": ["US", "CN", "NL"]
+        },
+        "postal_code": {
+          "type": "string",
+          "maxLength": 20,
+          "examples": ["90731", "200000", "3011"]
+        },
+        "coordinates": {
+          "type": "object",
+          "description": "GPS coordinates for route optimization",
+          "properties": {
+            "latitude": {
+              "type": "number",
+              "minimum": -90,
+              "maximum": 90,
+              "examples": [33.7361]
+            },
+            "longitude": {
+              "type": "number",
+              "minimum": -180,
+              "maximum": 180,
+              "examples": [-118.2725]
+            }
+          }
+        }
+      }
+    },
+    "destination": {
+      "type": "object",
+      "description": "Shipment destination location (same structure as origin)",
+      "properties": {
+        "location_name": {
+          "type": "string",
+          "maxLength": 200,
+          "examples": ["Distribution Center Dallas", "Port of Hamburg"]
+        },
+        "city": {
+          "type": "string",
+          "maxLength": 100,
+          "examples": ["Dallas", "Hamburg"]
+        },
+        "state_province": {
+          "type": "string",
+          "maxLength": 100,
+          "examples": ["Texas", "Hamburg"]
+        },
+        "country": {
+          "type": "string",
+          "pattern": "^[A-Z]{2}$",
+          "examples": ["US", "DE"]
+        },
+        "postal_code": {
+          "type": "string",
+          "maxLength": 20,
+          "examples": ["75201", "20457"]
+        },
+        "coordinates": {
+          "type": "object",
+          "properties": {
+            "latitude": {
+              "type": "number",
+              "minimum": -90,
+              "maximum": 90,
+              "examples": [32.7767]
+            },
+            "longitude": {
+              "type": "number",
+              "minimum": -180,
+              "maximum": 180,
+              "examples": [-96.7970]
+            }
+          }
+        }
+      }
+    },
+    "distance_km": {
+      "type": "number",
+      "description": "Transport distance in kilometers (required for distance-based method)",
+      "exclusiveMinimum": 0,
+      "examples": [500, 1500.5, 12000]
+    },
+    "distance_source": {
+      "type": "string",
+      "description": "Source of distance data",
+      "enum": [
+        "GPS_Telematics",
+        "Route_Planning_Software",
+        "Great_Circle_Distance",
+        "Carrier_Provided",
+        "Manual_Estimate"
+      ],
+      "examples": ["GPS_Telematics", "Route_Planning_Software"]
+    },
+    "weight_tonnes": {
+      "type": "number",
+      "description": "Shipment weight in metric tonnes (required for distance-based method)",
+      "exclusiveMinimum": 0,
+      "examples": [10, 25.5, 500]
+    },
+    "weight_source": {
+      "type": "string",
+      "description": "Source of weight data",
+      "enum": [
+        "Weigh_Station",
+        "Bill_of_Lading",
+        "Packing_List",
+        "Estimated"
+      ],
+      "examples": ["Weigh_Station", "Bill_of_Lading"]
+    },
+    "volume_m3": {
+      "type": "number",
+      "description": "Shipment volume in cubic meters (optional, for volume-weight conversion)",
+      "exclusiveMinimum": 0,
+      "examples": [20, 50.5, 100]
+    },
+    "vehicle_specifications": {
+      "type": "object",
+      "description": "Vehicle/vessel specifications for site-specific calculations",
+      "properties": {
+        "vehicle_type": {
+          "type": "string",
+          "description": "Specific vehicle/vessel type",
+          "examples": ["Scania R450 Euro 6", "Container Ship - Post-Panamax", "Boeing 747-400F"]
+        },
+        "fuel_type": {
+          "type": "string",
+          "enum": [
+            "Diesel",
+            "Gasoline",
+            "CNG",
+            "LNG",
+            "Electric",
+            "Hybrid",
+            "Hydrogen",
+            "HFO",
+            "Jet_Fuel_A1",
+            "Biodiesel",
+            "Renewable_Diesel"
+          ],
+          "examples": ["Diesel", "LNG", "Jet_Fuel_A1"]
+        },
+        "euro_standard": {
+          "type": "string",
+          "description": "Euro emission standard (for road vehicles)",
+          "enum": ["Euro_3", "Euro_4", "Euro_5", "Euro_6", "Not_Applicable"],
+          "examples": ["Euro_6"]
+        },
+        "load_capacity_tonnes": {
+          "type": "number",
+          "description": "Maximum load capacity in tonnes",
+          "exclusiveMinimum": 0,
+          "examples": [25, 40, 60]
+        },
+        "load_factor": {
+          "type": "number",
+          "description": "Load factor (0-1, actual load / capacity)",
+          "minimum": 0,
+          "maximum": 1,
+          "examples": [0.75, 0.9, 1.0]
+        },
+        "empty_return_trip": {
+          "type": "boolean",
+          "description": "Whether return trip is empty (affects allocation)",
+          "examples": [false, true]
+        }
+      }
+    },
+    "carrier_information": {
+      "type": "object",
+      "description": "Logistics carrier information",
+      "properties": {
+        "carrier_name": {
+          "type": "string",
+          "description": "Logistics service provider name",
+          "maxLength": 200,
+          "examples": ["DHL Freight", "Maersk Line", "FedEx Freight"]
+        },
+        "carrier_id_erp": {
+          "type": "string",
+          "description": "Carrier ID from ERP system",
+          "maxLength": 100,
+          "examples": ["CARR-12345", "SAP-V-67890"]
+        },
+        "scac_code": {
+          "type": "string",
+          "description": "Standard Carrier Alpha Code (maritime/rail)",
+          "pattern": "^[A-Z]{2,4}$",
+          "examples": ["MAEU", "MSCU", "HLCU"]
+        },
+        "iata_code": {
+          "type": "string",
+          "description": "IATA airline code (air freight)",
+          "pattern": "^[A-Z0-9]{2,3}$",
+          "examples": ["FX", "5Y", "EK"]
+        }
+      }
+    },
+    "spend_usd": {
+      "type": "number",
+      "description": "Total freight spend in USD (required for spend-based method)",
+      "minimum": 0,
+      "examples": [5000, 12345.67, 100000]
+    },
+    "spend_currency_original": {
+      "type": "string",
+      "description": "Original currency code (ISO 4217)",
+      "pattern": "^[A-Z]{3}$",
+      "examples": ["USD", "EUR", "GBP", "CNY"]
+    },
+    "spend_amount_original": {
+      "type": "number",
+      "description": "Spend amount in original currency",
+      "minimum": 0,
+      "examples": [4500, 10000.50]
+    },
+    "exchange_rate_to_usd": {
+      "type": "number",
+      "description": "Exchange rate used to convert to USD",
+      "exclusiveMinimum": 0,
+      "examples": [1.0, 0.85, 7.25]
+    },
+    "fuel_consumption": {
+      "type": "object",
+      "description": "Actual fuel consumption data (for fuel-based method)",
+      "properties": {
+        "fuel_quantity": {
+          "type": "number",
+          "description": "Fuel consumed",
+          "exclusiveMinimum": 0,
+          "examples": [250, 5000, 150000]
+        },
+        "fuel_unit": {
+          "type": "string",
+          "enum": ["liters", "gallons", "kg", "tonnes", "m3"],
+          "examples": ["liters", "tonnes"]
+        },
+        "fuel_type": {
+          "type": "string",
+          "enum": [
+            "Diesel",
+            "Gasoline",
+            "CNG",
+            "LNG",
+            "HFO",
+            "Jet_Fuel_A1",
+            "Biodiesel",
+            "Renewable_Diesel"
+          ],
+          "examples": ["Diesel", "LNG"]
+        }
+      },
+      "required": ["fuel_quantity", "fuel_unit", "fuel_type"]
+    },
+    "iso_14083_conformance": {
+      "type": "object",
+      "description": "ISO 14083:2023 conformance tracking",
+      "properties": {
+        "conformant": {
+          "type": "boolean",
+          "description": "Whether calculation is ISO 14083:2023 conformant",
+          "examples": [true, false]
+        },
+        "wtt_included": {
+          "type": "boolean",
+          "description": "Whether Well-to-Tank emissions are included",
+          "examples": [true, false]
+        },
+        "ttw_included": {
+          "type": "boolean",
+          "description": "Whether Tank-to-Wheel emissions are included",
+          "examples": [true, false]
+        },
+        "allocation_method": {
+          "type": "string",
+          "description": "Allocation method for shared transport",
+          "enum": [
+            "Mass_Based",
+            "Volume_Based",
+            "Economic_Value",
+            "Not_Applicable"
+          ],
+          "examples": ["Mass_Based"]
+        },
+        "system_boundary": {
+          "type": "string",
+          "description": "System boundary for calculation",
+          "enum": [
+            "TTW_Only",
+            "WTW_Full",
+            "Cradle_to_Grave"
+          ],
+          "examples": ["WTW_Full"]
+        }
+      }
+    },
+    "multimodal_legs": {
+      "type": "array",
+      "description": "For multimodal transport, breakdown by transport leg",
+      "items": {
+        "type": "object",
+        "properties": {
+          "leg_number": {
+            "type": "integer",
+            "minimum": 1,
+            "examples": [1, 2, 3]
+          },
+          "transport_mode": {
+            "type": "string",
+            "enum": [
+              "Road_Truck_LessThan7.5t",
+              "Road_Truck_7.5to17t",
+              "Road_Truck_GreaterThan17t",
+              "Rail_Freight",
+              "Air_Freight_ShortHaul",
+              "Air_Freight_LongHaul",
+              "Sea_Freight_Container",
+              "Sea_Freight_Bulk"
+            ],
+            "examples": ["Road_Truck_GreaterThan17t", "Sea_Freight_Container"]
+          },
+          "distance_km": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "examples": [50, 8000]
+          },
+          "origin": {
+            "type": "string",
+            "examples": ["Los Angeles Port", "Dallas DC"]
+          },
+          "destination": {
+            "type": "string",
+            "examples": ["Dallas DC", "Hamburg Port"]
+          }
+        },
+        "required": ["leg_number", "transport_mode", "distance_km"]
+      },
+      "examples": [
+        [
+          {
+            "leg_number": 1,
+            "transport_mode": "Road_Truck_GreaterThan17t",
+            "distance_km": 50,
+            "origin": "Manufacturing Plant",
+            "destination": "Port of LA"
+          },
+          {
+            "leg_number": 2,
+            "transport_mode": "Sea_Freight_Container",
+            "distance_km": 9500,
+            "origin": "Port of LA",
+            "destination": "Port of Hamburg"
+          },
+          {
+            "leg_number": 3,
+            "transport_mode": "Rail_Freight",
+            "distance_km": 400,
+            "origin": "Port of Hamburg",
+            "destination": "Distribution Center"
+          }
+        ]
+      ]
+    },
+    "data_quality_indicators": {
+      "type": "object",
+      "description": "ILCD pedigree matrix for data quality assessment",
+      "properties": {
+        "reliability": {
+          "type": "integer",
+          "description": "Reliability of data source (1=worst, 5=best)",
+          "minimum": 1,
+          "maximum": 5,
+          "examples": [5, 4, 3]
+        },
+        "completeness": {
+          "type": "integer",
+          "description": "Completeness of data (1=worst, 5=best)",
+          "minimum": 1,
+          "maximum": 5,
+          "examples": [5, 4, 3]
+        },
+        "temporal_correlation": {
+          "type": "integer",
+          "description": "Age of data (1=very old, 5=current year)",
+          "minimum": 1,
+          "maximum": 5,
+          "examples": [5, 4, 3]
+        },
+        "geographical_correlation": {
+          "type": "integer",
+          "description": "Match between data region and actual region (1=poor, 5=exact)",
+          "minimum": 1,
+          "maximum": 5,
+          "examples": [5, 4, 3]
+        },
+        "technological_correlation": {
+          "type": "integer",
+          "description": "Match between vehicle technology (1=poor, 5=exact)",
+          "minimum": 1,
+          "maximum": 5,
+          "examples": [5, 4, 3]
+        },
+        "dqi_score": {
+          "type": "number",
+          "description": "Calculated DQI score (average of 5 dimensions)",
+          "minimum": 1.0,
+          "maximum": 5.0,
+          "examples": [4.5, 3.8, 2.5]
+        },
+        "dqi_rating": {
+          "type": "string",
+          "description": "DQI rating category",
+          "enum": ["Excellent", "Good", "Fair", "Poor"],
+          "examples": ["Excellent", "Good"]
+        }
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Metadata for traceability and audit",
+      "properties": {
+        "source_system": {
+          "type": "string",
+          "description": "Source system",
+          "enum": [
+            "TMS",
+            "SAP_TM",
+            "Oracle_Transportation",
+            "Carrier_API",
+            "Manual_Upload",
+            "EDI",
+            "Other"
+          ],
+          "examples": ["SAP_TM", "Carrier_API"]
+        },
+        "source_document_id": {
+          "type": "string",
+          "description": "Source document ID (shipment number, BOL number)",
+          "maxLength": 200,
+          "examples": ["SHIP-20240115-001", "BOL-2024-12345"]
+        },
+        "extraction_timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when data was extracted from source system",
+          "examples": ["2025-01-25T14:30:00Z"]
+        },
+        "ingestion_timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when data was ingested into VCCI platform",
+          "examples": ["2025-01-25T15:00:00Z"]
+        },
+        "data_lineage": {
+          "type": "string",
+          "description": "Data lineage trail (comma-separated system IDs)",
+          "examples": ["TMS-001 -> VCCI-Intake-123 -> VCCI-Calc-456"]
+        },
+        "validation_status": {
+          "type": "string",
+          "description": "Validation status",
+          "enum": [
+            "Validated",
+            "Validation_Failed",
+            "Pending_Review",
+            "Approved",
+            "Rejected"
+          ],
+          "examples": ["Validated"]
+        },
+        "validation_errors": {
+          "type": "array",
+          "description": "List of validation errors (if any)",
+          "items": {
+            "type": "string"
+          },
+          "examples": [
+            ["Missing distance_km for distance-based method", "Weight must be positive"]
+          ]
+        },
+        "manual_review_required": {
+          "type": "boolean",
+          "description": "Flag for manual review queue",
+          "examples": [false, true]
+        },
+        "manual_review_reason": {
+          "type": "string",
+          "description": "Reason for manual review",
+          "examples": ["Distance exceeds 20,000 km (suspicious)", "Missing carrier information"]
+        },
+        "created_by": {
+          "type": "string",
+          "description": "User or system that created this record",
+          "examples": ["system-intake-agent", "user-john.doe@example.com"]
+        },
+        "updated_by": {
+          "type": "string",
+          "description": "User or system that last updated this record",
+          "examples": ["user-jane.smith@example.com"]
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "examples": ["2025-01-25T15:00:00Z"]
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time",
+          "examples": ["2025-01-26T10:30:00Z"]
+        }
+      }
+    },
+    "custom_fields": {
+      "type": "object",
+      "description": "Customer-specific custom fields (flexible schema)",
+      "additionalProperties": true,
+      "examples": [
+        {
+          "project_code": "PROJ-2024-001",
+          "cost_center": "CC-1234",
+          "department": "Logistics",
+          "priority": "High"
+        }
+      ]
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "calculation_method": {"const": "distance_based"}
+        }
+      },
+      "then": {
+        "required": ["distance_km", "weight_tonnes"]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "calculation_method": {"const": "spend_based"}
+        }
+      },
+      "then": {
+        "required": ["spend_usd"]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "calculation_method": {"const": "fuel_based"}
+        }
+      },
+      "then": {
+        "required": ["fuel_consumption"]
+      }
+    }
+  ],
+  "examples": [
+    {
+      "shipment_id": "SHIP-20250125001",
+      "tenant_id": "tenant-acme-corp",
+      "shipment_date": "2024-11-15",
+      "reporting_year": 2024,
+      "transport_mode": "Road_Truck_GreaterThan17t",
+      "calculation_method": "distance_based",
+      "origin": {
+        "location_name": "Manufacturing Plant A",
+        "city": "Los Angeles",
+        "state_province": "California",
+        "country": "US",
+        "postal_code": "90001",
+        "coordinates": {
+          "latitude": 33.9731,
+          "longitude": -118.2479
+        }
+      },
+      "destination": {
+        "location_name": "Distribution Center Dallas",
+        "city": "Dallas",
+        "state_province": "Texas",
+        "country": "US",
+        "postal_code": "75201",
+        "coordinates": {
+          "latitude": 32.7767,
+          "longitude": -96.7970
+        }
+      },
+      "distance_km": 2200,
+      "distance_source": "Route_Planning_Software",
+      "weight_tonnes": 15.5,
+      "weight_source": "Weigh_Station",
+      "vehicle_specifications": {
+        "vehicle_type": "Scania R450 Euro 6",
+        "fuel_type": "Diesel",
+        "euro_standard": "Euro_6",
+        "load_capacity_tonnes": 25,
+        "load_factor": 0.62,
+        "empty_return_trip": false
+      },
+      "carrier_information": {
+        "carrier_name": "DHL Freight",
+        "carrier_id_erp": "CARR-12345"
+      },
+      "iso_14083_conformance": {
+        "conformant": true,
+        "wtt_included": true,
+        "ttw_included": true,
+        "allocation_method": "Mass_Based",
+        "system_boundary": "WTW_Full"
+      },
+      "data_quality_indicators": {
+        "reliability": 5,
+        "completeness": 5,
+        "temporal_correlation": 5,
+        "geographical_correlation": 5,
+        "technological_correlation": 5,
+        "dqi_score": 5.0,
+        "dqi_rating": "Excellent"
+      },
+      "metadata": {
+        "source_system": "SAP_TM",
+        "source_document_id": "SHIP-2024-11-001",
+        "extraction_timestamp": "2025-01-25T10:00:00Z",
+        "ingestion_timestamp": "2025-01-25T10:15:00Z",
+        "validation_status": "Validated",
+        "validation_errors": [],
+        "manual_review_required": false,
+        "created_by": "system-intake-agent",
+        "created_at": "2025-01-25T10:15:00Z",
+        "updated_at": "2025-01-25T10:15:00Z"
+      }
+    }
+  ],
+  "definitions": {
+    "comment": "JSON Schema definitions for reusable components"
+  }
+}

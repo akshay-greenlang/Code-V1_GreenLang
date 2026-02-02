@@ -1,0 +1,56 @@
+---
+# Headless service for StatefulSet
+apiVersion: v1
+kind: Service
+metadata:
+  name: weaviate-headless
+  namespace: vcci-platform
+  labels:
+    app: weaviate
+    component: vector-db
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
+      protocol: TCP
+    - name: grpc
+      port: 50051
+      targetPort: grpc
+      protocol: TCP
+  selector:
+    app: weaviate
+  publishNotReadyAddresses: true
+
+---
+# Regular service for client connections
+apiVersion: v1
+kind: Service
+metadata:
+  name: weaviate
+  namespace: vcci-platform
+  labels:
+    app: weaviate
+    component: vector-db
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "2112"
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
+      protocol: TCP
+    - name: grpc
+      port: 50051
+      targetPort: grpc
+      protocol: TCP
+    - name: metrics
+      port: 2112
+      targetPort: metrics
+      protocol: TCP
+  selector:
+    app: weaviate

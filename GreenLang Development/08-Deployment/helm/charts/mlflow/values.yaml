@@ -1,0 +1,623 @@
+# GreenLang MLflow Helm Chart - Production-Ready Values
+# =============================================================================
+# This configuration provides production-grade MLflow deployment with:
+# - High Availability (3 replicas with anti-affinity)
+# - PostgreSQL backend for metadata storage
+# - S3/MinIO for artifact storage
+# - Prometheus metrics integration
+# - Security hardening
+# - Autoscaling configuration
+# =============================================================================
+
+# Global settings
+global:
+  imageRegistry: ""
+  imagePullSecrets: []
+  storageClass: "gp3-encrypted"
+
+  # GreenLang specific settings
+  greenlang:
+    environment: production
+    provenanceEnabled: true
+    sha256Tracking: true
+    experimentPrefix: "greenlang-process-heat"
+
+# Namespace configuration
+namespace:
+  create: true
+  name: greenlang-mlops
+  labels:
+    app.kubernetes.io/part-of: greenlang-mlops
+
+# =============================================================================
+# MLflow Tracking Server Configuration
+# =============================================================================
+mlflow:
+  # Image configuration
+  image:
+    registry: ghcr.io
+    repository: mlflow/mlflow
+    tag: "v2.10.0"
+    pullPolicy: IfNotPresent
+
+  # Replica configuration (HA)
+  replicaCount: 3
+
+  # Service Account
+  serviceAccount:
+    create: true
+    name: mlflow-sa
+    annotations: {}
+    # AWS IRSA
+    # eks.amazonaws.com/role-arn: arn:aws:iam::ACCOUNT:role/mlflow-role
+
+  # Pod Security Context
+  podSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    fsGroup: 1000
+
+  # Container Security Context
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    capabilities:
+      drop:
+        - ALL
+
+  # Resource configuration
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+    limits:
+      cpu: 2000m
+      memory: 4Gi
+
+  # Gunicorn configuration
+  gunicorn:
+    workers: 4
+    threads: 2
+    timeout: 300
+    logLevel: info
+
+  # MLflow server configuration
+  config:
+    # Backend store (PostgreSQL)
+    backendStoreUri: ""  # Populated from PostgreSQL settings
+    # Artifact storage
+    defaultArtifactRoot: "s3://greenlang-mlflow-artifacts/"
+    # Enable artifact serving
+    serveArtifacts: true
+
+  # Probes
+  livenessProbe:
+    httpGet:
+      path: /health
+      port: 5000
+    initialDelaySeconds: 60
+    periodSeconds: 15
+    timeoutSeconds: 10
+    failureThreshold: 5
+
+  readinessProbe:
+    httpGet:
+      path: /health
+      port: 5000
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    successThreshold: 1
+
+  startupProbe:
+    httpGet:
+      path: /health
+      port: 5000
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    failureThreshold: 30
+
+  # Pod affinity/anti-affinity
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            labelSelector:
+              matchLabels:
+                app: mlflow
+                component: tracking-server
+            topologyKey: kubernetes.io/hostname
+    nodeAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 50
+          preference:
+            matchExpressions:
+              - key: node-type
+                operator: In
+                values:
+                  - mlops
+
+  # Topology spread constraints
+  topologySpreadConstraints:
+    - maxSkew: 1
+      topologyKey: topology.kubernetes.io/zone
+      whenUnsatisfiable: ScheduleAnyway
+      labelSelector:
+        matchLabels:
+          app: mlflow
+          component: tracking-server
+
+  # Node selector
+  nodeSelector: {}
+
+  # Tolerations
+  tolerations: []
+
+  # Extra environment variables
+  extraEnv:
+    - name: GREENLANG_ENVIRONMENT
+      value: "production"
+    - name: GREENLANG_PROVENANCE_ENABLED
+      value: "true"
+
+  # Extra volume mounts
+  extraVolumeMounts:
+    - name: tmp
+      mountPath: /tmp
+    - name: mlflow-cache
+      mountPath: /home/mlflow/.cache
+
+  # Extra volumes
+  extraVolumes:
+    - name: tmp
+      emptyDir: {}
+    - name: mlflow-cache
+      emptyDir: {}
+
+# =============================================================================
+# Autoscaling Configuration
+# =============================================================================
+autoscaling:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 10
+
+  # Metrics-based scaling
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+    - type: Pods
+      pods:
+        metric:
+          name: mlflow_http_requests_per_second
+        target:
+          type: AverageValue
+          averageValue: "100"
+
+  # Scaling behavior
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+        - type: Percent
+          value: 50
+          periodSeconds: 30
+        - type: Pods
+          value: 2
+          periodSeconds: 30
+      selectPolicy: Max
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Percent
+          value: 10
+          periodSeconds: 60
+      selectPolicy: Min
+
+# =============================================================================
+# Pod Disruption Budget
+# =============================================================================
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 2
+
+# =============================================================================
+# Service Configuration
+# =============================================================================
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 5000
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "5000"
+    prometheus.io/path: "/metrics"
+
+  # Session affinity for consistent routing
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 3600
+
+# =============================================================================
+# Ingress Configuration
+# =============================================================================
+ingress:
+  enabled: true
+  className: nginx
+
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    # SSL/TLS
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    # Rate limiting
+    nginx.ingress.kubernetes.io/limit-rps: "50"
+    nginx.ingress.kubernetes.io/limit-connections: "20"
+    nginx.ingress.kubernetes.io/limit-burst-multiplier: "3"
+    # Timeouts
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-body-size: "500m"
+    # Security headers
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      more_set_headers "X-Frame-Options: DENY";
+      more_set_headers "X-Content-Type-Options: nosniff";
+      more_set_headers "X-XSS-Protection: 1; mode=block";
+      more_set_headers "Referrer-Policy: strict-origin-when-cross-origin";
+
+  hosts:
+    - host: mlflow.greenlang.io
+      paths:
+        - path: /
+          pathType: Prefix
+
+  tls:
+    - secretName: mlflow-tls
+      hosts:
+        - mlflow.greenlang.io
+
+# =============================================================================
+# PostgreSQL Configuration (Backend Store)
+# =============================================================================
+postgresql:
+  enabled: true
+
+  # Authentication
+  auth:
+    username: mlflow
+    password: ""  # Use external secrets
+    database: mlflow
+    existingSecret: mlflow-postgresql-secret
+    secretKeys:
+      userPasswordKey: password
+
+  # Primary configuration
+  primary:
+    persistence:
+      enabled: true
+      size: 100Gi
+      storageClass: gp3-encrypted
+
+    resources:
+      requests:
+        cpu: 500m
+        memory: 1Gi
+      limits:
+        cpu: 2000m
+        memory: 4Gi
+
+    # Security context
+    podSecurityContext:
+      enabled: true
+      runAsUser: 999
+      fsGroup: 999
+
+    containerSecurityContext:
+      enabled: true
+      allowPrivilegeEscalation: false
+
+  # Backup configuration
+  backup:
+    enabled: true
+    cronjob:
+      schedule: "0 2 * * *"
+      storage:
+        size: 50Gi
+
+# =============================================================================
+# MinIO Configuration (Artifact Storage)
+# =============================================================================
+minio:
+  enabled: true
+
+  # Authentication
+  auth:
+    rootUser: greenlang-mlflow
+    rootPassword: ""  # Use external secrets
+    existingSecret: mlflow-minio-secret
+
+  # Persistence
+  persistence:
+    enabled: true
+    size: 500Gi
+    storageClass: gp3-encrypted
+
+  # Resources
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 2Gi
+
+  # Security context
+  podSecurityContext:
+    enabled: true
+    runAsUser: 1000
+    fsGroup: 1000
+
+  containerSecurityContext:
+    enabled: true
+    allowPrivilegeEscalation: false
+
+  # Prometheus metrics
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+      interval: 30s
+
+  # Default buckets
+  defaultBuckets: "greenlang-mlflow-artifacts"
+
+# =============================================================================
+# External S3 Configuration (Alternative to MinIO)
+# =============================================================================
+externalS3:
+  enabled: false
+  endpoint: ""
+  bucket: "greenlang-mlflow-artifacts"
+  region: "us-east-1"
+  accessKeyId: ""
+  secretAccessKey: ""
+  existingSecret: ""
+
+# =============================================================================
+# External Secrets Configuration
+# =============================================================================
+externalSecrets:
+  enabled: true
+  refreshInterval: 1h
+
+  secretStoreRef:
+    name: aws-secrets-manager
+    kind: ClusterSecretStore
+
+  postgresql:
+    secretKey: greenlang/mlflow/postgresql
+    data:
+      - key: username
+        property: username
+      - key: password
+        property: password
+
+  minio:
+    secretKey: greenlang/mlflow/minio
+    data:
+      - key: access-key
+        property: access-key
+      - key: secret-key
+        property: secret-key
+
+# =============================================================================
+# Monitoring Configuration
+# =============================================================================
+monitoring:
+  enabled: true
+
+  serviceMonitor:
+    enabled: true
+    interval: 30s
+    scrapeTimeout: 10s
+    labels:
+      release: prometheus
+
+  prometheusRule:
+    enabled: true
+    labels:
+      release: prometheus
+
+    rules:
+      - alert: MLflowHighErrorRate
+        expr: |
+          sum(rate(mlflow_http_requests_total{status=~"5.."}[5m])) by (instance)
+          /
+          sum(rate(mlflow_http_requests_total[5m])) by (instance) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+          team: mlops
+        annotations:
+          summary: "MLflow high error rate"
+          description: "Error rate is {{ $value | humanizePercentage }}"
+
+      - alert: MLflowPodDown
+        expr: |
+          kube_deployment_status_replicas_available{deployment="mlflow-tracking"} < 2
+        for: 5m
+        labels:
+          severity: critical
+          team: mlops
+        annotations:
+          summary: "MLflow has fewer than 2 replicas"
+
+      - alert: MLflowHighLatency
+        expr: |
+          histogram_quantile(0.95, sum(rate(mlflow_http_request_duration_seconds_bucket[5m])) by (le)) > 5
+        for: 10m
+        labels:
+          severity: warning
+          team: mlops
+        annotations:
+          summary: "MLflow P95 latency is high"
+
+  grafanaDashboard:
+    enabled: true
+    labels:
+      grafana_dashboard: "1"
+
+# =============================================================================
+# Network Policy Configuration
+# =============================================================================
+networkPolicy:
+  enabled: true
+
+  ingress:
+    # Allow from ingress controller
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: ingress-nginx
+      ports:
+        - port: 5000
+          protocol: TCP
+    # Allow from greenlang-agents
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: greenlang-agents
+      ports:
+        - port: 5000
+          protocol: TCP
+
+  egress:
+    # Allow DNS
+    - to:
+        - namespaceSelector: {}
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - port: 53
+          protocol: UDP
+    # Allow external HTTPS (for S3)
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+      ports:
+        - port: 443
+          protocol: TCP
+
+# =============================================================================
+# GreenLang Process Heat Agent Integration
+# =============================================================================
+processHeatIntegration:
+  enabled: true
+
+  # Default experiments for process heat agents
+  experiments:
+    - name: "greenlang-fuel-analyzer"
+      description: "Fuel emission factor analysis models"
+      tags:
+        agent: fuel-analyzer
+        domain: process-heat
+
+    - name: "greenlang-carbon-intensity"
+      description: "Carbon intensity prediction models"
+      tags:
+        agent: carbon-intensity
+        domain: process-heat
+
+    - name: "greenlang-energy-performance"
+      description: "Energy performance optimization models"
+      tags:
+        agent: energy-performance
+        domain: process-heat
+
+    - name: "greenlang-steam-optimization"
+      description: "Steam system optimization models"
+      tags:
+        agent: steam-optimization
+        domain: process-heat
+
+    - name: "greenlang-combustion-efficiency"
+      description: "Combustion efficiency models"
+      tags:
+        agent: combustion-efficiency
+        domain: process-heat
+
+  # Model registry configuration
+  modelRegistry:
+    stages:
+      - None
+      - Development
+      - Staging
+      - Production
+      - Archived
+
+    # Auto-promote rules
+    autoPromote:
+      enabled: false
+      # Promote to staging if metrics meet threshold
+      stagingThreshold:
+        accuracy: 0.95
+        precision: 0.90
+        recall: 0.90
+
+  # Provenance tracking
+  provenance:
+    enabled: true
+    hashAlgorithm: SHA-256
+    trackInputData: true
+    trackModelParams: true
+    trackMetrics: true
+    trackEnvironment: true
+
+# =============================================================================
+# Certificates Configuration
+# =============================================================================
+certificates:
+  enabled: true
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  privateKey:
+    algorithm: RSA
+    size: 4096
+
+# =============================================================================
+# Init Containers
+# =============================================================================
+initContainers:
+  waitForPostgres:
+    enabled: true
+    image:
+      repository: busybox
+      tag: "1.36"
+
+  waitForMinio:
+    enabled: true
+    image:
+      repository: busybox
+      tag: "1.36"
+
+  createBucket:
+    enabled: true
+    image:
+      repository: minio/mc
+      tag: "RELEASE.2024-01-16T16-06-34Z"

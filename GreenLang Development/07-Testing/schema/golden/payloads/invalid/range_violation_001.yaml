@@ -1,0 +1,15 @@
+# Invalid Payload - Range Violation (below minimum)
+# Error Code: GLSCHEMA-E200 (RANGE_VIOLATION)
+# Schema: basic/numeric_constraints.yaml
+
+_test_metadata:
+  schema: "basic/numeric_constraints.yaml"
+  description: "Range violation - temperature below absolute zero"
+  expected_valid: false
+  expected_errors:
+    - code: "GLSCHEMA-E200"
+      path: "/temperature"
+      severity: "error"
+
+temperature: -300  # Below minimum of -273.15
+quantity: 100

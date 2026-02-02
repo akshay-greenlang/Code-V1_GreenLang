@@ -1,0 +1,246 @@
+# ==============================================================================
+# GL-VCCI Horizontal Pod Autoscaler (HPA) Configuration
+# Automatically scales pods based on CPU, memory, and custom metrics
+# ==============================================================================
+
+# ==============================================================================
+# HPA for Backend API
+# ==============================================================================
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: vcci-backend-api-hpa
+  namespace: vcci-production
+  labels:
+    app.kubernetes.io/name: gl-vcci
+    app.kubernetes.io/component: backend-api
+    app.kubernetes.io/part-of: vcci-platform
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: vcci-backend-api
+  minReplicas: 3
+  maxReplicas: 20
+  metrics:
+    # CPU-based scaling
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    # Memory-based scaling
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+    # Custom metric: HTTP requests per second (requires metrics server)
+    - type: Pods
+      pods:
+        metric:
+          name: http_requests_per_second
+        target:
+          type: AverageValue
+          averageValue: "1000"
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Percent
+          value: 50
+          periodSeconds: 60
+        - type: Pods
+          value: 2
+          periodSeconds: 60
+      selectPolicy: Min
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+        - type: Percent
+          value: 100
+          periodSeconds: 30
+        - type: Pods
+          value: 4
+          periodSeconds: 30
+      selectPolicy: Max
+
+---
+# ==============================================================================
+# HPA for Worker (Calculator Agent)
+# ==============================================================================
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: vcci-worker-hpa
+  namespace: vcci-production
+  labels:
+    app.kubernetes.io/name: gl-vcci
+    app.kubernetes.io/component: worker
+    app.kubernetes.io/part-of: vcci-platform
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: vcci-worker
+  minReplicas: 2
+  maxReplicas: 15
+  metrics:
+    # CPU-based scaling (ML workloads are CPU intensive)
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 75
+    # Memory-based scaling (ML models require memory)
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 85
+    # Custom metric: Celery queue length
+    - type: External
+      external:
+        metric:
+          name: celery_queue_length
+          selector:
+            matchLabels:
+              queue_name: "celery"
+        target:
+          type: AverageValue
+          averageValue: "50"
+    # Custom metric: Task processing rate
+    - type: Pods
+      pods:
+        metric:
+          name: celery_tasks_per_minute
+        target:
+          type: AverageValue
+          averageValue: "100"
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 600  # 10 minutes - slow scale down for workers
+      policies:
+        - type: Percent
+          value: 25
+          periodSeconds: 120
+        - type: Pods
+          value: 1
+          periodSeconds: 120
+      selectPolicy: Min
+    scaleUp:
+      stabilizationWindowSeconds: 120  # 2 minutes - faster scale up
+      policies:
+        - type: Percent
+          value: 100
+          periodSeconds: 60
+        - type: Pods
+          value: 3
+          periodSeconds: 60
+      selectPolicy: Max
+
+---
+# ==============================================================================
+# HPA for Frontend
+# ==============================================================================
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: vcci-frontend-hpa
+  namespace: vcci-production
+  labels:
+    app.kubernetes.io/name: gl-vcci
+    app.kubernetes.io/component: frontend
+    app.kubernetes.io/part-of: vcci-platform
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: vcci-frontend
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+    # CPU-based scaling
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 60
+    # Memory-based scaling
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 70
+    # Custom metric: HTTP requests per second
+    - type: Pods
+      pods:
+        metric:
+          name: nginx_requests_per_second
+        target:
+          type: AverageValue
+          averageValue: "2000"
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 180
+      policies:
+        - type: Percent
+          value: 50
+          periodSeconds: 60
+        - type: Pods
+          value: 1
+          periodSeconds: 60
+      selectPolicy: Min
+    scaleUp:
+      stabilizationWindowSeconds: 30
+      policies:
+        - type: Percent
+          value: 100
+          periodSeconds: 30
+        - type: Pods
+          value: 2
+          periodSeconds: 30
+      selectPolicy: Max
+
+---
+# ==============================================================================
+# NOTE: Custom Metrics Configuration
+# ==============================================================================
+# To enable custom metrics (http_requests_per_second, celery_queue_length, etc.):
+#
+# 1. Install Prometheus Adapter:
+#    kubectl apply -f https://github.com/kubernetes-sigs/prometheus-adapter/releases/latest/download/adapter.yaml
+#
+# 2. Configure Prometheus to scrape metrics from your services
+#
+# 3. Create PrometheusAdapter ConfigMap to expose custom metrics:
+#
+# apiVersion: v1
+# kind: ConfigMap
+# metadata:
+#   name: adapter-config
+#   namespace: monitoring
+# data:
+#   config.yaml: |
+#     rules:
+#     - seriesQuery: 'http_requests_total{namespace="vcci-production"}'
+#       resources:
+#         overrides:
+#           namespace: {resource: "namespace"}
+#           pod: {resource: "pod"}
+#       name:
+#         matches: "^(.*)_total$"
+#         as: "${1}_per_second"
+#       metricsQuery: 'rate(<<.Series>>{<<.LabelMatchers>>}[2m])'
+#
+# 4. For Celery metrics, use flower or celery-exporter:
+#    - https://github.com/danihodovic/celery-exporter
+#
+# Example deployment:
+#   kubectl apply -f https://raw.githubusercontent.com/danihodovic/celery-exporter/master/deploy/kubernetes.yaml

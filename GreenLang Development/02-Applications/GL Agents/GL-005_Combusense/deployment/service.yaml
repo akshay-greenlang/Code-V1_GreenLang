@@ -1,0 +1,85 @@
+# GL-005 CombustionControlAgent - Kubernetes Services
+# Exposes the application for internal and external access
+
+---
+# Main application service
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-005-combustion-control
+  namespace: greenlang
+  labels:
+    app: gl-005-combustion-control
+    agent: "GL-005"
+    service-type: application
+  annotations:
+    description: "Main service for GL-005 CombustionControlAgent"
+spec:
+  type: ClusterIP
+  selector:
+    app: gl-005-combustion-control
+    agent: "GL-005"
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8000
+      protocol: TCP
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 10800  # 3 hours
+
+---
+# Metrics service for Prometheus
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-005-metrics
+  namespace: greenlang
+  labels:
+    app: gl-005-combustion-control
+    agent: "GL-005"
+    service-type: metrics
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8001"
+    prometheus.io/path: "/metrics"
+spec:
+  type: ClusterIP
+  selector:
+    app: gl-005-combustion-control
+    agent: "GL-005"
+  ports:
+    - name: metrics
+      port: 8001
+      targetPort: 8001
+      protocol: TCP
+
+---
+# Headless service for StatefulSet-like behavior (if needed)
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-005-headless
+  namespace: greenlang
+  labels:
+    app: gl-005-combustion-control
+    agent: "GL-005"
+    service-type: headless
+  annotations:
+    description: "Headless service for direct pod access"
+spec:
+  type: ClusterIP
+  clusterIP: None  # Headless service
+  selector:
+    app: gl-005-combustion-control
+    agent: "GL-005"
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000
+      protocol: TCP
+    - name: metrics
+      port: 8001
+      targetPort: 8001
+      protocol: TCP

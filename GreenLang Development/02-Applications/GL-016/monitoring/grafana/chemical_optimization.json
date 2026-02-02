@@ -1,0 +1,1018 @@
+{
+  "dashboard": {
+    "title": "GL-016 WATERGUARD - Chemical Optimization",
+    "uid": "waterguard-chemical-optimization",
+    "timezone": "browser",
+    "schemaVersion": 38,
+    "version": 1,
+    "refresh": "5m",
+    "editable": true,
+    "tags": ["waterguard", "gl-016", "chemical-optimization", "cost-tracking"],
+    "templating": {
+      "list": [
+        {
+          "name": "datasource",
+          "type": "datasource",
+          "query": "prometheus",
+          "current": {
+            "text": "Prometheus",
+            "value": "Prometheus"
+          }
+        },
+        {
+          "name": "boiler_id",
+          "type": "query",
+          "datasource": "${datasource}",
+          "query": "label_values(water_treatment_chemical_consumption_gallons, boiler_id)",
+          "multi": true,
+          "includeAll": true,
+          "current": {
+            "text": "All",
+            "value": "$__all"
+          },
+          "refresh": 1,
+          "sort": 1
+        },
+        {
+          "name": "facility",
+          "type": "query",
+          "datasource": "${datasource}",
+          "query": "label_values(water_treatment_chemical_consumption_gallons, facility)",
+          "multi": false,
+          "includeAll": false,
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "refresh": 1,
+          "sort": 1
+        },
+        {
+          "name": "timerange",
+          "type": "custom",
+          "options": [
+            {
+              "value": "1h",
+              "text": "Last Hour"
+            },
+            {
+              "value": "24h",
+              "text": "Last 24 Hours"
+            },
+            {
+              "value": "7d",
+              "text": "Last 7 Days"
+            },
+            {
+              "value": "30d",
+              "text": "Last 30 Days"
+            }
+          ],
+          "current": {
+            "text": "Last 24 Hours",
+            "value": "24h"
+          }
+        }
+      ]
+    },
+    "time": {
+      "from": "now-7d",
+      "to": "now"
+    },
+    "timepicker": {
+      "refresh_intervals": ["5m", "15m", "30m", "1h", "6h", "12h"]
+    },
+    "panels": [
+      {
+        "id": 1,
+        "type": "row",
+        "title": "Chemical Consumption Overview",
+        "gridPos": {
+          "h": 1,
+          "w": 24,
+          "x": 0,
+          "y": 0
+        },
+        "collapsed": false
+      },
+      {
+        "id": 2,
+        "type": "timeseries",
+        "title": "Chemical Consumption Trends",
+        "datasource": "${datasource}",
+        "gridPos": {
+          "h": 10,
+          "w": 24,
+          "x": 0,
+          "y": 1
+        },
+        "targets": [
+          {
+            "expr": "rate(water_treatment_chemical_consumption_gallons{boiler_id=~\"$boiler_id\", facility=\"$facility\", chemical=\"phosphate\"}[$timerange])",
+            "legendFormat": "{{boiler_id}} - Phosphate",
+            "refId": "A"
+          },
+          {
+            "expr": "rate(water_treatment_chemical_consumption_gallons{boiler_id=~\"$boiler_id\", facility=\"$facility\", chemical=\"sulfite\"}[$timerange])",
+            "legendFormat": "{{boiler_id}} - Sulfite",
+            "refId": "B"
+          },
+          {
+            "expr": "rate(water_treatment_chemical_consumption_gallons{boiler_id=~\"$boiler_id\", facility=\"$facility\", chemical=\"polymer\"}[$timerange])",
+            "legendFormat": "{{boiler_id}} - Polymer",
+            "refId": "C"
+          },
+          {
+            "expr": "rate(water_treatment_chemical_consumption_gallons{boiler_id=~\"$boiler_id\", facility=\"$facility\", chemical=\"caustic\"}[$timerange])",
+            "legendFormat": "{{boiler_id}} - Caustic",
+            "refId": "D"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
+              "axisLabel": "Gallons/Hour",
+              "axisPlacement": "auto",
+              "fillOpacity": 10,
+              "gradientMode": "none",
+              "lineInterpolation": "smooth",
+              "lineWidth": 2,
+              "pointSize": 5,
+              "showPoints": "never",
+              "spanNulls": true
+            },
+            "unit": "gal/h"
+          }
+        },
+        "options": {
+          "legend": {
+            "displayMode": "table",
+            "placement": "bottom",
+            "showLegend": true,
+            "calcs": ["mean", "max", "lastNotNull"]
+          },
+          "tooltip": {
+            "mode": "multi"
+          }
+        }
+      },
+      {
+        "id": 3,
+        "type": "row",
+        "title": "Cost Analysis",
+        "gridPos": {
+          "h": 1,
+          "w": 24,
+          "x": 0,
+          "y": 11
+        },
+        "collapsed": false
+      },
+      {
+        "id": 4,
+        "type": "stat",
+        "title": "Total Chemical Cost (Period)",
+        "datasource": "${datasource}",
+        "gridPos": {
+          "h": 6,
+          "w": 6,
+          "x": 0,
+          "y": 12
+        },
+        "targets": [
+          {
+            "expr": "sum(increase(water_treatment_chemical_cost_usd{boiler_id=~\"$boiler_id\", facility=\"$facility\"}[$timerange]))",
+            "legendFormat": "Total Cost",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "unit": "currencyUSD",
+            "decimals": 2,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                }
+              ]
+            }
+          }
+        },
+        "options": {
+          "colorMode": "value",
+          "graphMode": "area",
+          "textMode": "value_and_name",
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"]
+          }
+        }
+      },
+      {
+        "id": 5,
+        "type": "stat",
+        "title": "Cost per 1000 lb Steam",
+        "datasource": "${datasource}",
+        "gridPos": {
+          "h": 6,
+          "w": 6,
+          "x": 6,
+          "y": 12
+        },
+        "targets": [
+          {
+            "expr": "avg(water_treatment_chemical_cost_per_1000lb_steam_usd{boiler_id=~\"$boiler_id\", facility=\"$facility\"})",
+            "legendFormat": "Cost/1000lb",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "unit": "currencyUSD",
+            "decimals": 3,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "yellow",
+                  "value": 0.5
+                },
+                {
+                  "color": "red",
+                  "value": 1.0
+                }
+              ]
+            }
+          }
+        },
+        "options": {
+          "colorMode": "background",
+          "graphMode": "area",
+          "textMode": "value_and_name"
+        }
+      },
+      {
+        "id": 6,
+        "type": "stat",
+        "title": "Cost Reduction vs Baseline",
+        "datasource": "${datasource}",
+        "gridPos": {
+          "h": 6,
+          "w": 6,
+          "x": 12,
+          "y": 12
+        },
+        "targets": [
+          {
+            "expr": "100 * (1 - (sum(increase(water_treatment_chemical_cost_usd{boiler_id=~\"$boiler_id\", facility=\"$facility\"}[$timerange])) / sum(increase(water_treatment_chemical_cost_baseline_usd{boiler_id=~\"$boiler_id\", facility=\"$facility\"}[$timerange]))))",
+            "legendFormat": "Cost Reduction %",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "unit": "percent",
+            "decimals": 1,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "red",
+                  "value": null
+                },
+                {
+                  "color": "yellow",
+                  "value": 5
+                },
+                {
+                  "color": "green",
+                  "value": 10
+                }
+              ]
+            }
+          }
+        },
+        "options": {
+          "colorMode": "background",
+          "graphMode": "area",
+          "textMode": "value_and_name"
+        }
+      },
+      {
+        "id": 7,
+        "type": "stat",
+        "title": "Total Savings (Period)",
+        "datasource": "${datasource}",
+        "gridPos": {
+          "h": 6,
+          "w": 6,
+          "x": 18,
+          "y": 12
+        },
+        "targets": [
+          {
+            "expr": "sum(increase(water_treatment_chemical_cost_baseline_usd{boiler_id=~\"$boiler_id\", facility=\"$facility\"}[$timerange])) - sum(increase(water_treatment_chemical_cost_usd{boiler_id=~\"$boiler_id\", facility=\"$facility\"}[$timerange]))",
+            "legendFormat": "Savings",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "unit": "currencyUSD",
+            "decimals": 2,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                }
+              ]
+            }
+          }
+        },
+        "options": {
+          "colorMode": "value",
+          "graphMode": "area",
+          "textMode": "value_and_name"
+        }
+      },
+      {
+        "id": 8,
+        "type": "timeseries",
+        "title": "Cost per Unit Steam Trend",
+        "datasource": "${datasource}",
+        "gridPos": {
+          "h": 9,
+          "w": 24,
+          "x": 0,
+          "y": 18
+        },
+        "targets": [
+          {
+            "expr": "water_treatment_chemical_cost_per_1000lb_steam_usd{boiler_id=~\"$boiler_id\", facility=\"$facility\"}",
+            "legendFormat": "{{boiler_id}} - Cost/1000lb Steam",
+            "refId": "A"
+          },
+          {
+            "expr": "water_treatment_chemical_cost_per_1000lb_steam_baseline_usd{boiler_id=~\"$boiler_id\", facility=\"$facility\"}",
+            "legendFormat": "{{boiler_id}} - Baseline",
+            "refId": "B"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisLabel": "USD per 1000 lb steam",
+              "fillOpacity": 10,
+              "lineInterpolation": "smooth",
+              "lineWidth": 2
+            },
+            "unit": "currencyUSD"
+          },
+          "overrides": [
+            {
+              "matcher": {
+                "id": "byRegexp",
+                "options": ".*Baseline.*"
+              },
+              "properties": [
+                {
+                  "id": "custom.lineStyle",
+                  "value": {
+                    "dash": [10, 10],
+                    "fill": "dash"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "id": 9,
+        "type": "row",
+        "title": "Dosing Efficiency",
+        "gridPos": {
+          "h": 1,
+          "w": 24,
+          "x": 0,
+          "y": 27
+        },
+        "collapsed": false
+      },
+      {
+        "id": 10,
+        "type": "timeseries",
+        "title": "Chemical Dosing Efficiency",
+        "datasource": "${datasource}",
+        "gridPos": {
+          "h": 9,
+          "w": 12,
+          "x": 0,
+          "y": 28
+        },
+        "targets": [
+          {
+            "expr": "water_treatment_chemical_dosing_efficiency_percent{boiler_id=~\"$boiler_id\", facility=\"$facility\", chemical=\"phosphate\"}",
+            "legendFormat": "{{boiler_id}} - Phosphate",
+            "refId": "A"
+          },
+          {
+            "expr": "water_treatment_chemical_dosing_efficiency_percent{boiler_id=~\"$boiler_id\", facility=\"$facility\", chemical=\"sulfite\"}",
+            "legendFormat": "{{boiler_id}} - Sulfite",
+            "refId": "B"
+          },
+          {
+            "expr": "water_treatment_chemical_dosing_efficiency_percent{boiler_id=~\"$boiler_id\", facility=\"$facility\", chemical=\"polymer\"}",
+            "legendFormat": "{{boiler_id}} - Polymer",
+            "refId": "C"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisLabel": "Efficiency %",
+              "fillOpacity": 10,
+              "lineInterpolation": "smooth",
+              "lineWidth": 2
+            },
+            "unit": "percent",
+            "min": 0,
+            "max": 100,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "red",
+                  "value": null
+                },
+                {
+                  "color": "yellow",
+                  "value": 70
+                },
+                {
+                  "color": "green",
+                  "value": 85
+                }
+              ]
+            }
+          }
+        },
+        "options": {
+          "legend": {
+            "displayMode": "table",
+            "placement": "bottom",
+            "showLegend": true,
+            "calcs": ["mean", "lastNotNull"]
+          }
+        }
+      },
+      {
+        "id": 11,
+        "type": "gauge",
+        "title": "Average Dosing Efficiency",
+        "datasource": "${datasource}",
+        "gridPos": {
+          "h": 9,
+          "w": 12,
+          "x": 12,
+          "y": 28
+        },
+        "targets": [
+          {
+            "expr": "avg(water_treatment_chemical_dosing_efficiency_percent{boiler_id=~\"$boiler_id\", facility=\"$facility\"}) by (chemical)",
+            "legendFormat": "{{chemical}}",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "unit": "percent",
+            "min": 0,
+            "max": 100,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "red",
+                  "value": null
+                },
+                {
+                  "color": "yellow",
+                  "value": 70
+                },
+                {
+                  "color": "green",
+                  "value": 85
+                }
+              ]
+            }
+          }
+        },
+        "options": {
+          "showThresholdLabels": true,
+          "showThresholdMarkers": true
+        }
+      },
+      {
+        "id": 12,
+        "type": "row",
+        "title": "Tank Inventory Management",
+        "gridPos": {
+          "h": 1,
+          "w": 24,
+          "x": 0,
+          "y": 37
+        },
+        "collapsed": false
+      },
+      {
+        "id": 13,
+        "type": "bargauge",
+        "title": "Current Tank Levels",
+        "datasource": "${datasource}",
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 38
+        },
+        "targets": [
+          {
+            "expr": "water_treatment_chemical_tank_level_percent{boiler_id=~\"$boiler_id\", facility=\"$facility\"}",
+            "legendFormat": "{{boiler_id}} - {{chemical}}",
+            "refId": "A",
+            "instant": true
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "unit": "percent",
+            "min": 0,
+            "max": 100,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "red",
+                  "value": null
+                },
+                {
+                  "color": "yellow",
+                  "value": 20
+                },
+                {
+                  "color": "green",
+                  "value": 40
+                }
+              ]
+            }
+          }
+        },
+        "options": {
+          "displayMode": "gradient",
+          "orientation": "horizontal",
+          "showUnfilled": true
+        }
+      },
+      {
+        "id": 14,
+        "type": "table",
+        "title": "Tank Inventory Details",
+        "datasource": "${datasource}",
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 38
+        },
+        "targets": [
+          {
+            "expr": "water_treatment_chemical_tank_level_gallons{boiler_id=~\"$boiler_id\", facility=\"$facility\"}",
+            "legendFormat": "{{boiler_id}} - {{chemical}}",
+            "refId": "A",
+            "instant": true,
+            "format": "table"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "custom": {
+              "align": "left"
+            }
+          },
+          "overrides": []
+        },
+        "options": {
+          "showHeader": true,
+          "sortBy": []
+        },
+        "transformations": [
+          {
+            "id": "organize",
+            "options": {
+              "excludeByName": {
+                "Time": true,
+                "__name__": true
+              },
+              "indexByName": {},
+              "renameByName": {
+                "boiler_id": "Boiler",
+                "chemical": "Chemical",
+                "Value": "Level (gal)"
+              }
+            }
+          },
+          {
+            "id": "sortBy",
+            "options": {
+              "fields": {},
+              "sort": [
+                {
+                  "field": "Level (gal)",
+                  "desc": false
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": 15,
+        "type": "timeseries",
+        "title": "Tank Level Trends",
+        "datasource": "${datasource}",
+        "gridPos": {
+          "h": 8,
+          "w": 24,
+          "x": 0,
+          "y": 46
+        },
+        "targets": [
+          {
+            "expr": "water_treatment_chemical_tank_level_percent{boiler_id=~\"$boiler_id\", facility=\"$facility\"}",
+            "legendFormat": "{{boiler_id}} - {{chemical}}",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisLabel": "Tank Level %",
+              "fillOpacity": 10,
+              "lineInterpolation": "smooth",
+              "lineWidth": 2
+            },
+            "unit": "percent",
+            "min": 0,
+            "max": 100
+          }
+        }
+      },
+      {
+        "id": 16,
+        "type": "row",
+        "title": "Reorder Predictions",
+        "gridPos": {
+          "h": 1,
+          "w": 24,
+          "x": 0,
+          "y": 54
+        },
+        "collapsed": false
+      },
+      {
+        "id": 17,
+        "type": "table",
+        "title": "Chemical Reorder Forecast",
+        "datasource": "${datasource}",
+        "gridPos": {
+          "h": 8,
+          "w": 24,
+          "x": 0,
+          "y": 55
+        },
+        "targets": [
+          {
+            "expr": "water_treatment_chemical_reorder_days{boiler_id=~\"$boiler_id\", facility=\"$facility\"}",
+            "legendFormat": "{{boiler_id}} - {{chemical}}",
+            "refId": "A",
+            "instant": true,
+            "format": "table"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "custom": {
+              "align": "left"
+            }
+          },
+          "overrides": [
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "Days Until Reorder"
+              },
+              "properties": [
+                {
+                  "id": "custom.displayMode",
+                  "value": "color-background"
+                },
+                {
+                  "id": "thresholds",
+                  "value": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "red",
+                        "value": null
+                      },
+                      {
+                        "color": "yellow",
+                        "value": 7
+                      },
+                      {
+                        "color": "green",
+                        "value": 14
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "options": {
+          "showHeader": true,
+          "sortBy": [
+            {
+              "displayName": "Days Until Reorder",
+              "desc": false
+            }
+          ]
+        },
+        "transformations": [
+          {
+            "id": "organize",
+            "options": {
+              "excludeByName": {
+                "Time": true,
+                "__name__": true
+              },
+              "indexByName": {},
+              "renameByName": {
+                "boiler_id": "Boiler",
+                "chemical": "Chemical",
+                "Value": "Days Until Reorder"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": 18,
+        "type": "row",
+        "title": "ROI Tracking",
+        "gridPos": {
+          "h": 1,
+          "w": 24,
+          "x": 0,
+          "y": 63
+        },
+        "collapsed": false
+      },
+      {
+        "id": 19,
+        "type": "stat",
+        "title": "Monthly ROI",
+        "datasource": "${datasource}",
+        "gridPos": {
+          "h": 6,
+          "w": 8,
+          "x": 0,
+          "y": 64
+        },
+        "targets": [
+          {
+            "expr": "100 * (sum(increase(water_treatment_total_cost_savings_usd{boiler_id=~\"$boiler_id\", facility=\"$facility\"}[30d])) / sum(increase(water_treatment_agent_operating_cost_usd{boiler_id=~\"$boiler_id\", facility=\"$facility\"}[30d])))",
+            "legendFormat": "ROI %",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "unit": "percent",
+            "decimals": 0,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "red",
+                  "value": null
+                },
+                {
+                  "color": "yellow",
+                  "value": 100
+                },
+                {
+                  "color": "green",
+                  "value": 200
+                }
+              ]
+            }
+          }
+        },
+        "options": {
+          "colorMode": "background",
+          "graphMode": "area",
+          "textMode": "value_and_name"
+        }
+      },
+      {
+        "id": 20,
+        "type": "stat",
+        "title": "Payback Period",
+        "datasource": "${datasource}",
+        "gridPos": {
+          "h": 6,
+          "w": 8,
+          "x": 8,
+          "y": 64
+        },
+        "targets": [
+          {
+            "expr": "30 / (sum(increase(water_treatment_total_cost_savings_usd{boiler_id=~\"$boiler_id\", facility=\"$facility\"}[30d])) / sum(increase(water_treatment_agent_operating_cost_usd{boiler_id=~\"$boiler_id\", facility=\"$facility\"}[30d])))",
+            "legendFormat": "Payback Days",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "unit": "d",
+            "decimals": 0,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "yellow",
+                  "value": 180
+                },
+                {
+                  "color": "red",
+                  "value": 365
+                }
+              ]
+            }
+          }
+        },
+        "options": {
+          "colorMode": "background",
+          "graphMode": "area",
+          "textMode": "value_and_name"
+        }
+      },
+      {
+        "id": 21,
+        "type": "stat",
+        "title": "Net Savings (30d)",
+        "datasource": "${datasource}",
+        "gridPos": {
+          "h": 6,
+          "w": 8,
+          "x": 16,
+          "y": 64
+        },
+        "targets": [
+          {
+            "expr": "sum(increase(water_treatment_total_cost_savings_usd{boiler_id=~\"$boiler_id\", facility=\"$facility\"}[30d])) - sum(increase(water_treatment_agent_operating_cost_usd{boiler_id=~\"$boiler_id\", facility=\"$facility\"}[30d]))",
+            "legendFormat": "Net Savings",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "unit": "currencyUSD",
+            "decimals": 2,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "red",
+                  "value": null
+                },
+                {
+                  "color": "green",
+                  "value": 0
+                }
+              ]
+            }
+          }
+        },
+        "options": {
+          "colorMode": "value",
+          "graphMode": "area",
+          "textMode": "value_and_name"
+        }
+      },
+      {
+        "id": 22,
+        "type": "timeseries",
+        "title": "Cumulative ROI Trend",
+        "datasource": "${datasource}",
+        "gridPos": {
+          "h": 9,
+          "w": 24,
+          "x": 0,
+          "y": 70
+        },
+        "targets": [
+          {
+            "expr": "sum(water_treatment_total_cost_savings_usd{boiler_id=~\"$boiler_id\", facility=\"$facility\"})",
+            "legendFormat": "Total Savings",
+            "refId": "A"
+          },
+          {
+            "expr": "sum(water_treatment_agent_operating_cost_usd{boiler_id=~\"$boiler_id\", facility=\"$facility\"})",
+            "legendFormat": "Operating Cost",
+            "refId": "B"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisLabel": "USD",
+              "fillOpacity": 20,
+              "lineInterpolation": "smooth",
+              "lineWidth": 2
+            },
+            "unit": "currencyUSD"
+          }
+        },
+        "options": {
+          "legend": {
+            "displayMode": "table",
+            "placement": "bottom",
+            "showLegend": true,
+            "calcs": ["lastNotNull", "mean"]
+          }
+        }
+      }
+    ]
+  }
+}

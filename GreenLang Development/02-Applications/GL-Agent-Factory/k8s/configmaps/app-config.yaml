@@ -1,0 +1,77 @@
+# GreenLang Application Configuration
+# Non-sensitive configuration values
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+  namespace: greenlang-production
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/instance: production
+    app.kubernetes.io/component: config
+    app.kubernetes.io/part-of: greenlang-platform
+  annotations:
+    description: "Application configuration for GreenLang services"
+data:
+  # Application settings
+  GREENLANG_APP_NAME: "GreenLang Agent Factory"
+  GREENLANG_APP_ENV: "production"
+  GREENLANG_DEBUG: "false"
+  GREENLANG_LOG_LEVEL: "INFO"
+
+  # API settings
+  GREENLANG_API_PREFIX: "/v1"
+  GREENLANG_API_VERSION: "1.0.0"
+
+  # CORS settings
+  GREENLANG_CORS_ORIGINS: "https://app.greenlang.ai,https://api.greenlang.ai,https://admin.greenlang.ai"
+
+  # Database settings (non-sensitive)
+  GREENLANG_DATABASE_POOL_SIZE: "20"
+  GREENLANG_DATABASE_MAX_OVERFLOW: "10"
+  GREENLANG_DATABASE_POOL_TIMEOUT: "30"
+  DATABASE_HOST: "postgresql-service"
+  DATABASE_PORT: "5432"
+  DATABASE_NAME: "greenlang"
+
+  # Redis settings (non-sensitive)
+  GREENLANG_REDIS_MAX_CONNECTIONS: "10"
+  REDIS_HOST: "redis-service"
+  REDIS_PORT: "6379"
+
+  # Rate limiting
+  GREENLANG_RATE_LIMIT_PER_MINUTE: "100"
+  GREENLANG_RATE_LIMIT_BURST: "20"
+
+  # Agent execution settings
+  GREENLANG_EXECUTION_TIMEOUT_DEFAULT: "300"
+  GREENLANG_EXECUTION_TIMEOUT_MAX: "3600"
+  GREENLANG_EXECUTION_MAX_CONCURRENT: "100"
+
+  # S3/Storage settings (non-sensitive)
+  GREENLANG_S3_BUCKET: "greenlang-artifacts-production"
+  GREENLANG_S3_REGION: "us-east-1"
+
+  # Observability
+  GREENLANG_METRICS_ENABLED: "true"
+  GREENLANG_TRACING_ENABLED: "true"
+  GREENLANG_OTLP_ENDPOINT: "http://otel-collector:4317"
+
+  # Multi-tenancy
+  GREENLANG_DEFAULT_TENANT_QUOTA_AGENTS: "100"
+  GREENLANG_DEFAULT_TENANT_QUOTA_EXECUTIONS_PER_MONTH: "10000"
+
+  # Feature flags
+  FEATURE_ZERO_HALLUCINATION: "true"
+  FEATURE_PROVENANCE_TRACKING: "true"
+  FEATURE_AUDIT_LOGGING: "true"
+  FEATURE_MULTI_TENANCY: "true"
+
+  # Service URLs
+  AGENT_RUNTIME_URL: "http://agent-runtime-service"
+  REGISTRY_URL: "http://registry-service"
+  API_SERVER_URL: "http://api-server-service"
+
+  # JWT settings (non-sensitive)
+  GREENLANG_JWT_ALGORITHM: "HS256"
+  GREENLANG_JWT_EXPIRATION_HOURS: "24"

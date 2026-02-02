@@ -1,0 +1,91 @@
+# =============================================================================
+# Prometheus Configuration - GreenLang Agents
+# =============================================================================
+# Configuration for scraping metrics from GreenLang agents
+# =============================================================================
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'greenlang-dev'
+    environment: 'development'
+
+# Alerting configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          # - alertmanager:9093
+
+# Rule files
+rule_files:
+  # - "alerts/*.yml"
+
+# Scrape configurations
+scrape_configs:
+  # ==========================================================================
+  # Prometheus self-monitoring
+  # ==========================================================================
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+    metrics_path: /metrics
+    scheme: http
+
+  # ==========================================================================
+  # Fuel Emissions Analyzer Agent
+  # ==========================================================================
+  - job_name: 'fuel-analyzer'
+    static_configs:
+      - targets: ['fuel-analyzer:9090']
+        labels:
+          agent_id: 'emissions/fuel_analyzer_v1'
+          agent_name: 'Fuel Emissions Analyzer'
+          agent_type: 'emissions'
+    metrics_path: /metrics
+    scheme: http
+    scrape_interval: 15s
+    scrape_timeout: 10s
+
+  # ==========================================================================
+  # CBAM Carbon Intensity Calculator
+  # ==========================================================================
+  - job_name: 'carbon-intensity'
+    static_configs:
+      - targets: ['carbon-intensity:9090']
+        labels:
+          agent_id: 'cbam/carbon_intensity_v1'
+          agent_name: 'CBAM Carbon Intensity Calculator'
+          agent_type: 'cbam'
+    metrics_path: /metrics
+    scheme: http
+    scrape_interval: 15s
+    scrape_timeout: 10s
+
+  # ==========================================================================
+  # Building Energy Performance Calculator
+  # ==========================================================================
+  - job_name: 'energy-performance'
+    static_configs:
+      - targets: ['energy-performance:9090']
+        labels:
+          agent_id: 'building/energy_performance_v1'
+          agent_name: 'Building Energy Performance Calculator'
+          agent_type: 'building'
+    metrics_path: /metrics
+    scheme: http
+    scrape_interval: 15s
+    scrape_timeout: 10s
+
+  # ==========================================================================
+  # Redis (if using)
+  # ==========================================================================
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis:9121']
+        labels:
+          service: 'redis'
+    metrics_path: /metrics
+    scheme: http
+    scrape_interval: 30s

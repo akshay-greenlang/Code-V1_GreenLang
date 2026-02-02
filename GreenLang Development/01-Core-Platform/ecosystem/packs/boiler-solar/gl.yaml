@@ -1,0 +1,49 @@
+name: boiler-solar-pipeline
+version: 1.0.0
+description: Deterministic boiler and solar analysis pipeline
+
+steps:
+  - name: validate
+    agent: packs/boiler-solar/agents/boiler_analyzer.py
+    action: validate_inputs
+    inputs:
+      building_size_sqft: 50000
+      location: "IN-North"
+      boiler_age_years: 10
+      solar_panel_area_sqm: 100
+      annual_operating_hours: 2000
+
+  - name: boiler
+    agent: packs/boiler-solar/agents/boiler_analyzer.py
+    action: analyze_efficiency
+    inputs:
+      validated_data: "$steps.validate.outputs"
+      boiler_age_years: 10
+
+  - name: solar
+    agent: packs/boiler-solar/agents/solar_estimator.py  
+    action: calculate_generation
+    inputs:
+      location: "IN-North"
+      panel_area_sqm: 100
+      annual_hours: 2000
+
+  - name: carbon
+    agent: packs/boiler-solar/agents/boiler_analyzer.py
+    action: calculate_emissions
+    inputs:
+      boiler_output: "$steps.boiler.outputs"
+      solar_output: "$steps.solar.outputs"
+      grid_intensity: 0.82
+
+  - name: report
+    agent: packs/boiler-solar/agents/solar_estimator.py
+    action: generate_report
+    inputs:
+      all_data: "$steps"
+      template: "reports/cfo_brief.html.j2"
+
+outputs:
+  annual_co2e_tons: 125.5
+  co2_reduction_tons: 24.5
+  cost_savings_usd: 15000

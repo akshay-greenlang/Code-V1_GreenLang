@@ -1,0 +1,201 @@
+# GL-002 Flameguard - High Availability Deployment
+# Boiler Efficiency Optimizer with SIL 2 safety integration
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gl-002-flameguard
+  namespace: greenlang
+  labels:
+    app: gl-002-flameguard
+    app.kubernetes.io/name: flameguard
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/component: boiler-optimizer
+    app.kubernetes.io/part-of: greenlang
+    safety.greenlang.io/sil-level: "2"
+spec:
+  replicas: 2
+  revisionHistoryLimit: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: gl-002-flameguard
+  template:
+    metadata:
+      labels:
+        app: gl-002-flameguard
+        safety.greenlang.io/sil-level: "2"
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+    spec:
+      serviceAccountName: gl-002-flameguard
+      terminationGracePeriodSeconds: 60
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  app: gl-002-flameguard
+              topologyKey: topology.kubernetes.io/zone
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: gl-002-flameguard
+                topologyKey: kubernetes.io/hostname
+
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: DoNotSchedule
+          labelSelector:
+            matchLabels:
+              app: gl-002-flameguard
+
+      containers:
+        - name: flameguard
+          image: gcr.io/greenlang/gl-002-flameguard:1.0.0
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 8080
+            - name: metrics
+              containerPort: 9090
+          env:
+            - name: ENVIRONMENT
+              value: "production"
+            - name: SAFETY_LEVEL
+              value: "SIL_2"
+            - name: WATCHDOG_TIMEOUT_MS
+              value: "5000"
+            - name: SCADA_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: gl-002-scada-credentials
+                  key: host
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: gl-002-db-credentials
+                  key: url
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: gl-002-redis-credentials
+                  key: url
+            - name: KAFKA_BROKERS
+              valueFrom:
+                secretKeyRef:
+                  name: gl-002-kafka-credentials
+                  key: brokers
+          resources:
+            requests:
+              cpu: 500m
+              memory: 512Mi
+            limits:
+              cpu: 2000m
+              memory: 2Gi
+          startupProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 30
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            periodSeconds: 5
+            timeoutSeconds: 3
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+            - name: config
+              mountPath: /app/config
+
+      volumes:
+        - name: tmp
+          emptyDir:
+            medium: Memory
+            sizeLimit: 256Mi
+        - name: config
+          configMap:
+            name: gl-002-flameguard-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-002-flameguard
+  namespace: greenlang
+spec:
+  type: ClusterIP
+  selector:
+    app: gl-002-flameguard
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
+    - name: metrics
+      port: 9090
+      targetPort: 9090
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: gl-002-flameguard-hpa
+  namespace: greenlang
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: gl-002-flameguard
+  minReplicas: 2
+  maxReplicas: 6
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: gl-002-flameguard-pdb
+  namespace: greenlang
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: gl-002-flameguard

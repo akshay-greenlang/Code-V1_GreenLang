@@ -1,0 +1,87 @@
+version: "3.9"
+services:
+  fuelcraft:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    image: gl-011-fuelcraft:latest
+    container_name: gl-011-fuelcraft
+    restart: unless-stopped
+    environment:
+      GL_AGENT_ID: GL-011
+      GL_AGENT_NAME: FUELCRAFT
+      GL_LOG_LEVEL: DEBUG
+      APP_ENV: development
+      DATABASE_URL: postgresql://fuelcraft:fuelcraft_dev@postgres:5432/fuelcraft
+      REDIS_URL: redis://redis:6379/0
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    ports:
+      - "8080:8080"
+      - "50051:50051"
+      - "9090:9090"
+    depends_on:
+      - postgres
+      - redis
+      - kafka
+    networks:
+      - fuelcraft-network
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: gl-011-postgres
+    environment:
+      POSTGRES_DB: fuelcraft
+      POSTGRES_USER: fuelcraft
+      POSTGRES_PASSWORD: fuelcraft_dev
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - fuelcraft-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: gl-011-redis
+    command: redis-server --appendonly yes
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - fuelcraft-network
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: gl-011-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+    ports:
+      - "2181:2181"
+    networks:
+      - fuelcraft-network
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: gl-011-kafka
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    ports:
+      - "9092:9092"
+    networks:
+      - fuelcraft-network
+
+networks:
+  fuelcraft-network:
+    driver: bridge
+
+volumes:
+  postgres-data:
+  redis-data:

@@ -1,0 +1,293 @@
+{
+  "commercial_office": {
+    "US": {
+      "excellent": 10,
+      "good": 20,
+      "average": 35,
+      "poor": 50,
+      "source": "ENERGY STAR Portfolio Manager",
+      "year": 2024,
+      "unit": "kgCO2e/sqft/year",
+      "energy_star_threshold": 75
+    },
+    "IN": {
+      "excellent": 8,
+      "good": 16,
+      "average": 28,
+      "poor": 40,
+      "source": "BEE (Bureau of Energy Efficiency)",
+      "year": 2024,
+      "unit": "kgCO2e/sqft/year",
+      "star_ratings": {
+        "5_star": 8,
+        "4_star": 12,
+        "3_star": 20,
+        "2_star": 28,
+        "1_star": 40
+      }
+    },
+    "EU": {
+      "excellent": 7,
+      "good": 14,
+      "average": 24.5,
+      "poor": 35,
+      "source": "EU Energy Performance Certificate",
+      "year": 2024,
+      "unit": "kgCO2e/sqft/year",
+      "epc_ratings": {
+        "A": 7,
+        "B": 10.5,
+        "C": 14,
+        "D": 21,
+        "E": 28,
+        "F": 35,
+        "G": 42
+      }
+    },
+    "CN": {
+      "excellent": 11,
+      "good": 22,
+      "average": 38.5,
+      "poor": 55,
+      "source": "China Green Building Label",
+      "year": 2024,
+      "unit": "kgCO2e/sqft/year",
+      "gb_ratings": {
+        "3_star": 11,
+        "2_star": 22,
+        "1_star": 38.5
+      }
+    },
+    "JP": {
+      "excellent": 9,
+      "good": 18,
+      "average": 31.5,
+      "poor": 45,
+      "source": "CASBEE / Top Runner",
+      "year": 2024,
+      "unit": "kgCO2e/sqft/year",
+      "casbee_ratings": {
+        "S": 9,
+        "A": 13.5,
+        "B_plus": 18,
+        "B_minus": 27,
+        "C": 36
+      }
+    },
+    "BR": {
+      "excellent": 5,
+      "good": 10,
+      "average": 17.5,
+      "poor": 25,
+      "source": "PROCEL Edifica",
+      "year": 2024,
+      "unit": "kgCO2e/sqft/year"
+    },
+    "KR": {
+      "excellent": 10,
+      "good": 20,
+      "average": 35,
+      "poor": 50,
+      "source": "Korea Energy Agency",
+      "year": 2024,
+      "unit": "kgCO2e/sqft/year"
+    }
+  },
+  "hospital": {
+    "US": {
+      "excellent": 30,
+      "good": 50,
+      "average": 75,
+      "poor": 100,
+      "source": "ENERGY STAR",
+      "year": 2024,
+      "unit": "kgCO2e/sqft/year"
+    },
+    "IN": {
+      "excellent": 24,
+      "good": 40,
+      "average": 60,
+      "poor": 80,
+      "source": "BEE Healthcare",
+      "year": 2024,
+      "unit": "kgCO2e/sqft/year"
+    },
+    "EU": {
+      "excellent": 21,
+      "good": 35,
+      "average": 52.5,
+      "poor": 70,
+      "source": "EU Healthcare EPC",
+      "year": 2024,
+      "unit": "kgCO2e/sqft/year"
+    }
+  },
+  "data_center": {
+    "US": {
+      "excellent": 200,
+      "good": 400,
+      "average": 600,
+      "poor": 800,
+      "source": "Data Center Efficiency Standards",
+      "year": 2024,
+      "unit": "kgCO2e/sqft/year",
+      "pue_targets": {
+        "excellent": 1.2,
+        "good": 1.5,
+        "average": 1.8,
+        "poor": 2.2
+      }
+    },
+    "IN": {
+      "excellent": 160,
+      "good": 320,
+      "average": 480,
+      "poor": 640,
+      "source": "India Data Center Standards",
+      "year": 2024,
+      "unit": "kgCO2e/sqft/year"
+    },
+    "EU": {
+      "excellent": 140,
+      "good": 280,
+      "average": 420,
+      "poor": 560,
+      "source": "EU Code of Conduct for Data Centers",
+      "year": 2024,
+      "unit": "kgCO2e/sqft/year"
+    }
+  },
+  "retail": {
+    "US": {
+      "excellent": 15,
+      "good": 30,
+      "average": 45,
+      "poor": 60,
+      "source": "ENERGY STAR Retail",
+      "year": 2024,
+      "unit": "kgCO2e/sqft/year"
+    },
+    "IN": {
+      "excellent": 12,
+      "good": 24,
+      "average": 36,
+      "poor": 48,
+      "source": "BEE Retail",
+      "year": 2024,
+      "unit": "kgCO2e/sqft/year"
+    },
+    "EU": {
+      "excellent": 10.5,
+      "good": 21,
+      "average": 31.5,
+      "poor": 42,
+      "source": "EU Retail EPC",
+      "year": 2024,
+      "unit": "kgCO2e/sqft/year"
+    }
+  },
+  "warehouse": {
+    "US": {
+      "excellent": 5,
+      "good": 10,
+      "average": 20,
+      "poor": 30,
+      "source": "ENERGY STAR Warehouse",
+      "year": 2024,
+      "unit": "kgCO2e/sqft/year"
+    },
+    "IN": {
+      "excellent": 4,
+      "good": 8,
+      "average": 16,
+      "poor": 24,
+      "source": "BEE Warehouse",
+      "year": 2024,
+      "unit": "kgCO2e/sqft/year"
+    },
+    "EU": {
+      "excellent": 3.5,
+      "good": 7,
+      "average": 14,
+      "poor": 21,
+      "source": "EU Logistics EPC",
+      "year": 2024,
+      "unit": "kgCO2e/sqft/year"
+    }
+  },
+  "hotel": {
+    "US": {
+      "excellent": 20,
+      "good": 35,
+      "average": 50,
+      "poor": 70,
+      "source": "ENERGY STAR Hotels",
+      "year": 2024,
+      "unit": "kgCO2e/sqft/year"
+    },
+    "IN": {
+      "excellent": 16,
+      "good": 28,
+      "average": 40,
+      "poor": 56,
+      "source": "BEE Hotels",
+      "year": 2024,
+      "unit": "kgCO2e/sqft/year"
+    },
+    "EU": {
+      "excellent": 14,
+      "good": 24.5,
+      "average": 35,
+      "poor": 49,
+      "source": "EU Hotel Energy Label",
+      "year": 2024,
+      "unit": "kgCO2e/sqft/year"
+    }
+  },
+  "education": {
+    "US": {
+      "excellent": 12,
+      "good": 25,
+      "average": 40,
+      "poor": 55,
+      "source": "ENERGY STAR Schools",
+      "year": 2024,
+      "unit": "kgCO2e/sqft/year"
+    },
+    "IN": {
+      "excellent": 9.6,
+      "good": 20,
+      "average": 32,
+      "poor": 44,
+      "source": "BEE Educational Buildings",
+      "year": 2024,
+      "unit": "kgCO2e/sqft/year"
+    },
+    "EU": {
+      "excellent": 8.4,
+      "good": 17.5,
+      "average": 28,
+      "poor": 38.5,
+      "source": "EU Schools EPC",
+      "year": 2024,
+      "unit": "kgCO2e/sqft/year"
+    }
+  },
+  "metadata": {
+    "last_updated": "2024-12",
+    "sources": [
+      "ENERGY STAR Portfolio Manager",
+      "BEE India",
+      "EU Energy Performance Certificates",
+      "China Green Building Council",
+      "CASBEE Japan",
+      "PROCEL Brazil",
+      "Korea Energy Agency"
+    ],
+    "notes": "Benchmarks are based on total carbon emissions intensity including all fuel sources",
+    "conversion_factors": {
+      "sqft_to_sqm": 0.092903,
+      "sqm_to_sqft": 10.764
+    }
+  }
+}

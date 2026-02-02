@@ -1,0 +1,25 @@
+# Invalid Payload - Property Name Pattern Violation
+# Error Code: GLSCHEMA-E209 (PROPERTY_NAME_VIOLATION)
+# Schema: basic/object_constraints.yaml
+
+_test_metadata:
+  schema: "basic/object_constraints.yaml"
+  description: "Property name does not match required pattern"
+  expected_valid: false
+  expected_errors:
+    - code: "GLSCHEMA-E209"
+      path: "/tags_map/InvalidKey"
+      severity: "error"
+
+id: "ABC-123456"
+name: "Test Organization"
+metadata:
+  created_at: "2026-01-15T10:00:00Z"
+
+tags_map:
+  valid_key: "ok"
+  InvalidKey: "bad"  # Property name must match ^[a-z][a-z0-9_]*$
+  123_bad: "also bad"
+
+attributes:
+  dept: "Engineering"

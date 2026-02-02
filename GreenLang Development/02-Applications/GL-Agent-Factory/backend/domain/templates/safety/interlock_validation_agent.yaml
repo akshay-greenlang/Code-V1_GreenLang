@@ -1,0 +1,625 @@
+# =============================================================================
+# Interlock Validation Agent Template
+# GreenLang Agent Factory - Process Heat Applications
+# =============================================================================
+# Standards: IEC 61511, NFPA 85/86, ISA 84
+# Version: 1.0.0
+# =============================================================================
+
+metadata:
+  template_id: interlock_validation_agent
+  name: Safety Interlock Validation Agent
+  description: >
+    Validates safety interlock logic, timing, and functionality against design
+    specifications and regulatory requirements. Verifies trip logic, response
+    times, and bypass management for process heat safety systems.
+  category: safety
+  version: "1.0.0"
+  status: production
+  author: GreenLang Engineering Team
+  created_at: "2024-12-01T00:00:00Z"
+  updated_at: "2024-12-11T00:00:00Z"
+
+  tags:
+    - interlock
+    - safety_logic
+    - trip_system
+    - bypass_management
+    - response_time
+    - proof_testing
+
+  equipment_types:
+    - safety_interlock
+    - burner_management_system
+    - emergency_shutdown
+    - process_trip_system
+
+  industries:
+    - oil_gas
+    - petrochemical
+    - chemical
+    - power_generation
+
+  applicable_standards:
+    - IEC 61511
+    - NFPA 85
+    - NFPA 86
+    - ISA 84
+
+# =============================================================================
+# Input Schema
+# =============================================================================
+
+input_schema:
+  name: InterlockValidationInput
+  description: Safety interlock validation input parameters
+  version: "1.0.0"
+
+  fields:
+    # Interlock identification
+    interlock_tag:
+      type: string
+      description: Interlock tag number
+      required: true
+
+    interlock_description:
+      type: string
+      description: Description of interlock function
+      required: true
+
+    interlock_type:
+      type: enum
+      description: Type of safety interlock
+      required: true
+      allowed_values:
+        - process_trip
+        - burner_trip
+        - emergency_shutdown
+        - permissive
+        - alarm
+
+    sil_rating:
+      type: integer
+      description: Required SIL rating
+      required: false
+      min_value: 1
+      max_value: 4
+
+    # Input devices
+    input_devices:
+      type: list
+      description: List of input devices/transmitters
+      required: true
+
+    input_voting:
+      type: string
+      description: Input voting logic (e.g., 1oo1, 2oo3)
+      required: true
+      default: "1oo1"
+
+    setpoint_value:
+      type: float
+      description: Trip setpoint value
+      required: true
+
+    setpoint_unit:
+      type: string
+      description: Setpoint engineering unit
+      required: true
+
+    # Logic specification
+    trip_logic:
+      type: string
+      description: Trip logic description (AND/OR combinations)
+      required: true
+
+    logic_solver_type:
+      type: enum
+      description: Type of logic solver
+      required: true
+      allowed_values:
+        - safety_plc
+        - relay
+        - solid_state
+        - pneumatic
+
+    logic_solver_tag:
+      type: string
+      description: Logic solver tag/identifier
+      required: true
+
+    # Output devices
+    output_devices:
+      type: list
+      description: List of final elements
+      required: true
+
+    output_voting:
+      type: string
+      description: Output voting logic
+      required: false
+      default: "1oo1"
+
+    fail_safe_position:
+      type: enum
+      description: Fail-safe position of final elements
+      required: true
+      allowed_values:
+        - open
+        - closed
+        - as_is
+
+    # Timing requirements
+    required_response_time:
+      type: float
+      description: Maximum allowed response time
+      required: true
+      unit: seconds
+      min_value: 0
+
+    sensor_response_time:
+      type: float
+      description: Sensor response time
+      required: true
+      unit: seconds
+
+    logic_scan_time:
+      type: float
+      description: Logic solver scan time
+      required: true
+      unit: milliseconds
+
+    final_element_stroke_time:
+      type: float
+      description: Final element stroke time
+      required: true
+      unit: seconds
+
+    # Bypass management
+    bypass_allowed:
+      type: boolean
+      description: Whether bypass is permitted
+      required: true
+
+    bypass_type:
+      type: enum
+      description: Type of bypass
+      required: false
+      allowed_values:
+        - maintenance
+        - operational
+        - not_allowed
+
+    max_bypass_time:
+      type: float
+      description: Maximum allowed bypass duration
+      required: false
+      unit: hours
+
+    bypass_authorization:
+      type: enum
+      description: Authorization level for bypass
+      required: false
+      allowed_values:
+        - operator
+        - supervisor
+        - engineer
+        - not_allowed
+
+    # Testing requirements
+    proof_test_interval:
+      type: float
+      description: Proof test interval
+      required: true
+      unit: months
+
+    last_proof_test_date:
+      type: date
+      description: Date of last proof test
+      required: false
+
+    proof_test_procedure:
+      type: string
+      description: Reference to proof test procedure
+      required: false
+
+    # Design basis
+    design_basis_document:
+      type: string
+      description: Reference to design basis document
+      required: false
+
+    cause_and_effect_matrix:
+      type: string
+      description: Reference to C&E matrix
+      required: false
+
+# =============================================================================
+# Output Schema
+# =============================================================================
+
+output_schema:
+  name: InterlockValidationOutput
+  description: Safety interlock validation results
+  version: "1.0.0"
+
+  fields:
+    # Overall validation status
+    validation_status:
+      type: string
+      description: Overall validation status
+
+    validation_score:
+      type: float
+      description: Validation score (0-100)
+      unit: percent
+
+    # Response time analysis
+    total_response_time:
+      type: float
+      description: Calculated total response time
+      unit: seconds
+
+    response_time_margin:
+      type: float
+      description: Margin to requirement
+      unit: seconds
+
+    response_time_compliant:
+      type: boolean
+      description: Response time compliance status
+
+    response_time_breakdown:
+      type: dict
+      description: Breakdown of response time components
+
+    # Logic validation
+    logic_validation_status:
+      type: string
+      description: Logic validation status
+
+    logic_deficiencies:
+      type: list
+      description: Logic deficiencies found
+
+    voting_compliance:
+      type: boolean
+      description: Voting logic compliance
+
+    # Bypass compliance
+    bypass_compliance:
+      type: boolean
+      description: Bypass management compliance
+
+    bypass_deficiencies:
+      type: list
+      description: Bypass management deficiencies
+
+    # Testing compliance
+    testing_compliance:
+      type: boolean
+      description: Testing program compliance
+
+    next_proof_test_due:
+      type: date
+      description: Next proof test due date
+
+    testing_deficiencies:
+      type: list
+      description: Testing deficiencies
+
+    # Documentation compliance
+    documentation_status:
+      type: string
+      description: Documentation completeness
+
+    missing_documentation:
+      type: list
+      description: Missing documentation items
+
+    # All deficiencies
+    all_deficiencies:
+      type: list
+      description: Complete list of deficiencies
+
+    critical_deficiencies:
+      type: list
+      description: Critical deficiencies requiring immediate action
+
+    # Recommendations
+    recommendations:
+      type: list
+      description: Improvement recommendations
+
+    corrective_actions:
+      type: list
+      description: Required corrective actions
+
+    # Provenance
+    provenance_hash:
+      type: string
+      description: SHA-256 validation hash
+
+    calculation_timestamp:
+      type: datetime
+      description: Validation timestamp
+
+    source_references:
+      type: list
+      description: Standards referenced
+
+# =============================================================================
+# Formulas
+# =============================================================================
+
+formulas:
+  - id: TOTAL_RESPONSE_TIME
+    name: Total Response Time
+    description: Calculate total interlock response time
+    equation: "t_total = t_sensor + t_logic + t_final"
+    variables:
+      t_total:
+        description: Total response time
+        unit: seconds
+        type: float
+      t_sensor:
+        description: Sensor response time
+        unit: seconds
+        type: float
+      t_logic:
+        description: Logic solver response time
+        unit: seconds
+        type: float
+      t_final:
+        description: Final element response time
+        unit: seconds
+        type: float
+    source:
+      standard: IEC 61511
+      section: "Part 1, Section 11.4"
+      edition: "2016"
+    application: Response time verification
+
+  - id: RESPONSE_TIME_MARGIN
+    name: Response Time Margin
+    description: Calculate margin to requirement
+    equation: "margin = t_required - t_total"
+    variables:
+      margin:
+        description: Time margin
+        unit: seconds
+        type: float
+      t_required:
+        description: Required response time
+        unit: seconds
+        type: float
+      t_total:
+        description: Actual response time
+        unit: seconds
+        type: float
+    source:
+      standard: IEC 61511
+      section: "Part 1, Section 11.4"
+      edition: "2016"
+    application: Margin assessment
+
+# =============================================================================
+# Standards References
+# =============================================================================
+
+standards:
+  - code: IEC 61511
+    title: Functional safety - Safety instrumented systems for the process industry
+    edition: "2016"
+    sections:
+      - "Part 1: Framework"
+      - "Part 2: Guidelines"
+    requirements:
+      - SIF response time
+      - Proof testing
+      - Bypass management
+    compliance_level: required
+
+  - code: NFPA 85
+    title: Boiler and Combustion Systems Hazards Code
+    edition: "2023"
+    sections:
+      - "Interlock requirements"
+    requirements:
+      - Burner interlock requirements
+    compliance_level: required
+
+# =============================================================================
+# Safety Constraints
+# =============================================================================
+
+safety_constraints:
+  - id: SC_RESPONSE_TIME
+    name: Response Time Compliance
+    description: Total response time must be within requirement
+    condition: "total_response_time <= required_response_time"
+    action: reject
+    severity: critical
+    message: "CRITICAL: Response time {total_response_time}s exceeds {required_response_time}s requirement"
+
+  - id: SC_BYPASS_AUTHORIZATION
+    name: Bypass Authorization Required
+    description: Bypass must have proper authorization
+    condition: "bypass_allowed == false or bypass_authorization != 'not_allowed'"
+    action: warn
+    severity: error
+    message: "Bypass requires defined authorization level"
+
+  - id: SC_PROOF_TEST_OVERDUE
+    name: Proof Test Overdue
+    description: Proof test must not be overdue
+    condition: "days_since_proof_test <= proof_test_interval * 30"
+    action: warn
+    severity: error
+    message: "Proof test overdue"
+
+# =============================================================================
+# Processing Pipeline
+# =============================================================================
+
+processing:
+  steps:
+    - id: STEP_01_VALIDATE_INPUTS
+      name: Input Validation
+      type: validation
+      inputs:
+        - all_input_fields
+      outputs:
+        - validation_status
+      error_handling: reject
+
+    - id: STEP_02_RESPONSE_TIME
+      name: Response Time Analysis
+      type: calculation
+      inputs:
+        - sensor_response_time
+        - logic_scan_time
+        - final_element_stroke_time
+        - required_response_time
+      outputs:
+        - total_response_time
+        - response_time_margin
+        - response_time_compliant
+        - response_time_breakdown
+      formula_refs:
+        - TOTAL_RESPONSE_TIME
+        - RESPONSE_TIME_MARGIN
+      constraints:
+        - SC_RESPONSE_TIME
+      error_handling: propagate
+
+    - id: STEP_03_LOGIC_VALIDATION
+      name: Logic Validation
+      type: validation
+      inputs:
+        - trip_logic
+        - input_voting
+        - output_voting
+        - sil_rating
+      outputs:
+        - logic_validation_status
+        - logic_deficiencies
+        - voting_compliance
+      error_handling: propagate
+
+    - id: STEP_04_BYPASS_VALIDATION
+      name: Bypass Management Validation
+      type: validation
+      inputs:
+        - bypass_allowed
+        - bypass_type
+        - max_bypass_time
+        - bypass_authorization
+      outputs:
+        - bypass_compliance
+        - bypass_deficiencies
+      constraints:
+        - SC_BYPASS_AUTHORIZATION
+      error_handling: propagate
+
+    - id: STEP_05_TESTING_VALIDATION
+      name: Testing Program Validation
+      type: validation
+      inputs:
+        - proof_test_interval
+        - last_proof_test_date
+        - proof_test_procedure
+      outputs:
+        - testing_compliance
+        - next_proof_test_due
+        - testing_deficiencies
+      constraints:
+        - SC_PROOF_TEST_OVERDUE
+      error_handling: propagate
+
+    - id: STEP_06_COMPILE_RESULTS
+      name: Compile Results
+      type: aggregation
+      inputs:
+        - all_deficiencies
+      outputs:
+        - all_deficiencies
+        - critical_deficiencies
+        - validation_status
+        - validation_score
+      error_handling: propagate
+
+    - id: STEP_07_RECOMMENDATIONS
+      name: Generate Recommendations
+      type: decision
+      inputs:
+        - all_deficiencies
+      outputs:
+        - recommendations
+        - corrective_actions
+      error_handling: default
+
+    - id: STEP_08_PROVENANCE
+      name: Provenance Tracking
+      type: output
+      inputs:
+        - all_inputs
+        - all_outputs
+      outputs:
+        - provenance_hash
+        - calculation_timestamp
+        - source_references
+      error_handling: propagate
+
+# =============================================================================
+# Zero-Hallucination Configuration
+# =============================================================================
+
+zero_hallucination:
+  enabled: true
+  calculation_mode: deterministic
+  allowed_operations:
+    - arithmetic
+    - formula_evaluation
+    - date_calculation
+    - comparison
+  forbidden_operations:
+    - llm_safety_judgment
+  require_formula_citation: true
+  require_provenance: true
+  llm_allowed_for:
+    - recommendation_narrative
+
+# =============================================================================
+# Test Cases
+# =============================================================================
+
+test_cases:
+  - name: Burner Trip Interlock - Compliant
+    inputs:
+      interlock_tag: BMS-001-HIGH-TEMP
+      interlock_description: High furnace temperature trip
+      interlock_type: burner_trip
+      sil_rating: 2
+      input_devices: ["TE-001A", "TE-001B"]
+      input_voting: "1oo2"
+      setpoint_value: 1200
+      setpoint_unit: celsius
+      trip_logic: "TE-001A > SP OR TE-001B > SP"
+      logic_solver_type: safety_plc
+      logic_solver_tag: BMS-001
+      output_devices: ["XV-001", "XV-002"]
+      output_voting: "1oo2"
+      fail_safe_position: closed
+      required_response_time: 5.0
+      sensor_response_time: 0.5
+      logic_scan_time: 100
+      final_element_stroke_time: 2.0
+      bypass_allowed: true
+      bypass_type: maintenance
+      max_bypass_time: 8
+      bypass_authorization: supervisor
+      proof_test_interval: 12
+    expected_outputs:
+      validation_status: COMPLIANT
+      response_time_compliant: true

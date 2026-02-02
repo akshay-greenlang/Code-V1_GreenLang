@@ -1,0 +1,13 @@
+name: "test-when-gating"
+steps:
+  - name: "step1"
+    agent: "test.Agent"
+    when: true
+
+  - name: "step2"
+    agent: "test.Agent"
+    when: false  # This step should be skipped
+
+  - name: "step3"
+    agent: "test.Agent"
+    condition: "${steps.step1.success} == true"

@@ -1,0 +1,154 @@
+name: Industrial Process Heat Agent (AI-Powered)
+version: 1.0.0
+kind: pack
+pack_schema_version: '1.0'
+author:
+  name: GreenLang Team
+  email: support@greenlang.io
+  organization: GreenLang
+license: MIT
+tags:
+- industrial
+- process-heat
+- solar-thermal
+- decarbonization
+- hybrid-systems
+- ai-agent
+- citations
+id: industrial/process_heat_ai_v1
+summary: AI-powered industrial process heat analysis with solar thermal opportunity
+  assessment, hybrid system design, and decarbonization pathway identification
+owners:
+- greenlang-team
+ai:
+  system_prompt: 'You are an expert in industrial process heat systems and solar thermal
+    integration.
+
+
+    Your role:
+
+    1. Analyze process heat requirements using exact tools (never hallucinate numbers)
+
+    2. Assess solar thermal opportunity based on temperature, location, and load profile
+
+    3. Design hybrid systems (solar + backup fuel) for optimal reliability
+
+    4. Calculate emissions reduction potential and technology recommendations
+
+    5. Provide implementation guidance and risk assessment
+
+
+    Guidelines:
+
+    - Always use provided tools for all calculations
+
+    - Consider temperature requirements (low: <100°C, medium: 100-250°C, high: >250°C)
+
+    - Evaluate solar fraction based on irradiance and load matching
+
+    - Account for thermal storage requirements based on load profile
+
+    - Recommend appropriate collector technology (flat plate, evacuated tube, concentrating)
+
+    - Calculate backup system capacity for reliability
+
+    - Provide clear implementation roadmap with phases
+
+
+    Remember: All numeric calculations MUST come from tools. Focus on clear, practical
+    guidance.
+
+    '
+  budget:
+    max_cost_usd: 0.8
+    max_input_tokens: 15000
+    max_output_tokens: 4000
+    max_retries: 3
+  rag_collections:
+  - solar_thermal_technologies
+  - industrial_process_heat_data
+  - hybrid_system_design
+  tools:
+  - name: calculate_heat_demand
+    description: Calculate process heat demand from production rate and temperature
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:calculate_heat_demand
+    safe: true
+  - name: calculate_solar_fraction
+    description: Calculate achievable solar fraction based on irradiance and load
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:calculate_solar_fraction
+    safe: true
+  - name: size_collector_system
+    description: Size solar collector array and thermal storage
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:size_collector_system
+    safe: true
+  - name: calculate_backup_requirements
+    description: Calculate backup system capacity and fuel consumption
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:calculate_backup_requirements
+    safe: true
+  - name: calculate_emissions
+    description: Calculate baseline and residual emissions
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:calculate_emissions
+    safe: true
+  - name: recommend_technology
+    description: Recommend solar thermal technology based on temperature and application
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:recommend_technology
+    safe: true
+  - name: assess_implementation
+    description: Assess implementation feasibility and provide roadmap
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:assess_implementation
+    safe: true
+realtime:
+  default_mode: replay
+  snapshot_path: null
+  connectors: []
+provenance:
+  gwp_set: AR6GWP100
+  pin_ef: false
+  record:
+  - inputs
+  - outputs
+  - factors
+  - code_sha
+  - seed

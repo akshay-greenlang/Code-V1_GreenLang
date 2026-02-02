@@ -1,0 +1,109 @@
+# =============================================================================
+# GL-005 COMBUSENSE CombustionControlAgent - HashiCorp Vault Configuration
+# =============================================================================
+#
+# This configuration file defines the Vault setup for the COMBUSENSE
+# CombustionControlAgent including authentication, secret paths, and policies.
+#
+# PERFORMANCE NOTE: GL-005 operates in real-time control mode with sub-100ms
+# response requirements. Secret caching is critical for performance.
+#
+# Author: GreenLang Security Engineering
+# Version: 1.0.0
+# =============================================================================
+
+vault:
+  addr: "https://vault.greenlang.local:8200"
+  namespace: "greenlang"
+  tls:
+    ca_cert: "/etc/vault/certs/ca.crt"
+    client_cert: "/etc/vault/certs/client.crt"
+    client_key: "/etc/vault/certs/client.key"
+    skip_verify: false
+
+auth:
+  method: "kubernetes"
+  kubernetes:
+    mount_path: "auth/kubernetes"
+    role: "gl-005-combusense"
+    jwt_path: "/var/run/secrets/kubernetes.io/serviceaccount/token"
+
+secrets_engines:
+  kv:
+    mount_path: "secret"
+    version: 2
+  database:
+    mount_path: "database"
+    default_ttl: "1h"
+    max_ttl: "24h"
+  pki:
+    mount_path: "pki"
+    default_ttl: "720h"
+
+secret_paths:
+  base: "greenlang/agents/GL-005"
+
+  database:
+    postgres_main: "database/postgres-main"
+    redis: "cache/redis"
+
+  api_keys:
+    weather: "api-keys/weather"
+
+  auth:
+    jwt_secret: "auth/jwt"
+    api_key: "auth/api-key"
+
+  integrations:
+    plc: "integrations/plc"
+    dcs: "integrations/dcs"
+    modbus: "integrations/modbus"
+    combustion_analyzer: "integrations/combustion-analyzer"
+    scada: "integrations/scada"
+    kafka: "integrations/kafka"
+    mqtt: "integrations/mqtt"
+    opcua: "integrations/opcua"
+
+  encryption:
+    default: "encryption-keys/default"
+    control_signals: "encryption-keys/control-signals"
+
+cache:
+  # Aggressive caching for real-time performance
+  enabled: true
+  ttl_seconds: 600  # Longer TTL to minimize latency
+  max_size: 500
+
+connection:
+  timeout_seconds: 10  # Shorter timeout for real-time system
+  max_retries: 2  # Fewer retries to fail fast
+  retry_delay_seconds: 0.5
+
+fallback:
+  enabled: true
+  env_prefix: "GL_005_SECRET_"
+  warn_on_fallback: true
+
+---
+development:
+  vault:
+    addr: "http://localhost:8200"
+    tls:
+      skip_verify: true
+  auth:
+    method: "token"
+  fallback:
+    enabled: true
+
+production:
+  vault:
+    addr: "https://vault.greenlang.local:8200"
+    namespace: "greenlang-prod"
+  auth:
+    method: "kubernetes"
+    kubernetes:
+      role: "gl-005-combusense-prod"
+  fallback:
+    enabled: false
+  cache:
+    ttl_seconds: 900  # 15 minutes in production

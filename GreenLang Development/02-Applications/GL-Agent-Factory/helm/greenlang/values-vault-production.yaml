@@ -1,0 +1,217 @@
+# =============================================================================
+# GreenLang Helm Chart - HashiCorp Vault Production Values
+# =============================================================================
+# This file contains production configuration for deploying GreenLang with
+# secrets managed by HashiCorp Vault.
+#
+# Prerequisites:
+#   1. External Secrets Operator installed:
+#      helm install external-secrets external-secrets/external-secrets \
+#        --namespace external-secrets --create-namespace
+#
+#   2. HashiCorp Vault server accessible from the cluster
+#
+#   3. Vault Kubernetes authentication configured:
+#      vault auth enable kubernetes
+#      vault write auth/kubernetes/config \
+#        kubernetes_host="https://kubernetes.default.svc"
+#
+#   4. Vault policy and role created:
+#      vault policy write greenlang-app - <<EOF
+#      path "secret/data/greenlang/production/*" {
+#        capabilities = ["read"]
+#      }
+#      EOF
+#
+#      vault write auth/kubernetes/role/greenlang-app \
+#        bound_service_account_names=greenlang-app-sa \
+#        bound_service_account_namespaces=greenlang-production \
+#        policies=greenlang-app \
+#        ttl=1h
+#
+#   5. Secrets created in Vault (KV v2):
+#      vault kv put secret/greenlang/production/database \
+#        url="postgresql://..." host="..." password="..."
+#      vault kv put secret/greenlang/production/redis \
+#        url="redis://..." password="..."
+#      vault kv put secret/greenlang/production/jwt secret="..."
+#      vault kv put secret/greenlang/production/llm \
+#        anthropic_key="..." openai_key="..."
+#      vault kv put secret/greenlang/production/encryption key="..."
+#
+# Usage:
+#   helm upgrade --install greenlang ./greenlang \
+#     -f values-vault-production.yaml \
+#     --namespace greenlang-production
+# =============================================================================
+
+# Environment-specific namespace
+namespace:
+  name: "greenlang-production"
+  labels:
+    environment: production
+    secrets-provider: vault
+
+# Application environment
+config:
+  appEnv: "production"
+  debug: "false"
+  logLevel: "INFO"
+
+# -----------------------------------------------------------------------------
+# Secrets Configuration - HashiCorp Vault
+# -----------------------------------------------------------------------------
+secrets:
+  # Enable External Secrets Operator
+  useExternalSecrets: true
+
+  # Use HashiCorp Vault as the provider
+  provider: "vault"
+
+  # Sync secrets every hour
+  refreshInterval: "1h"
+
+  # HashiCorp Vault configuration
+  vault:
+    # Vault server address
+    # For in-cluster Vault: https://vault.vault.svc.cluster.local:8200
+    # For external Vault: https://vault.example.com:8200
+    address: "https://vault.vault.svc.cluster.local:8200"
+
+    # Vault namespace (for Vault Enterprise only)
+    namespace: ""
+
+    # KV secrets engine configuration
+    secretsEngine: "secret"
+    kvVersion: "v2"
+
+    # Base path for GreenLang secrets
+    secretsPath: "greenlang"
+
+    # TLS verification (base64 encoded CA certificate)
+    # Generate with: cat ca.crt | base64 -w 0
+    caBundle: ""
+
+    # Alternative: CA from ConfigMap/Secret
+    caProvider:
+      type: "Secret"
+      name: "vault-ca"
+      key: "ca.crt"
+      namespace: "vault"
+
+    # Authentication method (kubernetes recommended)
+    authMethod: "kubernetes"
+
+    # Kubernetes authentication configuration
+    kubernetes:
+      # Mount path for Kubernetes auth method
+      mountPath: "kubernetes"
+      # Vault role that the service account can assume
+      role: "greenlang-app"
+
+    # Enable dynamic database credentials (optional, advanced)
+    # Requires Vault database secrets engine configured
+    dynamicDatabaseCredentials: false
+
+    # TLS certificate management via Vault PKI (optional)
+    tlsSecretEnabled: false
+
+  # Leave inline secrets empty when using external secrets
+  databaseUrl: ""
+  redisUrl: ""
+  jwtSecret: ""
+  anthropicApiKey: ""
+  openaiApiKey: ""
+  dataEncryptionKey: ""
+
+# -----------------------------------------------------------------------------
+# Service Account Configuration
+# -----------------------------------------------------------------------------
+serviceAccount:
+  create: true
+  name: "greenlang-app-sa"
+  annotations: {}
+
+# -----------------------------------------------------------------------------
+# PostgreSQL Configuration
+# -----------------------------------------------------------------------------
+postgresql:
+  enabled: true
+  auth:
+    username: greenlang_app
+    database: greenlang
+    # Use external secret for PostgreSQL credentials
+    existingSecret: "greenlang-postgresql-credentials"
+    password: ""
+
+  primary:
+    persistence:
+      enabled: true
+      size: 100Gi
+
+# -----------------------------------------------------------------------------
+# Redis Configuration
+# -----------------------------------------------------------------------------
+redis:
+  enabled: true
+  auth:
+    enabled: true
+    # Use external secret for Redis credentials
+    existingSecret: "greenlang-redis-credentials"
+    password: ""
+
+  master:
+    persistence:
+      enabled: true
+      size: 10Gi
+
+# -----------------------------------------------------------------------------
+# Ingress Configuration
+# -----------------------------------------------------------------------------
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+  hosts:
+    - host: api.greenlang.ai
+      paths:
+        - path: /
+          pathType: Prefix
+          service: api-server
+  tls:
+    - secretName: greenlang-tls-secret
+      hosts:
+        - api.greenlang.ai
+
+# -----------------------------------------------------------------------------
+# Production Resource Limits
+# -----------------------------------------------------------------------------
+agentRuntime:
+  replicaCount: 5
+  resources:
+    requests:
+      cpu: "1000m"
+      memory: "1Gi"
+    limits:
+      cpu: "4000m"
+      memory: "4Gi"
+  autoscaling:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 20
+
+apiServer:
+  replicaCount: 5
+  resources:
+    requests:
+      cpu: "1000m"
+      memory: "1Gi"
+    limits:
+      cpu: "4000m"
+      memory: "4Gi"
+  autoscaling:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 20

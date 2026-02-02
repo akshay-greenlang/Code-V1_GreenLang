@@ -1,0 +1,758 @@
+# GreenLang MLflow Service and Ingress Configuration
+# Exposes MLflow tracking server with SSL/TLS and rate limiting
+---
+# ClusterIP Service for MLflow Tracking Server
+apiVersion: v1
+kind: Service
+metadata:
+  name: mlflow-tracking
+  namespace: greenlang-mlops
+  labels:
+    app: mlflow
+    component: tracking-server
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "5000"
+    prometheus.io/path: "/metrics"
+spec:
+  type: ClusterIP
+  selector:
+    app: mlflow
+    component: tracking-server
+  ports:
+    - name: http
+      port: 80
+      targetPort: 5000
+      protocol: TCP
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 3600
+
+---
+# Headless Service for MLflow (for StatefulSet DNS)
+apiVersion: v1
+kind: Service
+metadata:
+  name: mlflow-tracking-headless
+  namespace: greenlang-mlops
+  labels:
+    app: mlflow
+    component: tracking-server
+spec:
+  type: ClusterIP
+  clusterIP: None
+  selector:
+    app: mlflow
+    component: tracking-server
+  ports:
+    - name: http
+      port: 5000
+      targetPort: 5000
+      protocol: TCP
+
+---
+# Service for PostgreSQL
+apiVersion: v1
+kind: Service
+metadata:
+  name: mlflow-postgresql
+  namespace: greenlang-mlops
+  labels:
+    app: mlflow
+    component: postgresql
+spec:
+  type: ClusterIP
+  selector:
+    app: mlflow
+    component: postgresql
+  ports:
+    - name: postgres
+      port: 5432
+      targetPort: 5432
+      protocol: TCP
+
+---
+# Service for MinIO API
+apiVersion: v1
+kind: Service
+metadata:
+  name: mlflow-minio
+  namespace: greenlang-mlops
+  labels:
+    app: mlflow
+    component: minio
+spec:
+  type: ClusterIP
+  selector:
+    app: mlflow
+    component: minio
+  ports:
+    - name: api
+      port: 9000
+      targetPort: 9000
+      protocol: TCP
+    - name: console
+      port: 9001
+      targetPort: 9001
+      protocol: TCP
+
+---
+# Ingress for MLflow Tracking Server (External Access)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: mlflow-tracking-ingress
+  namespace: greenlang-mlops
+  labels:
+    app: mlflow
+    component: tracking-server
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    # SSL/TLS configuration
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    # Rate limiting
+    nginx.ingress.kubernetes.io/limit-rps: "50"
+    nginx.ingress.kubernetes.io/limit-connections: "20"
+    nginx.ingress.kubernetes.io/limit-burst-multiplier: "3"
+    # Timeouts for long-running operations
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-body-size: "500m"
+    # Security headers
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      more_set_headers "X-Frame-Options: DENY";
+      more_set_headers "X-Content-Type-Options: nosniff";
+      more_set_headers "X-XSS-Protection: 1; mode=block";
+      more_set_headers "Referrer-Policy: strict-origin-when-cross-origin";
+      more_set_headers "Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self';";
+    # CORS (if needed for API access)
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "https://app.greenlang.io"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, DELETE, OPTIONS"
+    nginx.ingress.kubernetes.io/cors-allow-headers: "DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization"
+    # OAuth2 proxy (optional - for authentication)
+    # nginx.ingress.kubernetes.io/auth-url: "https://oauth.greenlang.io/oauth2/auth"
+    # nginx.ingress.kubernetes.io/auth-signin: "https://oauth.greenlang.io/oauth2/start?rd=$escaped_request_uri"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - mlflow.greenlang.io
+      secretName: mlflow-tls
+  rules:
+    - host: mlflow.greenlang.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: mlflow-tracking
+                port:
+                  number: 80
+
+---
+# Ingress for MinIO Console (Admin Access Only)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: mlflow-minio-ingress
+  namespace: greenlang-mlops
+  labels:
+    app: mlflow
+    component: minio
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/limit-rps: "20"
+    nginx.ingress.kubernetes.io/limit-connections: "10"
+    # IP whitelist for admin access
+    nginx.ingress.kubernetes.io/whitelist-source-range: "10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - minio.mlflow.greenlang.io
+      secretName: minio-tls
+  rules:
+    - host: minio.mlflow.greenlang.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: mlflow-minio
+                port:
+                  number: 9001
+
+---
+# Certificate for MLflow
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: mlflow-tls-cert
+  namespace: greenlang-mlops
+  labels:
+    app: mlflow
+spec:
+  secretName: mlflow-tls
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  dnsNames:
+    - mlflow.greenlang.io
+  privateKey:
+    algorithm: RSA
+    size: 4096
+
+---
+# Certificate for MinIO
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: minio-tls-cert
+  namespace: greenlang-mlops
+  labels:
+    app: mlflow
+spec:
+  secretName: minio-tls
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  dnsNames:
+    - minio.mlflow.greenlang.io
+  privateKey:
+    algorithm: RSA
+    size: 4096
+
+---
+# ServiceMonitor for Prometheus (MLflow)
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: mlflow-tracking-monitor
+  namespace: greenlang-mlops
+  labels:
+    app: mlflow
+    component: tracking-server
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: mlflow
+      component: tracking-server
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s
+  namespaceSelector:
+    matchNames:
+      - greenlang-mlops
+
+---
+# ServiceMonitor for MinIO
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: mlflow-minio-monitor
+  namespace: greenlang-mlops
+  labels:
+    app: mlflow
+    component: minio
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: mlflow
+      component: minio
+  endpoints:
+    - port: api
+      path: /minio/v2/metrics/cluster
+      interval: 30s
+      scrapeTimeout: 10s
+  namespaceSelector:
+    matchNames:
+      - greenlang-mlops
+
+---
+# PrometheusRule for MLflow Alerts
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: mlflow-alerts
+  namespace: greenlang-mlops
+  labels:
+    app: mlflow
+    release: prometheus
+spec:
+  groups:
+    - name: mlflow.rules
+      rules:
+        # High error rate
+        - alert: MLflowHighErrorRate
+          expr: |
+            sum(rate(mlflow_http_requests_total{status=~"5.."}[5m])) by (instance)
+            /
+            sum(rate(mlflow_http_requests_total[5m])) by (instance) > 0.05
+          for: 5m
+          labels:
+            severity: critical
+            team: mlops
+          annotations:
+            summary: "MLflow high error rate on {{ $labels.instance }}"
+            description: "Error rate is {{ $value | humanizePercentage }} on MLflow instance {{ $labels.instance }}"
+
+        # MLflow pod down
+        - alert: MLflowPodDown
+          expr: |
+            kube_deployment_status_replicas_available{deployment="mlflow-tracking", namespace="greenlang-mlops"} < 2
+          for: 5m
+          labels:
+            severity: critical
+            team: mlops
+          annotations:
+            summary: "MLflow has fewer than 2 available replicas"
+            description: "MLflow deployment has {{ $value }} available replicas, expected at least 2"
+
+        # PostgreSQL connection failures
+        - alert: MLflowPostgreSQLConnectionFailure
+          expr: |
+            pg_up{namespace="greenlang-mlops"} == 0
+          for: 2m
+          labels:
+            severity: critical
+            team: mlops
+          annotations:
+            summary: "MLflow PostgreSQL connection failure"
+            description: "Cannot connect to MLflow PostgreSQL database"
+
+        # MinIO storage usage high
+        - alert: MLflowMinIOStorageHigh
+          expr: |
+            minio_bucket_usage_total_bytes{bucket="greenlang-mlflow-artifacts"} / minio_bucket_quota_total_bytes{bucket="greenlang-mlflow-artifacts"} > 0.85
+          for: 15m
+          labels:
+            severity: warning
+            team: mlops
+          annotations:
+            summary: "MLflow artifact storage usage high"
+            description: "MinIO bucket usage is at {{ $value | humanizePercentage }}"
+
+        # High latency
+        - alert: MLflowHighLatency
+          expr: |
+            histogram_quantile(0.95, sum(rate(mlflow_http_request_duration_seconds_bucket[5m])) by (le, instance)) > 5
+          for: 10m
+          labels:
+            severity: warning
+            team: mlops
+          annotations:
+            summary: "MLflow high latency on {{ $labels.instance }}"
+            description: "P95 latency is {{ $value }}s on MLflow instance {{ $labels.instance }}"
+
+        # Experiment tracking failures
+        - alert: MLflowExperimentTrackingFailure
+          expr: |
+            increase(mlflow_experiment_create_failures_total[5m]) > 5
+          for: 5m
+          labels:
+            severity: warning
+            team: mlops
+          annotations:
+            summary: "MLflow experiment tracking failures"
+            description: "{{ $value }} experiment creation failures in the last 5 minutes"
+
+        # Model registration failures
+        - alert: MLflowModelRegistrationFailure
+          expr: |
+            increase(mlflow_model_registration_failures_total[5m]) > 3
+          for: 5m
+          labels:
+            severity: warning
+            team: mlops
+          annotations:
+            summary: "MLflow model registration failures"
+            description: "{{ $value }} model registration failures in the last 5 minutes"
+
+---
+# Grafana Dashboard ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mlflow-grafana-dashboard
+  namespace: greenlang-mlops
+  labels:
+    app: mlflow
+    grafana_dashboard: "1"
+data:
+  mlflow-dashboard.json: |
+    {
+      "annotations": {
+        "list": []
+      },
+      "editable": true,
+      "fiscalYearStartMonth": 0,
+      "graphTooltip": 0,
+      "id": null,
+      "links": [],
+      "panels": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  }
+                ]
+              },
+              "unit": "short"
+            }
+          },
+          "gridPos": {
+            "h": 6,
+            "w": 6,
+            "x": 0,
+            "y": 0
+          },
+          "id": 1,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          },
+          "pluginVersion": "10.0.0",
+          "targets": [
+            {
+              "expr": "sum(increase(mlflow_experiments_created_total[24h]))",
+              "legendFormat": "Experiments Created (24h)"
+            }
+          ],
+          "title": "Experiments Created (24h)",
+          "type": "stat"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  }
+                ]
+              },
+              "unit": "short"
+            }
+          },
+          "gridPos": {
+            "h": 6,
+            "w": 6,
+            "x": 6,
+            "y": 0
+          },
+          "id": 2,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          },
+          "pluginVersion": "10.0.0",
+          "targets": [
+            {
+              "expr": "sum(increase(mlflow_runs_created_total[24h]))",
+              "legendFormat": "Runs Created (24h)"
+            }
+          ],
+          "title": "Runs Created (24h)",
+          "type": "stat"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  }
+                ]
+              },
+              "unit": "short"
+            }
+          },
+          "gridPos": {
+            "h": 6,
+            "w": 6,
+            "x": 12,
+            "y": 0
+          },
+          "id": 3,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          },
+          "pluginVersion": "10.0.0",
+          "targets": [
+            {
+              "expr": "sum(increase(mlflow_models_registered_total[24h]))",
+              "legendFormat": "Models Registered (24h)"
+            }
+          ],
+          "title": "Models Registered (24h)",
+          "type": "stat"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 10,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  }
+                ]
+              },
+              "unit": "reqps"
+            }
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 6
+          },
+          "id": 4,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "10.0.0",
+          "targets": [
+            {
+              "expr": "sum(rate(mlflow_http_requests_total[5m])) by (method)",
+              "legendFormat": "{{ method }}"
+            }
+          ],
+          "title": "Request Rate by Method",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 10,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  }
+                ]
+              },
+              "unit": "s"
+            }
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 6
+          },
+          "id": 5,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "10.0.0",
+          "targets": [
+            {
+              "expr": "histogram_quantile(0.50, sum(rate(mlflow_http_request_duration_seconds_bucket[5m])) by (le))",
+              "legendFormat": "p50"
+            },
+            {
+              "expr": "histogram_quantile(0.95, sum(rate(mlflow_http_request_duration_seconds_bucket[5m])) by (le))",
+              "legendFormat": "p95"
+            },
+            {
+              "expr": "histogram_quantile(0.99, sum(rate(mlflow_http_request_duration_seconds_bucket[5m])) by (le))",
+              "legendFormat": "p99"
+            }
+          ],
+          "title": "Request Latency Percentiles",
+          "type": "timeseries"
+        }
+      ],
+      "refresh": "30s",
+      "schemaVersion": 38,
+      "tags": [
+        "mlflow",
+        "mlops",
+        "greenlang"
+      ],
+      "templating": {
+        "list": []
+      },
+      "time": {
+        "from": "now-6h",
+        "to": "now"
+      },
+      "title": "GreenLang MLflow Dashboard",
+      "uid": "greenlang-mlflow",
+      "version": 1
+    }

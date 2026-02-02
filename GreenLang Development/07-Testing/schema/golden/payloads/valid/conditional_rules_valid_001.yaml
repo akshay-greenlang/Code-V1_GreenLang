@@ -1,0 +1,13 @@
+# Valid Conditional Rules Payload 001
+# Tests: Natural gas with methane_slip
+# Schema: rules/conditional_rules.yaml
+
+_test_metadata:
+  schema: "rules/conditional_rules.yaml"
+  description: "Valid payload with natural gas and required methane_slip"
+  expected_valid: true
+
+fuel_type: "natural_gas"
+quantity: 1000
+quantity_unit: "m3"
+methane_slip: 2.5

@@ -1,0 +1,765 @@
+# =============================================================================
+# GreenLang Process Heat Agents - Istio DestinationRule Configuration
+# =============================================================================
+# TASK-151: Configure Istio mTLS DestinationRules
+#
+# DestinationRules define traffic policies applied AFTER routing decisions.
+# These rules configure:
+#   - TLS settings for upstream connections
+#   - Connection pool settings for resilience
+#   - Outlier detection for circuit breaking
+#   - Load balancing policies
+#
+# All services use ISTIO_MUTUAL mode to enforce mTLS with Istio certificates.
+# =============================================================================
+
+---
+# =============================================================================
+# MESH-WIDE: Default mTLS DestinationRule
+# =============================================================================
+# Applies mTLS to all services in the mesh that don't have specific rules.
+# This ensures no service accidentally communicates in plaintext.
+# =============================================================================
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: default-mtls-destination-rule
+  namespace: istio-system
+  labels:
+    app.kubernetes.io/name: default-destination-rule
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: networking
+    security.greenlang.io/tier: mesh-wide
+  annotations:
+    description: "Default mTLS policy for all mesh services"
+spec:
+  # Wildcard host matches all services in the mesh
+  host: "*.local"
+  trafficPolicy:
+    tls:
+      # ISTIO_MUTUAL: Use Istio's auto-generated mTLS certificates
+      mode: ISTIO_MUTUAL
+
+---
+# =============================================================================
+# NAMESPACE: greenlang-agents - All Agent Services
+# =============================================================================
+# Comprehensive DestinationRule for all Process Heat agent services.
+# Includes connection pooling, circuit breaking, and load balancing.
+# =============================================================================
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: greenlang-agents-destination-rule
+  namespace: greenlang-agents
+  labels:
+    app.kubernetes.io/name: agents-destination-rule
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: networking
+    security.greenlang.io/tier: namespace
+  annotations:
+    description: "mTLS and traffic policy for all agent services"
+spec:
+  # Match all services in greenlang-agents namespace
+  host: "*.greenlang-agents.svc.cluster.local"
+
+  trafficPolicy:
+    # Enforce mTLS with Istio certificates
+    tls:
+      mode: ISTIO_MUTUAL
+      # Use SDS (Secret Discovery Service) for certificate rotation
+      # Certificates are automatically rotated by Istio
+
+    # Connection pool settings for resilience
+    connectionPool:
+      tcp:
+        # Maximum connections to upstream service
+        maxConnections: 100
+        # Connection timeout
+        connectTimeout: 10s
+        # TCP keepalive settings
+        tcpKeepalive:
+          time: 7200s
+          interval: 75s
+          probes: 9
+      http:
+        # HTTP/2 upgrade policy - prefer H2 for gRPC efficiency
+        h2UpgradePolicy: UPGRADE
+        # Max pending requests to queue
+        http1MaxPendingRequests: 100
+        # Max concurrent requests for HTTP/2
+        http2MaxRequests: 1000
+        # Max requests per connection before cycling
+        maxRequestsPerConnection: 100
+        # Max retries for failed requests
+        maxRetries: 3
+        # Idle timeout for connections
+        idleTimeout: 300s
+
+    # Outlier detection for circuit breaking
+    outlierDetection:
+      # Number of consecutive 5xx errors before ejection
+      consecutive5xxErrors: 5
+      # Number of consecutive gateway errors before ejection
+      consecutiveGatewayErrors: 5
+      # Interval for ejection analysis
+      interval: 30s
+      # Base ejection duration (increases with ejection count)
+      baseEjectionTime: 30s
+      # Maximum percentage of hosts that can be ejected
+      maxEjectionPercent: 50
+      # Minimum health percentage to avoid ejecting more hosts
+      minHealthPercent: 30
+      # Split external and local origin errors
+      splitExternalLocalOriginErrors: true
+      # Consecutive local origin failures before ejection
+      consecutiveLocalOriginFailures: 5
+
+    # Load balancing policy
+    loadBalancer:
+      simple: LEAST_REQUEST
+      localityLbSetting:
+        enabled: true
+        # Prefer pods in same zone for lower latency
+        distribute:
+          - from: "us-east-1/*"
+            to:
+              "us-east-1/*": 80
+              "us-west-2/*": 20
+
+---
+# =============================================================================
+# SERVICE: GL-010 Emissions Guardian Agent
+# =============================================================================
+# Primary emissions calculation agent - highest traffic volume.
+# Optimized connection pooling for high throughput.
+# =============================================================================
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: gl-010-emissions-guardian-dr
+  namespace: greenlang-agents
+  labels:
+    app.kubernetes.io/name: gl-010-destination-rule
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: networking
+    greenlang.io/agent-id: gl-010
+  annotations:
+    description: "DestinationRule for GL-010 Emissions Guardian Agent"
+spec:
+  host: gl-010-emissions-guardian.greenlang-agents.svc.cluster.local
+
+  trafficPolicy:
+    tls:
+      mode: ISTIO_MUTUAL
+
+    connectionPool:
+      tcp:
+        maxConnections: 200
+        connectTimeout: 5s
+      http:
+        h2UpgradePolicy: UPGRADE
+        http1MaxPendingRequests: 200
+        http2MaxRequests: 2000
+        maxRequestsPerConnection: 500
+        maxRetries: 3
+
+    outlierDetection:
+      consecutive5xxErrors: 3
+      consecutiveGatewayErrors: 3
+      interval: 10s
+      baseEjectionTime: 30s
+      maxEjectionPercent: 30
+
+    loadBalancer:
+      simple: ROUND_ROBIN
+
+  # Subset definitions for canary deployments
+  subsets:
+    - name: stable
+      labels:
+        version: stable
+      trafficPolicy:
+        connectionPool:
+          http:
+            http2MaxRequests: 2000
+    - name: canary
+      labels:
+        version: canary
+      trafficPolicy:
+        connectionPool:
+          http:
+            http2MaxRequests: 100
+
+---
+# =============================================================================
+# SERVICE: GL-020 CBAM Compliance Agent
+# =============================================================================
+# CBAM compliance calculations - requires high reliability.
+# =============================================================================
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: gl-020-cbam-compliance-dr
+  namespace: greenlang-agents
+  labels:
+    app.kubernetes.io/name: gl-020-destination-rule
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: networking
+    greenlang.io/agent-id: gl-020
+  annotations:
+    description: "DestinationRule for GL-020 CBAM Compliance Agent"
+spec:
+  host: gl-020-cbam-compliance.greenlang-agents.svc.cluster.local
+
+  trafficPolicy:
+    tls:
+      mode: ISTIO_MUTUAL
+
+    connectionPool:
+      tcp:
+        maxConnections: 150
+        connectTimeout: 10s
+      http:
+        h2UpgradePolicy: UPGRADE
+        http1MaxPendingRequests: 150
+        http2MaxRequests: 1500
+        maxRetries: 5
+
+    outlierDetection:
+      consecutive5xxErrors: 3
+      interval: 15s
+      baseEjectionTime: 60s
+      maxEjectionPercent: 25
+
+---
+# =============================================================================
+# SERVICE: GL-050 through GL-095 Process Heat Agents
+# =============================================================================
+# Process heat calculation agents - industrial process analysis.
+# =============================================================================
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: process-heat-agents-dr
+  namespace: greenlang-agents
+  labels:
+    app.kubernetes.io/name: process-heat-destination-rule
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: networking
+    greenlang.io/agent-category: process-heat
+  annotations:
+    description: "DestinationRule for all Process Heat agents (GL-050 to GL-095)"
+spec:
+  # Match all process heat agent services
+  host: "gl-0*.greenlang-agents.svc.cluster.local"
+
+  trafficPolicy:
+    tls:
+      mode: ISTIO_MUTUAL
+
+    connectionPool:
+      tcp:
+        maxConnections: 100
+        connectTimeout: 15s
+        tcpKeepalive:
+          time: 3600s
+          interval: 75s
+      http:
+        h2UpgradePolicy: UPGRADE
+        http1MaxPendingRequests: 100
+        http2MaxRequests: 500
+        maxRequestsPerConnection: 200
+        idleTimeout: 600s
+
+    outlierDetection:
+      consecutive5xxErrors: 5
+      consecutiveGatewayErrors: 5
+      interval: 30s
+      baseEjectionTime: 60s
+      maxEjectionPercent: 40
+
+    loadBalancer:
+      simple: LEAST_REQUEST
+
+---
+# =============================================================================
+# NAMESPACE: greenlang-data - Data Services
+# =============================================================================
+# Data processing and storage services destination rules.
+# =============================================================================
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: greenlang-data-destination-rule
+  namespace: greenlang-data
+  labels:
+    app.kubernetes.io/name: data-destination-rule
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: networking
+    security.greenlang.io/tier: namespace
+  annotations:
+    description: "mTLS and traffic policy for data services"
+spec:
+  host: "*.greenlang-data.svc.cluster.local"
+
+  trafficPolicy:
+    tls:
+      mode: ISTIO_MUTUAL
+
+    connectionPool:
+      tcp:
+        maxConnections: 200
+        connectTimeout: 10s
+      http:
+        h2UpgradePolicy: UPGRADE
+        http1MaxPendingRequests: 200
+        http2MaxRequests: 1000
+        maxRetries: 3
+
+    outlierDetection:
+      consecutive5xxErrors: 5
+      interval: 30s
+      baseEjectionTime: 30s
+      maxEjectionPercent: 50
+
+---
+# =============================================================================
+# SERVICE: Data Ingestion Service
+# =============================================================================
+# High-throughput data ingestion from industrial sensors.
+# =============================================================================
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: data-ingestion-dr
+  namespace: greenlang-data
+  labels:
+    app.kubernetes.io/name: data-ingestion-destination-rule
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: networking
+  annotations:
+    description: "DestinationRule for data ingestion service"
+spec:
+  host: data-ingestion.greenlang-data.svc.cluster.local
+
+  trafficPolicy:
+    tls:
+      mode: ISTIO_MUTUAL
+
+    connectionPool:
+      tcp:
+        maxConnections: 500
+        connectTimeout: 5s
+      http:
+        h2UpgradePolicy: UPGRADE
+        http1MaxPendingRequests: 500
+        http2MaxRequests: 5000
+        maxRequestsPerConnection: 1000
+
+    outlierDetection:
+      consecutive5xxErrors: 10
+      interval: 10s
+      baseEjectionTime: 15s
+      maxEjectionPercent: 20
+
+    loadBalancer:
+      simple: LEAST_REQUEST
+
+---
+# =============================================================================
+# NAMESPACE: greenlang-ml - ML Services
+# =============================================================================
+# Machine learning inference services destination rules.
+# =============================================================================
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: greenlang-ml-destination-rule
+  namespace: greenlang-ml
+  labels:
+    app.kubernetes.io/name: ml-destination-rule
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: networking
+    security.greenlang.io/tier: namespace
+  annotations:
+    description: "mTLS and traffic policy for ML services"
+spec:
+  host: "*.greenlang-ml.svc.cluster.local"
+
+  trafficPolicy:
+    tls:
+      mode: ISTIO_MUTUAL
+
+    connectionPool:
+      tcp:
+        maxConnections: 100
+        connectTimeout: 30s  # ML inference can be slow
+      http:
+        h2UpgradePolicy: UPGRADE
+        http1MaxPendingRequests: 50
+        http2MaxRequests: 200
+        maxRetries: 2  # Limit retries for expensive operations
+        idleTimeout: 600s
+
+    outlierDetection:
+      consecutive5xxErrors: 3
+      interval: 60s
+      baseEjectionTime: 120s
+      maxEjectionPercent: 30
+
+---
+# =============================================================================
+# SERVICE: ML Inference Service (TensorFlow Serving)
+# =============================================================================
+# TensorFlow Serving for emissions prediction models.
+# =============================================================================
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: ml-inference-tensorflow-dr
+  namespace: greenlang-ml
+  labels:
+    app.kubernetes.io/name: ml-inference-destination-rule
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: networking
+  annotations:
+    description: "DestinationRule for TensorFlow Serving ML inference"
+spec:
+  host: ml-inference-tensorflow.greenlang-ml.svc.cluster.local
+
+  trafficPolicy:
+    tls:
+      mode: ISTIO_MUTUAL
+
+    connectionPool:
+      tcp:
+        maxConnections: 50
+        connectTimeout: 60s  # Allow longer for model loading
+      http:
+        h2UpgradePolicy: UPGRADE
+        http1MaxPendingRequests: 25
+        http2MaxRequests: 100
+        maxRetries: 1
+
+    outlierDetection:
+      consecutive5xxErrors: 2
+      interval: 120s
+      baseEjectionTime: 180s
+      maxEjectionPercent: 20
+
+---
+# =============================================================================
+# NAMESPACE: greenlang-production - Production Services
+# =============================================================================
+# Production API and frontend services destination rules.
+# =============================================================================
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: greenlang-production-destination-rule
+  namespace: greenlang-production
+  labels:
+    app.kubernetes.io/name: production-destination-rule
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: networking
+    security.greenlang.io/tier: namespace
+  annotations:
+    description: "mTLS and traffic policy for production services"
+spec:
+  host: "*.greenlang-production.svc.cluster.local"
+
+  trafficPolicy:
+    tls:
+      mode: ISTIO_MUTUAL
+
+    connectionPool:
+      tcp:
+        maxConnections: 500
+        connectTimeout: 5s
+      http:
+        h2UpgradePolicy: UPGRADE
+        http1MaxPendingRequests: 500
+        http2MaxRequests: 5000
+        maxRequestsPerConnection: 500
+        maxRetries: 3
+
+    outlierDetection:
+      consecutive5xxErrors: 3
+      consecutiveGatewayErrors: 3
+      interval: 10s
+      baseEjectionTime: 30s
+      maxEjectionPercent: 25
+      minHealthPercent: 50
+
+    loadBalancer:
+      simple: ROUND_ROBIN
+      localityLbSetting:
+        enabled: true
+
+---
+# =============================================================================
+# SERVICE: GreenLang API
+# =============================================================================
+# Main API service - highest priority, maximum resilience.
+# =============================================================================
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: greenlang-api-dr
+  namespace: greenlang-production
+  labels:
+    app.kubernetes.io/name: api-destination-rule
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: networking
+  annotations:
+    description: "DestinationRule for main GreenLang API"
+spec:
+  host: greenlang-api.greenlang-production.svc.cluster.local
+
+  trafficPolicy:
+    tls:
+      mode: ISTIO_MUTUAL
+
+    connectionPool:
+      tcp:
+        maxConnections: 1000
+        connectTimeout: 3s
+      http:
+        h2UpgradePolicy: UPGRADE
+        http1MaxPendingRequests: 1000
+        http2MaxRequests: 10000
+        maxRequestsPerConnection: 1000
+        maxRetries: 3
+
+    outlierDetection:
+      consecutive5xxErrors: 2
+      consecutiveGatewayErrors: 2
+      interval: 5s
+      baseEjectionTime: 15s
+      maxEjectionPercent: 20
+      minHealthPercent: 70
+
+    loadBalancer:
+      simple: ROUND_ROBIN
+
+  subsets:
+    - name: stable
+      labels:
+        version: stable
+    - name: canary
+      labels:
+        version: canary
+      trafficPolicy:
+        connectionPool:
+          http:
+            http2MaxRequests: 500
+
+---
+# =============================================================================
+# EXTERNAL SERVICES: OPC-UA TLS Configuration
+# =============================================================================
+# DestinationRule for outbound OPC-UA connections to industrial systems.
+# Uses SIMPLE TLS (server-side TLS) as OPC-UA servers may not support mTLS.
+# =============================================================================
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: external-opcua-dr
+  namespace: greenlang-agents
+  labels:
+    app.kubernetes.io/name: opcua-external-destination-rule
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: networking
+    security.greenlang.io/external-protocol: opcua
+  annotations:
+    description: "DestinationRule for external OPC-UA connections"
+spec:
+  # Host defined in ServiceEntry
+  host: "*.opcua.external.greenlang.io"
+
+  trafficPolicy:
+    tls:
+      # SIMPLE mode: Client verifies server certificate
+      mode: SIMPLE
+      # CA certificate for verifying OPC-UA server certificates
+      caCertificates: /etc/istio/opcua-certs/ca-cert.pem
+      # SNI for TLS handshake
+      sni: opcua.external.greenlang.io
+
+    connectionPool:
+      tcp:
+        maxConnections: 50
+        connectTimeout: 30s
+        tcpKeepalive:
+          time: 300s
+          interval: 30s
+      http:
+        h2UpgradePolicy: DO_NOT_UPGRADE  # OPC-UA uses TCP, not HTTP
+
+    outlierDetection:
+      consecutive5xxErrors: 3
+      interval: 60s
+      baseEjectionTime: 120s
+      maxEjectionPercent: 50
+
+---
+# =============================================================================
+# EXTERNAL SERVICES: MQTT TLS Configuration
+# =============================================================================
+# DestinationRule for outbound MQTT connections over TLS (port 8883).
+# =============================================================================
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: external-mqtt-dr
+  namespace: greenlang-data
+  labels:
+    app.kubernetes.io/name: mqtt-external-destination-rule
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: networking
+    security.greenlang.io/external-protocol: mqtt
+  annotations:
+    description: "DestinationRule for external MQTT broker connections"
+spec:
+  host: "*.mqtt.external.greenlang.io"
+
+  trafficPolicy:
+    tls:
+      mode: SIMPLE
+      caCertificates: /etc/istio/mqtt-certs/ca-cert.pem
+      sni: mqtt.external.greenlang.io
+
+    connectionPool:
+      tcp:
+        maxConnections: 100
+        connectTimeout: 10s
+        tcpKeepalive:
+          time: 60s
+          interval: 10s
+
+    outlierDetection:
+      consecutive5xxErrors: 5
+      interval: 30s
+      baseEjectionTime: 60s
+      maxEjectionPercent: 30
+
+---
+# =============================================================================
+# EXTERNAL SERVICES: Kafka TLS Configuration
+# =============================================================================
+# DestinationRule for outbound Kafka connections over TLS (port 9093).
+# =============================================================================
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: external-kafka-dr
+  namespace: greenlang-data
+  labels:
+    app.kubernetes.io/name: kafka-external-destination-rule
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: networking
+    security.greenlang.io/external-protocol: kafka
+  annotations:
+    description: "DestinationRule for external Kafka broker connections"
+spec:
+  host: "*.kafka.external.greenlang.io"
+
+  trafficPolicy:
+    tls:
+      # MUTUAL: Both client and server authenticate
+      mode: MUTUAL
+      clientCertificate: /etc/istio/kafka-certs/client-cert.pem
+      privateKey: /etc/istio/kafka-certs/client-key.pem
+      caCertificates: /etc/istio/kafka-certs/ca-cert.pem
+      sni: kafka.external.greenlang.io
+
+    connectionPool:
+      tcp:
+        maxConnections: 200
+        connectTimeout: 10s
+        tcpKeepalive:
+          time: 300s
+          interval: 60s
+
+    outlierDetection:
+      consecutive5xxErrors: 3
+      interval: 30s
+      baseEjectionTime: 60s
+      maxEjectionPercent: 25
+
+---
+# =============================================================================
+# CROSS-NAMESPACE: Agent to Data Communication
+# =============================================================================
+# DestinationRule for agents communicating with data services.
+# =============================================================================
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: agents-to-data-dr
+  namespace: greenlang-agents
+  labels:
+    app.kubernetes.io/name: cross-namespace-data-destination-rule
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: networking
+  annotations:
+    description: "DestinationRule for agents accessing data services"
+spec:
+  host: "*.greenlang-data.svc.cluster.local"
+  exportTo:
+    - "greenlang-agents"
+
+  trafficPolicy:
+    tls:
+      mode: ISTIO_MUTUAL
+
+    connectionPool:
+      tcp:
+        maxConnections: 150
+        connectTimeout: 10s
+      http:
+        h2UpgradePolicy: UPGRADE
+        http2MaxRequests: 1000
+        maxRetries: 3
+
+---
+# =============================================================================
+# CROSS-NAMESPACE: Agent to ML Communication
+# =============================================================================
+# DestinationRule for agents communicating with ML services.
+# =============================================================================
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: agents-to-ml-dr
+  namespace: greenlang-agents
+  labels:
+    app.kubernetes.io/name: cross-namespace-ml-destination-rule
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: networking
+  annotations:
+    description: "DestinationRule for agents accessing ML services"
+spec:
+  host: "*.greenlang-ml.svc.cluster.local"
+  exportTo:
+    - "greenlang-agents"
+
+  trafficPolicy:
+    tls:
+      mode: ISTIO_MUTUAL
+
+    connectionPool:
+      tcp:
+        maxConnections: 50
+        connectTimeout: 60s  # ML can be slow
+      http:
+        h2UpgradePolicy: UPGRADE
+        http2MaxRequests: 100
+        maxRetries: 1  # Expensive operations, limit retries
+        idleTimeout: 600s
+
+    outlierDetection:
+      consecutive5xxErrors: 2
+      interval: 120s
+      baseEjectionTime: 300s

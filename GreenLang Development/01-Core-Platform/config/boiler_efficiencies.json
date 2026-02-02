@@ -1,0 +1,215 @@
+{
+  "metadata": {
+    "version": "1.0.0",
+    "last_updated": "2024-12-01",
+    "source": "GreenLang Boiler Efficiency Database",
+    "description": "Standard boiler efficiency values by type, fuel, and age"
+  },
+  "natural_gas": {
+    "condensing": {
+      "new": 0.95,
+      "medium": 0.92,
+      "old": 0.88,
+      "description": "High-efficiency condensing boilers"
+    },
+    "standard": {
+      "new": 0.85,
+      "medium": 0.80,
+      "old": 0.75,
+      "description": "Standard efficiency boilers"
+    },
+    "low_efficiency": {
+      "new": 0.78,
+      "medium": 0.72,
+      "old": 0.65,
+      "description": "Older or low-efficiency models"
+    },
+    "modulating": {
+      "new": 0.92,
+      "medium": 0.88,
+      "old": 0.84,
+      "description": "Modulating condensing boilers"
+    }
+  },
+  "oil": {
+    "condensing": {
+      "new": 0.92,
+      "medium": 0.88,
+      "old": 0.84,
+      "description": "Oil condensing boilers (rare)"
+    },
+    "standard": {
+      "new": 0.83,
+      "medium": 0.78,
+      "old": 0.72,
+      "description": "Standard oil boilers"
+    },
+    "low_efficiency": {
+      "new": 0.75,
+      "medium": 0.68,
+      "old": 0.60,
+      "description": "Older oil boilers"
+    }
+  },
+  "propane": {
+    "condensing": {
+      "new": 0.94,
+      "medium": 0.91,
+      "old": 0.87,
+      "description": "Propane condensing boilers"
+    },
+    "standard": {
+      "new": 0.84,
+      "medium": 0.79,
+      "old": 0.74,
+      "description": "Standard propane boilers"
+    },
+    "low_efficiency": {
+      "new": 0.76,
+      "medium": 0.70,
+      "old": 0.63,
+      "description": "Older propane models"
+    }
+  },
+  "biomass": {
+    "modern": {
+      "new": 0.85,
+      "medium": 0.80,
+      "old": 0.75,
+      "description": "Modern pellet boilers"
+    },
+    "standard": {
+      "new": 0.75,
+      "medium": 0.70,
+      "old": 0.65,
+      "description": "Standard biomass boilers"
+    },
+    "traditional": {
+      "new": 0.65,
+      "medium": 0.55,
+      "old": 0.45,
+      "description": "Traditional wood boilers"
+    }
+  },
+  "coal": {
+    "pulverized": {
+      "new": 0.85,
+      "medium": 0.80,
+      "old": 0.75,
+      "description": "Pulverized coal boilers"
+    },
+    "stoker": {
+      "new": 0.75,
+      "medium": 0.70,
+      "old": 0.65,
+      "description": "Stoker-fired boilers"
+    },
+    "hand_fired": {
+      "new": 0.60,
+      "medium": 0.50,
+      "old": 0.40,
+      "description": "Hand-fired coal boilers"
+    }
+  },
+  "electric": {
+    "resistance": {
+      "new": 0.99,
+      "medium": 0.98,
+      "old": 0.97,
+      "description": "Electric resistance heating"
+    },
+    "heat_pump": {
+      "new": 3.50,
+      "medium": 3.00,
+      "old": 2.50,
+      "description": "Heat pump COP values",
+      "note": "Values represent Coefficient of Performance (COP)"
+    },
+    "ground_source_heat_pump": {
+      "new": 4.50,
+      "medium": 4.00,
+      "old": 3.50,
+      "description": "Ground source heat pump COP"
+    }
+  },
+  "district_heating": {
+    "modern": {
+      "new": 0.95,
+      "medium": 0.92,
+      "old": 0.88,
+      "description": "Modern district heating systems"
+    },
+    "standard": {
+      "new": 0.88,
+      "medium": 0.85,
+      "old": 0.80,
+      "description": "Standard district heating"
+    }
+  },
+  "hydrogen": {
+    "condensing": {
+      "new": 0.94,
+      "medium": 0.91,
+      "old": 0.87,
+      "description": "Hydrogen-ready condensing boilers"
+    },
+    "standard": {
+      "new": 0.84,
+      "medium": 0.79,
+      "old": 0.74,
+      "description": "Hydrogen-compatible boilers"
+    },
+    "fuel_cell": {
+      "new": 0.60,
+      "medium": 0.55,
+      "old": 0.50,
+      "description": "Fuel cell combined heat and power",
+      "note": "Electrical efficiency, heat recovery additional"
+    }
+  },
+  "efficiency_adjustments": {
+    "altitude": {
+      "sea_level": 1.00,
+      "1000m": 0.98,
+      "2000m": 0.96,
+      "3000m": 0.94,
+      "description": "Efficiency reduction at altitude"
+    },
+    "maintenance": {
+      "excellent": 1.02,
+      "good": 1.00,
+      "average": 0.97,
+      "poor": 0.92,
+      "description": "Maintenance impact on efficiency"
+    },
+    "oversizing": {
+      "right_sized": 1.00,
+      "10_percent_oversized": 0.98,
+      "25_percent_oversized": 0.95,
+      "50_percent_oversized": 0.90,
+      "description": "Impact of boiler oversizing"
+    }
+  },
+  "regional_variations": {
+    "US": {
+      "efficiency_standard": "AFUE",
+      "minimum_required": 0.80,
+      "condensing_threshold": 0.90
+    },
+    "EU": {
+      "efficiency_standard": "ErP",
+      "minimum_required": 0.86,
+      "condensing_threshold": 0.92
+    },
+    "UK": {
+      "efficiency_standard": "SEDBUK",
+      "minimum_required": 0.86,
+      "condensing_threshold": 0.90
+    },
+    "CN": {
+      "efficiency_standard": "GB",
+      "minimum_required": 0.84,
+      "condensing_threshold": 0.88
+    }
+  }
+}

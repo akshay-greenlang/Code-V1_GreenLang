@@ -1,0 +1,556 @@
+# GL-005 Combusense - PostgreSQL HA Configuration
+# Patroni-based PostgreSQL cluster for control system data persistence
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gl-005-postgres-config
+  namespace: greenlang
+data:
+  PATRONI_SCOPE: "gl-005-postgres"
+  PATRONI_NAME: "${POD_NAME}"
+  PATRONI_KUBERNETES_NAMESPACE: "greenlang"
+  PATRONI_KUBERNETES_LABELS: "{app: gl-005-postgres}"
+  PATRONI_KUBERNETES_USE_ENDPOINTS: "true"
+  PATRONI_SUPERUSER_USERNAME: "postgres"
+  PATRONI_REPLICATION_USERNAME: "replicator"
+  PATRONI_POSTGRESQL_DATA_DIR: "/var/lib/postgresql/data/pgdata"
+  PATRONI_POSTGRESQL_PGPASS: "/tmp/pgpass"
+  PATRONI_POSTGRESQL_LISTEN: "0.0.0.0:5432"
+  PATRONI_RESTAPI_LISTEN: "0.0.0.0:8008"
+
+  patroni.yaml: |
+    bootstrap:
+      dcs:
+        ttl: 30
+        loop_wait: 10
+        retry_timeout: 10
+        maximum_lag_on_failover: 1048576
+        postgresql:
+          use_pg_rewind: true
+          use_slots: true
+          parameters:
+            # Memory Configuration
+            shared_buffers: 512MB
+            effective_cache_size: 1536MB
+            work_mem: 16MB
+            maintenance_work_mem: 128MB
+
+            # WAL Configuration
+            wal_level: replica
+            wal_log_hints: "on"
+            max_wal_senders: 5
+            max_replication_slots: 5
+            wal_keep_size: 1GB
+
+            # Checkpoint Configuration
+            checkpoint_completion_target: 0.9
+            min_wal_size: 256MB
+            max_wal_size: 1GB
+
+            # Connection Configuration
+            max_connections: 200
+
+            # Logging
+            log_destination: stderr
+            logging_collector: "on"
+            log_directory: /var/log/postgresql
+            log_filename: postgresql-%Y-%m-%d_%H%M%S.log
+            log_rotation_age: 1d
+            log_rotation_size: 100MB
+            log_min_duration_statement: 1000
+            log_checkpoints: "on"
+            log_connections: "on"
+            log_disconnections: "on"
+            log_lock_waits: "on"
+
+            # Performance
+            random_page_cost: 1.1
+            effective_io_concurrency: 200
+
+            # Autovacuum
+            autovacuum: "on"
+            autovacuum_max_workers: 3
+            autovacuum_naptime: 1min
+
+      initdb:
+        - encoding: UTF8
+        - data-checksums
+
+      pg_hba:
+        - host replication replicator 0.0.0.0/0 md5
+        - host all all 0.0.0.0/0 md5
+
+      users:
+        gl005_user:
+          password: ${GL005_USER_PASSWORD}
+          options:
+            - createrole
+            - createdb
+        replicator:
+          password: ${REPLICATOR_PASSWORD}
+          options:
+            - replication
+
+    postgresql:
+      listen: 0.0.0.0:5432
+      connect_address: ${POD_IP}:5432
+      data_dir: /var/lib/postgresql/data/pgdata
+      pgpass: /tmp/pgpass
+      authentication:
+        replication:
+          username: replicator
+          password: ${REPLICATOR_PASSWORD}
+        superuser:
+          username: postgres
+          password: ${POSTGRES_PASSWORD}
+
+    restapi:
+      listen: 0.0.0.0:8008
+      connect_address: ${POD_IP}:8008
+
+  init-db.sql: |
+    -- GL-005 Combusense Database Initialization
+
+    -- Create database
+    CREATE DATABASE greenlang_gl005;
+
+    \c greenlang_gl005
+
+    -- Extensions
+    CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+    CREATE EXTENSION IF NOT EXISTS "pg_stat_statements";
+    CREATE EXTENSION IF NOT EXISTS "btree_gist";
+
+    -- Schemas
+    CREATE SCHEMA IF NOT EXISTS control;
+    CREATE SCHEMA IF NOT EXISTS sensors;
+    CREATE SCHEMA IF NOT EXISTS audit;
+
+    -- Control system tables
+    CREATE TABLE control.pid_parameters (
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        controller_name VARCHAR(100) NOT NULL,
+        kp DECIMAL(10,6) NOT NULL,
+        ki DECIMAL(10,6) NOT NULL,
+        kd DECIMAL(10,6) NOT NULL,
+        setpoint_min DECIMAL(10,2),
+        setpoint_max DECIMAL(10,2),
+        output_min DECIMAL(10,2) DEFAULT 0,
+        output_max DECIMAL(10,2) DEFAULT 100,
+        anti_windup BOOLEAN DEFAULT true,
+        derivative_filter DECIMAL(10,6) DEFAULT 0.1,
+        feedforward_gain DECIMAL(10,6),
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        updated_at TIMESTAMPTZ DEFAULT NOW(),
+        updated_by VARCHAR(100),
+        UNIQUE(controller_name)
+    );
+
+    CREATE TABLE control.setpoints (
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        controller_name VARCHAR(100) NOT NULL,
+        setpoint_value DECIMAL(10,4) NOT NULL,
+        source VARCHAR(50) NOT NULL,
+        effective_at TIMESTAMPTZ DEFAULT NOW(),
+        expires_at TIMESTAMPTZ,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+    );
+
+    CREATE TABLE control.control_state (
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        controller_name VARCHAR(100) NOT NULL,
+        setpoint DECIMAL(10,4) NOT NULL,
+        process_variable DECIMAL(10,4) NOT NULL,
+        output DECIMAL(10,4) NOT NULL,
+        error DECIMAL(10,4) NOT NULL,
+        integral DECIMAL(10,4) NOT NULL,
+        derivative DECIMAL(10,4) NOT NULL,
+        mode VARCHAR(20) NOT NULL,
+        timestamp TIMESTAMPTZ DEFAULT NOW(),
+        UNIQUE(controller_name)
+    );
+
+    -- Sensor tables
+    CREATE TABLE sensors.calibration (
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        sensor_id VARCHAR(50) NOT NULL,
+        sensor_type VARCHAR(50) NOT NULL,
+        offset_value DECIMAL(10,6) DEFAULT 0,
+        scale_factor DECIMAL(10,6) DEFAULT 1,
+        range_min DECIMAL(10,4),
+        range_max DECIMAL(10,4),
+        calibrated_at TIMESTAMPTZ NOT NULL,
+        calibrated_by VARCHAR(100),
+        expires_at TIMESTAMPTZ,
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        UNIQUE(sensor_id)
+    );
+
+    CREATE TABLE sensors.readings (
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        sensor_id VARCHAR(50) NOT NULL,
+        raw_value DECIMAL(10,4) NOT NULL,
+        calibrated_value DECIMAL(10,4) NOT NULL,
+        quality INTEGER DEFAULT 100,
+        timestamp TIMESTAMPTZ DEFAULT NOW()
+    );
+
+    -- Partition readings by time
+    CREATE INDEX idx_sensor_readings_time ON sensors.readings (timestamp);
+
+    -- CQI tables
+    CREATE TABLE control.cqi_history (
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        cqi_score DECIMAL(5,4) NOT NULL,
+        temperature_score DECIMAL(5,4),
+        stability_score DECIMAL(5,4),
+        emissions_score DECIMAL(5,4),
+        efficiency_score DECIMAL(5,4),
+        timestamp TIMESTAMPTZ DEFAULT NOW()
+    );
+
+    CREATE INDEX idx_cqi_history_time ON control.cqi_history (timestamp);
+
+    -- Audit tables
+    CREATE TABLE audit.parameter_changes (
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        table_name VARCHAR(100) NOT NULL,
+        record_id UUID NOT NULL,
+        field_name VARCHAR(100) NOT NULL,
+        old_value TEXT,
+        new_value TEXT,
+        changed_by VARCHAR(100),
+        changed_at TIMESTAMPTZ DEFAULT NOW(),
+        reason TEXT
+    );
+
+    CREATE TABLE audit.control_events (
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        event_type VARCHAR(50) NOT NULL,
+        controller_name VARCHAR(100),
+        event_data JSONB,
+        severity VARCHAR(20) DEFAULT 'INFO',
+        timestamp TIMESTAMPTZ DEFAULT NOW()
+    );
+
+    CREATE INDEX idx_audit_events_time ON audit.control_events (timestamp);
+    CREATE INDEX idx_audit_events_type ON audit.control_events (event_type);
+
+    -- Alarm tables
+    CREATE TABLE control.alarms (
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        alarm_id VARCHAR(50) NOT NULL,
+        alarm_type VARCHAR(50) NOT NULL,
+        priority INTEGER NOT NULL,
+        state VARCHAR(20) NOT NULL,
+        message TEXT,
+        source VARCHAR(100),
+        activated_at TIMESTAMPTZ,
+        acknowledged_at TIMESTAMPTZ,
+        acknowledged_by VARCHAR(100),
+        cleared_at TIMESTAMPTZ,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+    );
+
+    CREATE INDEX idx_alarms_state ON control.alarms (state);
+    CREATE INDEX idx_alarms_priority ON control.alarms (priority);
+
+    -- Grant permissions
+    GRANT ALL PRIVILEGES ON DATABASE greenlang_gl005 TO gl005_user;
+    GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA control TO gl005_user;
+    GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA sensors TO gl005_user;
+    GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA audit TO gl005_user;
+    GRANT USAGE ON ALL SEQUENCES IN SCHEMA control TO gl005_user;
+    GRANT USAGE ON ALL SEQUENCES IN SCHEMA sensors TO gl005_user;
+    GRANT USAGE ON ALL SEQUENCES IN SCHEMA audit TO gl005_user;
+
+---
+# PostgreSQL StatefulSet with Patroni
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: gl-005-postgres
+  namespace: greenlang
+  labels:
+    app: gl-005-postgres
+spec:
+  serviceName: gl-005-postgres-headless
+  replicas: 3
+  selector:
+    matchLabels:
+      app: gl-005-postgres
+  template:
+    metadata:
+      labels:
+        app: gl-005-postgres
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9187"
+    spec:
+      serviceAccountName: gl-005-postgres-sa
+
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  app: gl-005-postgres
+              topologyKey: kubernetes.io/hostname
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: gl-005-postgres
+                topologyKey: topology.kubernetes.io/zone
+
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: DoNotSchedule
+          labelSelector:
+            matchLabels:
+              app: gl-005-postgres
+
+      containers:
+        - name: postgres
+          image: patroni/patroni:3.2.0
+          ports:
+            - name: postgres
+              containerPort: 5432
+              protocol: TCP
+            - name: patroni
+              containerPort: 8008
+              protocol: TCP
+
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: PATRONI_KUBERNETES_POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: gl-005-postgres-secrets
+                  key: POSTGRES_PASSWORD
+            - name: REPLICATOR_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: gl-005-postgres-secrets
+                  key: REPLICATOR_PASSWORD
+            - name: GL005_USER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: gl-005-combusense-secrets
+                  key: POSTGRES_PASSWORD
+
+          envFrom:
+            - configMapRef:
+                name: gl-005-postgres-config
+
+          resources:
+            requests:
+              cpu: 500m
+              memory: 1Gi
+            limits:
+              cpu: 2000m
+              memory: 4Gi
+
+          livenessProbe:
+            httpGet:
+              path: /liveness
+              port: 8008
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+          readinessProbe:
+            httpGet:
+              path: /readiness
+              port: 8008
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+            - name: config
+              mountPath: /etc/patroni
+            - name: init-scripts
+              mountPath: /docker-entrypoint-initdb.d
+
+        - name: postgres-exporter
+          image: prometheuscommunity/postgres-exporter:v0.15.0
+          ports:
+            - name: metrics
+              containerPort: 9187
+          env:
+            - name: DATA_SOURCE_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: gl-005-postgres-secrets
+                  key: DATA_SOURCE_NAME
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+
+      volumes:
+        - name: config
+          configMap:
+            name: gl-005-postgres-config
+        - name: init-scripts
+          configMap:
+            name: gl-005-postgres-config
+            items:
+              - key: init-db.sql
+                path: init-db.sql
+
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: fast-ssd
+        resources:
+          requests:
+            storage: 100Gi
+
+---
+# PostgreSQL Secrets
+apiVersion: v1
+kind: Secret
+metadata:
+  name: gl-005-postgres-secrets
+  namespace: greenlang
+type: Opaque
+stringData:
+  POSTGRES_PASSWORD: "REPLACE_WITH_SEALED_SECRET"
+  REPLICATOR_PASSWORD: "REPLACE_WITH_SEALED_SECRET"
+  DATA_SOURCE_NAME: "postgresql://postgres:REPLACE_WITH_SEALED_SECRET@localhost:5432/greenlang_gl005?sslmode=disable"
+
+---
+# ServiceAccount for Patroni
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: gl-005-postgres-sa
+  namespace: greenlang
+
+---
+# Role for Patroni
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: gl-005-postgres-role
+  namespace: greenlang
+rules:
+  - apiGroups: [""]
+    resources: ["endpoints", "pods"]
+    verbs: ["get", "list", "watch", "patch", "update"]
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch"]
+
+---
+# RoleBinding for Patroni
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: gl-005-postgres-rolebinding
+  namespace: greenlang
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: gl-005-postgres-role
+subjects:
+  - kind: ServiceAccount
+    name: gl-005-postgres-sa
+    namespace: greenlang
+
+---
+# PostgreSQL Headless Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-005-postgres-headless
+  namespace: greenlang
+  labels:
+    app: gl-005-postgres
+spec:
+  clusterIP: None
+  selector:
+    app: gl-005-postgres
+  ports:
+    - name: postgres
+      port: 5432
+      targetPort: 5432
+    - name: patroni
+      port: 8008
+      targetPort: 8008
+
+---
+# PostgreSQL HA Service (routes to primary)
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-005-postgres-ha
+  namespace: greenlang
+  labels:
+    app: gl-005-postgres
+spec:
+  type: ClusterIP
+  selector:
+    app: gl-005-postgres
+    role: master
+  ports:
+    - name: postgres
+      port: 5432
+      targetPort: 5432
+
+---
+# PostgreSQL Read-Only Service (routes to replicas)
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-005-postgres-ro
+  namespace: greenlang
+  labels:
+    app: gl-005-postgres
+spec:
+  type: ClusterIP
+  selector:
+    app: gl-005-postgres
+    role: replica
+  ports:
+    - name: postgres
+      port: 5432
+      targetPort: 5432
+
+---
+# PodDisruptionBudget
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: gl-005-postgres-pdb
+  namespace: greenlang
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: gl-005-postgres

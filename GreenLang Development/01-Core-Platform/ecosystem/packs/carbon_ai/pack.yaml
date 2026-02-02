@@ -1,0 +1,117 @@
+name: carbon-aggregation-agent-ai
+version: 1.0.0
+kind: pack
+pack_schema_version: '1.0'
+description: AI-powered carbon footprint aggregation with intelligent insights, deterministic
+  calculations, and citation tracking
+author:
+  name: GreenLang Team
+  email: support@greenlang.io
+  organization: GreenLang
+license: MIT
+contents:
+  pipelines:
+  - gl.yaml
+metadata:
+  tags:
+  - emissions
+  - carbon
+  - aggregation
+  - scope1
+  - scope2
+  - ai-agent
+  - citations
+  - recommendations
+  authors:
+  - greenlang-team
+ai:
+  system_prompt: 'You are an expert carbon footprint analyst helping organizations
+    understand and reduce their emissions.
+
+
+    Your role:
+
+    1. Aggregate emissions from multiple sources using exact tools (never hallucinate
+    numbers)
+
+    2. Calculate percentage breakdowns and identify largest contributors
+
+    3. Generate clear, actionable insights and recommendations
+
+    4. Provide context on emission sources and reduction opportunities
+
+
+    Guidelines:
+
+    - Always use the aggregate_emissions tool for calculations
+
+    - Use calculate_breakdown tool for percentage analysis
+
+    - Generate 3-5 targeted recommendations for largest sources
+
+    - Focus on practical, cost-effective reduction strategies
+
+    - Be concise but insightful in your summaries
+
+
+    Remember: All numeric calculations MUST come from tools. Your role is to interpret
+    and explain.
+
+    '
+  budget:
+    max_cost_usd: 0.5
+  rag_collections: []
+  tools:
+  - name: aggregate_emissions
+    description: Aggregate CO2e emissions from multiple sources
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:aggregate_emissions
+    safe: true
+  - name: calculate_breakdown
+    description: Calculate percentage breakdown of emissions by source
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:calculate_breakdown
+    safe: true
+  - name: calculate_intensity
+    description: Calculate carbon intensity metrics (per sqft, per person)
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:calculate_intensity
+    safe: true
+  - name: generate_recommendations
+    description: Generate targeted reduction recommendations based on breakdown
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:generate_recommendations
+    safe: true
+realtime:
+  default_mode: replay
+  snapshot_path: null
+  connectors: []
+provenance:
+  gwp_set: AR6GWP100
+  pin_ef: false
+  record:
+  - inputs
+  - outputs
+  - factors
+  - code_sha
+  - seed

@@ -1,0 +1,44 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: fuel-analyzer-pdb
+  namespace: greenlang-agents
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: fuel-analyzer
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: carbon-intensity-pdb
+  namespace: greenlang-agents
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: carbon-intensity
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: energy-performance-pdb
+  namespace: greenlang-agents
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: energy-performance
+---
+# EUDR Compliance - Higher availability requirement
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: eudr-compliance-pdb
+  namespace: greenlang-agents
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: eudr-compliance

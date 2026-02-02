@@ -1,0 +1,300 @@
+# GreenLang Emission Factors ConfigMap
+# Reference emission factors for carbon calculations
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: emission-factors
+  namespace: greenlang-production
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/instance: production
+    app.kubernetes.io/component: emission-factors
+    app.kubernetes.io/part-of: greenlang-platform
+  annotations:
+    description: "Emission factors for carbon calculations"
+    source: "GHG Protocol, EPA, DEFRA, IEA"
+    version: "2024.1"
+data:
+  # Electricity emission factors by region (kg CO2e/kWh)
+  electricity_factors.json: |
+    {
+      "version": "2024.1",
+      "source": "IEA, EPA eGRID, EU AIB",
+      "unit": "kg_co2e_per_kwh",
+      "factors": {
+        "US": {
+          "national_average": 0.417,
+          "CAMX": 0.225,
+          "ERCT": 0.396,
+          "FRCC": 0.399,
+          "MROE": 0.515,
+          "MROW": 0.448,
+          "NEWE": 0.234,
+          "NWPP": 0.295,
+          "NYCW": 0.241,
+          "NYLI": 0.324,
+          "NYUP": 0.176,
+          "RFCE": 0.358,
+          "RFCM": 0.526,
+          "RFCW": 0.468,
+          "RMPA": 0.575,
+          "SPNO": 0.541,
+          "SPSO": 0.477,
+          "SRMV": 0.394,
+          "SRMW": 0.619,
+          "SRSO": 0.414,
+          "SRTV": 0.462,
+          "SRVC": 0.337
+        },
+        "EU": {
+          "EU27_average": 0.256,
+          "DE": 0.338,
+          "FR": 0.052,
+          "ES": 0.187,
+          "IT": 0.315,
+          "PL": 0.658,
+          "NL": 0.328,
+          "BE": 0.167,
+          "SE": 0.013,
+          "AT": 0.137,
+          "FI": 0.075,
+          "DK": 0.140,
+          "PT": 0.222,
+          "CZ": 0.401,
+          "RO": 0.296,
+          "GR": 0.334
+        },
+        "APAC": {
+          "CN": 0.581,
+          "JP": 0.453,
+          "KR": 0.459,
+          "AU": 0.660,
+          "IN": 0.708,
+          "SG": 0.408,
+          "MY": 0.585,
+          "TH": 0.480,
+          "VN": 0.543,
+          "ID": 0.734
+        },
+        "UK": {
+          "national_average": 0.207
+        }
+      }
+    }
+
+  # Fuel emission factors (kg CO2e per unit)
+  fuel_factors.json: |
+    {
+      "version": "2024.1",
+      "source": "GHG Protocol, EPA, DEFRA",
+      "factors": {
+        "natural_gas": {
+          "unit": "kg_co2e_per_mmbtu",
+          "value": 53.06,
+          "breakdown": {
+            "co2": 52.91,
+            "ch4": 0.10,
+            "n2o": 0.05
+          }
+        },
+        "diesel": {
+          "unit": "kg_co2e_per_liter",
+          "value": 2.68,
+          "breakdown": {
+            "co2": 2.65,
+            "ch4": 0.01,
+            "n2o": 0.02
+          }
+        },
+        "gasoline": {
+          "unit": "kg_co2e_per_liter",
+          "value": 2.31,
+          "breakdown": {
+            "co2": 2.28,
+            "ch4": 0.01,
+            "n2o": 0.02
+          }
+        },
+        "lpg": {
+          "unit": "kg_co2e_per_liter",
+          "value": 1.51,
+          "breakdown": {
+            "co2": 1.49,
+            "ch4": 0.01,
+            "n2o": 0.01
+          }
+        },
+        "coal_bituminous": {
+          "unit": "kg_co2e_per_kg",
+          "value": 2.46,
+          "breakdown": {
+            "co2": 2.42,
+            "ch4": 0.02,
+            "n2o": 0.02
+          }
+        },
+        "coal_anthracite": {
+          "unit": "kg_co2e_per_kg",
+          "value": 2.60,
+          "breakdown": {
+            "co2": 2.56,
+            "ch4": 0.02,
+            "n2o": 0.02
+          }
+        },
+        "fuel_oil_heavy": {
+          "unit": "kg_co2e_per_liter",
+          "value": 3.15,
+          "breakdown": {
+            "co2": 3.10,
+            "ch4": 0.02,
+            "n2o": 0.03
+          }
+        },
+        "kerosene": {
+          "unit": "kg_co2e_per_liter",
+          "value": 2.55,
+          "breakdown": {
+            "co2": 2.52,
+            "ch4": 0.01,
+            "n2o": 0.02
+          }
+        },
+        "jet_fuel": {
+          "unit": "kg_co2e_per_liter",
+          "value": 2.54,
+          "breakdown": {
+            "co2": 2.51,
+            "ch4": 0.01,
+            "n2o": 0.02
+          }
+        }
+      }
+    }
+
+  # Transport emission factors
+  transport_factors.json: |
+    {
+      "version": "2024.1",
+      "source": "GHG Protocol, DEFRA, EPA",
+      "factors": {
+        "road": {
+          "car_petrol_medium": {
+            "unit": "kg_co2e_per_km",
+            "value": 0.171
+          },
+          "car_diesel_medium": {
+            "unit": "kg_co2e_per_km",
+            "value": 0.168
+          },
+          "car_electric": {
+            "unit": "kg_co2e_per_km",
+            "value": 0.053,
+            "note": "Varies by grid mix"
+          },
+          "truck_rigid_medium": {
+            "unit": "kg_co2e_per_tonne_km",
+            "value": 0.207
+          },
+          "truck_articulated": {
+            "unit": "kg_co2e_per_tonne_km",
+            "value": 0.089
+          },
+          "van_diesel": {
+            "unit": "kg_co2e_per_km",
+            "value": 0.235
+          }
+        },
+        "air": {
+          "domestic_average": {
+            "unit": "kg_co2e_per_passenger_km",
+            "value": 0.255
+          },
+          "short_haul_economy": {
+            "unit": "kg_co2e_per_passenger_km",
+            "value": 0.156
+          },
+          "long_haul_economy": {
+            "unit": "kg_co2e_per_passenger_km",
+            "value": 0.148
+          },
+          "long_haul_business": {
+            "unit": "kg_co2e_per_passenger_km",
+            "value": 0.429
+          },
+          "freight": {
+            "unit": "kg_co2e_per_tonne_km",
+            "value": 0.602
+          }
+        },
+        "rail": {
+          "passenger_national": {
+            "unit": "kg_co2e_per_passenger_km",
+            "value": 0.035
+          },
+          "passenger_international": {
+            "unit": "kg_co2e_per_passenger_km",
+            "value": 0.006
+          },
+          "freight": {
+            "unit": "kg_co2e_per_tonne_km",
+            "value": 0.023
+          }
+        },
+        "sea": {
+          "container_ship_average": {
+            "unit": "kg_co2e_per_tonne_km",
+            "value": 0.016
+          },
+          "bulk_carrier": {
+            "unit": "kg_co2e_per_tonne_km",
+            "value": 0.004
+          },
+          "tanker_product": {
+            "unit": "kg_co2e_per_tonne_km",
+            "value": 0.007
+          },
+          "ferry_foot_passenger": {
+            "unit": "kg_co2e_per_passenger_km",
+            "value": 0.019
+          },
+          "ferry_car_passenger": {
+            "unit": "kg_co2e_per_passenger_km",
+            "value": 0.129
+          }
+        }
+      }
+    }
+
+  # GWP values (Global Warming Potentials)
+  gwp_factors.json: |
+    {
+      "version": "AR6",
+      "source": "IPCC AR6 (2021)",
+      "timeframe": "100-year",
+      "factors": {
+        "CO2": 1,
+        "CH4": 29.8,
+        "CH4_fossil": 29.8,
+        "CH4_biogenic": 27.0,
+        "N2O": 273,
+        "SF6": 25200,
+        "NF3": 17400,
+        "HFC-134a": 1530,
+        "HFC-152a": 164,
+        "HFC-32": 771,
+        "HFC-125": 3740,
+        "HFC-143a": 5810,
+        "HFC-227ea": 3600,
+        "HFC-23": 14600,
+        "HFC-236fa": 8690,
+        "HFC-245fa": 962,
+        "HFC-365mfc": 914,
+        "HFC-43-10mee": 1650,
+        "PFC-14": 7380,
+        "PFC-116": 12400,
+        "PFC-218": 9290,
+        "PFC-318": 10200,
+        "PFC-3-1-10": 10000
+      }
+    }

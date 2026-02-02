@@ -1,0 +1,439 @@
+{
+  "suite": "EUDR Geolocation Validation - Protected Areas",
+  "version": "1.0.0",
+  "description": "Golden tests for protected area detection in EUDR geolocation validation",
+  "tests": [
+    {
+      "test_id": "GEO-PA-001",
+      "description": "Brazil Amazon Protected Complex - inside protected area",
+      "tool_name": "validate_geolocation",
+      "input": {
+        "coordinates": [-3.0, -62.0],
+        "country_code": "BR",
+        "coordinate_type": "point",
+        "precision_meters": 10.0
+      },
+      "expected_output": {
+        "valid": true,
+        "country_code": "BR",
+        "in_protected_area": true,
+        "protected_area_name": "Amazon Protected Complex"
+      },
+      "tolerance": 0.01,
+      "tags": ["brazil", "amazon", "protected_area"]
+    },
+    {
+      "test_id": "GEO-PA-002",
+      "description": "Brazil Tumucumaque National Park - inside protected area",
+      "tool_name": "validate_geolocation",
+      "input": {
+        "coordinates": [1.5, -52.5],
+        "country_code": "BR",
+        "coordinate_type": "point",
+        "precision_meters": 10.0
+      },
+      "expected_output": {
+        "valid": true,
+        "country_code": "BR",
+        "in_protected_area": true,
+        "protected_area_name": "Tumucumaque"
+      },
+      "tolerance": 0.01,
+      "tags": ["brazil", "tumucumaque", "protected_area"]
+    },
+    {
+      "test_id": "GEO-PA-003",
+      "description": "Brazil Xingu Indigenous Territory - inside protected area",
+      "tool_name": "validate_geolocation",
+      "input": {
+        "coordinates": [-10.5, -53.0],
+        "country_code": "BR",
+        "coordinate_type": "point",
+        "precision_meters": 10.0
+      },
+      "expected_output": {
+        "valid": true,
+        "country_code": "BR",
+        "in_protected_area": true,
+        "protected_area_name": "Xingu Indigenous Territory"
+      },
+      "tolerance": 0.01,
+      "tags": ["brazil", "xingu", "indigenous", "protected_area"]
+    },
+    {
+      "test_id": "GEO-PA-004",
+      "description": "Indonesia Leuser Ecosystem - inside protected area",
+      "tool_name": "validate_geolocation",
+      "input": {
+        "coordinates": [3.5, 97.5],
+        "country_code": "ID",
+        "coordinate_type": "point",
+        "precision_meters": 10.0
+      },
+      "expected_output": {
+        "valid": true,
+        "country_code": "ID",
+        "in_protected_area": true,
+        "protected_area_name": "Leuser Ecosystem"
+      },
+      "tolerance": 0.01,
+      "tags": ["indonesia", "leuser", "protected_area"]
+    },
+    {
+      "test_id": "GEO-PA-005",
+      "description": "Indonesia Tanjung Puting - inside protected area",
+      "tool_name": "validate_geolocation",
+      "input": {
+        "coordinates": [-2.5, 111.5],
+        "country_code": "ID",
+        "coordinate_type": "point",
+        "precision_meters": 10.0
+      },
+      "expected_output": {
+        "valid": true,
+        "country_code": "ID",
+        "in_protected_area": true,
+        "protected_area_name": "Tanjung Puting"
+      },
+      "tolerance": 0.01,
+      "tags": ["indonesia", "tanjung_puting", "protected_area"]
+    },
+    {
+      "test_id": "GEO-PA-006",
+      "description": "DRC Virunga National Park - inside protected area",
+      "tool_name": "validate_geolocation",
+      "input": {
+        "coordinates": [0.0, 29.5],
+        "country_code": "CD",
+        "coordinate_type": "point",
+        "precision_meters": 10.0
+      },
+      "expected_output": {
+        "valid": true,
+        "country_code": "CD",
+        "in_protected_area": true,
+        "protected_area_name": "Virunga"
+      },
+      "tolerance": 0.01,
+      "tags": ["drc", "virunga", "protected_area"]
+    },
+    {
+      "test_id": "GEO-PA-007",
+      "description": "Cote d'Ivoire Tai National Park - inside protected area",
+      "tool_name": "validate_geolocation",
+      "input": {
+        "coordinates": [6.0, -7.0],
+        "country_code": "CI",
+        "coordinate_type": "point",
+        "precision_meters": 10.0
+      },
+      "expected_output": {
+        "valid": true,
+        "country_code": "CI",
+        "in_protected_area": true,
+        "protected_area_name": "Tai National Park"
+      },
+      "tolerance": 0.01,
+      "tags": ["cote_divoire", "tai", "protected_area"]
+    },
+    {
+      "test_id": "GEO-PA-008",
+      "description": "Brazil - just outside Amazon Protected Complex boundary",
+      "tool_name": "validate_geolocation",
+      "input": {
+        "coordinates": [-4.0, -64.0],
+        "country_code": "BR",
+        "coordinate_type": "point",
+        "precision_meters": 10.0
+      },
+      "expected_output": {
+        "valid": true,
+        "country_code": "BR",
+        "in_protected_area": false
+      },
+      "tolerance": 0.01,
+      "tags": ["brazil", "amazon", "outside_protected"]
+    },
+    {
+      "test_id": "GEO-PA-009",
+      "description": "Indonesia - outside Leuser Ecosystem boundary",
+      "tool_name": "validate_geolocation",
+      "input": {
+        "coordinates": [2.0, 99.0],
+        "country_code": "ID",
+        "coordinate_type": "point",
+        "precision_meters": 10.0
+      },
+      "expected_output": {
+        "valid": true,
+        "country_code": "ID",
+        "in_protected_area": false
+      },
+      "tolerance": 0.01,
+      "tags": ["indonesia", "outside_protected"]
+    },
+    {
+      "test_id": "GEO-PA-010",
+      "description": "DRC - outside Virunga boundary",
+      "tool_name": "validate_geolocation",
+      "input": {
+        "coordinates": [-2.0, 28.0],
+        "country_code": "CD",
+        "coordinate_type": "point",
+        "precision_meters": 10.0
+      },
+      "expected_output": {
+        "valid": true,
+        "country_code": "CD",
+        "in_protected_area": false
+      },
+      "tolerance": 0.01,
+      "tags": ["drc", "outside_protected"]
+    },
+    {
+      "test_id": "GEO-INV-001",
+      "description": "Invalid latitude - below -90",
+      "tool_name": "validate_geolocation",
+      "input": {
+        "coordinates": [-91.0, 0.0],
+        "country_code": "BR",
+        "coordinate_type": "point",
+        "precision_meters": 10.0
+      },
+      "expected_output": {
+        "valid": false
+      },
+      "tolerance": 0.01,
+      "tags": ["invalid", "boundary"]
+    },
+    {
+      "test_id": "GEO-INV-002",
+      "description": "Invalid latitude - above 90",
+      "tool_name": "validate_geolocation",
+      "input": {
+        "coordinates": [91.0, 0.0],
+        "country_code": "BR",
+        "coordinate_type": "point",
+        "precision_meters": 10.0
+      },
+      "expected_output": {
+        "valid": false
+      },
+      "tolerance": 0.01,
+      "tags": ["invalid", "boundary"]
+    },
+    {
+      "test_id": "GEO-INV-003",
+      "description": "Invalid longitude - below -180",
+      "tool_name": "validate_geolocation",
+      "input": {
+        "coordinates": [0.0, -181.0],
+        "country_code": "BR",
+        "coordinate_type": "point",
+        "precision_meters": 10.0
+      },
+      "expected_output": {
+        "valid": false
+      },
+      "tolerance": 0.01,
+      "tags": ["invalid", "boundary"]
+    },
+    {
+      "test_id": "GEO-INV-004",
+      "description": "Invalid longitude - above 180",
+      "tool_name": "validate_geolocation",
+      "input": {
+        "coordinates": [0.0, 181.0],
+        "country_code": "BR",
+        "coordinate_type": "point",
+        "precision_meters": 10.0
+      },
+      "expected_output": {
+        "valid": false
+      },
+      "tolerance": 0.01,
+      "tags": ["invalid", "boundary"]
+    },
+    {
+      "test_id": "GEO-INV-005",
+      "description": "Invalid coordinate format - single value",
+      "tool_name": "validate_geolocation",
+      "input": {
+        "coordinates": [-15.0],
+        "country_code": "BR",
+        "coordinate_type": "point",
+        "precision_meters": 10.0
+      },
+      "expected_output": {
+        "valid": false
+      },
+      "tolerance": 0.01,
+      "tags": ["invalid", "format"]
+    },
+    {
+      "test_id": "GEO-BOUND-001",
+      "description": "Boundary test - exactly at equator",
+      "tool_name": "validate_geolocation",
+      "input": {
+        "coordinates": [0.0, 0.0],
+        "country_code": "BR",
+        "coordinate_type": "point",
+        "precision_meters": 10.0
+      },
+      "expected_output": {
+        "valid": true,
+        "country_code": "BR"
+      },
+      "tolerance": 0.01,
+      "tags": ["boundary", "equator"]
+    },
+    {
+      "test_id": "GEO-BOUND-002",
+      "description": "Boundary test - exactly at North Pole",
+      "tool_name": "validate_geolocation",
+      "input": {
+        "coordinates": [90.0, 0.0],
+        "country_code": "NO",
+        "coordinate_type": "point",
+        "precision_meters": 10.0
+      },
+      "expected_output": {
+        "valid": true
+      },
+      "tolerance": 0.01,
+      "tags": ["boundary", "pole"]
+    },
+    {
+      "test_id": "GEO-BOUND-003",
+      "description": "Boundary test - exactly at South Pole",
+      "tool_name": "validate_geolocation",
+      "input": {
+        "coordinates": [-90.0, 0.0],
+        "country_code": "AQ",
+        "coordinate_type": "point",
+        "precision_meters": 10.0
+      },
+      "expected_output": {
+        "valid": true
+      },
+      "tolerance": 0.01,
+      "tags": ["boundary", "pole"]
+    },
+    {
+      "test_id": "GEO-BOUND-004",
+      "description": "Boundary test - International Date Line East",
+      "tool_name": "validate_geolocation",
+      "input": {
+        "coordinates": [0.0, 180.0],
+        "country_code": "FJ",
+        "coordinate_type": "point",
+        "precision_meters": 10.0
+      },
+      "expected_output": {
+        "valid": true
+      },
+      "tolerance": 0.01,
+      "tags": ["boundary", "dateline"]
+    },
+    {
+      "test_id": "GEO-BOUND-005",
+      "description": "Boundary test - International Date Line West",
+      "tool_name": "validate_geolocation",
+      "input": {
+        "coordinates": [0.0, -180.0],
+        "country_code": "FJ",
+        "coordinate_type": "point",
+        "precision_meters": 10.0
+      },
+      "expected_output": {
+        "valid": true
+      },
+      "tolerance": 0.01,
+      "tags": ["boundary", "dateline"]
+    },
+    {
+      "test_id": "GEO-POLY-001",
+      "description": "Valid polygon - triangle in Brazil",
+      "tool_name": "validate_geolocation",
+      "input": {
+        "coordinates": [[-10.0, -60.0], [-10.0, -55.0], [-15.0, -57.5]],
+        "country_code": "BR",
+        "coordinate_type": "polygon",
+        "precision_meters": 10.0
+      },
+      "expected_output": {
+        "valid": true,
+        "country_code": "BR"
+      },
+      "tolerance": 0.01,
+      "tags": ["polygon", "brazil"]
+    },
+    {
+      "test_id": "GEO-POLY-002",
+      "description": "Valid polygon - quadrilateral in Indonesia",
+      "tool_name": "validate_geolocation",
+      "input": {
+        "coordinates": [[0.0, 100.0], [0.0, 102.0], [2.0, 102.0], [2.0, 100.0]],
+        "country_code": "ID",
+        "coordinate_type": "polygon",
+        "precision_meters": 10.0
+      },
+      "expected_output": {
+        "valid": true,
+        "country_code": "ID"
+      },
+      "tolerance": 0.01,
+      "tags": ["polygon", "indonesia"]
+    },
+    {
+      "test_id": "GEO-POLY-003",
+      "description": "Invalid polygon - only 2 points",
+      "tool_name": "validate_geolocation",
+      "input": {
+        "coordinates": [[-10.0, -60.0], [-10.0, -55.0]],
+        "country_code": "BR",
+        "coordinate_type": "polygon",
+        "precision_meters": 10.0
+      },
+      "expected_output": {
+        "valid": false
+      },
+      "tolerance": 0.01,
+      "tags": ["polygon", "invalid"]
+    },
+    {
+      "test_id": "GEO-PREC-001",
+      "description": "Low precision warning - 150m precision",
+      "tool_name": "validate_geolocation",
+      "input": {
+        "coordinates": [-15.0, -60.0],
+        "country_code": "BR",
+        "coordinate_type": "point",
+        "precision_meters": 150.0
+      },
+      "expected_output": {
+        "valid": true,
+        "country_code": "BR"
+      },
+      "tolerance": 0.01,
+      "tags": ["precision", "warning"]
+    },
+    {
+      "test_id": "GEO-PREC-002",
+      "description": "High precision - 5m GPS accuracy",
+      "tool_name": "validate_geolocation",
+      "input": {
+        "coordinates": [-15.0, -60.0],
+        "country_code": "BR",
+        "coordinate_type": "point",
+        "precision_meters": 5.0
+      },
+      "expected_output": {
+        "valid": true,
+        "country_code": "BR"
+      },
+      "tolerance": 0.01,
+      "tags": ["precision", "high"]
+    }
+  ]
+}

@@ -1,0 +1,140 @@
+# GreenLang API Server Network Policy
+# Allows:
+#   - Ingress: From ingress controller (nginx) and Prometheus for metrics
+#   - Egress: To PostgreSQL, Redis, Agent Runtime, and Registry services
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: api-server-netpol
+  namespace: greenlang-production
+  labels:
+    app.kubernetes.io/name: api-server-netpol
+    app.kubernetes.io/component: network-policy
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/managed-by: kubectl
+    security.greenlang.ai/policy-type: allow
+  annotations:
+    description: "Network policy for API Server - Gateway component"
+    security.greenlang.ai/compliance: "SOC2,ISO27001"
+    security.greenlang.ai/last-review: "2024-01-01"
+spec:
+  # Select API Server pods
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: api-server
+      app.kubernetes.io/component: api
+  policyTypes:
+    - Ingress
+    - Egress
+
+  ingress:
+    # Allow traffic from NGINX Ingress Controller
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: ingress-nginx
+              app.kubernetes.io/component: controller
+      ports:
+        - protocol: TCP
+          port: 8000
+
+    # Allow traffic from any ingress controller in the ingress namespace
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              app.kubernetes.io/name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 8000
+
+    # Allow Prometheus metrics scraping
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: prometheus
+      ports:
+        - protocol: TCP
+          port: 8000
+        - protocol: TCP
+          port: 9090
+
+    # Allow health checks from kubelet (node network)
+    - from:
+        - ipBlock:
+            cidr: 10.0.0.0/8
+      ports:
+        - protocol: TCP
+          port: 8000
+
+  egress:
+    # Allow egress to PostgreSQL
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: postgresql
+      ports:
+        - protocol: TCP
+          port: 5432
+
+    # Allow egress to Redis
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: redis
+      ports:
+        - protocol: TCP
+          port: 6379
+
+    # Allow egress to Agent Runtime (internal service calls)
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: agent-runtime
+              app.kubernetes.io/component: agent-runtime
+      ports:
+        - protocol: TCP
+          port: 8000
+
+    # Allow egress to Registry service
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: registry
+              app.kubernetes.io/component: registry
+      ports:
+        - protocol: TCP
+          port: 8001
+
+    # Allow egress to external APIs (Anthropic, OpenAI, etc.)
+    # Using CIDR 0.0.0.0/0 with port restrictions
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            # Exclude private networks - only allow public internet
+            except:
+              - 10.0.0.0/8
+              - 172.16.0.0/12
+              - 192.168.0.0/16
+      ports:
+        - protocol: TCP
+          port: 443
+
+    # Allow egress to OpenTelemetry Collector (observability)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: otel-collector
+      ports:
+        - protocol: TCP
+          port: 4317
+        - protocol: TCP
+          port: 4318

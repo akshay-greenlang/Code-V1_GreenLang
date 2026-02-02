@@ -1,0 +1,402 @@
+# GL-017_Condensync Network Policy
+# Network segmentation and security using Kubernetes Network Policies
+# Version: 1.0.0
+
+---
+# Default Deny All Ingress (Namespace Level)
+# Apply this first to deny all ingress by default
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: gl-017-default-deny-ingress
+  namespace: greenlang
+  labels:
+    app: gl-017-condensync
+    app.kubernetes.io/part-of: greenlang
+spec:
+  podSelector:
+    matchLabels:
+      app: gl-017-condensync
+  policyTypes:
+    - Ingress
+
+---
+# Default Deny All Egress (Namespace Level)
+# Apply this to deny all egress by default
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: gl-017-default-deny-egress
+  namespace: greenlang
+  labels:
+    app: gl-017-condensync
+    app.kubernetes.io/part-of: greenlang
+spec:
+  podSelector:
+    matchLabels:
+      app: gl-017-condensync
+  policyTypes:
+    - Egress
+
+---
+# GL-017 Condensync Ingress Policy
+# Allow traffic from ingress controller and internal services
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: gl-017-condensync-ingress
+  namespace: greenlang
+  labels:
+    app: gl-017-condensync
+    app.kubernetes.io/name: gl-017-condensync
+spec:
+  podSelector:
+    matchLabels:
+      app: gl-017-condensync
+  policyTypes:
+    - Ingress
+  ingress:
+    # Allow from Ingress Controller (nginx)
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: ingress-nginx
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 8000
+        - protocol: TCP
+          port: 50051
+
+    # Allow from same namespace (inter-service communication)
+    - from:
+        - podSelector: {}
+      ports:
+        - protocol: TCP
+          port: 8000
+        - protocol: TCP
+          port: 9090
+        - protocol: TCP
+          port: 50051
+
+    # Allow from monitoring namespace (Prometheus scraping)
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+          podSelector:
+            matchLabels:
+              app: prometheus
+      ports:
+        - protocol: TCP
+          port: 8000
+        - protocol: TCP
+          port: 9090
+
+    # Allow from Grafana for metrics
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: grafana
+      ports:
+        - protocol: TCP
+          port: 9090
+
+    # Allow from Istio sidecar (if using service mesh)
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: istio-system
+      ports:
+        - protocol: TCP
+          port: 8000
+        - protocol: TCP
+          port: 15090
+
+    # Allow from other GreenLang thermal agents
+    - from:
+        - podSelector:
+            matchLabels:
+              greenlang.io/agent-group: thermal
+      ports:
+        - protocol: TCP
+          port: 8000
+        - protocol: TCP
+          port: 50051
+
+---
+# GL-017 Condensync Egress Policy
+# Allow outbound traffic to required services
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: gl-017-condensync-egress
+  namespace: greenlang
+  labels:
+    app: gl-017-condensync
+    app.kubernetes.io/name: gl-017-condensync
+spec:
+  podSelector:
+    matchLabels:
+      app: gl-017-condensync
+  policyTypes:
+    - Egress
+  egress:
+    # Allow DNS resolution
+    - to:
+        - namespaceSelector: {}
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+
+    # Allow to Database (PostgreSQL)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: database
+          podSelector:
+            matchLabels:
+              app: postgresql
+      ports:
+        - protocol: TCP
+          port: 5432
+
+    # Allow to Redis
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: cache
+          podSelector:
+            matchLabels:
+              app: redis
+      ports:
+        - protocol: TCP
+          port: 6379
+
+    # Allow to RabbitMQ
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: messaging
+          podSelector:
+            matchLabels:
+              app: rabbitmq
+      ports:
+        - protocol: TCP
+          port: 5672
+        - protocol: TCP
+          port: 15672
+
+    # Allow to other agents in same namespace
+    - to:
+        - podSelector: {}
+      ports:
+        - protocol: TCP
+          port: 8000
+        - protocol: TCP
+          port: 50051
+
+    # Allow to OpenTelemetry Collector
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+          podSelector:
+            matchLabels:
+              app: otel-collector
+      ports:
+        - protocol: TCP
+          port: 4317
+        - protocol: TCP
+          port: 4318
+
+    # Allow to external services (HTTPS)
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 10.0.0.0/8
+              - 172.16.0.0/12
+              - 192.168.0.0/16
+      ports:
+        - protocol: TCP
+          port: 443
+
+    # Allow to AWS services (S3, Secrets Manager)
+    - to:
+        - ipBlock:
+            cidr: 52.94.0.0/15  # AWS S3
+        - ipBlock:
+            cidr: 52.119.0.0/16  # AWS S3
+      ports:
+        - protocol: TCP
+          port: 443
+
+---
+# Inter-Agent Communication Policy
+# Allow specific thermal agents to communicate with GL-017
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: gl-017-condensync-inter-agent
+  namespace: greenlang
+  labels:
+    app: gl-017-condensync
+spec:
+  podSelector:
+    matchLabels:
+      app: gl-017-condensync
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Allow from thermal group agents
+    - from:
+        - podSelector:
+            matchLabels:
+              greenlang.io/agent-group: thermal
+      ports:
+        - protocol: TCP
+          port: 8000
+        - protocol: TCP
+          port: 50051
+
+    # Allow from optimization group agents
+    - from:
+        - podSelector:
+            matchLabels:
+              greenlang.io/agent-group: optimization
+      ports:
+        - protocol: TCP
+          port: 8000
+
+  egress:
+    # Allow to thermal group agents
+    - to:
+        - podSelector:
+            matchLabels:
+              greenlang.io/agent-group: thermal
+      ports:
+        - protocol: TCP
+          port: 8000
+        - protocol: TCP
+          port: 50051
+
+    # Allow to data collection agents
+    - to:
+        - podSelector:
+            matchLabels:
+              greenlang.io/agent-group: data-collection
+      ports:
+        - protocol: TCP
+          port: 8000
+
+---
+# Monitoring Access Policy
+# Allow Prometheus and Grafana to access metrics
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: gl-017-allow-monitoring
+  namespace: greenlang
+  labels:
+    app: gl-017-condensync
+    app.kubernetes.io/part-of: greenlang
+spec:
+  podSelector:
+    matchLabels:
+      app: gl-017-condensync
+      greenlang.io/monitoring: enabled
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+      ports:
+        - protocol: TCP
+          port: 9090
+        - protocol: TCP
+          port: 8000
+
+---
+# Admin Access Policy
+# Allow kubectl exec/logs from authorized namespaces
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: gl-017-allow-admin-access
+  namespace: greenlang
+  labels:
+    app: gl-017-condensync
+    app.kubernetes.io/part-of: greenlang
+spec:
+  podSelector:
+    matchLabels:
+      app: gl-017-condensync
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: kube-system
+        - namespaceSelector:
+            matchLabels:
+              name: admin
+
+---
+# Cilium Network Policy (Alternative - More Features)
+# Uncomment if using Cilium CNI
+# apiVersion: cilium.io/v2
+# kind: CiliumNetworkPolicy
+# metadata:
+#   name: gl-017-condensync-cilium-policy
+#   namespace: greenlang
+# spec:
+#   endpointSelector:
+#     matchLabels:
+#       app: gl-017-condensync
+#   ingress:
+#     - fromEndpoints:
+#         - matchLabels:
+#             io.kubernetes.pod.namespace: ingress-nginx
+#       toPorts:
+#         - ports:
+#             - port: "8000"
+#               protocol: TCP
+#           rules:
+#             http:
+#               - method: "GET"
+#                 path: "/api/v1/health"
+#               - method: "GET"
+#                 path: "/api/v1/ready"
+#               - method: "POST"
+#                 path: "/api/v1/optimize"
+#               - method: "GET"
+#                 path: "/api/v1/condenser/.*"
+#   egress:
+#     - toFQDNs:
+#         - matchPattern: "*.amazonaws.com"
+#       toPorts:
+#         - ports:
+#             - port: "443"
+#               protocol: TCP
+#     - toEndpoints:
+#         - matchLabels:
+#             app: postgresql
+#       toPorts:
+#         - ports:
+#             - port: "5432"
+#               protocol: TCP

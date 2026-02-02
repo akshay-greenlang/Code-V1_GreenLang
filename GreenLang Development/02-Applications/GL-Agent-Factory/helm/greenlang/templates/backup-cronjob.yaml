@@ -1,0 +1,480 @@
+{{- if .Values.backup.enabled }}
+# GreenLang PostgreSQL Backup CronJob Helm Template
+# Automated daily backups with S3 upload and configurable retention
+---
+# Service Account for backup operations
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ include "greenlang.fullname" . }}-backup-sa
+  namespace: {{ .Values.namespace.name }}
+  labels:
+    {{- include "greenlang.labels" . | nindent 4 }}
+    app.kubernetes.io/component: backup
+  {{- with .Values.backup.serviceAccount.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+---
+# RBAC Role for backup operations
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "greenlang.fullname" . }}-backup-role
+  namespace: {{ .Values.namespace.name }}
+  labels:
+    {{- include "greenlang.labels" . | nindent 4 }}
+    app.kubernetes.io/component: backup
+rules:
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "list"]
+    resourceNames:
+      - {{ .Values.backup.database.secretName | default "db-credentials" }}
+      - {{ include "greenlang.fullname" . }}-backup-s3-credentials
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["get", "list", "create", "update", "patch"]
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list"]
+  - apiGroups: ["batch"]
+    resources: ["jobs"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "greenlang.fullname" . }}-backup-rolebinding
+  namespace: {{ .Values.namespace.name }}
+  labels:
+    {{- include "greenlang.labels" . | nindent 4 }}
+    app.kubernetes.io/component: backup
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "greenlang.fullname" . }}-backup-sa
+    namespace: {{ .Values.namespace.name }}
+roleRef:
+  kind: Role
+  name: {{ include "greenlang.fullname" . }}-backup-role
+  apiGroup: rbac.authorization.k8s.io
+---
+# ConfigMap for backup configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "greenlang.fullname" . }}-backup-config
+  namespace: {{ .Values.namespace.name }}
+  labels:
+    {{- include "greenlang.labels" . | nindent 4 }}
+    app.kubernetes.io/component: backup
+data:
+  BACKUP_RETENTION_DAYS: {{ .Values.backup.retention.days | quote }}
+  BACKUP_COMPRESSION: {{ .Values.backup.compression | default "gzip" | quote }}
+  S3_BUCKET: {{ .Values.backup.s3.bucket | quote }}
+  S3_REGION: {{ .Values.backup.s3.region | quote }}
+  S3_PREFIX: {{ .Values.backup.s3.prefix | default "postgres/daily" | quote }}
+  S3_STORAGE_CLASS: {{ .Values.backup.s3.storageClass | default "STANDARD_IA" | quote }}
+  PGHOST: {{ .Values.backup.database.host | default "postgresql-service" | quote }}
+  PGPORT: {{ .Values.backup.database.port | default "5432" | quote }}
+  PGDATABASE: {{ .Values.backup.database.name | default "greenlang" | quote }}
+  SLACK_CHANNEL: {{ .Values.backup.notifications.slackChannel | default "#greenlang-alerts" | quote }}
+  ENABLE_NOTIFICATIONS: {{ .Values.backup.notifications.enabled | default false | quote }}
+---
+# S3 Credentials Secret (template - replace with actual values or use external secrets)
+{{- if not .Values.backup.s3.useIRSA }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ include "greenlang.fullname" . }}-backup-s3-credentials
+  namespace: {{ .Values.namespace.name }}
+  labels:
+    {{- include "greenlang.labels" . | nindent 4 }}
+    app.kubernetes.io/component: backup
+  annotations:
+    description: "S3 credentials for PostgreSQL backup - REPLACE WITH ACTUAL VALUES"
+type: Opaque
+stringData:
+  AWS_ACCESS_KEY_ID: {{ .Values.backup.s3.accessKeyId | default "CHANGE_ME" | quote }}
+  AWS_SECRET_ACCESS_KEY: {{ .Values.backup.s3.secretAccessKey | default "CHANGE_ME" | quote }}
+  {{- if .Values.backup.notifications.slackWebhookUrl }}
+  SLACK_WEBHOOK_URL: {{ .Values.backup.notifications.slackWebhookUrl | quote }}
+  {{- end }}
+{{- end }}
+---
+# CronJob for PostgreSQL backup
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "greenlang.fullname" . }}-postgres-backup
+  namespace: {{ .Values.namespace.name }}
+  labels:
+    {{- include "greenlang.labels" . | nindent 4 }}
+    app.kubernetes.io/component: backup
+  annotations:
+    description: "Automated PostgreSQL backup to S3"
+spec:
+  schedule: {{ .Values.backup.schedule | default "0 2 * * *" | quote }}
+  {{- if .Values.backup.timeZone }}
+  timeZone: {{ .Values.backup.timeZone | quote }}
+  {{- end }}
+  concurrencyPolicy: {{ .Values.backup.concurrencyPolicy | default "Forbid" }}
+  successfulJobsHistoryLimit: {{ .Values.backup.successfulJobsHistoryLimit | default 7 }}
+  failedJobsHistoryLimit: {{ .Values.backup.failedJobsHistoryLimit | default 3 }}
+  startingDeadlineSeconds: {{ .Values.backup.startingDeadlineSeconds | default 3600 }}
+  suspend: {{ .Values.backup.suspend | default false }}
+  jobTemplate:
+    metadata:
+      labels:
+        {{- include "greenlang.labels" . | nindent 8 }}
+        app.kubernetes.io/component: backup
+    spec:
+      activeDeadlineSeconds: {{ .Values.backup.activeDeadlineSeconds | default 7200 }}
+      backoffLimit: {{ .Values.backup.backoffLimit | default 3 }}
+      ttlSecondsAfterFinished: {{ .Values.backup.ttlSecondsAfterFinished | default 86400 }}
+      template:
+        metadata:
+          labels:
+            {{- include "greenlang.labels" . | nindent 12 }}
+            app.kubernetes.io/component: backup
+          annotations:
+            sidecar.istio.io/inject: "false"
+            {{- with .Values.backup.podAnnotations }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+        spec:
+          serviceAccountName: {{ include "greenlang.fullname" . }}-backup-sa
+          restartPolicy: OnFailure
+
+          securityContext:
+            {{- toYaml .Values.podSecurityContext | nindent 12 }}
+
+          {{- with .Values.backup.imagePullSecrets }}
+          imagePullSecrets:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+
+          # Init container to verify PostgreSQL connectivity
+          initContainers:
+            - name: check-postgres
+              image: {{ .Values.backup.image.repository | default "postgres" }}:{{ .Values.backup.image.tag | default "15-alpine" }}
+              imagePullPolicy: {{ .Values.backup.image.pullPolicy | default "IfNotPresent" }}
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  echo "Checking PostgreSQL connectivity..."
+                  until pg_isready -h $PGHOST -p $PGPORT -U $PGUSER; do
+                    echo "Waiting for PostgreSQL to be ready..."
+                    sleep 5
+                  done
+                  echo "PostgreSQL is ready!"
+              env:
+                - name: PGHOST
+                  valueFrom:
+                    configMapKeyRef:
+                      name: {{ include "greenlang.fullname" . }}-backup-config
+                      key: PGHOST
+                - name: PGPORT
+                  valueFrom:
+                    configMapKeyRef:
+                      name: {{ include "greenlang.fullname" . }}-backup-config
+                      key: PGPORT
+                - name: PGUSER
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Values.backup.database.secretName | default "db-credentials" }}
+                      key: {{ .Values.backup.database.userKey | default "DATABASE_USER" }}
+              securityContext:
+                {{- toYaml .Values.containerSecurityContext | nindent 16 }}
+              resources:
+                requests:
+                  cpu: "50m"
+                  memory: "64Mi"
+                limits:
+                  cpu: "100m"
+                  memory: "128Mi"
+
+          containers:
+            - name: postgres-backup
+              image: {{ .Values.backup.image.repository | default "postgres" }}:{{ .Values.backup.image.tag | default "15-alpine" }}
+              imagePullPolicy: {{ .Values.backup.image.pullPolicy | default "IfNotPresent" }}
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  set -e
+
+                  # Generate timestamp for backup filename
+                  TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+                  BACKUP_FILENAME="greenlang_${PGDATABASE}_${TIMESTAMP}.sql.gz"
+                  BACKUP_PATH="/backups/${BACKUP_FILENAME}"
+
+                  echo "=========================================="
+                  echo "GreenLang PostgreSQL Backup"
+                  echo "=========================================="
+                  echo "Timestamp: ${TIMESTAMP}"
+                  echo "Database: ${PGDATABASE}"
+                  echo "Host: ${PGHOST}:${PGPORT}"
+                  echo "Backup file: ${BACKUP_FILENAME}"
+                  echo "S3 destination: s3://${S3_BUCKET}/${S3_PREFIX}/"
+                  echo "=========================================="
+
+                  # Create backup directory
+                  mkdir -p /backups
+
+                  # Perform full database backup with pg_dump
+                  echo "[$(date)] Starting pg_dump..."
+                  pg_dump \
+                    -h "${PGHOST}" \
+                    -p "${PGPORT}" \
+                    -U "${PGUSER}" \
+                    -d "${PGDATABASE}" \
+                    --verbose \
+                    --no-password \
+                    --format=plain \
+                    --no-owner \
+                    --no-privileges \
+                    --clean \
+                    --if-exists \
+                    --create \
+                    --encoding=UTF8 \
+                    | gzip -9 > "${BACKUP_PATH}"
+
+                  # Verify backup was created
+                  if [ ! -f "${BACKUP_PATH}" ]; then
+                    echo "[ERROR] Backup file was not created!"
+                    exit 1
+                  fi
+
+                  BACKUP_SIZE=$(du -h "${BACKUP_PATH}" | cut -f1)
+                  echo "[$(date)] Backup completed: ${BACKUP_SIZE}"
+
+                  # Generate checksum
+                  CHECKSUM=$(sha256sum "${BACKUP_PATH}" | cut -d' ' -f1)
+                  echo "${CHECKSUM}" > "${BACKUP_PATH}.sha256"
+                  echo "[$(date)] Checksum: ${CHECKSUM}"
+
+                  # Install AWS CLI
+                  if ! command -v aws &> /dev/null; then
+                    echo "[$(date)] Installing AWS CLI..."
+                    apk add --no-cache aws-cli
+                  fi
+
+                  # Configure AWS
+                  export AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}"
+                  export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}"
+                  export AWS_DEFAULT_REGION="${S3_REGION}"
+
+                  # Upload to S3
+                  echo "[$(date)] Uploading backup to S3..."
+                  aws s3 cp "${BACKUP_PATH}" "s3://${S3_BUCKET}/${S3_PREFIX}/${BACKUP_FILENAME}" \
+                    --storage-class "${S3_STORAGE_CLASS}" \
+                    --metadata "checksum=${CHECKSUM},database=${PGDATABASE},timestamp=${TIMESTAMP}"
+
+                  aws s3 cp "${BACKUP_PATH}.sha256" "s3://${S3_BUCKET}/${S3_PREFIX}/${BACKUP_FILENAME}.sha256"
+
+                  # Create latest symlink
+                  aws s3 cp "s3://${S3_BUCKET}/${S3_PREFIX}/${BACKUP_FILENAME}" \
+                    "s3://${S3_BUCKET}/${S3_PREFIX}/latest.sql.gz"
+
+                  # Cleanup old backups
+                  echo "[$(date)] Applying retention policy (${BACKUP_RETENTION_DAYS} days)..."
+                  CUTOFF_DATE=$(date -d "-${BACKUP_RETENTION_DAYS} days" +%Y-%m-%d 2>/dev/null || \
+                    date -v-${BACKUP_RETENTION_DAYS}d +%Y-%m-%d)
+
+                  aws s3 ls "s3://${S3_BUCKET}/${S3_PREFIX}/" | while read -r line; do
+                    FILE_DATE=$(echo "$line" | awk '{print $1}')
+                    FILE_NAME=$(echo "$line" | awk '{print $4}')
+
+                    if [[ ! "$FILE_NAME" =~ ^greenlang_.*\.sql\.gz$ ]] || [ "$FILE_NAME" == "latest.sql.gz" ]; then
+                      continue
+                    fi
+
+                    if [[ "$FILE_DATE" < "$CUTOFF_DATE" ]]; then
+                      echo "[$(date)] Deleting old backup: ${FILE_NAME}"
+                      aws s3 rm "s3://${S3_BUCKET}/${S3_PREFIX}/${FILE_NAME}"
+                      aws s3 rm "s3://${S3_BUCKET}/${S3_PREFIX}/${FILE_NAME}.sha256" 2>/dev/null || true
+                    fi
+                  done
+
+                  rm -f "${BACKUP_PATH}" "${BACKUP_PATH}.sha256"
+
+                  echo "=========================================="
+                  echo "Backup Summary"
+                  echo "=========================================="
+                  echo "Status: SUCCESS"
+                  echo "File: ${BACKUP_FILENAME}"
+                  echo "Size: ${BACKUP_SIZE}"
+                  echo "Completed: $(date)"
+                  echo "=========================================="
+
+                  # Send notification
+                  if [ "${ENABLE_NOTIFICATIONS}" = "true" ] && [ -n "${SLACK_WEBHOOK_URL}" ]; then
+                    curl -X POST -H 'Content-type: application/json' \
+                      --data "{\"channel\":\"${SLACK_CHANNEL}\",\"text\":\"PostgreSQL Backup SUCCESS: ${BACKUP_FILENAME} (${BACKUP_SIZE})\"}" \
+                      "${SLACK_WEBHOOK_URL}" || true
+                  fi
+
+              env:
+                - name: PGHOST
+                  valueFrom:
+                    configMapKeyRef:
+                      name: {{ include "greenlang.fullname" . }}-backup-config
+                      key: PGHOST
+                - name: PGPORT
+                  valueFrom:
+                    configMapKeyRef:
+                      name: {{ include "greenlang.fullname" . }}-backup-config
+                      key: PGPORT
+                - name: PGDATABASE
+                  valueFrom:
+                    configMapKeyRef:
+                      name: {{ include "greenlang.fullname" . }}-backup-config
+                      key: PGDATABASE
+                - name: PGUSER
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Values.backup.database.secretName | default "db-credentials" }}
+                      key: {{ .Values.backup.database.userKey | default "DATABASE_USER" }}
+                - name: PGPASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Values.backup.database.secretName | default "db-credentials" }}
+                      key: {{ .Values.backup.database.passwordKey | default "DATABASE_PASSWORD" }}
+                - name: S3_BUCKET
+                  valueFrom:
+                    configMapKeyRef:
+                      name: {{ include "greenlang.fullname" . }}-backup-config
+                      key: S3_BUCKET
+                - name: S3_REGION
+                  valueFrom:
+                    configMapKeyRef:
+                      name: {{ include "greenlang.fullname" . }}-backup-config
+                      key: S3_REGION
+                - name: S3_PREFIX
+                  valueFrom:
+                    configMapKeyRef:
+                      name: {{ include "greenlang.fullname" . }}-backup-config
+                      key: S3_PREFIX
+                - name: S3_STORAGE_CLASS
+                  valueFrom:
+                    configMapKeyRef:
+                      name: {{ include "greenlang.fullname" . }}-backup-config
+                      key: S3_STORAGE_CLASS
+                {{- if not .Values.backup.s3.useIRSA }}
+                - name: AWS_ACCESS_KEY_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ include "greenlang.fullname" . }}-backup-s3-credentials
+                      key: AWS_ACCESS_KEY_ID
+                - name: AWS_SECRET_ACCESS_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ include "greenlang.fullname" . }}-backup-s3-credentials
+                      key: AWS_SECRET_ACCESS_KEY
+                {{- end }}
+                - name: BACKUP_RETENTION_DAYS
+                  valueFrom:
+                    configMapKeyRef:
+                      name: {{ include "greenlang.fullname" . }}-backup-config
+                      key: BACKUP_RETENTION_DAYS
+                - name: ENABLE_NOTIFICATIONS
+                  valueFrom:
+                    configMapKeyRef:
+                      name: {{ include "greenlang.fullname" . }}-backup-config
+                      key: ENABLE_NOTIFICATIONS
+                - name: SLACK_CHANNEL
+                  valueFrom:
+                    configMapKeyRef:
+                      name: {{ include "greenlang.fullname" . }}-backup-config
+                      key: SLACK_CHANNEL
+                {{- if not .Values.backup.s3.useIRSA }}
+                - name: SLACK_WEBHOOK_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ include "greenlang.fullname" . }}-backup-s3-credentials
+                      key: SLACK_WEBHOOK_URL
+                      optional: true
+                {{- end }}
+
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: false
+                capabilities:
+                  drop:
+                    - ALL
+
+              resources:
+                {{- toYaml .Values.backup.resources | nindent 16 }}
+
+              volumeMounts:
+                - name: backup-storage
+                  mountPath: /backups
+                - name: tmp
+                  mountPath: /tmp
+
+          volumes:
+            - name: backup-storage
+              emptyDir:
+                sizeLimit: {{ .Values.backup.storage.size | default "10Gi" }}
+            - name: tmp
+              emptyDir:
+                sizeLimit: 1Gi
+
+          {{- with .Values.backup.nodeSelector }}
+          nodeSelector:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+
+          {{- with .Values.backup.affinity }}
+          affinity:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+
+          {{- with .Values.backup.tolerations }}
+          tolerations:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+---
+# Network Policy for backup jobs
+{{- if .Values.networkPolicies.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "greenlang.fullname" . }}-backup-netpol
+  namespace: {{ .Values.namespace.name }}
+  labels:
+    {{- include "greenlang.labels" . | nindent 4 }}
+    app.kubernetes.io/component: backup
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/component: backup
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress: []
+  egress:
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+    - to:
+        - podSelector:
+            matchLabels:
+              app: postgresql
+      ports:
+        - protocol: TCP
+          port: 5432
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+      ports:
+        - protocol: TCP
+          port: 443
+{{- end }}
+{{- end }}

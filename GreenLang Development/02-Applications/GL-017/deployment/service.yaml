@@ -1,0 +1,100 @@
+# =============================================================================
+# GL-017 CONDENSYNC - Kubernetes Services
+# Internal ClusterIP services for HTTP API and Prometheus metrics
+# =============================================================================
+
+---
+# Primary HTTP API Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-017-condensync
+  namespace: greenlang
+  labels:
+    app: gl-017-condensync
+    app.kubernetes.io/name: condensync
+    app.kubernetes.io/instance: gl-017
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/component: agent
+    app.kubernetes.io/part-of: greenlang
+    tier: backend
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9017"
+    prometheus.io/path: "/metrics"
+    service.kubernetes.io/topology-mode: Auto
+spec:
+  type: ClusterIP
+  selector:
+    app: gl-017-condensync
+    app.kubernetes.io/name: condensync
+    app.kubernetes.io/instance: gl-017
+  ports:
+    - name: http
+      protocol: TCP
+      port: 8017
+      targetPort: 8017
+      appProtocol: http
+    - name: metrics
+      protocol: TCP
+      port: 9017
+      targetPort: 9017
+      appProtocol: http
+  sessionAffinity: None
+  publishNotReadyAddresses: false
+
+---
+# Headless Service for StatefulSet-like DNS resolution
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-017-condensync-headless
+  namespace: greenlang
+  labels:
+    app: gl-017-condensync
+    app.kubernetes.io/name: condensync
+    app.kubernetes.io/instance: gl-017
+    app.kubernetes.io/component: agent
+    service-type: headless
+spec:
+  type: ClusterIP
+  clusterIP: None
+  selector:
+    app: gl-017-condensync
+    app.kubernetes.io/name: condensync
+  ports:
+    - name: http
+      protocol: TCP
+      port: 8017
+      targetPort: 8017
+    - name: metrics
+      protocol: TCP
+      port: 9017
+      targetPort: 9017
+  publishNotReadyAddresses: true
+
+---
+# Metrics-only Service for Prometheus ServiceMonitor
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-017-condensync-metrics
+  namespace: greenlang
+  labels:
+    app: gl-017-condensync
+    app.kubernetes.io/name: condensync
+    app.kubernetes.io/instance: gl-017
+    app.kubernetes.io/component: metrics
+    monitoring: prometheus
+spec:
+  type: ClusterIP
+  selector:
+    app: gl-017-condensync
+    app.kubernetes.io/name: condensync
+  ports:
+    - name: metrics
+      protocol: TCP
+      port: 9017
+      targetPort: 9017
+      appProtocol: http
+  sessionAffinity: None

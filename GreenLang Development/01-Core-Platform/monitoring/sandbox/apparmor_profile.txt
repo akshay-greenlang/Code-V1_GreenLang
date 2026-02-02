@@ -1,0 +1,459 @@
+#include <tunables/global>
+
+# AppArmor profile for GreenLang sandbox
+# This profile provides filesystem isolation and access control
+# for GreenLang processes running in the OS-level sandbox
+
+profile greenlang-sandbox /usr/bin/python3 flags=(attach_disconnected,mediate_deleted,complain) {
+  #include <abstractions/base>
+  #include <abstractions/python>
+  #include <abstractions/nameservice>
+
+  # Capabilities - deny dangerous capabilities
+  deny capability sys_admin,
+  deny capability sys_module,
+  deny capability sys_rawio,
+  deny capability sys_boot,
+  deny capability sys_time,
+  deny capability sys_chroot,
+  deny capability sys_ptrace,
+  deny capability mac_admin,
+  deny capability mac_override,
+  deny capability setfcap,
+  deny capability setpcap,
+  deny capability linux_immutable,
+  deny capability net_broadcast,
+  deny capability net_admin,
+  deny capability ipc_lock,
+  deny capability ipc_owner,
+  deny capability sys_resource,
+  deny capability audit_write,
+  deny capability audit_control,
+  deny capability block_suspend,
+  deny capability wake_alarm,
+
+  # Allow basic capabilities needed for normal operation
+  capability chown,
+  capability fowner,
+  capability fsetid,
+  capability kill,
+  capability setgid,
+  capability setuid,
+  capability dac_override,
+  capability dac_read_search,
+  capability net_bind_service,
+
+  # Network access controls
+  network inet dgram,
+  network inet stream,
+  network inet6 dgram,
+  network inet6 stream,
+  network netlink raw,
+  network unix stream,
+  network unix dgram,
+
+  # Block access to sensitive network interfaces
+  deny network packet,
+  deny network netlink dgram,
+  deny network netlink seqpacket,
+  deny network ax25,
+  deny network ipx,
+  deny network appletalk,
+  deny network netrom,
+  deny network bridge,
+  deny network atmpvc,
+  deny network x25,
+  deny network rose,
+  deny network decnet,
+  deny network netbeui,
+  deny network security,
+  deny network key,
+  deny network bluetooth,
+  deny network econet,
+  deny network ash,
+  deny network wanpipe,
+  deny network llc,
+  deny network ib,
+  deny network mpls,
+  deny network can,
+  deny network tipc,
+  deny network iucv,
+  deny network rxrpc,
+  deny network isdn,
+  deny network phonet,
+  deny network ieee802154,
+  deny network caif,
+  deny network alg,
+  deny network nfc,
+  deny network vsock,
+  deny network kcm,
+  deny network qipcrtr,
+  deny network smc,
+
+  # Filesystem access controls
+
+  # Python interpreter and libraries - read-only
+  /usr/bin/python3 rix,
+  /usr/bin/python3.* rix,
+  /usr/lib/python3*/** r,
+  /usr/local/lib/python3*/** r,
+  /opt/python*/** r,
+
+  # System libraries - read-only
+  /lib/** r,
+  /lib64/** r,
+  /usr/lib/** r,
+  /usr/lib64/** r,
+  /usr/share/** r,
+
+  # Essential system binaries - execute only
+  /bin/** rix,
+  /sbin/** rix,
+  /usr/bin/** rix,
+  /usr/sbin/** rix,
+
+  # System configuration - read-only
+  /etc/ld.so.cache r,
+  /etc/ld.so.conf r,
+  /etc/ld.so.conf.d/ r,
+  /etc/ld.so.conf.d/** r,
+  /etc/localtime r,
+  /etc/timezone r,
+  /etc/hosts r,
+  /etc/hostname r,
+  /etc/resolv.conf r,
+  /etc/nsswitch.conf r,
+  /etc/passwd r,
+  /etc/group r,
+  /etc/ssl/certs/** r,
+  /etc/ca-certificates/** r,
+
+  # Deny access to sensitive system files
+  deny /etc/shadow* rw,
+  deny /etc/gshadow* rw,
+  deny /etc/sudoers* rw,
+  deny /etc/ssh/** rw,
+  deny /etc/cron* rw,
+  deny /etc/passwd+ rw,
+  deny /etc/group+ rw,
+  deny /etc/fstab rw,
+  deny /etc/mtab w,
+  deny /etc/apparmor* rw,
+  deny /etc/selinux/** rw,
+
+  # Proc filesystem - limited access
+  @{PROC}/ r,
+  @{PROC}/@{pid}/ r,
+  @{PROC}/@{pid}/fd/ r,
+  @{PROC}/@{pid}/fd/* rw,
+  @{PROC}/@{pid}/stat r,
+  @{PROC}/@{pid}/status r,
+  @{PROC}/@{pid}/cmdline r,
+  @{PROC}/@{pid}/environ r,
+  @{PROC}/@{pid}/maps r,
+  @{PROC}/@{pid}/mounts r,
+  @{PROC}/@{pid}/mountinfo r,
+  @{PROC}/@{pid}/task/ r,
+  @{PROC}/@{pid}/task/@{tid}/ r,
+  @{PROC}/@{pid}/task/@{tid}/stat r,
+  @{PROC}/@{pid}/task/@{tid}/status r,
+  @{PROC}/cpuinfo r,
+  @{PROC}/meminfo r,
+  @{PROC}/version r,
+  @{PROC}/uptime r,
+  @{PROC}/loadavg r,
+  @{PROC}/stat r,
+  @{PROC}/filesystems r,
+  @{PROC}/sys/kernel/ostype r,
+  @{PROC}/sys/kernel/osrelease r,
+  @{PROC}/sys/kernel/version r,
+  @{PROC}/sys/vm/overcommit_memory r,
+
+  # Deny dangerous proc entries
+  deny @{PROC}/1/ rw,
+  deny @{PROC}/sys/kernel/core_pattern rw,
+  deny @{PROC}/sys/kernel/modprobe rw,
+  deny @{PROC}/sys/vm/panic_on_oom rw,
+  deny @{PROC}/sys/net/** w,
+  deny @{PROC}/sys/kernel/hotplug rw,
+  deny @{PROC}/kcore rw,
+  deny @{PROC}/kallsyms rw,
+  deny @{PROC}/kmem rw,
+  deny @{PROC}/mem rw,
+
+  # Sys filesystem - very limited read access
+  /sys/class/net/ r,
+  /sys/devices/system/cpu/ r,
+  /sys/devices/system/cpu/online r,
+  deny /sys/** w,
+  deny /sys/kernel/debug/** rw,
+  deny /sys/module/** w,
+  deny /sys/class/net/*/wireless/ rw,
+
+  # Dev filesystem - minimal access
+  /dev/null rw,
+  /dev/zero rw,
+  /dev/full rw,
+  /dev/random r,
+  /dev/urandom r,
+  /dev/stdin r,
+  /dev/stdout w,
+  /dev/stderr w,
+  /dev/tty rw,
+
+  # Deny dangerous device files
+  deny /dev/mem rw,
+  deny /dev/kmem rw,
+  deny /dev/port rw,
+  deny /dev/kcore rw,
+  deny /dev/crash rw,
+  deny /dev/initctl rw,
+  deny /dev/watchdog* rw,
+  deny /dev/rtc* w,
+  deny /dev/hpet w,
+  deny /dev/nvram rw,
+  deny /dev/raw/** rw,
+  deny /dev/disk/** w,
+
+  # Temporary directories - allow read/write in designated areas only
+  /tmp/ rw,
+  /tmp/** rw,
+  /var/tmp/ rw,
+  /var/tmp/** rw,
+
+  # GreenLang specific temporary directories
+  /tmp/greenlang_*/ rw,
+  /tmp/greenlang_*/** rw,
+  /tmp/gl_*/ rw,
+  /tmp/gl_*/** rw,
+
+  # User home directories - restrict access
+  deny @{HOME}/.ssh/** rw,
+  deny @{HOME}/.gnupg/** rw,
+  deny @{HOME}/.aws/** rw,
+  deny @{HOME}/.gcp/** rw,
+  deny @{HOME}/.azure/** rw,
+  deny @{HOME}/.docker/** rw,
+  deny @{HOME}/.kube/** rw,
+  deny @{HOME}/.config/gcloud/** rw,
+  deny @{HOME}/.*_history rw,
+
+  # Allow access to designated data directories
+  owner @{HOME}/greenlang_data/ rw,
+  owner @{HOME}/greenlang_data/** rw,
+
+  # Runtime directories
+  /run/user/@{uid}/ rw,
+  /run/user/@{uid}/** rw,
+
+  # Deny access to other users' data
+  deny /home/** rw,
+  deny /root/** rw,
+
+  # Deny access to system directories
+  deny /boot/** rw,
+  deny /media/** rw,
+  deny /mnt/** rw,
+  deny /opt/** w,
+  deny /srv/** rw,
+  deny /var/log/** w,
+  deny /var/cache/** w,
+  deny /var/lib/** w,
+  deny /var/spool/** rw,
+  deny /var/run/** w,
+  deny /var/lock/** w,
+
+  # Deny mount/unmount operations
+  deny mount,
+  deny umount,
+  deny remount,
+  deny pivot_root,
+
+  # Deny ptrace operations
+  deny ptrace,
+
+  # Deny signal operations to other processes
+  deny signal send set=(term, kill) peer=unconfined,
+  deny signal send set=(term, kill) peer=/**,
+
+  # Allow self-signaling
+  signal send set=(term, kill) peer=@{profile_name},
+  signal receive set=(term, kill) peer=@{profile_name},
+
+  # Unix domain socket restrictions
+  unix (send, receive) type=stream peer=(label=@{profile_name}),
+  unix (send, receive) type=dgram peer=(label=@{profile_name}),
+
+  # Deny access to container runtime sockets
+  deny /var/run/docker.sock rw,
+  deny /run/podman/** rw,
+  deny /run/containerd/** rw,
+
+  # Deny access to systemd
+  deny /run/systemd/** rw,
+  deny /usr/bin/systemctl x,
+  deny /usr/bin/systemd-* x,
+
+  # Deny access to package managers
+  deny /usr/bin/apt* x,
+  deny /usr/bin/yum x,
+  deny /usr/bin/dnf x,
+  deny /usr/bin/zypper x,
+  deny /usr/bin/pacman x,
+  deny /usr/bin/pip* x,
+  deny /usr/bin/conda x,
+
+  # Python package installation directories - read-only
+  /usr/local/lib/python*/site-packages/** r,
+  /home/*/.local/lib/python*/site-packages/** r,
+  owner @{HOME}/.local/lib/python*/site-packages/** r,
+
+  # Deny write to system Python directories
+  deny /usr/lib/python*/** w,
+  deny /usr/local/lib/python*/** w,
+
+  # Allow writing to user's local Python packages in sandbox context only
+  owner @{HOME}/.local/lib/python*/site-packages/greenlang*/ rw,
+  owner @{HOME}/.local/lib/python*/site-packages/greenlang*/** rw,
+
+  # Logging - allow writing to designated log files only
+  /var/log/greenlang/ rw,
+  /var/log/greenlang/** rw,
+
+  # Network address restrictions
+  # Block metadata service endpoints
+  deny network inet to 169.254.169.254,
+  deny network inet to 169.254.170.2,
+  deny network inet to 100.100.100.200,
+  deny network inet to 169.254.169.253,
+
+  # Block private network ranges (configurable per deployment)
+  deny network inet to 10.0.0.0/8,
+  deny network inet to 172.16.0.0/12,
+  deny network inet to 192.168.0.0/16,
+
+  # Allow localhost
+  network inet to 127.0.0.0/8,
+  network inet6 to ::1/128,
+
+  # Exec restrictions
+  # Allow only specific interpreters and tools
+  /usr/bin/python3* rix,
+  /usr/bin/env rix,
+  /bin/sh rix,
+  /bin/bash rix,
+  /bin/dash rix,
+
+  # Deny execution of system utilities
+  deny /bin/su x,
+  deny /bin/sudo x,
+  deny /usr/bin/sudo x,
+  deny /usr/bin/su x,
+  deny /usr/bin/passwd x,
+  deny /usr/bin/chsh x,
+  deny /usr/bin/chfn x,
+  deny /usr/bin/gpasswd x,
+  deny /usr/bin/newgrp x,
+  deny /usr/sbin/** x,
+  deny /sbin/** x,
+
+  # Dbus restrictions
+  deny dbus,
+
+  # rlimit restrictions
+  set rlimit nproc <= 100,
+  set rlimit fsize <= 1073741824,  # 1GB max file size
+  set rlimit data <= 1073741824,   # 1GB max data segment
+  set rlimit stack <= 8388608,     # 8MB max stack size
+  set rlimit core <= 0,            # No core dumps
+  set rlimit rss <= 536870912,     # 512MB max RSS
+  set rlimit nofile <= 1024,       # Max 1024 open files
+  set rlimit locks <= 64,          # Max 64 file locks
+  set rlimit sigpending <= 256,    # Max 256 pending signals
+  set rlimit msgqueue <= 819200,   # Max 800KB message queue
+  set rlimit nice <= 0,            # No nice priority increase
+  set rlimit rtprio <= 0,          # No real-time priority
+  set rlimit rttime <= 1000000,    # Max 1 second RT time
+
+  # Chroot jail - if enabled
+  # chroot /var/lib/greenlang/sandbox/,
+
+  # Change profile on exec for child processes
+  change_profile -> greenlang-sandbox-child,
+
+  # Site-specific customizations can be included here
+  #include <local/greenlang-sandbox>
+}
+
+# Child profile for spawned processes
+profile greenlang-sandbox-child {
+  #include <abstractions/base>
+
+  # More restrictive profile for child processes
+  capability kill,
+  capability setgid,
+  capability setuid,
+
+  # Minimal filesystem access
+  /usr/bin/python3* rix,
+  /lib/** r,
+  /usr/lib/** r,
+  /tmp/greenlang_*/** rw,
+  /tmp/gl_*/** rw,
+
+  # Proc access - very limited
+  @{PROC}/@{pid}/stat r,
+  @{PROC}/@{pid}/status r,
+
+  # Dev access - minimal
+  /dev/null rw,
+  /dev/zero rw,
+  /dev/urandom r,
+
+  # No network access for child processes
+  deny network,
+
+  # No exec privileges
+  deny capability,
+  deny mount,
+  deny ptrace,
+
+  # Resource limits - stricter than parent
+  set rlimit nproc <= 10,
+  set rlimit fsize <= 10485760,    # 10MB max file size
+  set rlimit data <= 134217728,    # 128MB max data
+  set rlimit nofile <= 64,         # Max 64 open files
+  set rlimit cpu <= 60,            # Max 60 seconds CPU time
+}
+
+# Alternative enforcement mode profile (stricter)
+profile greenlang-sandbox-enforce /usr/bin/python3 flags=(attach_disconnected,mediate_deleted,enforce) {
+  # Same rules as above but in enforce mode instead of complain mode
+  # This profile kills processes that violate rules instead of just logging
+
+  #include <abstractions/base>
+  #include <abstractions/python>
+
+  # Copy all rules from main profile but with enforce flag
+  # This would be expanded with the same rules as above
+
+  # Essential capabilities only
+  capability kill,
+  capability setgid,
+  capability setuid,
+
+  # Minimal filesystem access
+  /usr/bin/python3* rix,
+  /lib/** r,
+  /usr/lib/** r,
+  /tmp/greenlang_*/** rw,
+
+  # Strict denials - will terminate process on violation
+  deny /etc/shadow* rw,
+  deny /root/** rw,
+  deny /home/** rw,
+  deny network inet to 169.254.169.254,
+  deny mount,
+  deny ptrace,
+  deny capability sys_admin,
+}

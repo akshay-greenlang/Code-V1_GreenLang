@@ -1,0 +1,40 @@
+# GL-005 Combusense ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gl-005-combusense-config
+  namespace: greenlang
+  labels:
+    app: gl-005-combusense
+    agent-id: GL-005
+    codename: COMBUSENSE
+data:
+  ENVIRONMENT: "production"
+  LOG_LEVEL: "INFO"
+  
+  # Combustion Control Parameters
+  EXCESS_O2_TARGET: "3.0"
+  EXCESS_O2_TOLERANCE: "0.5"
+  CO_LIMIT_PPM: "100"
+  NOX_LIMIT_PPM: "50"
+  COMBUSTION_EFFICIENCY_TARGET: "0.92"
+  
+  # Control Loop Parameters
+  AIR_FUEL_RATIO_CONTROL: "true"
+  OXYGEN_TRIM_ENABLED: "true"
+  FLAME_STABILITY_MONITORING: "true"
+  
+  # Safety Parameters
+  FLAME_FAILURE_TIMEOUT_SECONDS: "5"
+  HIGH_CO_ALARM: "200"
+  LOW_O2_ALARM: "1.0"
+  EMERGENCY_SHUTDOWN_ENABLED: "true"
+  
+  # Feature Flags
+  FEATURE_ADAPTIVE_CONTROL: "true"
+  FEATURE_PREDICTIVE_TUNING: "true"
+  FEATURE_EMISSION_OPTIMIZATION: "true"
+  
+  # API Configuration
+  API_RATE_LIMIT: "1000"
+  API_TIMEOUT_SECONDS: "30"

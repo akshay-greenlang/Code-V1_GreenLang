@@ -1,0 +1,221 @@
+# GL-017_Condensync Docker Ignore
+# Condenser Optimization Agent
+# Version: 1.0.0
+
+# Git
+.git
+.gitignore
+.gitattributes
+.github
+
+# Python
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+.conda/
+conda-env/
+
+# IDEs and editors
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.project
+.pydevproject
+.settings/
+*.sublime-project
+*.sublime-workspace
+.spyderproject
+.spyproject
+.ropeproject
+
+# Testing
+.tox/
+.nox/
+.coverage
+.coverage.*
+htmlcov/
+.pytest_cache/
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+tests/
+test_*.py
+*_test.py
+conftest.py
+
+# Documentation
+docs/
+*.md
+*.rst
+*.txt
+!requirements.txt
+LICENSE
+CHANGELOG
+AUTHORS
+CONTRIBUTING
+
+# CI/CD
+.travis.yml
+.circleci/
+Jenkinsfile
+azure-pipelines.yml
+.gitlab-ci.yml
+.github/
+Makefile
+
+# Deployment configurations (not needed in container)
+deployment/
+kubernetes/
+helm/
+terraform/
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+.docker/
+.dockerignore
+
+# Local development
+*.local
+*.local.*
+.env.local
+.env.*.local
+local_settings.py
+
+# Logs
+*.log
+logs/
+
+# Cache
+.cache/
+*.cache
+.mypy_cache/
+.ruff_cache/
+.dmypy.json
+dmypy.json
+
+# Jupyter notebooks (if not needed in production)
+*.ipynb
+.ipynb_checkpoints/
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.bak
+*.backup
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# Security
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+secrets/
+credentials/
+.secrets
+*.secret
+
+# Large files
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.rar
+*.7z
+*.iso
+
+# Model files (if pre-built models should not be in container)
+# Uncomment if models are downloaded at runtime
+# models/*.pkl
+# models/*.h5
+# models/*.pt
+# models/*.onnx
+
+# Data files
+data/
+*.csv
+*.json
+*.parquet
+*.feather
+
+# Profiling
+*.prof
+.benchmarks/
+
+# Editor specific
+.history/
+*.code-workspace
+
+# Misc
+*.bak
+*.orig
+.python-version
+pyproject.toml
+setup.cfg
+setup.py
+MANIFEST.in
+tox.ini
+.pre-commit-config.yaml
+.flake8
+.pylintrc
+mypy.ini
+.bandit
+.safety-policy.yml
+
+# Keep requirements
+!requirements.txt
+!requirements-dev.txt
+!requirements-prod.txt

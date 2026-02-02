@@ -1,0 +1,13 @@
+description: Calculate emissions from fuel consumption
+name: emissions_calculation
+steps:
+- agent_id: fuel
+  description: Calculate emissions from fuel consumption
+  name: calculate_fuel_emissions
+- agent_id: carbon
+  description: Aggregate total emissions
+  name: aggregate_emissions
+- agent_id: report
+  description: Generate emissions report
+  name: generate_report
+version: 0.0.1

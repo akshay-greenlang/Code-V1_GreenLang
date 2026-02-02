@@ -1,0 +1,103 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: greenlang-egress-control
+  namespace: greenlang-system
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: greenlang
+  policyTypes:
+  - Ingress
+  - Egress
+
+  ingress:
+  # Allow from ingress controller
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: ingress-nginx
+      podSelector:
+        matchLabels:
+          app.kubernetes.io/name: ingress-nginx
+    ports:
+    - protocol: TCP
+      port: 8080
+
+  # Allow from monitoring namespace
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: monitoring
+      podSelector:
+        matchLabels:
+          app: prometheus
+    ports:
+    - protocol: TCP
+      port: 9090
+
+  # Allow internal communication
+  - from:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/part-of: greenlang
+    ports:
+    - protocol: TCP
+      port: 8080
+    - protocol: TCP
+      port: 9090
+
+  egress:
+  # Allow DNS resolution
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: kube-system
+      podSelector:
+        matchLabels:
+          k8s-app: kube-dns
+    ports:
+    - protocol: UDP
+      port: 53
+    - protocol: TCP
+      port: 53
+
+  # Allow to internal services
+  - to:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/part-of: greenlang
+    ports:
+    - protocol: TCP
+      port: 8080
+    - protocol: TCP
+      port: 9090
+
+  # Allow to external registries (PyPI, npm, Docker)
+  - to:
+    - namespaceSelector: {}
+    ports:
+    - protocol: TCP
+      port: 443
+    - protocol: TCP
+      port: 80
+
+  # Allow to cloud metadata services (for IAM roles)
+  - to:
+    ports:
+    - protocol: TCP
+      port: 80
+    - protocol: TCP
+      port: 443
+
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: greenlang-deny-all-default
+  namespace: greenlang-system
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress

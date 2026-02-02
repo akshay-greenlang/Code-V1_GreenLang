@@ -1,0 +1,48 @@
+# Development Environment Overlay
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: greenlang-agents-dev
+
+namePrefix: dev-
+
+commonLabels:
+  environment: development
+
+resources:
+  - ../../base
+
+patchesStrategicMerge:
+  - patches/deployment-patch.yaml
+  - patches/hpa-patch.yaml
+
+configMapGenerator:
+  - name: greenlang-config
+    behavior: replace
+    literals:
+      - ENVIRONMENT=development
+      - LOG_LEVEL=debug
+      - LOG_FORMAT=text
+      - CACHE_TTL=60
+      - MAX_CONCURRENT_REQUESTS=10
+
+# Reduced replicas for development
+replicas:
+  - name: fuel-analyzer
+    count: 1
+  - name: carbon-intensity
+    count: 1
+  - name: energy-performance
+    count: 1
+  - name: eudr-compliance
+    count: 1
+
+images:
+  - name: greenlang/fuel-analyzer
+    newTag: dev
+  - name: greenlang/carbon-intensity
+    newTag: dev
+  - name: greenlang/energy-performance
+    newTag: dev
+  - name: greenlang/eudr-compliance
+    newTag: dev

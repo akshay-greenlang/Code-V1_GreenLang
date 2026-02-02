@@ -1,0 +1,115 @@
+# Basic Agent Specification Template
+# Use this template as a starting point for creating new agents
+
+metadata:
+  # Unique identifier for the agent (lowercase, hyphens only)
+  id: "my-basic-agent"
+
+  # Human-readable name
+  name: "My Basic Agent"
+
+  # Semantic version
+  version: "0.1.0"
+
+  # Agent type (basic, regulatory, api, optimization, etc.)
+  type: "basic"
+
+  # Brief description
+  description: "A basic agent template for getting started"
+
+  # Author information
+  author: "Your Name"
+  email: "your.email@example.com"
+
+  # Tags for discoverability
+  tags:
+    - "basic"
+    - "template"
+    - "starter"
+
+# Agent capabilities
+capabilities:
+  - "task-execution"
+  - "data-processing"
+
+# Architecture definition
+architecture:
+  # Framework to use
+  framework: "greenlang"
+
+  # Components
+  components:
+    - name: "executor"
+      type: "core"
+      description: "Main task executor"
+
+    - name: "validator"
+      type: "validation"
+      description: "Input validation"
+
+# Dependencies
+dependencies:
+  - "greenlang-sdk>=1.0.0"
+  - "pydantic>=2.5.0"
+  - "pyyaml>=6.0.1"
+
+# Configuration
+configuration:
+  # Default settings
+  defaults:
+    timeout: 30
+    retry_count: 3
+
+  # Environment-specific settings
+  environments:
+    development:
+      debug: true
+      log_level: "DEBUG"
+
+    production:
+      debug: false
+      log_level: "INFO"
+
+# Testing configuration
+testing:
+  # Test types to generate
+  types:
+    - "unit"
+    - "integration"
+
+  # Coverage requirements
+  coverage:
+    minimum: 80
+
+  # Test data
+  fixtures:
+    - "test_data.yaml"
+
+# Documentation settings
+documentation:
+  # Generate API docs
+  api_docs: true
+
+  # Generate user guide
+  user_guide: true
+
+  # Generate deployment guide
+  deployment_guide: true
+
+# Deployment configuration
+deployment:
+  # Container settings
+  container:
+    base_image: "python:3.11-slim"
+    port: 8000
+
+  # Resource limits
+  resources:
+    cpu_limit: "500m"
+    memory_limit: "512Mi"
+
+  # Health checks
+  health_check:
+    path: "/health"
+    interval: 30
+    timeout: 10

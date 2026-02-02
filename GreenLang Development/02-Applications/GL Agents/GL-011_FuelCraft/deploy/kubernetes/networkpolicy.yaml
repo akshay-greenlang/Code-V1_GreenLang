@@ -1,0 +1,190 @@
+# GL-011 FUELCRAFT - Network Policies
+# Controls ingress/egress for Kafka, OPC-UA, and ERP connections
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: gl-011-fuelcraft-network-policy
+  namespace: gl-agents
+  labels:
+    app: gl-011-fuelcraft
+    app.kubernetes.io/name: gl-011-fuelcraft
+    app.kubernetes.io/component: network-policy
+    component: optimization
+    tier: fuel-management
+    compliance: tcfd
+spec:
+  podSelector:
+    matchLabels:
+      app: gl-011-fuelcraft
+      component: optimization
+  policyTypes:
+    - Ingress
+    - Egress
+  # Ingress rules - who can talk TO us
+  ingress:
+    # Allow Prometheus scraping from monitoring namespace
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+        - podSelector:
+            matchLabels:
+              app: prometheus
+      ports:
+        - protocol: TCP
+          port: 9090
+    # Allow API access from other GL agents
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              app.kubernetes.io/part-of: greenlang
+        - podSelector:
+            matchLabels:
+              tier: optimization
+      ports:
+        - protocol: TCP
+          port: 8080
+        - protocol: TCP
+          port: 50051
+    # Allow ingress controller access
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 8080
+  # Egress rules - who we can talk TO
+  egress:
+    # Allow DNS resolution
+    - to:
+        - namespaceSelector: {}
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+    # Allow Kafka connections (within cluster)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: kafka
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: kafka
+      ports:
+        - protocol: TCP
+          port: 9092
+        - protocol: TCP
+          port: 9093  # TLS
+    # Allow PostgreSQL connections
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: gl-agents
+        - podSelector:
+            matchLabels:
+              app: postgresql
+      ports:
+        - protocol: TCP
+          port: 5432
+    # Allow Redis connections
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: gl-agents
+        - podSelector:
+            matchLabels:
+              app: redis
+      ports:
+        - protocol: TCP
+          port: 6379
+    # Allow OpenTelemetry collector
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+        - podSelector:
+            matchLabels:
+              app: otel-collector
+      ports:
+        - protocol: TCP
+          port: 4317
+        - protocol: TCP
+          port: 4318
+    # Allow other GL agents communication
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              app.kubernetes.io/part-of: greenlang
+      ports:
+        - protocol: TCP
+          port: 8080
+        - protocol: TCP
+          port: 50051
+---
+# Network policy for external OPC-UA connections
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: gl-011-fuelcraft-opcua-egress
+  namespace: gl-agents
+  labels:
+    app: gl-011-fuelcraft
+    component: optimization
+spec:
+  podSelector:
+    matchLabels:
+      app: gl-011-fuelcraft
+      component: optimization
+  policyTypes:
+    - Egress
+  egress:
+    # Allow OPC-UA connections to industrial network
+    # NOTE: Replace CIDR with actual OPC-UA server network
+    - to:
+        - ipBlock:
+            cidr: 10.100.0.0/16  # Industrial network CIDR
+            except:
+              - 10.100.255.0/24  # Exclude management subnet
+      ports:
+        - protocol: TCP
+          port: 4840  # OPC-UA default port
+        - protocol: TCP
+          port: 4843  # OPC-UA secure port
+---
+# Network policy for external ERP connections
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: gl-011-fuelcraft-erp-egress
+  namespace: gl-agents
+  labels:
+    app: gl-011-fuelcraft
+    component: optimization
+spec:
+  podSelector:
+    matchLabels:
+      app: gl-011-fuelcraft
+      component: optimization
+  policyTypes:
+    - Egress
+  egress:
+    # Allow HTTPS connections to ERP systems
+    # NOTE: In production, use specific IP blocks or external names
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 10.0.0.0/8
+              - 172.16.0.0/12
+              - 192.168.0.0/16
+      ports:
+        - protocol: TCP
+          port: 443  # HTTPS for REST APIs
+        - protocol: TCP
+          port: 8443  # SAP alternative HTTPS port

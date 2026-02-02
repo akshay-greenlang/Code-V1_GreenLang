@@ -1,0 +1,222 @@
+# Development environment values for greenlang
+# Override production defaults for development
+
+global:
+  environment: development
+  storageClass: standard-storage
+
+# Executor configuration - reduced resources for dev
+executor:
+  enabled: true
+  replicaCount: 1
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 250m
+      memory: 256Mi
+
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 3
+
+  ingress:
+    enabled: true
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-staging
+    hosts:
+      - host: dev.greenlang.io
+        paths:
+          - path: /
+            pathType: Prefix
+    tls:
+      - secretName: greenlang-dev-tls-cert
+        hosts:
+          - dev.greenlang.io
+
+  podDisruptionBudget:
+    enabled: false
+
+# Worker configuration - reduced for dev
+worker:
+  enabled: true
+  replicaCount: 2
+
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+      ephemeral-storage: 500Mi
+    limits:
+      cpu: 1000m
+      memory: 2Gi
+      ephemeral-storage: 2Gi
+
+  autoscaling:
+    enabled: false
+    minReplicas: 2
+    maxReplicas: 5
+
+  podDisruptionBudget:
+    enabled: false
+
+  config:
+    maxConcurrentTasks: 5
+    taskTimeout: 1800
+
+# Redis configuration - minimal for dev
+redis:
+  enabled: true
+  architecture: standalone
+  auth:
+    enabled: true
+
+  master:
+    persistence:
+      enabled: true
+      size: 5Gi
+      storageClass: standard-storage
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 1Gi
+
+  replica:
+    replicaCount: 0
+
+  sentinel:
+    enabled: false
+
+  metrics:
+    enabled: false
+
+# PostgreSQL configuration - minimal for dev
+postgresql:
+  enabled: true
+  auth:
+    username: greenlang
+    database: greenlang
+    password: "dev-password"
+
+  primary:
+    persistence:
+      enabled: true
+      size: 20Gi
+      storageClass: standard-storage
+    resources:
+      requests:
+        cpu: 250m
+        memory: 512Mi
+      limits:
+        cpu: 500m
+        memory: 1Gi
+
+  readReplicas:
+    replicaCount: 0
+
+  metrics:
+    enabled: false
+
+# Service configuration
+service:
+  type: NodePort
+  port: 80
+  targetPort: 8080
+  annotations: {}
+
+# Ingress configuration
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-staging
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+  hosts:
+    - host: dev.greenlang.io
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: greenlang-dev-tls-cert
+      hosts:
+        - dev.greenlang.io
+
+# Storage configuration - reduced for dev
+storage:
+  logs:
+    enabled: true
+    size: 10Gi
+    storageClass: standard-storage
+
+  backups:
+    enabled: false
+
+  artifacts:
+    enabled: true
+    size: 10Gi
+    storageClass: standard-storage
+
+# Security configuration
+security:
+  podSecurityPolicy:
+    enabled: false
+  networkPolicy:
+    enabled: false
+
+# Monitoring configuration
+monitoring:
+  enabled: false
+  prometheus:
+    enabled: false
+  grafana:
+    enabled: false
+  alerts:
+    enabled: false
+
+# Resource quotas - reduced for dev
+resourceQuota:
+  enabled: true
+  hard:
+    requests.cpu: "20"
+    requests.memory: "40Gi"
+    limits.cpu: "40"
+    limits.memory: "80Gi"
+    persistentvolumeclaims: "20"
+    pods: "50"
+
+# Limit ranges - reduced for dev
+limitRange:
+  enabled: true
+  limits:
+    - type: Container
+      default:
+        cpu: "1"
+        memory: "2Gi"
+      defaultRequest:
+        cpu: "250m"
+        memory: "512Mi"
+      max:
+        cpu: "4"
+        memory: "8Gi"
+      min:
+        cpu: "50m"
+        memory: "64Mi"
+
+# Topology spread - disabled for dev
+topologySpreadConstraints:
+  enabled: false
+
+# Environment variables
+env:
+  - name: APP_ENV
+    value: "development"
+  - name: LOG_LEVEL
+    value: "DEBUG"
+  - name: DEBUG
+    value: "true"

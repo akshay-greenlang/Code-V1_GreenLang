@@ -1,0 +1,500 @@
+# GreenLang Agent Factory - Release Pipeline
+# Handles semantic versioning, changelog generation, PyPI publishing, and GitHub releases
+# Triggered on version tags (v*.*.*)
+
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., 1.0.0)'
+        required: true
+        type: string
+      prerelease:
+        description: 'Mark as pre-release'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  PYTHON_VERSION: "3.11"
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  # =============================================================================
+  # Validate Release
+  # =============================================================================
+  validate:
+    name: Validate Release
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      is-prerelease: ${{ steps.version.outputs.is-prerelease }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Extract version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            VERSION="${{ inputs.version }}"
+            IS_PRERELEASE="${{ inputs.prerelease }}"
+          else
+            VERSION="${GITHUB_REF#refs/tags/v}"
+            # Check if pre-release (contains alpha, beta, rc)
+            if [[ "$VERSION" =~ (alpha|beta|rc) ]]; then
+              IS_PRERELEASE=true
+            else
+              IS_PRERELEASE=false
+            fi
+          fi
+
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "is-prerelease=$IS_PRERELEASE" >> $GITHUB_OUTPUT
+          echo "Release version: $VERSION (prerelease: $IS_PRERELEASE)"
+
+      - name: Validate version format
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9]+)?$ ]]; then
+            echo "Invalid version format: $VERSION"
+            echo "Expected: X.Y.Z or X.Y.Z-suffix"
+            exit 1
+          fi
+
+      - name: Check version not already released
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          if git tag -l "v$VERSION" | grep -q "v$VERSION"; then
+            echo "Version v$VERSION already exists!"
+            exit 1
+          fi
+
+  # =============================================================================
+  # Run Tests
+  # =============================================================================
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    needs: validate
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest pytest-cov
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi
+
+      - name: Run tests
+        run: |
+          pytest tests/ \
+            --cov=. \
+            --cov-report=term \
+            --cov-fail-under=85 \
+            -v \
+            --ignore=tests/integration \
+            --ignore=tests/e2e
+
+  # =============================================================================
+  # Build Package
+  # =============================================================================
+  build-package:
+    name: Build Python Package
+    runs-on: ubuntu-latest
+    needs: [validate, test]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install build tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install build twine
+
+      - name: Update version in package
+        run: |
+          VERSION="${{ needs.validate.outputs.version }}"
+
+          # Update pyproject.toml if exists
+          if [ -f pyproject.toml ]; then
+            sed -i "s/version = \".*\"/version = \"$VERSION\"/" pyproject.toml
+          fi
+
+          # Update setup.py if exists
+          if [ -f setup.py ]; then
+            sed -i "s/version=\".*\"/version=\"$VERSION\"/" setup.py
+          fi
+
+          # Update __version__ in package
+          find . -name "__init__.py" -exec sed -i "s/__version__ = \".*\"/__version__ = \"$VERSION\"/" {} \;
+
+          # Create VERSION file
+          echo "$VERSION" > VERSION
+
+      - name: Build package
+        run: |
+          python -m build
+
+      - name: Verify package
+        run: |
+          twine check dist/*
+
+      - name: Upload package artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-package
+          path: dist/
+          retention-days: 30
+
+  # =============================================================================
+  # Build Docker Image
+  # =============================================================================
+  build-docker:
+    name: Build Docker Image
+    runs-on: ubuntu-latest
+    needs: [validate, test]
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      image-digest: ${{ steps.build.outputs.digest }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=semver,pattern={{version}},value=${{ needs.validate.outputs.version }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ needs.validate.outputs.version }}
+            type=semver,pattern={{major}},value=${{ needs.validate.outputs.version }}
+            type=raw,value=latest,enable=${{ needs.validate.outputs.is-prerelease == 'false' }}
+
+      - name: Build and push Docker image
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          platforms: linux/amd64,linux/arm64
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            VERSION=${{ needs.validate.outputs.version }}
+
+  # =============================================================================
+  # Generate Changelog
+  # =============================================================================
+  changelog:
+    name: Generate Changelog
+    runs-on: ubuntu-latest
+    needs: validate
+    outputs:
+      changelog: ${{ steps.changelog.outputs.changelog }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          VERSION="${{ needs.validate.outputs.version }}"
+
+          # Get previous tag
+          PREV_TAG=$(git tag -l "v*" --sort=-version:refname | grep -v "v$VERSION" | head -1)
+
+          if [ -z "$PREV_TAG" ]; then
+            PREV_TAG=$(git rev-list --max-parents=0 HEAD)
+          fi
+
+          echo "Generating changelog from $PREV_TAG to HEAD"
+
+          # Generate changelog
+          CHANGELOG=$(cat << 'EOF'
+          ## What's Changed
+
+          EOF
+          )
+
+          # Features
+          FEATURES=$(git log $PREV_TAG..HEAD --pretty=format:"- %s" --grep="feat:" --grep="feature:" --grep="add:" -i | head -20)
+          if [ -n "$FEATURES" ]; then
+            CHANGELOG="${CHANGELOG}
+
+          ### Features
+          ${FEATURES}"
+          fi
+
+          # Bug Fixes
+          FIXES=$(git log $PREV_TAG..HEAD --pretty=format:"- %s" --grep="fix:" --grep="bug:" --grep="patch:" -i | head -20)
+          if [ -n "$FIXES" ]; then
+            CHANGELOG="${CHANGELOG}
+
+          ### Bug Fixes
+          ${FIXES}"
+          fi
+
+          # Documentation
+          DOCS=$(git log $PREV_TAG..HEAD --pretty=format:"- %s" --grep="docs:" --grep="doc:" -i | head -10)
+          if [ -n "$DOCS" ]; then
+            CHANGELOG="${CHANGELOG}
+
+          ### Documentation
+          ${DOCS}"
+          fi
+
+          # Other changes
+          OTHER=$(git log $PREV_TAG..HEAD --pretty=format:"- %s" --grep="chore:" --grep="refactor:" --grep="perf:" --grep="test:" -i | head -10)
+          if [ -n "$OTHER" ]; then
+            CHANGELOG="${CHANGELOG}
+
+          ### Other Changes
+          ${OTHER}"
+          fi
+
+          # Contributors
+          CONTRIBUTORS=$(git log $PREV_TAG..HEAD --pretty=format:"%an" | sort | uniq | head -10 | sed 's/^/- @/')
+          if [ -n "$CONTRIBUTORS" ]; then
+            CHANGELOG="${CHANGELOG}
+
+          ### Contributors
+          ${CONTRIBUTORS}"
+          fi
+
+          # Save to file and output
+          echo "$CHANGELOG" > RELEASE_CHANGELOG.md
+
+          # Set output (escape for GitHub Actions)
+          {
+            echo 'changelog<<EOF'
+            echo "$CHANGELOG"
+            echo 'EOF'
+          } >> $GITHUB_OUTPUT
+
+      - name: Upload changelog
+        uses: actions/upload-artifact@v4
+        with:
+          name: changelog
+          path: RELEASE_CHANGELOG.md
+          retention-days: 30
+
+  # =============================================================================
+  # Publish to PyPI
+  # =============================================================================
+  publish-pypi:
+    name: Publish to PyPI
+    runs-on: ubuntu-latest
+    needs: [validate, build-package]
+    if: needs.validate.outputs.is-prerelease == 'false'
+    environment:
+      name: pypi
+      url: https://pypi.org/project/greenlang-agent-factory/
+    permissions:
+      id-token: write
+    steps:
+      - name: Download package
+        uses: actions/download-artifact@v4
+        with:
+          name: python-package
+          path: dist/
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          verbose: true
+          print-hash: true
+
+  # =============================================================================
+  # Publish to Test PyPI (Pre-releases)
+  # =============================================================================
+  publish-testpypi:
+    name: Publish to Test PyPI
+    runs-on: ubuntu-latest
+    needs: [validate, build-package]
+    if: needs.validate.outputs.is-prerelease == 'true'
+    environment:
+      name: testpypi
+      url: https://test.pypi.org/project/greenlang-agent-factory/
+    permissions:
+      id-token: write
+    steps:
+      - name: Download package
+        uses: actions/download-artifact@v4
+        with:
+          name: python-package
+          path: dist/
+
+      - name: Publish to Test PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
+          verbose: true
+
+  # =============================================================================
+  # Create GitHub Release
+  # =============================================================================
+  github-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: [validate, build-package, build-docker, changelog]
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download package
+        uses: actions/download-artifact@v4
+        with:
+          name: python-package
+          path: dist/
+
+      - name: Download changelog
+        uses: actions/download-artifact@v4
+        with:
+          name: changelog
+
+      - name: Create release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ needs.validate.outputs.version }}
+          name: Release v${{ needs.validate.outputs.version }}
+          body_path: RELEASE_CHANGELOG.md
+          draft: false
+          prerelease: ${{ needs.validate.outputs.is-prerelease }}
+          files: |
+            dist/*.whl
+            dist/*.tar.gz
+          generate_release_notes: true
+
+  # =============================================================================
+  # Update Documentation
+  # =============================================================================
+  update-docs:
+    name: Update Documentation
+    runs-on: ubuntu-latest
+    needs: [validate, github-release]
+    if: needs.validate.outputs.is-prerelease == 'false'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Build docs
+        run: |
+          pip install sphinx sphinx-rtd-theme
+          if [ -d docs ]; then
+            cd docs && make html
+          fi
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs/_build/html
+        continue-on-error: true
+
+  # =============================================================================
+  # Notify
+  # =============================================================================
+  notify:
+    name: Send Release Notifications
+    runs-on: ubuntu-latest
+    needs: [validate, github-release, publish-pypi]
+    if: always()
+    steps:
+      - name: Notify Slack
+        uses: slackapi/slack-github-action@v1.25.0
+        with:
+          payload: |
+            {
+              "text": "New Release: GreenLang Agent Factory v${{ needs.validate.outputs.version }}",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*GreenLang Agent Factory v${{ needs.validate.outputs.version }}* has been released!\n\n*GitHub:* ${{ github.server_url }}/${{ github.repository }}/releases/tag/v${{ needs.validate.outputs.version }}\n*PyPI:* https://pypi.org/project/greenlang-agent-factory/${{ needs.validate.outputs.version }}/\n*Docker:* ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.validate.outputs.version }}"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+        continue-on-error: true
+
+  # =============================================================================
+  # Release Summary
+  # =============================================================================
+  summary:
+    name: Release Summary
+    runs-on: ubuntu-latest
+    needs: [validate, build-package, build-docker, github-release]
+    if: always()
+    steps:
+      - name: Generate summary
+        run: |
+          echo "# Release Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Version:** v${{ needs.validate.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Pre-release:** ${{ needs.validate.outputs.is-prerelease }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Artifacts" >> $GITHUB_STEP_SUMMARY
+          echo "| Artifact | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Python Package | ${{ needs.build-package.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Docker Image | ${{ needs.build-docker.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| GitHub Release | ${{ needs.github-release.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Links" >> $GITHUB_STEP_SUMMARY
+          echo "- [GitHub Release](${{ github.server_url }}/${{ github.repository }}/releases/tag/v${{ needs.validate.outputs.version }})" >> $GITHUB_STEP_SUMMARY
+          echo "- [Docker Image](${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.validate.outputs.version }})" >> $GITHUB_STEP_SUMMARY

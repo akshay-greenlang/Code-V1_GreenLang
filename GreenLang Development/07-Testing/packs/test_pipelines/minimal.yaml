@@ -1,0 +1,4 @@
+name: "minimal-pipeline"
+steps:
+  - name: "step1"
+    agent: "greenlang.agents.TestAgent"

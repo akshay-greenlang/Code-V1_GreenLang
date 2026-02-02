@@ -1,0 +1,22 @@
+# Invalid Payload - Missing Required in Nested Object
+# Error Code: GLSCHEMA-E100 (MISSING_REQUIRED)
+# Schema: basic/array_constraints.yaml
+
+_test_metadata:
+  schema: "basic/array_constraints.yaml"
+  description: "Missing required field in nested readings object"
+  expected_valid: false
+  expected_errors:
+    - code: "GLSCHEMA-E100"
+      path: "/readings/0/timestamp"
+      severity: "error"
+
+tags:
+  - "test"
+
+measurements:
+  - 100
+
+readings:
+  - value: 42.5  # Missing required 'timestamp' field
+    unit: "kWh"

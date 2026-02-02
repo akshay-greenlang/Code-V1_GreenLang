@@ -1,0 +1,735 @@
+# EUDR Policy Input Schemas
+# Defines all input schemas for EUDR compliance validation
+# Version: 1.0.0
+
+schemas:
+  # Main commodity input schema
+  CommodityInput:
+    type: object
+    description: "Input data for commodity being validated"
+    required:
+      - commodity_type
+      - cn_code
+      - quantity_kg
+      - origin_country
+    properties:
+      commodity_type:
+        type: string
+        enum:
+          - cattle
+          - cocoa
+          - coffee
+          - palm_oil
+          - rubber
+          - soy
+          - wood
+        description: "EUDR regulated commodity type"
+
+      cn_code:
+        type: string
+        pattern: "^[0-9]{4,8}$"
+        description: "Combined Nomenclature code for customs"
+        examples:
+          - "01022110"  # Pure-bred breeding cattle
+          - "18010000"  # Cocoa beans
+          - "09011100"  # Coffee, not roasted, not decaffeinated
+          - "15111000"  # Crude palm oil
+          - "40011000"  # Natural rubber latex
+          - "12011000"  # Soya beans, seed
+          - "44039100"  # Oak wood in the rough
+
+      quantity_kg:
+        type: number
+        minimum: 0.001
+        maximum: 1000000000
+        description: "Quantity in kilograms"
+
+      origin_country:
+        type: string
+        pattern: "^[A-Z]{2}$"
+        description: "ISO 3166-1 alpha-2 country code"
+
+      product_description:
+        type: string
+        maxLength: 500
+        description: "Free text description of product"
+
+      hs_code:
+        type: string
+        pattern: "^[0-9]{6}$"
+        description: "Harmonized System code (6 digits)"
+
+      batch_id:
+        type: string
+        description: "Unique batch or lot identifier"
+
+      is_derived_product:
+        type: boolean
+        default: false
+        description: "Whether this is a derived/processed product"
+
+      primary_commodity_percentage:
+        type: number
+        minimum: 0
+        maximum: 100
+        description: "Percentage of EUDR commodity in derived product"
+
+  # Geolocation input schema
+  GeolocationInput:
+    type: object
+    description: "Geolocation data for production plot"
+    required:
+      - geometry
+    properties:
+      geometry:
+        oneOf:
+          - $ref: "#/schemas/PointGeometry"
+          - $ref: "#/schemas/PolygonGeometry"
+          - $ref: "#/schemas/MultiPolygonGeometry"
+        description: "GeoJSON geometry of production plot"
+
+      crs:
+        type: string
+        default: "EPSG:4326"
+        description: "Coordinate Reference System"
+        enum:
+          - "EPSG:4326"  # WGS84
+          - "EPSG:3857"  # Web Mercator
+          - "EPSG:32601" # UTM Zone 1N through 60N
+
+      precision_meters:
+        type: number
+        minimum: 0.1
+        maximum: 100
+        description: "Horizontal accuracy in meters"
+
+      collection_method:
+        type: string
+        enum:
+          - gps_device
+          - smartphone
+          - satellite_derived
+          - survey_grade
+          - manual_entry
+        description: "Method used to collect coordinates"
+
+      collection_date:
+        type: string
+        format: date
+        description: "Date coordinates were collected"
+
+      plot_area_hectares:
+        type: number
+        minimum: 0.01
+        description: "Self-reported plot area"
+
+  # Point geometry
+  PointGeometry:
+    type: object
+    required:
+      - type
+      - coordinates
+    properties:
+      type:
+        type: string
+        const: "Point"
+      coordinates:
+        type: array
+        items:
+          type: number
+        minItems: 2
+        maxItems: 3
+        description: "[longitude, latitude, (altitude)]"
+        examples:
+          - [-47.9292, -15.7801]  # Brasilia
+          - [-1.5536, 6.6666]     # Ghana cocoa region
+          - [101.6958, 3.1390]    # Malaysia palm oil region
+
+  # Polygon geometry
+  PolygonGeometry:
+    type: object
+    required:
+      - type
+      - coordinates
+    properties:
+      type:
+        type: string
+        const: "Polygon"
+      coordinates:
+        type: array
+        items:
+          type: array
+          items:
+            type: array
+            items:
+              type: number
+            minItems: 2
+            maxItems: 3
+          minItems: 4  # Minimum 4 points for closed polygon
+        minItems: 1   # At least exterior ring
+        description: "Array of linear rings (first is exterior)"
+
+  # MultiPolygon geometry
+  MultiPolygonGeometry:
+    type: object
+    required:
+      - type
+      - coordinates
+    properties:
+      type:
+        type: string
+        const: "MultiPolygon"
+      coordinates:
+        type: array
+        items:
+          type: array
+          items:
+            type: array
+            items:
+              type: array
+              items:
+                type: number
+              minItems: 2
+              maxItems: 3
+            minItems: 4
+
+  # Production data input
+  ProductionInput:
+    type: object
+    description: "Production and harvest information"
+    required:
+      - production_date
+    properties:
+      production_date:
+        type: string
+        format: date
+        description: "Date of production/harvest"
+
+      production_date_type:
+        type: string
+        enum:
+          - exact
+          - estimated_month
+          - estimated_quarter
+          - estimated_year
+        default: exact
+        description: "Precision of production date"
+
+      harvest_season:
+        type: string
+        description: "Harvest season identifier (e.g., '2024/2025')"
+
+      cultivation_method:
+        type: string
+        enum:
+          - conventional
+          - organic
+          - agroforestry
+          - wild_harvest
+          - plantation
+        description: "Method of cultivation"
+
+      yield_per_hectare_kg:
+        type: number
+        minimum: 0
+        description: "Reported yield per hectare"
+
+      farm_id:
+        type: string
+        description: "Unique farm identifier"
+
+      farmer_name:
+        type: string
+        description: "Name of producer/farmer"
+
+      cooperative_id:
+        type: string
+        description: "Cooperative or aggregator ID if applicable"
+
+  # Operator data input
+  OperatorInput:
+    type: object
+    description: "Operator or trader identification"
+    required:
+      - operator_type
+      - legal_name
+      - registration_country
+    properties:
+      operator_type:
+        type: string
+        enum:
+          - operator
+          - trader
+        description: "EUDR classification of actor"
+
+      legal_name:
+        type: string
+        maxLength: 200
+        description: "Legal name of company"
+
+      trading_name:
+        type: string
+        maxLength: 200
+        description: "Trading name if different"
+
+      registration_country:
+        type: string
+        pattern: "^[A-Z]{2}$"
+        description: "Country of registration"
+
+      eori_number:
+        type: string
+        pattern: "^[A-Z]{2}[0-9A-Z]{1,15}$"
+        description: "Economic Operators Registration and Identification number"
+
+      vat_number:
+        type: string
+        description: "VAT registration number"
+
+      company_registration_number:
+        type: string
+        description: "National company registration number"
+
+      address:
+        $ref: "#/schemas/Address"
+
+      contact_person:
+        $ref: "#/schemas/ContactPerson"
+
+      sme_status:
+        type: boolean
+        default: false
+        description: "Whether operator qualifies as SME"
+
+      eu_subsidiary:
+        type: boolean
+        description: "For non-EU operators, whether they have EU subsidiary"
+
+  # Address schema
+  Address:
+    type: object
+    properties:
+      street:
+        type: string
+      city:
+        type: string
+      postal_code:
+        type: string
+      country:
+        type: string
+        pattern: "^[A-Z]{2}$"
+
+  # Contact person schema
+  ContactPerson:
+    type: object
+    properties:
+      name:
+        type: string
+      email:
+        type: string
+        format: email
+      phone:
+        type: string
+
+  # Supply chain data input
+  SupplyChainInput:
+    type: object
+    description: "Supply chain traceability information"
+    required:
+      - chain_of_custody
+    properties:
+      chain_of_custody:
+        type: array
+        items:
+          $ref: "#/schemas/SupplyChainNode"
+        minItems: 1
+        description: "Ordered list of supply chain nodes"
+
+      traceability_system:
+        type: string
+        enum:
+          - identity_preserved
+          - segregated
+          - mass_balance
+          - book_and_claim
+        description: "Type of traceability system used"
+
+      certification_claims:
+        type: array
+        items:
+          $ref: "#/schemas/CertificationClaim"
+        description: "Third-party certifications"
+
+      documents:
+        type: array
+        items:
+          $ref: "#/schemas/SupportingDocument"
+        description: "Supporting documentation"
+
+  # Supply chain node
+  SupplyChainNode:
+    type: object
+    required:
+      - node_type
+      - entity_name
+      - location_country
+    properties:
+      node_type:
+        type: string
+        enum:
+          - producer
+          - cooperative
+          - processor
+          - trader
+          - exporter
+          - importer
+          - manufacturer
+        description: "Type of supply chain actor"
+
+      entity_name:
+        type: string
+        description: "Name of entity"
+
+      entity_id:
+        type: string
+        description: "Unique identifier if available"
+
+      location_country:
+        type: string
+        pattern: "^[A-Z]{2}$"
+
+      location_coordinates:
+        $ref: "#/schemas/PointGeometry"
+
+      processing_type:
+        type: string
+        description: "Type of processing if applicable"
+
+      input_quantity_kg:
+        type: number
+        description: "Input quantity to this node"
+
+      output_quantity_kg:
+        type: number
+        description: "Output quantity from this node"
+
+      date_received:
+        type: string
+        format: date
+
+      date_shipped:
+        type: string
+        format: date
+
+      transport_mode:
+        type: string
+        enum:
+          - road
+          - rail
+          - sea
+          - air
+          - inland_waterway
+
+      document_references:
+        type: array
+        items:
+          type: string
+        description: "References to supporting documents"
+
+  # Certification claim
+  CertificationClaim:
+    type: object
+    required:
+      - certification_scheme
+      - certificate_number
+    properties:
+      certification_scheme:
+        type: string
+        enum:
+          - FSC
+          - PEFC
+          - RSPO
+          - RTRS
+          - UTZ
+          - Rainforest_Alliance
+          - Fairtrade
+          - Organic_EU
+          - ISCC
+          - Other
+        description: "Certification scheme name"
+
+      certificate_number:
+        type: string
+        description: "Certificate or license number"
+
+      certificate_holder:
+        type: string
+        description: "Name of certificate holder"
+
+      valid_from:
+        type: string
+        format: date
+
+      valid_until:
+        type: string
+        format: date
+
+      scope:
+        type: string
+        description: "Scope of certification"
+
+      chain_of_custody_type:
+        type: string
+        enum:
+          - Identity_Preserved
+          - Segregated
+          - Mass_Balance
+          - Controlled_Wood
+
+      verification_url:
+        type: string
+        format: uri
+        description: "URL to verify certificate"
+
+  # Supporting document
+  SupportingDocument:
+    type: object
+    required:
+      - document_type
+      - document_id
+    properties:
+      document_type:
+        type: string
+        enum:
+          - invoice
+          - bill_of_lading
+          - certificate_of_origin
+          - phytosanitary_certificate
+          - customs_declaration
+          - certification_certificate
+          - supplier_declaration
+          - legality_verification
+          - deforestation_assessment
+          - other
+        description: "Type of document"
+
+      document_id:
+        type: string
+        description: "Document reference number"
+
+      document_date:
+        type: string
+        format: date
+
+      issuer:
+        type: string
+        description: "Entity that issued document"
+
+      file_hash:
+        type: string
+        pattern: "^[a-f0-9]{64}$"
+        description: "SHA-256 hash of document file"
+
+      file_url:
+        type: string
+        format: uri
+        description: "URL to document if hosted"
+
+      summary:
+        type: string
+        maxLength: 1000
+        description: "Brief summary of document contents"
+
+  # Verification request
+  VerificationRequest:
+    type: object
+    description: "Complete verification request combining all inputs"
+    required:
+      - commodity
+      - geolocation
+      - production
+      - operator
+    properties:
+      request_id:
+        type: string
+        format: uuid
+        description: "Unique request identifier"
+
+      commodity:
+        $ref: "#/schemas/CommodityInput"
+
+      geolocation:
+        $ref: "#/schemas/GeolocationInput"
+
+      production:
+        $ref: "#/schemas/ProductionInput"
+
+      operator:
+        $ref: "#/schemas/OperatorInput"
+
+      supply_chain:
+        $ref: "#/schemas/SupplyChainInput"
+
+      verification_level:
+        type: string
+        enum:
+          - standard
+          - enhanced
+          - reinforced
+        default: standard
+        description: "Level of due diligence required"
+
+      priority:
+        type: string
+        enum:
+          - normal
+          - urgent
+          - critical
+        default: normal
+
+      callback_url:
+        type: string
+        format: uri
+        description: "Webhook URL for async result notification"
+
+# Output schemas
+outputs:
+  ComplianceResult:
+    type: object
+    required:
+      - compliance_status
+      - verification_date
+      - reference_number
+    properties:
+      compliance_status:
+        type: string
+        enum:
+          - COMPLIANT
+          - NON_COMPLIANT
+          - PENDING_VERIFICATION
+          - INSUFFICIENT_DATA
+          - VERIFICATION_ERROR
+        description: "Overall compliance determination"
+
+      verification_date:
+        type: string
+        format: date-time
+
+      reference_number:
+        type: string
+        description: "Unique verification reference"
+
+      compliance_details:
+        type: object
+        properties:
+          geolocation_valid:
+            type: boolean
+          production_date_valid:
+            type: boolean
+          deforestation_free:
+            type: boolean
+          legally_produced:
+            type: boolean
+          supply_chain_traceable:
+            type: boolean
+
+      non_compliance_reasons:
+        type: array
+        items:
+          type: string
+        description: "Reasons for non-compliance if applicable"
+
+      risk_assessment:
+        $ref: "#/outputs/RiskAssessment"
+
+      recommendations:
+        type: array
+        items:
+          type: string
+        description: "Recommended actions"
+
+  RiskAssessment:
+    type: object
+    properties:
+      overall_risk_score:
+        type: number
+        minimum: 0
+        maximum: 100
+
+      risk_level:
+        type: string
+        enum:
+          - low
+          - medium
+          - high
+
+      risk_factors:
+        type: array
+        items:
+          type: object
+          properties:
+            factor:
+              type: string
+            weight:
+              type: number
+            score:
+              type: number
+            description:
+              type: string
+
+      mitigating_factors:
+        type: array
+        items:
+          type: object
+          properties:
+            factor:
+              type: string
+            reduction:
+              type: number
+            description:
+              type: string
+
+  ValidationReport:
+    type: object
+    description: "Complete audit trail of validation"
+    properties:
+      report_id:
+        type: string
+        format: uuid
+
+      generated_at:
+        type: string
+        format: date-time
+
+      validation_steps:
+        type: array
+        items:
+          type: object
+          properties:
+            step_name:
+              type: string
+            status:
+              type: string
+            timestamp:
+              type: string
+              format: date-time
+            details:
+              type: object
+
+      data_sources:
+        type: array
+        items:
+          type: object
+          properties:
+            source_name:
+              type: string
+            query_date:
+              type: string
+              format: date-time
+            data_quality:
+              type: number
+
+      audit_hash:
+        type: string
+        pattern: "^[a-f0-9]{64}$"
+        description: "SHA-256 hash of complete audit trail"

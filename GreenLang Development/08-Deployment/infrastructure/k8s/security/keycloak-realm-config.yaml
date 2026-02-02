@@ -1,0 +1,975 @@
+# =============================================================================
+# GreenLang Process Heat Agents - Keycloak Realm Configuration
+# =============================================================================
+# TASK-152: Implement OAuth2/OIDC (Keycloak) for Process Heat Agents
+#
+# This ConfigMap contains the Keycloak realm configuration for GreenLang:
+#   - GreenLang realm with Process Heat clients
+#   - Client configurations (API, Dashboard, CLI, Agent-to-Agent)
+#   - Role definitions (admin, operator, viewer, auditor)
+#   - Identity provider configurations (OIDC, SAML, LDAP)
+#   - Security policies and authentication flows
+#
+# Clients:
+#   1. greenlang-api: Backend API server (confidential)
+#   2. greenlang-dashboard: Web dashboard (public with PKCE)
+#   3. greenlang-cli: Command-line interface (public with PKCE)
+#   4. greenlang-agent-service: Agent-to-agent communication (service account)
+#
+# Roles:
+#   - admin: Full access to all resources and agents
+#   - operator: Execute agents, view results, limited config changes
+#   - viewer: Read-only access to results and reports
+#   - auditor: Access to audit logs and compliance reports
+#
+# OWASP Compliance:
+#   - Token lifetimes follow security best practices
+#   - PKCE required for public clients
+#   - Brute force protection enabled
+#   - Password policies enforced
+# =============================================================================
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: keycloak-realm-config
+  namespace: greenlang-security
+  labels:
+    app.kubernetes.io/name: keycloak
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: identity
+  annotations:
+    description: "Keycloak realm configuration for GreenLang Process Heat Agents"
+data:
+  greenlang-realm.json: |
+    {
+      "id": "greenlang",
+      "realm": "greenlang",
+      "displayName": "GreenLang Process Heat Platform",
+      "displayNameHtml": "<div class=\"kc-logo-text\"><span>GreenLang</span></div>",
+      "enabled": true,
+      "sslRequired": "all",
+      "registrationAllowed": false,
+      "registrationEmailAsUsername": true,
+      "rememberMe": true,
+      "verifyEmail": true,
+      "loginWithEmailAllowed": true,
+      "duplicateEmailsAllowed": false,
+      "resetPasswordAllowed": true,
+      "editUsernameAllowed": false,
+      "bruteForceProtected": true,
+      "permanentLockout": false,
+      "maxFailureWaitSeconds": 900,
+      "minimumQuickLoginWaitSeconds": 60,
+      "waitIncrementSeconds": 60,
+      "quickLoginCheckMilliSeconds": 1000,
+      "maxDeltaTimeSeconds": 43200,
+      "failureFactor": 5,
+
+      "accessTokenLifespan": 300,
+      "accessTokenLifespanForImplicitFlow": 300,
+      "ssoSessionIdleTimeout": 1800,
+      "ssoSessionMaxLifespan": 36000,
+      "ssoSessionIdleTimeoutRememberMe": 604800,
+      "ssoSessionMaxLifespanRememberMe": 604800,
+      "offlineSessionIdleTimeout": 2592000,
+      "offlineSessionMaxLifespanEnabled": true,
+      "offlineSessionMaxLifespan": 5184000,
+      "clientSessionIdleTimeout": 0,
+      "clientSessionMaxLifespan": 0,
+      "clientOfflineSessionIdleTimeout": 0,
+      "clientOfflineSessionMaxLifespan": 0,
+      "accessCodeLifespan": 60,
+      "accessCodeLifespanUserAction": 300,
+      "accessCodeLifespanLogin": 1800,
+      "actionTokenGeneratedByAdminLifespan": 43200,
+      "actionTokenGeneratedByUserLifespan": 300,
+      "oauth2DeviceCodeLifespan": 600,
+      "oauth2DevicePollingInterval": 5,
+
+      "defaultSignatureAlgorithm": "RS256",
+      "revokeRefreshToken": false,
+      "refreshTokenMaxReuse": 0,
+
+      "passwordPolicy": "length(12) and digits(1) and upperCase(1) and lowerCase(1) and specialChars(1) and notUsername and passwordHistory(5) and forceExpiredPasswordChange(90)",
+
+      "smtpServer": {
+        "host": "${SMTP_HOST}",
+        "port": "${SMTP_PORT}",
+        "from": "noreply@greenlang.io",
+        "fromDisplayName": "GreenLang Platform",
+        "ssl": "true",
+        "starttls": "true",
+        "auth": "true",
+        "user": "${SMTP_USER}",
+        "password": "${SMTP_PASSWORD}"
+      },
+
+      "eventsEnabled": true,
+      "eventsListeners": ["jboss-logging", "metrics-listener"],
+      "enabledEventTypes": [
+        "LOGIN", "LOGIN_ERROR", "LOGOUT", "LOGOUT_ERROR",
+        "CODE_TO_TOKEN", "CODE_TO_TOKEN_ERROR",
+        "CLIENT_LOGIN", "CLIENT_LOGIN_ERROR",
+        "REFRESH_TOKEN", "REFRESH_TOKEN_ERROR",
+        "INTROSPECT_TOKEN", "INTROSPECT_TOKEN_ERROR",
+        "FEDERATED_IDENTITY_LINK", "FEDERATED_IDENTITY_LINK_ERROR",
+        "REMOVE_FEDERATED_IDENTITY", "REMOVE_FEDERATED_IDENTITY_ERROR",
+        "UPDATE_EMAIL", "UPDATE_EMAIL_ERROR",
+        "UPDATE_PROFILE", "UPDATE_PROFILE_ERROR",
+        "UPDATE_PASSWORD", "UPDATE_PASSWORD_ERROR",
+        "UPDATE_TOTP", "UPDATE_TOTP_ERROR",
+        "VERIFY_EMAIL", "VERIFY_EMAIL_ERROR",
+        "REMOVE_TOTP", "REMOVE_TOTP_ERROR",
+        "GRANT_CONSENT", "GRANT_CONSENT_ERROR",
+        "UPDATE_CONSENT", "UPDATE_CONSENT_ERROR",
+        "REVOKE_GRANT", "REVOKE_GRANT_ERROR",
+        "SEND_VERIFY_EMAIL", "SEND_VERIFY_EMAIL_ERROR",
+        "SEND_RESET_PASSWORD", "SEND_RESET_PASSWORD_ERROR",
+        "SEND_IDENTITY_PROVIDER_LINK", "SEND_IDENTITY_PROVIDER_LINK_ERROR",
+        "RESET_PASSWORD", "RESET_PASSWORD_ERROR",
+        "RESTART_AUTHENTICATION", "RESTART_AUTHENTICATION_ERROR",
+        "INVALID_SIGNATURE", "INVALID_SIGNATURE_ERROR",
+        "REGISTER_NODE", "REGISTER_NODE_ERROR",
+        "UNREGISTER_NODE", "UNREGISTER_NODE_ERROR",
+        "USER_INFO_REQUEST", "USER_INFO_REQUEST_ERROR",
+        "IDENTITY_PROVIDER_LINK_ACCOUNT", "IDENTITY_PROVIDER_LINK_ACCOUNT_ERROR",
+        "IDENTITY_PROVIDER_LOGIN", "IDENTITY_PROVIDER_LOGIN_ERROR",
+        "IDENTITY_PROVIDER_FIRST_LOGIN", "IDENTITY_PROVIDER_FIRST_LOGIN_ERROR",
+        "IDENTITY_PROVIDER_POST_LOGIN", "IDENTITY_PROVIDER_POST_LOGIN_ERROR",
+        "IDENTITY_PROVIDER_RESPONSE", "IDENTITY_PROVIDER_RESPONSE_ERROR",
+        "IDENTITY_PROVIDER_RETRIEVE_TOKEN", "IDENTITY_PROVIDER_RETRIEVE_TOKEN_ERROR",
+        "IMPERSONATE", "IMPERSONATE_ERROR",
+        "CUSTOM_REQUIRED_ACTION", "CUSTOM_REQUIRED_ACTION_ERROR",
+        "EXECUTE_ACTIONS", "EXECUTE_ACTIONS_ERROR",
+        "EXECUTE_ACTION_TOKEN", "EXECUTE_ACTION_TOKEN_ERROR",
+        "CLIENT_INFO", "CLIENT_INFO_ERROR",
+        "CLIENT_REGISTER", "CLIENT_REGISTER_ERROR",
+        "CLIENT_UPDATE", "CLIENT_UPDATE_ERROR",
+        "CLIENT_DELETE", "CLIENT_DELETE_ERROR",
+        "CLIENT_INITIATED_ACCOUNT_LINKING", "CLIENT_INITIATED_ACCOUNT_LINKING_ERROR",
+        "TOKEN_EXCHANGE", "TOKEN_EXCHANGE_ERROR",
+        "OAUTH2_DEVICE_AUTH", "OAUTH2_DEVICE_AUTH_ERROR",
+        "OAUTH2_DEVICE_VERIFY_USER_CODE", "OAUTH2_DEVICE_VERIFY_USER_CODE_ERROR",
+        "OAUTH2_DEVICE_CODE_TO_TOKEN", "OAUTH2_DEVICE_CODE_TO_TOKEN_ERROR",
+        "AUTHREQID_TO_TOKEN", "AUTHREQID_TO_TOKEN_ERROR",
+        "PERMISSION_TOKEN", "PERMISSION_TOKEN_ERROR",
+        "DELETE_ACCOUNT", "DELETE_ACCOUNT_ERROR"
+      ],
+      "adminEventsEnabled": true,
+      "adminEventsDetailsEnabled": true,
+      "eventsExpiration": 7776000,
+
+      "internationalizationEnabled": true,
+      "supportedLocales": ["en", "de", "fr", "es"],
+      "defaultLocale": "en",
+
+      "browserFlow": "browser",
+      "registrationFlow": "registration",
+      "directGrantFlow": "direct grant",
+      "resetCredentialsFlow": "reset credentials",
+      "clientAuthenticationFlow": "clients",
+      "dockerAuthenticationFlow": "docker auth",
+
+      "attributes": {
+        "cibaBackchannelTokenDeliveryMode": "poll",
+        "cibaExpiresIn": "120",
+        "cibaAuthRequestedUserHint": "login_hint",
+        "oauth2DeviceCodeLifespan": "600",
+        "oauth2DevicePollingInterval": "5",
+        "parRequestUriLifespan": "60",
+        "frontendUrl": "https://auth.greenlang.io",
+        "acr.loa.map": "{\"bronze\":\"1\",\"silver\":\"2\",\"gold\":\"3\"}"
+      },
+
+      "requiredCredentials": ["password"],
+
+      "otpPolicyType": "totp",
+      "otpPolicyAlgorithm": "HmacSHA256",
+      "otpPolicyInitialCounter": 0,
+      "otpPolicyDigits": 6,
+      "otpPolicyLookAheadWindow": 1,
+      "otpPolicyPeriod": 30,
+      "otpPolicyCodeReusable": false,
+      "otpSupportedApplications": ["totpAppFreeOTPName", "totpAppGoogleName", "totpAppMicrosoftAuthenticatorName"],
+
+      "webAuthnPolicyRpEntityName": "GreenLang",
+      "webAuthnPolicySignatureAlgorithms": ["ES256", "RS256"],
+      "webAuthnPolicyRpId": "auth.greenlang.io",
+      "webAuthnPolicyAttestationConveyancePreference": "not specified",
+      "webAuthnPolicyAuthenticatorAttachment": "not specified",
+      "webAuthnPolicyRequireResidentKey": "not specified",
+      "webAuthnPolicyUserVerificationRequirement": "preferred",
+      "webAuthnPolicyCreateTimeout": 0,
+      "webAuthnPolicyAvoidSameAuthenticatorRegister": false,
+      "webAuthnPolicyAcceptableAaguids": [],
+
+      "roles": {
+        "realm": [
+          {
+            "name": "admin",
+            "description": "Full access to all GreenLang resources, agents, and configurations",
+            "composite": true,
+            "composites": {
+              "realm": ["operator", "viewer", "auditor"]
+            },
+            "attributes": {
+              "greenlang.permissions": ["*"],
+              "greenlang.access_level": ["full"]
+            }
+          },
+          {
+            "name": "operator",
+            "description": "Execute agents, view results, limited configuration changes",
+            "composite": true,
+            "composites": {
+              "realm": ["viewer"]
+            },
+            "attributes": {
+              "greenlang.permissions": ["agents:execute", "agents:view", "results:view", "results:export", "config:view"],
+              "greenlang.access_level": ["standard"]
+            }
+          },
+          {
+            "name": "viewer",
+            "description": "Read-only access to results, reports, and dashboards",
+            "composite": false,
+            "attributes": {
+              "greenlang.permissions": ["results:view", "reports:view", "dashboards:view"],
+              "greenlang.access_level": ["readonly"]
+            }
+          },
+          {
+            "name": "auditor",
+            "description": "Access to audit logs, compliance reports, and security events",
+            "composite": false,
+            "attributes": {
+              "greenlang.permissions": ["audit:view", "compliance:view", "security:view", "provenance:view"],
+              "greenlang.access_level": ["audit"]
+            }
+          },
+          {
+            "name": "agent-service",
+            "description": "Service role for agent-to-agent communication",
+            "composite": false,
+            "attributes": {
+              "greenlang.permissions": ["agents:internal", "data:read", "data:write"],
+              "greenlang.access_level": ["service"]
+            }
+          }
+        ],
+        "client": {
+          "greenlang-api": [
+            {
+              "name": "api-read",
+              "description": "Read access to API resources"
+            },
+            {
+              "name": "api-write",
+              "description": "Write access to API resources"
+            },
+            {
+              "name": "api-admin",
+              "description": "Administrative access to API"
+            }
+          ],
+          "greenlang-agent-service": [
+            {
+              "name": "agent-execute",
+              "description": "Permission to execute agents"
+            },
+            {
+              "name": "agent-data-access",
+              "description": "Permission to access agent data"
+            }
+          ]
+        }
+      },
+
+      "groups": [
+        {
+          "name": "GreenLang Administrators",
+          "path": "/administrators",
+          "realmRoles": ["admin"],
+          "attributes": {
+            "department": ["IT"],
+            "access_tier": ["1"]
+          }
+        },
+        {
+          "name": "Process Heat Operators",
+          "path": "/operators",
+          "realmRoles": ["operator"],
+          "attributes": {
+            "department": ["Operations"],
+            "access_tier": ["2"]
+          }
+        },
+        {
+          "name": "Sustainability Team",
+          "path": "/sustainability",
+          "realmRoles": ["viewer"],
+          "attributes": {
+            "department": ["Sustainability"],
+            "access_tier": ["3"]
+          }
+        },
+        {
+          "name": "Compliance Auditors",
+          "path": "/auditors",
+          "realmRoles": ["auditor"],
+          "attributes": {
+            "department": ["Compliance"],
+            "access_tier": ["2"]
+          }
+        }
+      ],
+
+      "defaultDefaultClientScopes": [
+        "role_list",
+        "profile",
+        "email",
+        "roles",
+        "web-origins",
+        "acr"
+      ],
+      "defaultOptionalClientScopes": [
+        "address",
+        "phone",
+        "offline_access",
+        "microprofile-jwt"
+      ],
+
+      "clientScopes": [
+        {
+          "name": "greenlang-agents",
+          "description": "Access to GreenLang Process Heat Agents",
+          "protocol": "openid-connect",
+          "attributes": {
+            "include.in.token.scope": "true",
+            "display.on.consent.screen": "true",
+            "consent.screen.text": "Access to GreenLang Process Heat Agents"
+          },
+          "protocolMappers": [
+            {
+              "name": "agent-permissions",
+              "protocol": "openid-connect",
+              "protocolMapper": "oidc-usermodel-attribute-mapper",
+              "consentRequired": false,
+              "config": {
+                "userinfo.token.claim": "true",
+                "user.attribute": "greenlang.permissions",
+                "id.token.claim": "true",
+                "access.token.claim": "true",
+                "claim.name": "greenlang_permissions",
+                "jsonType.label": "JSON",
+                "multivalued": "true"
+              }
+            },
+            {
+              "name": "access-level",
+              "protocol": "openid-connect",
+              "protocolMapper": "oidc-usermodel-attribute-mapper",
+              "consentRequired": false,
+              "config": {
+                "userinfo.token.claim": "true",
+                "user.attribute": "greenlang.access_level",
+                "id.token.claim": "true",
+                "access.token.claim": "true",
+                "claim.name": "greenlang_access_level",
+                "jsonType.label": "String"
+              }
+            }
+          ]
+        },
+        {
+          "name": "greenlang-emissions",
+          "description": "Access to emissions calculation and reporting",
+          "protocol": "openid-connect",
+          "attributes": {
+            "include.in.token.scope": "true",
+            "display.on.consent.screen": "true",
+            "consent.screen.text": "Access to emissions data and calculations"
+          },
+          "protocolMappers": [
+            {
+              "name": "emissions-scope",
+              "protocol": "openid-connect",
+              "protocolMapper": "oidc-hardcoded-claim-mapper",
+              "consentRequired": false,
+              "config": {
+                "claim.value": "emissions:read emissions:calculate emissions:report",
+                "userinfo.token.claim": "true",
+                "id.token.claim": "true",
+                "access.token.claim": "true",
+                "claim.name": "emissions_scope",
+                "jsonType.label": "String"
+              }
+            }
+          ]
+        },
+        {
+          "name": "greenlang-audit",
+          "description": "Access to audit logs and provenance data",
+          "protocol": "openid-connect",
+          "attributes": {
+            "include.in.token.scope": "true",
+            "display.on.consent.screen": "true",
+            "consent.screen.text": "Access to audit logs and data provenance"
+          },
+          "protocolMappers": [
+            {
+              "name": "audit-permissions",
+              "protocol": "openid-connect",
+              "protocolMapper": "oidc-hardcoded-claim-mapper",
+              "consentRequired": false,
+              "config": {
+                "claim.value": "audit:read provenance:read compliance:read",
+                "userinfo.token.claim": "true",
+                "id.token.claim": "true",
+                "access.token.claim": "true",
+                "claim.name": "audit_permissions",
+                "jsonType.label": "String"
+              }
+            }
+          ]
+        }
+      ],
+
+      "clients": [
+        {
+          "clientId": "greenlang-api",
+          "name": "GreenLang API Server",
+          "description": "Backend API server for GreenLang Process Heat platform",
+          "enabled": true,
+          "clientAuthenticatorType": "client-secret",
+          "secret": "${GREENLANG_API_CLIENT_SECRET}",
+          "redirectUris": [
+            "https://api.greenlang.io/*",
+            "https://api.greenlang.io/auth/callback"
+          ],
+          "webOrigins": [
+            "https://api.greenlang.io",
+            "https://dashboard.greenlang.io"
+          ],
+          "bearerOnly": false,
+          "consentRequired": false,
+          "standardFlowEnabled": true,
+          "implicitFlowEnabled": false,
+          "directAccessGrantsEnabled": true,
+          "serviceAccountsEnabled": true,
+          "authorizationServicesEnabled": true,
+          "publicClient": false,
+          "frontchannelLogout": true,
+          "protocol": "openid-connect",
+          "attributes": {
+            "saml.multivalued.roles": "false",
+            "saml.force.post.binding": "false",
+            "frontchannel.logout.session.required": "false",
+            "oauth2.device.authorization.grant.enabled": "false",
+            "backchannel.logout.revoke.offline.tokens": "false",
+            "saml.server.signature.keyinfo.ext": "false",
+            "use.refresh.tokens": "true",
+            "oidc.ciba.grant.enabled": "false",
+            "backchannel.logout.session.required": "true",
+            "client_credentials.use_refresh_token": "false",
+            "saml.client.signature": "false",
+            "require.pushed.authorization.requests": "false",
+            "saml.allow.ecp.flow": "false",
+            "saml.assertion.signature": "false",
+            "id.token.as.detached.signature": "false",
+            "saml.encrypt": "false",
+            "saml.server.signature": "false",
+            "exclude.session.state.from.auth.response": "false",
+            "saml.artifact.binding": "false",
+            "saml_force_name_id_format": "false",
+            "acr.loa.map": "{}",
+            "tls.client.certificate.bound.access.tokens": "true",
+            "saml.authnstatement": "false",
+            "display.on.consent.screen": "false",
+            "token.response.type.bearer.lower-case": "false",
+            "saml.onetimeuse.condition": "false",
+            "access.token.lifespan": "300",
+            "client.session.idle.timeout": "1800"
+          },
+          "defaultClientScopes": [
+            "web-origins",
+            "acr",
+            "profile",
+            "roles",
+            "email",
+            "greenlang-agents",
+            "greenlang-emissions"
+          ],
+          "optionalClientScopes": [
+            "address",
+            "phone",
+            "offline_access",
+            "microprofile-jwt",
+            "greenlang-audit"
+          ],
+          "authorizationSettings": {
+            "allowRemoteResourceManagement": true,
+            "policyEnforcementMode": "ENFORCING",
+            "resources": [
+              {
+                "name": "Process Heat Agents",
+                "type": "urn:greenlang:resources:agents",
+                "ownerManagedAccess": false,
+                "uris": ["/api/v1/agents/*", "/api/v2/agents/*"],
+                "scopes": [
+                  {"name": "execute"},
+                  {"name": "view"},
+                  {"name": "configure"}
+                ]
+              },
+              {
+                "name": "Emissions Data",
+                "type": "urn:greenlang:resources:emissions",
+                "ownerManagedAccess": false,
+                "uris": ["/api/v1/emissions/*", "/api/v2/emissions/*"],
+                "scopes": [
+                  {"name": "read"},
+                  {"name": "write"},
+                  {"name": "calculate"}
+                ]
+              },
+              {
+                "name": "Audit Logs",
+                "type": "urn:greenlang:resources:audit",
+                "ownerManagedAccess": false,
+                "uris": ["/api/v1/audit/*", "/api/v2/audit/*"],
+                "scopes": [
+                  {"name": "read"},
+                  {"name": "export"}
+                ]
+              }
+            ],
+            "policies": [
+              {
+                "name": "Admin Policy",
+                "type": "role",
+                "logic": "POSITIVE",
+                "decisionStrategy": "UNANIMOUS",
+                "config": {
+                  "roles": "[{\"id\":\"admin\",\"required\":true}]"
+                }
+              },
+              {
+                "name": "Operator Policy",
+                "type": "role",
+                "logic": "POSITIVE",
+                "decisionStrategy": "UNANIMOUS",
+                "config": {
+                  "roles": "[{\"id\":\"operator\",\"required\":true}]"
+                }
+              },
+              {
+                "name": "Viewer Policy",
+                "type": "role",
+                "logic": "POSITIVE",
+                "decisionStrategy": "UNANIMOUS",
+                "config": {
+                  "roles": "[{\"id\":\"viewer\",\"required\":true}]"
+                }
+              },
+              {
+                "name": "Auditor Policy",
+                "type": "role",
+                "logic": "POSITIVE",
+                "decisionStrategy": "UNANIMOUS",
+                "config": {
+                  "roles": "[{\"id\":\"auditor\",\"required\":true}]"
+                }
+              }
+            ],
+            "scopes": [
+              {"name": "execute"},
+              {"name": "view"},
+              {"name": "configure"},
+              {"name": "read"},
+              {"name": "write"},
+              {"name": "calculate"},
+              {"name": "export"}
+            ]
+          }
+        },
+        {
+          "clientId": "greenlang-dashboard",
+          "name": "GreenLang Dashboard",
+          "description": "Web dashboard for GreenLang Process Heat platform",
+          "enabled": true,
+          "clientAuthenticatorType": "client-secret",
+          "redirectUris": [
+            "https://dashboard.greenlang.io/*",
+            "https://dashboard.greenlang.io/auth/callback",
+            "http://localhost:3000/*"
+          ],
+          "webOrigins": [
+            "https://dashboard.greenlang.io",
+            "http://localhost:3000"
+          ],
+          "bearerOnly": false,
+          "consentRequired": false,
+          "standardFlowEnabled": true,
+          "implicitFlowEnabled": false,
+          "directAccessGrantsEnabled": false,
+          "serviceAccountsEnabled": false,
+          "publicClient": true,
+          "frontchannelLogout": true,
+          "protocol": "openid-connect",
+          "attributes": {
+            "pkce.code.challenge.method": "S256",
+            "use.refresh.tokens": "true",
+            "backchannel.logout.session.required": "true",
+            "post.logout.redirect.uris": "https://dashboard.greenlang.io/*",
+            "access.token.lifespan": "300",
+            "client.session.idle.timeout": "1800"
+          },
+          "defaultClientScopes": [
+            "web-origins",
+            "acr",
+            "profile",
+            "roles",
+            "email",
+            "greenlang-agents"
+          ],
+          "optionalClientScopes": [
+            "address",
+            "phone",
+            "offline_access",
+            "greenlang-emissions",
+            "greenlang-audit"
+          ]
+        },
+        {
+          "clientId": "greenlang-cli",
+          "name": "GreenLang CLI",
+          "description": "Command-line interface for GreenLang platform",
+          "enabled": true,
+          "clientAuthenticatorType": "client-secret",
+          "redirectUris": [
+            "http://localhost:8400/callback",
+            "http://127.0.0.1:8400/callback",
+            "urn:ietf:wg:oauth:2.0:oob"
+          ],
+          "webOrigins": [],
+          "bearerOnly": false,
+          "consentRequired": true,
+          "standardFlowEnabled": true,
+          "implicitFlowEnabled": false,
+          "directAccessGrantsEnabled": false,
+          "serviceAccountsEnabled": false,
+          "publicClient": true,
+          "frontchannelLogout": false,
+          "protocol": "openid-connect",
+          "attributes": {
+            "pkce.code.challenge.method": "S256",
+            "use.refresh.tokens": "true",
+            "oauth2.device.authorization.grant.enabled": "true",
+            "access.token.lifespan": "3600",
+            "client.session.idle.timeout": "7200"
+          },
+          "defaultClientScopes": [
+            "profile",
+            "roles",
+            "email",
+            "greenlang-agents"
+          ],
+          "optionalClientScopes": [
+            "offline_access",
+            "greenlang-emissions",
+            "greenlang-audit"
+          ]
+        },
+        {
+          "clientId": "greenlang-agent-service",
+          "name": "GreenLang Agent Service",
+          "description": "Service account for agent-to-agent communication",
+          "enabled": true,
+          "clientAuthenticatorType": "client-secret",
+          "secret": "${GREENLANG_AGENT_SERVICE_SECRET}",
+          "redirectUris": [],
+          "webOrigins": [],
+          "bearerOnly": true,
+          "consentRequired": false,
+          "standardFlowEnabled": false,
+          "implicitFlowEnabled": false,
+          "directAccessGrantsEnabled": false,
+          "serviceAccountsEnabled": true,
+          "authorizationServicesEnabled": false,
+          "publicClient": false,
+          "frontchannelLogout": false,
+          "protocol": "openid-connect",
+          "attributes": {
+            "use.refresh.tokens": "false",
+            "client_credentials.use_refresh_token": "false",
+            "tls.client.certificate.bound.access.tokens": "true",
+            "access.token.lifespan": "60"
+          },
+          "defaultClientScopes": [
+            "roles",
+            "greenlang-agents"
+          ],
+          "optionalClientScopes": []
+        },
+        {
+          "clientId": "greenlang-oauth2-proxy",
+          "name": "GreenLang OAuth2 Proxy",
+          "description": "OAuth2 proxy for service protection",
+          "enabled": true,
+          "clientAuthenticatorType": "client-secret",
+          "secret": "${GREENLANG_OAUTH2_PROXY_SECRET}",
+          "redirectUris": [
+            "https://*.greenlang.io/oauth2/callback"
+          ],
+          "webOrigins": [
+            "https://*.greenlang.io"
+          ],
+          "bearerOnly": false,
+          "consentRequired": false,
+          "standardFlowEnabled": true,
+          "implicitFlowEnabled": false,
+          "directAccessGrantsEnabled": false,
+          "serviceAccountsEnabled": false,
+          "publicClient": false,
+          "frontchannelLogout": true,
+          "protocol": "openid-connect",
+          "attributes": {
+            "pkce.code.challenge.method": "S256",
+            "use.refresh.tokens": "true",
+            "backchannel.logout.session.required": "true",
+            "access.token.lifespan": "300"
+          },
+          "defaultClientScopes": [
+            "web-origins",
+            "profile",
+            "roles",
+            "email"
+          ],
+          "optionalClientScopes": [
+            "offline_access"
+          ]
+        }
+      ],
+
+      "identityProviders": [
+        {
+          "alias": "azure-ad",
+          "displayName": "Microsoft Azure AD",
+          "providerId": "oidc",
+          "enabled": false,
+          "trustEmail": true,
+          "storeToken": false,
+          "addReadTokenRoleOnCreate": false,
+          "authenticateByDefault": false,
+          "linkOnly": false,
+          "firstBrokerLoginFlowAlias": "first broker login",
+          "config": {
+            "clientId": "${AZURE_AD_CLIENT_ID}",
+            "clientSecret": "${AZURE_AD_CLIENT_SECRET}",
+            "tokenUrl": "https://login.microsoftonline.com/${AZURE_AD_TENANT_ID}/oauth2/v2.0/token",
+            "authorizationUrl": "https://login.microsoftonline.com/${AZURE_AD_TENANT_ID}/oauth2/v2.0/authorize",
+            "logoutUrl": "https://login.microsoftonline.com/${AZURE_AD_TENANT_ID}/oauth2/v2.0/logout",
+            "userInfoUrl": "https://graph.microsoft.com/oidc/userinfo",
+            "jwksUrl": "https://login.microsoftonline.com/${AZURE_AD_TENANT_ID}/discovery/v2.0/keys",
+            "issuer": "https://login.microsoftonline.com/${AZURE_AD_TENANT_ID}/v2.0",
+            "defaultScope": "openid profile email",
+            "validateSignature": "true",
+            "useJwksUrl": "true",
+            "pkceEnabled": "true",
+            "pkceMethod": "S256",
+            "syncMode": "IMPORT"
+          }
+        },
+        {
+          "alias": "google",
+          "displayName": "Google",
+          "providerId": "google",
+          "enabled": false,
+          "trustEmail": true,
+          "storeToken": false,
+          "addReadTokenRoleOnCreate": false,
+          "authenticateByDefault": false,
+          "linkOnly": false,
+          "firstBrokerLoginFlowAlias": "first broker login",
+          "config": {
+            "clientId": "${GOOGLE_CLIENT_ID}",
+            "clientSecret": "${GOOGLE_CLIENT_SECRET}",
+            "defaultScope": "openid profile email",
+            "syncMode": "IMPORT"
+          }
+        },
+        {
+          "alias": "okta",
+          "displayName": "Okta",
+          "providerId": "oidc",
+          "enabled": false,
+          "trustEmail": true,
+          "storeToken": false,
+          "addReadTokenRoleOnCreate": false,
+          "authenticateByDefault": false,
+          "linkOnly": false,
+          "firstBrokerLoginFlowAlias": "first broker login",
+          "config": {
+            "clientId": "${OKTA_CLIENT_ID}",
+            "clientSecret": "${OKTA_CLIENT_SECRET}",
+            "tokenUrl": "https://${OKTA_DOMAIN}/oauth2/default/v1/token",
+            "authorizationUrl": "https://${OKTA_DOMAIN}/oauth2/default/v1/authorize",
+            "logoutUrl": "https://${OKTA_DOMAIN}/oauth2/default/v1/logout",
+            "userInfoUrl": "https://${OKTA_DOMAIN}/oauth2/default/v1/userinfo",
+            "jwksUrl": "https://${OKTA_DOMAIN}/oauth2/default/v1/keys",
+            "issuer": "https://${OKTA_DOMAIN}/oauth2/default",
+            "defaultScope": "openid profile email groups",
+            "validateSignature": "true",
+            "useJwksUrl": "true",
+            "pkceEnabled": "true",
+            "pkceMethod": "S256",
+            "syncMode": "IMPORT"
+          }
+        }
+      ],
+
+      "identityProviderMappers": [
+        {
+          "name": "azure-ad-groups",
+          "identityProviderAlias": "azure-ad",
+          "identityProviderMapper": "oidc-user-attribute-idp-mapper",
+          "config": {
+            "syncMode": "INHERIT",
+            "claim": "groups",
+            "user.attribute": "azure_groups"
+          }
+        },
+        {
+          "name": "okta-groups",
+          "identityProviderAlias": "okta",
+          "identityProviderMapper": "oidc-user-attribute-idp-mapper",
+          "config": {
+            "syncMode": "INHERIT",
+            "claim": "groups",
+            "user.attribute": "okta_groups"
+          }
+        }
+      ],
+
+      "components": {
+        "org.keycloak.userprofile.UserProfileProvider": [
+          {
+            "providerId": "declarative-user-profile",
+            "config": {
+              "kc.user.profile.config": [
+                "{\"attributes\":[{\"name\":\"username\",\"displayName\":\"${username}\",\"validations\":{\"length\":{\"min\":3,\"max\":255},\"username-prohibited-characters\":{},\"up-username-not-idn-homograph\":{}},\"permissions\":{\"view\":[\"admin\",\"user\"],\"edit\":[\"admin\",\"user\"]},\"multivalued\":false},{\"name\":\"email\",\"displayName\":\"${email}\",\"validations\":{\"email\":{},\"length\":{\"max\":255}},\"required\":{\"roles\":[\"user\"]},\"permissions\":{\"view\":[\"admin\",\"user\"],\"edit\":[\"admin\",\"user\"]},\"multivalued\":false},{\"name\":\"firstName\",\"displayName\":\"${firstName}\",\"validations\":{\"length\":{\"max\":255},\"person-name-prohibited-characters\":{}},\"required\":{\"roles\":[\"user\"]},\"permissions\":{\"view\":[\"admin\",\"user\"],\"edit\":[\"admin\",\"user\"]},\"multivalued\":false},{\"name\":\"lastName\",\"displayName\":\"${lastName}\",\"validations\":{\"length\":{\"max\":255},\"person-name-prohibited-characters\":{}},\"required\":{\"roles\":[\"user\"]},\"permissions\":{\"view\":[\"admin\",\"user\"],\"edit\":[\"admin\",\"user\"]},\"multivalued\":false},{\"name\":\"department\",\"displayName\":\"Department\",\"validations\":{\"length\":{\"max\":255}},\"permissions\":{\"view\":[\"admin\",\"user\"],\"edit\":[\"admin\"]},\"multivalued\":false},{\"name\":\"greenlang.permissions\",\"displayName\":\"GreenLang Permissions\",\"permissions\":{\"view\":[\"admin\"],\"edit\":[\"admin\"]},\"multivalued\":true},{\"name\":\"greenlang.access_level\",\"displayName\":\"GreenLang Access Level\",\"permissions\":{\"view\":[\"admin\"],\"edit\":[\"admin\"]},\"multivalued\":false}],\"groups\":[{\"name\":\"user-metadata\",\"displayHeader\":\"User metadata\",\"displayDescription\":\"Attributes, which refer to user metadata\"}]}"
+              ]
+            }
+          }
+        ],
+        "org.keycloak.keys.KeyProvider": [
+          {
+            "name": "rsa-generated",
+            "providerId": "rsa-generated",
+            "config": {
+              "priority": ["100"],
+              "keySize": ["4096"],
+              "algorithm": ["RS256"]
+            }
+          },
+          {
+            "name": "rsa-enc-generated",
+            "providerId": "rsa-enc-generated",
+            "config": {
+              "priority": ["100"],
+              "keySize": ["4096"],
+              "algorithm": ["RSA-OAEP"]
+            }
+          },
+          {
+            "name": "hmac-generated",
+            "providerId": "hmac-generated",
+            "config": {
+              "priority": ["100"],
+              "algorithm": ["HS256"]
+            }
+          }
+        ]
+      },
+
+      "authenticationFlows": [
+        {
+          "alias": "mfa-browser",
+          "description": "Browser flow with MFA",
+          "providerId": "basic-flow",
+          "topLevel": true,
+          "builtIn": false,
+          "authenticationExecutions": [
+            {
+              "authenticator": "auth-cookie",
+              "authenticatorFlow": false,
+              "requirement": "ALTERNATIVE",
+              "priority": 10
+            },
+            {
+              "authenticator": "auth-spnego",
+              "authenticatorFlow": false,
+              "requirement": "DISABLED",
+              "priority": 20
+            },
+            {
+              "authenticator": "identity-provider-redirector",
+              "authenticatorFlow": false,
+              "requirement": "ALTERNATIVE",
+              "priority": 25
+            },
+            {
+              "authenticatorFlow": true,
+              "requirement": "ALTERNATIVE",
+              "priority": 30,
+              "flowAlias": "mfa-browser forms"
+            }
+          ]
+        },
+        {
+          "alias": "mfa-browser forms",
+          "description": "Username, password, and MFA",
+          "providerId": "basic-flow",
+          "topLevel": false,
+          "builtIn": false,
+          "authenticationExecutions": [
+            {
+              "authenticator": "auth-username-password-form",
+              "authenticatorFlow": false,
+              "requirement": "REQUIRED",
+              "priority": 10
+            },
+            {
+              "authenticatorFlow": true,
+              "requirement": "CONDITIONAL",
+              "priority": 20,
+              "flowAlias": "mfa-conditional-otp"
+            }
+          ]
+        },
+        {
+          "alias": "mfa-conditional-otp",
+          "description": "Conditional OTP for MFA",
+          "providerId": "basic-flow",
+          "topLevel": false,
+          "builtIn": false,
+          "authenticationExecutions": [
+            {
+              "authenticator": "conditional-user-configured",
+              "authenticatorFlow": false,
+              "requirement": "REQUIRED",
+              "priority": 10
+            },
+            {
+              "authenticator": "auth-otp-form",
+              "authenticatorFlow": false,
+              "requirement": "REQUIRED",
+              "priority": 20
+            }
+          ]
+        }
+      ]
+    }

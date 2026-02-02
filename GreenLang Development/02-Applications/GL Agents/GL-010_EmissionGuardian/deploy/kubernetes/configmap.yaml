@@ -1,0 +1,45 @@
+# GL-010 EmissionGuardian ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gl-010-emissionguardian-config
+  namespace: greenlang
+  labels:
+    app: gl-010-emissionguardian
+    agent-id: GL-010
+    codename: EMISSIONGUARDIAN
+data:
+  ENVIRONMENT: "production"
+  LOG_LEVEL: "INFO"
+  
+  # Emissions Monitoring Parameters
+  NOX_LIMIT_PPM: "50"
+  SO2_LIMIT_PPM: "100"
+  CO_LIMIT_PPM: "100"
+  PARTICULATE_LIMIT_MG_M3: "30"
+  CO2_TRACKING_ENABLED: "true"
+  
+  # CEMS Integration Parameters
+  CEMS_DATA_AVERAGING_MINUTES: "15"
+  CEMS_CALIBRATION_CHECK_HOURS: "24"
+  DATA_SUBSTITUTION_METHOD: "EPA_METHOD"
+  
+  # Regulatory Compliance
+  EPA_REPORTING_ENABLED: "true"
+  STATE_REPORTING_ENABLED: "true"
+  PERMIT_LIMIT_MARGIN_PERCENT: "10"
+  
+  # Alerting Parameters
+  WARNING_THRESHOLD_PERCENT: "80"
+  CRITICAL_THRESHOLD_PERCENT: "90"
+  EXCEEDANCE_NOTIFICATION: "true"
+  
+  # Feature Flags
+  FEATURE_PREDICTIVE_COMPLIANCE: "true"
+  FEATURE_EMISSION_FORECASTING: "true"
+  FEATURE_CARBON_ACCOUNTING: "true"
+  FEATURE_REGULATORY_REPORTING: "true"
+  
+  # API Configuration
+  API_RATE_LIMIT: "1000"
+  API_TIMEOUT_SECONDS: "30"

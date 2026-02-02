@@ -1,0 +1,580 @@
+{
+  "metadata": {
+    "source": "IPCC",
+    "source_name": "Intergovernmental Panel on Climate Change",
+    "source_document": "2006 IPCC Guidelines for National Greenhouse Gas Inventories (with 2019 Refinement)",
+    "source_url": "https://www.ipcc-nggip.iges.or.jp/public/2019rf/",
+    "version": "2019 Refinement",
+    "last_updated": "2019-05-12",
+    "description": "IPCC Tier 1 default emission factors for sector-level emissions"
+  },
+  "energy": {
+    "stationary_combustion": {
+      "power_generation": [
+        {
+          "id": "ef://ipcc/energy/power_coal/default",
+          "fuel_category": "Coal",
+          "sub_category": "Anthracite",
+          "co2_factor": 98.3,
+          "co2_unit": "kg CO2/GJ",
+          "ch4_factor": 1,
+          "ch4_unit": "kg CH4/TJ",
+          "n2o_factor": 1.5,
+          "n2o_unit": "kg N2O/TJ",
+          "tier": 1,
+          "uncertainty_pct": 7
+        },
+        {
+          "id": "ef://ipcc/energy/power_coal_bituminous/default",
+          "fuel_category": "Coal",
+          "sub_category": "Bituminous",
+          "co2_factor": 94.6,
+          "co2_unit": "kg CO2/GJ",
+          "ch4_factor": 1,
+          "ch4_unit": "kg CH4/TJ",
+          "n2o_factor": 1.5,
+          "n2o_unit": "kg N2O/TJ",
+          "tier": 1,
+          "uncertainty_pct": 7
+        },
+        {
+          "id": "ef://ipcc/energy/power_coal_subbituminous/default",
+          "fuel_category": "Coal",
+          "sub_category": "Sub-bituminous",
+          "co2_factor": 96.1,
+          "co2_unit": "kg CO2/GJ",
+          "ch4_factor": 1,
+          "ch4_unit": "kg CH4/TJ",
+          "n2o_factor": 1.5,
+          "n2o_unit": "kg N2O/TJ",
+          "tier": 1,
+          "uncertainty_pct": 7
+        },
+        {
+          "id": "ef://ipcc/energy/power_coal_lignite/default",
+          "fuel_category": "Coal",
+          "sub_category": "Lignite",
+          "co2_factor": 101,
+          "co2_unit": "kg CO2/GJ",
+          "ch4_factor": 1,
+          "ch4_unit": "kg CH4/TJ",
+          "n2o_factor": 1.5,
+          "n2o_unit": "kg N2O/TJ",
+          "tier": 1,
+          "uncertainty_pct": 7
+        },
+        {
+          "id": "ef://ipcc/energy/power_natural_gas/default",
+          "fuel_category": "Natural Gas",
+          "sub_category": "Dry",
+          "co2_factor": 56.1,
+          "co2_unit": "kg CO2/GJ",
+          "ch4_factor": 1,
+          "ch4_unit": "kg CH4/TJ",
+          "n2o_factor": 0.1,
+          "n2o_unit": "kg N2O/TJ",
+          "tier": 1,
+          "uncertainty_pct": 5
+        },
+        {
+          "id": "ef://ipcc/energy/power_crude_oil/default",
+          "fuel_category": "Crude Oil",
+          "sub_category": "General",
+          "co2_factor": 73.3,
+          "co2_unit": "kg CO2/GJ",
+          "ch4_factor": 3,
+          "ch4_unit": "kg CH4/TJ",
+          "n2o_factor": 0.6,
+          "n2o_unit": "kg N2O/TJ",
+          "tier": 1,
+          "uncertainty_pct": 3
+        },
+        {
+          "id": "ef://ipcc/energy/power_diesel/default",
+          "fuel_category": "Petroleum Products",
+          "sub_category": "Diesel/Gas Oil",
+          "co2_factor": 74.1,
+          "co2_unit": "kg CO2/GJ",
+          "ch4_factor": 3,
+          "ch4_unit": "kg CH4/TJ",
+          "n2o_factor": 0.6,
+          "n2o_unit": "kg N2O/TJ",
+          "tier": 1,
+          "uncertainty_pct": 3
+        },
+        {
+          "id": "ef://ipcc/energy/power_residual_oil/default",
+          "fuel_category": "Petroleum Products",
+          "sub_category": "Residual Fuel Oil",
+          "co2_factor": 77.4,
+          "co2_unit": "kg CO2/GJ",
+          "ch4_factor": 3,
+          "ch4_unit": "kg CH4/TJ",
+          "n2o_factor": 0.6,
+          "n2o_unit": "kg N2O/TJ",
+          "tier": 1,
+          "uncertainty_pct": 3
+        }
+      ],
+      "industrial": [
+        {
+          "id": "ef://ipcc/energy/industrial_coal/default",
+          "fuel_category": "Coal",
+          "sector": "Industrial",
+          "co2_factor": 94.6,
+          "co2_unit": "kg CO2/GJ",
+          "ch4_factor": 10,
+          "ch4_unit": "kg CH4/TJ",
+          "n2o_factor": 1.5,
+          "n2o_unit": "kg N2O/TJ",
+          "tier": 1
+        },
+        {
+          "id": "ef://ipcc/energy/industrial_natural_gas/default",
+          "fuel_category": "Natural Gas",
+          "sector": "Industrial",
+          "co2_factor": 56.1,
+          "co2_unit": "kg CO2/GJ",
+          "ch4_factor": 5,
+          "ch4_unit": "kg CH4/TJ",
+          "n2o_factor": 0.1,
+          "n2o_unit": "kg N2O/TJ",
+          "tier": 1
+        },
+        {
+          "id": "ef://ipcc/energy/industrial_diesel/default",
+          "fuel_category": "Petroleum Products",
+          "sector": "Industrial",
+          "co2_factor": 74.1,
+          "co2_unit": "kg CO2/GJ",
+          "ch4_factor": 3,
+          "ch4_unit": "kg CH4/TJ",
+          "n2o_factor": 0.6,
+          "n2o_unit": "kg N2O/TJ",
+          "tier": 1
+        }
+      ],
+      "residential_commercial": [
+        {
+          "id": "ef://ipcc/energy/residential_natural_gas/default",
+          "fuel_category": "Natural Gas",
+          "sector": "Residential/Commercial",
+          "co2_factor": 56.1,
+          "co2_unit": "kg CO2/GJ",
+          "ch4_factor": 5,
+          "ch4_unit": "kg CH4/TJ",
+          "n2o_factor": 0.1,
+          "n2o_unit": "kg N2O/TJ",
+          "tier": 1
+        },
+        {
+          "id": "ef://ipcc/energy/residential_lpg/default",
+          "fuel_category": "LPG",
+          "sector": "Residential/Commercial",
+          "co2_factor": 63.1,
+          "co2_unit": "kg CO2/GJ",
+          "ch4_factor": 5,
+          "ch4_unit": "kg CH4/TJ",
+          "n2o_factor": 0.1,
+          "n2o_unit": "kg N2O/TJ",
+          "tier": 1
+        },
+        {
+          "id": "ef://ipcc/energy/residential_kerosene/default",
+          "fuel_category": "Kerosene",
+          "sector": "Residential/Commercial",
+          "co2_factor": 71.9,
+          "co2_unit": "kg CO2/GJ",
+          "ch4_factor": 10,
+          "ch4_unit": "kg CH4/TJ",
+          "n2o_factor": 0.6,
+          "n2o_unit": "kg N2O/TJ",
+          "tier": 1
+        }
+      ]
+    },
+    "mobile_combustion": {
+      "road_transport": [
+        {
+          "id": "ef://ipcc/transport/road_gasoline/default",
+          "fuel_type": "Gasoline",
+          "vehicle_category": "All road vehicles",
+          "co2_factor": 69.3,
+          "co2_unit": "kg CO2/GJ",
+          "ch4_factor": 33,
+          "ch4_unit": "kg CH4/TJ",
+          "n2o_factor": 3.2,
+          "n2o_unit": "kg N2O/TJ",
+          "tier": 1,
+          "notes": "Default for uncontrolled vehicles"
+        },
+        {
+          "id": "ef://ipcc/transport/road_diesel/default",
+          "fuel_type": "Diesel",
+          "vehicle_category": "All road vehicles",
+          "co2_factor": 74.1,
+          "co2_unit": "kg CO2/GJ",
+          "ch4_factor": 3.9,
+          "ch4_unit": "kg CH4/TJ",
+          "n2o_factor": 3.9,
+          "n2o_unit": "kg N2O/TJ",
+          "tier": 1
+        },
+        {
+          "id": "ef://ipcc/transport/road_lpg/default",
+          "fuel_type": "LPG",
+          "vehicle_category": "All road vehicles",
+          "co2_factor": 63.1,
+          "co2_unit": "kg CO2/GJ",
+          "ch4_factor": 62,
+          "ch4_unit": "kg CH4/TJ",
+          "n2o_factor": 0.2,
+          "n2o_unit": "kg N2O/TJ",
+          "tier": 1
+        },
+        {
+          "id": "ef://ipcc/transport/road_cng/default",
+          "fuel_type": "CNG",
+          "vehicle_category": "All road vehicles",
+          "co2_factor": 56.1,
+          "co2_unit": "kg CO2/GJ",
+          "ch4_factor": 92,
+          "ch4_unit": "kg CH4/TJ",
+          "n2o_factor": 3,
+          "n2o_unit": "kg N2O/TJ",
+          "tier": 1
+        }
+      ],
+      "aviation": [
+        {
+          "id": "ef://ipcc/transport/aviation_jet_kerosene/default",
+          "fuel_type": "Jet Kerosene",
+          "category": "Domestic and International Aviation",
+          "co2_factor": 71.5,
+          "co2_unit": "kg CO2/GJ",
+          "ch4_factor": 0.5,
+          "ch4_unit": "kg CH4/TJ",
+          "n2o_factor": 2,
+          "n2o_unit": "kg N2O/TJ",
+          "tier": 1
+        },
+        {
+          "id": "ef://ipcc/transport/aviation_gasoline/default",
+          "fuel_type": "Aviation Gasoline",
+          "category": "Small Aircraft",
+          "co2_factor": 70,
+          "co2_unit": "kg CO2/GJ",
+          "ch4_factor": 0.5,
+          "ch4_unit": "kg CH4/TJ",
+          "n2o_factor": 2,
+          "n2o_unit": "kg N2O/TJ",
+          "tier": 1
+        }
+      ],
+      "marine": [
+        {
+          "id": "ef://ipcc/transport/marine_diesel/default",
+          "fuel_type": "Diesel/Gas Oil",
+          "category": "Ships and Boats",
+          "co2_factor": 74.1,
+          "co2_unit": "kg CO2/GJ",
+          "ch4_factor": 7,
+          "ch4_unit": "kg CH4/TJ",
+          "n2o_factor": 2,
+          "n2o_unit": "kg N2O/TJ",
+          "tier": 1
+        },
+        {
+          "id": "ef://ipcc/transport/marine_residual_oil/default",
+          "fuel_type": "Residual Fuel Oil",
+          "category": "Large Ships",
+          "co2_factor": 77.4,
+          "co2_unit": "kg CO2/GJ",
+          "ch4_factor": 7,
+          "ch4_unit": "kg CH4/TJ",
+          "n2o_factor": 2,
+          "n2o_unit": "kg N2O/TJ",
+          "tier": 1
+        }
+      ],
+      "rail": [
+        {
+          "id": "ef://ipcc/transport/rail_diesel/default",
+          "fuel_type": "Diesel",
+          "category": "Railways",
+          "co2_factor": 74.1,
+          "co2_unit": "kg CO2/GJ",
+          "ch4_factor": 4.15,
+          "ch4_unit": "kg CH4/TJ",
+          "n2o_factor": 28.6,
+          "n2o_unit": "kg N2O/TJ",
+          "tier": 1
+        }
+      ]
+    }
+  },
+  "industrial_processes": {
+    "cement": [
+      {
+        "id": "ef://ipcc/ippu/cement_clinker/default",
+        "process": "Cement Production",
+        "product": "Clinker",
+        "co2_factor": 0.52,
+        "co2_unit": "t CO2/t clinker",
+        "tier": 1,
+        "uncertainty_pct": 5,
+        "notes": "Process emissions from calcination"
+      }
+    ],
+    "lime": [
+      {
+        "id": "ef://ipcc/ippu/lime_high_calcium/default",
+        "process": "Lime Production",
+        "product": "High-calcium quicklime",
+        "co2_factor": 0.75,
+        "co2_unit": "t CO2/t CaO",
+        "tier": 1,
+        "uncertainty_pct": 3
+      },
+      {
+        "id": "ef://ipcc/ippu/lime_dolomitic/default",
+        "process": "Lime Production",
+        "product": "Dolomitic quicklime",
+        "co2_factor": 0.86,
+        "co2_unit": "t CO2/t (CaO+MgO)",
+        "tier": 1,
+        "uncertainty_pct": 3
+      }
+    ],
+    "glass": [
+      {
+        "id": "ef://ipcc/ippu/glass_production/default",
+        "process": "Glass Production",
+        "product": "Glass",
+        "co2_factor": 0.20,
+        "co2_unit": "t CO2/t glass",
+        "tier": 1,
+        "uncertainty_pct": 25
+      }
+    ],
+    "iron_steel": [
+      {
+        "id": "ef://ipcc/ippu/steel_bof/default",
+        "process": "Steel Production",
+        "product": "BOF Steel",
+        "co2_factor": 1.46,
+        "co2_unit": "t CO2/t crude steel",
+        "tier": 1,
+        "notes": "Integrated steelmaking"
+      },
+      {
+        "id": "ef://ipcc/ippu/steel_eaf/default",
+        "process": "Steel Production",
+        "product": "EAF Steel",
+        "co2_factor": 0.08,
+        "co2_unit": "t CO2/t crude steel",
+        "tier": 1,
+        "notes": "Excludes upstream electricity emissions"
+      },
+      {
+        "id": "ef://ipcc/ippu/coke_production/default",
+        "process": "Coke Production",
+        "product": "Metallurgical Coke",
+        "co2_factor": 0.56,
+        "co2_unit": "t CO2/t coke",
+        "tier": 1
+      }
+    ],
+    "aluminum": [
+      {
+        "id": "ef://ipcc/ippu/aluminum_primary/default",
+        "process": "Primary Aluminum",
+        "product": "Primary Aluminum",
+        "co2_factor": 1.5,
+        "co2_unit": "t CO2/t aluminum",
+        "pfc_cf4_factor": 0.6,
+        "pfc_cf4_unit": "kg CF4/t aluminum",
+        "pfc_c2f6_factor": 0.058,
+        "pfc_c2f6_unit": "kg C2F6/t aluminum",
+        "tier": 1,
+        "notes": "Prebake technology default"
+      }
+    ],
+    "ammonia": [
+      {
+        "id": "ef://ipcc/ippu/ammonia/default",
+        "process": "Ammonia Production",
+        "product": "Ammonia",
+        "co2_factor": 1.694,
+        "co2_unit": "t CO2/t ammonia",
+        "tier": 1,
+        "notes": "Steam reforming of natural gas"
+      }
+    ],
+    "nitric_acid": [
+      {
+        "id": "ef://ipcc/ippu/nitric_acid/default",
+        "process": "Nitric Acid Production",
+        "product": "Nitric Acid",
+        "n2o_factor": 4.5,
+        "n2o_unit": "kg N2O/t HNO3",
+        "tier": 1,
+        "notes": "Without abatement technology"
+      }
+    ]
+  },
+  "agriculture": {
+    "enteric_fermentation": [
+      {
+        "id": "ef://ipcc/agriculture/enteric_dairy_cattle/default",
+        "animal_category": "Dairy Cattle",
+        "region": "Global default",
+        "ch4_factor": 128,
+        "ch4_unit": "kg CH4/head/year",
+        "tier": 1
+      },
+      {
+        "id": "ef://ipcc/agriculture/enteric_beef_cattle/default",
+        "animal_category": "Other Cattle",
+        "region": "Global default",
+        "ch4_factor": 50,
+        "ch4_unit": "kg CH4/head/year",
+        "tier": 1
+      },
+      {
+        "id": "ef://ipcc/agriculture/enteric_sheep/default",
+        "animal_category": "Sheep",
+        "region": "Global default",
+        "ch4_factor": 5,
+        "ch4_unit": "kg CH4/head/year",
+        "tier": 1
+      },
+      {
+        "id": "ef://ipcc/agriculture/enteric_swine/default",
+        "animal_category": "Swine",
+        "region": "Global default",
+        "ch4_factor": 1.5,
+        "ch4_unit": "kg CH4/head/year",
+        "tier": 1
+      }
+    ],
+    "manure_management": [
+      {
+        "id": "ef://ipcc/agriculture/manure_dairy_cattle/default",
+        "animal_category": "Dairy Cattle",
+        "region": "Global default",
+        "ch4_factor": 6.6,
+        "ch4_unit": "kg CH4/head/year",
+        "n2o_indirect_factor": 0.005,
+        "n2o_indirect_unit": "kg N2O-N/kg N excreted",
+        "tier": 1
+      },
+      {
+        "id": "ef://ipcc/agriculture/manure_swine/default",
+        "animal_category": "Swine",
+        "region": "Global default",
+        "ch4_factor": 10,
+        "ch4_unit": "kg CH4/head/year",
+        "tier": 1
+      }
+    ],
+    "agricultural_soils": [
+      {
+        "id": "ef://ipcc/agriculture/soil_synthetic_fertilizer/default",
+        "source": "Synthetic fertilizer application",
+        "n2o_factor": 0.01,
+        "n2o_unit": "kg N2O-N/kg N applied",
+        "tier": 1,
+        "uncertainty_range": "0.001-0.018"
+      },
+      {
+        "id": "ef://ipcc/agriculture/soil_organic_fertilizer/default",
+        "source": "Organic fertilizer application",
+        "n2o_factor": 0.01,
+        "n2o_unit": "kg N2O-N/kg N applied",
+        "tier": 1
+      },
+      {
+        "id": "ef://ipcc/agriculture/soil_crop_residue/default",
+        "source": "Crop residue decomposition",
+        "n2o_factor": 0.01,
+        "n2o_unit": "kg N2O-N/kg N in residue",
+        "tier": 1
+      }
+    ],
+    "rice_cultivation": [
+      {
+        "id": "ef://ipcc/agriculture/rice_irrigated/default",
+        "cultivation_type": "Irrigated - continuously flooded",
+        "ch4_factor": 1.3,
+        "ch4_unit": "kg CH4/ha/day",
+        "growing_season_days": 120,
+        "tier": 1
+      },
+      {
+        "id": "ef://ipcc/agriculture/rice_rainfed/default",
+        "cultivation_type": "Rainfed",
+        "ch4_factor": 0.39,
+        "ch4_unit": "kg CH4/ha/day",
+        "tier": 1
+      }
+    ]
+  },
+  "waste": {
+    "solid_waste_disposal": [
+      {
+        "id": "ef://ipcc/waste/landfill_mixed_msw/default",
+        "waste_type": "Mixed MSW",
+        "disposal_type": "Managed landfill",
+        "doc": 0.18,
+        "doc_unit": "fraction",
+        "doc_f": 0.5,
+        "doc_f_notes": "Fraction DOC that decomposes",
+        "mcf": 1.0,
+        "mcf_notes": "Managed anaerobic landfill",
+        "tier": 1,
+        "notes": "Use IPCC First Order Decay method"
+      },
+      {
+        "id": "ef://ipcc/waste/landfill_unmanaged/default",
+        "waste_type": "Mixed MSW",
+        "disposal_type": "Unmanaged landfill - deep",
+        "mcf": 0.8,
+        "tier": 1
+      }
+    ],
+    "wastewater_treatment": [
+      {
+        "id": "ef://ipcc/waste/wastewater_domestic/default",
+        "source": "Domestic wastewater",
+        "bod_factor": 0.6,
+        "bod_unit": "kg CH4/kg BOD",
+        "n2o_factor": 0.005,
+        "n2o_unit": "kg N2O-N/kg N",
+        "tier": 1
+      },
+      {
+        "id": "ef://ipcc/waste/wastewater_industrial/default",
+        "source": "Industrial wastewater",
+        "cod_factor": 0.25,
+        "cod_unit": "kg CH4/kg COD removed",
+        "tier": 1,
+        "notes": "Varies by industry type"
+      }
+    ],
+    "incineration": [
+      {
+        "id": "ef://ipcc/waste/incineration_msw/default",
+        "waste_type": "Mixed MSW",
+        "treatment": "Open burning/incineration",
+        "co2_fossil_factor": 0.91,
+        "co2_fossil_unit": "t CO2/t waste",
+        "ch4_factor": 6.5,
+        "ch4_unit": "kg CH4/t waste",
+        "n2o_factor": 0.15,
+        "n2o_unit": "kg N2O/t waste",
+        "tier": 1
+      }
+    ]
+  }
+}

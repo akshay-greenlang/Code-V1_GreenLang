@@ -1,0 +1,453 @@
+# Flue Gas Analyzer Configuration Examples for GL-018 FLUEFLOW
+#
+# This file contains configuration templates for various flue gas analyzers
+# and SCADA systems. Update with your actual connection details.
+
+# =============================================================================
+# ABB AO2000 Series - OPC-UA
+# =============================================================================
+abb_ao2000:
+  protocol: opc_ua
+  analyzer_type: abb_ao2000
+  host: 192.168.1.100
+  port: 4840
+  endpoint_url: opc.tcp://192.168.1.100:4840/ABB/AO2000
+  namespace_index: 2
+
+  # Authentication
+  username: operator
+  password: "${ABB_PASSWORD}"  # Use environment variable
+
+  # Connection settings
+  connection_timeout: 10.0
+  reconnect_interval: 5.0
+  max_reconnect_attempts: 10
+
+  # Data collection
+  subscription_interval_ms: 1000
+  enable_historical_access: true
+  historical_buffer_hours: 24
+
+  # Buffering
+  enable_buffering: true
+  buffer_max_size: 10000
+
+  # Tag configuration
+  tags:
+    - tag_name: "AO2000.Channel1.O2"
+      parameter_type: oxygen
+      location: stack_outlet
+      engineering_unit: "%"
+      raw_min: 0.0
+      raw_max: 25.0
+      scaled_min: 0.0
+      scaled_max: 25.0
+      low_alarm_limit: 1.0
+      low_warning_limit: 2.0
+      high_warning_limit: 8.0
+      high_alarm_limit: 10.0
+      analyzer_channel: 1
+
+    - tag_name: "AO2000.Channel2.CO"
+      parameter_type: carbon_monoxide
+      location: stack_outlet
+      engineering_unit: "ppm"
+      raw_min: 0.0
+      raw_max: 5000.0
+      scaled_min: 0.0
+      scaled_max: 5000.0
+      high_warning_limit: 100.0
+      high_alarm_limit: 400.0
+      analyzer_channel: 2
+
+    - tag_name: "AO2000.Channel3.CO2"
+      parameter_type: carbon_dioxide
+      location: stack_outlet
+      engineering_unit: "%"
+      raw_min: 0.0
+      raw_max: 20.0
+      scaled_min: 0.0
+      scaled_max: 20.0
+      low_alarm_limit: 8.0
+      high_alarm_limit: 18.0
+      analyzer_channel: 3
+
+    - tag_name: "AO2000.Channel4.NOx"
+      parameter_type: nox
+      location: stack_outlet
+      engineering_unit: "ppm"
+      raw_min: 0.0
+      raw_max: 1000.0
+      scaled_min: 0.0
+      scaled_max: 1000.0
+      high_warning_limit: 200.0
+      high_alarm_limit: 400.0
+      analyzer_channel: 4
+
+# =============================================================================
+# SICK MARSIC Series - OPC-UA
+# =============================================================================
+sick_marsic:
+  protocol: opc_ua
+  analyzer_type: sick_marsic
+  host: 192.168.1.101
+  port: 4840
+  endpoint_url: opc.tcp://192.168.1.101:4840/SICK/MARSIC
+  namespace_index: 2
+
+  username: admin
+  password: "${SICK_PASSWORD}"
+
+  connection_timeout: 10.0
+  reconnect_interval: 5.0
+  max_reconnect_attempts: 10
+
+  subscription_interval_ms: 1000
+  enable_historical_access: true
+
+  tags:
+    - tag_name: "MARSIC.O2.Value"
+      parameter_type: oxygen
+      location: stack_outlet
+      engineering_unit: "%"
+      raw_min: 0.0
+      raw_max: 21.0
+      scaled_min: 0.0
+      scaled_max: 21.0
+      low_alarm_limit: 1.0
+      high_alarm_limit: 10.0
+
+    - tag_name: "MARSIC.CO.Value"
+      parameter_type: carbon_monoxide
+      location: stack_outlet
+      engineering_unit: "ppm"
+      raw_min: 0.0
+      raw_max: 5000.0
+      scaled_min: 0.0
+      scaled_max: 5000.0
+      high_alarm_limit: 400.0
+
+    - tag_name: "MARSIC.NOx.Value"
+      parameter_type: nox
+      location: stack_outlet
+      engineering_unit: "ppm"
+      raw_min: 0.0
+      raw_max: 1000.0
+      scaled_min: 0.0
+      scaled_max: 1000.0
+      high_alarm_limit: 400.0
+
+    - tag_name: "MARSIC.SO2.Value"
+      parameter_type: so2
+      location: stack_outlet
+      engineering_unit: "ppm"
+      raw_min: 0.0
+      raw_max: 2000.0
+      scaled_min: 0.0
+      scaled_max: 2000.0
+      high_alarm_limit: 500.0
+
+# =============================================================================
+# Emerson Rosemount X-STREAM - OPC-UA
+# =============================================================================
+emerson_xstream:
+  protocol: opc_ua
+  analyzer_type: emerson_xstream
+  host: 192.168.1.102
+  port: 4840
+  endpoint_url: opc.tcp://192.168.1.102:4840/Emerson/XStream
+
+  certificate_path: /path/to/client_cert.pem
+  private_key_path: /path/to/client_key.pem
+
+  connection_timeout: 10.0
+  subscription_interval_ms: 500  # Faster updates
+
+  tags:
+    - tag_name: "XStream.Analyzer1.O2"
+      parameter_type: oxygen
+      location: stack_outlet
+      engineering_unit: "%"
+      raw_min: 0.0
+      raw_max: 25.0
+      scaled_min: 0.0
+      scaled_max: 25.0
+
+# =============================================================================
+# Siemens ULTRAMAT - OPC-UA
+# =============================================================================
+siemens_ultramat:
+  protocol: opc_ua
+  analyzer_type: siemens_ultramat
+  host: 192.168.1.103
+  port: 4840
+  endpoint_url: opc.tcp://192.168.1.103:4840/SIEMENS/ULTRAMAT
+  namespace_index: 2
+
+  connection_timeout: 10.0
+  subscription_interval_ms: 1000
+
+  tags:
+    - tag_name: "ULTRAMAT.O2"
+      parameter_type: oxygen
+      location: stack_outlet
+      engineering_unit: "%"
+
+    - tag_name: "ULTRAMAT.CO"
+      parameter_type: carbon_monoxide
+      location: stack_outlet
+      engineering_unit: "ppm"
+
+# =============================================================================
+# Horiba PG Series - Modbus TCP
+# =============================================================================
+horiba_pg:
+  protocol: modbus_tcp
+  analyzer_type: horiba_pg
+  host: 192.168.1.104
+  port: 502
+  modbus_unit_id: 1
+  modbus_timeout: 3.0
+
+  connection_timeout: 10.0
+  reconnect_interval: 5.0
+  max_reconnect_attempts: 10
+
+  enable_buffering: true
+
+  # Modbus register mappings
+  tags:
+    - tag_name: "30001"  # Holding register 30001
+      parameter_type: oxygen
+      location: stack_outlet
+      engineering_unit: "%"
+      raw_min: 0
+      raw_max: 20000
+      scaled_min: 0.0
+      scaled_max: 25.0
+      low_alarm_limit: 1.0
+      high_alarm_limit: 10.0
+
+    - tag_name: "30002"  # CO2
+      parameter_type: carbon_dioxide
+      location: stack_outlet
+      engineering_unit: "%"
+      raw_min: 0
+      raw_max: 20000
+      scaled_min: 0.0
+      scaled_max: 20.0
+
+    - tag_name: "30003"  # CO
+      parameter_type: carbon_monoxide
+      location: stack_outlet
+      engineering_unit: "ppm"
+      raw_min: 0
+      raw_max: 50000
+      scaled_min: 0.0
+      scaled_max: 5000.0
+      high_alarm_limit: 400.0
+
+    - tag_name: "30004"  # NOx
+      parameter_type: nox
+      location: stack_outlet
+      engineering_unit: "ppm"
+      raw_min: 0
+      raw_max: 10000
+      scaled_min: 0.0
+      scaled_max: 1000.0
+      high_alarm_limit: 400.0
+
+    - tag_name: "30005"  # Stack temperature
+      parameter_type: temperature
+      location: stack_outlet
+      engineering_unit: "°C"
+      raw_min: 0
+      raw_max: 50000
+      scaled_min: 0.0
+      scaled_max: 500.0
+      low_alarm_limit: 80.0
+      high_alarm_limit: 300.0
+
+# =============================================================================
+# Fuji Electric ZRJ - Modbus RTU
+# =============================================================================
+fuji_zrj:
+  protocol: modbus_rtu
+  analyzer_type: fuji_zrj
+  host: /dev/ttyUSB0  # Serial port
+  modbus_unit_id: 1
+  modbus_timeout: 3.0
+
+  connection_timeout: 10.0
+
+  tags:
+    - tag_name: "40001"  # O2 reading
+      parameter_type: oxygen
+      location: stack_outlet
+      engineering_unit: "%"
+      raw_min: 0
+      raw_max: 16384
+      scaled_min: 0.0
+      scaled_max: 25.0
+
+# =============================================================================
+# Yokogawa AV550G - OPC-UA
+# =============================================================================
+yokogawa_av550g:
+  protocol: opc_ua
+  analyzer_type: yokogawa_av550g
+  host: 192.168.1.105
+  port: 4840
+  namespace_index: 2
+
+  connection_timeout: 10.0
+  subscription_interval_ms: 1000
+
+  tags:
+    - tag_name: "AV550G.O2"
+      parameter_type: oxygen
+      location: stack_outlet
+      engineering_unit: "%"
+
+    - tag_name: "AV550G.ZrO2"  # Zirconia sensor
+      parameter_type: oxygen
+      location: stack_outlet
+      engineering_unit: "%"
+
+# =============================================================================
+# Control System Tags
+# =============================================================================
+control_tags:
+  # Process measurements
+  - tag_name: "FG_TEMP_STACK"
+    parameter_type: temperature
+    location: stack_outlet
+    tag_type: analog_input
+    engineering_unit: "°C"
+    raw_min: 0.0
+    raw_max: 16384.0
+    scaled_min: 0.0
+    scaled_max: 500.0
+    low_alarm_limit: 80.0
+    high_alarm_limit: 300.0
+
+  - tag_name: "FG_PRESSURE_STACK"
+    parameter_type: pressure
+    location: stack_outlet
+    tag_type: analog_input
+    engineering_unit: "Pa"
+    raw_min: 0.0
+    raw_max: 16384.0
+    scaled_min: -500.0
+    scaled_max: 500.0
+
+  - tag_name: "FUEL_FLOW"
+    parameter_type: fuel_flow
+    location: fuel_inlet
+    tag_type: analog_input
+    engineering_unit: "kg/h"
+    raw_min: 0.0
+    raw_max: 16384.0
+    scaled_min: 0.0
+    scaled_max: 10000.0
+
+  - tag_name: "AIR_FLOW"
+    parameter_type: air_flow
+    location: forced_draft_fan_outlet
+    tag_type: analog_input
+    engineering_unit: "kg/h"
+    raw_min: 0.0
+    raw_max: 16384.0
+    scaled_min: 0.0
+    scaled_max: 100000.0
+
+  # Control outputs
+  - tag_name: "AIR_DAMPER_POS"
+    parameter_type: damper_position
+    location: forced_draft_fan_outlet
+    tag_type: analog_output
+    engineering_unit: "%"
+    raw_min: 0.0
+    raw_max: 16384.0
+    scaled_min: 0.0
+    scaled_max: 100.0
+    low_alarm_limit: 10.0
+    high_alarm_limit: 95.0
+
+  - tag_name: "FUEL_VALVE_POS"
+    parameter_type: valve_position
+    location: fuel_inlet
+    tag_type: analog_output
+    engineering_unit: "%"
+    raw_min: 0.0
+    raw_max: 16384.0
+    scaled_min: 0.0
+    scaled_max: 100.0
+
+  - tag_name: "O2_SETPOINT"
+    parameter_type: oxygen
+    location: stack_outlet
+    tag_type: analog_output
+    engineering_unit: "%"
+    raw_min: 0.0
+    raw_max: 16384.0
+    scaled_min: 0.0
+    scaled_max: 10.0
+
+# =============================================================================
+# Multi-Boiler Plant Configuration
+# =============================================================================
+multi_boiler_plant:
+  boiler_1:
+    analyzer: abb_ao2000
+    config:
+      host: 192.168.1.100
+      port: 4840
+
+  boiler_2:
+    analyzer: sick_marsic
+    config:
+      host: 192.168.1.101
+      port: 4840
+
+  boiler_3:
+    analyzer: horiba_pg
+    config:
+      protocol: modbus_tcp
+      host: 192.168.1.104
+      port: 502
+
+# =============================================================================
+# Optimization Parameters
+# =============================================================================
+optimization:
+  # Target O2 setpoints by fuel type
+  target_o2:
+    natural_gas: 3.5  # %
+    diesel: 3.0       # %
+    heavy_oil: 2.5    # %
+    coal: 4.0         # %
+
+  # Alarm thresholds
+  alarms:
+    o2:
+      low_alarm: 1.0
+      low_warning: 2.0
+      high_warning: 8.0
+      high_alarm: 10.0
+
+    co:
+      high_warning: 100.0
+      high_alarm: 400.0
+
+    nox:
+      high_warning: 200.0
+      high_alarm: 400.0
+
+  # Control parameters
+  control:
+    damper_step_size: 2.0      # % per adjustment
+    min_damper_position: 20.0  # %
+    max_damper_position: 90.0  # %
+    control_deadband: 0.5      # %
+    update_interval: 5.0       # seconds

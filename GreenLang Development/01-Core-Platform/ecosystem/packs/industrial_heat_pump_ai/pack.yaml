@@ -1,0 +1,182 @@
+name: Industrial Heat Pump Agent (AI-Powered)
+version: 1.0.0
+kind: pack
+pack_schema_version: '1.0'
+author:
+  name: GreenLang Team
+  email: support@greenlang.io
+  organization: GreenLang
+license: MIT
+tags:
+- industrial
+- heat-pump
+- electrification
+- cop-calculation
+- carnot-efficiency
+- waste-heat-recovery
+- ai-agent
+- citations
+id: industrial/heat_pump_ai_v1
+summary: AI-powered industrial heat pump analysis with thermodynamic COP calculation,
+  technology selection, cascade system design, and electrification pathway optimization
+owners:
+- greenlang-team
+ai:
+  system_prompt: 'You are an expert in industrial heat pump systems and thermal system
+    electrification.
+
+
+    Your role:
+
+    1. Calculate heat pump COP using Carnot efficiency method (never hallucinate numbers)
+
+    2. Select optimal heat pump technology based on temperature, climate, load profile
+
+    3. Design cascade systems for high temperature applications (>200°F)
+
+    4. Optimize thermal storage to reduce demand charges
+
+    5. Calculate comprehensive financial and emissions impacts
+
+    6. Provide implementation guidance and risk assessment
+
+
+    Guidelines:
+
+    - Always use provided tools for all thermodynamic calculations
+
+    - Calculate COP using: COP = (T_sink/(T_sink-T_source)) × Carnot_efficiency ×
+    part_load_factor
+
+    - Consider heat source availability (ambient air, waste heat, water, ground)
+
+    - Account for climate impact on performance (cold climate = lower COP)
+
+    - Evaluate cascade systems for process temps > 200°F
+
+    - Include thermal storage for demand charge reduction
+
+    - Compare electricity cost vs fuel savings
+
+    - Consider grid emissions factor for true carbon impact
+
+    - Assess space constraints and noise sensitivity
+
+
+    Technology Selection Rules:
+
+    - < 140°F: Air source HP (COP 3-4)
+
+    - 140-180°F: Water/ground source HP (COP 3-5)
+
+    - 180-250°F: High-temp HP or cascade (COP 2-3)
+
+    - Waste heat available: Always prioritize waste heat recovery HP
+
+
+    Remember: All calculations MUST come from tools. Focus on practical system design.
+
+    '
+  budget:
+    max_cost_usd: 0.8
+    max_input_tokens: 15000
+    max_output_tokens: 4000
+    max_retries: 3
+  rag_collections:
+  - heat_pump_cop_data
+  - carnot_efficiency_curves
+  - industrial_heat_pump_case_studies
+  tools:
+  - name: calculate_cop
+    description: Calculate COP using Carnot efficiency method
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:calculate_cop
+    safe: true
+  - name: select_technology
+    description: Select optimal heat pump technology
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:select_technology
+    safe: true
+  - name: size_equipment
+    description: Size heat pump capacity and electrical demand
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:size_equipment
+    safe: true
+  - name: calculate_energy_consumption
+    description: Calculate annual electricity consumption
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:calculate_energy_consumption
+    safe: true
+  - name: calculate_emissions
+    description: Calculate baseline and heat pump emissions
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:calculate_emissions
+    safe: true
+  - name: calculate_financial_metrics
+    description: Calculate capex, opex, NPV, payback with demand charges
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:calculate_financial_metrics
+    safe: true
+  - name: optimize_thermal_storage
+    description: Optimize thermal storage for demand charge reduction
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:optimize_thermal_storage
+    safe: true
+  - name: assess_implementation
+    description: Assess implementation feasibility and risks
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:assess_implementation
+    safe: true
+realtime:
+  default_mode: replay
+  snapshot_path: null
+  connectors: []
+provenance:
+  gwp_set: AR6GWP100
+  pin_ef: false
+  record:
+  - inputs
+  - outputs
+  - factors
+  - code_sha
+  - seed

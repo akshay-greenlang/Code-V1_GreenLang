@@ -1,0 +1,78 @@
+# Climatenza AI - Solar Thermal Feasibility Workflow
+# This workflow orchestrates the complete feasibility analysis pipeline
+# Version: 1.0
+
+version: "1.0"
+name: climatenza-feasibility-v1
+description: "End-to-end solar thermal feasibility analysis for industrial heat applications"
+
+inputs:
+  site_file: climatenza_app/examples/dairy_hotwater_site.yaml
+
+output_mapping:
+  solar_fraction: "results.RunSimulation.data.solar_fraction"
+  total_solar_yield_gwh: "results.RunSimulation.data.total_solar_yield_gwh"
+  required_aperture_area_m2: "results.SizeSolarField.data.required_aperture_area_m2"
+  num_collectors: "results.SizeSolarField.data.num_collectors"
+  required_land_area_m2: "results.SizeSolarField.data.required_land_area_m2"
+  total_annual_demand_gwh: "results.GetLoadProfile.data.total_annual_demand_gwh"
+
+steps:
+  # Step 1: Load and validate site input data
+  - agent_id: SiteInputAgent
+    name: LoadSiteData
+    description: "Load and validate the site configuration data"
+    input_mapping:
+      site_file: "input.inputs.site_file"
+    output_key: site_data
+
+  # Step 2: Fetch solar resource data for the site location
+  - agent_id: SolarResourceAgent
+    name: GetSolarData
+    description: "Retrieve TMY solar radiation and temperature data"
+    input_mapping:
+      lat: "results.LoadSiteData.data.site.lat"
+      lon: "results.LoadSiteData.data.site.lon"
+    output_key: solar_data
+
+  # Step 3: Generate hourly thermal load profile
+  - agent_id: LoadProfileAgent
+    name: GetLoadProfile
+    description: "Calculate hourly thermal energy demand profile"
+    input_mapping:
+      process_demand: "results.LoadSiteData.data.process_demand"
+    output_key: load_profile
+
+  # Step 4: Size the solar collector field
+  - agent_id: FieldLayoutAgent
+    name: SizeSolarField
+    description: "Determine optimal solar field size and configuration"
+    input_mapping:
+      total_annual_demand_gwh: "results.GetLoadProfile.data.total_annual_demand_gwh"
+      solar_config: "results.LoadSiteData.data.solar_config"
+    output_key: field_layout
+
+  # Step 5: Run hourly energy balance simulation
+  - agent_id: EnergyBalanceAgent
+    name: RunSimulation
+    description: "Perform 8760-hour energy balance simulation"
+    input_mapping:
+      solar_resource_df_json: "results.GetSolarData.data.solar_resource_df"
+      load_profile_df_json: "results.GetLoadProfile.data.load_profile_df_json"
+      required_aperture_area_m2: "results.SizeSolarField.data.required_aperture_area_m2"
+    output_key: simulation_results
+
+metadata:
+  author: "Climatenza AI Team"
+  version: "1.0.0"
+  created: "2024-01-01"
+  tags: ["solar-thermal", "feasibility", "industrial-heat", "dairy"]
+  description: |
+    This workflow performs a complete feasibility analysis for solar thermal
+    systems in industrial applications. It includes:
+    - Site data validation
+    - Solar resource assessment
+    - Load profile analysis
+    - Solar field sizing
+    - Hourly energy balance simulation
+    - Solar fraction calculation

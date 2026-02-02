@@ -1,0 +1,29 @@
+{
+  "description": "India electricity grid with high coal mix",
+  "input": {
+    "fuel_type": "electricity",
+    "consumption": {
+      "value": 150000,
+      "unit": "kWh"
+    },
+    "country": "IN",
+    "year": 2024
+  },
+  "expected_output": {
+    "fuel_type": "electricity",
+    "consumption_value": 150000,
+    "consumption_unit": "kWh",
+    "emission_factor": 0.71,
+    "emission_factor_unit": "kgCO2e/kWh",
+    "co2e_emissions_kg": 106500,
+    "source": "GreenLang Global Dataset",
+    "confidence": 0.85
+  },
+  "metadata": {
+    "test_case": "india_grid_electricity",
+    "category": "fuel_emissions",
+    "scope": "2",
+    "grid_mix": "70% coal, 20% renewable, 10% other",
+    "priority": "high"
+  }
+}

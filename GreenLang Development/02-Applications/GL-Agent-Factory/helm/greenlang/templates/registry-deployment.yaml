@@ -1,0 +1,147 @@
+{{- if .Values.registry.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "greenlang.fullname" . }}-registry
+  namespace: {{ include "greenlang.namespace" . }}
+  labels:
+    {{- include "greenlang.registry.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.registry.replicaCount }}
+  revisionHistoryLimit: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      {{- include "greenlang.registry.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "greenlang.registry.selectorLabels" . | nindent 8 }}
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8001"
+        prometheus.io/path: "/metrics"
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
+    spec:
+      serviceAccountName: {{ include "greenlang.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      {{- if .Values.registry.migrations.enabled }}
+      initContainers:
+      - name: run-migrations
+        image: {{ .Values.global.imageRegistry }}/{{ .Values.registry.image.repository }}:{{ .Values.registry.image.tag | default .Chart.AppVersion }}
+        command: ['sh', '-c', '/app/migrate.sh upgrade head']
+        env:
+        - name: RUN_MIGRATIONS
+          value: "true"
+        envFrom:
+        - configMapRef:
+            name: {{ include "greenlang.fullname" . }}-config
+        - secretRef:
+            name: {{ include "greenlang.fullname" . }}-secrets
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+      {{- end }}
+      containers:
+      - name: registry
+        image: {{ .Values.global.imageRegistry }}/{{ .Values.registry.image.repository }}:{{ .Values.registry.image.tag | default .Chart.AppVersion }}
+        imagePullPolicy: {{ .Values.registry.image.pullPolicy }}
+        ports:
+        - name: http
+          containerPort: 8001
+          protocol: TCP
+        - name: metrics
+          containerPort: 9091
+          protocol: TCP
+        env:
+        - name: WAIT_FOR_POSTGRES
+          value: "false"
+        - name: RUN_MIGRATIONS
+          value: "false"
+        envFrom:
+        - configMapRef:
+            name: {{ include "greenlang.fullname" . }}-config
+        - secretRef:
+            name: {{ include "greenlang.fullname" . }}-secrets
+        resources:
+          {{- toYaml .Values.registry.resources | nindent 10 }}
+        securityContext:
+          {{- toYaml .Values.containerSecurityContext | nindent 10 }}
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8001
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8001
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+        - name: app-tmp
+          mountPath: /app/tmp
+        - name: app-logs
+          mountPath: /app/logs
+      volumes:
+      - name: tmp
+        emptyDir:
+          medium: Memory
+          sizeLimit: 100Mi
+      - name: app-tmp
+        emptyDir:
+          sizeLimit: 500Mi
+      - name: app-logs
+        emptyDir:
+          sizeLimit: 1Gi
+      {{- with .Values.registry.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.registry.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.registry.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "greenlang.fullname" . }}-registry
+  namespace: {{ include "greenlang.namespace" . }}
+  labels:
+    {{- include "greenlang.registry.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.registry.service.type }}
+  ports:
+  - name: http
+    port: {{ .Values.registry.service.port }}
+    targetPort: {{ .Values.registry.service.targetPort }}
+    protocol: TCP
+  - name: metrics
+    port: {{ .Values.registry.service.metricsPort }}
+    targetPort: {{ .Values.registry.service.metricsPort }}
+    protocol: TCP
+  selector:
+    {{- include "greenlang.registry.selectorLabels" . | nindent 4 }}
+{{- end }}

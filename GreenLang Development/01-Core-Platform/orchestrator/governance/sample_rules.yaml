@@ -1,0 +1,205 @@
+# GL-FOUND-X-001: Sample YAML Policy Rules
+# ==========================================
+#
+# This file contains sample declarative policy rules for the GreenLang
+# orchestrator governance layer. These rules work alongside OPA Rego
+# policies for comprehensive policy enforcement.
+#
+# Rule Syntax:
+#   - name: Unique rule identifier
+#   - condition: Boolean expression using context variables
+#   - action: allow, deny, require_approval, warn, audit
+#   - severity: error, warning, info
+#   - message: Custom message template with {{ variable }} placeholders
+#   - evaluation_points: pre_run, pre_step, post_step
+#
+# Available Context Variables:
+#   Pre-run:
+#     - namespace: Pipeline namespace
+#     - environment: Execution environment
+#     - pipeline: Pipeline definition
+#     - run: Run configuration
+#     - budget: Cost budget settings
+#
+#   Pre-step:
+#     - step: Current step definition
+#     - context: Execution context
+#     - user_roles: List of user roles
+#     - permissions: Set of user permissions
+#
+#   Post-step:
+#     - result: Step execution result
+#     - result.output_classification: Data classification of outputs
+#     - result.export_destinations: Where data was exported
+
+name: greenlang-baseline-policies
+version: "1.0.0"
+description: "Baseline policy rules for GreenLang orchestrator"
+
+rules:
+  # ==========================================================================
+  # PRE-RUN POLICIES
+  # ==========================================================================
+
+  - name: require_approval_for_production
+    description: "Production deployments require manager approval"
+    condition: namespace == 'production'
+    action: require_approval
+    severity: error
+    message: "Production pipeline runs require approval"
+    approval_type: manager
+    approval_role: team_lead
+    evaluation_points:
+      - pre_run
+    namespaces:
+      - production
+
+  - name: warn_high_cost_estimate
+    description: "Warn when estimated cost exceeds threshold"
+    condition: run.estimated_cost_usd > 500
+    action: warn
+    severity: warning
+    message: "High cost estimate: ${{ run.estimated_cost_usd }}"
+    evaluation_points:
+      - pre_run
+
+  - name: deny_cost_budget_exceeded
+    description: "Deny runs that exceed cost budget"
+    condition: run.estimated_cost_usd > budget.max_cost_usd
+    action: deny
+    severity: error
+    message: "Run exceeds cost budget of ${{ budget.max_cost_usd }}"
+    evaluation_points:
+      - pre_run
+
+  - name: require_owner_for_production
+    description: "Production pipelines must have an owner"
+    condition: namespace == 'production' and pipeline.owner == none
+    action: deny
+    severity: error
+    message: "Production pipelines must have an owner defined"
+    evaluation_points:
+      - pre_run
+    namespaces:
+      - production
+
+  # ==========================================================================
+  # PRE-STEP POLICIES
+  # ==========================================================================
+
+  - name: deny_pii_without_permission
+    description: "Deny PII access without explicit permission"
+    condition: step.accesses_pii == true and 'pii_access' not_in permissions
+    action: deny
+    severity: error
+    message: "Step {{ step.name }} requires PII access permission"
+    evaluation_points:
+      - pre_step
+
+  - name: require_approval_for_publish
+    description: "Publishing data in production requires approval"
+    condition: step.publishes_data == true and namespace == 'production'
+    action: require_approval
+    severity: error
+    message: "Publishing data in production requires approval"
+    approval_type: security
+    evaluation_points:
+      - pre_step
+    namespaces:
+      - production
+
+  - name: warn_external_data_access
+    description: "Warn when step accesses external data sources"
+    condition: "'external' in step.data_regions"
+    action: warn
+    severity: warning
+    message: "Step {{ step.name }} accesses external data sources"
+    evaluation_points:
+      - pre_step
+
+  - name: deny_step_approval_required
+    description: "Deny steps flagged as requiring approval without permission"
+    condition: step.requires_approval == true and 'approve_steps' not_in permissions
+    action: deny
+    severity: error
+    message: "Step {{ step.name }} requires approval permission"
+    evaluation_points:
+      - pre_step
+
+  # ==========================================================================
+  # POST-STEP POLICIES
+  # ==========================================================================
+
+  - name: deny_restricted_export
+    description: "Deny exporting restricted data externally"
+    condition: result.output_classification == 'restricted' and 'external' in result.export_destinations
+    action: deny
+    severity: error
+    message: "Restricted data cannot be exported to external destinations"
+    evaluation_points:
+      - post_step
+
+  - name: warn_confidential_artifacts
+    description: "Warn when confidential artifacts are produced"
+    condition: result.output_classification == 'confidential'
+    action: warn
+    severity: warning
+    message: "Step produced confidential artifacts requiring special handling"
+    evaluation_points:
+      - post_step
+
+  - name: audit_all_exports
+    description: "Audit all data export operations"
+    condition: result.export_destinations != []
+    action: audit
+    severity: info
+    message: "Data exported to: {{ result.export_destinations }}"
+    evaluation_points:
+      - post_step
+
+  # ==========================================================================
+  # DATA RESIDENCY POLICIES
+  # ==========================================================================
+
+  - name: eu_data_residency
+    description: "EU data must stay in EU regions"
+    condition: "'eu' in pipeline.labels.data_classification and 'us-' in step.data_regions"
+    action: deny
+    severity: error
+    message: "EU classified data cannot be processed in US regions"
+    evaluation_points:
+      - pre_step
+    namespaces:
+      - production
+      - staging
+
+  - name: china_data_localization
+    description: "China data localization compliance"
+    condition: "'cn' in pipeline.labels.data_region and 'cn-' not_in step.data_regions"
+    action: deny
+    severity: error
+    message: "Data from China must be processed within Chinese regions"
+    evaluation_points:
+      - pre_step
+
+  # ==========================================================================
+  # SECURITY POLICIES
+  # ==========================================================================
+
+  - name: require_encryption_for_secrets
+    description: "Steps accessing secrets must use encryption"
+    condition: step.accesses_pii == true and 'encryption_enabled' not_in context.run_config.labels
+    action: deny
+    severity: error
+    message: "Encryption must be enabled when accessing sensitive data"
+    evaluation_points:
+      - pre_step
+
+  - name: deny_admin_without_mfa
+    description: "Admin operations require MFA"
+    condition: "'admin' in user_roles and 'mfa_verified' not_in permissions"
+    action: deny
+    severity: error
+    message: "Admin operations require MFA verification"
+    evaluation_points:
+      - pre_step

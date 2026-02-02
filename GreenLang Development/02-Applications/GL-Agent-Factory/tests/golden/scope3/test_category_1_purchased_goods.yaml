@@ -1,0 +1,466 @@
+# Golden Tests: Category 1 Purchased Goods - Scope 3 Emissions Agent (GL-006)
+# Test Count: 30 tests
+# Formula: emissions = spend_usd * eeio_factor (kgCO2e/USD)
+# EPA EEIO Factors (2024):
+#   - Steel: 0.85 kgCO2e/USD
+#   - Aluminum: 1.20 kgCO2e/USD
+#   - Plastics: 0.75 kgCO2e/USD
+#   - Chemicals: 0.65 kgCO2e/USD
+#   - Paper: 0.45 kgCO2e/USD
+#   - Electronics: 0.55 kgCO2e/USD
+#   - Services: 0.15 kgCO2e/USD
+
+test_suite:
+  name: "Category 1 Purchased Goods Golden Tests"
+  agent_id: "emissions/scope3_v1"
+  version: "1.0.0"
+  description: "Validates Scope 3 Category 1 (Purchased Goods and Services) calculations"
+
+tests:
+  # Steel purchases (1-6)
+  - test_id: "scope3_cat1_steel_001"
+    test_name: "Steel Purchase $100,000"
+    description: "Standard steel procurement"
+    tags: ["scope3", "category1", "steel", "spend_based"]
+    input:
+      category: "purchased_goods"
+      reporting_year: 2024
+      spend_data:
+        - category: "steel"
+          spend_usd: 100000
+          supplier_name: "Steel Corp A"
+      calculation_method: "spend_based"
+    expected:
+      category: "purchased_goods"
+      category_number: 1
+      category_name: "Purchased Goods and Services"
+      total_emissions_kgco2e: 85000.0
+      calculation_method: "spend_based"
+      data_quality_score: "fair"
+
+  - test_id: "scope3_cat1_steel_002"
+    test_name: "Steel Purchase $1,000,000"
+    description: "Large steel procurement"
+    tags: ["scope3", "category1", "steel", "large"]
+    input:
+      category: "purchased_goods"
+      reporting_year: 2024
+      spend_data:
+        - category: "steel"
+          spend_usd: 1000000
+      calculation_method: "spend_based"
+    expected:
+      total_emissions_kgco2e: 850000.0
+
+  - test_id: "scope3_cat1_steel_003"
+    test_name: "Steel Purchase $50,000"
+    description: "Medium steel procurement"
+    tags: ["scope3", "category1", "steel"]
+    input:
+      category: "purchased_goods"
+      reporting_year: 2024
+      spend_data:
+        - category: "steel"
+          spend_usd: 50000
+    expected:
+      total_emissions_kgco2e: 42500.0
+
+  - test_id: "scope3_cat1_steel_004"
+    test_name: "Steel Multiple Suppliers"
+    description: "Steel from multiple suppliers"
+    tags: ["scope3", "category1", "steel", "multiple"]
+    input:
+      category: "purchased_goods"
+      reporting_year: 2024
+      spend_data:
+        - category: "steel"
+          spend_usd: 250000
+          supplier_name: "Supplier A"
+        - category: "steel"
+          spend_usd: 150000
+          supplier_name: "Supplier B"
+    expected:
+      total_emissions_kgco2e: 340000.0
+
+  - test_id: "scope3_cat1_steel_005"
+    test_name: "Steel Small Purchase"
+    description: "Small steel order"
+    tags: ["scope3", "category1", "steel", "small"]
+    input:
+      category: "purchased_goods"
+      reporting_year: 2024
+      spend_data:
+        - category: "steel"
+          spend_usd: 10000
+    expected:
+      total_emissions_kgco2e: 8500.0
+
+  - test_id: "scope3_cat1_steel_006"
+    test_name: "Steel Annual Budget"
+    description: "Full year steel budget"
+    tags: ["scope3", "category1", "steel", "annual"]
+    input:
+      category: "purchased_goods"
+      reporting_year: 2024
+      spend_data:
+        - category: "steel"
+          spend_usd: 5000000
+    expected:
+      total_emissions_kgco2e: 4250000.0
+
+  # Aluminum purchases (7-10)
+  - test_id: "scope3_cat1_alu_007"
+    test_name: "Aluminum Purchase $100,000"
+    description: "Standard aluminum procurement"
+    tags: ["scope3", "category1", "aluminum"]
+    input:
+      category: "purchased_goods"
+      reporting_year: 2024
+      spend_data:
+        - category: "aluminum"
+          spend_usd: 100000
+    expected:
+      total_emissions_kgco2e: 120000.0
+
+  - test_id: "scope3_cat1_alu_008"
+    test_name: "Aluminum Large Order"
+    description: "Large aluminum order"
+    tags: ["scope3", "category1", "aluminum", "large"]
+    input:
+      category: "purchased_goods"
+      reporting_year: 2024
+      spend_data:
+        - category: "aluminum"
+          spend_usd: 500000
+    expected:
+      total_emissions_kgco2e: 600000.0
+
+  - test_id: "scope3_cat1_alu_009"
+    test_name: "Aluminum Small Order"
+    description: "Small aluminum order"
+    tags: ["scope3", "category1", "aluminum", "small"]
+    input:
+      category: "purchased_goods"
+      reporting_year: 2024
+      spend_data:
+        - category: "aluminum"
+          spend_usd: 25000
+    expected:
+      total_emissions_kgco2e: 30000.0
+
+  - test_id: "scope3_cat1_alu_010"
+    test_name: "Aluminum Major Project"
+    description: "Major project aluminum"
+    tags: ["scope3", "category1", "aluminum", "project"]
+    input:
+      category: "purchased_goods"
+      reporting_year: 2024
+      spend_data:
+        - category: "aluminum"
+          spend_usd: 2000000
+    expected:
+      total_emissions_kgco2e: 2400000.0
+
+  # Plastics purchases (11-14)
+  - test_id: "scope3_cat1_plastics_011"
+    test_name: "Plastics Purchase $100,000"
+    description: "Standard plastics procurement"
+    tags: ["scope3", "category1", "plastics"]
+    input:
+      category: "purchased_goods"
+      reporting_year: 2024
+      spend_data:
+        - category: "plastics"
+          spend_usd: 100000
+    expected:
+      total_emissions_kgco2e: 75000.0
+
+  - test_id: "scope3_cat1_plastics_012"
+    test_name: "Plastics Packaging Materials"
+    description: "Packaging plastics"
+    tags: ["scope3", "category1", "plastics", "packaging"]
+    input:
+      category: "purchased_goods"
+      reporting_year: 2024
+      spend_data:
+        - category: "plastics"
+          spend_usd: 350000
+    expected:
+      total_emissions_kgco2e: 262500.0
+
+  - test_id: "scope3_cat1_plastics_013"
+    test_name: "Plastics Components"
+    description: "Plastic components purchase"
+    tags: ["scope3", "category1", "plastics", "components"]
+    input:
+      category: "purchased_goods"
+      reporting_year: 2024
+      spend_data:
+        - category: "plastics"
+          spend_usd: 75000
+    expected:
+      total_emissions_kgco2e: 56250.0
+
+  - test_id: "scope3_cat1_plastics_014"
+    test_name: "Plastics Raw Materials"
+    description: "Raw plastic materials"
+    tags: ["scope3", "category1", "plastics", "raw"]
+    input:
+      category: "purchased_goods"
+      reporting_year: 2024
+      spend_data:
+        - category: "plastics"
+          spend_usd: 1500000
+    expected:
+      total_emissions_kgco2e: 1125000.0
+
+  # Mixed materials (15-20)
+  - test_id: "scope3_cat1_mixed_015"
+    test_name: "Mixed Materials Basic"
+    description: "Multiple material categories"
+    tags: ["scope3", "category1", "mixed"]
+    input:
+      category: "purchased_goods"
+      reporting_year: 2024
+      spend_data:
+        - category: "steel"
+          spend_usd: 100000
+        - category: "aluminum"
+          spend_usd: 50000
+        - category: "plastics"
+          spend_usd: 30000
+    expected:
+      total_emissions_kgco2e: 167500.0
+
+  - test_id: "scope3_cat1_mixed_016"
+    test_name: "Manufacturing Inputs"
+    description: "Typical manufacturing inputs"
+    tags: ["scope3", "category1", "manufacturing"]
+    input:
+      category: "purchased_goods"
+      reporting_year: 2024
+      spend_data:
+        - category: "steel"
+          spend_usd: 500000
+        - category: "aluminum"
+          spend_usd: 200000
+        - category: "plastics"
+          spend_usd: 150000
+        - category: "chemicals"
+          spend_usd: 100000
+    expected:
+      total_emissions_kgco2e: 842500.0
+
+  - test_id: "scope3_cat1_mixed_017"
+    test_name: "Electronics with Components"
+    description: "Electronics and raw materials"
+    tags: ["scope3", "category1", "electronics"]
+    input:
+      category: "purchased_goods"
+      reporting_year: 2024
+      spend_data:
+        - category: "electronics"
+          spend_usd: 300000
+        - category: "plastics"
+          spend_usd: 100000
+    expected:
+      total_emissions_kgco2e: 240000.0
+
+  - test_id: "scope3_cat1_mixed_018"
+    test_name: "Office Supplies Mixed"
+    description: "Various office supplies"
+    tags: ["scope3", "category1", "office"]
+    input:
+      category: "purchased_goods"
+      reporting_year: 2024
+      spend_data:
+        - category: "paper"
+          spend_usd: 50000
+        - category: "electronics"
+          spend_usd: 100000
+        - category: "services"
+          spend_usd: 200000
+    expected:
+      total_emissions_kgco2e: 107500.0
+
+  - test_id: "scope3_cat1_mixed_019"
+    test_name: "Full Procurement Mix"
+    description: "Complete procurement categories"
+    tags: ["scope3", "category1", "comprehensive"]
+    input:
+      category: "purchased_goods"
+      reporting_year: 2024
+      spend_data:
+        - category: "steel"
+          spend_usd: 1000000
+        - category: "aluminum"
+          spend_usd: 500000
+        - category: "plastics"
+          spend_usd: 300000
+        - category: "chemicals"
+          spend_usd: 200000
+        - category: "paper"
+          spend_usd: 100000
+        - category: "electronics"
+          spend_usd: 400000
+        - category: "services"
+          spend_usd: 600000
+    expected:
+      total_emissions_kgco2e: 2355000.0
+
+  - test_id: "scope3_cat1_mixed_020"
+    test_name: "Chemicals Heavy"
+    description: "Chemical industry procurement"
+    tags: ["scope3", "category1", "chemicals"]
+    input:
+      category: "purchased_goods"
+      reporting_year: 2024
+      spend_data:
+        - category: "chemicals"
+          spend_usd: 800000
+        - category: "plastics"
+          spend_usd: 400000
+    expected:
+      total_emissions_kgco2e: 820000.0
+
+  # Services purchases (21-24)
+  - test_id: "scope3_cat1_services_021"
+    test_name: "IT Services"
+    description: "IT services procurement"
+    tags: ["scope3", "category1", "services", "it"]
+    input:
+      category: "purchased_goods"
+      reporting_year: 2024
+      spend_data:
+        - category: "it_services"
+          spend_usd: 500000
+    expected:
+      total_emissions_kgco2e: 90000.0
+
+  - test_id: "scope3_cat1_services_022"
+    test_name: "Professional Services"
+    description: "Consulting and professional services"
+    tags: ["scope3", "category1", "services", "professional"]
+    input:
+      category: "purchased_goods"
+      reporting_year: 2024
+      spend_data:
+        - category: "professional_services"
+          spend_usd: 1000000
+    expected:
+      total_emissions_kgco2e: 120000.0
+
+  - test_id: "scope3_cat1_services_023"
+    test_name: "General Services"
+    description: "General business services"
+    tags: ["scope3", "category1", "services"]
+    input:
+      category: "purchased_goods"
+      reporting_year: 2024
+      spend_data:
+        - category: "services"
+          spend_usd: 2000000
+    expected:
+      total_emissions_kgco2e: 300000.0
+
+  - test_id: "scope3_cat1_services_024"
+    test_name: "Mixed Services"
+    description: "Various service categories"
+    tags: ["scope3", "category1", "services", "mixed"]
+    input:
+      category: "purchased_goods"
+      reporting_year: 2024
+      spend_data:
+        - category: "it_services"
+          spend_usd: 300000
+        - category: "professional_services"
+          spend_usd: 400000
+        - category: "services"
+          spend_usd: 300000
+    expected:
+      total_emissions_kgco2e: 147000.0
+
+  # Edge cases and intensity metrics (25-30)
+  - test_id: "scope3_cat1_edge_025"
+    test_name: "Minimum Spend"
+    description: "Very small purchase"
+    tags: ["scope3", "category1", "edge", "minimum"]
+    input:
+      category: "purchased_goods"
+      reporting_year: 2024
+      spend_data:
+        - category: "steel"
+          spend_usd: 100
+    expected:
+      total_emissions_kgco2e: 85.0
+
+  - test_id: "scope3_cat1_edge_026"
+    test_name: "Large Enterprise Spend"
+    description: "Enterprise-scale procurement"
+    tags: ["scope3", "category1", "enterprise"]
+    input:
+      category: "purchased_goods"
+      reporting_year: 2024
+      spend_data:
+        - category: "steel"
+          spend_usd: 50000000
+        - category: "aluminum"
+          spend_usd: 20000000
+    expected:
+      total_emissions_kgco2e: 66500000.0
+
+  - test_id: "scope3_cat1_edge_027"
+    test_name: "With Revenue Intensity"
+    description: "Calculate emissions per revenue"
+    tags: ["scope3", "category1", "intensity"]
+    input:
+      category: "purchased_goods"
+      reporting_year: 2024
+      spend_data:
+        - category: "steel"
+          spend_usd: 1000000
+      revenue_usd: 10000000
+    expected:
+      total_emissions_kgco2e: 850000.0
+      emissions_per_revenue: 0.085
+
+  - test_id: "scope3_cat1_edge_028"
+    test_name: "With Employee Intensity"
+    description: "Calculate emissions per employee"
+    tags: ["scope3", "category1", "intensity"]
+    input:
+      category: "purchased_goods"
+      reporting_year: 2024
+      spend_data:
+        - category: "steel"
+          spend_usd: 850000
+      employees: 1000
+    expected:
+      total_emissions_kgco2e: 722500.0
+      emissions_per_employee: 722.5
+
+  - test_id: "scope3_cat1_edge_029"
+    test_name: "Unknown Category Default"
+    description: "Uses default factor for unknown"
+    tags: ["scope3", "category1", "default"]
+    input:
+      category: "purchased_goods"
+      reporting_year: 2024
+      spend_data:
+        - category: "unknown_material"
+          spend_usd: 100000
+    expected:
+      total_emissions_kgco2e: 40000.0
+
+  - test_id: "scope3_cat1_edge_030"
+    test_name: "Decimal Spend Values"
+    description: "Non-integer spend amounts"
+    tags: ["scope3", "category1", "precision"]
+    input:
+      category: "purchased_goods"
+      reporting_year: 2024
+      spend_data:
+        - category: "steel"
+          spend_usd: 123456.78
+    expected:
+      total_emissions_kgco2e: 104938.263

@@ -1,0 +1,128 @@
+name: cement-lifecycle-assessment
+version: 1.0.0
+description: Complete LCA for cement and concrete production
+
+steps:
+  - name: analyze_materials
+    agent: material_analyzer
+    action: analyze_composition
+    inputs:
+      cement_type: "${CEMENT_TYPE:OPC}"
+      strength_class: "${STRENGTH_CLASS:42.5}"
+      volume_m3: "${VOLUME_M3:1000}"
+      mix_design: "${MIX_DESIGN:standard}"
+    outputs:
+      - material_inventory
+      - composition_breakdown
+
+  - name: calculate_production
+    agent: emissions_calculator
+    action: calculate_production_emissions
+    inputs:
+      material_inventory: "$steps.analyze_materials.outputs.material_inventory"
+      production_method: "${PRODUCTION_METHOD:dry_process}"
+      fuel_type: "${FUEL_TYPE:coal}"
+      electricity_grid: "${GRID_MIX:US_average}"
+      plant_efficiency: "${PLANT_EFFICIENCY:0.85}"
+    outputs:
+      - production_emissions
+      - energy_consumption
+      - process_emissions
+
+  - name: calculate_transport
+    agent: emissions_calculator
+    action: calculate_transport_emissions
+    inputs:
+      material_inventory: "$steps.analyze_materials.outputs.material_inventory"
+      transport_mode: "${TRANSPORT_MODE:truck}"
+      distance_km: "${DISTANCE_KM:100}"
+      return_empty: "${RETURN_EMPTY:true}"
+    outputs:
+      - transport_emissions
+      - fuel_consumption
+
+  - name: calculate_use_phase
+    agent: emissions_calculator
+    action: calculate_use_phase
+    inputs:
+      material_inventory: "$steps.analyze_materials.outputs.material_inventory"
+      service_life_years: "${SERVICE_LIFE:50}"
+      carbonation_rate: "${CARBONATION_RATE:standard}"
+      maintenance_schedule: "${MAINTENANCE:minimal}"
+    outputs:
+      - use_phase_emissions
+      - carbonation_sequestration
+
+  - name: calculate_end_of_life
+    agent: emissions_calculator
+    action: calculate_eol_emissions
+    inputs:
+      material_inventory: "$steps.analyze_materials.outputs.material_inventory"
+      disposal_method: "${DISPOSAL_METHOD:landfill}"
+      recycling_rate: "${RECYCLING_RATE:0.3}"
+      crushing_energy: "${CRUSHING_ENERGY:standard}"
+    outputs:
+      - eol_emissions
+      - recycling_credits
+
+  - name: assess_impacts
+    agent: impact_assessor
+    action: comprehensive_assessment
+    inputs:
+      production_emissions: "$steps.calculate_production.outputs.production_emissions"
+      transport_emissions: "$steps.calculate_transport.outputs.transport_emissions"
+      use_phase_emissions: "$steps.calculate_use_phase.outputs.use_phase_emissions"
+      eol_emissions: "$steps.calculate_end_of_life.outputs.eol_emissions"
+      impact_method: "${IMPACT_METHOD:TRACI_2.1}"
+    outputs:
+      - total_gwp
+      - impact_categories
+      - hotspot_analysis
+
+  - name: generate_report
+    agent: impact_assessor
+    action: create_lca_report
+    inputs:
+      material_inventory: "$steps.analyze_materials.outputs.material_inventory"
+      impact_categories: "$steps.assess_impacts.outputs.impact_categories"
+      hotspot_analysis: "$steps.assess_impacts.outputs.hotspot_analysis"
+      report_format: "${REPORT_FORMAT:pdf}"
+      include_epd: "${INCLUDE_EPD:true}"
+    outputs:
+      - lca_report
+      - epd_document
+      - recommendations
+
+runtime:
+  backend: "${RUNTIME_BACKEND:local}"
+  timeout: 300
+  memory_limit: "2GB"
+  cpu_limit: "2"
+  deterministic: true
+
+monitoring:
+  metrics:
+    - total_co2_kg
+    - co2_per_m3
+    - embodied_energy_mj
+    - water_consumption_l
+  alerts:
+    - type: threshold
+      metric: total_co2_kg
+      operator: ">"
+      value: 500000
+      message: "High carbon footprint detected"
+
+outputs:
+  - name: report
+    path: "out/cement_lca_report.pdf"
+    type: file
+  - name: epd
+    path: "out/environmental_product_declaration.pdf"
+    type: file
+  - name: results
+    path: "out/lca_results.json"
+    type: json
+  - name: visualization
+    path: "out/impact_charts.png"
+    type: image

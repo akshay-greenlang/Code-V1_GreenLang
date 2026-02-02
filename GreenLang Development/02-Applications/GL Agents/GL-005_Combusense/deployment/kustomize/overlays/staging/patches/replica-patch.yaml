@@ -1,0 +1,9 @@
+# Staging Environment - Replica Count Patch
+# 2 replicas for basic HA testing
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gl-005-combustion-control
+spec:
+  replicas: 2  # 2 replicas for staging HA

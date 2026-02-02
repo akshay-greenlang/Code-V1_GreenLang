@@ -1,0 +1,164 @@
+---
+# ============================================================================
+# Kubernetes Services for CSRD/ESRS Platform
+# ============================================================================
+
+# Main application service
+apiVersion: v1
+kind: Service
+metadata:
+  name: csrd-service
+  namespace: production
+  labels:
+    app: csrd
+    component: api
+    version: v1
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8000"
+    prometheus.io/path: "/metrics"
+spec:
+  type: LoadBalancer
+  selector:
+    app: csrd
+    component: api
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 8000
+    - name: metrics
+      protocol: TCP
+      port: 9090
+      targetPort: 9090
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 10800  # 3 hours
+
+---
+# Internal ClusterIP service for pod-to-pod communication
+apiVersion: v1
+kind: Service
+metadata:
+  name: csrd-internal
+  namespace: production
+  labels:
+    app: csrd
+    component: api
+spec:
+  type: ClusterIP
+  clusterIP: None  # Headless service for direct pod access
+  selector:
+    app: csrd
+    component: api
+  ports:
+    - name: http
+      protocol: TCP
+      port: 8000
+      targetPort: 8000
+
+---
+# PostgreSQL service
+apiVersion: v1
+kind: Service
+metadata:
+  name: csrd-postgresql
+  namespace: production
+  labels:
+    app: csrd
+    component: database
+spec:
+  type: ClusterIP
+  selector:
+    app: csrd
+    component: database
+  ports:
+    - name: postgresql
+      protocol: TCP
+      port: 5432
+      targetPort: 5432
+
+---
+# Redis service
+apiVersion: v1
+kind: Service
+metadata:
+  name: csrd-redis
+  namespace: production
+  labels:
+    app: csrd
+    component: cache
+spec:
+  type: ClusterIP
+  selector:
+    app: csrd
+    component: cache
+  ports:
+    - name: redis
+      protocol: TCP
+      port: 6379
+      targetPort: 6379
+
+---
+# Weaviate service
+apiVersion: v1
+kind: Service
+metadata:
+  name: csrd-weaviate
+  namespace: production
+  labels:
+    app: csrd
+    component: vector-db
+spec:
+  type: ClusterIP
+  selector:
+    app: csrd
+    component: vector-db
+  ports:
+    - name: http
+      protocol: TCP
+      port: 8080
+      targetPort: 8080
+
+---
+# Monitoring services - Prometheus
+apiVersion: v1
+kind: Service
+metadata:
+  name: csrd-prometheus
+  namespace: production
+  labels:
+    app: csrd
+    component: monitoring
+spec:
+  type: ClusterIP
+  selector:
+    app: csrd
+    component: prometheus
+  ports:
+    - name: http
+      protocol: TCP
+      port: 9090
+      targetPort: 9090
+
+---
+# Monitoring services - Grafana
+apiVersion: v1
+kind: Service
+metadata:
+  name: csrd-grafana
+  namespace: production
+  labels:
+    app: csrd
+    component: monitoring
+spec:
+  type: LoadBalancer
+  selector:
+    app: csrd
+    component: grafana
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 3000

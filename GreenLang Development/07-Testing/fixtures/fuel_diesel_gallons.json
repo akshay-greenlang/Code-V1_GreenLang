@@ -1,0 +1,28 @@
+{
+  "description": "Diesel fuel for backup generators",
+  "input": {
+    "fuel_type": "diesel",
+    "consumption": {
+      "value": 1000,
+      "unit": "gallons"
+    },
+    "country": "US",
+    "year": 2024
+  },
+  "expected_output": {
+    "fuel_type": "diesel",
+    "consumption_value": 1000,
+    "consumption_unit": "gallons",
+    "emission_factor": 10.21,
+    "emission_factor_unit": "kgCO2e/gallons",
+    "co2e_emissions_kg": 10210,
+    "source": "GreenLang Global Dataset"
+  },
+  "metadata": {
+    "test_case": "diesel_backup_generator",
+    "category": "fuel_emissions",
+    "scope": "1",
+    "use_case": "emergency_power",
+    "priority": "medium"
+  }
+}

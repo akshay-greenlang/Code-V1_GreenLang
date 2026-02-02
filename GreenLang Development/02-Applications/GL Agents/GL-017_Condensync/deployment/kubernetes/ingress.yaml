@@ -1,0 +1,230 @@
+# GL-017_Condensync Ingress Configuration
+# HTTP/HTTPS Routing for Condenser Optimization Agent
+# Version: 1.0.0
+
+---
+# Primary Ingress (HTTP/HTTPS Access)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: gl-017-condensync-ingress
+  namespace: greenlang
+  labels:
+    app: gl-017-condensync
+    app.kubernetes.io/name: gl-017-condensync
+    app.kubernetes.io/component: ingress
+  annotations:
+    # Ingress Controller
+    kubernetes.io/ingress.class: nginx
+
+    # TLS/SSL
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+
+    # Rate Limiting
+    nginx.ingress.kubernetes.io/limit-rps: "100"
+    nginx.ingress.kubernetes.io/limit-connections: "50"
+    nginx.ingress.kubernetes.io/limit-rpm: "1000"
+
+    # Timeouts
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "30"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "120"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "120"
+
+    # Body Size (for large optimization payloads)
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+
+    # CORS
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "https://*.greenlang.io"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, DELETE, OPTIONS"
+    nginx.ingress.kubernetes.io/cors-allow-headers: "DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization,X-Request-ID"
+
+    # Security Headers
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      add_header X-Frame-Options "SAMEORIGIN" always;
+      add_header X-Content-Type-Options "nosniff" always;
+      add_header X-XSS-Protection "1; mode=block" always;
+      add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+      add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';" always;
+      add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+
+    # WebSocket Support (for real-time optimization data)
+    nginx.ingress.kubernetes.io/proxy-http-version: "1.1"
+    nginx.ingress.kubernetes.io/upstream-hash-by: "$request_uri"
+
+    # Buffering
+    nginx.ingress.kubernetes.io/proxy-buffering: "on"
+    nginx.ingress.kubernetes.io/proxy-buffer-size: "8k"
+    nginx.ingress.kubernetes.io/proxy-buffers-number: "4"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - gl-017-condensync.greenlang.io
+        - api.gl-017-condensync.greenlang.io
+        - condensync.greenlang.io
+      secretName: gl-017-condensync-tls
+  rules:
+    # Primary API endpoint
+    - host: gl-017-condensync.greenlang.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: gl-017-condensync
+                port:
+                  number: 80
+
+    # API subdomain
+    - host: api.gl-017-condensync.greenlang.io
+      http:
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: gl-017-condensync
+                port:
+                  number: 80
+          - path: /metrics
+            pathType: Prefix
+            backend:
+              service:
+                name: gl-017-condensync
+                port:
+                  number: 9090
+
+    # Short domain alias
+    - host: condensync.greenlang.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: gl-017-condensync
+                port:
+                  number: 80
+
+---
+# Internal Ingress (for internal services only)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: gl-017-condensync-internal-ingress
+  namespace: greenlang
+  labels:
+    app: gl-017-condensync
+    app.kubernetes.io/name: gl-017-condensync
+  annotations:
+    kubernetes.io/ingress.class: nginx-internal
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/whitelist-source-range: "10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"
+spec:
+  ingressClassName: nginx-internal
+  rules:
+    - host: gl-017-condensync.internal.greenlang.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: gl-017-condensync
+                port:
+                  number: 80
+          - path: /grpc
+            pathType: Prefix
+            backend:
+              service:
+                name: gl-017-condensync
+                port:
+                  number: 50051
+
+---
+# Gateway API (Alternative to Ingress - for newer clusters)
+# Uncomment if using Gateway API
+# apiVersion: gateway.networking.k8s.io/v1
+# kind: HTTPRoute
+# metadata:
+#   name: gl-017-condensync-route
+#   namespace: greenlang
+#   labels:
+#     app: gl-017-condensync
+# spec:
+#   parentRefs:
+#     - name: greenlang-gateway
+#       namespace: gateway-system
+#   hostnames:
+#     - gl-017-condensync.greenlang.io
+#     - condensync.greenlang.io
+#   rules:
+#     # API routes
+#     - matches:
+#         - path:
+#             type: PathPrefix
+#             value: /api
+#       backendRefs:
+#         - name: gl-017-condensync
+#           port: 80
+#       filters:
+#         - type: RequestHeaderModifier
+#           requestHeaderModifier:
+#             add:
+#               - name: X-Forwarded-Host
+#                 value: gl-017-condensync.greenlang.io
+#
+#     # Health check routes
+#     - matches:
+#         - path:
+#             type: PathPrefix
+#             value: /health
+#       backendRefs:
+#         - name: gl-017-condensync
+#           port: 80
+#
+#     # WebSocket routes for real-time data
+#     - matches:
+#         - path:
+#             type: PathPrefix
+#             value: /ws
+#       backendRefs:
+#         - name: gl-017-condensync
+#           port: 80
+
+---
+# gRPC Ingress (for gRPC traffic)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: gl-017-condensync-grpc-ingress
+  namespace: greenlang
+  labels:
+    app: gl-017-condensync
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/backend-protocol: "GRPC"
+    nginx.ingress.kubernetes.io/grpc-backend: "true"
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - grpc.gl-017-condensync.greenlang.io
+      secretName: gl-017-condensync-grpc-tls
+  rules:
+    - host: grpc.gl-017-condensync.greenlang.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: gl-017-condensync
+                port:
+                  number: 50051

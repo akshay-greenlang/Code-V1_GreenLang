@@ -1,0 +1,388 @@
+{
+  "metadata": {
+    "source": "EPA",
+    "source_name": "U.S. Environmental Protection Agency",
+    "source_document": "Emission Factors for Greenhouse Gas Inventories - Fugitive Emissions",
+    "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+    "version": "2024.1",
+    "last_updated": "2024-04-01",
+    "gwp_set": "AR5",
+    "region": "US",
+    "description": "EPA emission factors for fugitive emissions including refrigerants and other gases"
+  },
+  "refrigerants": {
+    "hfcs": [
+      {
+        "id": "ef://epa/fugitive/hfc-23/2024",
+        "gas_name": "HFC-23",
+        "chemical_formula": "CHF3",
+        "cas_number": "75-46-7",
+        "gwp_ar5_100yr": 12400,
+        "gwp_ar6_100yr": 14600,
+        "atmospheric_lifetime_years": 228,
+        "common_applications": ["HCFC-22 production byproduct"],
+        "notes": "Very high GWP refrigerant"
+      },
+      {
+        "id": "ef://epa/fugitive/hfc-32/2024",
+        "gas_name": "HFC-32",
+        "chemical_formula": "CH2F2",
+        "cas_number": "75-10-5",
+        "gwp_ar5_100yr": 677,
+        "gwp_ar6_100yr": 771,
+        "atmospheric_lifetime_years": 5.4,
+        "common_applications": ["Air conditioning", "Heat pumps"],
+        "notes": "Lower GWP alternative refrigerant"
+      },
+      {
+        "id": "ef://epa/fugitive/hfc-125/2024",
+        "gas_name": "HFC-125",
+        "chemical_formula": "CHF2CF3",
+        "cas_number": "354-33-6",
+        "gwp_ar5_100yr": 3170,
+        "gwp_ar6_100yr": 3740,
+        "atmospheric_lifetime_years": 31,
+        "common_applications": ["Refrigerant blends", "Fire suppression"],
+        "notes": "Component of R-410A"
+      },
+      {
+        "id": "ef://epa/fugitive/hfc-134a/2024",
+        "gas_name": "HFC-134a",
+        "chemical_formula": "CH2FCF3",
+        "cas_number": "811-97-2",
+        "gwp_ar5_100yr": 1300,
+        "gwp_ar6_100yr": 1530,
+        "atmospheric_lifetime_years": 14,
+        "common_applications": ["Vehicle AC", "Domestic refrigeration", "Stationary AC"],
+        "notes": "Most common automotive refrigerant"
+      },
+      {
+        "id": "ef://epa/fugitive/hfc-143a/2024",
+        "gas_name": "HFC-143a",
+        "chemical_formula": "CH3CF3",
+        "cas_number": "420-46-2",
+        "gwp_ar5_100yr": 4800,
+        "gwp_ar6_100yr": 5810,
+        "atmospheric_lifetime_years": 52,
+        "common_applications": ["Refrigerant blends"],
+        "notes": "Component of R-404A"
+      },
+      {
+        "id": "ef://epa/fugitive/hfc-152a/2024",
+        "gas_name": "HFC-152a",
+        "chemical_formula": "CH3CHF2",
+        "cas_number": "75-37-6",
+        "gwp_ar5_100yr": 138,
+        "gwp_ar6_100yr": 164,
+        "atmospheric_lifetime_years": 1.5,
+        "common_applications": ["Aerosol propellant", "Foam blowing"],
+        "notes": "Low GWP HFC"
+      },
+      {
+        "id": "ef://epa/fugitive/hfc-227ea/2024",
+        "gas_name": "HFC-227ea",
+        "chemical_formula": "CF3CHFCF3",
+        "cas_number": "431-89-0",
+        "gwp_ar5_100yr": 3350,
+        "gwp_ar6_100yr": 3600,
+        "atmospheric_lifetime_years": 36,
+        "common_applications": ["Fire suppression", "Pharmaceutical aerosols"],
+        "notes": "Common fire suppression agent"
+      },
+      {
+        "id": "ef://epa/fugitive/hfc-236fa/2024",
+        "gas_name": "HFC-236fa",
+        "chemical_formula": "CF3CH2CF3",
+        "cas_number": "690-39-1",
+        "gwp_ar5_100yr": 8060,
+        "gwp_ar6_100yr": 8690,
+        "atmospheric_lifetime_years": 213,
+        "common_applications": ["Fire suppression"],
+        "notes": "High GWP fire suppressant"
+      },
+      {
+        "id": "ef://epa/fugitive/hfc-245fa/2024",
+        "gas_name": "HFC-245fa",
+        "chemical_formula": "CHF2CH2CF3",
+        "cas_number": "460-73-1",
+        "gwp_ar5_100yr": 858,
+        "gwp_ar6_100yr": 962,
+        "atmospheric_lifetime_years": 7.9,
+        "common_applications": ["Foam blowing", "Solvent"],
+        "notes": "Foam blowing agent"
+      },
+      {
+        "id": "ef://epa/fugitive/hfc-365mfc/2024",
+        "gas_name": "HFC-365mfc",
+        "chemical_formula": "CH3CF2CH2CF3",
+        "cas_number": "406-58-6",
+        "gwp_ar5_100yr": 804,
+        "gwp_ar6_100yr": 914,
+        "atmospheric_lifetime_years": 8.7,
+        "common_applications": ["Foam blowing", "Solvent"],
+        "notes": "Foam blowing agent"
+      },
+      {
+        "id": "ef://epa/fugitive/hfc-43-10mee/2024",
+        "gas_name": "HFC-43-10mee",
+        "chemical_formula": "CF3CHFCHFCF2CF3",
+        "cas_number": "138495-42-8",
+        "gwp_ar5_100yr": 1650,
+        "gwp_ar6_100yr": 1600,
+        "atmospheric_lifetime_years": 17,
+        "common_applications": ["Solvent"],
+        "notes": "Specialty solvent"
+      }
+    ],
+    "pfcs": [
+      {
+        "id": "ef://epa/fugitive/pfc-14/2024",
+        "gas_name": "PFC-14 (CF4)",
+        "chemical_formula": "CF4",
+        "cas_number": "75-73-0",
+        "gwp_ar5_100yr": 6630,
+        "gwp_ar6_100yr": 7380,
+        "atmospheric_lifetime_years": 50000,
+        "common_applications": ["Semiconductor manufacturing", "Aluminum production"],
+        "notes": "Very long atmospheric lifetime"
+      },
+      {
+        "id": "ef://epa/fugitive/pfc-116/2024",
+        "gas_name": "PFC-116 (C2F6)",
+        "chemical_formula": "C2F6",
+        "cas_number": "76-16-4",
+        "gwp_ar5_100yr": 11100,
+        "gwp_ar6_100yr": 12400,
+        "atmospheric_lifetime_years": 10000,
+        "common_applications": ["Semiconductor manufacturing", "Aluminum production"],
+        "notes": "High GWP process gas"
+      },
+      {
+        "id": "ef://epa/fugitive/pfc-218/2024",
+        "gas_name": "PFC-218 (C3F8)",
+        "chemical_formula": "C3F8",
+        "cas_number": "76-19-7",
+        "gwp_ar5_100yr": 8900,
+        "gwp_ar6_100yr": 9290,
+        "atmospheric_lifetime_years": 2600,
+        "common_applications": ["Semiconductor manufacturing"],
+        "notes": "Semiconductor process gas"
+      },
+      {
+        "id": "ef://epa/fugitive/pfc-318/2024",
+        "gas_name": "PFC-318 (c-C4F8)",
+        "chemical_formula": "c-C4F8",
+        "cas_number": "115-25-3",
+        "gwp_ar5_100yr": 9540,
+        "gwp_ar6_100yr": 10200,
+        "atmospheric_lifetime_years": 3200,
+        "common_applications": ["Semiconductor manufacturing"],
+        "notes": "Cyclic PFC"
+      },
+      {
+        "id": "ef://epa/fugitive/pfc-3-1-10/2024",
+        "gas_name": "PFC-3-1-10 (C4F10)",
+        "chemical_formula": "C4F10",
+        "cas_number": "355-25-9",
+        "gwp_ar5_100yr": 9200,
+        "gwp_ar6_100yr": 10000,
+        "atmospheric_lifetime_years": 2600,
+        "common_applications": ["Fire suppression", "Electronics"],
+        "notes": "Fire suppression agent"
+      },
+      {
+        "id": "ef://epa/fugitive/pfc-4-1-12/2024",
+        "gas_name": "PFC-4-1-12 (C5F12)",
+        "chemical_formula": "C5F12",
+        "cas_number": "678-26-2",
+        "gwp_ar5_100yr": 8550,
+        "gwp_ar6_100yr": 9220,
+        "atmospheric_lifetime_years": 4100,
+        "common_applications": ["Solvent"],
+        "notes": "Specialty solvent"
+      },
+      {
+        "id": "ef://epa/fugitive/pfc-5-1-14/2024",
+        "gas_name": "PFC-5-1-14 (C6F14)",
+        "chemical_formula": "C6F14",
+        "cas_number": "355-42-0",
+        "gwp_ar5_100yr": 7910,
+        "gwp_ar6_100yr": 8620,
+        "atmospheric_lifetime_years": 3100,
+        "common_applications": ["Heat transfer fluid", "Solvent"],
+        "notes": "Heat transfer fluid"
+      }
+    ],
+    "blends": [
+      {
+        "id": "ef://epa/fugitive/r-404a/2024",
+        "blend_name": "R-404A",
+        "components": ["HFC-125 (44%)", "HFC-143a (52%)", "HFC-134a (4%)"],
+        "gwp_ar5_100yr": 3922,
+        "gwp_ar6_100yr": 4728,
+        "common_applications": ["Commercial refrigeration", "Transport refrigeration"],
+        "notes": "Common commercial refrigerant blend"
+      },
+      {
+        "id": "ef://epa/fugitive/r-407a/2024",
+        "blend_name": "R-407A",
+        "components": ["HFC-32 (20%)", "HFC-125 (40%)", "HFC-134a (40%)"],
+        "gwp_ar5_100yr": 2107,
+        "gwp_ar6_100yr": 2459,
+        "common_applications": ["Retrofit for R-22 systems"],
+        "notes": "R-22 replacement blend"
+      },
+      {
+        "id": "ef://epa/fugitive/r-407c/2024",
+        "blend_name": "R-407C",
+        "components": ["HFC-32 (23%)", "HFC-125 (25%)", "HFC-134a (52%)"],
+        "gwp_ar5_100yr": 1624,
+        "gwp_ar6_100yr": 1908,
+        "common_applications": ["Air conditioning"],
+        "notes": "Common AC refrigerant blend"
+      },
+      {
+        "id": "ef://epa/fugitive/r-410a/2024",
+        "blend_name": "R-410A",
+        "components": ["HFC-32 (50%)", "HFC-125 (50%)"],
+        "gwp_ar5_100yr": 1924,
+        "gwp_ar6_100yr": 2256,
+        "common_applications": ["Residential AC", "Heat pumps"],
+        "notes": "Most common residential AC refrigerant"
+      },
+      {
+        "id": "ef://epa/fugitive/r-507a/2024",
+        "blend_name": "R-507A",
+        "components": ["HFC-125 (50%)", "HFC-143a (50%)"],
+        "gwp_ar5_100yr": 3985,
+        "gwp_ar6_100yr": 4775,
+        "common_applications": ["Commercial refrigeration"],
+        "notes": "High GWP commercial refrigerant"
+      },
+      {
+        "id": "ef://epa/fugitive/r-508b/2024",
+        "blend_name": "R-508B",
+        "components": ["HFC-23 (46%)", "PFC-116 (54%)"],
+        "gwp_ar5_100yr": 11698,
+        "gwp_ar6_100yr": 13430,
+        "common_applications": ["Ultra-low temperature refrigeration"],
+        "notes": "Very high GWP - ultra-low temp applications"
+      }
+    ],
+    "other_gases": [
+      {
+        "id": "ef://epa/fugitive/sf6/2024",
+        "gas_name": "Sulfur Hexafluoride",
+        "chemical_formula": "SF6",
+        "cas_number": "2551-62-4",
+        "gwp_ar5_100yr": 23500,
+        "gwp_ar6_100yr": 25200,
+        "atmospheric_lifetime_years": 3200,
+        "common_applications": ["Electrical switchgear", "Magnesium casting"],
+        "notes": "Highest GWP gas in common use"
+      },
+      {
+        "id": "ef://epa/fugitive/nf3/2024",
+        "gas_name": "Nitrogen Trifluoride",
+        "chemical_formula": "NF3",
+        "cas_number": "7783-54-2",
+        "gwp_ar5_100yr": 16100,
+        "gwp_ar6_100yr": 17400,
+        "atmospheric_lifetime_years": 569,
+        "common_applications": ["Semiconductor manufacturing", "LCD/solar panel production"],
+        "notes": "Semiconductor cleaning gas"
+      },
+      {
+        "id": "ef://epa/fugitive/n2o/2024",
+        "gas_name": "Nitrous Oxide",
+        "chemical_formula": "N2O",
+        "cas_number": "10024-97-2",
+        "gwp_ar5_100yr": 265,
+        "gwp_ar6_100yr": 273,
+        "atmospheric_lifetime_years": 121,
+        "common_applications": ["Medical anesthesia", "Aerosol propellant"],
+        "notes": "Medical and industrial uses"
+      }
+    ]
+  },
+  "leak_rates": {
+    "ac_equipment": {
+      "residential_ac": {
+        "id": "ef://epa/fugitive/leak_rate_residential_ac/2024",
+        "equipment_type": "Residential Air Conditioning",
+        "annual_leak_rate_pct": 4.0,
+        "typical_charge_kg": 1.8,
+        "service_life_years": 15,
+        "end_of_life_loss_pct": 15.0,
+        "notes": "Split systems and central AC"
+      },
+      "commercial_ac": {
+        "id": "ef://epa/fugitive/leak_rate_commercial_ac/2024",
+        "equipment_type": "Commercial Air Conditioning",
+        "annual_leak_rate_pct": 10.0,
+        "typical_charge_kg": 50.0,
+        "service_life_years": 15,
+        "end_of_life_loss_pct": 15.0,
+        "notes": "Large commercial systems"
+      },
+      "chillers": {
+        "id": "ef://epa/fugitive/leak_rate_chillers/2024",
+        "equipment_type": "Chillers",
+        "annual_leak_rate_pct": 2.0,
+        "typical_charge_kg": 200.0,
+        "service_life_years": 20,
+        "end_of_life_loss_pct": 5.0,
+        "notes": "Large water-cooled chillers"
+      }
+    },
+    "refrigeration_equipment": {
+      "domestic_refrigeration": {
+        "id": "ef://epa/fugitive/leak_rate_domestic_ref/2024",
+        "equipment_type": "Domestic Refrigeration",
+        "annual_leak_rate_pct": 0.5,
+        "typical_charge_kg": 0.15,
+        "service_life_years": 15,
+        "end_of_life_loss_pct": 70.0,
+        "notes": "Household refrigerators and freezers"
+      },
+      "commercial_refrigeration": {
+        "id": "ef://epa/fugitive/leak_rate_commercial_ref/2024",
+        "equipment_type": "Commercial Refrigeration",
+        "annual_leak_rate_pct": 15.0,
+        "typical_charge_kg": 100.0,
+        "service_life_years": 10,
+        "end_of_life_loss_pct": 15.0,
+        "notes": "Supermarket and cold storage systems"
+      },
+      "industrial_refrigeration": {
+        "id": "ef://epa/fugitive/leak_rate_industrial_ref/2024",
+        "equipment_type": "Industrial Refrigeration",
+        "annual_leak_rate_pct": 10.0,
+        "typical_charge_kg": 500.0,
+        "service_life_years": 20,
+        "end_of_life_loss_pct": 10.0,
+        "notes": "Large industrial systems"
+      },
+      "transport_refrigeration": {
+        "id": "ef://epa/fugitive/leak_rate_transport_ref/2024",
+        "equipment_type": "Transport Refrigeration",
+        "annual_leak_rate_pct": 20.0,
+        "typical_charge_kg": 5.0,
+        "service_life_years": 10,
+        "end_of_life_loss_pct": 25.0,
+        "notes": "Trucks and containers"
+      }
+    },
+    "vehicle_ac": {
+      "passenger_vehicle_ac": {
+        "id": "ef://epa/fugitive/leak_rate_vehicle_ac/2024",
+        "equipment_type": "Passenger Vehicle AC",
+        "annual_leak_rate_pct": 10.0,
+        "typical_charge_kg": 0.7,
+        "service_life_years": 12,
+        "end_of_life_loss_pct": 40.0,
+        "notes": "Cars and light trucks"
+      }
+    }
+  }
+}

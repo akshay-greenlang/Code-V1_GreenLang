@@ -1,0 +1,464 @@
+# =============================================================================
+# Stack Monitoring Agent Template
+# GreenLang Agent Factory - Process Heat Applications
+# =============================================================================
+# Standards: EPA 40 CFR Part 60/75, EU IED
+# Version: 1.0.0
+# =============================================================================
+
+metadata:
+  template_id: stack_monitoring_agent
+  name: Stack Emissions Monitoring Agent
+  description: >
+    Monitors and analyzes stack emissions data from CEMS or periodic testing.
+    Validates data quality, checks compliance with permit limits, and
+    generates regulatory reports.
+  category: emissions
+  version: "1.0.0"
+  status: production
+  author: GreenLang Engineering Team
+  created_at: "2024-12-01T00:00:00Z"
+  updated_at: "2024-12-11T00:00:00Z"
+
+  tags:
+    - stack_monitoring
+    - CEMS
+    - compliance
+    - EPA
+    - permit_limits
+
+  equipment_types:
+    - stack
+    - CEMS
+
+  industries:
+    - all
+
+  applicable_standards:
+    - EPA 40 CFR Part 60
+    - EPA 40 CFR Part 75
+    - EU IED
+
+# =============================================================================
+# Input Schema
+# =============================================================================
+
+input_schema:
+  name: StackMonitoringInput
+  description: Stack monitoring input parameters
+  version: "1.0.0"
+
+  fields:
+    stack_id:
+      type: string
+      description: Stack identifier
+      required: true
+
+    monitoring_type:
+      type: enum
+      description: Type of monitoring
+      required: true
+      allowed_values:
+        - CEMS
+        - periodic_testing
+        - parametric
+
+    # CEMS data
+    co2_concentration:
+      type: float
+      description: CO2 concentration
+      required: false
+      unit: percent
+
+    nox_concentration:
+      type: float
+      description: NOx concentration
+      required: false
+      unit: ppm
+
+    so2_concentration:
+      type: float
+      description: SO2 concentration
+      required: false
+      unit: ppm
+
+    co_concentration:
+      type: float
+      description: CO concentration
+      required: false
+      unit: ppm
+
+    o2_concentration:
+      type: float
+      description: O2 concentration
+      required: true
+      unit: percent
+
+    particulate_concentration:
+      type: float
+      description: Particulate concentration
+      required: false
+      unit: mg/Nm3
+
+    flue_gas_flow:
+      type: float
+      description: Flue gas volumetric flow
+      required: true
+      unit: Nm3/hr
+
+    flue_gas_temperature:
+      type: float
+      description: Flue gas temperature
+      required: true
+      unit: celsius
+
+    # Permit limits
+    nox_limit:
+      type: float
+      description: NOx permit limit
+      required: false
+      unit: mg/Nm3
+
+    so2_limit:
+      type: float
+      description: SO2 permit limit
+      required: false
+      unit: mg/Nm3
+
+    co_limit:
+      type: float
+      description: CO permit limit
+      required: false
+      unit: ppm
+
+    pm_limit:
+      type: float
+      description: Particulate permit limit
+      required: false
+      unit: mg/Nm3
+
+    reference_o2:
+      type: float
+      description: Reference O2 for limit comparison
+      required: false
+      unit: percent
+      default: 3.0
+
+    # Data quality
+    data_quality_flags:
+      type: list
+      description: CEMS data quality flags
+      required: false
+
+# =============================================================================
+# Output Schema
+# =============================================================================
+
+output_schema:
+  name: StackMonitoringOutput
+  description: Stack monitoring analysis results
+  version: "1.0.0"
+
+  fields:
+    # Corrected concentrations
+    nox_at_reference_o2:
+      type: float
+      description: NOx corrected to reference O2
+      unit: mg/Nm3
+
+    so2_at_reference_o2:
+      type: float
+      description: SO2 corrected to reference O2
+      unit: mg/Nm3
+
+    co_at_reference_o2:
+      type: float
+      description: CO corrected to reference O2
+      unit: ppm
+
+    pm_at_reference_o2:
+      type: float
+      description: PM corrected to reference O2
+      unit: mg/Nm3
+
+    # Mass emission rates
+    nox_mass_rate:
+      type: float
+      description: NOx mass emission rate
+      unit: kg/hr
+
+    so2_mass_rate:
+      type: float
+      description: SO2 mass emission rate
+      unit: kg/hr
+
+    co2_mass_rate:
+      type: float
+      description: CO2 mass emission rate
+      unit: kg/hr
+
+    # Compliance status
+    nox_compliance:
+      type: boolean
+      description: NOx compliance with limit
+
+    so2_compliance:
+      type: boolean
+      description: SO2 compliance with limit
+
+    co_compliance:
+      type: boolean
+      description: CO compliance with limit
+
+    pm_compliance:
+      type: boolean
+      description: PM compliance with limit
+
+    overall_compliance:
+      type: boolean
+      description: Overall compliance status
+
+    # Data quality
+    data_availability:
+      type: float
+      description: CEMS data availability
+      unit: percent
+
+    data_quality_status:
+      type: string
+      description: Data quality assessment
+
+    # Alerts
+    exceedance_alerts:
+      type: list
+      description: Permit exceedance alerts
+
+    trending_alerts:
+      type: list
+      description: Trending toward limits alerts
+
+    recommendations:
+      type: list
+      description: Recommendations
+
+    provenance_hash:
+      type: string
+      description: SHA-256 hash
+
+    calculation_timestamp:
+      type: datetime
+      description: Timestamp
+
+# =============================================================================
+# Formulas
+# =============================================================================
+
+formulas:
+  - id: O2_CORRECTION
+    name: O2 Reference Correction
+    description: Correct concentration to reference O2
+    equation: "C_ref = C_meas * (21 - O2_ref) / (21 - O2_meas)"
+    variables:
+      C_ref:
+        description: Concentration at reference O2
+        unit: mg/Nm3 or ppm
+        type: float
+      C_meas:
+        description: Measured concentration
+        unit: mg/Nm3 or ppm
+        type: float
+      O2_ref:
+        description: Reference O2
+        unit: percent
+        type: float
+      O2_meas:
+        description: Measured O2
+        unit: percent
+        type: float
+    source:
+      standard: EPA 40 CFR Part 60
+      section: "Method 19"
+      edition: "2024"
+    application: Standardize emissions for comparison
+
+  - id: MASS_EMISSION_RATE
+    name: Mass Emission Rate
+    description: Calculate mass emission rate
+    equation: "m = C * Q * MW / 22.4 * 1e-6"
+    variables:
+      m:
+        description: Mass rate
+        unit: kg/hr
+        type: float
+      C:
+        description: Concentration
+        unit: ppm or mg/Nm3
+        type: float
+      Q:
+        description: Flow rate
+        unit: Nm3/hr
+        type: float
+      MW:
+        description: Molecular weight
+        unit: g/mol
+        type: float
+    source:
+      standard: EPA 40 CFR Part 60
+      section: "Method 19"
+      edition: "2024"
+    application: Convert to mass rate
+
+# =============================================================================
+# Safety Constraints
+# =============================================================================
+
+safety_constraints:
+  - id: SC_NOX_LIMIT
+    name: NOx Permit Compliance
+    description: NOx must be below permit limit
+    condition: "nox_at_reference_o2 <= nox_limit"
+    action: warn
+    severity: error
+    message: "NOx {nox_at_reference_o2} mg/Nm3 exceeds limit {nox_limit}"
+
+  - id: SC_SO2_LIMIT
+    name: SO2 Permit Compliance
+    description: SO2 must be below permit limit
+    condition: "so2_at_reference_o2 <= so2_limit"
+    action: warn
+    severity: error
+    message: "SO2 {so2_at_reference_o2} mg/Nm3 exceeds limit {so2_limit}"
+
+# =============================================================================
+# Processing Pipeline
+# =============================================================================
+
+processing:
+  steps:
+    - id: STEP_01_VALIDATE
+      name: Input Validation
+      type: validation
+      inputs:
+        - all_input_fields
+      outputs:
+        - validation_status
+      error_handling: reject
+
+    - id: STEP_02_DATA_QUALITY
+      name: Data Quality Check
+      type: validation
+      inputs:
+        - data_quality_flags
+      outputs:
+        - data_availability
+        - data_quality_status
+      error_handling: propagate
+
+    - id: STEP_03_O2_CORRECTION
+      name: O2 Reference Correction
+      type: calculation
+      inputs:
+        - all_concentrations
+        - o2_concentration
+        - reference_o2
+      outputs:
+        - nox_at_reference_o2
+        - so2_at_reference_o2
+        - co_at_reference_o2
+        - pm_at_reference_o2
+      formula_refs:
+        - O2_CORRECTION
+      error_handling: propagate
+
+    - id: STEP_04_MASS_RATES
+      name: Mass Rate Calculation
+      type: calculation
+      inputs:
+        - corrected_concentrations
+        - flue_gas_flow
+      outputs:
+        - nox_mass_rate
+        - so2_mass_rate
+        - co2_mass_rate
+      formula_refs:
+        - MASS_EMISSION_RATE
+      error_handling: propagate
+
+    - id: STEP_05_COMPLIANCE
+      name: Compliance Check
+      type: validation
+      inputs:
+        - corrected_concentrations
+        - permit_limits
+      outputs:
+        - nox_compliance
+        - so2_compliance
+        - co_compliance
+        - pm_compliance
+        - overall_compliance
+      constraints:
+        - SC_NOX_LIMIT
+        - SC_SO2_LIMIT
+      error_handling: propagate
+
+    - id: STEP_06_ALERTS
+      name: Generate Alerts
+      type: decision
+      inputs:
+        - compliance_results
+      outputs:
+        - exceedance_alerts
+        - trending_alerts
+        - recommendations
+      error_handling: default
+
+    - id: STEP_07_PROVENANCE
+      name: Provenance Tracking
+      type: output
+      inputs:
+        - all_inputs
+        - all_outputs
+      outputs:
+        - provenance_hash
+        - calculation_timestamp
+      error_handling: propagate
+
+# =============================================================================
+# Zero-Hallucination Configuration
+# =============================================================================
+
+zero_hallucination:
+  enabled: true
+  calculation_mode: deterministic
+  allowed_operations:
+    - arithmetic
+    - formula_evaluation
+    - comparison
+  forbidden_operations:
+    - llm_emission_calculation
+  require_formula_citation: true
+  require_provenance: true
+  llm_allowed_for:
+    - alert_narrative
+    - recommendation_generation
+
+# =============================================================================
+# Test Cases
+# =============================================================================
+
+test_cases:
+  - name: CEMS Data Compliance Check
+    inputs:
+      stack_id: STACK-001
+      monitoring_type: CEMS
+      nox_concentration: 50
+      so2_concentration: 30
+      o2_concentration: 4.0
+      flue_gas_flow: 50000
+      flue_gas_temperature: 180
+      nox_limit: 100
+      so2_limit: 50
+      reference_o2: 3.0
+    expected_outputs:
+      nox_compliance: true
+      so2_compliance: true

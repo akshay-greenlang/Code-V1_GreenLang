@@ -1,0 +1,608 @@
+# GreenLang Alert Rules
+# Production alerting for carbon accounting platform
+
+groups:
+  # ============================================================================
+  # EUDR Agent Alerts
+  # ============================================================================
+  - name: eudr_agent_alerts
+    interval: 30s
+    rules:
+      - alert: EUDRAgentDown
+        expr: up{job="eudr-agent"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: eudr-agent
+          team: compliance
+        annotations:
+          summary: "EUDR Agent is down"
+          description: "EUDR Agent {{ $labels.instance }} has been down for more than 1 minute."
+          runbook_url: "https://runbooks.greenlang.io/eudr-agent-down"
+
+      - alert: EUDRAgentHighLatency
+        expr: histogram_quantile(0.95, sum(rate(eudr_request_duration_seconds_bucket[5m])) by (le)) > 0.5
+        for: 5m
+        labels:
+          severity: warning
+          service: eudr-agent
+          team: compliance
+        annotations:
+          summary: "EUDR Agent P95 latency is high"
+          description: "EUDR Agent P95 latency is {{ $value | humanizeDuration }} (threshold: 500ms)."
+          runbook_url: "https://runbooks.greenlang.io/eudr-high-latency"
+
+      - alert: EUDRAgentHighErrorRate
+        expr: |
+          (
+            sum(rate(eudr_requests_total{status=~"5.."}[5m])) /
+            sum(rate(eudr_requests_total[5m]))
+          ) * 100 > 1
+        for: 5m
+        labels:
+          severity: warning
+          service: eudr-agent
+          team: compliance
+        annotations:
+          summary: "EUDR Agent error rate is high"
+          description: "EUDR Agent error rate is {{ $value | printf \"%.2f\" }}% (threshold: 1%)."
+          runbook_url: "https://runbooks.greenlang.io/eudr-high-errors"
+
+      - alert: EUDRAgentCriticalErrorRate
+        expr: |
+          (
+            sum(rate(eudr_requests_total{status=~"5.."}[5m])) /
+            sum(rate(eudr_requests_total[5m]))
+          ) * 100 > 5
+        for: 2m
+        labels:
+          severity: critical
+          service: eudr-agent
+          team: compliance
+        annotations:
+          summary: "EUDR Agent critical error rate"
+          description: "EUDR Agent error rate is {{ $value | printf \"%.2f\" }}% (threshold: 5%)."
+          runbook_url: "https://runbooks.greenlang.io/eudr-critical-errors"
+
+      - alert: EUDRComplianceCheckFailure
+        expr: increase(eudr_compliance_check_failures_total[15m]) > 10
+        for: 5m
+        labels:
+          severity: warning
+          service: eudr-agent
+          team: compliance
+        annotations:
+          summary: "EUDR compliance check failures increasing"
+          description: "{{ $value }} EUDR compliance checks failed in the last 15 minutes."
+          runbook_url: "https://runbooks.greenlang.io/eudr-check-failures"
+
+      - alert: EUDRDeforestationAlertBacklog
+        expr: eudr_deforestation_alert_queue_size > 100
+        for: 10m
+        labels:
+          severity: warning
+          service: eudr-agent
+          team: compliance
+        annotations:
+          summary: "EUDR deforestation alert backlog growing"
+          description: "{{ $value }} unprocessed deforestation alerts in queue."
+          runbook_url: "https://runbooks.greenlang.io/eudr-alert-backlog"
+
+  # ============================================================================
+  # CBAM Agent Alerts
+  # ============================================================================
+  - name: cbam_agent_alerts
+    interval: 30s
+    rules:
+      - alert: CBAMAgentDown
+        expr: up{job="cbam-agent"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: cbam-agent
+          team: compliance
+        annotations:
+          summary: "CBAM Agent is down"
+          description: "CBAM Agent {{ $labels.instance }} has been down for more than 1 minute."
+          runbook_url: "https://runbooks.greenlang.io/cbam-agent-down"
+
+      - alert: CBAMCalculationError
+        expr: increase(cbam_calculation_errors_total[15m]) > 5
+        for: 5m
+        labels:
+          severity: warning
+          service: cbam-agent
+          team: compliance
+        annotations:
+          summary: "CBAM calculation errors increasing"
+          description: "{{ $value }} CBAM calculation errors in the last 15 minutes."
+          runbook_url: "https://runbooks.greenlang.io/cbam-calculation-errors"
+
+      - alert: CBAMReportGenerationSlow
+        expr: histogram_quantile(0.95, sum(rate(cbam_report_generation_duration_seconds_bucket[5m])) by (le)) > 30
+        for: 10m
+        labels:
+          severity: warning
+          service: cbam-agent
+          team: compliance
+        annotations:
+          summary: "CBAM report generation is slow"
+          description: "CBAM report generation P95 is {{ $value | humanizeDuration }} (threshold: 30s)."
+          runbook_url: "https://runbooks.greenlang.io/cbam-slow-reports"
+
+      - alert: CBAMEmissionFactorMissing
+        expr: cbam_missing_emission_factors_total > 0
+        for: 5m
+        labels:
+          severity: warning
+          service: cbam-agent
+          team: compliance
+        annotations:
+          summary: "CBAM missing emission factors detected"
+          description: "{{ $value }} products missing emission factors."
+          runbook_url: "https://runbooks.greenlang.io/cbam-missing-factors"
+
+  # ============================================================================
+  # SB253 Agent Alerts
+  # ============================================================================
+  - name: sb253_agent_alerts
+    interval: 30s
+    rules:
+      - alert: SB253AgentDown
+        expr: up{job="sb253-agent"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: sb253-agent
+          team: compliance
+        annotations:
+          summary: "SB253 Agent is down"
+          description: "SB253 California Climate Agent is down."
+          runbook_url: "https://runbooks.greenlang.io/sb253-agent-down"
+
+      - alert: SB253ScopeCalculationError
+        expr: increase(sb253_scope_calculation_errors_total[15m]) > 5
+        for: 5m
+        labels:
+          severity: warning
+          service: sb253-agent
+          team: compliance
+        annotations:
+          summary: "SB253 scope calculation errors"
+          description: "{{ $value }} scope calculation errors in the last 15 minutes."
+          runbook_url: "https://runbooks.greenlang.io/sb253-calculation-errors"
+
+  # ============================================================================
+  # API Gateway Alerts
+  # ============================================================================
+  - name: api_gateway_alerts
+    interval: 15s
+    rules:
+      - alert: APIGatewayDown
+        expr: up{job="greenlang-api-gateway"} == 0
+        for: 30s
+        labels:
+          severity: critical
+          service: api-gateway
+          team: platform
+        annotations:
+          summary: "API Gateway is down"
+          description: "API Gateway {{ $labels.instance }} is down."
+          runbook_url: "https://runbooks.greenlang.io/api-gateway-down"
+
+      - alert: APIHighLatency
+        expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job="greenlang-api-gateway"}[5m])) by (le)) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+          service: api-gateway
+          team: platform
+        annotations:
+          summary: "API P95 latency is high"
+          description: "API Gateway P95 latency is {{ $value | humanizeDuration }} (threshold: 100ms)."
+          runbook_url: "https://runbooks.greenlang.io/api-high-latency"
+
+      - alert: APICriticalLatency
+        expr: histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket{job="greenlang-api-gateway"}[5m])) by (le)) > 1
+        for: 2m
+        labels:
+          severity: critical
+          service: api-gateway
+          team: platform
+        annotations:
+          summary: "API P99 latency is critical"
+          description: "API Gateway P99 latency is {{ $value | humanizeDuration }} (threshold: 1s)."
+          runbook_url: "https://runbooks.greenlang.io/api-critical-latency"
+
+      - alert: APIHighErrorRate
+        expr: |
+          (
+            sum(rate(http_requests_total{job="greenlang-api-gateway",status=~"5.."}[5m])) /
+            sum(rate(http_requests_total{job="greenlang-api-gateway"}[5m]))
+          ) * 100 > 0.5
+        for: 5m
+        labels:
+          severity: warning
+          service: api-gateway
+          team: platform
+        annotations:
+          summary: "API error rate is high"
+          description: "API error rate is {{ $value | printf \"%.2f\" }}% (threshold: 0.5%)."
+          runbook_url: "https://runbooks.greenlang.io/api-high-errors"
+
+      - alert: APICriticalErrorRate
+        expr: |
+          (
+            sum(rate(http_requests_total{job="greenlang-api-gateway",status=~"5.."}[5m])) /
+            sum(rate(http_requests_total{job="greenlang-api-gateway"}[5m]))
+          ) * 100 > 5
+        for: 1m
+        labels:
+          severity: critical
+          service: api-gateway
+          team: platform
+        annotations:
+          summary: "API critical error rate"
+          description: "API error rate is {{ $value | printf \"%.2f\" }}% (threshold: 5%)."
+          runbook_url: "https://runbooks.greenlang.io/api-critical-errors"
+
+      - alert: APIRateLimitExceeded
+        expr: increase(http_rate_limit_exceeded_total{job="greenlang-api-gateway"}[5m]) > 100
+        for: 5m
+        labels:
+          severity: warning
+          service: api-gateway
+          team: platform
+        annotations:
+          summary: "API rate limit exceeded frequently"
+          description: "{{ $value }} rate limit exceeded events in the last 5 minutes."
+          runbook_url: "https://runbooks.greenlang.io/api-rate-limit"
+
+      - alert: APIAuthenticationFailures
+        expr: increase(http_authentication_failures_total{job="greenlang-api-gateway"}[5m]) > 50
+        for: 5m
+        labels:
+          severity: warning
+          service: api-gateway
+          team: security
+        annotations:
+          summary: "High authentication failure rate"
+          description: "{{ $value }} authentication failures in the last 5 minutes."
+          runbook_url: "https://runbooks.greenlang.io/api-auth-failures"
+
+  # ============================================================================
+  # Database Alerts
+  # ============================================================================
+  - name: database_alerts
+    interval: 30s
+    rules:
+      - alert: PostgreSQLDown
+        expr: pg_up == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: postgresql
+          team: platform
+        annotations:
+          summary: "PostgreSQL is down"
+          description: "PostgreSQL database is not responding."
+          runbook_url: "https://runbooks.greenlang.io/postgres-down"
+
+      - alert: PostgreSQLHighConnections
+        expr: |
+          pg_stat_activity_count / pg_settings_max_connections * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+          service: postgresql
+          team: platform
+        annotations:
+          summary: "PostgreSQL connection usage high"
+          description: "PostgreSQL connection usage is {{ $value | printf \"%.1f\" }}% of max."
+          runbook_url: "https://runbooks.greenlang.io/postgres-connections"
+
+      - alert: PostgreSQLSlowQueries
+        expr: |
+          rate(pg_stat_statements_seconds_total[5m]) / rate(pg_stat_statements_calls_total[5m]) > 1
+        for: 10m
+        labels:
+          severity: warning
+          service: postgresql
+          team: platform
+        annotations:
+          summary: "PostgreSQL slow queries detected"
+          description: "Average query time is {{ $value | humanizeDuration }}."
+          runbook_url: "https://runbooks.greenlang.io/postgres-slow-queries"
+
+      - alert: PostgreSQLReplicationLag
+        expr: pg_replication_lag > 30
+        for: 5m
+        labels:
+          severity: warning
+          service: postgresql
+          team: platform
+        annotations:
+          summary: "PostgreSQL replication lag"
+          description: "Replication lag is {{ $value | humanizeDuration }}."
+          runbook_url: "https://runbooks.greenlang.io/postgres-replication-lag"
+
+      - alert: PostgreSQLDiskSpaceLow
+        expr: |
+          (pg_database_size_bytes / pg_tablespace_size_bytes) * 100 > 85
+        for: 10m
+        labels:
+          severity: warning
+          service: postgresql
+          team: platform
+        annotations:
+          summary: "PostgreSQL disk space low"
+          description: "Database disk usage is {{ $value | printf \"%.1f\" }}%."
+          runbook_url: "https://runbooks.greenlang.io/postgres-disk-space"
+
+  # ============================================================================
+  # Redis Alerts
+  # ============================================================================
+  - name: redis_alerts
+    interval: 30s
+    rules:
+      - alert: RedisDown
+        expr: redis_up == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: redis
+          team: platform
+        annotations:
+          summary: "Redis is down"
+          description: "Redis cache is not responding."
+          runbook_url: "https://runbooks.greenlang.io/redis-down"
+
+      - alert: RedisHighMemoryUsage
+        expr: redis_memory_used_bytes / redis_memory_max_bytes * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+          service: redis
+          team: platform
+        annotations:
+          summary: "Redis memory usage high"
+          description: "Redis memory usage is {{ $value | printf \"%.1f\" }}%."
+          runbook_url: "https://runbooks.greenlang.io/redis-memory"
+
+      - alert: RedisHighCacheMissRate
+        expr: |
+          (rate(redis_keyspace_misses_total[5m]) /
+           (rate(redis_keyspace_hits_total[5m]) + rate(redis_keyspace_misses_total[5m]))) * 100 > 30
+        for: 10m
+        labels:
+          severity: warning
+          service: redis
+          team: platform
+        annotations:
+          summary: "Redis cache miss rate high"
+          description: "Redis cache miss rate is {{ $value | printf \"%.1f\" }}%."
+          runbook_url: "https://runbooks.greenlang.io/redis-cache-miss"
+
+      - alert: RedisReplicationBroken
+        expr: redis_connected_slaves < 1
+        for: 5m
+        labels:
+          severity: critical
+          service: redis
+          team: platform
+        annotations:
+          summary: "Redis replication broken"
+          description: "Redis has no connected slaves."
+          runbook_url: "https://runbooks.greenlang.io/redis-replication"
+
+  # ============================================================================
+  # Kubernetes Infrastructure Alerts
+  # ============================================================================
+  - name: kubernetes_alerts
+    interval: 30s
+    rules:
+      - alert: KubernetesPodCrashLooping
+        expr: rate(kube_pod_container_status_restarts_total{namespace="greenlang"}[15m]) * 60 * 15 > 3
+        for: 5m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "Pod is crash looping"
+          description: "Pod {{ $labels.namespace }}/{{ $labels.pod }} is restarting {{ $value | printf \"%.0f\" }} times per 15 min."
+          runbook_url: "https://runbooks.greenlang.io/pod-crash-loop"
+
+      - alert: KubernetesPodNotReady
+        expr: |
+          kube_pod_status_ready{namespace="greenlang",condition="true"} == 0
+        for: 5m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "Pod is not ready"
+          description: "Pod {{ $labels.namespace }}/{{ $labels.pod }} has been not ready for 5 minutes."
+          runbook_url: "https://runbooks.greenlang.io/pod-not-ready"
+
+      - alert: KubernetesDeploymentReplicasMismatch
+        expr: |
+          kube_deployment_spec_replicas{namespace="greenlang"} !=
+          kube_deployment_status_available_replicas{namespace="greenlang"}
+        for: 10m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "Deployment replica mismatch"
+          description: "Deployment {{ $labels.deployment }} has {{ $value }} available vs desired replicas."
+          runbook_url: "https://runbooks.greenlang.io/deployment-replicas"
+
+      - alert: KubernetesNodeNotReady
+        expr: kube_node_status_condition{condition="Ready",status="true"} == 0
+        for: 5m
+        labels:
+          severity: critical
+          team: platform
+        annotations:
+          summary: "Kubernetes node not ready"
+          description: "Node {{ $labels.node }} is not ready."
+          runbook_url: "https://runbooks.greenlang.io/node-not-ready"
+
+      - alert: KubernetesNodeMemoryPressure
+        expr: kube_node_status_condition{condition="MemoryPressure",status="true"} == 1
+        for: 5m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "Node memory pressure"
+          description: "Node {{ $labels.node }} is under memory pressure."
+          runbook_url: "https://runbooks.greenlang.io/node-memory-pressure"
+
+      - alert: KubernetesNodeDiskPressure
+        expr: kube_node_status_condition{condition="DiskPressure",status="true"} == 1
+        for: 5m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "Node disk pressure"
+          description: "Node {{ $labels.node }} is under disk pressure."
+          runbook_url: "https://runbooks.greenlang.io/node-disk-pressure"
+
+      - alert: ContainerCPUThrottling
+        expr: |
+          rate(container_cpu_cfs_throttled_periods_total{namespace="greenlang"}[5m]) /
+          rate(container_cpu_cfs_periods_total{namespace="greenlang"}[5m]) * 100 > 25
+        for: 15m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "Container CPU throttling"
+          description: "Container {{ $labels.container }} is being throttled {{ $value | printf \"%.1f\" }}% of the time."
+          runbook_url: "https://runbooks.greenlang.io/cpu-throttling"
+
+      - alert: ContainerMemoryNearLimit
+        expr: |
+          container_memory_working_set_bytes{namespace="greenlang"} /
+          container_spec_memory_limit_bytes{namespace="greenlang"} * 100 > 90
+        for: 5m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "Container memory near limit"
+          description: "Container {{ $labels.container }} memory is {{ $value | printf \"%.1f\" }}% of limit."
+          runbook_url: "https://runbooks.greenlang.io/container-memory"
+
+  # ============================================================================
+  # Business Metrics Alerts
+  # ============================================================================
+  - name: business_alerts
+    interval: 60s
+    rules:
+      - alert: CalculationVolumeAnomaly
+        expr: |
+          abs(sum(rate(emission_calculations_total[1h])) -
+              sum(rate(emission_calculations_total[1h] offset 1d))) /
+          sum(rate(emission_calculations_total[1h] offset 1d)) * 100 > 50
+        for: 30m
+        labels:
+          severity: warning
+          team: business
+        annotations:
+          summary: "Calculation volume anomaly detected"
+          description: "Calculation volume is {{ $value | printf \"%.0f\" }}% different from yesterday."
+          runbook_url: "https://runbooks.greenlang.io/volume-anomaly"
+
+      - alert: HighValueCalculationFailure
+        expr: increase(high_value_calculation_failures_total[1h]) > 0
+        for: 1m
+        labels:
+          severity: critical
+          team: business
+        annotations:
+          summary: "High-value calculation failed"
+          description: "A high-value emission calculation has failed."
+          runbook_url: "https://runbooks.greenlang.io/high-value-failure"
+
+      - alert: TenantQuotaExceeded
+        expr: tenant_api_requests_total > tenant_api_quota_limit * 0.9
+        for: 5m
+        labels:
+          severity: warning
+          team: business
+        annotations:
+          summary: "Tenant approaching quota limit"
+          description: "Tenant {{ $labels.tenant_id }} is at 90% of API quota."
+          runbook_url: "https://runbooks.greenlang.io/tenant-quota"
+
+      - alert: ComplianceReportingDeadlineApproaching
+        expr: compliance_report_deadline_seconds < 86400 * 7
+        for: 1h
+        labels:
+          severity: warning
+          team: compliance
+        annotations:
+          summary: "Compliance reporting deadline approaching"
+          description: "Compliance report deadline in {{ $value | humanizeDuration }}."
+          runbook_url: "https://runbooks.greenlang.io/compliance-deadline"
+
+  # ============================================================================
+  # SLO Alerts (Service Level Objectives)
+  # ============================================================================
+  - name: slo_alerts
+    interval: 30s
+    rules:
+      - alert: SLOAvailabilityBudgetBurn
+        expr: |
+          (
+            1 - (
+              sum(rate(http_requests_total{job="greenlang-api-gateway",status!~"5.."}[1h])) /
+              sum(rate(http_requests_total{job="greenlang-api-gateway"}[1h]))
+            )
+          ) / (1 - 0.9995) > 2
+        for: 5m
+        labels:
+          severity: warning
+          team: platform
+          slo: availability
+        annotations:
+          summary: "SLO availability budget burning fast"
+          description: "Error budget burn rate is {{ $value | printf \"%.1f\" }}x the sustainable rate."
+          runbook_url: "https://runbooks.greenlang.io/slo-availability"
+
+      - alert: SLOLatencyBudgetBurn
+        expr: |
+          (
+            1 - (
+              sum(rate(http_request_duration_seconds_bucket{job="greenlang-api-gateway",le="0.1"}[1h])) /
+              sum(rate(http_request_duration_seconds_count{job="greenlang-api-gateway"}[1h]))
+            )
+          ) / (1 - 0.99) > 2
+        for: 5m
+        labels:
+          severity: warning
+          team: platform
+          slo: latency
+        annotations:
+          summary: "SLO latency budget burning fast"
+          description: "Latency SLO budget burn rate is {{ $value | printf \"%.1f\" }}x the sustainable rate."
+          runbook_url: "https://runbooks.greenlang.io/slo-latency"
+
+      - alert: EUDRSLOBreach
+        expr: |
+          (
+            sum(rate(eudr_requests_total{status!~"5.."}[24h])) /
+            sum(rate(eudr_requests_total[24h]))
+          ) < 0.999
+        for: 10m
+        labels:
+          severity: critical
+          team: compliance
+          slo: eudr-availability
+        annotations:
+          summary: "EUDR SLO breach"
+          description: "EUDR availability is {{ $value | printf \"%.4f\" }} (SLO: 99.9%)."
+          runbook_url: "https://runbooks.greenlang.io/eudr-slo-breach"

@@ -1,0 +1,18 @@
+# Invalid Payload - Rule Violation (sum validation)
+# Error Code: GLSCHEMA-E402 (CONSISTENCY_ERROR)
+# Schema: rules/conditional_rules.yaml
+
+_test_metadata:
+  schema: "rules/conditional_rules.yaml"
+  description: "Rule violation - total_emissions does not equal scope1 + scope2"
+  expected_valid: false
+  expected_errors:
+    - code: "GLSCHEMA-E402"
+      path: "/total_emissions"
+      severity: "error"
+
+fuel_type: "diesel"
+quantity: 500
+scope1_emissions: 1000
+scope2_emissions: 500
+total_emissions: 2000  # Should be 1500 (1000 + 500)

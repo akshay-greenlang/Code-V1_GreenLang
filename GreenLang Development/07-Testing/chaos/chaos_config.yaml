@@ -1,0 +1,269 @@
+# Chaos Engineering Test Configuration
+# GreenLang Chaos Testing Framework
+# Date: December 2025
+
+# =============================================================================
+# General Settings
+# =============================================================================
+general:
+  environment: test
+  log_level: DEBUG
+  report_format: json  # json, html, both
+  report_directory: ./chaos-reports
+  parallel_execution: false
+  fail_fast: false
+  seed: 42  # For reproducible random failures
+
+# =============================================================================
+# Steady State Metrics (SLOs)
+# =============================================================================
+steady_state:
+  max_latency_ms: 5000
+  min_availability_percent: 99.0
+  max_error_rate_percent: 1.0
+  max_memory_mb: 1000
+  min_throughput_rps: 100
+  max_p99_latency_ms: 10000
+
+# =============================================================================
+# Chaos Scenarios Configuration
+# =============================================================================
+scenarios:
+  # Network Partition Scenarios
+  network_partition:
+    enabled: true
+    duration_seconds: 30
+    targets:
+      - service_a: process-heat-agent
+        service_b: postgresql
+        description: "Agent to database partition"
+      - service_a: process-heat-agent
+        service_b: redis
+        description: "Agent to cache partition"
+      - service_a: postgresql-primary
+        service_b: postgresql-replica
+        description: "Split brain scenario"
+
+  # Latency Injection
+  latency_injection:
+    enabled: true
+    scenarios:
+      - name: minor_latency
+        delay_ms: 100
+        duration_seconds: 30
+        targets: ["api", "database"]
+      - name: moderate_latency
+        delay_ms: 500
+        duration_seconds: 30
+        targets: ["api"]
+      - name: severe_latency
+        delay_ms: 2000
+        duration_seconds: 30
+        targets: ["api", "database"]
+      - name: timeout_inducing
+        delay_ms: 10000
+        duration_seconds: 60
+        targets: ["external_api"]
+
+  # Failure Injection
+  failure_injection:
+    enabled: true
+    scenarios:
+      - name: intermittent_failures
+        error_rate_percent: 10
+        duration_seconds: 60
+        targets: ["api"]
+      - name: partial_outage
+        error_rate_percent: 50
+        duration_seconds: 30
+        targets: ["database"]
+      - name: complete_outage
+        error_rate_percent: 100
+        duration_seconds: 30
+        targets: ["database", "cache", "external_api"]
+
+  # Resource Pressure
+  resource_pressure:
+    enabled: true
+    cpu_stress:
+      cores: 4
+      duration_seconds: 30
+      targets: ["process-heat-agent"]
+    memory_pressure:
+      mb: 800
+      duration_seconds: 30
+      targets: ["process-heat-agent"]
+
+  # Pod Failures
+  pod_failures:
+    enabled: true
+    scenarios:
+      - name: single_pod_failure
+        count: 1
+        deployment: process-heat-agent
+      - name: cascading_pod_failures
+        count: 2
+        deployment: process-heat-agent
+      - name: all_replicas_failure
+        count: 3
+        deployment: process-heat-agent
+
+  # Disk I/O Failures
+  disk_io:
+    enabled: true
+    scenarios:
+      - name: disk_full
+        type: write_failure
+        error_rate_percent: 100
+        duration_seconds: 30
+      - name: slow_disk
+        type: latency
+        delay_ms: 500
+        duration_seconds: 30
+      - name: disk_corruption
+        type: data_corruption
+        corruption_rate_percent: 1
+        duration_seconds: 30
+
+  # Dependency Failures
+  dependency_failures:
+    enabled: true
+    dependencies:
+      - name: external_grid_api
+        failure_type: complete_outage
+        duration_seconds: 60
+        fallback_expected: true
+        max_cache_age_hours: 24
+      - name: kafka
+        failure_type: complete_outage
+        duration_seconds: 60
+        buffer_limit_mb: 100
+      - name: redis
+        failure_type: complete_outage
+        duration_seconds: 30
+        fallback_to_database: true
+
+# =============================================================================
+# Recovery Validation
+# =============================================================================
+recovery:
+  validation_enabled: true
+  max_recovery_time_seconds: 30
+  health_checks:
+    - name: liveness
+      endpoint: /health/live
+      expected_status: 200
+    - name: readiness
+      endpoint: /health/ready
+      expected_status: 200
+    - name: startup
+      endpoint: /health/startup
+      expected_status: 200
+  data_consistency:
+    enabled: true
+    verify_writes: true
+    verify_reads: true
+
+# =============================================================================
+# Circuit Breaker Settings
+# =============================================================================
+circuit_breaker:
+  enabled: true
+  failure_threshold: 5
+  success_threshold: 3
+  timeout_seconds: 30
+  half_open_requests: 3
+
+# =============================================================================
+# Retry Configuration
+# =============================================================================
+retry:
+  max_attempts: 3
+  base_delay_seconds: 1
+  max_delay_seconds: 30
+  exponential_base: 2
+  jitter_enabled: true
+  jitter_max_seconds: 0.5
+
+# =============================================================================
+# Rate Limiting (Thundering Herd Prevention)
+# =============================================================================
+rate_limiting:
+  enabled: true
+  max_concurrent_requests: 100
+  requests_per_second: 1000
+  burst_size: 200
+
+# =============================================================================
+# Monitoring and Alerting
+# =============================================================================
+monitoring:
+  metrics_collection: true
+  metrics_interval_seconds: 1
+  alert_on_slo_violation: true
+  alert_channels:
+    - type: log
+      level: WARNING
+    - type: metrics
+      endpoint: /metrics
+
+# =============================================================================
+# Test Execution
+# =============================================================================
+execution:
+  # Test categories to run
+  categories:
+    - agent_failover
+    - database_resilience
+    - network_partition
+    - disk_io_failures
+    - dependency_failures
+    - cascading_failures
+    - recovery_validation
+
+  # Timeouts
+  test_timeout_seconds: 300
+  scenario_timeout_seconds: 120
+  cleanup_timeout_seconds: 30
+
+  # Hooks
+  pre_test_hooks:
+    - name: verify_baseline
+      command: "python -m pytest tests/health_check.py"
+    - name: record_metrics_baseline
+      enabled: true
+
+  post_test_hooks:
+    - name: cleanup_resources
+      enabled: true
+    - name: generate_report
+      format: both  # json and html
+
+# =============================================================================
+# Safety Guards
+# =============================================================================
+safety:
+  # Prevent chaos in production
+  allowed_environments:
+    - test
+    - staging
+    - chaos-testing
+
+  # Resource limits for chaos injection
+  max_cpu_stress_cores: 4
+  max_memory_pressure_mb: 1000
+  max_concurrent_chaos_events: 5
+
+  # Emergency stop
+  kill_switch_enabled: true
+  kill_switch_trigger:
+    - metric: error_rate_percent
+      threshold: 50
+    - metric: latency_p99_ms
+      threshold: 30000
+    - metric: availability_percent
+      threshold: 90
+
+  # Auto-recovery
+  auto_recovery_enabled: true
+  recovery_timeout_seconds: 60

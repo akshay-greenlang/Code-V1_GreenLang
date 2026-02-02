@@ -1,0 +1,123 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "GreenLang Analysis Output Schema",
+  "type": "object",
+  "required": ["total_co2e_kg", "total_co2e_tons", "by_fuel"],
+  "properties": {
+    "total_co2e_kg": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Total CO2 equivalent emissions in kilograms"
+    },
+    "total_co2e_tons": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Total CO2 equivalent emissions in metric tons"
+    },
+    "by_fuel": {
+      "type": "object",
+      "description": "Emissions breakdown by fuel type",
+      "additionalProperties": {
+        "type": "number",
+        "minimum": 0
+      }
+    },
+    "by_fuel_percentage": {
+      "type": "object",
+      "description": "Percentage breakdown by fuel type",
+      "additionalProperties": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 100
+      }
+    },
+    "intensity": {
+      "type": "object",
+      "properties": {
+        "per_sqft_year": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Emissions intensity per square foot per year"
+        },
+        "per_sqm_year": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Emissions intensity per square meter per year"
+        },
+        "per_occupant": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Emissions per occupant"
+        }
+      }
+    },
+    "benchmark": {
+      "type": "object",
+      "required": ["rating"],
+      "properties": {
+        "rating": {
+          "type": "string",
+          "enum": ["Excellent", "Good", "Average", "Poor"],
+          "description": "Performance rating"
+        },
+        "percentile": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Percentile ranking"
+        },
+        "comparison": {
+          "type": "object",
+          "description": "Comparison with benchmarks"
+        }
+      }
+    },
+    "recommendations": {
+      "type": "array",
+      "description": "List of recommendations",
+      "items": {
+        "type": "object",
+        "required": ["action"],
+        "properties": {
+          "action": {
+            "type": "string",
+            "description": "Recommended action"
+          },
+          "savings": {
+            "type": "string",
+            "description": "Potential savings"
+          },
+          "impact": {
+            "type": "string",
+            "description": "Environmental impact"
+          },
+          "priority": {
+            "type": "string",
+            "enum": ["High", "Medium", "Low"]
+          },
+          "cost": {
+            "type": "string",
+            "description": "Implementation cost estimate"
+          }
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "properties": {
+        "dataset_version": {
+          "type": "string",
+          "description": "Version of emission factors dataset"
+        },
+        "source": {
+          "type": "string",
+          "description": "Data source"
+        },
+        "last_updated": {
+          "type": "string",
+          "description": "Last update date"
+        }
+      }
+    }
+  }
+}

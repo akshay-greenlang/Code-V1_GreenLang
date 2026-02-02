@@ -1,0 +1,206 @@
+# GL-016 WATERGUARD - Docker Compose
+# Project: GreenLang Industrial Sustainability Framework
+# Agent: Water Treatment Quality Control
+#
+# This file is for local development and testing only.
+# Production deployments should use Kubernetes manifests.
+
+version: '3.8'
+
+services:
+  # ============================================================================
+  # WATERGUARD Agent
+  # ============================================================================
+  waterguard:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: gl-016-waterguard:latest
+    container_name: gl-016-waterguard
+    hostname: waterguard
+    restart: unless-stopped
+
+    ports:
+      - "8000:8000"  # API
+      - "9090:9090"  # Metrics
+
+    environment:
+      AGENT_ID: GL-016
+      AGENT_NAME: WATERGUARD
+      ENVIRONMENT: development
+      LOG_LEVEL: DEBUG
+
+      # Redis connection
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+
+      # Disable external integrations for local dev
+      SCADA_ENABLED: "false"
+      ERP_ENABLED: "false"
+      ANALYZER_ENABLED: "false"
+
+    env_file:
+      - .env
+
+    volumes:
+      - ./config:/app/config:ro
+      - ./logs:/app/logs
+      - ./data:/app/data
+      - waterguard-models:/app/models
+
+    networks:
+      - greenlang-network
+
+    depends_on:
+      - redis
+
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # ============================================================================
+  # Redis Cache
+  # ============================================================================
+  redis:
+    image: redis:7-alpine
+    container_name: gl-016-redis
+    hostname: redis
+    restart: unless-stopped
+
+    ports:
+      - "6379:6379"
+
+    volumes:
+      - redis-data:/data
+
+    networks:
+      - greenlang-network
+
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+    command: redis-server --appendonly yes
+
+  # ============================================================================
+  # Prometheus (Monitoring)
+  # ============================================================================
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: gl-016-prometheus
+    hostname: prometheus
+    restart: unless-stopped
+
+    ports:
+      - "9091:9090"
+
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+
+    networks:
+      - greenlang-network
+
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+
+  # ============================================================================
+  # Grafana (Visualization)
+  # ============================================================================
+  grafana:
+    image: grafana/grafana:latest
+    container_name: gl-016-grafana
+    hostname: grafana
+    restart: unless-stopped
+
+    ports:
+      - "3000:3000"
+
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_INSTALL_PLUGINS: grafana-piechart-panel
+
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+
+    networks:
+      - greenlang-network
+
+    depends_on:
+      - prometheus
+
+  # ============================================================================
+  # Mock SCADA Server (for testing)
+  # ============================================================================
+  mock-scada:
+    image: python:3.10-slim
+    container_name: gl-016-mock-scada
+    hostname: mock-scada
+    restart: unless-stopped
+
+    ports:
+      - "4840:4840"
+
+    volumes:
+      - ./tests/mocks/scada:/app
+
+    networks:
+      - greenlang-network
+
+    working_dir: /app
+
+    command: python mock_scada_server.py
+
+  # ============================================================================
+  # Mock Analyzer (for testing)
+  # ============================================================================
+  mock-analyzer:
+    image: python:3.10-slim
+    container_name: gl-016-mock-analyzer
+    hostname: mock-analyzer
+    restart: unless-stopped
+
+    ports:
+      - "5020:502"
+
+    volumes:
+      - ./tests/mocks/analyzer:/app
+
+    networks:
+      - greenlang-network
+
+    working_dir: /app
+
+    command: python mock_analyzer_server.py
+
+# ============================================================================
+# Networks
+# ============================================================================
+networks:
+  greenlang-network:
+    name: greenlang-network
+    driver: bridge
+
+# ============================================================================
+# Volumes
+# ============================================================================
+volumes:
+  waterguard-models:
+    name: gl-016-waterguard-models
+  redis-data:
+    name: gl-016-redis-data
+  prometheus-data:
+    name: gl-016-prometheus-data
+  grafana-data:
+    name: gl-016-grafana-data

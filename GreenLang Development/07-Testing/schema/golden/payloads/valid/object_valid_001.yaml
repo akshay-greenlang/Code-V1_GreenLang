@@ -1,0 +1,30 @@
+# Valid Object Constraints Payload 001
+# Tests: All object constraints satisfied
+# Schema: basic/object_constraints.yaml
+
+_test_metadata:
+  schema: "basic/object_constraints.yaml"
+  description: "Valid payload with all object constraints satisfied"
+  expected_valid: true
+
+id: "ABC-123456"
+name: "Test Organization"
+metadata:
+  created_at: "2026-01-15T10:00:00Z"
+  updated_at: "2026-01-15T12:00:00Z"
+  version: 1
+
+tags_map:
+  environment: "production"
+  region: "us-west-2"
+  owner: "team-alpha"
+
+config:
+  enabled: true
+  settings:
+    timeout_ms: 30000
+    retry_count: 3
+
+attributes:
+  department: "Engineering"
+  cost_center: "CC-1234"

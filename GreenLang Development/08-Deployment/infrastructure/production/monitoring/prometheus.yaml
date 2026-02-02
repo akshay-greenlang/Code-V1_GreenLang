@@ -1,0 +1,269 @@
+# GreenLang Climate OS - Prometheus Configuration
+# INFRA-008: Configure observability (Prometheus + Grafana)
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+  namespace: greenlang-production
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: prometheus
+data:
+  prometheus.yml: |
+    # GreenLang Prometheus Configuration
+
+    global:
+      scrape_interval: 15s
+      evaluation_interval: 15s
+      external_labels:
+        cluster: 'greenlang-production'
+        environment: 'production'
+
+    # Alerting configuration
+    alerting:
+      alertmanagers:
+        - static_configs:
+            - targets:
+                - alertmanager:9093
+
+    # Rule files
+    rule_files:
+      - /etc/prometheus/rules/*.yaml
+
+    # Scrape configurations
+    scrape_configs:
+      # Prometheus self-monitoring
+      - job_name: 'prometheus'
+        static_configs:
+          - targets: ['localhost:9090']
+
+      # Kubernetes API server
+      - job_name: 'kubernetes-apiservers'
+        kubernetes_sd_configs:
+          - role: endpoints
+        scheme: https
+        tls_config:
+          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+        bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_namespace, __meta_kubernetes_service_name, __meta_kubernetes_endpoint_port_name]
+            action: keep
+            regex: default;kubernetes;https
+
+      # GreenLang Agent Factory
+      - job_name: 'agent-factory'
+        kubernetes_sd_configs:
+          - role: pod
+            namespaces:
+              names: ['greenlang-production']
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_label_app_kubernetes_io_component]
+            action: keep
+            regex: agent-factory
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+            action: keep
+            regex: true
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_port]
+            action: replace
+            target_label: __address__
+            regex: (.+)
+            replacement: ${1}:9090
+
+      # GreenLang API Gateway
+      - job_name: 'api-gateway'
+        kubernetes_sd_configs:
+          - role: pod
+            namespaces:
+              names: ['greenlang-production']
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_label_app_kubernetes_io_component]
+            action: keep
+            regex: api-gateway
+
+      # GreenLang Workers
+      - job_name: 'workers'
+        kubernetes_sd_configs:
+          - role: pod
+            namespaces:
+              names: ['greenlang-production']
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_label_app_kubernetes_io_component]
+            action: keep
+            regex: worker
+
+      # PostgreSQL
+      - job_name: 'postgresql'
+        kubernetes_sd_configs:
+          - role: pod
+            namespaces:
+              names: ['greenlang-production']
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_label_app_kubernetes_io_component]
+            action: keep
+            regex: postgresql
+          - source_labels: [__meta_kubernetes_pod_container_port_name]
+            action: keep
+            regex: metrics
+
+      # Redis
+      - job_name: 'redis'
+        kubernetes_sd_configs:
+          - role: pod
+            namespaces:
+              names: ['greenlang-production']
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_label_app_kubernetes_io_component]
+            action: keep
+            regex: redis
+          - source_labels: [__meta_kubernetes_pod_container_port_name]
+            action: keep
+            regex: metrics
+
+      # All GreenLang pods with prometheus annotations
+      - job_name: 'greenlang-pods'
+        kubernetes_sd_configs:
+          - role: pod
+            namespaces:
+              names: ['greenlang-production']
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+            action: keep
+            regex: true
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+            action: replace
+            target_label: __metrics_path__
+            regex: (.+)
+          - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+            action: replace
+            regex: ([^:]+)(?::\d+)?;(\d+)
+            replacement: $1:$2
+            target_label: __address__
+          - action: labelmap
+            regex: __meta_kubernetes_pod_label_(.+)
+
+  alerts.yaml: |
+    # GreenLang Alert Rules
+
+    groups:
+      - name: greenlang-agent-factory
+        rules:
+          # Agent Factory availability
+          - alert: AgentFactoryDown
+            expr: up{job="agent-factory"} == 0
+            for: 1m
+            labels:
+              severity: critical
+            annotations:
+              summary: "Agent Factory instance is down"
+              description: "Agent Factory {{ $labels.instance }} has been down for more than 1 minute."
+
+          # High error rate
+          - alert: AgentFactoryHighErrorRate
+            expr: |
+              sum(rate(agent_execution_errors_total[5m])) by (agent_id)
+              / sum(rate(agent_executions_total[5m])) by (agent_id) > 0.05
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "High error rate for agent {{ $labels.agent_id }}"
+              description: "Agent {{ $labels.agent_id }} has error rate > 5% for 5 minutes."
+
+          # Slow agent execution
+          - alert: AgentExecutionSlow
+            expr: |
+              histogram_quantile(0.95, rate(agent_execution_duration_seconds_bucket[5m])) > 60
+            for: 10m
+            labels:
+              severity: warning
+            annotations:
+              summary: "Agent execution is slow"
+              description: "P95 agent execution time is > 60 seconds."
+
+          # Queue backup
+          - alert: AgentQueueBackup
+            expr: agent_queue_size > 1000
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "Agent execution queue is backing up"
+              description: "Agent queue has > 1000 pending executions."
+
+      - name: greenlang-infrastructure
+        rules:
+          # PostgreSQL down
+          - alert: PostgreSQLDown
+            expr: pg_up == 0
+            for: 1m
+            labels:
+              severity: critical
+            annotations:
+              summary: "PostgreSQL is down"
+              description: "PostgreSQL instance {{ $labels.instance }} is down."
+
+          # PostgreSQL replication lag
+          - alert: PostgreSQLReplicationLag
+            expr: pg_replication_lag > 30
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "PostgreSQL replication lag is high"
+              description: "Replication lag is {{ $value }} seconds."
+
+          # Redis down
+          - alert: RedisDown
+            expr: redis_up == 0
+            for: 1m
+            labels:
+              severity: critical
+            annotations:
+              summary: "Redis is down"
+              description: "Redis instance {{ $labels.instance }} is down."
+
+          # Redis memory high
+          - alert: RedisMemoryHigh
+            expr: redis_memory_used_bytes / redis_memory_max_bytes > 0.9
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "Redis memory usage is high"
+              description: "Redis memory usage is > 90%."
+
+      - name: greenlang-zero-hallucination
+        rules:
+          # Lineage completeness
+          - alert: LineageIncomplete
+            expr: |
+              sum(rate(lineage_incomplete_total[5m])) > 0
+            for: 1m
+            labels:
+              severity: critical
+            annotations:
+              summary: "Lineage tracking is incomplete"
+              description: "Some calculations are missing lineage data."
+
+          # Missing citations
+          - alert: MissingCitations
+            expr: |
+              sum(rate(calculations_without_citations_total[5m])) > 0
+            for: 1m
+            labels:
+              severity: warning
+            annotations:
+              summary: "Calculations missing citations"
+              description: "Some calculations are missing required citations."
+
+          # Non-deterministic execution
+          - alert: NonDeterministicExecution
+            expr: |
+              sum(rate(determinism_check_failures_total[5m])) > 0
+            for: 1m
+            labels:
+              severity: critical
+            annotations:
+              summary: "Non-deterministic execution detected"
+              description: "Agent executions are producing non-deterministic results."

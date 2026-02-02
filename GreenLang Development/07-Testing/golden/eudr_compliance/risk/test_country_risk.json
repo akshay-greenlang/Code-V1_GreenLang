@@ -1,0 +1,652 @@
+{
+  "suite": "EUDR Country Risk Assessment",
+  "version": "1.0.0",
+  "description": "Golden tests for country deforestation risk assessment under EUDR",
+  "tests": [
+    {
+      "test_id": "RISK-HIGH-001",
+      "description": "Brazil - Soya (HIGH risk)",
+      "tool_name": "assess_country_risk",
+      "input": {
+        "country_code": "BR",
+        "commodity_type": "soya",
+        "region": null,
+        "production_year": 2024
+      },
+      "expected_output": {
+        "risk_level": "high",
+        "country_name": "Brazil",
+        "country_code": "BR",
+        "due_diligence_level": "full_verification",
+        "satellite_verification_required": true
+      },
+      "tolerance": 0.01,
+      "tags": ["brazil", "soya", "high_risk"]
+    },
+    {
+      "test_id": "RISK-HIGH-002",
+      "description": "Brazil - Cattle (HIGH risk)",
+      "tool_name": "assess_country_risk",
+      "input": {
+        "country_code": "BR",
+        "commodity_type": "cattle",
+        "region": null,
+        "production_year": 2024
+      },
+      "expected_output": {
+        "risk_level": "high",
+        "country_name": "Brazil",
+        "due_diligence_level": "full_verification",
+        "satellite_verification_required": true
+      },
+      "tolerance": 0.01,
+      "tags": ["brazil", "cattle", "high_risk"]
+    },
+    {
+      "test_id": "RISK-HIGH-003",
+      "description": "Indonesia - Palm Oil (HIGH risk)",
+      "tool_name": "assess_country_risk",
+      "input": {
+        "country_code": "ID",
+        "commodity_type": "palm_oil",
+        "region": null,
+        "production_year": 2024
+      },
+      "expected_output": {
+        "risk_level": "high",
+        "country_name": "Indonesia",
+        "due_diligence_level": "full_verification",
+        "satellite_verification_required": true
+      },
+      "tolerance": 0.01,
+      "tags": ["indonesia", "palm_oil", "high_risk"]
+    },
+    {
+      "test_id": "RISK-HIGH-004",
+      "description": "Malaysia - Palm Oil (HIGH risk)",
+      "tool_name": "assess_country_risk",
+      "input": {
+        "country_code": "MY",
+        "commodity_type": "palm_oil",
+        "region": null,
+        "production_year": 2024
+      },
+      "expected_output": {
+        "risk_level": "high",
+        "country_name": "Malaysia",
+        "due_diligence_level": "full_verification",
+        "satellite_verification_required": true
+      },
+      "tolerance": 0.01,
+      "tags": ["malaysia", "palm_oil", "high_risk"]
+    },
+    {
+      "test_id": "RISK-HIGH-005",
+      "description": "Cote d'Ivoire - Cocoa (HIGH risk)",
+      "tool_name": "assess_country_risk",
+      "input": {
+        "country_code": "CI",
+        "commodity_type": "cocoa",
+        "region": null,
+        "production_year": 2024
+      },
+      "expected_output": {
+        "risk_level": "high",
+        "country_name": "Cote d'Ivoire",
+        "due_diligence_level": "full_verification",
+        "satellite_verification_required": true
+      },
+      "tolerance": 0.01,
+      "tags": ["cote_divoire", "cocoa", "high_risk"]
+    },
+    {
+      "test_id": "RISK-HIGH-006",
+      "description": "DRC - Wood (HIGH risk)",
+      "tool_name": "assess_country_risk",
+      "input": {
+        "country_code": "CD",
+        "commodity_type": "wood",
+        "region": null,
+        "production_year": 2024
+      },
+      "expected_output": {
+        "risk_level": "high",
+        "country_name": "Democratic Republic of the Congo",
+        "due_diligence_level": "full_verification",
+        "satellite_verification_required": true
+      },
+      "tolerance": 0.01,
+      "tags": ["drc", "wood", "high_risk"]
+    },
+    {
+      "test_id": "RISK-HIGH-007",
+      "description": "Paraguay - Cattle (HIGH risk)",
+      "tool_name": "assess_country_risk",
+      "input": {
+        "country_code": "PY",
+        "commodity_type": "cattle",
+        "region": null,
+        "production_year": 2024
+      },
+      "expected_output": {
+        "risk_level": "high",
+        "country_name": "Paraguay",
+        "due_diligence_level": "full_verification",
+        "satellite_verification_required": true
+      },
+      "tolerance": 0.01,
+      "tags": ["paraguay", "cattle", "high_risk"]
+    },
+    {
+      "test_id": "RISK-HIGH-008",
+      "description": "Bolivia - Soya (HIGH risk)",
+      "tool_name": "assess_country_risk",
+      "input": {
+        "country_code": "BO",
+        "commodity_type": "soya",
+        "region": null,
+        "production_year": 2024
+      },
+      "expected_output": {
+        "risk_level": "high",
+        "country_name": "Bolivia",
+        "due_diligence_level": "full_verification",
+        "satellite_verification_required": true
+      },
+      "tolerance": 0.01,
+      "tags": ["bolivia", "soya", "high_risk"]
+    },
+    {
+      "test_id": "RISK-HIGH-009",
+      "description": "Nigeria - Cocoa (HIGH risk)",
+      "tool_name": "assess_country_risk",
+      "input": {
+        "country_code": "NG",
+        "commodity_type": "cocoa",
+        "region": null,
+        "production_year": 2024
+      },
+      "expected_output": {
+        "risk_level": "high",
+        "country_name": "Nigeria",
+        "due_diligence_level": "full_verification",
+        "satellite_verification_required": true
+      },
+      "tolerance": 0.01,
+      "tags": ["nigeria", "cocoa", "high_risk"]
+    },
+    {
+      "test_id": "RISK-HIGH-010",
+      "description": "Cameroon - Wood (HIGH risk)",
+      "tool_name": "assess_country_risk",
+      "input": {
+        "country_code": "CM",
+        "commodity_type": "wood",
+        "region": null,
+        "production_year": 2024
+      },
+      "expected_output": {
+        "risk_level": "high",
+        "country_name": "Cameroon",
+        "due_diligence_level": "full_verification",
+        "satellite_verification_required": true
+      },
+      "tolerance": 0.01,
+      "tags": ["cameroon", "wood", "high_risk"]
+    },
+    {
+      "test_id": "RISK-STD-001",
+      "description": "Ghana - Cocoa (STANDARD risk)",
+      "tool_name": "assess_country_risk",
+      "input": {
+        "country_code": "GH",
+        "commodity_type": "cocoa",
+        "region": null,
+        "production_year": 2024
+      },
+      "expected_output": {
+        "risk_level": "standard",
+        "country_name": "Ghana",
+        "due_diligence_level": "enhanced",
+        "satellite_verification_required": false
+      },
+      "tolerance": 0.01,
+      "tags": ["ghana", "cocoa", "standard_risk"]
+    },
+    {
+      "test_id": "RISK-STD-002",
+      "description": "Colombia - Coffee (LOW commodity risk)",
+      "tool_name": "assess_country_risk",
+      "input": {
+        "country_code": "CO",
+        "commodity_type": "coffee",
+        "region": null,
+        "production_year": 2024
+      },
+      "expected_output": {
+        "risk_level": "low",
+        "country_name": "Colombia",
+        "due_diligence_level": "standard",
+        "satellite_verification_required": false
+      },
+      "tolerance": 0.01,
+      "tags": ["colombia", "coffee", "low_risk"]
+    },
+    {
+      "test_id": "RISK-STD-003",
+      "description": "Vietnam - Coffee (STANDARD risk)",
+      "tool_name": "assess_country_risk",
+      "input": {
+        "country_code": "VN",
+        "commodity_type": "coffee",
+        "region": null,
+        "production_year": 2024
+      },
+      "expected_output": {
+        "risk_level": "standard",
+        "country_name": "Vietnam",
+        "due_diligence_level": "enhanced",
+        "satellite_verification_required": false
+      },
+      "tolerance": 0.01,
+      "tags": ["vietnam", "coffee", "standard_risk"]
+    },
+    {
+      "test_id": "RISK-STD-004",
+      "description": "Thailand - Rubber (STANDARD risk)",
+      "tool_name": "assess_country_risk",
+      "input": {
+        "country_code": "TH",
+        "commodity_type": "rubber",
+        "region": null,
+        "production_year": 2024
+      },
+      "expected_output": {
+        "risk_level": "standard",
+        "country_name": "Thailand",
+        "due_diligence_level": "enhanced",
+        "satellite_verification_required": false
+      },
+      "tolerance": 0.01,
+      "tags": ["thailand", "rubber", "standard_risk"]
+    },
+    {
+      "test_id": "RISK-STD-005",
+      "description": "Ecuador - Cocoa (STANDARD risk)",
+      "tool_name": "assess_country_risk",
+      "input": {
+        "country_code": "EC",
+        "commodity_type": "cocoa",
+        "region": null,
+        "production_year": 2024
+      },
+      "expected_output": {
+        "risk_level": "standard",
+        "country_name": "Ecuador",
+        "due_diligence_level": "enhanced",
+        "satellite_verification_required": false
+      },
+      "tolerance": 0.01,
+      "tags": ["ecuador", "cocoa", "standard_risk"]
+    },
+    {
+      "test_id": "RISK-STD-006",
+      "description": "Peru - Coffee (STANDARD risk)",
+      "tool_name": "assess_country_risk",
+      "input": {
+        "country_code": "PE",
+        "commodity_type": "coffee",
+        "region": null,
+        "production_year": 2024
+      },
+      "expected_output": {
+        "risk_level": "standard",
+        "country_name": "Peru",
+        "due_diligence_level": "enhanced",
+        "satellite_verification_required": false
+      },
+      "tolerance": 0.01,
+      "tags": ["peru", "coffee", "standard_risk"]
+    },
+    {
+      "test_id": "RISK-STD-007",
+      "description": "Ethiopia - Coffee (STANDARD risk)",
+      "tool_name": "assess_country_risk",
+      "input": {
+        "country_code": "ET",
+        "commodity_type": "coffee",
+        "region": null,
+        "production_year": 2024
+      },
+      "expected_output": {
+        "risk_level": "standard",
+        "country_name": "Ethiopia",
+        "due_diligence_level": "enhanced",
+        "satellite_verification_required": false
+      },
+      "tolerance": 0.01,
+      "tags": ["ethiopia", "coffee", "standard_risk"]
+    },
+    {
+      "test_id": "RISK-STD-008",
+      "description": "Argentina - Soya (STANDARD risk)",
+      "tool_name": "assess_country_risk",
+      "input": {
+        "country_code": "AR",
+        "commodity_type": "soya",
+        "region": null,
+        "production_year": 2024
+      },
+      "expected_output": {
+        "risk_level": "standard",
+        "country_name": "Argentina",
+        "due_diligence_level": "enhanced",
+        "satellite_verification_required": false
+      },
+      "tolerance": 0.01,
+      "tags": ["argentina", "soya", "standard_risk"]
+    },
+    {
+      "test_id": "RISK-LOW-001",
+      "description": "France - Wood (LOW risk)",
+      "tool_name": "assess_country_risk",
+      "input": {
+        "country_code": "FR",
+        "commodity_type": "wood",
+        "region": null,
+        "production_year": 2024
+      },
+      "expected_output": {
+        "risk_level": "low",
+        "country_name": "France",
+        "due_diligence_level": "standard",
+        "satellite_verification_required": false
+      },
+      "tolerance": 0.01,
+      "tags": ["france", "wood", "low_risk"]
+    },
+    {
+      "test_id": "RISK-LOW-002",
+      "description": "Germany - Wood (LOW risk)",
+      "tool_name": "assess_country_risk",
+      "input": {
+        "country_code": "DE",
+        "commodity_type": "wood",
+        "region": null,
+        "production_year": 2024
+      },
+      "expected_output": {
+        "risk_level": "low",
+        "country_name": "Germany",
+        "due_diligence_level": "standard",
+        "satellite_verification_required": false
+      },
+      "tolerance": 0.01,
+      "tags": ["germany", "wood", "low_risk"]
+    },
+    {
+      "test_id": "RISK-LOW-003",
+      "description": "Sweden - Wood (LOW risk)",
+      "tool_name": "assess_country_risk",
+      "input": {
+        "country_code": "SE",
+        "commodity_type": "wood",
+        "region": null,
+        "production_year": 2024
+      },
+      "expected_output": {
+        "risk_level": "low",
+        "country_name": "Sweden",
+        "due_diligence_level": "standard",
+        "satellite_verification_required": false
+      },
+      "tolerance": 0.01,
+      "tags": ["sweden", "wood", "low_risk"]
+    },
+    {
+      "test_id": "RISK-LOW-004",
+      "description": "Finland - Wood (LOW risk)",
+      "tool_name": "assess_country_risk",
+      "input": {
+        "country_code": "FI",
+        "commodity_type": "wood",
+        "region": null,
+        "production_year": 2024
+      },
+      "expected_output": {
+        "risk_level": "low",
+        "country_name": "Finland",
+        "due_diligence_level": "standard",
+        "satellite_verification_required": false
+      },
+      "tolerance": 0.01,
+      "tags": ["finland", "wood", "low_risk"]
+    },
+    {
+      "test_id": "RISK-LOW-005",
+      "description": "Canada - Wood (LOW risk)",
+      "tool_name": "assess_country_risk",
+      "input": {
+        "country_code": "CA",
+        "commodity_type": "wood",
+        "region": null,
+        "production_year": 2024
+      },
+      "expected_output": {
+        "risk_level": "low",
+        "country_name": "Canada",
+        "due_diligence_level": "standard",
+        "satellite_verification_required": false
+      },
+      "tolerance": 0.01,
+      "tags": ["canada", "wood", "low_risk"]
+    },
+    {
+      "test_id": "RISK-LOW-006",
+      "description": "USA - Soya (LOW risk)",
+      "tool_name": "assess_country_risk",
+      "input": {
+        "country_code": "US",
+        "commodity_type": "soya",
+        "region": null,
+        "production_year": 2024
+      },
+      "expected_output": {
+        "risk_level": "low",
+        "country_name": "United States",
+        "due_diligence_level": "standard",
+        "satellite_verification_required": false
+      },
+      "tolerance": 0.01,
+      "tags": ["usa", "soya", "low_risk"]
+    },
+    {
+      "test_id": "RISK-LOW-007",
+      "description": "Australia - Cattle (LOW risk)",
+      "tool_name": "assess_country_risk",
+      "input": {
+        "country_code": "AU",
+        "commodity_type": "cattle",
+        "region": null,
+        "production_year": 2024
+      },
+      "expected_output": {
+        "risk_level": "low",
+        "country_name": "Australia",
+        "due_diligence_level": "standard",
+        "satellite_verification_required": false
+      },
+      "tolerance": 0.01,
+      "tags": ["australia", "cattle", "low_risk"]
+    },
+    {
+      "test_id": "RISK-LOW-008",
+      "description": "New Zealand - Wood (LOW risk)",
+      "tool_name": "assess_country_risk",
+      "input": {
+        "country_code": "NZ",
+        "commodity_type": "wood",
+        "region": null,
+        "production_year": 2024
+      },
+      "expected_output": {
+        "risk_level": "low",
+        "country_name": "New Zealand",
+        "due_diligence_level": "standard",
+        "satellite_verification_required": false
+      },
+      "tolerance": 0.01,
+      "tags": ["new_zealand", "wood", "low_risk"]
+    },
+    {
+      "test_id": "RISK-LOW-009",
+      "description": "Japan - Wood (LOW risk)",
+      "tool_name": "assess_country_risk",
+      "input": {
+        "country_code": "JP",
+        "commodity_type": "wood",
+        "region": null,
+        "production_year": 2024
+      },
+      "expected_output": {
+        "risk_level": "low",
+        "country_name": "Japan",
+        "due_diligence_level": "standard",
+        "satellite_verification_required": false
+      },
+      "tolerance": 0.01,
+      "tags": ["japan", "wood", "low_risk"]
+    },
+    {
+      "test_id": "RISK-LOW-010",
+      "description": "Chile - Wood (LOW risk)",
+      "tool_name": "assess_country_risk",
+      "input": {
+        "country_code": "CL",
+        "commodity_type": "wood",
+        "region": null,
+        "production_year": 2024
+      },
+      "expected_output": {
+        "risk_level": "low",
+        "country_name": "Chile",
+        "due_diligence_level": "standard",
+        "satellite_verification_required": false
+      },
+      "tolerance": 0.01,
+      "tags": ["chile", "wood", "low_risk"]
+    },
+    {
+      "test_id": "RISK-INV-001",
+      "description": "Invalid country code - 3 characters",
+      "tool_name": "assess_country_risk",
+      "input": {
+        "country_code": "BRA",
+        "commodity_type": "soya",
+        "region": null,
+        "production_year": 2024
+      },
+      "expected_output": {
+        "risk_level": "standard",
+        "due_diligence_level": "enhanced",
+        "satellite_verification_required": true
+      },
+      "tolerance": 0.01,
+      "tags": ["invalid", "country_code"]
+    },
+    {
+      "test_id": "RISK-INV-002",
+      "description": "Invalid commodity type",
+      "tool_name": "assess_country_risk",
+      "input": {
+        "country_code": "BR",
+        "commodity_type": "wheat",
+        "region": null,
+        "production_year": 2024
+      },
+      "expected_output": {
+        "risk_level": "standard",
+        "due_diligence_level": "enhanced",
+        "satellite_verification_required": true
+      },
+      "tolerance": 0.01,
+      "tags": ["invalid", "commodity"]
+    },
+    {
+      "test_id": "RISK-MIXED-001",
+      "description": "Brazil - Coffee (STANDARD commodity in HIGH country)",
+      "tool_name": "assess_country_risk",
+      "input": {
+        "country_code": "BR",
+        "commodity_type": "coffee",
+        "region": null,
+        "production_year": 2024
+      },
+      "expected_output": {
+        "risk_level": "standard",
+        "country_name": "Brazil",
+        "due_diligence_level": "enhanced",
+        "satellite_verification_required": false
+      },
+      "tolerance": 0.01,
+      "tags": ["brazil", "coffee", "mixed_risk"]
+    },
+    {
+      "test_id": "RISK-MIXED-002",
+      "description": "Indonesia - Coffee (STANDARD commodity in HIGH country)",
+      "tool_name": "assess_country_risk",
+      "input": {
+        "country_code": "ID",
+        "commodity_type": "coffee",
+        "region": null,
+        "production_year": 2024
+      },
+      "expected_output": {
+        "risk_level": "standard",
+        "country_name": "Indonesia",
+        "due_diligence_level": "enhanced",
+        "satellite_verification_required": false
+      },
+      "tolerance": 0.01,
+      "tags": ["indonesia", "coffee", "mixed_risk"]
+    },
+    {
+      "test_id": "RISK-REGION-001",
+      "description": "Brazil - Soya in Amazonia Legal region (HIGH)",
+      "tool_name": "assess_country_risk",
+      "input": {
+        "country_code": "BR",
+        "commodity_type": "soya",
+        "region": "Amazonia Legal",
+        "production_year": 2024
+      },
+      "expected_output": {
+        "risk_level": "high",
+        "country_name": "Brazil",
+        "due_diligence_level": "full_verification",
+        "satellite_verification_required": true
+      },
+      "tolerance": 0.01,
+      "tags": ["brazil", "soya", "region", "amazonia"]
+    },
+    {
+      "test_id": "RISK-REGION-002",
+      "description": "Indonesia - Palm Oil in Kalimantan region (HIGH)",
+      "tool_name": "assess_country_risk",
+      "input": {
+        "country_code": "ID",
+        "commodity_type": "palm_oil",
+        "region": "Kalimantan",
+        "production_year": 2024
+      },
+      "expected_output": {
+        "risk_level": "high",
+        "country_name": "Indonesia",
+        "due_diligence_level": "full_verification",
+        "satellite_verification_required": true
+      },
+      "tolerance": 0.01,
+      "tags": ["indonesia", "palm_oil", "region", "kalimantan"]
+    }
+  ]
+}

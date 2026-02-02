@@ -1,0 +1,74 @@
+{
+  "packs": {
+    "greenlang/boiler-solar": {
+      "card_summary": "# Boiler \u00e2\u2020\u2019 Solar Preheat Pack (v0.2.0) ## Purpose Optimize industrial boiler operations by preheating feedwater using solar thermal collectors. This pack analyzes the technical and economic feasibil",
+      "created_at": "2025-09-09T15:02:32.293754",
+      "description": "",
+      "download_count": 0,
+      "latest_version": "1.0.0",
+      "license": "Apache-2.0",
+      "name": "boiler-solar",
+      "oci_ref": "ghcr.io/greenlang/boiler-solar",
+      "org": "greenlang",
+      "slug": "boiler-solar",
+      "tags": [],
+      "updated_at": "2025-09-09T15:02:32.293757",
+      "versions": [
+        "1.0.0"
+      ]
+    },
+    "greenlang/cement-lca": {
+      "card_summary": "# Cement LCA Pack Card ## Overview - **Name**: cement-lca - **Version**: 1.0.0",
+      "created_at": "2025-09-09T15:02:32.319279",
+      "description": "Life Cycle Assessment for cement and concrete production",
+      "download_count": 0,
+      "latest_version": "1.0.0",
+      "license": "Apache-2.0",
+      "name": "cement-lca",
+      "oci_ref": "ghcr.io/greenlang/cement-lca",
+      "org": "greenlang",
+      "slug": "cement-lca",
+      "tags": [],
+      "updated_at": "2025-09-09T15:02:32.319287",
+      "versions": [
+        "1.0.0"
+      ]
+    },
+    "greenlang/emissions-core": {
+      "card_summary": "",
+      "created_at": "2025-09-09T15:02:32.323080",
+      "description": "Core emissions calculation agents for fuel, electricity, and carbon accounting",
+      "download_count": 0,
+      "latest_version": "1.0.0",
+      "license": "MIT",
+      "name": "emissions-core",
+      "oci_ref": "ghcr.io/greenlang/emissions-core",
+      "org": "greenlang",
+      "slug": "emissions-core",
+      "tags": [],
+      "updated_at": "2025-09-09T15:02:32.323083",
+      "versions": [
+        "1.0.0"
+      ]
+    },
+    "greenlang/hvac-measures": {
+      "card_summary": "# HVAC Measures Pack Card ## Overview - **Name**: hvac-measures - **Version**: 1.0.0",
+      "created_at": "2025-09-09T15:02:32.339747",
+      "description": "HVAC system optimization and measurement calculations",
+      "download_count": 0,
+      "latest_version": "1.0.0",
+      "license": "Apache-2.0",
+      "name": "hvac-measures",
+      "oci_ref": "ghcr.io/greenlang/hvac-measures",
+      "org": "greenlang",
+      "slug": "hvac-measures",
+      "tags": [],
+      "updated_at": "2025-09-09T15:02:32.339755",
+      "versions": [
+        "1.0.0"
+      ]
+    }
+  },
+  "updated_at": "2025-09-09T15:02:32.291528",
+  "version": "1.0"
+}

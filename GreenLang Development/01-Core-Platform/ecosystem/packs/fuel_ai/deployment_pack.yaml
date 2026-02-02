@@ -1,0 +1,872 @@
+# GreenLang Agent Deployment Pack Template
+# Version: 1.0.0
+# Use this template for all AI agent deployments
+#
+# This template provides a universal configuration structure for deploying
+# GreenLang AI agents in production environments. It covers all aspects of
+# agent deployment including resources, dependencies, APIs, monitoring,
+# security, and scaling.
+#
+# Usage:
+#   - Copy this template for new agent deployments
+#   - Fill in agent-specific values (marked with {placeholders})
+#   - Use scripts/apply_deployment_template.py for automated generation
+#   - Validate with 'gl validate pack <path>'
+#
+# Author: GreenLang Framework Team
+# Date: October 2025
+
+# ============================================================================
+# PACK METADATA
+# ============================================================================
+pack_metadata:
+  # Unique identifier for the deployment pack
+  # Format: emissions/fuel_ai
+  # Example: "emissions/fuel_ai" or "analytics/forecast_sarima"
+  pack_id: "emissions/fuel_ai"
+
+  # Version following semantic versioning (MAJOR.MINOR.PATCH)
+  pack_version: "1.0.0"
+
+  # Agent classification type
+  # Options: ai_orchestration, deterministic, hybrid, ml_inference
+  agent_type: "ai_orchestration"
+
+  # Human-readable description of the agent's purpose and capabilities
+  description: "Calculate CO2e emissions from fuel consumption with AI-enhanced explanations and recommendations"
+
+  # Author or team responsible for the agent
+  author: "GreenLang Framework Team"
+
+  # License under which the agent is distributed
+  # Options: Proprietary, Apache-2.0, MIT, GPL-3.0
+  license: "Proprietary"
+
+  # Additional metadata for discoverability
+  tags:
+    - greenlang
+    - ai-agent
+    - emissions
+    - production-ready
+
+  # Contact information for support
+  maintainer:
+    email: "support@greenlang.com"
+    slack_channel: "#greenlang-agents"
+
+# ============================================================================
+# RESOURCE REQUIREMENTS
+# ============================================================================
+resource_requirements:
+  # Memory allocation in megabytes
+  # Typical ranges:
+  #   - Simple agents: 256-512 MB
+  #   - AI agents: 512-1024 MB
+  #   - ML inference agents: 1024-2048 MB
+  memory_mb: 512
+
+  # CPU cores allocation (can be fractional)
+  # Typical ranges:
+  #   - Simple agents: 0.25-0.5 cores
+  #   - AI agents: 0.5-1.0 cores
+  #   - ML inference agents: 1.0-2.0 cores
+  cpu_cores: 1.0
+
+  # GPU requirement flag
+  # Set to true only for ML inference agents that require GPU acceleration
+  gpu_required: false
+
+  # GPU specifications (required if gpu_required: true)
+  gpu_specs:
+    type: "nvidia-tesla-t4"  # e.g., nvidia-tesla-t4, nvidia-a100
+    memory_gb: 16
+    count: 1
+
+  # Disk space requirement in megabytes
+  # Includes code, dependencies, and temporary storage
+  disk_space_mb: 100
+
+  # Scaling configuration for horizontal pod autoscaling
+  scaling:
+    # Minimum number of agent instances (0 for on-demand scaling)
+    min_instances: 1
+
+    # Maximum number of agent instances
+    max_instances: 10
+
+    # CPU utilization threshold for scale-up (percentage)
+    target_cpu_utilization: 70
+
+    # Memory utilization threshold for scale-up (percentage)
+    target_memory_utilization: 80
+
+    # Custom metrics for scaling (optional)
+    custom_metrics:
+      - name: "agent_queue_depth"
+        target_value: 100
+      - name: "agent_response_time_p95_ms"
+        target_value: 5000
+
+# ============================================================================
+# DEPENDENCIES
+# ============================================================================
+dependencies:
+  # Python version requirement
+  # Use range notation for compatibility
+  python_version: ">=3.9,<4.0"
+
+  # Python packages from PyPI
+  python_packages:
+    # Core dependencies
+    - name: "pydantic"
+      version: ">=2.0,<3.0"
+      description: "Data validation and settings management"
+
+    - name: "typing-extensions"
+      version: ">=4.0"
+      description: "Typing extensions for Python <3.11"
+
+    # AI/ML dependencies (uncomment if needed)
+    # - name: "anthropic"
+    #   version: ">=0.18.0"
+    #   description: "Anthropic Claude API client"
+
+    # - name: "openai"
+    #   version: ">=1.0.0"
+    #   description: "OpenAI API client"
+
+    # - name: "numpy"
+    #   version: ">=1.24.0,<2.0"
+    #   description: "Numerical computing"
+
+    # - name: "pandas"
+    #   version: ">=2.0.0"
+    #   description: "Data manipulation"
+
+    # - name: "scikit-learn"
+    #   version: ">=1.3.0"
+    #   description: "Machine learning toolkit"
+
+    # - name: "statsmodels"
+    #   version: ">=0.14.0"
+    #   description: "Statistical models (SARIMA, etc.)"
+
+    # Add agent-specific packages here
+
+  # GreenLang framework modules
+  greenlang_modules:
+    - "greenlang.agents.base"
+    - "greenlang.intelligence"
+    - "greenlang.core"
+    - "greenlang.types"
+
+  # System-level dependencies (optional)
+  system_packages:
+    - "libgomp1"  # Required for some ML libraries
+    # Add system packages as needed
+
+  # External services (optional)
+  external_services:
+    - name: "emissions_database"
+      type: "postgresql"
+      required: false
+    # Add external service dependencies
+
+# ============================================================================
+# API ENDPOINTS
+# ============================================================================
+api_endpoints:
+  # Primary execution endpoint
+  - endpoint: "/api/v1/agents/{agent_id}/execute"
+    method: "POST"
+    authentication: "required"
+    rate_limit: "100 req/min"
+    timeout_ms: 30000
+    description: "Execute agent analysis with input payload"
+    request_schema:
+      type: "object"
+      properties:
+        # Define agent-specific input schema
+        input_data:
+          type: "object"
+          description: "Agent-specific input parameters"
+    response_schema:
+      type: "object"
+      properties:
+        success:
+          type: "boolean"
+        data:
+          type: "object"
+          description: "Agent-specific output data"
+        metadata:
+          type: "object"
+          description: "Execution metadata"
+
+  # Health check endpoint
+  - endpoint: "/api/v1/agents/{agent_id}/health"
+    method: "GET"
+    authentication: "optional"
+    rate_limit: "1000 req/min"
+    timeout_ms: 5000
+    description: "Health check and readiness probe"
+    response_schema:
+      type: "object"
+      properties:
+        status:
+          type: "string"
+          enum: ["healthy", "degraded", "unhealthy"]
+        timestamp:
+          type: "string"
+          format: "date-time"
+        checks:
+          type: "object"
+
+  # Performance metrics endpoint
+  - endpoint: "/api/v1/agents/{agent_id}/performance"
+    method: "GET"
+    authentication: "required"
+    rate_limit: "100 req/min"
+    timeout_ms: 5000
+    description: "Retrieve agent performance metrics"
+    response_schema:
+      type: "object"
+      properties:
+        agent_id:
+          type: "string"
+        metrics:
+          type: "object"
+
+  # Batch execution endpoint (optional)
+  - endpoint: "/api/v1/agents/{agent_id}/batch"
+    method: "POST"
+    authentication: "required"
+    rate_limit: "10 req/min"
+    timeout_ms: 300000
+    description: "Execute agent on batch of inputs"
+    request_schema:
+      type: "object"
+      properties:
+        inputs:
+          type: "array"
+          items:
+            type: "object"
+
+# ============================================================================
+# CONFIGURATION PARAMETERS
+# ============================================================================
+configuration:
+  # AI-specific settings (for AI agents)
+  ai_settings:
+    # Default budget per execution in USD
+    default_budget_usd: 0.5
+
+    # Temperature for AI model (0.0 = deterministic, 1.0 = creative)
+    temperature: 0.0
+
+    # Random seed for reproducibility
+    seed: 42
+
+    # Maximum AI iterations per execution
+    max_iterations: 5
+
+    # Enable AI explanations in output
+    enable_explanations: true
+
+    # Enable AI recommendations
+    enable_recommendations: true
+
+    # Provider configuration
+    provider:
+      # Auto-detect provider or specify: anthropic, openai, azure_openai
+      type: "auto"
+
+      # Model selection (optional, provider-specific)
+      # Anthropic: claude-3-5-sonnet-20241022, claude-3-opus-20240229
+      # OpenAI: gpt-4, gpt-4-turbo, gpt-3.5-turbo
+      model: "auto"
+
+      # API key from environment variable
+      api_key_env: "ANTHROPIC_API_KEY"
+
+  # Operational settings
+  operational:
+    # Logging level: DEBUG, INFO, WARNING, ERROR, CRITICAL
+    log_level: "INFO"
+
+    # Enable distributed tracing
+    enable_tracing: true
+
+    # Enable Prometheus metrics
+    enable_metrics: true
+
+    # Cache TTL in seconds
+    cache_ttl_seconds: 3600
+
+    # Request timeout in milliseconds
+    request_timeout_ms: 30000
+
+    # Retry configuration
+    retry:
+      max_attempts: 3
+      backoff_multiplier: 2
+      initial_delay_ms: 1000
+
+    # Feature flags
+    feature_flags:
+      enable_batch_processing: true
+      enable_async_execution: true
+      enable_result_caching: true
+
+# ============================================================================
+# MONITORING & OBSERVABILITY
+# ============================================================================
+monitoring:
+  # Prometheus metrics
+  metrics:
+    # Counter: total number of agent executions
+    - name: "agent_execution_count"
+      type: "counter"
+      description: "Total number of agent executions"
+      labels:
+        - "agent_id"
+        - "status"
+        - "result"
+
+    # Histogram: execution duration in milliseconds
+    - name: "agent_execution_duration_ms"
+      type: "histogram"
+      description: "Agent execution duration in milliseconds"
+      labels:
+        - "agent_id"
+        - "status"
+      buckets: [10, 50, 100, 500, 1000, 5000, 10000, 30000]
+
+    # Gauge: current AI cost per execution in USD
+    - name: "agent_cost_usd"
+      type: "gauge"
+      description: "AI cost per execution in USD"
+      labels:
+        - "agent_id"
+        - "provider"
+
+    # Gauge: error rate percentage
+    - name: "agent_error_rate"
+      type: "gauge"
+      description: "Agent error rate (percentage)"
+      labels:
+        - "agent_id"
+        - "error_type"
+
+    # Counter: AI token usage
+    - name: "agent_token_usage"
+      type: "counter"
+      description: "Total AI tokens used"
+      labels:
+        - "agent_id"
+        - "provider"
+        - "token_type"  # input, output, total
+
+    # Counter: tool calls made by AI
+    - name: "agent_tool_calls"
+      type: "counter"
+      description: "Number of tool calls made by AI"
+      labels:
+        - "agent_id"
+        - "tool_name"
+
+  # Health checks for Kubernetes
+  health_checks:
+    # Liveness probe (is the agent alive?)
+    liveness_probe:
+      path: "/health"
+      port: 8080
+      interval_seconds: 30
+      timeout_seconds: 5
+      failure_threshold: 3
+      initial_delay_seconds: 10
+
+    # Readiness probe (is the agent ready to serve?)
+    readiness_probe:
+      path: "/health"
+      port: 8080
+      interval_seconds: 10
+      timeout_seconds: 5
+      failure_threshold: 3
+      initial_delay_seconds: 5
+
+  # Logging configuration
+  logging:
+    # Log format: json, text
+    format: "json"
+
+    # Log output: stdout, file, both
+    output: "stdout"
+
+    # Include structured fields
+    structured_fields:
+      - "agent_id"
+      - "request_id"
+      - "user_id"
+      - "execution_time_ms"
+      - "status"
+      - "error_type"
+
+    # Log rotation (if output includes file)
+    rotation:
+      max_size_mb: 100
+      max_age_days: 7
+      max_backups: 10
+
+  # Distributed tracing
+  tracing:
+    # Tracing backend: jaeger, zipkin, datadog
+    backend: "jaeger"
+
+    # Sampling rate (0.0 to 1.0)
+    sampling_rate: 0.1
+
+    # Export endpoint
+    endpoint: "http://jaeger-collector:14268/api/traces"
+
+  # Alerting rules
+  alerts:
+    - name: "HighErrorRate"
+      condition: "agent_error_rate > 5"
+      severity: "warning"
+      duration: "5m"
+
+    - name: "CriticalErrorRate"
+      condition: "agent_error_rate > 20"
+      severity: "critical"
+      duration: "2m"
+
+    - name: "HighLatency"
+      condition: "agent_execution_duration_ms_p95 > 10000"
+      severity: "warning"
+      duration: "5m"
+
+    - name: "BudgetExceeded"
+      condition: "agent_cost_usd > 1.0"
+      severity: "warning"
+      duration: "1m"
+
+# ============================================================================
+# SECURITY
+# ============================================================================
+security:
+  # Require authentication for API access
+  authentication_required: true
+
+  # Authentication methods
+  authentication:
+    # API key authentication
+    api_key:
+      enabled: true
+      header_name: "X-API-Key"
+      key_from_env: "GREENLANG_API_KEY"
+
+    # JWT token authentication
+    jwt:
+      enabled: false
+      issuer: "https://auth.greenlang.com"
+      audience: "greenlang-api"
+      public_key_url: "https://auth.greenlang.com/.well-known/jwks.json"
+
+  # Enable role-based access control
+  authorization_enabled: true
+
+  # Authorization rules
+  authorization:
+    # Required roles for agent execution
+    required_roles:
+      - "agent_user"
+      - "emissions_analyst"
+
+  # Enable TLS/HTTPS
+  tls_enabled: true
+
+  # TLS configuration
+  tls:
+    # Minimum TLS version
+    min_version: "1.2"
+
+    # Certificate source: file, secret, cert-manager
+    cert_source: "cert-manager"
+
+    # Certificate paths (if cert_source: file)
+    cert_file: "/etc/tls/tls.crt"
+    key_file: "/etc/tls/tls.key"
+
+  # Load secrets from environment variables
+  secrets_from_env: true
+
+  # Secret names (stored in environment or secrets manager)
+  secrets:
+    - name: "ANTHROPIC_API_KEY"
+      required: true
+    - name: "GREENLANG_API_KEY"
+      required: true
+    - name: "DATABASE_PASSWORD"
+      required: false
+
+  # CORS configuration
+  cors:
+    enabled: true
+    allowed_origins:
+      - "https://app.greenlang.com"
+      - "https://api.greenlang.com"
+      - "https://dashboard.greenlang.com"
+    allowed_methods:
+      - "GET"
+      - "POST"
+      - "PUT"
+      - "DELETE"
+    allowed_headers:
+      - "Content-Type"
+      - "Authorization"
+      - "X-API-Key"
+    max_age_seconds: 3600
+
+  # Network policies
+  network_policy:
+    # Ingress rules
+    ingress:
+      - from:
+          - namespace: "greenlang-api"
+          - namespace: "greenlang-web"
+        ports:
+          - protocol: "TCP"
+            port: 8080
+
+    # Egress rules
+    egress:
+      - to:
+          - namespace: "kube-system"  # DNS
+        ports:
+          - protocol: "UDP"
+            port: 53
+      - to:
+          - external: "api.anthropic.com"  # AI provider
+        ports:
+          - protocol: "TCP"
+            port: 443
+
+  # Security scanning
+  security_scanning:
+    # Enable vulnerability scanning
+    enabled: true
+
+    # Scanner: trivy, snyk, aqua
+    scanner: "trivy"
+
+    # Scan schedule (cron format)
+    schedule: "0 2 * * *"  # Daily at 2 AM
+
+    # Severity threshold for blocking: LOW, MEDIUM, HIGH, CRITICAL
+    block_on_severity: "HIGH"
+
+  # Pod security policy
+  pod_security:
+    # Run as non-root user
+    run_as_non_root: true
+
+    # User ID to run as
+    run_as_user: 1000
+
+    # Group ID to run as
+    run_as_group: 1000
+
+    # Read-only root filesystem
+    read_only_root_filesystem: true
+
+    # Allow privilege escalation
+    allow_privilege_escalation: false
+
+    # Drop all capabilities
+    drop_capabilities:
+      - ALL
+
+    # SELinux context
+    selinux_options:
+      level: "s0:c123,c456"
+
+# ============================================================================
+# DEPLOYMENT
+# ============================================================================
+deployment:
+  # Deployment environment: development, staging, production
+  environment: "production"
+
+  # Cloud region
+  region: "us-east-1"
+
+  # Availability zones for redundancy
+  availability_zones:
+    - "us-east-1a"
+    - "us-east-1b"
+
+  # Docker configuration
+  docker:
+    # Docker image with tag
+    # Format: registry/organization/repository:tag
+    image: "greenlang/agent:fuel_ai:latest"
+
+    # Image pull policy: Always, IfNotPresent, Never
+    pull_policy: "Always"
+
+    # Image pull secrets (for private registries)
+    pull_secrets:
+      - "greenlang-registry-secret"
+
+    # Build configuration (optional)
+    build:
+      dockerfile: "Dockerfile.agent"
+      context: "."
+      args:
+        - "PYTHON_VERSION=3.11"
+        - "AGENT_NAME=fuel_ai"
+
+  # Kubernetes configuration
+  kubernetes:
+    # Namespace for deployment
+    namespace: "greenlang-agents"
+
+    # Service account for RBAC
+    service_account: "agent-runner"
+
+    # Deployment strategy
+    strategy:
+      type: "RollingUpdate"
+      rolling_update:
+        max_surge: 1
+        max_unavailable: 0
+
+    # Pod annotations
+    annotations:
+      prometheus.io/scrape: "true"
+      prometheus.io/port: "8080"
+      prometheus.io/path: "/metrics"
+
+    # Pod labels
+    labels:
+      app: "greenlang-agent"
+      agent: "fuel_ai"
+      version: "1.0.0"
+      tier: "compute"
+
+    # Node selector (for specific node pools)
+    node_selector:
+      workload-type: "ai-agents"
+
+    # Tolerations (for tainted nodes)
+    tolerations:
+      - key: "ai-workload"
+        operator: "Equal"
+        value: "true"
+        effect: "NoSchedule"
+
+    # Affinity rules
+    affinity:
+      # Pod anti-affinity for high availability
+      pod_anti_affinity:
+        preferred_during_scheduling_ignored_during_execution:
+          - weight: 100
+            pod_affinity_term:
+              label_selector:
+                match_expressions:
+                  - key: "agent"
+                    operator: "In"
+                    values:
+                      - "fuel_ai"
+              topology_key: "kubernetes.io/hostname"
+
+  # Service configuration
+  service:
+    # Service type: ClusterIP, NodePort, LoadBalancer
+    type: "ClusterIP"
+
+    # Service port
+    port: 80
+
+    # Target container port
+    target_port: 8080
+
+    # Session affinity
+    session_affinity: "ClientIP"
+
+  # Ingress configuration
+  ingress:
+    enabled: true
+
+    # Ingress class
+    class: "nginx"
+
+    # Hostname
+    host: "agents.greenlang.com"
+
+    # Path prefix
+    path: "/api/v1/agents/fuel_ai"
+
+    # TLS configuration
+    tls:
+      enabled: true
+      secret_name: "greenlang-tls-cert"
+
+  # ConfigMap for configuration files
+  config_map:
+    name: "fuel_ai-config"
+    data:
+      # Add configuration files here
+      # Example:
+      # config.yaml: |
+      #   key: value
+
+  # Persistent volume (if needed)
+  persistent_volume:
+    enabled: false
+    size: "10Gi"
+    storage_class: "standard"
+    mount_path: "/data"
+    access_modes:
+      - "ReadWriteOnce"
+
+# ============================================================================
+# AGENT-SPECIFIC OVERRIDES
+# ============================================================================
+# Override any settings above for specific agent needs
+# These values will override the defaults when applied
+agent_specific:
+  # Example overrides:
+
+  # For agents requiring more memory
+  # resource_requirements:
+  #   memory_mb: 1024
+  #   cpu_cores: 2.0
+
+  # For GPU-accelerated ML agents
+  # resource_requirements:
+  #   gpu_required: true
+  #   gpu_specs:
+  #     type: "nvidia-tesla-t4"
+  #     memory_gb: 16
+  #     count: 1
+
+  # For agents with custom AI budgets
+  # configuration:
+  #   ai_settings:
+  #     default_budget_usd: 1.0
+
+  # For agents with additional dependencies
+  # dependencies:
+  #   python_packages:
+  #     - name: "scipy"
+  #       version: ">=1.10.0"
+
+  # For batch processing agents
+  # api_endpoints:
+  #   - endpoint: "/api/v1/agents/{agent_id}/batch"
+  #     method: "POST"
+  #     timeout_ms: 300000
+
+  # Add agent-specific overrides here
+  {}
+
+# ============================================================================
+# DOCUMENTATION
+# ============================================================================
+documentation:
+  # Link to agent documentation
+  readme: "https://docs.greenlang.com/agents/fuel_ai"
+
+  # API documentation
+  api_docs: "https://api-docs.greenlang.com/agents/fuel_ai"
+
+  # Examples and tutorials
+  examples: "https://github.com/greenlang/examples/tree/main/agents/fuel_ai"
+
+  # Changelog
+  changelog: "https://github.com/greenlang/agents/blob/main/CHANGELOG_fuel_ai.md"
+
+  # Support channels
+  support:
+    - "Email: support@greenlang.com"
+    - "Slack: #greenlang-support"
+    - "GitHub: https://github.com/greenlang/agents/issues"
+
+# ============================================================================
+# TESTING & VALIDATION
+# ============================================================================
+testing:
+  # Test suites to run before deployment
+  test_suites:
+    - name: "unit_tests"
+      command: "pytest tests/unit/"
+      required: true
+
+    - name: "integration_tests"
+      command: "pytest tests/integration/"
+      required: true
+
+    - name: "smoke_tests"
+      command: "pytest tests/smoke/"
+      required: true
+
+  # Performance benchmarks
+  benchmarks:
+    - name: "latency_p95"
+      threshold_ms: 5000
+      required: true
+
+    - name: "throughput_rps"
+      threshold: 10
+      required: false
+
+  # Validation rules
+  validation:
+    # Schema validation
+    schema_validation: true
+
+    # Security scanning
+    security_scan: true
+
+    # License compliance
+    license_check: true
+
+    # Dependency vulnerability scan
+    dependency_scan: true
+
+# ============================================================================
+# MAINTENANCE
+# ============================================================================
+maintenance:
+  # Backup configuration
+  backup:
+    enabled: false
+    schedule: "0 1 * * *"  # Daily at 1 AM
+    retention_days: 30
+
+  # Update policy
+  update_policy:
+    # Automatic updates: enabled, disabled, patch-only
+    automatic_updates: "patch-only"
+
+    # Update window (UTC)
+    update_window:
+      start: "02:00"
+      end: "04:00"
+
+    # Update notification channels
+    notifications:
+      - "email:ops@greenlang.com"
+      - "slack:#greenlang-ops"
+
+  # Cleanup policy
+  cleanup:
+    # Delete old logs after N days
+    log_retention_days: 7
+
+    # Delete old metrics after N days
+    metrics_retention_days: 30
+
+    # Delete old traces after N days
+    trace_retention_days: 7

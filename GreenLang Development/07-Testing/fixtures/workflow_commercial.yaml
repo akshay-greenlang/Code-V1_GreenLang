@@ -1,0 +1,119 @@
+name: commercial_building_analysis
+description: Complete carbon analysis for commercial buildings
+version: 1.0.0
+
+agents:
+  - name: input_validator
+    type: InputValidatorAgent
+    description: Validate and normalize building input data
+    
+  - name: grid_factor
+    type: GridFactorAgent
+    description: Retrieve emission factors for electricity grid
+    
+  - name: fuel_calculator
+    type: FuelAgent
+    description: Calculate emissions from fuel consumption
+    
+  - name: carbon_aggregator
+    type: CarbonAgent
+    description: Aggregate total carbon emissions
+    
+  - name: intensity_calculator
+    type: IntensityAgent
+    description: Calculate emission intensities
+    
+  - name: benchmark_evaluator
+    type: BenchmarkAgent
+    description: Compare against benchmarks
+    
+  - name: profile_generator
+    type: BuildingProfileAgent
+    description: Generate building profile
+    
+  - name: recommendation_engine
+    type: RecommendationAgent
+    description: Generate improvement recommendations
+    
+  - name: report_generator
+    type: ReportAgent
+    description: Generate final reports
+
+workflow:
+  steps:
+    - agent: input_validator
+      input: building_data
+      output: validated_data
+      
+    - agent: grid_factor
+      input: validated_data.country
+      output: emission_factors
+      
+    - agent: fuel_calculator
+      input: 
+        - validated_data.energy_sources
+        - emission_factors
+      output: fuel_emissions
+      
+    - agent: carbon_aggregator
+      input: fuel_emissions
+      output: total_emissions
+      
+    - agent: intensity_calculator
+      input:
+        - total_emissions
+        - validated_data.total_area
+        - validated_data.occupancy
+      output: emission_intensities
+      
+    - agent: benchmark_evaluator
+      input:
+        - emission_intensities
+        - validated_data.building_type
+        - validated_data.country
+      output: benchmark_rating
+      
+    - agent: profile_generator
+      input: validated_data
+      output: building_profile
+      
+    - agent: recommendation_engine
+      input:
+        - benchmark_rating
+        - building_profile
+        - emission_intensities
+      output: recommendations
+      
+    - agent: report_generator
+      input:
+        - total_emissions
+        - emission_intensities
+        - benchmark_rating
+        - recommendations
+      output: final_report
+
+outputs:
+  - name: carbon_footprint
+    type: number
+    unit: kgCO2e
+    
+  - name: intensity_metrics
+    type: object
+    properties:
+      - per_sqft
+      - per_occupant
+      
+  - name: performance_rating
+    type: string
+    enum: ["A", "B", "C", "D", "E", "F"]
+    
+  - name: recommendations
+    type: array
+    items:
+      - action
+      - impact
+      - payback
+      
+  - name: report
+    type: object
+    formats: ["json", "markdown", "csv", "excel"]

@@ -1,0 +1,749 @@
+{
+  "dashboard": {
+    "id": null,
+    "uid": "cbam-emissions-analysis",
+    "title": "CBAM Emissions Analysis Dashboard",
+    "tags": ["cbam", "emissions", "analytics", "carbon"],
+    "timezone": "browser",
+    "schemaVersion": 38,
+    "version": 1,
+    "refresh": "5m",
+    "time": {
+      "from": "now-30d",
+      "to": "now"
+    },
+    "timepicker": {
+      "refresh_intervals": ["1m", "5m", "15m", "30m", "1h", "6h"],
+      "time_options": ["6h", "12h", "24h", "7d", "30d", "90d", "180d", "1y"]
+    },
+    "editable": true,
+    "fiscalYearStartMonth": 0,
+    "graphTooltip": 1,
+    "description": "Comprehensive emissions analysis dashboard for CBAM compliance - tracking carbon emissions across products, countries, and suppliers",
+    "links": [],
+    "panels": [
+      {
+        "id": 1,
+        "type": "row",
+        "title": "Total Emissions Overview",
+        "gridPos": {"x": 0, "y": 0, "w": 24, "h": 1},
+        "collapsed": false
+      },
+      {
+        "id": 2,
+        "type": "stat",
+        "title": "Total Emissions (Current Quarter)",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 0, "y": 1, "w": 6, "h": 6},
+        "description": "Total embedded carbon emissions calculated for current quarter (tCO2)",
+        "targets": [
+          {
+            "expr": "sum(cbam_emissions_total_tco2{period=\"current_quarter\"})",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"]
+          },
+          "orientation": "auto",
+          "textMode": "value_and_name",
+          "colorMode": "background",
+          "graphMode": "area"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "decimals": 2,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "green"},
+                {"value": 10000, "color": "yellow"},
+                {"value": 50000, "color": "orange"},
+                {"value": 100000, "color": "red"}
+              ]
+            },
+            "custom": {
+              "displayName": "tCO2"
+            }
+          }
+        }
+      },
+      {
+        "id": 3,
+        "type": "stat",
+        "title": "Total Emissions (Last 30 Days)",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 6, "y": 1, "w": 6, "h": 6},
+        "description": "Total embedded carbon emissions in the last 30 days (tCO2)",
+        "targets": [
+          {
+            "expr": "sum(increase(cbam_emissions_calculated_tco2[30d]))",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"]
+          },
+          "orientation": "auto",
+          "textMode": "value_and_name",
+          "colorMode": "background",
+          "graphMode": "area"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "decimals": 2,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "blue"}
+              ]
+            },
+            "custom": {
+              "displayName": "tCO2"
+            }
+          }
+        }
+      },
+      {
+        "id": 4,
+        "type": "stat",
+        "title": "Average Emission Intensity",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 12, "y": 1, "w": 6, "h": 6},
+        "description": "Average emission intensity across all products (tCO2/ton)",
+        "targets": [
+          {
+            "expr": "sum(cbam_emissions_total_tco2) / sum(cbam_product_quantity_tons)",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"]
+          },
+          "orientation": "auto",
+          "textMode": "value_and_name",
+          "colorMode": "value",
+          "graphMode": "none"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "decimals": 3,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "green"},
+                {"value": 0.5, "color": "yellow"},
+                {"value": 1.0, "color": "red"}
+              ]
+            },
+            "custom": {
+              "displayName": "tCO2/ton"
+            }
+          }
+        }
+      },
+      {
+        "id": 5,
+        "type": "stat",
+        "title": "Emissions Calculation Rate",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 18, "y": 1, "w": 6, "h": 6},
+        "description": "Current rate of emissions calculations (calculations/sec)",
+        "targets": [
+          {
+            "expr": "sum(rate(cbam_emissions_calculated_tco2[5m]))",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"]
+          },
+          "orientation": "auto",
+          "textMode": "value_and_name",
+          "colorMode": "value",
+          "graphMode": "area"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "ops",
+            "decimals": 2,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "blue"}
+              ]
+            },
+            "custom": {
+              "displayName": "tCO2/sec"
+            }
+          }
+        }
+      },
+      {
+        "id": 6,
+        "type": "row",
+        "title": "Emissions Trends",
+        "gridPos": {"x": 0, "y": 7, "w": 24, "h": 1},
+        "collapsed": false
+      },
+      {
+        "id": 7,
+        "type": "graph",
+        "title": "Total Emissions Trend Over Time",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 0, "y": 8, "w": 24, "h": 9},
+        "description": "Cumulative and rate-based emissions trends",
+        "targets": [
+          {
+            "expr": "sum(increase(cbam_emissions_calculated_tco2[1d]))",
+            "refId": "A",
+            "legendFormat": "Daily Emissions (tCO2)"
+          },
+          {
+            "expr": "sum(cbam_emissions_total_tco2)",
+            "refId": "B",
+            "legendFormat": "Cumulative Emissions (tCO2)"
+          }
+        ],
+        "yaxes": [
+          {
+            "format": "short",
+            "label": "tCO2",
+            "min": 0
+          },
+          {
+            "format": "short"
+          }
+        ],
+        "legend": {
+          "show": true,
+          "alignAsTable": true,
+          "avg": true,
+          "max": true,
+          "min": true,
+          "current": true,
+          "total": true
+        }
+      },
+      {
+        "id": 8,
+        "type": "row",
+        "title": "Emissions by Product Group",
+        "gridPos": {"x": 0, "y": 17, "w": 24, "h": 1},
+        "collapsed": false
+      },
+      {
+        "id": 9,
+        "type": "piechart",
+        "title": "Emissions Distribution by Product Group",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 0, "y": 18, "w": 12, "h": 10},
+        "description": "Distribution of emissions across CBAM product categories (cement, steel, aluminum, fertilizers, electricity, hydrogen)",
+        "targets": [
+          {
+            "expr": "sum by (product_group) (cbam_emissions_total_tco2)",
+            "refId": "A",
+            "legendFormat": "{{product_group}}"
+          }
+        ],
+        "options": {
+          "legend": {
+            "displayMode": "table",
+            "placement": "right",
+            "values": ["value", "percent"],
+            "calcs": ["sum", "percent"]
+          },
+          "pieType": "pie",
+          "tooltip": {
+            "mode": "single"
+          },
+          "displayLabels": ["name", "percent"]
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "custom": {
+              "displayName": "tCO2"
+            }
+          }
+        }
+      },
+      {
+        "id": 10,
+        "type": "bargauge",
+        "title": "Top 10 Products by Emissions",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 12, "y": 18, "w": 12, "h": 10},
+        "description": "Top 10 individual products by total emissions",
+        "targets": [
+          {
+            "expr": "topk(10, sum by (product_name, cn_code) (cbam_emissions_total_tco2))",
+            "refId": "A",
+            "legendFormat": "{{product_name}} ({{cn_code}})"
+          }
+        ],
+        "options": {
+          "orientation": "horizontal",
+          "displayMode": "gradient",
+          "showUnfilled": true,
+          "text": {
+            "valueSize": 14
+          }
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "green"},
+                {"value": 1000, "color": "yellow"},
+                {"value": 5000, "color": "red"}
+              ]
+            },
+            "custom": {
+              "displayName": "tCO2"
+            }
+          }
+        }
+      },
+      {
+        "id": 11,
+        "type": "row",
+        "title": "Emissions by Origin Country",
+        "gridPos": {"x": 0, "y": 28, "w": 24, "h": 1},
+        "collapsed": false
+      },
+      {
+        "id": 12,
+        "type": "bargauge",
+        "title": "Top 10 Countries by Emissions",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 0, "y": 29, "w": 16, "h": 10},
+        "description": "Top 10 origin countries by total embedded emissions",
+        "targets": [
+          {
+            "expr": "topk(10, sum by (origin_country) (cbam_emissions_total_tco2))",
+            "refId": "A",
+            "legendFormat": "{{origin_country}}"
+          }
+        ],
+        "options": {
+          "orientation": "horizontal",
+          "displayMode": "gradient",
+          "showUnfilled": true,
+          "text": {
+            "valueSize": 16
+          }
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "blue"},
+                {"value": 5000, "color": "green"},
+                {"value": 10000, "color": "yellow"},
+                {"value": 20000, "color": "red"}
+              ]
+            },
+            "custom": {
+              "displayName": "tCO2"
+            }
+          }
+        }
+      },
+      {
+        "id": 13,
+        "type": "graph",
+        "title": "Emissions Trend by Top Countries",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 16, "y": 29, "w": 8, "h": 10},
+        "description": "Emissions trends for top origin countries over time",
+        "targets": [
+          {
+            "expr": "sum by (origin_country) (rate(cbam_emissions_calculated_tco2{origin_country=~\"${origin_country}\"}[1h]))",
+            "refId": "A",
+            "legendFormat": "{{origin_country}}"
+          }
+        ],
+        "yaxes": [
+          {
+            "format": "ops",
+            "label": "tCO2/sec",
+            "min": 0
+          },
+          {
+            "format": "short"
+          }
+        ],
+        "legend": {
+          "show": true,
+          "alignAsTable": false,
+          "avg": true,
+          "current": true
+        }
+      },
+      {
+        "id": 14,
+        "type": "row",
+        "title": "Emissions by Supplier",
+        "gridPos": {"x": 0, "y": 39, "w": 24, "h": 1},
+        "collapsed": false
+      },
+      {
+        "id": 15,
+        "type": "bargauge",
+        "title": "Top 20 Suppliers by Emissions",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 0, "y": 40, "w": 16, "h": 12},
+        "description": "Top 20 suppliers by total embedded emissions in their products",
+        "targets": [
+          {
+            "expr": "topk(20, sum by (supplier_id, supplier_name) (cbam_emissions_total_tco2))",
+            "refId": "A",
+            "legendFormat": "{{supplier_name}} ({{supplier_id}})"
+          }
+        ],
+        "options": {
+          "orientation": "horizontal",
+          "displayMode": "gradient",
+          "showUnfilled": true,
+          "text": {
+            "valueSize": 12
+          }
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "green"},
+                {"value": 500, "color": "yellow"},
+                {"value": 2000, "color": "orange"},
+                {"value": 5000, "color": "red"}
+              ]
+            },
+            "custom": {
+              "displayName": "tCO2"
+            }
+          }
+        }
+      },
+      {
+        "id": 16,
+        "type": "stat",
+        "title": "Total Suppliers Tracked",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 16, "y": 40, "w": 8, "h": 6},
+        "description": "Total number of unique suppliers in CBAM system",
+        "targets": [
+          {
+            "expr": "count(count by (supplier_id) (cbam_emissions_total_tco2))",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"]
+          },
+          "orientation": "auto",
+          "textMode": "value_and_name",
+          "colorMode": "value",
+          "graphMode": "none"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "decimals": 0,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "blue"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 17,
+        "type": "stat",
+        "title": "Average Emissions per Supplier",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 16, "y": 46, "w": 8, "h": 6},
+        "description": "Average emissions per supplier (tCO2)",
+        "targets": [
+          {
+            "expr": "sum(cbam_emissions_total_tco2) / count(count by (supplier_id) (cbam_emissions_total_tco2))",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"]
+          },
+          "orientation": "auto",
+          "textMode": "value_and_name",
+          "colorMode": "value",
+          "graphMode": "none"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "decimals": 2,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "blue"}
+              ]
+            },
+            "custom": {
+              "displayName": "tCO2"
+            }
+          }
+        }
+      },
+      {
+        "id": 18,
+        "type": "row",
+        "title": "Calculation Method Analysis",
+        "gridPos": {"x": 0, "y": 52, "w": 24, "h": 1},
+        "collapsed": false
+      },
+      {
+        "id": 19,
+        "type": "piechart",
+        "title": "Calculation Method Distribution (by Volume)",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 0, "y": 53, "w": 8, "h": 9},
+        "description": "Distribution of emissions by calculation method (supplier actual vs EU default)",
+        "targets": [
+          {
+            "expr": "sum by (calculation_method) (cbam_emissions_total_tco2)",
+            "refId": "A",
+            "legendFormat": "{{calculation_method}}"
+          }
+        ],
+        "options": {
+          "legend": {
+            "displayMode": "table",
+            "placement": "bottom",
+            "values": ["value", "percent"],
+            "calcs": ["sum", "percent"]
+          },
+          "pieType": "pie",
+          "tooltip": {
+            "mode": "single"
+          },
+          "displayLabels": ["name", "percent"]
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "custom": {
+              "displayName": "tCO2"
+            }
+          }
+        }
+      },
+      {
+        "id": 20,
+        "type": "graph",
+        "title": "Emissions by Calculation Method Over Time",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 8, "y": 53, "w": 16, "h": 9},
+        "description": "Trend of emissions calculated using different methods",
+        "targets": [
+          {
+            "expr": "sum by (calculation_method) (rate(cbam_emissions_calculated_tco2[1h]))",
+            "refId": "A",
+            "legendFormat": "{{calculation_method}}"
+          }
+        ],
+        "yaxes": [
+          {
+            "format": "ops",
+            "label": "tCO2/sec",
+            "min": 0
+          },
+          {
+            "format": "short"
+          }
+        ],
+        "legend": {
+          "show": true,
+          "alignAsTable": true,
+          "avg": true,
+          "max": true,
+          "current": true
+        },
+        "stack": true,
+        "fill": 1
+      },
+      {
+        "id": 21,
+        "type": "row",
+        "title": "Emission Intensity by Product",
+        "gridPos": {"x": 0, "y": 62, "w": 24, "h": 1},
+        "collapsed": false
+      },
+      {
+        "id": 22,
+        "type": "bargauge",
+        "title": "Emission Intensity by Product Group (tCO2/ton)",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 0, "y": 63, "w": 12, "h": 10},
+        "description": "Average emission intensity for each product group",
+        "targets": [
+          {
+            "expr": "sum by (product_group) (cbam_emissions_total_tco2) / sum by (product_group) (cbam_product_quantity_tons)",
+            "refId": "A",
+            "legendFormat": "{{product_group}}"
+          }
+        ],
+        "options": {
+          "orientation": "horizontal",
+          "displayMode": "gradient",
+          "showUnfilled": true,
+          "text": {
+            "valueSize": 14
+          }
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "decimals": 3,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "green"},
+                {"value": 0.5, "color": "yellow"},
+                {"value": 1.0, "color": "orange"},
+                {"value": 2.0, "color": "red"}
+              ]
+            },
+            "custom": {
+              "displayName": "tCO2/ton"
+            }
+          }
+        }
+      },
+      {
+        "id": 23,
+        "type": "graph",
+        "title": "Emission Intensity Trends",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 12, "y": 63, "w": 12, "h": 10},
+        "description": "Emission intensity trends over time by product group",
+        "targets": [
+          {
+            "expr": "sum by (product_group) (rate(cbam_emissions_calculated_tco2[1h])) / sum by (product_group) (rate(cbam_product_quantity_tons[1h]))",
+            "refId": "A",
+            "legendFormat": "{{product_group}}"
+          }
+        ],
+        "yaxes": [
+          {
+            "format": "short",
+            "label": "tCO2/ton",
+            "min": 0
+          },
+          {
+            "format": "short"
+          }
+        ],
+        "legend": {
+          "show": true,
+          "alignAsTable": true,
+          "avg": true,
+          "max": true,
+          "min": true,
+          "current": true
+        }
+      }
+    ],
+    "templating": {
+      "list": [
+        {
+          "name": "DS_PROMETHEUS",
+          "type": "datasource",
+          "query": "prometheus",
+          "current": {
+            "text": "Prometheus",
+            "value": "Prometheus"
+          }
+        },
+        {
+          "name": "environment",
+          "type": "query",
+          "datasource": "${DS_PROMETHEUS}",
+          "query": "label_values(cbam_emissions_total_tco2, environment)",
+          "refresh": 1,
+          "multi": false,
+          "includeAll": true,
+          "allValue": ".*"
+        },
+        {
+          "name": "product_group",
+          "type": "query",
+          "datasource": "${DS_PROMETHEUS}",
+          "query": "label_values(cbam_emissions_total_tco2, product_group)",
+          "refresh": 1,
+          "multi": true,
+          "includeAll": true,
+          "allValue": ".*"
+        },
+        {
+          "name": "origin_country",
+          "type": "query",
+          "datasource": "${DS_PROMETHEUS}",
+          "query": "label_values(cbam_emissions_total_tco2, origin_country)",
+          "refresh": 1,
+          "multi": true,
+          "includeAll": true,
+          "allValue": ".*"
+        },
+        {
+          "name": "supplier",
+          "type": "query",
+          "datasource": "${DS_PROMETHEUS}",
+          "query": "label_values(cbam_emissions_total_tco2, supplier_id)",
+          "refresh": 1,
+          "multi": true,
+          "includeAll": true,
+          "allValue": ".*"
+        }
+      ]
+    },
+    "annotations": {
+      "list": [
+        {
+          "datasource": "${DS_PROMETHEUS}",
+          "enable": true,
+          "expr": "changes(cbam_application_info[5m]) > 0",
+          "name": "Deployments",
+          "tagKeys": "version",
+          "textFormat": "New deployment: {{version}}",
+          "titleFormat": "Deployment"
+        }
+      ]
+    }
+  },
+  "overwrite": true,
+  "message": "CBAM Emissions Analysis Dashboard v1.0.0"
+}

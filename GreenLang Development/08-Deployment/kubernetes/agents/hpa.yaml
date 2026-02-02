@@ -1,0 +1,302 @@
+# =============================================================================
+# GreenLang Agents - Horizontal Pod Autoscaler
+# =============================================================================
+# HPA configuration for all 3 agents
+# Min replicas: 2, Max replicas: 10
+# =============================================================================
+
+---
+# =============================================================================
+# Fuel Analyzer HPA
+# =============================================================================
+
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: fuel-analyzer-hpa
+  namespace: greenlang-dev
+  labels:
+    app: fuel-analyzer
+    app.kubernetes.io/name: fuel-analyzer
+    app.kubernetes.io/component: autoscaling
+    app.kubernetes.io/part-of: greenlang-platform
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: fuel-analyzer
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+    # CPU-based scaling
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    # Memory-based scaling
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+  behavior:
+    # Scale up configuration
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+        - type: Pods
+          value: 4
+          periodSeconds: 60
+        - type: Percent
+          value: 100
+          periodSeconds: 60
+      selectPolicy: Max
+    # Scale down configuration (more conservative)
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Pods
+          value: 2
+          periodSeconds: 60
+        - type: Percent
+          value: 25
+          periodSeconds: 60
+      selectPolicy: Min
+
+---
+# =============================================================================
+# Carbon Intensity HPA
+# =============================================================================
+
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: carbon-intensity-hpa
+  namespace: greenlang-dev
+  labels:
+    app: carbon-intensity
+    app.kubernetes.io/name: carbon-intensity
+    app.kubernetes.io/component: autoscaling
+    app.kubernetes.io/part-of: greenlang-platform
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: carbon-intensity
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+        - type: Pods
+          value: 4
+          periodSeconds: 60
+        - type: Percent
+          value: 100
+          periodSeconds: 60
+      selectPolicy: Max
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Pods
+          value: 2
+          periodSeconds: 60
+        - type: Percent
+          value: 25
+          periodSeconds: 60
+      selectPolicy: Min
+
+---
+# =============================================================================
+# Energy Performance HPA
+# =============================================================================
+
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: energy-performance-hpa
+  namespace: greenlang-dev
+  labels:
+    app: energy-performance
+    app.kubernetes.io/name: energy-performance
+    app.kubernetes.io/component: autoscaling
+    app.kubernetes.io/part-of: greenlang-platform
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: energy-performance
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+        - type: Pods
+          value: 4
+          periodSeconds: 60
+        - type: Percent
+          value: 100
+          periodSeconds: 60
+      selectPolicy: Max
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Pods
+          value: 2
+          periodSeconds: 60
+        - type: Percent
+          value: 25
+          periodSeconds: 60
+      selectPolicy: Min
+
+---
+# =============================================================================
+# Pod Disruption Budgets
+# =============================================================================
+
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: fuel-analyzer-pdb
+  namespace: greenlang-dev
+  labels:
+    app: fuel-analyzer
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: fuel-analyzer
+
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: carbon-intensity-pdb
+  namespace: greenlang-dev
+  labels:
+    app: carbon-intensity
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: carbon-intensity
+
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: energy-performance-pdb
+  namespace: greenlang-dev
+  labels:
+    app: energy-performance
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: energy-performance
+
+---
+# =============================================================================
+# EUDR Compliance HPA (Higher limits for critical agent)
+# =============================================================================
+
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: eudr-compliance-hpa
+  namespace: greenlang-dev
+  labels:
+    app: eudr-compliance
+    app.kubernetes.io/name: eudr-compliance
+    app.kubernetes.io/component: autoscaling
+    app.kubernetes.io/part-of: greenlang-platform
+    agent-tier: "1-extreme-urgency"
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: eudr-compliance
+  minReplicas: 3
+  maxReplicas: 15
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+  behavior:
+    # Aggressive scale up for critical agent
+    scaleUp:
+      stabilizationWindowSeconds: 30
+      policies:
+        - type: Pods
+          value: 6
+          periodSeconds: 30
+        - type: Percent
+          value: 100
+          periodSeconds: 30
+      selectPolicy: Max
+    # Conservative scale down
+    scaleDown:
+      stabilizationWindowSeconds: 600
+      policies:
+        - type: Pods
+          value: 1
+          periodSeconds: 120
+        - type: Percent
+          value: 10
+          periodSeconds: 120
+      selectPolicy: Min
+
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: eudr-compliance-pdb
+  namespace: greenlang-dev
+  labels:
+    app: eudr-compliance
+    agent-tier: "1-extreme-urgency"
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: eudr-compliance

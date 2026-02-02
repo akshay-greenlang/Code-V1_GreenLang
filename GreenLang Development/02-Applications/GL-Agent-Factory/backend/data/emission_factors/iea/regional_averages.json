@@ -1,0 +1,224 @@
+{
+  "metadata": {
+    "source": "IEA",
+    "source_name": "International Energy Agency",
+    "source_document": "CO2 Emissions from Fuel Combustion 2024 - Regional Averages",
+    "source_url": "https://www.iea.org/data-and-statistics/data-product/emissions-factors-2024",
+    "version": "2024",
+    "data_year": 2022,
+    "last_updated": "2024-09-01",
+    "description": "IEA regional average electricity grid emission factors"
+  },
+  "global": {
+    "id": "ef://iea/grid/global/2024",
+    "region": "World",
+    "co2_factor": 0.494,
+    "co2_unit": "kg CO2/kWh",
+    "trend_vs_2021": -2.1,
+    "trend_unit": "percent",
+    "notes": "Global weighted average"
+  },
+  "regional_averages": [
+    {
+      "id": "ef://iea/grid/oecd_total/2024",
+      "region": "OECD Total",
+      "co2_factor": 0.340,
+      "co2_unit": "kg CO2/kWh",
+      "member_count": 38,
+      "notes": "OECD member countries"
+    },
+    {
+      "id": "ef://iea/grid/non_oecd/2024",
+      "region": "Non-OECD",
+      "co2_factor": 0.590,
+      "co2_unit": "kg CO2/kWh",
+      "notes": "Non-OECD countries"
+    },
+    {
+      "id": "ef://iea/grid/eu27/2024",
+      "region": "European Union (27)",
+      "co2_factor": 0.230,
+      "co2_unit": "kg CO2/kWh",
+      "member_count": 27,
+      "notes": "EU-27 average"
+    },
+    {
+      "id": "ef://iea/grid/europe/2024",
+      "region": "Europe",
+      "co2_factor": 0.255,
+      "co2_unit": "kg CO2/kWh",
+      "notes": "Entire European region"
+    },
+    {
+      "id": "ef://iea/grid/north_america/2024",
+      "region": "North America",
+      "co2_factor": 0.360,
+      "co2_unit": "kg CO2/kWh",
+      "includes": ["USA", "Canada", "Mexico"],
+      "notes": "North American average"
+    },
+    {
+      "id": "ef://iea/grid/latin_america/2024",
+      "region": "Latin America",
+      "co2_factor": 0.185,
+      "co2_unit": "kg CO2/kWh",
+      "notes": "Central and South America average"
+    },
+    {
+      "id": "ef://iea/grid/asia_pacific/2024",
+      "region": "Asia Pacific",
+      "co2_factor": 0.570,
+      "co2_unit": "kg CO2/kWh",
+      "notes": "Asia and Pacific region"
+    },
+    {
+      "id": "ef://iea/grid/asia_excl_china/2024",
+      "region": "Asia (excluding China)",
+      "co2_factor": 0.540,
+      "co2_unit": "kg CO2/kWh",
+      "notes": "Asian countries except China"
+    },
+    {
+      "id": "ef://iea/grid/middle_east/2024",
+      "region": "Middle East",
+      "co2_factor": 0.590,
+      "co2_unit": "kg CO2/kWh",
+      "notes": "Middle East region"
+    },
+    {
+      "id": "ef://iea/grid/africa/2024",
+      "region": "Africa",
+      "co2_factor": 0.510,
+      "co2_unit": "kg CO2/kWh",
+      "notes": "African continent"
+    },
+    {
+      "id": "ef://iea/grid/sub_saharan_africa/2024",
+      "region": "Sub-Saharan Africa",
+      "co2_factor": 0.480,
+      "co2_unit": "kg CO2/kWh",
+      "notes": "Sub-Saharan Africa average"
+    },
+    {
+      "id": "ef://iea/grid/oceania/2024",
+      "region": "Oceania",
+      "co2_factor": 0.580,
+      "co2_unit": "kg CO2/kWh",
+      "includes": ["Australia", "New Zealand", "Pacific Islands"],
+      "notes": "Oceania region"
+    },
+    {
+      "id": "ef://iea/grid/g20/2024",
+      "region": "G20",
+      "co2_factor": 0.480,
+      "co2_unit": "kg CO2/kWh",
+      "member_count": 20,
+      "notes": "G20 economies"
+    },
+    {
+      "id": "ef://iea/grid/brics/2024",
+      "region": "BRICS",
+      "co2_factor": 0.580,
+      "co2_unit": "kg CO2/kWh",
+      "includes": ["Brazil", "Russia", "India", "China", "South Africa"],
+      "notes": "Original BRICS members"
+    }
+  ],
+  "economic_groupings": [
+    {
+      "id": "ef://iea/grid/advanced_economies/2024",
+      "region": "Advanced Economies",
+      "co2_factor": 0.320,
+      "co2_unit": "kg CO2/kWh",
+      "notes": "IMF advanced economy classification"
+    },
+    {
+      "id": "ef://iea/grid/emerging_markets/2024",
+      "region": "Emerging Markets & Developing",
+      "co2_factor": 0.580,
+      "co2_unit": "kg CO2/kWh",
+      "notes": "IMF emerging/developing classification"
+    }
+  ],
+  "special_regions": [
+    {
+      "id": "ef://iea/grid/nordic_countries/2024",
+      "region": "Nordic Countries",
+      "co2_factor": 0.028,
+      "co2_unit": "kg CO2/kWh",
+      "includes": ["Denmark", "Finland", "Iceland", "Norway", "Sweden"],
+      "notes": "Very low carbon grid due to hydro/nuclear/wind"
+    },
+    {
+      "id": "ef://iea/grid/benelux/2024",
+      "region": "Benelux",
+      "co2_factor": 0.220,
+      "co2_unit": "kg CO2/kWh",
+      "includes": ["Belgium", "Netherlands", "Luxembourg"],
+      "notes": "Benelux countries"
+    },
+    {
+      "id": "ef://iea/grid/dach/2024",
+      "region": "DACH Region",
+      "co2_factor": 0.160,
+      "co2_unit": "kg CO2/kWh",
+      "includes": ["Germany", "Austria", "Switzerland"],
+      "notes": "German-speaking Europe"
+    },
+    {
+      "id": "ef://iea/grid/southeast_asia/2024",
+      "region": "Southeast Asia",
+      "co2_factor": 0.550,
+      "co2_unit": "kg CO2/kWh",
+      "includes": ["Indonesia", "Malaysia", "Philippines", "Singapore", "Thailand", "Vietnam"],
+      "notes": "ASEAN countries"
+    },
+    {
+      "id": "ef://iea/grid/gulf_states/2024",
+      "region": "Gulf Cooperation Council",
+      "co2_factor": 0.550,
+      "co2_unit": "kg CO2/kWh",
+      "includes": ["Bahrain", "Kuwait", "Oman", "Qatar", "Saudi Arabia", "UAE"],
+      "notes": "GCC countries - primarily gas-fired"
+    }
+  ],
+  "trend_data": {
+    "world": {
+      "2019": 0.510,
+      "2020": 0.500,
+      "2021": 0.505,
+      "2022": 0.494,
+      "trend_description": "Gradual decline due to renewable expansion"
+    },
+    "eu27": {
+      "2019": 0.275,
+      "2020": 0.240,
+      "2021": 0.260,
+      "2022": 0.230,
+      "trend_description": "Significant decline with coal phase-out and renewables"
+    },
+    "china": {
+      "2019": 0.570,
+      "2020": 0.560,
+      "2021": 0.555,
+      "2022": 0.549,
+      "trend_description": "Slow decline despite massive renewable deployment"
+    },
+    "usa": {
+      "2019": 0.420,
+      "2020": 0.400,
+      "2021": 0.395,
+      "2022": 0.387,
+      "trend_description": "Coal-to-gas switching and renewables"
+    }
+  },
+  "fallback_hierarchy": {
+    "description": "Use these values when country-specific data unavailable",
+    "hierarchy": [
+      {"level": 1, "type": "country", "source": "IEA country-specific"},
+      {"level": 2, "type": "sub_region", "source": "Regional average"},
+      {"level": 3, "type": "economic_grouping", "source": "OECD/Non-OECD"},
+      {"level": 4, "type": "global", "source": "World average"}
+    ]
+  }
+}

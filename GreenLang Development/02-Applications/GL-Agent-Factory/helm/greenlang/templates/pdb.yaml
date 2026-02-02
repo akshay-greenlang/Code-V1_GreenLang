@@ -1,0 +1,50 @@
+{{- if .Values.agentRuntime.enabled }}
+{{- if .Values.agentRuntime.podDisruptionBudget.enabled }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "greenlang.fullname" . }}-agent-runtime-pdb
+  namespace: {{ include "greenlang.namespace" . }}
+  labels:
+    {{- include "greenlang.agentRuntime.labels" . | nindent 4 }}
+spec:
+  minAvailable: {{ .Values.agentRuntime.podDisruptionBudget.minAvailable }}
+  selector:
+    matchLabels:
+      {{- include "greenlang.agentRuntime.selectorLabels" . | nindent 6 }}
+{{- end }}
+{{- end }}
+---
+{{- if .Values.apiServer.enabled }}
+{{- if .Values.apiServer.podDisruptionBudget.enabled }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "greenlang.fullname" . }}-api-server-pdb
+  namespace: {{ include "greenlang.namespace" . }}
+  labels:
+    {{- include "greenlang.apiServer.labels" . | nindent 4 }}
+spec:
+  minAvailable: {{ .Values.apiServer.podDisruptionBudget.minAvailable }}
+  selector:
+    matchLabels:
+      {{- include "greenlang.apiServer.selectorLabels" . | nindent 6 }}
+{{- end }}
+{{- end }}
+---
+{{- if .Values.registry.enabled }}
+{{- if .Values.registry.podDisruptionBudget.enabled }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "greenlang.fullname" . }}-registry-pdb
+  namespace: {{ include "greenlang.namespace" . }}
+  labels:
+    {{- include "greenlang.registry.labels" . | nindent 4 }}
+spec:
+  minAvailable: {{ .Values.registry.podDisruptionBudget.minAvailable }}
+  selector:
+    matchLabels:
+      {{- include "greenlang.registry.selectorLabels" . | nindent 6 }}
+{{- end }}
+{{- end }}

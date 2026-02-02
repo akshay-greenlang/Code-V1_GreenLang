@@ -1,0 +1,474 @@
+---
+# GL-016 WATERGUARD - Agent Health Alerting Rules
+# Prometheus Alert Rules for WATERGUARD Agent Infrastructure Health
+# Version: 1.0.0
+
+groups:
+  - name: waterguard_agent_health_critical
+    interval: 30s
+    rules:
+      # CRITICAL: Agent High Latency
+      - alert: WaterGuardAgentLatencyCritical
+        expr: histogram_quantile(0.99, rate(water_treatment_agent_latency_seconds_bucket[5m])) > 0.2
+        for: 3m
+        labels:
+          severity: critical
+          component: agent_infrastructure
+          alert_type: latency_critical
+          team: platform
+          runbook: https://runbooks.greenlang.io/gl-016/agent-latency-critical
+        annotations:
+          summary: "CRITICAL: WATERGUARD Agent p99 Latency Exceeds 200ms on {{ $labels.boiler_id }}"
+          description: |
+            WATERGUARD agent for boiler {{ $labels.boiler_id }} at {{ $labels.facility }} has p99 latency
+            of {{ $value | humanize }}s ({{ $value | humanize 1000 }}ms), exceeding critical threshold of 200ms.
+
+            This may impact real-time water treatment control and decision-making.
+
+            Metric Details:
+            - p99 Latency: {{ $value | humanize }}s
+            - Critical Threshold: 0.2s (200ms)
+            - Boiler ID: {{ $labels.boiler_id }}
+            - Facility: {{ $labels.facility }}
+            - Agent Instance: {{ $labels.instance }}
+          impact: |
+            - Delayed water treatment adjustments
+            - Potential chemistry excursions
+            - Reduced control loop responsiveness
+            - Risk of parameter violations
+          action: |
+            1. IMMEDIATE: Check agent CPU and memory usage
+            2. Review agent logs for blocking operations
+            3. Check database query performance
+            4. Verify SCADA communication latency
+            5. Inspect network connectivity
+            6. Consider agent restart if issue persists
+            7. Escalate to platform team if unresolved in 10 minutes
+
+      # CRITICAL: Agent Error Rate Critical
+      - alert: WaterGuardAgentErrorRateCritical
+        expr: rate(water_treatment_agent_errors_total[5m]) > 10
+        for: 2m
+        labels:
+          severity: critical
+          component: agent_infrastructure
+          alert_type: error_rate_critical
+          team: platform
+          runbook: https://runbooks.greenlang.io/gl-016/agent-error-rate-critical
+        annotations:
+          summary: "CRITICAL: WATERGUARD Agent Error Rate Exceeds 10/sec on {{ $labels.boiler_id }}"
+          description: |
+            WATERGUARD agent for boiler {{ $labels.boiler_id }} is experiencing {{ $value | humanize }} errors/second,
+            indicating a severe operational issue.
+
+            Metric Details:
+            - Error Rate: {{ $value | humanize }} errors/sec
+            - Critical Threshold: 10 errors/sec
+            - Boiler ID: {{ $labels.boiler_id }}
+            - Facility: {{ $labels.facility }}
+            - Error Type: {{ $labels.error_type }}
+          impact: |
+            - Loss of automated control capability
+            - Potential chemistry violations
+            - Data collection gaps
+            - Risk of equipment damage
+          action: |
+            1. IMMEDIATE: Review agent error logs for root cause
+            2. Check all external system connectivity (SCADA, ERP, database)
+            3. Verify agent configuration files
+            4. Switch to manual control mode if necessary
+            5. Restart agent if errors are transient
+            6. Engage on-call platform engineer immediately
+            7. Document incident for post-mortem
+
+      # CRITICAL: Agent Memory Usage Critical
+      - alert: WaterGuardAgentMemoryCritical
+        expr: (water_treatment_agent_memory_usage_bytes / water_treatment_agent_memory_limit_bytes) * 100 > 90
+        for: 3m
+        labels:
+          severity: critical
+          component: agent_infrastructure
+          alert_type: memory_critical
+          team: platform
+          runbook: https://runbooks.greenlang.io/gl-016/agent-memory-critical
+        annotations:
+          summary: "CRITICAL: WATERGUARD Agent Memory Usage > 90% on {{ $labels.boiler_id }}"
+          description: |
+            WATERGUARD agent for boiler {{ $labels.boiler_id }} is using {{ $value | humanize }}% of allocated memory,
+            approaching out-of-memory condition.
+
+            Metric Details:
+            - Memory Usage: {{ $value | humanize }}%
+            - Critical Threshold: 90%
+            - Boiler ID: {{ $labels.boiler_id }}
+            - Facility: {{ $labels.facility }}
+            - Instance: {{ $labels.instance }}
+          impact: |
+            - Risk of agent crash or OOM kill
+            - Loss of automated control
+            - Data loss
+            - Service interruption
+          action: |
+            1. IMMEDIATE: Check for memory leaks in agent logs
+            2. Review recent agent updates or configuration changes
+            3. Restart agent to clear potential leaks
+            4. Increase memory allocation if consistently high
+            5. Review data retention policies
+            6. Check for hung processes or threads
+            7. Escalate to development team if pattern persists
+
+      # CRITICAL: Agent CPU Usage Critical
+      - alert: WaterGuardAgentCPUCritical
+        expr: rate(water_treatment_agent_cpu_usage_seconds_total[5m]) * 100 > 90
+        for: 5m
+        labels:
+          severity: critical
+          component: agent_infrastructure
+          alert_type: cpu_critical
+          team: platform
+          runbook: https://runbooks.greenlang.io/gl-016/agent-cpu-critical
+        annotations:
+          summary: "CRITICAL: WATERGUARD Agent CPU Usage > 90% on {{ $labels.boiler_id }}"
+          description: |
+            WATERGUARD agent for boiler {{ $labels.boiler_id }} is using {{ $value | humanize }}% CPU,
+            indicating computational overload.
+
+            Metric Details:
+            - CPU Usage: {{ $value | humanize }}%
+            - Critical Threshold: 90%
+            - Boiler ID: {{ $labels.boiler_id }}
+            - Instance: {{ $labels.instance }}
+          impact: |
+            - Degraded agent performance
+            - Increased latency
+            - Potential control delays
+            - System instability
+          action: |
+            1. Identify CPU-intensive operations in agent logs
+            2. Check for infinite loops or blocking operations
+            3. Review recent code deployments
+            4. Optimize heavy calculations if identified
+            5. Consider horizontal scaling if load is legitimate
+            6. Restart agent if issue is transient
+
+      # CRITICAL: SCADA Connection Lost
+      - alert: WaterGuardSCADAConnectionLost
+        expr: water_treatment_scada_connection_status == 0
+        for: 2m
+        labels:
+          severity: critical
+          component: integration
+          alert_type: scada_connection
+          team: integration
+          runbook: https://runbooks.greenlang.io/gl-016/scada-connection-lost
+        annotations:
+          summary: "CRITICAL: SCADA Connection Lost for {{ $labels.boiler_id }}"
+          description: |
+            WATERGUARD agent has lost connection to SCADA system for boiler {{ $labels.boiler_id }}.
+            Real-time data collection and control commands are unavailable.
+
+            Metric Details:
+            - Connection Status: DISCONNECTED
+            - Boiler ID: {{ $labels.boiler_id }}
+            - Facility: {{ $labels.facility }}
+            - SCADA System: {{ $labels.scada_system }}
+            - Last Connected: {{ $labels.last_connection_time }}
+          impact: |
+            - No real-time sensor data
+            - Cannot send control commands
+            - Automated control disabled
+            - Must switch to manual operation
+          action: |
+            1. IMMEDIATE: Switch to manual control mode
+            2. Verify SCADA system operational status
+            3. Check network connectivity to SCADA
+            4. Review SCADA credentials and authentication
+            5. Check firewall and security group rules
+            6. Verify OPC/Modbus/protocol configuration
+            7. Contact SCADA vendor support if needed
+            8. Test connection restoration procedure
+
+      # CRITICAL: ERP Connection Lost
+      - alert: WaterGuardERPConnectionLost
+        expr: water_treatment_erp_connection_status == 0
+        for: 5m
+        labels:
+          severity: critical
+          component: integration
+          alert_type: erp_connection
+          team: integration
+          runbook: https://runbooks.greenlang.io/gl-016/erp-connection-lost
+        annotations:
+          summary: "CRITICAL: ERP Connection Lost for {{ $labels.boiler_id }}"
+          description: |
+            WATERGUARD agent has lost connection to ERP system for boiler {{ $labels.boiler_id }}.
+            Chemical inventory, cost tracking, and procurement functions unavailable.
+
+            Metric Details:
+            - Connection Status: DISCONNECTED
+            - Boiler ID: {{ $labels.boiler_id }}
+            - Facility: {{ $labels.facility }}
+            - ERP System: {{ $labels.erp_system }}
+            - Last Connected: {{ $labels.last_connection_time }}
+          impact: |
+            - No chemical inventory updates
+            - Cost tracking disabled
+            - Procurement alerts unavailable
+            - ROI calculations paused
+          action: |
+            1. Verify ERP system operational status
+            2. Check network connectivity to ERP
+            3. Review ERP API credentials
+            4. Check API rate limits and quotas
+            5. Verify ERP endpoint URLs
+            6. Review ERP integration logs
+            7. Test ERP API manually
+            8. Contact ERP support if needed
+
+      # CRITICAL: Database Connection Lost
+      - alert: WaterGuardDatabaseConnectionLost
+        expr: water_treatment_database_connection_status == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: infrastructure
+          alert_type: database_connection
+          team: platform
+          runbook: https://runbooks.greenlang.io/gl-016/database-connection-lost
+        annotations:
+          summary: "CRITICAL: Database Connection Lost for {{ $labels.boiler_id }}"
+          description: |
+            WATERGUARD agent has lost connection to time-series database for boiler {{ $labels.boiler_id }}.
+            Historical data storage and retrieval unavailable.
+
+            Metric Details:
+            - Connection Status: DISCONNECTED
+            - Boiler ID: {{ $labels.boiler_id }}
+            - Database: {{ $labels.database_name }}
+            - Host: {{ $labels.database_host }}
+          impact: |
+            - No historical data storage
+            - Trending analysis unavailable
+            - Reports cannot be generated
+            - Data loss during outage
+          action: |
+            1. IMMEDIATE: Enable local data buffering if available
+            2. Verify database server operational status
+            3. Check network connectivity to database
+            4. Review database credentials
+            5. Check connection pool status
+            6. Verify database is accepting connections
+            7. Review database server logs
+            8. Escalate to DBA team if unresolved
+
+  - name: waterguard_agent_health_warnings
+    interval: 1m
+    rules:
+      # WARNING: Agent High Latency
+      - alert: WaterGuardAgentLatencyWarning
+        expr: histogram_quantile(0.99, rate(water_treatment_agent_latency_seconds_bucket[5m])) > 0.1 and histogram_quantile(0.99, rate(water_treatment_agent_latency_seconds_bucket[5m])) <= 0.2
+        for: 5m
+        labels:
+          severity: warning
+          component: agent_infrastructure
+          alert_type: latency_warning
+          team: platform
+          runbook: https://runbooks.greenlang.io/gl-016/agent-latency-warning
+        annotations:
+          summary: "Warning: WATERGUARD Agent p99 Latency Elevated on {{ $labels.boiler_id }}"
+          description: |
+            WATERGUARD agent p99 latency is {{ $value | humanize }}s ({{ $value | humanize 1000 }}ms),
+            elevated above normal levels.
+
+            p99 Latency: {{ $value | humanize }}s
+            Warning Threshold: 0.1s (100ms)
+            Critical Threshold: 0.2s (200ms)
+            Boiler: {{ $labels.boiler_id }}
+          action: "Monitor trend. Review agent performance metrics. Investigate if trend continues."
+
+      # WARNING: Agent Memory Usage High
+      - alert: WaterGuardAgentMemoryWarning
+        expr: (water_treatment_agent_memory_usage_bytes / water_treatment_agent_memory_limit_bytes) * 100 > 75 and (water_treatment_agent_memory_usage_bytes / water_treatment_agent_memory_limit_bytes) * 100 <= 90
+        for: 10m
+        labels:
+          severity: warning
+          component: agent_infrastructure
+          alert_type: memory_warning
+          team: platform
+          runbook: https://runbooks.greenlang.io/gl-016/agent-memory-warning
+        annotations:
+          summary: "Warning: WATERGUARD Agent Memory Usage > 75% on {{ $labels.boiler_id }}"
+          description: |
+            WATERGUARD agent memory usage is {{ $value | humanize }}%, elevated.
+
+            Memory Usage: {{ $value | humanize }}%
+            Warning Threshold: 75%
+            Critical Threshold: 90%
+            Boiler: {{ $labels.boiler_id }}
+          action: "Monitor memory trend. Review for potential memory leaks. Plan restart if continues to increase."
+
+      # WARNING: Agent CPU Usage High
+      - alert: WaterGuardAgentCPUWarning
+        expr: rate(water_treatment_agent_cpu_usage_seconds_total[5m]) * 100 > 70 and rate(water_treatment_agent_cpu_usage_seconds_total[5m]) * 100 <= 90
+        for: 10m
+        labels:
+          severity: warning
+          component: agent_infrastructure
+          alert_type: cpu_warning
+          team: platform
+          runbook: https://runbooks.greenlang.io/gl-016/agent-cpu-warning
+        annotations:
+          summary: "Warning: WATERGUARD Agent CPU Usage > 70% on {{ $labels.boiler_id }}"
+          description: |
+            WATERGUARD agent CPU usage is {{ $value | humanize }}%, elevated.
+
+            CPU Usage: {{ $value | humanize }}%
+            Warning Threshold: 70%
+            Critical Threshold: 90%
+            Boiler: {{ $labels.boiler_id }}
+          action: "Monitor CPU trend. Review agent operations for optimization opportunities."
+
+      # WARNING: Agent Restart Detected
+      - alert: WaterGuardAgentRestartDetected
+        expr: rate(water_treatment_agent_uptime_seconds[5m]) < 0
+        for: 1m
+        labels:
+          severity: warning
+          component: agent_infrastructure
+          alert_type: restart
+          team: platform
+          runbook: https://runbooks.greenlang.io/gl-016/agent-restart
+        annotations:
+          summary: "Info: WATERGUARD Agent Restarted on {{ $labels.boiler_id }}"
+          description: |
+            WATERGUARD agent for boiler {{ $labels.boiler_id }} has been restarted.
+
+            Boiler: {{ $labels.boiler_id }}
+            Instance: {{ $labels.instance }}
+            Previous Uptime: {{ $labels.previous_uptime }}
+          action: "Verify agent is functioning normally post-restart. Check for crash logs if unplanned."
+
+      # WARNING: SCADA Connection Flapping
+      - alert: WaterGuardSCADAConnectionFlapping
+        expr: changes(water_treatment_scada_connection_status[15m]) > 5
+        for: 5m
+        labels:
+          severity: warning
+          component: integration
+          alert_type: scada_flapping
+          team: integration
+          runbook: https://runbooks.greenlang.io/gl-016/scada-connection-flapping
+        annotations:
+          summary: "Warning: SCADA Connection Flapping on {{ $labels.boiler_id }}"
+          description: |
+            SCADA connection for {{ $labels.boiler_id }} has changed state {{ $value }} times in 15 minutes.
+
+            State Changes: {{ $value }}
+            Threshold: 5 changes/15min
+            Boiler: {{ $labels.boiler_id }}
+            SCADA System: {{ $labels.scada_system }}
+          action: "Investigate network stability. Review SCADA system health. Check for configuration issues."
+
+      # WARNING: ERP API Rate Limit Warning
+      - alert: WaterGuardERPRateLimitWarning
+        expr: water_treatment_erp_api_rate_limit_remaining < 100
+        for: 5m
+        labels:
+          severity: warning
+          component: integration
+          alert_type: erp_rate_limit
+          team: integration
+          runbook: https://runbooks.greenlang.io/gl-016/erp-rate-limit
+        annotations:
+          summary: "Warning: ERP API Rate Limit Low on {{ $labels.boiler_id }}"
+          description: |
+            Remaining ERP API calls: {{ $value }}. Approaching rate limit.
+
+            Remaining Calls: {{ $value }}
+            Warning Threshold: 100 calls
+            Boiler: {{ $labels.boiler_id }}
+          action: "Review API call frequency. Optimize API usage. Consider rate limit increase with ERP vendor."
+
+      # WARNING: Database Query Slow
+      - alert: WaterGuardDatabaseQuerySlow
+        expr: histogram_quantile(0.95, rate(water_treatment_database_query_duration_seconds_bucket[5m])) > 1.0
+        for: 10m
+        labels:
+          severity: warning
+          component: infrastructure
+          alert_type: database_slow
+          team: platform
+          runbook: https://runbooks.greenlang.io/gl-016/database-query-slow
+        annotations:
+          summary: "Warning: Slow Database Queries on {{ $labels.boiler_id }}"
+          description: |
+            Database query p95 duration is {{ $value | humanize }}s, slower than normal.
+
+            p95 Duration: {{ $value | humanize }}s
+            Warning Threshold: 1.0s
+            Boiler: {{ $labels.boiler_id }}
+            Database: {{ $labels.database_name }}
+          action: "Review slow query logs. Optimize queries. Check database performance. Consider indexing."
+
+      # WARNING: Low Disk Space
+      - alert: WaterGuardAgentDiskSpaceLow
+        expr: (water_treatment_agent_disk_free_bytes / water_treatment_agent_disk_total_bytes) * 100 < 20
+        for: 15m
+        labels:
+          severity: warning
+          component: infrastructure
+          alert_type: disk_space
+          team: platform
+          runbook: https://runbooks.greenlang.io/gl-016/disk-space-low
+        annotations:
+          summary: "Warning: Low Disk Space for WATERGUARD Agent on {{ $labels.boiler_id }}"
+          description: |
+            Free disk space is {{ $value | humanize }}%, below warning threshold.
+
+            Free Space: {{ $value | humanize }}%
+            Warning Threshold: 20%
+            Instance: {{ $labels.instance }}
+            Mount Point: {{ $labels.mount_point }}
+          action: "Clean up old logs. Review data retention. Increase disk capacity if needed."
+
+  - name: waterguard_agent_health_info
+    interval: 5m
+    rules:
+      # INFO: Agent Version Mismatch
+      - alert: WaterGuardAgentVersionMismatch
+        expr: count(count by (version) (water_treatment_agent_info)) > 1
+        for: 30m
+        labels:
+          severity: info
+          component: agent_infrastructure
+          alert_type: version_mismatch
+          team: platform
+          runbook: https://runbooks.greenlang.io/gl-016/version-mismatch
+        annotations:
+          summary: "Info: Multiple WATERGUARD Agent Versions Detected"
+          description: |
+            Multiple WATERGUARD agent versions are running across the deployment.
+
+            Number of Versions: {{ $value }}
+            Expected: 1 version
+          action: "Plan rolling upgrade to standardize agent versions. Review deployment procedures."
+
+      # INFO: High Request Rate
+      - alert: WaterGuardAgentHighRequestRate
+        expr: rate(water_treatment_agent_requests_total[5m]) > 100
+        for: 15m
+        labels:
+          severity: info
+          component: agent_infrastructure
+          alert_type: high_request_rate
+          team: platform
+          runbook: https://runbooks.greenlang.io/gl-016/high-request-rate
+        annotations:
+          summary: "Info: High Request Rate on {{ $labels.boiler_id }}"
+          description: |
+            WATERGUARD agent request rate is {{ $value | humanize }} req/sec, higher than typical.
+
+            Request Rate: {{ $value | humanize }} req/sec
+            Typical Range: 10-50 req/sec
+            Boiler: {{ $labels.boiler_id }}
+          action: "Monitor for performance impact. Investigate source of high request volume."

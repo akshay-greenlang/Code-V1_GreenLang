@@ -1,0 +1,1128 @@
+# =============================================================================
+# Boiler Efficiency Agent Template
+# GreenLang Agent Factory - Process Heat Applications
+# =============================================================================
+# Standard: ASME PTC 4 - Fired Steam Generators
+# Version: 1.0.0
+# =============================================================================
+
+metadata:
+  template_id: boiler_efficiency_agent
+  name: Boiler Efficiency Calculation Agent
+  description: >
+    Calculates boiler efficiency per ASME PTC 4 using both input-output
+    and energy balance (heat loss) methods. Supports all fuel types
+    (natural gas, fuel oil, coal, biomass) with complete provenance tracking.
+  category: efficiency
+  version: "1.0.0"
+  status: production
+  author: GreenLang Engineering Team
+  created_at: "2024-12-01T00:00:00Z"
+  updated_at: "2024-12-11T00:00:00Z"
+
+  tags:
+    - boiler
+    - efficiency
+    - ASME_PTC_4
+    - steam_generation
+    - heat_balance
+    - combustion
+
+  equipment_types:
+    - fire_tube_boiler
+    - water_tube_boiler
+    - waste_heat_boiler
+    - hrsg
+    - package_boiler
+
+  industries:
+    - oil_gas
+    - power_generation
+    - petrochemical
+    - chemical
+    - food_beverage
+    - pulp_paper
+
+  applicable_standards:
+    - ASME PTC 4
+    - ASME BPVC Section I
+    - NFPA 85
+    - EPA 40 CFR Part 60
+
+  compliance_frameworks:
+    - ISO 50001
+    - EU ETS
+    - EPA GHG Reporting
+
+# =============================================================================
+# Input Schema
+# =============================================================================
+
+input_schema:
+  name: BoilerEfficiencyInput
+  description: Input parameters for boiler efficiency calculation
+  version: "1.0.0"
+
+  fields:
+    # Fuel inputs
+    fuel_type:
+      type: enum
+      description: Type of fuel being burned
+      required: true
+      allowed_values:
+        - natural_gas
+        - fuel_oil_no2
+        - fuel_oil_no6
+        - coal_bituminous
+        - coal_subbituminous
+        - biomass_wood
+        - biomass_bagasse
+        - hydrogen
+        - mixed
+
+    fuel_flow_rate:
+      type: float
+      description: Mass flow rate of fuel
+      required: true
+      unit: kg/hr
+      min_value: 0
+      max_value: 1000000
+
+    fuel_higher_heating_value:
+      type: float
+      description: Higher heating value (HHV) of fuel
+      required: true
+      unit: MJ/kg
+      min_value: 1
+      max_value: 150
+
+    fuel_lower_heating_value:
+      type: float
+      description: Lower heating value (LHV) of fuel
+      required: false
+      unit: MJ/kg
+
+    fuel_moisture_content:
+      type: float
+      description: Moisture content of fuel (as-fired basis)
+      required: false
+      unit: percent
+      min_value: 0
+      max_value: 80
+      default: 0
+
+    fuel_ash_content:
+      type: float
+      description: Ash content of fuel
+      required: false
+      unit: percent
+      min_value: 0
+      max_value: 50
+      default: 0
+
+    fuel_hydrogen_content:
+      type: float
+      description: Hydrogen content of fuel
+      required: false
+      unit: percent_by_mass
+      min_value: 0
+      max_value: 25
+
+    fuel_carbon_content:
+      type: float
+      description: Carbon content of fuel
+      required: false
+      unit: percent_by_mass
+
+    # Combustion air inputs
+    combustion_air_temperature:
+      type: float
+      description: Temperature of combustion air entering burner
+      required: true
+      unit: celsius
+      min_value: -40
+      max_value: 400
+
+    combustion_air_humidity:
+      type: float
+      description: Relative humidity of combustion air
+      required: false
+      unit: percent
+      min_value: 0
+      max_value: 100
+      default: 50
+
+    excess_air:
+      type: float
+      description: Excess air percentage
+      required: true
+      unit: percent
+      min_value: 0
+      max_value: 100
+
+    # Flue gas measurements
+    flue_gas_temperature:
+      type: float
+      description: Temperature of flue gas leaving boiler
+      required: true
+      unit: celsius
+      min_value: 50
+      max_value: 600
+
+    flue_gas_o2:
+      type: float
+      description: Oxygen concentration in flue gas (dry basis)
+      required: false
+      unit: percent
+      min_value: 0
+      max_value: 21
+
+    flue_gas_co2:
+      type: float
+      description: CO2 concentration in flue gas (dry basis)
+      required: false
+      unit: percent
+      min_value: 0
+      max_value: 25
+
+    flue_gas_co:
+      type: float
+      description: CO concentration in flue gas
+      required: false
+      unit: ppm
+      min_value: 0
+      max_value: 10000
+      default: 0
+
+    # Steam/water outputs
+    steam_flow_rate:
+      type: float
+      description: Steam production rate
+      required: true
+      unit: kg/hr
+      min_value: 0
+
+    steam_pressure:
+      type: float
+      description: Steam pressure at boiler outlet
+      required: true
+      unit: bar_g
+      min_value: 0
+      max_value: 350
+
+    steam_temperature:
+      type: float
+      description: Steam temperature at boiler outlet
+      required: true
+      unit: celsius
+      min_value: 100
+      max_value: 650
+
+    feedwater_temperature:
+      type: float
+      description: Feedwater temperature entering economizer/boiler
+      required: true
+      unit: celsius
+      min_value: 0
+      max_value: 350
+
+    feedwater_pressure:
+      type: float
+      description: Feedwater pressure
+      required: false
+      unit: bar_g
+
+    blowdown_rate:
+      type: float
+      description: Continuous blowdown rate as percentage of feedwater
+      required: false
+      unit: percent
+      min_value: 0
+      max_value: 10
+      default: 2
+
+    # Ambient conditions
+    ambient_temperature:
+      type: float
+      description: Ambient air temperature
+      required: true
+      unit: celsius
+      min_value: -50
+      max_value: 60
+
+    ambient_pressure:
+      type: float
+      description: Ambient atmospheric pressure
+      required: false
+      unit: bar_a
+      default: 1.01325
+
+    # Optional heat recovery
+    economizer_inlet_temp:
+      type: float
+      description: Flue gas temperature at economizer inlet
+      required: false
+      unit: celsius
+
+    air_preheater_effectiveness:
+      type: float
+      description: Air preheater effectiveness
+      required: false
+      unit: percent
+      min_value: 0
+      max_value: 100
+
+    # Radiation and convection losses
+    boiler_surface_area:
+      type: float
+      description: External surface area of boiler
+      required: false
+      unit: m2
+
+    boiler_surface_temperature:
+      type: float
+      description: Average external surface temperature
+      required: false
+      unit: celsius
+
+# =============================================================================
+# Output Schema
+# =============================================================================
+
+output_schema:
+  name: BoilerEfficiencyOutput
+  description: Results of boiler efficiency calculation
+  version: "1.0.0"
+
+  fields:
+    # Primary efficiency results
+    efficiency_input_output:
+      type: float
+      description: Boiler efficiency by input-output method
+      unit: percent
+
+    efficiency_heat_loss:
+      type: float
+      description: Boiler efficiency by heat loss method
+      unit: percent
+
+    efficiency_gross:
+      type: float
+      description: Gross efficiency (based on HHV)
+      unit: percent
+
+    efficiency_net:
+      type: float
+      description: Net efficiency (based on LHV)
+      unit: percent
+
+    efficiency_hhv:
+      type: float
+      description: Efficiency based on higher heating value
+      unit: percent
+
+    efficiency_lhv:
+      type: float
+      description: Efficiency based on lower heating value
+      unit: percent
+
+    # Heat balance components
+    heat_input:
+      type: float
+      description: Total heat input from fuel
+      unit: MW
+
+    heat_output:
+      type: float
+      description: Useful heat output to steam
+      unit: MW
+
+    heat_loss_dry_flue_gas:
+      type: float
+      description: Heat loss in dry flue gas
+      unit: percent
+
+    heat_loss_moisture_fuel:
+      type: float
+      description: Heat loss from moisture in fuel
+      unit: percent
+
+    heat_loss_moisture_combustion:
+      type: float
+      description: Heat loss from moisture from combustion of hydrogen
+      unit: percent
+
+    heat_loss_moisture_air:
+      type: float
+      description: Heat loss from moisture in combustion air
+      unit: percent
+
+    heat_loss_unburned_carbon:
+      type: float
+      description: Heat loss from unburned carbon in ash
+      unit: percent
+
+    heat_loss_unburned_co:
+      type: float
+      description: Heat loss from incomplete combustion (CO)
+      unit: percent
+
+    heat_loss_radiation_convection:
+      type: float
+      description: Heat loss from radiation and convection
+      unit: percent
+
+    heat_loss_blowdown:
+      type: float
+      description: Heat loss from continuous blowdown
+      unit: percent
+
+    heat_loss_total:
+      type: float
+      description: Total heat losses
+      unit: percent
+
+    # Combustion analysis
+    excess_air_calculated:
+      type: float
+      description: Calculated excess air from O2 measurement
+      unit: percent
+
+    stoichiometric_air:
+      type: float
+      description: Theoretical stoichiometric air requirement
+      unit: kg_air/kg_fuel
+
+    actual_air_fuel_ratio:
+      type: float
+      description: Actual air-to-fuel ratio
+      unit: kg_air/kg_fuel
+
+    flue_gas_flow_rate:
+      type: float
+      description: Calculated flue gas mass flow rate
+      unit: kg/hr
+
+    # Steam quality
+    steam_enthalpy:
+      type: float
+      description: Specific enthalpy of outlet steam
+      unit: kJ/kg
+
+    feedwater_enthalpy:
+      type: float
+      description: Specific enthalpy of feedwater
+      unit: kJ/kg
+
+    enthalpy_rise:
+      type: float
+      description: Enthalpy rise across boiler
+      unit: kJ/kg
+
+    # Emissions estimates
+    co2_emissions_rate:
+      type: float
+      description: CO2 emission rate
+      unit: kg/hr
+
+    co2_emissions_factor:
+      type: float
+      description: CO2 emission factor per unit steam
+      unit: kg_CO2/tonne_steam
+
+    nox_estimate:
+      type: float
+      description: Estimated NOx emissions
+      unit: mg/Nm3
+
+    # Improvement opportunities
+    efficiency_improvement_potential:
+      type: float
+      description: Estimated efficiency improvement potential
+      unit: percent
+
+    fuel_savings_potential:
+      type: float
+      description: Potential fuel savings at current load
+      unit: kg/hr
+
+    cost_savings_potential:
+      type: float
+      description: Potential annual cost savings
+      unit: USD/year
+
+    recommendations:
+      type: list
+      description: List of efficiency improvement recommendations
+
+    # Provenance
+    provenance_hash:
+      type: string
+      description: SHA-256 hash of inputs and calculation steps
+
+    calculation_timestamp:
+      type: datetime
+      description: Timestamp of calculation
+
+    calculation_method:
+      type: string
+      description: Calculation method used
+
+    source_references:
+      type: list
+      description: Standards and formulas used in calculation
+
+    uncertainty:
+      type: float
+      description: Estimated measurement uncertainty
+      unit: percent
+
+# =============================================================================
+# Formulas
+# =============================================================================
+
+formulas:
+  - id: ASME_PTC4_EFF_IO
+    name: Input-Output Efficiency
+    description: Boiler efficiency by direct input-output method
+    equation: "eta_io = (Q_out / Q_in) * 100"
+    variables:
+      Q_out:
+        description: Heat absorbed by working fluid
+        unit: MW
+        type: float
+      Q_in:
+        description: Heat input from fuel combustion
+        unit: MW
+        type: float
+    source:
+      standard: ASME PTC 4
+      section: "5.3"
+      edition: "2023"
+    application: Direct efficiency measurement when steam and fuel flows are accurately measured
+    limitations:
+      - Requires accurate flow measurement
+      - Sensitive to steam quality uncertainty
+    uncertainty: 1.0
+
+  - id: ASME_PTC4_EFF_HL
+    name: Heat Loss Efficiency
+    description: Boiler efficiency by energy balance method
+    equation: "eta_hl = 100 - L_df - L_mf - L_mc - L_ma - L_uc - L_co - L_rc - L_bd"
+    variables:
+      L_df:
+        description: Dry flue gas loss
+        unit: percent
+        type: float
+      L_mf:
+        description: Moisture in fuel loss
+        unit: percent
+        type: float
+      L_mc:
+        description: Moisture from combustion loss
+        unit: percent
+        type: float
+      L_ma:
+        description: Moisture in air loss
+        unit: percent
+        type: float
+      L_uc:
+        description: Unburned carbon loss
+        unit: percent
+        type: float
+      L_co:
+        description: CO loss
+        unit: percent
+        type: float
+      L_rc:
+        description: Radiation and convection loss
+        unit: percent
+        type: float
+      L_bd:
+        description: Blowdown loss
+        unit: percent
+        type: float
+    source:
+      standard: ASME PTC 4
+      section: "5.4"
+      edition: "2023"
+    application: Preferred method for performance testing
+    limitations:
+      - Requires detailed fuel analysis
+      - Multiple measurement points needed
+    uncertainty: 0.5
+
+  - id: ASME_PTC4_DRY_FLUE_LOSS
+    name: Dry Flue Gas Loss
+    description: Heat loss in dry flue gas
+    equation: "L_df = (m_dg * Cp_dg * (T_fg - T_ref)) / (m_f * HHV) * 100"
+    variables:
+      m_dg:
+        description: Mass of dry flue gas per unit fuel
+        unit: kg/kg_fuel
+        type: float
+      Cp_dg:
+        description: Mean specific heat of dry flue gas
+        unit: kJ/kg-K
+        type: float
+      T_fg:
+        description: Flue gas exit temperature
+        unit: celsius
+        type: float
+      T_ref:
+        description: Reference temperature (usually ambient)
+        unit: celsius
+        type: float
+      m_f:
+        description: Fuel mass flow
+        unit: kg/hr
+        type: float
+      HHV:
+        description: Higher heating value of fuel
+        unit: kJ/kg
+        type: float
+    source:
+      standard: ASME PTC 4
+      section: "5.4.2.1"
+      edition: "2023"
+    application: Largest heat loss component in most boilers
+
+  - id: ASME_PTC4_MOISTURE_COMBUSTION_LOSS
+    name: Moisture from Combustion Loss
+    description: Heat loss from water formed by combustion of hydrogen
+    equation: "L_mc = (8.94 * H2 * (h_v - h_ref)) / HHV * 100"
+    variables:
+      H2:
+        description: Hydrogen content of fuel
+        unit: percent_by_mass
+        type: float
+      h_v:
+        description: Enthalpy of steam at flue gas temperature
+        unit: kJ/kg
+        type: float
+      h_ref:
+        description: Reference enthalpy at ambient temperature
+        unit: kJ/kg
+        type: float
+      HHV:
+        description: Higher heating value of fuel
+        unit: kJ/kg
+        type: float
+    source:
+      standard: ASME PTC 4
+      section: "5.4.2.3"
+      edition: "2023"
+    application: Significant for hydrogen-rich fuels
+
+  - id: EXCESS_AIR_FROM_O2
+    name: Excess Air from O2 Measurement
+    description: Calculate excess air from flue gas O2 concentration
+    equation: "EA = (O2 / (21 - O2)) * 100"
+    variables:
+      O2:
+        description: Oxygen concentration in dry flue gas
+        unit: percent
+        type: float
+      EA:
+        description: Excess air
+        unit: percent
+        type: float
+    source:
+      standard: ASME PTC 4
+      section: "4.12"
+      edition: "2023"
+    application: Common method for excess air determination
+    limitations:
+      - Assumes complete combustion
+      - Valid for dry O2 measurement only
+
+  - id: STEAM_ENTHALPY_CALCULATION
+    name: Steam Enthalpy
+    description: Specific enthalpy of superheated or saturated steam
+    equation: "h = f(P, T) from IAPWS-IF97"
+    variables:
+      P:
+        description: Steam pressure
+        unit: bar_a
+        type: float
+      T:
+        description: Steam temperature
+        unit: celsius
+        type: float
+      h:
+        description: Specific enthalpy
+        unit: kJ/kg
+        type: float
+    source:
+      standard: IAPWS-IF97
+      section: Region 2
+      edition: "1997"
+    application: Steam property calculation
+
+  - id: RADIATION_CONVECTION_LOSS
+    name: Radiation and Convection Loss
+    description: Heat loss from boiler external surface
+    equation: "L_rc = (A * (T_s - T_a)^1.25 + sigma * epsilon * A * (T_s^4 - T_a^4)) / Q_in * 100"
+    variables:
+      A:
+        description: External surface area
+        unit: m2
+        type: float
+      T_s:
+        description: Surface temperature
+        unit: kelvin
+        type: float
+      T_a:
+        description: Ambient temperature
+        unit: kelvin
+        type: float
+      sigma:
+        description: Stefan-Boltzmann constant
+        unit: W/m2-K4
+        type: float
+      epsilon:
+        description: Surface emissivity
+        unit: dimensionless
+        type: float
+      Q_in:
+        description: Heat input
+        unit: W
+        type: float
+    source:
+      standard: ASME PTC 4
+      section: "5.4.4"
+      edition: "2023"
+    application: Surface heat loss estimation
+
+# =============================================================================
+# Standards References
+# =============================================================================
+
+standards:
+  - code: ASME PTC 4
+    title: Fired Steam Generators Performance Test Codes
+    edition: "2023"
+    sections:
+      - "Section 4: Instruments and Methods of Measurement"
+      - "Section 5: Computation of Results"
+      - "Section 6: Report of Results"
+    requirements:
+      - Input-output and heat loss efficiency methods
+      - Uncertainty analysis requirements
+      - Test procedure specifications
+    compliance_level: required
+
+  - code: ASME BPVC Section I
+    title: Rules for Construction of Power Boilers
+    edition: "2023"
+    sections:
+      - "PG: General Requirements"
+    requirements:
+      - Boiler design parameters
+      - Operating limits
+    compliance_level: required
+
+  - code: NFPA 85
+    title: Boiler and Combustion Systems Hazards Code
+    edition: "2023"
+    sections:
+      - "Chapter 4: Single Burner Boilers"
+      - "Chapter 5: Multiple Burner Boilers"
+    requirements:
+      - Combustion safety requirements
+      - Purge requirements
+    compliance_level: required
+
+  - code: IAPWS-IF97
+    title: Industrial Formulation for Thermodynamic Properties of Water and Steam
+    edition: "1997"
+    sections:
+      - "Region 1: Subcooled Water"
+      - "Region 2: Superheated Steam"
+    requirements:
+      - Steam property calculations
+    compliance_level: required
+
+# =============================================================================
+# Safety Constraints
+# =============================================================================
+
+safety_constraints:
+  - id: SC_EXCESS_AIR_RANGE
+    name: Excess Air Range Check
+    description: Excess air must be within safe operating range
+    condition: "excess_air >= 5 and excess_air <= 50"
+    action: warn
+    severity: warning
+    standard_reference: NFPA 85
+    parameters:
+      min_excess_air: 5
+      max_excess_air: 50
+    message: "Excess air {excess_air}% outside recommended range (5-50%)"
+
+  - id: SC_FLUE_GAS_TEMP_HIGH
+    name: High Flue Gas Temperature
+    description: Flag abnormally high flue gas temperature
+    condition: "flue_gas_temperature <= 450"
+    action: warn
+    severity: warning
+    parameters:
+      max_flue_gas_temp: 450
+    message: "Flue gas temperature {flue_gas_temperature}C exceeds 450C - check for fouling"
+
+  - id: SC_EFFICIENCY_LOW
+    name: Low Efficiency Warning
+    description: Flag efficiency below expected range
+    condition: "efficiency_heat_loss >= 70"
+    action: warn
+    severity: warning
+    parameters:
+      min_efficiency: 70
+    message: "Calculated efficiency {efficiency_heat_loss}% below 70% - verify inputs"
+
+  - id: SC_CO_HIGH
+    name: High CO Concentration
+    description: Flag high CO indicating incomplete combustion
+    condition: "flue_gas_co <= 400"
+    action: warn
+    severity: error
+    standard_reference: EPA 40 CFR Part 60
+    parameters:
+      max_co_ppm: 400
+    message: "CO concentration {flue_gas_co} ppm exceeds 400 ppm - combustion issue"
+
+  - id: SC_O2_RANGE
+    name: Flue Gas O2 Range
+    description: O2 must be within expected range
+    condition: "flue_gas_o2 >= 1 and flue_gas_o2 <= 15"
+    action: warn
+    severity: warning
+    parameters:
+      min_o2: 1
+      max_o2: 15
+    message: "Flue gas O2 {flue_gas_o2}% outside expected range (1-15%)"
+
+  - id: SC_STEAM_CONDITIONS
+    name: Steam Conditions Check
+    description: Verify steam conditions are physically possible
+    condition: "steam_temperature >= 100"
+    action: reject
+    severity: critical
+    message: "Steam temperature {steam_temperature}C below 100C - invalid input"
+
+  - id: SC_HEAT_BALANCE_CHECK
+    name: Heat Balance Closure
+    description: Heat balance must close within tolerance
+    condition: "abs(efficiency_input_output - efficiency_heat_loss) <= 5"
+    action: warn
+    severity: warning
+    parameters:
+      tolerance: 5
+    message: "Heat balance methods differ by more than 5% - check measurements"
+
+  - id: SC_BLOWDOWN_RATE
+    name: Blowdown Rate Check
+    description: Blowdown rate within normal range
+    condition: "blowdown_rate <= 5"
+    action: warn
+    severity: warning
+    parameters:
+      max_blowdown: 5
+    message: "Blowdown rate {blowdown_rate}% exceeds 5% - potential water quality issue"
+
+# =============================================================================
+# Processing Pipeline
+# =============================================================================
+
+processing:
+  steps:
+    - id: STEP_01_VALIDATE_INPUTS
+      name: Input Validation
+      type: validation
+      description: Validate all input parameters against schema
+      inputs:
+        - all_input_fields
+      outputs:
+        - validation_status
+        - validation_errors
+      constraints:
+        - SC_STEAM_CONDITIONS
+        - SC_EXCESS_AIR_RANGE
+        - SC_O2_RANGE
+      error_handling: reject
+
+    - id: STEP_02_LOOKUP_FUEL_PROPERTIES
+      name: Fuel Property Lookup
+      type: lookup
+      description: Look up fuel properties from database if not provided
+      inputs:
+        - fuel_type
+        - fuel_higher_heating_value
+      outputs:
+        - fuel_properties
+        - hhv_validated
+        - lhv_calculated
+      formula_refs:
+        - FUEL_PROPERTY_LOOKUP
+      error_handling: default
+
+    - id: STEP_03_CALCULATE_STEAM_PROPERTIES
+      name: Steam Property Calculation
+      type: calculation
+      description: Calculate steam and water enthalpies using IAPWS-IF97
+      inputs:
+        - steam_pressure
+        - steam_temperature
+        - feedwater_temperature
+        - feedwater_pressure
+      outputs:
+        - steam_enthalpy
+        - feedwater_enthalpy
+        - enthalpy_rise
+      formula_refs:
+        - STEAM_ENTHALPY_CALCULATION
+      error_handling: propagate
+
+    - id: STEP_04_CALCULATE_HEAT_OUTPUT
+      name: Heat Output Calculation
+      type: calculation
+      description: Calculate heat absorbed by steam
+      inputs:
+        - steam_flow_rate
+        - steam_enthalpy
+        - feedwater_enthalpy
+        - blowdown_rate
+      outputs:
+        - heat_output
+      formula_refs: []
+      error_handling: propagate
+
+    - id: STEP_05_CALCULATE_HEAT_INPUT
+      name: Heat Input Calculation
+      type: calculation
+      description: Calculate heat input from fuel
+      inputs:
+        - fuel_flow_rate
+        - fuel_higher_heating_value
+      outputs:
+        - heat_input
+      error_handling: propagate
+
+    - id: STEP_06_CALCULATE_IO_EFFICIENCY
+      name: Input-Output Efficiency
+      type: calculation
+      description: Calculate efficiency by input-output method
+      inputs:
+        - heat_output
+        - heat_input
+      outputs:
+        - efficiency_input_output
+      formula_refs:
+        - ASME_PTC4_EFF_IO
+      error_handling: propagate
+
+    - id: STEP_07_CALCULATE_EXCESS_AIR
+      name: Excess Air Calculation
+      type: calculation
+      description: Calculate or verify excess air from O2 measurement
+      inputs:
+        - flue_gas_o2
+        - excess_air
+      outputs:
+        - excess_air_calculated
+        - stoichiometric_air
+        - actual_air_fuel_ratio
+      formula_refs:
+        - EXCESS_AIR_FROM_O2
+      constraints:
+        - SC_EXCESS_AIR_RANGE
+      error_handling: default
+
+    - id: STEP_08_CALCULATE_HEAT_LOSSES
+      name: Heat Loss Calculations
+      type: calculation
+      description: Calculate all heat loss components
+      inputs:
+        - flue_gas_temperature
+        - ambient_temperature
+        - fuel_moisture_content
+        - fuel_hydrogen_content
+        - flue_gas_co
+        - combustion_air_humidity
+        - boiler_surface_area
+        - boiler_surface_temperature
+        - blowdown_rate
+      outputs:
+        - heat_loss_dry_flue_gas
+        - heat_loss_moisture_fuel
+        - heat_loss_moisture_combustion
+        - heat_loss_moisture_air
+        - heat_loss_unburned_carbon
+        - heat_loss_unburned_co
+        - heat_loss_radiation_convection
+        - heat_loss_blowdown
+        - heat_loss_total
+      formula_refs:
+        - ASME_PTC4_DRY_FLUE_LOSS
+        - ASME_PTC4_MOISTURE_COMBUSTION_LOSS
+        - RADIATION_CONVECTION_LOSS
+      constraints:
+        - SC_FLUE_GAS_TEMP_HIGH
+        - SC_CO_HIGH
+      error_handling: propagate
+
+    - id: STEP_09_CALCULATE_HL_EFFICIENCY
+      name: Heat Loss Efficiency
+      type: calculation
+      description: Calculate efficiency by heat loss method
+      inputs:
+        - heat_loss_total
+      outputs:
+        - efficiency_heat_loss
+      formula_refs:
+        - ASME_PTC4_EFF_HL
+      constraints:
+        - SC_EFFICIENCY_LOW
+        - SC_HEAT_BALANCE_CHECK
+      error_handling: propagate
+
+    - id: STEP_10_CALCULATE_EMISSIONS
+      name: Emissions Calculation
+      type: calculation
+      description: Calculate CO2 and NOx emissions
+      inputs:
+        - fuel_flow_rate
+        - fuel_carbon_content
+        - fuel_type
+        - excess_air
+      outputs:
+        - co2_emissions_rate
+        - co2_emissions_factor
+        - nox_estimate
+      error_handling: default
+
+    - id: STEP_11_GENERATE_RECOMMENDATIONS
+      name: Generate Recommendations
+      type: decision
+      description: Generate efficiency improvement recommendations
+      inputs:
+        - efficiency_heat_loss
+        - heat_loss_dry_flue_gas
+        - heat_loss_radiation_convection
+        - excess_air_calculated
+        - flue_gas_temperature
+      outputs:
+        - efficiency_improvement_potential
+        - fuel_savings_potential
+        - cost_savings_potential
+        - recommendations
+      error_handling: default
+
+    - id: STEP_12_CALCULATE_PROVENANCE
+      name: Provenance Tracking
+      type: output
+      description: Calculate SHA-256 provenance hash
+      inputs:
+        - all_inputs
+        - all_outputs
+      outputs:
+        - provenance_hash
+        - calculation_timestamp
+        - source_references
+        - uncertainty
+      error_handling: propagate
+
+# =============================================================================
+# Zero-Hallucination Configuration
+# =============================================================================
+
+zero_hallucination:
+  enabled: true
+  calculation_mode: deterministic
+  allowed_operations:
+    - arithmetic
+    - formula_evaluation
+    - table_lookup
+    - steam_property_calculation
+    - unit_conversion
+    - interpolation
+  forbidden_operations:
+    - llm_numeric_calculation
+    - ml_prediction_for_efficiency
+    - unvalidated_external_api
+  require_formula_citation: true
+  require_provenance: true
+  llm_allowed_for:
+    - recommendation_generation
+    - narrative_summary
+    - root_cause_classification
+
+# =============================================================================
+# Test Cases
+# =============================================================================
+
+test_cases:
+  - name: Natural Gas Boiler - Typical Operation
+    description: Standard natural gas boiler at normal operating conditions
+    inputs:
+      fuel_type: natural_gas
+      fuel_flow_rate: 1000
+      fuel_higher_heating_value: 52.2
+      combustion_air_temperature: 25
+      excess_air: 15
+      flue_gas_temperature: 180
+      flue_gas_o2: 3.0
+      steam_flow_rate: 15000
+      steam_pressure: 10
+      steam_temperature: 184
+      feedwater_temperature: 105
+      ambient_temperature: 25
+    expected_outputs:
+      efficiency_heat_loss:
+        min: 85
+        max: 92
+      efficiency_input_output:
+        min: 85
+        max: 92
+
+  - name: Coal Boiler - High Efficiency
+    description: Modern coal-fired boiler with heat recovery
+    inputs:
+      fuel_type: coal_bituminous
+      fuel_flow_rate: 5000
+      fuel_higher_heating_value: 28.0
+      fuel_moisture_content: 8
+      fuel_ash_content: 10
+      fuel_hydrogen_content: 4.5
+      combustion_air_temperature: 150
+      excess_air: 20
+      flue_gas_temperature: 140
+      flue_gas_o2: 4.0
+      steam_flow_rate: 80000
+      steam_pressure: 100
+      steam_temperature: 540
+      feedwater_temperature: 250
+      ambient_temperature: 20
+    expected_outputs:
+      efficiency_heat_loss:
+        min: 86
+        max: 92
+
+  - name: Waste Heat Boiler - HRSG
+    description: Heat recovery steam generator
+    inputs:
+      fuel_type: natural_gas
+      fuel_flow_rate: 0
+      fuel_higher_heating_value: 0
+      combustion_air_temperature: 25
+      excess_air: 300
+      flue_gas_temperature: 170
+      steam_flow_rate: 50000
+      steam_pressure: 40
+      steam_temperature: 400
+      feedwater_temperature: 120
+      ambient_temperature: 25
+    expected_outputs:
+      efficiency_heat_loss:
+        min: 70
+        max: 85

@@ -1,0 +1,538 @@
+# ============================================================================
+# CIRCUIT BREAKER ALERTING RULES FOR VCCI SCOPE 3 PLATFORM
+# ============================================================================
+#
+# This file defines Prometheus alerting rules specifically for circuit breaker
+# monitoring across all external dependencies:
+# - Factor Broker (emission factor database)
+# - LLM Provider (Anthropic Claude, OpenAI GPT)
+# - ERP SAP (enterprise resource planning connector)
+# - Database (PostgreSQL primary/replica)
+# - Redis (cache layer)
+# - Weaviate (vector database for entity resolution)
+#
+# Alert Severity Levels:
+# - critical: Circuit open on critical dependency (pages on-call)
+# - warning: Circuit degraded or flapping (notifies team)
+# - info: Circuit state changes (logged for analysis)
+#
+# Version: 1.0.0
+# Author: GreenLang VCCI Team (Health Check & Monitoring)
+# Date: 2025-11-09
+# ============================================================================
+
+groups:
+  # ==========================================================================
+  # CIRCUIT BREAKER STATE ALERTS
+  # ==========================================================================
+
+  - name: circuit_breaker_states
+    interval: 30s
+    rules:
+      - alert: CircuitBreakerOpen
+        expr: |
+          greenlang_circuit_breaker_state{service=~"factor_broker|database|redis"} == 1
+        for: 2m
+        labels:
+          severity: critical
+          component: circuit_breaker
+          team: vcci
+          alert_type: dependency_failure
+        annotations:
+          summary: "Circuit breaker OPEN for critical dependency: {{ $labels.service }}"
+          description: |
+            The circuit breaker for {{ $labels.service }} has been in OPEN state for 2 minutes.
+            All requests to this service are being fast-failed to protect the system.
+          impact: |
+            - {{ $labels.service }}: Requests will fail immediately without attempting connection
+            - Dependent features may be degraded or unavailable
+            - Error rate will increase for affected operations
+          action: |
+            1. Check {{ $labels.service }} service health and availability
+            2. Review {{ $labels.service }} logs for error patterns
+            3. Verify network connectivity to {{ $labels.service }}
+            4. Check if {{ $labels.service }} is experiencing high load or outage
+            5. Monitor circuit breaker metrics: greenlang_circuit_breaker_failures_total
+            6. If service is healthy, circuit will auto-recover after cooldown period
+          runbook_url: "https://wiki.greenlang.com/vcci/runbooks/circuit-breaker-open"
+          dashboard_url: "https://grafana.greenlang.com/d/circuit-breakers"
+
+      - alert: CircuitBreakerOpenNonCritical
+        expr: |
+          greenlang_circuit_breaker_state{service=~"llm_provider|erp_sap"} == 1
+        for: 5m
+        labels:
+          severity: warning
+          component: circuit_breaker
+          team: vcci
+          alert_type: dependency_degradation
+        annotations:
+          summary: "Circuit breaker OPEN for non-critical dependency: {{ $labels.service }}"
+          description: |
+            The circuit breaker for {{ $labels.service }} has been in OPEN state for 5 minutes.
+            This is a non-critical dependency - system can operate with degraded functionality.
+          impact: |
+            - {{ $labels.service }}: Enhanced features unavailable
+            - Core functionality remains operational
+            - Fallback mechanisms activated
+          action: |
+            1. Verify {{ $labels.service }} availability
+            2. Check if fallback mechanisms are working correctly
+            3. Monitor error rates and user impact
+            4. Plan recovery during maintenance window if needed
+          runbook_url: "https://wiki.greenlang.com/vcci/runbooks/circuit-breaker-degraded"
+
+      - alert: CircuitBreakerFlapping
+        expr: |
+          rate(greenlang_circuit_breaker_state_changes_total[10m]) > 0.1
+        for: 15m
+        labels:
+          severity: warning
+          component: circuit_breaker
+          team: vcci
+          alert_type: stability_issue
+        annotations:
+          summary: "Circuit breaker flapping for {{ $labels.service }}"
+          description: |
+            Circuit breaker for {{ $labels.service }} is changing states frequently (> 0.1 changes/sec).
+            State changes in last 10 minutes: {{ $value | humanize }}
+            This indicates an unstable dependency or misconfigured thresholds.
+          impact: |
+            - Intermittent failures for {{ $labels.service }} operations
+            - Degraded user experience due to inconsistent availability
+            - Increased error rates during state transitions
+          action: |
+            1. Review circuit breaker configuration (failure_threshold, recovery_timeout)
+            2. Check {{ $labels.service }} health - may be experiencing intermittent issues
+            3. Analyze recent state transitions: greenlang_circuit_breaker_state_changes_total
+            4. Consider increasing recovery_timeout to reduce flapping
+            5. Investigate {{ $labels.service }} stability issues
+          runbook_url: "https://wiki.greenlang.com/vcci/runbooks/circuit-breaker-flapping"
+
+      - alert: CircuitBreakerHalfOpen
+        expr: |
+          greenlang_circuit_breaker_state == 2
+        for: 10m
+        labels:
+          severity: info
+          component: circuit_breaker
+          team: vcci
+          alert_type: recovery_in_progress
+        annotations:
+          summary: "Circuit breaker in HALF_OPEN state for {{ $labels.service }}"
+          description: |
+            Circuit breaker for {{ $labels.service }} has been in HALF_OPEN state for 10 minutes.
+            The system is testing if the dependency has recovered by allowing probe requests.
+          impact: "Limited requests to {{ $labels.service }} while testing recovery"
+          action: |
+            Monitor recovery progress. Circuit will either:
+            - Close (green) if recovery successful
+            - Re-open (red) if recovery failed
+            No immediate action required unless stuck in HALF_OPEN > 30 minutes.
+
+  # ==========================================================================
+  # CIRCUIT BREAKER FAILURE RATE ALERTS
+  # ==========================================================================
+
+  - name: circuit_breaker_failures
+    interval: 30s
+    rules:
+      - alert: HighFailureRate
+        expr: |
+          (
+            rate(greenlang_circuit_breaker_failures_total[5m])
+            / (rate(greenlang_circuit_breaker_failures_total[5m]) + rate(greenlang_circuit_breaker_successes_total[5m]))
+          ) > 0.2
+        for: 10m
+        labels:
+          severity: warning
+          component: circuit_breaker
+          team: vcci
+          alert_type: dependency_errors
+        annotations:
+          summary: "High failure rate for {{ $labels.service }} ({{ $value | humanizePercentage }})"
+          description: |
+            {{ $labels.service }} is experiencing {{ $value | humanizePercentage }} failure rate.
+            Circuit breaker may open soon if failures continue.
+            Current state: {{ with query (printf "greenlang_circuit_breaker_state{service='%s'}" .Labels.service) }}{{ . | first | value }}{{ end }}
+          impact: |
+            - Increased errors for {{ $labels.service }} operations
+            - Circuit may open soon, causing fast-fail behavior
+            - User experience degradation
+          action: |
+            1. Investigate {{ $labels.service }} error logs
+            2. Check {{ $labels.service }} latency: greenlang_circuit_breaker_latency_seconds
+            3. Review recent changes to {{ $labels.service }} or network configuration
+            4. Monitor consecutive failures: greenlang_circuit_breaker_consecutive_failures
+            5. Prepare for potential circuit breaker opening
+          runbook_url: "https://wiki.greenlang.com/vcci/runbooks/high-failure-rate"
+
+      - alert: ConsecutiveFailuresHigh
+        expr: |
+          greenlang_circuit_breaker_consecutive_failures >= 5
+        for: 2m
+        labels:
+          severity: warning
+          component: circuit_breaker
+          team: vcci
+          alert_type: failure_pattern
+        annotations:
+          summary: "{{ $labels.service }} has {{ $value }} consecutive failures"
+          description: |
+            {{ $labels.service }} has {{ $value }} consecutive failures.
+            Circuit breaker will open if this continues (threshold typically 5-10 failures).
+          impact: "Circuit breaker may open imminently"
+          action: |
+            1. Immediate investigation of {{ $labels.service }} required
+            2. Check service health and error logs
+            3. Verify network connectivity
+            4. Review recent deployments or configuration changes
+
+      - alert: CircuitBreakerRejections
+        expr: |
+          rate(greenlang_circuit_breaker_rejection_total[5m]) > 0.5
+        for: 5m
+        labels:
+          severity: critical
+          component: circuit_breaker
+          team: vcci
+          alert_type: service_degradation
+        annotations:
+          summary: "Circuit breaker rejecting requests for {{ $labels.service }}"
+          description: |
+            {{ $labels.service }} circuit breaker is rejecting {{ $value | humanize }} requests/sec.
+            Circuit is OPEN - all requests are being fast-failed.
+          impact: |
+            - All {{ $labels.service }} operations failing immediately
+            - Features dependent on {{ $labels.service }} unavailable
+            - Error messages presented to users
+          action: |
+            1. URGENT: Restore {{ $labels.service }} availability
+            2. Check {{ $labels.service }} service status
+            3. Review {{ $labels.service }} logs and metrics
+            4. Verify infrastructure (network, load balancers, DNS)
+            5. Once service restored, circuit will auto-recover
+            6. Consider manual circuit reset if service healthy but circuit stuck open
+          runbook_url: "https://wiki.greenlang.com/vcci/runbooks/circuit-rejecting-requests"
+
+  # ==========================================================================
+  # DEPENDENCY HEALTH ALERTS
+  # ==========================================================================
+
+  - name: dependency_health
+    interval: 30s
+    rules:
+      - alert: DependencyUnhealthy
+        expr: |
+          greenlang_dependency_health_status{dependency=~"database|redis|factor_broker"} == 0
+        for: 3m
+        labels:
+          severity: critical
+          component: dependency
+          team: vcci
+          alert_type: infrastructure_failure
+        annotations:
+          summary: "Critical dependency {{ $labels.dependency }} is unhealthy"
+          description: |
+            {{ $labels.dependency }} has been marked as unhealthy for 3 minutes.
+            Health status: 0 (unhealthy)
+          impact: |
+            - Core platform functionality may be unavailable
+            - High error rates expected
+            - Circuit breaker may be open
+          action: |
+            1. Check {{ $labels.dependency }} service status immediately
+            2. Review {{ $labels.dependency }} logs for errors
+            3. Verify infrastructure (pods, connections, resources)
+            4. Check dependency latency: greenlang_dependency_latency_ms
+            5. Escalate to infrastructure team if needed
+          runbook_url: "https://wiki.greenlang.com/vcci/runbooks/dependency-unhealthy"
+
+      - alert: DependencyDegraded
+        expr: |
+          greenlang_dependency_health_status == 1
+        for: 10m
+        labels:
+          severity: warning
+          component: dependency
+          team: vcci
+          alert_type: performance_degradation
+        annotations:
+          summary: "Dependency {{ $labels.dependency }} is degraded"
+          description: |
+            {{ $labels.dependency }} is operating in degraded mode.
+            Health status: 1 (degraded) - functional but with reduced performance or availability.
+          impact: |
+            - {{ $labels.dependency }} operational but slow or intermittently failing
+            - User experience may be degraded
+            - Circuit breaker may be in HALF_OPEN state
+          action: |
+            1. Monitor {{ $labels.dependency }} performance
+            2. Check for resource constraints (CPU, memory, connections)
+            3. Review latency metrics: greenlang_dependency_latency_ms
+            4. Consider scaling {{ $labels.dependency }} if under load
+            5. Investigate root cause during next maintenance window
+
+      - alert: DependencyHighLatency
+        expr: |
+          greenlang_dependency_latency_ms > 1000
+        for: 15m
+        labels:
+          severity: warning
+          component: dependency
+          team: vcci
+          alert_type: performance_issue
+        annotations:
+          summary: "High latency for {{ $labels.dependency }}: {{ $value }}ms"
+          description: |
+            {{ $labels.dependency }} is experiencing {{ $value }}ms latency (threshold: 1000ms).
+            This may indicate resource constraints or network issues.
+          impact: |
+            - Slow response times for operations using {{ $labels.dependency }}
+            - Increased API latency
+            - Circuit breaker may open if latency causes timeouts
+          action: |
+            1. Check {{ $labels.dependency }} resource utilization
+            2. Review {{ $labels.dependency }} query performance (if database)
+            3. Verify network connectivity and bandwidth
+            4. Check for background processes (backups, maintenance)
+            5. Consider optimization or scaling
+
+      - alert: DependencyCheckFailures
+        expr: |
+          (
+            rate(greenlang_dependency_check_total{status="failure"}[5m])
+            / rate(greenlang_dependency_check_total[5m])
+          ) > 0.1
+        for: 10m
+        labels:
+          severity: warning
+          component: dependency
+          team: vcci
+          alert_type: monitoring_issue
+        annotations:
+          summary: "Health checks failing for {{ $labels.dependency }}"
+          description: |
+            {{ $value | humanizePercentage }} of health checks for {{ $labels.dependency }} are failing.
+            This may indicate intermittent issues or monitoring problems.
+          impact: "Unreliable health status for {{ $labels.dependency }}"
+          action: |
+            1. Verify health check endpoint for {{ $labels.dependency }}
+            2. Check if {{ $labels.dependency }} is actually experiencing issues
+            3. Review health check configuration and timeout settings
+            4. Check network connectivity between monitor and {{ $labels.dependency }}
+
+  # ==========================================================================
+  # CIRCUIT BREAKER LATENCY ALERTS
+  # ==========================================================================
+
+  - name: circuit_breaker_latency
+    interval: 30s
+    rules:
+      - alert: CircuitBreakerHighLatency
+        expr: |
+          histogram_quantile(0.95,
+            rate(greenlang_circuit_breaker_latency_seconds_bucket{status="success"}[5m])
+          ) > 5.0
+        for: 10m
+        labels:
+          severity: warning
+          component: circuit_breaker
+          team: vcci
+          alert_type: latency_degradation
+        annotations:
+          summary: "High latency through circuit breaker for {{ $labels.service }}"
+          description: |
+            95th percentile latency for {{ $labels.service }} is {{ $value | humanizeDuration }} (threshold: 5s).
+            This may lead to timeout errors and circuit breaker opening.
+          impact: |
+            - Slow operations involving {{ $labels.service }}
+            - Increased timeout errors
+            - Circuit breaker may open due to timeout failures
+          action: |
+            1. Investigate {{ $labels.service }} performance
+            2. Check {{ $labels.service }} resource utilization
+            3. Review network latency to {{ $labels.service }}
+            4. Consider increasing timeout thresholds if {{ $labels.service }} is inherently slow
+            5. Optimize {{ $labels.service }} calls (batching, caching)
+
+      - alert: CircuitBreakerFailureLatency
+        expr: |
+          histogram_quantile(0.95,
+            rate(greenlang_circuit_breaker_latency_seconds_bucket{status="failure"}[5m])
+          ) > 10.0
+        for: 5m
+        labels:
+          severity: info
+          component: circuit_breaker
+          team: vcci
+          alert_type: timeout_pattern
+        annotations:
+          summary: "Failed requests to {{ $labels.service }} timing out slowly"
+          description: |
+            Failed requests to {{ $labels.service }} are taking {{ $value | humanizeDuration }} to fail.
+            This suggests timeout-based failures rather than fast connection errors.
+          impact: "Slow failure detection - circuit breaker may be slow to open"
+          action: |
+            1. Review timeout configuration for {{ $labels.service }}
+            2. Consider reducing timeout threshold for faster failure detection
+            3. Check if {{ $labels.service }} is hanging rather than rejecting requests
+
+  # ==========================================================================
+  # CIRCUIT BREAKER RECOVERY ALERTS
+  # ==========================================================================
+
+  - name: circuit_breaker_recovery
+    interval: 1m
+    rules:
+      - alert: CircuitBreakerRecoverySuccess
+        expr: |
+          increase(greenlang_circuit_breaker_state_changes_total{to_state="closed"}[5m]) > 0
+        for: 1m
+        labels:
+          severity: info
+          component: circuit_breaker
+          team: vcci
+          alert_type: recovery_success
+        annotations:
+          summary: "Circuit breaker for {{ $labels.service }} recovered (CLOSED)"
+          description: |
+            Circuit breaker for {{ $labels.service }} has transitioned to CLOSED state.
+            Service is healthy and accepting requests normally.
+          impact: "{{ $labels.service }} fully operational"
+          action: |
+            1. Verify {{ $labels.service }} is stable
+            2. Monitor for any flapping (repeated open/close)
+            3. Review root cause of previous failure
+            4. Update runbooks if needed based on incident learnings
+
+      - alert: CircuitBreakerRecoveryFailed
+        expr: |
+          increase(greenlang_circuit_breaker_state_changes_total{from_state="half_open", to_state="open"}[5m]) > 0
+        for: 1m
+        labels:
+          severity: warning
+          component: circuit_breaker
+          team: vcci
+          alert_type: recovery_failure
+        annotations:
+          summary: "Circuit breaker recovery failed for {{ $labels.service }}"
+          description: |
+            Circuit breaker for {{ $labels.service }} attempted recovery (HALF_OPEN) but failed.
+            Circuit has re-opened. Service is still experiencing issues.
+          impact: "{{ $labels.service }} still unavailable, circuit re-opened"
+          action: |
+            1. {{ $labels.service }} is NOT recovered - continue troubleshooting
+            2. Check {{ $labels.service }} health and error logs
+            3. Verify infrastructure and network connectivity
+            4. Circuit will retry recovery after cooldown period
+            5. Consider manual intervention if service is actually healthy
+
+      - alert: CircuitBreakerStuckOpen
+        expr: |
+          (time() - greenlang_circuit_breaker_last_state_change_timestamp) > 3600
+          and greenlang_circuit_breaker_state == 1
+        for: 5m
+        labels:
+          severity: critical
+          component: circuit_breaker
+          team: vcci
+          alert_type: stuck_state
+        annotations:
+          summary: "Circuit breaker for {{ $labels.service }} stuck OPEN for > 1 hour"
+          description: |
+            Circuit breaker for {{ $labels.service }} has been OPEN for over 1 hour.
+            Last state change: {{ $value | humanizeTimestamp }}
+            This may indicate persistent failure or stuck circuit.
+          impact: |
+            - {{ $labels.service }} unavailable for extended period
+            - All dependent features non-functional
+            - Customer impact likely significant
+          action: |
+            1. URGENT: Investigate why {{ $labels.service }} hasn't recovered
+            2. Verify {{ $labels.service }} is actually healthy
+            3. Check if circuit breaker recovery mechanism is working
+            4. Review recovery timeout configuration
+            5. Consider manual circuit breaker reset if service is confirmed healthy
+            6. Escalate to senior engineer if unable to resolve
+          runbook_url: "https://wiki.greenlang.com/vcci/runbooks/circuit-stuck-open"
+
+# ============================================================================
+# ALERTMANAGER ROUTING (for Alertmanager)
+# ============================================================================
+#
+# Add to alertmanager.yml:
+#
+# route:
+#   receiver: 'vcci-team'
+#   group_by: ['alertname', 'service', 'severity']
+#   group_wait: 30s
+#   group_interval: 5m
+#   repeat_interval: 4h
+#
+#   routes:
+#     # Critical circuit breaker alerts -> PagerDuty
+#     - match:
+#         severity: critical
+#         component: circuit_breaker
+#       receiver: 'vcci-pagerduty'
+#       continue: true
+#
+#     # Warning circuit breaker alerts -> Slack
+#     - match:
+#         severity: warning
+#         component: circuit_breaker
+#       receiver: 'vcci-slack-circuit-breakers'
+#       continue: true
+#
+#     # Info alerts -> Log only
+#     - match:
+#         severity: info
+#       receiver: 'vcci-logs'
+#
+# receivers:
+#   - name: 'vcci-pagerduty'
+#     pagerduty_configs:
+#       - service_key: '<pagerduty-integration-key>'
+#         description: '{{ .GroupLabels.alertname }}: {{ .GroupLabels.service }}'
+#
+#   - name: 'vcci-slack-circuit-breakers'
+#     slack_configs:
+#       - api_url: '<slack-webhook-url>'
+#         channel: '#vcci-circuit-breakers'
+#         title: 'Circuit Breaker Alert: {{ .GroupLabels.service }}'
+#         text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+#
+#   - name: 'vcci-logs'
+#     webhook_configs:
+#       - url: 'http://logging-service/alerts'
+#
+# ============================================================================
+# ALERT SUMMARY
+# ============================================================================
+#
+# Total Alerts: 18
+#
+# By Severity:
+# - Critical: 5 alerts (circuit open, dependency unhealthy, stuck open, rejections)
+# - Warning: 10 alerts (flapping, high failure rate, degraded, latency)
+# - Info: 3 alerts (half-open, recovery success/failure)
+#
+# By Category:
+# - Circuit Breaker States: 4 alerts
+# - Failure Rates: 3 alerts
+# - Dependency Health: 4 alerts
+# - Latency: 2 alerts
+# - Recovery: 3 alerts
+# - Rejections: 1 alert
+# - Stuck States: 1 alert
+#
+# Coverage:
+# - All critical dependencies monitored (database, redis, factor_broker)
+# - Non-critical dependencies monitored (llm_provider, erp_sap)
+# - State transitions tracked (open, closed, half_open)
+# - Failure patterns detected (flapping, consecutive failures)
+# - Latency issues identified
+# - Recovery success/failure tracked
+#
+# ============================================================================

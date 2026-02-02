@@ -1,0 +1,413 @@
+# GreenLang Monitoring Helm Chart - Default Values
+# Override these values for different environments
+
+# Global settings
+global:
+  namespace: monitoring
+  clusterName: greenlang-production
+  environment: production
+  domain: greenlang.io
+
+# =============================================================================
+# Prometheus Configuration
+# =============================================================================
+prometheus:
+  enabled: true
+
+  server:
+    replicaCount: 1
+    retention: "15d"
+    retentionSize: "50GB"
+
+    resources:
+      requests:
+        cpu: "500m"
+        memory: "1Gi"
+      limits:
+        cpu: "2"
+        memory: "4Gi"
+
+    persistentVolume:
+      enabled: true
+      size: 100Gi
+      storageClass: "gp3"
+
+    ingress:
+      enabled: true
+      ingressClassName: nginx
+      hosts:
+        - prometheus.greenlang.io
+      tls:
+        - secretName: prometheus-tls
+          hosts:
+            - prometheus.greenlang.io
+
+    # Extra scrape configs for GreenLang services
+    extraScrapeConfigs: |
+      - job_name: 'greenlang-services'
+        kubernetes_sd_configs:
+          - role: endpoints
+            namespaces:
+              names:
+                - greenlang
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_scrape]
+            action: keep
+            regex: true
+          - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_path]
+            action: replace
+            target_label: __metrics_path__
+            regex: (.+)
+          - source_labels: [__address__, __meta_kubernetes_service_annotation_prometheus_io_port]
+            action: replace
+            regex: ([^:]+)(?::\d+)?;(\d+)
+            replacement: $1:$2
+            target_label: __address__
+
+  alertmanager:
+    enabled: true
+    replicaCount: 1
+
+    resources:
+      requests:
+        cpu: "50m"
+        memory: "64Mi"
+      limits:
+        cpu: "200m"
+        memory: "256Mi"
+
+    persistentVolume:
+      enabled: true
+      size: 5Gi
+      storageClass: "gp3"
+
+    config:
+      global:
+        resolve_timeout: 5m
+        smtp_smarthost: 'smtp.sendgrid.net:587'
+        smtp_from: 'alerts@greenlang.io'
+        smtp_require_tls: true
+
+      route:
+        receiver: 'slack-warnings'
+        group_by: ['alertname', 'service', 'namespace']
+        group_wait: 30s
+        group_interval: 5m
+        repeat_interval: 4h
+        routes:
+          - matchers:
+              - severity = critical
+            receiver: 'pagerduty-critical'
+
+      receivers:
+        - name: 'slack-warnings'
+          slack_configs:
+            - channel: '#greenlang-alerts-warnings'
+              send_resolved: true
+        - name: 'pagerduty-critical'
+          pagerduty_configs:
+            - severity: critical
+
+# =============================================================================
+# Grafana Configuration
+# =============================================================================
+grafana:
+  enabled: true
+
+  replicas: 1
+
+  adminUser: admin
+  # adminPassword is set via secret
+
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "256Mi"
+    limits:
+      cpu: "500m"
+      memory: "1Gi"
+
+  persistence:
+    enabled: true
+    size: 10Gi
+    storageClassName: "gp3"
+
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    hosts:
+      - grafana.greenlang.io
+    tls:
+      - secretName: grafana-tls
+        hosts:
+          - grafana.greenlang.io
+
+  # Grafana configuration
+  grafana.ini:
+    server:
+      root_url: "https://grafana.greenlang.io"
+    auth:
+      disable_login_form: false
+    auth.anonymous:
+      enabled: false
+    security:
+      admin_user: admin
+    users:
+      allow_sign_up: false
+    alerting:
+      enabled: true
+    unified_alerting:
+      enabled: true
+
+  # Datasources
+  datasources:
+    datasources.yaml:
+      apiVersion: 1
+      datasources:
+        - name: Prometheus
+          type: prometheus
+          url: http://prometheus-server:9090
+          access: proxy
+          isDefault: true
+        - name: Loki
+          type: loki
+          url: http://loki:3100
+          access: proxy
+        - name: Jaeger
+          type: jaeger
+          url: http://jaeger-query:16686
+          access: proxy
+
+  # Dashboard providers
+  dashboardProviders:
+    dashboardproviders.yaml:
+      apiVersion: 1
+      providers:
+        - name: 'greenlang'
+          orgId: 1
+          folder: 'GreenLang'
+          type: file
+          disableDeletion: false
+          editable: true
+          options:
+            path: /var/lib/grafana/dashboards/greenlang
+
+  # Dashboards from ConfigMaps
+  dashboardsConfigMaps:
+    greenlang: grafana-dashboards
+
+  # Plugins
+  plugins:
+    - grafana-piechart-panel
+    - grafana-clock-panel
+
+# =============================================================================
+# Loki Configuration
+# =============================================================================
+loki:
+  enabled: true
+
+  loki:
+    auth_enabled: false
+
+    storage:
+      type: filesystem
+
+    commonConfig:
+      replication_factor: 1
+
+    schemaConfig:
+      configs:
+        - from: 2024-01-01
+          store: tsdb
+          object_store: filesystem
+          schema: v13
+          index:
+            prefix: index_
+            period: 24h
+
+    limits_config:
+      retention_period: 720h  # 30 days
+      reject_old_samples: true
+      reject_old_samples_max_age: 168h
+
+  singleBinary:
+    replicas: 1
+    resources:
+      requests:
+        cpu: "200m"
+        memory: "512Mi"
+      limits:
+        cpu: "1"
+        memory: "2Gi"
+
+    persistence:
+      enabled: true
+      size: 50Gi
+      storageClass: "gp3"
+
+  # Promtail configuration
+  promtail:
+    enabled: true
+
+    resources:
+      requests:
+        cpu: "50m"
+        memory: "64Mi"
+      limits:
+        cpu: "200m"
+        memory: "256Mi"
+
+    config:
+      clients:
+        - url: http://loki:3100/loki/api/v1/push
+
+# =============================================================================
+# Jaeger Configuration
+# =============================================================================
+jaeger:
+  enabled: true
+
+  provisionDataStore:
+    cassandra: false
+    elasticsearch: false
+
+  allInOne:
+    enabled: true
+    replicas: 1
+
+    resources:
+      requests:
+        cpu: "200m"
+        memory: "512Mi"
+      limits:
+        cpu: "1"
+        memory: "2Gi"
+
+    extraEnv:
+      - name: SPAN_STORAGE_TYPE
+        value: "badger"
+      - name: BADGER_EPHEMERAL
+        value: "false"
+      - name: BADGER_DIRECTORY_VALUE
+        value: "/badger/data"
+      - name: BADGER_DIRECTORY_KEY
+        value: "/badger/key"
+
+  storage:
+    type: badger
+
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    hosts:
+      - jaeger.greenlang.io
+    tls:
+      - secretName: jaeger-tls
+        hosts:
+          - jaeger.greenlang.io
+
+  agent:
+    enabled: true
+
+  collector:
+    enabled: true
+
+# =============================================================================
+# ServiceMonitors for GreenLang Services
+# =============================================================================
+serviceMonitors:
+  eudrAgent:
+    enabled: true
+    namespace: greenlang
+    labels:
+      app: eudr-agent
+    interval: 15s
+
+  cbamAgent:
+    enabled: true
+    namespace: greenlang
+    labels:
+      app: cbam-agent
+    interval: 15s
+
+  sb253Agent:
+    enabled: true
+    namespace: greenlang
+    labels:
+      app: sb253-agent
+    interval: 15s
+
+  apiGateway:
+    enabled: true
+    namespace: greenlang
+    labels:
+      app: api-gateway
+    interval: 10s
+
+  emissionCalculator:
+    enabled: true
+    namespace: greenlang
+    labels:
+      app: emission-calculator
+    interval: 15s
+
+# =============================================================================
+# Alert Rules
+# =============================================================================
+alertRules:
+  enabled: true
+
+  # Custom alert rules
+  rules:
+    - name: greenlang-alerts
+      rules:
+        - alert: EUDRAgentDown
+          expr: up{job="eudr-agent"} == 0
+          for: 1m
+          labels:
+            severity: critical
+            service: eudr-agent
+          annotations:
+            summary: "EUDR Agent is down"
+            description: "EUDR Agent has been down for more than 1 minute."
+
+        - alert: CBAMAgentDown
+          expr: up{job="cbam-agent"} == 0
+          for: 1m
+          labels:
+            severity: critical
+            service: cbam-agent
+          annotations:
+            summary: "CBAM Agent is down"
+
+        - alert: APIHighLatency
+          expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job="greenlang-api-gateway"}[5m])) by (le)) > 0.1
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "API P95 latency is high"
+
+# =============================================================================
+# SLO Configuration
+# =============================================================================
+slos:
+  enabled: true
+
+  definitions:
+    apiAvailability:
+      target: 99.95
+      window: 30d
+      metric: "sum(rate(http_requests_total{job=\"greenlang-api-gateway\",status!~\"5..\"}[5m])) / sum(rate(http_requests_total{job=\"greenlang-api-gateway\"}[5m]))"
+
+    eudrAvailability:
+      target: 99.9
+      window: 30d
+      metric: "sum(rate(eudr_requests_total{status!~\"5..\"}[5m])) / sum(rate(eudr_requests_total[5m]))"
+
+    apiLatency:
+      target: 99.0
+      window: 30d
+      threshold: 0.1
+      metric: "sum(rate(http_request_duration_seconds_bucket{job=\"greenlang-api-gateway\",le=\"0.1\"}[5m])) / sum(rate(http_request_duration_seconds_count{job=\"greenlang-api-gateway\"}[5m]))"

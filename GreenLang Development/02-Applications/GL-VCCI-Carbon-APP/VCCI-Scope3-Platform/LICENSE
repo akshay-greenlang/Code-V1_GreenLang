@@ -1,0 +1,248 @@
+PROPRIETARY LICENSE AGREEMENT
+GL-VCCI SCOPE 3 VALUE CHAIN CARBON INTELLIGENCE PLATFORM
+
+Copyright © 2025 GreenLang Framework Team. All Rights Reserved.
+
+================================================================================
+
+IMPORTANT - READ CAREFULLY:
+
+This software and associated documentation files (the "Software") are
+proprietary and confidential to GreenLang Framework Team ("Licensor").
+
+The Software is licensed, not sold. By accessing, downloading, installing,
+or using the Software, you agree to be bound by the terms of this License
+Agreement.
+
+================================================================================
+
+1. GRANT OF LICENSE
+
+Subject to the terms and conditions of this Agreement, Licensor grants you
+a limited, non-exclusive, non-transferable, revocable license to use the
+Software solely for your internal business purposes and in accordance with
+the usage tier you have subscribed to.
+
+2. LICENSE TIERS
+
+The Software is available under the following license tiers:
+
+   a) EVALUATION LICENSE (Free, 30 days)
+      - Limited to 1,000 calculations
+      - Single user access
+      - No production use
+      - No support
+
+   b) STARTUP LICENSE ($2,500/month)
+      - Up to 10,000 suppliers
+      - 1M calculations per year
+      - Up to 5 users
+      - Email support
+
+   c) PROFESSIONAL LICENSE ($12,500/month)
+      - Up to 50,000 suppliers
+      - 10M calculations per year
+      - Up to 50 users
+      - Priority support
+
+   d) ENTERPRISE LICENSE ($50,000/month)
+      - Unlimited suppliers
+      - Unlimited calculations
+      - Unlimited users
+      - 24/7 on-call support
+      - Dedicated customer success manager
+      - Custom integrations
+
+   e) CUSTOM LICENSE (Contact for pricing)
+      - Custom deployment options
+      - On-premise deployment
+      - Source code access (optional)
+      - Custom SLAs
+
+3. RESTRICTIONS
+
+You may NOT:
+
+   a) Copy, modify, or create derivative works of the Software
+   b) Reverse engineer, decompile, or disassemble the Software
+   c) Distribute, sublicense, rent, lease, or lend the Software
+   d) Remove or alter any proprietary notices in the Software
+   e) Use the Software to develop competing products
+   f) Exceed the usage limits of your license tier
+   g) Share your license with third parties
+   h) Use the Software for illegal or unethical purposes
+   i) Access the Software after license expiration
+   j) Benchmark the Software without prior written consent
+
+4. INTELLECTUAL PROPERTY RIGHTS
+
+The Software, including all intellectual property rights therein, is and
+shall remain the exclusive property of Licensor. This Agreement does not
+convey to you any rights of ownership in or to the Software.
+
+The following components and technologies are proprietary to Licensor:
+
+   - Hybrid AI calculation methodology (Tier 1/2/3 approach)
+   - Zero-hallucination calculation engine
+   - SHA-256 provenance chain architecture
+   - Entity resolution algorithms
+   - Supplier engagement workflows
+   - Multi-standard reporting system
+   - ERP integration connectors
+   - Emission factor database structure
+
+5. CONFIDENTIALITY
+
+The Software contains trade secrets and confidential information of
+Licensor. You agree to maintain the confidentiality of the Software and
+not to disclose it to any third party without Licensor's prior written
+consent.
+
+6. DATA OWNERSHIP
+
+   a) Your Data: You retain all ownership rights to your data (procurement
+      data, supplier data, emissions calculations, reports) processed by
+      the Software.
+
+   b) Aggregated Data: Licensor may collect and use aggregated, anonymized
+      data for product improvement, research, and benchmarking purposes.
+
+   c) Emission Factors: Emission factor databases included in the Software
+      are licensed from third-party sources (DEFRA, EPA, Ecoinvent) and
+      are subject to their respective license terms.
+
+7. AUDIT RIGHTS
+
+Licensor reserves the right to audit your use of the Software to verify
+compliance with this Agreement. You agree to provide reasonable cooperation
+and access during such audits.
+
+8. TERM AND TERMINATION
+
+   a) Term: This license is effective until terminated.
+
+   b) Termination by You: You may terminate this license at any time by
+      ceasing all use of the Software and destroying all copies.
+
+   c) Termination by Licensor: Licensor may terminate this license
+      immediately if you breach any term of this Agreement.
+
+   d) Effect of Termination: Upon termination, you must immediately cease
+      all use of the Software and destroy all copies in your possession.
+
+   e) Survival: Sections 4 (Intellectual Property), 5 (Confidentiality),
+      9 (Limitation of Liability), and 10 (General Provisions) survive
+      termination.
+
+9. LIMITATION OF LIABILITY
+
+TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW:
+
+   a) THE SOFTWARE IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EITHER
+      EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+      WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND
+      NON-INFRINGEMENT.
+
+   b) IN NO EVENT SHALL LICENSOR BE LIABLE FOR ANY SPECIAL, INCIDENTAL,
+      INDIRECT, OR CONSEQUENTIAL DAMAGES WHATSOEVER (INCLUDING, WITHOUT
+      LIMITATION, DAMAGES FOR LOSS OF BUSINESS PROFITS, BUSINESS
+      INTERRUPTION, LOSS OF BUSINESS INFORMATION, OR ANY OTHER PECUNIARY
+      LOSS) ARISING OUT OF THE USE OF OR INABILITY TO USE THE SOFTWARE.
+
+   c) LICENSOR'S TOTAL LIABILITY TO YOU FOR ALL DAMAGES, LOSSES, AND CAUSES
+      OF ACTION SHALL NOT EXCEED THE AMOUNT PAID BY YOU FOR THE SOFTWARE IN
+      THE 12 MONTHS PRECEDING THE CLAIM.
+
+   d) SOME JURISDICTIONS DO NOT ALLOW THE EXCLUSION OR LIMITATION OF
+      INCIDENTAL OR CONSEQUENTIAL DAMAGES, SO THE ABOVE LIMITATION OR
+      EXCLUSION MAY NOT APPLY TO YOU.
+
+10. COMPLIANCE WITH LAWS
+
+You agree to comply with all applicable laws and regulations in your use
+of the Software, including but not limited to:
+
+   - Data protection laws (GDPR, CCPA)
+   - Export control laws
+   - Environmental reporting regulations
+   - Financial disclosure requirements
+
+11. UPDATES AND SUPPORT
+
+   a) Updates: Licensor may provide updates, upgrades, or bug fixes at its
+      sole discretion. Updates are subject to this Agreement unless
+      accompanied by a separate license.
+
+   b) Support: Support services are provided according to your license tier
+      and may be subject to additional fees.
+
+   c) No Obligation: Licensor has no obligation to provide updates, support,
+      or maintenance unless specified in your license tier.
+
+12. EMISSION FACTOR DATA LICENSES
+
+The Software includes emission factor databases from third-party sources.
+You acknowledge and agree that:
+
+   a) DEFRA emission factors: UK Open Government License v3.0
+   b) EPA emission factors: Public domain (U.S. Government work)
+   c) Ecoinvent LCA database: Separate commercial license required
+      (licensed by Licensor, usage restrictions apply)
+
+You may not extract, redistribute, or use emission factor data outside
+the scope of the Software.
+
+13. EXPORT CONTROL
+
+The Software may be subject to export control laws and regulations. You
+agree not to export or re-export the Software in violation of such laws.
+
+14. GENERAL PROVISIONS
+
+   a) Governing Law: This Agreement shall be governed by the laws of
+      [JURISDICTION TO BE DETERMINED], without regard to its conflict
+      of law provisions.
+
+   b) Severability: If any provision of this Agreement is held to be
+      unenforceable, that provision shall be reformed only to the extent
+      necessary to make it enforceable.
+
+   c) Entire Agreement: This Agreement constitutes the entire agreement
+      between you and Licensor regarding the Software and supersedes all
+      prior agreements and understandings.
+
+   d) Amendment: Licensor reserves the right to modify this Agreement at
+      any time. Continued use of the Software after such modifications
+      constitutes acceptance of the new terms.
+
+   e) No Waiver: Failure by Licensor to enforce any provision of this
+      Agreement shall not be deemed a waiver of future enforcement.
+
+   f) Assignment: You may not assign this Agreement without Licensor's
+      prior written consent. Licensor may assign this Agreement without
+      restriction.
+
+================================================================================
+
+FOR LICENSING INQUIRIES, CONTACT:
+
+Email:    vcci@greenlang.io
+Website:  https://greenlang.io/vcci
+Phone:    [TO BE DETERMINED]
+
+Address:  GreenLang Framework Team
+          [ADDRESS TO BE DETERMINED]
+
+================================================================================
+
+ACKNOWLEDGMENT
+
+BY USING THE SOFTWARE, YOU ACKNOWLEDGE THAT YOU HAVE READ THIS AGREEMENT,
+UNDERSTAND IT, AND AGREE TO BE BOUND BY ITS TERMS AND CONDITIONS.
+
+IF YOU DO NOT AGREE TO THE TERMS OF THIS AGREEMENT, DO NOT USE THE SOFTWARE.
+
+================================================================================
+
+Last Updated: January 2025
+Version: 1.0.0

@@ -1,0 +1,2523 @@
+# GL-021: BURNERSENTRY - Burner Maintenance Predictor Agent Pack Specification
+# GreenLang Agent Factory - Predictive Maintenance for Industrial Burners
+# Version: 1.0.0
+# Zero-Hallucination Guarantee: All reliability calculations are deterministic
+
+schema_version: "2.0.0"
+
+pack:
+  id: gl-021-burner-maintenance
+  name: BURNERSENTRY - Burner Maintenance Predictor
+  description: |
+    Predicts burner maintenance needs based on operating conditions using
+    Weibull failure analysis, remaining useful life (RUL) estimation,
+    flame quality scoring, and zero-hallucination deterministic calculations.
+
+    Features:
+    - Weibull failure distribution analysis for component reliability
+    - Remaining Useful Life (RUL) prediction with confidence intervals
+    - Flame quality scoring based on combustion parameters
+    - Multi-component health assessment (burner, igniter, scanner, etc.)
+    - NFPA 86, API 535, ASME CSD-1 compliance monitoring
+    - Maintenance scheduling optimization
+    - Complete provenance tracking for audit trails
+    - Zero-hallucination deterministic calculations
+  version: "1.0.0"
+  author: GreenLang
+  license: Proprietary
+  category: maintenance-predictor
+  priority: P2-MEDIUM
+  deadline: "Q3 2026"
+
+metadata:
+  market_size: "$4B"
+  implementation_score: 90
+
+  standards:
+    - name: "NFPA 86"
+      description: "Standard for Ovens and Furnaces"
+      version: "2023"
+      url: "https://www.nfpa.org/codes-and-standards/all-codes-and-standards/list-of-codes-and-standards/detail?code=86"
+      requirements:
+        - "Burner flame supervision requirements"
+        - "Safety interlock testing frequency"
+        - "Combustion equipment inspection intervals"
+        - "Flame failure response time limits"
+    - name: "API 535"
+      description: "Burners for Fired Heaters in General Refinery Services"
+      version: "2014 (R2019)"
+      url: "https://www.api.org/products-and-services/standards"
+      requirements:
+        - "Burner performance standards"
+        - "Flame stability criteria"
+        - "Turndown ratio requirements"
+        - "Emissions compliance (NOx, CO)"
+    - name: "ASME CSD-1"
+      description: "Controls and Safety Devices for Automatically Fired Boilers"
+      version: "2021"
+      url: "https://www.asme.org/codes-standards/find-codes-standards/csd-1-controls-safety-devices-automatically-fired-boilers"
+      requirements:
+        - "Safety control device testing"
+        - "Flame safeguard system requirements"
+        - "Low water cutoff device testing"
+        - "Operating control calibration"
+    - name: "IEEE 352"
+      description: "Guide for General Principles of Reliability Analysis"
+      version: "2016"
+      url: "https://standards.ieee.org/ieee/352/5653/"
+      requirements:
+        - "Weibull analysis methodology"
+        - "Failure rate estimation"
+        - "Reliability prediction methods"
+    - name: "ISO 13381-1"
+      description: "Condition Monitoring and Diagnostics - Prognostics"
+      version: "2015"
+      url: "https://www.iso.org/standard/51436.html"
+      requirements:
+        - "RUL estimation methodology"
+        - "Prognostic uncertainty quantification"
+        - "Performance degradation modeling"
+
+  integrations:
+    - name: "OPC-UA"
+      description: "Real-time burner operating data from DCS/SCADA"
+      protocol: "OPC-UA"
+      data_frequency: "1-5 seconds"
+      tags:
+        - flame_temperature
+        - firing_rate
+        - fuel_flow
+        - air_flow
+        - flue_gas_composition
+    - name: "Kafka"
+      description: "Event streaming for high-throughput sensor data"
+      protocol: "Apache Kafka"
+      topics:
+        - burner_sensor_readings
+        - flame_scanner_signals
+        - ignition_events
+        - safety_interlock_status
+    - name: "CMMS"
+      description: "Computerized Maintenance Management System"
+      protocol: "REST API"
+      operations:
+        - work_order_creation
+        - maintenance_history_retrieval
+        - spare_parts_inventory
+        - technician_scheduling
+    - name: "Historian"
+      description: "OSIsoft PI or similar process historian"
+      protocol: "PI Web API"
+      data_retention: "7 years"
+      functions:
+        - historical_trend_analysis
+        - event_correlation
+        - degradation_pattern_detection
+    - name: "EAM"
+      description: "Enterprise Asset Management System"
+      protocol: "REST API"
+      operations:
+        - asset_registry_lookup
+        - lifecycle_cost_tracking
+        - reliability_metrics
+        - failure_mode_analysis
+
+  reliability_models:
+    weibull_distribution:
+      description: "Two-parameter Weibull distribution for failure modeling"
+      equation: "F(t) = 1 - exp(-(t/eta)^beta)"
+      parameters:
+        beta: "Shape parameter (failure mode characteristic)"
+        eta: "Scale parameter (characteristic life)"
+      typical_values:
+        burner_nozzle:
+          beta: 2.5
+          eta: 35000  # hours
+        igniter:
+          beta: 1.8
+          eta: 20000  # hours
+        flame_scanner:
+          beta: 3.0
+          eta: 45000  # hours
+        flame_rod:
+          beta: 2.2
+          eta: 25000  # hours
+        gas_valve:
+          beta: 3.5
+          eta: 80000  # hours
+      reference: "Abernethy, R.B., The New Weibull Handbook, 5th Ed."
+
+    remaining_useful_life:
+      description: "RUL estimation using degradation modeling"
+      methods:
+        - "Weibull-based conditional reliability"
+        - "Degradation rate extrapolation"
+        - "Physics-based damage accumulation"
+      confidence_intervals: [0.80, 0.90, 0.95]
+      reference: "ISO 13381-1:2015"
+
+    flame_quality_scoring:
+      description: "Multi-parameter flame quality assessment"
+      parameters:
+        - stability_index
+        - temperature_uniformity
+        - luminosity_profile
+        - combustion_efficiency
+      scoring_method: "Weighted composite score (0-100)"
+
+agents:
+  - id: burner-maintenance-predictor
+    name: BurnerMaintenancePredictorAgent
+    type: deterministic-calculator
+    description: |
+      Zero-hallucination predictive maintenance for industrial burners.
+      Implements Weibull failure analysis, RUL prediction, flame quality
+      scoring, and component health assessment for maintenance optimization.
+
+    inputs:
+      # =========================================================================
+      # Operating Conditions
+      # =========================================================================
+      - name: operating_hours
+        type: float
+        required: true
+        description: "Total burner operating hours since installation or last overhaul"
+        validation:
+          minimum: 0.0
+          maximum: 500000.0
+
+      - name: start_stop_cycles
+        type: int
+        required: true
+        description: "Number of start/stop cycles (thermal cycling stress)"
+        validation:
+          minimum: 0
+          maximum: 1000000
+
+      - name: firing_rate_percent
+        type: float
+        required: true
+        description: "Average firing rate as percentage of capacity (0-100%)"
+        validation:
+          minimum: 0.0
+          maximum: 100.0
+
+      - name: hours_at_high_fire
+        type: float
+        required: false
+        default: 0.0
+        description: "Hours operated at high fire (>90% capacity)"
+        validation:
+          minimum: 0.0
+          maximum: 500000.0
+
+      - name: hours_at_low_fire
+        type: float
+        required: false
+        default: 0.0
+        description: "Hours operated at low fire (<30% capacity)"
+        validation:
+          minimum: 0.0
+          maximum: 500000.0
+
+      # =========================================================================
+      # Fuel Quality Parameters
+      # =========================================================================
+      - name: fuel_type
+        type: string
+        required: true
+        description: "Primary fuel type"
+        validation:
+          enum:
+            - natural_gas
+            - propane
+            - fuel_oil_2
+            - fuel_oil_6
+            - hydrogen
+            - mixed_gas
+            - biogas
+            - lpg
+
+      - name: fuel_heating_value_mj_kg
+        type: float
+        required: false
+        description: "Fuel lower heating value [MJ/kg]"
+        validation:
+          minimum: 10.0
+          maximum: 150.0
+        defaults:
+          natural_gas: 47.1
+          propane: 46.4
+          fuel_oil_2: 42.6
+          fuel_oil_6: 40.4
+          hydrogen: 120.0
+          biogas: 20.0
+
+      - name: fuel_sulfur_content_ppm
+        type: float
+        required: false
+        default: 0.0
+        description: "Fuel sulfur content [ppm] - affects nozzle/refractory degradation"
+        validation:
+          minimum: 0.0
+          maximum: 50000.0
+
+      - name: fuel_moisture_percent
+        type: float
+        required: false
+        default: 0.0
+        description: "Fuel moisture content [%] - relevant for biogas/landfill gas"
+        validation:
+          minimum: 0.0
+          maximum: 50.0
+
+      - name: fuel_contaminants
+        type: dict
+        required: false
+        description: "Fuel contaminant levels (siloxanes, H2S, etc.)"
+        schema:
+          siloxanes_ppm:
+            type: float
+            default: 0.0
+          h2s_ppm:
+            type: float
+            default: 0.0
+          particulates_mg_m3:
+            type: float
+            default: 0.0
+
+      # =========================================================================
+      # Flame Characteristics
+      # =========================================================================
+      - name: flame_temperature_c
+        type: float
+        required: true
+        description: "Measured flame temperature [Celsius]"
+        validation:
+          minimum: 500.0
+          maximum: 2500.0
+
+      - name: flame_stability_index
+        type: float
+        required: true
+        description: "Flame stability index (0-1, where 1=perfectly stable)"
+        validation:
+          minimum: 0.0
+          maximum: 1.0
+
+      - name: flame_luminosity
+        type: float
+        required: false
+        description: "Flame luminosity measurement (0-100)"
+        validation:
+          minimum: 0.0
+          maximum: 100.0
+
+      - name: flame_shape_score
+        type: float
+        required: false
+        description: "Flame shape conformance score (0-100)"
+        validation:
+          minimum: 0.0
+          maximum: 100.0
+
+      - name: o2_in_flue_percent
+        type: float
+        required: true
+        description: "Oxygen concentration in flue gas [%]"
+        validation:
+          minimum: 0.0
+          maximum: 21.0
+
+      - name: co_in_flue_ppm
+        type: float
+        required: true
+        description: "Carbon monoxide in flue gas [ppm]"
+        validation:
+          minimum: 0.0
+          maximum: 10000.0
+
+      - name: nox_in_flue_ppm
+        type: float
+        required: false
+        description: "NOx emissions in flue gas [ppm]"
+        validation:
+          minimum: 0.0
+          maximum: 2000.0
+
+      - name: co2_in_flue_percent
+        type: float
+        required: false
+        description: "CO2 concentration in flue gas [%]"
+        validation:
+          minimum: 0.0
+          maximum: 20.0
+
+      - name: flue_gas_temperature_c
+        type: float
+        required: false
+        description: "Flue gas exit temperature [Celsius]"
+        validation:
+          minimum: 100.0
+          maximum: 1500.0
+
+      # =========================================================================
+      # Component Condition
+      # =========================================================================
+      - name: burner_age_years
+        type: float
+        required: true
+        description: "Burner age since installation [years]"
+        validation:
+          minimum: 0.0
+          maximum: 50.0
+
+      - name: last_maintenance_hours
+        type: float
+        required: true
+        description: "Operating hours since last maintenance"
+        validation:
+          minimum: 0.0
+          maximum: 100000.0
+
+      - name: last_overhaul_hours
+        type: float
+        required: false
+        description: "Operating hours since last major overhaul"
+        validation:
+          minimum: 0.0
+          maximum: 500000.0
+
+      - name: igniter_condition_score
+        type: float
+        required: false
+        description: "Igniter condition score (0-100)"
+        validation:
+          minimum: 0.0
+          maximum: 100.0
+
+      - name: igniter_type
+        type: string
+        required: false
+        default: "spark"
+        description: "Igniter type"
+        validation:
+          enum:
+            - spark
+            - hot_surface
+            - pilot
+            - direct_spark
+
+      - name: flame_scanner_signal
+        type: float
+        required: false
+        description: "Flame scanner signal strength [%]"
+        validation:
+          minimum: 0.0
+          maximum: 100.0
+
+      - name: flame_scanner_type
+        type: string
+        required: false
+        default: "uv"
+        description: "Flame scanner type"
+        validation:
+          enum:
+            - uv
+            - ir
+            - uv_ir
+            - flame_rod
+            - optical
+
+      - name: nozzle_condition_score
+        type: float
+        required: false
+        description: "Nozzle condition score (0-100)"
+        validation:
+          minimum: 0.0
+          maximum: 100.0
+
+      - name: refractory_condition_score
+        type: float
+        required: false
+        description: "Refractory/tile condition score (0-100)"
+        validation:
+          minimum: 0.0
+          maximum: 100.0
+
+      - name: gas_valve_response_ms
+        type: float
+        required: false
+        description: "Gas valve response time [milliseconds]"
+        validation:
+          minimum: 0.0
+          maximum: 5000.0
+
+      - name: air_damper_position_accuracy
+        type: float
+        required: false
+        description: "Air damper positioning accuracy [%]"
+        validation:
+          minimum: 0.0
+          maximum: 100.0
+
+      # =========================================================================
+      # Burner Specifications
+      # =========================================================================
+      - name: burner_capacity_mw
+        type: float
+        required: true
+        description: "Burner rated thermal capacity [MW]"
+        validation:
+          minimum: 0.01
+          maximum: 500.0
+
+      - name: design_life_hours
+        type: float
+        required: false
+        default: 50000
+        description: "Design life expectancy [hours]"
+        validation:
+          minimum: 10000.0
+          maximum: 200000.0
+
+      - name: burner_type
+        type: string
+        required: false
+        default: "conventional"
+        description: "Burner type/technology"
+        validation:
+          enum:
+            - conventional
+            - low_nox
+            - ultra_low_nox
+            - premix
+            - staged_air
+            - staged_fuel
+            - flat_flame
+            - high_velocity
+
+      - name: turndown_ratio
+        type: float
+        required: false
+        default: 10.0
+        description: "Burner turndown ratio (max:min firing rate)"
+        validation:
+          minimum: 2.0
+          maximum: 50.0
+
+      - name: manufacturer
+        type: string
+        required: false
+        description: "Burner manufacturer for specific reliability data"
+
+      - name: model
+        type: string
+        required: false
+        description: "Burner model number"
+
+      # =========================================================================
+      # Environmental Conditions
+      # =========================================================================
+      - name: ambient_temperature_c
+        type: float
+        required: false
+        default: 25.0
+        description: "Ambient temperature [Celsius]"
+        validation:
+          minimum: -40.0
+          maximum: 60.0
+
+      - name: ambient_humidity_percent
+        type: float
+        required: false
+        default: 50.0
+        description: "Ambient relative humidity [%]"
+        validation:
+          minimum: 0.0
+          maximum: 100.0
+
+      - name: altitude_m
+        type: float
+        required: false
+        default: 0.0
+        description: "Installation altitude [meters above sea level]"
+        validation:
+          minimum: 0.0
+          maximum: 5000.0
+
+      - name: corrosive_environment
+        type: boolean
+        required: false
+        default: false
+        description: "Whether burner operates in corrosive environment"
+
+      # =========================================================================
+      # Maintenance History
+      # =========================================================================
+      - name: maintenance_history
+        type: array
+        required: false
+        description: "Historical maintenance events"
+        items:
+          type: object
+          properties:
+            date:
+              type: string
+              format: date
+            type:
+              type: string
+              enum: [inspection, minor_repair, major_repair, overhaul, component_replacement]
+            component:
+              type: string
+            hours_at_event:
+              type: float
+            findings:
+              type: string
+
+      - name: failure_history
+        type: array
+        required: false
+        description: "Historical failure events"
+        items:
+          type: object
+          properties:
+            date:
+              type: string
+              format: date
+            failure_mode:
+              type: string
+            root_cause:
+              type: string
+            hours_at_failure:
+              type: float
+            downtime_hours:
+              type: float
+
+      # =========================================================================
+      # Weibull Parameters (Optional Override)
+      # =========================================================================
+      - name: custom_weibull_params
+        type: dict
+        required: false
+        description: "Custom Weibull parameters for specific equipment"
+        schema:
+          beta:
+            type: float
+            description: "Shape parameter"
+          eta:
+            type: float
+            description: "Scale parameter (characteristic life in hours)"
+
+    outputs:
+      # =========================================================================
+      # Remaining Useful Life Predictions
+      # =========================================================================
+      - name: remaining_useful_life_hours
+        type: float
+        description: "Estimated remaining useful life [hours]"
+
+      - name: rul_confidence_percent
+        type: float
+        description: "RUL prediction confidence level [%]"
+
+      - name: rul_lower_bound_hours
+        type: float
+        description: "RUL lower bound (90% confidence) [hours]"
+
+      - name: rul_upper_bound_hours
+        type: float
+        description: "RUL upper bound (90% confidence) [hours]"
+
+      - name: failure_probability_30d
+        type: float
+        description: "Probability of failure in next 30 days (0-1)"
+
+      - name: failure_probability_90d
+        type: float
+        description: "Probability of failure in next 90 days (0-1)"
+
+      - name: failure_probability_180d
+        type: float
+        description: "Probability of failure in next 180 days (0-1)"
+
+      - name: mean_time_to_failure_hours
+        type: float
+        description: "Mean Time To Failure estimate [hours]"
+
+      # =========================================================================
+      # Health Scores
+      # =========================================================================
+      - name: overall_health_score
+        type: float
+        description: "Overall burner health score (0-100)"
+
+      - name: flame_quality_score
+        type: float
+        description: "Flame quality composite score (0-100)"
+
+      - name: combustion_efficiency_percent
+        type: float
+        description: "Calculated combustion efficiency [%]"
+
+      - name: thermal_efficiency_percent
+        type: float
+        description: "Estimated thermal efficiency [%]"
+
+      - name: reliability_index
+        type: float
+        description: "Current reliability index (0-1)"
+
+      - name: performance_degradation_percent
+        type: float
+        description: "Performance degradation from baseline [%]"
+
+      # =========================================================================
+      # Maintenance Recommendations
+      # =========================================================================
+      - name: maintenance_priority
+        type: string
+        description: "Maintenance priority: CRITICAL, HIGH, MEDIUM, LOW, NONE"
+
+      - name: recommended_actions
+        type: array
+        description: "List of recommended maintenance actions"
+        items:
+          type: object
+          properties:
+            action:
+              type: string
+            priority:
+              type: string
+            component:
+              type: string
+            reason:
+              type: string
+            estimated_duration_hours:
+              type: float
+            estimated_cost_usd:
+              type: float
+
+      - name: next_maintenance_date
+        type: string
+        format: date
+        description: "Recommended next maintenance date"
+
+      - name: next_inspection_hours
+        type: float
+        description: "Hours until next recommended inspection"
+
+      - name: replacement_recommended
+        type: bool
+        description: "Whether full burner replacement is recommended"
+
+      - name: replacement_reason
+        type: string
+        description: "Reason for replacement recommendation if applicable"
+
+      - name: optimal_maintenance_window
+        type: dict
+        description: "Optimal maintenance scheduling window"
+        schema:
+          start_hours:
+            type: float
+          end_hours:
+            type: float
+          confidence:
+            type: float
+
+      # =========================================================================
+      # Component-Specific Health
+      # =========================================================================
+      - name: component_health
+        type: dict
+        description: "Health scores by component (0-100)"
+        schema:
+          burner_nozzle:
+            type: float
+          igniter:
+            type: float
+          flame_scanner:
+            type: float
+          gas_valve:
+            type: float
+          air_damper:
+            type: float
+          refractory:
+            type: float
+          pilot_assembly:
+            type: float
+
+      - name: component_rul
+        type: dict
+        description: "RUL estimates by component [hours]"
+        schema:
+          burner_nozzle:
+            type: float
+          igniter:
+            type: float
+          flame_scanner:
+            type: float
+          gas_valve:
+            type: float
+          refractory:
+            type: float
+
+      - name: critical_component
+        type: string
+        description: "Most critical component requiring attention"
+
+      - name: limiting_component
+        type: string
+        description: "Component limiting overall RUL"
+
+      # =========================================================================
+      # Degradation Analysis
+      # =========================================================================
+      - name: degradation_rate_per_1000h
+        type: float
+        description: "Health degradation rate per 1000 operating hours"
+
+      - name: degradation_trend
+        type: string
+        description: "Degradation trend: STABLE, GRADUAL, ACCELERATING, RAPID"
+
+      - name: wear_out_phase
+        type: bool
+        description: "Whether burner is in wear-out phase of bathtub curve"
+
+      - name: infant_mortality_risk
+        type: bool
+        description: "Whether burner is in infant mortality risk period"
+
+      # =========================================================================
+      # Compliance Status
+      # =========================================================================
+      - name: nfpa_86_compliance
+        type: dict
+        description: "NFPA 86 compliance status"
+        schema:
+          compliant:
+            type: bool
+          violations:
+            type: array
+          next_required_test_hours:
+            type: float
+
+      - name: safety_interlock_status
+        type: string
+        description: "Safety interlock system status: OK, WARNING, CRITICAL"
+
+      - name: flame_safeguard_status
+        type: string
+        description: "Flame safeguard system status: OK, DEGRADED, CRITICAL"
+
+      # =========================================================================
+      # Economic Analysis
+      # =========================================================================
+      - name: estimated_repair_cost_usd
+        type: float
+        description: "Estimated cost for recommended repairs [USD]"
+
+      - name: replacement_cost_usd
+        type: float
+        description: "Estimated replacement cost [USD]"
+
+      - name: cost_of_failure_usd
+        type: float
+        description: "Estimated cost of unplanned failure [USD]"
+
+      - name: maintenance_roi
+        type: float
+        description: "ROI of performing recommended maintenance"
+
+      # =========================================================================
+      # Alarms and Warnings
+      # =========================================================================
+      - name: active_alarms
+        type: array
+        description: "List of active alarm conditions"
+        items:
+          type: object
+          properties:
+            code:
+              type: string
+            severity:
+              type: string
+            message:
+              type: string
+            timestamp:
+              type: string
+
+      - name: warnings
+        type: array
+        description: "List of warning conditions"
+
+      # =========================================================================
+      # Provenance and Audit
+      # =========================================================================
+      - name: provenance_hash
+        type: string
+        description: "SHA-256 hash for complete audit trail"
+
+      - name: calculation_steps
+        type: array
+        description: "Detailed calculation audit trail"
+
+      - name: processing_time_ms
+        type: float
+        description: "Processing duration in milliseconds"
+
+      - name: agent_version
+        type: string
+        description: "Agent version used for calculation"
+
+      - name: timestamp_utc
+        type: string
+        description: "Calculation timestamp (ISO 8601 UTC)"
+
+      - name: input_hash
+        type: string
+        description: "SHA-256 hash of input data"
+
+      - name: model_version
+        type: string
+        description: "Reliability model version used"
+
+    tools:
+      - weibull_analyzer
+      - rul_predictor
+      - flame_quality_scorer
+      - combustion_efficiency_calculator
+      - component_health_assessor
+      - maintenance_scheduler
+      - compliance_checker
+      - cost_estimator
+      - provenance_hasher
+
+tools:
+  # =============================================================================
+  # Reliability Analysis Tools
+  # =============================================================================
+  - id: weibull_analyzer
+    name: Weibull Distribution Analyzer
+    description: |
+      Calculate failure probability and reliability using two-parameter Weibull
+      distribution. F(t) = 1 - exp(-(t/eta)^beta)
+      Where beta = shape parameter, eta = scale parameter (characteristic life)
+    type: deterministic
+    safe: true
+    cache_enabled: true
+    cache_ttl: 3600
+    input_schema:
+      type: object
+      properties:
+        operating_hours:
+          type: number
+          description: "Current operating hours"
+          minimum: 0.0
+        beta:
+          type: number
+          description: "Weibull shape parameter"
+          minimum: 0.1
+          maximum: 10.0
+        eta:
+          type: number
+          description: "Weibull scale parameter (characteristic life) [hours]"
+          minimum: 100.0
+        time_horizon_hours:
+          type: number
+          description: "Time horizon for failure probability calculation"
+          default: 720  # 30 days
+      required: ["operating_hours", "beta", "eta"]
+    output_schema:
+      type: object
+      properties:
+        reliability:
+          type: number
+          description: "Current reliability R(t) (0-1)"
+        failure_probability:
+          type: number
+          description: "Cumulative failure probability F(t) (0-1)"
+        hazard_rate:
+          type: number
+          description: "Instantaneous hazard rate h(t)"
+        conditional_reliability:
+          type: number
+          description: "Conditional reliability for time horizon"
+        failure_probability_horizon:
+          type: number
+          description: "Failure probability within time horizon"
+        mttf:
+          type: number
+          description: "Mean Time To Failure [hours]"
+        b10_life:
+          type: number
+          description: "B10 life (10% failure) [hours]"
+        characteristic_life:
+          type: number
+          description: "Characteristic life (63.2% failure) [hours]"
+        wear_phase:
+          type: string
+          description: "Operating phase: INFANT, USEFUL, WEAROUT"
+      required: ["reliability", "failure_probability", "hazard_rate", "mttf"]
+
+  - id: rul_predictor
+    name: Remaining Useful Life Predictor
+    description: |
+      Predict remaining useful life using Weibull-based conditional reliability
+      and degradation modeling. Provides confidence intervals.
+    type: deterministic
+    safe: true
+    cache_enabled: true
+    cache_ttl: 1800
+    input_schema:
+      type: object
+      properties:
+        current_age_hours:
+          type: number
+          description: "Current operating age [hours]"
+        health_score:
+          type: number
+          description: "Current health score (0-100)"
+        degradation_rate:
+          type: number
+          description: "Degradation rate per 1000 hours"
+        beta:
+          type: number
+          description: "Weibull shape parameter"
+        eta:
+          type: number
+          description: "Weibull scale parameter [hours]"
+        confidence_level:
+          type: number
+          description: "Confidence level for bounds (0.8, 0.9, 0.95)"
+          default: 0.9
+        failure_threshold:
+          type: number
+          description: "Health score threshold for failure (default 30)"
+          default: 30
+      required: ["current_age_hours", "health_score", "beta", "eta"]
+    output_schema:
+      type: object
+      properties:
+        rul_hours:
+          type: number
+          description: "Estimated RUL [hours]"
+        rul_lower_bound:
+          type: number
+          description: "RUL lower bound [hours]"
+        rul_upper_bound:
+          type: number
+          description: "RUL upper bound [hours]"
+        confidence_level:
+          type: number
+          description: "Confidence level used"
+        rul_days:
+          type: number
+          description: "Estimated RUL [days] at 24h/day operation"
+        end_of_life_hours:
+          type: number
+          description: "Predicted end of life [total hours]"
+        prediction_method:
+          type: string
+          description: "Method used: WEIBULL, DEGRADATION, HYBRID"
+      required: ["rul_hours", "rul_lower_bound", "rul_upper_bound", "confidence_level"]
+
+  # =============================================================================
+  # Flame Quality Tools
+  # =============================================================================
+  - id: flame_quality_scorer
+    name: Flame Quality Scorer
+    description: |
+      Calculate composite flame quality score based on stability, temperature,
+      emissions, and combustion parameters.
+    type: deterministic
+    safe: true
+    input_schema:
+      type: object
+      properties:
+        flame_stability_index:
+          type: number
+          description: "Flame stability (0-1)"
+          minimum: 0.0
+          maximum: 1.0
+        flame_temperature_c:
+          type: number
+          description: "Flame temperature [C]"
+        expected_temperature_c:
+          type: number
+          description: "Expected/design flame temperature [C]"
+        o2_percent:
+          type: number
+          description: "O2 in flue gas [%]"
+        co_ppm:
+          type: number
+          description: "CO in flue gas [ppm]"
+        flame_luminosity:
+          type: number
+          description: "Flame luminosity (0-100)"
+          default: 50.0
+        flame_shape_score:
+          type: number
+          description: "Flame shape score (0-100)"
+          default: 50.0
+        fuel_type:
+          type: string
+          description: "Fuel type for expected parameters"
+      required: ["flame_stability_index", "flame_temperature_c", "o2_percent", "co_ppm"]
+    output_schema:
+      type: object
+      properties:
+        flame_quality_score:
+          type: number
+          description: "Composite flame quality (0-100)"
+        stability_score:
+          type: number
+          description: "Stability component score"
+        temperature_score:
+          type: number
+          description: "Temperature conformance score"
+        emissions_score:
+          type: number
+          description: "Emissions score (CO, excess air)"
+        visual_score:
+          type: number
+          description: "Visual characteristics score"
+        quality_grade:
+          type: string
+          description: "Quality grade: EXCELLENT, GOOD, FAIR, POOR, CRITICAL"
+        issues:
+          type: array
+          description: "List of identified flame quality issues"
+      required: ["flame_quality_score", "quality_grade"]
+
+  - id: combustion_efficiency_calculator
+    name: Combustion Efficiency Calculator
+    description: |
+      Calculate combustion efficiency using direct and indirect methods.
+      Based on stack losses and fuel utilization.
+    type: deterministic
+    safe: true
+    cache_enabled: true
+    cache_ttl: 3600
+    input_schema:
+      type: object
+      properties:
+        fuel_type:
+          type: string
+          description: "Fuel type"
+        flue_gas_temp_c:
+          type: number
+          description: "Flue gas temperature [C]"
+        ambient_temp_c:
+          type: number
+          description: "Ambient/combustion air temperature [C]"
+        o2_percent:
+          type: number
+          description: "O2 in flue gas [%]"
+        co_ppm:
+          type: number
+          description: "CO in flue gas [ppm]"
+        co2_percent:
+          type: number
+          description: "CO2 in flue gas [%]"
+          default: 0.0
+        fuel_heating_value_mj_kg:
+          type: number
+          description: "Fuel LHV [MJ/kg]"
+      required: ["fuel_type", "flue_gas_temp_c", "ambient_temp_c", "o2_percent"]
+    output_schema:
+      type: object
+      properties:
+        combustion_efficiency_percent:
+          type: number
+          description: "Combustion efficiency [%]"
+        stack_loss_percent:
+          type: number
+          description: "Dry flue gas loss [%]"
+        latent_loss_percent:
+          type: number
+          description: "Latent heat loss (moisture) [%]"
+        radiation_loss_percent:
+          type: number
+          description: "Estimated radiation loss [%]"
+        excess_air_percent:
+          type: number
+          description: "Excess air [%]"
+        co_loss_percent:
+          type: number
+          description: "CO incomplete combustion loss [%]"
+        air_fuel_ratio:
+          type: number
+          description: "Actual air-fuel ratio"
+      required: ["combustion_efficiency_percent", "excess_air_percent"]
+
+  # =============================================================================
+  # Component Assessment Tools
+  # =============================================================================
+  - id: component_health_assessor
+    name: Component Health Assessor
+    description: |
+      Assess health of individual burner components based on operating
+      conditions, age, and degradation patterns.
+    type: deterministic
+    safe: true
+    input_schema:
+      type: object
+      properties:
+        component:
+          type: string
+          description: "Component name"
+          enum:
+            - burner_nozzle
+            - igniter
+            - flame_scanner
+            - gas_valve
+            - air_damper
+            - refractory
+            - pilot_assembly
+        operating_hours:
+          type: number
+          description: "Component operating hours"
+        start_stop_cycles:
+          type: number
+          description: "Number of thermal cycles"
+        condition_score:
+          type: number
+          description: "Measured condition score (0-100)"
+        last_maintenance_hours:
+          type: number
+          description: "Hours since last maintenance"
+        environmental_factors:
+          type: object
+          description: "Environmental stress factors"
+          properties:
+            corrosive:
+              type: boolean
+            high_temp:
+              type: boolean
+            high_sulfur:
+              type: boolean
+      required: ["component", "operating_hours"]
+    output_schema:
+      type: object
+      properties:
+        health_score:
+          type: number
+          description: "Component health (0-100)"
+        rul_hours:
+          type: number
+          description: "Component RUL [hours]"
+        failure_mode:
+          type: string
+          description: "Most likely failure mode"
+        degradation_rate:
+          type: number
+          description: "Degradation rate per 1000h"
+        maintenance_action:
+          type: string
+          description: "Recommended maintenance action"
+        priority:
+          type: string
+          description: "Maintenance priority"
+      required: ["health_score", "rul_hours", "maintenance_action"]
+
+  # =============================================================================
+  # Maintenance Planning Tools
+  # =============================================================================
+  - id: maintenance_scheduler
+    name: Maintenance Scheduler
+    description: |
+      Determine optimal maintenance scheduling based on RUL predictions,
+      cost analysis, and production requirements.
+    type: deterministic
+    safe: true
+    input_schema:
+      type: object
+      properties:
+        rul_hours:
+          type: number
+          description: "Predicted RUL [hours]"
+        failure_probability_30d:
+          type: number
+          description: "30-day failure probability"
+        health_score:
+          type: number
+          description: "Current health score"
+        component_rul:
+          type: object
+          description: "Component-level RUL values"
+        operating_hours_per_day:
+          type: number
+          description: "Expected operating hours per day"
+          default: 24
+        maintenance_history:
+          type: array
+          description: "Recent maintenance events"
+        planned_outages:
+          type: array
+          description: "Planned production outages"
+      required: ["rul_hours", "health_score"]
+    output_schema:
+      type: object
+      properties:
+        maintenance_priority:
+          type: string
+          description: "Priority: CRITICAL, HIGH, MEDIUM, LOW, NONE"
+        recommended_date:
+          type: string
+          format: date
+          description: "Recommended maintenance date"
+        optimal_window_start:
+          type: number
+          description: "Optimal window start [hours from now]"
+        optimal_window_end:
+          type: number
+          description: "Optimal window end [hours from now]"
+        recommended_actions:
+          type: array
+          description: "List of recommended actions"
+        risk_of_deferral:
+          type: string
+          description: "Risk level if maintenance deferred"
+        next_inspection_hours:
+          type: number
+          description: "Hours until next inspection"
+      required: ["maintenance_priority", "recommended_actions"]
+
+  - id: compliance_checker
+    name: Compliance Checker
+    description: |
+      Check compliance with NFPA 86, API 535, and ASME CSD-1 requirements
+      for burner safety and maintenance.
+    type: deterministic
+    safe: true
+    input_schema:
+      type: object
+      properties:
+        last_inspection_hours:
+          type: number
+          description: "Hours since last inspection"
+        last_safety_test_hours:
+          type: number
+          description: "Hours since last safety interlock test"
+        flame_safeguard_test_hours:
+          type: number
+          description: "Hours since last flame safeguard test"
+        flame_scanner_signal:
+          type: number
+          description: "Flame scanner signal strength [%]"
+        gas_valve_response_ms:
+          type: number
+          description: "Gas valve response time [ms]"
+        safety_shutdown_time_s:
+          type: number
+          description: "Safety shutdown time [seconds]"
+        burner_type:
+          type: string
+          description: "Burner type for applicable standards"
+      required: ["last_inspection_hours"]
+    output_schema:
+      type: object
+      properties:
+        nfpa_86_compliant:
+          type: boolean
+          description: "NFPA 86 compliance status"
+        nfpa_86_violations:
+          type: array
+          description: "List of NFPA 86 violations"
+        api_535_compliant:
+          type: boolean
+          description: "API 535 compliance status"
+        asme_csd1_compliant:
+          type: boolean
+          description: "ASME CSD-1 compliance status"
+        overall_compliant:
+          type: boolean
+          description: "Overall compliance status"
+        next_required_test:
+          type: string
+          description: "Next required safety test"
+        hours_until_required:
+          type: number
+          description: "Hours until next required test"
+        compliance_score:
+          type: number
+          description: "Compliance score (0-100)"
+      required: ["overall_compliant", "compliance_score"]
+
+  - id: cost_estimator
+    name: Cost Estimator
+    description: |
+      Estimate maintenance costs, replacement costs, and cost of failure
+      for economic analysis of maintenance decisions.
+    type: deterministic
+    safe: true
+    input_schema:
+      type: object
+      properties:
+        burner_capacity_mw:
+          type: number
+          description: "Burner capacity [MW]"
+        burner_type:
+          type: string
+          description: "Burner type"
+        recommended_actions:
+          type: array
+          description: "List of recommended maintenance actions"
+        failure_probability:
+          type: number
+          description: "Failure probability for cost of failure calculation"
+        downtime_cost_per_hour:
+          type: number
+          description: "Production downtime cost [USD/hour]"
+          default: 5000
+        expected_repair_hours:
+          type: number
+          description: "Expected repair duration [hours]"
+          default: 8
+      required: ["burner_capacity_mw", "recommended_actions"]
+    output_schema:
+      type: object
+      properties:
+        repair_cost_usd:
+          type: number
+          description: "Estimated repair cost [USD]"
+        replacement_cost_usd:
+          type: number
+          description: "Estimated replacement cost [USD]"
+        cost_of_failure_usd:
+          type: number
+          description: "Expected cost of unplanned failure [USD]"
+        maintenance_roi:
+          type: number
+          description: "ROI of performing maintenance"
+        cost_breakdown:
+          type: object
+          description: "Cost breakdown by component/action"
+        recommended_budget:
+          type: number
+          description: "Recommended maintenance budget [USD]"
+      required: ["repair_cost_usd", "replacement_cost_usd", "cost_of_failure_usd"]
+
+  - id: provenance_hasher
+    name: Provenance Hasher
+    description: "Calculate SHA-256 provenance hash for complete audit trail"
+    type: deterministic
+    safe: true
+    input_schema:
+      type: object
+      properties:
+        calculation_steps:
+          type: array
+          description: "List of calculation steps with inputs and outputs"
+        agent_id:
+          type: string
+          description: "Agent identifier"
+        agent_version:
+          type: string
+          description: "Agent version"
+        input_data:
+          type: object
+          description: "Original input data"
+        output_data:
+          type: object
+          description: "Calculated output data"
+      required: ["calculation_steps", "agent_id", "agent_version"]
+    output_schema:
+      type: object
+      properties:
+        hash:
+          type: string
+          pattern: "^[a-f0-9]{64}$"
+          description: "SHA-256 hash"
+        timestamp:
+          type: string
+          format: date-time
+          description: "Calculation timestamp"
+        input_hash:
+          type: string
+          description: "Hash of input data only"
+      required: ["hash", "timestamp"]
+
+# =============================================================================
+# Reference Data
+# =============================================================================
+reference_data:
+  # Weibull parameters by component type
+  weibull_parameters:
+    burner_nozzle:
+      beta: 2.5
+      eta: 35000
+      description: "Gas/oil nozzle wear-out characteristics"
+    igniter_spark:
+      beta: 1.8
+      eta: 20000
+      description: "Spark igniter - random failures dominate"
+    igniter_hot_surface:
+      beta: 2.2
+      eta: 15000
+      description: "Hot surface igniter - thermal fatigue"
+    flame_scanner_uv:
+      beta: 3.0
+      eta: 45000
+      description: "UV scanner - optical degradation"
+    flame_scanner_ir:
+      beta: 2.8
+      eta: 50000
+      description: "IR scanner - more robust than UV"
+    flame_rod:
+      beta: 2.2
+      eta: 25000
+      description: "Flame rod - erosion/contamination"
+    gas_valve:
+      beta: 3.5
+      eta: 80000
+      description: "Gas valve - mechanical wear-out"
+    air_damper:
+      beta: 3.0
+      eta: 60000
+      description: "Air damper actuator"
+    refractory:
+      beta: 2.0
+      eta: 40000
+      description: "Refractory/tile thermal cycling"
+
+  # Health score thresholds
+  health_thresholds:
+    excellent: 90
+    good: 70
+    fair: 50
+    poor: 30
+    critical: 0
+
+  # Maintenance priority thresholds
+  maintenance_priority_rules:
+    critical:
+      health_score_max: 30
+      failure_prob_30d_min: 0.3
+      description: "Immediate maintenance required"
+    high:
+      health_score_max: 50
+      failure_prob_30d_min: 0.15
+      description: "Schedule maintenance within 2 weeks"
+    medium:
+      health_score_max: 70
+      failure_prob_30d_min: 0.05
+      description: "Schedule maintenance within 1 month"
+    low:
+      health_score_max: 90
+      failure_prob_30d_min: 0.02
+      description: "Monitor and schedule during next outage"
+    none:
+      health_score_max: 100
+      failure_prob_30d_min: 0.0
+      description: "No immediate action required"
+
+  # Flame quality score weights
+  flame_quality_weights:
+    stability: 0.30
+    temperature: 0.25
+    emissions: 0.25
+    visual: 0.20
+
+  # Compliance requirements
+  compliance_intervals:
+    nfpa_86:
+      inspection_hours: 8760  # Annual
+      safety_test_hours: 2190  # Quarterly
+      flame_safeguard_test_hours: 720  # Monthly
+    asme_csd1:
+      low_water_cutoff_test_hours: 168  # Weekly
+      operating_control_test_hours: 8760  # Annual
+    api_535:
+      burner_inspection_hours: 4380  # Semi-annual
+
+  # Typical cost factors by burner size
+  cost_factors:
+    inspection_cost_per_mw: 500
+    minor_repair_cost_per_mw: 2000
+    major_repair_cost_per_mw: 8000
+    replacement_cost_per_mw: 25000
+    downtime_cost_per_hour_base: 5000
+
+# =============================================================================
+# Provenance Configuration
+# =============================================================================
+provenance:
+  pin_ef: false
+  enable_audit: true
+  retention_days: 2555  # 7 years for regulatory compliance
+
+  record:
+    - inputs
+    - outputs
+    - calculation_steps
+    - weibull_parameters
+    - tool_outputs
+    - code_sha
+    - seed
+    - timestamp
+    - agent_version
+    - model_version
+
+# =============================================================================
+# Golden Tests
+# =============================================================================
+golden_tests:
+  count: 50
+  categories:
+    - name: weibull_analysis
+      tests: 15
+      description: "Weibull failure distribution validation"
+    - name: rul_prediction
+      tests: 15
+      description: "Remaining useful life calculations"
+    - name: flame_quality
+      tests: 10
+      description: "Flame quality scoring"
+    - name: maintenance_scheduling
+      tests: 10
+      description: "Maintenance priority determination"
+
+tests:
+  golden:
+    # =========================================================================
+    # Weibull Analysis Tests
+    # =========================================================================
+    - name: weibull_new_burner
+      description: "New burner with minimal operating hours"
+      input:
+        operating_hours: 1000.0
+        start_stop_cycles: 50
+        firing_rate_percent: 75.0
+        fuel_type: "natural_gas"
+        flame_temperature_c: 1800.0
+        flame_stability_index: 0.95
+        o2_in_flue_percent: 3.0
+        co_in_flue_ppm: 20.0
+        burner_age_years: 0.5
+        last_maintenance_hours: 1000.0
+        burner_capacity_mw: 5.0
+        design_life_hours: 50000
+      expect:
+        overall_health_score_min: 95.0
+        reliability_index_min: 0.98
+        maintenance_priority: "NONE"
+        failure_probability_30d_max: 0.001
+        wear_out_phase: false
+      tolerance:
+        overall_health_score: 2.0
+
+    - name: weibull_mid_life_burner
+      description: "Burner at approximately 50% of design life"
+      input:
+        operating_hours: 25000.0
+        start_stop_cycles: 1200
+        firing_rate_percent: 70.0
+        fuel_type: "natural_gas"
+        flame_temperature_c: 1780.0
+        flame_stability_index: 0.90
+        o2_in_flue_percent: 3.5
+        co_in_flue_ppm: 50.0
+        burner_age_years: 3.0
+        last_maintenance_hours: 5000.0
+        burner_capacity_mw: 5.0
+        design_life_hours: 50000
+      expect:
+        overall_health_score_min: 70.0
+        overall_health_score_max: 85.0
+        reliability_index_min: 0.85
+        maintenance_priority: "LOW"
+      tolerance:
+        overall_health_score: 3.0
+
+    - name: weibull_wear_out_phase
+      description: "Burner in wear-out phase near end of life"
+      input:
+        operating_hours: 45000.0
+        start_stop_cycles: 2500
+        firing_rate_percent: 65.0
+        fuel_type: "natural_gas"
+        flame_temperature_c: 1720.0
+        flame_stability_index: 0.80
+        o2_in_flue_percent: 4.5
+        co_in_flue_ppm: 150.0
+        burner_age_years: 6.0
+        last_maintenance_hours: 8000.0
+        burner_capacity_mw: 5.0
+        design_life_hours: 50000
+      expect:
+        overall_health_score_max: 60.0
+        wear_out_phase: true
+        maintenance_priority: "HIGH"
+        failure_probability_90d_min: 0.10
+      tolerance:
+        overall_health_score: 3.0
+
+    - name: weibull_high_cycles
+      description: "Burner with high thermal cycling stress"
+      input:
+        operating_hours: 20000.0
+        start_stop_cycles: 5000
+        firing_rate_percent: 60.0
+        fuel_type: "natural_gas"
+        flame_temperature_c: 1750.0
+        flame_stability_index: 0.85
+        o2_in_flue_percent: 4.0
+        co_in_flue_ppm: 80.0
+        burner_age_years: 4.0
+        last_maintenance_hours: 3000.0
+        burner_capacity_mw: 5.0
+        design_life_hours: 50000
+      expect:
+        overall_health_score_max: 75.0
+        component_health:
+          refractory_max: 70.0
+          igniter_max: 75.0
+        degradation_trend: "ACCELERATING"
+      tolerance:
+        overall_health_score: 3.0
+
+    - name: weibull_critical_condition
+      description: "Burner in critical condition requiring immediate action"
+      input:
+        operating_hours: 55000.0
+        start_stop_cycles: 3000
+        firing_rate_percent: 55.0
+        fuel_type: "natural_gas"
+        flame_temperature_c: 1650.0
+        flame_stability_index: 0.65
+        o2_in_flue_percent: 6.0
+        co_in_flue_ppm: 400.0
+        burner_age_years: 8.0
+        last_maintenance_hours: 12000.0
+        burner_capacity_mw: 5.0
+        design_life_hours: 50000
+        igniter_condition_score: 40.0
+        flame_scanner_signal: 55.0
+      expect:
+        overall_health_score_max: 40.0
+        maintenance_priority: "CRITICAL"
+        failure_probability_30d_min: 0.20
+        replacement_recommended: true
+      tolerance:
+        overall_health_score: 3.0
+
+    # =========================================================================
+    # RUL Prediction Tests
+    # =========================================================================
+    - name: rul_healthy_burner
+      description: "RUL prediction for healthy burner"
+      input:
+        operating_hours: 15000.0
+        start_stop_cycles: 800
+        firing_rate_percent: 75.0
+        fuel_type: "natural_gas"
+        flame_temperature_c: 1800.0
+        flame_stability_index: 0.92
+        o2_in_flue_percent: 3.2
+        co_in_flue_ppm: 30.0
+        burner_age_years: 2.0
+        last_maintenance_hours: 3000.0
+        burner_capacity_mw: 10.0
+        design_life_hours: 50000
+      expect:
+        remaining_useful_life_hours_min: 25000.0
+        rul_confidence_percent_min: 80.0
+      tolerance:
+        remaining_useful_life_hours: 2000.0
+
+    - name: rul_degraded_burner
+      description: "RUL prediction for degraded burner"
+      input:
+        operating_hours: 35000.0
+        start_stop_cycles: 1800
+        firing_rate_percent: 68.0
+        fuel_type: "natural_gas"
+        flame_temperature_c: 1740.0
+        flame_stability_index: 0.82
+        o2_in_flue_percent: 4.2
+        co_in_flue_ppm: 120.0
+        burner_age_years: 5.0
+        last_maintenance_hours: 7000.0
+        burner_capacity_mw: 10.0
+        design_life_hours: 50000
+        nozzle_condition_score: 60.0
+      expect:
+        remaining_useful_life_hours_max: 15000.0
+        remaining_useful_life_hours_min: 5000.0
+        limiting_component: "burner_nozzle"
+      tolerance:
+        remaining_useful_life_hours: 1500.0
+
+    - name: rul_oil_fired_burner
+      description: "RUL for oil-fired burner with sulfur content"
+      input:
+        operating_hours: 20000.0
+        start_stop_cycles: 600
+        firing_rate_percent: 80.0
+        fuel_type: "fuel_oil_6"
+        fuel_sulfur_content_ppm: 15000.0
+        flame_temperature_c: 1850.0
+        flame_stability_index: 0.88
+        o2_in_flue_percent: 3.8
+        co_in_flue_ppm: 60.0
+        burner_age_years: 3.0
+        last_maintenance_hours: 4000.0
+        burner_capacity_mw: 15.0
+        design_life_hours: 40000
+      expect:
+        remaining_useful_life_hours_max: 18000.0
+        degradation_rate_per_1000h_min: 0.5
+      tolerance:
+        remaining_useful_life_hours: 1500.0
+
+    - name: rul_hydrogen_burner
+      description: "RUL for hydrogen-capable burner"
+      input:
+        operating_hours: 10000.0
+        start_stop_cycles: 400
+        firing_rate_percent: 70.0
+        fuel_type: "hydrogen"
+        flame_temperature_c: 1950.0
+        flame_stability_index: 0.85
+        o2_in_flue_percent: 4.0
+        co_in_flue_ppm: 5.0
+        burner_age_years: 1.5
+        last_maintenance_hours: 2000.0
+        burner_capacity_mw: 8.0
+        design_life_hours: 35000
+        burner_type: "low_nox"
+      expect:
+        remaining_useful_life_hours_min: 15000.0
+        combustion_efficiency_percent_min: 98.0
+      tolerance:
+        remaining_useful_life_hours: 1500.0
+
+    # =========================================================================
+    # Flame Quality Tests
+    # =========================================================================
+    - name: flame_quality_excellent
+      description: "Excellent flame quality conditions"
+      input:
+        operating_hours: 5000.0
+        start_stop_cycles: 200
+        firing_rate_percent: 80.0
+        fuel_type: "natural_gas"
+        flame_temperature_c: 1820.0
+        flame_stability_index: 0.98
+        o2_in_flue_percent: 2.5
+        co_in_flue_ppm: 10.0
+        nox_in_flue_ppm: 30.0
+        flame_luminosity: 85.0
+        flame_shape_score: 90.0
+        burner_age_years: 1.0
+        last_maintenance_hours: 2000.0
+        burner_capacity_mw: 5.0
+      expect:
+        flame_quality_score_min: 90.0
+        combustion_efficiency_percent_min: 97.0
+      tolerance:
+        flame_quality_score: 2.0
+
+    - name: flame_quality_poor_stability
+      description: "Poor flame stability affecting quality"
+      input:
+        operating_hours: 30000.0
+        start_stop_cycles: 1500
+        firing_rate_percent: 65.0
+        fuel_type: "natural_gas"
+        flame_temperature_c: 1700.0
+        flame_stability_index: 0.60
+        o2_in_flue_percent: 5.5
+        co_in_flue_ppm: 250.0
+        burner_age_years: 4.5
+        last_maintenance_hours: 8000.0
+        burner_capacity_mw: 5.0
+      expect:
+        flame_quality_score_max: 50.0
+        maintenance_priority: "HIGH"
+      tolerance:
+        flame_quality_score: 3.0
+
+    - name: flame_quality_high_emissions
+      description: "High CO emissions degrading flame quality"
+      input:
+        operating_hours: 22000.0
+        start_stop_cycles: 1100
+        firing_rate_percent: 72.0
+        fuel_type: "natural_gas"
+        flame_temperature_c: 1760.0
+        flame_stability_index: 0.85
+        o2_in_flue_percent: 6.0
+        co_in_flue_ppm: 350.0
+        nox_in_flue_ppm: 80.0
+        burner_age_years: 3.5
+        last_maintenance_hours: 5000.0
+        burner_capacity_mw: 5.0
+      expect:
+        flame_quality_score_max: 65.0
+        combustion_efficiency_percent_max: 92.0
+      tolerance:
+        flame_quality_score: 3.0
+
+    - name: flame_quality_oil_burner
+      description: "Flame quality for oil-fired burner"
+      input:
+        operating_hours: 18000.0
+        start_stop_cycles: 500
+        firing_rate_percent: 78.0
+        fuel_type: "fuel_oil_2"
+        fuel_heating_value_mj_kg: 42.6
+        flame_temperature_c: 1880.0
+        flame_stability_index: 0.88
+        o2_in_flue_percent: 3.5
+        co_in_flue_ppm: 45.0
+        nox_in_flue_ppm: 120.0
+        burner_age_years: 2.5
+        last_maintenance_hours: 4000.0
+        burner_capacity_mw: 8.0
+      expect:
+        flame_quality_score_min: 75.0
+        flame_quality_score_max: 90.0
+      tolerance:
+        flame_quality_score: 3.0
+
+    # =========================================================================
+    # Maintenance Scheduling Tests
+    # =========================================================================
+    - name: maintenance_none_required
+      description: "New burner - no maintenance required"
+      input:
+        operating_hours: 2000.0
+        start_stop_cycles: 100
+        firing_rate_percent: 75.0
+        fuel_type: "natural_gas"
+        flame_temperature_c: 1810.0
+        flame_stability_index: 0.96
+        o2_in_flue_percent: 2.8
+        co_in_flue_ppm: 15.0
+        burner_age_years: 0.3
+        last_maintenance_hours: 2000.0
+        burner_capacity_mw: 5.0
+        design_life_hours: 50000
+      expect:
+        maintenance_priority: "NONE"
+        failure_probability_30d_max: 0.005
+      tolerance: {}
+
+    - name: maintenance_low_priority
+      description: "Minor maintenance during next outage"
+      input:
+        operating_hours: 18000.0
+        start_stop_cycles: 900
+        firing_rate_percent: 72.0
+        fuel_type: "natural_gas"
+        flame_temperature_c: 1780.0
+        flame_stability_index: 0.88
+        o2_in_flue_percent: 3.8
+        co_in_flue_ppm: 70.0
+        burner_age_years: 2.5
+        last_maintenance_hours: 6000.0
+        burner_capacity_mw: 5.0
+        design_life_hours: 50000
+      expect:
+        maintenance_priority: "LOW"
+        next_inspection_hours_max: 4000.0
+      tolerance: {}
+
+    - name: maintenance_medium_priority
+      description: "Schedule maintenance within 1 month"
+      input:
+        operating_hours: 32000.0
+        start_stop_cycles: 1600
+        firing_rate_percent: 68.0
+        fuel_type: "natural_gas"
+        flame_temperature_c: 1740.0
+        flame_stability_index: 0.82
+        o2_in_flue_percent: 4.5
+        co_in_flue_ppm: 140.0
+        burner_age_years: 4.5
+        last_maintenance_hours: 8000.0
+        burner_capacity_mw: 5.0
+        design_life_hours: 50000
+        flame_scanner_signal: 70.0
+      expect:
+        maintenance_priority: "MEDIUM"
+        recommended_actions_count_min: 2
+      tolerance: {}
+
+    - name: maintenance_high_priority
+      description: "Schedule maintenance within 2 weeks"
+      input:
+        operating_hours: 42000.0
+        start_stop_cycles: 2200
+        firing_rate_percent: 62.0
+        fuel_type: "natural_gas"
+        flame_temperature_c: 1700.0
+        flame_stability_index: 0.75
+        o2_in_flue_percent: 5.2
+        co_in_flue_ppm: 220.0
+        burner_age_years: 6.0
+        last_maintenance_hours: 10000.0
+        burner_capacity_mw: 5.0
+        design_life_hours: 50000
+        igniter_condition_score: 55.0
+        flame_scanner_signal: 60.0
+        nozzle_condition_score: 50.0
+      expect:
+        maintenance_priority: "HIGH"
+        failure_probability_30d_min: 0.08
+        recommended_actions_count_min: 3
+      tolerance: {}
+
+    - name: maintenance_critical_priority
+      description: "Immediate maintenance required"
+      input:
+        operating_hours: 52000.0
+        start_stop_cycles: 2800
+        firing_rate_percent: 55.0
+        fuel_type: "natural_gas"
+        flame_temperature_c: 1620.0
+        flame_stability_index: 0.58
+        o2_in_flue_percent: 7.0
+        co_in_flue_ppm: 500.0
+        burner_age_years: 7.5
+        last_maintenance_hours: 15000.0
+        burner_capacity_mw: 5.0
+        design_life_hours: 50000
+        igniter_condition_score: 35.0
+        flame_scanner_signal: 45.0
+        nozzle_condition_score: 30.0
+        refractory_condition_score: 40.0
+      expect:
+        maintenance_priority: "CRITICAL"
+        failure_probability_30d_min: 0.25
+        overall_health_score_max: 35.0
+      tolerance: {}
+
+    # =========================================================================
+    # Component Health Tests
+    # =========================================================================
+    - name: component_igniter_degraded
+      description: "Degraded igniter condition"
+      input:
+        operating_hours: 25000.0
+        start_stop_cycles: 3000
+        firing_rate_percent: 65.0
+        fuel_type: "natural_gas"
+        flame_temperature_c: 1760.0
+        flame_stability_index: 0.84
+        o2_in_flue_percent: 4.0
+        co_in_flue_ppm: 90.0
+        burner_age_years: 4.0
+        last_maintenance_hours: 6000.0
+        burner_capacity_mw: 5.0
+        igniter_condition_score: 45.0
+        igniter_type: "spark"
+      expect:
+        component_health:
+          igniter_max: 50.0
+        critical_component: "igniter"
+        recommended_actions_contains: "Replace igniter"
+      tolerance: {}
+
+    - name: component_flame_scanner_weak
+      description: "Weak flame scanner signal"
+      input:
+        operating_hours: 40000.0
+        start_stop_cycles: 2000
+        firing_rate_percent: 70.0
+        fuel_type: "natural_gas"
+        flame_temperature_c: 1750.0
+        flame_stability_index: 0.86
+        o2_in_flue_percent: 3.8
+        co_in_flue_ppm: 70.0
+        burner_age_years: 5.5
+        last_maintenance_hours: 5000.0
+        burner_capacity_mw: 5.0
+        flame_scanner_signal: 40.0
+        flame_scanner_type: "uv"
+      expect:
+        component_health:
+          flame_scanner_max: 45.0
+        safety_interlock_status: "WARNING"
+      tolerance: {}
+
+    - name: component_nozzle_worn
+      description: "Worn burner nozzle"
+      input:
+        operating_hours: 38000.0
+        start_stop_cycles: 1500
+        firing_rate_percent: 75.0
+        fuel_type: "natural_gas"
+        flame_temperature_c: 1720.0
+        flame_stability_index: 0.78
+        o2_in_flue_percent: 4.8
+        co_in_flue_ppm: 180.0
+        burner_age_years: 5.0
+        last_maintenance_hours: 8000.0
+        burner_capacity_mw: 5.0
+        nozzle_condition_score: 40.0
+      expect:
+        component_health:
+          burner_nozzle_max: 45.0
+        flame_quality_score_max: 65.0
+      tolerance: {}
+
+    # =========================================================================
+    # Compliance Tests
+    # =========================================================================
+    - name: compliance_all_passed
+      description: "All compliance requirements met"
+      input:
+        operating_hours: 10000.0
+        start_stop_cycles: 500
+        firing_rate_percent: 75.0
+        fuel_type: "natural_gas"
+        flame_temperature_c: 1800.0
+        flame_stability_index: 0.94
+        o2_in_flue_percent: 3.0
+        co_in_flue_ppm: 25.0
+        burner_age_years: 1.5
+        last_maintenance_hours: 2000.0
+        burner_capacity_mw: 5.0
+        flame_scanner_signal: 90.0
+        gas_valve_response_ms: 500.0
+      expect:
+        nfpa_86_compliance:
+          compliant: true
+        safety_interlock_status: "OK"
+        flame_safeguard_status: "OK"
+      tolerance: {}
+
+    - name: compliance_overdue_inspection
+      description: "Overdue safety inspection"
+      input:
+        operating_hours: 12000.0
+        start_stop_cycles: 600
+        firing_rate_percent: 72.0
+        fuel_type: "natural_gas"
+        flame_temperature_c: 1790.0
+        flame_stability_index: 0.90
+        o2_in_flue_percent: 3.5
+        co_in_flue_ppm: 40.0
+        burner_age_years: 2.0
+        last_maintenance_hours: 10000.0
+        burner_capacity_mw: 5.0
+      expect:
+        nfpa_86_compliance:
+          compliant: false
+        warnings_count_min: 1
+      tolerance: {}
+
+    # =========================================================================
+    # Edge Cases
+    # =========================================================================
+    - name: edge_zero_hours
+      description: "Brand new burner with zero operating hours"
+      input:
+        operating_hours: 0.0
+        start_stop_cycles: 0
+        firing_rate_percent: 0.0
+        fuel_type: "natural_gas"
+        flame_temperature_c: 1800.0
+        flame_stability_index: 1.0
+        o2_in_flue_percent: 3.0
+        co_in_flue_ppm: 10.0
+        burner_age_years: 0.0
+        last_maintenance_hours: 0.0
+        burner_capacity_mw: 5.0
+        design_life_hours: 50000
+      expect:
+        overall_health_score: 100.0
+        reliability_index: 1.0
+        maintenance_priority: "NONE"
+        failure_probability_30d: 0.0
+      tolerance:
+        overall_health_score: 0.1
+
+    - name: edge_max_design_life
+      description: "Burner at exactly design life"
+      input:
+        operating_hours: 50000.0
+        start_stop_cycles: 2500
+        firing_rate_percent: 70.0
+        fuel_type: "natural_gas"
+        flame_temperature_c: 1720.0
+        flame_stability_index: 0.78
+        o2_in_flue_percent: 4.5
+        co_in_flue_ppm: 150.0
+        burner_age_years: 7.0
+        last_maintenance_hours: 8000.0
+        burner_capacity_mw: 5.0
+        design_life_hours: 50000
+      expect:
+        wear_out_phase: true
+        maintenance_priority: "HIGH"
+        replacement_recommended: true
+      tolerance: {}
+
+    - name: provenance_hash_generation
+      description: "Verify provenance hash is generated correctly"
+      input:
+        operating_hours: 15000.0
+        start_stop_cycles: 750
+        firing_rate_percent: 75.0
+        fuel_type: "natural_gas"
+        flame_temperature_c: 1800.0
+        flame_stability_index: 0.92
+        o2_in_flue_percent: 3.0
+        co_in_flue_ppm: 30.0
+        burner_age_years: 2.0
+        last_maintenance_hours: 3000.0
+        burner_capacity_mw: 5.0
+      expect:
+        provenance_hash_format: "^[a-f0-9]{64}$"
+      tolerance: {}
+
+  properties:
+    - name: deterministic_output
+      description: "Same inputs must produce identical outputs"
+      rule: "run(inputs, seed=42) == run(inputs, seed=42)"
+      iterations: 100
+
+    - name: provenance_hash_unique
+      description: "Different inputs must produce different provenance hashes"
+      rule: "hash(run(input1)) != hash(run(input2)) when input1 != input2"
+
+    - name: health_score_bounds
+      description: "Health scores must be between 0 and 100"
+      rule: "0.0 <= outputs.overall_health_score <= 100.0"
+
+    - name: reliability_bounds
+      description: "Reliability index must be between 0 and 1"
+      rule: "0.0 <= outputs.reliability_index <= 1.0"
+
+    - name: failure_probability_bounds
+      description: "Failure probabilities must be between 0 and 1"
+      rule: "0.0 <= outputs.failure_probability_30d <= 1.0"
+
+    - name: rul_positive
+      description: "RUL must be non-negative"
+      rule: "outputs.remaining_useful_life_hours >= 0.0"
+
+    - name: rul_confidence_interval
+      description: "RUL lower bound must be less than upper bound"
+      rule: "outputs.rul_lower_bound_hours <= outputs.rul_upper_bound_hours"
+
+    - name: combustion_efficiency_bounds
+      description: "Combustion efficiency must be between 0 and 100%"
+      rule: "0.0 <= outputs.combustion_efficiency_percent <= 100.0"
+
+    - name: health_degradation_monotonic
+      description: "Health score decreases with operating hours (generally)"
+      rule: "run(hours=t1).health >= run(hours=t2).health when t1 < t2 (statistical)"
+
+    - name: provenance_hash_format
+      description: "Provenance hash must be valid SHA-256"
+      rule: "len(outputs.provenance_hash) == 64 and is_hex(outputs.provenance_hash)"
+
+# =============================================================================
+# Certification
+# =============================================================================
+certification:
+  status: "audit_ready"
+
+  quality_gates:
+    - name: golden_tests_pass
+      type: test
+      threshold: 1.0  # 100% pass rate
+      required: true
+
+    - name: determinism_verified
+      type: determinism
+      runs: 100
+      tolerance: 0.0
+      required: true
+
+    - name: provenance_completeness
+      type: provenance
+      completeness: 1.0
+      required: true
+
+    - name: code_coverage
+      type: coverage
+      threshold: 0.85  # 85%
+      required: true
+
+    - name: zero_hallucination_verified
+      type: hallucination_check
+      method: "tool_isolation"
+      required: true
+
+    - name: weibull_accuracy
+      type: calculation_accuracy
+      method: "correlation_validation"
+      correlations:
+        - weibull_reliability
+        - weibull_hazard_rate
+        - weibull_mttf
+      threshold: 0.99
+      required: true
+
+    - name: nfpa_86_compliance
+      type: standards_compliance
+      standards:
+        - "NFPA 86"
+        - "API 535"
+        - "ASME CSD-1"
+      threshold: 1.0
+      required: true
+
+    - name: reliability_model_validation
+      type: model_validation
+      method: "historical_data_comparison"
+      min_data_points: 100
+      required: false
+
+# =============================================================================
+# Deployment
+# =============================================================================
+deployment:
+  kubernetes:
+    namespace: maintenance-production
+    replicas:
+      min: 2
+      max: 8
+    resources:
+      requests:
+        cpu: "200m"
+        memory: "256Mi"
+      limits:
+        cpu: "500m"
+        memory: "512Mi"
+    autoscaling:
+      target_cpu: 70
+    health_check:
+      liveness_path: "/health/live"
+      readiness_path: "/health/ready"
+      startup_probe_seconds: 30
+
+  monitoring:
+    prometheus:
+      enabled: true
+      metrics:
+        - burner_health_score
+        - remaining_useful_life_hours
+        - failure_probability_30d
+        - flame_quality_score
+        - combustion_efficiency
+        - maintenance_priority_distribution
+        - component_health_by_type
+        - compliance_status
+        - calculation_latency_ms
+        - calculations_total
+        - errors_total
+    grafana:
+      dashboard: burner-maintenance-predictor
+      panels:
+        - health_score_trend
+        - rul_forecast
+        - failure_probability_heatmap
+        - flame_quality_trend
+        - component_health_breakdown
+        - maintenance_calendar
+        - compliance_status_matrix
+        - cost_analysis
+    alerts:
+      - name: critical_health_score
+        condition: "overall_health_score < 30"
+        severity: critical
+        action: "Immediate maintenance required - high failure risk"
+      - name: high_failure_probability
+        condition: "failure_probability_30d > 0.20"
+        severity: critical
+        action: "Schedule emergency maintenance"
+      - name: flame_quality_degraded
+        condition: "flame_quality_score < 50"
+        severity: warning
+        action: "Inspect burner and combustion settings"
+      - name: compliance_violation
+        condition: "nfpa_86_compliant == false"
+        severity: critical
+        action: "Schedule required safety inspection"
+      - name: component_failure_imminent
+        condition: "any(component_health) < 25"
+        severity: critical
+        action: "Replace affected component immediately"
+      - name: high_error_rate
+        condition: "error_rate > 0.01"
+        severity: critical
+        action: "Check sensor inputs and connectivity"
+      - name: high_latency
+        condition: "p99_latency > 500ms"
+        severity: warning
+        action: "Scale up resources"
+
+  security:
+    data_classification: internal
+    encryption_at_rest: true
+    encryption_in_transit: true
+    audit_logging: true
+    api_authentication: oauth2
+
+# =============================================================================
+# Documentation
+# =============================================================================
+documentation:
+  overview: |
+    The BURNERSENTRY Burner Maintenance Predictor Agent provides comprehensive
+    predictive maintenance capabilities for industrial burners. It implements:
+
+    1. **Weibull Failure Analysis**: Uses two-parameter Weibull distribution to
+       model component failure characteristics including:
+       - Shape parameter (beta) for failure mode identification
+       - Scale parameter (eta) for characteristic life estimation
+       - Hazard rate calculation for current risk assessment
+       - Identification of operating phase (infant, useful life, wear-out)
+
+    2. **Remaining Useful Life (RUL) Prediction**: Estimates remaining useful
+       life with confidence intervals using:
+       - Weibull-based conditional reliability
+       - Degradation rate extrapolation
+       - Component-level RUL aggregation
+       - 80%, 90%, and 95% confidence bounds
+
+    3. **Flame Quality Scoring**: Multi-parameter assessment including:
+       - Flame stability index
+       - Temperature conformance
+       - Emissions analysis (CO, excess air)
+       - Visual characteristics (luminosity, shape)
+
+    4. **Component Health Assessment**: Individual health scores for:
+       - Burner nozzle
+       - Igniter (spark, hot surface)
+       - Flame scanner (UV, IR, flame rod)
+       - Gas valve
+       - Air damper
+       - Refractory/tile
+
+    5. **Compliance Monitoring**: Tracks compliance with:
+       - NFPA 86 (Industrial Furnaces)
+       - API 535 (Burner Systems)
+       - ASME CSD-1 (Controls and Safety Devices)
+
+    6. **Maintenance Optimization**: Provides:
+       - Priority-based maintenance recommendations
+       - Optimal maintenance window scheduling
+       - Cost-benefit analysis
+       - Replacement vs. repair recommendations
+
+  api_examples:
+    - name: "Basic Health Assessment"
+      description: "Calculate burner health and RUL"
+      request: |
+        {
+          "operating_hours": 25000.0,
+          "start_stop_cycles": 1200,
+          "firing_rate_percent": 75.0,
+          "fuel_type": "natural_gas",
+          "flame_temperature_c": 1780.0,
+          "flame_stability_index": 0.88,
+          "o2_in_flue_percent": 3.5,
+          "co_in_flue_ppm": 60.0,
+          "burner_age_years": 3.5,
+          "last_maintenance_hours": 5000.0,
+          "burner_capacity_mw": 5.0,
+          "design_life_hours": 50000
+        }
+      response: |
+        {
+          "overall_health_score": 78.5,
+          "remaining_useful_life_hours": 18500.0,
+          "rul_confidence_percent": 85.0,
+          "rul_lower_bound_hours": 14200.0,
+          "rul_upper_bound_hours": 22800.0,
+          "failure_probability_30d": 0.012,
+          "failure_probability_90d": 0.045,
+          "flame_quality_score": 82.3,
+          "combustion_efficiency_percent": 96.8,
+          "maintenance_priority": "LOW",
+          "recommended_actions": [
+            {
+              "action": "Inspect burner nozzle",
+              "priority": "LOW",
+              "component": "burner_nozzle",
+              "reason": "Approaching 50% of design life"
+            }
+          ],
+          "next_inspection_hours": 3000.0,
+          "component_health": {
+            "burner_nozzle": 75.0,
+            "igniter": 85.0,
+            "flame_scanner": 88.0,
+            "gas_valve": 92.0,
+            "refractory": 80.0
+          },
+          "nfpa_86_compliance": {
+            "compliant": true,
+            "violations": []
+          },
+          "provenance_hash": "a1b2c3d4e5f6..."
+        }
+
+    - name: "Critical Maintenance Alert"
+      description: "Burner requiring immediate attention"
+      request: |
+        {
+          "operating_hours": 48000.0,
+          "start_stop_cycles": 2500,
+          "firing_rate_percent": 60.0,
+          "fuel_type": "natural_gas",
+          "flame_temperature_c": 1680.0,
+          "flame_stability_index": 0.65,
+          "o2_in_flue_percent": 5.5,
+          "co_in_flue_ppm": 350.0,
+          "burner_age_years": 7.0,
+          "last_maintenance_hours": 12000.0,
+          "burner_capacity_mw": 5.0,
+          "igniter_condition_score": 40.0,
+          "flame_scanner_signal": 50.0
+        }
+      response: |
+        {
+          "overall_health_score": 35.2,
+          "remaining_useful_life_hours": 3500.0,
+          "failure_probability_30d": 0.28,
+          "maintenance_priority": "CRITICAL",
+          "recommended_actions": [
+            {
+              "action": "Replace igniter",
+              "priority": "CRITICAL",
+              "component": "igniter"
+            },
+            {
+              "action": "Replace flame scanner",
+              "priority": "HIGH",
+              "component": "flame_scanner"
+            },
+            {
+              "action": "Inspect and clean burner nozzle",
+              "priority": "HIGH",
+              "component": "burner_nozzle"
+            }
+          ],
+          "replacement_recommended": true,
+          "replacement_reason": "Multiple critical components degraded, approaching end of design life",
+          "estimated_repair_cost_usd": 15000.0,
+          "replacement_cost_usd": 125000.0,
+          "cost_of_failure_usd": 250000.0
+        }
+
+  references:
+    - "NFPA 86: Standard for Ovens and Furnaces, 2023 Edition"
+    - "API 535: Burners for Fired Heaters in General Refinery Services, 2014 (R2019)"
+    - "ASME CSD-1: Controls and Safety Devices for Automatically Fired Boilers, 2021"
+    - "Abernethy, R.B., The New Weibull Handbook, 5th Edition"
+    - "ISO 13381-1:2015, Condition Monitoring and Diagnostics - Prognostics"
+    - "IEEE 352-2016, Guide for General Principles of Reliability Analysis"
+    - "Moubray, J., Reliability-Centered Maintenance, 2nd Edition"
+    - "Jardine, A.K.S. and Tsang, A.H.C., Maintenance, Replacement, and Reliability"

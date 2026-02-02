@@ -1,0 +1,112 @@
+# syntax=docker/dockerfile:1.7
+# Production-ready GreenLang CLI Docker image with pinned dependencies
+# Security-hardened with hash verification
+
+# Multi-stage build for optimized layer caching and security
+ARG PYTHON_VERSION=3.11-slim
+FROM python:${PYTHON_VERSION} AS builder
+
+# Build stage environment
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    PIP_DEFAULT_TIMEOUT=100 \
+    VIRTUAL_ENV=/opt/venv \
+    PATH="/opt/venv/bin:$PATH"
+
+# Create virtual environment
+RUN python -m venv $VIRTUAL_ENV
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    gcc \
+    git \
+    curl \
+    pkg-config \
+    libssl-dev \
+    libffi-dev \
+    ca-certificates \
+    && apt-get upgrade -y \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy pinned requirements
+COPY requirements-pinned.txt /tmp/
+
+# Install dependencies with hash verification
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install --upgrade pip==24.0 setuptools==69.0.3 wheel==0.42.0 \
+    && pip install --require-hashes -r /tmp/requirements-pinned.txt
+
+# Copy and install the application
+COPY . /app
+WORKDIR /app
+RUN pip install --no-deps .
+
+# Security scan stage
+FROM builder AS security-scan
+
+# Install security scanning tools
+RUN pip install pip-audit==2.7.0 safety==3.0.1
+
+# Run security checks
+RUN pip-audit --desc \
+    && safety check --json \
+    && pip check
+
+# Final stage - minimal production image
+FROM python:${PYTHON_VERSION}
+
+# Install runtime dependencies only
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libssl3 \
+    ca-certificates \
+    curl \
+    && apt-get upgrade -y \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONHASHSEED=random \
+    VIRTUAL_ENV=/opt/venv \
+    PATH="/opt/venv/bin:$PATH" \
+    GL_HOME=/var/lib/greenlang \
+    GL_CACHE_DIR=/var/cache/greenlang \
+    GL_LOG_DIR=/var/log/greenlang
+
+# Copy virtual environment from builder
+COPY --from=builder /opt/venv /opt/venv
+
+# Create non-root user
+RUN groupadd -r -g 1000 greenlang \
+    && useradd -r -u 1000 -g greenlang -m -d /home/greenlang greenlang \
+    && mkdir -p $GL_HOME $GL_CACHE_DIR $GL_LOG_DIR \
+    && chown -R greenlang:greenlang $GL_HOME $GL_CACHE_DIR $GL_LOG_DIR /home/greenlang
+
+# Security hardening
+RUN chmod 750 $GL_HOME $GL_LOG_DIR \
+    && chmod 755 $GL_CACHE_DIR
+
+# Add security labels
+LABEL maintainer="GreenLang Security Team <security@greenlang.io>" \
+      version="0.3.0" \
+      description="GreenLang CLI - Security-hardened production image" \
+      security.scan="pip-audit,safety" \
+      security.updates="auto" \
+      org.opencontainers.image.source="https://github.com/greenlang/greenlang"
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD gl version || exit 1
+
+# Switch to non-root user
+USER greenlang
+WORKDIR /home/greenlang
+
+# Verify installation
+RUN gl version
+
+ENTRYPOINT ["gl"]
+CMD ["--help"]

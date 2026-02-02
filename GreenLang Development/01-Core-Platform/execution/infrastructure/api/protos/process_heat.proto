@@ -1,0 +1,242 @@
+syntax = "proto3";
+
+package greenlang.infrastructure.api;
+
+option go_package = "github.com/greenlang/api/protos/process_heat";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+
+// ProcessHeatService - Heat calculation and monitoring
+service ProcessHeatService {
+  rpc RunCalculation(CalculationRequest) returns (CalculationResponse) {}
+  rpc GetStatus(StatusRequest) returns (StatusResponse) {}
+  rpc StreamResults(StreamRequest) returns (stream CalculationResult) {}
+}
+
+// EmissionsService - Emissions calculation and factors
+service EmissionsService {
+  rpc CalculateEmissions(EmissionsRequest) returns (EmissionsResponse) {}
+  rpc GetEmissionFactors(EmissionFactorsRequest) returns (EmissionFactorsResponse) {}
+}
+
+// ComplianceService - Regulatory compliance
+service ComplianceService {
+  rpc GenerateReport(ReportRequest) returns (ReportResponse) {}
+  rpc CheckCompliance(ComplianceCheckRequest) returns (ComplianceCheckResponse) {}
+}
+
+// ============================================================================
+// CALCULATION SERVICE MESSAGES
+// ============================================================================
+
+message CalculationRequest {
+  string calculation_id = 1;
+  string agent_name = 2;
+  google.protobuf.Timestamp timestamp = 3;
+  EquipmentSpecification equipment = 4;
+  FuelInput fuel_input = 5;
+  OperatingConditions operating_conditions = 6;
+}
+
+message CalculationResponse {
+  string calculation_id = 1;
+  string status = 2;  // QUEUED, PROCESSING, COMPLETED
+  string message_id = 3;
+  string provenance_hash = 4;
+}
+
+message StatusRequest {
+  string calculation_id = 1;
+  string message_id = 2;
+}
+
+message StatusResponse {
+  string calculation_id = 1;
+  string status = 2;  // QUEUED, PROCESSING, COMPLETED, FAILED
+  float progress_percent = 3;
+  string error_message = 4;
+  google.protobuf.Timestamp started_at = 5;
+  google.protobuf.Timestamp completed_at = 6;
+}
+
+message StreamRequest {
+  string agent_name = 1;
+  string filter_type = 2;
+  bool include_intermediate_results = 3;
+}
+
+message CalculationResult {
+  string calculation_id = 1;
+  string agent_name = 2;
+  google.protobuf.Timestamp timestamp = 3;
+  double heat_output_mwh = 4;
+  double fuel_consumed_mwh = 5;
+  double fuel_efficiency_percent = 6;
+  double co2_emissions_tonnes = 7;
+  double ch4_emissions_tonnes = 8;
+  double n2o_emissions_tonnes = 9;
+  double thermal_loss_percent = 10;
+  string provenance_hash = 11;
+  string validation_status = 12;
+  float processing_time_ms = 13;
+}
+
+message EquipmentSpecification {
+  string equipment_id = 1;
+  string equipment_type = 2;
+  double rated_capacity_mw = 3;
+  string fuel_type = 4;
+  int32 installation_year = 5;
+  double nominal_efficiency_percent = 6;
+}
+
+message FuelInput {
+  double quantity = 1;
+  string unit = 2;
+  double carbon_content = 3;
+  string source = 4;
+  google.protobuf.Timestamp measurement_date = 5;
+}
+
+message OperatingConditions {
+  double load_percent = 1;
+  double inlet_temperature_celsius = 2;
+  double outlet_temperature_celsius = 3;
+  double operating_pressure_bar = 4;
+  bool burner_on = 5;
+  int32 number_of_burners_active = 6;
+}
+
+// ============================================================================
+// EMISSIONS SERVICE MESSAGES
+// ============================================================================
+
+message EmissionsRequest {
+  string emissions_id = 1;
+  string scope = 2;  // SCOPE_1, SCOPE_2, SCOPE_3
+  repeated ActivityData activity_data = 3;
+  string region = 4;
+  int32 reporting_year = 5;
+}
+
+message ActivityData {
+  string activity_id = 1;
+  string activity_type = 2;
+  double quantity = 3;
+  string unit = 4;
+  string source = 5;
+}
+
+message EmissionsResponse {
+  string emissions_id = 1;
+  double total_co2_tonnes = 2;
+  double total_ch4_tonnes = 3;
+  double total_n2o_tonnes = 4;
+  double total_co2e_tonnes = 5;
+  repeated EmissionDetail details = 6;
+  string provenance_hash = 7;
+  string validation_status = 8;
+  float processing_time_ms = 9;
+}
+
+message EmissionDetail {
+  string source_id = 1;
+  string source_name = 2;
+  double co2_tonnes = 3;
+  double ch4_tonnes = 4;
+  double n2o_tonnes = 5;
+  double emissions_factor_used = 6;
+}
+
+message EmissionFactorsRequest {
+  string fuel_type = 1;
+  string scope = 2;
+  string region = 3;
+  int32 year = 4;
+}
+
+message EmissionFactorsResponse {
+  string fuel_type = 1;
+  repeated EmissionFactor factors = 2;
+  google.protobuf.Timestamp last_updated = 3;
+}
+
+message EmissionFactor {
+  string factor_id = 1;
+  string scope = 2;
+  double co2_per_unit = 3;
+  double ch4_per_unit = 4;
+  double n2o_per_unit = 5;
+  string unit = 6;
+  string source = 7;
+  string region = 8;
+  int32 year = 9;
+}
+
+// ============================================================================
+// COMPLIANCE SERVICE MESSAGES
+// ============================================================================
+
+message ReportRequest {
+  string report_id = 1;
+  string framework = 2;
+  string facility_id = 3;
+  google.protobuf.Timestamp start_date = 4;
+  google.protobuf.Timestamp end_date = 5;
+  bool include_recommendations = 6;
+}
+
+message ReportResponse {
+  string report_id = 1;
+  string framework = 2;
+  string facility_id = 3;
+  string status = 4;
+  repeated ComplianceItem items = 5;
+  repeated string recommendations = 6;
+  string summary = 7;
+  double overall_score = 8;
+  string provenance_hash = 9;
+  float processing_time_ms = 10;
+}
+
+message ComplianceItem {
+  string requirement_id = 1;
+  string requirement_description = 2;
+  string status = 3;
+  string evidence = 4;
+  repeated string issues = 5;
+}
+
+message ComplianceCheckRequest {
+  string check_id = 1;
+  string regulation = 2;
+  string facility_id = 3;
+  repeated ComplianceDataPoint data_points = 4;
+}
+
+message ComplianceDataPoint {
+  string metric_name = 1;
+  double value = 2;
+  string unit = 3;
+  string timestamp = 4;
+}
+
+message ComplianceCheckResponse {
+  string check_id = 1;
+  string regulation = 2;
+  bool is_compliant = 3;
+  double compliance_score = 4;
+  repeated ComplianceViolation violations = 5;
+  string summary = 6;
+  string provenance_hash = 7;
+  float processing_time_ms = 8;
+}
+
+message ComplianceViolation {
+  string violation_id = 1;
+  string violation_type = 2;
+  string description = 3;
+  string severity = 4;
+  string remediation = 5;
+}

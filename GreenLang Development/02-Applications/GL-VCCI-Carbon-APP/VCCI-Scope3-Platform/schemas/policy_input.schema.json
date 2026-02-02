@@ -1,0 +1,519 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://greenlang.io/schemas/vcci-scope3/policy-input/v1.0",
+  "title": "VCCI Scope 3 Policy Input Schema",
+  "description": "Policy input schema for VCCI Scope 3 Value Chain Carbon Intelligence Platform",
+  "type": "object",
+  "required": ["version", "policy_type", "scope3_category", "rules", "metadata"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Semantic version of the policy"
+    },
+    "policy_type": {
+      "type": "string",
+      "enum": ["calculation", "factor_selection", "entity_resolution", "engagement", "reporting"],
+      "description": "Type of Scope 3 policy"
+    },
+    "scope3_category": {
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 15
+      },
+      "description": "Scope 3 categories (1-15) this policy applies to"
+    },
+    "metadata": {
+      "type": "object",
+      "required": ["name", "description", "created", "updated", "ghg_protocol_version"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 1000
+        },
+        "created": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "ghg_protocol_version": {
+          "type": "string",
+          "description": "GHG Protocol version reference"
+        },
+        "author": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "rules": {
+      "type": "object",
+      "properties": {
+        "calculation_tiers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/calculation_tier"
+          }
+        },
+        "factor_broker_config": {
+          "$ref": "#/definitions/factor_broker_config"
+        },
+        "entity_mdm_config": {
+          "$ref": "#/definitions/entity_mdm_config"
+        },
+        "pcf_exchange_config": {
+          "$ref": "#/definitions/pcf_exchange_config"
+        },
+        "data_quality_scoring": {
+          "$ref": "#/definitions/data_quality_scoring"
+        }
+      }
+    },
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "category_specific": {
+          "type": "object",
+          "properties": {
+            "category_1": {
+              "$ref": "#/definitions/category_1_params"
+            },
+            "category_4": {
+              "$ref": "#/definitions/category_4_params"
+            },
+            "category_6": {
+              "$ref": "#/definitions/category_6_params"
+            }
+          }
+        },
+        "uncertainty_config": {
+          "type": "object",
+          "properties": {
+            "enable_monte_carlo": {
+              "type": "boolean",
+              "default": true
+            },
+            "iterations": {
+              "type": "integer",
+              "minimum": 1000,
+              "maximum": 100000,
+              "default": 10000
+            },
+            "confidence_intervals": {
+              "type": "array",
+              "items": {
+                "type": "number",
+                "enum": [0.05, 0.25, 0.5, 0.75, 0.95]
+              }
+            }
+          }
+        },
+        "engagement_thresholds": {
+          "type": "object",
+          "properties": {
+            "pareto_threshold": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "default": 0.8,
+              "description": "Top X% of suppliers by emissions"
+            },
+            "response_rate_target": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "default": 0.5
+            },
+            "data_collection_deadline_months": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 12,
+              "default": 4
+            }
+          }
+        }
+      }
+    },
+    "outputs": {
+      "type": "object",
+      "properties": {
+        "reporting_standards": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["GHG_Protocol", "ESRS", "CDP", "IFRS_S2", "ISO_14083", "SBTi"]
+          }
+        },
+        "aggregation_dimensions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["category", "supplier", "product", "geography", "facility", "time_period"]
+          }
+        },
+        "provenance_tracking": {
+          "type": "object",
+          "properties": {
+            "enable_sha256_hashing": {
+              "type": "boolean",
+              "default": true
+            },
+            "track_policy_version": {
+              "type": "boolean",
+              "default": true
+            },
+            "track_factor_version": {
+              "type": "boolean",
+              "default": true
+            }
+          }
+        }
+      }
+    },
+    "compliance": {
+      "type": "object",
+      "properties": {
+        "gdpr_ccpa": {
+          "type": "object",
+          "properties": {
+            "enforce_consent": {
+              "type": "boolean",
+              "default": true
+            },
+            "lawful_basis": {
+              "type": "string",
+              "enum": ["legitimate_interest", "contract", "consent"]
+            },
+            "data_retention_days": {
+              "type": "integer",
+              "minimum": 30,
+              "maximum": 2555
+            }
+          }
+        },
+        "soc2_type2": {
+          "type": "boolean",
+          "default": true
+        }
+      }
+    }
+  },
+  "definitions": {
+    "calculation_tier": {
+      "type": "object",
+      "required": ["tier", "name", "method", "priority"],
+      "properties": {
+        "tier": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 3
+        },
+        "name": {
+          "type": "string"
+        },
+        "method": {
+          "type": "string",
+          "enum": ["supplier_specific", "average_data", "spend_based", "distance_based", "fuel_based"]
+        },
+        "priority": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10
+        },
+        "data_quality_range": {
+          "type": "object",
+          "properties": {
+            "min": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 5
+            },
+            "max": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 5
+            }
+          }
+        },
+        "applicability_conditions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "field": {
+                "type": "string"
+              },
+              "condition": {
+                "type": "string"
+              },
+              "value": {}
+            }
+          }
+        }
+      }
+    },
+    "factor_broker_config": {
+      "type": "object",
+      "properties": {
+        "sources": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string",
+                "enum": ["free", "licensed"]
+              },
+              "priority": {
+                "type": "integer"
+              },
+              "api_endpoint": {
+                "type": "string",
+                "format": "uri"
+              },
+              "cache_ttl_seconds": {
+                "type": "integer",
+                "minimum": 0
+              }
+            }
+          }
+        },
+        "version_control": {
+          "type": "object",
+          "properties": {
+            "gwp_set": {
+              "type": "string",
+              "enum": ["AR4", "AR5", "AR6"]
+            },
+            "track_updates": {
+              "type": "boolean"
+            }
+          }
+        }
+      }
+    },
+    "entity_mdm_config": {
+      "type": "object",
+      "properties": {
+        "identifiers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": ["LEI", "DUNS", "OpenCorporates", "VAT", "Custom"]
+              },
+              "enabled": {
+                "type": "boolean"
+              },
+              "api_config": {
+                "type": "object",
+                "properties": {
+                  "endpoint": {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "rate_limit": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "matching_thresholds": {
+          "type": "object",
+          "properties": {
+            "auto_match": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "default": 0.9
+            },
+            "human_review": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "default": 0.7
+            }
+          }
+        }
+      }
+    },
+    "pcf_exchange_config": {
+      "type": "object",
+      "properties": {
+        "standards": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["PACT_Pathfinder_v2", "Catena_X", "SAP_SDX"]
+          }
+        },
+        "validation": {
+          "type": "object",
+          "properties": {
+            "schema_validation": {
+              "type": "boolean",
+              "default": true
+            },
+            "completeness_check": {
+              "type": "boolean",
+              "default": true
+            },
+            "plausibility_check": {
+              "type": "boolean",
+              "default": true
+            }
+          }
+        },
+        "target_coverage": {
+          "type": "object",
+          "properties": {
+            "category_1_spend_percentage": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100,
+              "default": 30
+            },
+            "timeline_months": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 24,
+              "default": 6
+            }
+          }
+        }
+      }
+    },
+    "data_quality_scoring": {
+      "type": "object",
+      "properties": {
+        "method": {
+          "type": "string",
+          "enum": ["ILCD_pedigree", "custom", "hybrid"]
+        },
+        "dimensions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "weight": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "scoring_scale": {
+                "type": "object",
+                "properties": {
+                  "min": {
+                    "type": "number"
+                  },
+                  "max": {
+                    "type": "number"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "category_1_params": {
+      "type": "object",
+      "properties": {
+        "product_categories": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "spend_threshold": {
+          "type": "number",
+          "minimum": 0
+        },
+        "pcf_priority_suppliers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "category_4_params": {
+      "type": "object",
+      "properties": {
+        "transport_modes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["road", "rail", "air", "sea", "inland_waterway", "pipeline"]
+          }
+        },
+        "iso_14083_conformance": {
+          "type": "boolean",
+          "default": true
+        },
+        "distance_calculation_method": {
+          "type": "string",
+          "enum": ["great_circle", "actual_route", "estimated"]
+        }
+      }
+    },
+    "category_6_params": {
+      "type": "object",
+      "properties": {
+        "travel_types": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["air", "rail", "road", "hotel", "other"]
+          }
+        },
+        "data_sources": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["expense_reports", "travel_portal", "corporate_card", "manual"]
+          }
+        },
+        "emission_class_mapping": {
+          "type": "object",
+          "properties": {
+            "economy": {
+              "type": "number"
+            },
+            "business": {
+              "type": "number"
+            },
+            "first": {
+              "type": "number"
+            }
+          }
+        }
+      }
+    }
+  }
+}

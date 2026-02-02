@@ -1,0 +1,28 @@
+{
+  "valid": false,
+  "schema_ref": {
+    "schema_id": "gl://schemas/test/numeric_constraints",
+    "version": "1.0.0"
+  },
+  "summary": {
+    "error_count": 1,
+    "warning_count": 0,
+    "info_count": 0,
+    "total_findings": 1
+  },
+  "findings": [
+    {
+      "code": "GLSCHEMA-E200",
+      "severity": "error",
+      "path": "/temperature",
+      "message": "Value -300 is below minimum -273.15",
+      "expected": {
+        "minimum": -273.15,
+        "maximum": 1000
+      },
+      "actual": {
+        "value": -300
+      }
+    }
+  ]
+}

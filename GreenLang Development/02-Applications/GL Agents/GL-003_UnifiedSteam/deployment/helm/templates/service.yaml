@@ -1,0 +1,54 @@
+{{/*
+GL-003 UNIFIEDSTEAM - Service Template
+*/}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "unifiedsteam.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "unifiedsteam.labels" . | nindent 4 }}
+  {{- with .Values.service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ .Values.service.type }}
+  selector:
+    {{- include "unifiedsteam.selectorLabels" . | nindent 4 }}
+  ports:
+    - name: http
+      port: {{ .Values.service.http.port }}
+      targetPort: {{ .Values.service.http.targetPort }}
+      protocol: TCP
+    - name: grpc
+      port: {{ .Values.service.grpc.port }}
+      targetPort: {{ .Values.service.grpc.targetPort }}
+      protocol: TCP
+    - name: metrics
+      port: {{ .Values.service.metrics.port }}
+      targetPort: {{ .Values.service.metrics.targetPort }}
+      protocol: TCP
+---
+{{/*
+Headless service for direct pod access
+*/}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "unifiedsteam.fullname" . }}-headless
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "unifiedsteam.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  clusterIP: None
+  selector:
+    {{- include "unifiedsteam.selectorLabels" . | nindent 4 }}
+  ports:
+    - name: http
+      port: {{ .Values.containerPorts.http }}
+      targetPort: http
+    - name: grpc
+      port: {{ .Values.containerPorts.grpc }}
+      targetPort: grpc

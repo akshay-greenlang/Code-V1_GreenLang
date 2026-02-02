@@ -1,0 +1,69 @@
+{
+  "description": "Portfolio of boilers for large campus",
+  "boilers": [
+    {
+      "id": "boiler_1",
+      "name": "Main Building Boiler",
+      "input": {
+        "boiler_type": "condensing",
+        "fuel_type": "natural_gas",
+        "thermal_output": {"value": 1000, "unit": "MMBtu"},
+        "efficiency": 0.92,
+        "age": "new",
+        "country": "US"
+      }
+    },
+    {
+      "id": "boiler_2",
+      "name": "Science Lab Boiler",
+      "input": {
+        "boiler_type": "standard",
+        "fuel_type": "natural_gas",
+        "thermal_output": {"value": 500, "unit": "MMBtu"},
+        "efficiency": 0.78,
+        "age": "medium",
+        "country": "US"
+      }
+    },
+    {
+      "id": "boiler_3",
+      "name": "Dormitory Heat Pump",
+      "input": {
+        "boiler_type": "heat_pump",
+        "fuel_type": "electricity",
+        "thermal_output": {"value": 500000, "unit": "kWh"},
+        "efficiency": 3.2,
+        "age": "new",
+        "country": "US"
+      }
+    },
+    {
+      "id": "boiler_4",
+      "name": "Backup Oil Boiler",
+      "input": {
+        "boiler_type": "standard",
+        "fuel_type": "oil",
+        "fuel_consumption": {"value": 1000, "unit": "gallons"},
+        "efficiency": 0.75,
+        "age": "old",
+        "country": "US"
+      }
+    }
+  ],
+  "aggregation": {
+    "total_thermal_output_mmbtu": 2879.86,
+    "total_fuel_consumption_mmbtu": 3397.45,
+    "average_efficiency": 0.847,
+    "recommendations": [
+      "Replace backup oil boiler with natural gas",
+      "Upgrade Science Lab boiler to condensing model",
+      "Optimize heat pump operation schedules"
+    ]
+  },
+  "metadata": {
+    "test_case": "campus_boiler_portfolio",
+    "category": "thermal_systems",
+    "building_count": 4,
+    "priority": "high"
+  }
+}

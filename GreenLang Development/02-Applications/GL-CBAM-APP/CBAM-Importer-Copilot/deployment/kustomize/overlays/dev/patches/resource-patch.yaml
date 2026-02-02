@@ -1,0 +1,22 @@
+# ============================================================================
+# Development Environment - Resource Patch
+# ============================================================================
+# Set resources to standard tier (1 CPU / 1GB)
+# ============================================================================
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cbam-api
+spec:
+  template:
+    spec:
+      containers:
+        - name: api
+          resources:
+            requests:
+              cpu: "1000m"
+              memory: "1Gi"
+            limits:
+              cpu: "1000m"
+              memory: "1Gi"

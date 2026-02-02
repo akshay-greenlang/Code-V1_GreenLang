@@ -1,0 +1,613 @@
+Run started:2025-11-07 09:47:33.246898
+
+Test results:
+>> Issue: [B411:blacklist] Using xmlrpc.client to parse untrusted XML data is known to be vulnerable to XML attacks. Use defusedxml.xmlrpc.monkey_patch() function to monkey-patch xmlrpclib and mitigate XML vulnerabilities.
+   Severity: High   Confidence: High
+   CWE: CWE-20 (https://cwe.mitre.org/data/definitions/20.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/blacklists/blacklist_imports.html#b411-import-xmlrpclib
+   Location: core\greenlang\packs\installer.py:496:12
+495	        try:
+496	            import xmlrpc.client
+497	
+
+--------------------------------------------------
+>> Issue: [B202:tarfile_unsafe_members] tarfile.extractall used without any validation. Please check and discard dangerous members.
+   Severity: High   Confidence: High
+   CWE: CWE-22 (https://cwe.mitre.org/data/definitions/22.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b202_tarfile_unsafe_members.html
+   Location: core\greenlang\packs\loader.py:187:16
+186	            with tarfile.open(archive_path, "r:gz") as tar:
+187	                tar.extractall(extract_dir)
+188	
+
+--------------------------------------------------
+>> Issue: [B102:exec_used] Use of exec detected.
+   Severity: Medium   Confidence: High
+   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b102_exec_used.html
+   Location: core\greenlang\runtime\executor.py:706:8
+705	        # Execute code
+706	        exec(code, namespace)
+707	
+
+--------------------------------------------------
+>> Issue: [B104:hardcoded_bind_all_interfaces] Possible binding to all interfaces.
+   Severity: Medium   Confidence: Medium
+   CWE: CWE-605 (https://cwe.mitre.org/data/definitions/605.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b104_hardcoded_bind_all_interfaces.html
+   Location: core\greenlang\security\network.py:121:58
+120	        hostname = parsed.hostname.lower()
+121	        private_hosts = ["localhost", "127.0.0.1", "::1", "0.0.0.0"]
+122	
+
+--------------------------------------------------
+>> Issue: [B202:tarfile_unsafe_members] tarfile.extractall used without any validation. Please check and discard dangerous members.
+   Severity: High   Confidence: High
+   CWE: CWE-22 (https://cwe.mitre.org/data/definitions/22.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b202_tarfile_unsafe_members.html
+   Location: core\greenlang\security\paths.py:111:8
+110	        # All checks passed, extract
+111	        tar.extractall(extract_path)
+112	        logger.info(f"Safely extracted tar archive to: {extract_path}")
+
+--------------------------------------------------
+>> Issue: [B202:tarfile_unsafe_members] tarfile.extractall used without any validation. Please check and discard dangerous members.
+   Severity: High   Confidence: High
+   CWE: CWE-22 (https://cwe.mitre.org/data/definitions/22.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b202_tarfile_unsafe_members.html
+   Location: core\greenlang\security\paths.py:148:8
+147	        # All checks passed, extract
+148	        zip_ref.extractall(extract_path)
+149	        logger.info(f"Safely extracted zip archive to: {extract_path}")
+
+--------------------------------------------------
+>> Issue: [B324:hashlib] Use of weak MD5 hash for security. Consider usedforsecurity=False
+   Severity: High   Confidence: High
+   CWE: CWE-327 (https://cwe.mitre.org/data/definitions/327.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b324_hashlib.html
+   Location: greenlang\cli\complete_cli.py:524:32
+523	                    }
+524	                    cache_key = hashlib.md5(
+525	                        json.dumps(cache_data, sort_keys=True).encode()
+526	                    ).hexdigest()
+527	                    cache_file = CACHE_DIR / f"{cache_key}.pkl"
+
+--------------------------------------------------
+>> Issue: [B301:blacklist] Pickle and modules that wrap it can be unsafe when used to deserialize untrusted data, possible security issue.
+   Severity: Medium   Confidence: High
+   CWE: CWE-502 (https://cwe.mitre.org/data/definitions/502.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/blacklists/blacklist_calls.html#b301-pickle
+   Location: greenlang\cli\complete_cli.py:532:44
+531	                        with open(cache_file, "rb") as f:
+532	                            cached_result = pickle.load(f)
+533	                            results[step.name] = cached_result
+
+--------------------------------------------------
+>> Issue: [B605:start_process_with_a_shell] Starting a process with a shell, possible injection detected, security issue.
+   Severity: High   Confidence: High
+   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b605_start_process_with_a_shell.html
+   Location: greenlang\cli\dev_interface.py:2733:8
+2732	
+2733	        os.system("cls" if os.name == "nt" else "clear")
+2734	        self.show_welcome()
+
+--------------------------------------------------
+>> Issue: [B324:hashlib] Use of weak MD5 hash for security. Consider usedforsecurity=False
+   Severity: High   Confidence: High
+   CWE: CWE-327 (https://cwe.mitre.org/data/definitions/327.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b324_hashlib.html
+   Location: greenlang\core\artifact_manager.py:212:15
+211	        # Create a short hash for the ID
+212	        return hashlib.md5(id_string.encode()).hexdigest()[:12]
+213	
+
+--------------------------------------------------
+>> Issue: [B202:tarfile_unsafe_members] tarfile.extractall used without any validation. Please check and discard dangerous members.
+   Severity: High   Confidence: High
+   CWE: CWE-22 (https://cwe.mitre.org/data/definitions/22.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b202_tarfile_unsafe_members.html
+   Location: greenlang\hub\archive.py:159:12
+158	            # Extract all
+159	            tar.extractall(output_dir)
+160	
+
+--------------------------------------------------
+>> Issue: [B615:huggingface_unsafe_download] Unsafe Hugging Face Hub download without revision pinning in from_pretrained()
+   Severity: Medium   Confidence: High
+   CWE: CWE-494 (https://cwe.mitre.org/data/definitions/494.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b615_huggingface_unsafe_download.html
+   Location: greenlang\intelligence\rag\chunker.py:80:34
+79	                # Use all-MiniLM-L6-v2 tokenizer (matches embedding model)
+80	                self._tokenizer = AutoTokenizer.from_pretrained(
+81	                    "sentence-transformers/all-MiniLM-L6-v2"
+82	                )
+83	                logger.info("Initialized HuggingFace tokenizer (all-MiniLM-L6-v2)")
+
+--------------------------------------------------
+>> Issue: [B104:hardcoded_bind_all_interfaces] Possible binding to all interfaces.
+   Severity: Medium   Confidence: Medium
+   CWE: CWE-605 (https://cwe.mitre.org/data/definitions/605.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b104_hardcoded_bind_all_interfaces.html
+   Location: greenlang\intelligence\rag\sanitize.py:151:12
+150	            "127.0.0.1",
+151	            "0.0.0.0",
+152	            "169.254.",  # Link-local
+153	            "192.168.",  # Private network
+154	            "10.",  # Private network
+155	        ]
+156	
+157	        for dangerous in dangerous_hosts:
+158	            if dangerous in netloc:
+159	                return "gl://blocked/private_network"
+
+--------------------------------------------------
+>> Issue: [B301:blacklist] Pickle and modules that wrap it can be unsafe when used to deserialize untrusted data, possible security issue.
+   Severity: Medium   Confidence: High
+   CWE: CWE-502 (https://cwe.mitre.org/data/definitions/502.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/blacklists/blacklist_calls.html#b301-pickle
+   Location: greenlang\intelligence\rag\vector_stores.py:423:23
+422	            # NOTE: We control this data, but should validate it
+423	            metadata = pickle.load(f)
+424	
+
+--------------------------------------------------
+>> Issue: [B324:hashlib] Use of weak MD5 hash for security. Consider usedforsecurity=False
+   Severity: High   Confidence: High
+   CWE: CWE-327 (https://cwe.mitre.org/data/definitions/327.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b324_hashlib.html
+   Location: greenlang\middleware\rate_limiter.py:111:15
+110	        client_id = ":".join(parts) if parts else "global"
+111	        return hashlib.md5(client_id.encode()).hexdigest()
+112	
+
+--------------------------------------------------
+>> Issue: [B104:hardcoded_bind_all_interfaces] Possible binding to all interfaces.
+   Severity: Medium   Confidence: Medium
+   CWE: CWE-605 (https://cwe.mitre.org/data/definitions/605.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b104_hardcoded_bind_all_interfaces.html
+   Location: greenlang\monitoring\health.py:747:45
+746	        app = create_fastapi_health_app(health_checker)
+747	        return lambda: uvicorn.run(app, host="0.0.0.0", port=port)
+748	
+
+--------------------------------------------------
+>> Issue: [B104:hardcoded_bind_all_interfaces] Possible binding to all interfaces.
+   Severity: Medium   Confidence: Medium
+   CWE: CWE-605 (https://cwe.mitre.org/data/definitions/605.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b104_hardcoded_bind_all_interfaces.html
+   Location: greenlang\monitoring\health.py:751:36
+750	        app = create_flask_health_app(health_checker)
+751	        return lambda: app.run(host="0.0.0.0", port=port)
+752	
+
+--------------------------------------------------
+>> Issue: [B411:blacklist] Using xmlrpc.client to parse untrusted XML data is known to be vulnerable to XML attacks. Use defusedxml.xmlrpc.monkey_patch() function to monkey-patch xmlrpclib and mitigate XML vulnerabilities.
+   Severity: High   Confidence: High
+   CWE: CWE-20 (https://cwe.mitre.org/data/definitions/20.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/blacklists/blacklist_imports.html#b411-import-xmlrpclib
+   Location: greenlang\packs\installer.py:620:12
+619	        try:
+620	            import xmlrpc.client
+621	
+
+--------------------------------------------------
+>> Issue: [B202:tarfile_unsafe_members] tarfile.extractall used without any validation. Please check and discard dangerous members.
+   Severity: High   Confidence: High
+   CWE: CWE-22 (https://cwe.mitre.org/data/definitions/22.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b202_tarfile_unsafe_members.html
+   Location: greenlang\packs\loader.py:187:16
+186	            with tarfile.open(archive_path, "r:gz") as tar:
+187	                tar.extractall(extract_dir)
+188	
+
+--------------------------------------------------
+>> Issue: [B324:hashlib] Use of weak MD5 hash for security. Consider usedforsecurity=False
+   Severity: High   Confidence: High
+   CWE: CWE-327 (https://cwe.mitre.org/data/definitions/327.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b324_hashlib.html
+   Location: greenlang\provenance\hashing.py:71:17
+70	    elif algorithm == "md5":
+71	        hasher = hashlib.md5()
+72	    else:
+
+--------------------------------------------------
+>> Issue: [B324:hashlib] Use of weak MD5 hash for security. Consider usedforsecurity=False
+   Severity: High   Confidence: High
+   CWE: CWE-327 (https://cwe.mitre.org/data/definitions/327.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b324_hashlib.html
+   Location: greenlang\provenance\hashing.py:122:17
+121	    elif algorithm == "md5":
+122	        hasher = hashlib.md5()
+123	    else:
+
+--------------------------------------------------
+>> Issue: [B202:tarfile_unsafe_members] tarfile.extractall used without any validation. Please check and discard dangerous members.
+   Severity: High   Confidence: High
+   CWE: CWE-22 (https://cwe.mitre.org/data/definitions/22.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b202_tarfile_unsafe_members.html
+   Location: greenlang\registry\oci_client.py:516:16
+515	            with tarfile.open(tmp.name, "r:gz") as tar:
+516	                tar.extractall(pack_dir)
+517	
+
+--------------------------------------------------
+>> Issue: [B108:hardcoded_tmp_directory] Probable insecure usage of temp file/directory.
+   Severity: Medium   Confidence: Medium
+   CWE: CWE-377 (https://cwe.mitre.org/data/definitions/377.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b108_hardcoded_tmp_directory.html
+   Location: greenlang\runtime\backends\docker.py:359:37
+358	        temp_dir = tempfile.mkdtemp(prefix="greenlang-")
+359	        volumes[temp_dir] = {"bind": "/tmp/outputs", "mode": "rw"}
+360	
+
+--------------------------------------------------
+>> Issue: [B108:hardcoded_tmp_directory] Probable insecure usage of temp file/directory.
+   Severity: Medium   Confidence: Medium
+   CWE: CWE-377 (https://cwe.mitre.org/data/definitions/377.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b108_hardcoded_tmp_directory.html
+   Location: greenlang\runtime\backends\docker.py:492:41
+491	            temp_dir = tempfile.mkdtemp(prefix="greenlang-isolated-")
+492	            volumes[temp_dir] = {"bind": "/tmp/workspace", "mode": "rw"}
+493	            return volumes
+
+--------------------------------------------------
+>> Issue: [B108:hardcoded_tmp_directory] Probable insecure usage of temp file/directory.
+   Severity: Medium   Confidence: Medium
+   CWE: CWE-377 (https://cwe.mitre.org/data/definitions/377.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b108_hardcoded_tmp_directory.html
+   Location: greenlang\runtime\backends\docker.py:526:37
+525	        temp_dir = tempfile.mkdtemp(prefix="greenlang-")
+526	        volumes[temp_dir] = {"bind": "/tmp/outputs", "mode": "rw"}
+527	
+
+--------------------------------------------------
+>> Issue: [B108:hardcoded_tmp_directory] Probable insecure usage of temp file/directory.
+   Severity: Medium   Confidence: Medium
+   CWE: CWE-377 (https://cwe.mitre.org/data/definitions/377.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b108_hardcoded_tmp_directory.html
+   Location: greenlang\runtime\backends\docker.py:545:64
+544	            write_paths = fs_cap.get("write_paths", [])
+545	            if any(path.startswith("/") and not path.startswith("/tmp") for path in write_paths):
+546	                return False
+
+--------------------------------------------------
+>> Issue: [B108:hardcoded_tmp_directory] Probable insecure usage of temp file/directory.
+   Severity: Medium   Confidence: Medium
+   CWE: CWE-377 (https://cwe.mitre.org/data/definitions/377.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b108_hardcoded_tmp_directory.html
+   Location: greenlang\runtime\backends\k8s.py:708:39
+707	            # If any write path is not under /tmp, need writable root
+708	            if any(not path.startswith("/tmp") for path in write_paths if path):
+709	                return False
+
+--------------------------------------------------
+>> Issue: [B602:subprocess_popen_with_shell_equals_true] subprocess call with shell=True identified, security issue.
+   Severity: High   Confidence: High
+   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b602_subprocess_popen_with_shell_equals_true.html
+   Location: greenlang\runtime\backends\local.py:165:26
+164	                    stderr=stderr,
+165	                    shell=self.use_shell,
+166	                )
+167	
+168	                # Track process
+169	                self.processes[step_id] = {
+170	                    "process": process,
+171	                    "step": step.name,
+172	                    "stdout_file": stdout_file,
+173	                    "stderr_file": stderr_file,
+
+--------------------------------------------------
+>> Issue: [B102:exec_used] Use of exec detected.
+   Severity: Medium   Confidence: High
+   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b102_exec_used.html
+   Location: greenlang\runtime\executor.py:759:8
+758	        # Execute code
+759	        exec(code, namespace)
+760	
+
+--------------------------------------------------
+>> Issue: [B301:blacklist] Pickle and modules that wrap it can be unsafe when used to deserialize untrusted data, possible security issue.
+   Severity: Medium   Confidence: High
+   CWE: CWE-502 (https://cwe.mitre.org/data/definitions/502.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/blacklists/blacklist_calls.html#b301-pickle
+   Location: greenlang\sandbox\__init__.py:358:23
+357	                result_data = base64.b64decode(line[17:])
+358	                return pickle.loads(result_data)
+359	            elif line.startswith("GREENLANG_ERROR:"):
+
+--------------------------------------------------
+>> Issue: [B301:blacklist] Pickle and modules that wrap it can be unsafe when used to deserialize untrusted data, possible security issue.
+   Severity: Medium   Confidence: High
+   CWE: CWE-502 (https://cwe.mitre.org/data/definitions/502.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/blacklists/blacklist_calls.html#b301-pickle
+   Location: greenlang\sandbox\__init__.py:361:24
+360	                error_data = base64.b64decode(line[16:])
+361	                error = pickle.loads(error_data)
+362	                raise error
+
+--------------------------------------------------
+>> Issue: [B108:hardcoded_tmp_directory] Probable insecure usage of temp file/directory.
+   Severity: Medium   Confidence: Medium
+   CWE: CWE-377 (https://cwe.mitre.org/data/definitions/377.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b108_hardcoded_tmp_directory.html
+   Location: greenlang\sandbox\__init__.py:396:42
+395	        allowed_capabilities=DATA_PROCESSING_POLICY.allowed_capabilities.copy(),
+396	        allowed_read_paths=read_paths or ["/tmp"],
+397	        allowed_write_paths=write_paths or ["/tmp"],
+
+--------------------------------------------------
+>> Issue: [B108:hardcoded_tmp_directory] Probable insecure usage of temp file/directory.
+   Severity: Medium   Confidence: Medium
+   CWE: CWE-377 (https://cwe.mitre.org/data/definitions/377.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b108_hardcoded_tmp_directory.html
+   Location: greenlang\sandbox\__init__.py:397:44
+396	        allowed_read_paths=read_paths or ["/tmp"],
+397	        allowed_write_paths=write_paths or ["/tmp"],
+398	        max_memory_mb=1024,
+
+--------------------------------------------------
+>> Issue: [B108:hardcoded_tmp_directory] Probable insecure usage of temp file/directory.
+   Severity: Medium   Confidence: Medium
+   CWE: CWE-377 (https://cwe.mitre.org/data/definitions/377.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b108_hardcoded_tmp_directory.html
+   Location: greenlang\sandbox\capabilities.py:262:24
+261	    },
+262	    allowed_read_paths=["/tmp", "/var/tmp"],
+263	    max_memory_mb=1024,
+
+--------------------------------------------------
+>> Issue: [B108:hardcoded_tmp_directory] Probable insecure usage of temp file/directory.
+   Severity: Medium   Confidence: Medium
+   CWE: CWE-377 (https://cwe.mitre.org/data/definitions/377.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b108_hardcoded_tmp_directory.html
+   Location: greenlang\sandbox\capabilities.py:262:32
+261	    },
+262	    allowed_read_paths=["/tmp", "/var/tmp"],
+263	    max_memory_mb=1024,
+
+--------------------------------------------------
+>> Issue: [B108:hardcoded_tmp_directory] Probable insecure usage of temp file/directory.
+   Severity: Medium   Confidence: Medium
+   CWE: CWE-377 (https://cwe.mitre.org/data/definitions/377.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b108_hardcoded_tmp_directory.html
+   Location: greenlang\sandbox\capabilities.py:281:25
+280	    allowed_read_paths=["/"],
+281	    allowed_write_paths=["/tmp", "/var/tmp"],
+282	    allowed_hosts=["*"],
+
+--------------------------------------------------
+>> Issue: [B108:hardcoded_tmp_directory] Probable insecure usage of temp file/directory.
+   Severity: Medium   Confidence: Medium
+   CWE: CWE-377 (https://cwe.mitre.org/data/definitions/377.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b108_hardcoded_tmp_directory.html
+   Location: greenlang\sandbox\capabilities.py:281:33
+280	    allowed_read_paths=["/"],
+281	    allowed_write_paths=["/tmp", "/var/tmp"],
+282	    allowed_hosts=["*"],
+
+--------------------------------------------------
+>> Issue: [B108:hardcoded_tmp_directory] Probable insecure usage of temp file/directory.
+   Severity: Medium   Confidence: Medium
+   CWE: CWE-377 (https://cwe.mitre.org/data/definitions/377.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b108_hardcoded_tmp_directory.html
+   Location: greenlang\sandbox\example_usage.py:88:50
+87	        config = create_default_config()
+88	        config.filesystem.read_write_paths.append("/tmp")
+89	
+
+--------------------------------------------------
+>> Issue: [B108:hardcoded_tmp_directory] Probable insecure usage of temp file/directory.
+   Severity: Medium   Confidence: Medium
+   CWE: CWE-377 (https://cwe.mitre.org/data/definitions/377.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b108_hardcoded_tmp_directory.html
+   Location: greenlang\sandbox\example_usage.py:196:39
+195	                "allow": True,
+196	                "read": {"allowlist": ["/tmp/**"]},
+197	                "write": {"allowlist": ["/tmp/**"]}
+
+--------------------------------------------------
+>> Issue: [B108:hardcoded_tmp_directory] Probable insecure usage of temp file/directory.
+   Severity: Medium   Confidence: Medium
+   CWE: CWE-377 (https://cwe.mitre.org/data/definitions/377.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b108_hardcoded_tmp_directory.html
+   Location: greenlang\sandbox\example_usage.py:197:40
+196	                "read": {"allowlist": ["/tmp/**"]},
+197	                "write": {"allowlist": ["/tmp/**"]}
+198	            },
+
+--------------------------------------------------
+>> Issue: [B301:blacklist] Pickle and modules that wrap it can be unsafe when used to deserialize untrusted data, possible security issue.
+   Severity: Medium   Confidence: High
+   CWE: CWE-502 (https://cwe.mitre.org/data/definitions/502.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/blacklists/blacklist_calls.html#b301-pickle
+   Location: greenlang\sandbox\os_sandbox.py:487:23
+486	            if line.startswith('RESULT:'):
+487	                return pickle.loads(base64.b64decode(line[7:]))
+488	            elif line.startswith('ERROR:'):
+
+--------------------------------------------------
+>> Issue: [B301:blacklist] Pickle and modules that wrap it can be unsafe when used to deserialize untrusted data, possible security issue.
+   Severity: Medium   Confidence: High
+   CWE: CWE-502 (https://cwe.mitre.org/data/definitions/502.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/blacklists/blacklist_calls.html#b301-pickle
+   Location: greenlang\sandbox\os_sandbox.py:489:24
+488	            elif line.startswith('ERROR:'):
+489	                error = pickle.loads(base64.b64decode(line[6:]))
+490	                raise error
+
+--------------------------------------------------
+>> Issue: [B301:blacklist] Pickle and modules that wrap it can be unsafe when used to deserialize untrusted data, possible security issue.
+   Severity: Medium   Confidence: High
+   CWE: CWE-502 (https://cwe.mitre.org/data/definitions/502.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/blacklists/blacklist_calls.html#b301-pickle
+   Location: greenlang\sandbox\os_sandbox.py:682:23
+681	            if line.startswith('RESULT:'):
+682	                return pickle.loads(base64.b64decode(line[7:]))
+683	            elif line.startswith('ERROR:'):
+
+--------------------------------------------------
+>> Issue: [B301:blacklist] Pickle and modules that wrap it can be unsafe when used to deserialize untrusted data, possible security issue.
+   Severity: Medium   Confidence: High
+   CWE: CWE-502 (https://cwe.mitre.org/data/definitions/502.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/blacklists/blacklist_calls.html#b301-pickle
+   Location: greenlang\sandbox\os_sandbox.py:684:24
+683	            elif line.startswith('ERROR:'):
+684	                error = pickle.loads(base64.b64decode(line[6:]))
+685	                raise error
+
+--------------------------------------------------
+>> Issue: [B108:hardcoded_tmp_directory] Probable insecure usage of temp file/directory.
+   Severity: Medium   Confidence: Medium
+   CWE: CWE-377 (https://cwe.mitre.org/data/definitions/377.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b108_hardcoded_tmp_directory.html
+   Location: greenlang\sandbox\os_sandbox.py:778:23
+777	            "--read-only",  # Read-only filesystem
+778	            "--tmpfs", "/tmp",  # Writable /tmp
+779	            "--network", "none" if not self.config.network.allow_network else "default",
+780	            "--cap-drop", "ALL",  # Drop all capabilities
+781	            "--security-opt", "no-new-privileges",  # No privilege escalation
+782	        ]
+783	
+784	        # Add resource limits
+785	        if self.config.limits.memory_limit_bytes:
+786	            cmd.extend(["--memory", str(self.config.limits.memory_limit_bytes)])
+787	
+
+--------------------------------------------------
+>> Issue: [B301:blacklist] Pickle and modules that wrap it can be unsafe when used to deserialize untrusted data, possible security issue.
+   Severity: Medium   Confidence: High
+   CWE: CWE-502 (https://cwe.mitre.org/data/definitions/502.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/blacklists/blacklist_calls.html#b301-pickle
+   Location: greenlang\sandbox\os_sandbox.py:808:23
+807	            if line.startswith('RESULT:'):
+808	                return pickle.loads(base64.b64decode(line[7:]))
+809	            elif line.startswith('ERROR:'):
+
+--------------------------------------------------
+>> Issue: [B301:blacklist] Pickle and modules that wrap it can be unsafe when used to deserialize untrusted data, possible security issue.
+   Severity: Medium   Confidence: High
+   CWE: CWE-502 (https://cwe.mitre.org/data/definitions/502.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/blacklists/blacklist_calls.html#b301-pickle
+   Location: greenlang\sandbox\os_sandbox.py:810:24
+809	            elif line.startswith('ERROR:'):
+810	                error = pickle.loads(base64.b64decode(line[6:]))
+811	                raise error
+
+--------------------------------------------------
+>> Issue: [B108:hardcoded_tmp_directory] Probable insecure usage of temp file/directory.
+   Severity: Medium   Confidence: Medium
+   CWE: CWE-377 (https://cwe.mitre.org/data/definitions/377.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b108_hardcoded_tmp_directory.html
+   Location: greenlang\sandbox\os_sandbox.py:888:27
+887	                "--read-only",
+888	                "--tmpfs", "/tmp",
+889	                "--network", "none" if not self.config.network.allow_network else "default",
+890	                "--cap-drop", "ALL",
+891	                "--security-opt", "no-new-privileges",
+892	                "-v", f"{temp_dir}:/sandbox:ro",
+893	                self.config.container_image,
+894	                "python3", "/sandbox/execute.py"
+895	            ]
+896	
+897	            result = subprocess.run(
+898	                cmd,
+899	                capture_output=True,
+900	                text=True,
+901	                timeout=self.config.execution_timeout or 300
+
+--------------------------------------------------
+>> Issue: [B301:blacklist] Pickle and modules that wrap it can be unsafe when used to deserialize untrusted data, possible security issue.
+   Severity: Medium   Confidence: High
+   CWE: CWE-502 (https://cwe.mitre.org/data/definitions/502.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/blacklists/blacklist_calls.html#b301-pickle
+   Location: greenlang\sandbox\os_sandbox.py:907:27
+906	                if line.startswith('RESULT:'):
+907	                    return pickle.loads(base64.b64decode(line[7:]))
+908	                elif line.startswith('ERROR:'):
+
+--------------------------------------------------
+>> Issue: [B301:blacklist] Pickle and modules that wrap it can be unsafe when used to deserialize untrusted data, possible security issue.
+   Severity: Medium   Confidence: High
+   CWE: CWE-502 (https://cwe.mitre.org/data/definitions/502.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/blacklists/blacklist_calls.html#b301-pickle
+   Location: greenlang\sandbox\os_sandbox.py:909:28
+908	                elif line.startswith('ERROR:'):
+909	                    error = pickle.loads(base64.b64decode(line[6:]))
+910	                    raise error
+
+--------------------------------------------------
+>> Issue: [B108:hardcoded_tmp_directory] Probable insecure usage of temp file/directory.
+   Severity: Medium   Confidence: Medium
+   CWE: CWE-377 (https://cwe.mitre.org/data/definitions/377.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b108_hardcoded_tmp_directory.html
+   Location: greenlang\sandbox\os_sandbox.py:960:30
+959	            create_temp_root=True,
+960	            read_write_paths=["/tmp"],
+961	            blocked_paths=["/proc", "/sys", "/dev", "/boot", "/root", "/home", "/etc"]
+
+--------------------------------------------------
+>> Issue: [B104:hardcoded_bind_all_interfaces] Possible binding to all interfaces.
+   Severity: Medium   Confidence: Medium
+   CWE: CWE-605 (https://cwe.mitre.org/data/definitions/605.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b104_hardcoded_bind_all_interfaces.html
+   Location: greenlang\security\network.py:121:58
+120	        hostname = parsed.hostname.lower()
+121	        private_hosts = ["localhost", "127.0.0.1", "::1", "0.0.0.0"]
+122	
+
+--------------------------------------------------
+>> Issue: [B202:tarfile_unsafe_members] tarfile.extractall used without any validation. Please check and discard dangerous members.
+   Severity: High   Confidence: High
+   CWE: CWE-22 (https://cwe.mitre.org/data/definitions/22.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b202_tarfile_unsafe_members.html
+   Location: greenlang\security\paths.py:111:8
+110	        # All checks passed, extract
+111	        tar.extractall(extract_path)
+112	        logger.info(f"Safely extracted tar archive to: {extract_path}")
+
+--------------------------------------------------
+>> Issue: [B202:tarfile_unsafe_members] tarfile.extractall used without any validation. Please check and discard dangerous members.
+   Severity: High   Confidence: High
+   CWE: CWE-22 (https://cwe.mitre.org/data/definitions/22.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b202_tarfile_unsafe_members.html
+   Location: greenlang\security\paths.py:148:8
+147	        # All checks passed, extract
+148	        zip_ref.extractall(extract_path)
+149	        logger.info(f"Safely extracted zip archive to: {extract_path}")
+
+--------------------------------------------------
+>> Issue: [B108:hardcoded_tmp_directory] Probable insecure usage of temp file/directory.
+   Severity: Medium   Confidence: Medium
+   CWE: CWE-377 (https://cwe.mitre.org/data/definitions/377.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b108_hardcoded_tmp_directory.html
+   Location: greenlang\utils\environment.py:294:12
+293	        allowed_prefixes = [
+294	            "/tmp/",
+295	            "/var/log/greenlang/",
+296	            "/opt/greenlang/data/"
+297	        ]
+298	
+299	        return any(path.startswith(prefix) for prefix in allowed_prefixes)
+
+--------------------------------------------------
+
+Code scanned:
+	Total lines of code: 111983
+	Total lines skipped (#nosec): 0
+	Total potential issues skipped due to specifically being disabled (e.g., #nosec BXXX): 0
+
+Run metrics:
+	Total issues (by severity):
+		Undefined: 0
+		Low: 178
+		Medium: 38
+		High: 17
+	Total issues (by confidence):
+		Undefined: 0
+		Low: 0
+		Medium: 29
+		High: 204
+Files skipped (0):

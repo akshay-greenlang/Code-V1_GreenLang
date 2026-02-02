@@ -1,0 +1,62 @@
+# GL-001 ThermalCommand Pod Disruption Budget
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: gl-001-thermalcommand-pdb
+  namespace: greenlang
+  labels:
+    app: gl-001-thermalcommand
+    agent-id: GL-001
+    codename: THERMALCOMMAND
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: gl-001-thermalcommand
+---
+# Network Policy for GL-001
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: gl-001-thermalcommand-network-policy
+  namespace: greenlang
+  labels:
+    app: gl-001-thermalcommand
+    agent-id: GL-001
+spec:
+  podSelector:
+    matchLabels:
+      app: gl-001-thermalcommand
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: greenlang
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+      ports:
+        - protocol: TCP
+          port: 8080
+        - protocol: TCP
+          port: 9090
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: greenlang
+      ports:
+        - protocol: TCP
+          port: 5432
+        - protocol: TCP
+          port: 6379
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 443

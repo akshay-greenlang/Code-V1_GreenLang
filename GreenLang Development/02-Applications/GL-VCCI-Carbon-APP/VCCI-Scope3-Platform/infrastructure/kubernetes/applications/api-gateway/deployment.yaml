@@ -1,0 +1,225 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vcci-api-gateway
+  namespace: vcci-platform
+  labels:
+    app: vcci-api-gateway
+    component: gateway
+    tier: frontend
+    version: v1
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: vcci-api-gateway
+  template:
+    metadata:
+      labels:
+        app: vcci-api-gateway
+        component: gateway
+        version: v1
+        prometheus.io/scrape: "true"
+      annotations:
+        prometheus.io/port: "9113"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: vcci-api-gateway-sa
+
+      # Anti-affinity to spread pods across nodes
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - vcci-api-gateway
+                topologyKey: kubernetes.io/hostname
+        # Prefer different availability zones
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              preference:
+                matchExpressions:
+                  - key: topology.kubernetes.io/zone
+                    operator: In
+                    values:
+                      - us-east-1a
+                      - us-east-1b
+                      - us-east-1c
+
+      # Init container to wait for backend API
+      initContainers:
+        - name: wait-for-backend
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              until nc -z vcci-backend-api 8000; do
+                echo "Waiting for backend API to be ready..."
+                sleep 5
+              done
+              echo "Backend API is ready!"
+
+      containers:
+        - name: nginx
+          image: nginx:1.25-alpine
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+            - name: https
+              containerPort: 443
+              protocol: TCP
+
+          # Resource limits and requests
+          resources:
+            requests:
+              cpu: 500m
+              memory: 512Mi
+            limits:
+              cpu: 2000m
+              memory: 2Gi
+
+          # Health checks
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
+
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            successThreshold: 1
+            failureThreshold: 3
+
+          # Startup probe for slow-starting containers
+          startupProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 0
+            periodSeconds: 5
+            timeoutSeconds: 3
+            successThreshold: 1
+            failureThreshold: 30
+
+          # Volume mounts
+          volumeMounts:
+            - name: nginx-config
+              mountPath: /etc/nginx/nginx.conf
+              subPath: nginx.conf
+              readOnly: true
+            - name: cache
+              mountPath: /var/cache/nginx
+            - name: run
+              mountPath: /var/run
+            - name: tls-certs
+              mountPath: /etc/nginx/certs
+              readOnly: true
+
+          # Security context
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 101
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+              add:
+                - NET_BIND_SERVICE
+            readOnlyRootFilesystem: true
+
+          # Lifecycle hooks
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - /bin/sh
+                  - -c
+                  - sleep 15 && nginx -s quit
+
+          # Environment variables
+          env:
+            - name: NGINX_WORKER_PROCESSES
+              value: "auto"
+            - name: NGINX_WORKER_CONNECTIONS
+              value: "2048"
+
+        # Prometheus exporter sidecar
+        - name: nginx-exporter
+          image: nginx/nginx-prometheus-exporter:1.1
+          args:
+            - -nginx.scrape-uri=http://localhost:8080/stub_status
+          ports:
+            - name: metrics
+              containerPort: 9113
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi
+
+      # Volumes
+      volumes:
+        - name: nginx-config
+          configMap:
+            name: vcci-api-gateway-config
+        - name: cache
+          emptyDir: {}
+        - name: run
+          emptyDir: {}
+        - name: tls-certs
+          secret:
+            secretName: vcci-tls-cert
+
+      # DNS configuration
+      dnsPolicy: ClusterFirst
+
+      # Graceful termination
+      terminationGracePeriodSeconds: 30
+
+      # Security context for pod
+      securityContext:
+        fsGroup: 101
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+
+---
+# PodDisruptionBudget for high availability
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: vcci-api-gateway-pdb
+  namespace: vcci-platform
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: vcci-api-gateway

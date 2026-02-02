@@ -1,0 +1,329 @@
+# Golden Tests: Cement Imports - CBAM Compliance Agent (GL-002)
+# Test Count: 20 tests
+# Default Emission Factors (EU Implementing Regulation 2023/1773):
+#   - Global: Direct 0.83 tCO2e/t, Indirect 0.05 tCO2e/t
+# EU ETS Price: 85.0 EUR/tCO2
+# Formula: embedded_emissions = quantity * (direct_ef + indirect_ef)
+#          cbam_liability = embedded_emissions * ets_price
+
+test_suite:
+  name: "Cement Imports CBAM Golden Tests"
+  agent_id: "regulatory/cbam_compliance_v1"
+  version: "1.0.0"
+  description: "Validates CBAM calculations for cement products (CN 2523)"
+  regulation: "EU 2023/956"
+
+tests:
+  # Standard cement imports from various countries (1-10)
+  - test_id: "cbam_cement_001"
+    test_name: "Cement 100t Turkey Portland"
+    description: "CN 2523.29.00 - Portland cement from Turkey"
+    tags: ["cement", "turkey", "cbam", "cn_2523"]
+    input:
+      cn_code: "25232900"
+      quantity_tonnes: 100
+      country_of_origin: "TR"
+      reporting_period: "Q1 2026"
+    expected:
+      cn_code: "25232900"
+      product_category: "cement"
+      quantity_tonnes: 100
+      direct_emissions_tco2e: 83.0
+      indirect_emissions_tco2e: 5.0
+      total_embedded_emissions_tco2e: 88.0
+      specific_embedded_emissions: 0.88
+      calculation_method: "default"
+      carbon_price_applicable: 85.0
+      cbam_liability_eur: 7480.0
+
+  - test_id: "cbam_cement_002"
+    test_name: "Cement 500t Egypt"
+    description: "Cement import from Egypt"
+    tags: ["cement", "egypt", "cbam"]
+    input:
+      cn_code: "25232100"
+      quantity_tonnes: 500
+      country_of_origin: "EG"
+      reporting_period: "Q1 2026"
+    expected:
+      product_category: "cement"
+      direct_emissions_tco2e: 415.0
+      indirect_emissions_tco2e: 25.0
+      total_embedded_emissions_tco2e: 440.0
+      cbam_liability_eur: 37400.0
+
+  - test_id: "cbam_cement_003"
+    test_name: "Cement 1000t Algeria"
+    description: "Large cement import from Algeria"
+    tags: ["cement", "algeria", "cbam"]
+    input:
+      cn_code: "25232900"
+      quantity_tonnes: 1000
+      country_of_origin: "DZ"
+      reporting_period: "Q2 2026"
+    expected:
+      product_category: "cement"
+      direct_emissions_tco2e: 830.0
+      indirect_emissions_tco2e: 50.0
+      total_embedded_emissions_tco2e: 880.0
+      cbam_liability_eur: 74800.0
+
+  - test_id: "cbam_cement_004"
+    test_name: "Cement 2500t Morocco"
+    description: "Bulk cement from Morocco"
+    tags: ["cement", "morocco", "cbam", "bulk"]
+    input:
+      cn_code: "25232100"
+      quantity_tonnes: 2500
+      country_of_origin: "MA"
+      reporting_period: "Q2 2026"
+    expected:
+      product_category: "cement"
+      direct_emissions_tco2e: 2075.0
+      indirect_emissions_tco2e: 125.0
+      total_embedded_emissions_tco2e: 2200.0
+      cbam_liability_eur: 187000.0
+
+  - test_id: "cbam_cement_005"
+    test_name: "Cement 750t Tunisia"
+    description: "Cement from Tunisia"
+    tags: ["cement", "tunisia", "cbam"]
+    input:
+      cn_code: "25232900"
+      quantity_tonnes: 750
+      country_of_origin: "TN"
+      reporting_period: "Q3 2026"
+    expected:
+      product_category: "cement"
+      direct_emissions_tco2e: 622.5
+      indirect_emissions_tco2e: 37.5
+      total_embedded_emissions_tco2e: 660.0
+      cbam_liability_eur: 56100.0
+
+  - test_id: "cbam_cement_006"
+    test_name: "Cement 300t India"
+    description: "Cement from India"
+    tags: ["cement", "india", "cbam"]
+    input:
+      cn_code: "25232100"
+      quantity_tonnes: 300
+      country_of_origin: "IN"
+      reporting_period: "Q3 2026"
+    expected:
+      product_category: "cement"
+      direct_emissions_tco2e: 249.0
+      indirect_emissions_tco2e: 15.0
+      total_embedded_emissions_tco2e: 264.0
+      cbam_liability_eur: 22440.0
+
+  - test_id: "cbam_cement_007"
+    test_name: "Cement 5000t China"
+    description: "Major cement import from China"
+    tags: ["cement", "china", "cbam", "bulk"]
+    input:
+      cn_code: "25232900"
+      quantity_tonnes: 5000
+      country_of_origin: "CN"
+      reporting_period: "Q4 2026"
+    expected:
+      product_category: "cement"
+      direct_emissions_tco2e: 4150.0
+      indirect_emissions_tco2e: 250.0
+      total_embedded_emissions_tco2e: 4400.0
+      cbam_liability_eur: 374000.0
+
+  - test_id: "cbam_cement_008"
+    test_name: "Cement 150t Pakistan"
+    description: "Cement from Pakistan"
+    tags: ["cement", "pakistan", "cbam"]
+    input:
+      cn_code: "25232100"
+      quantity_tonnes: 150
+      country_of_origin: "PK"
+      reporting_period: "Q4 2026"
+    expected:
+      product_category: "cement"
+      direct_emissions_tco2e: 124.5
+      indirect_emissions_tco2e: 7.5
+      total_embedded_emissions_tco2e: 132.0
+      cbam_liability_eur: 11220.0
+
+  - test_id: "cbam_cement_009"
+    test_name: "Cement 800t Vietnam"
+    description: "Cement from Vietnam"
+    tags: ["cement", "vietnam", "cbam"]
+    input:
+      cn_code: "25232900"
+      quantity_tonnes: 800
+      country_of_origin: "VN"
+      reporting_period: "Q1 2026"
+    expected:
+      product_category: "cement"
+      direct_emissions_tco2e: 664.0
+      indirect_emissions_tco2e: 40.0
+      total_embedded_emissions_tco2e: 704.0
+      cbam_liability_eur: 59840.0
+
+  - test_id: "cbam_cement_010"
+    test_name: "Cement 1200t Indonesia"
+    description: "Cement from Indonesia"
+    tags: ["cement", "indonesia", "cbam"]
+    input:
+      cn_code: "25232100"
+      quantity_tonnes: 1200
+      country_of_origin: "ID"
+      reporting_period: "Q2 2026"
+    expected:
+      product_category: "cement"
+      direct_emissions_tco2e: 996.0
+      indirect_emissions_tco2e: 60.0
+      total_embedded_emissions_tco2e: 1056.0
+      cbam_liability_eur: 89760.0
+
+  # Different cement types (11-15)
+  - test_id: "cbam_cement_011"
+    test_name: "White Cement 200t Turkey"
+    description: "CN 2523.21 - White portland cement"
+    tags: ["cement", "turkey", "cbam", "white_cement"]
+    input:
+      cn_code: "25232100"
+      quantity_tonnes: 200
+      country_of_origin: "TR"
+      reporting_period: "Q1 2026"
+    expected:
+      product_category: "cement"
+      total_embedded_emissions_tco2e: 176.0
+      cbam_liability_eur: 14960.0
+
+  - test_id: "cbam_cement_012"
+    test_name: "Aluminous Cement 100t"
+    description: "CN 2523.30 - Aluminous cement"
+    tags: ["cement", "cbam", "aluminous"]
+    input:
+      cn_code: "25233000"
+      quantity_tonnes: 100
+      country_of_origin: "IN"
+      reporting_period: "Q2 2026"
+    expected:
+      product_category: "cement"
+      total_embedded_emissions_tco2e: 88.0
+      cbam_liability_eur: 7480.0
+
+  - test_id: "cbam_cement_013"
+    test_name: "Cement Clinkers 500t"
+    description: "CN 2523.10 - Cement clinkers"
+    tags: ["cement", "cbam", "clinker"]
+    input:
+      cn_code: "25231000"
+      quantity_tonnes: 500
+      country_of_origin: "TR"
+      reporting_period: "Q3 2026"
+    expected:
+      product_category: "cement"
+      total_embedded_emissions_tco2e: 440.0
+      cbam_liability_eur: 37400.0
+
+  - test_id: "cbam_cement_014"
+    test_name: "Hydraulic Cement 350t"
+    description: "CN 2523.90 - Other hydraulic cements"
+    tags: ["cement", "cbam", "hydraulic"]
+    input:
+      cn_code: "25239000"
+      quantity_tonnes: 350
+      country_of_origin: "EG"
+      reporting_period: "Q4 2026"
+    expected:
+      product_category: "cement"
+      total_embedded_emissions_tco2e: 308.0
+      cbam_liability_eur: 26180.0
+
+  - test_id: "cbam_cement_015"
+    test_name: "Portland Cement Other 600t"
+    description: "CN 2523.29 - Other portland cement"
+    tags: ["cement", "cbam", "portland"]
+    input:
+      cn_code: "25232900"
+      quantity_tonnes: 600
+      country_of_origin: "MA"
+      reporting_period: "Q1 2026"
+    expected:
+      product_category: "cement"
+      total_embedded_emissions_tco2e: 528.0
+      cbam_liability_eur: 44880.0
+
+  # Actual emissions and edge cases (16-20)
+  - test_id: "cbam_cement_actual_016"
+    test_name: "Cement Low Carbon Verified"
+    description: "Verified low-carbon cement production"
+    tags: ["cement", "actual", "cbam", "low_carbon"]
+    input:
+      cn_code: "25232900"
+      quantity_tonnes: 500
+      country_of_origin: "TR"
+      actual_emissions: 0.6
+      reporting_period: "Q1 2026"
+    expected:
+      product_category: "cement"
+      total_embedded_emissions_tco2e: 300.0
+      calculation_method: "actual"
+      cbam_liability_eur: 25500.0
+
+  - test_id: "cbam_cement_actual_017"
+    test_name: "Cement Green Production"
+    description: "Low-carbon cement with carbon capture"
+    tags: ["cement", "actual", "cbam", "green"]
+    input:
+      cn_code: "25232100"
+      quantity_tonnes: 1000
+      country_of_origin: "NO"
+      actual_emissions: 0.3
+      reporting_period: "Q2 2026"
+    expected:
+      product_category: "cement"
+      total_embedded_emissions_tco2e: 300.0
+      calculation_method: "actual"
+      cbam_liability_eur: 25500.0
+
+  - test_id: "cbam_cement_edge_018"
+    test_name: "Cement Minimum Quantity"
+    description: "Minimum 1 tonne import"
+    tags: ["cement", "edge_case", "cbam", "minimum"]
+    input:
+      cn_code: "25232900"
+      quantity_tonnes: 1
+      country_of_origin: "TR"
+      reporting_period: "Q1 2026"
+    expected:
+      product_category: "cement"
+      total_embedded_emissions_tco2e: 0.88
+      cbam_liability_eur: 74.8
+
+  - test_id: "cbam_cement_edge_019"
+    test_name: "Cement Decimal Quantity"
+    description: "Non-integer quantity"
+    tags: ["cement", "edge_case", "cbam", "decimal"]
+    input:
+      cn_code: "25232100"
+      quantity_tonnes: 123.456
+      country_of_origin: "EG"
+      reporting_period: "Q2 2026"
+    expected:
+      product_category: "cement"
+      total_embedded_emissions_tco2e: 108.641280
+      cbam_liability_eur: 9234.5088
+
+  - test_id: "cbam_cement_edge_020"
+    test_name: "Cement 50000t Major Import"
+    description: "Very large bulk cement import"
+    tags: ["cement", "edge_case", "cbam", "bulk"]
+    input:
+      cn_code: "25232900"
+      quantity_tonnes: 50000
+      country_of_origin: "CN"
+      reporting_period: "Q3 2026"
+    expected:
+      product_category: "cement"
+      direct_emissions_tco2e: 41500.0
+      indirect_emissions_tco2e: 2500.0
+      total_embedded_emissions_tco2e: 44000.0
+      cbam_liability_eur: 3740000.0

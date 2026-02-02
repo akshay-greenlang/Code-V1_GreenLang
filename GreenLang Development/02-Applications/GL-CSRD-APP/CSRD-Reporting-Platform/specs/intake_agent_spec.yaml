@@ -1,0 +1,18 @@
+apiVersion: greenlang.io/v2
+kind: AgentSpec
+metadata:
+  name: IntakeAgent
+  version: 1.0.0
+  labels:
+    type: data-processor
+    category: ''
+    id: csrd_intake_agent
+  annotations:
+    description: ''
+    created_by: ''
+    created_date: ''
+spec:
+  inputs: []
+  outputs: []
+  capabilities: []
+  requirements: {}

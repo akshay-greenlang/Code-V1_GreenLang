@@ -1,0 +1,27 @@
+{
+  "description": "US electricity grid emissions calculation",
+  "input": {
+    "fuel_type": "electricity",
+    "consumption": {
+      "value": 100000,
+      "unit": "kWh"
+    },
+    "country": "US",
+    "year": 2024
+  },
+  "expected_output": {
+    "fuel_type": "electricity",
+    "consumption_value": 100000,
+    "consumption_unit": "kWh",
+    "emission_factor": 0.385,
+    "emission_factor_unit": "kgCO2e/kWh",
+    "co2e_emissions_kg": 38500,
+    "source": "GreenLang Global Dataset"
+  },
+  "metadata": {
+    "test_case": "us_grid_electricity",
+    "category": "fuel_emissions",
+    "scope": "2",
+    "priority": "high"
+  }
+}

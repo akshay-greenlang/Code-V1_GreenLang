@@ -1,0 +1,403 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://greenlang.io/schemas/csrd/policy-input/v1.0",
+  "title": "CSRD Policy Input Schema",
+  "description": "Policy input schema for CSRD/ESRS reporting platform policies and calculations",
+  "type": "object",
+  "required": ["version", "policy_type", "esrs_standard", "rules", "metadata"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Semantic version of the policy"
+    },
+    "policy_type": {
+      "type": "string",
+      "enum": ["calculation", "validation", "materiality", "disclosure", "assurance"],
+      "description": "Type of ESRS policy being defined"
+    },
+    "esrs_standard": {
+      "type": "string",
+      "enum": ["ESRS1", "ESRS2", "E1", "E2", "E3", "E4", "E5", "S1", "S2", "S3", "S4", "G1", "ALL"],
+      "description": "ESRS standard this policy applies to"
+    },
+    "metadata": {
+      "type": "object",
+      "required": ["name", "description", "created", "updated", "regulatory_reference"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 1000
+        },
+        "created": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "regulatory_reference": {
+          "type": "string",
+          "description": "Reference to EU CSRD Directive or ESRS regulation"
+        },
+        "author": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "rules": {
+      "type": "object",
+      "properties": {
+        "materiality_assessment": {
+          "type": "object",
+          "properties": {
+            "impact_materiality": {
+              "$ref": "#/definitions/materiality_criteria"
+            },
+            "financial_materiality": {
+              "$ref": "#/definitions/materiality_criteria"
+            },
+            "threshold": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "description": "Materiality threshold (0-1)"
+            }
+          }
+        },
+        "calculation_rules": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/esrs_calculation_rule"
+          }
+        },
+        "disclosure_requirements": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/disclosure_requirement"
+          }
+        },
+        "data_quality_rules": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/data_quality_rule"
+          }
+        }
+      }
+    },
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "ghg_factors": {
+          "type": "object",
+          "properties": {
+            "scope1": {
+              "$ref": "#/definitions/emission_factors"
+            },
+            "scope2": {
+              "$ref": "#/definitions/emission_factors"
+            },
+            "scope3": {
+              "$ref": "#/definitions/emission_factors"
+            }
+          }
+        },
+        "esrs_metrics": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "required": ["metric_id", "name", "unit", "calculation_method"],
+            "properties": {
+              "metric_id": {
+                "type": "string",
+                "pattern": "^[ES]\\d+-\\d+$"
+              },
+              "name": {
+                "type": "string"
+              },
+              "unit": {
+                "type": "string"
+              },
+              "calculation_method": {
+                "type": "string"
+              },
+              "data_points": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "mandatory": {
+                "type": "boolean"
+              }
+            }
+          }
+        },
+        "cross_cutting_standards": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["TCFD", "GRI", "SASB", "CDP", "ISSB"]
+          },
+          "description": "Other standards to map to ESRS"
+        }
+      }
+    },
+    "outputs": {
+      "type": "object",
+      "properties": {
+        "xbrl_tagging": {
+          "type": "object",
+          "properties": {
+            "taxonomy_version": {
+              "type": "string"
+            },
+            "namespace": {
+              "type": "string"
+            },
+            "required_tags": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "report_formats": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["xhtml", "pdf", "json", "excel", "esef_package"]
+          }
+        },
+        "language_support": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z]{2}$"
+          }
+        }
+      }
+    },
+    "audit_trail": {
+      "type": "object",
+      "properties": {
+        "enable_provenance": {
+          "type": "boolean",
+          "default": true
+        },
+        "calculation_logging": {
+          "type": "boolean",
+          "default": true
+        },
+        "data_lineage": {
+          "type": "boolean",
+          "default": true
+        }
+      }
+    }
+  },
+  "definitions": {
+    "materiality_criteria": {
+      "type": "object",
+      "properties": {
+        "severity": {
+          "type": "object",
+          "properties": {
+            "weight": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "scale": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "scope": {
+          "type": "object",
+          "properties": {
+            "weight": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "categories": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "likelihood": {
+          "type": "object",
+          "properties": {
+            "weight": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "probability_ranges": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "min": {
+                    "type": "number"
+                  },
+                  "max": {
+                    "type": "number"
+                  },
+                  "label": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "esrs_calculation_rule": {
+      "type": "object",
+      "required": ["id", "name", "metric", "formula"],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "metric": {
+          "type": "string",
+          "pattern": "^[ES]\\d+-\\d+$"
+        },
+        "formula": {
+          "type": "string"
+        },
+        "inputs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "data_point": {
+                "type": "string"
+              },
+              "required": {
+                "type": "boolean"
+              },
+              "default_value": {}
+            }
+          }
+        }
+      }
+    },
+    "disclosure_requirement": {
+      "type": "object",
+      "required": ["id", "name", "esrs_reference", "mandatory"],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "esrs_reference": {
+          "type": "string"
+        },
+        "mandatory": {
+          "type": "boolean"
+        },
+        "data_points": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "narrative_required": {
+          "type": "boolean"
+        },
+        "quantitative_required": {
+          "type": "boolean"
+        }
+      }
+    },
+    "data_quality_rule": {
+      "type": "object",
+      "required": ["id", "name", "check_type"],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "check_type": {
+          "type": "string",
+          "enum": ["completeness", "accuracy", "consistency", "timeliness", "validity"]
+        },
+        "threshold": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "severity": {
+          "type": "string",
+          "enum": ["critical", "high", "medium", "low"]
+        }
+      }
+    },
+    "emission_factors": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["value", "unit", "source", "gwp_version"],
+        "properties": {
+          "value": {
+            "type": "number",
+            "minimum": 0
+          },
+          "unit": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          },
+          "gwp_version": {
+            "type": "string",
+            "enum": ["AR4", "AR5", "AR6"]
+          },
+          "uncertainty": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "valid_from": {
+            "type": "string",
+            "format": "date"
+          },
+          "valid_to": {
+            "type": "string",
+            "format": "date"
+          }
+        }
+      }
+    }
+  }
+}

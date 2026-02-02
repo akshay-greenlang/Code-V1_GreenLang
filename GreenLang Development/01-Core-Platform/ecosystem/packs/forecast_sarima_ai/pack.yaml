@@ -1,0 +1,182 @@
+name: SARIMA Forecast Agent (Time-Series ML)
+version: 1.0.0
+kind: pack
+pack_schema_version: '1.0'
+author:
+  name: GreenLang Team
+  email: support@greenlang.io
+  organization: GreenLang
+license: MIT
+tags:
+- ml
+- forecasting
+- time-series
+- sarima
+- sarimax
+- prediction
+- ai-agent
+- statsmodels
+- citations
+id: ml/forecast_sarima_v1
+summary: AI-powered SARIMA forecasting for time-series prediction with auto-tuning,
+  seasonality detection, confidence intervals, and multi-metric evaluation
+owners:
+- greenlang-team
+ai:
+  system_prompt: 'You are a time-series forecasting expert for GreenLang.
+
+    You help analyze historical data and generate forecasts using SARIMA models.
+
+
+    CRITICAL RULE: You must use the provided tools for ALL numeric calculations.
+
+    Never estimate or guess numbers. Always explain patterns and provide actionable
+    insights.
+
+
+    Your Role:
+
+    1. Orchestrate time-series analysis workflow using deterministic tools
+
+    2. Interpret SARIMA model results and parameters
+
+    3. Explain seasonality patterns and trends
+
+    4. Assess stationarity and recommend differencing
+
+    5. Generate clear, actionable forecasts with confidence intervals
+
+    6. Provide business context and recommendations
+
+
+    Tool Usage Pattern:
+
+    1. Use preprocess_data to handle missing values and outliers
+
+    2. Use validate_stationarity to test stationarity (ADF test)
+
+    3. Use detect_seasonality to identify seasonal patterns (ACF method)
+
+    4. Use fit_sarima_model to train optimal SARIMA model (auto-tune or manual)
+
+    5. Use forecast_future to generate predictions with confidence intervals
+
+    6. Use calculate_confidence_intervals to compute prediction bounds
+
+    7. Use evaluate_model to compute RMSE, MAE, MAPE metrics
+
+    8. Synthesize all results into clear forecast explanation
+
+
+    Model Configuration:
+
+    - Auto-tuning searches: p∈[0,1,2,3], d∈[0,1], q∈[0,1,2,3], P∈[0,1], D∈[0,1], Q∈[0,1]
+
+    - Optimization: Minimize AIC (Akaike Information Criterion)
+
+    - Stationarity: ADF test (α=0.05)
+
+    - Seasonality: ACF peak detection (threshold=0.3)
+
+
+    Output Guidelines:
+
+    - Format numbers clearly (e.g., "1,234.5 kWh" not "1234.5")
+
+    - Explain confidence intervals in plain language
+
+    - Highlight any concerning trends or anomalies
+
+    - Provide actionable recommendations based on forecast
+
+    '
+  budget:
+    max_cost_usd: 1.0
+  rag_collections:
+  - sarima_modeling_guide
+  - time_series_patterns
+  - seasonality_detection
+  tools:
+  - name: fit_sarima_model
+    description: Train SARIMA model with optional auto-tuning via grid search
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:fit_sarima_model
+    safe: true
+  - name: forecast_future
+    description: Generate point forecasts for specified horizon
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:forecast_future
+    safe: true
+  - name: calculate_confidence_intervals
+    description: Compute prediction intervals at specified confidence level
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:calculate_confidence_intervals
+    safe: true
+  - name: evaluate_model
+    description: Calculate RMSE, MAE, MAPE on train/test split
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:evaluate_model
+    safe: true
+  - name: detect_seasonality
+    description: Detect seasonal patterns using ACF method
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:detect_seasonality
+    safe: true
+  - name: validate_stationarity
+    description: Test stationarity using Augmented Dickey-Fuller test
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:validate_stationarity
+    safe: true
+  - name: preprocess_data
+    description: Handle missing values and outliers (interpolation + IQR method)
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:preprocess_data
+    safe: true
+realtime:
+  default_mode: replay
+  snapshot_path: null
+  connectors: []
+provenance:
+  gwp_set: AR6GWP100
+  pin_ef: false
+  record:
+  - inputs
+  - outputs
+  - factors
+  - code_sha
+  - seed

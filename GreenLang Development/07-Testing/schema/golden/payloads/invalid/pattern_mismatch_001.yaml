@@ -1,0 +1,15 @@
+# Invalid Payload - Pattern Mismatch
+# Error Code: GLSCHEMA-E201 (PATTERN_MISMATCH)
+# Schema: basic/string_constraints.yaml
+
+_test_metadata:
+  schema: "basic/string_constraints.yaml"
+  description: "Pattern mismatch - username starts with number"
+  expected_valid: false
+  expected_errors:
+    - code: "GLSCHEMA-E201"
+      path: "/username"
+      severity: "error"
+
+username: "123invalid"  # Must start with letter
+email: "user@example.com"

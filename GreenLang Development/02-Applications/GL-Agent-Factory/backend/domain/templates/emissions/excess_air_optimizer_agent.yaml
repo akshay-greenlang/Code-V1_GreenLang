@@ -1,0 +1,403 @@
+# =============================================================================
+# Excess Air Optimizer Agent Template
+# GreenLang Agent Factory - Process Heat Applications
+# =============================================================================
+# Standards: ASME PTC 4, DOE Best Practices
+# Version: 1.0.0
+# =============================================================================
+
+metadata:
+  template_id: excess_air_optimizer_agent
+  name: Combustion Excess Air Optimization Agent
+  description: >
+    Optimizes combustion excess air for process heat equipment to balance
+    efficiency, emissions, and safety. Provides setpoint recommendations
+    based on real-time O2, CO, and efficiency analysis.
+  category: emissions
+  version: "1.0.0"
+  status: production
+  author: GreenLang Engineering Team
+  created_at: "2024-12-01T00:00:00Z"
+  updated_at: "2024-12-11T00:00:00Z"
+
+  tags:
+    - combustion_optimization
+    - excess_air
+    - O2_trim
+    - efficiency
+    - emissions
+
+  equipment_types:
+    - boiler
+    - fired_heater
+    - furnace
+
+  industries:
+    - oil_gas
+    - power_generation
+    - petrochemical
+
+  applicable_standards:
+    - ASME PTC 4
+    - DOE Best Practices
+
+# =============================================================================
+# Input Schema
+# =============================================================================
+
+input_schema:
+  name: ExcessAirOptimizerInput
+  description: Excess air optimization input parameters
+  version: "1.0.0"
+
+  fields:
+    equipment_tag:
+      type: string
+      description: Equipment tag
+      required: true
+
+    fuel_type:
+      type: enum
+      description: Fuel type
+      required: true
+      allowed_values:
+        - natural_gas
+        - fuel_oil
+        - coal
+        - mixed
+
+    current_o2:
+      type: float
+      description: Current flue gas O2 (dry basis)
+      required: true
+      unit: percent
+      min_value: 0
+      max_value: 21
+
+    current_co:
+      type: float
+      description: Current CO concentration
+      required: false
+      unit: ppm
+      default: 0
+
+    flue_gas_temperature:
+      type: float
+      description: Flue gas exit temperature
+      required: true
+      unit: celsius
+
+    ambient_temperature:
+      type: float
+      description: Ambient temperature
+      required: true
+      unit: celsius
+
+    current_load:
+      type: float
+      description: Current load percentage
+      required: true
+      unit: percent
+      min_value: 0
+      max_value: 100
+
+    fuel_flow_rate:
+      type: float
+      description: Current fuel flow rate
+      required: true
+      unit: kg/hr
+
+    fuel_cost:
+      type: float
+      description: Fuel cost
+      required: false
+      unit: USD/kg
+
+    o2_setpoint_min:
+      type: float
+      description: Minimum safe O2 setpoint
+      required: false
+      unit: percent
+      default: 2.0
+
+    co_limit:
+      type: float
+      description: Maximum allowable CO
+      required: false
+      unit: ppm
+      default: 200
+
+# =============================================================================
+# Output Schema
+# =============================================================================
+
+output_schema:
+  name: ExcessAirOptimizerOutput
+  description: Excess air optimization results
+  version: "1.0.0"
+
+  fields:
+    current_excess_air:
+      type: float
+      description: Current excess air percentage
+      unit: percent
+
+    optimal_o2_setpoint:
+      type: float
+      description: Recommended O2 setpoint
+      unit: percent
+
+    optimal_excess_air:
+      type: float
+      description: Optimal excess air
+      unit: percent
+
+    efficiency_current:
+      type: float
+      description: Current combustion efficiency
+      unit: percent
+
+    efficiency_optimal:
+      type: float
+      description: Expected efficiency at optimal
+      unit: percent
+
+    efficiency_improvement:
+      type: float
+      description: Potential efficiency improvement
+      unit: percent
+
+    fuel_savings_rate:
+      type: float
+      description: Potential fuel savings rate
+      unit: kg/hr
+
+    fuel_savings_annual:
+      type: float
+      description: Annual fuel savings
+      unit: kg/year
+
+    cost_savings_annual:
+      type: float
+      description: Annual cost savings
+      unit: USD/year
+
+    co2_reduction:
+      type: float
+      description: CO2 reduction
+      unit: tonnes/year
+
+    safety_margin:
+      type: string
+      description: Safety assessment
+
+    recommendations:
+      type: list
+      description: Optimization recommendations
+
+    provenance_hash:
+      type: string
+      description: SHA-256 hash
+
+    calculation_timestamp:
+      type: datetime
+      description: Timestamp
+
+# =============================================================================
+# Formulas
+# =============================================================================
+
+formulas:
+  - id: EXCESS_AIR_FROM_O2
+    name: Excess Air from O2
+    description: Calculate excess air from flue gas O2
+    equation: "EA = (O2 / (21 - O2)) * 100"
+    variables:
+      EA:
+        description: Excess air
+        unit: percent
+        type: float
+      O2:
+        description: O2 concentration
+        unit: percent
+        type: float
+    source:
+      standard: ASME PTC 4
+      section: "4.12"
+      edition: "2023"
+    application: Excess air determination
+
+  - id: DRY_FLUE_GAS_LOSS
+    name: Dry Flue Gas Loss
+    description: Efficiency loss due to dry flue gas
+    equation: "L_df = K * (T_fg - T_a) * (1 + EA/100)"
+    variables:
+      L_df:
+        description: Dry flue gas loss
+        unit: percent
+        type: float
+      K:
+        description: Fuel constant
+        unit: 1/celsius
+        type: float
+      T_fg:
+        description: Flue gas temperature
+        unit: celsius
+        type: float
+      T_a:
+        description: Ambient temperature
+        unit: celsius
+        type: float
+      EA:
+        description: Excess air
+        unit: percent
+        type: float
+    source:
+      standard: ASME PTC 4
+      section: "5.4.2"
+      edition: "2023"
+    application: Stack loss optimization
+
+# =============================================================================
+# Safety Constraints
+# =============================================================================
+
+safety_constraints:
+  - id: SC_MIN_O2
+    name: Minimum O2 for Safety
+    description: O2 must stay above minimum for safe combustion
+    condition: "optimal_o2_setpoint >= o2_setpoint_min"
+    action: reject
+    severity: critical
+    message: "CRITICAL: Recommended O2 below safety minimum"
+
+  - id: SC_CO_LIMIT
+    name: CO Below Limit
+    description: CO must stay below regulatory limit
+    condition: "current_co <= co_limit"
+    action: warn
+    severity: error
+    message: "CO {current_co} ppm exceeds limit {co_limit} ppm"
+
+# =============================================================================
+# Processing Pipeline
+# =============================================================================
+
+processing:
+  steps:
+    - id: STEP_01_VALIDATE
+      name: Input Validation
+      type: validation
+      inputs:
+        - all_input_fields
+      outputs:
+        - validation_status
+      error_handling: reject
+
+    - id: STEP_02_CURRENT_ANALYSIS
+      name: Analyze Current Operation
+      type: calculation
+      inputs:
+        - current_o2
+        - flue_gas_temperature
+        - ambient_temperature
+      outputs:
+        - current_excess_air
+        - efficiency_current
+      formula_refs:
+        - EXCESS_AIR_FROM_O2
+        - DRY_FLUE_GAS_LOSS
+      error_handling: propagate
+
+    - id: STEP_03_OPTIMIZE
+      name: Determine Optimal Setpoint
+      type: calculation
+      inputs:
+        - fuel_type
+        - current_load
+        - o2_setpoint_min
+        - co_limit
+      outputs:
+        - optimal_o2_setpoint
+        - optimal_excess_air
+        - efficiency_optimal
+      constraints:
+        - SC_MIN_O2
+        - SC_CO_LIMIT
+      error_handling: propagate
+
+    - id: STEP_04_SAVINGS
+      name: Calculate Savings
+      type: calculation
+      inputs:
+        - efficiency_improvement
+        - fuel_flow_rate
+        - fuel_cost
+      outputs:
+        - fuel_savings_rate
+        - fuel_savings_annual
+        - cost_savings_annual
+        - co2_reduction
+      error_handling: propagate
+
+    - id: STEP_05_RECOMMENDATIONS
+      name: Generate Recommendations
+      type: decision
+      inputs:
+        - all_results
+      outputs:
+        - recommendations
+        - safety_margin
+      error_handling: default
+
+    - id: STEP_06_PROVENANCE
+      name: Provenance Tracking
+      type: output
+      inputs:
+        - all_inputs
+        - all_outputs
+      outputs:
+        - provenance_hash
+        - calculation_timestamp
+      error_handling: propagate
+
+# =============================================================================
+# Zero-Hallucination Configuration
+# =============================================================================
+
+zero_hallucination:
+  enabled: true
+  calculation_mode: deterministic
+  allowed_operations:
+    - arithmetic
+    - formula_evaluation
+    - optimization_calculation
+  forbidden_operations:
+    - llm_setpoint_determination
+  require_formula_citation: true
+  require_provenance: true
+  llm_allowed_for:
+    - recommendation_narrative
+
+# =============================================================================
+# Test Cases
+# =============================================================================
+
+test_cases:
+  - name: Natural Gas Boiler Optimization
+    inputs:
+      equipment_tag: B-101
+      fuel_type: natural_gas
+      current_o2: 5.0
+      flue_gas_temperature: 200
+      ambient_temperature: 25
+      current_load: 80
+      fuel_flow_rate: 1000
+      fuel_cost: 0.03
+    expected_outputs:
+      optimal_o2_setpoint:
+        min: 2.5
+        max: 4.0
+      efficiency_improvement:
+        min: 0.5
+        max: 3.0

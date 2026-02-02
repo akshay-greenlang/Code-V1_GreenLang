@@ -1,0 +1,827 @@
+# EUDR Commodity Test Fixtures
+# Test data for all 7 regulated commodities
+# Version: 1.0.0
+
+# =============================================================================
+# CATTLE FIXTURES
+# =============================================================================
+cattle:
+  valid_cases:
+    - id: CATTLE-VALID-001
+      description: "Valid cattle import from Brazil - established ranch"
+      commodity:
+        commodity_type: cattle
+        cn_code: "01022110"
+        quantity_kg: 15000
+        origin_country: BR
+        product_description: "Live pure-bred breeding cattle"
+        batch_id: "BR-CAT-2024-00456"
+      geolocation:
+        geometry:
+          type: Polygon
+          coordinates:
+            - - [-47.123456, -15.234567]
+              - [-47.123456, -15.244567]
+              - [-47.133456, -15.244567]
+              - [-47.133456, -15.234567]
+              - [-47.123456, -15.234567]
+        collection_method: gps_device
+        precision_meters: 5
+        plot_area_hectares: 120
+      production:
+        production_date: "2024-06-15"
+        harvest_season: "2024"
+        cultivation_method: conventional
+        farm_id: "BR-GO-RANCH-00123"
+        farmer_name: "Fazenda Santa Maria"
+      expected_result:
+        compliance_status: COMPLIANT
+        risk_level: low
+
+    - id: CATTLE-VALID-002
+      description: "Valid beef from Argentina - Pampas region"
+      commodity:
+        commodity_type: cattle
+        cn_code: "02013000"
+        quantity_kg: 5000
+        origin_country: AR
+        product_description: "Fresh beef, boneless"
+      geolocation:
+        geometry:
+          type: Point
+          coordinates: [-60.123456, -34.567890]
+        collection_method: satellite_derived
+        precision_meters: 10
+      production:
+        production_date: "2024-08-20"
+        farm_id: "AR-BA-EST-00789"
+      expected_result:
+        compliance_status: COMPLIANT
+        risk_level: low
+
+  invalid_cases:
+    - id: CATTLE-INVALID-001
+      description: "Invalid - production in deforested Amazon area"
+      commodity:
+        commodity_type: cattle
+        cn_code: "02011000"
+        quantity_kg: 8000
+        origin_country: BR
+      geolocation:
+        geometry:
+          type: Point
+          coordinates: [-55.456789, -8.123456]  # Amazon deforestation hotspot
+        collection_method: gps_device
+      production:
+        production_date: "2024-03-15"
+        farm_id: "BR-PA-FARM-00999"
+      expected_result:
+        compliance_status: NON_COMPLIANT
+        non_compliance_reasons:
+          - "Deforestation detected post-2020 cutoff date"
+        risk_level: high
+
+    - id: CATTLE-INVALID-002
+      description: "Invalid - pre-cutoff production date"
+      commodity:
+        commodity_type: cattle
+        cn_code: "01022190"
+        quantity_kg: 3000
+        origin_country: PY
+      geolocation:
+        geometry:
+          type: Point
+          coordinates: [-56.789012, -23.456789]
+      production:
+        production_date: "2019-06-15"  # Before Dec 31, 2020 cutoff
+      expected_result:
+        compliance_status: NON_COMPLIANT
+        non_compliance_reasons:
+          - "Production date before EUDR cutoff (2020-12-31)"
+
+# =============================================================================
+# COCOA FIXTURES
+# =============================================================================
+cocoa:
+  valid_cases:
+    - id: COCOA-VALID-001
+      description: "Valid cocoa from Ghana - certified cooperative"
+      commodity:
+        commodity_type: cocoa
+        cn_code: "18010000"
+        quantity_kg: 25000
+        origin_country: GH
+        product_description: "Cocoa beans, whole"
+        batch_id: "GH-COA-2024-05678"
+      geolocation:
+        geometry:
+          type: MultiPolygon
+          coordinates:
+            - - - [-1.567890, 6.234567]
+                - [-1.567890, 6.244567]
+                - [-1.577890, 6.244567]
+                - [-1.577890, 6.234567]
+                - [-1.567890, 6.234567]
+            - - - [-1.589012, 6.256789]
+                - [-1.589012, 6.266789]
+                - [-1.599012, 6.266789]
+                - [-1.599012, 6.256789]
+                - [-1.589012, 6.256789]
+        collection_method: smartphone
+        precision_meters: 8
+      production:
+        production_date: "2024-10-15"
+        harvest_season: "2024/2025"
+        cultivation_method: agroforestry
+        cooperative_id: "GH-COCOBOD-COOP-0456"
+      supply_chain:
+        traceability_system: segregated
+        certification_claims:
+          - certification_scheme: Rainforest_Alliance
+            certificate_number: "RA-GH-2024-12345"
+            valid_until: "2025-12-31"
+      expected_result:
+        compliance_status: COMPLIANT
+        risk_level: low
+
+    - id: COCOA-VALID-002
+      description: "Valid cocoa from Cote d'Ivoire - UTZ certified"
+      commodity:
+        commodity_type: cocoa
+        cn_code: "18031000"
+        quantity_kg: 18000
+        origin_country: CI
+        product_description: "Cocoa paste, not defatted"
+      geolocation:
+        geometry:
+          type: Polygon
+          coordinates:
+            - - [-5.234567, 6.789012]
+              - [-5.234567, 6.799012]
+              - [-5.244567, 6.799012]
+              - [-5.244567, 6.789012]
+              - [-5.234567, 6.789012]
+        collection_method: gps_device
+      production:
+        production_date: "2024-09-01"
+        cultivation_method: conventional
+      supply_chain:
+        certification_claims:
+          - certification_scheme: UTZ
+            certificate_number: "UTZ-CI-2024-67890"
+            valid_until: "2025-06-30"
+      expected_result:
+        compliance_status: COMPLIANT
+
+  invalid_cases:
+    - id: COCOA-INVALID-001
+      description: "Invalid - encroachment into Tai National Park"
+      commodity:
+        commodity_type: cocoa
+        cn_code: "18010000"
+        quantity_kg: 5000
+        origin_country: CI
+      geolocation:
+        geometry:
+          type: Point
+          coordinates: [-7.234567, 5.789012]  # Inside Tai National Park
+      production:
+        production_date: "2024-08-15"
+      expected_result:
+        compliance_status: NON_COMPLIANT
+        non_compliance_reasons:
+          - "Production plot intersects protected area (Tai National Park)"
+        risk_level: high
+
+# =============================================================================
+# COFFEE FIXTURES
+# =============================================================================
+coffee:
+  valid_cases:
+    - id: COFFEE-VALID-001
+      description: "Valid Arabica coffee from Colombia - high altitude farm"
+      commodity:
+        commodity_type: coffee
+        cn_code: "09011100"
+        quantity_kg: 12000
+        origin_country: CO
+        product_description: "Coffee, not roasted, not decaffeinated"
+        batch_id: "CO-COF-2024-03456"
+      geolocation:
+        geometry:
+          type: Polygon
+          coordinates:
+            - - [-75.567890, 5.234567]
+              - [-75.567890, 5.244567]
+              - [-75.577890, 5.244567]
+              - [-75.577890, 5.234567]
+              - [-75.567890, 5.234567]
+        collection_method: survey_grade
+        precision_meters: 2
+        plot_area_hectares: 8.5
+      production:
+        production_date: "2024-05-20"
+        harvest_season: "2024"
+        cultivation_method: organic
+        farm_id: "CO-HUI-FINCA-0123"
+        farmer_name: "Finca La Esperanza"
+      supply_chain:
+        certification_claims:
+          - certification_scheme: Organic_EU
+            certificate_number: "EU-ORG-CO-2024-5678"
+            valid_until: "2025-12-31"
+      expected_result:
+        compliance_status: COMPLIANT
+        risk_level: low
+
+    - id: COFFEE-VALID-002
+      description: "Valid Robusta coffee from Vietnam"
+      commodity:
+        commodity_type: coffee
+        cn_code: "09011200"
+        quantity_kg: 50000
+        origin_country: VN
+        product_description: "Coffee, not roasted, decaffeinated"
+      geolocation:
+        geometry:
+          type: Point
+          coordinates: [108.234567, 12.567890]
+        collection_method: gps_device
+      production:
+        production_date: "2024-11-10"
+        cultivation_method: plantation
+      expected_result:
+        compliance_status: COMPLIANT
+
+  invalid_cases:
+    - id: COFFEE-INVALID-001
+      description: "Invalid - recent forest clearing in Ethiopia"
+      commodity:
+        commodity_type: coffee
+        cn_code: "09011100"
+        quantity_kg: 8000
+        origin_country: ET
+      geolocation:
+        geometry:
+          type: Point
+          coordinates: [36.234567, 7.567890]
+      production:
+        production_date: "2024-04-15"
+      satellite_data:
+        forest_loss_detected: true
+        loss_year: 2022
+        loss_area_ha: 2.5
+      expected_result:
+        compliance_status: NON_COMPLIANT
+        non_compliance_reasons:
+          - "Deforestation detected: 2.5 hectares cleared in 2022"
+        risk_level: high
+
+# =============================================================================
+# PALM OIL FIXTURES
+# =============================================================================
+palm_oil:
+  valid_cases:
+    - id: PALM-VALID-001
+      description: "Valid RSPO certified palm oil from Malaysia"
+      commodity:
+        commodity_type: palm_oil
+        cn_code: "15111000"
+        quantity_kg: 100000
+        origin_country: MY
+        product_description: "Crude palm oil"
+        batch_id: "MY-PALM-2024-78901"
+      geolocation:
+        geometry:
+          type: Polygon
+          coordinates:
+            - - [101.234567, 3.456789]
+              - [101.234567, 3.556789]
+              - [101.334567, 3.556789]
+              - [101.334567, 3.456789]
+              - [101.234567, 3.456789]
+        collection_method: satellite_derived
+        precision_meters: 10
+        plot_area_hectares: 1200
+      production:
+        production_date: "2024-07-25"
+        cultivation_method: plantation
+        farm_id: "MY-SBK-ESTATE-0456"
+      supply_chain:
+        traceability_system: segregated
+        certification_claims:
+          - certification_scheme: RSPO
+            certificate_number: "RSPO-MY-2024-23456"
+            chain_of_custody_type: Segregated
+            valid_until: "2026-03-31"
+      expected_result:
+        compliance_status: COMPLIANT
+        risk_level: low
+
+    - id: PALM-VALID-002
+      description: "Valid palm kernel oil from Indonesia - smallholder"
+      commodity:
+        commodity_type: palm_oil
+        cn_code: "15132110"
+        quantity_kg: 5000
+        origin_country: ID
+        product_description: "Crude palm kernel oil"
+      geolocation:
+        geometry:
+          type: Point
+          coordinates: [104.567890, 0.234567]
+        collection_method: smartphone
+        precision_meters: 15
+      production:
+        production_date: "2024-09-10"
+        cultivation_method: conventional
+      expected_result:
+        compliance_status: COMPLIANT
+
+  invalid_cases:
+    - id: PALM-INVALID-001
+      description: "Invalid - plantation on deep peat"
+      commodity:
+        commodity_type: palm_oil
+        cn_code: "15111000"
+        quantity_kg: 75000
+        origin_country: ID
+      geolocation:
+        geometry:
+          type: Polygon
+          coordinates:
+            - - [109.567890, 1.234567]
+              - [109.567890, 1.334567]
+              - [109.667890, 1.334567]
+              - [109.667890, 1.234567]
+              - [109.567890, 1.234567]
+      production:
+        production_date: "2024-06-20"
+      environmental_data:
+        peat_depth_meters: 4.5  # >3m triggers EUDR concern
+      expected_result:
+        compliance_status: NON_COMPLIANT
+        non_compliance_reasons:
+          - "Plantation on peatland exceeding 3m depth"
+        risk_level: high
+
+    - id: PALM-INVALID-002
+      description: "Invalid - recent plantation expansion"
+      commodity:
+        commodity_type: palm_oil
+        cn_code: "15111000"
+        quantity_kg: 40000
+        origin_country: MY
+      geolocation:
+        geometry:
+          type: Polygon
+          coordinates:
+            - - [117.234567, 5.678901]
+              - [117.234567, 5.778901]
+              - [117.334567, 5.778901]
+              - [117.334567, 5.678901]
+              - [117.234567, 5.678901]
+      production:
+        production_date: "2024-08-15"
+      satellite_data:
+        land_cover_change_detected: true
+        change_year: 2021
+        previous_land_cover: "primary_forest"
+      expected_result:
+        compliance_status: NON_COMPLIANT
+        non_compliance_reasons:
+          - "Land use change from primary forest detected in 2021"
+
+# =============================================================================
+# RUBBER FIXTURES
+# =============================================================================
+rubber:
+  valid_cases:
+    - id: RUBBER-VALID-001
+      description: "Valid natural rubber from Thailand"
+      commodity:
+        commodity_type: rubber
+        cn_code: "40011000"
+        quantity_kg: 30000
+        origin_country: TH
+        product_description: "Natural rubber latex"
+        batch_id: "TH-RUB-2024-45678"
+      geolocation:
+        geometry:
+          type: Polygon
+          coordinates:
+            - - [99.234567, 8.567890]
+              - [99.234567, 8.667890]
+              - [99.334567, 8.667890]
+              - [99.334567, 8.567890]
+              - [99.234567, 8.567890]
+        collection_method: gps_device
+        plot_area_hectares: 50
+      production:
+        production_date: "2024-04-10"
+        cultivation_method: plantation
+        farm_id: "TH-SRT-PLANT-0789"
+      expected_result:
+        compliance_status: COMPLIANT
+        risk_level: low
+
+    - id: RUBBER-VALID-002
+      description: "Valid rubber from established Malaysian plantation"
+      commodity:
+        commodity_type: rubber
+        cn_code: "40012100"
+        quantity_kg: 45000
+        origin_country: MY
+        product_description: "Natural rubber smoked sheets"
+      geolocation:
+        geometry:
+          type: Point
+          coordinates: [102.345678, 4.567890]
+        collection_method: satellite_derived
+      production:
+        production_date: "2024-06-25"
+        cultivation_method: plantation
+      supply_chain:
+        certification_claims:
+          - certification_scheme: FSC
+            certificate_number: "FSC-MY-2024-34567"
+            valid_until: "2025-09-30"
+      expected_result:
+        compliance_status: COMPLIANT
+
+  invalid_cases:
+    - id: RUBBER-INVALID-001
+      description: "Invalid - encroachment into Cambodian protected forest"
+      commodity:
+        commodity_type: rubber
+        cn_code: "40011000"
+        quantity_kg: 15000
+        origin_country: KH
+      geolocation:
+        geometry:
+          type: Point
+          coordinates: [107.234567, 12.567890]  # Near protected area
+      production:
+        production_date: "2024-05-15"
+      environmental_data:
+        protected_area_intersection: true
+        protected_area_name: "Prey Lang Wildlife Sanctuary"
+      expected_result:
+        compliance_status: NON_COMPLIANT
+        non_compliance_reasons:
+          - "Production area intersects Prey Lang Wildlife Sanctuary"
+        risk_level: high
+
+# =============================================================================
+# SOY FIXTURES
+# =============================================================================
+soy:
+  valid_cases:
+    - id: SOY-VALID-001
+      description: "Valid soybeans from Argentina - Pampas region"
+      commodity:
+        commodity_type: soy
+        cn_code: "12011000"
+        quantity_kg: 500000
+        origin_country: AR
+        product_description: "Soya beans, seed"
+        batch_id: "AR-SOY-2024-12345"
+      geolocation:
+        geometry:
+          type: Polygon
+          coordinates:
+            - - [-60.234567, -33.567890]
+              - [-60.234567, -33.467890]
+              - [-60.134567, -33.467890]
+              - [-60.134567, -33.567890]
+              - [-60.234567, -33.567890]
+        collection_method: satellite_derived
+        precision_meters: 10
+        plot_area_hectares: 2500
+      production:
+        production_date: "2024-04-01"
+        harvest_season: "2023/2024"
+        cultivation_method: conventional
+      expected_result:
+        compliance_status: COMPLIANT
+        risk_level: low
+
+    - id: SOY-VALID-002
+      description: "Valid RTRS certified soy from Brazil - Cerrado converted pre-2020"
+      commodity:
+        commodity_type: soy
+        cn_code: "15071000"
+        quantity_kg: 200000
+        origin_country: BR
+        product_description: "Crude soya bean oil"
+      geolocation:
+        geometry:
+          type: Polygon
+          coordinates:
+            - - [-47.567890, -16.234567]
+              - [-47.567890, -16.134567]
+              - [-47.467890, -16.134567]
+              - [-47.467890, -16.234567]
+              - [-47.567890, -16.234567]
+        collection_method: gps_device
+      production:
+        production_date: "2024-03-20"
+        cultivation_method: conventional
+      supply_chain:
+        certification_claims:
+          - certification_scheme: RTRS
+            certificate_number: "RTRS-BR-2024-56789"
+            valid_until: "2025-12-31"
+      environmental_data:
+        land_conversion_date: "2018-06-15"  # Before EUDR cutoff
+      expected_result:
+        compliance_status: COMPLIANT
+
+  invalid_cases:
+    - id: SOY-INVALID-001
+      description: "Invalid - recent Cerrado conversion"
+      commodity:
+        commodity_type: soy
+        cn_code: "12011000"
+        quantity_kg: 150000
+        origin_country: BR
+      geolocation:
+        geometry:
+          type: Polygon
+          coordinates:
+            - - [-45.234567, -12.567890]
+              - [-45.234567, -12.467890]
+              - [-45.134567, -12.467890]
+              - [-45.134567, -12.567890]
+              - [-45.234567, -12.567890]
+      production:
+        production_date: "2024-04-10"
+      satellite_data:
+        forest_loss_detected: true
+        loss_year: 2021
+        loss_area_ha: 450
+        previous_land_cover: "cerrado_savanna"
+      expected_result:
+        compliance_status: NON_COMPLIANT
+        non_compliance_reasons:
+          - "Cerrado conversion detected: 450 hectares cleared in 2021"
+        risk_level: high
+
+# =============================================================================
+# WOOD FIXTURES
+# =============================================================================
+wood:
+  valid_cases:
+    - id: WOOD-VALID-001
+      description: "Valid FSC certified timber from Sweden"
+      commodity:
+        commodity_type: wood
+        cn_code: "44039100"
+        quantity_kg: 80000
+        origin_country: SE
+        product_description: "Oak wood in the rough"
+        batch_id: "SE-WOOD-2024-67890"
+      geolocation:
+        geometry:
+          type: Polygon
+          coordinates:
+            - - [15.234567, 59.567890]
+              - [15.234567, 59.667890]
+              - [15.334567, 59.667890]
+              - [15.334567, 59.567890]
+              - [15.234567, 59.567890]
+        collection_method: survey_grade
+        precision_meters: 1
+        plot_area_hectares: 500
+      production:
+        production_date: "2024-02-15"
+        cultivation_method: conventional
+        farm_id: "SE-FSC-FOREST-0123"
+      supply_chain:
+        traceability_system: identity_preserved
+        certification_claims:
+          - certification_scheme: FSC
+            certificate_number: "FSC-SE-2024-12345"
+            chain_of_custody_type: Identity_Preserved
+            valid_until: "2027-06-30"
+      expected_result:
+        compliance_status: COMPLIANT
+        risk_level: low
+
+    - id: WOOD-VALID-002
+      description: "Valid PEFC certified wood products from Canada"
+      commodity:
+        commodity_type: wood
+        cn_code: "47032100"
+        quantity_kg: 120000
+        origin_country: CA
+        product_description: "Chemical wood pulp, coniferous"
+      geolocation:
+        geometry:
+          type: Point
+          coordinates: [-125.234567, 54.567890]
+        collection_method: satellite_derived
+      production:
+        production_date: "2024-05-10"
+        cultivation_method: conventional
+      supply_chain:
+        certification_claims:
+          - certification_scheme: PEFC
+            certificate_number: "PEFC-CA-2024-78901"
+            valid_until: "2026-03-31"
+      expected_result:
+        compliance_status: COMPLIANT
+
+  invalid_cases:
+    - id: WOOD-INVALID-001
+      description: "Invalid - illegal logging from Myanmar"
+      commodity:
+        commodity_type: wood
+        cn_code: "44072910"
+        quantity_kg: 25000
+        origin_country: MM
+        product_description: "Teak wood, sawn"
+      geolocation:
+        geometry:
+          type: Point
+          coordinates: [96.234567, 19.567890]
+        collection_method: manual_entry
+      production:
+        production_date: "2024-06-01"
+      supply_chain:
+        chain_of_custody: []  # No traceability
+        documents: []
+      expected_result:
+        compliance_status: NON_COMPLIANT
+        non_compliance_reasons:
+          - "No chain of custody documentation"
+          - "High risk origin country with no legality verification"
+        risk_level: high
+
+    - id: WOOD-INVALID-002
+      description: "Invalid - charcoal from unsustainable source"
+      commodity:
+        commodity_type: wood
+        cn_code: "44029000"
+        quantity_kg: 10000
+        origin_country: NG
+        product_description: "Wood charcoal"
+      geolocation:
+        geometry:
+          type: Point
+          coordinates: [7.234567, 9.567890]
+        collection_method: manual_entry
+        precision_meters: 100  # Low precision
+      production:
+        production_date: "2024-07-20"
+      satellite_data:
+        forest_loss_detected: true
+        loss_year: 2023
+      expected_result:
+        compliance_status: NON_COMPLIANT
+        non_compliance_reasons:
+          - "Deforestation detected in 2023"
+          - "Low geolocation precision (<10m required)"
+
+# =============================================================================
+# EDGE CASES
+# =============================================================================
+edge_cases:
+  - id: EDGE-CUTOFF-001
+    description: "Production exactly on cutoff date (2020-12-31)"
+    commodity:
+      commodity_type: coffee
+      cn_code: "09011100"
+      quantity_kg: 5000
+      origin_country: CO
+    production:
+      production_date: "2020-12-31"
+    expected_result:
+      compliance_status: COMPLIANT
+      notes: "Cutoff date is inclusive"
+
+  - id: EDGE-CUTOFF-002
+    description: "Production one day after cutoff (2021-01-01)"
+    commodity:
+      commodity_type: soy
+      cn_code: "12011000"
+      quantity_kg: 100000
+      origin_country: BR
+    production:
+      production_date: "2021-01-01"
+    satellite_data:
+      baseline_forest_cover: 95
+      current_forest_cover: 30
+    expected_result:
+      compliance_status: NON_COMPLIANT
+      non_compliance_reasons:
+        - "Deforestation detected after cutoff date"
+
+  - id: EDGE-MULTIPOLYGON-001
+    description: "Valid multi-polygon with 50 small plots"
+    commodity:
+      commodity_type: cocoa
+      cn_code: "18010000"
+      quantity_kg: 30000
+      origin_country: GH
+    geolocation:
+      geometry:
+        type: MultiPolygon
+        coordinates:
+          # 50 polygons would be listed here
+          - - - [-1.5, 6.2]
+              - [-1.5, 6.21]
+              - [-1.51, 6.21]
+              - [-1.51, 6.2]
+              - [-1.5, 6.2]
+    expected_result:
+      compliance_status: COMPLIANT
+      notes: "Multi-polygon aggregation from cooperative"
+
+  - id: EDGE-PRECISION-001
+    description: "Low precision coordinates - warning"
+    commodity:
+      commodity_type: rubber
+      cn_code: "40011000"
+      quantity_kg: 10000
+      origin_country: TH
+    geolocation:
+      geometry:
+        type: Point
+        coordinates: [99.23, 8.56]  # Only 2 decimal places
+      precision_meters: 100
+    expected_result:
+      compliance_status: PENDING_VERIFICATION
+      warnings:
+        - "Coordinate precision below recommended 6 decimal places"
+
+  - id: EDGE-DERIVED-001
+    description: "Derived product - chocolate with 35% cocoa"
+    commodity:
+      commodity_type: cocoa
+      cn_code: "18063210"
+      quantity_kg: 50000
+      origin_country: BE  # Manufactured in Belgium
+      is_derived_product: true
+      primary_commodity_percentage: 35
+    supply_chain:
+      chain_of_custody:
+        - node_type: producer
+          location_country: GH
+        - node_type: processor
+          location_country: NL
+        - node_type: manufacturer
+          location_country: BE
+    expected_result:
+      compliance_status: COMPLIANT
+      notes: "EUDR applies to cocoa content portion"
+
+# =============================================================================
+# ERROR SCENARIOS
+# =============================================================================
+error_scenarios:
+  - id: ERROR-MISSING-GEO-001
+    description: "Missing geolocation data"
+    commodity:
+      commodity_type: palm_oil
+      cn_code: "15111000"
+      quantity_kg: 50000
+      origin_country: ID
+    geolocation: null
+    expected_result:
+      compliance_status: VALIDATION_ERROR
+      errors:
+        - "Geolocation data is required"
+
+  - id: ERROR-INVALID-POLYGON-001
+    description: "Self-intersecting polygon"
+    commodity:
+      commodity_type: soy
+      cn_code: "12011000"
+      quantity_kg: 100000
+      origin_country: BR
+    geolocation:
+      geometry:
+        type: Polygon
+        coordinates:
+          - - [-60.0, -30.0]
+            - [-60.0, -31.0]
+            - [-61.0, -30.0]  # Creates self-intersection
+            - [-61.0, -31.0]
+            - [-60.0, -30.0]
+    expected_result:
+      compliance_status: VALIDATION_ERROR
+      errors:
+        - "Invalid polygon geometry: self-intersection detected"
+
+  - id: ERROR-INVALID-CN-001
+    description: "Invalid CN code - not in EUDR scope"
+    commodity:
+      commodity_type: coffee
+      cn_code: "99999999"  # Invalid code
+      quantity_kg: 5000
+      origin_country: CO
+    expected_result:
+      compliance_status: VALIDATION_ERROR
+      errors:
+        - "CN code not in EUDR regulated product list"

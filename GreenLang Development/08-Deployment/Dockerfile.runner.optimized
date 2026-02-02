@@ -1,0 +1,79 @@
+# Optimized runner image - Target: <300MB
+# NOTE: Python 3.11 is the standardized version for GreenLang core infrastructure.
+# See pyproject.toml for supported versions (3.10, 3.11, 3.12).
+FROM python:3.11-slim AS builder
+
+# Build stage - compile dependencies
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+
+WORKDIR /build
+
+# Copy only necessary files for installation
+COPY pyproject.toml setup.py VERSION README.md ./
+COPY greenlang/ ./greenlang/
+COPY core/ ./core/
+COPY MANIFEST.in ./
+
+# Install in a virtual environment
+RUN python -m venv /opt/venv && \
+    /opt/venv/bin/pip install --upgrade pip setuptools wheel && \
+    /opt/venv/bin/pip install --no-cache-dir .
+
+# Remove unnecessary files from venv
+RUN find /opt/venv -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true && \
+    find /opt/venv -type d -name "*.dist-info" -exec rm -rf {} + 2>/dev/null || true && \
+    find /opt/venv -type d -name tests -exec rm -rf {} + 2>/dev/null || true && \
+    find /opt/venv -type f -name "*.pyc" -delete && \
+    find /opt/venv -type f -name "*.pyo" -delete
+
+# Final stage - minimal runtime
+FROM python:3.11-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    VIRTUAL_ENV=/opt/venv \
+    PATH="/opt/venv/bin:$PATH" \
+    GL_HOME=/var/lib/greenlang \
+    GL_CACHE_DIR=/var/cache/greenlang \
+    GL_LOG_DIR=/var/log/greenlang
+
+# Minimal runtime deps (no curl, smaller)
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    ca-certificates \
+    tini && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# Copy only the venv from builder
+COPY --from=builder /opt/venv /opt/venv
+
+# Create non-root user
+RUN groupadd -g 10001 appuser && \
+    useradd -u 10001 -g 10001 -m -s /bin/false appuser && \
+    mkdir -p ${GL_HOME} ${GL_CACHE_DIR} ${GL_LOG_DIR} /app && \
+    chown -R appuser:appuser ${GL_HOME} ${GL_CACHE_DIR} ${GL_LOG_DIR} /app
+
+USER appuser
+WORKDIR /app
+
+# OCI labels
+ARG VCS_REF
+ARG BUILD_DATE
+ARG VERSION=0.2.0
+LABEL org.opencontainers.image.title="GreenLang Runner Optimized" \
+      org.opencontainers.image.description="Minimal production runtime (<300MB)" \
+      org.opencontainers.image.version="${VERSION}" \
+      org.opencontainers.image.created="${BUILD_DATE}" \
+      org.opencontainers.image.revision="${VCS_REF}" \
+      org.opencontainers.image.source="https://github.com/akshay-greenlang/Code-V1_GreenLang" \
+      org.opencontainers.image.licenses="MIT"
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD gl --help >/dev/null 2>&1 || exit 1
+
+ENTRYPOINT ["/usr/bin/tini", "--", "gl"]
+CMD ["--help"]

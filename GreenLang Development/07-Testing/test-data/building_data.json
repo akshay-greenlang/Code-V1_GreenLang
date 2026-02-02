@@ -1,0 +1,49 @@
+{
+  "metadata": {
+    "building_type": "hospital",
+    "area": 100000,
+    "area_unit": "sqft",
+    "location": {
+      "country": "US",
+      "city": "New York"
+    },
+    "occupancy": 500,
+    "floor_count": 5,
+    "building_age": 10,
+    "climate_zone": "4A"
+  },
+  "energy_consumption": {
+    "electricity": {
+      "value": 3500000,
+      "unit": "kWh"
+    },
+    "natural_gas": {
+      "value": 10000,
+      "unit": "therms"
+    },
+    "diesel": {
+      "value": 5000,
+      "unit": "gallons"
+    }
+  },
+  "hvac_system": {
+    "type": "central",
+    "age": 8,
+    "efficiency_rating": 0.85
+  },
+  "building_envelope": {
+    "insulation_r_value": 20,
+    "window_type": "double_pane",
+    "window_area_percentage": 30
+  },
+  "appliance_loads": {
+    "lighting": {
+      "type": "mixed",
+      "percentage_led": 60
+    },
+    "equipment": {
+      "medical_equipment": true,
+      "data_center": false
+    }
+  }
+}

@@ -1,0 +1,919 @@
+# =============================================================================
+# Steam System Optimization Agent Template
+# GreenLang Agent Factory - Process Heat Applications
+# =============================================================================
+# Standards: ASME, API, IAPWS-IF97
+# Version: 1.0.0
+# =============================================================================
+
+metadata:
+  template_id: steam_system_agent
+  name: Steam System Optimization Agent
+  description: >
+    Comprehensive steam system analysis including generation, distribution,
+    utilization, and condensate recovery. Calculates system efficiency,
+    identifies losses, and provides optimization recommendations.
+  category: efficiency
+  version: "1.0.0"
+  status: production
+  author: GreenLang Engineering Team
+  created_at: "2024-12-01T00:00:00Z"
+  updated_at: "2024-12-11T00:00:00Z"
+
+  tags:
+    - steam_system
+    - condensate
+    - distribution
+    - flash_steam
+    - steam_balance
+    - energy_efficiency
+
+  equipment_types:
+    - steam_header
+    - prv_station
+    - condensate_system
+    - deaerator
+    - flash_tank
+    - steam_trap
+
+  industries:
+    - oil_gas
+    - petrochemical
+    - chemical
+    - power_generation
+    - pulp_paper
+    - food_beverage
+
+  applicable_standards:
+    - ASME PTC 4
+    - IAPWS-IF97
+    - ASME B31.1
+
+# =============================================================================
+# Input Schema
+# =============================================================================
+
+input_schema:
+  name: SteamSystemInput
+  description: Steam system analysis input parameters
+  version: "1.0.0"
+
+  fields:
+    # Steam generation
+    boiler_steam_generation:
+      type: float
+      description: Total steam generation from boilers
+      required: true
+      unit: kg/hr
+      min_value: 0
+
+    boiler_efficiency:
+      type: float
+      description: Average boiler efficiency
+      required: false
+      unit: percent
+      min_value: 50
+      max_value: 98
+      default: 85
+
+    fuel_consumption:
+      type: float
+      description: Total fuel consumption
+      required: false
+      unit: kg/hr
+
+    fuel_cost:
+      type: float
+      description: Fuel cost
+      required: false
+      unit: USD/kg
+      default: 0.03
+
+    # High pressure steam
+    hp_steam_pressure:
+      type: float
+      description: High pressure steam header pressure
+      required: true
+      unit: bar_g
+      min_value: 0
+
+    hp_steam_temperature:
+      type: float
+      description: HP steam temperature
+      required: true
+      unit: celsius
+
+    hp_steam_flow:
+      type: float
+      description: HP steam header flow
+      required: true
+      unit: kg/hr
+      min_value: 0
+
+    hp_steam_users:
+      type: list
+      description: List of HP steam users with flows
+      required: false
+
+    # Medium pressure steam
+    mp_steam_pressure:
+      type: float
+      description: Medium pressure steam header pressure
+      required: false
+      unit: bar_g
+
+    mp_steam_temperature:
+      type: float
+      description: MP steam temperature
+      required: false
+      unit: celsius
+
+    mp_steam_flow:
+      type: float
+      description: MP steam header flow
+      required: false
+      unit: kg/hr
+      default: 0
+
+    mp_steam_users:
+      type: list
+      description: List of MP steam users with flows
+      required: false
+
+    # Low pressure steam
+    lp_steam_pressure:
+      type: float
+      description: Low pressure steam header pressure
+      required: false
+      unit: bar_g
+      default: 3
+
+    lp_steam_temperature:
+      type: float
+      description: LP steam temperature
+      required: false
+      unit: celsius
+
+    lp_steam_flow:
+      type: float
+      description: LP steam header flow
+      required: false
+      unit: kg/hr
+      default: 0
+
+    lp_steam_users:
+      type: list
+      description: List of LP steam users with flows
+      required: false
+
+    # Letdown stations
+    hp_to_mp_letdown:
+      type: float
+      description: Steam letdown from HP to MP
+      required: false
+      unit: kg/hr
+      default: 0
+
+    hp_to_lp_letdown:
+      type: float
+      description: Steam letdown from HP to LP
+      required: false
+      unit: kg/hr
+      default: 0
+
+    mp_to_lp_letdown:
+      type: float
+      description: Steam letdown from MP to LP
+      required: false
+      unit: kg/hr
+      default: 0
+
+    # Condensate recovery
+    condensate_return_flow:
+      type: float
+      description: Condensate returned to boiler house
+      required: true
+      unit: kg/hr
+      min_value: 0
+
+    condensate_return_temp:
+      type: float
+      description: Condensate return temperature
+      required: true
+      unit: celsius
+      min_value: 0
+      max_value: 200
+
+    flash_steam_recovery:
+      type: float
+      description: Flash steam recovered
+      required: false
+      unit: kg/hr
+      default: 0
+
+    # Make-up water
+    makeup_water_flow:
+      type: float
+      description: Make-up water flow to deaerator
+      required: true
+      unit: kg/hr
+      min_value: 0
+
+    makeup_water_temp:
+      type: float
+      description: Make-up water temperature
+      required: true
+      unit: celsius
+      min_value: 0
+      max_value: 100
+
+    makeup_water_cost:
+      type: float
+      description: Cost of treated make-up water
+      required: false
+      unit: USD/m3
+      default: 2.0
+
+    # Deaerator
+    deaerator_pressure:
+      type: float
+      description: Deaerator operating pressure
+      required: false
+      unit: bar_g
+      default: 0.5
+
+    deaerator_temperature:
+      type: float
+      description: Deaerator operating temperature
+      required: false
+      unit: celsius
+      default: 110
+
+    # Losses and vents
+    atmospheric_venting:
+      type: float
+      description: Steam vented to atmosphere
+      required: false
+      unit: kg/hr
+      default: 0
+
+    steam_trap_losses:
+      type: float
+      description: Estimated losses through failed traps
+      required: false
+      unit: kg/hr
+      default: 0
+
+    insulation_losses:
+      type: float
+      description: Heat losses from uninsulated surfaces
+      required: false
+      unit: kW
+      default: 0
+
+    # Operating hours
+    operating_hours:
+      type: float
+      description: Annual operating hours
+      required: false
+      unit: hours/year
+      default: 8000
+
+# =============================================================================
+# Output Schema
+# =============================================================================
+
+output_schema:
+  name: SteamSystemOutput
+  description: Steam system analysis results
+  version: "1.0.0"
+
+  fields:
+    # Steam balance
+    total_steam_generated:
+      type: float
+      description: Total steam generation
+      unit: kg/hr
+
+    total_steam_consumed:
+      type: float
+      description: Total steam consumption
+      unit: kg/hr
+
+    steam_balance_error:
+      type: float
+      description: Steam balance discrepancy
+      unit: percent
+
+    # Energy flows
+    total_heat_input:
+      type: float
+      description: Total heat input from fuel
+      unit: MW
+
+    total_heat_in_steam:
+      type: float
+      description: Total heat content in generated steam
+      unit: MW
+
+    useful_heat_delivered:
+      type: float
+      description: Useful heat delivered to users
+      unit: MW
+
+    # System efficiency
+    system_efficiency:
+      type: float
+      description: Overall steam system efficiency
+      unit: percent
+
+    generation_efficiency:
+      type: float
+      description: Steam generation efficiency
+      unit: percent
+
+    distribution_efficiency:
+      type: float
+      description: Steam distribution efficiency
+      unit: percent
+
+    utilization_efficiency:
+      type: float
+      description: Steam utilization efficiency
+      unit: percent
+
+    # Condensate analysis
+    condensate_return_rate:
+      type: float
+      description: Percentage of condensate returned
+      unit: percent
+
+    condensate_heat_recovery:
+      type: float
+      description: Heat recovered from condensate
+      unit: MW
+
+    flash_steam_potential:
+      type: float
+      description: Potential flash steam generation
+      unit: kg/hr
+
+    flash_steam_loss:
+      type: float
+      description: Flash steam currently lost
+      unit: kg/hr
+
+    # Losses breakdown
+    distribution_losses:
+      type: float
+      description: Steam distribution losses
+      unit: kg/hr
+
+    trap_losses:
+      type: float
+      description: Losses through steam traps
+      unit: kg/hr
+
+    venting_losses:
+      type: float
+      description: Atmospheric venting losses
+      unit: kg/hr
+
+    blowdown_losses:
+      type: float
+      description: Boiler blowdown losses
+      unit: kg/hr
+
+    total_losses:
+      type: float
+      description: Total steam system losses
+      unit: kg/hr
+
+    loss_percentage:
+      type: float
+      description: Total losses as percentage of generation
+      unit: percent
+
+    # Enthalpy values
+    hp_steam_enthalpy:
+      type: float
+      description: HP steam specific enthalpy
+      unit: kJ/kg
+
+    mp_steam_enthalpy:
+      type: float
+      description: MP steam specific enthalpy
+      unit: kJ/kg
+
+    lp_steam_enthalpy:
+      type: float
+      description: LP steam specific enthalpy
+      unit: kJ/kg
+
+    condensate_enthalpy:
+      type: float
+      description: Condensate specific enthalpy
+      unit: kJ/kg
+
+    makeup_enthalpy:
+      type: float
+      description: Make-up water specific enthalpy
+      unit: kJ/kg
+
+    # Cost analysis
+    fuel_cost_total:
+      type: float
+      description: Total annual fuel cost
+      unit: USD/year
+
+    water_cost_total:
+      type: float
+      description: Total annual water cost
+      unit: USD/year
+
+    loss_cost_total:
+      type: float
+      description: Annual cost of steam losses
+      unit: USD/year
+
+    savings_potential:
+      type: float
+      description: Annual savings potential
+      unit: USD/year
+
+    # CO2 emissions
+    co2_emissions:
+      type: float
+      description: Annual CO2 emissions from steam system
+      unit: tonnes/year
+
+    co2_savings_potential:
+      type: float
+      description: CO2 savings potential
+      unit: tonnes/year
+
+    # Recommendations
+    recommendations:
+      type: list
+      description: System optimization recommendations
+
+    priority_actions:
+      type: list
+      description: High priority improvement actions
+
+    payback_analysis:
+      type: list
+      description: Payback analysis for improvements
+
+    # Provenance
+    provenance_hash:
+      type: string
+      description: SHA-256 calculation hash
+
+    calculation_timestamp:
+      type: datetime
+      description: Timestamp of analysis
+
+    source_references:
+      type: list
+      description: Standards and methods used
+
+# =============================================================================
+# Formulas
+# =============================================================================
+
+formulas:
+  - id: IAPWS_STEAM_ENTHALPY
+    name: Steam Enthalpy (IAPWS-IF97)
+    description: Steam specific enthalpy from pressure and temperature
+    equation: "h = f(P, T) per IAPWS-IF97"
+    variables:
+      P:
+        description: Steam pressure
+        unit: bar_a
+        type: float
+      T:
+        description: Steam temperature
+        unit: celsius
+        type: float
+      h:
+        description: Specific enthalpy
+        unit: kJ/kg
+        type: float
+    source:
+      standard: IAPWS-IF97
+      section: "Region 2"
+      edition: "1997"
+    application: All steam enthalpy calculations
+
+  - id: CONDENSATE_ENTHALPY
+    name: Condensate Enthalpy
+    description: Saturated liquid enthalpy at given temperature
+    equation: "h_f = f(T) per IAPWS-IF97"
+    variables:
+      T:
+        description: Temperature
+        unit: celsius
+        type: float
+      h_f:
+        description: Saturated liquid enthalpy
+        unit: kJ/kg
+        type: float
+    source:
+      standard: IAPWS-IF97
+      section: "Region 1"
+      edition: "1997"
+    application: Condensate heat recovery calculations
+
+  - id: FLASH_STEAM_CALCULATION
+    name: Flash Steam Quantity
+    description: Calculate flash steam from condensate letdown
+    equation: "m_flash = m_cond * (h_f1 - h_f2) / h_fg2"
+    variables:
+      m_cond:
+        description: Condensate mass flow
+        unit: kg/hr
+        type: float
+      h_f1:
+        description: Enthalpy at high pressure
+        unit: kJ/kg
+        type: float
+      h_f2:
+        description: Enthalpy at low pressure
+        unit: kJ/kg
+        type: float
+      h_fg2:
+        description: Latent heat at low pressure
+        unit: kJ/kg
+        type: float
+    source:
+      standard: ASME
+      section: "Steam Tables"
+      edition: "2023"
+    application: Flash steam recovery analysis
+
+  - id: SYSTEM_EFFICIENCY
+    name: Steam System Efficiency
+    description: Overall steam system efficiency
+    equation: "eta_sys = (Q_useful / Q_fuel) * 100"
+    variables:
+      Q_useful:
+        description: Useful heat delivered to users
+        unit: MW
+        type: float
+      Q_fuel:
+        description: Heat input from fuel
+        unit: MW
+        type: float
+    source:
+      standard: ASME PTC
+      section: "General"
+      edition: "2023"
+    application: System efficiency calculation
+
+  - id: CONDENSATE_RETURN_SAVINGS
+    name: Condensate Return Savings
+    description: Fuel savings from condensate return
+    equation: "Savings = m_cond * (h_cond - h_makeup) / (HHV * eta_boiler)"
+    variables:
+      m_cond:
+        description: Condensate return flow
+        unit: kg/hr
+        type: float
+      h_cond:
+        description: Condensate enthalpy
+        unit: kJ/kg
+        type: float
+      h_makeup:
+        description: Makeup water enthalpy
+        unit: kJ/kg
+        type: float
+      HHV:
+        description: Fuel heating value
+        unit: kJ/kg
+        type: float
+      eta_boiler:
+        description: Boiler efficiency
+        unit: fraction
+        type: float
+    source:
+      standard: DOE Best Practices
+      section: "Steam Tip Sheet 8"
+      edition: "2012"
+    application: Condensate recovery economics
+
+# =============================================================================
+# Standards References
+# =============================================================================
+
+standards:
+  - code: IAPWS-IF97
+    title: Industrial Formulation for Thermodynamic Properties of Water and Steam
+    edition: "1997"
+    sections:
+      - "All Regions"
+    requirements:
+      - Steam property calculations
+    compliance_level: required
+
+  - code: ASME PTC 4
+    title: Fired Steam Generators
+    edition: "2023"
+    sections:
+      - "Energy balance"
+    requirements:
+      - Efficiency calculations
+    compliance_level: recommended
+
+  - code: ASME B31.1
+    title: Power Piping
+    edition: "2022"
+    sections:
+      - "Distribution systems"
+    requirements:
+      - Piping design
+    compliance_level: recommended
+
+# =============================================================================
+# Safety Constraints
+# =============================================================================
+
+safety_constraints:
+  - id: SC_STEAM_BALANCE
+    name: Steam Balance Check
+    description: Steam balance must close within tolerance
+    condition: "abs(steam_balance_error) <= 5"
+    action: warn
+    severity: warning
+    message: "Steam balance error {steam_balance_error}% exceeds 5%"
+
+  - id: SC_CONDENSATE_RETURN
+    name: Low Condensate Return
+    description: Flag low condensate return rate
+    condition: "condensate_return_rate >= 50"
+    action: warn
+    severity: warning
+    message: "Condensate return rate {condensate_return_rate}% below 50%"
+
+  - id: SC_SYSTEM_EFFICIENCY
+    name: Low System Efficiency
+    description: Flag low overall system efficiency
+    condition: "system_efficiency >= 60"
+    action: warn
+    severity: warning
+    message: "System efficiency {system_efficiency}% below 60%"
+
+  - id: SC_HIGH_LOSSES
+    name: High Steam Losses
+    description: Flag excessive steam losses
+    condition: "loss_percentage <= 15"
+    action: warn
+    severity: warning
+    message: "Total losses {loss_percentage}% exceed 15%"
+
+  - id: SC_VENTING_LOSSES
+    name: Excessive Venting
+    description: Flag excessive atmospheric venting
+    condition: "atmospheric_venting <= boiler_steam_generation * 0.02"
+    action: warn
+    severity: error
+    message: "Atmospheric venting exceeds 2% of steam generation"
+
+# =============================================================================
+# Processing Pipeline
+# =============================================================================
+
+processing:
+  steps:
+    - id: STEP_01_VALIDATE_INPUTS
+      name: Input Validation
+      type: validation
+      description: Validate all input parameters
+      inputs:
+        - all_input_fields
+      outputs:
+        - validation_status
+      error_handling: reject
+
+    - id: STEP_02_CALCULATE_ENTHALPIES
+      name: Steam Property Calculations
+      type: calculation
+      description: Calculate all steam and water enthalpies
+      inputs:
+        - hp_steam_pressure
+        - hp_steam_temperature
+        - mp_steam_pressure
+        - mp_steam_temperature
+        - lp_steam_pressure
+        - lp_steam_temperature
+        - condensate_return_temp
+        - makeup_water_temp
+      outputs:
+        - hp_steam_enthalpy
+        - mp_steam_enthalpy
+        - lp_steam_enthalpy
+        - condensate_enthalpy
+        - makeup_enthalpy
+      formula_refs:
+        - IAPWS_STEAM_ENTHALPY
+        - CONDENSATE_ENTHALPY
+      error_handling: propagate
+
+    - id: STEP_03_STEAM_BALANCE
+      name: Steam Balance
+      type: calculation
+      description: Calculate steam balance across system
+      inputs:
+        - boiler_steam_generation
+        - hp_steam_flow
+        - mp_steam_flow
+        - lp_steam_flow
+        - hp_to_mp_letdown
+        - hp_to_lp_letdown
+        - mp_to_lp_letdown
+      outputs:
+        - total_steam_generated
+        - total_steam_consumed
+        - steam_balance_error
+      constraints:
+        - SC_STEAM_BALANCE
+      error_handling: propagate
+
+    - id: STEP_04_ENERGY_FLOWS
+      name: Energy Flow Calculations
+      type: calculation
+      description: Calculate energy flows throughout system
+      inputs:
+        - all_flows
+        - all_enthalpies
+      outputs:
+        - total_heat_input
+        - total_heat_in_steam
+        - useful_heat_delivered
+      error_handling: propagate
+
+    - id: STEP_05_CONDENSATE_ANALYSIS
+      name: Condensate Recovery Analysis
+      type: calculation
+      description: Analyze condensate recovery system
+      inputs:
+        - condensate_return_flow
+        - condensate_return_temp
+        - makeup_water_flow
+        - lp_steam_pressure
+      outputs:
+        - condensate_return_rate
+        - condensate_heat_recovery
+        - flash_steam_potential
+        - flash_steam_loss
+      formula_refs:
+        - FLASH_STEAM_CALCULATION
+        - CONDENSATE_RETURN_SAVINGS
+      constraints:
+        - SC_CONDENSATE_RETURN
+      error_handling: propagate
+
+    - id: STEP_06_LOSS_ANALYSIS
+      name: Loss Analysis
+      type: calculation
+      description: Calculate all steam system losses
+      inputs:
+        - steam_trap_losses
+        - atmospheric_venting
+        - insulation_losses
+      outputs:
+        - distribution_losses
+        - trap_losses
+        - venting_losses
+        - blowdown_losses
+        - total_losses
+        - loss_percentage
+      constraints:
+        - SC_HIGH_LOSSES
+        - SC_VENTING_LOSSES
+      error_handling: propagate
+
+    - id: STEP_07_EFFICIENCY
+      name: Efficiency Calculations
+      type: calculation
+      description: Calculate system efficiencies
+      inputs:
+        - total_heat_input
+        - useful_heat_delivered
+        - boiler_efficiency
+      outputs:
+        - system_efficiency
+        - generation_efficiency
+        - distribution_efficiency
+        - utilization_efficiency
+      formula_refs:
+        - SYSTEM_EFFICIENCY
+      constraints:
+        - SC_SYSTEM_EFFICIENCY
+      error_handling: propagate
+
+    - id: STEP_08_COST_ANALYSIS
+      name: Cost Analysis
+      type: calculation
+      description: Calculate costs and savings potential
+      inputs:
+        - fuel_consumption
+        - fuel_cost
+        - makeup_water_flow
+        - makeup_water_cost
+        - operating_hours
+      outputs:
+        - fuel_cost_total
+        - water_cost_total
+        - loss_cost_total
+        - savings_potential
+      error_handling: propagate
+
+    - id: STEP_09_EMISSIONS
+      name: CO2 Emissions
+      type: calculation
+      description: Calculate CO2 emissions
+      inputs:
+        - fuel_consumption
+        - operating_hours
+      outputs:
+        - co2_emissions
+        - co2_savings_potential
+      error_handling: default
+
+    - id: STEP_10_RECOMMENDATIONS
+      name: Generate Recommendations
+      type: decision
+      description: Generate optimization recommendations
+      inputs:
+        - all_analysis_results
+      outputs:
+        - recommendations
+        - priority_actions
+        - payback_analysis
+      error_handling: default
+
+    - id: STEP_11_PROVENANCE
+      name: Provenance Tracking
+      type: output
+      description: Generate provenance hash
+      inputs:
+        - all_inputs
+        - all_outputs
+      outputs:
+        - provenance_hash
+        - calculation_timestamp
+        - source_references
+      error_handling: propagate
+
+# =============================================================================
+# Zero-Hallucination Configuration
+# =============================================================================
+
+zero_hallucination:
+  enabled: true
+  calculation_mode: deterministic
+  allowed_operations:
+    - arithmetic
+    - formula_evaluation
+    - steam_property_lookup
+    - interpolation
+  forbidden_operations:
+    - llm_numeric_calculation
+  require_formula_citation: true
+  require_provenance: true
+  llm_allowed_for:
+    - recommendation_generation
+    - priority_assessment
+
+# =============================================================================
+# Test Cases
+# =============================================================================
+
+test_cases:
+  - name: Medium Industrial Site
+    description: Typical multi-pressure steam system
+    inputs:
+      boiler_steam_generation: 50000
+      boiler_efficiency: 85
+      hp_steam_pressure: 40
+      hp_steam_temperature: 400
+      hp_steam_flow: 30000
+      mp_steam_pressure: 10
+      mp_steam_temperature: 200
+      mp_steam_flow: 15000
+      lp_steam_pressure: 3
+      lp_steam_flow: 10000
+      hp_to_mp_letdown: 5000
+      mp_to_lp_letdown: 3000
+      condensate_return_flow: 35000
+      condensate_return_temp: 90
+      makeup_water_flow: 15000
+      makeup_water_temp: 25
+    expected_outputs:
+      condensate_return_rate:
+        min: 65
+        max: 75
+      system_efficiency:
+        min: 60
+        max: 80

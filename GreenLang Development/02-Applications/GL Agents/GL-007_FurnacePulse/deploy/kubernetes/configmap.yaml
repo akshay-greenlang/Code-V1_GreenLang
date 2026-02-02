@@ -1,0 +1,38 @@
+# GL-007 FurnacePulse ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gl-007-furnacepulse-config
+  namespace: greenlang
+  labels:
+    app: gl-007-furnacepulse
+    agent-id: GL-007
+    codename: FURNACEPULSE
+data:
+  ENVIRONMENT: "production"
+  LOG_LEVEL: "INFO"
+  
+  # Furnace Monitoring Parameters
+  TEMPERATURE_SAMPLING_INTERVAL_SECONDS: "5"
+  THERMAL_PROFILE_ZONES: "12"
+  REFRACTORY_THICKNESS_MONITORING: "true"
+  HEAT_FLUX_CALCULATION: "true"
+  
+  # Anomaly Detection Parameters
+  TEMPERATURE_DEVIATION_THRESHOLD: "50.0"
+  TREND_ANALYSIS_WINDOW_HOURS: "24"
+  ANOMALY_SENSITIVITY: "medium"
+  
+  # Safety Parameters
+  MAX_TEMPERATURE_ALARM: "1200.0"
+  REFRACTORY_FAILURE_THRESHOLD: "0.7"
+  EMERGENCY_SHUTDOWN_ENABLED: "true"
+  
+  # Feature Flags
+  FEATURE_THERMAL_IMAGING: "true"
+  FEATURE_PREDICTIVE_MAINTENANCE: "true"
+  FEATURE_REFRACTORY_LIFE_PREDICTION: "true"
+  
+  # API Configuration
+  API_RATE_LIMIT: "1000"
+  API_TIMEOUT_SECONDS: "30"

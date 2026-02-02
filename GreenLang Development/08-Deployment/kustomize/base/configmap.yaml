@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: greenlang-config
+  namespace: greenlang-agents
+data:
+  ENVIRONMENT: "base"
+  LOG_LEVEL: "info"
+  LOG_FORMAT: "json"
+  CACHE_TTL: "3600"
+  MAX_CONCURRENT_REQUESTS: "100"
+  METRICS_PORT: "9090"
+  HEALTH_PORT: "8080"

@@ -1,0 +1,44 @@
+# ============================================================================
+# GL-CBAM-APP - Development Environment
+# ============================================================================
+# Kustomize overlay for development environment
+# ============================================================================
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: gl-cbam-dev
+
+# Base resources
+bases:
+  - ../../base
+
+# Environment-specific labels
+commonLabels:
+  environment: development
+
+# Patches
+patchesStrategicMerge:
+  - patches/replica-patch.yaml
+  - patches/resource-patch.yaml
+  - patches/ingress-patch.yaml
+
+# ConfigMap generator (environment-specific values)
+configMapGenerator:
+  - name: cbam-api-config
+    behavior: merge
+    literals:
+      - APP_ENV=development
+      - LOG_LEVEL=DEBUG
+      - ENABLE_API_DOCS=true
+      - ENABLE_TRACING=true
+      - CORS_ORIGINS=http://localhost:3000,http://localhost:8080,https://cbam-dev.greenlang.io
+
+# Image tags
+images:
+  - name: cbam-api
+    newName: ghcr.io/greenlang/gl-cbam-app
+    newTag: dev-latest
+
+# Namespace
+namespace: gl-cbam-dev

@@ -1,0 +1,7 @@
+name: test-simple
+version: 1.0.0
+steps:
+  - name: test
+    agent: mock
+    inputs:
+      data: test

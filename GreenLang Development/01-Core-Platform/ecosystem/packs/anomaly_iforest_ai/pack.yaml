@@ -1,0 +1,167 @@
+name: Anomaly Detection Agent (Isolation Forest ML)
+version: 1.0.0
+kind: pack
+pack_schema_version: '1.0'
+author:
+  name: GreenLang Team
+  email: support@greenlang.io
+  organization: GreenLang
+license: MIT
+tags:
+- ml
+- anomaly-detection
+- isolation-forest
+- outlier-detection
+- data-quality
+- ai-agent
+- scikit-learn
+- unsupervised-learning
+- citations
+id: ml/anomaly_detection_iforest_v1
+summary: AI-powered Isolation Forest anomaly detection for identifying outliers in
+  climate and energy data with severity-based alerting and pattern analysis
+owners:
+- greenlang-team
+ai:
+  system_prompt: 'You are an anomaly detection expert for GreenLang climate and energy
+    systems.
+
+    You help identify outliers, unusual patterns, and potential data quality issues.
+
+
+    CRITICAL RULES:
+
+    - You MUST use the provided tools for ALL calculations and predictions
+
+    - NEVER estimate or guess numbers
+
+    - Always explain anomalies clearly with specific feature values
+
+    - Provide confidence scores for critical findings
+
+    - Highlight any data quality issues discovered
+
+
+    Your Role:
+
+    1. Orchestrate the anomaly detection workflow using tools
+
+    2. Interpret numerical results with clear, actionable explanations
+
+    3. Identify patterns and root causes of anomalies
+
+    4. Generate severity-based alerts
+
+    5. Provide recommendations for investigation and remediation
+
+
+    Tool Usage Pattern:
+
+    1. Use fit_isolation_forest to train anomaly detection model
+
+    2. Use detect_anomalies to identify outliers in the dataset
+
+    3. Use calculate_anomaly_scores to compute scores for all points
+
+    4. Use rank_anomalies to rank by severity with feature values
+
+    5. Use analyze_anomaly_patterns to identify common characteristics
+
+    6. Use generate_alerts to create actionable alerts for critical anomalies
+
+    7. Synthesize all tool results into clear analysis with recommendations
+
+
+    Severity Classification:
+
+    - Critical: score < -0.5 (immediate attention required)
+
+    - High: score -0.5 to -0.3 (investigate soon)
+
+    - Medium: score -0.3 to -0.1 (monitor)
+
+    - Low: score -0.1 to 0 (note for review)
+
+    - Normal: score >= 0
+
+    '
+  budget:
+    max_cost_usd: 1.0
+  rag_collections:
+  - anomaly_detection_methods
+  - isolation_forest_tuning
+  - energy_data_patterns
+  tools:
+  - name: fit_isolation_forest
+    description: Train Isolation Forest model on data with specified parameters
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:fit_isolation_forest
+    safe: true
+  - name: detect_anomalies
+    description: Identify outliers using fitted model predictions
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:detect_anomalies
+    safe: true
+  - name: calculate_anomaly_scores
+    description: Compute anomaly scores and severity classification for all points
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:calculate_anomaly_scores
+    safe: true
+  - name: rank_anomalies
+    description: Rank anomalies by severity with feature values
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:rank_anomalies
+    safe: true
+  - name: analyze_anomaly_patterns
+    description: Identify patterns in anomalies (feature importance, mean/std differences)
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:analyze_anomaly_patterns
+    safe: true
+  - name: generate_alerts
+    description: Create actionable alerts with root cause hints and recommendations
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:generate_alerts
+    safe: true
+realtime:
+  default_mode: replay
+  snapshot_path: null
+  connectors: []
+provenance:
+  gwp_set: AR6GWP100
+  pin_ef: false
+  record:
+  - inputs
+  - outputs
+  - factors
+  - code_sha
+  - seed

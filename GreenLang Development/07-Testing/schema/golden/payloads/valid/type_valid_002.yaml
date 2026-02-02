@@ -1,0 +1,18 @@
+# Valid Type Constraints Payload 002
+# Tests: Alternative valid types
+# Schema: basic/type_constraints.yaml
+
+_test_metadata:
+  schema: "basic/type_constraints.yaml"
+  description: "Valid payload with nullable and multi-type alternatives"
+  expected_valid: true
+
+string_field: ""
+number_field: -999.99
+integer_field: 0
+boolean_field: false
+array_field: []
+object_field: {}
+null_field: null
+nullable_string: null
+multi_type: 12345

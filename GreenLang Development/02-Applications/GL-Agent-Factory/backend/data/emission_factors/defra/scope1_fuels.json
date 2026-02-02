@@ -1,0 +1,639 @@
+{
+  "metadata": {
+    "source": "DEFRA",
+    "source_name": "UK Department for Environment, Food and Rural Affairs",
+    "source_document": "UK Government GHG Conversion Factors 2024 - Fuels",
+    "source_url": "https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2024",
+    "version": "2024.0",
+    "last_updated": "2024-06-01",
+    "gwp_set": "AR5",
+    "region": "UK",
+    "description": "DEFRA 2024 emission factors for Scope 1 fuel combustion"
+  },
+  "gaseous_fuels": [
+    {
+      "id": "ef://defra/scope1/natural_gas/2024",
+      "fuel_name": "Natural Gas",
+      "fuel_type": "natural_gas",
+      "units": [
+        {
+          "unit": "kWh_gross",
+          "co2_factor": 0.18254,
+          "ch4_factor": 0.00034,
+          "n2o_factor": 0.00032,
+          "co2e_factor": 0.18316,
+          "factor_unit": "kg/kWh"
+        },
+        {
+          "unit": "kWh_net",
+          "co2_factor": 0.20227,
+          "ch4_factor": 0.00038,
+          "n2o_factor": 0.00035,
+          "co2e_factor": 0.20296,
+          "factor_unit": "kg/kWh"
+        },
+        {
+          "unit": "cubic_metres",
+          "co2_factor": 2.02145,
+          "ch4_factor": 0.00378,
+          "n2o_factor": 0.00350,
+          "co2e_factor": 2.02831,
+          "factor_unit": "kg/m3"
+        },
+        {
+          "unit": "therms",
+          "co2_factor": 5.34973,
+          "ch4_factor": 0.01000,
+          "n2o_factor": 0.00927,
+          "co2e_factor": 5.36783,
+          "factor_unit": "kg/therm"
+        }
+      ],
+      "uncertainty_lower_pct": -1.5,
+      "uncertainty_upper_pct": 1.5,
+      "notes": "UK average natural gas"
+    },
+    {
+      "id": "ef://defra/scope1/lpg/2024",
+      "fuel_name": "LPG",
+      "fuel_type": "lpg",
+      "units": [
+        {
+          "unit": "litres",
+          "co2_factor": 1.51906,
+          "ch4_factor": 0.00061,
+          "n2o_factor": 0.00027,
+          "co2e_factor": 1.52118,
+          "factor_unit": "kg/litre"
+        },
+        {
+          "unit": "kWh_gross",
+          "co2_factor": 0.21418,
+          "ch4_factor": 0.00009,
+          "n2o_factor": 0.00004,
+          "co2e_factor": 0.21448,
+          "factor_unit": "kg/kWh"
+        },
+        {
+          "unit": "kg",
+          "co2_factor": 2.93952,
+          "ch4_factor": 0.00119,
+          "n2o_factor": 0.00053,
+          "co2e_factor": 2.94362,
+          "factor_unit": "kg/kg"
+        },
+        {
+          "unit": "tonnes",
+          "co2_factor": 2939.52,
+          "ch4_factor": 1.19,
+          "n2o_factor": 0.53,
+          "co2e_factor": 2943.62,
+          "factor_unit": "kg/tonne"
+        }
+      ],
+      "uncertainty_lower_pct": -2,
+      "uncertainty_upper_pct": 2,
+      "notes": "Propane/butane mixture"
+    },
+    {
+      "id": "ef://defra/scope1/propane/2024",
+      "fuel_name": "Propane",
+      "fuel_type": "propane",
+      "units": [
+        {
+          "unit": "litres",
+          "co2_factor": 1.53628,
+          "ch4_factor": 0.00064,
+          "n2o_factor": 0.00027,
+          "co2e_factor": 1.53849,
+          "factor_unit": "kg/litre"
+        },
+        {
+          "unit": "kWh_gross",
+          "co2_factor": 0.21402,
+          "ch4_factor": 0.00009,
+          "n2o_factor": 0.00004,
+          "co2e_factor": 0.21433,
+          "factor_unit": "kg/kWh"
+        },
+        {
+          "unit": "kg",
+          "co2_factor": 2.99434,
+          "ch4_factor": 0.00125,
+          "n2o_factor": 0.00052,
+          "co2e_factor": 2.99866,
+          "factor_unit": "kg/kg"
+        }
+      ],
+      "uncertainty_lower_pct": -2,
+      "uncertainty_upper_pct": 2,
+      "notes": "Pure propane"
+    },
+    {
+      "id": "ef://defra/scope1/butane/2024",
+      "fuel_name": "Butane",
+      "fuel_type": "butane",
+      "units": [
+        {
+          "unit": "litres",
+          "co2_factor": 1.74983,
+          "ch4_factor": 0.00073,
+          "n2o_factor": 0.00031,
+          "co2e_factor": 1.75236,
+          "factor_unit": "kg/litre"
+        },
+        {
+          "unit": "kWh_gross",
+          "co2_factor": 0.22233,
+          "ch4_factor": 0.00009,
+          "n2o_factor": 0.00004,
+          "co2e_factor": 0.22265,
+          "factor_unit": "kg/kWh"
+        },
+        {
+          "unit": "kg",
+          "co2_factor": 3.03013,
+          "ch4_factor": 0.00126,
+          "n2o_factor": 0.00053,
+          "co2e_factor": 3.03449,
+          "factor_unit": "kg/kg"
+        }
+      ],
+      "uncertainty_lower_pct": -2,
+      "uncertainty_upper_pct": 2,
+      "notes": "Pure butane"
+    },
+    {
+      "id": "ef://defra/scope1/biogas/2024",
+      "fuel_name": "Biogas",
+      "fuel_type": "biogas",
+      "units": [
+        {
+          "unit": "kWh_gross",
+          "co2_factor": 0.0,
+          "ch4_factor": 0.00034,
+          "n2o_factor": 0.00032,
+          "co2e_factor": 0.00062,
+          "biogenic_co2_factor": 0.18254,
+          "factor_unit": "kg/kWh"
+        }
+      ],
+      "uncertainty_lower_pct": -5,
+      "uncertainty_upper_pct": 5,
+      "notes": "Biogenic CO2 reported separately"
+    },
+    {
+      "id": "ef://defra/scope1/biomethane/2024",
+      "fuel_name": "Biomethane",
+      "fuel_type": "biomethane",
+      "units": [
+        {
+          "unit": "kWh_gross",
+          "co2_factor": 0.0,
+          "ch4_factor": 0.00034,
+          "n2o_factor": 0.00032,
+          "co2e_factor": 0.00062,
+          "biogenic_co2_factor": 0.18254,
+          "factor_unit": "kg/kWh"
+        }
+      ],
+      "uncertainty_lower_pct": -5,
+      "uncertainty_upper_pct": 5,
+      "notes": "Grid-injected biomethane - biogenic CO2 reported separately"
+    }
+  ],
+  "liquid_fuels": [
+    {
+      "id": "ef://defra/scope1/petrol/2024",
+      "fuel_name": "Petrol (Gasoline)",
+      "fuel_type": "petrol",
+      "units": [
+        {
+          "unit": "litres",
+          "co2_factor": 2.10748,
+          "ch4_factor": 0.00188,
+          "n2o_factor": 0.00595,
+          "co2e_factor": 2.12413,
+          "factor_unit": "kg/litre"
+        },
+        {
+          "unit": "kWh_gross",
+          "co2_factor": 0.22994,
+          "ch4_factor": 0.00021,
+          "n2o_factor": 0.00065,
+          "co2e_factor": 0.23175,
+          "factor_unit": "kg/kWh"
+        },
+        {
+          "unit": "tonnes",
+          "co2_factor": 2869.57,
+          "ch4_factor": 2.56,
+          "n2o_factor": 8.11,
+          "co2e_factor": 2892.26,
+          "factor_unit": "kg/tonne"
+        }
+      ],
+      "uncertainty_lower_pct": -2,
+      "uncertainty_upper_pct": 2,
+      "notes": "100% mineral petrol"
+    },
+    {
+      "id": "ef://defra/scope1/diesel/2024",
+      "fuel_name": "Diesel",
+      "fuel_type": "diesel",
+      "units": [
+        {
+          "unit": "litres",
+          "co2_factor": 2.51233,
+          "ch4_factor": 0.00035,
+          "n2o_factor": 0.01161,
+          "co2e_factor": 2.54454,
+          "factor_unit": "kg/litre"
+        },
+        {
+          "unit": "kWh_gross",
+          "co2_factor": 0.24046,
+          "ch4_factor": 0.00003,
+          "n2o_factor": 0.00111,
+          "co2e_factor": 0.24355,
+          "factor_unit": "kg/kWh"
+        },
+        {
+          "unit": "tonnes",
+          "co2_factor": 3006.70,
+          "ch4_factor": 0.42,
+          "n2o_factor": 13.89,
+          "co2e_factor": 3044.23,
+          "factor_unit": "kg/tonne"
+        }
+      ],
+      "uncertainty_lower_pct": -2,
+      "uncertainty_upper_pct": 2,
+      "notes": "100% mineral diesel"
+    },
+    {
+      "id": "ef://defra/scope1/gas_oil/2024",
+      "fuel_name": "Gas Oil (Red Diesel)",
+      "fuel_type": "gas_oil",
+      "units": [
+        {
+          "unit": "litres",
+          "co2_factor": 2.75830,
+          "ch4_factor": 0.00039,
+          "n2o_factor": 0.01274,
+          "co2e_factor": 2.79353,
+          "factor_unit": "kg/litre"
+        },
+        {
+          "unit": "kWh_gross",
+          "co2_factor": 0.26357,
+          "ch4_factor": 0.00004,
+          "n2o_factor": 0.00122,
+          "co2e_factor": 0.26694,
+          "factor_unit": "kg/kWh"
+        },
+        {
+          "unit": "tonnes",
+          "co2_factor": 3255.58,
+          "ch4_factor": 0.46,
+          "n2o_factor": 15.04,
+          "co2e_factor": 3297.16,
+          "factor_unit": "kg/tonne"
+        }
+      ],
+      "uncertainty_lower_pct": -2,
+      "uncertainty_upper_pct": 2,
+      "notes": "Off-road diesel / heating oil"
+    },
+    {
+      "id": "ef://defra/scope1/fuel_oil/2024",
+      "fuel_name": "Fuel Oil",
+      "fuel_type": "fuel_oil",
+      "units": [
+        {
+          "unit": "litres",
+          "co2_factor": 2.96403,
+          "ch4_factor": 0.00078,
+          "n2o_factor": 0.00739,
+          "co2e_factor": 2.99007,
+          "factor_unit": "kg/litre"
+        },
+        {
+          "unit": "kWh_gross",
+          "co2_factor": 0.26759,
+          "ch4_factor": 0.00007,
+          "n2o_factor": 0.00067,
+          "co2e_factor": 0.26994,
+          "factor_unit": "kg/kWh"
+        },
+        {
+          "unit": "tonnes",
+          "co2_factor": 3119.10,
+          "ch4_factor": 0.82,
+          "n2o_factor": 7.78,
+          "co2e_factor": 3146.51,
+          "factor_unit": "kg/tonne"
+        }
+      ],
+      "uncertainty_lower_pct": -2,
+      "uncertainty_upper_pct": 2,
+      "notes": "Heavy fuel oil"
+    },
+    {
+      "id": "ef://defra/scope1/kerosene/2024",
+      "fuel_name": "Burning Oil (Kerosene)",
+      "fuel_type": "kerosene",
+      "units": [
+        {
+          "unit": "litres",
+          "co2_factor": 2.53879,
+          "ch4_factor": 0.00035,
+          "n2o_factor": 0.00117,
+          "co2e_factor": 2.54181,
+          "factor_unit": "kg/litre"
+        },
+        {
+          "unit": "kWh_gross",
+          "co2_factor": 0.24652,
+          "ch4_factor": 0.00003,
+          "n2o_factor": 0.00011,
+          "co2e_factor": 0.24681,
+          "factor_unit": "kg/kWh"
+        },
+        {
+          "unit": "tonnes",
+          "co2_factor": 3163.14,
+          "ch4_factor": 0.44,
+          "n2o_factor": 1.46,
+          "co2e_factor": 3166.90,
+          "factor_unit": "kg/tonne"
+        }
+      ],
+      "uncertainty_lower_pct": -2,
+      "uncertainty_upper_pct": 2,
+      "notes": "Heating kerosene"
+    },
+    {
+      "id": "ef://defra/scope1/aviation_turbine_fuel/2024",
+      "fuel_name": "Aviation Turbine Fuel",
+      "fuel_type": "jet_fuel",
+      "units": [
+        {
+          "unit": "litres",
+          "co2_factor": 2.52254,
+          "ch4_factor": 0.00011,
+          "n2o_factor": 0.00558,
+          "co2e_factor": 2.54441,
+          "factor_unit": "kg/litre"
+        },
+        {
+          "unit": "kWh_gross",
+          "co2_factor": 0.24549,
+          "ch4_factor": 0.00001,
+          "n2o_factor": 0.00054,
+          "co2e_factor": 0.24762,
+          "factor_unit": "kg/kWh"
+        },
+        {
+          "unit": "tonnes",
+          "co2_factor": 3153.38,
+          "ch4_factor": 0.13,
+          "n2o_factor": 6.98,
+          "co2e_factor": 3181.12,
+          "factor_unit": "kg/tonne"
+        }
+      ],
+      "uncertainty_lower_pct": -2,
+      "uncertainty_upper_pct": 2,
+      "notes": "Jet A-1 / Kerosene type"
+    },
+    {
+      "id": "ef://defra/scope1/biodiesel_me/2024",
+      "fuel_name": "Biodiesel (ME)",
+      "fuel_type": "biodiesel",
+      "units": [
+        {
+          "unit": "litres",
+          "co2_factor": 0.0,
+          "ch4_factor": 0.00003,
+          "n2o_factor": 0.00009,
+          "co2e_factor": 0.00012,
+          "biogenic_co2_factor": 1.95038,
+          "factor_unit": "kg/litre"
+        }
+      ],
+      "uncertainty_lower_pct": -5,
+      "uncertainty_upper_pct": 5,
+      "notes": "100% biodiesel methyl ester - biogenic CO2 reported separately"
+    },
+    {
+      "id": "ef://defra/scope1/bioethanol/2024",
+      "fuel_name": "Bioethanol",
+      "fuel_type": "bioethanol",
+      "units": [
+        {
+          "unit": "litres",
+          "co2_factor": 0.0,
+          "ch4_factor": 0.00015,
+          "n2o_factor": 0.00047,
+          "co2e_factor": 0.00062,
+          "biogenic_co2_factor": 1.51906,
+          "factor_unit": "kg/litre"
+        }
+      ],
+      "uncertainty_lower_pct": -5,
+      "uncertainty_upper_pct": 5,
+      "notes": "100% bioethanol - biogenic CO2 reported separately"
+    }
+  ],
+  "solid_fuels": [
+    {
+      "id": "ef://defra/scope1/coal_industrial/2024",
+      "fuel_name": "Coal (Industrial)",
+      "fuel_type": "coal_industrial",
+      "units": [
+        {
+          "unit": "kWh_gross",
+          "co2_factor": 0.32291,
+          "ch4_factor": 0.00028,
+          "n2o_factor": 0.00142,
+          "co2e_factor": 0.32528,
+          "factor_unit": "kg/kWh"
+        },
+        {
+          "unit": "tonnes",
+          "co2_factor": 2260.10,
+          "ch4_factor": 1.96,
+          "n2o_factor": 9.92,
+          "co2e_factor": 2276.60,
+          "factor_unit": "kg/tonne"
+        }
+      ],
+      "uncertainty_lower_pct": -5,
+      "uncertainty_upper_pct": 5,
+      "notes": "Industrial coal"
+    },
+    {
+      "id": "ef://defra/scope1/coal_domestic/2024",
+      "fuel_name": "Coal (Domestic)",
+      "fuel_type": "coal_domestic",
+      "units": [
+        {
+          "unit": "kWh_gross",
+          "co2_factor": 0.33816,
+          "ch4_factor": 0.02955,
+          "n2o_factor": 0.00152,
+          "co2e_factor": 0.39315,
+          "factor_unit": "kg/kWh"
+        },
+        {
+          "unit": "tonnes",
+          "co2_factor": 2883.34,
+          "ch4_factor": 252.00,
+          "n2o_factor": 12.96,
+          "co2e_factor": 3352.22,
+          "factor_unit": "kg/tonne"
+        }
+      ],
+      "uncertainty_lower_pct": -5,
+      "uncertainty_upper_pct": 5,
+      "notes": "Domestic/residential coal"
+    },
+    {
+      "id": "ef://defra/scope1/coking_coal/2024",
+      "fuel_name": "Coking Coal",
+      "fuel_type": "coking_coal",
+      "units": [
+        {
+          "unit": "kWh_gross",
+          "co2_factor": 0.34125,
+          "ch4_factor": 0.00028,
+          "n2o_factor": 0.00142,
+          "co2e_factor": 0.34364,
+          "factor_unit": "kg/kWh"
+        },
+        {
+          "unit": "tonnes",
+          "co2_factor": 2776.07,
+          "ch4_factor": 2.32,
+          "n2o_factor": 11.54,
+          "co2e_factor": 2796.11,
+          "factor_unit": "kg/tonne"
+        }
+      ],
+      "uncertainty_lower_pct": -5,
+      "uncertainty_upper_pct": 5,
+      "notes": "Metallurgical coal for steel production"
+    },
+    {
+      "id": "ef://defra/scope1/petroleum_coke/2024",
+      "fuel_name": "Petroleum Coke",
+      "fuel_type": "petroleum_coke",
+      "units": [
+        {
+          "unit": "kWh_gross",
+          "co2_factor": 0.33960,
+          "ch4_factor": 0.00012,
+          "n2o_factor": 0.00059,
+          "co2e_factor": 0.34048,
+          "factor_unit": "kg/kWh"
+        },
+        {
+          "unit": "tonnes",
+          "co2_factor": 3386.94,
+          "ch4_factor": 1.17,
+          "n2o_factor": 5.91,
+          "co2e_factor": 3396.81,
+          "factor_unit": "kg/tonne"
+        }
+      ],
+      "uncertainty_lower_pct": -5,
+      "uncertainty_upper_pct": 5,
+      "notes": "Refinery petroleum coke"
+    },
+    {
+      "id": "ef://defra/scope1/wood_logs/2024",
+      "fuel_name": "Wood Logs",
+      "fuel_type": "wood_logs",
+      "units": [
+        {
+          "unit": "kWh_gross",
+          "co2_factor": 0.0,
+          "ch4_factor": 0.00348,
+          "n2o_factor": 0.00075,
+          "co2e_factor": 0.00610,
+          "biogenic_co2_factor": 0.39376,
+          "factor_unit": "kg/kWh"
+        },
+        {
+          "unit": "tonnes",
+          "co2_factor": 0.0,
+          "ch4_factor": 13.86,
+          "n2o_factor": 2.98,
+          "co2e_factor": 24.29,
+          "biogenic_co2_factor": 1567.73,
+          "factor_unit": "kg/tonne"
+        }
+      ],
+      "uncertainty_lower_pct": -10,
+      "uncertainty_upper_pct": 10,
+      "notes": "Sustainably sourced wood - biogenic CO2 reported separately"
+    },
+    {
+      "id": "ef://defra/scope1/wood_chips/2024",
+      "fuel_name": "Wood Chips",
+      "fuel_type": "wood_chips",
+      "units": [
+        {
+          "unit": "kWh_gross",
+          "co2_factor": 0.0,
+          "ch4_factor": 0.00023,
+          "n2o_factor": 0.00095,
+          "co2e_factor": 0.00147,
+          "biogenic_co2_factor": 0.39376,
+          "factor_unit": "kg/kWh"
+        },
+        {
+          "unit": "tonnes",
+          "co2_factor": 0.0,
+          "ch4_factor": 0.92,
+          "n2o_factor": 3.77,
+          "co2e_factor": 5.82,
+          "biogenic_co2_factor": 1567.73,
+          "factor_unit": "kg/tonne"
+        }
+      ],
+      "uncertainty_lower_pct": -10,
+      "uncertainty_upper_pct": 10,
+      "notes": "Sustainably sourced wood chips - biogenic CO2 reported separately"
+    },
+    {
+      "id": "ef://defra/scope1/wood_pellets/2024",
+      "fuel_name": "Wood Pellets",
+      "fuel_type": "wood_pellets",
+      "units": [
+        {
+          "unit": "kWh_gross",
+          "co2_factor": 0.0,
+          "ch4_factor": 0.00023,
+          "n2o_factor": 0.00095,
+          "co2e_factor": 0.00147,
+          "biogenic_co2_factor": 0.38466,
+          "factor_unit": "kg/kWh"
+        },
+        {
+          "unit": "tonnes",
+          "co2_factor": 0.0,
+          "ch4_factor": 1.05,
+          "n2o_factor": 4.35,
+          "co2e_factor": 6.72,
+          "biogenic_co2_factor": 1767.38,
+          "factor_unit": "kg/tonne"
+        }
+      ],
+      "uncertainty_lower_pct": -10,
+      "uncertainty_upper_pct": 10,
+      "notes": "Compressed wood pellets - biogenic CO2 reported separately"
+    }
+  ]
+}

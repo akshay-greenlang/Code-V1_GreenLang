@@ -1,0 +1,116 @@
+name: Grid Emission Factor Agent (AI-Powered)
+version: 1.0.0
+kind: pack
+pack_schema_version: '1.0'
+author:
+  name: GreenLang Team
+  email: support@greenlang.io
+  organization: GreenLang
+license: MIT
+tags:
+- emissions
+- electricity
+- grid
+- scope2
+- ai-agent
+- citations
+- recommendations
+id: emissions/grid_factor_ai_v1
+summary: AI-powered grid carbon intensity lookup with temporal analysis, intelligent
+  insights, and citation tracking
+owners:
+- greenlang-team
+ai:
+  system_prompt: 'You are an expert on electrical grid carbon intensity and renewable
+    energy systems.
+
+
+    Your role:
+
+    1. Look up grid emission factors using exact tools (never hallucinate numbers)
+
+    2. Provide context on grid composition and renewable energy share
+
+    3. Explain temporal variations (hourly, daily, seasonal) in grid intensity
+
+    4. Recommend strategies for reducing electricity-related emissions
+
+    5. Highlight opportunities for renewable energy adoption
+
+
+    Guidelines:
+
+    - Always use the lookup_grid_intensity tool for emission factors
+
+    - Explain what drives high/low grid intensity for the region
+
+    - Mention renewable energy penetration when available
+
+    - Suggest time-of-use strategies for cleaner electricity consumption
+
+    - Be clear about data sources and temporal applicability
+
+
+    Remember: All numeric data MUST come from tools. Your role is to contextualize
+    and guide.
+
+    '
+  budget:
+    max_cost_usd: 0.5
+  rag_collections:
+  - grid_emission_factors
+  - renewable_energy_data
+  tools:
+  - name: lookup_grid_intensity
+    description: Look up grid carbon intensity for a country/region/time
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:lookup_grid_intensity
+    safe: true
+  - name: interpolate_hourly_data
+    description: Interpolate hourly grid intensity data
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:interpolate_hourly_data
+    safe: true
+  - name: calculate_weighted_average
+    description: Calculate weighted average intensity from multiple sources
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:calculate_weighted_average
+    safe: true
+  - name: analyze_grid_mix
+    description: Analyze grid energy mix composition
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:analyze_grid_mix
+    safe: true
+realtime:
+  default_mode: replay
+  snapshot_path: null
+  connectors: []
+provenance:
+  gwp_set: AR6GWP100
+  pin_ef: false
+  record:
+  - inputs
+  - outputs
+  - factors
+  - code_sha
+  - seed

@@ -1,0 +1,374 @@
+---
+# ServiceMonitor for GreenLang Executor
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: greenlang-executor-monitor
+  namespace: greenlang
+  labels:
+    app: greenlang
+    component: executor
+    prometheus: kube-prometheus
+spec:
+  selector:
+    matchLabels:
+      app: greenlang
+      component: executor
+  endpoints:
+    - port: metrics
+      interval: 30s
+      scrapeTimeout: 10s
+      path: /metrics
+      scheme: http
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod
+        - sourceLabels: [__meta_kubernetes_pod_node_name]
+          targetLabel: node
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace
+      metricRelabelings:
+        - sourceLabels: [__name__]
+          regex: 'greenlang_.*'
+          action: keep
+
+---
+# ServiceMonitor for GreenLang Workers
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: greenlang-worker-monitor
+  namespace: greenlang
+  labels:
+    app: greenlang
+    component: worker
+    prometheus: kube-prometheus
+spec:
+  selector:
+    matchLabels:
+      app: greenlang
+      component: worker
+  endpoints:
+    - port: metrics
+      interval: 30s
+      scrapeTimeout: 10s
+      path: /metrics
+      scheme: http
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod
+        - sourceLabels: [__meta_kubernetes_pod_node_name]
+          targetLabel: node
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace
+        - sourceLabels: [__meta_kubernetes_pod_label_version]
+          targetLabel: version
+      metricRelabelings:
+        - sourceLabels: [__name__]
+          regex: 'greenlang_.*'
+          action: keep
+
+---
+# ServiceMonitor for Redis Sentinel
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: redis-sentinel-monitor
+  namespace: greenlang
+  labels:
+    app: redis-sentinel
+    component: cache
+    prometheus: kube-prometheus
+spec:
+  selector:
+    matchLabels:
+      app: redis-sentinel
+  endpoints:
+    - port: metrics
+      interval: 30s
+      scrapeTimeout: 10s
+      path: /metrics
+      scheme: http
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod
+        - sourceLabels: [__meta_kubernetes_pod_node_name]
+          targetLabel: node
+
+---
+# PodMonitor for additional pod-level metrics
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: greenlang-pods
+  namespace: greenlang
+  labels:
+    app: greenlang
+    prometheus: kube-prometheus
+spec:
+  selector:
+    matchLabels:
+      app: greenlang
+  podMetricsEndpoints:
+    - port: metrics
+      interval: 30s
+      path: /metrics
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace
+        - sourceLabels: [__meta_kubernetes_pod_label_component]
+          targetLabel: component
+        - sourceLabels: [__meta_kubernetes_pod_label_version]
+          targetLabel: version
+
+---
+# PrometheusRule for GreenLang alerts
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: greenlang-alerts
+  namespace: greenlang
+  labels:
+    app: greenlang
+    prometheus: kube-prometheus
+spec:
+  groups:
+    - name: greenlang.executor
+      interval: 30s
+      rules:
+        # High CPU usage
+        - alert: ExecutorHighCPU
+          expr: |
+            rate(container_cpu_usage_seconds_total{
+              namespace="greenlang",
+              pod=~"greenlang-executor.*"
+            }[5m]) > 0.8
+          for: 5m
+          labels:
+            severity: warning
+            component: executor
+          annotations:
+            summary: "Executor pod {{ $labels.pod }} has high CPU usage"
+            description: "CPU usage is {{ $value | humanizePercentage }} on pod {{ $labels.pod }}"
+
+        # High memory usage
+        - alert: ExecutorHighMemory
+          expr: |
+            container_memory_usage_bytes{
+              namespace="greenlang",
+              pod=~"greenlang-executor.*"
+            } / container_spec_memory_limit_bytes{
+              namespace="greenlang",
+              pod=~"greenlang-executor.*"
+            } > 0.9
+          for: 5m
+          labels:
+            severity: warning
+            component: executor
+          annotations:
+            summary: "Executor pod {{ $labels.pod }} has high memory usage"
+            description: "Memory usage is {{ $value | humanizePercentage }} on pod {{ $labels.pod }}"
+
+        # Pod restart rate
+        - alert: ExecutorHighRestartRate
+          expr: |
+            rate(kube_pod_container_status_restarts_total{
+              namespace="greenlang",
+              pod=~"greenlang-executor.*"
+            }[15m]) > 0.1
+          for: 5m
+          labels:
+            severity: critical
+            component: executor
+          annotations:
+            summary: "Executor pod {{ $labels.pod }} is restarting frequently"
+            description: "Restart rate is {{ $value }} restarts/second"
+
+    - name: greenlang.worker
+      interval: 30s
+      rules:
+        # High task queue depth
+        - alert: WorkerHighQueueDepth
+          expr: greenlang_task_queue_depth > 1000
+          for: 10m
+          labels:
+            severity: warning
+            component: worker
+          annotations:
+            summary: "Task queue depth is high"
+            description: "Queue depth is {{ $value }} tasks"
+
+        # Worker not processing tasks
+        - alert: WorkerNotProcessing
+          expr: |
+            rate(greenlang_tasks_processed_total[5m]) == 0
+          for: 10m
+          labels:
+            severity: critical
+            component: worker
+          annotations:
+            summary: "Worker is not processing tasks"
+            description: "No tasks processed in the last 10 minutes"
+
+        # High task failure rate
+        - alert: WorkerHighFailureRate
+          expr: |
+            rate(greenlang_tasks_failed_total[5m]) /
+            rate(greenlang_tasks_processed_total[5m]) > 0.1
+          for: 5m
+          labels:
+            severity: warning
+            component: worker
+          annotations:
+            summary: "High task failure rate"
+            description: "Failure rate is {{ $value | humanizePercentage }}"
+
+        # Worker count too low
+        - alert: WorkerCountLow
+          expr: |
+            count(up{job="greenlang-worker"} == 1) < 3
+          for: 5m
+          labels:
+            severity: critical
+            component: worker
+          annotations:
+            summary: "Worker count is below minimum"
+            description: "Only {{ $value }} workers are running"
+
+    - name: greenlang.redis
+      interval: 30s
+      rules:
+        # Redis down
+        - alert: RedisDown
+          expr: redis_up == 0
+          for: 1m
+          labels:
+            severity: critical
+            component: redis
+          annotations:
+            summary: "Redis instance {{ $labels.pod }} is down"
+            description: "Redis has been down for more than 1 minute"
+
+        # Redis high memory usage
+        - alert: RedisHighMemory
+          expr: |
+            redis_memory_used_bytes / redis_memory_max_bytes > 0.9
+          for: 5m
+          labels:
+            severity: warning
+            component: redis
+          annotations:
+            summary: "Redis {{ $labels.pod }} has high memory usage"
+            description: "Memory usage is {{ $value | humanizePercentage }}"
+
+        # Redis high connection count
+        - alert: RedisHighConnections
+          expr: redis_connected_clients > 1000
+          for: 5m
+          labels:
+            severity: warning
+            component: redis
+          annotations:
+            summary: "Redis has high connection count"
+            description: "Connection count is {{ $value }}"
+
+        # Redis replication lag
+        - alert: RedisReplicationLag
+          expr: redis_slave_repl_offset - redis_master_repl_offset > 1000000
+          for: 5m
+          labels:
+            severity: warning
+            component: redis
+          annotations:
+            summary: "Redis replica has replication lag"
+            description: "Replication lag is {{ $value }} bytes"
+
+    - name: greenlang.performance
+      interval: 30s
+      rules:
+        # High request latency
+        - alert: HighRequestLatency
+          expr: |
+            histogram_quantile(0.95,
+              rate(greenlang_request_duration_seconds_bucket[5m])
+            ) > 5
+          for: 5m
+          labels:
+            severity: warning
+            component: api
+          annotations:
+            summary: "High request latency"
+            description: "95th percentile latency is {{ $value }}s"
+
+        # High error rate
+        - alert: HighErrorRate
+          expr: |
+            rate(greenlang_requests_total{status=~"5.."}[5m]) /
+            rate(greenlang_requests_total[5m]) > 0.05
+          for: 5m
+          labels:
+            severity: critical
+            component: api
+          annotations:
+            summary: "High error rate"
+            description: "Error rate is {{ $value | humanizePercentage }}"
+
+---
+# Grafana Dashboard ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: greenlang-grafana-dashboard
+  namespace: greenlang
+  labels:
+    app: greenlang
+    grafana_dashboard: "1"
+data:
+  greenlang-dashboard.json: |
+    {
+      "dashboard": {
+        "title": "GreenLang Monitoring",
+        "tags": ["greenlang"],
+        "timezone": "browser",
+        "panels": [
+          {
+            "title": "Worker Count",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "count(up{job=\"greenlang-worker\"} == 1)"
+              }
+            ]
+          },
+          {
+            "title": "Task Queue Depth",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "greenlang_task_queue_depth"
+              }
+            ]
+          },
+          {
+            "title": "Task Processing Rate",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "rate(greenlang_tasks_processed_total[5m])"
+              }
+            ]
+          },
+          {
+            "title": "Redis Memory Usage",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "redis_memory_used_bytes"
+              }
+            ]
+          }
+        ]
+      }
+    }

@@ -1,0 +1,40 @@
+# GL-008 Trapcatcher ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gl-008-trapcatcher-config
+  namespace: greenlang
+  labels:
+    app: gl-008-trapcatcher
+    agent-id: GL-008
+    codename: TRAPCATCHER
+data:
+  ENVIRONMENT: "production"
+  LOG_LEVEL: "INFO"
+  
+  # Steam Trap Diagnostics Parameters
+  ACOUSTIC_SAMPLING_RATE_HZ: "48000"
+  TEMPERATURE_DIFFERENTIAL_THRESHOLD: "10.0"
+  ULTRASONIC_LEAK_THRESHOLD_DB: "40"
+  TRAP_SURVEY_INTERVAL_DAYS: "7"
+  
+  # Failure Detection Parameters
+  FAILURE_DETECTION_MODEL: "ensemble"
+  STUCK_OPEN_DETECTION: "true"
+  STUCK_CLOSED_DETECTION: "true"
+  BLOWING_STEAM_DETECTION: "true"
+  
+  # Economic Analysis Parameters
+  STEAM_COST_PER_KLBS: "12.0"
+  ANNUAL_OPERATING_HOURS: "8760"
+  MAINTENANCE_COST_PER_TRAP: "250.0"
+  
+  # Feature Flags
+  FEATURE_ACOUSTIC_ANALYSIS: "true"
+  FEATURE_THERMAL_IMAGING: "true"
+  FEATURE_PREDICTIVE_FAILURE: "true"
+  FEATURE_ROI_CALCULATION: "true"
+  
+  # API Configuration
+  API_RATE_LIMIT: "1000"
+  API_TIMEOUT_SECONDS: "30"

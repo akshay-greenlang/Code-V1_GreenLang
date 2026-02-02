@@ -1,0 +1,102 @@
+apiVersion: greenlang.io/v2
+kind: AgentSpec
+metadata:
+  name: ShipmentIntakeAgent_AI
+  version: 1.0.0
+  labels:
+    type: data_processor
+    category: cbam
+    id: cbam-shipment-intake-v1
+    tags: cbam,data-intake,validation,customs,eu-regulation
+  annotations:
+    description: Ingests raw shipment data, validates against CBAM requirements, enriches
+      with CN code mappings, and prepares for emissions calculation.
+    created_by: GreenLang CBAM Team
+    created_date: '2025-10-15'
+spec:
+  inputs:
+  - name: raw_shipments
+    type: data
+    format: CSV
+    schema: ../schemas/shipment.schema.json
+    required: true
+    description: Raw shipment data from importer's systems
+    validation:
+      required_fields:
+      - shipment_id
+      - import_date
+      - quarter
+      - cn_code
+      - origin_iso
+      - net_mass_kg
+      optional_fields:
+      - product_description
+      - supplier_id
+      - customs_declaration_number
+      - invoice_number
+      - notes
+  - name: reference_data
+    type: data
+    format: json
+    schema: ''
+    required: true
+    description: ''
+  outputs:
+  - name: validated_shipments
+    type: data
+    format: JSON
+    schema: ../schemas/shipment.schema.json
+    description: Validated and enriched shipment records
+    structure: "{\n  \"metadata\": {\n    \"processed_at\": \"ISO8601 timestamp\"\
+      ,\n    \"input_file\": \"path\",\n    \"total_records\": int,\n    \"valid_records\"\
+      : int,\n    \"invalid_records\": int,\n    \"warnings\": int\n  },\n  \"shipments\"\
+      : [\n    {\n      // Shipment schema fields\n      \"_enrichment\": {\n    \
+      \    \"product_group\": \"cement|steel|aluminum|fertilizers|hydrogen\",\n  \
+      \      \"product_description\": \"Human-readable description\",\n        \"\
+      supplier_found\": true|false,\n        \"validation_status\": \"valid|invalid|warning\"\
+      \n      }\n    }\n  ],\n  \"validation_errors\": [\n    {\n      \"shipment_id\"\
+      : \"...\",\n      \"error_code\": \"E001\",\n      \"severity\": \"error|warning\"\
+      ,\n      \"message\": \"...\",\n      \"field\": \"...\"\n    }\n  ]\n}\n"
+  - name: secondary_outputs
+    type: data
+    format: json
+    schema: ''
+    description: ''
+  capabilities:
+  - name: capability_1
+    description: Read shipment data from CSV, JSON, Excel, or database
+  - name: capability_2
+    description: Validate each shipment record against CBAM requirements
+  - name: capability_3
+    description: Enrich shipments with CN code metadata (product group, descriptions)
+  - name: capability_4
+    description: Link shipments to supplier records when actual emissions data available
+  - name: capability_5
+    description: Flag data quality issues and missing information
+  - name: capability_6
+    description: Output validated shipment records in standard format
+  requirements:
+    performance:
+    - Processing time <1 second per 1000 shipments
+    quality:
+    - 100% of valid shipments successfully processed
+    - All validation errors clearly identified with error codes
+    - CN code enrichment accurate for all recognized codes
+    - Zero false positives (valid data marked invalid)
+    - Zero false negatives (invalid data marked valid)
+  description: Transform raw import data into validated, enriched shipment records
+    ready for emissions calculation
+  dependencies:
+    python_version: '>=3.9'
+    required_packages:
+    - pandas>=2.0.0
+    - jsonschema>=4.0.0
+    - pyyaml>=6.0
+    - openpyxl>=3.0.0
+    - pydantic>=2.0.0
+    - python-dateutil>=2.8.0
+    reference_data:
+    - ../data/cn_codes.json
+    - ../rules/cbam_rules.yaml
+    optional_data:
+    - ../examples/demo_suppliers.yaml

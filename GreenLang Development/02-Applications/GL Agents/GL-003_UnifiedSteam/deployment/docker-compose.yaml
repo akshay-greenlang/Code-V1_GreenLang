@@ -1,0 +1,361 @@
+# GL-003 UNIFIEDSTEAM - Docker Compose
+# Local Development and Testing Environment
+#
+# Usage:
+#   docker-compose up -d                    # Start all services
+#   docker-compose up -d --build            # Rebuild and start
+#   docker-compose logs -f unifiedsteam     # Follow logs
+#   docker-compose down -v                  # Stop and remove volumes
+
+version: "3.8"
+
+services:
+  # ==============================================================================
+  # GL-003 UnifiedSteam Application
+  # ==============================================================================
+  unifiedsteam:
+    build:
+      context: ..
+      dockerfile: deployment/Dockerfile
+      args:
+        VERSION: 1.0.0-dev
+    container_name: unifiedsteam
+    hostname: unifiedsteam
+    restart: unless-stopped
+    ports:
+      - "8080:8080"    # REST/GraphQL API
+      - "50051:50051"  # gRPC API
+      - "9090:9090"    # Prometheus metrics
+    environment:
+      # Application settings
+      - UNIFIEDSTEAM_ENV=development
+      - UNIFIEDSTEAM_LOG_LEVEL=DEBUG
+      - UNIFIEDSTEAM_API_PORT=8080
+      - UNIFIEDSTEAM_GRPC_PORT=50051
+      - UNIFIEDSTEAM_METRICS_PORT=9090
+
+      # Database
+      - DATABASE_URL=postgresql://unifiedsteam:unifiedsteam_dev@postgres:5432/unifiedsteam
+
+      # Redis
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+
+      # Kafka
+      - KAFKA_BROKERS=kafka:9092
+      - KAFKA_CONSUMER_GROUP=unifiedsteam-dev
+
+      # OPC-UA (Mock server)
+      - OPCUA_ENDPOINT=opc.tcp://opcua-simulator:4840
+
+      # OpenTelemetry
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+      - OTEL_SERVICE_NAME=gl-003-unifiedsteam-dev
+
+      # Feature flags
+      - FEATURE_ENABLE_REAL_TIME_OPTIMIZATION=true
+      - FEATURE_ENABLE_PREDICTIVE_MAINTENANCE=true
+      - FEATURE_ENABLE_AUTOMATIC_CONTROL=false
+    depends_on:
+      kafka:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    networks:
+      - unifiedsteam-network
+    volumes:
+      - unifiedsteam-data:/app/data
+      - unifiedsteam-logs:/app/logs
+      - ../:/app/src:ro  # Mount source for development
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # ==============================================================================
+  # Kafka + Zookeeper (Event Streaming)
+  # ==============================================================================
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: zookeeper
+    hostname: zookeeper
+    restart: unless-stopped
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+      ZOOKEEPER_INIT_LIMIT: 5
+      ZOOKEEPER_SYNC_LIMIT: 2
+    networks:
+      - unifiedsteam-network
+    volumes:
+      - zookeeper-data:/var/lib/zookeeper/data
+      - zookeeper-logs:/var/lib/zookeeper/log
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "2181"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: kafka
+    hostname: kafka
+    restart: unless-stopped
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 100
+      KAFKA_LOG_RETENTION_HOURS: 24
+      KAFKA_LOG_RETENTION_BYTES: 1073741824
+    networks:
+      - unifiedsteam-network
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+    healthcheck:
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  # Kafka UI for development
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-ui
+    restart: unless-stopped
+    depends_on:
+      - kafka
+    ports:
+      - "8081:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: unifiedsteam-dev
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+      KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
+    networks:
+      - unifiedsteam-network
+
+  # ==============================================================================
+  # Redis (Caching & Session Store)
+  # ==============================================================================
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    hostname: redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    networks:
+      - unifiedsteam-network
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Commander for development
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: redis-commander
+    restart: unless-stopped
+    depends_on:
+      - redis
+    ports:
+      - "8082:8081"
+    environment:
+      REDIS_HOSTS: local:redis:6379
+    networks:
+      - unifiedsteam-network
+
+  # ==============================================================================
+  # PostgreSQL (Persistent Storage)
+  # ==============================================================================
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres
+    hostname: postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: unifiedsteam
+      POSTGRES_USER: unifiedsteam
+      POSTGRES_PASSWORD: unifiedsteam_dev
+      PGDATA: /var/lib/postgresql/data/pgdata
+    networks:
+      - unifiedsteam-network
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U unifiedsteam -d unifiedsteam"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # pgAdmin for database management
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    ports:
+      - "5050:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@greenlang.io
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+    networks:
+      - unifiedsteam-network
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+
+  # ==============================================================================
+  # OPC-UA Simulator (Industrial Protocol Testing)
+  # ==============================================================================
+  opcua-simulator:
+    image: ghcr.io/umati/opcua-simulation-server:latest
+    container_name: opcua-simulator
+    hostname: opcua-simulator
+    restart: unless-stopped
+    ports:
+      - "4840:4840"
+    networks:
+      - unifiedsteam-network
+    volumes:
+      - ./opcua-config:/config:ro
+
+  # ==============================================================================
+  # Prometheus (Metrics Collection)
+  # ==============================================================================
+  prometheus:
+    image: prom/prometheus:v2.47.0
+    container_name: prometheus
+    hostname: prometheus
+    restart: unless-stopped
+    ports:
+      - "9091:9090"
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=7d'
+      - '--web.enable-lifecycle'
+      - '--web.enable-admin-api'
+    networks:
+      - unifiedsteam-network
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:9090/-/healthy"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ==============================================================================
+  # Grafana (Visualization & Dashboards)
+  # ==============================================================================
+  grafana:
+    image: grafana/grafana:10.2.0
+    container_name: grafana
+    hostname: grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_SERVER_ROOT_URL: http://localhost:3000
+      GF_INSTALL_PLUGINS: grafana-clock-panel,grafana-simple-json-datasource
+    networks:
+      - unifiedsteam-network
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+    depends_on:
+      - prometheus
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ==============================================================================
+  # OpenTelemetry Collector (Tracing)
+  # ==============================================================================
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.88.0
+    container_name: otel-collector
+    hostname: otel-collector
+    restart: unless-stopped
+    ports:
+      - "4317:4317"   # OTLP gRPC
+      - "4318:4318"   # OTLP HTTP
+      - "8888:8888"   # Prometheus metrics
+      - "8889:8889"   # Prometheus exporter
+    command: ["--config=/etc/otel/config.yaml"]
+    networks:
+      - unifiedsteam-network
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otel/config.yaml:ro
+
+  # Jaeger for distributed tracing visualization
+  jaeger:
+    image: jaegertracing/all-in-one:1.51
+    container_name: jaeger
+    hostname: jaeger
+    restart: unless-stopped
+    ports:
+      - "16686:16686"  # Jaeger UI
+      - "14268:14268"  # Jaeger collector HTTP
+    environment:
+      COLLECTOR_ZIPKIN_HOST_PORT: ":9411"
+    networks:
+      - unifiedsteam-network
+
+# ==============================================================================
+# Networks
+# ==============================================================================
+networks:
+  unifiedsteam-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
+
+# ==============================================================================
+# Volumes
+# ==============================================================================
+volumes:
+  unifiedsteam-data:
+  unifiedsteam-logs:
+  kafka-data:
+  zookeeper-data:
+  zookeeper-logs:
+  redis-data:
+  postgres-data:
+  pgadmin-data:
+  prometheus-data:
+  grafana-data:

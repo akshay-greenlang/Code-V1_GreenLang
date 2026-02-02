@@ -1,0 +1,139 @@
+---
+# Note: PodSecurityPolicy (PSP) is deprecated in Kubernetes 1.25+
+# Use Pod Security Standards (PSS) instead with Pod Security Admission
+# This file provides both for compatibility
+
+# PodSecurityPolicy (for clusters < 1.25)
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: vcci-restricted
+  annotations:
+    seccomp.security.alpha.kubernetes.io/allowedProfileNames: 'runtime/default'
+    apparmor.security.beta.kubernetes.io/allowedProfileNames: 'runtime/default'
+    seccomp.security.alpha.kubernetes.io/defaultProfileName: 'runtime/default'
+    apparmor.security.beta.kubernetes.io/defaultProfileName: 'runtime/default'
+spec:
+  privileged: false
+  allowPrivilegeEscalation: false
+  requiredDropCapabilities:
+    - ALL
+  volumes:
+    - 'configMap'
+    - 'emptyDir'
+    - 'projected'
+    - 'secret'
+    - 'downwardAPI'
+    - 'persistentVolumeClaim'
+  hostNetwork: false
+  hostIPC: false
+  hostPID: false
+  runAsUser:
+    rule: 'MustRunAsNonRoot'
+  seLinux:
+    rule: 'RunAsAny'
+  supplementalGroups:
+    rule: 'RunAsAny'
+  fsGroup:
+    rule: 'RunAsAny'
+  readOnlyRootFilesystem: false
+
+---
+# Pod Security Standards using labels (Kubernetes 1.23+)
+# Apply to namespaces to enforce pod security standards
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: vcci-platform-pss-example
+  labels:
+    # Enforce restricted pod security standard
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/enforce-version: latest
+
+    # Audit mode for privileged violations
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/audit-version: latest
+
+    # Warn on baseline violations
+    pod-security.kubernetes.io/warn: baseline
+    pod-security.kubernetes.io/warn-version: latest
+
+---
+# ClusterRole for using the restricted PSP
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: vcci-psp-restricted
+rules:
+  - apiGroups:
+      - policy
+    resources:
+      - podsecuritypolicies
+    verbs:
+      - use
+    resourceNames:
+      - vcci-restricted
+
+---
+# ClusterRoleBinding for all service accounts
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: vcci-psp-restricted-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: vcci-psp-restricted
+subjects:
+  - kind: Group
+    name: system:serviceaccounts:vcci-platform
+    apiGroup: rbac.authorization.k8s.io
+  - kind: Group
+    name: system:serviceaccounts:vcci-observability
+    apiGroup: rbac.authorization.k8s.io
+
+---
+# SecurityContext examples for different workload types
+# Apply these as pod security contexts in your deployments
+
+# Example 1: Restricted (most secure)
+# spec:
+#   securityContext:
+#     runAsNonRoot: true
+#     runAsUser: 1000
+#     fsGroup: 1000
+#     seccompProfile:
+#       type: RuntimeDefault
+#   containers:
+#     - securityContext:
+#         allowPrivilegeEscalation: false
+#         capabilities:
+#           drop:
+#             - ALL
+#         readOnlyRootFilesystem: true
+
+# Example 2: Baseline (moderate)
+# spec:
+#   securityContext:
+#     runAsNonRoot: true
+#     seccompProfile:
+#       type: RuntimeDefault
+#   containers:
+#     - securityContext:
+#         allowPrivilegeEscalation: false
+#         capabilities:
+#           drop:
+#             - ALL
+
+# Example 3: Privileged (use sparingly)
+# Only for system components like fluentd
+# spec:
+#   securityContext:
+#     runAsUser: 0
+#   containers:
+#     - securityContext:
+#         privileged: true
+
+---
+# NetworkPolicy Security Context
+# These are applied separately via network-policies.yaml

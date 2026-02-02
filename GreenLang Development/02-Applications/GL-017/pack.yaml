@@ -1,0 +1,1580 @@
+# ==============================================================================
+# GL-017 CONDENSYNC Condenser Optimization Agent
+# Pack Manifest (pack.yaml)
+# ==============================================================================
+# Pack Schema Version: 1.0
+# Agent ID: GL-017
+# Codename: CONDENSYNC
+# ==============================================================================
+
+kind: Pack
+pack_schema_version: "1.0"
+license: Apache-2.0
+
+# ==============================================================================
+# AGENT METADATA
+# ==============================================================================
+metadata:
+  # Core Identification
+  agent_id: GL-017
+  codename: CONDENSYNC
+  name: CondenserOptimizationAgent
+  version: "1.0.0"
+
+  # Classification
+  category: optimizer
+  type: optimizer
+  domain: steam_systems
+
+  # Business Priority
+  priority: medium
+  business_priority: P2
+  market_tam: "$4B"
+  target_date: "Q3 2026"
+
+  # Description
+  description: >-
+    Optimizes condenser performance for maximum heat recovery, vacuum efficiency,
+    and system reliability. Monitors cooling water temperature, vacuum levels,
+    and condensate flow to deliver optimal condenser operation with efficiency
+    improvements. Uses deterministic calculations following HEI/ASME/TEMA standards
+    with zero-hallucination guarantees.
+
+  # Extended Description
+  long_description: |
+    The CONDENSYNC agent provides comprehensive condenser optimization
+    capabilities for steam power plants and industrial facilities:
+
+    1. CONDENSER PERFORMANCE ANALYSIS
+       - Heat transfer coefficient (U-value) calculation
+       - Terminal Temperature Difference (TTD) monitoring
+       - Cleanliness factor assessment
+       - Heat duty optimization
+       - Overall thermal performance tracking
+       - Design vs. actual performance comparison
+
+    2. VACUUM OPTIMIZATION
+       - Vacuum pressure monitoring (mmHg absolute)
+       - Air in-leakage detection and quantification
+       - Non-condensable gas analysis
+       - Steam jet air ejector (SJAE) optimization
+       - Liquid ring vacuum pump coordination
+       - Vacuum system efficiency tracking
+
+    3. HEAT RECOVERY OPTIMIZATION
+       - Condensate subcooling analysis and minimization
+       - Heat recovery opportunity identification
+       - Thermal efficiency improvement recommendations
+       - Energy savings quantification
+       - Carbon footprint reduction tracking
+
+    4. COOLING WATER MANAGEMENT
+       - Cooling water flow rate optimization
+       - Inlet/outlet temperature differential monitoring
+       - Cooling tower integration and coordination
+       - Approach temperature optimization
+       - Water consumption tracking
+       - Seasonal adjustment strategies
+
+    5. FOULING DETECTION AND MANAGEMENT
+       - Tube fouling factor calculation
+       - Fouling trend analysis and prediction
+       - Cleaning schedule optimization
+       - Tube plugging recommendations
+       - Performance degradation tracking
+       - Cleaning effectiveness verification
+
+    6. PERFORMANCE TRENDING AND REPORTING
+       - Real-time KPI dashboards
+       - Historical performance trending
+       - Efficiency improvement tracking
+       - Maintenance cost optimization
+       - Reliability metrics (MTBF, availability)
+       - Regulatory compliance reporting
+
+    Zero-Hallucination Guarantee: All calculations use deterministic
+    engineering formulas from HEI, ASME, TEMA, and ISO standards.
+    No AI is used for numeric calculations, ensuring 100% accuracy
+    and regulatory compliance.
+
+apiVersion: greenlang.io/v1
+
+# ==============================================================================
+# RUNTIME SPECIFICATION
+# ==============================================================================
+spec:
+  runtime:
+    language: python
+    version: "3.11"
+    framework: fastapi
+    entry_point: main:app
+    deterministic: true
+    temperature: 0.0
+    seed: 42
+    zero_hallucination: true
+    max_retries: 3
+    cache_ttl_seconds: 300
+
+    batch_processing:
+      enabled: true
+      max_batch_size: 1000
+      parallel_workers: 4
+
+  # ============================================================================
+  # DEPENDENCIES
+  # ============================================================================
+  dependencies:
+    required:
+      # Web Framework
+      - fastapi>=0.104.1
+      - uvicorn[standard]>=0.24.0
+      - pydantic>=2.5.0
+      - pydantic-settings>=2.1.0
+
+      # Database & Cache
+      - asyncpg>=0.29.0
+      - sqlalchemy>=2.0.23
+      - redis>=5.0.1
+
+      # Numerical Computing
+      - numpy>=1.26.2
+      - scipy>=1.11.4
+      - pandas>=2.1.3
+
+      # Thermodynamic Calculations
+      - CoolProp>=6.6.0  # Fluid properties
+      - iapws>=1.5.3     # Steam/water properties (IAPWS-IF97)
+
+      # Industrial Protocols
+      - opcua>=0.98.13
+      - asyncua>=1.0.0
+
+      # Monitoring
+      - prometheus-client>=0.19.0
+
+      # Utilities
+      - python-dateutil>=2.8.2
+      - pytz>=2023.3
+      - pyyaml>=6.0.1
+
+    optional:
+      # Observability
+      - opentelemetry-api>=1.21.0
+      - opentelemetry-sdk>=1.21.0
+      - opentelemetry-exporter-otlp>=1.21.0
+
+      # Advanced Analytics
+      - matplotlib>=3.8.2
+      - seaborn>=0.13.0
+      - plotly>=5.18.0
+      - scikit-learn>=1.3.2  # For trend prediction
+
+      # Reporting
+      - reportlab>=4.0.7
+      - openpyxl>=3.1.2
+      - jinja2>=3.1.2
+
+      # Logging
+      - structlog>=23.2.0
+
+    development:
+      - pytest>=7.4.3
+      - pytest-asyncio>=0.21.1
+      - pytest-cov>=4.1.0
+      - black>=23.12.0
+      - ruff>=0.1.7
+      - mypy>=1.7.1
+      - hypothesis>=6.92.0  # Property-based testing
+
+  # ============================================================================
+  # RESOURCE REQUIREMENTS
+  # ============================================================================
+  resources:
+    cpu:
+      requests: "500m"
+      limits: "2000m"
+    memory:
+      requests: "1Gi"
+      limits: "4Gi"
+    storage: "50Gi"
+    gpu: false
+
+  # ============================================================================
+  # NETWORK PORTS
+  # ============================================================================
+  ports:
+    - name: http
+      port: 8017
+      protocol: TCP
+      description: "Main API endpoint for condenser optimization"
+    - name: metrics
+      port: 9017
+      protocol: TCP
+      description: "Prometheus metrics endpoint"
+    - name: health
+      port: 8018
+      protocol: TCP
+      description: "Health check endpoint"
+
+  # ============================================================================
+  # INPUT SPECIFICATION
+  # ============================================================================
+  inputs:
+    - name: cooling_water_parameters
+      type: object
+      required: true
+      description: "Real-time cooling water system measurements"
+      schema:
+        condenser_id:
+          type: string
+          description: "Unique condenser identifier"
+        timestamp:
+          type: string
+          format: datetime
+        cooling_water_inlet_temp_c:
+          type: number
+          unit: "degC"
+          range: [5.0, 45.0]
+          description: "Cooling water inlet temperature"
+        cooling_water_outlet_temp_c:
+          type: number
+          unit: "degC"
+          range: [10.0, 55.0]
+          description: "Cooling water outlet temperature"
+        cooling_water_flow_rate_m3_hr:
+          type: number
+          unit: "m3/hr"
+          range: [100.0, 500000.0]
+          description: "Cooling water volumetric flow rate"
+        cooling_water_pressure_bar:
+          type: number
+          unit: "bar"
+          range: [0.5, 10.0]
+          description: "Cooling water pressure"
+        cooling_water_quality:
+          type: object
+          description: "Cooling water chemistry parameters"
+          properties:
+            ph:
+              type: number
+              range: [6.5, 9.0]
+            conductivity_us_cm:
+              type: number
+              unit: "uS/cm"
+            total_hardness_ppm:
+              type: number
+              unit: "ppm as CaCO3"
+            chlorine_residual_ppm:
+              type: number
+              unit: "ppm"
+
+    - name: vacuum_levels
+      type: object
+      required: true
+      description: "Condenser vacuum and pressure measurements"
+      schema:
+        condenser_id:
+          type: string
+        timestamp:
+          type: string
+          format: datetime
+        condenser_vacuum_mmhg_abs:
+          type: number
+          unit: "mmHg absolute"
+          range: [15.0, 760.0]
+          description: "Absolute pressure in condenser"
+        condenser_pressure_kpa_abs:
+          type: number
+          unit: "kPa absolute"
+          range: [2.0, 101.3]
+          description: "Absolute pressure in kPa"
+        hotwell_level_percent:
+          type: number
+          unit: "percent"
+          range: [0.0, 100.0]
+          description: "Hotwell water level"
+        air_ejector_steam_flow_kg_hr:
+          type: number
+          unit: "kg/hr"
+          description: "Steam flow to air ejector"
+        air_ejector_suction_pressure_kpa:
+          type: number
+          unit: "kPa"
+          description: "Air ejector suction pressure"
+        vacuum_pump_status:
+          type: string
+          enum: [OFF, RUNNING, STANDBY, FAULT]
+          description: "Liquid ring vacuum pump status"
+        air_in_leakage_rate_kg_hr:
+          type: number
+          unit: "kg/hr"
+          description: "Measured or estimated air in-leakage"
+
+    - name: condensate_flow
+      type: object
+      required: true
+      description: "Condensate system flow and temperature data"
+      schema:
+        condenser_id:
+          type: string
+        timestamp:
+          type: string
+          format: datetime
+        condensate_flow_rate_kg_hr:
+          type: number
+          unit: "kg/hr"
+          range: [1000.0, 5000000.0]
+          description: "Condensate mass flow rate"
+        condensate_temperature_c:
+          type: number
+          unit: "degC"
+          range: [20.0, 80.0]
+          description: "Condensate temperature at hotwell"
+        condensate_subcooling_c:
+          type: number
+          unit: "degC"
+          range: [0.0, 15.0]
+          description: "Condensate subcooling below saturation"
+        condensate_do_ppb:
+          type: number
+          unit: "ppb"
+          description: "Dissolved oxygen in condensate"
+        condensate_conductivity_us_cm:
+          type: number
+          unit: "uS/cm"
+          description: "Condensate conductivity"
+        condensate_pump_status:
+          type: array
+          items:
+            type: string
+            enum: [OFF, RUNNING, STANDBY, FAULT]
+          description: "Status of condensate extraction pumps"
+
+    - name: steam_inlet_parameters
+      type: object
+      required: true
+      description: "Exhaust steam conditions entering condenser"
+      schema:
+        condenser_id:
+          type: string
+        timestamp:
+          type: string
+          format: datetime
+        exhaust_steam_flow_kg_hr:
+          type: number
+          unit: "kg/hr"
+          description: "Exhaust steam mass flow to condenser"
+        exhaust_steam_temp_c:
+          type: number
+          unit: "degC"
+          description: "Exhaust steam temperature"
+        exhaust_steam_pressure_kpa:
+          type: number
+          unit: "kPa"
+          description: "Exhaust steam pressure"
+        exhaust_steam_quality_percent:
+          type: number
+          unit: "percent"
+          range: [85.0, 100.0]
+          description: "Steam quality (dryness fraction)"
+        turbine_load_mw:
+          type: number
+          unit: "MW"
+          description: "Current turbine electrical load"
+
+    - name: condenser_design_specifications
+      type: object
+      required: true
+      description: "Condenser design and nameplate data"
+      schema:
+        condenser_id:
+          type: string
+        condenser_type:
+          type: string
+          enum: [SHELL_AND_TUBE, SURFACE, DIRECT_CONTACT, AIR_COOLED]
+          description: "Condenser construction type"
+        tube_material:
+          type: string
+          enum: [ADMIRALTY_BRASS, COPPER_NICKEL_90_10, COPPER_NICKEL_70_30, STAINLESS_316, TITANIUM, ALUMINUM_BRASS]
+          description: "Condenser tube material"
+        number_of_passes:
+          type: integer
+          enum: [1, 2, 3, 4]
+          description: "Number of cooling water passes"
+        total_tube_count:
+          type: integer
+          description: "Total number of tubes"
+        active_tube_count:
+          type: integer
+          description: "Number of tubes in service (not plugged)"
+        tube_od_mm:
+          type: number
+          unit: "mm"
+          description: "Tube outside diameter"
+        tube_wall_thickness_mm:
+          type: number
+          unit: "mm"
+          description: "Tube wall thickness"
+        tube_length_m:
+          type: number
+          unit: "m"
+          description: "Active tube length"
+        design_heat_duty_mw:
+          type: number
+          unit: "MW"
+          description: "Design heat rejection capacity"
+        design_vacuum_mmhg_abs:
+          type: number
+          unit: "mmHg absolute"
+          description: "Design vacuum pressure"
+        design_ttd_c:
+          type: number
+          unit: "degC"
+          description: "Design terminal temperature difference"
+        design_u_value_w_m2k:
+          type: number
+          unit: "W/m2-K"
+          description: "Design overall heat transfer coefficient"
+        heat_transfer_area_m2:
+          type: number
+          unit: "m2"
+          description: "Total heat transfer surface area"
+
+    - name: cooling_tower_parameters
+      type: object
+      required: false
+      description: "Cooling tower operating data for integrated optimization"
+      schema:
+        tower_id:
+          type: string
+        ambient_wet_bulb_temp_c:
+          type: number
+          unit: "degC"
+          description: "Ambient wet bulb temperature"
+        ambient_dry_bulb_temp_c:
+          type: number
+          unit: "degC"
+          description: "Ambient dry bulb temperature"
+        relative_humidity_percent:
+          type: number
+          unit: "percent"
+          description: "Ambient relative humidity"
+        tower_approach_c:
+          type: number
+          unit: "degC"
+          description: "Cooling tower approach temperature"
+        tower_range_c:
+          type: number
+          unit: "degC"
+          description: "Cooling tower range (inlet - outlet)"
+        fan_status:
+          type: array
+          items:
+            type: string
+            enum: [OFF, LOW, HIGH, VFD_CONTROLLED]
+          description: "Cooling tower fan operating status"
+        basin_level_percent:
+          type: number
+          unit: "percent"
+          description: "Cooling tower basin level"
+        makeup_water_flow_m3_hr:
+          type: number
+          unit: "m3/hr"
+          description: "Cooling tower makeup water flow"
+        blowdown_flow_m3_hr:
+          type: number
+          unit: "m3/hr"
+          description: "Cooling tower blowdown flow"
+        cycles_of_concentration:
+          type: number
+          description: "Cooling water cycles of concentration"
+
+  # ============================================================================
+  # OUTPUT SPECIFICATION
+  # ============================================================================
+  outputs:
+    - name: condenser_performance
+      type: object
+      description: "Real-time condenser performance assessment"
+      schema:
+        condenser_id:
+          type: string
+        timestamp:
+          type: string
+          format: datetime
+        actual_heat_duty_mw:
+          type: number
+          unit: "MW"
+          description: "Current heat rejection rate"
+        actual_u_value_w_m2k:
+          type: number
+          unit: "W/m2-K"
+          description: "Actual overall heat transfer coefficient"
+        cleanliness_factor_percent:
+          type: number
+          unit: "percent"
+          description: "Tube cleanliness factor (actual U / design U)"
+        actual_ttd_c:
+          type: number
+          unit: "degC"
+          description: "Actual terminal temperature difference"
+        design_vs_actual_ttd_deviation_c:
+          type: number
+          unit: "degC"
+          description: "TTD deviation from design"
+        lmtd_c:
+          type: number
+          unit: "degC"
+          description: "Log mean temperature difference"
+        effectiveness_percent:
+          type: number
+          unit: "percent"
+          description: "Condenser heat exchanger effectiveness"
+        performance_rating:
+          type: string
+          enum: [EXCELLENT, GOOD, ACCEPTABLE, DEGRADED, POOR, CRITICAL]
+          description: "Overall performance classification"
+        performance_score:
+          type: number
+          range: [0.0, 100.0]
+          description: "Numerical performance score"
+        provenance_hash:
+          type: string
+          description: "SHA-256 hash for calculation audit trail"
+
+    - name: vacuum_optimization
+      type: object
+      description: "Vacuum system optimization recommendations"
+      schema:
+        condenser_id:
+          type: string
+        timestamp:
+          type: string
+          format: datetime
+        optimal_vacuum_mmhg_abs:
+          type: number
+          unit: "mmHg absolute"
+          description: "Recommended optimal vacuum pressure"
+        current_vacuum_deviation_mmhg:
+          type: number
+          unit: "mmHg"
+          description: "Deviation from optimal vacuum"
+        estimated_air_leakage_kg_hr:
+          type: number
+          unit: "kg/hr"
+          description: "Estimated total air in-leakage rate"
+        air_leakage_severity:
+          type: string
+          enum: [NORMAL, ELEVATED, HIGH, CRITICAL]
+          description: "Air leakage severity classification"
+        sjae_performance_status:
+          type: string
+          enum: [OPTIMAL, DEGRADED, NEEDS_MAINTENANCE]
+          description: "Steam jet air ejector performance"
+        vacuum_pump_recommendations:
+          type: array
+          items:
+            type: string
+          description: "Vacuum pump operating recommendations"
+        turbine_backpressure_impact_mw:
+          type: number
+          unit: "MW"
+          description: "Estimated power loss due to elevated backpressure"
+        annual_energy_loss_mwh:
+          type: number
+          unit: "MWh"
+          description: "Projected annual energy loss from vacuum degradation"
+        provenance_hash:
+          type: string
+
+    - name: heat_recovery_optimization
+      type: object
+      description: "Heat recovery and efficiency improvement analysis"
+      schema:
+        condenser_id:
+          type: string
+        timestamp:
+          type: string
+          format: datetime
+        current_condensate_subcooling_c:
+          type: number
+          unit: "degC"
+          description: "Current condensate subcooling"
+        optimal_subcooling_c:
+          type: number
+          unit: "degC"
+          description: "Recommended optimal subcooling"
+        subcooling_energy_loss_mw:
+          type: number
+          unit: "MW"
+          description: "Energy loss due to excessive subcooling"
+        heat_recovery_opportunities:
+          type: array
+          items:
+            type: object
+            properties:
+              opportunity_id:
+                type: string
+              description:
+                type: string
+              potential_savings_mw:
+                type: number
+              implementation_cost_usd:
+                type: number
+              payback_months:
+                type: number
+          description: "Identified heat recovery opportunities"
+        thermal_efficiency_improvement_percent:
+          type: number
+          unit: "percent"
+          description: "Potential thermal efficiency improvement"
+        annual_energy_savings_mwh:
+          type: number
+          unit: "MWh"
+          description: "Projected annual energy savings"
+        annual_cost_savings_usd:
+          type: number
+          unit: "USD"
+          description: "Projected annual cost savings"
+        co2_reduction_tonnes_year:
+          type: number
+          unit: "tonnes/year"
+          description: "Annual CO2 emission reduction"
+        provenance_hash:
+          type: string
+
+    - name: cooling_water_optimization
+      type: object
+      description: "Cooling water system optimization recommendations"
+      schema:
+        condenser_id:
+          type: string
+        timestamp:
+          type: string
+          format: datetime
+        optimal_cw_flow_rate_m3_hr:
+          type: number
+          unit: "m3/hr"
+          description: "Recommended cooling water flow rate"
+        current_vs_optimal_flow_deviation_percent:
+          type: number
+          unit: "percent"
+          description: "Flow rate deviation from optimal"
+        optimal_cw_inlet_temp_c:
+          type: number
+          unit: "degC"
+          description: "Target cooling water inlet temperature"
+        approach_temperature_c:
+          type: number
+          unit: "degC"
+          description: "Current approach temperature"
+        optimal_approach_c:
+          type: number
+          unit: "degC"
+          description: "Target approach temperature"
+        pump_optimization:
+          type: object
+          properties:
+            recommended_pumps_running:
+              type: integer
+            pump_speed_recommendations:
+              type: array
+              items:
+                type: object
+            estimated_pump_power_savings_kw:
+              type: number
+          description: "Cooling water pump optimization"
+        cooling_tower_recommendations:
+          type: array
+          items:
+            type: string
+          description: "Cooling tower operating recommendations"
+        seasonal_adjustment_factor:
+          type: number
+          description: "Seasonal adjustment for optimal operation"
+        water_consumption_m3_day:
+          type: number
+          unit: "m3/day"
+          description: "Daily water consumption"
+        provenance_hash:
+          type: string
+
+    - name: fouling_assessment
+      type: object
+      description: "Tube fouling analysis and cleaning recommendations"
+      schema:
+        condenser_id:
+          type: string
+        timestamp:
+          type: string
+          format: datetime
+        fouling_factor_m2k_w:
+          type: number
+          unit: "m2-K/W"
+          description: "Calculated fouling resistance"
+        fouling_factor_trend:
+          type: string
+          enum: [STABLE, INCREASING, RAPIDLY_INCREASING, DECREASING]
+          description: "Fouling factor trend direction"
+        fouling_severity:
+          type: string
+          enum: [CLEAN, LIGHT, MODERATE, HEAVY, SEVERE]
+          description: "Fouling severity classification"
+        fouling_type_assessment:
+          type: object
+          properties:
+            biological_fouling_likelihood:
+              type: number
+              range: [0.0, 1.0]
+            scaling_likelihood:
+              type: number
+              range: [0.0, 1.0]
+            particulate_fouling_likelihood:
+              type: number
+              range: [0.0, 1.0]
+            corrosion_product_likelihood:
+              type: number
+              range: [0.0, 1.0]
+          description: "Assessment of fouling type probabilities"
+        days_since_last_cleaning:
+          type: integer
+          unit: "days"
+          description: "Days since last tube cleaning"
+        recommended_cleaning_date:
+          type: string
+          format: date
+          description: "Recommended next cleaning date"
+        cleaning_method_recommendation:
+          type: string
+          enum: [MECHANICAL_BRUSH, HIGH_PRESSURE_WATER, CHEMICAL_CLEANING, SPONGE_BALL, BACKWASH]
+          description: "Recommended cleaning method"
+        performance_loss_due_to_fouling_mw:
+          type: number
+          unit: "MW"
+          description: "Current performance loss from fouling"
+        tube_plugging_recommendations:
+          type: object
+          properties:
+            tubes_recommended_for_plugging:
+              type: integer
+            plugging_urgency:
+              type: string
+              enum: [NONE, LOW, MEDIUM, HIGH, IMMEDIATE]
+          description: "Tube plugging recommendations"
+        annual_fouling_cost_usd:
+          type: number
+          unit: "USD"
+          description: "Annual cost impact of fouling"
+        provenance_hash:
+          type: string
+
+    - name: performance_trending
+      type: object
+      description: "Historical performance trends and analytics"
+      schema:
+        condenser_id:
+          type: string
+        timestamp:
+          type: string
+          format: datetime
+        reporting_period:
+          type: string
+          enum: [DAILY, WEEKLY, MONTHLY, QUARTERLY, ANNUAL]
+          description: "Reporting period for trends"
+        kpi_summary:
+          type: object
+          properties:
+            average_cleanliness_factor_percent:
+              type: number
+            average_ttd_c:
+              type: number
+            average_vacuum_mmhg_abs:
+              type: number
+            average_subcooling_c:
+              type: number
+            total_heat_duty_gwh:
+              type: number
+            availability_percent:
+              type: number
+          description: "Key performance indicator summary"
+        trend_analysis:
+          type: object
+          properties:
+            u_value_trend:
+              type: string
+              enum: [IMPROVING, STABLE, DEGRADING]
+            vacuum_trend:
+              type: string
+              enum: [IMPROVING, STABLE, DEGRADING]
+            fouling_trend:
+              type: string
+              enum: [IMPROVING, STABLE, DEGRADING]
+          description: "Performance trend analysis"
+        efficiency_improvement_achieved_percent:
+          type: number
+          unit: "percent"
+          description: "Efficiency improvement from optimization"
+        cost_savings_achieved_usd:
+          type: number
+          unit: "USD"
+          description: "Cost savings achieved in period"
+        reliability_metrics:
+          type: object
+          properties:
+            mtbf_hours:
+              type: number
+              unit: "hours"
+            mttr_hours:
+              type: number
+              unit: "hours"
+            forced_outage_rate_percent:
+              type: number
+              unit: "percent"
+          description: "Reliability performance metrics"
+        next_maintenance_window:
+          type: string
+          format: datetime
+          description: "Recommended next maintenance window"
+        provenance_hash:
+          type: string
+
+  # ============================================================================
+  # INTEGRATIONS
+  # ============================================================================
+  integrations:
+    scada_systems:
+      - name: OPC_UA
+        protocol: "OPC UA"
+        description: "OPC UA SCADA integration for real-time data"
+        required: true
+        endpoints:
+          - condenser_instrumentation
+          - cooling_water_system
+          - vacuum_system
+          - condensate_system
+      - name: Modbus_TCP
+        protocol: "Modbus TCP"
+        description: "Modbus TCP for legacy instrumentation"
+        required: false
+      - name: PI_System
+        protocol: "OSIsoft PI Web API"
+        description: "OSIsoft PI historian integration"
+        required: false
+
+    dcs_systems:
+      - name: ABB_800xA
+        protocol: "OPC DA/UA"
+        description: "ABB 800xA DCS integration"
+        required: false
+      - name: Honeywell_Experion
+        protocol: "OPC UA"
+        description: "Honeywell Experion PKS integration"
+        required: false
+      - name: Siemens_PCS7
+        protocol: "OPC UA"
+        description: "Siemens PCS 7 DCS integration"
+        required: false
+      - name: Emerson_DeltaV
+        protocol: "OPC UA"
+        description: "Emerson DeltaV DCS integration"
+        required: false
+
+    historian_systems:
+      - name: OSIsoft_PI
+        protocol: "PI Web API"
+        description: "OSIsoft PI historian for data trending"
+        required: false
+      - name: Honeywell_PHD
+        protocol: "REST API"
+        description: "Honeywell PHD historian integration"
+        required: false
+      - name: GE_Proficy
+        protocol: "REST API"
+        description: "GE Proficy historian integration"
+        required: false
+      - name: AspenTech_InfoPlus
+        protocol: "REST API"
+        description: "AspenTech InfoPlus.21 historian"
+        required: false
+
+    cmms_systems:
+      - name: SAP_PM
+        protocol: "SAP RFC/BAPI"
+        description: "SAP Plant Maintenance integration"
+        required: false
+      - name: IBM_Maximo
+        protocol: "REST API"
+        description: "IBM Maximo Asset Management"
+        required: false
+      - name: Infor_EAM
+        protocol: "REST API"
+        description: "Infor EAM integration"
+        required: false
+
+    cooling_tower_systems:
+      - name: Cooling_Tower_Controller
+        protocol: "Modbus TCP/OPC UA"
+        description: "Cooling tower control system integration"
+        required: false
+      - name: Water_Treatment_System
+        protocol: "REST API"
+        description: "Cooling water treatment system"
+        required: false
+
+    greenlang_agents:
+      - name: GL-001_THERMOSYNC
+        description: "Process heat orchestrator coordination"
+        required: false
+      - name: GL-002_BOILEROPT
+        description: "Boiler optimization coordination"
+        required: false
+      - name: GL-007_STEAMTRACE
+        description: "Steam trap monitoring coordination"
+        required: false
+      - name: GL-013_PREDICTMAINT
+        description: "Predictive maintenance coordination"
+        required: false
+      - name: GL-016_WATERGUARD
+        description: "Water treatment coordination"
+        required: false
+
+  # ============================================================================
+  # CAPABILITIES
+  # ============================================================================
+  capabilities:
+    condenser_analysis:
+      - heat_transfer_coefficient_calculation
+      - ttd_monitoring_and_analysis
+      - cleanliness_factor_assessment
+      - lmtd_calculation
+      - effectiveness_calculation
+      - design_vs_actual_comparison
+      - performance_rating
+      - heat_duty_optimization
+
+    vacuum_optimization:
+      - vacuum_pressure_monitoring
+      - optimal_vacuum_calculation
+      - air_in_leakage_detection
+      - air_leakage_quantification
+      - non_condensable_analysis
+      - backpressure_impact_assessment
+      - turbine_power_loss_calculation
+
+    heat_recovery:
+      - condensate_subcooling_analysis
+      - subcooling_minimization
+      - heat_recovery_opportunity_identification
+      - thermal_efficiency_optimization
+      - energy_savings_calculation
+      - carbon_reduction_tracking
+
+    cooling_water_management:
+      - flow_rate_optimization
+      - inlet_temperature_optimization
+      - approach_temperature_analysis
+      - pump_optimization
+      - cooling_tower_coordination
+      - seasonal_adjustment
+      - water_consumption_tracking
+
+    fouling_detection:
+      - fouling_factor_calculation
+      - fouling_trend_analysis
+      - fouling_type_assessment
+      - cleaning_schedule_optimization
+      - tube_plugging_recommendations
+      - performance_degradation_tracking
+      - cleaning_effectiveness_verification
+
+    performance_trending:
+      - real_time_kpi_dashboards
+      - historical_trend_analysis
+      - efficiency_improvement_tracking
+      - reliability_metrics_calculation
+      - maintenance_optimization
+      - compliance_reporting
+
+    sjae_monitoring:
+      - steam_jet_air_ejector_performance
+      - sjae_efficiency_calculation
+      - sjae_steam_consumption_optimization
+      - inter_condenser_performance
+      - ejector_staging_optimization
+
+  # ============================================================================
+  # COMPLIANCE
+  # ============================================================================
+  compliance:
+    standards:
+      - standard: HEI
+        version: "2023"
+        document: "HEI Standards for Steam Surface Condensers"
+        description: "Heat Exchange Institute standards for condenser performance"
+
+      - standard: ASME_PTC_12.2
+        version: "2021"
+        document: "ASME PTC 12.2 Steam Surface Condensers"
+        description: "Performance test code for steam surface condensers"
+
+      - standard: TEMA
+        version: "10th Edition"
+        document: "Standards of the Tubular Exchanger Manufacturers Association"
+        description: "Shell and tube heat exchanger standards"
+
+      - standard: ISO_13706
+        version: "2011"
+        document: "Petroleum, petrochemical and natural gas industries - Air-cooled heat exchangers"
+        description: "Air-cooled heat exchanger standards"
+
+      - standard: EPA
+        version: "2023"
+        document: "EPA 316(b) Regulations"
+        description: "Cooling water intake structure regulations"
+
+      - standard: NACE
+        version: "2023"
+        document: "NACE Corrosion Standards"
+        description: "Corrosion prevention standards for cooling systems"
+
+      - standard: ASME_PTC_23
+        version: "2020"
+        document: "ASME PTC 23 Atmospheric Water Cooling Equipment"
+        description: "Cooling tower performance test code"
+
+      - standard: CTI
+        version: "2023"
+        document: "Cooling Technology Institute Standards"
+        description: "Cooling tower performance standards"
+
+    audit_trail:
+      enabled: true
+      retention_days: 2555  # 7 years
+      provenance_tracking: true
+      hash_algorithm: SHA-256
+      immutable: true
+
+    zero_hallucination: true
+    deterministic_calculations: true
+
+    validation:
+      input_validation: true
+      output_validation: true
+      heat_balance_validation: true
+      mass_balance_validation: true
+      thermodynamic_consistency_checks: true
+      regulatory_compliance_checks: true
+
+  # ============================================================================
+  # MONITORING
+  # ============================================================================
+  monitoring:
+    metrics_enabled: true
+    metrics_port: 9017
+    metrics_path: /metrics
+
+    prometheus_metrics:
+      # Performance Metrics
+      - name: condenser_cleanliness_factor_percent
+        type: gauge
+        description: "Condenser tube cleanliness factor"
+        labels: [condenser_id]
+      - name: condenser_ttd_celsius
+        type: gauge
+        description: "Terminal temperature difference"
+        labels: [condenser_id]
+      - name: condenser_u_value_w_m2k
+        type: gauge
+        description: "Overall heat transfer coefficient"
+        labels: [condenser_id]
+      - name: condenser_vacuum_mmhg_abs
+        type: gauge
+        description: "Condenser vacuum pressure"
+        labels: [condenser_id]
+      - name: condenser_heat_duty_mw
+        type: gauge
+        description: "Heat rejection rate"
+        labels: [condenser_id]
+      - name: condenser_subcooling_celsius
+        type: gauge
+        description: "Condensate subcooling"
+        labels: [condenser_id]
+      - name: condenser_fouling_factor_m2k_w
+        type: gauge
+        description: "Tube fouling resistance"
+        labels: [condenser_id]
+      - name: condenser_air_leakage_kg_hr
+        type: gauge
+        description: "Air in-leakage rate"
+        labels: [condenser_id]
+
+      # Optimization Metrics
+      - name: condenser_efficiency_improvement_percent
+        type: gauge
+        description: "Efficiency improvement from optimization"
+        labels: [condenser_id]
+      - name: condenser_energy_savings_mwh
+        type: counter
+        description: "Cumulative energy savings"
+        labels: [condenser_id]
+      - name: condenser_cost_savings_usd
+        type: counter
+        description: "Cumulative cost savings"
+        labels: [condenser_id]
+
+      # Agent Metrics
+      - name: condensync_calculations_total
+        type: counter
+        description: "Total optimization calculations performed"
+      - name: condensync_calculation_latency_seconds
+        type: histogram
+        description: "Calculation latency distribution"
+        buckets: [0.01, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0]
+      - name: condensync_api_requests_total
+        type: counter
+        description: "Total API requests"
+        labels: [endpoint, method, status]
+
+    dashboards:
+      - condenser_overview
+      - condenser_performance_detail
+      - vacuum_system_monitoring
+      - cooling_water_optimization
+      - fouling_tracking
+      - heat_recovery_analysis
+      - trend_analysis
+      - cost_savings_tracking
+      - reliability_metrics
+
+    alerts:
+      - name: critical_vacuum_loss
+        condition: "condenser_vacuum_mmhg_abs > 100"
+        severity: critical
+        description: "Critical loss of condenser vacuum"
+        notification_channels: [pagerduty, email, slack]
+
+      - name: high_air_leakage
+        condition: "condenser_air_leakage_kg_hr > 50"
+        severity: high
+        description: "Elevated air in-leakage detected"
+        notification_channels: [email, slack]
+
+      - name: severe_fouling
+        condition: "condenser_cleanliness_factor_percent < 70"
+        severity: high
+        description: "Severe tube fouling detected"
+        notification_channels: [email, slack]
+
+      - name: high_ttd_deviation
+        condition: "abs(condenser_ttd_celsius - design_ttd) > 5"
+        severity: medium
+        description: "Significant TTD deviation from design"
+        notification_channels: [email]
+
+      - name: excessive_subcooling
+        condition: "condenser_subcooling_celsius > 8"
+        severity: medium
+        description: "Excessive condensate subcooling"
+        notification_channels: [email]
+
+      - name: low_cleanliness_factor
+        condition: "condenser_cleanliness_factor_percent < 85"
+        severity: low
+        description: "Tube cleanliness factor degraded"
+        notification_channels: [email]
+
+      - name: cooling_water_temp_high
+        condition: "cooling_water_inlet_temp_c > design_inlet_temp + 5"
+        severity: medium
+        description: "Cooling water inlet temperature elevated"
+        notification_channels: [email]
+
+  # ============================================================================
+  # SECURITY
+  # ============================================================================
+  security:
+    authentication: oauth2
+    authorization: rbac
+    encryption: tls_1_3
+    secrets_management: vault
+    api_key_required: true
+    audit_logging: true
+
+    oauth2_config:
+      provider: keycloak
+      issuer_url: "${OAUTH_ISSUER_URL}"
+      client_id: "${OAUTH_CLIENT_ID}"
+      client_secret: "${OAUTH_CLIENT_SECRET}"
+      scopes:
+        - condenser:read
+        - condenser:write
+        - condenser:admin
+
+    roles:
+      - name: admin
+        permissions:
+          - condenser:read
+          - condenser:write
+          - condenser:delete
+          - condenser:configure
+          - users:manage
+        description: "Full administrative access"
+
+      - name: condenser_engineer
+        permissions:
+          - condenser:read
+          - condenser:write
+          - condenser:configure
+        description: "Condenser operations engineering"
+
+      - name: operations_engineer
+        permissions:
+          - condenser:read
+          - condenser:write
+        description: "Plant operations access"
+
+      - name: operator
+        permissions:
+          - condenser:read
+        description: "Operational monitoring access"
+
+      - name: viewer
+        permissions:
+          - condenser:read
+        description: "Read-only access"
+
+    vault_config:
+      address: "${VAULT_ADDR}"
+      token: "${VAULT_TOKEN}"
+      secret_paths:
+        - secret/data/gl-017/database
+        - secret/data/gl-017/api-keys
+        - secret/data/gl-017/oauth
+
+    audit_logging:
+      enabled: true
+      log_level: INFO
+      include_request_body: false
+      include_response_body: false
+      retention_days: 2555
+      encryption: true
+
+  # ============================================================================
+  # DEPLOYMENT
+  # ============================================================================
+  deployment:
+    replicas: 3
+    strategy: rolling_update
+    max_surge: 1
+    max_unavailable: 0
+
+    health_check:
+      liveness:
+        path: /health/liveness
+        port: 8018
+        interval: 10s
+        timeout: 5s
+        failure_threshold: 3
+        initial_delay: 30s
+
+      readiness:
+        path: /health/readiness
+        port: 8018
+        interval: 5s
+        timeout: 3s
+        failure_threshold: 3
+        initial_delay: 10s
+
+      startup:
+        path: /health/startup
+        port: 8018
+        interval: 5s
+        timeout: 5s
+        failure_threshold: 30
+        initial_delay: 5s
+
+    autoscaling:
+      enabled: true
+      min_replicas: 2
+      max_replicas: 10
+      target_cpu_percent: 70
+      target_memory_percent: 80
+      scale_up_cooldown: 60s
+      scale_down_cooldown: 300s
+
+    pod_disruption_budget:
+      min_available: 1
+
+    affinity:
+      preferred_zones:
+        - zone-a
+        - zone-b
+        - zone-c
+      anti_affinity: preferred
+
+    tolerations:
+      - key: "dedicated"
+        operator: "Equal"
+        value: "condenser-optimization"
+        effect: "NoSchedule"
+
+  # ============================================================================
+  # DATA RETENTION
+  # ============================================================================
+  data_retention:
+    real_time_data:
+      retention_days: 90
+      compression: true
+      archive_to: s3
+      sampling_interval: 1s
+
+    hourly_aggregates:
+      retention_days: 365
+      compression: true
+      archive_to: s3
+
+    daily_summaries:
+      retention_days: 2555  # 7 years
+      compression: true
+      archive_to: glacier
+
+    optimization_results:
+      retention_days: 2555
+      immutable: true
+      encryption: true
+
+    audit_logs:
+      retention_days: 2555
+      immutable: true
+      encryption: true
+      compliance: regulatory
+
+    performance_reports:
+      retention_days: 2555
+      format: [json, pdf]
+      archive_to: s3
+
+# ==============================================================================
+# AUTHOR & DOCUMENTATION
+# ==============================================================================
+authors:
+  - name: GreenLang AI Agent Factory
+    email: agents@greenlang.io
+
+repository: https://github.com/greenlang/agents/gl-017
+documentation: https://docs.greenlang.io/agents/gl-017
+changelog: https://github.com/greenlang/agents/gl-017/blob/main/CHANGELOG.md
+
+tags:
+  - condenser
+  - steam-systems
+  - heat-recovery
+  - vacuum-optimization
+  - cooling-water
+  - fouling-detection
+  - performance-trending
+  - energy-efficiency
+  - industrial
+  - power-plant
+  - HEI
+  - ASME
+  - TEMA
+  - deterministic
+  - zero-hallucination
+
+# ==============================================================================
+# BUSINESS METRICS
+# ==============================================================================
+business:
+  tam: "$4B"
+  target_date: "Q3 2026"
+  priority: P2
+
+  value_proposition:
+    - Improve condenser vacuum by 10-15 mmHg
+    - Reduce cooling water pumping costs by 15%
+    - Extend cleaning intervals by 25%
+    - Increase turbine output by 1-2 MW per unit
+    - Reduce tube failure incidents by 60%
+    - Optimize heat recovery for 5% energy savings
+    - Ensure regulatory compliance for cooling water
+    - Lower maintenance costs by 20%
+
+  target_customers:
+    - power_plants
+    - combined_cycle_plants
+    - cogeneration_facilities
+    - industrial_steam_systems
+    - chemical_plants
+    - refineries
+    - pulp_and_paper_mills
+    - district_heating_systems
+    - marine_propulsion
+
+  use_cases:
+    - continuous_condenser_performance_monitoring
+    - vacuum_system_optimization
+    - predictive_fouling_management
+    - cooling_water_flow_optimization
+    - air_in_leakage_detection
+    - heat_recovery_maximization
+    - tube_cleaning_scheduling
+    - performance_trending_and_reporting
+    - regulatory_compliance_tracking
+
+  roi_metrics:
+    - metric: vacuum_improvement
+      target: 12
+      unit: mmHg
+      measurement_frequency: daily
+
+    - metric: turbine_output_increase
+      target: 1.5
+      unit: MW
+      measurement_frequency: monthly
+
+    - metric: pumping_cost_reduction
+      target: 15
+      unit: percent
+      measurement_frequency: monthly
+
+    - metric: cleaning_interval_extension
+      target: 25
+      unit: percent
+      measurement_frequency: quarterly
+
+    - metric: tube_failure_reduction
+      target: 60
+      unit: percent
+      measurement_frequency: quarterly
+
+    - metric: heat_recovery_improvement
+      target: 5
+      unit: percent
+      measurement_frequency: monthly
+
+    - metric: payback_period
+      target: 8
+      unit: months
+
+    - metric: annual_cost_savings
+      target: 500000
+      unit: USD
+      per_facility: true
+
+    - metric: annual_energy_savings
+      target: 8000
+      unit: MWh
+      per_facility: true
+
+    - metric: annual_co2_reduction
+      target: 4000
+      unit: tonnes
+      per_facility: true
+
+# ==============================================================================
+# TECHNICAL SPECIFICATIONS
+# ==============================================================================
+technical:
+  architecture:
+    pattern: microservice
+    design: event_driven
+    messaging: async
+    state_management: stateless
+    data_persistence: postgresql
+    cache: redis
+    message_broker: kafka
+
+  scalability:
+    horizontal: true
+    vertical: true
+    max_condensers_per_instance: 50
+    max_calculations_per_second: 5000
+
+  reliability:
+    availability: 99.9
+    mtbf_hours: 8760  # 1 year
+    mttr_minutes: 30
+    data_loss_tolerance: zero
+
+  performance:
+    latency_p50_ms: 25
+    latency_p95_ms: 100
+    latency_p99_ms: 250
+    throughput_ops_per_second: 500
+
+  calculation_accuracy:
+    u_value_precision: 0.1  # W/m2-K
+    ttd_precision: 0.1  # degC
+    vacuum_precision: 0.1  # mmHg
+    fouling_factor_precision: 0.00001  # m2-K/W
+    heat_duty_precision: 0.01  # MW
+
+  testing:
+    unit_test_coverage_percent: 90
+    integration_test_coverage_percent: 85
+    e2e_test_coverage_percent: 75
+    load_testing: required
+    chaos_testing: recommended
+    thermodynamic_validation: required
+
+# ==============================================================================
+# LICENSING & LEGAL
+# ==============================================================================
+legal:
+  license: Apache-2.0
+  copyright: "Copyright 2024 GreenLang AI"
+  patent_pending: false
+  export_control: EAR99
+
+  disclaimers:
+    - "This software is provided 'as is' without warranty"
+    - "Users are responsible for regulatory compliance"
+    - "Consult qualified engineers for safety-critical applications"
+    - "Condenser optimization recommendations require engineering review"
+
+# ==============================================================================
+# VERSION HISTORY
+# ==============================================================================
+version_history:
+  - version: "1.0.0"
+    date: "2024-12-02"
+    status: development
+    changes:
+      - Initial development release
+      - Complete condenser performance analysis
+      - Vacuum optimization algorithms
+      - Heat recovery optimization
+      - Cooling water management
+      - Fouling detection and management
+      - Performance trending and reporting
+    breaking_changes: []
+
+# ==============================================================================
+# ROADMAP
+# ==============================================================================
+roadmap:
+  - version: "1.1.0"
+    target_date: "Q4 2026"
+    features:
+      - ML-enhanced fouling prediction
+      - Advanced air leakage localization
+      - Multi-condenser fleet optimization
+      - Automated cleaning scheduling integration
+
+  - version: "1.2.0"
+    target_date: "Q1 2027"
+    features:
+      - Digital twin integration
+      - Predictive vacuum loss analysis
+      - Advanced cooling tower coordination
+      - Mobile app support
+
+  - version: "2.0.0"
+    target_date: "Q3 2027"
+    features:
+      - AI-powered anomaly detection
+      - Autonomous optimization mode
+      - Cloud-native architecture
+      - Real-time 3D visualization
+      - Integration with carbon accounting

@@ -1,0 +1,15 @@
+# Invalid Payload - Length Violation (too long)
+# Error Code: GLSCHEMA-E203 (LENGTH_VIOLATION)
+# Schema: basic/string_constraints.yaml
+
+_test_metadata:
+  schema: "basic/string_constraints.yaml"
+  description: "Length violation - username too long"
+  expected_valid: false
+  expected_errors:
+    - code: "GLSCHEMA-E203"
+      path: "/username"
+      severity: "error"
+
+username: "this_username_is_way_too_long_and_exceeds_max"  # maxLength is 20
+email: "user@example.com"

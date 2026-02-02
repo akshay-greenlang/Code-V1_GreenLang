@@ -1,0 +1,37 @@
+# GreenLang Emission Factor API - Requirements
+# Production dependencies for FastAPI service
+
+# Core FastAPI
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+pydantic==2.12.5
+pydantic-settings==2.1.0
+
+# Security
+python-jose[cryptography]==3.4.0
+python-multipart==0.0.22
+passlib[bcrypt]==1.7.4
+
+# Rate limiting
+slowapi==0.1.9
+
+# Caching
+fastapi-cache2[redis]==0.2.1
+redis==5.0.1
+
+# HTTP client
+httpx==0.28.1
+
+# CORS and security
+python-dotenv==1.2.1
+
+# Testing
+pytest==7.4.3
+pytest-asyncio==0.21.1
+pytest-cov==4.1.0
+httpx==0.28.1
+
+# Development
+black==24.3.0
+flake8==6.1.0
+mypy==1.7.1

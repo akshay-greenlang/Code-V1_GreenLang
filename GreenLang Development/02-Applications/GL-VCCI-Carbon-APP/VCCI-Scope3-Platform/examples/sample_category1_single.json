@@ -1,0 +1,10 @@
+{
+  "product_name": "Steel Rebar",
+  "quantity": 1000,
+  "quantity_unit": "kg",
+  "region": "US",
+  "supplier_pcf": 2.5,
+  "supplier_pcf_uncertainty": 0.15,
+  "supplier_name": "ABC Steel Co.",
+  "purchase_date": "2025-11-01T00:00:00"
+}

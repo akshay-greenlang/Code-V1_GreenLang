@@ -1,0 +1,30 @@
+# GreenLang Data Intake Application Requirements
+
+# Core GreenLang Framework
+greenlang>=0.3.0
+
+# Data Processing
+pandas>=2.0.0
+numpy>=1.24.0
+
+# Database Support
+sqlalchemy>=2.0.0
+psycopg2-binary>=2.9.0  # PostgreSQL
+pymongo>=4.0.0  # MongoDB (optional)
+
+# Caching
+redis>=5.0.0  # For L2 cache (optional)
+
+# Configuration
+pyyaml>=6.0
+python-dotenv>=1.0.0
+
+# Testing
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+pytest-cov>=4.1.0
+
+# Development
+black>=23.0.0
+flake8>=6.0.0
+mypy>=1.5.0

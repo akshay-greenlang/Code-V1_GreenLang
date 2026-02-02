@@ -1,0 +1,190 @@
+# GreenLang Agents ArgoCD Application
+# Manages deployment of all GreenLang regulatory compliance agents
+# Author: GL-DevOpsEngineer
+# Version: 1.0.0
+
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: greenlang-agents
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: greenlang-agents
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: agents
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+    notifications.argoproj.io/subscribe.on-sync-succeeded.slack: greenlang-deployments
+    notifications.argoproj.io/subscribe.on-sync-failed.slack: greenlang-alerts
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: greenlang
+
+  source:
+    repoURL: https://github.com/greenlang/greenlang-platform.git
+    targetRevision: HEAD
+    path: helm/greenlang-agents
+    helm:
+      releaseName: greenlang-agents
+      valueFiles:
+        - values.yaml
+        - values-production.yaml
+      parameters:
+        - name: global.environment
+          value: production
+        - name: global.imageTag
+          value: $ARGOCD_APP_REVISION
+        - name: agents.eudr.replicas
+          value: "3"
+        - name: agents.sb253.replicas
+          value: "3"
+        - name: agents.cbam.replicas
+          value: "2"
+        - name: agents.csrd.replicas
+          value: "2"
+      values: |
+        # Production-specific overrides
+        global:
+          imagePullPolicy: Always
+          imageRegistry: gcr.io/greenlang-production
+
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+
+        autoscaling:
+          enabled: true
+          minReplicas: 2
+          maxReplicas: 10
+          targetCPUUtilizationPercentage: 70
+          targetMemoryUtilizationPercentage: 80
+
+        podDisruptionBudget:
+          enabled: true
+          minAvailable: 1
+
+        nodeSelector:
+          workload-type: compute
+
+        tolerations:
+          - key: "dedicated"
+            operator: "Equal"
+            value: "agents"
+            effect: "NoSchedule"
+
+        affinity:
+          podAntiAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+              - weight: 100
+                podAffinityTerm:
+                  labelSelector:
+                    matchExpressions:
+                      - key: app.kubernetes.io/name
+                        operator: In
+                        values:
+                          - greenlang-agents
+                  topologyKey: kubernetes.io/hostname
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: greenlang-agents
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+      allowEmpty: false
+    syncOptions:
+      - CreateNamespace=true
+      - PrunePropagationPolicy=foreground
+      - PruneLast=true
+      - ApplyOutOfSyncOnly=true
+      - ServerSideApply=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
+
+  revisionHistoryLimit: 10
+
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      jsonPointers:
+        - /spec/replicas
+    - group: autoscaling
+      kind: HorizontalPodAutoscaler
+      jsonPointers:
+        - /spec/minReplicas
+        - /spec/maxReplicas
+
+---
+# Pre-sync hook for database migrations
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: greenlang-agents-db-migrate
+  namespace: greenlang-agents
+  annotations:
+    argocd.argoproj.io/hook: PreSync
+    argocd.argoproj.io/hook-delete-policy: HookSucceeded
+spec:
+  ttlSecondsAfterFinished: 3600
+  template:
+    spec:
+      restartPolicy: Never
+      serviceAccountName: greenlang-migrations
+      containers:
+        - name: migrate
+          image: gcr.io/greenlang-production/greenlang-agents:latest
+          command: ["alembic", "upgrade", "head"]
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: greenlang-db-credentials
+                  key: connection-string
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+
+---
+# Post-sync hook for smoke tests
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: greenlang-agents-smoke-test
+  namespace: greenlang-agents
+  annotations:
+    argocd.argoproj.io/hook: PostSync
+    argocd.argoproj.io/hook-delete-policy: HookSucceeded
+spec:
+  ttlSecondsAfterFinished: 3600
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: smoke-test
+          image: gcr.io/greenlang-production/greenlang-tests:latest
+          command: ["pytest", "tests/smoke/", "-v", "--tb=short"]
+          env:
+            - name: API_BASE_URL
+              value: "http://greenlang-agents-service:8000"
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"

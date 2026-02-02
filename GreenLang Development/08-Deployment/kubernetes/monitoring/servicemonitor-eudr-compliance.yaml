@@ -1,0 +1,221 @@
+# ============================================================================
+# GreenLang Agent Factory - EUDR Compliance Agent ServiceMonitor
+# ============================================================================
+# Prometheus ServiceMonitor for the EUDR Compliance Agent
+# Enables automatic service discovery and metrics scraping.
+#
+# Agent: EUDR Compliance Verifier (regulatory/eudr_compliance_v1)
+# Scrape Path: /metrics
+# Scrape Port: 8000
+# Scrape Interval: 15 seconds
+#
+# Priority: TIER 1 - EXTREME URGENCY
+# Deadline: 2025-12-30 (EU Regulation 2023/1115 enforcement)
+#
+# Created: 2025-12-03
+# Team: Monitoring & Observability
+# ============================================================================
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: eudr-compliance-agent
+  namespace: monitoring
+  labels:
+    app: eudr-api
+    agent-type: regulatory
+    team: greenlang
+    tier: 1-extreme-urgency
+    regulation: eudr-2023-1115
+    app.kubernetes.io/name: eudr-compliance-agent
+    app.kubernetes.io/component: monitoring
+    app.kubernetes.io/part-of: greenlang-agent-factory
+    release: prometheus
+  annotations:
+    description: "ServiceMonitor for EUDR Compliance Verifier Agent metrics"
+    agent-id: "regulatory/eudr_compliance_v1"
+    agent-version: "1.0.0"
+    regulation: "EU Regulation 2023/1115"
+    deadline: "2025-12-30"
+    urgency: "extreme"
+    business-impact: "critical-regulatory-compliance"
+spec:
+  # Job label for Prometheus
+  jobLabel: eudr-compliance-agent
+
+  # Selector for target services
+  selector:
+    matchLabels:
+      app: eudr-api
+    matchExpressions:
+      - key: monitoring
+        operator: NotIn
+        values: ["disabled"]
+
+  # Target namespaces
+  namespaceSelector:
+    matchNames:
+      - gl-eudr
+      - greenlang
+      - default
+
+  # Endpoint configuration
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 15s
+      scrapeTimeout: 10s
+      scheme: http
+      honorLabels: true
+
+      # Add agent-specific labels
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_service_name]
+          targetLabel: service
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod
+        - sourceLabels: []
+          targetLabel: agent_id
+          replacement: "regulatory/eudr_compliance_v1"
+        - sourceLabels: []
+          targetLabel: agent_type
+          replacement: "regulatory"
+        - sourceLabels: []
+          targetLabel: agent_name
+          replacement: "eudr-compliance"
+        - sourceLabels: []
+          targetLabel: tier
+          replacement: "1-extreme-urgency"
+        - sourceLabels: []
+          targetLabel: regulation
+          replacement: "eudr-2023-1115"
+        - sourceLabels: []
+          targetLabel: deadline
+          replacement: "2025-12-30"
+
+      # Metric relabeling for better organization
+      metricRelabelings:
+        # Rename generic metrics with agent prefix
+        - sourceLabels: [__name__]
+          regex: 'python_(.+)'
+          targetLabel: __name__
+          replacement: 'greenlang_python_${1}'
+
+        # Add environment label based on namespace
+        - sourceLabels: [namespace]
+          regex: '.*-prod'
+          targetLabel: environment
+          replacement: 'production'
+        - sourceLabels: [namespace]
+          regex: '.*-staging'
+          targetLabel: environment
+          replacement: 'staging'
+        - sourceLabels: [namespace]
+          regex: '.*-dev'
+          targetLabel: environment
+          replacement: 'development'
+
+        # Add EUDR-specific metadata
+        - sourceLabels: [__name__]
+          regex: 'agent_tool_(.+)'
+          targetLabel: eudr_tool
+          replacement: '${1}'
+
+      # TLS configuration (if using HTTPS)
+      # tlsConfig:
+      #   insecureSkipVerify: false
+      #   ca:
+      #     secret:
+      #       name: monitoring-ca
+      #       key: ca.crt
+
+---
+# ============================================================================
+# Service for EUDR Agent Metrics
+# ============================================================================
+# This Service ensures the agent is discoverable by the ServiceMonitor.
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: eudr-api-metrics
+  namespace: gl-eudr
+  labels:
+    app: eudr-api
+    component: metrics
+    monitoring: enabled
+    tier: 1-extreme-urgency
+    app.kubernetes.io/name: eudr-api
+    app.kubernetes.io/component: metrics
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8000"
+    prometheus.io/path: "/metrics"
+spec:
+  type: ClusterIP
+  selector:
+    app: eudr-api
+    component: backend
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000
+      protocol: TCP
+
+---
+# ============================================================================
+# PodMonitor Alternative (for pods without Service)
+# ============================================================================
+# Use this if agents are deployed as standalone pods without a Service.
+
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: eudr-compliance-agent-pods
+  namespace: monitoring
+  labels:
+    app: eudr-api
+    tier: 1-extreme-urgency
+    release: prometheus
+  annotations:
+    deadline: "2025-12-30"
+    regulation: "EU Regulation 2023/1115"
+spec:
+  jobLabel: eudr-compliance-agent
+
+  selector:
+    matchLabels:
+      app: eudr-api
+      component: backend
+
+  namespaceSelector:
+    matchNames:
+      - gl-eudr
+      - greenlang
+      - default
+
+  podMetricsEndpoints:
+    - port: http
+      path: /metrics
+      interval: 15s
+      scrapeTimeout: 10s
+
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace
+        - sourceLabels: []
+          targetLabel: agent_id
+          replacement: "regulatory/eudr_compliance_v1"
+        - sourceLabels: []
+          targetLabel: agent_type
+          replacement: "regulatory"
+        - sourceLabels: []
+          targetLabel: tier
+          replacement: "1-extreme-urgency"
+        - sourceLabels: []
+          targetLabel: regulation
+          replacement: "eudr-2023-1115"

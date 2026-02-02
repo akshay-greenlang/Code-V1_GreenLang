@@ -1,0 +1,43 @@
+# ==============================================================================
+# GL-VCCI Backend API - ConfigMap
+# ==============================================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-config
+  namespace: vcci-production
+  labels:
+    app.kubernetes.io/name: gl-vcci
+    app.kubernetes.io/component: backend-api
+data:
+  # Application Configuration
+  APP_NAME: "GL-VCCI Carbon Intelligence Platform"
+  APP_VERSION: "2.0.0"
+
+  # Database Configuration
+  DB_POOL_SIZE: "20"
+  DB_MAX_OVERFLOW: "10"
+  DB_POOL_TIMEOUT: "30"
+  DB_POOL_RECYCLE: "3600"
+
+  # Cache Configuration
+  CACHE_TTL: "3600"
+  CACHE_MAX_CONNECTIONS: "50"
+
+  # API Configuration
+  API_RATE_LIMIT: "1000/hour"
+  API_TIMEOUT: "30"
+  CORS_ORIGINS: "*"
+
+  # Worker Configuration
+  CELERY_TASK_TIMEOUT: "3600"
+  CELERY_RESULT_EXPIRES: "86400"
+
+  # Feature Flags
+  ENABLE_METRICS: "true"
+  ENABLE_TRACING: "true"
+  ENABLE_CACHE: "true"
+
+  # Logging
+  LOG_FORMAT: "json"
+  LOG_RETENTION_DAYS: "30"

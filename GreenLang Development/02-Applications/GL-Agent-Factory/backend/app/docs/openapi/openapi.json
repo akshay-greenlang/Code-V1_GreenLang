@@ -1,0 +1,1395 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "GreenLang Agent Factory API",
+    "description": "Zero-hallucination climate calculation platform with 143+ certified agents for carbon emissions, regulatory compliance, and sustainability reporting.",
+    "version": "1.0.0",
+    "termsOfService": "https://greenlang.io/terms",
+    "contact": {
+      "name": "GreenLang API Support",
+      "email": "api-support@greenlang.io",
+      "url": "https://greenlang.io/support"
+    },
+    "license": {
+      "name": "Proprietary",
+      "url": "https://greenlang.io/license"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://api.greenlang.io/v1",
+      "description": "Production"
+    },
+    {
+      "url": "https://api.staging.greenlang.io/v1",
+      "description": "Staging"
+    },
+    {
+      "url": "http://localhost:8000/v1",
+      "description": "Development"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Agents",
+      "description": "Manage and discover calculation agents"
+    },
+    {
+      "name": "Executions",
+      "description": "Execute agents and track results"
+    },
+    {
+      "name": "Emissions",
+      "description": "Carbon emissions calculations"
+    },
+    {
+      "name": "Compliance",
+      "description": "Regulatory compliance (CSRD, CBAM, EUDR)"
+    },
+    {
+      "name": "Batch",
+      "description": "Bulk operations and file processing"
+    },
+    {
+      "name": "Webhooks",
+      "description": "Event notifications"
+    },
+    {
+      "name": "Tenants",
+      "description": "Multi-tenant management"
+    },
+    {
+      "name": "Audit",
+      "description": "Audit logs and provenance"
+    },
+    {
+      "name": "Health",
+      "description": "System health and metrics"
+    }
+  ],
+  "paths": {
+    "/agents": {
+      "get": {
+        "tags": ["Agents"],
+        "summary": "List all agents",
+        "description": "Retrieve a paginated list of all available calculation agents with optional filtering.",
+        "operationId": "listAgents",
+        "parameters": [
+          {
+            "name": "category",
+            "in": "query",
+            "description": "Filter by category (e.g., 'Emissions', 'Compliance')",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "description": "Filter by agent type (e.g., 'Calculator', 'Optimizer')",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "priority",
+            "in": "query",
+            "description": "Filter by priority (P0, P1, P2, P3)",
+            "schema": {
+              "type": "string",
+              "enum": ["P0", "P1", "P2", "P3"]
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Filter by implementation status",
+            "schema": {
+              "type": "string",
+              "enum": ["Implemented", "In Progress", "Planned"]
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number",
+            "schema": {
+              "type": "integer",
+              "default": 1,
+              "minimum": 1
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "description": "Items per page",
+            "schema": {
+              "type": "integer",
+              "default": 20,
+              "minimum": 1,
+              "maximum": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentListResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          }
+        },
+        "security": [
+          {"ApiKeyAuth": []},
+          {"BearerAuth": []}
+        ]
+      }
+    },
+    "/agents/{agent_id}": {
+      "get": {
+        "tags": ["Agents"],
+        "summary": "Get agent details",
+        "description": "Retrieve detailed information about a specific agent.",
+        "operationId": "getAgent",
+        "parameters": [
+          {
+            "name": "agent_id",
+            "in": "path",
+            "required": true,
+            "description": "Agent ID (e.g., 'GL-001')",
+            "schema": {
+              "type": "string",
+              "pattern": "^GL-\\d{3}[A-Z]?$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Agent"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        },
+        "security": [
+          {"ApiKeyAuth": []},
+          {"BearerAuth": []}
+        ]
+      }
+    },
+    "/agents/{agent_id}/execute": {
+      "post": {
+        "tags": ["Executions"],
+        "summary": "Execute an agent",
+        "description": "Execute a calculation agent with the provided inputs. Results include full provenance tracking.",
+        "operationId": "executeAgent",
+        "parameters": [
+          {
+            "name": "agent_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExecutionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Execution completed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExecutionResult"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Execution accepted (async)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExecutionAccepted"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          }
+        },
+        "security": [
+          {"ApiKeyAuth": []},
+          {"BearerAuth": []}
+        ]
+      }
+    },
+    "/emissions/calculate": {
+      "post": {
+        "tags": ["Emissions"],
+        "summary": "Calculate carbon emissions",
+        "description": "Calculate carbon emissions for various activity types using certified emission factors.",
+        "operationId": "calculateEmissions",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmissionCalculationRequest"
+              },
+              "examples": {
+                "electricity": {
+                  "summary": "Electricity consumption",
+                  "value": {
+                    "activity_type": "electricity",
+                    "quantity": 1000,
+                    "unit": "kWh",
+                    "region": "US-WECC",
+                    "year": 2024
+                  }
+                },
+                "natural_gas": {
+                  "summary": "Natural gas combustion",
+                  "value": {
+                    "activity_type": "stationary_combustion",
+                    "fuel_type": "natural_gas",
+                    "quantity": 100,
+                    "unit": "therms",
+                    "region": "US"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Calculation result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmissionCalculationResult"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {"ApiKeyAuth": []},
+          {"BearerAuth": []}
+        ]
+      }
+    },
+    "/emission-factors": {
+      "get": {
+        "tags": ["Emissions"],
+        "summary": "List emission factors",
+        "description": "Retrieve available emission factors from EPA, DEFRA, IEA, and IPCC sources.",
+        "operationId": "listEmissionFactors",
+        "parameters": [
+          {
+            "name": "source",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["EPA", "DEFRA", "IEA", "IPCC", "Ecoinvent"]
+            }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fuel_type",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "region",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "year",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of emission factors",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmissionFactorListResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {"ApiKeyAuth": []},
+          {"BearerAuth": []}
+        ]
+      }
+    },
+    "/compliance/csrd/report": {
+      "post": {
+        "tags": ["Compliance"],
+        "summary": "Generate CSRD report",
+        "description": "Generate a Corporate Sustainability Reporting Directive (CSRD) compliant report.",
+        "operationId": "generateCSRDReport",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CSRDReportRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Report generation started",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportJobResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {"ApiKeyAuth": []},
+          {"BearerAuth": []}
+        ]
+      }
+    },
+    "/compliance/cbam/calculate": {
+      "post": {
+        "tags": ["Compliance"],
+        "summary": "Calculate CBAM obligations",
+        "description": "Calculate Carbon Border Adjustment Mechanism (CBAM) obligations for imports.",
+        "operationId": "calculateCBAM",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CBAMCalculationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "CBAM calculation result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CBAMCalculationResult"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {"ApiKeyAuth": []},
+          {"BearerAuth": []}
+        ]
+      }
+    },
+    "/batch/upload": {
+      "post": {
+        "tags": ["Batch"],
+        "summary": "Upload batch data",
+        "description": "Upload a file for batch processing (CSV, Excel, JSON).",
+        "operationId": "uploadBatch",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "agent_id": {
+                    "type": "string"
+                  },
+                  "config": {
+                    "type": "string",
+                    "description": "JSON configuration"
+                  }
+                },
+                "required": ["file", "agent_id"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Batch job created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchJobResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {"ApiKeyAuth": []},
+          {"BearerAuth": []}
+        ]
+      }
+    },
+    "/batch/{job_id}": {
+      "get": {
+        "tags": ["Batch"],
+        "summary": "Get batch job status",
+        "operationId": "getBatchJob",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Job status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchJobStatus"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {"ApiKeyAuth": []},
+          {"BearerAuth": []}
+        ]
+      }
+    },
+    "/webhooks": {
+      "get": {
+        "tags": ["Webhooks"],
+        "summary": "List webhooks",
+        "operationId": "listWebhooks",
+        "responses": {
+          "200": {
+            "description": "List of webhooks",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookListResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {"ApiKeyAuth": []},
+          {"BearerAuth": []}
+        ]
+      },
+      "post": {
+        "tags": ["Webhooks"],
+        "summary": "Create webhook",
+        "operationId": "createWebhook",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WebhookCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Webhook created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Webhook"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {"ApiKeyAuth": []},
+          {"BearerAuth": []}
+        ]
+      }
+    },
+    "/audit/logs": {
+      "get": {
+        "tags": ["Audit"],
+        "summary": "Query audit logs",
+        "description": "Retrieve audit logs for compliance and provenance tracking.",
+        "operationId": "queryAuditLogs",
+        "parameters": [
+          {
+            "name": "start_date",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "end_date",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "agent_id",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "user_id",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Audit logs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuditLogResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {"ApiKeyAuth": []},
+          {"BearerAuth": []}
+        ]
+      }
+    },
+    "/health": {
+      "get": {
+        "tags": ["Health"],
+        "summary": "Health check",
+        "description": "Check system health status.",
+        "operationId": "healthCheck",
+        "responses": {
+          "200": {
+            "description": "System healthy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "System unhealthy"
+          }
+        }
+      }
+    },
+    "/health/ready": {
+      "get": {
+        "tags": ["Health"],
+        "summary": "Readiness check",
+        "operationId": "readinessCheck",
+        "responses": {
+          "200": {
+            "description": "Ready"
+          },
+          "503": {
+            "description": "Not ready"
+          }
+        }
+      }
+    },
+    "/metrics": {
+      "get": {
+        "tags": ["Health"],
+        "summary": "Prometheus metrics",
+        "operationId": "getMetrics",
+        "responses": {
+          "200": {
+            "description": "Prometheus format metrics",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Agent": {
+        "type": "object",
+        "properties": {
+          "agent_id": {
+            "type": "string",
+            "example": "GL-001"
+          },
+          "name": {
+            "type": "string",
+            "example": "CARBON-EMISSIONS"
+          },
+          "category": {
+            "type": "string",
+            "example": "Emissions"
+          },
+          "type": {
+            "type": "string",
+            "example": "Calculator"
+          },
+          "description": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string",
+            "example": "1.0.0"
+          },
+          "standards": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "example": ["GHG Protocol", "ISO 14064-1"]
+          },
+          "input_schema": {
+            "type": "object"
+          },
+          "output_schema": {
+            "type": "object"
+          },
+          "priority": {
+            "type": "string",
+            "enum": ["P0", "P1", "P2", "P3"]
+          },
+          "complexity": {
+            "type": "string",
+            "enum": ["Low", "Medium", "High"]
+          },
+          "status": {
+            "type": "string",
+            "enum": ["Implemented", "In Progress", "Planned"]
+          }
+        }
+      },
+      "AgentListResponse": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Agent"
+            }
+          },
+          "total": {
+            "type": "integer"
+          },
+          "page": {
+            "type": "integer"
+          },
+          "page_size": {
+            "type": "integer"
+          },
+          "has_more": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ExecutionRequest": {
+        "type": "object",
+        "required": ["inputs"],
+        "properties": {
+          "inputs": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "config": {
+            "type": "object",
+            "properties": {
+              "emission_factor_source": {
+                "type": "string",
+                "enum": ["EPA", "DEFRA", "IEA", "IPCC"]
+              },
+              "gwp_set": {
+                "type": "string",
+                "enum": ["AR5", "AR6"]
+              },
+              "include_uncertainty": {
+                "type": "boolean",
+                "default": false
+              }
+            }
+          },
+          "async": {
+            "type": "boolean",
+            "default": false
+          },
+          "webhook_url": {
+            "type": "string",
+            "format": "uri"
+          }
+        }
+      },
+      "ExecutionResult": {
+        "type": "object",
+        "properties": {
+          "execution_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "agent_id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["completed", "failed", "pending"]
+          },
+          "outputs": {
+            "type": "object"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance"
+          },
+          "executed_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "duration_ms": {
+            "type": "integer"
+          }
+        }
+      },
+      "ExecutionAccepted": {
+        "type": "object",
+        "properties": {
+          "execution_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["pending", "processing"]
+          },
+          "status_url": {
+            "type": "string",
+            "format": "uri"
+          }
+        }
+      },
+      "Provenance": {
+        "type": "object",
+        "properties": {
+          "execution_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "agent_version": {
+            "type": "string"
+          },
+          "emission_factors_used": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "source": {
+                  "type": "string"
+                },
+                "version": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "methodology": {
+            "type": "string"
+          },
+          "calculation_hash": {
+            "type": "string"
+          },
+          "deterministic": {
+            "type": "boolean"
+          }
+        }
+      },
+      "EmissionCalculationRequest": {
+        "type": "object",
+        "required": ["activity_type", "quantity", "unit"],
+        "properties": {
+          "activity_type": {
+            "type": "string",
+            "enum": ["electricity", "stationary_combustion", "mobile_combustion", "fugitive", "process"]
+          },
+          "fuel_type": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "number",
+            "minimum": 0
+          },
+          "unit": {
+            "type": "string"
+          },
+          "region": {
+            "type": "string"
+          },
+          "year": {
+            "type": "integer"
+          },
+          "scope": {
+            "type": "integer",
+            "enum": [1, 2, 3]
+          }
+        }
+      },
+      "EmissionCalculationResult": {
+        "type": "object",
+        "properties": {
+          "carbon_footprint": {
+            "type": "number",
+            "description": "Total emissions in tCO2e"
+          },
+          "co2": {
+            "type": "number"
+          },
+          "ch4": {
+            "type": "number"
+          },
+          "n2o": {
+            "type": "number"
+          },
+          "unit": {
+            "type": "string",
+            "example": "tCO2e"
+          },
+          "emission_factor": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "type": "number"
+              },
+              "source": {
+                "type": "string"
+              },
+              "year": {
+                "type": "integer"
+              }
+            }
+          },
+          "uncertainty": {
+            "type": "object",
+            "properties": {
+              "lower_bound": {
+                "type": "number"
+              },
+              "upper_bound": {
+                "type": "number"
+              },
+              "confidence": {
+                "type": "number"
+              }
+            }
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance"
+          }
+        }
+      },
+      "EmissionFactor": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "fuel_type": {
+            "type": "string"
+          },
+          "value": {
+            "type": "number"
+          },
+          "unit": {
+            "type": "string"
+          },
+          "region": {
+            "type": "string"
+          },
+          "year": {
+            "type": "integer"
+          },
+          "gwp_set": {
+            "type": "string"
+          }
+        }
+      },
+      "EmissionFactorListResponse": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EmissionFactor"
+            }
+          },
+          "total": {
+            "type": "integer"
+          }
+        }
+      },
+      "CSRDReportRequest": {
+        "type": "object",
+        "required": ["organization_id", "reporting_period"],
+        "properties": {
+          "organization_id": {
+            "type": "string"
+          },
+          "reporting_period": {
+            "type": "object",
+            "properties": {
+              "start_date": {
+                "type": "string",
+                "format": "date"
+              },
+              "end_date": {
+                "type": "string",
+                "format": "date"
+              }
+            }
+          },
+          "esrs_standards": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "format": {
+            "type": "string",
+            "enum": ["PDF", "XBRL", "JSON"]
+          }
+        }
+      },
+      "CBAMCalculationRequest": {
+        "type": "object",
+        "required": ["imports"],
+        "properties": {
+          "imports": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "cn_code": {
+                  "type": "string"
+                },
+                "quantity_tonnes": {
+                  "type": "number"
+                },
+                "origin_country": {
+                  "type": "string"
+                },
+                "embedded_emissions": {
+                  "type": "number"
+                }
+              }
+            }
+          },
+          "reporting_period": {
+            "type": "string"
+          }
+        }
+      },
+      "CBAMCalculationResult": {
+        "type": "object",
+        "properties": {
+          "total_embedded_emissions": {
+            "type": "number"
+          },
+          "cbam_certificates_required": {
+            "type": "integer"
+          },
+          "estimated_cost_eur": {
+            "type": "number"
+          },
+          "by_product": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          }
+        }
+      },
+      "ReportJobResponse": {
+        "type": "object",
+        "properties": {
+          "job_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string"
+          },
+          "status_url": {
+            "type": "string",
+            "format": "uri"
+          }
+        }
+      },
+      "BatchJobResponse": {
+        "type": "object",
+        "properties": {
+          "job_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string"
+          },
+          "rows_total": {
+            "type": "integer"
+          }
+        }
+      },
+      "BatchJobStatus": {
+        "type": "object",
+        "properties": {
+          "job_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["pending", "processing", "completed", "failed"]
+          },
+          "progress": {
+            "type": "number"
+          },
+          "rows_processed": {
+            "type": "integer"
+          },
+          "rows_total": {
+            "type": "integer"
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "download_url": {
+            "type": "string",
+            "format": "uri"
+          }
+        }
+      },
+      "Webhook": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "events": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "secret": {
+            "type": "string"
+          }
+        }
+      },
+      "WebhookListResponse": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Webhook"
+            }
+          }
+        }
+      },
+      "WebhookCreateRequest": {
+        "type": "object",
+        "required": ["url", "events"],
+        "properties": {
+          "url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "events": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["execution.completed", "execution.failed", "batch.completed", "report.ready"]
+            }
+          }
+        }
+      },
+      "AuditLogResponse": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "timestamp": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "action": {
+                  "type": "string"
+                },
+                "agent_id": {
+                  "type": "string"
+                },
+                "user_id": {
+                  "type": "string"
+                },
+                "details": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "total": {
+            "type": "integer"
+          }
+        }
+      },
+      "HealthResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["healthy", "degraded", "unhealthy"]
+          },
+          "version": {
+            "type": "string"
+          },
+          "components": {
+            "type": "object",
+            "properties": {
+              "database": {
+                "type": "string"
+              },
+              "redis": {
+                "type": "string"
+              },
+              "agents": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              },
+              "details": {
+                "type": "object"
+              }
+            }
+          }
+        }
+      }
+    },
+    "responses": {
+      "BadRequest": {
+        "description": "Bad request",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Unauthorized": {
+        "description": "Unauthorized",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "Not found",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "ValidationError": {
+        "description": "Validation error",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "RateLimited": {
+        "description": "Rate limited",
+        "headers": {
+          "Retry-After": {
+            "schema": {
+              "type": "integer"
+            }
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key",
+        "description": "API key for server-to-server authentication"
+      },
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "JWT token for user session authentication"
+      },
+      "OAuth2": {
+        "type": "oauth2",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://auth.greenlang.io/oauth/authorize",
+            "tokenUrl": "https://auth.greenlang.io/oauth/token",
+            "scopes": {
+              "read:agents": "Read agent information",
+              "execute:agents": "Execute agents",
+              "read:emissions": "Read emission data",
+              "write:emissions": "Write emission data",
+              "admin": "Full administrative access"
+            }
+          }
+        }
+      }
+    }
+  },
+  "security": [
+    {"ApiKeyAuth": []},
+    {"BearerAuth": []}
+  ],
+  "externalDocs": {
+    "description": "GreenLang Documentation",
+    "url": "https://docs.greenlang.io"
+  }
+}

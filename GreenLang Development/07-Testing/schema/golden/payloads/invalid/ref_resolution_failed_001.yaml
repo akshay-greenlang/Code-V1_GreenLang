@@ -1,0 +1,19 @@
+# Invalid Payload - Nested Required Field Missing (via $ref)
+# Error Code: GLSCHEMA-E100 (MISSING_REQUIRED in referenced schema)
+# Schema: basic/ref_schema.yaml
+
+_test_metadata:
+  schema: "basic/ref_schema.yaml"
+  description: "Missing required field in referenced Address schema"
+  expected_valid: false
+  expected_errors:
+    - code: "GLSCHEMA-E100"
+      path: "/billing_address/country"
+      severity: "error"
+
+company_name: "Acme Corporation"
+
+billing_address:
+  street: "123 Main Street"
+  city: "San Francisco"
+  # country is missing - required by Address $def

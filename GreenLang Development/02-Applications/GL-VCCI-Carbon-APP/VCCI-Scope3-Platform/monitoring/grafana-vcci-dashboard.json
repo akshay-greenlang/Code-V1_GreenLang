@@ -1,0 +1,1033 @@
+{
+  "dashboard": {
+    "title": "GL-VCCI Production Dashboard",
+    "tags": ["vcci", "production", "scope3"],
+    "timezone": "utc",
+    "editable": true,
+    "graphTooltip": 1,
+    "time": {
+      "from": "now-6h",
+      "to": "now"
+    },
+    "refresh": "30s",
+    "version": 2,
+    "panels": [
+      {
+        "id": 1,
+        "title": "System Overview",
+        "type": "row",
+        "gridPos": {"h": 1, "w": 24, "x": 0, "y": 0}
+      },
+      {
+        "id": 2,
+        "title": "API Request Rate",
+        "type": "graph",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 1},
+        "targets": [
+          {
+            "expr": "sum(rate(http_requests_total[5m]))",
+            "legendFormat": "Total Requests/sec",
+            "refId": "A"
+          },
+          {
+            "expr": "sum(rate(http_requests_total{status=~\"5..\"}[5m]))",
+            "legendFormat": "5xx Errors/sec",
+            "refId": "B"
+          }
+        ],
+        "yaxes": [
+          {"label": "Requests/sec", "format": "short"},
+          {"label": "", "format": "short"}
+        ],
+        "alert": {
+          "name": "High API Error Rate",
+          "conditions": [
+            {
+              "evaluator": {"type": "gt", "params": [0.01]},
+              "operator": {"type": "and"},
+              "query": {"params": ["B", "5m", "now"]},
+              "reducer": {"type": "avg"},
+              "type": "query"
+            }
+          ],
+          "executionErrorState": "alerting",
+          "frequency": "1m",
+          "handler": 1,
+          "message": "API error rate exceeded 1%",
+          "noDataState": "no_data",
+          "notifications": []
+        }
+      },
+      {
+        "id": 3,
+        "title": "API Latency (p95, p99)",
+        "type": "graph",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 1},
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))",
+            "legendFormat": "p95",
+            "refId": "A"
+          },
+          {
+            "expr": "histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))",
+            "legendFormat": "p99",
+            "refId": "B"
+          }
+        ],
+        "yaxes": [
+          {"label": "Latency (seconds)", "format": "s"},
+          {"label": "", "format": "short"}
+        ],
+        "thresholds": [
+          {"value": 0.5, "colorMode": "custom", "fill": true, "line": true, "op": "gt", "fillColor": "rgba(255, 152, 0, 0.2)", "lineColor": "rgb(255, 152, 0)"},
+          {"value": 1.0, "colorMode": "custom", "fill": true, "line": true, "op": "gt", "fillColor": "rgba(244, 67, 54, 0.2)", "lineColor": "rgb(244, 67, 54)"}
+        ]
+      },
+      {
+        "id": 4,
+        "title": "Active Users & Tenants",
+        "type": "stat",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 4, "w": 6, "x": 0, "y": 9},
+        "targets": [
+          {
+            "expr": "vcci_active_users",
+            "legendFormat": "Active Users",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "graphMode": "area",
+          "colorMode": "value",
+          "orientation": "auto",
+          "textMode": "value_and_name"
+        }
+      },
+      {
+        "id": 5,
+        "title": "Error Rate",
+        "type": "stat",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 4, "w": 6, "x": 6, "y": 9},
+        "targets": [
+          {
+            "expr": "sum(rate(http_requests_total{status=~\"5..\"}[5m])) / sum(rate(http_requests_total[5m]))",
+            "legendFormat": "Error Rate",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "graphMode": "area",
+          "colorMode": "value",
+          "orientation": "auto",
+          "textMode": "value_and_name"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percentunit",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": null, "color": "green"},
+                {"value": 0.001, "color": "yellow"},
+                {"value": 0.01, "color": "red"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 6,
+        "title": "Request Success Rate",
+        "type": "stat",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 4, "w": 6, "x": 12, "y": 9},
+        "targets": [
+          {
+            "expr": "sum(rate(http_requests_total{status=~\"2..\"}[5m])) / sum(rate(http_requests_total[5m]))",
+            "legendFormat": "Success Rate",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "graphMode": "area",
+          "colorMode": "value",
+          "orientation": "auto",
+          "textMode": "value_and_name"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percentunit",
+            "min": 0.95,
+            "max": 1.0,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": null, "color": "red"},
+                {"value": 0.99, "color": "yellow"},
+                {"value": 0.999, "color": "green"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 7,
+        "title": "Pod Health",
+        "type": "stat",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 4, "w": 6, "x": 18, "y": 9},
+        "targets": [
+          {
+            "expr": "sum(kube_pod_status_phase{namespace=\"vcci-production\", phase=\"Running\"})",
+            "legendFormat": "Running Pods",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "graphMode": "area",
+          "colorMode": "value",
+          "orientation": "auto",
+          "textMode": "value_and_name"
+        }
+      },
+      {
+        "id": 10,
+        "title": "Database",
+        "type": "row",
+        "gridPos": {"h": 1, "w": 24, "x": 0, "y": 13}
+      },
+      {
+        "id": 11,
+        "title": "Database Connections",
+        "type": "graph",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 14},
+        "targets": [
+          {
+            "expr": "pg_stat_database_numbackends{datname=\"vcci_production\"}",
+            "legendFormat": "Active Connections",
+            "refId": "A"
+          },
+          {
+            "expr": "pg_settings_max_connections",
+            "legendFormat": "Max Connections",
+            "refId": "B"
+          }
+        ],
+        "yaxes": [
+          {"label": "Connections", "format": "short"},
+          {"label": "", "format": "short"}
+        ],
+        "alert": {
+          "name": "High Database Connections",
+          "conditions": [
+            {
+              "evaluator": {"type": "gt", "params": [160]},
+              "operator": {"type": "and"},
+              "query": {"params": ["A", "5m", "now"]},
+              "reducer": {"type": "avg"},
+              "type": "query"
+            }
+          ],
+          "message": "Database connections > 80% of max",
+          "frequency": "1m"
+        }
+      },
+      {
+        "id": 12,
+        "title": "Database Query Performance",
+        "type": "graph",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 14},
+        "targets": [
+          {
+            "expr": "rate(pg_stat_database_tup_fetched{datname=\"vcci_production\"}[5m])",
+            "legendFormat": "Rows Fetched/sec",
+            "refId": "A"
+          },
+          {
+            "expr": "rate(pg_stat_database_tup_returned{datname=\"vcci_production\"}[5m])",
+            "legendFormat": "Rows Returned/sec",
+            "refId": "B"
+          }
+        ],
+        "yaxes": [
+          {"label": "Rows/sec", "format": "short"},
+          {"label": "", "format": "short"}
+        ]
+      },
+      {
+        "id": 13,
+        "title": "Database Size",
+        "type": "graph",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 22},
+        "targets": [
+          {
+            "expr": "pg_database_size_bytes{datname=\"vcci_production\"}",
+            "legendFormat": "Database Size",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {"label": "Size", "format": "bytes"},
+          {"label": "", "format": "short"}
+        ]
+      },
+      {
+        "id": 14,
+        "title": "Database CPU & Memory",
+        "type": "graph",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 22},
+        "targets": [
+          {
+            "expr": "rate(process_cpu_seconds_total{job=\"postgres\"}[5m]) * 100",
+            "legendFormat": "CPU %",
+            "refId": "A"
+          },
+          {
+            "expr": "process_resident_memory_bytes{job=\"postgres\"}",
+            "legendFormat": "Memory",
+            "refId": "B",
+            "yAxisIndex": 1
+          }
+        ],
+        "yaxes": [
+          {"label": "CPU %", "format": "percent"},
+          {"label": "Memory", "format": "bytes"}
+        ]
+      },
+      {
+        "id": 20,
+        "title": "Workers & Queues",
+        "type": "row",
+        "gridPos": {"h": 1, "w": 24, "x": 0, "y": 30}
+      },
+      {
+        "id": 21,
+        "title": "Worker Queue Depth",
+        "type": "graph",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 31},
+        "targets": [
+          {
+            "expr": "worker_queue_depth{queue=\"intake\"}",
+            "legendFormat": "Intake Queue",
+            "refId": "A"
+          },
+          {
+            "expr": "worker_queue_depth{queue=\"calculator\"}",
+            "legendFormat": "Calculator Queue",
+            "refId": "B"
+          },
+          {
+            "expr": "worker_queue_depth{queue=\"hotspot\"}",
+            "legendFormat": "Hotspot Queue",
+            "refId": "C"
+          },
+          {
+            "expr": "worker_queue_depth{queue=\"engagement\"}",
+            "legendFormat": "Engagement Queue",
+            "refId": "D"
+          },
+          {
+            "expr": "worker_queue_depth{queue=\"reporting\"}",
+            "legendFormat": "Reporting Queue",
+            "refId": "E"
+          }
+        ],
+        "yaxes": [
+          {"label": "Tasks", "format": "short"},
+          {"label": "", "format": "short"}
+        ],
+        "alert": {
+          "name": "High Worker Queue Depth",
+          "conditions": [
+            {
+              "evaluator": {"type": "gt", "params": [10000]},
+              "operator": {"type": "or"},
+              "query": {"params": ["A", "5m", "now"]},
+              "reducer": {"type": "max"},
+              "type": "query"
+            }
+          ],
+          "message": "Worker queue depth exceeded 10,000 tasks",
+          "frequency": "5m"
+        }
+      },
+      {
+        "id": 22,
+        "title": "Worker Task Duration",
+        "type": "graph",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 31},
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(worker_task_duration_seconds_bucket[5m])) by (le, task_name))",
+            "legendFormat": "{{task_name}} p95",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {"label": "Duration (seconds)", "format": "s"},
+          {"label": "", "format": "short"}
+        ]
+      },
+      {
+        "id": 23,
+        "title": "Worker Task Success Rate",
+        "type": "graph",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 39},
+        "targets": [
+          {
+            "expr": "sum(rate(worker_tasks_total{status=\"success\"}[5m])) by (task_name) / sum(rate(worker_tasks_total[5m])) by (task_name)",
+            "legendFormat": "{{task_name}}",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {"label": "Success Rate", "format": "percentunit", "min": 0, "max": 1},
+          {"label": "", "format": "short"}
+        ]
+      },
+      {
+        "id": 24,
+        "title": "Active Workers",
+        "type": "stat",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 39},
+        "targets": [
+          {
+            "expr": "sum(up{job=\"worker\"})",
+            "legendFormat": "Active Workers",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "graphMode": "area",
+          "colorMode": "value",
+          "orientation": "auto",
+          "textMode": "value_and_name"
+        }
+      },
+      {
+        "id": 30,
+        "title": "Redis Cache",
+        "type": "row",
+        "gridPos": {"h": 1, "w": 24, "x": 0, "y": 47}
+      },
+      {
+        "id": 31,
+        "title": "Cache Hit Rate",
+        "type": "graph",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 48},
+        "targets": [
+          {
+            "expr": "rate(cache_hits_total[5m]) / (rate(cache_hits_total[5m]) + rate(cache_misses_total[5m]))",
+            "legendFormat": "Hit Rate",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {"label": "Hit Rate", "format": "percentunit", "min": 0, "max": 1},
+          {"label": "", "format": "short"}
+        ],
+        "thresholds": [
+          {"value": 0.95, "colorMode": "custom", "fill": false, "line": true, "op": "lt", "lineColor": "rgb(255, 152, 0)"}
+        ]
+      },
+      {
+        "id": 32,
+        "title": "Redis Memory Usage",
+        "type": "graph",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 48},
+        "targets": [
+          {
+            "expr": "redis_memory_used_bytes",
+            "legendFormat": "Used Memory",
+            "refId": "A"
+          },
+          {
+            "expr": "redis_memory_max_bytes",
+            "legendFormat": "Max Memory",
+            "refId": "B"
+          }
+        ],
+        "yaxes": [
+          {"label": "Memory", "format": "bytes"},
+          {"label": "", "format": "short"}
+        ]
+      },
+      {
+        "id": 40,
+        "title": "Business Metrics",
+        "type": "row",
+        "gridPos": {"h": 1, "w": 24, "x": 0, "y": 56}
+      },
+      {
+        "id": 41,
+        "title": "Emissions Calculations (24h)",
+        "type": "stat",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 4, "w": 6, "x": 0, "y": 57},
+        "targets": [
+          {
+            "expr": "sum(increase(worker_tasks_total{task_name=\"calculate_emissions\", status=\"success\"}[24h]))",
+            "legendFormat": "Calculations",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "graphMode": "area",
+          "colorMode": "value",
+          "orientation": "auto",
+          "textMode": "value_and_name"
+        }
+      },
+      {
+        "id": 42,
+        "title": "Suppliers Processed (24h)",
+        "type": "stat",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 4, "w": 6, "x": 6, "y": 57},
+        "targets": [
+          {
+            "expr": "vcci_suppliers_processed_24h",
+            "legendFormat": "Suppliers",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "graphMode": "area",
+          "colorMode": "value",
+          "orientation": "auto",
+          "textMode": "value_and_name"
+        }
+      },
+      {
+        "id": 43,
+        "title": "Reports Generated (24h)",
+        "type": "stat",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 4, "w": 6, "x": 12, "y": 57},
+        "targets": [
+          {
+            "expr": "sum(increase(worker_tasks_total{task_name=\"generate_report\", status=\"success\"}[24h]))",
+            "legendFormat": "Reports",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "graphMode": "area",
+          "colorMode": "value",
+          "orientation": "auto",
+          "textMode": "value_and_name"
+        }
+      },
+      {
+        "id": 44,
+        "title": "Active Tenants",
+        "type": "stat",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 4, "w": 6, "x": 18, "y": 57},
+        "targets": [
+          {
+            "expr": "vcci_active_tenants",
+            "legendFormat": "Tenants",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "graphMode": "area",
+          "colorMode": "value",
+          "orientation": "auto",
+          "textMode": "value_and_name"
+        }
+      },
+      {
+        "id": 50,
+        "title": "Carbon Calculations - Scope 3 Categories",
+        "type": "row",
+        "gridPos": {"h": 1, "w": 24, "x": 0, "y": 61}
+      },
+      {
+        "id": 51,
+        "title": "Emissions by Scope 3 Category (15 Categories)",
+        "type": "graph",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 10, "w": 24, "x": 0, "y": 62},
+        "targets": [
+          {
+            "expr": "sum(rate(vcci_emissions_calculated_total[1h])) by (category)",
+            "legendFormat": "Category {{category}}",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {"label": "tCO2e/hour", "format": "short"},
+          {"label": "", "format": "short"}
+        ],
+        "legend": {
+          "show": true,
+          "values": true,
+          "current": true,
+          "total": true
+        }
+      },
+      {
+        "id": 52,
+        "title": "Data Tier Distribution (Tier 1/2/3)",
+        "type": "piechart",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 72},
+        "targets": [
+          {
+            "expr": "sum(increase(vcci_calculations_total[24h])) by (tier)",
+            "legendFormat": "{{tier}}",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "legend": {
+            "display": true,
+            "placement": "right"
+          },
+          "pieType": "pie",
+          "displayLabels": ["percent"]
+        }
+      },
+      {
+        "id": 53,
+        "title": "Tier 1 vs Tier 2/3 Coverage",
+        "type": "gauge",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 72},
+        "targets": [
+          {
+            "expr": "sum(increase(vcci_calculations_total{tier=\"tier1\"}[24h])) / sum(increase(vcci_calculations_total[24h]))",
+            "legendFormat": "Tier 1 %",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percentunit",
+            "min": 0,
+            "max": 1,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": null, "color": "red"},
+                {"value": 0.2, "color": "orange"},
+                {"value": 0.3, "color": "yellow"},
+                {"value": 0.4, "color": "green"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 54,
+        "title": "Calculation Performance by Category",
+        "type": "graph",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 80},
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(vcci_calculation_duration_seconds_bucket[5m])) by (le, category))",
+            "legendFormat": "Cat {{category}} p95",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {"label": "Duration (seconds)", "format": "s"},
+          {"label": "", "format": "short"}
+        ]
+      },
+      {
+        "id": 55,
+        "title": "Category Coverage (% of 15 Categories Active)",
+        "type": "stat",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 80},
+        "targets": [
+          {
+            "expr": "count(sum(increase(vcci_calculations_total[1h])) by (category) > 0) / 15 * 100",
+            "legendFormat": "Categories Active",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "min": 0,
+            "max": 100,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": null, "color": "red"},
+                {"value": 40, "color": "orange"},
+                {"value": 60, "color": "yellow"},
+                {"value": 80, "color": "green"}
+              ]
+            }
+          }
+        },
+        "options": {
+          "graphMode": "area",
+          "colorMode": "value"
+        }
+      },
+      {
+        "id": 60,
+        "title": "Entity Resolution & Data Quality",
+        "type": "row",
+        "gridPos": {"h": 1, "w": 24, "x": 0, "y": 88}
+      },
+      {
+        "id": 61,
+        "title": "Entity Resolution Success Rate",
+        "type": "graph",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 89},
+        "targets": [
+          {
+            "expr": "sum(rate(vcci_entity_resolution_total{status=\"success\"}[5m])) by (source) / sum(rate(vcci_entity_resolution_total[5m])) by (source)",
+            "legendFormat": "{{source}}",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {"label": "Success Rate", "format": "percentunit", "min": 0, "max": 1},
+          {"label": "", "format": "short"}
+        ]
+      },
+      {
+        "id": 62,
+        "title": "Entity Match Confidence Distribution",
+        "type": "heatmap",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 89},
+        "targets": [
+          {
+            "expr": "rate(vcci_entity_match_confidence_bucket[5m])",
+            "legendFormat": "{{le}}",
+            "refId": "A"
+          }
+        ]
+      },
+      {
+        "id": 63,
+        "title": "Manual Review Queue Depth",
+        "type": "graph",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 97},
+        "targets": [
+          {
+            "expr": "vcci_entity_review_queue_depth",
+            "legendFormat": "Pending Review",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {"label": "Entities", "format": "short"},
+          {"label": "", "format": "short"}
+        ],
+        "alert": {
+          "name": "High Manual Review Queue",
+          "conditions": [
+            {
+              "evaluator": {"type": "gt", "params": [100]},
+              "query": {"params": ["A", "5m", "now"]},
+              "reducer": {"type": "avg"}
+            }
+          ],
+          "message": "Manual review queue exceeds 100 entities"
+        }
+      },
+      {
+        "id": 64,
+        "title": "Data Quality Score",
+        "type": "gauge",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 97},
+        "targets": [
+          {
+            "expr": "avg(vcci_data_quality_score)",
+            "legendFormat": "Overall DQ",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "none",
+            "min": 0,
+            "max": 100,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": null, "color": "red"},
+                {"value": 60, "color": "orange"},
+                {"value": 70, "color": "yellow"},
+                {"value": 80, "color": "green"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 70,
+        "title": "Supplier Engagement",
+        "type": "row",
+        "gridPos": {"h": 1, "w": 24, "x": 0, "y": 105}
+      },
+      {
+        "id": 71,
+        "title": "Supplier Engagement Rate",
+        "type": "gauge",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 8, "w": 8, "x": 0, "y": 106},
+        "targets": [
+          {
+            "expr": "avg(vcci_supplier_engagement_rate)",
+            "legendFormat": "Engagement %",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percentunit",
+            "min": 0,
+            "max": 1,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": null, "color": "red"},
+                {"value": 0.3, "color": "orange"},
+                {"value": 0.4, "color": "yellow"},
+                {"value": 0.5, "color": "green"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 72,
+        "title": "Portal Logins (24h)",
+        "type": "stat",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 8, "w": 8, "x": 8, "y": 106},
+        "targets": [
+          {
+            "expr": "sum(increase(vcci_portal_logins_total[24h]))",
+            "legendFormat": "Logins",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "graphMode": "area",
+          "colorMode": "value"
+        }
+      },
+      {
+        "id": 73,
+        "title": "Supplier Data Submissions (7d)",
+        "type": "graph",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 8, "w": 8, "x": 16, "y": 106},
+        "targets": [
+          {
+            "expr": "sum(increase(vcci_supplier_data_submissions_total[7d])) by (category)",
+            "legendFormat": "Cat {{category}}",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {"label": "Submissions", "format": "short"},
+          {"label": "", "format": "short"}
+        ]
+      },
+      {
+        "id": 74,
+        "title": "Email Campaign Performance",
+        "type": "graph",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 8, "w": 24, "x": 0, "y": 114},
+        "targets": [
+          {
+            "expr": "sum(rate(vcci_emails_sent_total{status=\"sent\"}[1h]))",
+            "legendFormat": "Sent",
+            "refId": "A"
+          },
+          {
+            "expr": "sum(rate(vcci_emails_sent_total{status=\"opened\"}[1h]))",
+            "legendFormat": "Opened",
+            "refId": "B"
+          },
+          {
+            "expr": "sum(rate(vcci_emails_sent_total{status=\"clicked\"}[1h]))",
+            "legendFormat": "Clicked",
+            "refId": "C"
+          },
+          {
+            "expr": "sum(rate(vcci_emails_sent_total{status=\"bounced\"}[1h]))",
+            "legendFormat": "Bounced",
+            "refId": "D"
+          }
+        ],
+        "yaxes": [
+          {"label": "Emails/hour", "format": "short"},
+          {"label": "", "format": "short"}
+        ]
+      },
+      {
+        "id": 80,
+        "title": "LLM & AI Performance",
+        "type": "row",
+        "gridPos": {"h": 1, "w": 24, "x": 0, "y": 122}
+      },
+      {
+        "id": 81,
+        "title": "LLM API Calls by Provider",
+        "type": "graph",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 123},
+        "targets": [
+          {
+            "expr": "sum(rate(vcci_llm_api_calls_total[5m])) by (provider, purpose)",
+            "legendFormat": "{{provider}} - {{purpose}}",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {"label": "Calls/sec", "format": "short"},
+          {"label": "", "format": "short"}
+        ]
+      },
+      {
+        "id": 82,
+        "title": "LLM API Latency (p95)",
+        "type": "graph",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 123},
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(vcci_llm_api_duration_seconds_bucket[5m])) by (le, provider))",
+            "legendFormat": "{{provider}} p95",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {"label": "Latency (seconds)", "format": "s"},
+          {"label": "", "format": "short"}
+        ]
+      },
+      {
+        "id": 83,
+        "title": "LLM Token Usage (24h)",
+        "type": "stat",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 4, "w": 8, "x": 0, "y": 131},
+        "targets": [
+          {
+            "expr": "sum(increase(vcci_llm_tokens_used_total[24h]))",
+            "legendFormat": "Total Tokens",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "graphMode": "area",
+          "colorMode": "value"
+        }
+      },
+      {
+        "id": 84,
+        "title": "LLM Cost (24h USD)",
+        "type": "stat",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 4, "w": 8, "x": 8, "y": 131},
+        "targets": [
+          {
+            "expr": "sum(increase(vcci_llm_cost_usd[24h]))",
+            "legendFormat": "Cost USD",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "currencyUSD"
+          }
+        },
+        "options": {
+          "graphMode": "area",
+          "colorMode": "value"
+        }
+      },
+      {
+        "id": 85,
+        "title": "LLM Error Rate",
+        "type": "stat",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 4, "w": 8, "x": 16, "y": 131},
+        "targets": [
+          {
+            "expr": "sum(rate(vcci_llm_api_errors_total[5m])) / sum(rate(vcci_llm_api_calls_total[5m]))",
+            "legendFormat": "Error Rate",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percentunit",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": null, "color": "green"},
+                {"value": 0.01, "color": "yellow"},
+                {"value": 0.05, "color": "red"}
+              ]
+            }
+          }
+        },
+        "options": {
+          "graphMode": "area",
+          "colorMode": "value"
+        }
+      }
+    ],
+    "annotations": {
+      "list": [
+        {
+          "datasource": "Prometheus",
+          "enable": true,
+          "expr": "ALERTS{alertstate=\"firing\"}",
+          "iconColor": "red",
+          "name": "Alerts",
+          "tagKeys": "alertname"
+        }
+      ]
+    },
+    "templating": {
+      "list": [
+        {
+          "name": "namespace",
+          "label": "Namespace",
+          "type": "query",
+          "datasource": "Prometheus",
+          "query": "label_values(kube_pod_info, namespace)",
+          "current": {"text": "vcci-production", "value": "vcci-production"},
+          "includeAll": false,
+          "multi": false
+        }
+      ]
+    }
+  }
+}

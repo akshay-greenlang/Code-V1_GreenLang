@@ -1,0 +1,16 @@
+# Invalid Payload - Multiple Of Violation
+# Error Code: GLSCHEMA-E205 (MULTIPLE_OF_VIOLATION)
+# Schema: basic/numeric_constraints.yaml
+
+_test_metadata:
+  schema: "basic/numeric_constraints.yaml"
+  description: "Multiple of violation - batch_size not multiple of 10"
+  expected_valid: false
+  expected_errors:
+    - code: "GLSCHEMA-E205"
+      path: "/batch_size"
+      severity: "error"
+
+temperature: 25
+quantity: 100
+batch_size: 55  # Must be multiple of 10

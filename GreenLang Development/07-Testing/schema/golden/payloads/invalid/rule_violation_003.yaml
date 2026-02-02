@@ -1,0 +1,18 @@
+# Invalid Payload - Rule Violation (biofuel requires blend)
+# Error Code: GLSCHEMA-E400 (RULE_VIOLATION)
+# Schema: rules/conditional_rules.yaml
+
+_test_metadata:
+  schema: "rules/conditional_rules.yaml"
+  description: "Rule violation - biofuel requires biofuel_blend"
+  expected_valid: false
+  expected_errors:
+    - code: "GLSCHEMA-E400"
+      path: ""
+      severity: "error"
+      rule_id: "RULE-002"
+
+fuel_type: "biofuel"
+quantity: 500
+quantity_unit: "liters"
+# biofuel_blend is missing but required when fuel_type is biofuel

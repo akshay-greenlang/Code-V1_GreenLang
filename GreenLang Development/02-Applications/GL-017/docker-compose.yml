@@ -1,0 +1,208 @@
+# =============================================================================
+# GL-017 CONDENSYNC - Docker Compose Configuration
+# Complete development and testing stack
+# =============================================================================
+
+version: "3.9"
+
+services:
+  # ---------------------------------------------------------------------------
+  # GL-017 CONDENSYNC Application Service
+  # ---------------------------------------------------------------------------
+  gl-017-condensync:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: greenlang/gl-017-condensync:latest
+    container_name: gl-017-condensync
+    hostname: condensync
+    restart: unless-stopped
+    ports:
+      - "8017:8017"   # HTTP API
+      - "9017:9017"   # Prometheus metrics
+    environment:
+      - AGENT_ID=GL-017
+      - AGENT_NAME=CONDENSYNC
+      - ENVIRONMENT=development
+      - LOG_LEVEL=INFO
+      - HTTP_PORT=8017
+      - METRICS_PORT=9017
+      - DATABASE_URL=postgresql://condensync:condensync_secret@postgres:5432/condensync_db
+      - REDIS_URL=redis://redis:6379/0
+      - SCADA_ENDPOINT=http://scada-mock:8080
+      - ENABLE_METRICS=true
+      - ENABLE_TRACING=true
+    volumes:
+      - condensync-data:/app/data
+      - condensync-logs:/app/logs
+      - condensync-models:/app/models
+      - ./config:/app/config:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - greenlang-internal
+      - greenlang-monitoring
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8017/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 2G
+        reservations:
+          cpus: "0.25"
+          memory: 512M
+    logging:
+      driver: json-file
+      options:
+        max-size: "100m"
+        max-file: "5"
+
+  # ---------------------------------------------------------------------------
+  # PostgreSQL Database
+  # ---------------------------------------------------------------------------
+  postgres:
+    image: postgres:15-alpine
+    container_name: gl-017-postgres
+    hostname: postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=condensync
+      - POSTGRES_PASSWORD=condensync_secret
+      - POSTGRES_DB=condensync_db
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./init-scripts/postgres:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "5432:5432"
+    networks:
+      - greenlang-internal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U condensync -d condensync_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # ---------------------------------------------------------------------------
+  # Redis Cache
+  # ---------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: gl-017-redis
+    hostname: redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis-data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - greenlang-internal
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ---------------------------------------------------------------------------
+  # Prometheus Metrics Collection
+  # ---------------------------------------------------------------------------
+  prometheus:
+    image: prom/prometheus:v2.47.0
+    container_name: gl-017-prometheus
+    hostname: prometheus
+    restart: unless-stopped
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--storage.tsdb.retention.time=15d"
+      - "--web.enable-lifecycle"
+      - "--web.enable-admin-api"
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/prometheus/alerts:/etc/prometheus/alerts:ro
+      - prometheus-data:/prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - greenlang-monitoring
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:9090/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ---------------------------------------------------------------------------
+  # Grafana Dashboards
+  # ---------------------------------------------------------------------------
+  grafana:
+    image: grafana/grafana:10.1.0
+    container_name: gl-017-grafana
+    hostname: grafana
+    restart: unless-stopped
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin_secret
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SERVER_ROOT_URL=http://localhost:3000
+      - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-piechart-panel
+    volumes:
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana-data:/var/lib/grafana
+    ports:
+      - "3000:3000"
+    networks:
+      - greenlang-monitoring
+    depends_on:
+      - prometheus
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+# =============================================================================
+# Networks
+# =============================================================================
+networks:
+  greenlang-internal:
+    driver: bridge
+    name: gl-017-internal
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24
+  greenlang-monitoring:
+    driver: bridge
+    name: gl-017-monitoring
+    ipam:
+      config:
+        - subnet: 172.21.0.0/24
+
+# =============================================================================
+# Volumes
+# =============================================================================
+volumes:
+  condensync-data:
+    name: gl-017-condensync-data
+  condensync-logs:
+    name: gl-017-condensync-logs
+  condensync-models:
+    name: gl-017-condensync-models
+  postgres-data:
+    name: gl-017-postgres-data
+  redis-data:
+    name: gl-017-redis-data
+  prometheus-data:
+    name: gl-017-prometheus-data
+  grafana-data:
+    name: gl-017-grafana-data

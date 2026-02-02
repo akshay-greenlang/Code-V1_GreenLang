@@ -1,0 +1,451 @@
+{
+  "metadata": {
+    "source": "DEFRA",
+    "source_name": "UK Department for Environment, Food and Rural Affairs",
+    "source_document": "UK Government GHG Conversion Factors 2024 - Transport",
+    "source_url": "https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2024",
+    "version": "2024.0",
+    "last_updated": "2024-06-01",
+    "gwp_set": "AR5",
+    "region": "UK",
+    "description": "DEFRA 2024 emission factors for company-owned vehicles"
+  },
+  "passenger_vehicles": {
+    "cars": {
+      "petrol": [
+        {
+          "id": "ef://defra/transport/car_petrol_small/2024",
+          "fuel_type": "Petrol",
+          "size_class": "Small (up to 1.4L)",
+          "co2e_factor": 0.14084,
+          "unit": "kg CO2e/km",
+          "co2e_per_mile": 0.22670,
+          "notes": "Small petrol car"
+        },
+        {
+          "id": "ef://defra/transport/car_petrol_medium/2024",
+          "fuel_type": "Petrol",
+          "size_class": "Medium (1.4-2.0L)",
+          "co2e_factor": 0.16953,
+          "unit": "kg CO2e/km",
+          "co2e_per_mile": 0.27288,
+          "notes": "Medium petrol car"
+        },
+        {
+          "id": "ef://defra/transport/car_petrol_large/2024",
+          "fuel_type": "Petrol",
+          "size_class": "Large (over 2.0L)",
+          "co2e_factor": 0.22813,
+          "unit": "kg CO2e/km",
+          "co2e_per_mile": 0.36717,
+          "notes": "Large petrol car"
+        },
+        {
+          "id": "ef://defra/transport/car_petrol_average/2024",
+          "fuel_type": "Petrol",
+          "size_class": "Average",
+          "co2e_factor": 0.17049,
+          "unit": "kg CO2e/km",
+          "co2e_per_mile": 0.27443,
+          "notes": "Average petrol car"
+        }
+      ],
+      "diesel": [
+        {
+          "id": "ef://defra/transport/car_diesel_small/2024",
+          "fuel_type": "Diesel",
+          "size_class": "Small (up to 1.7L)",
+          "co2e_factor": 0.13812,
+          "unit": "kg CO2e/km",
+          "co2e_per_mile": 0.22231,
+          "notes": "Small diesel car"
+        },
+        {
+          "id": "ef://defra/transport/car_diesel_medium/2024",
+          "fuel_type": "Diesel",
+          "size_class": "Medium (1.7-2.0L)",
+          "co2e_factor": 0.16346,
+          "unit": "kg CO2e/km",
+          "co2e_per_mile": 0.26311,
+          "notes": "Medium diesel car"
+        },
+        {
+          "id": "ef://defra/transport/car_diesel_large/2024",
+          "fuel_type": "Diesel",
+          "size_class": "Large (over 2.0L)",
+          "co2e_factor": 0.20608,
+          "unit": "kg CO2e/km",
+          "co2e_per_mile": 0.33167,
+          "notes": "Large diesel car"
+        },
+        {
+          "id": "ef://defra/transport/car_diesel_average/2024",
+          "fuel_type": "Diesel",
+          "size_class": "Average",
+          "co2e_factor": 0.16584,
+          "unit": "kg CO2e/km",
+          "co2e_per_mile": 0.26694,
+          "notes": "Average diesel car"
+        }
+      ],
+      "hybrid": [
+        {
+          "id": "ef://defra/transport/car_hybrid_small/2024",
+          "fuel_type": "Petrol hybrid",
+          "size_class": "Small",
+          "co2e_factor": 0.10287,
+          "unit": "kg CO2e/km",
+          "co2e_per_mile": 0.16557,
+          "notes": "Small petrol hybrid car"
+        },
+        {
+          "id": "ef://defra/transport/car_hybrid_medium/2024",
+          "fuel_type": "Petrol hybrid",
+          "size_class": "Medium",
+          "co2e_factor": 0.10928,
+          "unit": "kg CO2e/km",
+          "co2e_per_mile": 0.17588,
+          "notes": "Medium petrol hybrid car"
+        },
+        {
+          "id": "ef://defra/transport/car_hybrid_large/2024",
+          "fuel_type": "Petrol hybrid",
+          "size_class": "Large",
+          "co2e_factor": 0.15095,
+          "unit": "kg CO2e/km",
+          "co2e_per_mile": 0.24296,
+          "notes": "Large petrol hybrid car"
+        },
+        {
+          "id": "ef://defra/transport/car_hybrid_average/2024",
+          "fuel_type": "Petrol hybrid",
+          "size_class": "Average",
+          "co2e_factor": 0.11560,
+          "unit": "kg CO2e/km",
+          "co2e_per_mile": 0.18606,
+          "notes": "Average petrol hybrid car"
+        }
+      ],
+      "plug_in_hybrid": [
+        {
+          "id": "ef://defra/transport/car_phev_small/2024",
+          "fuel_type": "Plug-in hybrid",
+          "size_class": "Small",
+          "co2e_factor": 0.02137,
+          "unit": "kg CO2e/km",
+          "co2e_per_mile": 0.03439,
+          "notes": "Small plug-in hybrid - electric mode"
+        },
+        {
+          "id": "ef://defra/transport/car_phev_medium/2024",
+          "fuel_type": "Plug-in hybrid",
+          "size_class": "Medium",
+          "co2e_factor": 0.06813,
+          "unit": "kg CO2e/km",
+          "co2e_per_mile": 0.10966,
+          "notes": "Medium plug-in hybrid"
+        },
+        {
+          "id": "ef://defra/transport/car_phev_large/2024",
+          "fuel_type": "Plug-in hybrid",
+          "size_class": "Large",
+          "co2e_factor": 0.07528,
+          "unit": "kg CO2e/km",
+          "co2e_per_mile": 0.12117,
+          "notes": "Large plug-in hybrid"
+        },
+        {
+          "id": "ef://defra/transport/car_phev_average/2024",
+          "fuel_type": "Plug-in hybrid",
+          "size_class": "Average",
+          "co2e_factor": 0.07062,
+          "unit": "kg CO2e/km",
+          "co2e_per_mile": 0.11366,
+          "notes": "Average plug-in hybrid"
+        }
+      ],
+      "battery_electric": [
+        {
+          "id": "ef://defra/transport/car_bev_small/2024",
+          "fuel_type": "Battery electric",
+          "size_class": "Small",
+          "co2e_factor": 0.04556,
+          "unit": "kg CO2e/km",
+          "co2e_per_mile": 0.07333,
+          "notes": "Small battery electric car"
+        },
+        {
+          "id": "ef://defra/transport/car_bev_medium/2024",
+          "fuel_type": "Battery electric",
+          "size_class": "Medium",
+          "co2e_factor": 0.05282,
+          "unit": "kg CO2e/km",
+          "co2e_per_mile": 0.08502,
+          "notes": "Medium battery electric car"
+        },
+        {
+          "id": "ef://defra/transport/car_bev_large/2024",
+          "fuel_type": "Battery electric",
+          "size_class": "Large",
+          "co2e_factor": 0.06112,
+          "unit": "kg CO2e/km",
+          "co2e_per_mile": 0.09837,
+          "notes": "Large battery electric car"
+        },
+        {
+          "id": "ef://defra/transport/car_bev_average/2024",
+          "fuel_type": "Battery electric",
+          "size_class": "Average",
+          "co2e_factor": 0.05200,
+          "unit": "kg CO2e/km",
+          "co2e_per_mile": 0.08370,
+          "notes": "Average battery electric car"
+        }
+      ],
+      "lpg": [
+        {
+          "id": "ef://defra/transport/car_lpg_average/2024",
+          "fuel_type": "LPG",
+          "size_class": "Average",
+          "co2e_factor": 0.17887,
+          "unit": "kg CO2e/km",
+          "co2e_per_mile": 0.28793,
+          "notes": "LPG car average"
+        }
+      ],
+      "cng": [
+        {
+          "id": "ef://defra/transport/car_cng_average/2024",
+          "fuel_type": "CNG",
+          "size_class": "Average",
+          "co2e_factor": 0.17472,
+          "unit": "kg CO2e/km",
+          "co2e_per_mile": 0.28124,
+          "notes": "CNG car average"
+        }
+      ]
+    },
+    "motorcycles": [
+      {
+        "id": "ef://defra/transport/motorcycle_small/2024",
+        "size_class": "Small (up to 125cc)",
+        "co2e_factor": 0.08288,
+        "unit": "kg CO2e/km",
+        "co2e_per_mile": 0.13340,
+        "notes": "Small motorcycle"
+      },
+      {
+        "id": "ef://defra/transport/motorcycle_medium/2024",
+        "size_class": "Medium (125-500cc)",
+        "co2e_factor": 0.10087,
+        "unit": "kg CO2e/km",
+        "co2e_per_mile": 0.16235,
+        "notes": "Medium motorcycle"
+      },
+      {
+        "id": "ef://defra/transport/motorcycle_large/2024",
+        "size_class": "Large (over 500cc)",
+        "co2e_factor": 0.13278,
+        "unit": "kg CO2e/km",
+        "co2e_per_mile": 0.21374,
+        "notes": "Large motorcycle"
+      },
+      {
+        "id": "ef://defra/transport/motorcycle_average/2024",
+        "size_class": "Average",
+        "co2e_factor": 0.11281,
+        "unit": "kg CO2e/km",
+        "co2e_per_mile": 0.18159,
+        "notes": "Average motorcycle"
+      }
+    ]
+  },
+  "vans": {
+    "diesel": [
+      {
+        "id": "ef://defra/transport/van_diesel_class1/2024",
+        "fuel_type": "Diesel",
+        "size_class": "Class I (up to 1.305t)",
+        "co2e_factor": 0.14752,
+        "unit": "kg CO2e/km",
+        "co2e_per_mile": 0.23745,
+        "notes": "Small diesel van"
+      },
+      {
+        "id": "ef://defra/transport/van_diesel_class2/2024",
+        "fuel_type": "Diesel",
+        "size_class": "Class II (1.305-1.74t)",
+        "co2e_factor": 0.18269,
+        "unit": "kg CO2e/km",
+        "co2e_per_mile": 0.29407,
+        "notes": "Medium diesel van"
+      },
+      {
+        "id": "ef://defra/transport/van_diesel_class3/2024",
+        "fuel_type": "Diesel",
+        "size_class": "Class III (1.74-3.5t)",
+        "co2e_factor": 0.26519,
+        "unit": "kg CO2e/km",
+        "co2e_per_mile": 0.42684,
+        "notes": "Large diesel van"
+      },
+      {
+        "id": "ef://defra/transport/van_diesel_average/2024",
+        "fuel_type": "Diesel",
+        "size_class": "Average",
+        "co2e_factor": 0.23095,
+        "unit": "kg CO2e/km",
+        "co2e_per_mile": 0.37175,
+        "notes": "Average diesel van"
+      }
+    ],
+    "petrol": [
+      {
+        "id": "ef://defra/transport/van_petrol_class1/2024",
+        "fuel_type": "Petrol",
+        "size_class": "Class I (up to 1.305t)",
+        "co2e_factor": 0.19378,
+        "unit": "kg CO2e/km",
+        "co2e_per_mile": 0.31192,
+        "notes": "Small petrol van"
+      },
+      {
+        "id": "ef://defra/transport/van_petrol_class2/2024",
+        "fuel_type": "Petrol",
+        "size_class": "Class II (1.305-1.74t)",
+        "co2e_factor": 0.21098,
+        "unit": "kg CO2e/km",
+        "co2e_per_mile": 0.33962,
+        "notes": "Medium petrol van"
+      },
+      {
+        "id": "ef://defra/transport/van_petrol_class3/2024",
+        "fuel_type": "Petrol",
+        "size_class": "Class III (1.74-3.5t)",
+        "co2e_factor": 0.30821,
+        "unit": "kg CO2e/km",
+        "co2e_per_mile": 0.49608,
+        "notes": "Large petrol van"
+      },
+      {
+        "id": "ef://defra/transport/van_petrol_average/2024",
+        "fuel_type": "Petrol",
+        "size_class": "Average",
+        "co2e_factor": 0.20971,
+        "unit": "kg CO2e/km",
+        "co2e_per_mile": 0.33757,
+        "notes": "Average petrol van"
+      }
+    ],
+    "battery_electric": [
+      {
+        "id": "ef://defra/transport/van_bev_class1/2024",
+        "fuel_type": "Battery electric",
+        "size_class": "Class I",
+        "co2e_factor": 0.04908,
+        "unit": "kg CO2e/km",
+        "co2e_per_mile": 0.07899,
+        "notes": "Small electric van"
+      },
+      {
+        "id": "ef://defra/transport/van_bev_class2/2024",
+        "fuel_type": "Battery electric",
+        "size_class": "Class II",
+        "co2e_factor": 0.05704,
+        "unit": "kg CO2e/km",
+        "co2e_per_mile": 0.09181,
+        "notes": "Medium electric van"
+      },
+      {
+        "id": "ef://defra/transport/van_bev_class3/2024",
+        "fuel_type": "Battery electric",
+        "size_class": "Class III",
+        "co2e_factor": 0.07456,
+        "unit": "kg CO2e/km",
+        "co2e_per_mile": 0.12001,
+        "notes": "Large electric van"
+      },
+      {
+        "id": "ef://defra/transport/van_bev_average/2024",
+        "fuel_type": "Battery electric",
+        "size_class": "Average",
+        "co2e_factor": 0.06000,
+        "unit": "kg CO2e/km",
+        "co2e_per_mile": 0.09657,
+        "notes": "Average electric van"
+      }
+    ]
+  },
+  "hgvs": {
+    "rigid": [
+      {
+        "id": "ef://defra/transport/hgv_rigid_small/2024",
+        "type": "Rigid",
+        "size_class": "7.5-17t",
+        "co2e_factor": 0.47929,
+        "unit": "kg CO2e/km",
+        "notes": "Small rigid HGV"
+      },
+      {
+        "id": "ef://defra/transport/hgv_rigid_medium/2024",
+        "type": "Rigid",
+        "size_class": "17-26t",
+        "co2e_factor": 0.58975,
+        "unit": "kg CO2e/km",
+        "notes": "Medium rigid HGV"
+      },
+      {
+        "id": "ef://defra/transport/hgv_rigid_large/2024",
+        "type": "Rigid",
+        "size_class": ">26t",
+        "co2e_factor": 0.75971,
+        "unit": "kg CO2e/km",
+        "notes": "Large rigid HGV"
+      },
+      {
+        "id": "ef://defra/transport/hgv_rigid_average/2024",
+        "type": "Rigid",
+        "size_class": "All",
+        "co2e_factor": 0.56688,
+        "unit": "kg CO2e/km",
+        "notes": "All rigid HGVs average"
+      }
+    ],
+    "articulated": [
+      {
+        "id": "ef://defra/transport/hgv_articulated_small/2024",
+        "type": "Articulated",
+        "size_class": "3.5-33t",
+        "co2e_factor": 0.66975,
+        "unit": "kg CO2e/km",
+        "notes": "Small articulated HGV"
+      },
+      {
+        "id": "ef://defra/transport/hgv_articulated_medium/2024",
+        "type": "Articulated",
+        "size_class": ">33t",
+        "co2e_factor": 0.88015,
+        "unit": "kg CO2e/km",
+        "notes": "Medium/Large articulated HGV"
+      },
+      {
+        "id": "ef://defra/transport/hgv_articulated_average/2024",
+        "type": "Articulated",
+        "size_class": "All",
+        "co2e_factor": 0.86344,
+        "unit": "kg CO2e/km",
+        "notes": "All articulated HGVs average"
+      }
+    ],
+    "all_hgv": [
+      {
+        "id": "ef://defra/transport/hgv_average/2024",
+        "type": "All HGV",
+        "size_class": "All",
+        "co2e_factor": 0.78475,
+        "unit": "kg CO2e/km",
+        "notes": "All HGVs average"
+      }
+    ]
+  }
+}

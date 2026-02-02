@@ -1,0 +1,645 @@
+# ==============================================================================
+# GL-020 ECONOPULSE Economizer Performance Agent
+# Pack Manifest (pack.yaml)
+# ==============================================================================
+# Pack Schema Version: 1.0
+# Agent ID: GL-020
+# Codename: ECONOPULSE
+# ==============================================================================
+
+kind: Pack
+pack_schema_version: "1.0"
+license: Apache-2.0
+
+# ==============================================================================
+# AGENT METADATA
+# ==============================================================================
+metadata:
+  # Core Identification
+  agent_id: GL-020
+  codename: ECONOPULSE
+  name: EconomizerPerformanceAgent
+  version: "1.0.0"
+
+  # Classification
+  category: heat_recovery
+  type: monitor
+  domain: thermal_systems
+
+  # Business Priority
+  priority: medium
+  business_priority: P2
+  market_tam: "$3B"
+  target_date: "Q3 2026"
+
+  # Description
+  description: >-
+    Monitors economizer performance and fouling to optimize heat recovery,
+    reduce soot blowing frequency, and prevent efficiency losses. Uses
+    deterministic calculations following ASME PTC 4.3 standards with
+    zero-hallucination guarantees.
+
+  # Extended Description
+  long_description: |
+    The ECONOPULSE agent provides comprehensive economizer performance
+    monitoring and fouling analysis capabilities:
+
+    1. HEAT TRANSFER MONITORING
+       - Feedwater temperature monitoring (inlet/outlet)
+       - Flue gas temperature monitoring (inlet/outlet)
+       - Flow rate measurement (water and gas sides)
+       - Differential pressure monitoring
+       - Real-time heat duty calculation
+       - Log Mean Temperature Difference (LMTD)
+
+    2. PERFORMANCE CALCULATION
+       - Overall Heat Transfer Coefficient (U-value)
+       - Heat exchanger effectiveness (ε-NTU method)
+       - Approach temperature monitoring
+       - Terminal temperature difference
+       - Heat recovery ratio
+       - Design deviation analysis
+
+    3. FOULING ANALYSIS
+       - Fouling Factor (Rf) calculation (TEMA method)
+       - Cleanliness Factor trending
+       - Gas-side fouling (soot, ash deposits)
+       - Water-side fouling (scale, corrosion)
+       - Fouling rate determination (dRf/dt)
+       - Predicted cleaning date
+
+    4. EFFICIENCY LOSS QUANTIFICATION
+       - Heat loss calculation (MMBtu/hr)
+       - Fuel penalty estimation ($/hr)
+       - Annual cost impact projection
+       - Carbon emission penalty
+       - ROI for cleaning actions
+
+    5. CLEANING ALERT GENERATION
+       - Threshold-based alerts (Rf exceeds limit)
+       - Rate-of-change alerts (rapid fouling)
+       - Predictive alerts (cleaning needed in X days)
+       - Alert prioritization and escalation
+       - Integration with notification systems
+
+    6. SOOT BLOWER OPTIMIZATION
+       - Optimal cleaning interval calculation
+       - Zone-based cleaning prioritization
+       - Media consumption tracking (steam/air)
+       - Cleaning effectiveness measurement
+       - Before/after performance comparison
+       - ROI analysis for each cleaning cycle
+
+    7. PERFORMANCE TRENDING
+       - Hourly, daily, weekly trend analysis
+       - Load-corrected performance metrics
+       - Seasonal normalization
+       - Historical comparison
+       - Statistical trend detection
+
+    8. REPORTING & VISUALIZATION
+       - Real-time performance dashboards
+       - Daily/weekly efficiency reports
+       - Cleaning history analysis
+       - Savings tracking and verification
+       - Regulatory compliance reports
+
+    Zero-Hallucination Guarantee: All heat transfer and fouling calculations
+    use deterministic engineering formulas from ASME PTC 4.3, TEMA standards,
+    and IAPWS-IF97 property tables. No AI is used for numeric calculations.
+
+apiVersion: greenlang.io/v1
+
+# ==============================================================================
+# RUNTIME SPECIFICATION
+# ==============================================================================
+spec:
+  runtime:
+    language: python
+    version: "3.11"
+    framework: fastapi
+    entry_point: main:app
+    deterministic: true
+    temperature: 0.0
+    seed: 42
+    zero_hallucination: true
+    max_retries: 3
+    cache_ttl_seconds: 60  # Real-time monitoring needs fresh data
+
+    batch_processing:
+      enabled: true
+      max_batch_size: 100
+      parallel_workers: 4
+
+  # ============================================================================
+  # DEPENDENCIES
+  # ============================================================================
+  dependencies:
+    required:
+      # Web Framework
+      - fastapi>=0.104.1
+      - uvicorn[standard]>=0.24.0
+      - pydantic>=2.5.0
+      - pydantic-settings>=2.1.0
+
+      # Database & Cache
+      - asyncpg>=0.29.0
+      - sqlalchemy>=2.0.23
+      - redis>=5.0.1
+      - timescaledb>=2.0.0
+
+      # Numerical Computing
+      - numpy>=1.26.2
+      - scipy>=1.11.4
+      - pandas>=2.1.3
+
+      # Industrial Protocols
+      - opcua>=0.98.13
+      - asyncua>=1.0.0
+      - pymodbus>=3.5.0
+
+      # Monitoring
+      - prometheus-client>=0.19.0
+
+      # Utilities
+      - python-dateutil>=2.8.2
+      - pytz>=2023.3
+      - pyyaml>=6.0.1
+
+    optional:
+      # Observability
+      - opentelemetry-api>=1.21.0
+      - opentelemetry-sdk>=1.21.0
+      - opentelemetry-exporter-otlp>=1.21.0
+
+      # Advanced Analytics
+      - matplotlib>=3.8.2
+      - plotly>=5.18.0
+      - statsmodels>=0.14.0
+
+      # Reporting
+      - reportlab>=4.0.7
+      - openpyxl>=3.1.2
+
+      # Logging
+      - structlog>=23.2.0
+
+    development:
+      - pytest>=7.4.3
+      - pytest-asyncio>=0.21.1
+      - pytest-cov>=4.1.0
+      - black>=23.12.0
+      - ruff>=0.1.7
+      - mypy>=1.7.1
+
+  # ============================================================================
+  # RESOURCE REQUIREMENTS
+  # ============================================================================
+  resources:
+    cpu:
+      requests: "250m"
+      limits: "1000m"
+    memory:
+      requests: "512Mi"
+      limits: "2Gi"
+    storage: "10Gi"
+    gpu: false
+
+  # ============================================================================
+  # NETWORK PORTS
+  # ============================================================================
+  ports:
+    - name: http
+      port: 8080
+      protocol: TCP
+      description: "Main API endpoint"
+    - name: metrics
+      port: 9090
+      protocol: TCP
+      description: "Prometheus metrics endpoint"
+    - name: health
+      port: 8081
+      protocol: TCP
+      description: "Health check endpoint"
+
+  # ============================================================================
+  # INPUT SPECIFICATION
+  # ============================================================================
+  inputs:
+    - name: temperature_readings
+      type: object
+      required: true
+      description: "Temperature sensor readings from economizer"
+      schema:
+        economizer_id:
+          type: string
+          description: "Economizer identifier"
+        timestamp:
+          type: string
+          format: datetime
+        feedwater_inlet_temp_f:
+          type: number
+          range: [100, 500]
+          unit: "°F"
+        feedwater_outlet_temp_f:
+          type: number
+          range: [150, 600]
+          unit: "°F"
+        flue_gas_inlet_temp_f:
+          type: number
+          range: [300, 1000]
+          unit: "°F"
+        flue_gas_outlet_temp_f:
+          type: number
+          range: [200, 800]
+          unit: "°F"
+        quality_flag:
+          type: string
+          enum: [GOOD, SUSPECT, BAD]
+
+    - name: flow_readings
+      type: object
+      required: true
+      description: "Flow rate measurements"
+      schema:
+        feedwater_flow_lb_hr:
+          type: number
+          range: [0, 5000000]
+          unit: "lb/hr"
+        flue_gas_flow_lb_hr:
+          type: number
+          range: [0, 10000000]
+          unit: "lb/hr"
+
+    - name: economizer_configuration
+      type: object
+      required: true
+      description: "Economizer physical specifications"
+      schema:
+        surface_area_ft2:
+          type: number
+          description: "Heat transfer surface area"
+        tube_count:
+          type: integer
+          description: "Number of tubes"
+        tube_material:
+          type: string
+          enum: [CARBON_STEEL, STAINLESS_304, STAINLESS_316, COR_TEN]
+        economizer_type:
+          type: string
+          enum: [BARE_TUBE, FINNED_TUBE, EXTENDED_SURFACE, CONDENSING]
+        design_u_value:
+          type: number
+          description: "Design heat transfer coefficient (Btu/hr-ft²-°F)"
+        design_effectiveness:
+          type: number
+          range: [0, 1]
+          description: "Design effectiveness"
+
+  # ============================================================================
+  # OUTPUT SPECIFICATION
+  # ============================================================================
+  outputs:
+    - name: performance_metrics
+      type: object
+      description: "Current economizer performance metrics"
+      schema:
+        economizer_id:
+          type: string
+        timestamp:
+          type: string
+          format: datetime
+        lmtd_f:
+          type: number
+          unit: "°F"
+          description: "Log Mean Temperature Difference"
+        heat_duty_mmbtu_hr:
+          type: number
+          unit: "MMBtu/hr"
+          description: "Heat transfer rate"
+        u_value_btu_hr_ft2_f:
+          type: number
+          unit: "Btu/hr-ft²-°F"
+          description: "Overall heat transfer coefficient"
+        effectiveness:
+          type: number
+          range: [0, 1]
+          description: "Heat exchanger effectiveness"
+        approach_temp_f:
+          type: number
+          unit: "°F"
+          description: "Approach temperature"
+        provenance_hash:
+          type: string
+
+    - name: fouling_analysis
+      type: object
+      description: "Fouling status and predictions"
+      schema:
+        fouling_factor_hr_ft2_f_btu:
+          type: number
+          unit: "hr-ft²-°F/Btu"
+          description: "Current fouling factor (Rf)"
+        cleanliness_factor_pct:
+          type: number
+          range: [0, 100]
+          description: "Cleanliness factor percentage"
+        fouling_rate_per_day:
+          type: number
+          description: "Rate of fouling increase"
+        fouling_severity:
+          type: string
+          enum: [CLEAN, LIGHT, MODERATE, HEAVY, SEVERE]
+        predicted_cleaning_date:
+          type: string
+          format: date
+        efficiency_loss_pct:
+          type: number
+          description: "Efficiency loss due to fouling"
+        fuel_penalty_usd_hr:
+          type: number
+          unit: "$/hr"
+
+    - name: cleaning_alerts
+      type: array
+      description: "Cleaning alerts and recommendations"
+      items:
+        type: object
+        properties:
+          alert_id:
+            type: string
+          alert_type:
+            type: string
+            enum: [THRESHOLD, RATE_OF_CHANGE, PREDICTIVE]
+          severity:
+            type: string
+            enum: [LOW, MEDIUM, HIGH, CRITICAL]
+          message:
+            type: string
+          recommended_action:
+            type: string
+          created_at:
+            type: string
+            format: datetime
+
+  # ============================================================================
+  # INTEGRATIONS
+  # ============================================================================
+  integrations:
+    scada_systems:
+      - name: OPC_UA
+        protocol: "OPC UA"
+        description: "Temperature, flow, and pressure sensors"
+        required: true
+      - name: Modbus_TCP
+        protocol: "Modbus TCP"
+        description: "Legacy sensor integration"
+        required: false
+
+    soot_blower_systems:
+      - name: Soot_Blower_Control
+        protocol: "OPC UA / Modbus"
+        description: "Soot blower status and control"
+        required: true
+
+    historian_systems:
+      - name: OSIsoft_PI
+        protocol: "PI Web API"
+        description: "Process historian for historical data"
+        required: false
+      - name: Wonderware
+        protocol: "InSQL"
+        description: "Wonderware historian"
+        required: false
+
+    greenlang_agents:
+      - name: GL-001_THERMOSYNC
+        description: "Process heat orchestrator coordination"
+        required: false
+      - name: GL-018_FLUEFLOW
+        description: "Flue gas composition data"
+        required: false
+      - name: GL-021_AIRPREHEATER
+        description: "Air preheater performance coordination"
+        required: false
+
+  # ============================================================================
+  # CAPABILITIES
+  # ============================================================================
+  capabilities:
+    heat_transfer_monitoring:
+      - temperature_measurement
+      - flow_measurement
+      - lmtd_calculation
+      - heat_duty_calculation
+      - u_value_calculation
+
+    fouling_analysis:
+      - fouling_factor_calculation
+      - fouling_rate_trending
+      - fouling_prediction
+      - cleanliness_factor_tracking
+      - efficiency_loss_quantification
+
+    alert_generation:
+      - threshold_alerts
+      - rate_of_change_alerts
+      - predictive_alerts
+      - alert_prioritization
+      - notification_integration
+
+    soot_blower_optimization:
+      - optimal_interval_calculation
+      - cleaning_effectiveness_tracking
+      - media_consumption_monitoring
+      - cleaning_roi_analysis
+
+    reporting:
+      - performance_dashboards
+      - efficiency_reports
+      - cleaning_history
+      - savings_verification
+
+  # ============================================================================
+  # COMPLIANCE
+  # ============================================================================
+  compliance:
+    standards:
+      - standard: ASME_PTC_4_3
+        version: "2017"
+        description: "ASME PTC 4.3 - Air Heaters and Economizers"
+
+      - standard: TEMA
+        version: "10th Edition"
+        description: "TEMA Standards for Heat Exchangers"
+
+      - standard: IAPWS_IF97
+        version: "1997"
+        description: "IAPWS Industrial Formulation for Water/Steam"
+
+      - standard: ISO_50001
+        version: "2018"
+        description: "ISO 50001 - Energy Management Systems"
+
+    audit_trail:
+      enabled: true
+      retention_days: 2555  # 7 years
+      provenance_tracking: true
+      hash_algorithm: SHA-256
+      immutable: true
+
+    zero_hallucination: true
+    deterministic_calculations: true
+
+  # ============================================================================
+  # MONITORING
+  # ============================================================================
+  monitoring:
+    metrics_enabled: true
+    metrics_port: 9090
+    metrics_path: /metrics
+
+    dashboards:
+      - economizer_performance_overview
+      - fouling_status_trending
+      - cleaning_effectiveness
+      - efficiency_loss_tracking
+      - alert_summary
+
+    alerts:
+      - name: high_fouling_factor
+        condition: "fouling_factor > fouling_threshold"
+        severity: high
+        description: "Fouling factor exceeds cleaning threshold"
+
+      - name: rapid_fouling_increase
+        condition: "fouling_rate > critical_rate"
+        severity: critical
+        description: "Rapid fouling increase detected"
+
+      - name: low_effectiveness
+        condition: "effectiveness < min_effectiveness"
+        severity: medium
+        description: "Economizer effectiveness below minimum"
+
+      - name: high_approach_temperature
+        condition: "approach_temp > max_approach_temp"
+        severity: high
+        description: "Approach temperature too high"
+
+      - name: sensor_fault
+        condition: "sensor_quality == BAD"
+        severity: high
+        description: "Temperature sensor fault detected"
+
+  # ============================================================================
+  # SECURITY
+  # ============================================================================
+  security:
+    authentication: oauth2
+    authorization: rbac
+    encryption: tls_1_3
+    secrets_management: kubernetes
+    api_key_required: true
+    audit_logging: true
+
+    roles:
+      - admin
+      - performance_engineer
+      - maintenance_engineer
+      - operator
+      - viewer
+
+  # ============================================================================
+  # DEPLOYMENT
+  # ============================================================================
+  deployment:
+    replicas: 2
+    strategy: rolling_update
+    max_surge: 1
+    max_unavailable: 0
+
+    health_check:
+      liveness:
+        path: /health/liveness
+        interval: 10s
+        timeout: 5s
+        failure_threshold: 3
+
+      readiness:
+        path: /health/readiness
+        interval: 5s
+        timeout: 3s
+        failure_threshold: 3
+
+    autoscaling:
+      enabled: true
+      min_replicas: 1
+      max_replicas: 5
+      target_cpu_percent: 70
+      target_memory_percent: 80
+
+# ==============================================================================
+# AUTHOR & DOCUMENTATION
+# ==============================================================================
+authors:
+  - name: GreenLang AI Agent Factory
+    email: agents@greenlang.io
+
+repository: https://github.com/greenlang/agents/gl-020
+documentation: https://docs.greenlang.io/agents/gl-020
+
+tags:
+  - economizer
+  - heat-recovery
+  - fouling
+  - soot-blower
+  - performance-monitoring
+  - efficiency
+  - asme-ptc
+  - thermal
+  - boiler
+  - deterministic
+  - zero-hallucination
+
+# ==============================================================================
+# BUSINESS METRICS
+# ==============================================================================
+business:
+  tam: "$3B"
+  target_date: "Q3 2026"
+  priority: P2
+
+  value_proposition:
+    - Reduce soot blowing frequency by 10%
+    - Improve boiler efficiency by 0.5%
+    - Achieve 95% cleaning alert accuracy
+    - Save $100K+ annually per economizer
+    - Extend economizer tube life
+    - Reduce unplanned outages
+
+  target_customers:
+    - power_plants
+    - pulp_paper_mills
+    - refineries
+    - petrochemical_plants
+    - food_processing
+    - steel_mills
+    - cement_plants
+
+  roi_metrics:
+    - metric: soot_blowing_reduction
+      target: 10
+      unit: percent
+
+    - metric: efficiency_improvement
+      target: 0.5
+      unit: percent
+
+    - metric: alert_accuracy
+      target: 95
+      unit: percent
+
+    - metric: annual_savings
+      target: 100000
+      unit: USD

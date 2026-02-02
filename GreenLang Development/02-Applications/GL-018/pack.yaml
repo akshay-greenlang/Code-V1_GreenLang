@@ -1,0 +1,1495 @@
+# ==============================================================================
+# GL-018 FLUEFLOW Flue Gas Analyzer Agent
+# Pack Manifest (pack.yaml)
+# ==============================================================================
+# Pack Schema Version: 1.0
+# Agent ID: GL-018
+# Codename: FLUEFLOW
+# ==============================================================================
+
+kind: Pack
+pack_schema_version: "1.0"
+license: Apache-2.0
+
+# ==============================================================================
+# AGENT METADATA
+# ==============================================================================
+metadata:
+  # Core Identification
+  agent_id: GL-018
+  codename: FLUEFLOW
+  name: FlueGasAnalyzer
+  version: "1.0.0"
+
+  # Classification
+  category: analyzer
+  type: analyzer
+  domain: combustion_systems
+
+  # Business Priority
+  priority: high
+  business_priority: P1
+  market_tam: "$4B"
+  target_date: "Q1 2026"
+
+  # Description
+  description: >-
+    Analyzes flue gas composition to optimize combustion efficiency, minimize
+    emissions, and ensure regulatory compliance. Uses deterministic calculations
+    following EPA, ASME PTC 4.1, and ISO 50001 standards with zero-hallucination
+    guarantees for all combustion calculations.
+
+  # Extended Description
+  long_description: |
+    The FLUEFLOW agent provides comprehensive flue gas analysis and combustion
+    optimization capabilities:
+
+    1. FLUE GAS COMPOSITION ANALYSIS
+       - Real-time monitoring of O2, CO2, CO, NOx, SOx concentrations
+       - Stack temperature and draft pressure monitoring
+       - Moisture content and dewpoint analysis
+       - Unburned hydrocarbons (THC) detection
+       - Particulate matter (PM) estimation
+       - Gas velocity and volumetric flow calculation
+
+    2. COMBUSTION EFFICIENCY OPTIMIZATION
+       - Heat loss via dry flue gas calculation
+       - Heat loss via moisture in fuel calculation
+       - Heat loss via incomplete combustion calculation
+       - Heat loss via radiation and convection estimation
+       - Overall thermal efficiency determination (HHV and LHV basis)
+       - Fuel energy input vs. useful output analysis
+       - Stack heat recovery opportunity assessment
+
+    3. AIR-FUEL RATIO OPTIMIZATION
+       - Stoichiometric air requirement calculation
+       - Excess air percentage determination
+       - Optimal O2 setpoint recommendation
+       - Lambda (air ratio) calculation
+       - Combustion air preheating optimization
+       - Fuel-air mixing quality assessment
+       - Burner trim optimization recommendations
+
+    4. EMISSIONS COMPLIANCE MONITORING
+       - NOx emissions tracking (ppm and lb/MMBtu)
+       - CO emissions monitoring and trending
+       - SOx emissions calculation (for sulfur-bearing fuels)
+       - CO2 emissions quantification
+       - Opacity and particulate matter estimation
+       - Compliance against EPA, EU IED, and local limits
+       - CEMS (Continuous Emissions Monitoring System) validation
+
+    5. BURNER PERFORMANCE DIAGNOSTICS
+       - Flame quality assessment via gas composition
+       - Burner fouling detection (rising O2 with constant load)
+       - Air register positioning optimization
+       - Damper control optimization
+       - Atomization quality (for oil burners)
+       - Incomplete combustion diagnosis (high CO)
+       - Burner age and degradation tracking
+
+    6. FUEL QUALITY ASSESSMENT
+       - Fuel heating value estimation from combustion products
+       - Fuel composition inference (C, H, S, O, N ratios)
+       - Moisture and ash content estimation
+       - Fuel switching impact analysis
+       - Blend optimization for multi-fuel systems
+       - Fuel quality deviation alerts
+
+    7. ECONOMIC OPTIMIZATION
+       - Fuel cost savings from efficiency improvements
+       - Emissions penalty/credit quantification
+       - Carbon tax impact analysis
+       - Heat recovery payback calculations
+       - Maintenance cost reduction from optimal operation
+       - Total cost of combustion (fuel + emissions + maintenance)
+
+    8. PERFORMANCE REPORTING
+       - Real-time efficiency dashboards
+       - Emissions compliance reports
+       - Trend analysis and benchmarking
+       - Optimization opportunity identification
+       - ROI tracking for combustion improvements
+       - Predictive maintenance alerts
+
+    Zero-Hallucination Guarantee: All combustion calculations use deterministic
+    engineering formulas from EPA Method 19, ASME PTC 4.1, ISO 12039, and
+    NFPA 85. No AI is used for numeric calculations, ensuring 100% accuracy
+    and regulatory compliance.
+
+apiVersion: greenlang.io/v1
+
+# ==============================================================================
+# RUNTIME SPECIFICATION
+# ==============================================================================
+spec:
+  runtime:
+    language: python
+    version: "3.11"
+    framework: fastapi
+    entry_point: main:app
+    deterministic: true
+    temperature: 0.0
+    seed: 42
+    zero_hallucination: true
+    max_retries: 3
+    cache_ttl_seconds: 60  # Flue gas changes rapidly
+
+    batch_processing:
+      enabled: true
+      max_batch_size: 500
+      parallel_workers: 4
+
+  # ============================================================================
+  # DEPENDENCIES
+  # ============================================================================
+  dependencies:
+    required:
+      # Web Framework
+      - fastapi>=0.104.1
+      - uvicorn[standard]>=0.24.0
+      - pydantic>=2.5.0
+      - pydantic-settings>=2.1.0
+
+      # Database & Cache
+      - asyncpg>=0.29.0
+      - sqlalchemy>=2.0.23
+      - redis>=5.0.1
+
+      # Numerical Computing
+      - numpy>=1.26.2
+      - scipy>=1.11.4
+      - pandas>=2.1.3
+
+      # Combustion Calculations
+      - cantera>=3.0.0  # Chemical kinetics and thermodynamics
+      - CoolProp>=6.5.0  # Thermodynamic properties
+
+      # Industrial Protocols
+      - opcua>=0.98.13
+      - asyncua>=1.0.0
+      - pymodbus>=3.5.0
+
+      # Monitoring
+      - prometheus-client>=0.19.0
+
+      # Utilities
+      - python-dateutil>=2.8.2
+      - pytz>=2023.3
+      - pyyaml>=6.0.1
+
+    optional:
+      # Observability
+      - opentelemetry-api>=1.21.0
+      - opentelemetry-sdk>=1.21.0
+      - opentelemetry-exporter-otlp>=1.21.0
+
+      # Advanced Analytics
+      - matplotlib>=3.8.2
+      - seaborn>=0.13.0
+      - plotly>=5.18.0
+
+      # Reporting
+      - reportlab>=4.0.7
+      - openpyxl>=3.1.2
+
+      # Logging
+      - structlog>=23.2.0
+
+    development:
+      - pytest>=7.4.3
+      - pytest-asyncio>=0.21.1
+      - pytest-cov>=4.1.0
+      - black>=23.12.0
+      - ruff>=0.1.7
+      - mypy>=1.7.1
+
+  # ============================================================================
+  # RESOURCE REQUIREMENTS
+  # ============================================================================
+  resources:
+    cpu:
+      requests: "500m"
+      limits: "2000m"
+    memory:
+      requests: "1Gi"
+      limits: "2Gi"
+    storage: "20Gi"
+    gpu: false
+
+  # ============================================================================
+  # NETWORK PORTS
+  # ============================================================================
+  ports:
+    - name: http
+      port: 8080
+      protocol: TCP
+      description: "Main API endpoint"
+    - name: metrics
+      port: 9090
+      protocol: TCP
+      description: "Prometheus metrics endpoint"
+    - name: health
+      port: 8081
+      protocol: TCP
+      description: "Health check endpoint"
+
+  # ============================================================================
+  # INPUT SPECIFICATION
+  # ============================================================================
+  inputs:
+    - name: flue_gas_composition
+      type: object
+      required: true
+      description: "Real-time flue gas analyzer measurements"
+      schema:
+        combustion_unit_id:
+          type: string
+          description: "Unique identifier for combustion unit (boiler, furnace, etc.)"
+        timestamp:
+          type: string
+          format: datetime
+        oxygen_percent_dry:
+          type: number
+          range: [0.0, 21.0]
+          unit: "% dry basis"
+          description: "Oxygen concentration in dry flue gas"
+        carbon_dioxide_percent_dry:
+          type: number
+          range: [0.0, 20.0]
+          unit: "% dry basis"
+          description: "CO2 concentration in dry flue gas"
+        carbon_monoxide_ppm_dry:
+          type: number
+          range: [0.0, 10000.0]
+          unit: "ppm dry basis"
+          description: "CO concentration in dry flue gas"
+        nitrogen_oxides_ppm_dry:
+          type: number
+          range: [0.0, 1000.0]
+          unit: "ppm dry basis"
+          description: "NOx concentration (as NO2) in dry flue gas"
+        sulfur_dioxide_ppm_dry:
+          type: number
+          range: [0.0, 5000.0]
+          unit: "ppm dry basis"
+          description: "SO2 concentration in dry flue gas (if measured)"
+          required: false
+        total_hydrocarbons_ppm_dry:
+          type: number
+          range: [0.0, 1000.0]
+          unit: "ppm dry basis as CH4"
+          description: "Unburned hydrocarbons concentration"
+          required: false
+        stack_temperature_c:
+          type: number
+          range: [50.0, 800.0]
+          unit: "°C"
+          description: "Flue gas temperature at analyzer location"
+        stack_pressure_mbar:
+          type: number
+          unit: "mbar gauge"
+          description: "Draft pressure at stack (negative = draft)"
+          required: false
+        flue_gas_moisture_percent:
+          type: number
+          range: [0.0, 30.0]
+          unit: "% volume"
+          description: "Moisture content in flue gas"
+          required: false
+        opacity_percent:
+          type: number
+          range: [0.0, 100.0]
+          unit: "%"
+          description: "Visible opacity (if measured)"
+          required: false
+
+    - name: fuel_properties
+      type: object
+      required: true
+      description: "Fuel specification and properties"
+      schema:
+        combustion_unit_id:
+          type: string
+        fuel_type:
+          type: string
+          enum: [NATURAL_GAS, COAL, OIL_NO2, OIL_NO6, PROPANE, BUTANE, BIOMASS, SYNGAS, HYDROGEN, DIESEL, MULTI_FUEL]
+        fuel_flow_rate_kg_hr:
+          type: number
+          unit: "kg/hr"
+          description: "Fuel mass flow rate"
+          required: false
+        fuel_heating_value_mj_kg:
+          type: number
+          unit: "MJ/kg (HHV)"
+          description: "Higher heating value of fuel"
+        fuel_carbon_percent:
+          type: number
+          range: [0.0, 100.0]
+          unit: "% mass"
+          description: "Carbon content in fuel"
+          required: false
+        fuel_hydrogen_percent:
+          type: number
+          range: [0.0, 100.0]
+          unit: "% mass"
+          description: "Hydrogen content in fuel"
+          required: false
+        fuel_sulfur_percent:
+          type: number
+          range: [0.0, 10.0]
+          unit: "% mass"
+          description: "Sulfur content in fuel"
+          required: false
+        fuel_nitrogen_percent:
+          type: number
+          range: [0.0, 5.0]
+          unit: "% mass"
+          description: "Nitrogen content in fuel"
+          required: false
+        fuel_oxygen_percent:
+          type: number
+          range: [0.0, 50.0]
+          unit: "% mass"
+          description: "Oxygen content in fuel"
+          required: false
+        fuel_moisture_percent:
+          type: number
+          range: [0.0, 50.0]
+          unit: "% mass"
+          description: "Moisture content in fuel as fired"
+          required: false
+        fuel_ash_percent:
+          type: number
+          range: [0.0, 50.0]
+          unit: "% mass"
+          description: "Ash content in fuel"
+          required: false
+
+    - name: combustion_air_parameters
+      type: object
+      required: true
+      description: "Combustion air system parameters"
+      schema:
+        combustion_unit_id:
+          type: string
+        ambient_air_temperature_c:
+          type: number
+          unit: "°C"
+          description: "Combustion air inlet temperature"
+        ambient_air_pressure_mbar:
+          type: number
+          unit: "mbar absolute"
+          description: "Ambient barometric pressure"
+          default: 1013.25
+        ambient_air_humidity_percent:
+          type: number
+          range: [0.0, 100.0]
+          unit: "% relative humidity"
+          description: "Ambient air humidity"
+          default: 60.0
+        air_preheat_temperature_c:
+          type: number
+          unit: "°C"
+          description: "Air temperature after preheater (if applicable)"
+          required: false
+        forced_draft_fan_speed_percent:
+          type: number
+          range: [0.0, 100.0]
+          unit: "%"
+          description: "FD fan speed or damper position"
+          required: false
+        induced_draft_fan_speed_percent:
+          type: number
+          range: [0.0, 100.0]
+          unit: "%"
+          description: "ID fan speed or damper position"
+          required: false
+
+    - name: burner_operating_parameters
+      type: object
+      required: true
+      description: "Burner and combustion unit operational data"
+      schema:
+        combustion_unit_id:
+          type: string
+        firing_rate_mw:
+          type: number
+          unit: "MW thermal"
+          description: "Current thermal firing rate"
+        load_percent:
+          type: number
+          range: [0.0, 110.0]
+          unit: "% of MCR"
+          description: "Load as percentage of maximum continuous rating"
+        burner_count:
+          type: integer
+          description: "Number of burners in service"
+          required: false
+        burner_tilt_angle_deg:
+          type: number
+          range: [-30.0, 30.0]
+          unit: "degrees"
+          description: "Burner tilt (for tilting burners)"
+          required: false
+        flame_scanner_status:
+          type: string
+          enum: [GOOD, MARGINAL, POOR, FAULT]
+          description: "Flame detection system status"
+          required: false
+        atomizing_steam_pressure_bar:
+          type: number
+          unit: "bar gauge"
+          description: "Atomizing steam pressure (for oil burners)"
+          required: false
+
+    - name: combustion_unit_specifications
+      type: object
+      required: true
+      description: "Design specifications of combustion equipment"
+      schema:
+        combustion_unit_id:
+          type: string
+        unit_type:
+          type: string
+          enum: [BOILER_FIRETUBE, BOILER_WATERTUBE, FURNACE_PROCESS, FURNACE_MELTING, INCINERATOR, GAS_TURBINE, RECIPROCATING_ENGINE, DRYER, OVEN, OTHER]
+        rated_capacity_mw:
+          type: number
+          unit: "MW thermal"
+          description: "Maximum continuous rated thermal input"
+        design_efficiency_percent:
+          type: number
+          range: [60.0, 99.0]
+          unit: "%"
+          description: "Design thermal efficiency (HHV basis)"
+        commissioning_year:
+          type: integer
+          description: "Year of initial commissioning"
+          required: false
+        last_tune_date:
+          type: string
+          format: date
+          description: "Date of last combustion tune-up"
+          required: false
+        nox_limit_ppm:
+          type: number
+          unit: "ppm @ 3% O2 dry"
+          description: "Regulatory or permit NOx limit"
+          required: false
+        co_limit_ppm:
+          type: number
+          unit: "ppm @ 3% O2 dry"
+          description: "Regulatory or permit CO limit"
+          required: false
+        opacity_limit_percent:
+          type: number
+          unit: "%"
+          description: "Regulatory opacity limit"
+          required: false
+
+    - name: stack_monitoring_parameters
+      type: object
+      required: false
+      description: "Stack gas volumetric flow and velocity (if measured)"
+      schema:
+        combustion_unit_id:
+          type: string
+        stack_diameter_m:
+          type: number
+          unit: "m"
+          description: "Inside diameter of stack"
+        stack_gas_velocity_m_s:
+          type: number
+          unit: "m/s"
+          description: "Gas velocity at measurement point"
+        stack_volumetric_flow_nm3_hr:
+          type: number
+          unit: "Nm³/hr dry"
+          description: "Volumetric flow normalized to 0°C, 1 atm, dry"
+
+  # ============================================================================
+  # OUTPUT SPECIFICATION
+  # ============================================================================
+  outputs:
+    - name: combustion_efficiency_analysis
+      type: object
+      description: "Comprehensive combustion efficiency assessment"
+      schema:
+        combustion_unit_id:
+          type: string
+        timestamp:
+          type: string
+          format: datetime
+        thermal_efficiency_hhv_percent:
+          type: number
+          unit: "%"
+          description: "Overall thermal efficiency (HHV basis)"
+        thermal_efficiency_lhv_percent:
+          type: number
+          unit: "%"
+          description: "Overall thermal efficiency (LHV basis)"
+        heat_loss_dry_flue_gas_percent:
+          type: number
+          unit: "%"
+          description: "Heat loss via sensible heat in dry flue gas"
+        heat_loss_moisture_fuel_percent:
+          type: number
+          unit: "%"
+          description: "Heat loss via evaporation of moisture in fuel"
+        heat_loss_moisture_combustion_percent:
+          type: number
+          unit: "%"
+          description: "Heat loss via moisture from H2 combustion"
+        heat_loss_incomplete_combustion_percent:
+          type: number
+          unit: "%"
+          description: "Heat loss via incomplete combustion (CO, THC)"
+        heat_loss_radiation_convection_percent:
+          type: number
+          unit: "%"
+          description: "Heat loss via radiation and convection"
+        heat_loss_unaccounted_percent:
+          type: number
+          unit: "%"
+          description: "Unaccounted losses (closure error)"
+        efficiency_assessment:
+          type: string
+          enum: [EXCELLENT, GOOD, FAIR, POOR, CRITICAL]
+        efficiency_vs_baseline_percentage_points:
+          type: number
+          unit: "percentage points"
+          description: "Efficiency change vs. baseline or design"
+        provenance_hash:
+          type: string
+
+    - name: air_fuel_ratio_analysis
+      type: object
+      description: "Air-fuel ratio and excess air analysis"
+      schema:
+        combustion_unit_id:
+          type: string
+        timestamp:
+          type: string
+          format: datetime
+        excess_air_percent:
+          type: number
+          unit: "%"
+          description: "Excess air percentage above stoichiometric"
+        lambda_air_ratio:
+          type: number
+          description: "Actual air / stoichiometric air ratio"
+        stoichiometric_air_kg_per_kg_fuel:
+          type: number
+          unit: "kg air / kg fuel"
+          description: "Theoretical air requirement for complete combustion"
+        actual_air_kg_per_kg_fuel:
+          type: number
+          unit: "kg air / kg fuel"
+          description: "Actual air supplied per kg fuel"
+        recommended_o2_setpoint_percent:
+          type: number
+          range: [1.0, 8.0]
+          unit: "% dry"
+          description: "Optimal O2 setpoint for current conditions"
+        current_o2_deviation_percent:
+          type: number
+          unit: "percentage points"
+          description: "Current O2 - Optimal O2"
+        air_fuel_status:
+          type: string
+          enum: [OPTIMAL, EXCESS_AIR, INSUFFICIENT_AIR, CRITICAL_LOW_O2]
+        air_fuel_recommendation:
+          type: string
+          description: "Action to improve air-fuel ratio"
+        provenance_hash:
+          type: string
+
+    - name: emissions_analysis
+      type: object
+      description: "Emissions quantification and compliance status"
+      schema:
+        combustion_unit_id:
+          type: string
+        timestamp:
+          type: string
+          format: datetime
+        nox_ppm_at_3pct_o2:
+          type: number
+          unit: "ppm @ 3% O2 dry"
+          description: "NOx corrected to 3% O2 reference"
+        nox_lb_per_mmbtu:
+          type: number
+          unit: "lb/MMBtu"
+          description: "NOx emission rate"
+        nox_kg_per_hr:
+          type: number
+          unit: "kg/hr"
+          description: "NOx mass emission rate"
+        nox_compliance_status:
+          type: string
+          enum: [COMPLIANT, APPROACHING_LIMIT, NON_COMPLIANT, NO_LIMIT_SET]
+        co_ppm_at_3pct_o2:
+          type: number
+          unit: "ppm @ 3% O2 dry"
+          description: "CO corrected to 3% O2 reference"
+        co_lb_per_mmbtu:
+          type: number
+          unit: "lb/MMBtu"
+          description: "CO emission rate"
+        co_kg_per_hr:
+          type: number
+          unit: "kg/hr"
+          description: "CO mass emission rate"
+        co_compliance_status:
+          type: string
+          enum: [COMPLIANT, APPROACHING_LIMIT, NON_COMPLIANT, NO_LIMIT_SET]
+        co2_kg_per_hr:
+          type: number
+          unit: "kg/hr"
+          description: "CO2 mass emission rate"
+        co2_tonnes_per_year:
+          type: number
+          unit: "tonnes/year"
+          description: "Annualized CO2 emissions"
+        sox_kg_per_hr:
+          type: number
+          unit: "kg/hr"
+          description: "SOx mass emission rate (if measured)"
+          required: false
+        particulate_matter_kg_per_hr:
+          type: number
+          unit: "kg/hr"
+          description: "PM emission estimate (if measured/calculated)"
+          required: false
+        opacity_compliance_status:
+          type: string
+          enum: [COMPLIANT, NON_COMPLIANT, NOT_MEASURED]
+          required: false
+        overall_compliance_status:
+          type: string
+          enum: [FULLY_COMPLIANT, PARTIAL_COMPLIANCE, NON_COMPLIANT]
+        provenance_hash:
+          type: string
+
+    - name: burner_performance_diagnostics
+      type: object
+      description: "Burner condition and performance diagnostics"
+      schema:
+        combustion_unit_id:
+          type: string
+        timestamp:
+          type: string
+          format: datetime
+        combustion_quality_score:
+          type: number
+          range: [0, 100]
+          description: "Overall combustion quality (0=poor, 100=excellent)"
+        flame_quality_assessment:
+          type: string
+          enum: [EXCELLENT, GOOD, FAIR, POOR, CRITICAL]
+        incomplete_combustion_detected:
+          type: boolean
+          description: "True if high CO or THC indicates incomplete combustion"
+        fouling_detected:
+          type: boolean
+          description: "True if rising O2 at constant load suggests fouling"
+        burner_age_factor:
+          type: number
+          range: [0.0, 1.0]
+          description: "0=new, 1=end of life (based on age and performance)"
+        recommended_burner_actions:
+          type: array
+          items:
+            type: string
+          description: "List of recommended burner maintenance/tuning actions"
+        air_register_optimization:
+          type: object
+          properties:
+            current_position_percent:
+              type: number
+            recommended_position_percent:
+              type: number
+            expected_benefit:
+              type: string
+          required: false
+        damper_optimization:
+          type: object
+          properties:
+            fd_fan_current_percent:
+              type: number
+            fd_fan_recommended_percent:
+              type: number
+            id_fan_current_percent:
+              type: number
+            id_fan_recommended_percent:
+              type: number
+          required: false
+        provenance_hash:
+          type: string
+
+    - name: fuel_quality_assessment
+      type: object
+      description: "Fuel quality inference from combustion products"
+      schema:
+        combustion_unit_id:
+          type: string
+        timestamp:
+          type: string
+          format: datetime
+        inferred_fuel_heating_value_mj_kg:
+          type: number
+          unit: "MJ/kg (HHV)"
+          description: "Fuel HHV estimated from combustion analysis"
+        fuel_quality_deviation_percent:
+          type: number
+          unit: "%"
+          description: "Deviation from expected/contracted fuel quality"
+        fuel_quality_status:
+          type: string
+          enum: [ON_SPEC, OFF_SPEC_HIGH, OFF_SPEC_LOW, UNKNOWN]
+        estimated_moisture_percent:
+          type: number
+          unit: "% mass"
+          description: "Estimated fuel moisture from flue gas analysis"
+          required: false
+        fuel_consistency_score:
+          type: number
+          range: [0, 100]
+          description: "Fuel quality consistency (0=highly variable, 100=stable)"
+        fuel_switching_impact:
+          type: object
+          description: "Impact analysis if fuel type changed"
+          required: false
+          properties:
+            detected:
+              type: boolean
+            previous_fuel_type:
+              type: string
+            efficiency_impact_percent:
+              type: number
+            emissions_impact:
+              type: string
+        provenance_hash:
+          type: string
+
+    - name: optimization_recommendations
+      type: object
+      description: "Actionable recommendations to improve combustion performance"
+      schema:
+        combustion_unit_id:
+          type: string
+        timestamp:
+          type: string
+          format: datetime
+        priority_recommendations:
+          type: array
+          description: "Prioritized list of recommended actions"
+          items:
+            type: object
+            properties:
+              priority:
+                type: integer
+                description: "1=highest priority"
+              category:
+                type: string
+                enum: [EFFICIENCY, EMISSIONS, SAFETY, MAINTENANCE, FUEL]
+              action:
+                type: string
+                description: "Specific action to take"
+              expected_benefit:
+                type: string
+                description: "Expected improvement"
+              implementation_difficulty:
+                type: string
+                enum: [EASY, MODERATE, DIFFICULT]
+              estimated_cost:
+                type: string
+                enum: [LOW, MEDIUM, HIGH]
+        setpoint_adjustments:
+          type: object
+          description: "Recommended setpoint changes"
+          properties:
+            o2_setpoint_change_percent:
+              type: number
+            fuel_flow_adjustment_percent:
+              type: number
+            air_flow_adjustment_percent:
+              type: number
+            burner_tilt_adjustment_deg:
+              type: number
+        heat_recovery_opportunities:
+          type: array
+          items:
+            type: object
+            properties:
+              opportunity:
+                type: string
+              estimated_savings_mw:
+                type: number
+              payback_period_months:
+                type: number
+        provenance_hash:
+          type: string
+
+    - name: economic_analysis
+      type: object
+      description: "Economic impact of combustion performance"
+      schema:
+        combustion_unit_id:
+          type: string
+        timestamp:
+          type: string
+          format: datetime
+        current_fuel_cost_usd_per_hr:
+          type: number
+          unit: "USD/hr"
+          description: "Current fuel cost at current efficiency"
+        optimized_fuel_cost_usd_per_hr:
+          type: number
+          unit: "USD/hr"
+          description: "Fuel cost if operating at optimal efficiency"
+        potential_fuel_savings_usd_per_hr:
+          type: number
+          unit: "USD/hr"
+        potential_fuel_savings_usd_per_year:
+          type: number
+          unit: "USD/year"
+        emissions_penalty_cost_usd_per_year:
+          type: number
+          unit: "USD/year"
+          description: "Cost of emissions penalties/credits (if applicable)"
+          required: false
+        carbon_tax_cost_usd_per_year:
+          type: number
+          unit: "USD/year"
+          description: "Carbon tax cost at current emissions"
+          required: false
+        maintenance_cost_impact_usd_per_year:
+          type: number
+          unit: "USD/year"
+          description: "Maintenance cost change from optimization"
+          required: false
+        total_potential_savings_usd_per_year:
+          type: number
+          unit: "USD/year"
+        roi_months:
+          type: number
+          unit: "months"
+          description: "Payback period for optimization actions"
+        provenance_hash:
+          type: string
+
+    - name: performance_report
+      type: object
+      description: "Comprehensive combustion system performance summary"
+      schema:
+        combustion_unit_id:
+          type: string
+        report_period_start:
+          type: string
+          format: datetime
+        report_period_end:
+          type: string
+          format: datetime
+        average_efficiency_percent:
+          type: number
+          unit: "%"
+        average_excess_air_percent:
+          type: number
+          unit: "%"
+        average_nox_ppm_at_3pct_o2:
+          type: number
+          unit: "ppm @ 3% O2"
+        average_co_ppm_at_3pct_o2:
+          type: number
+          unit: "ppm @ 3% O2"
+        total_fuel_consumption_tonnes:
+          type: number
+          unit: "tonnes"
+        total_co2_emissions_tonnes:
+          type: number
+          unit: "tonnes"
+        compliance_violations_count:
+          type: integer
+        uptime_percent:
+          type: number
+          unit: "%"
+        performance_vs_baseline:
+          type: object
+          properties:
+            efficiency_change_percentage_points:
+              type: number
+            emissions_change_percent:
+              type: number
+            fuel_savings_tonnes:
+              type: number
+        kpi_summary:
+          type: object
+          properties:
+            efficiency_trend:
+              type: string
+              enum: [IMPROVING, STABLE, DEGRADING]
+            emissions_trend:
+              type: string
+              enum: [IMPROVING, STABLE, DEGRADING]
+            overall_health:
+              type: string
+              enum: [EXCELLENT, GOOD, FAIR, POOR, CRITICAL]
+        provenance_hash:
+          type: string
+
+  # ============================================================================
+  # INTEGRATIONS
+  # ============================================================================
+  integrations:
+    flue_gas_analyzers:
+      - name: ABB_AO2020
+        protocol: "Modbus TCP"
+        description: "ABB Continuous Gas Analyzer"
+        required: true
+      - name: Siemens_ULTRAMAT_23
+        protocol: "Modbus TCP / PROFIBUS"
+        description: "Siemens ULTRAMAT 23 Gas Analyzer"
+        required: false
+      - name: Emerson_Rosemount_X_STREAM
+        protocol: "Modbus TCP / OPC UA"
+        description: "Emerson X-STREAM Gas Analyzer"
+        required: false
+      - name: Yokogawa_TDLS8200
+        protocol: "Modbus TCP / HART"
+        description: "Yokogawa Tunable Diode Laser Spectrometer"
+        required: false
+
+    scada_dcs_systems:
+      - name: OPC_UA
+        protocol: "OPC UA"
+        description: "OPC UA SCADA/DCS integration"
+        required: true
+      - name: Modbus_TCP
+        protocol: "Modbus TCP"
+        description: "Modbus TCP SCADA integration"
+        required: false
+      - name: Honeywell_Experion
+        protocol: "OPC DA/UA"
+        description: "Honeywell Experion DCS"
+        required: false
+      - name: Emerson_DeltaV
+        protocol: "OPC DA/UA"
+        description: "Emerson DeltaV DCS"
+        required: false
+
+    cems_systems:
+      - name: Continuous_Emissions_Monitoring
+        protocol: "Modbus / OPC UA"
+        description: "CEMS for regulatory compliance reporting"
+        required: false
+
+    fuel_management:
+      - name: Fuel_Quality_Lab
+        protocol: "REST API"
+        description: "Laboratory fuel analysis system"
+        required: false
+      - name: Fuel_Supplier_API
+        protocol: "REST API"
+        description: "Fuel supplier quality certificates"
+        required: false
+
+    maintenance_systems:
+      - name: SAP_PM
+        protocol: "SAP RFC/BAPI"
+        description: "SAP Plant Maintenance"
+        required: false
+      - name: IBM_Maximo
+        protocol: "REST API"
+        description: "IBM Maximo Asset Management"
+        required: false
+
+    greenlang_agents:
+      - name: GL-001_THERMOSYNC
+        description: "Process heat orchestrator coordination"
+        required: false
+      - name: GL-002_BoilerEfficiency
+        description: "Boiler efficiency optimization coordination"
+        required: false
+      - name: GL-016_WATERGUARD
+        description: "Boiler water treatment coordination"
+        required: false
+      - name: GL-013_PREDICTMAINT
+        description: "Predictive maintenance for burners and analyzers"
+        required: false
+      - name: GL-019_STEAMMASTER
+        description: "Steam system optimization coordination"
+        required: false
+
+  # ============================================================================
+  # CAPABILITIES
+  # ============================================================================
+  capabilities:
+    flue_gas_analysis:
+      - oxygen_concentration_monitoring
+      - co2_concentration_monitoring
+      - co_concentration_monitoring
+      - nox_concentration_monitoring
+      - sox_concentration_monitoring
+      - thc_concentration_monitoring
+      - stack_temperature_monitoring
+      - moisture_content_analysis
+      - flue_gas_volumetric_flow_calculation
+
+    combustion_efficiency:
+      - thermal_efficiency_calculation_hhv
+      - thermal_efficiency_calculation_lhv
+      - heat_loss_dry_flue_gas
+      - heat_loss_moisture_fuel
+      - heat_loss_moisture_combustion
+      - heat_loss_incomplete_combustion
+      - heat_loss_radiation_convection
+      - stack_heat_recovery_assessment
+
+    air_fuel_optimization:
+      - excess_air_calculation
+      - stoichiometric_air_calculation
+      - lambda_calculation
+      - optimal_o2_setpoint_determination
+      - air_fuel_ratio_balancing
+      - combustion_air_preheating_optimization
+
+    emissions_management:
+      - nox_emissions_calculation
+      - co_emissions_calculation
+      - co2_emissions_quantification
+      - sox_emissions_calculation
+      - particulate_matter_estimation
+      - emissions_compliance_monitoring
+      - cems_validation
+
+    burner_diagnostics:
+      - combustion_quality_assessment
+      - burner_fouling_detection
+      - incomplete_combustion_diagnosis
+      - flame_quality_evaluation
+      - air_register_optimization
+      - damper_control_optimization
+      - burner_degradation_tracking
+
+    fuel_assessment:
+      - fuel_heating_value_estimation
+      - fuel_quality_deviation_detection
+      - fuel_composition_inference
+      - fuel_switching_impact_analysis
+      - fuel_moisture_estimation
+      - fuel_consistency_tracking
+
+    economic_optimization:
+      - fuel_cost_savings_calculation
+      - emissions_penalty_quantification
+      - carbon_tax_impact_analysis
+      - heat_recovery_payback_calculation
+      - total_cost_of_combustion_analysis
+
+    reporting:
+      - real_time_efficiency_dashboards
+      - emissions_compliance_reports
+      - trend_analysis_and_benchmarking
+      - optimization_opportunity_identification
+      - roi_tracking
+      - predictive_maintenance_alerts
+
+  # ============================================================================
+  # COMPLIANCE
+  # ============================================================================
+  compliance:
+    standards:
+      - standard: EPA_METHOD_19
+        version: "2023"
+        description: "EPA Method 19 - Determination of Sulfur Dioxide Removal Efficiency and Particulate Matter, Sulfur Dioxide, and Nitrogen Oxides Emission Rates"
+
+      - standard: ASME_PTC_4_1
+        version: "2013 (R2019)"
+        description: "ASME PTC 4.1 - Steam Generating Units"
+
+      - standard: ISO_12039
+        version: "2019"
+        description: "ISO 12039 - Stationary source emissions - Determination of carbon monoxide, carbon dioxide and oxygen - Performance characteristics and calibration of automated measuring systems"
+
+      - standard: ISO_50001
+        version: "2018"
+        description: "ISO 50001 - Energy Management Systems"
+
+      - standard: EN_15259
+        version: "2007"
+        description: "EN 15259 - Air quality - Measurement of stationary source emissions - Requirements for measurement sections and sites and for the measurement objective, plan and report"
+
+      - standard: NFPA_85
+        version: "2023"
+        description: "NFPA 85 - Boiler and Combustion Systems Hazards Code"
+
+      - standard: 40_CFR_PART_60
+        version: "2023"
+        description: "40 CFR Part 60 - Standards of Performance for New Stationary Sources (NSPS)"
+
+      - standard: EU_IED
+        version: "2010/75/EU"
+        description: "EU Industrial Emissions Directive"
+
+    audit_trail:
+      enabled: true
+      retention_days: 2555  # 7 years
+      provenance_tracking: true
+      hash_algorithm: SHA-256
+      immutable: true
+
+    zero_hallucination: true
+    deterministic_calculations: true
+
+    validation:
+      input_validation: true
+      output_validation: true
+      mass_balance_validation: true
+      energy_balance_validation: true
+      emissions_calculation_validation: true
+      regulatory_compliance_checks: true
+
+  # ============================================================================
+  # MONITORING
+  # ============================================================================
+  monitoring:
+    metrics_enabled: true
+    metrics_port: 9090
+    metrics_path: /metrics
+
+    dashboards:
+      - combustion_efficiency_overview
+      - flue_gas_composition_trends
+      - emissions_compliance_monitoring
+      - air_fuel_ratio_tracking
+      - burner_performance_diagnostics
+      - fuel_quality_monitoring
+      - economic_performance_tracking
+
+    alerts:
+      - name: critical_low_o2
+        condition: "oxygen_percent_dry < 1.5"
+        severity: critical
+        description: "Dangerously low O2 - risk of incomplete combustion"
+
+      - name: high_co_emissions
+        condition: "carbon_monoxide_ppm_dry > 400"
+        severity: critical
+        description: "High CO indicates incomplete combustion"
+
+      - name: nox_limit_exceeded
+        condition: "nox_ppm_at_3pct_o2 > nox_limit_ppm"
+        severity: high
+        description: "NOx emissions exceed permit limit"
+
+      - name: co_limit_exceeded
+        condition: "co_ppm_at_3pct_o2 > co_limit_ppm"
+        severity: high
+        description: "CO emissions exceed permit limit"
+
+      - name: efficiency_degradation
+        condition: "thermal_efficiency_hhv_percent < design_efficiency_percent - 3.0"
+        severity: medium
+        description: "Efficiency >3 points below design - tune required"
+
+      - name: excessive_excess_air
+        condition: "excess_air_percent > 50"
+        severity: medium
+        description: "Excessive excess air reducing efficiency"
+
+      - name: stack_temperature_high
+        condition: "stack_temperature_c > 350"
+        severity: medium
+        description: "High stack temperature - heat recovery opportunity"
+
+      - name: burner_fouling_detected
+        condition: "fouling_detected == true"
+        severity: medium
+        description: "Burner fouling detected - cleaning recommended"
+
+      - name: fuel_quality_deviation
+        condition: "fuel_quality_deviation_percent > 10"
+        severity: medium
+        description: "Fuel quality deviates >10% from specification"
+
+      - name: analyzer_offline
+        condition: "data_source_status == 'DISCONNECTED'"
+        severity: critical
+        description: "Flue gas analyzer offline"
+
+  # ============================================================================
+  # SECURITY
+  # ============================================================================
+  security:
+    authentication: oauth2
+    authorization: rbac
+    encryption: tls_1_3
+    secrets_management: kubernetes
+    api_key_required: true
+    audit_logging: true
+
+    roles:
+      - admin
+      - combustion_engineer
+      - operations_engineer
+      - environmental_engineer
+      - operator
+      - viewer
+
+  # ============================================================================
+  # DEPLOYMENT
+  # ============================================================================
+  deployment:
+    replicas: 3
+    strategy: rolling_update
+    max_surge: 1
+    max_unavailable: 0
+
+    health_check:
+      liveness:
+        path: /health/liveness
+        interval: 10s
+        timeout: 5s
+        failure_threshold: 3
+
+      readiness:
+        path: /health/readiness
+        interval: 5s
+        timeout: 3s
+        failure_threshold: 3
+
+    autoscaling:
+      enabled: true
+      min_replicas: 2
+      max_replicas: 10
+      target_cpu_percent: 70
+      target_memory_percent: 80
+
+  # ============================================================================
+  # DATA RETENTION
+  # ============================================================================
+  data_retention:
+    real_time_data:
+      retention_days: 90
+      compression: true
+      archive_to: s3
+
+    hourly_aggregates:
+      retention_days: 365
+      compression: true
+
+    daily_summaries:
+      retention_days: 2555  # 7 years for regulatory compliance
+      compression: true
+
+    optimization_results:
+      retention_days: 2555
+      immutable: true
+
+    audit_logs:
+      retention_days: 2555
+      immutable: true
+      encryption: true
+
+# ==============================================================================
+# AUTHOR & DOCUMENTATION
+# ==============================================================================
+authors:
+  - name: GreenLang AI Agent Factory
+    email: agents@greenlang.io
+
+repository: https://github.com/greenlang/agents/gl-018
+documentation: https://docs.greenlang.io/agents/gl-018
+changelog: https://github.com/greenlang/agents/gl-018/blob/main/CHANGELOG.md
+
+tags:
+  - combustion
+  - flue-gas
+  - emissions
+  - efficiency
+  - boiler
+  - furnace
+  - nox
+  - co
+  - epa
+  - asme
+  - iso-50001
+  - industrial
+  - deterministic
+  - zero-hallucination
+
+# ==============================================================================
+# BUSINESS METRICS
+# ==============================================================================
+business:
+  tam: "$4B"
+  target_date: "Q1 2026"
+  priority: P1
+
+  value_proposition:
+    - Improve combustion efficiency by 3-8%
+    - Reduce fuel consumption by 3-8%
+    - Reduce NOx emissions by 15-30%
+    - Reduce CO emissions by 50-80%
+    - Ensure continuous regulatory compliance
+    - Extend burner and equipment life
+    - Reduce unplanned downtime
+    - Lower carbon tax burden
+
+  target_customers:
+    - power_generation_plants
+    - industrial_boilers
+    - process_heating_facilities
+    - chemical_plants
+    - refineries
+    - pulp_and_paper_mills
+    - food_processing_plants
+    - incinerators
+    - cement_kilns
+    - glass_furnaces
+
+  use_cases:
+    - real_time_combustion_optimization
+    - emissions_compliance_monitoring
+    - burner_performance_diagnostics
+    - fuel_quality_monitoring
+    - combustion_tuning_guidance
+    - predictive_burner_maintenance
+    - cems_validation
+    - carbon_accounting
+
+  roi_metrics:
+    - metric: fuel_savings
+      target: 5
+      unit: percent
+      measurement_frequency: monthly
+
+    - metric: efficiency_improvement
+      target: 3
+      unit: percentage_points
+      measurement_frequency: monthly
+
+    - metric: nox_reduction
+      target: 20
+      unit: percent
+      measurement_frequency: monthly
+
+    - metric: co_reduction
+      target: 60
+      unit: percent
+      measurement_frequency: monthly
+
+    - metric: compliance_violations_reduction
+      target: 90
+      unit: percent
+      measurement_frequency: quarterly
+
+    - metric: payback_period
+      target: 18
+      unit: months
+
+    - metric: annual_savings_per_unit
+      target: 150000
+      unit: USD
+      per_unit: true
+
+# ==============================================================================
+# TECHNICAL SPECIFICATIONS
+# ==============================================================================
+technical:
+  architecture:
+    pattern: microservice
+    design: event_driven
+    messaging: async
+    state_management: stateless
+    data_persistence: postgresql
+
+  scalability:
+    horizontal: true
+    vertical: true
+    max_combustion_units_per_instance: 50
+    max_calculations_per_second: 500
+
+  reliability:
+    availability: 99.9
+    mtbf_hours: 8760  # 1 year
+    mttr_minutes: 30
+    data_loss_tolerance: zero
+
+  performance:
+    latency_p50_ms: 30
+    latency_p95_ms: 100
+    latency_p99_ms: 300
+    throughput_ops_per_second: 200
+
+  testing:
+    unit_test_coverage_percent: 90
+    integration_test_coverage_percent: 80
+    e2e_test_coverage_percent: 70
+    load_testing: required
+    chaos_testing: recommended
+
+# ==============================================================================
+# LICENSING & LEGAL
+# ==============================================================================
+legal:
+  license: Apache-2.0
+  copyright: "Copyright 2024 GreenLang AI"
+  patent_pending: false
+  export_control: EAR99
+
+  disclaimers:
+    - "This software is provided 'as is' without warranty"
+    - "Users are responsible for regulatory compliance"
+    - "Consult qualified combustion engineers for safety-critical applications"
+    - "Not certified for safety instrumented systems (SIS)"
+
+# ==============================================================================
+# VERSION HISTORY
+# ==============================================================================
+version_history:
+  - version: "1.0.0"
+    date: "2024-12-02"
+    status: production
+    changes:
+      - Initial production release
+      - Flue gas composition analysis
+      - Combustion efficiency calculations (EPA Method 19, ASME PTC 4.1)
+      - Air-fuel ratio optimization
+      - Emissions compliance monitoring
+      - Burner performance diagnostics
+      - Fuel quality assessment
+      - Economic analysis and ROI tracking
+    breaking_changes: []
+
+# ==============================================================================
+# ROADMAP
+# ==============================================================================
+roadmap:
+  - version: "1.1.0"
+    target_date: "Q3 2026"
+    features:
+      - AI-enhanced anomaly detection for combustion patterns
+      - Advanced CFD-based burner optimization
+      - Predictive emissions modeling
+      - Multi-fuel blend optimization
+      - Automated combustion tuning
+
+  - version: "1.2.0"
+    target_date: "Q4 2026"
+    features:
+      - Digital twin integration for combustion equipment
+      - Real-time CEMS data reconciliation
+      - Carbon capture integration readiness
+      - Hydrogen co-firing support
+      - Advanced heat recovery optimization
+
+  - version: "2.0.0"
+    target_date: "Q2 2027"
+    features:
+      - Autonomous combustion control mode
+      - Distributed combustion system optimization
+      - Blockchain-based emissions reporting
+      - IoT sensor mesh integration
+      - Edge computing deployment option

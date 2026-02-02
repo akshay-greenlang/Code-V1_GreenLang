@@ -1,0 +1,370 @@
+# GL-006 HEATRECLAIM - GreenLang Pack Configuration
+# Heat Recovery Maximizer Agent
+
+name: gl-006-heatreclaim
+version: 1.0.0
+description: |
+  Heat Recovery Maximizer Agent for industrial waste heat optimization.
+  Implements pinch analysis, heat exchanger network (HEN) synthesis,
+  exergy analysis, and multi-objective optimization with deterministic,
+  zero-hallucination calculations per thermodynamic standards.
+
+metadata:
+  agent_id: GL-006
+  agent_name: HEATRECLAIM
+  full_name: HeatRecoveryMaximizer
+  category: process_heat
+  tier: 1
+  status: production
+  program_value: "$12B"
+  readiness_score: 96
+
+  # Regulatory standards
+  standards:
+    - ASME PTC 4.3  # Air Heaters
+    - ASME PTC 4.4  # Gas Turbine Heat Recovery Steam Generators
+    - ISO 14414     # Pump System Energy Assessment
+    - ISO 50001     # Energy Management Systems
+    - API 660       # Shell and Tube Heat Exchangers
+
+  # Core methods
+  methods:
+    - Pinch Analysis
+    - Heat Exchanger Network (HEN) Synthesis
+    - Exergy Destruction Analysis
+    - LMTD/NTU Heat Exchanger Rating
+    - Multi-Objective Pareto Optimization
+    - SHAP/LIME Explainability
+    - Causal Inference
+    - Uncertainty Quantification
+
+  # GreenLang compliance
+  greenlang:
+    zero_hallucination: true
+    provenance_tracking: true
+    deterministic_calculations: true
+    audit_logging: true
+    fail_closed: true
+
+# Runtime configuration
+runtime:
+  language: python
+  python_version: ">=3.10"
+  entrypoint: core.orchestrator:HeatReclaimOrchestrator
+
+  # Resource requirements
+  resources:
+    cpu_min: "1000m"
+    cpu_max: "4000m"
+    memory_min: "1Gi"
+    memory_max: "8Gi"
+
+# Dependencies
+dependencies:
+  python:
+    # Core
+    - pydantic>=2.0.0
+    - fastapi>=0.100.0
+    - uvicorn>=0.22.0
+    - aiohttp>=3.8.0
+
+    # Numerical/Scientific
+    - numpy>=1.24.0
+    - scipy>=1.10.0
+    - pandas>=2.0.0
+
+    # Optimization
+    - pulp>=2.7.0
+    - cvxpy>=1.4.0
+    - pymoo>=0.6.0
+
+    # ML/Explainability
+    - scikit-learn>=1.2.0
+    - shap>=0.42.0
+    - lime>=0.2.0
+
+    # Thermodynamics
+    - CoolProp>=6.4.0
+    - iapws>=1.5.0
+
+    # Streaming
+    - aiokafka>=0.8.0
+
+    # Metrics
+    - prometheus-client>=0.17.0
+
+    # Visualization
+    - matplotlib>=3.7.0
+    - plotly>=5.15.0
+
+# Inputs (Policy Inputs)
+inputs:
+  heat_streams:
+    type: array
+    description: Hot and cold process streams for heat recovery
+    items:
+      type: object
+      properties:
+        stream_id:
+          type: string
+        stream_type:
+          type: string
+          enum: [hot, cold, utility_hot, utility_cold]
+        fluid_name:
+          type: string
+        T_supply_C:
+          type: number
+          range: [-200, 1500]
+        T_target_C:
+          type: number
+          range: [-200, 1500]
+        m_dot_kg_s:
+          type: number
+          range: [0, 10000]
+        Cp_kJ_kgK:
+          type: number
+          range: [0.1, 10]
+        phase:
+          type: string
+          enum: [liquid, gas, two_phase]
+
+  equipment_constraints:
+    type: object
+    description: Equipment and retrofit constraints
+    properties:
+      existing_exchangers:
+        type: array
+      max_new_exchangers:
+        type: integer
+      allowed_connections:
+        type: array
+
+  utility_costs:
+    type: object
+    description: Utility cost data
+    properties:
+      steam_cost_usd_gj:
+        type: number
+      electricity_cost_usd_kwh:
+        type: number
+      cooling_water_cost_usd_gj:
+        type: number
+      fuel_gas_cost_usd_gj:
+        type: number
+
+  optimization_config:
+    type: object
+    description: Optimization mode and objectives
+    properties:
+      mode:
+        type: string
+        enum: [minimize_utility, minimize_cost, minimize_exergy_loss, multi_objective]
+      delta_t_min_C:
+        type: number
+        range: [5, 50]
+      include_exergy:
+        type: boolean
+      include_uncertainty:
+        type: boolean
+
+# Outputs
+outputs:
+  pinch_analysis:
+    type: object
+    description: Pinch analysis results
+    properties:
+      pinch_temperature_C:
+        type: number
+      minimum_hot_utility_kW:
+        type: number
+      minimum_cold_utility_kW:
+        type: number
+      maximum_heat_recovery_kW:
+        type: number
+      calculation_hash:
+        type: string
+
+  hen_design:
+    type: object
+    description: Heat exchanger network design
+    properties:
+      exchangers:
+        type: array
+      total_heat_recovered_kW:
+        type: number
+      hot_utility_required_kW:
+        type: number
+      cold_utility_required_kW:
+        type: number
+      total_area_m2:
+        type: number
+      capital_cost_usd:
+        type: number
+
+  exergy_analysis:
+    type: object
+    description: Exergy destruction analysis
+    properties:
+      total_exergy_destruction_kW:
+        type: number
+      exergy_efficiency_percent:
+        type: number
+      exergy_by_exchanger:
+        type: array
+
+  pareto_results:
+    type: object
+    description: Multi-objective optimization Pareto frontier
+    properties:
+      pareto_points:
+        type: array
+      dominated_solutions:
+        type: integer
+      hypervolume:
+        type: number
+
+  economic_analysis:
+    type: object
+    description: Economic optimization results
+    properties:
+      total_annual_cost_usd:
+        type: number
+      utility_savings_usd_yr:
+        type: number
+      capex_usd:
+        type: number
+      payback_years:
+        type: number
+      npv_usd:
+        type: number
+      irr_percent:
+        type: number
+
+# Connectors
+connectors:
+  opcua:
+    type: opc_ua
+    description: OPC-UA for OT data ingestion
+    protocols:
+      - opc_ua
+    security:
+      certificate_required: true
+      network_segmentation: true
+
+  kafka:
+    type: kafka
+    description: Event streaming
+    topics:
+      - heatreclaim.streams.canonical
+      - heatreclaim.equipment.canonical
+      - heatreclaim.optimization.requests
+      - heatreclaim.optimization.results
+      - heatreclaim.reports.generated
+
+  graphql:
+    type: graphql
+    description: GraphQL API for results
+    entities:
+      - Stream
+      - Equipment
+      - HENDesign
+      - OptimizationRun
+      - ParetoPoint
+      - ExplainabilityReport
+
+  rest:
+    type: rest
+    description: REST API
+    endpoints:
+      - /health
+      - /streams
+      - /equipment
+      - /pinch
+      - /optimize
+      - /pareto
+      - /exergy
+      - /explain
+
+# Safety configuration
+safety:
+  constraints:
+    - tag: DELTA_T_MIN
+      min_value: 5.0
+      description: Minimum approach temperature (°C)
+
+    - tag: MAX_FILM_TEMPERATURE
+      max_value: 400.0
+      description: Maximum film temperature to prevent coking
+
+    - tag: ACID_DEW_POINT
+      min_value: 120.0
+      description: Minimum outlet temp to avoid acid condensation
+
+    - tag: MAX_PRESSURE_DROP
+      max_value: 50.0
+      description: Maximum allowable pressure drop (kPa)
+
+  thermal_safety:
+    coking_prevention: true
+    acid_dew_point_check: true
+    thermal_stress_limit: true
+    condensation_prevention: true
+
+# Monitoring
+monitoring:
+  metrics:
+    enabled: true
+    port: 9090
+    path: /metrics
+
+  health:
+    enabled: true
+    port: 8080
+    path: /health
+
+  alerting:
+    enabled: true
+    channels:
+      - type: log
+      - type: webhook
+        url: "${ALERT_WEBHOOK_URL}"
+
+# Audit configuration
+audit:
+  enabled: true
+  retention_days: 365
+  tamper_detection: true
+
+  events:
+    - optimization_started
+    - optimization_completed
+    - pinch_calculated
+    - hen_synthesized
+    - pareto_generated
+    - recommendation_approved
+    - setpoint_change
+
+# Deployment
+deployment:
+  replicas: 2
+
+  environment:
+    HEATRECLAIM_LOG_LEVEL: INFO
+    HEATRECLAIM_OPCUA_HOST: "${OPCUA_HOST}"
+    HEATRECLAIM_KAFKA_BROKERS: "${KAFKA_BROKERS}"
+    HEATRECLAIM_DB_CONNECTION: "${DATABASE_URL}"
+
+  health_check:
+    http_get:
+      path: /health
+      port: 8080
+    initial_delay_seconds: 30
+    period_seconds: 10
+
+  resources:
+    requests:
+      cpu: "1000m"
+      memory: "1Gi"
+    limits:
+      cpu: "4000m"
+      memory: "8Gi"

@@ -1,0 +1,2078 @@
+# GL-003: CSRD Reporting Agent Pack Specification
+# GreenLang Agent Factory - EU Corporate Sustainability Reporting Directive
+# Version: 1.0.0
+# Zero-Hallucination Guarantee: All assessments are deterministic and auditable
+
+schema_version: "2.0.0"
+
+pack:
+  id: gl-csrd-reporting-v1
+  name: CSRD Reporting Agent
+  description: |
+    Generate ESRS-compliant sustainability disclosures per EU Directive 2022/2464.
+    Supports complete CSRD/ESRS reporting with zero-hallucination deterministic assessments.
+
+    Features:
+    - Double materiality assessment (impact + financial materiality)
+    - Complete ESRS datapoint collection (ESRS 1-2, E1-E5, S1-S4, G1)
+    - Gap analysis against mandatory, phase-in, and optional disclosures
+    - iXBRL/ESEF report generation capability
+    - EFRAG taxonomy alignment
+    - Sector-specific standards support
+    - Complete provenance tracking for regulatory audits
+  version: "1.0.0"
+  author: GreenLang
+  license: Proprietary
+  category: sustainability-reporting
+  priority: P1-HIGH
+
+agents:
+  - id: csrd-reporting-agent
+    name: CSRD Reporting Agent
+    type: compliance-assessor
+    description: |
+      Generate ESRS-compliant sustainability disclosures per EU Directive 2022/2464.
+      Supports double materiality assessment and complete ESRS standards coverage.
+
+    inputs:
+      # Company Identification
+      - name: company_id
+        type: string
+        required: true
+        description: Unique company identifier
+        validation:
+          pattern: "^[A-Z]{2}-[A-Z0-9]+-[0-9]+$"
+
+      - name: company_name
+        type: string
+        required: false
+        default: ""
+        description: Company legal name
+
+      - name: lei_code
+        type: string
+        required: false
+        description: Legal Entity Identifier (ISO 17442)
+        validation:
+          pattern: "^[A-Z0-9]{20}$"
+
+      - name: reporting_year
+        type: integer
+        required: true
+        description: Reporting fiscal year (2024+)
+        validation:
+          minimum: 2024
+          maximum: 2100
+
+      - name: reporting_period_start
+        type: string
+        required: false
+        description: Start of reporting period (ISO 8601 date)
+        validation:
+          format: date
+
+      - name: reporting_period_end
+        type: string
+        required: false
+        description: End of reporting period (ISO 8601 date)
+        validation:
+          format: date
+
+      - name: company_size
+        type: string
+        required: false
+        default: "large"
+        description: Company size classification per CSRD Article 3
+        validation:
+          enum:
+            - large_pie    # Large public interest entity
+            - large        # Large company (2+ of: >250 employees, >50M revenue, >25M assets)
+            - sme          # Small/medium enterprise (listed)
+            - micro        # Micro enterprise
+
+      - name: sector
+        type: string
+        required: false
+        default: "general"
+        description: Industry sector for sector-specific standards
+        validation:
+          enum:
+            - oil_gas
+            - coal
+            - mining
+            - road_transport
+            - agriculture
+            - energy
+            - motor_vehicles
+            - food_beverages
+            - textiles
+            - financial_institutions
+            - general
+
+      - name: nace_codes
+        type: array
+        required: false
+        description: NACE activity codes (EU economic classification)
+        validation:
+          items:
+            type: string
+            pattern: "^[A-U][0-9]{2}(\\.[0-9]{1,2})?$"
+
+      # Double Materiality Assessments
+      - name: materiality_assessments
+        type: array
+        required: false
+        description: Double materiality assessments per ESRS topic
+        validation:
+          items:
+            type: object
+            properties:
+              topic:
+                type: string
+                enum: [E1, E2, E3, E4, E5, S1, S2, S3, S4, G1]
+              impact_materiality:
+                type: number
+                minimum: 0.0
+                maximum: 1.0
+              financial_materiality:
+                type: number
+                minimum: 0.0
+                maximum: 1.0
+              impact_threshold:
+                type: number
+                default: 0.5
+              financial_threshold:
+                type: number
+                default: 0.5
+            required: [topic, impact_materiality, financial_materiality]
+
+      # ESRS 2 Cross-Cutting Standards
+      - name: esrs2_governance
+        type: object
+        required: false
+        description: ESRS 2 Governance disclosures (GOV-1 to GOV-5)
+        validation:
+          properties:
+            board_sustainability_oversight:
+              type: boolean
+            board_sustainability_expertise:
+              type: integer
+              minimum: 0
+            sustainability_committee_exists:
+              type: boolean
+            board_sustainability_training_hours:
+              type: number
+              minimum: 0
+            sustainability_agenda_frequency:
+              type: integer
+              minimum: 0
+            material_topics_addressed:
+              type: array
+              items:
+                type: string
+            sustainability_incentives_board:
+              type: boolean
+            sustainability_incentives_management:
+              type: boolean
+            sustainability_kpis_in_incentives:
+              type: array
+              items:
+                type: string
+            due_diligence_statement:
+              type: string
+            due_diligence_standards_applied:
+              type: array
+              items:
+                type: string
+            sustainability_risk_management_process:
+              type: string
+            internal_controls_sustainability:
+              type: boolean
+          required: [board_sustainability_oversight]
+
+      - name: esrs2_strategy
+        type: object
+        required: false
+        description: ESRS 2 Strategy disclosures (SBM-1 to SBM-3)
+        validation:
+          properties:
+            business_model_description:
+              type: string
+            value_chain_description:
+              type: string
+            key_stakeholders:
+              type: array
+              items:
+                type: string
+            geographic_presence:
+              type: array
+              items:
+                type: string
+            revenue_by_segment:
+              type: object
+              additionalProperties:
+                type: number
+            stakeholder_engagement_process:
+              type: string
+            stakeholder_engagement_frequency:
+              type: string
+            material_topics_from_stakeholders:
+              type: array
+              items:
+                type: string
+            strategy_resilience:
+              type: string
+
+      - name: esrs2_iro
+        type: object
+        required: false
+        description: ESRS 2 Impact, Risk, Opportunity disclosures (IRO-1, IRO-2)
+        validation:
+          properties:
+            iro_identification_process:
+              type: string
+            iro_assessment_methodology:
+              type: string
+            value_chain_mapping:
+              type: boolean
+            sector_specific_guidance_used:
+              type: boolean
+            material_topics_disclosed:
+              type: array
+              items:
+                type: string
+            non_material_topics_explanation:
+              type: object
+              additionalProperties:
+                type: string
+
+      # E1 Climate Change
+      - name: e1_climate_data
+        type: object
+        required: false
+        description: E1 Climate change disclosures per ESRS E1
+        validation:
+          properties:
+            # E1-1 Transition plan
+            has_transition_plan:
+              type: boolean
+            transition_plan_aligned_to_15c:
+              type: boolean
+            transition_plan_targets:
+              type: array
+              items:
+                type: string
+            locked_in_emissions_explanation:
+              type: string
+            # E1-2 Policies
+            climate_policies:
+              type: array
+              items:
+                type: string
+            climate_policies_coverage:
+              type: string
+            # E1-3 Actions
+            climate_actions:
+              type: array
+            total_climate_investment_eur:
+              type: number
+              minimum: 0
+            # E1-4 Targets
+            sbti_commitment:
+              type: boolean
+            sbti_validated:
+              type: boolean
+            net_zero_target_year:
+              type: integer
+              minimum: 2024
+              maximum: 2100
+            interim_targets:
+              type: array
+            # E1-5 Energy
+            total_energy_consumption_mwh:
+              type: number
+              minimum: 0
+            renewable_energy_share_pct:
+              type: number
+              minimum: 0
+              maximum: 100
+            energy_intensity_revenue:
+              type: number
+              minimum: 0
+            fossil_fuel_consumption_mwh:
+              type: number
+              minimum: 0
+            # E1-6 GHG Emissions
+            scope1_emissions:
+              type: number
+              minimum: 0
+            scope2_emissions_location:
+              type: number
+              minimum: 0
+            scope2_emissions_market:
+              type: number
+              minimum: 0
+            scope3_emissions:
+              type: number
+              minimum: 0
+            scope3_categories:
+              type: object
+              additionalProperties:
+                type: number
+            total_emissions:
+              type: number
+              minimum: 0
+            ghg_intensity_revenue:
+              type: number
+              minimum: 0
+            # E1-7 Removals and carbon credits
+            ghg_removals_tco2e:
+              type: number
+              minimum: 0
+            carbon_credits_retired:
+              type: number
+              minimum: 0
+            carbon_credits_type:
+              type: string
+            # E1-8 Internal carbon pricing
+            internal_carbon_price:
+              type: number
+              minimum: 0
+            carbon_price_application:
+              type: string
+            # E1-9 Financial effects
+            physical_risk_financial_exposure_eur:
+              type: number
+              minimum: 0
+            transition_risk_financial_exposure_eur:
+              type: number
+              minimum: 0
+            climate_opportunity_revenue_eur:
+              type: number
+              minimum: 0
+
+      # E2 Pollution
+      - name: e2_pollution_data
+        type: object
+        required: false
+        description: E2 Pollution disclosures per ESRS E2
+        validation:
+          properties:
+            pollution_policies:
+              type: array
+              items:
+                type: string
+            pollution_prevention_approach:
+              type: string
+            pollution_actions:
+              type: array
+            pollution_targets:
+              type: array
+            air_pollutants_kg:
+              type: object
+              additionalProperties:
+                type: number
+            water_pollutants_kg:
+              type: object
+              additionalProperties:
+                type: number
+            soil_pollutants_kg:
+              type: object
+              additionalProperties:
+                type: number
+            pollutants_of_concern:
+              type: array
+              items:
+                type: string
+            substances_of_concern_tonnes:
+              type: number
+              minimum: 0
+            svhc_tonnes:
+              type: number
+              minimum: 0
+            pollution_remediation_provisions_eur:
+              type: number
+              minimum: 0
+            pollution_risk_exposure_eur:
+              type: number
+              minimum: 0
+
+      # E3 Water and Marine Resources
+      - name: e3_water_data
+        type: object
+        required: false
+        description: E3 Water and marine resources disclosures per ESRS E3
+        validation:
+          properties:
+            water_policies:
+              type: array
+              items:
+                type: string
+            water_actions:
+              type: array
+            water_targets:
+              type: array
+            total_water_withdrawal_m3:
+              type: number
+              minimum: 0
+            water_withdrawal_by_source:
+              type: object
+              additionalProperties:
+                type: number
+            water_consumption_m3:
+              type: number
+              minimum: 0
+            water_recycled_m3:
+              type: number
+              minimum: 0
+            water_stress_area_operations:
+              type: array
+              items:
+                type: string
+            water_intensity:
+              type: number
+              minimum: 0
+            water_risk_exposure_eur:
+              type: number
+              minimum: 0
+
+      # E4 Biodiversity and Ecosystems
+      - name: e4_biodiversity_data
+        type: object
+        required: false
+        description: E4 Biodiversity and ecosystems disclosures per ESRS E4
+        validation:
+          properties:
+            biodiversity_strategy:
+              type: string
+            nature_positive_commitment:
+              type: boolean
+            biodiversity_policies:
+              type: array
+              items:
+                type: string
+            biodiversity_actions:
+              type: array
+            biodiversity_investment_eur:
+              type: number
+              minimum: 0
+            biodiversity_targets:
+              type: array
+            no_net_loss_commitment:
+              type: boolean
+            sites_near_biodiversity_areas:
+              type: integer
+              minimum: 0
+            land_use_change_ha:
+              type: number
+            ecosystem_restoration_ha:
+              type: number
+              minimum: 0
+            species_at_risk_assessment:
+              type: boolean
+            biodiversity_risk_exposure_eur:
+              type: number
+              minimum: 0
+            nature_based_solutions_revenue_eur:
+              type: number
+              minimum: 0
+
+      # E5 Resource Use and Circular Economy
+      - name: e5_circular_economy_data
+        type: object
+        required: false
+        description: E5 Circular economy disclosures per ESRS E5
+        validation:
+          properties:
+            circular_economy_policies:
+              type: array
+              items:
+                type: string
+            circular_economy_actions:
+              type: array
+            circular_economy_targets:
+              type: array
+            waste_reduction_target_pct:
+              type: number
+              minimum: 0
+              maximum: 100
+            recycled_content_target_pct:
+              type: number
+              minimum: 0
+              maximum: 100
+            total_material_inflows_tonnes:
+              type: number
+              minimum: 0
+            renewable_materials_tonnes:
+              type: number
+              minimum: 0
+            recycled_materials_tonnes:
+              type: number
+              minimum: 0
+            recycled_content_pct:
+              type: number
+              minimum: 0
+              maximum: 100
+            critical_raw_materials_tonnes:
+              type: number
+              minimum: 0
+            total_waste_tonnes:
+              type: number
+              minimum: 0
+            hazardous_waste_tonnes:
+              type: number
+              minimum: 0
+            waste_recycled_tonnes:
+              type: number
+              minimum: 0
+            waste_landfilled_tonnes:
+              type: number
+              minimum: 0
+            waste_incinerated_tonnes:
+              type: number
+              minimum: 0
+            products_designed_for_circularity_pct:
+              type: number
+              minimum: 0
+              maximum: 100
+            circular_economy_revenue_eur:
+              type: number
+              minimum: 0
+            resource_efficiency_savings_eur:
+              type: number
+              minimum: 0
+
+      # S1 Own Workforce
+      - name: s1_workforce_data
+        type: object
+        required: false
+        description: S1 Own workforce disclosures per ESRS S1
+        validation:
+          properties:
+            workforce_policies:
+              type: array
+              items:
+                type: string
+            human_rights_policy:
+              type: boolean
+            non_discrimination_policy:
+              type: boolean
+            worker_engagement_process:
+              type: string
+            worker_representatives_consultation:
+              type: boolean
+            grievance_mechanism:
+              type: boolean
+            grievance_cases_filed:
+              type: integer
+              minimum: 0
+            grievance_cases_resolved:
+              type: integer
+              minimum: 0
+            workforce_actions:
+              type: array
+            workforce_targets:
+              type: array
+            total_employees:
+              type: integer
+              minimum: 0
+            employees_by_gender:
+              type: object
+              additionalProperties:
+                type: integer
+            employees_by_country:
+              type: object
+              additionalProperties:
+                type: integer
+            employees_permanent:
+              type: integer
+              minimum: 0
+            employees_temporary:
+              type: integer
+              minimum: 0
+            employees_full_time:
+              type: integer
+              minimum: 0
+            employees_part_time:
+              type: integer
+              minimum: 0
+            employee_turnover_rate:
+              type: number
+              minimum: 0
+              maximum: 100
+            non_employee_workers:
+              type: integer
+              minimum: 0
+            contractors:
+              type: integer
+              minimum: 0
+            collective_bargaining_coverage_pct:
+              type: number
+              minimum: 0
+              maximum: 100
+            works_council_exists:
+              type: boolean
+            gender_diversity_board_pct:
+              type: number
+              minimum: 0
+              maximum: 100
+            gender_diversity_management_pct:
+              type: number
+              minimum: 0
+              maximum: 100
+            age_distribution:
+              type: object
+              additionalProperties:
+                type: number
+            living_wage_compliance_pct:
+              type: number
+              minimum: 0
+              maximum: 100
+            lowest_wage_ratio_to_minimum:
+              type: number
+              minimum: 0
+            social_protection_coverage_pct:
+              type: number
+              minimum: 0
+              maximum: 100
+            parental_leave_policy:
+              type: boolean
+            employees_with_disabilities:
+              type: integer
+              minimum: 0
+            disability_inclusion_program:
+              type: boolean
+            training_hours_per_employee:
+              type: number
+              minimum: 0
+            training_investment_per_employee_eur:
+              type: number
+              minimum: 0
+            skills_development_programs:
+              type: array
+              items:
+                type: string
+            work_related_fatalities:
+              type: integer
+              minimum: 0
+            recordable_work_related_injuries:
+              type: integer
+              minimum: 0
+            lost_time_injury_rate:
+              type: number
+              minimum: 0
+            occupational_illness_cases:
+              type: integer
+              minimum: 0
+            health_safety_management_system:
+              type: boolean
+            flexible_working_arrangements:
+              type: boolean
+            parental_leave_taken_days:
+              type: number
+              minimum: 0
+            family_leave_return_rate_pct:
+              type: number
+              minimum: 0
+              maximum: 100
+            gender_pay_gap_pct:
+              type: number
+            ceo_to_median_pay_ratio:
+              type: number
+              minimum: 0
+            discrimination_incidents:
+              type: integer
+              minimum: 0
+            harassment_incidents:
+              type: integer
+              minimum: 0
+            human_rights_violations:
+              type: integer
+              minimum: 0
+            fines_penalties_workforce_eur:
+              type: number
+              minimum: 0
+
+      # S2 Workers in Value Chain
+      - name: s2_value_chain_data
+        type: object
+        required: false
+        description: S2 Value chain workers disclosures per ESRS S2
+        validation:
+          properties:
+            value_chain_worker_policies:
+              type: array
+              items:
+                type: string
+            supplier_code_of_conduct:
+              type: boolean
+            value_chain_engagement_process:
+              type: string
+            supplier_grievance_mechanism:
+              type: boolean
+            value_chain_actions:
+              type: array
+            value_chain_targets:
+              type: array
+            suppliers_assessed:
+              type: integer
+              minimum: 0
+            suppliers_audited_pct:
+              type: number
+              minimum: 0
+              maximum: 100
+            critical_suppliers_with_issues:
+              type: integer
+              minimum: 0
+            child_labor_incidents:
+              type: integer
+              minimum: 0
+            forced_labor_incidents:
+              type: integer
+              minimum: 0
+
+      # S3 Affected Communities
+      - name: s3_communities_data
+        type: object
+        required: false
+        description: S3 Affected communities disclosures per ESRS S3
+        validation:
+          properties:
+            community_policies:
+              type: array
+              items:
+                type: string
+            free_prior_informed_consent_policy:
+              type: boolean
+            community_engagement_process:
+              type: string
+            indigenous_communities_engaged:
+              type: integer
+              minimum: 0
+            community_grievance_mechanism:
+              type: boolean
+            community_actions:
+              type: array
+            community_investment_eur:
+              type: number
+              minimum: 0
+            community_targets:
+              type: array
+            community_incidents:
+              type: integer
+              minimum: 0
+            land_rights_disputes:
+              type: integer
+              minimum: 0
+            resettlement_cases:
+              type: integer
+              minimum: 0
+
+      # S4 Consumers and End-Users
+      - name: s4_consumers_data
+        type: object
+        required: false
+        description: S4 Consumers and end-users disclosures per ESRS S4
+        validation:
+          properties:
+            consumer_policies:
+              type: array
+              items:
+                type: string
+            product_safety_policy:
+              type: boolean
+            data_privacy_policy:
+              type: boolean
+            consumer_engagement_process:
+              type: string
+            consumer_complaint_mechanism:
+              type: boolean
+            consumer_complaints_received:
+              type: integer
+              minimum: 0
+            consumer_complaints_resolved:
+              type: integer
+              minimum: 0
+            consumer_actions:
+              type: array
+            consumer_targets:
+              type: array
+            product_recalls:
+              type: integer
+              minimum: 0
+            product_safety_incidents:
+              type: integer
+              minimum: 0
+            data_breaches:
+              type: integer
+              minimum: 0
+            consumer_fines_eur:
+              type: number
+              minimum: 0
+
+      # G1 Business Conduct
+      - name: g1_governance_data
+        type: object
+        required: false
+        description: G1 Business conduct disclosures per ESRS G1
+        validation:
+          properties:
+            code_of_conduct:
+              type: boolean
+            code_of_conduct_coverage_pct:
+              type: number
+              minimum: 0
+              maximum: 100
+            ethics_training_pct:
+              type: number
+              minimum: 0
+              maximum: 100
+            corporate_culture_description:
+              type: string
+            supplier_due_diligence_process:
+              type: string
+            supplier_code_adoption_pct:
+              type: number
+              minimum: 0
+              maximum: 100
+            supplier_assessment_coverage_pct:
+              type: number
+              minimum: 0
+              maximum: 100
+            anti_corruption_policy:
+              type: boolean
+            anti_corruption_training_pct:
+              type: number
+              minimum: 0
+              maximum: 100
+            whistleblower_mechanism:
+              type: boolean
+            whistleblower_reports:
+              type: integer
+              minimum: 0
+            bribery_risk_assessment:
+              type: boolean
+            corruption_incidents:
+              type: integer
+              minimum: 0
+            bribery_incidents:
+              type: integer
+              minimum: 0
+            corruption_fines_eur:
+              type: number
+              minimum: 0
+            employees_dismissed_corruption:
+              type: integer
+              minimum: 0
+            political_contributions_eur:
+              type: number
+              minimum: 0
+            lobbying_expenditure_eur:
+              type: number
+              minimum: 0
+            trade_association_memberships:
+              type: array
+              items:
+                type: string
+            political_engagement_policy:
+              type: boolean
+            payment_terms_days:
+              type: integer
+              minimum: 0
+            late_payments_pct:
+              type: number
+              minimum: 0
+              maximum: 100
+            average_payment_delay_days:
+              type: number
+              minimum: 0
+
+    outputs:
+      - name: company_id
+        type: string
+        description: Company identifier
+
+      - name: company_name
+        type: string
+        description: Company name
+
+      - name: reporting_year
+        type: integer
+        description: Reporting year
+
+      - name: assessment_timestamp
+        type: string
+        description: Assessment timestamp (ISO 8601)
+
+      - name: total_datapoints
+        type: integer
+        description: Total ESRS datapoints applicable
+
+      - name: filled_datapoints
+        type: integer
+        description: Datapoints with values provided
+
+      - name: mandatory_datapoints
+        type: integer
+        description: Mandatory datapoints count
+
+      - name: mandatory_filled
+        type: integer
+        description: Mandatory datapoints filled
+
+      - name: completeness_score
+        type: float
+        description: Overall completeness percentage (0-100)
+
+      - name: mandatory_completeness
+        type: float
+        description: Mandatory completeness percentage (0-100)
+
+      - name: material_topics
+        type: array
+        description: List of material ESRS topics
+
+      - name: materiality_assessments
+        type: array
+        description: Double materiality assessment results
+
+      - name: compliance_by_standard
+        type: object
+        description: Compliance metrics per ESRS standard
+
+      - name: gap_analysis
+        type: array
+        description: Detailed gap analysis items
+
+      - name: critical_gaps
+        type: array
+        description: Critical mandatory gaps requiring attention
+
+      - name: e1_summary
+        type: object
+        description: E1 Climate metrics summary
+
+      - name: environmental_summary
+        type: object
+        description: Environmental pillar summary (E1-E5)
+
+      - name: social_summary
+        type: object
+        description: Social pillar summary (S1-S4)
+
+      - name: governance_summary
+        type: object
+        description: Governance pillar summary (G1)
+
+      - name: assurance_level
+        type: string
+        description: Required assurance level (limited/reasonable)
+
+      - name: assurance_scope
+        type: array
+        description: Standards in assurance scope
+
+      - name: esef_report
+        type: object
+        description: ESEF/iXBRL formatted report output
+
+      - name: provenance_hash
+        type: string
+        description: SHA-256 provenance hash for audit trail
+
+      - name: calculation_steps
+        type: array
+        description: Calculation audit trail
+
+      - name: processing_time_ms
+        type: float
+        description: Processing duration in milliseconds
+
+    tools:
+      - materiality_assessor
+      - esrs_datapoint_collector
+      - gap_analyzer
+      - esef_generator
+      - provenance_hasher
+
+metadata:
+  regulatory:
+    standards:
+      - "EU Directive 2022/2464 (CSRD)"
+      - "EU Delegated Act 2023/2772 (ESRS)"
+      - "EFRAG ESRS Set 1"
+      - "European Single Electronic Format (ESEF)"
+    jurisdictions:
+      - EU
+      - EEA
+    effective_dates:
+      wave1_large_pie: "2024-01-01"
+      wave2_large: "2025-01-01"
+      wave3_listed_sme: "2026-01-01"
+      wave4_non_eu: "2028-01-01"
+
+  esrs_standards:
+    - id: ESRS_1
+      name: "General Requirements"
+      type: cross_cutting
+    - id: ESRS_2
+      name: "General Disclosures"
+      type: cross_cutting
+    - id: E1
+      name: "Climate Change"
+      type: environmental
+    - id: E2
+      name: "Pollution"
+      type: environmental
+    - id: E3
+      name: "Water and Marine Resources"
+      type: environmental
+    - id: E4
+      name: "Biodiversity and Ecosystems"
+      type: environmental
+    - id: E5
+      name: "Resource Use and Circular Economy"
+      type: environmental
+    - id: S1
+      name: "Own Workforce"
+      type: social
+    - id: S2
+      name: "Workers in Value Chain"
+      type: social
+    - id: S3
+      name: "Affected Communities"
+      type: social
+    - id: S4
+      name: "Consumers and End-Users"
+      type: social
+    - id: G1
+      name: "Business Conduct"
+      type: governance
+
+  disclosure_types:
+    - mandatory      # Always required
+    - phase_in       # Subject to phase-in provisions
+    - conditional    # Required if topic is material
+    - voluntary      # Optional disclosure
+
+  materiality_thresholds:
+    high: 0.8
+    medium: 0.5
+    low: 0.3
+
+tools:
+  - id: materiality_assessor
+    name: Double Materiality Assessor
+    description: "Assess double materiality per ESRS 1 Chapter 3"
+    type: deterministic
+    safe: true
+    cache_enabled: true
+    cache_ttl: 3600
+    input_schema:
+      type: object
+      properties:
+        topic:
+          type: string
+          description: "ESRS topic to assess"
+        impact_materiality:
+          type: number
+          description: "Impact on people/environment (0-1)"
+        financial_materiality:
+          type: number
+          description: "Financial impact on company (0-1)"
+        impact_threshold:
+          type: number
+          default: 0.5
+        financial_threshold:
+          type: number
+          default: 0.5
+      required: ["topic", "impact_materiality", "financial_materiality"]
+    output_schema:
+      type: object
+      properties:
+        is_material:
+          type: boolean
+          description: "Whether topic is material"
+        is_impact_material:
+          type: boolean
+        is_financially_material:
+          type: boolean
+        materiality_level:
+          type: string
+          enum: ["high", "medium", "low", "not_material"]
+        combined_score:
+          type: number
+      required: ["is_material", "materiality_level"]
+
+  - id: esrs_datapoint_collector
+    name: ESRS Datapoint Collector
+    description: "Collect and validate ESRS disclosure datapoints"
+    type: deterministic
+    safe: true
+    input_schema:
+      type: object
+      properties:
+        standard:
+          type: string
+          description: "ESRS standard identifier"
+        data:
+          type: object
+          description: "Standard-specific data"
+        company_size:
+          type: string
+        reporting_year:
+          type: integer
+      required: ["standard", "data"]
+    output_schema:
+      type: object
+      properties:
+        datapoints:
+          type: array
+          description: "Collected datapoints"
+        total_count:
+          type: integer
+        filled_count:
+          type: integer
+        completeness_pct:
+          type: number
+      required: ["datapoints", "total_count", "filled_count"]
+
+  - id: gap_analyzer
+    name: Gap Analyzer
+    description: "Analyze gaps in ESRS disclosure compliance"
+    type: deterministic
+    safe: true
+    input_schema:
+      type: object
+      properties:
+        datapoints:
+          type: array
+          description: "Collected datapoints to analyze"
+        company_size:
+          type: string
+        reporting_year:
+          type: integer
+        material_topics:
+          type: array
+      required: ["datapoints", "company_size", "reporting_year"]
+    output_schema:
+      type: object
+      properties:
+        gaps:
+          type: array
+          description: "Identified gaps"
+        critical_gaps:
+          type: array
+        recommendations:
+          type: array
+        compliance_score:
+          type: number
+      required: ["gaps", "critical_gaps"]
+
+  - id: esef_generator
+    name: ESEF Report Generator
+    description: "Generate European Single Electronic Format reports"
+    type: deterministic
+    safe: true
+    input_schema:
+      type: object
+      properties:
+        company_id:
+          type: string
+        reporting_year:
+          type: integer
+        datapoints:
+          type: array
+        taxonomy_version:
+          type: string
+          default: "ESRS_2024"
+      required: ["company_id", "reporting_year", "datapoints"]
+    output_schema:
+      type: object
+      properties:
+        report_id:
+          type: string
+        xhtml_content:
+          type: string
+        xbrl_tags:
+          type: array
+        validation_status:
+          type: string
+        validation_errors:
+          type: array
+      required: ["report_id", "validation_status"]
+
+  - id: provenance_hasher
+    name: Provenance Hasher
+    description: "Calculate SHA-256 provenance hash for audit trail"
+    type: deterministic
+    safe: true
+    input_schema:
+      type: object
+      properties:
+        calculation_steps:
+          type: array
+          description: "List of calculation steps"
+        agent_id:
+          type: string
+        agent_version:
+          type: string
+      required: ["calculation_steps", "agent_id", "agent_version"]
+    output_schema:
+      type: object
+      properties:
+        hash:
+          type: string
+          pattern: "^[a-f0-9]{64}$"
+        timestamp:
+          type: string
+          format: date-time
+      required: ["hash", "timestamp"]
+
+reference_data:
+  # ESRS Disclosure Requirements Database
+  esrs_disclosure_requirements:
+    ESRS_1:
+      - id: "ESRS1-BP-1"
+        dr: "BP-1"
+        name: "General basis for preparation"
+        type: mandatory
+      - id: "ESRS1-BP-2"
+        dr: "BP-2"
+        name: "Disclosures in relation to specific circumstances"
+        type: mandatory
+
+    ESRS_2:
+      - id: "ESRS2-GOV-1"
+        dr: "GOV-1"
+        name: "Role of administrative, management and supervisory bodies"
+        type: mandatory
+      - id: "ESRS2-GOV-2"
+        dr: "GOV-2"
+        name: "Information provided to and sustainability matters addressed"
+        type: mandatory
+      - id: "ESRS2-GOV-3"
+        dr: "GOV-3"
+        name: "Integration of sustainability in incentive schemes"
+        type: mandatory
+      - id: "ESRS2-GOV-4"
+        dr: "GOV-4"
+        name: "Statement on due diligence"
+        type: mandatory
+      - id: "ESRS2-GOV-5"
+        dr: "GOV-5"
+        name: "Risk management and internal controls"
+        type: mandatory
+      - id: "ESRS2-SBM-1"
+        dr: "SBM-1"
+        name: "Strategy, business model and value chain"
+        type: mandatory
+      - id: "ESRS2-SBM-2"
+        dr: "SBM-2"
+        name: "Interests and views of stakeholders"
+        type: mandatory
+      - id: "ESRS2-SBM-3"
+        dr: "SBM-3"
+        name: "Material impacts, risks and opportunities"
+        type: mandatory
+      - id: "ESRS2-IRO-1"
+        dr: "IRO-1"
+        name: "Description of processes to identify and assess material IROs"
+        type: mandatory
+      - id: "ESRS2-IRO-2"
+        dr: "IRO-2"
+        name: "Disclosure requirements in ESRS covered by sustainability statement"
+        type: mandatory
+      - id: "ESRS2-MDR-P"
+        dr: "MDR-P"
+        name: "Policies adopted to manage material sustainability matters"
+        type: mandatory
+      - id: "ESRS2-MDR-A"
+        dr: "MDR-A"
+        name: "Actions and resources in relation to material sustainability matters"
+        type: mandatory
+      - id: "ESRS2-MDR-M"
+        dr: "MDR-M"
+        name: "Metrics in relation to material sustainability matters"
+        type: mandatory
+      - id: "ESRS2-MDR-T"
+        dr: "MDR-T"
+        name: "Tracking effectiveness of policies and actions through targets"
+        type: mandatory
+
+    E1:
+      - id: "E1-1"
+        dr: "E1-1"
+        name: "Transition plan for climate change mitigation"
+        type: conditional
+      - id: "E1-2"
+        dr: "E1-2"
+        name: "Policies related to climate change mitigation and adaptation"
+        type: conditional
+      - id: "E1-3"
+        dr: "E1-3"
+        name: "Actions and resources in relation to climate change policies"
+        type: conditional
+      - id: "E1-4"
+        dr: "E1-4"
+        name: "Targets related to climate change mitigation and adaptation"
+        type: conditional
+      - id: "E1-5"
+        dr: "E1-5"
+        name: "Energy consumption and mix"
+        type: conditional
+      - id: "E1-6"
+        dr: "E1-6"
+        name: "Gross Scopes 1, 2, 3 and Total GHG emissions"
+        type: conditional
+        phase_in: 2025
+      - id: "E1-7"
+        dr: "E1-7"
+        name: "GHG removals and GHG mitigation projects financed through carbon credits"
+        type: conditional
+      - id: "E1-8"
+        dr: "E1-8"
+        name: "Internal carbon pricing"
+        type: conditional
+      - id: "E1-9"
+        dr: "E1-9"
+        name: "Anticipated financial effects from material physical and transition risks"
+        type: phase_in
+        phase_in: 2026
+
+    E2:
+      - id: "E2-1"
+        dr: "E2-1"
+        name: "Policies related to pollution"
+        type: conditional
+      - id: "E2-2"
+        dr: "E2-2"
+        name: "Actions and resources related to pollution"
+        type: conditional
+      - id: "E2-3"
+        dr: "E2-3"
+        name: "Targets related to pollution"
+        type: conditional
+      - id: "E2-4"
+        dr: "E2-4"
+        name: "Pollution of air, water and soil"
+        type: conditional
+      - id: "E2-5"
+        dr: "E2-5"
+        name: "Substances of concern and substances of very high concern"
+        type: conditional
+      - id: "E2-6"
+        dr: "E2-6"
+        name: "Anticipated financial effects from pollution-related impacts"
+        type: phase_in
+        phase_in: 2026
+
+    E3:
+      - id: "E3-1"
+        dr: "E3-1"
+        name: "Policies related to water and marine resources"
+        type: conditional
+      - id: "E3-2"
+        dr: "E3-2"
+        name: "Actions and resources related to water and marine resources"
+        type: conditional
+      - id: "E3-3"
+        dr: "E3-3"
+        name: "Targets related to water and marine resources"
+        type: conditional
+      - id: "E3-4"
+        dr: "E3-4"
+        name: "Water consumption"
+        type: conditional
+      - id: "E3-5"
+        dr: "E3-5"
+        name: "Anticipated financial effects from water and marine resources impacts"
+        type: phase_in
+        phase_in: 2026
+
+    E4:
+      - id: "E4-1"
+        dr: "E4-1"
+        name: "Transition plan and consideration of biodiversity in strategy"
+        type: conditional
+      - id: "E4-2"
+        dr: "E4-2"
+        name: "Policies related to biodiversity and ecosystems"
+        type: conditional
+      - id: "E4-3"
+        dr: "E4-3"
+        name: "Actions and resources related to biodiversity and ecosystems"
+        type: conditional
+      - id: "E4-4"
+        dr: "E4-4"
+        name: "Targets related to biodiversity and ecosystems"
+        type: conditional
+      - id: "E4-5"
+        dr: "E4-5"
+        name: "Impact metrics related to biodiversity and ecosystems change"
+        type: conditional
+      - id: "E4-6"
+        dr: "E4-6"
+        name: "Anticipated financial effects from biodiversity impacts"
+        type: phase_in
+        phase_in: 2026
+
+    E5:
+      - id: "E5-1"
+        dr: "E5-1"
+        name: "Policies related to resource use and circular economy"
+        type: conditional
+      - id: "E5-2"
+        dr: "E5-2"
+        name: "Actions and resources related to resource use and circular economy"
+        type: conditional
+      - id: "E5-3"
+        dr: "E5-3"
+        name: "Targets related to resource use and circular economy"
+        type: conditional
+      - id: "E5-4"
+        dr: "E5-4"
+        name: "Resource inflows"
+        type: conditional
+      - id: "E5-5"
+        dr: "E5-5"
+        name: "Resource outflows"
+        type: conditional
+      - id: "E5-6"
+        dr: "E5-6"
+        name: "Anticipated financial effects from resource use and circular economy"
+        type: phase_in
+        phase_in: 2026
+
+    S1:
+      - id: "S1-1"
+        dr: "S1-1"
+        name: "Policies related to own workforce"
+        type: conditional
+      - id: "S1-2"
+        dr: "S1-2"
+        name: "Processes for engaging with own workers and workers' representatives"
+        type: conditional
+      - id: "S1-3"
+        dr: "S1-3"
+        name: "Processes to remediate negative impacts and channels for own workers"
+        type: conditional
+      - id: "S1-4"
+        dr: "S1-4"
+        name: "Taking action on material impacts on own workforce"
+        type: conditional
+      - id: "S1-5"
+        dr: "S1-5"
+        name: "Targets related to managing material negative impacts"
+        type: conditional
+      - id: "S1-6"
+        dr: "S1-6"
+        name: "Characteristics of the undertaking's employees"
+        type: conditional
+      - id: "S1-7"
+        dr: "S1-7"
+        name: "Characteristics of non-employee workers"
+        type: conditional
+      - id: "S1-8"
+        dr: "S1-8"
+        name: "Collective bargaining coverage and social dialogue"
+        type: conditional
+      - id: "S1-9"
+        dr: "S1-9"
+        name: "Diversity metrics"
+        type: conditional
+      - id: "S1-10"
+        dr: "S1-10"
+        name: "Adequate wages"
+        type: conditional
+      - id: "S1-11"
+        dr: "S1-11"
+        name: "Social protection"
+        type: conditional
+      - id: "S1-12"
+        dr: "S1-12"
+        name: "Persons with disabilities"
+        type: conditional
+      - id: "S1-13"
+        dr: "S1-13"
+        name: "Training and skills development metrics"
+        type: conditional
+      - id: "S1-14"
+        dr: "S1-14"
+        name: "Health and safety metrics"
+        type: conditional
+      - id: "S1-15"
+        dr: "S1-15"
+        name: "Work-life balance metrics"
+        type: conditional
+      - id: "S1-16"
+        dr: "S1-16"
+        name: "Remuneration metrics (pay gap and total remuneration)"
+        type: phase_in
+        phase_in: 2026
+      - id: "S1-17"
+        dr: "S1-17"
+        name: "Incidents, complaints and severe human rights impacts"
+        type: conditional
+
+    S2:
+      - id: "S2-1"
+        dr: "S2-1"
+        name: "Policies related to value chain workers"
+        type: conditional
+      - id: "S2-2"
+        dr: "S2-2"
+        name: "Processes for engaging with value chain workers"
+        type: conditional
+      - id: "S2-3"
+        dr: "S2-3"
+        name: "Processes to remediate negative impacts on value chain workers"
+        type: conditional
+      - id: "S2-4"
+        dr: "S2-4"
+        name: "Taking action on material impacts on value chain workers"
+        type: conditional
+      - id: "S2-5"
+        dr: "S2-5"
+        name: "Targets related to managing material negative impacts on value chain workers"
+        type: conditional
+
+    S3:
+      - id: "S3-1"
+        dr: "S3-1"
+        name: "Policies related to affected communities"
+        type: conditional
+      - id: "S3-2"
+        dr: "S3-2"
+        name: "Processes for engaging with affected communities"
+        type: conditional
+      - id: "S3-3"
+        dr: "S3-3"
+        name: "Processes to remediate negative impacts on affected communities"
+        type: conditional
+      - id: "S3-4"
+        dr: "S3-4"
+        name: "Taking action on material impacts on affected communities"
+        type: conditional
+      - id: "S3-5"
+        dr: "S3-5"
+        name: "Targets related to managing material negative impacts on affected communities"
+        type: conditional
+
+    S4:
+      - id: "S4-1"
+        dr: "S4-1"
+        name: "Policies related to consumers and end-users"
+        type: conditional
+      - id: "S4-2"
+        dr: "S4-2"
+        name: "Processes for engaging with consumers and end-users"
+        type: conditional
+      - id: "S4-3"
+        dr: "S4-3"
+        name: "Processes to remediate negative impacts on consumers and end-users"
+        type: conditional
+      - id: "S4-4"
+        dr: "S4-4"
+        name: "Taking action on material impacts on consumers and end-users"
+        type: conditional
+      - id: "S4-5"
+        dr: "S4-5"
+        name: "Targets related to managing material negative impacts on consumers"
+        type: conditional
+
+    G1:
+      - id: "G1-1"
+        dr: "G1-1"
+        name: "Business conduct policies and corporate culture"
+        type: conditional
+      - id: "G1-2"
+        dr: "G1-2"
+        name: "Management of relationships with suppliers"
+        type: conditional
+      - id: "G1-3"
+        dr: "G1-3"
+        name: "Prevention and detection of corruption and bribery"
+        type: conditional
+      - id: "G1-4"
+        dr: "G1-4"
+        name: "Confirmed incidents of corruption or bribery"
+        type: conditional
+      - id: "G1-5"
+        dr: "G1-5"
+        name: "Political influence and lobbying activities"
+        type: conditional
+      - id: "G1-6"
+        dr: "G1-6"
+        name: "Payment practices"
+        type: conditional
+
+provenance:
+  pin_ef: false
+  enable_audit: true
+  retention_days: 2555  # 7 years for CSRD regulatory compliance
+
+  record:
+    - inputs
+    - outputs
+    - materiality_assessments
+    - gap_analysis
+    - compliance_scores
+    - code_sha
+    - seed
+    - timestamp
+    - agent_version
+
+tests:
+  golden:
+    # E1 Climate Change Tests
+    - name: e1_climate_basic_compliance
+      description: "Large PIE with complete E1 climate disclosures"
+      input:
+        company_id: "EU-CORP-001"
+        company_name: "EuroManufacturing AG"
+        reporting_year: 2024
+        company_size: "large_pie"
+        sector: "general"
+        materiality_assessments:
+          - topic: "E1"
+            impact_materiality: 0.9
+            financial_materiality: 0.8
+        e1_climate_data:
+          has_transition_plan: true
+          transition_plan_aligned_to_15c: true
+          sbti_commitment: true
+          sbti_validated: true
+          net_zero_target_year: 2050
+          scope1_emissions: 10000.0
+          scope2_emissions_location: 5000.0
+          scope2_emissions_market: 4000.0
+          scope3_emissions: 50000.0
+          total_energy_consumption_mwh: 25000.0
+          renewable_energy_share_pct: 45.0
+      expect:
+        material_topics: ["E1"]
+        completeness_score_min: 60.0
+        mandatory_completeness_min: 80.0
+      tolerance:
+        completeness_score: 5.0
+
+    - name: e1_scope3_phase_in_2024
+      description: "Scope 3 phase-in test for 2024 reporting"
+      input:
+        company_id: "EU-CORP-002"
+        reporting_year: 2024
+        company_size: "large"
+        materiality_assessments:
+          - topic: "E1"
+            impact_materiality: 0.7
+            financial_materiality: 0.6
+        e1_climate_data:
+          scope1_emissions: 5000.0
+          scope2_emissions_location: 3000.0
+      expect:
+        material_topics: ["E1"]
+        gap_analysis_contains: "E1-6"
+      tolerance: {}
+
+    - name: e1_net_zero_target_validation
+      description: "Validate net zero target year constraints"
+      input:
+        company_id: "EU-CORP-003"
+        reporting_year: 2024
+        company_size: "large"
+        materiality_assessments:
+          - topic: "E1"
+            impact_materiality: 0.85
+            financial_materiality: 0.75
+        e1_climate_data:
+          has_transition_plan: true
+          net_zero_target_year: 2040
+          sbti_commitment: true
+          sbti_validated: false
+          scope1_emissions: 15000.0
+          scope2_emissions_location: 8000.0
+          scope3_emissions: 75000.0
+      expect:
+        e1_summary:
+          net_zero_target_year: 2040
+          sbti_validated: false
+      tolerance: {}
+
+    # E2 Pollution Tests
+    - name: e2_pollution_material_topic
+      description: "E2 Pollution material with substances of concern"
+      input:
+        company_id: "EU-CHEM-001"
+        reporting_year: 2024
+        company_size: "large"
+        sector: "general"
+        materiality_assessments:
+          - topic: "E2"
+            impact_materiality: 0.8
+            financial_materiality: 0.7
+        e2_pollution_data:
+          pollution_policies: ["Air Quality Policy", "Water Discharge Policy"]
+          air_pollutants_kg:
+            NOx: 5000.0
+            SOx: 2000.0
+            PM10: 1000.0
+          substances_of_concern_tonnes: 150.0
+          svhc_tonnes: 25.0
+      expect:
+        material_topics: ["E2"]
+        environmental_summary:
+          substances_of_concern_tonnes: 150.0
+      tolerance: {}
+
+    # E3 Water Resources Tests
+    - name: e3_water_stress_operations
+      description: "E3 Water disclosures with water stress area operations"
+      input:
+        company_id: "EU-AGRI-001"
+        reporting_year: 2024
+        company_size: "large"
+        sector: "agriculture"
+        materiality_assessments:
+          - topic: "E3"
+            impact_materiality: 0.75
+            financial_materiality: 0.65
+        e3_water_data:
+          water_policies: ["Water Stewardship Policy"]
+          total_water_withdrawal_m3: 500000.0
+          water_consumption_m3: 350000.0
+          water_recycled_m3: 100000.0
+          water_stress_area_operations: ["Spain-Andalucia", "Italy-Sicily"]
+      expect:
+        material_topics: ["E3"]
+      tolerance: {}
+
+    # S1 Own Workforce Tests
+    - name: s1_workforce_complete
+      description: "S1 Complete own workforce disclosures"
+      input:
+        company_id: "EU-CORP-010"
+        reporting_year: 2024
+        company_size: "large_pie"
+        materiality_assessments:
+          - topic: "S1"
+            impact_materiality: 0.9
+            financial_materiality: 0.7
+        s1_workforce_data:
+          total_employees: 5000
+          employees_by_gender:
+            male: 2800
+            female: 2100
+            non_binary: 100
+          employees_permanent: 4500
+          employees_temporary: 500
+          collective_bargaining_coverage_pct: 75.0
+          gender_diversity_board_pct: 40.0
+          gender_diversity_management_pct: 35.0
+          training_hours_per_employee: 24.0
+          work_related_fatalities: 0
+          recordable_work_related_injuries: 12
+          lost_time_injury_rate: 0.8
+          gender_pay_gap_pct: 8.5
+          human_rights_policy: true
+          grievance_mechanism: true
+      expect:
+        material_topics: ["S1"]
+        social_summary:
+          total_employees: 5000
+          gender_pay_gap_pct: 8.5
+      tolerance: {}
+
+    - name: s1_health_safety_zero_fatalities
+      description: "S1 Health and safety with zero fatalities"
+      input:
+        company_id: "EU-MANUF-001"
+        reporting_year: 2024
+        company_size: "large"
+        materiality_assessments:
+          - topic: "S1"
+            impact_materiality: 0.8
+            financial_materiality: 0.6
+        s1_workforce_data:
+          total_employees: 2500
+          work_related_fatalities: 0
+          recordable_work_related_injuries: 5
+          lost_time_injury_rate: 0.4
+          health_safety_management_system: true
+      expect:
+        social_summary:
+          work_related_fatalities: 0
+      tolerance: {}
+
+    # S2 Value Chain Workers Tests
+    - name: s2_value_chain_supplier_assessment
+      description: "S2 Value chain workers with supplier assessment"
+      input:
+        company_id: "EU-RETAIL-001"
+        reporting_year: 2024
+        company_size: "large"
+        sector: "textiles"
+        materiality_assessments:
+          - topic: "S2"
+            impact_materiality: 0.85
+            financial_materiality: 0.6
+        s2_value_chain_data:
+          supplier_code_of_conduct: true
+          supplier_grievance_mechanism: true
+          suppliers_assessed: 500
+          suppliers_audited_pct: 40.0
+          child_labor_incidents: 0
+          forced_labor_incidents: 0
+      expect:
+        material_topics: ["S2"]
+        social_summary:
+          suppliers_assessed: 500
+      tolerance: {}
+
+    # G1 Governance Tests
+    - name: g1_governance_complete
+      description: "G1 Complete business conduct disclosures"
+      input:
+        company_id: "EU-CORP-020"
+        reporting_year: 2024
+        company_size: "large_pie"
+        materiality_assessments:
+          - topic: "G1"
+            impact_materiality: 0.7
+            financial_materiality: 0.8
+        g1_governance_data:
+          code_of_conduct: true
+          code_of_conduct_coverage_pct: 100.0
+          ethics_training_pct: 95.0
+          anti_corruption_policy: true
+          anti_corruption_training_pct: 90.0
+          whistleblower_mechanism: true
+          whistleblower_reports: 5
+          corruption_incidents: 0
+          bribery_incidents: 0
+          political_contributions_eur: 0.0
+          lobbying_expenditure_eur: 250000.0
+      expect:
+        material_topics: ["G1"]
+        governance_summary:
+          corruption_incidents: 0
+      tolerance: {}
+
+    # Multi-Topic Tests
+    - name: multi_topic_esrs_compliance
+      description: "Multiple material topics E1, S1, G1"
+      input:
+        company_id: "EU-MULTI-001"
+        reporting_year: 2024
+        company_size: "large_pie"
+        materiality_assessments:
+          - topic: "E1"
+            impact_materiality: 0.9
+            financial_materiality: 0.85
+          - topic: "S1"
+            impact_materiality: 0.8
+            financial_materiality: 0.7
+          - topic: "G1"
+            impact_materiality: 0.6
+            financial_materiality: 0.75
+        e1_climate_data:
+          scope1_emissions: 20000.0
+          scope2_emissions_location: 10000.0
+        s1_workforce_data:
+          total_employees: 8000
+          human_rights_policy: true
+        g1_governance_data:
+          code_of_conduct: true
+          anti_corruption_policy: true
+      expect:
+        material_topics: ["E1", "S1", "G1"]
+      tolerance: {}
+
+    - name: non_material_topic_exclusion
+      description: "Non-material topics should not require disclosures"
+      input:
+        company_id: "EU-SERV-001"
+        reporting_year: 2024
+        company_size: "large"
+        sector: "general"
+        materiality_assessments:
+          - topic: "E1"
+            impact_materiality: 0.2
+            financial_materiality: 0.1
+          - topic: "E4"
+            impact_materiality: 0.1
+            financial_materiality: 0.05
+      expect:
+        material_topics: []
+      tolerance: {}
+
+    # SME Phase-in Tests
+    - name: sme_phased_reporting_2026
+      description: "SME reporting with phase-in provisions"
+      input:
+        company_id: "EU-SME-001"
+        reporting_year: 2026
+        company_size: "sme"
+        materiality_assessments:
+          - topic: "E1"
+            impact_materiality: 0.7
+            financial_materiality: 0.6
+        e1_climate_data:
+          scope1_emissions: 1000.0
+          scope2_emissions_location: 500.0
+      expect:
+        material_topics: ["E1"]
+        assurance_level: "limited"
+      tolerance: {}
+
+    # Provenance and Audit Tests
+    - name: provenance_hash_generation
+      description: "Verify provenance hash is generated correctly"
+      input:
+        company_id: "EU-AUDIT-001"
+        reporting_year: 2024
+        company_size: "large_pie"
+        e1_climate_data:
+          scope1_emissions: 5000.0
+      expect:
+        provenance_hash_format: "^[a-f0-9]{64}$"
+      tolerance: {}
+
+  properties:
+    - name: deterministic_output
+      description: "Same inputs must produce identical outputs"
+      rule: "run(inputs, seed=42) == run(inputs, seed=42)"
+      iterations: 100
+
+    - name: provenance_hash_unique
+      description: "Different inputs must produce different provenance hashes"
+      rule: "hash(run(input1)) != hash(run(input2)) when input1 != input2"
+
+    - name: completeness_score_range
+      description: "Completeness score must be between 0 and 100"
+      rule: "0 <= outputs.completeness_score <= 100"
+
+    - name: mandatory_completeness_range
+      description: "Mandatory completeness must be between 0 and 100"
+      rule: "0 <= outputs.mandatory_completeness <= 100"
+
+    - name: materiality_determination
+      description: "Topic is material if impact OR financial materiality >= threshold"
+      rule: "(impact >= threshold OR financial >= threshold) == is_material"
+
+    - name: filled_datapoints_consistency
+      description: "Filled datapoints cannot exceed total datapoints"
+      rule: "outputs.filled_datapoints <= outputs.total_datapoints"
+
+    - name: provenance_hash_format
+      description: "Provenance hash must be valid SHA-256"
+      rule: "len(outputs.provenance_hash) == 64 and is_hex(outputs.provenance_hash)"
+
+    - name: mandatory_filled_consistency
+      description: "Mandatory filled cannot exceed mandatory datapoints"
+      rule: "outputs.mandatory_filled <= outputs.mandatory_datapoints"
+
+certification:
+  status: "audit_ready"
+
+  quality_gates:
+    - name: golden_tests_pass
+      type: test
+      threshold: 1.0  # 100% pass rate
+      required: true
+
+    - name: determinism_verified
+      type: determinism
+      runs: 100
+      tolerance: 0.0
+      required: true
+
+    - name: provenance_completeness
+      type: provenance
+      completeness: 1.0
+      required: true
+
+    - name: code_coverage
+      type: coverage
+      threshold: 0.90  # 90%
+      required: true
+
+    - name: zero_hallucination_verified
+      type: hallucination_check
+      method: "tool_isolation"
+      required: true
+
+    - name: esrs_compliance_coverage
+      type: standards_coverage
+      standards:
+        - ESRS_1
+        - ESRS_2
+        - E1
+        - E2
+        - E3
+        - E4
+        - E5
+        - S1
+        - S2
+        - S3
+        - S4
+        - G1
+      threshold: 1.0
+      required: true
+
+    - name: materiality_assessment_accuracy
+      type: calculation_accuracy
+      method: "double_materiality"
+      threshold: 1.0
+      required: true
+
+deployment:
+  kubernetes:
+    namespace: csrd-production
+    replicas:
+      min: 2
+      max: 10
+    resources:
+      requests:
+        cpu: "200m"
+        memory: "512Mi"
+      limits:
+        cpu: "1000m"
+        memory: "1Gi"
+    autoscaling:
+      target_cpu: 70
+
+  monitoring:
+    prometheus:
+      enabled: true
+      metrics:
+        - assessments_total
+        - assessment_duration_seconds
+        - datapoints_collected_total
+        - gaps_identified_total
+        - completeness_score_histogram
+        - materiality_assessments_total
+        - esef_reports_generated_total
+        - errors_total
+    grafana:
+      dashboard: csrd-reporting
+    alerts:
+      - name: high_error_rate
+        condition: "error_rate > 0.01"
+        severity: critical
+      - name: high_latency
+        condition: "p99_latency > 5s"
+        severity: warning
+      - name: low_completeness_score
+        condition: "avg_completeness_score < 50"
+        severity: warning
+      - name: critical_gaps_detected
+        condition: "critical_gaps_count > 0"
+        severity: info
+
+  security:
+    data_classification: confidential
+    encryption_at_rest: true
+    encryption_in_transit: true
+    audit_logging: true
+    gdpr_compliant: true

@@ -1,0 +1,279 @@
+# GreenLang Climate OS - Agent Factory Configuration
+# INFRA-004: Agent Factory v1.0 Configuration
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: agent-factory-config
+  namespace: greenlang-production
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: agent-factory
+data:
+  config.yaml: |
+    # GreenLang Agent Factory Configuration v1.0
+
+    # Server Configuration
+    server:
+      host: "0.0.0.0"
+      port: 8000
+      workers: 4
+      timeout: 300
+      keep_alive: 5
+
+    # Zero-Hallucination Settings
+    zero_hallucination:
+      enabled: true
+      llm_temperature: 0.0
+      require_citations: true
+      require_lineage: true
+      require_provenance: true
+
+    # Agent Execution
+    execution:
+      max_concurrent: 100
+      default_timeout_seconds: 300
+      max_timeout_seconds: 3600
+      retry_count: 3
+      retry_delay_seconds: 5
+      enable_caching: true
+      cache_ttl_seconds: 3600
+
+    # DAG Execution Engine
+    dag:
+      enabled: true
+      max_parallel_tasks: 50
+      checkpoint_frequency: 10
+      enable_recovery: true
+
+    # Agent Registry
+    registry:
+      refresh_interval_seconds: 60
+      enable_hot_reload: true
+      validation_strict: true
+
+    # Observability
+    observability:
+      metrics:
+        enabled: true
+        port: 9090
+        path: "/metrics"
+      tracing:
+        enabled: true
+        sampling_rate: 0.1
+        exporter: "otlp"
+      logging:
+        level: "INFO"
+        format: "json"
+        include_trace_id: true
+
+    # Security
+    security:
+      enable_rbac: true
+      enable_audit_log: true
+      max_request_size_mb: 100
+      rate_limit:
+        enabled: true
+        requests_per_minute: 1000
+        burst: 100
+
+    # Database Connection Pool
+    database:
+      pool_size: 20
+      max_overflow: 10
+      pool_timeout: 30
+      pool_recycle: 1800
+      echo: false
+
+    # Redis Configuration
+    redis:
+      sentinel_enabled: true
+      sentinel_master: "greenlang-master"
+      socket_timeout: 5
+      socket_connect_timeout: 5
+      retry_on_timeout: true
+      max_connections: 100
+
+    # Agent Types Configuration
+    agent_types:
+      foundation:
+        priority: 0
+        timeout_seconds: 60
+        retry_count: 3
+      data:
+        priority: 1
+        timeout_seconds: 300
+        retry_count: 3
+      mrv:
+        priority: 2
+        timeout_seconds: 600
+        retry_count: 2
+      planning:
+        priority: 3
+        timeout_seconds: 900
+        retry_count: 2
+      reporting:
+        priority: 4
+        timeout_seconds: 600
+        retry_count: 2
+
+    # Quality Gates
+    quality_gates:
+      test_coverage_minimum: 85
+      lineage_completeness: true
+      citation_required: true
+      determinism_check: true
+
+  agents.yaml: |
+    # Agent Specifications Index
+    # This file indexes all available agents
+
+    version: "1.0"
+
+    # Foundation Layer Agents
+    foundation:
+      - id: GL-FOUND-X-001
+        name: GreenLang Orchestrator
+        status: pending
+        priority: P0
+
+      - id: GL-FOUND-X-002
+        name: Schema Compiler & Validator
+        status: pending
+        priority: P0
+
+      - id: GL-FOUND-X-003
+        name: Unit & Reference Normalizer
+        status: pending
+        priority: P0
+
+      - id: GL-FOUND-X-004
+        name: Assumptions Registry Agent
+        status: pending
+        priority: P0
+
+      - id: GL-FOUND-X-005
+        name: Citations & Evidence Agent
+        status: pending
+        priority: P1
+
+      - id: GL-FOUND-X-006
+        name: Access & Policy Guard Agent
+        status: pending
+        priority: P1
+
+      - id: GL-FOUND-X-007
+        name: Versioned Agent Registry
+        status: pending
+        priority: P0
+
+      - id: GL-FOUND-X-008
+        name: Run Reproducibility Agent
+        status: pending
+        priority: P1
+
+      - id: GL-FOUND-X-009
+        name: QA Test Harness Agent
+        status: pending
+        priority: P0
+
+      - id: GL-FOUND-X-010
+        name: Observability Agent
+        status: pending
+        priority: P0
+
+    # Data Layer Agents (to be populated)
+    data: []
+
+    # MRV Layer Agents (to be populated)
+    mrv: []
+
+    # Planning Layer Agents (to be populated)
+    planning: []
+---
+# Agent Specifications ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: agent-specifications
+  namespace: greenlang-production
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: agent-factory
+data:
+  GL-FOUND-X-001.yaml: |
+    # GL-FOUND-X-001: GreenLang Orchestrator
+    id: GL-FOUND-X-001
+    name: GreenLang Orchestrator
+    version: "1.0.0"
+    layer: foundation
+    description: |
+      DAG execution engine for multi-agent pipelines.
+      Manages dependency graphs, retry/timeout handling,
+      deterministic run metadata, and observability hooks.
+
+    capabilities:
+      - dag_execution
+      - dependency_management
+      - retry_handling
+      - timeout_management
+      - checkpoint_recovery
+      - observability
+
+    inputs:
+      - name: pipeline_definition
+        type: object
+        required: true
+        schema:
+          type: object
+          properties:
+            agents:
+              type: array
+              items:
+                type: object
+            dependencies:
+              type: object
+
+    outputs:
+      - name: execution_result
+        type: object
+        schema:
+          type: object
+          properties:
+            status:
+              type: string
+              enum: [success, failed, partial]
+            results:
+              type: object
+            lineage:
+              type: object
+
+    configuration:
+      max_parallel_agents: 50
+      checkpoint_interval: 10
+      retry_policy:
+        max_retries: 3
+        backoff_multiplier: 2
+        initial_delay_ms: 1000
+
+    quality_requirements:
+      test_coverage: 90
+      zero_hallucination: true
+      deterministic: true
+---
+# Agent Factory Secrets Template
+apiVersion: v1
+kind: Secret
+metadata:
+  name: agent-factory-secrets
+  namespace: greenlang-production
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: agent-factory
+type: Opaque
+stringData:
+  # IMPORTANT: Replace with actual values in production
+  # Use external-secrets or sealed-secrets
+  database-url: "postgresql://greenlang:REPLACE@postgresql-primary:5432/greenlang"
+  redis-url: "redis://:REPLACE@redis-sentinel:6379/0"
+  jwt-secret: "REPLACE_WITH_RSA_PRIVATE_KEY"

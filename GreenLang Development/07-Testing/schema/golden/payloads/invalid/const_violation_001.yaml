@@ -1,0 +1,16 @@
+# Invalid Payload - Const Violation
+# Error Code: GLSCHEMA-E207 (CONST_VIOLATION)
+# Schema: basic/enum_constraints.yaml
+
+_test_metadata:
+  schema: "basic/enum_constraints.yaml"
+  description: "Const violation - schema_version must be exactly '1.0.0'"
+  expected_valid: false
+  expected_errors:
+    - code: "GLSCHEMA-E207"
+      path: "/schema_version"
+      severity: "error"
+
+status: "approved"
+priority: 3
+schema_version: "2.0.0"  # Must be exactly "1.0.0"

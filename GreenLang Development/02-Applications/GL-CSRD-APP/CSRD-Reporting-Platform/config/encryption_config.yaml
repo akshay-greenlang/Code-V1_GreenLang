@@ -1,0 +1,151 @@
+# ============================================================================
+# ENCRYPTION CONFIGURATION - CSRD REPORTING PLATFORM
+# ============================================================================
+#
+# This configuration defines which fields contain sensitive data that must
+# be encrypted at rest to comply with GDPR, data protection regulations,
+# and corporate security policies.
+#
+# ============================================================================
+
+# Fields that require encryption
+sensitive_fields:
+  # ESG Data - Financial and operational metrics
+  esg_data:
+    - revenue_eur
+    - employee_salaries
+    - executive_compensation
+    - supplier_names
+    - customer_data
+    - proprietary_metrics
+    - cost_data
+    - profit_margins
+
+  # Materiality Assessment - Confidential stakeholder information
+  materiality_assessment:
+    - stakeholder_feedback
+    - confidential_impact_data
+    - proprietary_analysis
+    - strategic_risks
+    - competitive_intelligence
+    - board_discussions
+
+  # Company Profile - Regulated identifiers
+  company_profile:
+    - lei_code
+    - tax_id
+    - vat_number
+    - bank_accounts
+    - iban
+    - swift_code
+    - company_registration_number
+    - duns_number
+
+  # Environmental Data - Potentially sensitive operational data
+  environmental_data:
+    - facility_locations
+    - emission_source_details
+    - waste_stream_data
+    - water_usage_by_site
+    - energy_consumption_by_facility
+
+  # Social Data - Employee and labor information
+  social_data:
+    - employee_demographics
+    - diversity_metrics
+    - workplace_incident_details
+    - labor_relations_data
+    - employee_satisfaction_scores
+
+  # Governance Data - Corporate governance details
+  governance_data:
+    - board_member_compensation
+    - audit_findings
+    - compliance_violations
+    - legal_proceedings
+    - internal_investigation_results
+
+# Encryption settings
+encryption_settings:
+  # Algorithm: Fernet (AES-128 in CBC mode with HMAC authentication)
+  algorithm: "fernet"
+
+  # Key rotation policy
+  key_rotation:
+    enabled: true
+    rotation_period_days: 90
+    grace_period_days: 30  # Old keys remain valid during transition
+
+  # Encryption scope
+  scope:
+    # Encrypt data at rest (in database and files)
+    at_rest: true
+    # Note: TLS/HTTPS handles encryption in transit
+    in_transit: false
+
+  # Audit logging
+  audit:
+    log_encryption_operations: true
+    log_decryption_operations: true
+    log_key_access: true
+
+# Field-level encryption rules
+field_rules:
+  # Automatic encryption on save
+  auto_encrypt_on_save: true
+
+  # Automatic decryption on load
+  auto_decrypt_on_load: true
+
+  # Mark encrypted fields with metadata
+  add_encrypted_flag: true
+
+  # Validation before encryption
+  validate_before_encrypt: true
+
+# Compliance mappings
+compliance:
+  gdpr:
+    - lei_code
+    - tax_id
+    - employee_demographics
+    - stakeholder_feedback
+
+  sox:
+    - revenue_eur
+    - profit_margins
+    - audit_findings
+
+  csrd:
+    - all_sensitive_fields
+
+# Exceptions - Fields that should NOT be encrypted
+exceptions:
+  # Public company information
+  - company_name
+  - industry_sector
+  - country
+  - reporting_year
+
+  # Non-sensitive metrics
+  - total_employees_count
+  - number_of_facilities
+  - public_certifications
+
+  # System metadata
+  - created_at
+  - updated_at
+  - version
+  - status
+
+# ============================================================================
+# USAGE NOTES
+# ============================================================================
+#
+# 1. Add new sensitive fields to the appropriate category above
+# 2. Update agents to use encryption utilities when handling these fields
+# 3. Ensure CSRD_ENCRYPTION_KEY environment variable is set
+# 4. Review and update this configuration quarterly
+# 5. Document any changes in CHANGELOG.md
+#
+# ============================================================================

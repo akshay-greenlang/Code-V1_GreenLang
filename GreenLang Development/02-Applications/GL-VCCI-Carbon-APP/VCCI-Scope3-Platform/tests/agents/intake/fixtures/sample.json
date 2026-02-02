@@ -1,0 +1,13 @@
+[
+  {
+    "name": "Global Steel Manufacturing Ltd",
+    "country": "US",
+    "annual_spend_usd": 5000000,
+    "lei": "549300ZFEEJ2IP5VME86"
+  },
+  {
+    "name": "Acme Electronics Corp",
+    "country": "DE",
+    "annual_spend_usd": 3000000
+  }
+]

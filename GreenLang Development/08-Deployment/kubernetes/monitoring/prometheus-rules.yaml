@@ -1,0 +1,673 @@
+# ============================================================================
+# GreenLang Agent Factory - Prometheus Alerting Rules
+# ============================================================================
+# PrometheusRule CRD for the Prometheus Operator
+# Defines alerting rules for GreenLang agents and infrastructure.
+#
+# Alert Severity Levels:
+# - critical: Immediate attention required (PagerDuty + Slack)
+# - warning: Attention needed within business hours (Slack only)
+# - info: Informational, no immediate action required
+#
+# Created: 2025-12-03
+# Team: Monitoring & Observability
+# ============================================================================
+
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: greenlang-agent-rules
+  namespace: monitoring
+  labels:
+    app: prometheus
+    release: prometheus
+    app.kubernetes.io/name: greenlang-agent-rules
+    app.kubernetes.io/component: alerting
+    app.kubernetes.io/part-of: greenlang-agent-factory
+spec:
+  groups:
+    # ========================================================================
+    # Agent Error Rate Alerts
+    # ========================================================================
+    - name: greenlang.agent.errors
+      interval: 30s
+      rules:
+        # CRITICAL: Agent High Error Rate (>1% for 5 minutes)
+        - alert: AgentHighErrorRate
+          expr: |
+            (
+              sum(rate(agent_requests_total{status="error"}[5m])) by (agent_id)
+              /
+              sum(rate(agent_requests_total[5m])) by (agent_id)
+            ) * 100 > 1
+          for: 5m
+          labels:
+            severity: critical
+            team: platform
+            service: agent-factory
+          annotations:
+            summary: "High error rate detected for agent {{ $labels.agent_id }}"
+            description: |
+              Agent {{ $labels.agent_id }} has an error rate of {{ printf "%.2f" $value }}%
+              which exceeds the 1% threshold.
+
+              Possible causes:
+              - Invalid input data
+              - External service unavailable
+              - Resource exhaustion
+              - Bug in agent logic
+
+              Immediate actions:
+              1. Check agent logs: kubectl logs -l app={{ $labels.agent_id }} -n greenlang
+              2. Check external dependencies (database, Redis, LLM API)
+              3. Review recent deployments
+            runbook_url: "https://runbooks.greenlang.ai/agent-high-error-rate"
+            dashboard_url: "https://grafana.greenlang.ai/d/agent-health"
+
+        # WARNING: Agent Elevated Error Rate (>0.5% for 10 minutes)
+        - alert: AgentElevatedErrorRate
+          expr: |
+            (
+              sum(rate(agent_requests_total{status="error"}[10m])) by (agent_id)
+              /
+              sum(rate(agent_requests_total[10m])) by (agent_id)
+            ) * 100 > 0.5
+          for: 10m
+          labels:
+            severity: warning
+            team: platform
+            service: agent-factory
+          annotations:
+            summary: "Elevated error rate for agent {{ $labels.agent_id }}"
+            description: |
+              Agent {{ $labels.agent_id }} has an error rate of {{ printf "%.2f" $value }}%.
+              This is above normal levels but below the critical threshold.
+            runbook_url: "https://runbooks.greenlang.ai/agent-elevated-error-rate"
+
+    # ========================================================================
+    # Agent Latency Alerts
+    # ========================================================================
+    - name: greenlang.agent.latency
+      interval: 30s
+      rules:
+        # WARNING: Agent High Latency (P95 > 500ms for 5 minutes)
+        - alert: AgentHighLatency
+          expr: |
+            histogram_quantile(0.95,
+              sum(rate(agent_request_duration_seconds_bucket[5m])) by (le, agent_id)
+            ) > 0.5
+          for: 5m
+          labels:
+            severity: warning
+            team: platform
+            service: agent-factory
+          annotations:
+            summary: "High P95 latency for agent {{ $labels.agent_id }}"
+            description: |
+              Agent {{ $labels.agent_id }} has a P95 latency of {{ printf "%.3f" $value }}s
+              which exceeds the 500ms threshold.
+
+              Possible causes:
+              - Database query performance degradation
+              - Redis cache misses
+              - LLM API latency
+              - Resource contention
+
+              Actions:
+              1. Check database query latency
+              2. Verify cache hit rate
+              3. Check LLM API response times
+              4. Review pod resource utilization
+            runbook_url: "https://runbooks.greenlang.ai/agent-high-latency"
+            dashboard_url: "https://grafana.greenlang.ai/d/agent-health"
+
+        # CRITICAL: Agent Very High Latency (P95 > 2s for 5 minutes)
+        - alert: AgentVeryHighLatency
+          expr: |
+            histogram_quantile(0.95,
+              sum(rate(agent_request_duration_seconds_bucket[5m])) by (le, agent_id)
+            ) > 2
+          for: 5m
+          labels:
+            severity: critical
+            team: platform
+            service: agent-factory
+          annotations:
+            summary: "Critical latency for agent {{ $labels.agent_id }}"
+            description: |
+              Agent {{ $labels.agent_id }} has a P95 latency of {{ printf "%.3f" $value }}s
+              which severely impacts user experience.
+            runbook_url: "https://runbooks.greenlang.ai/agent-critical-latency"
+
+    # ========================================================================
+    # Agent Availability Alerts
+    # ========================================================================
+    - name: greenlang.agent.availability
+      interval: 30s
+      rules:
+        # WARNING: Agent Pod Not Ready
+        - alert: AgentPodNotReady
+          expr: |
+            kube_deployment_status_replicas_available{namespace=~"greenlang|gl-.*"}
+            <
+            kube_deployment_spec_replicas{namespace=~"greenlang|gl-.*"}
+          for: 5m
+          labels:
+            severity: warning
+            team: platform
+            service: agent-factory
+          annotations:
+            summary: "Agent deployment {{ $labels.deployment }} has unavailable replicas"
+            description: |
+              Deployment {{ $labels.deployment }} in namespace {{ $labels.namespace }}
+              has {{ $value }} fewer replicas than desired.
+
+              Current: {{ $labels.deployment }} available replicas < desired replicas
+
+              Actions:
+              1. Check pod status: kubectl get pods -n {{ $labels.namespace }}
+              2. Check events: kubectl get events -n {{ $labels.namespace }}
+              3. Check pod logs for startup failures
+              4. Verify resource quotas and limits
+            runbook_url: "https://runbooks.greenlang.ai/agent-pod-not-ready"
+
+        # CRITICAL: Agent Down (0 replicas for 2 minutes)
+        - alert: AgentDown
+          expr: |
+            kube_deployment_status_replicas_available{namespace=~"greenlang|gl-.*"} == 0
+          for: 2m
+          labels:
+            severity: critical
+            team: platform
+            service: agent-factory
+          annotations:
+            summary: "Agent {{ $labels.deployment }} is DOWN"
+            description: |
+              Agent deployment {{ $labels.deployment }} has 0 available replicas.
+              This is a service outage requiring immediate attention.
+
+              Immediate actions:
+              1. Check deployment: kubectl describe deployment {{ $labels.deployment }} -n {{ $labels.namespace }}
+              2. Check pods: kubectl get pods -n {{ $labels.namespace }}
+              3. Check events: kubectl get events -n {{ $labels.namespace }} --sort-by=.lastTimestamp
+              4. Consider rollback if recent deployment
+            runbook_url: "https://runbooks.greenlang.ai/agent-down"
+
+        # WARNING: Agent scrape target down
+        - alert: AgentTargetDown
+          expr: up{job=~".*fuel-analyzer.*|.*cbam.*|.*building-energy.*"} == 0
+          for: 2m
+          labels:
+            severity: warning
+            team: platform
+            service: agent-factory
+          annotations:
+            summary: "Agent metrics target {{ $labels.job }} is down"
+            description: |
+              Prometheus cannot scrape metrics from {{ $labels.instance }}.
+              The agent may be down or the /metrics endpoint is unreachable.
+
+    # ========================================================================
+    # Cache Performance Alerts
+    # ========================================================================
+    - name: greenlang.agent.cache
+      interval: 60s
+      rules:
+        # WARNING: Low Cache Hit Rate (<50% for 15 minutes)
+        - alert: AgentLowCacheHitRate
+          expr: |
+            (
+              sum(rate(agent_cache_hits_total[15m])) by (agent_id, cache_tier)
+              /
+              (sum(rate(agent_cache_hits_total[15m])) by (agent_id, cache_tier)
+               + sum(rate(agent_cache_misses_total[15m])) by (agent_id, cache_tier))
+            ) * 100 < 50
+          for: 15m
+          labels:
+            severity: warning
+            team: platform
+            service: agent-factory
+          annotations:
+            summary: "Low cache hit rate for {{ $labels.agent_id }} ({{ $labels.cache_tier }})"
+            description: |
+              Agent {{ $labels.agent_id }} has a cache hit rate of {{ printf "%.1f" $value }}%
+              for {{ $labels.cache_tier }} tier, below the 50% threshold.
+
+              This may indicate:
+              - Cache capacity issues
+              - Data access pattern changes
+              - Cache eviction problems
+            runbook_url: "https://runbooks.greenlang.ai/low-cache-hit-rate"
+
+    # ========================================================================
+    # Tool/Calculation Alerts
+    # ========================================================================
+    - name: greenlang.agent.calculations
+      interval: 30s
+      rules:
+        # WARNING: Tool Failure Rate High
+        - alert: AgentToolFailureRate
+          expr: |
+            (
+              sum(rate(agent_calculations_total{status="error"}[5m])) by (agent_id, tool_name)
+              /
+              sum(rate(agent_calculations_total[5m])) by (agent_id, tool_name)
+            ) * 100 > 5
+          for: 5m
+          labels:
+            severity: warning
+            team: platform
+            service: agent-factory
+          annotations:
+            summary: "High failure rate for tool {{ $labels.tool_name }} in {{ $labels.agent_id }}"
+            description: |
+              Tool {{ $labels.tool_name }} in agent {{ $labels.agent_id }} has a failure rate
+              of {{ printf "%.1f" $value }}%.
+
+              This may affect calculation accuracy and provenance tracking.
+
+    # ========================================================================
+    # Resource Alerts
+    # ========================================================================
+    - name: greenlang.agent.resources
+      interval: 60s
+      rules:
+        # WARNING: High Memory Usage (>80% for 10 minutes)
+        - alert: AgentHighMemoryUsage
+          expr: |
+            (
+              container_memory_working_set_bytes{namespace=~"greenlang|gl-.*", container!=""}
+              /
+              container_spec_memory_limit_bytes{namespace=~"greenlang|gl-.*", container!=""}
+            ) * 100 > 80
+          for: 10m
+          labels:
+            severity: warning
+            team: platform
+            service: agent-factory
+          annotations:
+            summary: "High memory usage for {{ $labels.pod }}"
+            description: |
+              Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} is using
+              {{ printf "%.1f" $value }}% of its memory limit.
+
+              Consider:
+              1. Increasing memory limits
+              2. Investigating memory leaks
+              3. Optimizing memory usage
+
+        # CRITICAL: Critical Memory Usage (>90% for 5 minutes)
+        - alert: AgentCriticalMemoryUsage
+          expr: |
+            (
+              container_memory_working_set_bytes{namespace=~"greenlang|gl-.*", container!=""}
+              /
+              container_spec_memory_limit_bytes{namespace=~"greenlang|gl-.*", container!=""}
+            ) * 100 > 90
+          for: 5m
+          labels:
+            severity: critical
+            team: platform
+            service: agent-factory
+          annotations:
+            summary: "Critical memory usage for {{ $labels.pod }}"
+            description: |
+              Pod {{ $labels.pod }} is at {{ printf "%.1f" $value }}% memory.
+              OOMKill is imminent!
+
+        # WARNING: High CPU Usage (>80% for 10 minutes)
+        - alert: AgentHighCPUUsage
+          expr: |
+            (
+              sum(rate(container_cpu_usage_seconds_total{namespace=~"greenlang|gl-.*", container!=""}[5m])) by (pod, namespace)
+              /
+              sum(container_spec_cpu_quota{namespace=~"greenlang|gl-.*", container!=""} / container_spec_cpu_period{namespace=~"greenlang|gl-.*", container!=""}) by (pod, namespace)
+            ) * 100 > 80
+          for: 10m
+          labels:
+            severity: warning
+            team: platform
+            service: agent-factory
+          annotations:
+            summary: "High CPU usage for {{ $labels.pod }}"
+            description: |
+              Pod {{ $labels.pod }} is using {{ printf "%.1f" $value }}% of CPU limit.
+
+    # ========================================================================
+    # Infrastructure Alerts
+    # ========================================================================
+    - name: greenlang.infrastructure
+      interval: 60s
+      rules:
+        # WARNING: PostgreSQL High Connections
+        - alert: PostgreSQLHighConnections
+          expr: |
+            pg_stat_activity_count{datname="greenlang"}
+            /
+            pg_settings_max_connections > 0.8
+          for: 5m
+          labels:
+            severity: warning
+            team: platform
+            service: postgresql
+          annotations:
+            summary: "PostgreSQL connection pool near capacity"
+            description: |
+              PostgreSQL is using {{ printf "%.1f" $value }}% of max_connections.
+              Consider increasing connection pool size or investigating connection leaks.
+
+        # CRITICAL: PostgreSQL Connection Exhaustion
+        - alert: PostgreSQLConnectionExhaustion
+          expr: |
+            pg_stat_activity_count{datname="greenlang"}
+            /
+            pg_settings_max_connections > 0.95
+          for: 2m
+          labels:
+            severity: critical
+            team: platform
+            service: postgresql
+          annotations:
+            summary: "PostgreSQL connections nearly exhausted"
+            description: "PostgreSQL is at {{ printf "%.1f" $value }}% connection capacity!"
+
+        # WARNING: Redis High Memory Usage
+        - alert: RedisHighMemoryUsage
+          expr: |
+            (redis_memory_used_bytes / redis_memory_max_bytes) * 100 > 80
+          for: 10m
+          labels:
+            severity: warning
+            team: platform
+            service: redis
+          annotations:
+            summary: "Redis memory usage high"
+            description: "Redis is using {{ printf "%.1f" $value }}% of max memory."
+
+        # CRITICAL: Redis Memory Critical
+        - alert: RedisMemoryCritical
+          expr: |
+            (redis_memory_used_bytes / redis_memory_max_bytes) * 100 > 95
+          for: 5m
+          labels:
+            severity: critical
+            team: platform
+            service: redis
+          annotations:
+            summary: "Redis memory critical"
+            description: "Redis is at {{ printf "%.1f" $value }}% memory! Evictions likely occurring."
+
+    # ========================================================================
+    # EUDR Compliance Agent - CRITICAL ALERTS (Tier 1 - Extreme Urgency)
+    # ========================================================================
+    # EU Regulation 2023/1115 - Deforestation-free products
+    # Enforcement deadline: 2025-12-30
+    # These alerts have stricter thresholds due to regulatory importance
+    # ========================================================================
+    - name: greenlang.eudr.compliance
+      interval: 30s
+      rules:
+        # CRITICAL: EUDR Agent High Error Rate (>0.5% - stricter than other agents)
+        - alert: EudrAgentHighErrorRate
+          expr: |
+            (
+              sum(rate(agent_requests_total{agent_id="regulatory/eudr_compliance_v1", status="error"}[5m]))
+              /
+              sum(rate(agent_requests_total{agent_id="regulatory/eudr_compliance_v1"}[5m]))
+            ) * 100 > 0.5
+          for: 5m
+          labels:
+            severity: critical
+            priority: p1
+            team: regulatory
+            service: eudr-compliance
+            tier: 1-extreme-urgency
+            regulation: eudr-2023-1115
+            pagerduty: "true"
+          annotations:
+            summary: "CRITICAL: EUDR Compliance Agent experiencing high error rate"
+            description: |
+              EUDR Compliance Agent has an error rate of {{ printf "%.3f" $value }}%
+              which exceeds the strict 0.5% threshold for regulatory compliance agents.
+
+              IMPACT: This affects EUDR due diligence statement generation and may
+              prevent importers from complying with EU Regulation 2023/1115.
+
+              Regulation Deadline: 2025-12-30
+              Business Impact: Critical - Regulatory compliance failure
+
+              IMMEDIATE ACTIONS:
+              1. Page on-call engineer immediately
+              2. Check agent logs: kubectl logs -l app=eudr-api -n gl-eudr --tail=200
+              3. Verify data source connectivity (country risk DB, commodity DB)
+              4. Check LLM API availability and rate limits
+              5. Review recent validation failures in tool executions
+
+              Tool-specific checks:
+              - calculate_country_risk: Verify country risk database
+              - classify_commodity: Check commodity classification DB
+              - assess_deforestation_risk: Verify geospatial data sources
+              - generate_due_diligence: Check template availability
+              - validate_documentation: Verify validation rules
+
+            runbook_url: "https://runbooks.greenlang.ai/eudr-high-error-rate"
+            dashboard_url: "https://grafana.greenlang.ai/d/eudr-agent"
+            regulation_url: "https://eur-lex.europa.eu/eli/reg/2023/1115/oj"
+            slack_channel: "#eudr-compliance-alerts"
+
+        # CRITICAL: EUDR Agent High Latency (>300ms - stricter than other agents)
+        - alert: EudrAgentHighLatency
+          expr: |
+            histogram_quantile(0.95,
+              sum(rate(agent_request_duration_seconds_bucket{agent_id="regulatory/eudr_compliance_v1"}[5m])) by (le)
+            ) > 0.3
+          for: 5m
+          labels:
+            severity: critical
+            priority: p1
+            team: regulatory
+            service: eudr-compliance
+            tier: 1-extreme-urgency
+            regulation: eudr-2023-1115
+          annotations:
+            summary: "EUDR Agent experiencing high latency"
+            description: |
+              EUDR Compliance Agent P95 latency is {{ printf "%.3f" $value }}s
+              which exceeds the 300ms threshold.
+
+              This impacts user experience for due diligence statement generation
+              and may slow down compliance workflows approaching the deadline.
+
+              Deadline: 2025-12-30 ({{ $labels.days_remaining }} days remaining)
+
+              Possible causes:
+              - Database query performance (country/commodity lookups)
+              - LLM API response time degradation
+              - Cache misses on frequently accessed data
+              - Resource contention on pods
+
+              Actions:
+              1. Check database query performance
+              2. Verify LLM API response times
+              3. Check cache hit rates
+              4. Review pod CPU/memory utilization
+              5. Consider horizontal scaling if sustained
+
+            runbook_url: "https://runbooks.greenlang.ai/eudr-high-latency"
+            dashboard_url: "https://grafana.greenlang.ai/d/eudr-agent"
+
+        # CRITICAL: EUDR Deadline Approaching (Alert at 7 days before deadline)
+        - alert: EudrDeadlineApproaching
+          expr: |
+            (1735603200 - time()) / 86400 < 7 and (1735603200 - time()) / 86400 > 0
+          for: 1h
+          labels:
+            severity: critical
+            priority: p1
+            team: regulatory
+            service: eudr-compliance
+            tier: 1-extreme-urgency
+            regulation: eudr-2023-1115
+            pagerduty: "true"
+          annotations:
+            summary: "EUDR Enforcement Deadline Approaching - 7 days or less"
+            description: |
+              CRITICAL: EU Regulation 2023/1115 (EUDR) enforcement deadline is approaching.
+
+              Deadline: 2025-12-30 00:00:00 UTC
+              Days remaining: {{ printf "%.1f" $value }}
+
+              All EUDR compliance systems must be fully operational and tested.
+
+              REQUIRED ACTIONS:
+              1. Verify all EUDR agent deployments are healthy
+              2. Confirm database migrations are complete
+              3. Validate integration with EU DDS system
+              4. Test complete due diligence workflow end-to-end
+              5. Ensure monitoring and alerting are functioning
+              6. Brief support team on escalation procedures
+              7. Prepare rollback plan if issues arise
+
+              COMPLIANCE IMPACT:
+              After 2025-12-30, importers CANNOT place regulated products on the
+              EU market without a due diligence statement. System downtime after
+              this date will block import operations.
+
+            runbook_url: "https://runbooks.greenlang.ai/eudr-deadline-readiness"
+            regulation_url: "https://eur-lex.europa.eu/eli/reg/2023/1115/oj"
+            slack_channel: "#eudr-compliance-alerts"
+            escalation: "immediate-executive-notification"
+
+        # CRITICAL: EUDR Validation Failures
+        - alert: EudrValidationFailures
+          expr: |
+            (
+              sum(rate(agent_calculations_total{agent_id="regulatory/eudr_compliance_v1", tool_name="validate_documentation", status="error"}[5m]))
+              /
+              sum(rate(agent_calculations_total{agent_id="regulatory/eudr_compliance_v1", tool_name="validate_documentation"}[5m]))
+            ) * 100 > 2
+          for: 5m
+          labels:
+            severity: critical
+            priority: p1
+            team: regulatory
+            service: eudr-compliance
+            tier: 1-extreme-urgency
+            regulation: eudr-2023-1115
+          annotations:
+            summary: "High rate of EUDR documentation validation failures"
+            description: |
+              EUDR documentation validation is failing at {{ printf "%.2f" $value }}%
+              which exceeds the 2% threshold.
+
+              This affects the quality and accuracy of due diligence statements,
+              potentially creating compliance risks for importers.
+
+              IMPACT:
+              - Invalid due diligence statements may be rejected by EU customs
+              - Importers may face delays or inability to import products
+              - Potential regulatory penalties for non-compliance
+
+              Common validation failure causes:
+              - Missing required fields in documentation
+              - Invalid country codes or commodity classifications
+              - Incomplete geolocation data
+              - Failed risk assessment criteria
+              - Malformed operator information
+
+              Actions:
+              1. Check validation error logs for specific failure patterns
+              2. Review validation rules for correctness
+              3. Verify input data quality from upstream systems
+              4. Check for schema mismatches in documentation
+              5. Test with known-good sample data
+
+            runbook_url: "https://runbooks.greenlang.ai/eudr-validation-failures"
+            dashboard_url: "https://grafana.greenlang.ai/d/eudr-agent"
+
+        # WARNING: EUDR Tool Execution Anomalies
+        - alert: EudrToolExecutionAnomaly
+          expr: |
+            (
+              sum(rate(agent_calculations_total{agent_id="regulatory/eudr_compliance_v1", status="error"}[10m])) by (tool_name)
+              /
+              sum(rate(agent_calculations_total{agent_id="regulatory/eudr_compliance_v1"}[10m])) by (tool_name)
+            ) * 100 > 3
+          for: 10m
+          labels:
+            severity: warning
+            team: regulatory
+            service: eudr-compliance
+            tier: 1-extreme-urgency
+          annotations:
+            summary: "EUDR tool {{ $labels.tool_name }} showing elevated error rate"
+            description: |
+              EUDR agent tool {{ $labels.tool_name }} has {{ printf "%.2f" $value }}% error rate.
+
+              Tool-specific guidance:
+              - calculate_country_risk: Check country risk database availability
+              - classify_commodity: Verify commodity classification DB and CN codes
+              - assess_deforestation_risk: Check geospatial data sources and APIs
+              - generate_due_diligence: Verify template engine and data completeness
+              - validate_documentation: Check validation rules and schema
+
+            runbook_url: "https://runbooks.greenlang.ai/eudr-tool-failures"
+
+        # WARNING: EUDR Agent Low Request Volume (potential system issue)
+        - alert: EudrAgentLowRequestVolume
+          expr: |
+            sum(rate(agent_requests_total{agent_id="regulatory/eudr_compliance_v1"}[10m])) < 0.1
+          for: 15m
+          labels:
+            severity: warning
+            team: regulatory
+            service: eudr-compliance
+            tier: 1-extreme-urgency
+          annotations:
+            summary: "EUDR Agent receiving unusually low request volume"
+            description: |
+              EUDR Compliance Agent is receiving fewer than 6 requests per minute,
+              which may indicate:
+
+              - Client/integration issues preventing requests
+              - Network connectivity problems
+              - Service discovery failures
+              - Incorrect routing configuration
+              - Upstream system failures
+
+              This is especially concerning approaching the regulatory deadline.
+
+              Actions:
+              1. Verify service is reachable from client applications
+              2. Check service mesh / ingress configuration
+              3. Review client application logs for errors
+              4. Confirm no planned maintenance or deployment in progress
+              5. Test with manual request to /health endpoint
+
+            runbook_url: "https://runbooks.greenlang.ai/eudr-low-volume"
+
+---
+# ============================================================================
+# ConfigMap for Dashboard Provisioning
+# ============================================================================
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboards-greenlang
+  namespace: monitoring
+  labels:
+    grafana_dashboard: "1"
+    app.kubernetes.io/name: grafana-dashboards
+    app.kubernetes.io/component: dashboards
+    app.kubernetes.io/part-of: greenlang-agent-factory
+data:
+  agent-factory-overview.json: |
+    # Dashboard JSON will be loaded from file
+    # See k8s/monitoring/dashboards/agent-factory-overview.json
+  agent-health.json: |
+    # Dashboard JSON will be loaded from file
+    # See k8s/monitoring/dashboards/agent-health.json
+  infrastructure.json: |
+    # Dashboard JSON will be loaded from file
+    # See k8s/monitoring/dashboards/infrastructure.json

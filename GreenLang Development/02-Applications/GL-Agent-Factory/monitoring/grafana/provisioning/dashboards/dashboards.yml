@@ -1,0 +1,44 @@
+# Grafana Dashboard Provisioning
+# Auto-loads dashboards from specified directories on startup
+
+apiVersion: 1
+
+providers:
+  # GreenLang Custom Dashboards
+  - name: 'GreenLang Dashboards'
+    orgId: 1
+    folder: 'GreenLang'
+    folderUid: 'greenlang'
+    type: file
+    disableDeletion: false
+    allowUiUpdates: true
+    updateIntervalSeconds: 30
+    options:
+      path: /var/lib/grafana/dashboards/greenlang
+      foldersFromFilesStructure: false
+
+  # System Monitoring Dashboards
+  - name: 'System Dashboards'
+    orgId: 1
+    folder: 'System'
+    folderUid: 'system'
+    type: file
+    disableDeletion: false
+    allowUiUpdates: true
+    updateIntervalSeconds: 30
+    options:
+      path: /var/lib/grafana/dashboards/system
+      foldersFromFilesStructure: false
+
+  # Kubernetes Dashboards (if using K8s)
+  - name: 'Kubernetes Dashboards'
+    orgId: 1
+    folder: 'Kubernetes'
+    folderUid: 'kubernetes'
+    type: file
+    disableDeletion: false
+    allowUiUpdates: true
+    updateIntervalSeconds: 30
+    options:
+      path: /var/lib/grafana/dashboards/kubernetes
+      foldersFromFilesStructure: false

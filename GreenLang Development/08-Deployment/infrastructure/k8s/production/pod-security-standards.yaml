@@ -1,0 +1,429 @@
+# GreenLang Production Pod Security Standards
+# Implements restricted PSS with security best practices
+---
+# Pod Security Policy (deprecated but included for backwards compatibility)
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: greenlang-production-restricted
+  labels:
+    environment: production
+  annotations:
+    seccomp.security.alpha.kubernetes.io/allowedProfiles: 'runtime/default,docker/default'
+    apparmor.security.beta.kubernetes.io/allowedProfiles: 'runtime/default'
+spec:
+  privileged: false
+  allowPrivilegeEscalation: false
+  requiredDropCapabilities:
+    - ALL
+  allowedCapabilities: []
+
+  # Volume restrictions
+  volumes:
+    - 'configMap'
+    - 'emptyDir'
+    - 'projected'
+    - 'secret'
+    - 'downwardAPI'
+    - 'persistentVolumeClaim'
+
+  # Host restrictions
+  hostNetwork: false
+  hostIPC: false
+  hostPID: false
+  hostPorts: []
+
+  # User and group restrictions
+  runAsUser:
+    rule: 'MustRunAsNonRoot'
+  runAsGroup:
+    rule: 'MustRunAs'
+    ranges:
+      - min: 1000
+        max: 65535
+  supplementalGroups:
+    rule: 'MustRunAs'
+    ranges:
+      - min: 1000
+        max: 65535
+  fsGroup:
+    rule: 'MustRunAs'
+    ranges:
+      - min: 1000
+        max: 65535
+
+  # SELinux
+  seLinux:
+    rule: 'RunAsAny'
+
+  # Read-only root filesystem
+  readOnlyRootFilesystem: true
+
+---
+# Security Context Constraints (for OpenShift compatibility)
+apiVersion: security.openshift.io/v1
+kind: SecurityContextConstraints
+metadata:
+  name: greenlang-production-scc
+  labels:
+    environment: production
+allowHostDirVolumePlugin: false
+allowHostIPC: false
+allowHostNetwork: false
+allowHostPID: false
+allowHostPorts: false
+allowPrivilegeEscalation: false
+allowPrivilegedContainer: false
+allowedCapabilities: null
+defaultAddCapabilities: null
+fsGroup:
+  type: MustRunAs
+  ranges:
+    - min: 1000
+      max: 65535
+priority: null
+readOnlyRootFilesystem: true
+requiredDropCapabilities:
+  - ALL
+runAsUser:
+  type: MustRunAsNonRoot
+seLinuxContext:
+  type: MustRunAs
+supplementalGroups:
+  type: MustRunAs
+  ranges:
+    - min: 1000
+      max: 65535
+users: []
+groups: []
+volumes:
+  - configMap
+  - downwardAPI
+  - emptyDir
+  - persistentVolumeClaim
+  - projected
+  - secret
+
+---
+# Kyverno Cluster Policy - Enforce Pod Security
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: greenlang-pod-security
+  labels:
+    environment: production
+  annotations:
+    policies.kyverno.io/title: GreenLang Pod Security Standards
+    policies.kyverno.io/category: Pod Security Standards
+    policies.kyverno.io/severity: high
+    policies.kyverno.io/subject: Pod
+    policies.kyverno.io/description: >-
+      Enforces production security standards for GreenLang pods.
+spec:
+  validationFailureAction: enforce
+  background: true
+  rules:
+    # Disallow privileged containers
+    - name: disallow-privileged-containers
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+              namespaces:
+                - greenlang-production
+      validate:
+        message: "Privileged mode is disallowed."
+        pattern:
+          spec:
+            containers:
+              - securityContext:
+                  privileged: "false"
+            initContainers:
+              - securityContext:
+                  privileged: "false"
+
+    # Require non-root user
+    - name: require-non-root
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+              namespaces:
+                - greenlang-production
+      validate:
+        message: "Containers must run as non-root user."
+        pattern:
+          spec:
+            securityContext:
+              runAsNonRoot: true
+            containers:
+              - securityContext:
+                  runAsNonRoot: true
+                  allowPrivilegeEscalation: false
+
+    # Require read-only root filesystem
+    - name: require-readonly-rootfs
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+              namespaces:
+                - greenlang-production
+      validate:
+        message: "Root filesystem must be read-only."
+        pattern:
+          spec:
+            containers:
+              - securityContext:
+                  readOnlyRootFilesystem: true
+
+    # Require resource limits
+    - name: require-resource-limits
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+              namespaces:
+                - greenlang-production
+      validate:
+        message: "CPU and memory limits are required."
+        pattern:
+          spec:
+            containers:
+              - resources:
+                  limits:
+                    memory: "?*"
+                    cpu: "?*"
+                  requests:
+                    memory: "?*"
+                    cpu: "?*"
+
+    # Disallow host namespaces
+    - name: disallow-host-namespaces
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+              namespaces:
+                - greenlang-production
+      validate:
+        message: "Host namespaces are not allowed."
+        pattern:
+          spec:
+            hostNetwork: "false"
+            hostIPC: "false"
+            hostPID: "false"
+
+    # Require approved base images
+    - name: require-approved-images
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+              namespaces:
+                - greenlang-production
+      validate:
+        message: "Images must be from approved registries."
+        pattern:
+          spec:
+            containers:
+              - image: "ghcr.io/greenlang/* | gcr.io/greenlang/*"
+            initContainers:
+              - image: "ghcr.io/greenlang/* | gcr.io/greenlang/*"
+
+    # Require image digest
+    - name: require-image-digest
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+              namespaces:
+                - greenlang-production
+      validate:
+        message: "Images must use digest (SHA256) for immutability."
+        pattern:
+          spec:
+            containers:
+              - image: "*@sha256:*"
+
+    # Drop all capabilities
+    - name: drop-all-capabilities
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+              namespaces:
+                - greenlang-production
+      validate:
+        message: "All capabilities must be dropped."
+        pattern:
+          spec:
+            containers:
+              - securityContext:
+                  capabilities:
+                    drop:
+                      - ALL
+
+    # Require seccomp profile
+    - name: require-seccomp
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+              namespaces:
+                - greenlang-production
+      validate:
+        message: "Seccomp profile must be RuntimeDefault or Localhost."
+        pattern:
+          spec:
+            securityContext:
+              seccompProfile:
+                type: "RuntimeDefault | Localhost"
+
+---
+# OPA Gatekeeper Constraint Template
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: greenlangpodsecurity
+  labels:
+    environment: production
+spec:
+  crd:
+    spec:
+      names:
+        kind: GreenLangPodSecurity
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties:
+            allowedRegistries:
+              type: array
+              items:
+                type: string
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package greenlangpodsecurity
+
+        violation[{"msg": msg}] {
+          container := input.review.object.spec.containers[_]
+          not container.securityContext.runAsNonRoot
+          msg := sprintf("Container %v must run as non-root", [container.name])
+        }
+
+        violation[{"msg": msg}] {
+          container := input.review.object.spec.containers[_]
+          container.securityContext.privileged
+          msg := sprintf("Container %v must not be privileged", [container.name])
+        }
+
+        violation[{"msg": msg}] {
+          container := input.review.object.spec.containers[_]
+          container.securityContext.allowPrivilegeEscalation
+          msg := sprintf("Container %v must not allow privilege escalation", [container.name])
+        }
+
+        violation[{"msg": msg}] {
+          container := input.review.object.spec.containers[_]
+          not container.resources.limits.memory
+          msg := sprintf("Container %v must have memory limits", [container.name])
+        }
+
+        violation[{"msg": msg}] {
+          container := input.review.object.spec.containers[_]
+          not container.resources.limits.cpu
+          msg := sprintf("Container %v must have CPU limits", [container.name])
+        }
+
+        violation[{"msg": msg}] {
+          container := input.review.object.spec.containers[_]
+          image := container.image
+          not startswith(image, "ghcr.io/greenlang/")
+          not startswith(image, "gcr.io/greenlang/")
+          msg := sprintf("Container %v uses unapproved image registry: %v", [container.name, image])
+        }
+
+---
+# Gatekeeper Constraint
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: GreenLangPodSecurity
+metadata:
+  name: greenlang-production-pod-security
+  labels:
+    environment: production
+spec:
+  enforcementAction: deny
+  match:
+    kinds:
+      - apiGroups: [""]
+        kinds: ["Pod"]
+    namespaces:
+      - greenlang-production
+  parameters:
+    allowedRegistries:
+      - "ghcr.io/greenlang/"
+      - "gcr.io/greenlang/"
+
+---
+# Runtime Security Profile (Falco rules)
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: greenlang-falco-rules
+  namespace: falco
+  labels:
+    environment: production
+data:
+  greenlang-rules.yaml: |
+    - rule: GreenLang Unauthorized Process
+      desc: Detect unauthorized process execution in GreenLang containers
+      condition: >
+        spawned_process and
+        container and
+        container.image.repository contains "greenlang" and
+        not proc.name in (python, python3, uvicorn, gunicorn, celery, node, npm)
+      output: >
+        Unauthorized process in GreenLang container
+        (user=%user.name container=%container.name image=%container.image.repository
+        process=%proc.name cmdline=%proc.cmdline)
+      priority: WARNING
+      tags: [greenlang, process, security]
+
+    - rule: GreenLang Sensitive File Access
+      desc: Detect access to sensitive files
+      condition: >
+        open_read and
+        container and
+        container.image.repository contains "greenlang" and
+        (fd.name startswith /etc/passwd or
+         fd.name startswith /etc/shadow or
+         fd.name contains private or
+         fd.name contains credentials)
+      output: >
+        Sensitive file access in GreenLang container
+        (user=%user.name file=%fd.name container=%container.name)
+      priority: CRITICAL
+      tags: [greenlang, file, security]
+
+    - rule: GreenLang Network Connection
+      desc: Detect unexpected outbound connections
+      condition: >
+        outbound and
+        container and
+        container.image.repository contains "greenlang" and
+        not fd.sip.name in (allowed_ips)
+      output: >
+        Unexpected network connection from GreenLang container
+        (user=%user.name connection=%fd.name container=%container.name)
+      priority: WARNING
+      tags: [greenlang, network, security]

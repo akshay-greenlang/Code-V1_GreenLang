@@ -1,0 +1,17 @@
+# Valid Enum Constraints Payload 001
+# Tests: All enum constraints satisfied
+# Schema: basic/enum_constraints.yaml
+
+_test_metadata:
+  schema: "basic/enum_constraints.yaml"
+  description: "Valid payload with all enum constraints satisfied"
+  expected_valid: true
+
+status: "approved"
+priority: 3
+region: "north_america"
+fuel_type: "diesel"
+schema_version: "1.0.0"
+api_version: 2
+boolean_flag: true
+nullable_status: "active"

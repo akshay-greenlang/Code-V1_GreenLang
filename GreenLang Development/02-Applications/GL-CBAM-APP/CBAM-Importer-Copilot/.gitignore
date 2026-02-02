@@ -1,0 +1,152 @@
+# ============================================================================
+# GL-CBAM-APP - Git Ignore File
+# ============================================================================
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+venv/
+ENV/
+env/
+.venv
+
+# Testing
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.hypothesis/
+*.cover
+.cache
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+*.sublime-project
+*.sublime-workspace
+
+# Environment files (NEVER commit these!)
+.env
+.env.local
+.env.production
+.env.staging
+.env.development
+*.env
+
+# Keep example files
+!.env.production.example
+
+# Logs
+*.log
+logs/
+*.log.*
+
+# Output directories
+output/
+uploads/
+data/output/
+reports/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# OS files
+Thumbs.db
+.DS_Store
+*.swp
+
+# Temporary files
+*.tmp
+*.bak
+*.backup
+*~
+
+# Secrets and credentials (CRITICAL - NEVER COMMIT!)
+secrets.yaml
+secrets/
+*.pem
+*.key
+*.crt
+*.p12
+credentials.json
+service-account.json
+
+# Kubernetes secrets (local copies)
+k8s/secrets-local.yaml
+k8s/*-secrets.yaml
+!k8s/secrets.yaml  # Template is ok
+
+# Docker
+docker-compose.override.yml
+
+# Build artifacts
+*.tar.gz
+*.zip
+*.rar
+
+# Large data files (use Git LFS if needed)
+*.csv
+*.xlsx
+!examples/*.csv
+!examples/*.xlsx
+
+# Backup files
+backup/
+backups/
+
+# Node modules (if any frontend)
+node_modules/
+
+# Coverage reports
+coverage/
+.nyc_output/
+
+# Profiling
+*.prof
+*.pstats
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre
+.pyre/
+
+# pytype
+.pytype/
+
+# Cython debug symbols
+cython_debug/

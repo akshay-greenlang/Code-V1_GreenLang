@@ -1,0 +1,599 @@
+# =============================================================================
+# Insulation Audit Agent Template
+# GreenLang Agent Factory - Process Heat Applications
+# =============================================================================
+# Standards: ASTM C1055, 3EPlus
+# Version: 1.0.0
+# =============================================================================
+
+metadata:
+  template_id: insulation_audit_agent
+  name: Insulation Defect Detection Agent
+  description: >
+    Audits thermal insulation systems to identify missing, damaged, or
+    degraded insulation. Calculates heat losses, prioritizes repairs,
+    and provides economic justification for insulation improvements.
+  category: maintenance
+  version: "1.0.0"
+  status: production
+  author: GreenLang Engineering Team
+  created_at: "2024-12-01T00:00:00Z"
+  updated_at: "2024-12-11T00:00:00Z"
+
+  tags:
+    - insulation
+    - heat_loss
+    - thermal_survey
+    - energy_efficiency
+    - maintenance
+
+  equipment_types:
+    - pipe_insulation
+    - vessel_insulation
+    - tank_insulation
+    - equipment_insulation
+
+  industries:
+    - oil_gas
+    - power_generation
+    - petrochemical
+    - chemical
+
+  applicable_standards:
+    - ASTM C1055
+    - ASTM C680
+    - 3EPlus
+    - NAIMA
+
+# =============================================================================
+# Input Schema
+# =============================================================================
+
+input_schema:
+  name: InsulationAuditInput
+  description: Insulation audit input parameters
+  version: "1.0.0"
+
+  fields:
+    # Equipment identification
+    equipment_tag:
+      type: string
+      description: Equipment tag
+      required: true
+
+    equipment_type:
+      type: enum
+      description: Type of equipment
+      required: true
+      allowed_values:
+        - pipe
+        - vessel
+        - tank
+        - heat_exchanger
+        - valve
+        - flange
+
+    service:
+      type: string
+      description: Service description
+      required: true
+
+    # Geometry
+    pipe_diameter:
+      type: float
+      description: Pipe outer diameter (for pipes)
+      required: false
+      unit: inch
+
+    surface_area:
+      type: float
+      description: Surface area (for vessels/tanks)
+      required: false
+      unit: m2
+
+    insulation_length:
+      type: float
+      description: Length of insulated section
+      required: false
+      unit: m
+
+    # Operating conditions
+    process_temperature:
+      type: float
+      description: Process temperature
+      required: true
+      unit: celsius
+
+    ambient_temperature:
+      type: float
+      description: Ambient temperature
+      required: true
+      unit: celsius
+
+    wind_speed:
+      type: float
+      description: Average wind speed
+      required: false
+      unit: m/s
+      default: 0
+
+    # Current insulation
+    insulation_type:
+      type: enum
+      description: Type of insulation
+      required: true
+      allowed_values:
+        - mineral_wool
+        - calcium_silicate
+        - cellular_glass
+        - aerogel
+        - none
+        - unknown
+
+    insulation_thickness:
+      type: float
+      description: Design insulation thickness
+      required: false
+      unit: mm
+
+    actual_thickness:
+      type: float
+      description: Measured actual thickness
+      required: false
+      unit: mm
+
+    jacketing_type:
+      type: enum
+      description: Type of jacketing
+      required: false
+      allowed_values:
+        - aluminum
+        - stainless_steel
+        - pvc
+        - none
+        - damaged
+
+    # Condition assessment
+    insulation_condition:
+      type: enum
+      description: Observed condition
+      required: true
+      allowed_values:
+        - good
+        - fair
+        - poor
+        - missing
+        - wet_damaged
+        - corroded
+
+    surface_temperature:
+      type: float
+      description: Measured surface temperature
+      required: true
+      unit: celsius
+
+    defect_area:
+      type: float
+      description: Area of defect/missing insulation
+      required: false
+      unit: m2
+
+    # Economic parameters
+    fuel_cost:
+      type: float
+      description: Fuel cost
+      required: true
+      unit: USD/GJ
+
+    operating_hours:
+      type: float
+      description: Annual operating hours
+      required: false
+      unit: hours/year
+      default: 8760
+
+    insulation_repair_cost:
+      type: float
+      description: Cost to repair/replace insulation
+      required: false
+      unit: USD/m2
+
+# =============================================================================
+# Output Schema
+# =============================================================================
+
+output_schema:
+  name: InsulationAuditOutput
+  description: Insulation audit results
+  version: "1.0.0"
+
+  fields:
+    # Condition assessment
+    condition_rating:
+      type: string
+      description: Overall condition rating
+
+    insulation_efficiency:
+      type: float
+      description: Current insulation efficiency
+      unit: percent
+
+    # Heat loss analysis
+    current_heat_loss:
+      type: float
+      description: Current heat loss rate
+      unit: W/m2
+
+    ideal_heat_loss:
+      type: float
+      description: Heat loss with proper insulation
+      unit: W/m2
+
+    excess_heat_loss:
+      type: float
+      description: Excess heat loss
+      unit: W/m2
+
+    total_heat_loss:
+      type: float
+      description: Total heat loss
+      unit: kW
+
+    annual_energy_loss:
+      type: float
+      description: Annual energy loss
+      unit: GJ/year
+
+    # Economic analysis
+    annual_cost_loss:
+      type: float
+      description: Annual cost of heat loss
+      unit: USD/year
+
+    repair_cost:
+      type: float
+      description: Estimated repair cost
+      unit: USD
+
+    annual_savings:
+      type: float
+      description: Annual savings if repaired
+      unit: USD/year
+
+    simple_payback:
+      type: float
+      description: Simple payback period
+      unit: months
+
+    roi:
+      type: float
+      description: Return on investment
+      unit: percent
+
+    # CO2 impact
+    co2_emissions:
+      type: float
+      description: CO2 from excess heat loss
+      unit: tonnes_CO2/year
+
+    # Priority and recommendations
+    repair_priority:
+      type: enum
+      description: Repair priority
+      allowed_values:
+        - critical
+        - high
+        - medium
+        - low
+
+    recommended_insulation:
+      type: string
+      description: Recommended insulation type
+
+    recommended_thickness:
+      type: float
+      description: Recommended thickness
+      unit: mm
+
+    recommendations:
+      type: list
+      description: Detailed recommendations
+
+    # Provenance
+    provenance_hash:
+      type: string
+      description: SHA-256 hash
+
+    calculation_timestamp:
+      type: datetime
+      description: Assessment timestamp
+
+# =============================================================================
+# Formulas
+# =============================================================================
+
+formulas:
+  - id: PIPE_HEAT_LOSS
+    name: Pipe Heat Loss
+    description: Calculate heat loss from insulated pipe
+    equation: "Q = (2 * pi * L * (T_p - T_a)) / (ln(r_o/r_i)/k_ins + 1/(h_o*r_o))"
+    variables:
+      Q:
+        description: Heat loss
+        unit: W
+        type: float
+      L:
+        description: Pipe length
+        unit: m
+        type: float
+      T_p:
+        description: Process temperature
+        unit: kelvin
+        type: float
+      T_a:
+        description: Ambient temperature
+        unit: kelvin
+        type: float
+      r_o:
+        description: Outer radius
+        unit: m
+        type: float
+      r_i:
+        description: Inner radius
+        unit: m
+        type: float
+      k_ins:
+        description: Insulation conductivity
+        unit: W/m-K
+        type: float
+      h_o:
+        description: Outer convection coefficient
+        unit: W/m2-K
+        type: float
+    source:
+      standard: ASTM C680
+      section: "Heat Transfer"
+      edition: "2020"
+    application: Pipe heat loss calculation
+
+  - id: BARE_SURFACE_LOSS
+    name: Bare Surface Heat Loss
+    description: Heat loss from uninsulated surface
+    equation: "Q = A * (h * (T_s - T_a) + epsilon * sigma * (T_s^4 - T_a^4))"
+    variables:
+      Q:
+        description: Heat loss
+        unit: W
+        type: float
+      A:
+        description: Surface area
+        unit: m2
+        type: float
+      h:
+        description: Convection coefficient
+        unit: W/m2-K
+        type: float
+      T_s:
+        description: Surface temperature
+        unit: kelvin
+        type: float
+      T_a:
+        description: Ambient temperature
+        unit: kelvin
+        type: float
+      epsilon:
+        description: Surface emissivity
+        unit: dimensionless
+        type: float
+      sigma:
+        description: Stefan-Boltzmann constant
+        unit: W/m2-K4
+        type: float
+    source:
+      standard: 3EPlus
+      section: "Bare Surface"
+      edition: "2023"
+    application: Uninsulated surface heat loss
+
+  - id: INSULATION_EFFICIENCY
+    name: Insulation Efficiency
+    description: Calculate insulation efficiency
+    equation: "eta = (T_p - T_s) / (T_p - T_a) * 100"
+    variables:
+      eta:
+        description: Efficiency
+        unit: percent
+        type: float
+      T_p:
+        description: Process temperature
+        unit: celsius
+        type: float
+      T_s:
+        description: Surface temperature
+        unit: celsius
+        type: float
+      T_a:
+        description: Ambient temperature
+        unit: celsius
+        type: float
+    source:
+      standard: ASTM C1055
+      section: "Efficiency"
+      edition: "2020"
+    application: Efficiency assessment
+
+# =============================================================================
+# Processing Pipeline
+# =============================================================================
+
+processing:
+  steps:
+    - id: STEP_01_VALIDATE
+      name: Input Validation
+      type: validation
+      inputs:
+        - all_input_fields
+      outputs:
+        - validation_status
+      error_handling: reject
+
+    - id: STEP_02_EFFICIENCY
+      name: Calculate Efficiency
+      type: calculation
+      inputs:
+        - process_temperature
+        - surface_temperature
+        - ambient_temperature
+      outputs:
+        - insulation_efficiency
+        - condition_rating
+      formula_refs:
+        - INSULATION_EFFICIENCY
+      error_handling: propagate
+
+    - id: STEP_03_CURRENT_LOSS
+      name: Calculate Current Heat Loss
+      type: calculation
+      inputs:
+        - equipment_type
+        - surface_temperature
+        - surface_area
+        - ambient_temperature
+        - wind_speed
+      outputs:
+        - current_heat_loss
+        - total_heat_loss
+      formula_refs:
+        - BARE_SURFACE_LOSS
+        - PIPE_HEAT_LOSS
+      error_handling: propagate
+
+    - id: STEP_04_IDEAL_LOSS
+      name: Calculate Ideal Heat Loss
+      type: calculation
+      inputs:
+        - insulation_type
+        - insulation_thickness
+        - process_temperature
+      outputs:
+        - ideal_heat_loss
+        - excess_heat_loss
+      formula_refs:
+        - PIPE_HEAT_LOSS
+      error_handling: propagate
+
+    - id: STEP_05_ANNUAL_LOSS
+      name: Calculate Annual Loss
+      type: calculation
+      inputs:
+        - excess_heat_loss
+        - operating_hours
+      outputs:
+        - annual_energy_loss
+      error_handling: propagate
+
+    - id: STEP_06_ECONOMICS
+      name: Economic Analysis
+      type: calculation
+      inputs:
+        - annual_energy_loss
+        - fuel_cost
+        - insulation_repair_cost
+        - defect_area
+      outputs:
+        - annual_cost_loss
+        - repair_cost
+        - annual_savings
+        - simple_payback
+        - roi
+      error_handling: propagate
+
+    - id: STEP_07_CO2
+      name: CO2 Impact
+      type: calculation
+      inputs:
+        - annual_energy_loss
+      outputs:
+        - co2_emissions
+      error_handling: default
+
+    - id: STEP_08_PRIORITIZE
+      name: Prioritize Repairs
+      type: decision
+      inputs:
+        - annual_cost_loss
+        - simple_payback
+        - insulation_condition
+      outputs:
+        - repair_priority
+      error_handling: propagate
+
+    - id: STEP_09_RECOMMENDATIONS
+      name: Generate Recommendations
+      type: decision
+      inputs:
+        - insulation_condition
+        - process_temperature
+        - equipment_type
+      outputs:
+        - recommended_insulation
+        - recommended_thickness
+        - recommendations
+      error_handling: default
+
+    - id: STEP_10_PROVENANCE
+      name: Provenance Tracking
+      type: output
+      inputs:
+        - all_inputs
+        - all_outputs
+      outputs:
+        - provenance_hash
+        - calculation_timestamp
+      error_handling: propagate
+
+# =============================================================================
+# Zero-Hallucination Configuration
+# =============================================================================
+
+zero_hallucination:
+  enabled: true
+  calculation_mode: deterministic
+  allowed_operations:
+    - arithmetic
+    - formula_evaluation
+    - logarithmic_calculation
+    - insulation_property_lookup
+  forbidden_operations:
+    - llm_heat_loss_estimation
+  require_formula_citation: true
+  require_provenance: true
+  llm_allowed_for:
+    - condition_classification
+    - recommendation_narrative
+
+# =============================================================================
+# Test Cases
+# =============================================================================
+
+test_cases:
+  - name: Missing Pipe Insulation
+    inputs:
+      equipment_tag: P-101
+      equipment_type: pipe
+      service: Steam supply
+      pipe_diameter: 6
+      insulation_length: 10
+      process_temperature: 200
+      ambient_temperature: 25
+      insulation_type: none
+      insulation_condition: missing
+      surface_temperature: 195
+      fuel_cost: 5.0
+      operating_hours: 8760
+      insulation_repair_cost: 150
+    expected_outputs:
+      insulation_efficiency:
+        min: 0
+        max: 5
+      repair_priority: critical

@@ -1,0 +1,381 @@
+# GreenLang Agent Factory - Project Configuration
+# PEP 518, PEP 621 compliant
+
+[build-system]
+requires = ["setuptools>=68.0", "wheel", "setuptools-scm>=8.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "greenlang-agent-factory"
+version = "1.0.0"
+description = "GreenLang Agent Factory - Climate and Industrial Decarbonization Agents at Scale"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.10"
+authors = [
+    {name = "GreenLang Team", email = "team@greenlang.io"}
+]
+maintainers = [
+    {name = "GreenLang Team", email = "team@greenlang.io"}
+]
+keywords = [
+    "climate",
+    "sustainability",
+    "decarbonization",
+    "ai-agents",
+    "llm",
+    "carbon",
+    "emissions",
+    "regulatory-compliance"
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Typing :: Typed",
+]
+
+dependencies = [
+    "pydantic>=2.0.0",
+    "fastapi>=0.109.0",
+    "uvicorn>=0.27.0",
+    "httpx>=0.27.0",
+    "aiohttp>=3.9.0",
+    "python-dotenv>=1.0.0",
+    "PyYAML>=6.0.0",
+    "structlog>=24.1.0",
+    "tenacity>=8.2.0",
+    "prometheus-client>=0.20.0",
+    "opentelemetry-api>=1.23.0",
+    "opentelemetry-sdk>=1.23.0",
+    "anthropic>=0.18.0",
+    "langchain>=0.1.0",
+    "langgraph>=0.0.20",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "pytest-asyncio>=0.23.0",
+    "pytest-xdist>=3.5.0",
+    "pytest-timeout>=2.2.0",
+    "pytest-benchmark>=4.0.0",
+    "ruff>=0.3.0",
+    "black>=24.2.0",
+    "isort>=5.13.0",
+    "mypy>=1.8.0",
+    "pre-commit>=3.6.0",
+    "tox>=4.13.0",
+    "ipython>=8.21.0",
+    "ipdb>=0.13.0",
+]
+
+test = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "pytest-asyncio>=0.23.0",
+    "pytest-xdist>=3.5.0",
+    "pytest-timeout>=2.2.0",
+    "pytest-benchmark>=4.0.0",
+    "pytest-mock>=3.12.0",
+    "hypothesis>=6.98.0",
+    "faker>=23.2.0",
+    "deepdiff>=6.7.0",
+    "responses>=0.25.0",
+]
+
+security = [
+    "bandit>=1.7.7",
+    "safety>=3.0.0",
+    "pip-audit>=2.7.0",
+    "detect-secrets>=1.4.0",
+]
+
+docs = [
+    "sphinx>=7.2.0",
+    "sphinx-rtd-theme>=2.0.0",
+    "sphinx-autodoc-typehints>=2.0.0",
+    "myst-parser>=2.0.0",
+]
+
+all = [
+    "greenlang-agent-factory[dev,test,security,docs]",
+]
+
+[project.urls]
+Homepage = "https://greenlang.io"
+Documentation = "https://docs.greenlang.io"
+Repository = "https://github.com/greenlang/agent-factory"
+Changelog = "https://github.com/greenlang/agent-factory/blob/main/CHANGELOG.md"
+"Bug Tracker" = "https://github.com/greenlang/agent-factory/issues"
+
+[project.scripts]
+gl = "greenlang.cli:main"
+greenlang = "greenlang.cli:main"
+
+[project.entry-points."greenlang.agents"]
+boiler_efficiency = "greenlang.agents.boiler_efficiency:BoilerEfficiencyOptimizer"
+emission_calculator = "greenlang.agents.emission_calculator:EmissionCalculator"
+
+# =============================================================================
+# Tool Configurations
+# =============================================================================
+
+[tool.setuptools]
+package-dir = {"" = "backend"}
+
+[tool.setuptools.packages.find]
+where = ["backend"]
+include = ["agents*", "engines*", "services*", "app*", "core*", "connectors*", "data*"]
+
+[tool.setuptools.package-data]
+greenlang = ["py.typed", "*.yaml", "*.json"]
+
+# =============================================================================
+# Black Configuration
+# =============================================================================
+[tool.black]
+line-length = 100
+target-version = ["py310", "py311", "py312"]
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+    | \.hg
+    | \.mypy_cache
+    | \.tox
+    | \.venv
+    | venv
+    | _build
+    | buck-out
+    | build
+    | dist
+    | migrations
+)/
+'''
+
+# =============================================================================
+# isort Configuration
+# =============================================================================
+[tool.isort]
+profile = "black"
+line_length = 100
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+ensure_newline_before_comments = true
+skip = [".git", ".venv", "venv", "dist", "build", "__pycache__", "migrations"]
+known_first_party = ["greenlang"]
+known_third_party = ["pydantic", "fastapi", "pytest", "anthropic", "langchain"]
+
+# =============================================================================
+# Ruff Configuration
+# =============================================================================
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+exclude = [
+    ".git",
+    ".hg",
+    ".mypy_cache",
+    ".tox",
+    ".venv",
+    "venv",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "__pycache__",
+    "migrations",
+]
+
+[tool.ruff.lint]
+select = [
+    "E",      # pycodestyle errors
+    "W",      # pycodestyle warnings
+    "F",      # Pyflakes
+    "I",      # isort
+    "N",      # pep8-naming
+    "UP",     # pyupgrade
+    "YTT",    # flake8-2020
+    "ANN",    # flake8-annotations
+    "ASYNC",  # flake8-async
+    "S",      # flake8-bandit
+    "BLE",    # flake8-blind-except
+    "FBT",    # flake8-boolean-trap
+    "B",      # flake8-bugbear
+    "A",      # flake8-builtins
+    "COM",    # flake8-commas
+    "C4",     # flake8-comprehensions
+    "DTZ",    # flake8-datetimez
+    "T10",    # flake8-debugger
+    "EM",     # flake8-errmsg
+    "EXE",    # flake8-executable
+    "ISC",    # flake8-implicit-str-concat
+    "ICN",    # flake8-import-conventions
+    "G",      # flake8-logging-format
+    "INP",    # flake8-no-pep420
+    "PIE",    # flake8-pie
+    "T20",    # flake8-print
+    "PYI",    # flake8-pyi
+    "PT",     # flake8-pytest-style
+    "Q",      # flake8-quotes
+    "RSE",    # flake8-raise
+    "RET",    # flake8-return
+    "SLF",    # flake8-self
+    "SLOT",   # flake8-slots
+    "SIM",    # flake8-simplify
+    "TID",    # flake8-tidy-imports
+    "TCH",    # flake8-type-checking
+    "ARG",    # flake8-unused-arguments
+    "PTH",    # flake8-use-pathlib
+    "ERA",    # eradicate
+    "PD",     # pandas-vet
+    "PGH",    # pygrep-hooks
+    "PL",     # Pylint
+    "TRY",    # tryceratops
+    "FLY",    # flynt
+    "NPY",    # NumPy-specific rules
+    "PERF",   # Perflint
+    "FURB",   # refurb
+    "LOG",    # flake8-logging
+    "RUF",    # Ruff-specific rules
+]
+
+ignore = [
+    "ANN101",   # Missing type annotation for self
+    "ANN102",   # Missing type annotation for cls
+    "ANN401",   # Dynamically typed expressions (typing.Any)
+    "S101",     # Use of assert detected
+    "PLR0913",  # Too many arguments to function call
+    "TRY003",   # Avoid specifying long messages outside the exception class
+    "COM812",   # Trailing comma missing (conflicts with black)
+    "ISC001",   # Single line implicit string concatenation (conflicts with black)
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101", "ANN", "PLR2004", "ARG001"]
+"conftest.py" = ["ANN"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["greenlang"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+# =============================================================================
+# MyPy Configuration
+# =============================================================================
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+disallow_untyped_defs = true
+check_untyped_defs = true
+no_implicit_optional = true
+strict_equality = true
+show_error_codes = true
+show_column_numbers = true
+pretty = true
+
+exclude = [
+    "tests",
+    "migrations",
+    ".venv",
+    "venv",
+]
+
+[[tool.mypy.overrides]]
+module = [
+    "anthropic.*",
+    "langchain.*",
+    "langgraph.*",
+    "prometheus_client.*",
+    "opentelemetry.*",
+]
+ignore_missing_imports = true
+
+# =============================================================================
+# Pytest Configuration
+# =============================================================================
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short --strict-markers -ra"
+asyncio_mode = "auto"
+markers = [
+    "slow: marks tests as slow",
+    "integration: marks tests as integration tests",
+    "e2e: marks tests as end-to-end tests",
+    "golden: marks tests as golden tests",
+    "certification: marks tests for agent certification",
+]
+
+# =============================================================================
+# Coverage Configuration
+# =============================================================================
+[tool.coverage.run]
+source = ["."]
+branch = true
+parallel = true
+omit = [
+    "tests/*",
+    ".venv/*",
+    "venv/*",
+    "dist/*",
+    "build/*",
+]
+
+[tool.coverage.report]
+fail_under = 85
+precision = 2
+show_missing = true
+skip_covered = false
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if TYPE_CHECKING:",
+    "if __name__ == .__main__.:",
+    "@abstractmethod",
+]
+
+[tool.coverage.html]
+directory = "htmlcov"
+
+[tool.coverage.xml]
+output = "coverage.xml"
+
+# =============================================================================
+# Bandit Configuration
+# =============================================================================
+[tool.bandit]
+exclude_dirs = ["tests", ".venv", "venv"]
+skips = ["B101"]  # assert_used
+
+# =============================================================================
+# Commitizen Configuration
+# =============================================================================
+[tool.commitizen]
+name = "cz_conventional_commits"
+tag_format = "v$version"
+version_scheme = "semver"
+version_provider = "pep621"
+update_changelog_on_bump = true
+major_version_zero = true

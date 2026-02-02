@@ -1,0 +1,918 @@
+# =============================================================================
+# Heat Recovery Assessment Agent Template
+# GreenLang Agent Factory - Process Heat Applications
+# =============================================================================
+# Standards: DOE AMO, ASME, Pinch Analysis
+# Version: 1.0.0
+# =============================================================================
+
+metadata:
+  template_id: heat_recovery_agent
+  name: Waste Heat Recovery Assessment Agent
+  description: >
+    Assesses waste heat recovery opportunities from process streams, flue gases,
+    and equipment surfaces. Performs pinch analysis, evaluates recovery technologies,
+    and provides economic justification for heat recovery projects.
+  category: efficiency
+  version: "1.0.0"
+  status: production
+  author: GreenLang Engineering Team
+  created_at: "2024-12-01T00:00:00Z"
+  updated_at: "2024-12-11T00:00:00Z"
+
+  tags:
+    - waste_heat
+    - heat_recovery
+    - pinch_analysis
+    - economizer
+    - recuperator
+    - ORC
+
+  equipment_types:
+    - economizer
+    - air_preheater
+    - recuperator
+    - regenerator
+    - heat_pipe
+    - orc_system
+    - absorption_chiller
+
+  industries:
+    - oil_gas
+    - petrochemical
+    - chemical
+    - metals
+    - cement
+    - glass
+    - food_beverage
+
+  applicable_standards:
+    - DOE AMO Best Practices
+    - ASME PTC
+    - IEA Industrial Heat Recovery
+
+# =============================================================================
+# Input Schema
+# =============================================================================
+
+input_schema:
+  name: HeatRecoveryInput
+  description: Waste heat recovery assessment input parameters
+  version: "1.0.0"
+
+  fields:
+    # Waste heat source identification
+    source_name:
+      type: string
+      description: Name/identifier of waste heat source
+      required: true
+
+    source_type:
+      type: enum
+      description: Type of waste heat source
+      required: true
+      allowed_values:
+        - flue_gas
+        - process_stream
+        - cooling_water
+        - condenser_heat
+        - compressor_aftercooler
+        - surface_radiation
+        - other
+
+    # Waste heat stream parameters
+    waste_stream_flow:
+      type: float
+      description: Mass flow rate of waste heat stream
+      required: true
+      unit: kg/hr
+      min_value: 0
+
+    waste_stream_inlet_temp:
+      type: float
+      description: Inlet temperature of waste heat stream
+      required: true
+      unit: celsius
+      min_value: -50
+      max_value: 1500
+
+    waste_stream_min_outlet_temp:
+      type: float
+      description: Minimum allowable outlet temperature (e.g., acid dew point)
+      required: true
+      unit: celsius
+
+    waste_stream_cp:
+      type: float
+      description: Specific heat of waste stream
+      required: true
+      unit: kJ/kg-K
+      min_value: 0.1
+      max_value: 10
+
+    waste_stream_composition:
+      type: dict
+      description: Stream composition (for flue gas acid dew point)
+      required: false
+
+    sulfur_content:
+      type: float
+      description: Sulfur content in fuel (for acid dew point)
+      required: false
+      unit: percent
+      default: 0
+
+    # Heat sink identification
+    sink_available:
+      type: boolean
+      description: Whether a heat sink is available
+      required: true
+
+    sink_name:
+      type: string
+      description: Name/identifier of heat sink
+      required: false
+
+    sink_type:
+      type: enum
+      description: Type of heat sink
+      required: false
+      allowed_values:
+        - combustion_air
+        - feedwater
+        - process_fluid
+        - space_heating
+        - absorption_cooling
+        - power_generation
+        - none
+
+    sink_flow:
+      type: float
+      description: Mass flow rate of heat sink stream
+      required: false
+      unit: kg/hr
+
+    sink_inlet_temp:
+      type: float
+      description: Inlet temperature of heat sink
+      required: false
+      unit: celsius
+
+    sink_max_outlet_temp:
+      type: float
+      description: Maximum allowable outlet temperature of sink
+      required: false
+      unit: celsius
+
+    sink_cp:
+      type: float
+      description: Specific heat of heat sink stream
+      required: false
+      unit: kJ/kg-K
+
+    # Operating conditions
+    operating_hours:
+      type: float
+      description: Annual operating hours
+      required: true
+      unit: hours/year
+      min_value: 0
+      max_value: 8760
+      default: 8000
+
+    load_factor:
+      type: float
+      description: Average load factor
+      required: false
+      unit: percent
+      min_value: 0
+      max_value: 100
+      default: 80
+
+    # Economic parameters
+    fuel_cost:
+      type: float
+      description: Fuel cost for equivalent heating
+      required: true
+      unit: USD/GJ
+      min_value: 0
+
+    electricity_cost:
+      type: float
+      description: Electricity cost
+      required: false
+      unit: USD/kWh
+      default: 0.08
+
+    capital_budget:
+      type: float
+      description: Available capital budget
+      required: false
+      unit: USD
+
+    required_payback:
+      type: float
+      description: Maximum acceptable payback period
+      required: false
+      unit: years
+      default: 3
+
+    discount_rate:
+      type: float
+      description: Discount rate for NPV calculation
+      required: false
+      unit: percent
+      default: 10
+
+    # Site constraints
+    space_available:
+      type: float
+      description: Available footprint for heat recovery equipment
+      required: false
+      unit: m2
+
+    max_pressure_drop:
+      type: float
+      description: Maximum allowable pressure drop on waste stream
+      required: false
+      unit: mbar
+      default: 25
+
+    corrosive_environment:
+      type: boolean
+      description: Whether environment is corrosive
+      required: false
+      default: false
+
+    fouling_tendency:
+      type: enum
+      description: Fouling tendency of waste stream
+      required: false
+      allowed_values:
+        - low
+        - moderate
+        - high
+        - severe
+      default: moderate
+
+# =============================================================================
+# Output Schema
+# =============================================================================
+
+output_schema:
+  name: HeatRecoveryOutput
+  description: Waste heat recovery assessment results
+  version: "1.0.0"
+
+  fields:
+    # Waste heat quantification
+    waste_heat_available:
+      type: float
+      description: Total waste heat available
+      unit: MW
+
+    waste_heat_quality:
+      type: string
+      description: Quality classification of waste heat
+
+    exergy_content:
+      type: float
+      description: Exergy content of waste heat
+      unit: MW
+
+    carnot_efficiency:
+      type: float
+      description: Maximum theoretical efficiency
+      unit: percent
+
+    # Recovery potential
+    recoverable_heat:
+      type: float
+      description: Technically recoverable heat
+      unit: MW
+
+    recovery_percentage:
+      type: float
+      description: Percentage of waste heat recoverable
+      unit: percent
+
+    # Temperature analysis
+    acid_dew_point:
+      type: float
+      description: Calculated acid dew point
+      unit: celsius
+
+    water_dew_point:
+      type: float
+      description: Water dew point
+      unit: celsius
+
+    safe_outlet_temp:
+      type: float
+      description: Safe minimum outlet temperature
+      unit: celsius
+
+    approach_temperature:
+      type: float
+      description: Minimum approach temperature
+      unit: celsius
+
+    # Technology recommendations
+    recommended_technology:
+      type: string
+      description: Primary recommended recovery technology
+
+    technology_options:
+      type: list
+      description: List of viable technology options with details
+
+    equipment_sizing:
+      type: dict
+      description: Preliminary equipment sizing
+
+    # Energy savings
+    annual_heat_recovered:
+      type: float
+      description: Annual recoverable heat
+      unit: GJ/year
+
+    fuel_savings:
+      type: float
+      description: Annual fuel savings
+      unit: GJ/year
+
+    electricity_generation:
+      type: float
+      description: Potential electricity generation (if ORC)
+      unit: MWh/year
+
+    # Economic analysis
+    estimated_capex:
+      type: float
+      description: Estimated capital cost
+      unit: USD
+
+    annual_savings:
+      type: float
+      description: Annual cost savings
+      unit: USD/year
+
+    simple_payback:
+      type: float
+      description: Simple payback period
+      unit: years
+
+    npv:
+      type: float
+      description: Net present value
+      unit: USD
+
+    irr:
+      type: float
+      description: Internal rate of return
+      unit: percent
+
+    lcoe:
+      type: float
+      description: Levelized cost of energy (if power generation)
+      unit: USD/MWh
+
+    # Environmental impact
+    co2_reduction:
+      type: float
+      description: Annual CO2 reduction
+      unit: tonnes/year
+
+    co2_abatement_cost:
+      type: float
+      description: Cost per tonne CO2 abated
+      unit: USD/tonne
+
+    # Risk assessment
+    technical_risk:
+      type: string
+      description: Technical risk level
+
+    implementation_complexity:
+      type: string
+      description: Implementation complexity rating
+
+    # Recommendations
+    recommendations:
+      type: list
+      description: Detailed recommendations
+
+    next_steps:
+      type: list
+      description: Suggested next steps
+
+    design_considerations:
+      type: list
+      description: Key design considerations
+
+    # Provenance
+    provenance_hash:
+      type: string
+      description: SHA-256 calculation hash
+
+    calculation_timestamp:
+      type: datetime
+      description: Timestamp of assessment
+
+    source_references:
+      type: list
+      description: Standards and methods used
+
+# =============================================================================
+# Formulas
+# =============================================================================
+
+formulas:
+  - id: WASTE_HEAT_AVAILABLE
+    name: Available Waste Heat
+    description: Calculate total available waste heat
+    equation: "Q = m * Cp * (T_in - T_min)"
+    variables:
+      Q:
+        description: Available waste heat
+        unit: kW
+        type: float
+      m:
+        description: Mass flow rate
+        unit: kg/s
+        type: float
+      Cp:
+        description: Specific heat
+        unit: kJ/kg-K
+        type: float
+      T_in:
+        description: Inlet temperature
+        unit: celsius
+        type: float
+      T_min:
+        description: Minimum outlet temperature
+        unit: celsius
+        type: float
+    source:
+      standard: DOE AMO
+      section: "Waste Heat Recovery"
+      edition: "2015"
+    application: Basic waste heat quantification
+
+  - id: ACID_DEW_POINT
+    name: Acid Dew Point (Okkes)
+    description: Calculate sulfuric acid dew point
+    equation: "T_adp = 203.25 + 27.6*log10(P_H2O) + 10.83*log10(P_SO3)"
+    variables:
+      T_adp:
+        description: Acid dew point temperature
+        unit: celsius
+        type: float
+      P_H2O:
+        description: Partial pressure of water
+        unit: atm
+        type: float
+      P_SO3:
+        description: Partial pressure of SO3
+        unit: atm
+        type: float
+    source:
+      standard: Okkes Correlation
+      section: "Acid Dew Point"
+      edition: "1987"
+    application: Flue gas heat recovery limit
+    limitations:
+      - Valid for SO3 concentrations 0.0001-0.01 atm
+
+  - id: CARNOT_EFFICIENCY
+    name: Carnot Efficiency
+    description: Maximum theoretical thermal efficiency
+    equation: "eta_carnot = 1 - (T_cold / T_hot)"
+    variables:
+      eta_carnot:
+        description: Carnot efficiency
+        unit: fraction
+        type: float
+      T_cold:
+        description: Cold sink temperature
+        unit: kelvin
+        type: float
+      T_hot:
+        description: Hot source temperature
+        unit: kelvin
+        type: float
+    source:
+      standard: Thermodynamics
+      section: "Carnot Cycle"
+      edition: "Classical"
+    application: Exergy and power generation potential
+
+  - id: EXERGY_CONTENT
+    name: Exergy Content
+    description: Calculate exergy of waste heat stream
+    equation: "Ex = Q * (1 - T_0/T_avg)"
+    variables:
+      Ex:
+        description: Exergy content
+        unit: kW
+        type: float
+      Q:
+        description: Heat content
+        unit: kW
+        type: float
+      T_0:
+        description: Reference temperature
+        unit: kelvin
+        type: float
+      T_avg:
+        description: Average stream temperature
+        unit: kelvin
+        type: float
+    source:
+      standard: DOE AMO
+      section: "Exergy Analysis"
+      edition: "2015"
+    application: Heat quality assessment
+
+  - id: ORC_POWER_OUTPUT
+    name: ORC Power Output
+    description: Estimate ORC power generation
+    equation: "P_elec = Q_in * eta_orc"
+    variables:
+      P_elec:
+        description: Electrical power output
+        unit: kW
+        type: float
+      Q_in:
+        description: Heat input to ORC
+        unit: kW
+        type: float
+      eta_orc:
+        description: ORC efficiency
+        unit: fraction
+        type: float
+    source:
+      standard: DOE AMO
+      section: "ORC Technology"
+      edition: "2015"
+    application: Power generation from waste heat
+    limitations:
+      - ORC efficiency typically 10-20%
+
+  - id: SIMPLE_PAYBACK
+    name: Simple Payback
+    description: Calculate simple payback period
+    equation: "PB = CAPEX / Annual_Savings"
+    variables:
+      PB:
+        description: Payback period
+        unit: years
+        type: float
+      CAPEX:
+        description: Capital expenditure
+        unit: USD
+        type: float
+      Annual_Savings:
+        description: Annual cost savings
+        unit: USD/year
+        type: float
+    source:
+      standard: Engineering Economics
+      section: "Basic"
+      edition: "Standard"
+    application: Investment screening
+
+  - id: NPV_CALCULATION
+    name: Net Present Value
+    description: Calculate NPV of heat recovery project
+    equation: "NPV = -CAPEX + sum(CF_t / (1+r)^t)"
+    variables:
+      NPV:
+        description: Net present value
+        unit: USD
+        type: float
+      CAPEX:
+        description: Initial investment
+        unit: USD
+        type: float
+      CF_t:
+        description: Cash flow in year t
+        unit: USD
+        type: float
+      r:
+        description: Discount rate
+        unit: fraction
+        type: float
+    source:
+      standard: Engineering Economics
+      section: "NPV"
+      edition: "Standard"
+    application: Investment decision
+
+# =============================================================================
+# Standards References
+# =============================================================================
+
+standards:
+  - code: DOE AMO
+    title: DOE Advanced Manufacturing Office Best Practices
+    edition: "2015"
+    sections:
+      - "Waste Heat Recovery"
+      - "Process Heating"
+    requirements:
+      - Heat recovery assessment methodology
+    compliance_level: recommended
+
+  - code: IEA
+    title: IEA Industrial Energy Efficiency
+    edition: "2018"
+    sections:
+      - "Heat Recovery Technologies"
+    requirements:
+      - Technology selection criteria
+    compliance_level: recommended
+
+# =============================================================================
+# Safety Constraints
+# =============================================================================
+
+safety_constraints:
+  - id: SC_ACID_DEW_POINT
+    name: Acid Dew Point Protection
+    description: Outlet temperature must be above acid dew point
+    condition: "waste_stream_min_outlet_temp >= acid_dew_point + 20"
+    action: reject
+    severity: critical
+    message: "Outlet temperature too close to acid dew point - corrosion risk"
+
+  - id: SC_APPROACH_TEMP
+    name: Minimum Approach Temperature
+    description: Maintain minimum temperature approach
+    condition: "approach_temperature >= 10"
+    action: warn
+    severity: warning
+    message: "Approach temperature {approach_temperature}C below 10C"
+
+  - id: SC_PRESSURE_DROP
+    name: Pressure Drop Limit
+    description: Ensure pressure drop within limits
+    condition: "pressure_drop <= max_pressure_drop"
+    action: warn
+    severity: warning
+    message: "Estimated pressure drop exceeds limit"
+
+  - id: SC_PAYBACK_LIMIT
+    name: Payback Period Check
+    description: Check payback against requirement
+    condition: "simple_payback <= required_payback"
+    action: warn
+    severity: info
+    message: "Payback {simple_payback} years exceeds required {required_payback} years"
+
+# =============================================================================
+# Processing Pipeline
+# =============================================================================
+
+processing:
+  steps:
+    - id: STEP_01_VALIDATE_INPUTS
+      name: Input Validation
+      type: validation
+      description: Validate all input parameters
+      inputs:
+        - all_input_fields
+      outputs:
+        - validation_status
+      error_handling: reject
+
+    - id: STEP_02_QUANTIFY_WASTE_HEAT
+      name: Waste Heat Quantification
+      type: calculation
+      description: Calculate available waste heat
+      inputs:
+        - waste_stream_flow
+        - waste_stream_inlet_temp
+        - waste_stream_min_outlet_temp
+        - waste_stream_cp
+      outputs:
+        - waste_heat_available
+        - waste_heat_quality
+      formula_refs:
+        - WASTE_HEAT_AVAILABLE
+      error_handling: propagate
+
+    - id: STEP_03_DEW_POINT_ANALYSIS
+      name: Dew Point Analysis
+      type: calculation
+      description: Calculate acid and water dew points
+      inputs:
+        - waste_stream_composition
+        - sulfur_content
+      outputs:
+        - acid_dew_point
+        - water_dew_point
+        - safe_outlet_temp
+      formula_refs:
+        - ACID_DEW_POINT
+      constraints:
+        - SC_ACID_DEW_POINT
+      error_handling: propagate
+
+    - id: STEP_04_EXERGY_ANALYSIS
+      name: Exergy Analysis
+      type: calculation
+      description: Calculate exergy content and Carnot efficiency
+      inputs:
+        - waste_heat_available
+        - waste_stream_inlet_temp
+        - waste_stream_min_outlet_temp
+      outputs:
+        - exergy_content
+        - carnot_efficiency
+      formula_refs:
+        - EXERGY_CONTENT
+        - CARNOT_EFFICIENCY
+      error_handling: propagate
+
+    - id: STEP_05_RECOVERY_POTENTIAL
+      name: Recovery Potential
+      type: calculation
+      description: Calculate recoverable heat considering constraints
+      inputs:
+        - waste_heat_available
+        - sink_available
+        - sink_flow
+        - sink_inlet_temp
+        - sink_max_outlet_temp
+        - sink_cp
+      outputs:
+        - recoverable_heat
+        - recovery_percentage
+        - approach_temperature
+      constraints:
+        - SC_APPROACH_TEMP
+      error_handling: propagate
+
+    - id: STEP_06_TECHNOLOGY_SELECTION
+      name: Technology Selection
+      type: decision
+      description: Select appropriate heat recovery technology
+      inputs:
+        - waste_heat_available
+        - waste_stream_inlet_temp
+        - waste_heat_quality
+        - sink_type
+        - corrosive_environment
+        - fouling_tendency
+      outputs:
+        - recommended_technology
+        - technology_options
+        - equipment_sizing
+      error_handling: propagate
+
+    - id: STEP_07_ENERGY_SAVINGS
+      name: Energy Savings Calculation
+      type: calculation
+      description: Calculate annual energy savings
+      inputs:
+        - recoverable_heat
+        - operating_hours
+        - load_factor
+      outputs:
+        - annual_heat_recovered
+        - fuel_savings
+        - electricity_generation
+      formula_refs:
+        - ORC_POWER_OUTPUT
+      error_handling: propagate
+
+    - id: STEP_08_ECONOMIC_ANALYSIS
+      name: Economic Analysis
+      type: calculation
+      description: Perform economic evaluation
+      inputs:
+        - annual_heat_recovered
+        - fuel_cost
+        - electricity_cost
+        - required_payback
+        - discount_rate
+      outputs:
+        - estimated_capex
+        - annual_savings
+        - simple_payback
+        - npv
+        - irr
+        - lcoe
+      formula_refs:
+        - SIMPLE_PAYBACK
+        - NPV_CALCULATION
+      constraints:
+        - SC_PAYBACK_LIMIT
+      error_handling: propagate
+
+    - id: STEP_09_ENVIRONMENTAL
+      name: Environmental Impact
+      type: calculation
+      description: Calculate CO2 reduction
+      inputs:
+        - fuel_savings
+        - electricity_generation
+      outputs:
+        - co2_reduction
+        - co2_abatement_cost
+      error_handling: default
+
+    - id: STEP_10_RISK_ASSESSMENT
+      name: Risk Assessment
+      type: decision
+      description: Assess technical and implementation risks
+      inputs:
+        - recommended_technology
+        - corrosive_environment
+        - fouling_tendency
+      outputs:
+        - technical_risk
+        - implementation_complexity
+      error_handling: default
+
+    - id: STEP_11_RECOMMENDATIONS
+      name: Generate Recommendations
+      type: decision
+      description: Generate detailed recommendations
+      inputs:
+        - all_analysis_results
+      outputs:
+        - recommendations
+        - next_steps
+        - design_considerations
+      error_handling: default
+
+    - id: STEP_12_PROVENANCE
+      name: Provenance Tracking
+      type: output
+      description: Generate provenance hash
+      inputs:
+        - all_inputs
+        - all_outputs
+      outputs:
+        - provenance_hash
+        - calculation_timestamp
+        - source_references
+      error_handling: propagate
+
+# =============================================================================
+# Zero-Hallucination Configuration
+# =============================================================================
+
+zero_hallucination:
+  enabled: true
+  calculation_mode: deterministic
+  allowed_operations:
+    - arithmetic
+    - formula_evaluation
+    - table_lookup
+    - interpolation
+    - logarithmic_calculation
+  forbidden_operations:
+    - llm_numeric_calculation
+    - ml_capex_estimation
+  require_formula_citation: true
+  require_provenance: true
+  llm_allowed_for:
+    - technology_recommendation
+    - risk_classification
+    - narrative_generation
+
+# =============================================================================
+# Test Cases
+# =============================================================================
+
+test_cases:
+  - name: Boiler Flue Gas Heat Recovery
+    description: Economizer installation assessment
+    inputs:
+      source_name: boiler_stack
+      source_type: flue_gas
+      waste_stream_flow: 50000
+      waste_stream_inlet_temp: 250
+      waste_stream_min_outlet_temp: 150
+      waste_stream_cp: 1.1
+      sulfur_content: 0.05
+      sink_available: true
+      sink_name: feedwater
+      sink_type: feedwater
+      sink_flow: 20000
+      sink_inlet_temp: 80
+      sink_max_outlet_temp: 140
+      sink_cp: 4.18
+      operating_hours: 8000
+      load_factor: 85
+      fuel_cost: 4.0
+    expected_outputs:
+      waste_heat_available:
+        min: 1
+        max: 3
+      simple_payback:
+        min: 1
+        max: 3

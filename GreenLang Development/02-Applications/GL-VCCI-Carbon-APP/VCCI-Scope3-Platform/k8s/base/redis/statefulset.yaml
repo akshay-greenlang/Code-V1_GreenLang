@@ -1,0 +1,110 @@
+# ==============================================================================
+# GL-VCCI Redis - StatefulSet
+# ==============================================================================
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: vcci-redis
+  namespace: vcci-production
+  labels:
+    app: vcci-redis
+    app.kubernetes.io/name: gl-vcci
+    app.kubernetes.io/component: cache
+    tier: cache
+spec:
+  serviceName: vcci-redis
+  replicas: 1  # For HA, use Redis Cluster or Sentinel
+
+  selector:
+    matchLabels:
+      app: vcci-redis
+      tier: cache
+
+  template:
+    metadata:
+      labels:
+        app: vcci-redis
+        tier: cache
+        app.kubernetes.io/name: gl-vcci
+        app.kubernetes.io/component: cache
+
+    spec:
+      priorityClassName: vcci-high-priority
+
+      containers:
+        - name: redis
+          image: redis:7-alpine
+          imagePullPolicy: IfNotPresent
+
+          command:
+            - redis-server
+            - /etc/redis/redis.conf
+            - --requirepass
+            - $(REDIS_PASSWORD)
+
+          ports:
+            - name: redis
+              containerPort: 6379
+              protocol: TCP
+
+          env:
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: redis-credentials
+                  key: REDIS_PASSWORD
+
+          resources:
+            requests:
+              cpu: 500m
+              memory: 1Gi
+            limits:
+              cpu: 2000m
+              memory: 4Gi
+
+          livenessProbe:
+            exec:
+              command:
+                - redis-cli
+                - --raw
+                - incr
+                - ping
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+          readinessProbe:
+            exec:
+              command:
+                - redis-cli
+                - --raw
+                - incr
+                - ping
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+          volumeMounts:
+            - name: redis-data
+              mountPath: /data
+            - name: redis-config
+              mountPath: /etc/redis
+
+      volumes:
+        - name: redis-config
+          configMap:
+            name: redis-config
+
+  volumeClaimTemplates:
+    - metadata:
+        name: redis-data
+        labels:
+          app: vcci-redis
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: fast-ssd
+        resources:
+          requests:
+            storage: 20Gi

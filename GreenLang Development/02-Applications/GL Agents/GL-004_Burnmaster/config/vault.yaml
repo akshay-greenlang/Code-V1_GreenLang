@@ -1,0 +1,106 @@
+# =============================================================================
+# GL-004 BURNMASTER Burner Optimization Agent - HashiCorp Vault Configuration
+# =============================================================================
+#
+# This configuration file defines the Vault setup for the BURNMASTER
+# Burner Optimization Agent including authentication, secret paths, and policies.
+#
+# Author: GreenLang Security Engineering
+# Version: 1.0.0
+# =============================================================================
+
+vault:
+  addr: "https://vault.greenlang.local:8200"
+  namespace: "greenlang"
+  tls:
+    ca_cert: "/etc/vault/certs/ca.crt"
+    client_cert: "/etc/vault/certs/client.crt"
+    client_key: "/etc/vault/certs/client.key"
+    skip_verify: false
+
+auth:
+  method: "kubernetes"
+  kubernetes:
+    mount_path: "auth/kubernetes"
+    role: "gl-004-burnmaster"
+    jwt_path: "/var/run/secrets/kubernetes.io/serviceaccount/token"
+
+secrets_engines:
+  kv:
+    mount_path: "secret"
+    version: 2
+  database:
+    mount_path: "database"
+    default_ttl: "1h"
+    max_ttl: "24h"
+  pki:
+    mount_path: "pki"
+    default_ttl: "720h"
+
+secret_paths:
+  base: "greenlang/agents/GL-004"
+
+  database:
+    postgres_main: "database/postgres-main"
+    timescale: "database/timescale"
+
+  api_keys:
+    weather: "api-keys/weather"
+    erp: "api-keys/erp"
+
+  auth:
+    jwt_secret: "auth/jwt"
+    api_key: "auth/api-key"
+
+  integrations:
+    flame_scanner: "integrations/flame-scanner"
+    combustion_analyzer: "integrations/combustion-analyzer"
+    air_fuel_controller: "integrations/air-fuel-controller"
+    emissions_monitor: "integrations/emissions-monitor"
+    dcs: "integrations/dcs"
+    historian: "integrations/historian"
+    kafka: "integrations/kafka"
+    opcua: "integrations/opcua"
+    grpc: "integrations/grpc"
+
+  encryption:
+    default: "encryption-keys/default"
+    audit: "encryption-keys/audit"
+    ml_models: "encryption-keys/ml-models"
+
+cache:
+  enabled: true
+  ttl_seconds: 300
+  max_size: 1000
+
+connection:
+  timeout_seconds: 30
+  max_retries: 3
+  retry_delay_seconds: 1.0
+
+fallback:
+  enabled: true
+  env_prefix: "GL_004_SECRET_"
+  warn_on_fallback: true
+
+---
+development:
+  vault:
+    addr: "http://localhost:8200"
+    tls:
+      skip_verify: true
+  auth:
+    method: "token"
+  fallback:
+    enabled: true
+
+production:
+  vault:
+    addr: "https://vault.greenlang.local:8200"
+    namespace: "greenlang-prod"
+  auth:
+    method: "kubernetes"
+    kubernetes:
+      role: "gl-004-burnmaster-prod"
+  fallback:
+    enabled: false

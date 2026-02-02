@@ -1,0 +1,206 @@
+# =============================================================================
+# EUDR Deforestation Compliance Agent - Kubernetes Deployment
+# =============================================================================
+# Agent: regulatory/eudr_compliance_v1
+# Version: 1.0.0
+# Tier: 1-EXTREME-URGENCY
+# Deadline: December 30, 2025 (27 days)
+# =============================================================================
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: eudr-compliance
+  namespace: greenlang-dev
+  labels:
+    app: eudr-compliance
+    app.kubernetes.io/name: eudr-compliance
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/component: agent
+    app.kubernetes.io/part-of: greenlang-platform
+    agent-type: regulatory
+    agent-tier: "1-extreme-urgency"
+    agent-deadline: "2025-12-30"
+  annotations:
+    deployment.kubernetes.io/revision: "1"
+    description: "Validates compliance with EU Deforestation Regulation (EU) 2023/1115"
+    regulation: "EU 2023/1115"
+    deadline: "2025-12-30"
+spec:
+  # Higher replica count for critical agent
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 2
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: eudr-compliance
+  template:
+    metadata:
+      labels:
+        app: eudr-compliance
+        app.kubernetes.io/name: eudr-compliance
+        app.kubernetes.io/version: "1.0.0"
+        app.kubernetes.io/component: agent
+        agent-tier: "1-extreme-urgency"
+      annotations:
+        # Prometheus scraping
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+        prometheus.io/path: "/metrics"
+        # Checksum for config changes
+        checksum/config: "{{ .Values.configChecksum }}"
+    spec:
+      # Service account for RBAC
+      serviceAccountName: greenlang-agent-sa
+
+      # Security context for pod
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+
+      # Graceful shutdown
+      terminationGracePeriodSeconds: 30
+
+      # Priority class for critical workload
+      priorityClassName: high-priority
+
+      containers:
+        - name: eudr-compliance
+          image: ghcr.io/greenlang/eudr-compliance:latest
+          imagePullPolicy: Always
+
+          # Ports
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+            - name: metrics
+              containerPort: 9090
+              protocol: TCP
+
+          # Environment from ConfigMaps
+          envFrom:
+            - configMapRef:
+                name: greenlang-agents-shared
+            - configMapRef:
+                name: eudr-compliance-config
+
+          # Additional environment variables
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: EUDR_CUTOFF_DATE
+              value: "2020-12-31"
+            - name: EUDR_DEADLINE
+              value: "2025-12-30"
+            - name: AGENT_TIER
+              value: "1-extreme-urgency"
+
+          # Resource limits - higher for critical agent
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "512Mi"
+            limits:
+              cpu: "2000m"
+              memory: "2Gi"
+
+          # Liveness probe - Is the container running?
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+            successThreshold: 1
+
+          # Readiness probe - Is the container ready to serve traffic?
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+            successThreshold: 1
+
+          # Startup probe - Has the container started?
+          startupProbe:
+            httpGet:
+              path: /health/live
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 30
+
+          # Security context for container
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1000
+            capabilities:
+              drop:
+                - ALL
+
+          # Volume mounts
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+            - name: cache
+              mountPath: /app/cache
+            - name: eudr-data
+              mountPath: /app/data/eudr
+              readOnly: true
+
+      # Volumes
+      volumes:
+        - name: tmp
+          emptyDir:
+            sizeLimit: 100Mi
+        - name: cache
+          emptyDir:
+            sizeLimit: 1Gi
+        - name: eudr-data
+          configMap:
+            name: eudr-reference-data
+
+      # Pod spread across zones (stricter for critical agent)
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: DoNotSchedule
+          labelSelector:
+            matchLabels:
+              app: eudr-compliance
+
+      # Affinity rules
+      affinity:
+        # Prefer spreading across nodes (strict for critical agent)
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  app: eudr-compliance
+              topologyKey: kubernetes.io/hostname

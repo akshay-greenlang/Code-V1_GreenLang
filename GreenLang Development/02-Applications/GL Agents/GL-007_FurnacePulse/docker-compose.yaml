@@ -1,0 +1,344 @@
+# GL-007 FURNACEPULSE - Docker Compose Configuration
+# Furnace Performance Monitoring Agent
+#
+# Usage:
+#   Development:     docker-compose up -d
+#   Full stack:      docker-compose --profile streaming --profile monitoring up -d
+#   Test:            docker-compose run --rm furnacepulse pytest
+#   Logs:            docker-compose logs -f furnacepulse
+
+version: '3.9'
+
+services:
+  # ========================================
+  # FurnacePulse Application
+  # ========================================
+  furnacepulse:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: gl-007-furnacepulse
+    image: gl-007-furnacepulse:latest
+    ports:
+      - "8080:8080"   # API
+      - "9090:9090"   # Metrics
+    environment:
+      # Agent Configuration
+      - GL_AGENT_ID=GL-007
+      - GL_AGENT_NAME=FURNACEPULSE
+      - GL_ENV=development
+      - GL_LOG_LEVEL=INFO
+      - GL_DEBUG=true
+      - PYTHONPATH=/app
+      # Database Configuration
+      - DATABASE_URL=postgresql://furnacepulse:furnacepulse@timescaledb:5432/furnacepulse
+      - REDIS_URL=redis://redis:6379/0
+      # Kafka Configuration
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - KAFKA_CONSUMER_GROUP=furnacepulse-consumer
+      # OPC-UA Configuration
+      - OPCUA_ENDPOINT=opc.tcp://opcua-simulator:4840
+      - OPCUA_SECURITY_POLICY=Basic256Sha256
+      # CMMS Integration
+      - CMMS_URL=http://cmms-mock:8081
+      - CMMS_API_KEY=${CMMS_API_KEY:-dev-api-key}
+      # Metrics
+      - PROMETHEUS_MULTIPROC_DIR=/tmp/prometheus
+    volumes:
+      - .:/app:cached
+      - furnacepulse_cache:/app/.cache
+      - /tmp/prometheus:/tmp/prometheus
+    networks:
+      - gl-network
+      - ot-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    depends_on:
+      timescaledb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.furnacepulse.rule=Host(`furnacepulse.localhost`)"
+      - "traefik.http.services.furnacepulse.loadbalancer.server.port=8080"
+
+  # ========================================
+  # TimescaleDB - Time-series Database
+  # ========================================
+  timescaledb:
+    image: timescale/timescaledb:latest-pg15
+    container_name: gl-007-timescaledb
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=furnacepulse
+      - POSTGRES_PASSWORD=furnacepulse
+      - POSTGRES_DB=furnacepulse
+    volumes:
+      - timescaledb_data:/var/lib/postgresql/data
+      - ./deploy/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+    networks:
+      - gl-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U furnacepulse -d furnacepulse"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # ========================================
+  # Redis - Caching and Job Queue
+  # ========================================
+  redis:
+    image: redis:7-alpine
+    container_name: gl-007-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - gl-network
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+
+  # ========================================
+  # Zookeeper - Kafka Coordination
+  # ========================================
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: gl-007-zookeeper
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    volumes:
+      - zookeeper_data:/var/lib/zookeeper/data
+      - zookeeper_log:/var/lib/zookeeper/log
+    networks:
+      - gl-network
+    healthcheck:
+      test: ["CMD", "bash", "-c", "echo 'ruok' | nc localhost 2181"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    profiles:
+      - streaming
+
+  # ========================================
+  # Kafka - Event Streaming
+  # ========================================
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: gl-007-kafka
+    ports:
+      - "9092:9092"
+      - "9093:9093"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,PLAINTEXT_HOST://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    networks:
+      - gl-network
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+    profiles:
+      - streaming
+
+  # ========================================
+  # Kafka UI - Management Console
+  # ========================================
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: gl-007-kafka-ui
+    ports:
+      - "8081:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: furnacepulse-local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+      KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
+    networks:
+      - gl-network
+    depends_on:
+      - kafka
+    profiles:
+      - streaming
+    restart: unless-stopped
+
+  # ========================================
+  # Prometheus - Metrics Collection
+  # ========================================
+  prometheus:
+    image: prom/prometheus:v2.48.0
+    container_name: gl-007-prometheus
+    ports:
+      - "9091:9090"
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.enable-lifecycle'
+      - '--storage.tsdb.retention.time=15d'
+    volumes:
+      - ./deploy/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./deploy/prometheus/alerts.yml:/etc/prometheus/alerts.yml:ro
+      - prometheus_data:/prometheus
+    networks:
+      - gl-network
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:9090/-/healthy"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+    profiles:
+      - monitoring
+
+  # ========================================
+  # Grafana - Dashboards
+  # ========================================
+  grafana:
+    image: grafana/grafana:10.2.0
+    container_name: gl-007-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./deploy/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./deploy/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    networks:
+      - gl-network
+    depends_on:
+      - prometheus
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/api/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+    profiles:
+      - monitoring
+
+  # ========================================
+  # AlertManager - Alert Routing
+  # ========================================
+  alertmanager:
+    image: prom/alertmanager:v0.26.0
+    container_name: gl-007-alertmanager
+    ports:
+      - "9093:9093"
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+      - '--storage.path=/alertmanager'
+    volumes:
+      - ./deploy/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - alertmanager_data:/alertmanager
+    networks:
+      - gl-network
+    restart: unless-stopped
+    profiles:
+      - monitoring
+
+  # ========================================
+  # OPC-UA Simulator (Development Only)
+  # ========================================
+  opcua-simulator:
+    image: ghcr.io/pro/opc-ua-server:latest
+    container_name: gl-007-opcua-simulator
+    ports:
+      - "4840:4840"
+    networks:
+      - ot-network
+    restart: unless-stopped
+    profiles:
+      - simulation
+
+  # ========================================
+  # CMMS Mock Server (Development Only)
+  # ========================================
+  cmms-mock:
+    image: mockserver/mockserver:5.15.0
+    container_name: gl-007-cmms-mock
+    ports:
+      - "1080:1080"
+    environment:
+      MOCKSERVER_WATCH_INITIALIZATION_JSON: "true"
+      MOCKSERVER_INITIALIZATION_JSON_PATH: /config/cmms-mock.json
+    volumes:
+      - ./deploy/mocks/cmms-mock.json:/config/cmms-mock.json:ro
+    networks:
+      - gl-network
+    profiles:
+      - simulation
+
+# ========================================
+# Networks
+# ========================================
+networks:
+  gl-network:
+    driver: bridge
+    name: gl-agents-network
+  ot-network:
+    driver: bridge
+    name: ot-simulation-network
+    # OT network is isolated from IT network
+    internal: false
+
+# ========================================
+# Volumes
+# ========================================
+volumes:
+  furnacepulse_cache:
+    name: gl-007-cache
+  timescaledb_data:
+    name: gl-007-timescaledb
+  redis_data:
+    name: gl-007-redis
+  zookeeper_data:
+    name: gl-007-zookeeper-data
+  zookeeper_log:
+    name: gl-007-zookeeper-log
+  kafka_data:
+    name: gl-007-kafka
+  prometheus_data:
+    name: gl-007-prometheus
+  grafana_data:
+    name: gl-007-grafana
+  alertmanager_data:
+    name: gl-007-alertmanager

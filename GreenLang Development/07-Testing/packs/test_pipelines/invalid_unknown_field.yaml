@@ -1,0 +1,5 @@
+name: "invalid-unknown-field"
+foo: "bar"  # Unknown field at root
+steps:
+  - name: "step1"
+    agent: "test.Agent"

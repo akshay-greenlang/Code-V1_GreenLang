@@ -1,0 +1,19 @@
+variable "project_name" { type = string }
+variable "environment" { type = string }
+variable "cluster_id" { type = string }
+variable "engine_version" { type = string }
+variable "node_type" { type = string }
+variable "num_node_groups" { type = number }
+variable "replicas_per_node_group" { type = number }
+variable "automatic_failover_enabled" { type = bool }
+variable "multi_az_enabled" { type = bool }
+variable "at_rest_encryption_enabled" { type = bool }
+variable "transit_encryption_enabled" { type = bool }
+variable "snapshot_retention_limit" { type = number }
+variable "snapshot_window" { type = string }
+variable "maintenance_window" { type = string }
+variable "vpc_id" { type = string }
+variable "subnet_ids" { type = list(string) }
+variable "allowed_security_groups" { type = list(string) }
+variable "kms_key_arn" { type = string }
+variable "tags" { type = map(string); default = {} }

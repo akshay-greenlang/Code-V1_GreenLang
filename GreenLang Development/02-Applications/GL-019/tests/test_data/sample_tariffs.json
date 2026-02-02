@@ -1,0 +1,175 @@
+{
+  "description": "Sample Energy Tariffs for GL-019 HEATSCHEDULER Testing",
+  "version": "1.0.0",
+  "tariffs": [
+    {
+      "tariff_id": "TOU-INDUSTRIAL-001",
+      "utility_name": "Pacific Gas & Electric",
+      "rate_type": "time_of_use",
+      "description": "Industrial Time-of-Use Rate Schedule E-20",
+      "base_rate_kwh": 0.10,
+      "demand_charge_kw": 18.50,
+      "time_periods": [
+        {
+          "period_type": "on_peak",
+          "start_hour": 12,
+          "end_hour": 18,
+          "days_of_week": [0, 1, 2, 3, 4],
+          "description": "Summer On-Peak (Mon-Fri 12pm-6pm)"
+        },
+        {
+          "period_type": "mid_peak",
+          "start_hour": 8,
+          "end_hour": 12,
+          "days_of_week": [0, 1, 2, 3, 4],
+          "description": "Mid-Peak Morning (Mon-Fri 8am-12pm)"
+        },
+        {
+          "period_type": "mid_peak",
+          "start_hour": 18,
+          "end_hour": 21,
+          "days_of_week": [0, 1, 2, 3, 4],
+          "description": "Mid-Peak Evening (Mon-Fri 6pm-9pm)"
+        },
+        {
+          "period_type": "off_peak",
+          "start_hour": 21,
+          "end_hour": 8,
+          "days_of_week": [0, 1, 2, 3, 4],
+          "description": "Off-Peak Overnight (Mon-Fri 9pm-8am)"
+        },
+        {
+          "period_type": "off_peak",
+          "start_hour": 0,
+          "end_hour": 24,
+          "days_of_week": [5, 6],
+          "description": "Off-Peak Weekend (All Day Sat-Sun)"
+        }
+      ],
+      "period_rates": {
+        "on_peak": 2.8,
+        "mid_peak": 1.6,
+        "off_peak": 0.5,
+        "super_off_peak": 0.3,
+        "critical_peak": 5.0
+      },
+      "effective_date": "2025-01-01",
+      "expiration_date": "2025-12-31"
+    },
+    {
+      "tariff_id": "TOU-SIMPLE-001",
+      "utility_name": "Test Utility Co",
+      "rate_type": "time_of_use",
+      "description": "Simple Two-Period ToU for Testing",
+      "base_rate_kwh": 0.12,
+      "demand_charge_kw": 15.00,
+      "time_periods": [
+        {
+          "period_type": "on_peak",
+          "start_hour": 14,
+          "end_hour": 19,
+          "days_of_week": [0, 1, 2, 3, 4],
+          "description": "Peak Hours (Mon-Fri 2pm-7pm)"
+        },
+        {
+          "period_type": "off_peak",
+          "start_hour": 19,
+          "end_hour": 14,
+          "days_of_week": [0, 1, 2, 3, 4],
+          "description": "Off-Peak Hours"
+        },
+        {
+          "period_type": "off_peak",
+          "start_hour": 0,
+          "end_hour": 24,
+          "days_of_week": [5, 6],
+          "description": "Weekend Off-Peak"
+        }
+      ],
+      "period_rates": {
+        "on_peak": 2.5,
+        "off_peak": 0.6
+      },
+      "effective_date": "2025-01-01"
+    },
+    {
+      "tariff_id": "DEMAND-001",
+      "utility_name": "Industrial Power Corp",
+      "rate_type": "demand",
+      "description": "Demand-Based Industrial Rate",
+      "base_rate_kwh": 0.08,
+      "demand_charge_kw": 25.00,
+      "time_periods": [],
+      "period_rates": {},
+      "effective_date": "2025-01-01"
+    },
+    {
+      "tariff_id": "FLAT-001",
+      "utility_name": "Simple Power Co",
+      "rate_type": "flat",
+      "description": "Flat Rate Industrial",
+      "base_rate_kwh": 0.14,
+      "demand_charge_kw": 12.00,
+      "time_periods": [],
+      "period_rates": {},
+      "effective_date": "2025-01-01"
+    }
+  ],
+  "test_scenarios": [
+    {
+      "name": "off_peak_optimization",
+      "description": "Maximize load shifting to off-peak hours",
+      "tariff_id": "TOU-INDUSTRIAL-001",
+      "expected_savings_pct_min": 15.0,
+      "expected_savings_pct_max": 35.0
+    },
+    {
+      "name": "demand_reduction",
+      "description": "Reduce peak demand charges",
+      "tariff_id": "DEMAND-001",
+      "expected_demand_reduction_pct": 20.0
+    },
+    {
+      "name": "flat_rate_baseline",
+      "description": "Baseline comparison with flat rate",
+      "tariff_id": "FLAT-001",
+      "expected_savings_pct": 0.0
+    }
+  ],
+  "real_time_price_patterns": {
+    "typical_summer_day": {
+      "description": "Typical summer day price pattern",
+      "hourly_prices": [
+        0.045, 0.040, 0.035, 0.032, 0.035, 0.050,
+        0.085, 0.120, 0.155, 0.185, 0.210, 0.235,
+        0.260, 0.290, 0.330, 0.365, 0.395, 0.360,
+        0.295, 0.230, 0.160, 0.105, 0.070, 0.050
+      ]
+    },
+    "winter_weekday": {
+      "description": "Winter weekday price pattern",
+      "hourly_prices": [
+        0.055, 0.050, 0.045, 0.042, 0.045, 0.060,
+        0.095, 0.130, 0.145, 0.155, 0.160, 0.165,
+        0.170, 0.175, 0.180, 0.190, 0.200, 0.220,
+        0.195, 0.160, 0.120, 0.090, 0.070, 0.058
+      ]
+    },
+    "demand_response_event": {
+      "description": "Price pattern during DR event (2pm-6pm spike)",
+      "hourly_prices": [
+        0.045, 0.040, 0.035, 0.032, 0.035, 0.050,
+        0.085, 0.120, 0.155, 0.185, 0.210, 0.235,
+        0.260, 0.450, 0.650, 0.750, 0.800, 0.550,
+        0.295, 0.230, 0.160, 0.105, 0.070, 0.050
+      ]
+    }
+  },
+  "known_calculation_values": {
+    "on_peak_rate_tou_industrial": 0.28,
+    "mid_peak_rate_tou_industrial": 0.16,
+    "off_peak_rate_tou_industrial": 0.05,
+    "peak_to_off_peak_ratio": 5.6,
+    "typical_industrial_savings_pct": 18.0
+  }
+}

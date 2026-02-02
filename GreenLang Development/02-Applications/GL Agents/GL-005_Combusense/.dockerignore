@@ -1,0 +1,191 @@
+# GL-005 CombustionControlAgent - Docker Ignore Configuration
+# Exclude files from Docker build context to optimize image size and build speed
+
+# ============================================================================
+# Git & Version Control
+# ============================================================================
+.git/
+.gitignore
+.gitattributes
+.github/
+.gitlab-ci.yml
+
+# ============================================================================
+# Python
+# ============================================================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+
+# ============================================================================
+# Virtual Environments
+# ============================================================================
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# ============================================================================
+# IDE & Editors
+# ============================================================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+*.sublime-*
+
+# ============================================================================
+# Testing & Coverage
+# ============================================================================
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+coverage.xml
+*.cover
+test-results/
+.hypothesis/
+tests/
+test_*.py
+*_test.py
+
+# ============================================================================
+# Documentation
+# ============================================================================
+docs/
+*.md
+!README.md
+LICENSE
+CHANGELOG.md
+CONTRIBUTING.md
+CODE_OF_CONDUCT.md
+
+# ============================================================================
+# Logs & Temporary Data
+# ============================================================================
+logs/
+*.log
+log/
+data/
+cache/
+tmp/
+temp/
+*.tmp
+*.pid
+*.seed
+
+# ============================================================================
+# Docker
+# ============================================================================
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+.docker/
+
+# ============================================================================
+# Kubernetes
+# ============================================================================
+deployment/
+k8s/
+kubernetes/
+*.yaml
+*.yml
+!**/kustomization.yaml
+
+# ============================================================================
+# CI/CD
+# ============================================================================
+.github/
+.gitlab/
+.circleci/
+.travis.yml
+Jenkinsfile
+azure-pipelines.yml
+
+# ============================================================================
+# Monitoring
+# ============================================================================
+monitoring/
+grafana/
+prometheus/
+alerts/
+
+# ============================================================================
+# Scripts & Tools
+# ============================================================================
+scripts/
+tools/
+Makefile
+*.sh
+
+# ============================================================================
+# Development Files
+# ============================================================================
+.pre-commit-config.yaml
+.flake8
+.pylintrc
+mypy.ini
+pytest.ini
+setup.cfg
+tox.ini
+.bandit
+.safety
+
+# ============================================================================
+# Security & Secrets
+# ============================================================================
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+secrets/
+credentials/
+.secrets
+
+# ============================================================================
+# Application-Specific
+# ============================================================================
+# Exclude large datasets
+sensor_data/
+historical_data/
+calibration_data/
+control_logs/
+
+# Exclude backups
+backups/
+*.backup
+*.bak
+
+# Exclude SBOM generation
+sbom/
+*.sbom.json
+*.spdx
+
+# Exclude analysis
+analysis/
+experiments/
+feedback/
+migrations/
+
+# ============================================================================
+# Keep Essential Files
+# ============================================================================
+# The following are NOT ignored (explicitly included in build):
+# - *.py (application source code)
+# - requirements.txt
+# - README.md (basic documentation)
+# - Any configuration files needed at runtime

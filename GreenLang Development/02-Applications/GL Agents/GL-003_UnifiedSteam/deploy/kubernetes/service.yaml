@@ -1,0 +1,57 @@
+# GL-003 UnifiedSteam Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-003-unifiedsteam
+  namespace: greenlang
+  labels:
+    app: gl-003-unifiedsteam
+    agent-id: GL-003
+    codename: UNIFIEDSTEAM
+spec:
+  type: ClusterIP
+  selector:
+    app: gl-003-unifiedsteam
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+      protocol: TCP
+    - name: metrics
+      port: 9090
+      targetPort: 9090
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-003-unifiedsteam-headless
+  namespace: greenlang
+  labels:
+    app: gl-003-unifiedsteam
+spec:
+  type: ClusterIP
+  clusterIP: None
+  selector:
+    app: gl-003-unifiedsteam
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-003-unifiedsteam-metrics
+  namespace: greenlang
+  labels:
+    app: gl-003-unifiedsteam
+    monitoring: prometheus
+spec:
+  type: ClusterIP
+  selector:
+    app: gl-003-unifiedsteam
+  ports:
+    - name: metrics
+      port: 9090
+      targetPort: 9090

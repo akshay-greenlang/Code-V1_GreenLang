@@ -1,0 +1,105 @@
+{
+  "campaign": {
+    "campaign_id": "camp_test001",
+    "name": "Q1 2025 Carbon Data Collection",
+    "target_suppliers": [
+      "SUP001",
+      "SUP002",
+      "SUP003",
+      "SUP004",
+      "SUP005"
+    ],
+    "email_sequence": {
+      "sequence_id": "default_4touch",
+      "name": "Standard 4-Touch Sequence",
+      "touches": [
+        {
+          "touch_number": 1,
+          "day_offset": 0,
+          "template": "touch_1_introduction",
+          "subject": "Partner with us on carbon transparency"
+        },
+        {
+          "touch_number": 2,
+          "day_offset": 14,
+          "template": "touch_2_reminder",
+          "subject": "Your action needed: Carbon data request"
+        },
+        {
+          "touch_number": 3,
+          "day_offset": 35,
+          "template": "touch_3_final_reminder",
+          "subject": "Final reminder: Carbon transparency program"
+        },
+        {
+          "touch_number": 4,
+          "day_offset": 42,
+          "template": "touch_4_thank_you",
+          "subject": "Thank you or next steps"
+        }
+      ]
+    },
+    "response_rate_target": 0.50
+  },
+  "suppliers": [
+    {
+      "supplier_id": "SUP001",
+      "email": "procurement@acme-manufacturing.com",
+      "contact_name": "Jane Smith",
+      "country": "DE",
+      "spend_usd": 1500000,
+      "category": "Electronics"
+    },
+    {
+      "supplier_id": "SUP002",
+      "email": "sustainability@global-logistics.com",
+      "contact_name": "John Doe",
+      "country": "US-CA",
+      "spend_usd": 850000,
+      "category": "Logistics"
+    },
+    {
+      "supplier_id": "SUP003",
+      "email": "contact@green-packaging.com",
+      "contact_name": "Maria Garcia",
+      "country": "ES",
+      "spend_usd": 620000,
+      "category": "Packaging"
+    },
+    {
+      "supplier_id": "SUP004",
+      "email": "info@eco-materials.co.uk",
+      "contact_name": "David Wilson",
+      "country": "GB",
+      "spend_usd": 480000,
+      "category": "Raw Materials"
+    },
+    {
+      "supplier_id": "SUP005",
+      "email": "contact@asia-components.com",
+      "contact_name": "Li Wei",
+      "country": "CN",
+      "spend_usd": 390000,
+      "category": "Components"
+    }
+  ],
+  "personalization_base": {
+    "company_name": "GreenCorp Industries",
+    "sender_name": "Sarah Johnson",
+    "support_email": "sustainability@greencorp.com",
+    "support_phone": "+1-555-0123",
+    "portal_url": "https://supplier-portal.greencorp.com",
+    "privacy_policy_url": "https://greencorp.com/privacy",
+    "guide_url": "https://greencorp.com/data-submission-guide",
+    "faq_url": "https://greencorp.com/faq",
+    "company_address": "123 Green Street, San Francisco, CA 94102, USA",
+    "scope3_percentage": "65",
+    "deadline_date": "2025-03-31"
+  },
+  "expected_outcomes": {
+    "emails_to_send": 20,
+    "target_response_rate": 0.50,
+    "target_data_quality_score": 0.75,
+    "campaign_duration_days": 90
+  }
+}

@@ -1,0 +1,10 @@
+# Invalid payload - missing required fields
+# This payload is missing the required 'name' field.
+# Expected error: GLSCHEMA-E100 (MISSING_REQUIRED)
+
+# Note: 'name' is intentionally omitted
+quantity: 50
+status: "active"
+price: 29.99
+tags:
+  - "incomplete"

@@ -1,0 +1,856 @@
+# GreenLang Evidently AI Drift Monitoring Service
+# Kubernetes deployment for drift detection dashboard and API
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: greenlang-mlops
+  labels:
+    app.kubernetes.io/name: greenlang-mlops
+    app.kubernetes.io/part-of: greenlang
+    environment: production
+
+---
+# ConfigMap for Evidently configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: evidently-config
+  namespace: greenlang-mlops
+  labels:
+    app: evidently-service
+data:
+  config.yaml: |
+    # Evidently AI Drift Detection Configuration
+    service:
+      name: greenlang-drift-monitor
+      version: "1.0.0"
+      log_level: INFO
+
+    # Drift detection settings
+    drift_detection:
+      significance_level: 0.05
+      psi_threshold: 0.2
+      js_divergence_threshold: 0.1
+      data_drift_share_threshold: 0.3
+
+    # Monitoring settings
+    monitoring:
+      interval_minutes: 60
+      min_samples: 100
+      reference_window_size: 10000
+
+    # Storage settings
+    storage:
+      type: s3
+      bucket: greenlang-mlops-drift-reports
+      prefix: evidently-reports/
+
+    # Prometheus metrics
+    prometheus:
+      enabled: true
+      port: 9090
+      prefix: greenlang_drift
+
+    # Alert thresholds by severity
+    alert_thresholds:
+      low: 0.1
+      medium: 0.2
+      high: 0.3
+      critical: 0.5
+
+    # Agent profiles
+    agents:
+      - id: GL-001
+        name: Carbon Emissions Calculator
+        monitoring_interval: 30
+        psi_threshold: 0.2
+      - id: GL-003
+        name: CSRD Reporting Agent
+        monitoring_interval: 60
+        psi_threshold: 0.15
+      - id: GL-006
+        name: Scope 3 Emissions Agent
+        monitoring_interval: 60
+        psi_threshold: 0.2
+      - id: GL-010
+        name: Emissions Guardian
+        monitoring_interval: 5
+        psi_threshold: 0.1
+
+---
+# Secret for sensitive credentials
+apiVersion: v1
+kind: Secret
+metadata:
+  name: evidently-secrets
+  namespace: greenlang-mlops
+  labels:
+    app: evidently-service
+type: Opaque
+stringData:
+  # Placeholder - should be replaced with actual values via external secrets manager
+  SLACK_WEBHOOK_URL: ""
+  PAGERDUTY_ROUTING_KEY: ""
+  S3_ACCESS_KEY: ""
+  S3_SECRET_KEY: ""
+  DATABASE_URL: ""
+
+---
+# PersistentVolumeClaim for drift reports storage
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: evidently-storage
+  namespace: greenlang-mlops
+  labels:
+    app: evidently-service
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: gp3
+  resources:
+    requests:
+      storage: 50Gi
+
+---
+# Service Account
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: evidently-service-account
+  namespace: greenlang-mlops
+  labels:
+    app: evidently-service
+  annotations:
+    # For AWS IAM roles for service accounts
+    eks.amazonaws.com/role-arn: arn:aws:iam::ACCOUNT_ID:role/greenlang-evidently-role
+
+---
+# Deployment - Evidently Monitoring Service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: evidently-service
+  namespace: greenlang-mlops
+  labels:
+    app: evidently-service
+    version: v1
+    component: drift-detection
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: evidently-service
+  template:
+    metadata:
+      labels:
+        app: evidently-service
+        version: v1
+        component: drift-detection
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: evidently-service-account
+
+      # Pod security context
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+
+      # Anti-affinity for high availability
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - evidently-service
+                topologyKey: kubernetes.io/hostname
+
+      containers:
+        - name: evidently-api
+          image: greenlang/evidently-service:1.0.0
+          imagePullPolicy: Always
+
+          # Container security
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+            - name: metrics
+              containerPort: 9090
+              protocol: TCP
+            - name: grpc
+              containerPort: 50051
+              protocol: TCP
+
+          # Environment variables
+          env:
+            - name: SERVICE_NAME
+              value: "evidently-service"
+            - name: LOG_LEVEL
+              value: "INFO"
+            - name: PROMETHEUS_ENABLED
+              value: "true"
+            - name: PROMETHEUS_PORT
+              value: "9090"
+            - name: STORAGE_PATH
+              value: "/data/drift-reports"
+
+            # From secrets
+            - name: SLACK_WEBHOOK_URL
+              valueFrom:
+                secretKeyRef:
+                  name: evidently-secrets
+                  key: SLACK_WEBHOOK_URL
+                  optional: true
+            - name: PAGERDUTY_ROUTING_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: evidently-secrets
+                  key: PAGERDUTY_ROUTING_KEY
+                  optional: true
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: evidently-secrets
+                  key: DATABASE_URL
+                  optional: true
+
+          # Resource limits
+          resources:
+            requests:
+              cpu: 500m
+              memory: 1Gi
+            limits:
+              cpu: 2000m
+              memory: 4Gi
+
+          # Health probes
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+
+          startupProbe:
+            httpGet:
+              path: /health/startup
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 30
+
+          # Volume mounts
+          volumeMounts:
+            - name: config
+              mountPath: /app/config
+              readOnly: true
+            - name: data
+              mountPath: /data
+            - name: tmp
+              mountPath: /tmp
+
+        # Prometheus sidecar for advanced metrics
+        - name: prometheus-exporter
+          image: prom/prometheus:v2.45.0
+          imagePullPolicy: IfNotPresent
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+
+          ports:
+            - name: prom-metrics
+              containerPort: 9091
+              protocol: TCP
+
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+
+          volumeMounts:
+            - name: prometheus-config
+              mountPath: /etc/prometheus
+              readOnly: true
+            - name: prometheus-data
+              mountPath: /prometheus
+
+      volumes:
+        - name: config
+          configMap:
+            name: evidently-config
+        - name: data
+          persistentVolumeClaim:
+            claimName: evidently-storage
+        - name: tmp
+          emptyDir: {}
+        - name: prometheus-config
+          configMap:
+            name: evidently-prometheus-config
+            optional: true
+        - name: prometheus-data
+          emptyDir: {}
+
+      # Node selector for ML workloads
+      nodeSelector:
+        workload-type: mlops
+
+      # Tolerations for dedicated nodes
+      tolerations:
+        - key: mlops
+          operator: Equal
+          value: "true"
+          effect: NoSchedule
+
+---
+# Deployment - Evidently UI Dashboard
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: evidently-dashboard
+  namespace: greenlang-mlops
+  labels:
+    app: evidently-dashboard
+    version: v1
+    component: drift-detection-ui
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: evidently-dashboard
+  template:
+    metadata:
+      labels:
+        app: evidently-dashboard
+        version: v1
+        component: drift-detection-ui
+    spec:
+      serviceAccountName: evidently-service-account
+
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+
+      containers:
+        - name: dashboard
+          image: greenlang/evidently-dashboard:1.0.0
+          imagePullPolicy: Always
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+
+          env:
+            - name: API_URL
+              value: "http://evidently-service:8080"
+            - name: DASHBOARD_TITLE
+              value: "GreenLang Drift Monitor"
+
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 5
+
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+
+      volumes:
+        - name: tmp
+          emptyDir: {}
+
+---
+# Service - Evidently API
+apiVersion: v1
+kind: Service
+metadata:
+  name: evidently-service
+  namespace: greenlang-mlops
+  labels:
+    app: evidently-service
+    component: drift-detection
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
+      protocol: TCP
+    - name: metrics
+      port: 9090
+      targetPort: metrics
+      protocol: TCP
+    - name: grpc
+      port: 50051
+      targetPort: grpc
+      protocol: TCP
+  selector:
+    app: evidently-service
+
+---
+# Service - Evidently Dashboard
+apiVersion: v1
+kind: Service
+metadata:
+  name: evidently-dashboard
+  namespace: greenlang-mlops
+  labels:
+    app: evidently-dashboard
+    component: drift-detection-ui
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+      protocol: TCP
+  selector:
+    app: evidently-dashboard
+
+---
+# Ingress for external access
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: evidently-ingress
+  namespace: greenlang-mlops
+  labels:
+    app: evidently-service
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  tls:
+    - hosts:
+        - drift-monitor.greenlang.io
+      secretName: evidently-tls
+  rules:
+    - host: drift-monitor.greenlang.io
+      http:
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: evidently-service
+                port:
+                  name: http
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: evidently-dashboard
+                port:
+                  name: http
+
+---
+# HorizontalPodAutoscaler
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: evidently-service-hpa
+  namespace: greenlang-mlops
+  labels:
+    app: evidently-service
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: evidently-service
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+    - type: Pods
+      pods:
+        metric:
+          name: drift_analysis_queue_depth
+        target:
+          type: AverageValue
+          averageValue: "10"
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+        - type: Pods
+          value: 2
+          periodSeconds: 60
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Percent
+          value: 10
+          periodSeconds: 120
+
+---
+# PodDisruptionBudget
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: evidently-service-pdb
+  namespace: greenlang-mlops
+  labels:
+    app: evidently-service
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: evidently-service
+
+---
+# ServiceMonitor for Prometheus Operator
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: evidently-service-monitor
+  namespace: greenlang-mlops
+  labels:
+    app: evidently-service
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: evidently-service
+  namespaceSelector:
+    matchNames:
+      - greenlang-mlops
+  endpoints:
+    - port: metrics
+      interval: 30s
+      path: /metrics
+      scrapeTimeout: 10s
+
+---
+# PrometheusRule for drift alerts
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: evidently-drift-alerts
+  namespace: greenlang-mlops
+  labels:
+    app: evidently-service
+    release: prometheus
+spec:
+  groups:
+    - name: drift-detection
+      interval: 60s
+      rules:
+        # Critical drift detection
+        - alert: CriticalDriftDetected
+          expr: greenlang_drift_score > 0.5
+          for: 5m
+          labels:
+            severity: critical
+            component: drift-detection
+          annotations:
+            summary: "Critical drift detected in {{ $labels.agent }}"
+            description: "Agent {{ $labels.agent }} has drift score {{ $value }} > 0.5"
+            runbook_url: https://docs.greenlang.io/runbooks/drift-critical
+
+        # High drift detection
+        - alert: HighDriftDetected
+          expr: greenlang_drift_score > 0.3 and greenlang_drift_score <= 0.5
+          for: 15m
+          labels:
+            severity: warning
+            component: drift-detection
+          annotations:
+            summary: "High drift detected in {{ $labels.agent }}"
+            description: "Agent {{ $labels.agent }} has drift score {{ $value }}"
+
+        # Drift service unavailable
+        - alert: EvidentlyServiceDown
+          expr: up{job="evidently-service"} == 0
+          for: 5m
+          labels:
+            severity: critical
+            component: drift-detection
+          annotations:
+            summary: "Evidently drift monitoring service is down"
+            description: "The Evidently drift detection service has been unavailable for 5+ minutes"
+
+        # High drift rate
+        - alert: HighDriftRate
+          expr: rate(greenlang_drift_detected_total[1h]) > 0.5
+          for: 30m
+          labels:
+            severity: warning
+            component: drift-detection
+          annotations:
+            summary: "High drift detection rate for {{ $labels.agent }}"
+            description: "Agent {{ $labels.agent }} is detecting drift at rate {{ $value }}/hour"
+
+---
+# NetworkPolicy for security
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: evidently-network-policy
+  namespace: greenlang-mlops
+  labels:
+    app: evidently-service
+spec:
+  podSelector:
+    matchLabels:
+      app: evidently-service
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Allow from ingress controller
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 8080
+    # Allow from Prometheus
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+      ports:
+        - protocol: TCP
+          port: 9090
+    # Allow from greenlang namespace
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: greenlang-production
+      ports:
+        - protocol: TCP
+          port: 8080
+        - protocol: TCP
+          port: 50051
+  egress:
+    # Allow DNS
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: UDP
+          port: 53
+    # Allow S3 access
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+      ports:
+        - protocol: TCP
+          port: 443
+    # Allow database access
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: greenlang-database
+      ports:
+        - protocol: TCP
+          port: 5432
+
+---
+# CronJob for scheduled drift analysis
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: drift-analysis-scheduler
+  namespace: greenlang-mlops
+  labels:
+    app: evidently-service
+    component: scheduler
+spec:
+  schedule: "*/15 * * * *"  # Every 15 minutes
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: drift-analysis-job
+        spec:
+          serviceAccountName: evidently-service-account
+          restartPolicy: OnFailure
+
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+
+          containers:
+            - name: drift-analyzer
+              image: greenlang/evidently-service:1.0.0
+              imagePullPolicy: Always
+              command:
+                - python
+                - -m
+                - greenlang.ml.drift_detection.scheduler
+              args:
+                - --agents=GL-001,GL-003,GL-006,GL-010
+                - --analysis-type=data,prediction
+                - --output-format=json
+
+              env:
+                - name: API_URL
+                  value: "http://evidently-service:8080"
+                - name: SLACK_WEBHOOK_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: evidently-secrets
+                      key: SLACK_WEBHOOK_URL
+                      optional: true
+
+              resources:
+                requests:
+                  cpu: 200m
+                  memory: 512Mi
+                limits:
+                  cpu: 1000m
+                  memory: 2Gi
+
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop:
+                    - ALL
+
+              volumeMounts:
+                - name: config
+                  mountPath: /app/config
+                  readOnly: true
+                - name: tmp
+                  mountPath: /tmp
+
+          volumes:
+            - name: config
+              configMap:
+                name: evidently-config
+            - name: tmp
+              emptyDir: {}
+
+---
+# CronJob for cleanup of old reports
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: drift-reports-cleanup
+  namespace: greenlang-mlops
+  labels:
+    app: evidently-service
+    component: cleanup
+spec:
+  schedule: "0 2 * * *"  # Daily at 2 AM
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: evidently-service-account
+          restartPolicy: OnFailure
+
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+
+          containers:
+            - name: cleanup
+              image: greenlang/evidently-service:1.0.0
+              command:
+                - python
+                - -m
+                - greenlang.ml.drift_detection.cleanup
+              args:
+                - --retention-days=30
+                - --dry-run=false
+
+              resources:
+                requests:
+                  cpu: 100m
+                  memory: 256Mi
+                limits:
+                  cpu: 500m
+                  memory: 512Mi
+
+          volumes:
+            - name: data
+              persistentVolumeClaim:
+                claimName: evidently-storage

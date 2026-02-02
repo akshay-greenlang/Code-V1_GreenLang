@@ -1,0 +1,66 @@
+# Sample GreenLang Configuration for Testing
+
+app:
+  name: "test_app"
+  version: "1.0.0"
+  environment: "test"
+
+llm:
+  provider: "anthropic"
+  model: "claude-3-5-sonnet-20241022"
+  temperature: 0.7
+  max_tokens: 4000
+  cache_enabled: true
+  cache_ttl: 3600
+
+cache:
+  backend: "redis"
+  host: "localhost"
+  port: 6379
+  db: 0
+  ttl: 3600
+  max_size: 1000
+
+database:
+  type: "postgresql"
+  host: "localhost"
+  port: 5432
+  database: "greenlang_test"
+  user: "test_user"
+  password: "test_password"
+  pool_size: 10
+  max_overflow: 20
+
+agents:
+  emissions_calculator:
+    enabled: true
+    max_retries: 3
+    timeout: 30
+
+  supplier_analyzer:
+    enabled: true
+    max_retries: 3
+    timeout: 60
+
+  report_generator:
+    enabled: true
+    max_retries: 2
+    timeout: 120
+
+validation:
+  strict_mode: true
+  auto_fix: false
+  schema_version: "1.0"
+
+telemetry:
+  enabled: true
+  provider: "prometheus"
+  metrics_port: 9090
+  log_level: "INFO"
+
+testing:
+  mock_llm: true
+  mock_cache: true
+  mock_database: true
+  seed_data: true
+  cleanup_after_test: true

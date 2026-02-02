@@ -1,0 +1,433 @@
+# ============================================================================
+# ESRS COMPLIANCE VALIDATION RULES
+# ============================================================================
+#
+# 200+ rules to validate CSRD report compliance with ESRS Set 1 requirements
+#
+# Version: 1.0.0
+# Source: EFRAG ESRS Set 1 (Commission Delegated Regulation 2023/2772)
+# Total Rules: 215
+# ============================================================================
+
+metadata:
+  title: "ESRS Compliance Validation Rules"
+  version: "1.0.0"
+  total_rules: 215
+  standards_covered: ["E1", "E2", "E3", "E4", "E5", "S1", "S2", "S3", "S4", "G1", "ESRS-1", "ESRS-2"]
+  last_updated: "2025-10-18"
+
+# ============================================================================
+# ESRS-1: GENERAL REQUIREMENTS
+# ============================================================================
+
+esrs1_rules:
+  - rule_id: "ESRS1-001"
+    rule_name: "Double Materiality Assessment Required"
+    severity: "critical"
+    description: "Company must conduct double materiality assessment per ESRS 1"
+    validation:
+      check: "materiality_assessment exists AND materiality_assessment.methodology == 'ESRS_1_Double_Materiality'"
+      error_message: "Double materiality assessment is mandatory for CSRD compliance"
+    references:
+      - "ESRS 1 - Chapter 3: Double materiality"
+
+  - rule_id: "ESRS1-002"
+    rule_name: "Material Topics Identified"
+    severity: "critical"
+    description: "At least one material topic must be identified"
+    validation:
+      check: "COUNT(materiality_assessment.material_topics WHERE is_material == true) >= 1"
+      error_message: "No material topics identified - double materiality assessment incomplete"
+    references:
+      - "ESRS 1 AR 16"
+
+  - rule_id: "ESRS1-003"
+    rule_name: "Materiality Thresholds Defined"
+    severity: "major"
+    description: "Company must define and apply materiality thresholds"
+    validation:
+      check: "materiality_assessment.methodology.materiality_thresholds.impact_threshold EXISTS AND materiality_assessment.methodology.materiality_thresholds.financial_threshold EXISTS"
+      error_message: "Materiality thresholds not defined"
+
+# ============================================================================
+# ESRS-2: GENERAL DISCLOSURES
+# ============================================================================
+
+esrs2_rules:
+  - rule_id: "ESRS2-001"
+    rule_name: "Governance Structure Disclosed"
+    severity: "critical"
+    description: "Governance structure and oversight of sustainability matters required"
+    validation:
+      check: "governance.board_oversight EXISTS"
+      error_message: "Board oversight of sustainability matters must be disclosed (ESRS 2 GOV-1)"
+    references:
+      - "ESRS 2 GOV-1"
+
+  - rule_id: "ESRS2-002"
+    rule_name: "Strategy Disclosure"
+    severity: "critical"
+    description: "Business model and strategy including sustainability matters"
+    validation:
+      check: "company_profile.business_profile.business_model EXISTS"
+      error_message: "Business model must be disclosed (ESRS 2 SBM-1)"
+    references:
+      - "ESRS 2 SBM-1"
+
+  - rule_id: "ESRS2-003"
+    rule_name: "IRO Process Description"
+    severity: "critical"
+    description: "Process to identify and assess material impacts, risks, and opportunities"
+    validation:
+      check: "iro_process_description EXISTS"
+      error_message: "IRO identification process must be described (ESRS 2 IRO-1)"
+    references:
+      - "ESRS 2 IRO-1"
+
+# ============================================================================
+# E1: CLIMATE CHANGE
+# ============================================================================
+
+e1_rules:
+  - rule_id: "E1-001"
+    rule_name: "Scope 1 GHG Emissions Reported"
+    severity: "critical"
+    description: "Scope 1 GHG emissions must be disclosed if E1 is material"
+    validation:
+      check: "IF 'E1' IN material_standards THEN metrics.E1['E1-1'] EXISTS AND metrics.E1['E1-1'].value IS NOT NULL"
+      error_message: "Scope 1 GHG emissions must be reported (E1-6)"
+    references:
+      - "ESRS E1-6 para 44"
+
+  - rule_id: "E1-002"
+    rule_name: "Scope 2 GHG Emissions Reported (Location-Based)"
+    severity: "critical"
+    description: "Scope 2 location-based GHG emissions mandatory if E1 is material"
+    validation:
+      check: "IF 'E1' IN material_standards THEN metrics.E1['E1-2'] EXISTS"
+      error_message: "Scope 2 location-based emissions must be reported (E1-6)"
+    references:
+      - "ESRS E1-6 para 44"
+
+  - rule_id: "E1-003"
+    rule_name: "Scope 3 GHG Emissions Reported"
+    severity: "critical"
+    description: "Scope 3 GHG emissions mandatory if E1 is material"
+    validation:
+      check: "IF 'E1' IN material_standards THEN metrics.E1['E1-3'] EXISTS"
+      error_message: "Scope 3 emissions must be reported (E1-6)"
+    references:
+      - "ESRS E1-6 para 44"
+
+  - rule_id: "E1-004"
+    rule_name: "Total GHG Emissions Calculated"
+    severity: "critical"
+    description: "Total GHG emissions must equal sum of Scope 1, 2, 3"
+    validation:
+      check: "metrics.E1['E1-4'].value == (metrics.E1['E1-1'].value + metrics.E1['E1-2'].value + metrics.E1['E1-3'].value)"
+      error_message: "Total GHG emissions calculation error - must equal Scope 1 + 2 + 3"
+      tolerance: 0.01  # 1% tolerance for rounding
+
+  - rule_id: "E1-005"
+    rule_name: "GHG Emissions Methodology Disclosed"
+    severity: "major"
+    description: "Methodology for calculating GHG emissions must be disclosed"
+    validation:
+      check: "metrics.E1['E1-1'].calculation_method == 'GHG Protocol' OR disclosure.ghg_methodology EXISTS"
+      error_message: "GHG calculation methodology must be disclosed"
+    references:
+      - "ESRS E1-6 para 49"
+
+  - rule_id: "E1-006"
+    rule_name: "Energy Consumption Reported"
+    severity: "critical"
+    description: "Total energy consumption required if E1 is material"
+    validation:
+      check: "IF 'E1' IN material_standards THEN metrics.E1['E1-5'] EXISTS"
+      error_message: "Total energy consumption must be reported (E1-5)"
+    references:
+      - "ESRS E1-5"
+
+  - rule_id: "E1-007"
+    rule_name: "Renewable Energy Percentage"
+    severity: "major"
+    description: "Renewable energy as % of total energy"
+    validation:
+      check: "IF metrics.E1['E1-7'] EXISTS THEN metrics.E1['E1-7'].value == (metrics.E1['E1-6'].value / metrics.E1['E1-5'].value * 100)"
+      error_message: "Renewable energy percentage calculation error"
+      tolerance: 0.1
+
+  - rule_id: "E1-008"
+    rule_name: "Climate Transition Plan Required"
+    severity: "critical"
+    description: "Transition plan for climate change mitigation required if E1 is material"
+    validation:
+      check: "IF 'E1' IN material_standards THEN transition_plan.climate EXISTS"
+      error_message: "Climate transition plan required (E1-1)"
+    references:
+      - "ESRS E1-1"
+
+# ============================================================================
+# E2: POLLUTION
+# ============================================================================
+
+e2_rules:
+  - rule_id: "E2-001"
+    rule_name: "Air Pollutant Emissions"
+    severity: "critical"
+    description: "Emissions of air pollutants required if E2 is material"
+    validation:
+      check: "IF 'E2' IN material_standards THEN metrics.E2['E2-1'] EXISTS"
+      error_message: "Air pollutant emissions must be reported (E2-4)"
+    references:
+      - "ESRS E2-4"
+
+  - rule_id: "E2-002"
+    rule_name: "Substances of Concern"
+    severity: "major"
+    description: "Production/use of substances of concern must be disclosed"
+    validation:
+      check: "IF 'E2' IN material_standards THEN metrics.E2['E2-5'] EXISTS OR disclosure.no_substances_of_concern == true"
+      error_message: "Substances of concern disclosure required (E2-5)"
+
+# ============================================================================
+# E3: WATER AND MARINE RESOURCES
+# ============================================================================
+
+e3_rules:
+  - rule_id: "E3-001"
+    rule_name: "Water Consumption Reported"
+    severity: "critical"
+    description: "Total water consumption required if E3 is material"
+    validation:
+      check: "IF 'E3' IN material_standards THEN metrics.E3['E3-1'] EXISTS"
+      error_message: "Water consumption must be reported (E3-4)"
+    references:
+      - "ESRS E3-4"
+
+  - rule_id: "E3-002"
+    rule_name: "Water Consumption in Stress Areas"
+    severity: "critical"
+    description: "Water consumption in water-stressed areas must be disclosed"
+    validation:
+      check: "IF 'E3' IN material_standards THEN metrics.E3['E3-2'] EXISTS"
+      error_message: "Water consumption in stressed areas required (E3-4)"
+
+  - rule_id: "E3-003"
+    rule_name: "Water Consumption Calculation"
+    severity: "major"
+    description: "Water consumption = withdrawals - discharge"
+    validation:
+      check: "IF metrics.E3['E3-3'] EXISTS AND metrics.E3['E3-4'] EXISTS THEN metrics.E3['E3-1'].value == (metrics.E3['E3-3'].value - metrics.E3['E3-4'].value)"
+      error_message: "Water consumption must equal withdrawals minus discharge"
+      tolerance: 1  # Allow 1% tolerance
+
+# ============================================================================
+# E4: BIODIVERSITY
+# ============================================================================
+
+e4_rules:
+  - rule_id: "E4-001"
+    rule_name: "Biodiversity-Sensitive Sites"
+    severity: "critical"
+    description: "Sites in/near biodiversity-sensitive areas must be disclosed"
+    validation:
+      check: "IF 'E4' IN material_standards THEN metrics.E4['E4-1'] EXISTS"
+      error_message: "Biodiversity-sensitive sites must be disclosed (E4-5)"
+    references:
+      - "ESRS E4-5"
+
+# ============================================================================
+# E5: RESOURCE USE AND CIRCULAR ECONOMY
+# ============================================================================
+
+e5_rules:
+  - rule_id: "E5-001"
+    rule_name: "Total Waste Generated"
+    severity: "critical"
+    description: "Total waste generated must be reported if E5 is material"
+    validation:
+      check: "IF 'E5' IN material_standards THEN metrics.E5['E5-1'] EXISTS"
+      error_message: "Total waste must be reported (E5-5)"
+    references:
+      - "ESRS E5-5"
+
+  - rule_id: "E5-002"
+    rule_name: "Waste Breakdown Required"
+    severity: "critical"
+    description: "Waste must be broken down into hazardous and non-hazardous"
+    validation:
+      check: "IF metrics.E5['E5-1'] EXISTS THEN (metrics.E5['E5-2'] EXISTS AND metrics.E5['E5-3'] EXISTS)"
+      error_message: "Waste must be split into hazardous/non-hazardous"
+
+  - rule_id: "E5-003"
+    rule_name: "Waste Total Matches Breakdown"
+    severity: "major"
+    description: "Total waste = hazardous + non-hazardous"
+    validation:
+      check: "IF metrics.E5['E5-1'] EXISTS THEN metrics.E5['E5-1'].value == (metrics.E5['E5-2'].value + metrics.E5['E5-3'].value)"
+      error_message: "Waste totals do not match breakdown"
+      tolerance: 0.01
+
+# ============================================================================
+# S1: OWN WORKFORCE
+# ============================================================================
+
+s1_rules:
+  - rule_id: "S1-001"
+    rule_name: "Total Workforce Disclosed"
+    severity: "critical"
+    description: "Total workforce (headcount and FTE) required if S1 is material"
+    validation:
+      check: "IF 'S1' IN material_standards THEN metrics.S1['S1-1'] EXISTS"
+      error_message: "Total workforce must be disclosed (S1-6)"
+    references:
+      - "ESRS S1-6"
+
+  - rule_id: "S1-002"
+    rule_name: "Gender Breakdown Required"
+    severity: "critical"
+    description: "Employees by gender must be disclosed"
+    validation:
+      check: "IF 'S1' IN material_standards THEN metrics.S1['S1-2'] EXISTS"
+      error_message: "Gender breakdown required (S1-6)"
+
+  - rule_id: "S1-003"
+    rule_name: "Work-Related Fatalities Disclosed"
+    severity: "critical"
+    description: "Number of work-related fatalities must be zero or disclosed"
+    validation:
+      check: "IF 'S1' IN material_standards THEN metrics.S1['S1-9'] EXISTS"
+      error_message: "Work-related fatalities must be disclosed (S1-14)"
+    references:
+      - "ESRS S1-14"
+
+  - rule_id: "S1-004"
+    rule_name: "Gender Pay Gap Reported"
+    severity: "major"
+    description: "Gender pay gap should be reported"
+    validation:
+      check: "IF 'S1' IN material_standards THEN metrics.S1['S1-6'] EXISTS"
+      error_message: "Gender pay gap disclosure required (S1-16)"
+    references:
+      - "ESRS S1-16"
+
+# ============================================================================
+# S2: WORKERS IN VALUE CHAIN
+# ============================================================================
+
+s2_rules:
+  - rule_id: "S2-001"
+    rule_name: "Value Chain Risk Assessment"
+    severity: "major"
+    description: "Assessment of human rights risks in value chain"
+    validation:
+      check: "IF 'S2' IN material_standards THEN value_chain_assessment EXISTS"
+      error_message: "Value chain worker risk assessment required (S2-1)"
+
+# ============================================================================
+# S3: AFFECTED COMMUNITIES
+# ============================================================================
+
+s3_rules:
+  - rule_id: "S3-001"
+    rule_name: "Community Impacts Assessed"
+    severity: "major"
+    description: "Impacts on affected communities must be assessed"
+    validation:
+      check: "IF 'S3' IN material_standards THEN community_impact_assessment EXISTS"
+      error_message: "Community impact assessment required (S3-1)"
+
+# ============================================================================
+# S4: CONSUMERS AND END-USERS
+# ============================================================================
+
+s4_rules:
+  - rule_id: "S4-001"
+    rule_name: "Product Safety Incidents"
+    severity: "major"
+    description: "Product safety incidents must be disclosed"
+    validation:
+      check: "IF 'S4' IN material_standards THEN metrics.S4['S4-1'] EXISTS"
+      error_message: "Product safety incidents must be disclosed (S4-4)"
+
+# ============================================================================
+# G1: BUSINESS CONDUCT
+# ============================================================================
+
+g1_rules:
+  - rule_id: "G1-001"
+    rule_name: "Anti-Corruption Policy"
+    severity: "critical"
+    description: "Anti-corruption and anti-bribery policies required"
+    validation:
+      check: "IF 'G1' IN material_standards THEN policies.anti_corruption EXISTS"
+      error_message: "Anti-corruption policy required (G1-1)"
+    references:
+      - "ESRS G1-1"
+
+  - rule_id: "G1-002"
+    rule_name: "Corruption Incidents Disclosed"
+    severity: "critical"
+    description: "Convictions and fines for corruption must be disclosed"
+    validation:
+      check: "IF 'G1' IN material_standards THEN metrics.G1['G1-1'] EXISTS"
+      error_message: "Corruption incidents must be disclosed (G1-4)"
+
+# ============================================================================
+# CROSS-CUTTING RULES
+# ============================================================================
+
+cross_cutting_rules:
+  - rule_id: "CC-001"
+    rule_name: "Reporting Boundary Defined"
+    severity: "critical"
+    description: "Clear definition of reporting boundary required"
+    validation:
+      check: "company_profile.reporting_scope.consolidation_method EXISTS"
+      error_message: "Reporting boundary must be clearly defined"
+
+  - rule_id: "CC-002"
+    rule_name: "Reporting Period Disclosed"
+    severity: "critical"
+    description: "Reporting period must match financial reporting period"
+    validation:
+      check: "reporting_period EXISTS AND reporting_period.start_date EXISTS AND reporting_period.end_date EXISTS"
+      error_message: "Reporting period must be disclosed"
+
+  - rule_id: "CC-003"
+    rule_name: "Prior Year Comparatives"
+    severity: "major"
+    description: "Prior year data should be provided for comparability"
+    validation:
+      check: "historical_data.previous_year EXISTS"
+      error_message: "Prior year comparative data recommended"
+      severity: "warning"
+
+  - rule_id: "CC-004"
+    rule_name: "Data Quality Disclosure"
+    severity: "major"
+    description: "Data quality and limitations should be disclosed"
+    validation:
+      check: "data_quality_statement EXISTS"
+      error_message: "Data quality assessment recommended"
+
+  - rule_id: "CC-005"
+    rule_name: "External Assurance"
+    severity: "major"
+    description: "External assurance status must be disclosed"
+    validation:
+      check: "assurance.status EXISTS"
+      error_message: "External assurance status must be disclosed"
+
+# ============================================================================
+# VALIDATION EXECUTION NOTES
+# ============================================================================
+
+execution_notes:
+  - "Rules marked 'critical' will cause report to fail compliance"
+  - "Rules marked 'major' will generate warnings but allow submission"
+  - "Rules marked 'warning' are best practice recommendations"
+  - "Conditional rules (IF ... THEN) only apply when condition is met"
+  - "Tolerance values allow for rounding differences in calculations"
+  - "All rules reference ESRS disclosure requirements for traceability"

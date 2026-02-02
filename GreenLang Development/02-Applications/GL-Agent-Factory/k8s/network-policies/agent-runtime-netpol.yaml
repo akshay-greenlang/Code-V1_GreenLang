@@ -1,0 +1,133 @@
+# GreenLang Agent Runtime Network Policy
+# Allows:
+#   - Ingress: From API Server ONLY (strict isolation)
+#   - Egress: To PostgreSQL, Redis, and external AI APIs
+#
+# Agent Runtime is an internal service that should NEVER be exposed externally
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: agent-runtime-netpol
+  namespace: greenlang-production
+  labels:
+    app.kubernetes.io/name: agent-runtime-netpol
+    app.kubernetes.io/component: network-policy
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/managed-by: kubectl
+    security.greenlang.ai/policy-type: allow
+  annotations:
+    description: "Network policy for Agent Runtime - Internal service only"
+    security.greenlang.ai/compliance: "SOC2,ISO27001"
+    security.greenlang.ai/exposure: "internal-only"
+spec:
+  # Select Agent Runtime pods
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: agent-runtime
+      app.kubernetes.io/component: agent-runtime
+  policyTypes:
+    - Ingress
+    - Egress
+
+  ingress:
+    # ONLY allow traffic from API Server
+    # This ensures Agent Runtime is never directly accessible
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: api-server
+              app.kubernetes.io/component: api
+      ports:
+        - protocol: TCP
+          port: 8000
+
+    # Allow Prometheus metrics scraping
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: prometheus
+      ports:
+        - protocol: TCP
+          port: 8000
+        - protocol: TCP
+          port: 9090
+
+    # Allow health checks from kubelet
+    - from:
+        - ipBlock:
+            cidr: 10.0.0.0/8
+      ports:
+        - protocol: TCP
+          port: 8000
+
+  egress:
+    # Allow egress to PostgreSQL for data persistence
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: postgresql
+      ports:
+        - protocol: TCP
+          port: 5432
+
+    # Allow egress to Redis for caching and task queues
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: redis
+      ports:
+        - protocol: TCP
+          port: 6379
+
+    # Allow egress to Registry service (agent lookup)
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: registry
+              app.kubernetes.io/component: registry
+      ports:
+        - protocol: TCP
+          port: 8001
+
+    # Allow egress to external AI APIs (Anthropic, OpenAI, etc.)
+    # HTTPS only to public internet
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 10.0.0.0/8
+              - 172.16.0.0/12
+              - 192.168.0.0/16
+      ports:
+        - protocol: TCP
+          port: 443
+
+    # Allow egress to S3 endpoints (AWS)
+    # Note: In production, use VPC endpoints for S3
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 10.0.0.0/8
+              - 172.16.0.0/12
+              - 192.168.0.0/16
+      ports:
+        - protocol: TCP
+          port: 443
+
+    # Allow egress to OpenTelemetry Collector
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: otel-collector
+      ports:
+        - protocol: TCP
+          port: 4317
+        - protocol: TCP
+          port: 4318

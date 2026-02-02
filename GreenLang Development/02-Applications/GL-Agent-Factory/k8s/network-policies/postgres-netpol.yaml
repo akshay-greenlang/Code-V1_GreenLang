@@ -1,0 +1,105 @@
+# GreenLang PostgreSQL Network Policy
+# Allows:
+#   - Ingress: From API Server, Agent Runtime, and Registry ONLY
+#   - Egress: Restricted (replication only if enabled)
+#
+# PostgreSQL is a critical data store with strict access control
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: postgres-netpol
+  namespace: greenlang-production
+  labels:
+    app.kubernetes.io/name: postgres-netpol
+    app.kubernetes.io/component: network-policy
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/managed-by: kubectl
+    security.greenlang.ai/policy-type: allow
+    security.greenlang.ai/data-tier: database
+  annotations:
+    description: "Network policy for PostgreSQL - Primary data store"
+    security.greenlang.ai/compliance: "SOC2,ISO27001,GDPR"
+    security.greenlang.ai/data-classification: "confidential"
+spec:
+  # Select PostgreSQL pods
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: postgresql
+  policyTypes:
+    - Ingress
+    - Egress
+
+  ingress:
+    # Allow traffic from API Server
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: api-server
+              app.kubernetes.io/component: api
+      ports:
+        - protocol: TCP
+          port: 5432
+
+    # Allow traffic from Agent Runtime
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: agent-runtime
+              app.kubernetes.io/component: agent-runtime
+      ports:
+        - protocol: TCP
+          port: 5432
+
+    # Allow traffic from Registry
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: registry
+              app.kubernetes.io/component: registry
+      ports:
+        - protocol: TCP
+          port: 5432
+
+    # Allow PostgreSQL replication (primary to replica)
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: postgresql
+      ports:
+        - protocol: TCP
+          port: 5432
+
+    # Allow Prometheus PostgreSQL Exporter metrics
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: prometheus
+      ports:
+        - protocol: TCP
+          port: 9187
+
+  egress:
+    # Allow PostgreSQL replication traffic (to replicas)
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: postgresql
+      ports:
+        - protocol: TCP
+          port: 5432
+
+    # Allow backup to S3 (via AWS SDK)
+    # Note: In production, prefer VPC endpoints
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 10.0.0.0/8
+              - 172.16.0.0/12
+              - 192.168.0.0/16
+      ports:
+        - protocol: TCP
+          port: 443

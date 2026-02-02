@@ -1,0 +1,12 @@
+{
+  "boiler": {
+    "model": "XB-3000",
+    "efficiency": 0.92,
+    "capacity_kw": 300
+  },
+  "solar": {
+    "panel_type": "monocrystalline",
+    "efficiency": 0.22,
+    "area_m2": 100
+  }
+}

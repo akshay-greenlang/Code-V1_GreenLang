@@ -1,0 +1,109 @@
+{{- if .Values.agentRuntime.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "greenlang.fullname" . }}-agent-runtime
+  namespace: {{ include "greenlang.namespace" . }}
+  labels:
+    {{- include "greenlang.agentRuntime.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.agentRuntime.replicaCount }}
+  revisionHistoryLimit: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      {{- include "greenlang.agentRuntime.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "greenlang.agentRuntime.selectorLabels" . | nindent 8 }}
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8000"
+        prometheus.io/path: "/metrics"
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
+    spec:
+      serviceAccountName: {{ include "greenlang.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+      - name: agent-runtime
+        image: {{ .Values.global.imageRegistry }}/{{ .Values.agentRuntime.image.repository }}:{{ .Values.agentRuntime.image.tag | default .Chart.AppVersion }}
+        imagePullPolicy: {{ .Values.agentRuntime.image.pullPolicy }}
+        ports:
+        - name: http
+          containerPort: 8000
+          protocol: TCP
+        - name: metrics
+          containerPort: 9090
+          protocol: TCP
+        envFrom:
+        - configMapRef:
+            name: {{ include "greenlang.fullname" . }}-config
+        - secretRef:
+            name: {{ include "greenlang.fullname" . }}-secrets
+        resources:
+          {{- toYaml .Values.agentRuntime.resources | nindent 10 }}
+        securityContext:
+          {{- toYaml .Values.containerSecurityContext | nindent 10 }}
+        livenessProbe:
+          {{- toYaml .Values.agentRuntime.livenessProbe | nindent 10 }}
+        readinessProbe:
+          {{- toYaml .Values.agentRuntime.readinessProbe | nindent 10 }}
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+        - name: app-tmp
+          mountPath: /app/tmp
+        - name: app-logs
+          mountPath: /app/logs
+      volumes:
+      - name: tmp
+        emptyDir:
+          medium: Memory
+          sizeLimit: 100Mi
+      - name: app-tmp
+        emptyDir:
+          sizeLimit: 500Mi
+      - name: app-logs
+        emptyDir:
+          sizeLimit: 1Gi
+      {{- with .Values.agentRuntime.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.agentRuntime.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.agentRuntime.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "greenlang.fullname" . }}-agent-runtime
+  namespace: {{ include "greenlang.namespace" . }}
+  labels:
+    {{- include "greenlang.agentRuntime.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.agentRuntime.service.type }}
+  ports:
+  - name: http
+    port: {{ .Values.agentRuntime.service.port }}
+    targetPort: {{ .Values.agentRuntime.service.targetPort }}
+    protocol: TCP
+  - name: metrics
+    port: {{ .Values.agentRuntime.service.metricsPort }}
+    targetPort: {{ .Values.agentRuntime.service.metricsPort }}
+    protocol: TCP
+  selector:
+    {{- include "greenlang.agentRuntime.selectorLabels" . | nindent 4 }}
+{{- end }}

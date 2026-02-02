@@ -1,0 +1,392 @@
+# Golden Tests: Edge Cases - Carbon Emissions Agent (GL-001)
+# Test Count: 25 tests
+# Description: Tests for boundary conditions, precision limits, and error handling
+
+test_suite:
+  name: "Edge Cases Golden Tests"
+  agent_id: "emissions/carbon_calculator_v1"
+  version: "1.0.0"
+  description: "Validates edge cases, boundary conditions, and precision handling"
+
+tests:
+  # Zero and near-zero tests (1-5)
+  - test_id: "edge_zero_001"
+    test_name: "Zero Quantity Natural Gas"
+    description: "Zero input should return zero emissions"
+    tags: ["edge_case", "zero", "boundary"]
+    input:
+      fuel_type: "natural_gas"
+      quantity: 0
+      unit: "m3"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 0.0
+      emission_factor_used: 1.93
+      scope: 1
+
+  - test_id: "edge_zero_002"
+    test_name: "Zero Quantity Diesel"
+    description: "Zero diesel should return zero"
+    tags: ["edge_case", "zero", "boundary"]
+    input:
+      fuel_type: "diesel"
+      quantity: 0
+      unit: "L"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 0.0
+      emission_factor_used: 2.68
+      scope: 1
+
+  - test_id: "edge_zero_003"
+    test_name: "Very Small Quantity"
+    description: "Extremely small but non-zero (0.0001 L)"
+    tags: ["edge_case", "precision", "small"]
+    input:
+      fuel_type: "diesel"
+      quantity: 0.0001
+      unit: "L"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 0.000268
+      emission_factor_used: 2.68
+      scope: 1
+
+  - test_id: "edge_zero_004"
+    test_name: "Minimum Representable"
+    description: "Very small quantity (0.000001)"
+    tags: ["edge_case", "precision", "minimum"]
+    input:
+      fuel_type: "natural_gas"
+      quantity: 0.000001
+      unit: "m3"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 0.00000193
+      emission_factor_used: 1.93
+      scope: 1
+
+  - test_id: "edge_zero_005"
+    test_name: "Zero Electricity"
+    description: "Zero electricity consumption"
+    tags: ["edge_case", "zero", "boundary"]
+    input:
+      fuel_type: "electricity_grid"
+      quantity: 0
+      unit: "kWh"
+      region: "US"
+      scope: 2
+    expected:
+      emissions_kgco2e: 0.0
+      emission_factor_used: 0.417
+      scope: 2
+
+  # Large number tests (6-10)
+  - test_id: "edge_large_006"
+    test_name: "Very Large Quantity"
+    description: "10 million m3 natural gas"
+    tags: ["edge_case", "large", "scale"]
+    input:
+      fuel_type: "natural_gas"
+      quantity: 10000000
+      unit: "m3"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 19300000.0
+      emission_factor_used: 1.93
+      scope: 1
+
+  - test_id: "edge_large_007"
+    test_name: "Massive Industrial Scale"
+    description: "100 million L diesel"
+    tags: ["edge_case", "large", "industrial"]
+    input:
+      fuel_type: "diesel"
+      quantity: 100000000
+      unit: "L"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 268000000.0
+      emission_factor_used: 2.68
+      scope: 1
+
+  - test_id: "edge_large_008"
+    test_name: "Enterprise Electricity"
+    description: "1 billion kWh (1 TWh)"
+    tags: ["edge_case", "large", "enterprise"]
+    input:
+      fuel_type: "electricity_grid"
+      quantity: 1000000000
+      unit: "kWh"
+      region: "US"
+      scope: 2
+    expected:
+      emissions_kgco2e: 417000000.0
+      emission_factor_used: 0.417
+      scope: 2
+
+  - test_id: "edge_large_009"
+    test_name: "National Scale Natural Gas"
+    description: "1 billion m3 (national scale)"
+    tags: ["edge_case", "large", "national"]
+    input:
+      fuel_type: "natural_gas"
+      quantity: 1000000000
+      unit: "m3"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 1930000000.0
+      emission_factor_used: 1.93
+      scope: 1
+
+  - test_id: "edge_large_010"
+    test_name: "Large GJ Conversion"
+    description: "10000 GJ natural gas"
+    tags: ["edge_case", "large", "conversion"]
+    input:
+      fuel_type: "natural_gas"
+      quantity: 10000
+      unit: "GJ"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 504444.1
+      emission_factor_used: 1.93
+      scope: 1
+
+  # Precision and rounding tests (11-15)
+  - test_id: "edge_precision_011"
+    test_name: "Precision Test 6 Decimals"
+    description: "Test 6 decimal place precision"
+    tags: ["edge_case", "precision", "decimals"]
+    input:
+      fuel_type: "natural_gas"
+      quantity: 1.234567
+      unit: "m3"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 2.382714
+      emission_factor_used: 1.93
+      scope: 1
+
+  - test_id: "edge_precision_012"
+    test_name: "Floating Point Challenge"
+    description: "Quantity that may cause floating point issues"
+    tags: ["edge_case", "precision", "floating_point"]
+    input:
+      fuel_type: "diesel"
+      quantity: 0.1
+      unit: "L"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 0.268
+      emission_factor_used: 2.68
+      scope: 1
+
+  - test_id: "edge_precision_013"
+    test_name: "Repeating Decimal Result"
+    description: "Input that creates repeating decimal"
+    tags: ["edge_case", "precision", "repeating"]
+    input:
+      fuel_type: "natural_gas"
+      quantity: 333.333333
+      unit: "m3"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 643.333333
+      emission_factor_used: 1.93
+      scope: 1
+
+  - test_id: "edge_precision_014"
+    test_name: "Round Number Check"
+    description: "Perfect round number (1000)"
+    tags: ["edge_case", "precision", "round"]
+    input:
+      fuel_type: "diesel"
+      quantity: 1000
+      unit: "L"
+      region: "EU"
+      scope: 1
+    expected:
+      emissions_kgco2e: 2620.0
+      emission_factor_used: 2.62
+      scope: 1
+
+  - test_id: "edge_precision_015"
+    test_name: "Near Round Number"
+    description: "Near round number (999.99)"
+    tags: ["edge_case", "precision", "near_round"]
+    input:
+      fuel_type: "diesel"
+      quantity: 999.99
+      unit: "L"
+      region: "EU"
+      scope: 1
+    expected:
+      emissions_kgco2e: 2619.9738
+      emission_factor_used: 2.62
+      scope: 1
+
+  # Region fallback tests (16-20)
+  - test_id: "edge_region_016"
+    test_name: "Unknown Region Fallback"
+    description: "Unknown region should use default"
+    tags: ["edge_case", "region", "fallback"]
+    input:
+      fuel_type: "natural_gas"
+      quantity: 1000
+      unit: "m3"
+      region: "XX"
+      scope: 1
+    expected:
+      emissions_kgco2e: 1930.0
+      emission_factor_used: 1.93
+      scope: 1
+
+  - test_id: "edge_region_017"
+    test_name: "Global Region Natural Gas"
+    description: "GLOBAL region code"
+    tags: ["edge_case", "region", "global"]
+    input:
+      fuel_type: "natural_gas"
+      quantity: 1000
+      unit: "m3"
+      region: "GLOBAL"
+      scope: 1
+    expected:
+      emissions_kgco2e: 1930.0
+      emission_factor_used: 1.93
+      scope: 1
+
+  - test_id: "edge_region_018"
+    test_name: "Case Insensitive Region"
+    description: "Lowercase region code"
+    tags: ["edge_case", "region", "case"]
+    input:
+      fuel_type: "diesel"
+      quantity: 1000
+      unit: "L"
+      region: "us"
+      scope: 1
+    expected:
+      emissions_kgco2e: 2680.0
+      emission_factor_used: 2.68
+      scope: 1
+
+  - test_id: "edge_region_019"
+    test_name: "Mixed Case Region"
+    description: "Mixed case region code (eU)"
+    tags: ["edge_case", "region", "case"]
+    input:
+      fuel_type: "diesel"
+      quantity: 1000
+      unit: "L"
+      region: "Eu"
+      scope: 1
+    expected:
+      emissions_kgco2e: 2620.0
+      emission_factor_used: 2.62
+      scope: 1
+
+  - test_id: "edge_region_020"
+    test_name: "Australia Uses US Fallback"
+    description: "AU region falls back to US"
+    tags: ["edge_case", "region", "fallback"]
+    input:
+      fuel_type: "natural_gas"
+      quantity: 1000
+      unit: "m3"
+      region: "AU"
+      scope: 1
+    expected:
+      emissions_kgco2e: 1930.0
+      emission_factor_used: 1.93
+      scope: 1
+
+  # Scope validation tests (21-25)
+  - test_id: "edge_scope_021"
+    test_name: "Scope 1 Natural Gas"
+    description: "Explicit Scope 1 marking"
+    tags: ["edge_case", "scope", "scope1"]
+    input:
+      fuel_type: "natural_gas"
+      quantity: 1000
+      unit: "m3"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 1930.0
+      scope: 1
+      calculation_method: "location"
+
+  - test_id: "edge_scope_022"
+    test_name: "Scope 2 Electricity Location"
+    description: "Scope 2 location-based"
+    tags: ["edge_case", "scope", "scope2", "location"]
+    input:
+      fuel_type: "electricity_grid"
+      quantity: 1000
+      unit: "kWh"
+      region: "US"
+      scope: 2
+      calculation_method: "location"
+    expected:
+      emissions_kgco2e: 417.0
+      scope: 2
+      calculation_method: "location"
+
+  - test_id: "edge_scope_023"
+    test_name: "Scope 2 Electricity Market"
+    description: "Scope 2 market-based method"
+    tags: ["edge_case", "scope", "scope2", "market"]
+    input:
+      fuel_type: "electricity_grid"
+      quantity: 1000
+      unit: "kWh"
+      region: "US"
+      scope: 2
+      calculation_method: "market"
+    expected:
+      emissions_kgco2e: 417.0
+      scope: 2
+      calculation_method: "market"
+
+  - test_id: "edge_scope_024"
+    test_name: "Diesel Mobile Combustion"
+    description: "Mobile source Scope 1"
+    tags: ["edge_case", "scope", "mobile"]
+    input:
+      fuel_type: "diesel"
+      quantity: 1000
+      unit: "L"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 2680.0
+      scope: 1
+
+  - test_id: "edge_scope_025"
+    test_name: "Gasoline Vehicle Fleet"
+    description: "Gasoline Scope 1 calculation"
+    tags: ["edge_case", "scope", "gasoline"]
+    input:
+      fuel_type: "gasoline"
+      quantity: 1000
+      unit: "L"
+      region: "US"
+      scope: 1
+    expected:
+      emissions_kgco2e: 2310.0
+      emission_factor_used: 2.31
+      emission_factor_source: "EPA"
+      scope: 1

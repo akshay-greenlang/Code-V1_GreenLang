@@ -1,0 +1,172 @@
+# ==============================================================================
+# GL-VCCI Pod Disruption Budgets (PDB) Configuration
+# Ensures minimum availability during voluntary disruptions (node drains, updates)
+# ==============================================================================
+
+# ==============================================================================
+# PDB for Backend API
+# ==============================================================================
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: vcci-backend-api-pdb
+  namespace: vcci-production
+  labels:
+    app.kubernetes.io/name: gl-vcci
+    app.kubernetes.io/component: backend-api
+    app.kubernetes.io/part-of: vcci-platform
+spec:
+  # Ensure at least 2 backend API pods are always available
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: vcci-backend-api
+      tier: backend
+  unhealthyPodEvictionPolicy: IfHealthyBudget  # K8s 1.26+
+
+  # Alternative: Use maxUnavailable instead of minAvailable
+  # maxUnavailable: 1  # Allow at most 1 pod to be unavailable
+
+---
+# ==============================================================================
+# PDB for Worker (Calculator Agent)
+# ==============================================================================
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: vcci-worker-pdb
+  namespace: vcci-production
+  labels:
+    app.kubernetes.io/name: gl-vcci
+    app.kubernetes.io/component: worker
+    app.kubernetes.io/part-of: vcci-platform
+spec:
+  # Ensure at least 1 worker is always running
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: vcci-worker
+      tier: worker
+  unhealthyPodEvictionPolicy: IfHealthyBudget
+
+---
+# ==============================================================================
+# PDB for Frontend
+# ==============================================================================
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: vcci-frontend-pdb
+  namespace: vcci-production
+  labels:
+    app.kubernetes.io/name: gl-vcci
+    app.kubernetes.io/component: frontend
+    app.kubernetes.io/part-of: vcci-platform
+spec:
+  # Percentage-based: Allow at most 50% unavailable
+  maxUnavailable: 50%
+  selector:
+    matchLabels:
+      app: vcci-frontend
+      tier: frontend
+  unhealthyPodEvictionPolicy: IfHealthyBudget
+
+---
+# ==============================================================================
+# PDB for PostgreSQL (if running in K8s)
+# ==============================================================================
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: vcci-postgres-pdb
+  namespace: vcci-production
+  labels:
+    app.kubernetes.io/name: gl-vcci
+    app.kubernetes.io/component: database
+    app.kubernetes.io/part-of: vcci-platform
+spec:
+  # For database, prevent any disruption if running single instance
+  # If using HA setup (e.g., patroni), allow some disruption
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: vcci-postgres
+      tier: database
+  unhealthyPodEvictionPolicy: AlwaysAllow  # Allow eviction even if budget exceeded
+
+---
+# ==============================================================================
+# PDB for Redis
+# ==============================================================================
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: vcci-redis-pdb
+  namespace: vcci-production
+  labels:
+    app.kubernetes.io/name: gl-vcci
+    app.kubernetes.io/component: cache
+    app.kubernetes.io/part-of: vcci-platform
+spec:
+  # For Redis cluster, allow one node to be down
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: vcci-redis
+      tier: cache
+  unhealthyPodEvictionPolicy: IfHealthyBudget
+
+---
+# ==============================================================================
+# PDB for Weaviate Vector Database
+# ==============================================================================
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: vcci-weaviate-pdb
+  namespace: vcci-production
+  labels:
+    app.kubernetes.io/name: gl-vcci
+    app.kubernetes.io/component: vector-db
+    app.kubernetes.io/part-of: vcci-platform
+spec:
+  # Keep at least 1 Weaviate instance running
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: vcci-weaviate
+      tier: database
+  unhealthyPodEvictionPolicy: IfHealthyBudget
+
+---
+# ==============================================================================
+# NOTES ON PDB CONFIGURATION
+# ==============================================================================
+#
+# 1. PDB Types:
+#    - minAvailable: Minimum number/percentage of pods that must remain available
+#    - maxUnavailable: Maximum number/percentage of pods that can be unavailable
+#
+# 2. Disruption Types:
+#    - Voluntary: Node drains, pod deletions, deployments
+#    - Involuntary: Hardware failures, kernel panics (PDB doesn't protect against these)
+#
+# 3. Best Practices:
+#    - For stateless services: Use maxUnavailable to allow rolling updates
+#    - For stateful services: Use minAvailable to ensure data consistency
+#    - Always ensure minAvailable < total replicas, or updates will block
+#    - For HA databases, use minAvailable based on quorum requirements
+#
+# 4. unhealthyPodEvictionPolicy (K8s 1.26+):
+#    - IfHealthyBudget: Only evict if it doesn't violate PDB
+#    - AlwaysAllow: Evict unhealthy pods even if it violates PDB
+#
+# 5. Testing PDB:
+#    kubectl drain <node> --ignore-daemonsets --delete-emptydir-data
+#    kubectl get pdb -n vcci-production
+#    kubectl describe pdb <pdb-name> -n vcci-production
+#
+# 6. Common Issues:
+#    - PDB blocking updates: Ensure minAvailable < replicas
+#    - Pods stuck terminating: Check for finalizers or graceful shutdown issues
+#    - PDB not enforced: Verify selector matches pod labels

@@ -1,0 +1,155 @@
+# ==============================================================================
+# GL-VCCI Istio Peer Authentication (mTLS)
+# ==============================================================================
+
+# ==============================================================================
+# Namespace-wide mTLS (Strict Mode)
+# ==============================================================================
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: default
+  namespace: vcci-production
+  labels:
+    app.kubernetes.io/name: gl-vcci
+spec:
+  mtls:
+    mode: STRICT  # Require mTLS for all services
+
+---
+# ==============================================================================
+# Backend API mTLS
+# ==============================================================================
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: vcci-backend-api
+  namespace: vcci-production
+  labels:
+    app.kubernetes.io/name: gl-vcci
+    app.kubernetes.io/component: backend-api
+spec:
+  selector:
+    matchLabels:
+      app: vcci-backend-api
+
+  mtls:
+    mode: STRICT
+
+  # Port-specific settings
+  portLevelMtls:
+    8000:
+      mode: STRICT
+
+---
+# ==============================================================================
+# Worker mTLS
+# ==============================================================================
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: vcci-worker
+  namespace: vcci-production
+  labels:
+    app.kubernetes.io/name: gl-vcci
+    app.kubernetes.io/component: worker
+spec:
+  selector:
+    matchLabels:
+      app: vcci-worker
+
+  mtls:
+    mode: STRICT
+
+---
+# ==============================================================================
+# Database mTLS (Permissive - PostgreSQL has own SSL)
+# ==============================================================================
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: vcci-postgres
+  namespace: vcci-production
+  labels:
+    app.kubernetes.io/name: gl-vcci
+    app.kubernetes.io/component: database
+spec:
+  selector:
+    matchLabels:
+      app: vcci-postgres
+
+  mtls:
+    mode: PERMISSIVE  # Allow both mTLS and plaintext
+
+  portLevelMtls:
+    5432:
+      mode: DISABLE  # PostgreSQL port - use PostgreSQL SSL
+
+---
+# ==============================================================================
+# Redis mTLS (Permissive)
+# ==============================================================================
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: vcci-redis
+  namespace: vcci-production
+  labels:
+    app.kubernetes.io/name: gl-vcci
+    app.kubernetes.io/component: cache
+spec:
+  selector:
+    matchLabels:
+      app: vcci-redis
+
+  mtls:
+    mode: PERMISSIVE
+
+  portLevelMtls:
+    6379:
+      mode: DISABLE  # Redis port - plaintext
+
+---
+# ==============================================================================
+# Weaviate mTLS
+# ==============================================================================
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: vcci-weaviate
+  namespace: vcci-production
+  labels:
+    app.kubernetes.io/name: gl-vcci
+    app.kubernetes.io/component: vector-db
+spec:
+  selector:
+    matchLabels:
+      app: vcci-weaviate
+
+  mtls:
+    mode: STRICT
+
+---
+# ==============================================================================
+# NOTES ON MTLS MODES
+# ==============================================================================
+#
+# STRICT: Only accept mTLS encrypted connections
+#   - Most secure
+#   - Requires all clients to have Istio sidecar
+#   - Use for internal service-to-service communication
+#
+# PERMISSIVE: Accept both mTLS and plaintext
+#   - Migration mode
+#   - Allows gradual adoption of mTLS
+#   - Use during Istio rollout
+#
+# DISABLE: Do not use Istio mTLS
+#   - For services with their own TLS (PostgreSQL, external services)
+#   - For protocols Istio doesn't support
+#
+# Best Practice:
+# 1. Start with PERMISSIVE for all services
+# 2. Verify mTLS is working (check metrics)
+# 3. Switch to STRICT for production
+# 4. Use DISABLE only for databases with native TLS

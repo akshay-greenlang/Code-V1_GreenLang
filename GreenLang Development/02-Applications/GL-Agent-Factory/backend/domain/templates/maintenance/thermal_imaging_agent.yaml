@@ -1,0 +1,601 @@
+# =============================================================================
+# Thermal Imaging Agent Template
+# GreenLang Agent Factory - Process Heat Applications
+# =============================================================================
+# Standards: ASTM E1934, ISO 18434
+# Version: 1.0.0
+# =============================================================================
+
+metadata:
+  template_id: thermal_imaging_agent
+  name: IR Thermography Analysis Agent
+  description: >
+    Analyzes infrared thermography images to detect hot spots, insulation
+    defects, refractory failures, and equipment anomalies. Supports predictive
+    maintenance through thermal pattern recognition and trending.
+  category: maintenance
+  version: "1.0.0"
+  status: production
+  author: GreenLang Engineering Team
+  created_at: "2024-12-01T00:00:00Z"
+  updated_at: "2024-12-11T00:00:00Z"
+
+  tags:
+    - thermal_imaging
+    - IR_thermography
+    - predictive_maintenance
+    - hot_spot_detection
+    - insulation_defect
+
+  equipment_types:
+    - boiler
+    - furnace
+    - heat_exchanger
+    - piping
+    - electrical_equipment
+
+  industries:
+    - oil_gas
+    - power_generation
+    - petrochemical
+    - manufacturing
+
+  applicable_standards:
+    - ASTM E1934
+    - ISO 18434
+    - NETA MTS
+
+# =============================================================================
+# Input Schema
+# =============================================================================
+
+input_schema:
+  name: ThermalImagingInput
+  description: Thermal imaging analysis input parameters
+  version: "1.0.0"
+
+  fields:
+    # Image identification
+    image_id:
+      type: string
+      description: Thermal image identifier
+      required: true
+
+    equipment_tag:
+      type: string
+      description: Equipment tag
+      required: true
+
+    equipment_type:
+      type: enum
+      description: Type of equipment
+      required: true
+      allowed_values:
+        - boiler_casing
+        - furnace_shell
+        - heat_exchanger
+        - steam_pipe
+        - valve
+        - flange
+        - electrical_panel
+        - motor
+
+    inspection_date:
+      type: datetime
+      description: Date of inspection
+      required: true
+
+    # Image data
+    image_file:
+      type: file
+      description: Thermal image file path
+      required: true
+
+    image_format:
+      type: enum
+      description: Image format
+      required: false
+      allowed_values:
+        - FLIR
+        - FLUKE
+        - JPEG
+        - TIFF
+        - RAW
+      default: JPEG
+
+    # Camera parameters
+    emissivity:
+      type: float
+      description: Emissivity setting used
+      required: true
+      unit: dimensionless
+      min_value: 0.1
+      max_value: 1.0
+
+    reflected_temperature:
+      type: float
+      description: Reflected apparent temperature
+      required: false
+      unit: celsius
+
+    distance:
+      type: float
+      description: Distance to target
+      required: false
+      unit: m
+      default: 3.0
+
+    atmospheric_temperature:
+      type: float
+      description: Ambient temperature during inspection
+      required: true
+      unit: celsius
+
+    relative_humidity:
+      type: float
+      description: Relative humidity
+      required: false
+      unit: percent
+      default: 50
+
+    # Temperature data
+    max_temperature:
+      type: float
+      description: Maximum temperature in image
+      required: true
+      unit: celsius
+
+    min_temperature:
+      type: float
+      description: Minimum temperature in image
+      required: true
+      unit: celsius
+
+    avg_temperature:
+      type: float
+      description: Average temperature in ROI
+      required: false
+      unit: celsius
+
+    # Reference data
+    reference_temperature:
+      type: float
+      description: Reference temperature (similar equipment)
+      required: false
+      unit: celsius
+
+    design_surface_temp:
+      type: float
+      description: Design maximum surface temperature
+      required: false
+      unit: celsius
+
+    # Operating conditions
+    process_temperature:
+      type: float
+      description: Process temperature at time of inspection
+      required: false
+      unit: celsius
+
+    operating_load:
+      type: float
+      description: Operating load percentage
+      required: false
+      unit: percent
+
+    # Region of interest
+    roi_coordinates:
+      type: list
+      description: ROI pixel coordinates
+      required: false
+
+    spot_temperatures:
+      type: list
+      description: List of spot temperature measurements
+      required: false
+
+    # Historical data
+    previous_inspection_data:
+      type: dict
+      description: Previous inspection temperature data
+      required: false
+
+# =============================================================================
+# Output Schema
+# =============================================================================
+
+output_schema:
+  name: ThermalImagingOutput
+  description: Thermal imaging analysis results
+  version: "1.0.0"
+
+  fields:
+    # Anomaly detection
+    anomalies_detected:
+      type: list
+      description: List of detected anomalies
+
+    anomaly_count:
+      type: integer
+      description: Number of anomalies detected
+
+    severity_classification:
+      type: enum
+      description: Overall severity
+      allowed_values:
+        - critical
+        - serious
+        - moderate
+        - minor
+        - normal
+
+    # Temperature analysis
+    delta_t_max:
+      type: float
+      description: Maximum temperature difference
+      unit: celsius
+
+    delta_t_reference:
+      type: float
+      description: Difference from reference
+      unit: celsius
+
+    hot_spot_locations:
+      type: list
+      description: Hot spot locations and temperatures
+
+    # Heat loss analysis
+    estimated_heat_loss:
+      type: float
+      description: Estimated heat loss from anomaly
+      unit: kW
+
+    annual_energy_loss:
+      type: float
+      description: Annual energy loss
+      unit: GJ/year
+
+    # Trending
+    temperature_trend:
+      type: string
+      description: Temperature trend from history
+
+    rate_of_change:
+      type: float
+      description: Rate of temperature change
+      unit: celsius/month
+
+    # Probability of failure
+    failure_probability:
+      type: float
+      description: Estimated probability of failure
+      unit: percent
+
+    estimated_remaining_life:
+      type: float
+      description: Estimated remaining component life
+      unit: months
+
+    # Recommendations
+    recommended_action:
+      type: string
+      description: Recommended maintenance action
+
+    priority:
+      type: enum
+      description: Action priority
+      allowed_values:
+        - immediate
+        - urgent
+        - scheduled
+        - monitor
+
+    follow_up_interval:
+      type: integer
+      description: Recommended follow-up interval
+      unit: days
+
+    repair_cost_estimate:
+      type: float
+      description: Estimated repair cost
+      unit: USD
+
+    # Detailed findings
+    findings:
+      type: list
+      description: Detailed findings
+
+    root_cause_assessment:
+      type: string
+      description: Probable root cause
+
+    # Provenance
+    provenance_hash:
+      type: string
+      description: SHA-256 hash
+
+    calculation_timestamp:
+      type: datetime
+      description: Analysis timestamp
+
+    source_references:
+      type: list
+      description: Standards referenced
+
+# =============================================================================
+# Formulas
+# =============================================================================
+
+formulas:
+  - id: DELTA_T_SEVERITY
+    name: Delta-T Severity Classification
+    description: Classify severity based on temperature difference
+    equation: |
+      Critical: delta_T >= 40C or T_max >= design_limit
+      Serious: 20C <= delta_T < 40C
+      Moderate: 10C <= delta_T < 20C
+      Minor: 3C <= delta_T < 10C
+      Normal: delta_T < 3C
+    variables:
+      delta_T:
+        description: Temperature difference
+        unit: celsius
+        type: float
+    source:
+      standard: NETA MTS
+      section: "Section 9"
+      edition: "2021"
+    application: Electrical equipment severity
+
+  - id: HEAT_LOSS_ESTIMATION
+    name: Surface Heat Loss
+    description: Estimate heat loss from hot surface
+    equation: "Q = A * h * (T_s - T_a) + A * epsilon * sigma * (T_s^4 - T_a^4)"
+    variables:
+      Q:
+        description: Heat loss
+        unit: W
+        type: float
+      A:
+        description: Surface area
+        unit: m2
+        type: float
+      h:
+        description: Convection coefficient
+        unit: W/m2-K
+        type: float
+      T_s:
+        description: Surface temperature
+        unit: kelvin
+        type: float
+      T_a:
+        description: Ambient temperature
+        unit: kelvin
+        type: float
+      epsilon:
+        description: Emissivity
+        unit: dimensionless
+        type: float
+      sigma:
+        description: Stefan-Boltzmann constant
+        unit: W/m2-K4
+        type: float
+    source:
+      standard: ASTM E1934
+      section: "Heat Loss"
+      edition: "2018"
+    application: Heat loss from insulation defects
+
+  - id: INSULATION_EFFICIENCY
+    name: Insulation Efficiency
+    description: Calculate insulation efficiency
+    equation: "eta = (T_process - T_surface) / (T_process - T_ambient) * 100"
+    variables:
+      eta:
+        description: Insulation efficiency
+        unit: percent
+        type: float
+      T_process:
+        description: Process temperature
+        unit: celsius
+        type: float
+      T_surface:
+        description: Surface temperature
+        unit: celsius
+        type: float
+      T_ambient:
+        description: Ambient temperature
+        unit: celsius
+        type: float
+    source:
+      standard: ASTM C1055
+      section: "Efficiency"
+      edition: "2020"
+    application: Insulation condition assessment
+
+# =============================================================================
+# Safety Constraints
+# =============================================================================
+
+safety_constraints:
+  - id: SC_CRITICAL_TEMP
+    name: Critical Temperature Detected
+    description: Temperature exceeds critical limit
+    condition: "max_temperature <= design_surface_temp"
+    action: reject
+    severity: critical
+    message: "CRITICAL: Temperature {max_temperature}C exceeds design limit"
+
+  - id: SC_DELTA_T_HIGH
+    name: High Temperature Difference
+    description: Temperature difference indicates serious issue
+    condition: "delta_t_max <= 40"
+    action: warn
+    severity: error
+    message: "High delta-T of {delta_t_max}C detected"
+
+# =============================================================================
+# Processing Pipeline
+# =============================================================================
+
+processing:
+  steps:
+    - id: STEP_01_VALIDATE
+      name: Input Validation
+      type: validation
+      inputs:
+        - all_input_fields
+      outputs:
+        - validation_status
+      error_handling: reject
+
+    - id: STEP_02_IMAGE_ANALYSIS
+      name: Thermal Image Analysis
+      type: calculation
+      inputs:
+        - image_file
+        - emissivity
+        - atmospheric_temperature
+      outputs:
+        - hot_spot_locations
+        - anomalies_detected
+        - anomaly_count
+      error_handling: propagate
+
+    - id: STEP_03_TEMPERATURE_ANALYSIS
+      name: Temperature Analysis
+      type: calculation
+      inputs:
+        - max_temperature
+        - min_temperature
+        - reference_temperature
+        - design_surface_temp
+      outputs:
+        - delta_t_max
+        - delta_t_reference
+      error_handling: propagate
+
+    - id: STEP_04_SEVERITY
+      name: Severity Classification
+      type: classification
+      inputs:
+        - delta_t_max
+        - max_temperature
+        - design_surface_temp
+      outputs:
+        - severity_classification
+      formula_refs:
+        - DELTA_T_SEVERITY
+      constraints:
+        - SC_CRITICAL_TEMP
+        - SC_DELTA_T_HIGH
+      error_handling: propagate
+
+    - id: STEP_05_HEAT_LOSS
+      name: Heat Loss Calculation
+      type: calculation
+      inputs:
+        - hot_spot_locations
+        - atmospheric_temperature
+        - emissivity
+      outputs:
+        - estimated_heat_loss
+        - annual_energy_loss
+      formula_refs:
+        - HEAT_LOSS_ESTIMATION
+      error_handling: default
+
+    - id: STEP_06_TRENDING
+      name: Trend Analysis
+      type: calculation
+      inputs:
+        - previous_inspection_data
+        - max_temperature
+      outputs:
+        - temperature_trend
+        - rate_of_change
+      error_handling: default
+
+    - id: STEP_07_FAILURE_PREDICTION
+      name: Failure Prediction
+      type: calculation
+      inputs:
+        - severity_classification
+        - rate_of_change
+        - equipment_type
+      outputs:
+        - failure_probability
+        - estimated_remaining_life
+      error_handling: default
+
+    - id: STEP_08_RECOMMENDATIONS
+      name: Generate Recommendations
+      type: decision
+      inputs:
+        - severity_classification
+        - anomalies_detected
+        - estimated_heat_loss
+      outputs:
+        - recommended_action
+        - priority
+        - follow_up_interval
+        - repair_cost_estimate
+        - findings
+        - root_cause_assessment
+      error_handling: default
+
+    - id: STEP_09_PROVENANCE
+      name: Provenance Tracking
+      type: output
+      inputs:
+        - all_inputs
+        - all_outputs
+      outputs:
+        - provenance_hash
+        - calculation_timestamp
+        - source_references
+      error_handling: propagate
+
+# =============================================================================
+# Zero-Hallucination Configuration
+# =============================================================================
+
+zero_hallucination:
+  enabled: true
+  calculation_mode: deterministic
+  allowed_operations:
+    - arithmetic
+    - formula_evaluation
+    - comparison
+    - trending_calculation
+  forbidden_operations:
+    - llm_temperature_estimation
+  require_formula_citation: true
+  require_provenance: true
+  llm_allowed_for:
+    - anomaly_classification
+    - root_cause_assessment
+    - recommendation_narrative
+    - defect_description
+
+# =============================================================================
+# Test Cases
+# =============================================================================
+
+test_cases:
+  - name: Boiler Casing Hot Spot
+    inputs:
+      image_id: IMG-001
+      equipment_tag: B-101
+      equipment_type: boiler_casing
+      inspection_date: "2024-12-01T10:00:00Z"
+      image_file: "/images/b101_thermal.jpg"
+      emissivity: 0.9
+      atmospheric_temperature: 25
+      max_temperature: 180
+      min_temperature: 35
+      design_surface_temp: 60
+      process_temperature: 350
+    expected_outputs:
+      severity_classification: critical
+      priority: immediate

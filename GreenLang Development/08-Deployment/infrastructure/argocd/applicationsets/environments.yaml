@@ -1,0 +1,242 @@
+# GreenLang Multi-Environment ApplicationSet
+# Manages deployments across dev, staging, and production environments
+# Author: GL-DevOpsEngineer
+# Version: 1.0.0
+
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: greenlang-environments
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: greenlang-applicationset
+    app.kubernetes.io/part-of: greenlang-platform
+spec:
+  generators:
+    # Matrix generator combining environments and services
+    - matrix:
+        generators:
+          # Environment definitions
+          - list:
+              elements:
+                - environment: development
+                  cluster: https://dev-cluster.greenlang.io
+                  namespace_suffix: dev
+                  revision: develop
+                  replicas: "1"
+                  resources_preset: small
+                  auto_sync: "true"
+                  prune: "true"
+
+                - environment: staging
+                  cluster: https://staging-cluster.greenlang.io
+                  namespace_suffix: staging
+                  revision: staging
+                  replicas: "2"
+                  resources_preset: medium
+                  auto_sync: "true"
+                  prune: "true"
+
+                - environment: production
+                  cluster: https://kubernetes.default.svc
+                  namespace_suffix: prod
+                  revision: main
+                  replicas: "3"
+                  resources_preset: large
+                  auto_sync: "false"
+                  prune: "false"
+
+          # Service definitions
+          - list:
+              elements:
+                - service: greenlang-agents
+                  path: helm/greenlang-agents
+                  port: "8000"
+                  health_path: /api/v1/health
+                  sync_wave: "3"
+
+                - service: greenlang-api
+                  path: helm/greenlang-api
+                  port: "8000"
+                  health_path: /api/v1/health
+                  sync_wave: "2"
+
+                - service: greenlang-workers
+                  path: helm/greenlang-workers
+                  port: "8080"
+                  health_path: /health
+                  sync_wave: "4"
+
+  template:
+    metadata:
+      name: '{{service}}-{{environment}}'
+      namespace: argocd
+      labels:
+        app.kubernetes.io/name: '{{service}}'
+        app.kubernetes.io/instance: '{{service}}-{{environment}}'
+        app.kubernetes.io/part-of: greenlang-platform
+        environment: '{{environment}}'
+      annotations:
+        argocd.argoproj.io/sync-wave: '{{sync_wave}}'
+        notifications.argoproj.io/subscribe.on-sync-succeeded.slack: 'greenlang-{{environment}}-deployments'
+        notifications.argoproj.io/subscribe.on-sync-failed.slack: 'greenlang-{{environment}}-alerts'
+      finalizers:
+        - resources-finalizer.argocd.argoproj.io
+
+    spec:
+      project: greenlang-{{environment}}
+
+      source:
+        repoURL: https://github.com/greenlang/greenlang-platform.git
+        targetRevision: '{{revision}}'
+        path: '{{path}}'
+        helm:
+          releaseName: '{{service}}'
+          valueFiles:
+            - values.yaml
+            - 'values-{{environment}}.yaml'
+          parameters:
+            - name: global.environment
+              value: '{{environment}}'
+            - name: replicaCount
+              value: '{{replicas}}'
+            - name: resources.preset
+              value: '{{resources_preset}}'
+          values: |
+            # Environment-specific configuration
+            nameOverride: "{{service}}"
+            fullnameOverride: "{{service}}-{{namespace_suffix}}"
+
+            # Common labels
+            commonLabels:
+              environment: "{{environment}}"
+              managed-by: argocd
+              service: "{{service}}"
+
+            # Service configuration
+            service:
+              port: {{port}}
+
+            # Health checks
+            livenessProbe:
+              httpGet:
+                path: "{{health_path}}"
+                port: {{port}}
+
+            readinessProbe:
+              httpGet:
+                path: "{{health_path}}"
+                port: {{port}}
+
+            # Environment variables
+            env:
+              - name: ENVIRONMENT
+                value: "{{environment}}"
+              - name: SERVICE_NAME
+                value: "{{service}}"
+
+      destination:
+        server: '{{cluster}}'
+        namespace: '{{service}}-{{namespace_suffix}}'
+
+      syncPolicy:
+        automated:
+          prune: '{{prune}}' == 'true'
+          selfHeal: '{{auto_sync}}' == 'true'
+          allowEmpty: false
+        syncOptions:
+          - CreateNamespace=true
+          - PrunePropagationPolicy=foreground
+          - PruneLast=true
+          - ApplyOutOfSyncOnly=true
+        retry:
+          limit: 5
+          backoff:
+            duration: 5s
+            factor: 2
+            maxDuration: 3m
+
+      revisionHistoryLimit: 10
+
+      ignoreDifferences:
+        - group: apps
+          kind: Deployment
+          jsonPointers:
+            - /spec/replicas
+
+---
+# Production-only ApplicationSet with additional controls
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: greenlang-production-critical
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: greenlang-production-critical
+    app.kubernetes.io/part-of: greenlang-platform
+spec:
+  generators:
+    - list:
+        elements:
+          - name: greenlang-database
+            path: helm/greenlang-database
+            namespace: greenlang-data-prod
+            sync_wave: "0"
+
+          - name: greenlang-redis
+            path: helm/greenlang-redis
+            namespace: greenlang-cache-prod
+            sync_wave: "0"
+
+          - name: greenlang-secrets
+            path: helm/greenlang-secrets
+            namespace: greenlang-secrets-prod
+            sync_wave: "-1"
+
+  template:
+    metadata:
+      name: '{{name}}'
+      namespace: argocd
+      labels:
+        app.kubernetes.io/name: '{{name}}'
+        app.kubernetes.io/part-of: greenlang-platform
+        environment: production
+        tier: critical
+      annotations:
+        argocd.argoproj.io/sync-wave: '{{sync_wave}}'
+        notifications.argoproj.io/subscribe.on-sync-failed.pagerduty: greenlang-oncall
+      finalizers:
+        - resources-finalizer.argocd.argoproj.io
+
+    spec:
+      project: greenlang-production
+
+      source:
+        repoURL: https://github.com/greenlang/greenlang-platform.git
+        targetRevision: main
+        path: '{{path}}'
+        helm:
+          releaseName: '{{name}}'
+          valueFiles:
+            - values.yaml
+            - values-production.yaml
+
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: '{{namespace}}'
+
+      # Manual sync required for critical infrastructure
+      syncPolicy:
+        automated: null
+        syncOptions:
+          - CreateNamespace=true
+          - PrunePropagationPolicy=foreground
+          - RespectIgnoreDifferences=true
+        retry:
+          limit: 3
+          backoff:
+            duration: 10s
+            factor: 2
+            maxDuration: 5m
+
+      revisionHistoryLimit: 20

@@ -1,0 +1,257 @@
+# ============================================================================
+# GL-VCCI Circuit Breaker Configuration
+# ============================================================================
+#
+# Circuit breaker settings for all external dependencies.
+# Adjust these values based on your production requirements.
+#
+# Reference: Martin Fowler's Circuit Breaker Pattern
+# https://martinfowler.com/bliki/CircuitBreaker.html
+#
+# Author: GreenLang Platform Team
+# Version: 1.0.0
+# Date: 2025-11-09
+# ============================================================================
+
+# ============================================================================
+# FACTOR BROKER APIS
+# ============================================================================
+
+factor_broker:
+  # ecoinvent API
+  ecoinvent:
+    enabled: true
+    fail_max: 5                    # Number of failures before opening
+    timeout_duration: 90           # Seconds before retry (OPEN -> HALF_OPEN)
+    reset_timeout: 60              # Time window for counting failures
+    cache_ttl: 86400              # Cache TTL in seconds (24 hours)
+    retry_on_timeout: true
+
+  # DESNZ (UK Government) API
+  desnz:
+    enabled: true
+    fail_max: 5
+    timeout_duration: 90
+    reset_timeout: 60
+    cache_ttl: 86400
+    retry_on_timeout: true
+
+  # EPA (US Environmental Protection Agency) API
+  epa:
+    enabled: true
+    fail_max: 5
+    timeout_duration: 90
+    reset_timeout: 60
+    cache_ttl: 86400
+    retry_on_timeout: true
+
+# ============================================================================
+# LLM PROVIDERS
+# ============================================================================
+
+llm_providers:
+  # Anthropic Claude (Primary)
+  claude:
+    enabled: true
+    fail_max: 3                    # Lower threshold for expensive APIs
+    timeout_duration: 120          # 2 minutes before retry
+    reset_timeout: 60
+    cache_ttl: 3600               # Cache responses for 1 hour
+    max_retries: 2
+    retry_delay: 5                # Seconds between retries
+    primary: true
+
+  # OpenAI GPT-4 (Secondary/Failover)
+  openai:
+    enabled: true
+    fail_max: 3
+    timeout_duration: 120
+    reset_timeout: 60
+    cache_ttl: 3600
+    max_retries: 2
+    retry_delay: 5
+    primary: false
+
+# ============================================================================
+# ERP SYSTEMS
+# ============================================================================
+
+erp_connectors:
+  # SAP S/4HANA
+  sap:
+    enabled: true
+    fail_max: 5
+    timeout_duration: 180          # 3 minutes - ERP calls can be slow
+    reset_timeout: 60
+    cache_ttl: 3600               # Cache for 1 hour
+    connection_pool_size: 10
+    max_retries: 3
+    retry_delay: 10
+
+  # Oracle Fusion
+  oracle:
+    enabled: true
+    fail_max: 5
+    timeout_duration: 180
+    reset_timeout: 60
+    cache_ttl: 3600
+    connection_pool_size: 10
+    max_retries: 3
+    retry_delay: 10
+
+  # Workday
+  workday:
+    enabled: true
+    fail_max: 5
+    timeout_duration: 180
+    reset_timeout: 60
+    cache_ttl: 3600
+    connection_pool_size: 10
+    max_retries: 3
+    retry_delay: 10
+
+# ============================================================================
+# EMAIL SERVICE
+# ============================================================================
+
+email_service:
+  # SendGrid
+  sendgrid:
+    enabled: true
+    fail_max: 3                    # Quick to fail for email
+    timeout_duration: 60           # 1 minute before retry
+    reset_timeout: 30
+    queue_enabled: true            # Queue emails when service is down
+    queue_dir: /tmp/greenlang_email_queue
+    max_queue_size: 10000
+    queue_processing_interval: 300  # Process queue every 5 minutes
+    rate_limit: 100                # Max emails per minute
+
+# ============================================================================
+# DATABASE (PostgreSQL)
+# ============================================================================
+
+database:
+  postgresql:
+    enabled: true
+    fail_max: 10                   # Higher threshold for critical service
+    timeout_duration: 30           # Quick recovery for database
+    reset_timeout: 30
+    connection_pool_size: 20
+    max_overflow: 10
+    pool_timeout: 30
+    pool_recycle: 3600            # Recycle connections every hour
+
+# ============================================================================
+# CACHE (Redis)
+# ============================================================================
+
+cache:
+  redis:
+    enabled: true
+    fail_max: 5
+    timeout_duration: 60
+    reset_timeout: 30
+    connection_pool_size: 10
+    socket_timeout: 5
+    socket_connect_timeout: 5
+    retry_on_timeout: true
+
+# ============================================================================
+# MONITORING AND ALERTING
+# ============================================================================
+
+monitoring:
+  # Prometheus metrics
+  prometheus:
+    enabled: true
+    port: 9090
+
+  # Alert thresholds
+  alerts:
+    # Alert when circuit opens
+    circuit_open:
+      enabled: true
+      severity: warning
+
+    # Alert when failure rate exceeds threshold
+    high_failure_rate:
+      enabled: true
+      threshold: 0.5              # 50% failure rate
+      severity: critical
+
+    # Alert when multiple circuits are open
+    multiple_circuits_open:
+      enabled: true
+      threshold: 3                # 3 or more circuits
+      severity: critical
+
+# ============================================================================
+# GLOBAL SETTINGS
+# ============================================================================
+
+global:
+  # Enable circuit breakers globally
+  enabled: true
+
+  # Default settings for all circuit breakers
+  defaults:
+    fail_max: 5
+    timeout_duration: 60
+    reset_timeout: 60
+
+  # Fallback behavior
+  fallback:
+    enabled: true
+    cache_fallback: true          # Use cache as fallback
+    default_timeout: 30           # Default timeout for all calls (seconds)
+
+  # Logging
+  logging:
+    level: INFO                   # DEBUG, INFO, WARNING, ERROR, CRITICAL
+    log_state_changes: true
+    log_failures: true
+    log_successes: false          # Only log on DEBUG
+
+  # Testing and development
+  testing:
+    mock_mode: false              # Enable for testing
+    simulate_failures: false      # Simulate random failures
+    failure_rate: 0.1            # 10% failure rate when simulating
+
+# ============================================================================
+# ENVIRONMENT-SPECIFIC OVERRIDES
+# ============================================================================
+
+environments:
+  # Development environment
+  development:
+    global:
+      defaults:
+        fail_max: 3               # Fail faster in dev
+        timeout_duration: 30
+    logging:
+      level: DEBUG
+      log_successes: true
+
+  # Staging environment
+  staging:
+    global:
+      defaults:
+        fail_max: 5
+        timeout_duration: 60
+    logging:
+      level: INFO
+
+  # Production environment
+  production:
+    global:
+      defaults:
+        fail_max: 10              # More tolerant in production
+        timeout_duration: 120
+    monitoring:
+      alerts:
+        high_failure_rate:
+          threshold: 0.3          # 30% threshold in prod
+    logging:
+      level: WARNING

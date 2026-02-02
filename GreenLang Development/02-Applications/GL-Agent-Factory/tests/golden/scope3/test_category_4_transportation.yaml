@@ -1,0 +1,487 @@
+# Golden Tests: Category 4 Transportation - Scope 3 Emissions Agent (GL-006)
+# Test Count: 30 tests
+# Formula: emissions = distance_km * weight_tonnes * transport_factor
+# GLEC Transport Factors (kgCO2e/tonne-km):
+#   - Road Truck: 0.089
+#   - Road Van: 0.195
+#   - Rail Freight: 0.028
+#   - Sea Container: 0.016
+#   - Sea Bulk: 0.008
+#   - Air Freight: 0.602
+#   - Air Belly: 0.301
+#   - Barge: 0.031
+
+test_suite:
+  name: "Category 4 Transportation Golden Tests"
+  agent_id: "emissions/scope3_v1"
+  version: "1.0.0"
+  description: "Validates Scope 3 Category 4 (Upstream Transportation) calculations"
+
+tests:
+  # Road transport tests (1-10)
+  - test_id: "scope3_cat4_road_001"
+    test_name: "Road Truck 100km 10t"
+    description: "Standard truck delivery"
+    tags: ["scope3", "category4", "road", "truck"]
+    input:
+      category: "upstream_transport"
+      reporting_year: 2024
+      transport_data:
+        - mode: "road_truck"
+          distance_km: 100
+          weight_tonnes: 10
+      calculation_method: "average_data"
+    expected:
+      category: "upstream_transport"
+      category_number: 4
+      category_name: "Upstream Transportation and Distribution"
+      total_emissions_kgco2e: 89.0
+
+  - test_id: "scope3_cat4_road_002"
+    test_name: "Road Truck 500km 20t"
+    description: "Medium distance trucking"
+    tags: ["scope3", "category4", "road", "truck"]
+    input:
+      category: "upstream_transport"
+      reporting_year: 2024
+      transport_data:
+        - mode: "road_truck"
+          distance_km: 500
+          weight_tonnes: 20
+    expected:
+      total_emissions_kgco2e: 890.0
+
+  - test_id: "scope3_cat4_road_003"
+    test_name: "Road Truck 1000km 25t"
+    description: "Long haul trucking"
+    tags: ["scope3", "category4", "road", "longhaul"]
+    input:
+      category: "upstream_transport"
+      reporting_year: 2024
+      transport_data:
+        - mode: "road_truck"
+          distance_km: 1000
+          weight_tonnes: 25
+    expected:
+      total_emissions_kgco2e: 2225.0
+
+  - test_id: "scope3_cat4_road_004"
+    test_name: "Road Van Last Mile"
+    description: "Last mile van delivery"
+    tags: ["scope3", "category4", "road", "van", "lastmile"]
+    input:
+      category: "upstream_transport"
+      reporting_year: 2024
+      transport_data:
+        - mode: "road_van"
+          distance_km: 50
+          weight_tonnes: 2
+    expected:
+      total_emissions_kgco2e: 19.5
+
+  - test_id: "scope3_cat4_road_005"
+    test_name: "Road Van Urban Distribution"
+    description: "Urban distribution routes"
+    tags: ["scope3", "category4", "road", "van", "urban"]
+    input:
+      category: "upstream_transport"
+      reporting_year: 2024
+      transport_data:
+        - mode: "road_van"
+          distance_km: 200
+          weight_tonnes: 5
+    expected:
+      total_emissions_kgco2e: 195.0
+
+  - test_id: "scope3_cat4_road_006"
+    test_name: "Road Mixed Fleet"
+    description: "Multiple truck deliveries"
+    tags: ["scope3", "category4", "road", "fleet"]
+    input:
+      category: "upstream_transport"
+      reporting_year: 2024
+      transport_data:
+        - mode: "road_truck"
+          distance_km: 300
+          weight_tonnes: 15
+        - mode: "road_truck"
+          distance_km: 450
+          weight_tonnes: 20
+        - mode: "road_van"
+          distance_km: 100
+          weight_tonnes: 3
+    expected:
+      total_emissions_kgco2e: 1260.9
+
+  - test_id: "scope3_cat4_road_007"
+    test_name: "Road Truck Cross Country"
+    description: "Cross-country trucking"
+    tags: ["scope3", "category4", "road", "crosscountry"]
+    input:
+      category: "upstream_transport"
+      reporting_year: 2024
+      transport_data:
+        - mode: "road_truck"
+          distance_km: 3000
+          weight_tonnes: 22
+    expected:
+      total_emissions_kgco2e: 5874.0
+
+  - test_id: "scope3_cat4_road_008"
+    test_name: "Road Distribution Network"
+    description: "Full distribution network"
+    tags: ["scope3", "category4", "road", "network"]
+    input:
+      category: "upstream_transport"
+      reporting_year: 2024
+      transport_data:
+        - mode: "road_truck"
+          distance_km: 800
+          weight_tonnes: 18
+        - mode: "road_truck"
+          distance_km: 600
+          weight_tonnes: 12
+        - mode: "road_van"
+          distance_km: 150
+          weight_tonnes: 4
+    expected:
+      total_emissions_kgco2e: 1937.4
+
+  - test_id: "scope3_cat4_road_009"
+    test_name: "Road Light Freight"
+    description: "Light freight deliveries"
+    tags: ["scope3", "category4", "road", "light"]
+    input:
+      category: "upstream_transport"
+      reporting_year: 2024
+      transport_data:
+        - mode: "road_van"
+          distance_km: 80
+          weight_tonnes: 1
+    expected:
+      total_emissions_kgco2e: 15.6
+
+  - test_id: "scope3_cat4_road_010"
+    test_name: "Road Heavy Freight"
+    description: "Heavy freight trucking"
+    tags: ["scope3", "category4", "road", "heavy"]
+    input:
+      category: "upstream_transport"
+      reporting_year: 2024
+      transport_data:
+        - mode: "road_truck"
+          distance_km: 400
+          weight_tonnes: 40
+    expected:
+      total_emissions_kgco2e: 1424.0
+
+  # Rail transport tests (11-15)
+  - test_id: "scope3_cat4_rail_011"
+    test_name: "Rail Freight 500km 100t"
+    description: "Standard rail freight"
+    tags: ["scope3", "category4", "rail"]
+    input:
+      category: "upstream_transport"
+      reporting_year: 2024
+      transport_data:
+        - mode: "rail_freight"
+          distance_km: 500
+          weight_tonnes: 100
+    expected:
+      total_emissions_kgco2e: 1400.0
+
+  - test_id: "scope3_cat4_rail_012"
+    test_name: "Rail Freight Long Distance"
+    description: "Long distance rail"
+    tags: ["scope3", "category4", "rail", "longdistance"]
+    input:
+      category: "upstream_transport"
+      reporting_year: 2024
+      transport_data:
+        - mode: "rail_freight"
+          distance_km: 2000
+          weight_tonnes: 500
+    expected:
+      total_emissions_kgco2e: 28000.0
+
+  - test_id: "scope3_cat4_rail_013"
+    test_name: "Rail Bulk Materials"
+    description: "Bulk materials by rail"
+    tags: ["scope3", "category4", "rail", "bulk"]
+    input:
+      category: "upstream_transport"
+      reporting_year: 2024
+      transport_data:
+        - mode: "rail_freight"
+          distance_km: 1500
+          weight_tonnes: 1000
+    expected:
+      total_emissions_kgco2e: 42000.0
+
+  - test_id: "scope3_cat4_rail_014"
+    test_name: "Rail Container"
+    description: "Container by rail"
+    tags: ["scope3", "category4", "rail", "container"]
+    input:
+      category: "upstream_transport"
+      reporting_year: 2024
+      transport_data:
+        - mode: "rail_freight"
+          distance_km: 800
+          weight_tonnes: 25
+    expected:
+      total_emissions_kgco2e: 560.0
+
+  - test_id: "scope3_cat4_rail_015"
+    test_name: "Rail Multiple Shipments"
+    description: "Multiple rail shipments"
+    tags: ["scope3", "category4", "rail", "multiple"]
+    input:
+      category: "upstream_transport"
+      reporting_year: 2024
+      transport_data:
+        - mode: "rail_freight"
+          distance_km: 600
+          weight_tonnes: 200
+        - mode: "rail_freight"
+          distance_km: 400
+          weight_tonnes: 150
+    expected:
+      total_emissions_kgco2e: 5040.0
+
+  # Sea transport tests (16-20)
+  - test_id: "scope3_cat4_sea_016"
+    test_name: "Sea Container 5000km 500t"
+    description: "Container shipping"
+    tags: ["scope3", "category4", "sea", "container"]
+    input:
+      category: "upstream_transport"
+      reporting_year: 2024
+      transport_data:
+        - mode: "sea_container"
+          distance_km: 5000
+          weight_tonnes: 500
+    expected:
+      total_emissions_kgco2e: 40000.0
+
+  - test_id: "scope3_cat4_sea_017"
+    test_name: "Sea Bulk 10000km 5000t"
+    description: "Bulk carrier shipping"
+    tags: ["scope3", "category4", "sea", "bulk"]
+    input:
+      category: "upstream_transport"
+      reporting_year: 2024
+      transport_data:
+        - mode: "sea_bulk"
+          distance_km: 10000
+          weight_tonnes: 5000
+    expected:
+      total_emissions_kgco2e: 400000.0
+
+  - test_id: "scope3_cat4_sea_018"
+    test_name: "Sea Transoceanic Container"
+    description: "Transoceanic container shipping"
+    tags: ["scope3", "category4", "sea", "transoceanic"]
+    input:
+      category: "upstream_transport"
+      reporting_year: 2024
+      transport_data:
+        - mode: "sea_container"
+          distance_km: 15000
+          weight_tonnes: 1000
+    expected:
+      total_emissions_kgco2e: 240000.0
+
+  - test_id: "scope3_cat4_sea_019"
+    test_name: "Sea Short Route"
+    description: "Short sea shipping"
+    tags: ["scope3", "category4", "sea", "short"]
+    input:
+      category: "upstream_transport"
+      reporting_year: 2024
+      transport_data:
+        - mode: "sea_container"
+          distance_km: 500
+          weight_tonnes: 100
+    expected:
+      total_emissions_kgco2e: 800.0
+
+  - test_id: "scope3_cat4_sea_020"
+    test_name: "Sea Barge River"
+    description: "River barge transport"
+    tags: ["scope3", "category4", "barge"]
+    input:
+      category: "upstream_transport"
+      reporting_year: 2024
+      transport_data:
+        - mode: "barge"
+          distance_km: 300
+          weight_tonnes: 500
+    expected:
+      total_emissions_kgco2e: 4650.0
+
+  # Air transport tests (21-25)
+  - test_id: "scope3_cat4_air_021"
+    test_name: "Air Freight 1000km 5t"
+    description: "Dedicated air freight"
+    tags: ["scope3", "category4", "air", "freight"]
+    input:
+      category: "upstream_transport"
+      reporting_year: 2024
+      transport_data:
+        - mode: "air_freight"
+          distance_km: 1000
+          weight_tonnes: 5
+    expected:
+      total_emissions_kgco2e: 3010.0
+
+  - test_id: "scope3_cat4_air_022"
+    test_name: "Air Belly Cargo"
+    description: "Passenger aircraft belly cargo"
+    tags: ["scope3", "category4", "air", "belly"]
+    input:
+      category: "upstream_transport"
+      reporting_year: 2024
+      transport_data:
+        - mode: "air_belly"
+          distance_km: 2000
+          weight_tonnes: 3
+    expected:
+      total_emissions_kgco2e: 1806.0
+
+  - test_id: "scope3_cat4_air_023"
+    test_name: "Air Express Intercontinental"
+    description: "Intercontinental express"
+    tags: ["scope3", "category4", "air", "express"]
+    input:
+      category: "upstream_transport"
+      reporting_year: 2024
+      transport_data:
+        - mode: "air_freight"
+          distance_km: 8000
+          weight_tonnes: 10
+    expected:
+      total_emissions_kgco2e: 48160.0
+
+  - test_id: "scope3_cat4_air_024"
+    test_name: "Air Freight High Value"
+    description: "High-value goods air freight"
+    tags: ["scope3", "category4", "air", "highvalue"]
+    input:
+      category: "upstream_transport"
+      reporting_year: 2024
+      transport_data:
+        - mode: "air_freight"
+          distance_km: 5000
+          weight_tonnes: 2
+    expected:
+      total_emissions_kgco2e: 6020.0
+
+  - test_id: "scope3_cat4_air_025"
+    test_name: "Air Short Haul"
+    description: "Short haul air freight"
+    tags: ["scope3", "category4", "air", "shorthaul"]
+    input:
+      category: "upstream_transport"
+      reporting_year: 2024
+      transport_data:
+        - mode: "air_belly"
+          distance_km: 500
+          weight_tonnes: 1
+    expected:
+      total_emissions_kgco2e: 150.5
+
+  # Multimodal transport tests (26-30)
+  - test_id: "scope3_cat4_multi_026"
+    test_name: "Multimodal Sea + Road"
+    description: "Container ship then truck"
+    tags: ["scope3", "category4", "multimodal"]
+    input:
+      category: "upstream_transport"
+      reporting_year: 2024
+      transport_data:
+        - mode: "sea_container"
+          distance_km: 8000
+          weight_tonnes: 20
+        - mode: "road_truck"
+          distance_km: 200
+          weight_tonnes: 20
+    expected:
+      total_emissions_kgco2e: 2916.0
+
+  - test_id: "scope3_cat4_multi_027"
+    test_name: "Multimodal Rail + Road"
+    description: "Rail then truck last mile"
+    tags: ["scope3", "category4", "multimodal"]
+    input:
+      category: "upstream_transport"
+      reporting_year: 2024
+      transport_data:
+        - mode: "rail_freight"
+          distance_km: 1000
+          weight_tonnes: 50
+        - mode: "road_truck"
+          distance_km: 100
+          weight_tonnes: 50
+    expected:
+      total_emissions_kgco2e: 1845.0
+
+  - test_id: "scope3_cat4_multi_028"
+    test_name: "Multimodal Full Chain"
+    description: "Complete multimodal chain"
+    tags: ["scope3", "category4", "multimodal", "complete"]
+    input:
+      category: "upstream_transport"
+      reporting_year: 2024
+      transport_data:
+        - mode: "sea_container"
+          distance_km: 10000
+          weight_tonnes: 100
+        - mode: "rail_freight"
+          distance_km: 500
+          weight_tonnes: 100
+        - mode: "road_truck"
+          distance_km: 150
+          weight_tonnes: 100
+    expected:
+      total_emissions_kgco2e: 18735.0
+
+  - test_id: "scope3_cat4_multi_029"
+    test_name: "Multimodal Air + Van"
+    description: "Air freight then van delivery"
+    tags: ["scope3", "category4", "multimodal", "express"]
+    input:
+      category: "upstream_transport"
+      reporting_year: 2024
+      transport_data:
+        - mode: "air_freight"
+          distance_km: 3000
+          weight_tonnes: 0.5
+        - mode: "road_van"
+          distance_km: 50
+          weight_tonnes: 0.5
+    expected:
+      total_emissions_kgco2e: 908.875
+
+  - test_id: "scope3_cat4_multi_030"
+    test_name: "Annual Logistics Mix"
+    description: "Full year logistics emissions"
+    tags: ["scope3", "category4", "annual"]
+    input:
+      category: "upstream_transport"
+      reporting_year: 2024
+      transport_data:
+        - mode: "road_truck"
+          distance_km: 500000
+          weight_tonnes: 10000
+        - mode: "sea_container"
+          distance_km: 100000
+          weight_tonnes: 5000
+        - mode: "rail_freight"
+          distance_km: 200000
+          weight_tonnes: 8000
+        - mode: "air_freight"
+          distance_km: 50000
+          weight_tonnes: 100
+    expected:
+      total_emissions_kgco2e: 501890000.0

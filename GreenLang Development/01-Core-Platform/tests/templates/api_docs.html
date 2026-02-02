@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GreenLang API Documentation</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/api_docs.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🌍 GreenLang API Documentation</h1>
+            <nav class="nav-menu">
+                <a href="/">Calculator</a>
+                <a href="/api/docs" class="active">API Docs</a>
+            </nav>
+        </header>
+
+        <main class="api-docs-container">
+            <aside class="sidebar">
+                <h3>Quick Links</h3>
+                <ul class="api-menu">
+                    <li><a href="#overview">Overview</a></li>
+                    <li><a href="#endpoints">API Endpoints</a></li>
+                    <li><a href="#sdk">Python SDK</a></li>
+                    <li><a href="#examples">Live Examples</a></li>
+                    <li><a href="#types">Data Types</a></li>
+                    <li><a href="#errors">Error Handling</a></li>
+                </ul>
+            </aside>
+
+            <div class="docs-content">
+                <section id="overview">
+                    <h2>Overview</h2>
+                    <p>GreenLang provides a comprehensive REST API for calculating carbon emissions, benchmarking performance, and generating climate intelligence reports.</p>
+                    
+                    <div class="info-box">
+                        <h4>Base URL</h4>
+                        <code>http://localhost:5000</code>
+                    </div>
+                </section>
+
+                <section id="endpoints">
+                    <h2>API Endpoints</h2>
+                    
+                    <div class="endpoint-card">
+                        <div class="endpoint-header">
+                            <span class="method post">POST</span>
+                            <span class="endpoint-path">/api/calculate</span>
+                        </div>
+                        <p>Calculate carbon emissions for multiple fuel sources with benchmarking.</p>
+                        
+                        <div class="code-example">
+                            <h4>Request Body</h4>
+                            <pre><code>{
+  "fuels": [
+    {
+      "type": "electricity",
+      "consumption": 1000,
+      "unit": "kWh"
+    },
+    {
+      "type": "natural_gas",
+      "consumption": 50,
+      "unit": "therms"
+    }
+  ],
+  "region": "US",
+  "building_info": {
+    "area": 10000,
+    "type": "commercial_office"
+  }
+}</code></pre>
+                        </div>
+                        
+                        <button class="try-it-btn" onclick="tryEndpoint('calculate')">Try It</button>
+                        <div id="calculate-response" class="response-container"></div>
+                    </div>
+
+                    <div class="endpoint-card">
+                        <div class="endpoint-header">
+                            <span class="method get">GET</span>
+                            <span class="endpoint-path">/api/quick-calc</span>
+                        </div>
+                        <p>Quick emissions calculation with minimal parameters.</p>
+                        
+                        <div class="code-example">
+                            <h4>Query Parameters</h4>
+                            <ul>
+                                <li><code>electricity</code> - Electricity consumption in kWh</li>
+                                <li><code>gas</code> - Natural gas consumption in therms</li>
+                            </ul>
+                        </div>
+                        
+                        <button class="try-it-btn" onclick="tryEndpoint('quick-calc')">Try It</button>
+                        <div id="quick-calc-response" class="response-container"></div>
+                    </div>
+
+                    <div class="endpoint-card">
+                        <div class="endpoint-header">
+                            <span class="method get">GET</span>
+                            <span class="endpoint-path">/api/agents</span>
+                        </div>
+                        <p>List all available calculation agents.</p>
+                        
+                        <button class="try-it-btn" onclick="tryEndpoint('agents')">Try It</button>
+                        <div id="agents-response" class="response-container"></div>
+                    </div>
+
+                    <div class="endpoint-card">
+                        <div class="endpoint-header">
+                            <span class="method get">GET</span>
+                            <span class="endpoint-path">/api/fuel-types</span>
+                        </div>
+                        <p>Get available fuel types and their units.</p>
+                        
+                        <button class="try-it-btn" onclick="tryEndpoint('fuel-types')">Try It</button>
+                        <div id="fuel-types-response" class="response-container"></div>
+                    </div>
+
+                    <div class="endpoint-card">
+                        <div class="endpoint-header">
+                            <span class="method get">GET</span>
+                            <span class="endpoint-path">/api/regions</span>
+                        </div>
+                        <p>Get available geographic regions.</p>
+                        
+                        <button class="try-it-btn" onclick="tryEndpoint('regions')">Try It</button>
+                        <div id="regions-response" class="response-container"></div>
+                    </div>
+
+                    <div class="endpoint-card">
+                        <div class="endpoint-header">
+                            <span class="method get">GET</span>
+                            <span class="endpoint-path">/api/building-types</span>
+                        </div>
+                        <p>Get available building types for benchmarking.</p>
+                        
+                        <button class="try-it-btn" onclick="tryEndpoint('building-types')">Try It</button>
+                        <div id="building-types-response" class="response-container"></div>
+                    </div>
+                </section>
+
+                <section id="sdk">
+                    <h2>Python SDK</h2>
+                    
+                    <div class="code-example">
+                        <h4>Installation</h4>
+                        <pre><code>pip install greenlang</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>Basic Usage</h4>
+                        <pre><code>from greenlang.sdk import GreenLangClient
+
+# Initialize client
+client = GreenLangClient()
+
+# Calculate emissions
+result = client.calculate_emissions(
+    fuel_type="electricity",
+    consumption=1000,
+    unit="kWh",
+    region="US"
+)
+
+print(f"CO2 emissions: {result['data']['co2e_kg']} kg")</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>Advanced Usage with Benchmarking</h4>
+                        <pre><code>from greenlang.sdk import GreenLangClient
+
+client = GreenLangClient()
+
+# Multiple fuel sources
+emissions_list = []
+
+# Electricity
+elec_result = client.calculate_emissions(
+    fuel_type="electricity",
+    consumption=5000,
+    unit="kWh"
+)
+emissions_list.append(elec_result['data'])
+
+# Natural Gas
+gas_result = client.calculate_emissions(
+    fuel_type="natural_gas",
+    consumption=100,
+    unit="therms"
+)
+emissions_list.append(gas_result['data'])
+
+# Aggregate and benchmark
+agg_result = client.aggregate_emissions(emissions_list)
+total = agg_result['data']['total_co2e_kg']
+
+benchmark = client.benchmark_emissions(
+    total_emissions_kg=total,
+    building_area=10000,
+    building_type='commercial_office'
+)
+
+print(f"Total: {total} kg CO2e")
+print(f"Performance: {benchmark['data']['performance']}")</code></pre>
+                    </div>
+                </section>
+
+                <section id="examples">
+                    <h2>Interactive Examples</h2>
+                    
+                    <div class="example-section">
+                        <h3>Calculate Emissions</h3>
+                        <div class="input-grid">
+                            <div class="input-group">
+                                <label>Fuel Type</label>
+                                <select id="example-fuel-type">
+                                    <option value="electricity">Electricity</option>
+                                    <option value="natural_gas">Natural Gas</option>
+                                    <option value="diesel">Diesel</option>
+                                    <option value="gasoline">Gasoline</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label>Consumption</label>
+                                <input type="number" id="example-consumption" value="1000">
+                            </div>
+                            <div class="input-group">
+                                <label>Unit</label>
+                                <select id="example-unit">
+                                    <option value="kWh">kWh</option>
+                                    <option value="therms">Therms</option>
+                                    <option value="gallons">Gallons</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label>Region</label>
+                                <select id="example-region">
+                                    <option value="US">United States</option>
+                                    <option value="EU">European Union</option>
+                                    <option value="IN">India</option>
+                                    <option value="UK">United Kingdom</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button class="btn-primary" onclick="runExample()">Run Example</button>
+                        <div id="example-response" class="response-container"></div>
+                    </div>
+
+                    <div class="example-section">
+                        <h3>Code Generator</h3>
+                        <p>Generate code snippets for your preferred language:</p>
+                        <div class="tab-container">
+                            <div class="tabs">
+                                <button class="tab active" onclick="showTab('python')">Python</button>
+                                <button class="tab" onclick="showTab('javascript')">JavaScript</button>
+                                <button class="tab" onclick="showTab('curl')">cURL</button>
+                            </div>
+                            <div id="python-code" class="tab-content active">
+                                <pre><code id="python-snippet"></code></pre>
+                            </div>
+                            <div id="javascript-code" class="tab-content">
+                                <pre><code id="javascript-snippet"></code></pre>
+                            </div>
+                            <div id="curl-code" class="tab-content">
+                                <pre><code id="curl-snippet"></code></pre>
+                            </div>
+                        </div>
+                        <button class="btn-secondary" onclick="generateCode()">Generate Code</button>
+                    </div>
+                </section>
+
+                <section id="types">
+                    <h2>Data Types</h2>
+                    
+                    <div class="type-card">
+                        <h3>Fuel Types</h3>
+                        <ul>
+                            <li><code>electricity</code> - Measured in kWh or MWh</li>
+                            <li><code>natural_gas</code> - Measured in therms or cubic meters</li>
+                            <li><code>diesel</code> - Measured in gallons or liters</li>
+                            <li><code>gasoline</code> - Measured in gallons or liters</li>
+                            <li><code>propane</code> - Measured in gallons or liters</li>
+                            <li><code>coal</code> - Measured in tons or kg</li>
+                            <li><code>fuel_oil</code> - Measured in gallons or liters</li>
+                        </ul>
+                    </div>
+
+                    <div class="type-card">
+                        <h3>Building Types</h3>
+                        <ul>
+                            <li><code>commercial_office</code> - Commercial office building</li>
+                            <li><code>retail</code> - Retail store</li>
+                            <li><code>warehouse</code> - Warehouse/storage facility</li>
+                            <li><code>residential</code> - Residential building</li>
+                            <li><code>industrial</code> - Industrial facility</li>
+                            <li><code>hospital</code> - Healthcare facility</li>
+                            <li><code>school</code> - Educational institution</li>
+                            <li><code>hotel</code> - Hotel/hospitality</li>
+                            <li><code>restaurant</code> - Restaurant/food service</li>
+                            <li><code>data_center</code> - Data center</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <section id="errors">
+                    <h2>Error Handling</h2>
+                    
+                    <div class="code-example">
+                        <h4>Error Response Format</h4>
+                        <pre><code>{
+  "success": false,
+  "error": "Error message describing the issue"
+}</code></pre>
+                    </div>
+
+                    <div class="type-card">
+                        <h3>HTTP Status Codes</h3>
+                        <ul>
+                            <li><code>200 OK</code> - Successful request</li>
+                            <li><code>400 Bad Request</code> - Invalid input data</li>
+                            <li><code>404 Not Found</code> - Resource not found</li>
+                            <li><code>500 Internal Server Error</code> - Server error</li>
+                        </ul>
+                    </div>
+                </section>
+            </div>
+        </main>
+
+        <footer>
+            <p>GreenLang API v0.0.1 | <a href="https://github.com/greenlang/greenlang">GitHub</a></p>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/api_docs.js') }}"></script>
+</body>
+</html>

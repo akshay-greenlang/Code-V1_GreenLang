@@ -1,0 +1,937 @@
+// GL-003 UnifiedSteam gRPC Service Definitions
+// Proto3 schema for high-performance steam system optimization services
+
+syntax = "proto3";
+
+package unifiedsteam.v1;
+
+option go_package = "github.com/greenlang/unifiedsteam/proto/v1";
+option java_multiple_files = true;
+option java_package = "io.greenlang.unifiedsteam.proto.v1";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/wrappers.proto";
+
+// =============================================================================
+// Enumerations
+// =============================================================================
+
+// Steam phase states
+enum SteamPhase {
+  STEAM_PHASE_UNSPECIFIED = 0;
+  STEAM_PHASE_SUBCOOLED_LIQUID = 1;
+  STEAM_PHASE_SATURATED_LIQUID = 2;
+  STEAM_PHASE_TWO_PHASE = 3;
+  STEAM_PHASE_SATURATED_VAPOR = 4;
+  STEAM_PHASE_SUPERHEATED_VAPOR = 5;
+  STEAM_PHASE_SUPERCRITICAL = 6;
+}
+
+// IAPWS IF97 regions
+enum SteamRegion {
+  STEAM_REGION_UNSPECIFIED = 0;
+  STEAM_REGION_1 = 1;  // Compressed liquid
+  STEAM_REGION_2 = 2;  // Superheated vapor
+  STEAM_REGION_3 = 3;  // Near-critical
+  STEAM_REGION_4 = 4;  // Two-phase
+  STEAM_REGION_5 = 5;  // High-temperature steam
+}
+
+// Steam trap condition states
+enum TrapCondition {
+  TRAP_CONDITION_UNSPECIFIED = 0;
+  TRAP_CONDITION_GOOD = 1;
+  TRAP_CONDITION_LEAKING = 2;
+  TRAP_CONDITION_BLOCKED = 3;
+  TRAP_CONDITION_BLOW_THROUGH = 4;
+  TRAP_CONDITION_FAILED_OPEN = 5;
+  TRAP_CONDITION_FAILED_CLOSED = 6;
+  TRAP_CONDITION_DEGRADED = 7;
+}
+
+// Steam trap types
+enum TrapType {
+  TRAP_TYPE_UNSPECIFIED = 0;
+  TRAP_TYPE_THERMOSTATIC = 1;
+  TRAP_TYPE_THERMODYNAMIC = 2;
+  TRAP_TYPE_MECHANICAL = 3;
+  TRAP_TYPE_INVERTED_BUCKET = 4;
+  TRAP_TYPE_FLOAT_THERMOSTATIC = 5;
+  TRAP_TYPE_BIMETALLIC = 6;
+}
+
+// Optimization objective types
+enum OptimizationObjective {
+  OPTIMIZATION_OBJECTIVE_UNSPECIFIED = 0;
+  OPTIMIZATION_OBJECTIVE_MINIMIZE_COST = 1;
+  OPTIMIZATION_OBJECTIVE_MINIMIZE_EMISSIONS = 2;
+  OPTIMIZATION_OBJECTIVE_MAXIMIZE_EFFICIENCY = 3;
+  OPTIMIZATION_OBJECTIVE_MINIMIZE_ENERGY = 4;
+  OPTIMIZATION_OBJECTIVE_BALANCE_COST_EMISSIONS = 5;
+}
+
+// Recommendation priority levels
+enum RecommendationPriority {
+  RECOMMENDATION_PRIORITY_UNSPECIFIED = 0;
+  RECOMMENDATION_PRIORITY_CRITICAL = 1;
+  RECOMMENDATION_PRIORITY_HIGH = 2;
+  RECOMMENDATION_PRIORITY_MEDIUM = 3;
+  RECOMMENDATION_PRIORITY_LOW = 4;
+  RECOMMENDATION_PRIORITY_INFORMATIONAL = 5;
+}
+
+// Alarm severity levels
+enum AlarmSeverity {
+  ALARM_SEVERITY_UNSPECIFIED = 0;
+  ALARM_SEVERITY_CRITICAL = 1;
+  ALARM_SEVERITY_HIGH = 2;
+  ALARM_SEVERITY_MEDIUM = 3;
+  ALARM_SEVERITY_LOW = 4;
+  ALARM_SEVERITY_INFO = 5;
+}
+
+// Health status
+enum HealthStatus {
+  HEALTH_STATUS_UNSPECIFIED = 0;
+  HEALTH_STATUS_HEALTHY = 1;
+  HEALTH_STATUS_DEGRADED = 2;
+  HEALTH_STATUS_UNHEALTHY = 3;
+}
+
+// =============================================================================
+// Common Messages
+// =============================================================================
+
+// Complete thermodynamic state of steam
+message SteamState {
+  double pressure_kpa = 1;
+  double temperature_c = 2;
+  double specific_enthalpy_kj_kg = 3;
+  double specific_entropy_kj_kg_k = 4;
+  double specific_volume_m3_kg = 5;
+  double density_kg_m3 = 6;
+  google.protobuf.DoubleValue quality = 7;  // Optional for two-phase
+  SteamPhase phase = 8;
+  SteamRegion region = 9;
+
+  // Optional transport properties
+  google.protobuf.DoubleValue cp_kj_kg_k = 10;
+  google.protobuf.DoubleValue cv_kj_kg_k = 11;
+  google.protobuf.DoubleValue speed_of_sound_m_s = 12;
+  google.protobuf.DoubleValue viscosity_pa_s = 13;
+  google.protobuf.DoubleValue thermal_conductivity_w_m_k = 14;
+}
+
+// Uncertainty values for measurements
+message Uncertainty {
+  double value = 1;
+  double uncertainty_abs = 2;
+  double uncertainty_rel_percent = 3;
+  double confidence_level = 4;  // e.g., 0.95 for 95% confidence
+}
+
+// Optimization recommendation
+message Recommendation {
+  string recommendation_id = 1;
+  string recommendation_type = 2;
+  RecommendationPriority priority = 3;
+  string title = 4;
+  string description = 5;
+  string rationale = 6;
+
+  google.protobuf.DoubleValue estimated_energy_savings_kw = 7;
+  google.protobuf.DoubleValue estimated_cost_savings_usd_year = 8;
+  google.protobuf.DoubleValue estimated_emissions_reduction_kg_co2_year = 9;
+  google.protobuf.DoubleValue estimated_payback_months = 10;
+
+  repeated string affected_equipment = 11;
+  double confidence_score = 12;
+
+  google.protobuf.Timestamp created_at = 13;
+  google.protobuf.Timestamp valid_until = 14;
+}
+
+// Causal factor from root cause analysis
+message CausalFactor {
+  string factor_id = 1;
+  string factor_name = 2;
+  string factor_description = 3;
+  double causal_strength = 4;
+  double confidence = 5;
+  bool is_root_cause = 6;
+  bool is_contributing_factor = 7;
+  repeated string supporting_evidence = 8;
+  repeated string related_variables = 9;
+}
+
+// =============================================================================
+// SteamPropertiesService - Thermodynamic property calculations
+// =============================================================================
+
+service SteamPropertiesService {
+  // Compute thermodynamic properties from two independent inputs
+  rpc GetProperties(SteamPropertiesRequest) returns (SteamPropertiesResponse);
+
+  // Get saturation properties at given pressure or temperature
+  rpc GetSaturationProperties(SaturationRequest) returns (SaturationResponse);
+
+  // Compute enthalpy from inputs
+  rpc ComputeEnthalpy(EnthalpyRequest) returns (EnthalpyResponse);
+
+  // Batch property computation for multiple states
+  rpc ComputeBatchProperties(stream SteamPropertiesRequest) returns (stream SteamPropertiesResponse);
+
+  // Compute enthalpy balance for equipment
+  rpc ComputeEnthalpyBalance(EnthalpyBalanceRequest) returns (EnthalpyBalanceResponse);
+
+  // Compute mass balance for equipment
+  rpc ComputeMassBalance(MassBalanceRequest) returns (MassBalanceResponse);
+}
+
+message SteamPropertiesRequest {
+  string request_id = 1;
+
+  // Input specification (at least two must be provided)
+  google.protobuf.DoubleValue pressure_kpa = 2;
+  google.protobuf.DoubleValue temperature_c = 3;
+  google.protobuf.DoubleValue specific_enthalpy_kj_kg = 4;
+  google.protobuf.DoubleValue specific_entropy_kj_kg_k = 5;
+  google.protobuf.DoubleValue quality = 6;
+
+  // Options
+  bool include_transport_properties = 7;
+  bool include_derivatives = 8;
+  bool include_uncertainty = 9;
+}
+
+message SteamPropertiesResponse {
+  string request_id = 1;
+  bool success = 2;
+  SteamState steam_state = 3;
+  double computation_time_ms = 4;
+  string error_message = 5;
+
+  // Optional derivatives
+  google.protobuf.DoubleValue dh_dp_const_t = 6;
+  google.protobuf.DoubleValue dh_dt_const_p = 7;
+  google.protobuf.DoubleValue ds_dp_const_t = 8;
+  google.protobuf.DoubleValue ds_dt_const_p = 9;
+
+  // Uncertainty if requested
+  Uncertainty enthalpy_uncertainty = 10;
+  Uncertainty entropy_uncertainty = 11;
+}
+
+message SaturationRequest {
+  string request_id = 1;
+  google.protobuf.DoubleValue pressure_kpa = 2;  // Provide pressure OR temperature
+  google.protobuf.DoubleValue temperature_c = 3;
+}
+
+message SaturationResponse {
+  string request_id = 1;
+  bool success = 2;
+  double saturation_pressure_kpa = 3;
+  double saturation_temperature_c = 4;
+
+  // Saturated liquid properties
+  SteamState liquid_properties = 5;
+
+  // Saturated vapor properties
+  SteamState vapor_properties = 6;
+
+  double latent_heat_kj_kg = 7;
+  double computation_time_ms = 8;
+  string error_message = 9;
+}
+
+message EnthalpyRequest {
+  string request_id = 1;
+  double pressure_kpa = 2;
+  double temperature_c = 3;
+  google.protobuf.DoubleValue quality = 4;  // For two-phase
+}
+
+message EnthalpyResponse {
+  string request_id = 1;
+  bool success = 2;
+  double specific_enthalpy_kj_kg = 3;
+  Uncertainty uncertainty = 4;
+  double computation_time_ms = 5;
+  string error_message = 6;
+}
+
+message StreamDefinition {
+  string stream_id = 1;
+  string stream_name = 2;
+  double mass_flow_kg_s = 3;
+  double pressure_kpa = 4;
+  double temperature_c = 5;
+  bool is_inlet = 6;
+  google.protobuf.DoubleValue specific_enthalpy_kj_kg = 7;
+  google.protobuf.DoubleValue quality = 8;
+}
+
+message EnthalpyBalanceRequest {
+  string request_id = 1;
+  string equipment_id = 2;
+  string equipment_name = 3;
+  repeated StreamDefinition streams = 4;
+  double heat_input_kw = 5;
+  double heat_loss_kw = 6;
+  double reference_temperature_c = 7;
+}
+
+message EnthalpyBalanceResponse {
+  string request_id = 1;
+  string equipment_id = 2;
+  bool success = 3;
+  double total_inlet_enthalpy_kw = 4;
+  double total_outlet_enthalpy_kw = 5;
+  double enthalpy_imbalance_kw = 6;
+  double enthalpy_imbalance_percent = 7;
+  map<string, double> stream_enthalpies = 8;
+  bool balance_closed = 9;
+  double tolerance_percent = 10;
+  double data_quality_score = 11;
+  double computation_time_ms = 12;
+  string error_message = 13;
+}
+
+message MassBalanceRequest {
+  string request_id = 1;
+  string equipment_id = 2;
+  string equipment_name = 3;
+  repeated StreamDefinition streams = 4;
+  double accumulation_rate_kg_s = 5;
+}
+
+message MassBalanceResponse {
+  string request_id = 1;
+  string equipment_id = 2;
+  bool success = 3;
+  double total_inlet_mass_flow_kg_s = 4;
+  double total_outlet_mass_flow_kg_s = 5;
+  double mass_imbalance_kg_s = 6;
+  double mass_imbalance_percent = 7;
+  bool balance_closed = 8;
+  double tolerance_percent = 9;
+  double data_quality_score = 10;
+  double computation_time_ms = 11;
+  string error_message = 12;
+}
+
+// =============================================================================
+// OptimizationService - Optimization computations
+// =============================================================================
+
+service OptimizationService {
+  // Get optimization recommendations
+  rpc GetRecommendations(GetRecommendationsRequest) returns (GetRecommendationsResponse);
+
+  // Request optimization analysis
+  rpc RequestOptimization(OptimizationRequest) returns (OptimizationResponse);
+
+  // Optimize desuperheater operation
+  rpc OptimizeDesuperheater(DesuperheaterRequest) returns (DesuperheaterResponse);
+
+  // Optimize condensate recovery
+  rpc OptimizeCondensate(CondensateRequest) returns (CondensateResponse);
+
+  // Optimize steam network
+  rpc OptimizeNetwork(NetworkRequest) returns (NetworkResponse);
+
+  // Stream optimization updates for real-time optimization
+  rpc StreamOptimizationUpdates(OptimizationSubscription) returns (stream OptimizationUpdate);
+}
+
+message GetRecommendationsRequest {
+  string request_id = 1;
+  google.protobuf.StringValue status_filter = 2;
+  google.protobuf.StringValue priority_filter = 3;
+  google.protobuf.StringValue type_filter = 4;
+  int32 limit = 5;
+  int32 offset = 6;
+}
+
+message GetRecommendationsResponse {
+  string request_id = 1;
+  bool success = 2;
+  repeated Recommendation recommendations = 3;
+  int32 total_count = 4;
+  string error_message = 5;
+}
+
+message OptimizationRequest {
+  string request_id = 1;
+  string optimization_type = 2;
+  repeated string equipment_ids = 3;
+  OptimizationObjective objective = 4;
+  int32 horizon_hours = 5;
+  map<string, double> constraints = 6;
+}
+
+message OptimizationResponse {
+  string request_id = 1;
+  bool success = 2;
+  string job_id = 3;
+  string status = 4;
+  repeated Recommendation recommendations = 5;
+  double computation_time_ms = 6;
+  string error_message = 7;
+}
+
+message DesuperheaterRequest {
+  string request_id = 1;
+  string desuperheater_id = 2;
+  double inlet_pressure_kpa = 3;
+  double inlet_temperature_c = 4;
+  double inlet_flow_kg_s = 5;
+  double target_outlet_temperature_c = 6;
+  double spray_water_temperature_c = 7;
+  double spray_water_pressure_kpa = 8;
+  google.protobuf.DoubleValue max_spray_flow_kg_s = 9;
+  double min_superheat_c = 10;
+  OptimizationObjective objective = 11;
+}
+
+message DesuperheaterResponse {
+  string request_id = 1;
+  string desuperheater_id = 2;
+  bool success = 3;
+  double optimal_spray_flow_kg_s = 4;
+  double predicted_outlet_temperature_c = 5;
+  SteamState predicted_outlet_state = 6;
+  double spray_water_energy_kw = 7;
+  double efficiency = 8;
+  repeated Recommendation recommendations = 9;
+  double computation_time_ms = 10;
+  string error_message = 11;
+}
+
+message CondensateRequest {
+  string request_id = 1;
+  string system_id = 2;
+  double current_recovery_rate_percent = 3;
+  double condensate_temperature_c = 4;
+  double makeup_water_temperature_c = 5;
+  double makeup_water_cost_usd_m3 = 6;
+  google.protobuf.DoubleValue flash_tank_pressure_kpa = 7;
+  OptimizationObjective objective = 8;
+}
+
+message CondensateResponse {
+  string request_id = 1;
+  string system_id = 2;
+  bool success = 3;
+  double optimal_recovery_rate_percent = 4;
+  double delta_from_current_percent = 5;
+  double annual_water_savings_m3 = 6;
+  double annual_energy_savings_mwh = 7;
+  double annual_cost_savings_usd = 8;
+  double annual_co2_reduction_tonnes = 9;
+  repeated Recommendation recommendations = 10;
+  double computation_time_ms = 11;
+  string error_message = 12;
+}
+
+message SteamHeader {
+  string header_id = 1;
+  string header_name = 2;
+  double design_pressure_kpa = 3;
+  double current_pressure_kpa = 4;
+  double min_pressure_kpa = 5;
+  double max_pressure_kpa = 6;
+}
+
+message SteamGenerator {
+  string generator_id = 1;
+  string generator_name = 2;
+  double max_capacity_kg_s = 3;
+  double min_capacity_kg_s = 4;
+  double current_output_kg_s = 5;
+  double efficiency = 6;
+  double fuel_cost_usd_per_mwh = 7;
+  double emissions_kg_co2_per_mwh = 8;
+}
+
+message NetworkRequest {
+  string request_id = 1;
+  string network_id = 2;
+  double total_demand_kg_s = 3;
+  repeated SteamHeader headers = 4;
+  repeated SteamGenerator generators = 5;
+  OptimizationObjective objective = 6;
+  double cost_weight = 7;
+  double emissions_weight = 8;
+  int32 horizon_hours = 9;
+}
+
+message NetworkResponse {
+  string request_id = 1;
+  string network_id = 2;
+  bool success = 3;
+  map<string, double> optimal_header_pressures_kpa = 4;
+  map<string, double> optimal_generator_outputs_kg_s = 5;
+  map<string, double> optimal_letdown_flows_kg_s = 6;
+  double total_generation_kg_s = 7;
+  double total_consumption_kg_s = 8;
+  double network_efficiency_percent = 9;
+  double total_operating_cost_usd_h = 10;
+  double total_emissions_kg_co2_h = 11;
+  bool all_constraints_satisfied = 12;
+  repeated string violated_constraints = 13;
+  repeated Recommendation recommendations = 14;
+  string solver_status = 15;
+  double computation_time_ms = 16;
+  string error_message = 17;
+}
+
+message OptimizationSubscription {
+  string subscription_id = 1;
+  repeated string equipment_ids = 2;
+  repeated string optimization_types = 3;
+  int32 update_interval_seconds = 4;
+}
+
+message OptimizationUpdate {
+  string update_id = 1;
+  string optimization_type = 2;
+  google.protobuf.Timestamp timestamp = 3;
+  map<string, double> current_setpoints = 4;
+  map<string, double> recommended_setpoints = 5;
+  double potential_savings_kw = 6;
+  repeated Recommendation new_recommendations = 7;
+  bool is_heartbeat = 8;
+}
+
+// =============================================================================
+// DiagnosticsService - Equipment diagnostics and health monitoring
+// =============================================================================
+
+service DiagnosticsService {
+  // Get diagnostics for a single trap
+  rpc GetTrapDiagnostics(TrapDiagnosticsRequest) returns (TrapDiagnosticsResponse);
+
+  // Batch diagnostics for multiple traps
+  rpc GetBatchTrapDiagnostics(BatchTrapDiagnosticsRequest) returns (BatchTrapDiagnosticsResponse);
+
+  // Get health status of system components
+  rpc GetHealthStatus(HealthStatusRequest) returns (HealthStatusResponse);
+
+  // Predict trap failure
+  rpc PredictTrapFailure(TrapFailurePredictionRequest) returns (TrapFailurePredictionResponse);
+
+  // Detect anomalies in sensor readings
+  rpc DetectAnomaly(AnomalyDetectionRequest) returns (AnomalyDetectionResponse);
+
+  // Infer steam quality from measurements
+  rpc InferSteamQuality(SteamQualityInferenceRequest) returns (SteamQualityInferenceResponse);
+
+  // Stream trap status updates
+  rpc StreamTrapStatus(TrapStatusSubscription) returns (stream TrapStatusUpdate);
+}
+
+message TrapDiagnosticsRequest {
+  string request_id = 1;
+  string trap_id = 2;
+  google.protobuf.DoubleValue inlet_pressure_kpa = 3;
+  google.protobuf.DoubleValue outlet_pressure_kpa = 4;
+  google.protobuf.DoubleValue inlet_temperature_c = 5;
+  google.protobuf.DoubleValue outlet_temperature_c = 6;
+  repeated double acoustic_data = 7;
+  repeated double ultrasonic_data = 8;
+  bool include_failure_prediction = 9;
+  bool include_loss_estimation = 10;
+}
+
+message TrapStatus {
+  string trap_id = 1;
+  string trap_name = 2;
+  TrapType trap_type = 3;
+  TrapCondition condition = 4;
+  double condition_confidence = 5;
+  string location = 6;
+  google.protobuf.DoubleValue inlet_pressure_kpa = 7;
+  google.protobuf.DoubleValue outlet_pressure_kpa = 8;
+  google.protobuf.DoubleValue inlet_temperature_c = 9;
+  google.protobuf.DoubleValue outlet_temperature_c = 10;
+  google.protobuf.DoubleValue differential_temperature_c = 11;
+  double estimated_steam_loss_kg_h = 12;
+  double estimated_energy_loss_kw = 13;
+  double estimated_annual_cost_loss_usd = 14;
+  google.protobuf.Timestamp last_inspection_date = 15;
+}
+
+message TrapFailurePrediction {
+  string trap_id = 1;
+  double failure_probability_30d = 2;
+  double failure_probability_90d = 3;
+  TrapCondition predicted_failure_mode = 4;
+  google.protobuf.DoubleValue predicted_remaining_life_days = 5;
+  repeated string risk_factors = 6;
+  double risk_score = 7;
+  string recommended_action = 8;
+  RecommendationPriority priority = 9;
+  double model_confidence = 10;
+}
+
+message TrapDiagnosticsResponse {
+  string request_id = 1;
+  string trap_id = 2;
+  bool success = 3;
+  TrapStatus status = 4;
+  TrapFailurePrediction failure_prediction = 5;
+  string diagnostic_method = 6;
+  double diagnostic_confidence = 7;
+  repeated string anomalies_detected = 8;
+  double computation_time_ms = 9;
+  string error_message = 10;
+}
+
+message BatchTrapDiagnosticsRequest {
+  string request_id = 1;
+  repeated TrapDiagnosticsRequest traps = 2;
+  bool include_summary = 3;
+  bool include_prioritization = 4;
+}
+
+message TrapSummary {
+  int32 total_traps = 1;
+  int32 traps_good = 2;
+  int32 traps_leaking = 3;
+  int32 traps_blocked = 4;
+  int32 traps_failed = 5;
+  double total_estimated_steam_loss_kg_h = 6;
+  double total_estimated_energy_loss_kw = 7;
+  double total_estimated_annual_cost_loss_usd = 8;
+}
+
+message PrioritizedAction {
+  string trap_id = 1;
+  TrapCondition condition = 2;
+  RecommendationPriority priority = 3;
+  string action = 4;
+  double estimated_savings_usd_year = 5;
+}
+
+message BatchTrapDiagnosticsResponse {
+  string request_id = 1;
+  bool success = 2;
+  repeated TrapDiagnosticsResponse results = 3;
+  TrapSummary summary = 4;
+  repeated PrioritizedAction prioritized_actions = 5;
+  double computation_time_ms = 6;
+  string error_message = 7;
+}
+
+message HealthStatusRequest {
+  string request_id = 1;
+  repeated string service_names = 2;  // Empty = all services
+  bool include_detailed_metrics = 3;
+}
+
+message ServiceHealth {
+  string service_name = 1;
+  HealthStatus status = 2;
+  double latency_ms = 3;
+  google.protobuf.Timestamp last_check = 4;
+  string error_message = 5;
+  map<string, string> metadata = 6;
+}
+
+message HealthStatusResponse {
+  string request_id = 1;
+  HealthStatus overall_status = 2;
+  repeated ServiceHealth services = 3;
+  string version = 4;
+  double uptime_seconds = 5;
+  google.protobuf.Timestamp timestamp = 6;
+}
+
+message TrapFailurePredictionRequest {
+  string request_id = 1;
+  string trap_id = 2;
+  double inlet_pressure_kpa = 3;
+  double outlet_pressure_kpa = 4;
+  double inlet_temperature_c = 5;
+  double outlet_temperature_c = 6;
+  repeated double acoustic_data = 7;
+  repeated double historical_readings = 8;
+  int32 prediction_horizon_days = 9;
+}
+
+message TrapFailurePredictionResponse {
+  string request_id = 1;
+  string trap_id = 2;
+  bool success = 3;
+  TrapFailurePrediction prediction = 4;
+  double computation_time_ms = 5;
+  string error_message = 6;
+}
+
+message AnomalyDetectionRequest {
+  string request_id = 1;
+  string equipment_id = 2;
+  map<string, double> sensor_readings = 3;
+  map<string, double> historical_baseline = 4;
+  double sensitivity_threshold = 5;
+}
+
+message Anomaly {
+  string sensor_name = 1;
+  double value = 2;
+  double expected_value = 3;
+  double deviation = 4;
+  string anomaly_type = 5;  // high_value, low_value, spike, drift
+  AlarmSeverity severity = 6;
+}
+
+message AnomalyDetectionResponse {
+  string request_id = 1;
+  string equipment_id = 2;
+  bool success = 3;
+  bool anomaly_detected = 4;
+  double anomaly_score = 5;
+  repeated Anomaly anomalies = 6;
+  google.protobuf.Timestamp timestamp = 7;
+  double computation_time_ms = 8;
+  string error_message = 9;
+}
+
+message SteamQualityInferenceRequest {
+  string request_id = 1;
+  double pressure_kpa = 2;
+  double temperature_c = 3;
+  double flow_rate_kg_s = 4;
+  google.protobuf.DoubleValue conductivity_us_cm = 5;
+}
+
+message SteamQualityInferenceResponse {
+  string request_id = 1;
+  bool success = 2;
+  double inferred_quality = 3;
+  string state = 4;  // superheated, wet_steam, near_saturation
+  double superheat_c = 5;
+  double confidence = 6;
+  double computation_time_ms = 7;
+  string error_message = 8;
+}
+
+message TrapStatusSubscription {
+  string subscription_id = 1;
+  repeated string trap_ids = 2;  // Empty = all traps
+  int32 update_interval_seconds = 3;
+  bool include_predictions = 4;
+}
+
+message TrapStatusUpdate {
+  string update_id = 1;
+  google.protobuf.Timestamp timestamp = 2;
+  TrapStatus status = 3;
+  TrapFailurePrediction prediction = 4;
+  repeated string alerts = 5;
+  bool is_heartbeat = 6;
+}
+
+// =============================================================================
+// StreamingService - Real-time bidirectional streaming
+// =============================================================================
+
+service StreamingService {
+  // Bidirectional streaming for real-time data exchange
+  rpc StreamData(stream StreamDataRequest) returns (stream StreamDataResponse);
+
+  // Subscribe to real-time steam state updates
+  rpc SubscribeSteamStates(SteamStateSubscription) returns (stream SteamStateUpdate);
+
+  // Subscribe to alarm notifications
+  rpc SubscribeAlarms(AlarmSubscription) returns (stream AlarmNotification);
+
+  // Subscribe to KPI updates
+  rpc SubscribeKPIs(KPISubscription) returns (stream KPIUpdate);
+
+  // Push sensor data for processing
+  rpc PushSensorData(stream SensorDataBatch) returns (stream SensorDataAck);
+}
+
+message StreamDataRequest {
+  string request_id = 1;
+  string data_type = 2;  // sensor_reading, command, query
+  map<string, double> values = 3;
+  map<string, string> metadata = 4;
+  google.protobuf.Timestamp timestamp = 5;
+}
+
+message StreamDataResponse {
+  string request_id = 1;
+  string response_type = 2;  // ack, result, error, heartbeat
+  map<string, double> values = 3;
+  map<string, string> metadata = 4;
+  google.protobuf.Timestamp timestamp = 5;
+  string error_message = 6;
+}
+
+message SteamStateSubscription {
+  string subscription_id = 1;
+  repeated string equipment_ids = 2;  // Empty = all equipment
+  int32 update_interval_ms = 3;
+  bool include_derived_values = 4;
+}
+
+message SteamStateUpdate {
+  string equipment_id = 1;
+  string equipment_name = 2;
+  SteamState steam_state = 3;
+  google.protobuf.Timestamp timestamp = 4;
+  double data_quality = 5;
+  bool is_heartbeat = 6;
+}
+
+message AlarmSubscription {
+  string subscription_id = 1;
+  repeated AlarmSeverity severity_filter = 2;  // Empty = all severities
+  repeated string equipment_ids = 3;  // Empty = all equipment
+}
+
+message AlarmNotification {
+  string alarm_id = 1;
+  string alarm_code = 2;
+  string name = 3;
+  string description = 4;
+  AlarmSeverity severity = 5;
+  string source_equipment = 6;
+  google.protobuf.Timestamp triggered_at = 7;
+  google.protobuf.DoubleValue measured_value = 8;
+  google.protobuf.DoubleValue threshold_value = 9;
+  string unit = 10;
+  bool is_acknowledged = 11;
+  string acknowledged_by = 12;
+}
+
+message KPISubscription {
+  string subscription_id = 1;
+  repeated string kpi_names = 2;  // Empty = all KPIs
+  int32 update_interval_seconds = 3;
+}
+
+message KPIValue {
+  string kpi_id = 1;
+  string kpi_name = 2;
+  string category = 3;  // energy, efficiency, cost, emissions
+  double current_value = 4;
+  google.protobuf.DoubleValue target_value = 5;
+  string unit = 6;
+  string trend = 7;  // up, down, stable
+  google.protobuf.DoubleValue trend_percent = 8;
+  bool is_on_target = 9;
+  google.protobuf.Timestamp measurement_timestamp = 10;
+}
+
+message KPIUpdate {
+  string update_id = 1;
+  google.protobuf.Timestamp timestamp = 2;
+  repeated KPIValue kpis = 3;
+  double overall_performance_score = 4;
+  bool is_heartbeat = 5;
+}
+
+message SensorReading {
+  string sensor_id = 1;
+  string sensor_name = 2;
+  double value = 3;
+  string unit = 4;
+  double quality = 5;  // 0-1 data quality indicator
+  google.protobuf.Timestamp timestamp = 6;
+}
+
+message SensorDataBatch {
+  string batch_id = 1;
+  string source_system = 2;
+  repeated SensorReading readings = 3;
+  google.protobuf.Timestamp batch_timestamp = 4;
+}
+
+message SensorDataAck {
+  string batch_id = 1;
+  bool success = 2;
+  int32 readings_received = 3;
+  int32 readings_processed = 4;
+  int32 readings_rejected = 5;
+  repeated string rejection_reasons = 6;
+  google.protobuf.Timestamp processed_at = 7;
+}
+
+// =============================================================================
+// RCAService - Root Cause Analysis
+// =============================================================================
+
+service RCAService {
+  // Perform root cause analysis
+  rpc AnalyzeRootCause(RCARequest) returns (RCAResponse);
+
+  // Compute counterfactual scenarios
+  rpc ComputeCounterfactual(CounterfactualRequest) returns (CounterfactualResponse);
+}
+
+message RCARequest {
+  string request_id = 1;
+  string target_event = 2;
+  google.protobuf.Timestamp event_timestamp = 3;
+  AlarmSeverity event_severity = 4;
+  repeated string affected_equipment = 5;
+  repeated string affected_variables = 6;
+  int32 lookback_hours = 7;
+  int32 lookahead_hours = 8;
+  bool include_counterfactuals = 9;
+  int32 max_causal_factors = 10;
+  double min_confidence_threshold = 11;
+}
+
+message RCAResponse {
+  string request_id = 1;
+  bool success = 2;
+  string analysis_id = 3;
+  string target_event = 4;
+  google.protobuf.Timestamp event_timestamp = 5;
+  repeated CausalFactor root_causes = 6;
+  repeated CausalFactor contributing_factors = 7;
+  repeated string causal_chain = 8;
+  string executive_summary = 9;
+  repeated string recommended_actions = 10;
+  string analysis_method = 11;
+  double model_confidence = 12;
+  double computation_time_ms = 13;
+  string error_message = 14;
+}
+
+message CounterfactualRequest {
+  string request_id = 1;
+  string scenario_name = 2;
+  string intervention_variable = 3;
+  double intervention_value = 4;
+  double baseline_value = 5;
+  string outcome_variable = 6;
+  map<string, double> context_variables = 7;
+}
+
+message CounterfactualResponse {
+  string request_id = 1;
+  bool success = 2;
+  string scenario_id = 3;
+  string scenario_name = 4;
+  string intervention_variable = 5;
+  double intervention_value = 6;
+  double baseline_value = 7;
+  string outcome_variable = 8;
+  double predicted_outcome = 9;
+  double baseline_outcome = 10;
+  double outcome_change = 11;
+  double outcome_change_percent = 12;
+  double prediction_confidence = 13;
+  string model_used = 14;
+  double computation_time_ms = 15;
+  string error_message = 16;
+}

@@ -1,0 +1,48 @@
+# GL-018 FLUEFLOW - Test Dependencies
+# Install with: pip install -r requirements-test.txt
+
+# Core testing framework
+pytest>=7.4.0
+pytest-cov>=4.1.0              # Coverage plugin
+pytest-xdist>=3.3.1            # Parallel test execution
+pytest-timeout>=2.1.0          # Timeout support
+pytest-benchmark>=4.0.0        # Performance benchmarking
+pytest-asyncio>=0.21.0         # Async test support
+
+# Coverage and reporting
+coverage>=7.3.0
+codecov>=2.1.13
+
+# Mock and fixtures
+pytest-mock>=3.11.1
+pytest-fixtures>=0.1.0
+faker>=19.2.0                  # Test data generation
+
+# Type checking and linting (for test quality)
+mypy>=1.5.0
+pylint>=2.17.0
+flake8>=6.1.0
+
+# Performance and profiling
+pytest-profiling>=1.7.0
+memory-profiler>=0.61.0
+
+# Data validation
+pydantic>=2.0.0
+python-dateutil>=2.8.2
+
+# JSON/YAML handling
+pyyaml>=6.0.1
+
+# HTTP testing (for API tests)
+httpx>=0.24.1
+requests>=2.31.0
+requests-mock>=1.11.0
+
+# Project dependencies (should match main requirements.txt)
+numpy>=1.24.0
+pandas>=2.0.0
+
+# Optional: Documentation generation from tests
+pytest-html>=3.2.0
+pytest-json-report>=1.5.0

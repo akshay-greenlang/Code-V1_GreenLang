@@ -1,0 +1,12 @@
+name: demo-pack
+version: 1.0.0
+kind: pack
+pack_schema_version: '1.0'
+author:
+  name: GreenLang Team
+  email: support@greenlang.io
+  organization: GreenLang
+license: MIT
+contents:
+  pipelines:
+  - gl.yaml

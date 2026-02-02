@@ -1,0 +1,223 @@
+# ============================================================================
+# CBAM IMPORTER COPILOT - PYTHON DEPENDENCIES
+# ============================================================================
+#
+# Core dependencies for the CBAM Importer Copilot pack.
+#
+# Installation:
+#   pip install -r requirements.txt
+#
+# Version: 1.0.0
+# Python: >=3.10
+#
+# ============================================================================
+
+# ----------------------------------------------------------------------------
+# CORE DEPENDENCIES (Required for runtime)
+# ----------------------------------------------------------------------------
+
+# Data Processing & Analysis
+pandas>=2.0.0
+# - Used by: All 3 agents
+# - Purpose: Data ingestion, transformation, aggregation
+# - Why this version: Modern API, improved performance, better type hints
+
+# Data Validation & Modeling
+pydantic>=2.12.5
+# - Used by: All 3 agents
+# - Purpose: Data validation, serialization, type safety
+# - Why this version: Pydantic v2 has 20× better performance
+
+# JSON Schema Validation
+jsonschema>=4.0.0
+# - Used by: Agent 1 (ShipmentIntakeAgent)
+# - Purpose: Validate input shipments against JSON Schema
+# - Why this version: Full Draft 7 support, better error messages
+
+# YAML Parsing
+PyYAML>=6.0
+# - Used by: All agents
+# - Purpose: Load CBAM rules, supplier profiles, configuration
+# - Why this version: Security fixes, Python 3.9+ compatibility
+
+# Excel File Support
+openpyxl>=3.1.0
+# - Used by: Agent 1 (ShipmentIntakeAgent)
+# - Purpose: Read Excel shipment files (.xlsx)
+# - Why this version: Latest stable, good performance
+
+# ----------------------------------------------------------------------------
+# OPTIONAL DEPENDENCIES (Recommended for development)
+# ----------------------------------------------------------------------------
+
+# Testing Framework
+pytest>=7.4.0
+# - Purpose: Unit tests, integration tests, end-to-end tests
+# - Phase: Will be used in Phase 9 (Validation & Testing)
+
+# Test Coverage
+pytest-cov>=4.1.0
+# - Purpose: Code coverage reporting
+# - Target: 80% coverage
+
+# Code Quality - Linting
+ruff>=0.1.0
+# - Purpose: Fast Python linter (replaces flake8, black, isort)
+# - Why: 10-100× faster than alternatives
+
+# Type Checking
+mypy>=1.5.0
+# - Purpose: Static type checking
+# - Why: Catch type errors before runtime
+
+# Security Scanning
+bandit>=1.7.5
+# - Purpose: Find common security issues
+# - Why: CBAM data is sensitive, security is critical
+
+# Dependency Vulnerability Scanning
+pip-audit>=2.6.0
+# - Purpose: Check for known vulnerabilities in dependencies
+# - Why: Compliance and security best practices
+
+# Performance Profiling
+memory-profiler>=0.61.0
+# - Purpose: Memory usage profiling
+# - Why: Ensure we stay under 500 MB for 100K shipments
+
+# ----------------------------------------------------------------------------
+# SECURITY DEPENDENCIES (CRITICAL FOR PRODUCTION)
+# ----------------------------------------------------------------------------
+
+# SECURITY FIX (HIGH-SEC-002): Rate limiting
+slowapi>=0.1.9
+# - Used by: backend/app.py
+# - Purpose: API rate limiting to prevent abuse
+# - Why: Protect against DoS attacks and API abuse
+
+# SECURITY: XML security (XXE prevention) - VCCI already uses this
+defusedxml>=0.7.1
+# - Purpose: Secure XML parsing (prevents XXE attacks)
+# - Why: Required for secure XML processing
+
+# SECURITY: JWT and authentication
+python-jose[cryptography]>=3.3.0
+# - Purpose: JWT token handling
+# - Why: Secure authentication mechanism
+
+# SECURITY: Password hashing
+passlib[bcrypt]>=1.7.4
+# - Purpose: Secure password hashing
+# - Why: Never store plaintext passwords
+
+# SECURITY: Encryption
+cryptography>=46.0.0
+# - Purpose: Data encryption and cryptographic operations
+# - Why: Protect sensitive data at rest and in transit
+
+# ----------------------------------------------------------------------------
+# MONITORING & OBSERVABILITY DEPENDENCIES (Production)
+# ----------------------------------------------------------------------------
+
+# Prometheus Metrics Client
+prometheus-client>=0.19.0
+# - Used by: backend/metrics.py
+# - Purpose: Expose Prometheus-compatible metrics
+# - Why: Industry standard for metrics collection and monitoring
+
+# System Resource Monitoring
+psutil>=5.9.0
+# - Used by: backend/metrics.py, backend/health.py
+# - Purpose: Monitor CPU, memory, disk usage
+# - Why: Essential for production resource monitoring
+
+# FastAPI (Optional - for web deployment)
+fastapi>=0.104.0
+# - Used by: backend/health.py, backend/metrics.py (optional)
+# - Purpose: REST API for health checks and metrics endpoints
+# - Why: Production-ready async web framework
+# - Note: Only required if deploying as web service
+
+# ASGI Server (Optional - for production web deployment)
+uvicorn[standard]>=0.24.0
+# - Used by: FastAPI deployment
+# - Purpose: High-performance ASGI server
+# - Why: Production-ready server with auto-reload and WebSocket support
+# - Note: Only required for web deployment
+
+# Error Tracking (Optional - recommended for production)
+# sentry-sdk>=1.38.0
+# - Purpose: Error tracking and performance monitoring
+# - Why: Centralized error tracking for production issues
+# - Note: Requires Sentry account and DSN configuration
+# - Uncomment to enable: pip install sentry-sdk
+
+# ----------------------------------------------------------------------------
+# DOCUMENTATION DEPENDENCIES (Optional)
+# ----------------------------------------------------------------------------
+
+# Markdown to PDF (for reports)
+# markdown>=3.4.0
+# - Purpose: Convert Markdown summaries to PDF (optional feature)
+# - Status: Not yet implemented
+
+# ----------------------------------------------------------------------------
+# GREENLANG FRAMEWORK DEPENDENCIES (v2 REFACTORING)
+# ----------------------------------------------------------------------------
+
+# GreenLang SDK Core (REQUIRED for v2 agents)
+# greenlang-sdk>=0.3.0
+# - Used by: All v2 agents (ShipmentIntakeAgent_v2, EmissionsCalculatorAgent_v2, ReportingPackagerAgent_v2)
+# - Purpose: Agent base classes, Pipeline orchestration, Result containers
+# - Why: Reduces custom code from 98% to 45% through framework adoption
+# - Status: Framework is local (not yet published to PyPI)
+# - Install: Add parent directory to PYTHONPATH or use local import
+
+# GreenLang Telemetry (REQUIRED for cbam_pipeline_v2)
+# greenlang-telemetry>=0.3.0
+# - Used by: cbam_pipeline_v2
+# - Purpose: Metrics collection, performance tracking, health monitoring
+# - Why: Production-ready observability without custom code
+# - Status: Part of local GreenLang SDK
+
+# GreenLang Agent Templates (REQUIRED for ReportingPackagerAgent_v2)
+# greenlang-agents>=0.3.0
+# - Used by: ReportingPackagerAgent_v2
+# - Purpose: ReportingAgent template for multi-format export
+# - Why: Reusable reporting patterns (JSON, Excel, CSV, PDF)
+# - Status: Part of local GreenLang SDK
+
+# NOTE: The GreenLang SDK is currently local in the parent directory.
+# To use v2 agents, ensure the parent directory is in your PYTHONPATH:
+#   export PYTHONPATH=$PYTHONPATH:/path/to/Code-V1_GreenLang
+# Or use the provided run scripts that set this automatically.
+
+# ----------------------------------------------------------------------------
+# NOTES
+# ----------------------------------------------------------------------------
+
+# GreenLang Integration:
+# - v1 agents: Standalone (no framework dependencies)
+# - v2 agents: Require GreenLang SDK (see above)
+# - CLI: pip install greenlang-cli>=0.3.0 (optional)
+
+# Platform Compatibility:
+# - All dependencies are cross-platform (Windows, macOS, Linux)
+# - Pure Python implementations (no C extensions required)
+# - Tested on Python 3.9, 3.10, 3.11, 3.12
+
+# Installation Verification:
+#   python -c "import pandas, pydantic, jsonschema, yaml, openpyxl; print('✓ All dependencies installed')"
+
+# Minimal Installation (runtime only):
+#   pip install pandas>=2.0.0 pydantic>=2.0.0 jsonschema>=4.0.0 PyYAML>=6.0 openpyxl>=3.1.0
+
+# Production Installation (with monitoring):
+#   pip install pandas pydantic jsonschema PyYAML openpyxl prometheus-client psutil fastapi uvicorn[standard]
+
+# Full Installation (development):
+#   pip install -r requirements.txt
+
+# ============================================================================
+# END OF REQUIREMENTS
+# ============================================================================

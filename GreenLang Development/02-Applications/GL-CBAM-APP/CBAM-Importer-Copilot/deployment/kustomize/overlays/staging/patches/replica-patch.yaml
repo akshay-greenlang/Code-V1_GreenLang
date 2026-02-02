@@ -1,0 +1,12 @@
+# ============================================================================
+# Staging Environment - Replica Patch
+# ============================================================================
+# Set replicas to 5 for staging (higher than production baseline)
+# ============================================================================
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cbam-api
+spec:
+  replicas: 5

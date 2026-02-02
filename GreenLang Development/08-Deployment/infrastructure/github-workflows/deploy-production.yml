@@ -1,0 +1,627 @@
+# Production Deployment Workflow
+# Blue-Green deployment with manual approval, migrations, smoke tests, and rollback
+name: Deploy to Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to deploy (e.g., v1.2.3 or commit SHA)'
+        required: true
+        type: string
+      skip_migrations:
+        description: 'Skip database migrations'
+        required: false
+        type: boolean
+        default: false
+      dry_run:
+        description: 'Dry run (validate without deploying)'
+        required: false
+        type: boolean
+        default: false
+      rollback_version:
+        description: 'Rollback to this version if deployment fails (leave empty for auto)'
+        required: false
+        type: string
+
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+      - 'v[0-9]+.[0-9]+.[0-9]+-rc[0-9]+'
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: greenlang/greenlang-platform
+  CLUSTER_NAME: greenlang-production
+  NAMESPACE: greenlang-production
+  ARGOCD_SERVER: argocd.greenlang.io
+  SLACK_CHANNEL: greenlang-deployments
+
+concurrency:
+  group: production-deployment
+  cancel-in-progress: false
+
+jobs:
+  # Pre-deployment validation
+  validate:
+    name: Validate Deployment
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      image_tag: ${{ steps.version.outputs.image_tag }}
+      previous_version: ${{ steps.current.outputs.version }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determine version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            VERSION="${GITHUB_REF#refs/tags/}"
+          fi
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "image_tag=${VERSION}" >> $GITHUB_OUTPUT
+          echo "Deploying version: ${VERSION}"
+
+      - name: Get current production version
+        id: current
+        run: |
+          # Get current deployed version from ArgoCD or kubectl
+          CURRENT_VERSION=$(kubectl get deployment greenlang-api \
+            -n ${{ env.NAMESPACE }} \
+            -o jsonpath='{.spec.template.spec.containers[0].image}' 2>/dev/null | cut -d: -f2 || echo "unknown")
+          echo "version=${CURRENT_VERSION}" >> $GITHUB_OUTPUT
+          echo "Current production version: ${CURRENT_VERSION}"
+        env:
+          KUBECONFIG: ${{ secrets.KUBECONFIG }}
+
+      - name: Verify image exists
+        run: |
+          IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.image_tag }}"
+          echo "Verifying image: ${IMAGE}"
+          docker manifest inspect ${IMAGE} || {
+            echo "ERROR: Image not found in registry"
+            exit 1
+          }
+        env:
+          DOCKER_CONFIG: ${{ secrets.DOCKER_CONFIG }}
+
+      - name: Run pre-deployment checks
+        run: |
+          echo "Running pre-deployment validation..."
+
+          # Check cluster health
+          kubectl cluster-info --context greenlang-production
+
+          # Verify namespace exists
+          kubectl get namespace ${{ env.NAMESPACE }}
+
+          # Check current deployment health
+          kubectl get deployments -n ${{ env.NAMESPACE }} -o wide
+
+          # Verify secrets exist
+          kubectl get secret greenlang-secrets -n ${{ env.NAMESPACE }}
+        env:
+          KUBECONFIG: ${{ secrets.KUBECONFIG }}
+
+      - name: Notify deployment started
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          channel-id: ${{ env.SLACK_CHANNEL }}
+          payload: |
+            {
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "Production Deployment Started"
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {"type": "mrkdwn", "text": "*Version:*\n${{ steps.version.outputs.version }}"},
+                    {"type": "mrkdwn", "text": "*Previous:*\n${{ steps.current.outputs.version }}"},
+                    {"type": "mrkdwn", "text": "*Triggered by:*\n${{ github.actor }}"},
+                    {"type": "mrkdwn", "text": "*Workflow:*\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Run>"}
+                  ]
+                }
+              ]
+            }
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+
+  # Manual approval gate
+  approval:
+    name: Production Approval
+    needs: validate
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://api.greenlang.io
+    steps:
+      - name: Approval granted
+        run: |
+          echo "Production deployment approved by: ${{ github.actor }}"
+          echo "Version: ${{ needs.validate.outputs.version }}"
+
+  # Database migrations
+  migrations:
+    name: Database Migrations
+    needs: [validate, approval]
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.skip_migrations != 'true' }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.validate.outputs.version }}
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install migration tools
+        run: |
+          pip install alembic psycopg2-binary sqlalchemy
+
+      - name: Create migration backup
+        id: backup
+        run: |
+          BACKUP_ID="pre-deploy-$(date +%Y%m%d-%H%M%S)"
+          echo "backup_id=${BACKUP_ID}" >> $GITHUB_OUTPUT
+
+          # Create database snapshot
+          aws rds create-db-snapshot \
+            --db-instance-identifier greenlang-production \
+            --db-snapshot-identifier ${BACKUP_ID}
+
+          # Wait for snapshot to complete
+          aws rds wait db-snapshot-available \
+            --db-snapshot-identifier ${BACKUP_ID}
+
+          echo "Database backup created: ${BACKUP_ID}"
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: us-east-1
+
+      - name: Run migrations (dry-run)
+        if: ${{ github.event.inputs.dry_run == 'true' }}
+        run: |
+          echo "DRY RUN: Checking migration compatibility..."
+          alembic upgrade head --sql
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: Run migrations
+        if: ${{ github.event.inputs.dry_run != 'true' }}
+        run: |
+          echo "Running database migrations..."
+          alembic upgrade head
+          echo "Migrations completed successfully"
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: Verify migrations
+        run: |
+          echo "Verifying migration status..."
+          alembic current
+          alembic history --indicate-current
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+    outputs:
+      backup_id: ${{ steps.backup.outputs.backup_id }}
+
+  # Blue-Green Deployment
+  deploy:
+    name: Blue-Green Deployment
+    needs: [validate, approval, migrations]
+    if: always() && needs.approval.result == 'success' && (needs.migrations.result == 'success' || needs.migrations.result == 'skipped')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.28.0'
+
+      - name: Setup kubeconfig
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBECONFIG }}" | base64 -d > ~/.kube/config
+          kubectl config use-context greenlang-production
+
+      - name: Install ArgoCD CLI
+        run: |
+          curl -sSL -o argocd https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
+          chmod +x argocd
+          sudo mv argocd /usr/local/bin/
+
+      - name: Login to ArgoCD
+        run: |
+          argocd login ${{ env.ARGOCD_SERVER }} \
+            --username admin \
+            --password ${{ secrets.ARGOCD_PASSWORD }} \
+            --grpc-web
+
+      - name: Create Green deployment
+        if: ${{ github.event.inputs.dry_run != 'true' }}
+        run: |
+          VERSION="${{ needs.validate.outputs.version }}"
+          IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.validate.outputs.image_tag }}"
+
+          echo "Creating green deployment with version: ${VERSION}"
+
+          # Create green deployment
+          cat <<EOF | kubectl apply -f -
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: greenlang-api-green
+            namespace: ${{ env.NAMESPACE }}
+            labels:
+              app: greenlang-api
+              version: ${VERSION}
+              deployment-type: green
+          spec:
+            replicas: 3
+            selector:
+              matchLabels:
+                app: greenlang-api
+                deployment-type: green
+            template:
+              metadata:
+                labels:
+                  app: greenlang-api
+                  version: ${VERSION}
+                  deployment-type: green
+              spec:
+                containers:
+                - name: api
+                  image: ${IMAGE}
+                  ports:
+                  - containerPort: 8000
+                  env:
+                  - name: VERSION
+                    value: "${VERSION}"
+                  - name: DEPLOYMENT_TYPE
+                    value: "green"
+                  resources:
+                    requests:
+                      memory: "512Mi"
+                      cpu: "500m"
+                    limits:
+                      memory: "2Gi"
+                      cpu: "2000m"
+                  readinessProbe:
+                    httpGet:
+                      path: /api/v1/health
+                      port: 8000
+                    initialDelaySeconds: 10
+                    periodSeconds: 5
+                  livenessProbe:
+                    httpGet:
+                      path: /api/v1/health
+                      port: 8000
+                    initialDelaySeconds: 30
+                    periodSeconds: 10
+          EOF
+
+      - name: Wait for green deployment
+        if: ${{ github.event.inputs.dry_run != 'true' }}
+        run: |
+          echo "Waiting for green deployment to be ready..."
+          kubectl rollout status deployment/greenlang-api-green \
+            -n ${{ env.NAMESPACE }} \
+            --timeout=10m
+
+      - name: Run pre-switch health checks
+        if: ${{ github.event.inputs.dry_run != 'true' }}
+        run: |
+          echo "Running health checks on green deployment..."
+
+          # Get a green pod
+          GREEN_POD=$(kubectl get pods -n ${{ env.NAMESPACE }} \
+            -l deployment-type=green \
+            -o jsonpath='{.items[0].metadata.name}')
+
+          # Port forward and test
+          kubectl port-forward pod/${GREEN_POD} 8080:8000 -n ${{ env.NAMESPACE }} &
+          PF_PID=$!
+          sleep 5
+
+          # Health check
+          curl -f http://localhost:8080/api/v1/health || {
+            kill $PF_PID
+            echo "Health check failed!"
+            exit 1
+          }
+
+          # Readiness check
+          curl -f http://localhost:8080/api/v1/ready || {
+            kill $PF_PID
+            echo "Readiness check failed!"
+            exit 1
+          }
+
+          kill $PF_PID
+          echo "Health checks passed!"
+
+      - name: Switch traffic to green
+        if: ${{ github.event.inputs.dry_run != 'true' }}
+        run: |
+          echo "Switching traffic to green deployment..."
+
+          # Update service selector
+          kubectl patch service greenlang-api-service \
+            -n ${{ env.NAMESPACE }} \
+            -p '{"spec":{"selector":{"deployment-type":"green"}}}'
+
+          echo "Traffic switched to green deployment"
+
+      - name: Run smoke tests
+        if: ${{ github.event.inputs.dry_run != 'true' }}
+        id: smoke_tests
+        run: |
+          echo "Running smoke tests..."
+
+          # Wait for service to stabilize
+          sleep 10
+
+          # API health check
+          curl -f https://api.greenlang.io/api/v1/health || exit 1
+
+          # API version check
+          DEPLOYED_VERSION=$(curl -s https://api.greenlang.io/api/v1/version | jq -r '.version')
+          EXPECTED_VERSION="${{ needs.validate.outputs.version }}"
+
+          if [ "${DEPLOYED_VERSION}" != "${EXPECTED_VERSION}" ]; then
+            echo "Version mismatch! Expected: ${EXPECTED_VERSION}, Got: ${DEPLOYED_VERSION}"
+            exit 1
+          fi
+
+          # Critical endpoint tests
+          curl -f https://api.greenlang.io/api/v1/carbon/calculate \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.SMOKE_TEST_TOKEN }}" \
+            -d '{"type":"test","data":{"value":1}}' || exit 1
+
+          # Database connectivity
+          curl -f https://api.greenlang.io/api/v1/health/db || exit 1
+
+          # Redis connectivity
+          curl -f https://api.greenlang.io/api/v1/health/cache || exit 1
+
+          echo "All smoke tests passed!"
+
+      - name: Cleanup blue deployment
+        if: ${{ github.event.inputs.dry_run != 'true' && steps.smoke_tests.outcome == 'success' }}
+        run: |
+          echo "Cleaning up blue deployment..."
+
+          # Scale down blue deployment
+          kubectl scale deployment/greenlang-api-blue \
+            -n ${{ env.NAMESPACE }} \
+            --replicas=0 2>/dev/null || true
+
+          # Rename green to blue for next deployment
+          kubectl label deployment greenlang-api-green \
+            -n ${{ env.NAMESPACE }} \
+            deployment-type=blue --overwrite
+
+          kubectl patch deployment greenlang-api-green \
+            -n ${{ env.NAMESPACE }} \
+            --type=json \
+            -p='[{"op": "replace", "path": "/metadata/name", "value": "greenlang-api-blue"}]' || true
+
+          echo "Deployment completed successfully!"
+
+      - name: Update ArgoCD application
+        if: ${{ github.event.inputs.dry_run != 'true' }}
+        run: |
+          argocd app set greenlang-platform \
+            --kustomize-image greenlang/api=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.validate.outputs.image_tag }}
+
+          argocd app sync greenlang-platform --prune
+
+    outputs:
+      deployment_success: ${{ steps.smoke_tests.outcome == 'success' }}
+
+  # Rollback on failure
+  rollback:
+    name: Rollback on Failure
+    needs: [validate, deploy, migrations]
+    if: failure() && needs.deploy.result == 'failure'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify rollback started
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          channel-id: ${{ env.SLACK_CHANNEL }}
+          payload: |
+            {
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "ALERT: Production Rollback Initiated"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "Deployment of *${{ needs.validate.outputs.version }}* failed. Rolling back to *${{ needs.validate.outputs.previous_version }}*"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+
+      - name: Setup kubeconfig
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBECONFIG }}" | base64 -d > ~/.kube/config
+
+      - name: Rollback application
+        run: |
+          ROLLBACK_VERSION="${{ github.event.inputs.rollback_version }}"
+          if [ -z "${ROLLBACK_VERSION}" ]; then
+            ROLLBACK_VERSION="${{ needs.validate.outputs.previous_version }}"
+          fi
+
+          echo "Rolling back to version: ${ROLLBACK_VERSION}"
+
+          # Switch traffic back to blue
+          kubectl patch service greenlang-api-service \
+            -n ${{ env.NAMESPACE }} \
+            -p '{"spec":{"selector":{"deployment-type":"blue"}}}'
+
+          # Delete failed green deployment
+          kubectl delete deployment greenlang-api-green \
+            -n ${{ env.NAMESPACE }} \
+            --ignore-not-found=true
+
+          echo "Rollback completed"
+
+      - name: Rollback database (if needed)
+        if: ${{ needs.migrations.outputs.backup_id != '' }}
+        run: |
+          BACKUP_ID="${{ needs.migrations.outputs.backup_id }}"
+          echo "Database backup available: ${BACKUP_ID}"
+          echo "Manual database restore may be required using backup: ${BACKUP_ID}"
+
+          # Note: Automatic DB rollback is dangerous and should be done manually
+          # aws rds restore-db-instance-from-db-snapshot \
+          #   --db-instance-identifier greenlang-production-restored \
+          #   --db-snapshot-identifier ${BACKUP_ID}
+
+      - name: Verify rollback
+        run: |
+          echo "Verifying rollback..."
+
+          # Wait for service to stabilize
+          sleep 10
+
+          # Health check
+          curl -f https://api.greenlang.io/api/v1/health || {
+            echo "CRITICAL: Rollback verification failed!"
+            exit 1
+          }
+
+          echo "Rollback verified successfully"
+
+  # Post-deployment notifications
+  notify:
+    name: Deployment Notification
+    needs: [validate, deploy]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify success
+        if: needs.deploy.result == 'success'
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          channel-id: ${{ env.SLACK_CHANNEL }}
+          payload: |
+            {
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "Production Deployment Successful"
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {"type": "mrkdwn", "text": "*Version:*\n${{ needs.validate.outputs.version }}"},
+                    {"type": "mrkdwn", "text": "*Status:*\nDeployed"},
+                    {"type": "mrkdwn", "text": "*Environment:*\nProduction"},
+                    {"type": "mrkdwn", "text": "*URL:*\n<https://api.greenlang.io|api.greenlang.io>"}
+                  ]
+                },
+                {
+                  "type": "context",
+                  "elements": [
+                    {"type": "mrkdwn", "text": "Deployed by ${{ github.actor }} | <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Run>"}
+                  ]
+                }
+              ]
+            }
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+
+      - name: Notify failure
+        if: needs.deploy.result == 'failure'
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          channel-id: ${{ env.SLACK_CHANNEL }}
+          payload: |
+            {
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "ALERT: Production Deployment Failed"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "Deployment of *${{ needs.validate.outputs.version }}* to production has failed. Automatic rollback initiated."
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {"type": "mrkdwn", "text": "*Version:*\n${{ needs.validate.outputs.version }}"},
+                    {"type": "mrkdwn", "text": "*Previous:*\n${{ needs.validate.outputs.previous_version }}"}
+                  ]
+                },
+                {
+                  "type": "actions",
+                  "elements": [
+                    {
+                      "type": "button",
+                      "text": {"type": "plain_text", "text": "View Logs"},
+                      "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                    }
+                  ]
+                }
+              ]
+            }
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+
+      - name: Create deployment record
+        if: needs.deploy.result == 'success'
+        run: |
+          # Record deployment in tracking system
+          curl -X POST https://api.greenlang.io/internal/deployments \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.INTERNAL_API_TOKEN }}" \
+            -d '{
+              "version": "${{ needs.validate.outputs.version }}",
+              "environment": "production",
+              "deployed_by": "${{ github.actor }}",
+              "commit_sha": "${{ github.sha }}",
+              "workflow_run_id": "${{ github.run_id }}",
+              "status": "success"
+            }' || true

@@ -1,0 +1,20 @@
+# Invalid Payload - Array Item Type Error
+# Error Code: GLSCHEMA-E102 (TYPE_MISMATCH in array item)
+# Schema: basic/array_constraints.yaml
+
+_test_metadata:
+  schema: "basic/array_constraints.yaml"
+  description: "Type mismatch in array item - number instead of string"
+  expected_valid: false
+  expected_errors:
+    - code: "GLSCHEMA-E102"
+      path: "/tags/1"
+      severity: "error"
+
+tags:
+  - "valid-string"
+  - 12345  # Should be string, not number
+  - "another-valid-string"
+
+measurements:
+  - 100

@@ -1,0 +1,517 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://greenlang.io/schemas/cbam/registry-output/v1",
+  "title": "CBAM Transitional Registry Report",
+  "description": "Schema for a complete CBAM quarterly report ready for submission to the EU Transitional Registry. This is the final output produced by the CBAM Importer Copilot.",
+  "type": "object",
+  "required": [
+    "report_metadata",
+    "importer_declaration",
+    "goods_summary",
+    "detailed_goods",
+    "emissions_summary",
+    "validation_results"
+  ],
+  "properties": {
+    "report_metadata": {
+      "type": "object",
+      "description": "Metadata about this CBAM report",
+      "required": ["report_id", "quarter", "reporting_period_start", "reporting_period_end", "generated_at"],
+      "properties": {
+        "report_id": {
+          "type": "string",
+          "description": "Unique identifier for this report",
+          "examples": ["CBAM-2025Q4-REPORT-001"]
+        },
+        "quarter": {
+          "type": "string",
+          "pattern": "^20[2-9][0-9]Q[1-4]$",
+          "description": "CBAM reporting quarter (YYYYQN format)",
+          "examples": ["2025Q4", "2026Q1"]
+        },
+        "reporting_period_start": {
+          "type": "string",
+          "format": "date",
+          "description": "Start date of the reporting period"
+        },
+        "reporting_period_end": {
+          "type": "string",
+          "format": "date",
+          "description": "End date of the reporting period"
+        },
+        "generated_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when this report was generated"
+        },
+        "generated_by": {
+          "type": "string",
+          "description": "Tool/system that generated this report",
+          "examples": ["GreenLang CBAM Importer Copilot v1.0.0"]
+        },
+        "version": {
+          "type": "string",
+          "description": "Version of the report format",
+          "examples": ["1.0.0"]
+        }
+      }
+    },
+    "importer_declaration": {
+      "type": "object",
+      "description": "Declaration by the EU importer/authorized CBAM declarant",
+      "required": ["importer_name", "importer_country", "importer_eori"],
+      "properties": {
+        "importer_name": {
+          "type": "string",
+          "description": "Legal name of the EU importer",
+          "maxLength": 200
+        },
+        "importer_country": {
+          "type": "string",
+          "pattern": "^[A-Z]{2}$",
+          "description": "ISO 3166-1 alpha-2 code of EU member state",
+          "examples": ["NL", "DE", "FR", "SE"]
+        },
+        "importer_eori": {
+          "type": "string",
+          "pattern": "^[A-Z]{2}[A-Z0-9]{1,15}$",
+          "description": "Economic Operators Registration and Identification number",
+          "examples": ["NL123456789012", "DE987654321098"]
+        },
+        "importer_address": {
+          "type": "object",
+          "properties": {
+            "street": {"type": "string"},
+            "city": {"type": "string"},
+            "postal_code": {"type": "string"},
+            "country": {"type": "string"}
+          }
+        },
+        "importer_vat": {
+          "type": "string",
+          "description": "VAT identification number"
+        },
+        "customs_representative": {
+          "type": "object",
+          "description": "Customs representative if different from importer",
+          "properties": {
+            "name": {"type": "string"},
+            "eori": {"type": "string"}
+          }
+        },
+        "declaration_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Date of this declaration"
+        },
+        "declarant_name": {
+          "type": "string",
+          "description": "Name of person making the declaration",
+          "maxLength": 100
+        },
+        "declarant_position": {
+          "type": "string",
+          "description": "Position/title of declarant",
+          "maxLength": 100
+        }
+      }
+    },
+    "goods_summary": {
+      "type": "object",
+      "description": "High-level summary of imported goods",
+      "required": ["total_shipments", "total_mass_tonnes", "product_groups"],
+      "properties": {
+        "total_shipments": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Total number of shipments in this report"
+        },
+        "total_mass_tonnes": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Total mass of all goods in metric tonnes"
+        },
+        "product_groups": {
+          "type": "array",
+          "description": "Summary by product group",
+          "items": {
+            "type": "object",
+            "required": ["product_group", "shipment_count", "total_mass_tonnes"],
+            "properties": {
+              "product_group": {
+                "type": "string",
+                "enum": ["cement", "steel", "aluminum", "fertilizers", "hydrogen", "electricity"]
+              },
+              "shipment_count": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "total_mass_tonnes": {
+                "type": "number",
+                "minimum": 0
+              },
+              "cn_codes": {
+                "type": "array",
+                "items": {"type": "string"}
+              }
+            }
+          }
+        },
+        "origin_countries": {
+          "type": "array",
+          "description": "Summary by country of origin",
+          "items": {
+            "type": "object",
+            "properties": {
+              "country_iso": {"type": "string"},
+              "country_name": {"type": "string"},
+              "shipment_count": {"type": "integer"},
+              "total_mass_tonnes": {"type": "number"}
+            }
+          }
+        }
+      }
+    },
+    "detailed_goods": {
+      "type": "array",
+      "description": "Detailed listing of all imported goods with emissions calculations",
+      "items": {
+        "type": "object",
+        "required": [
+          "shipment_id",
+          "cn_code",
+          "product_group",
+          "origin_iso",
+          "net_mass_kg",
+          "emissions_calculation"
+        ],
+        "properties": {
+          "shipment_id": {
+            "type": "string",
+            "description": "Unique shipment identifier"
+          },
+          "import_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "cn_code": {
+            "type": "string",
+            "pattern": "^[0-9]{8}$"
+          },
+          "product_group": {
+            "type": "string",
+            "enum": ["cement", "steel", "aluminum", "fertilizers", "hydrogen", "electricity"]
+          },
+          "product_description": {
+            "type": "string"
+          },
+          "origin_iso": {
+            "type": "string",
+            "pattern": "^[A-Z]{2}$"
+          },
+          "origin_country": {
+            "type": "string"
+          },
+          "net_mass_kg": {
+            "type": "number",
+            "minimum": 0
+          },
+          "net_mass_tonnes": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Net mass in tonnes (computed from kg)"
+          },
+          "customs_declaration_number": {
+            "type": "string",
+            "description": "MRN - Movement Reference Number"
+          },
+          "supplier_id": {
+            "type": "string",
+            "description": "Reference to supplier if actual emissions used"
+          },
+          "emissions_calculation": {
+            "type": "object",
+            "description": "Detailed emissions calculation for this shipment",
+            "required": [
+              "calculation_method",
+              "direct_emissions_tco2",
+              "indirect_emissions_tco2",
+              "total_emissions_tco2"
+            ],
+            "properties": {
+              "calculation_method": {
+                "type": "string",
+                "enum": ["default_values", "actual_data", "complex_goods", "estimation"],
+                "description": "Method used to calculate emissions"
+              },
+              "emission_factor_direct_tco2_per_ton": {
+                "type": "number",
+                "minimum": 0,
+                "description": "Direct emission factor applied"
+              },
+              "emission_factor_indirect_tco2_per_ton": {
+                "type": "number",
+                "minimum": 0,
+                "description": "Indirect emission factor applied"
+              },
+              "emission_factor_total_tco2_per_ton": {
+                "type": "number",
+                "minimum": 0,
+                "description": "Total emission factor applied"
+              },
+              "direct_emissions_tco2": {
+                "type": "number",
+                "minimum": 0,
+                "description": "Total direct (Scope 1) emissions for this shipment in tonnes CO2e"
+              },
+              "indirect_emissions_tco2": {
+                "type": "number",
+                "minimum": 0,
+                "description": "Total indirect (Scope 2) emissions for this shipment in tonnes CO2e"
+              },
+              "total_emissions_tco2": {
+                "type": "number",
+                "minimum": 0,
+                "description": "Total embedded emissions for this shipment in tonnes CO2e"
+              },
+              "emission_factor_source": {
+                "type": "string",
+                "description": "Source of emission factors used",
+                "examples": [
+                  "EU CBAM Default Values - Annex IV",
+                  "Supplier EPD - Verified by TÜV",
+                  "Estimated based on industry average"
+                ]
+              },
+              "data_quality": {
+                "type": "string",
+                "enum": ["high", "medium", "low", "estimated"],
+                "description": "Quality assessment of this emissions calculation"
+              },
+              "complex_goods_components": {
+                "type": "array",
+                "description": "If complex good, list of precursor materials",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "material_cn_code": {"type": "string"},
+                    "material_name": {"type": "string"},
+                    "mass_kg": {"type": "number"},
+                    "emissions_tco2": {"type": "number"}
+                  }
+                }
+              },
+              "notes": {
+                "type": "string",
+                "description": "Additional notes about this calculation"
+              }
+            }
+          }
+        }
+      }
+    },
+    "emissions_summary": {
+      "type": "object",
+      "description": "Aggregated emissions totals for the entire report",
+      "required": [
+        "total_direct_emissions_tco2",
+        "total_indirect_emissions_tco2",
+        "total_embedded_emissions_tco2"
+      ],
+      "properties": {
+        "total_direct_emissions_tco2": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Sum of all direct (Scope 1) emissions across all shipments"
+        },
+        "total_indirect_emissions_tco2": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Sum of all indirect (Scope 2) emissions across all shipments"
+        },
+        "total_embedded_emissions_tco2": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Sum of all embedded emissions (Direct + Indirect) across all shipments"
+        },
+        "emissions_by_product_group": {
+          "type": "array",
+          "description": "Emissions breakdown by product group",
+          "items": {
+            "type": "object",
+            "properties": {
+              "product_group": {"type": "string"},
+              "total_emissions_tco2": {"type": "number"},
+              "percentage_of_total": {"type": "number"}
+            }
+          }
+        },
+        "emissions_by_origin_country": {
+          "type": "array",
+          "description": "Emissions breakdown by country of origin",
+          "items": {
+            "type": "object",
+            "properties": {
+              "country_iso": {"type": "string"},
+              "country_name": {"type": "string"},
+              "total_emissions_tco2": {"type": "number"},
+              "percentage_of_total": {"type": "number"}
+            }
+          }
+        },
+        "emissions_intensity_tco2_per_tonne": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Average emissions intensity across all goods"
+        },
+        "calculation_methods_used": {
+          "type": "object",
+          "description": "Count of shipments by calculation method",
+          "properties": {
+            "default_values_count": {"type": "integer"},
+            "actual_data_count": {"type": "integer"},
+            "complex_goods_count": {"type": "integer"},
+            "estimation_count": {"type": "integer"}
+          }
+        }
+      }
+    },
+    "validation_results": {
+      "type": "object",
+      "description": "Results of CBAM compliance validation checks",
+      "required": ["is_valid", "validation_timestamp"],
+      "properties": {
+        "is_valid": {
+          "type": "boolean",
+          "description": "Whether this report passes all validation rules"
+        },
+        "validation_timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When validation was performed"
+        },
+        "rules_checked": {
+          "type": "array",
+          "description": "List of validation rules that were checked",
+          "items": {
+            "type": "object",
+            "properties": {
+              "rule_id": {"type": "string"},
+              "rule_name": {"type": "string"},
+              "status": {"type": "string", "enum": ["pass", "fail", "warning"]},
+              "message": {"type": "string"}
+            }
+          }
+        },
+        "errors": {
+          "type": "array",
+          "description": "List of validation errors that must be fixed",
+          "items": {
+            "type": "object",
+            "properties": {
+              "error_code": {"type": "string"},
+              "severity": {"type": "string", "enum": ["error", "warning", "info"]},
+              "message": {"type": "string"},
+              "affected_shipments": {"type": "array", "items": {"type": "string"}}
+            }
+          }
+        },
+        "warnings": {
+          "type": "array",
+          "description": "List of validation warnings (non-blocking)",
+          "items": {
+            "type": "object",
+            "properties": {
+              "warning_code": {"type": "string"},
+              "message": {"type": "string"},
+              "affected_shipments": {"type": "array", "items": {"type": "string"}}
+            }
+          }
+        },
+        "complex_goods_check": {
+          "type": "object",
+          "description": "Special validation for complex goods (20% cap)",
+          "properties": {
+            "complex_goods_count": {"type": "integer"},
+            "total_shipments_count": {"type": "integer"},
+            "complex_goods_percentage": {"type": "number"},
+            "threshold_percentage": {"type": "number", "default": 20},
+            "within_threshold": {"type": "boolean"}
+          }
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "description": "Provenance and audit trail for this report",
+      "properties": {
+        "input_files": {
+          "type": "array",
+          "description": "List of input files used to generate this report",
+          "items": {
+            "type": "object",
+            "properties": {
+              "file_path": {"type": "string"},
+              "file_hash_sha256": {"type": "string"},
+              "record_count": {"type": "integer"}
+            }
+          }
+        },
+        "emission_factors_version": {
+          "type": "string",
+          "description": "Version of emission factors database used"
+        },
+        "agents_used": {
+          "type": "array",
+          "description": "List of AI agents involved in generating this report",
+          "items": {
+            "type": "object",
+            "properties": {
+              "agent_name": {"type": "string"},
+              "agent_version": {"type": "string"},
+              "execution_time_ms": {"type": "number"}
+            }
+          }
+        },
+        "processing_log": {
+          "type": "array",
+          "description": "Processing steps taken to generate this report",
+          "items": {
+            "type": "object",
+            "properties": {
+              "step": {"type": "string"},
+              "timestamp": {"type": "string", "format": "date-time"},
+              "status": {"type": "string"}
+            }
+          }
+        }
+      }
+    },
+    "attachments": {
+      "type": "object",
+      "description": "References to supporting documentation",
+      "properties": {
+        "supplier_epds": {
+          "type": "array",
+          "description": "List of supplier Environmental Product Declarations",
+          "items": {
+            "type": "object",
+            "properties": {
+              "supplier_id": {"type": "string"},
+              "document_name": {"type": "string"},
+              "document_hash": {"type": "string"}
+            }
+          }
+        },
+        "customs_declarations": {
+          "type": "array",
+          "description": "References to customs declarations",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "additionalProperties": true
+}

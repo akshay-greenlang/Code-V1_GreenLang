@@ -1,0 +1,83 @@
+name: portfolio_analysis
+description: Analyze portfolio of multiple buildings
+version: 0.0.1
+
+inputs:
+  portfolio_data:
+    type: object
+    required: true
+    schema:
+      type: object
+      properties:
+        buildings: {type: array}
+        aggregation_method: {type: string}
+
+outputs:
+  portfolio_report:
+    type: object
+
+steps:
+  - id: parse_portfolio
+    name: Parse Portfolio Data
+    agent: PortfolioParserAgent
+    inputs:
+      data: $portfolio_data
+    outputs:
+      buildings: array
+      metadata: object
+
+  - id: calculate_individual
+    name: Calculate Individual Building Emissions
+    agent: BatchEmissionCalculatorAgent
+    inputs:
+      buildings: $steps.parse_portfolio.buildings
+      dataset_version: latest
+    outputs:
+      individual_emissions: array
+      provenance: object
+
+  - id: aggregate_emissions
+    name: Aggregate Portfolio Emissions
+    agent: AggregationAgent
+    inputs:
+      individual_emissions: $steps.calculate_individual.individual_emissions
+      method: $portfolio_data.aggregation_method
+    outputs:
+      total_emissions_tons: number
+      by_building: array
+      by_fuel: object
+      statistics: object
+
+  - id: portfolio_metrics
+    name: Calculate Portfolio Metrics
+    agent: PortfolioMetricsAgent
+    inputs:
+      emissions: $steps.aggregate_emissions
+      buildings: $steps.parse_portfolio.buildings
+    outputs:
+      total_area: number
+      average_intensity: number
+      distribution: object
+
+  - id: benchmark_portfolio
+    name: Benchmark Portfolio Performance
+    agent: PortfolioBenchmarkAgent
+    inputs:
+      metrics: $steps.portfolio_metrics
+      emissions: $steps.aggregate_emissions
+    outputs:
+      portfolio_rating: string
+      building_rankings: array
+
+  - id: export_results
+    name: Export Portfolio Results
+    agent: ExportAgent
+    inputs:
+      emissions: $steps.aggregate_emissions
+      metrics: $steps.portfolio_metrics
+      benchmark: $steps.benchmark_portfolio
+      provenance: $steps.calculate_individual.provenance
+    outputs:
+      csv_path: string
+      excel_path: string
+      report: object

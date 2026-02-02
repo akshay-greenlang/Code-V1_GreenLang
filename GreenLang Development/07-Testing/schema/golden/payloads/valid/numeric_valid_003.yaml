@@ -1,0 +1,18 @@
+# Valid Numeric Constraints Payload 003
+# Tests: Maximum boundary values
+# Schema: basic/numeric_constraints.yaml
+
+_test_metadata:
+  schema: "basic/numeric_constraints.yaml"
+  description: "Valid payload with maximum boundary values"
+  expected_valid: true
+
+temperature: 1000      # Maximum allowed
+quantity: 10000        # Maximum allowed
+percentage: 100        # Maximum allowed
+positive_number: 1000000
+price: 9999999.99
+score: 99.99           # Just below exclusive maximum
+batch_size: 1000       # Maximum allowed
+latitude: 90           # Maximum allowed
+longitude: 180         # Maximum allowed

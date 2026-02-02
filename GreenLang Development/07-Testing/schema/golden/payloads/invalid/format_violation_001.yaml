@@ -1,0 +1,15 @@
+# Invalid Payload - Format Violation (email)
+# Error Code: GLSCHEMA-E206 (FORMAT_VIOLATION)
+# Schema: basic/string_constraints.yaml
+
+_test_metadata:
+  schema: "basic/string_constraints.yaml"
+  description: "Format violation - invalid email format"
+  expected_valid: false
+  expected_errors:
+    - code: "GLSCHEMA-E206"
+      path: "/email"
+      severity: "error"
+
+username: "valid_user"
+email: "not-an-email"  # Invalid email format

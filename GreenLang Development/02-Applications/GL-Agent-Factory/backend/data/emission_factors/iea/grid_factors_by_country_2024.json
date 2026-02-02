@@ -1,0 +1,609 @@
+{
+  "metadata": {
+    "source": "IEA",
+    "source_name": "International Energy Agency",
+    "source_document": "CO2 Emissions from Fuel Combustion 2024",
+    "source_url": "https://www.iea.org/data-and-statistics/data-product/emissions-factors-2024",
+    "version": "2024",
+    "data_year": 2022,
+    "last_updated": "2024-09-01",
+    "description": "IEA electricity grid emission factors by country for 2022 data"
+  },
+  "world_average": {
+    "id": "ef://iea/grid/world/2024",
+    "region": "World",
+    "co2_factor": 0.494,
+    "co2_unit": "kg CO2/kWh",
+    "notes": "Global average grid intensity"
+  },
+  "countries": {
+    "europe": [
+      {
+        "id": "ef://iea/grid/austria/2024",
+        "country": "Austria",
+        "country_code": "AUT",
+        "iso2": "AT",
+        "co2_factor": 0.088,
+        "co2_unit": "kg CO2/kWh",
+        "renewable_share_pct": 78.2,
+        "notes": "High hydro share"
+      },
+      {
+        "id": "ef://iea/grid/belgium/2024",
+        "country": "Belgium",
+        "country_code": "BEL",
+        "iso2": "BE",
+        "co2_factor": 0.148,
+        "co2_unit": "kg CO2/kWh",
+        "renewable_share_pct": 24.5
+      },
+      {
+        "id": "ef://iea/grid/bulgaria/2024",
+        "country": "Bulgaria",
+        "country_code": "BGR",
+        "iso2": "BG",
+        "co2_factor": 0.422,
+        "co2_unit": "kg CO2/kWh",
+        "renewable_share_pct": 22.1
+      },
+      {
+        "id": "ef://iea/grid/croatia/2024",
+        "country": "Croatia",
+        "country_code": "HRV",
+        "iso2": "HR",
+        "co2_factor": 0.175,
+        "co2_unit": "kg CO2/kWh",
+        "renewable_share_pct": 55.8
+      },
+      {
+        "id": "ef://iea/grid/cyprus/2024",
+        "country": "Cyprus",
+        "country_code": "CYP",
+        "iso2": "CY",
+        "co2_factor": 0.618,
+        "co2_unit": "kg CO2/kWh",
+        "renewable_share_pct": 16.9
+      },
+      {
+        "id": "ef://iea/grid/czechia/2024",
+        "country": "Czechia",
+        "country_code": "CZE",
+        "iso2": "CZ",
+        "co2_factor": 0.402,
+        "co2_unit": "kg CO2/kWh",
+        "renewable_share_pct": 15.2
+      },
+      {
+        "id": "ef://iea/grid/denmark/2024",
+        "country": "Denmark",
+        "country_code": "DNK",
+        "iso2": "DK",
+        "co2_factor": 0.119,
+        "co2_unit": "kg CO2/kWh",
+        "renewable_share_pct": 80.1,
+        "notes": "High wind share"
+      },
+      {
+        "id": "ef://iea/grid/estonia/2024",
+        "country": "Estonia",
+        "country_code": "EST",
+        "iso2": "EE",
+        "co2_factor": 0.522,
+        "co2_unit": "kg CO2/kWh",
+        "renewable_share_pct": 30.5,
+        "notes": "Oil shale generation"
+      },
+      {
+        "id": "ef://iea/grid/finland/2024",
+        "country": "Finland",
+        "country_code": "FIN",
+        "iso2": "FI",
+        "co2_factor": 0.066,
+        "co2_unit": "kg CO2/kWh",
+        "renewable_share_pct": 51.2,
+        "notes": "Nuclear and hydro"
+      },
+      {
+        "id": "ef://iea/grid/france/2024",
+        "country": "France",
+        "country_code": "FRA",
+        "iso2": "FR",
+        "co2_factor": 0.052,
+        "co2_unit": "kg CO2/kWh",
+        "renewable_share_pct": 26.3,
+        "notes": "High nuclear share"
+      },
+      {
+        "id": "ef://iea/grid/germany/2024",
+        "country": "Germany",
+        "country_code": "DEU",
+        "iso2": "DE",
+        "co2_factor": 0.350,
+        "co2_unit": "kg CO2/kWh",
+        "renewable_share_pct": 46.2,
+        "notes": "Coal phase-out underway"
+      },
+      {
+        "id": "ef://iea/grid/greece/2024",
+        "country": "Greece",
+        "country_code": "GRC",
+        "iso2": "GR",
+        "co2_factor": 0.361,
+        "co2_unit": "kg CO2/kWh",
+        "renewable_share_pct": 44.4
+      },
+      {
+        "id": "ef://iea/grid/hungary/2024",
+        "country": "Hungary",
+        "country_code": "HUN",
+        "iso2": "HU",
+        "co2_factor": 0.217,
+        "co2_unit": "kg CO2/kWh",
+        "renewable_share_pct": 14.8
+      },
+      {
+        "id": "ef://iea/grid/iceland/2024",
+        "country": "Iceland",
+        "country_code": "ISL",
+        "iso2": "IS",
+        "co2_factor": 0.001,
+        "co2_unit": "kg CO2/kWh",
+        "renewable_share_pct": 99.9,
+        "notes": "Almost 100% renewable (hydro + geothermal)"
+      },
+      {
+        "id": "ef://iea/grid/ireland/2024",
+        "country": "Ireland",
+        "country_code": "IRL",
+        "iso2": "IE",
+        "co2_factor": 0.295,
+        "co2_unit": "kg CO2/kWh",
+        "renewable_share_pct": 39.2
+      },
+      {
+        "id": "ef://iea/grid/italy/2024",
+        "country": "Italy",
+        "country_code": "ITA",
+        "iso2": "IT",
+        "co2_factor": 0.265,
+        "co2_unit": "kg CO2/kWh",
+        "renewable_share_pct": 40.5
+      },
+      {
+        "id": "ef://iea/grid/latvia/2024",
+        "country": "Latvia",
+        "country_code": "LVA",
+        "iso2": "LV",
+        "co2_factor": 0.087,
+        "co2_unit": "kg CO2/kWh",
+        "renewable_share_pct": 62.8
+      },
+      {
+        "id": "ef://iea/grid/lithuania/2024",
+        "country": "Lithuania",
+        "country_code": "LTU",
+        "iso2": "LT",
+        "co2_factor": 0.051,
+        "co2_unit": "kg CO2/kWh",
+        "renewable_share_pct": 27.4
+      },
+      {
+        "id": "ef://iea/grid/luxembourg/2024",
+        "country": "Luxembourg",
+        "country_code": "LUX",
+        "iso2": "LU",
+        "co2_factor": 0.068,
+        "co2_unit": "kg CO2/kWh",
+        "renewable_share_pct": 13.4
+      },
+      {
+        "id": "ef://iea/grid/malta/2024",
+        "country": "Malta",
+        "country_code": "MLT",
+        "iso2": "MT",
+        "co2_factor": 0.370,
+        "co2_unit": "kg CO2/kWh",
+        "renewable_share_pct": 10.8
+      },
+      {
+        "id": "ef://iea/grid/netherlands/2024",
+        "country": "Netherlands",
+        "country_code": "NLD",
+        "iso2": "NL",
+        "co2_factor": 0.328,
+        "co2_unit": "kg CO2/kWh",
+        "renewable_share_pct": 33.4
+      },
+      {
+        "id": "ef://iea/grid/norway/2024",
+        "country": "Norway",
+        "country_code": "NOR",
+        "iso2": "NO",
+        "co2_factor": 0.008,
+        "co2_unit": "kg CO2/kWh",
+        "renewable_share_pct": 98.5,
+        "notes": "Almost entirely hydro"
+      },
+      {
+        "id": "ef://iea/grid/poland/2024",
+        "country": "Poland",
+        "country_code": "POL",
+        "iso2": "PL",
+        "co2_factor": 0.635,
+        "co2_unit": "kg CO2/kWh",
+        "renewable_share_pct": 21.3,
+        "notes": "High coal share"
+      },
+      {
+        "id": "ef://iea/grid/portugal/2024",
+        "country": "Portugal",
+        "country_code": "PRT",
+        "iso2": "PT",
+        "co2_factor": 0.147,
+        "co2_unit": "kg CO2/kWh",
+        "renewable_share_pct": 60.1
+      },
+      {
+        "id": "ef://iea/grid/romania/2024",
+        "country": "Romania",
+        "country_code": "ROU",
+        "iso2": "RO",
+        "co2_factor": 0.265,
+        "co2_unit": "kg CO2/kWh",
+        "renewable_share_pct": 44.2
+      },
+      {
+        "id": "ef://iea/grid/slovakia/2024",
+        "country": "Slovakia",
+        "country_code": "SVK",
+        "iso2": "SK",
+        "co2_factor": 0.119,
+        "co2_unit": "kg CO2/kWh",
+        "renewable_share_pct": 23.4
+      },
+      {
+        "id": "ef://iea/grid/slovenia/2024",
+        "country": "Slovenia",
+        "country_code": "SVN",
+        "iso2": "SI",
+        "co2_factor": 0.210,
+        "co2_unit": "kg CO2/kWh",
+        "renewable_share_pct": 35.4
+      },
+      {
+        "id": "ef://iea/grid/spain/2024",
+        "country": "Spain",
+        "country_code": "ESP",
+        "iso2": "ES",
+        "co2_factor": 0.149,
+        "co2_unit": "kg CO2/kWh",
+        "renewable_share_pct": 50.8
+      },
+      {
+        "id": "ef://iea/grid/sweden/2024",
+        "country": "Sweden",
+        "country_code": "SWE",
+        "iso2": "SE",
+        "co2_factor": 0.012,
+        "co2_unit": "kg CO2/kWh",
+        "renewable_share_pct": 69.0,
+        "notes": "Hydro and nuclear"
+      },
+      {
+        "id": "ef://iea/grid/switzerland/2024",
+        "country": "Switzerland",
+        "country_code": "CHE",
+        "iso2": "CH",
+        "co2_factor": 0.011,
+        "co2_unit": "kg CO2/kWh",
+        "renewable_share_pct": 79.5,
+        "notes": "Hydro and nuclear"
+      },
+      {
+        "id": "ef://iea/grid/turkey/2024",
+        "country": "Turkey",
+        "country_code": "TUR",
+        "iso2": "TR",
+        "co2_factor": 0.410,
+        "co2_unit": "kg CO2/kWh",
+        "renewable_share_pct": 42.1
+      },
+      {
+        "id": "ef://iea/grid/united_kingdom/2024",
+        "country": "United Kingdom",
+        "country_code": "GBR",
+        "iso2": "GB",
+        "co2_factor": 0.207,
+        "co2_unit": "kg CO2/kWh",
+        "renewable_share_pct": 41.4
+      },
+      {
+        "id": "ef://iea/grid/ukraine/2024",
+        "country": "Ukraine",
+        "country_code": "UKR",
+        "iso2": "UA",
+        "co2_factor": 0.370,
+        "co2_unit": "kg CO2/kWh",
+        "renewable_share_pct": 12.4
+      }
+    ],
+    "north_america": [
+      {
+        "id": "ef://iea/grid/canada/2024",
+        "country": "Canada",
+        "country_code": "CAN",
+        "iso2": "CA",
+        "co2_factor": 0.120,
+        "co2_unit": "kg CO2/kWh",
+        "renewable_share_pct": 68.5,
+        "notes": "High hydro share"
+      },
+      {
+        "id": "ef://iea/grid/usa/2024",
+        "country": "United States",
+        "country_code": "USA",
+        "iso2": "US",
+        "co2_factor": 0.387,
+        "co2_unit": "kg CO2/kWh",
+        "renewable_share_pct": 22.5
+      },
+      {
+        "id": "ef://iea/grid/mexico/2024",
+        "country": "Mexico",
+        "country_code": "MEX",
+        "iso2": "MX",
+        "co2_factor": 0.405,
+        "co2_unit": "kg CO2/kWh",
+        "renewable_share_pct": 23.8
+      }
+    ],
+    "south_america": [
+      {
+        "id": "ef://iea/grid/argentina/2024",
+        "country": "Argentina",
+        "country_code": "ARG",
+        "iso2": "AR",
+        "co2_factor": 0.320,
+        "co2_unit": "kg CO2/kWh",
+        "renewable_share_pct": 32.1
+      },
+      {
+        "id": "ef://iea/grid/brazil/2024",
+        "country": "Brazil",
+        "country_code": "BRA",
+        "iso2": "BR",
+        "co2_factor": 0.081,
+        "co2_unit": "kg CO2/kWh",
+        "renewable_share_pct": 83.0,
+        "notes": "Dominated by hydro"
+      },
+      {
+        "id": "ef://iea/grid/chile/2024",
+        "country": "Chile",
+        "country_code": "CHL",
+        "iso2": "CL",
+        "co2_factor": 0.320,
+        "co2_unit": "kg CO2/kWh",
+        "renewable_share_pct": 44.5
+      },
+      {
+        "id": "ef://iea/grid/colombia/2024",
+        "country": "Colombia",
+        "country_code": "COL",
+        "iso2": "CO",
+        "co2_factor": 0.130,
+        "co2_unit": "kg CO2/kWh",
+        "renewable_share_pct": 78.0
+      },
+      {
+        "id": "ef://iea/grid/peru/2024",
+        "country": "Peru",
+        "country_code": "PER",
+        "iso2": "PE",
+        "co2_factor": 0.200,
+        "co2_unit": "kg CO2/kWh",
+        "renewable_share_pct": 60.2
+      }
+    ],
+    "asia_pacific": [
+      {
+        "id": "ef://iea/grid/australia/2024",
+        "country": "Australia",
+        "country_code": "AUS",
+        "iso2": "AU",
+        "co2_factor": 0.656,
+        "co2_unit": "kg CO2/kWh",
+        "renewable_share_pct": 32.5,
+        "notes": "Coal-dominated"
+      },
+      {
+        "id": "ef://iea/grid/china/2024",
+        "country": "China",
+        "country_code": "CHN",
+        "iso2": "CN",
+        "co2_factor": 0.549,
+        "co2_unit": "kg CO2/kWh",
+        "renewable_share_pct": 31.9
+      },
+      {
+        "id": "ef://iea/grid/india/2024",
+        "country": "India",
+        "country_code": "IND",
+        "iso2": "IN",
+        "co2_factor": 0.708,
+        "co2_unit": "kg CO2/kWh",
+        "renewable_share_pct": 22.7,
+        "notes": "Coal-dominated"
+      },
+      {
+        "id": "ef://iea/grid/indonesia/2024",
+        "country": "Indonesia",
+        "country_code": "IDN",
+        "iso2": "ID",
+        "co2_factor": 0.720,
+        "co2_unit": "kg CO2/kWh",
+        "renewable_share_pct": 14.5
+      },
+      {
+        "id": "ef://iea/grid/japan/2024",
+        "country": "Japan",
+        "country_code": "JPN",
+        "iso2": "JP",
+        "co2_factor": 0.462,
+        "co2_unit": "kg CO2/kWh",
+        "renewable_share_pct": 22.5
+      },
+      {
+        "id": "ef://iea/grid/south_korea/2024",
+        "country": "South Korea",
+        "country_code": "KOR",
+        "iso2": "KR",
+        "co2_factor": 0.424,
+        "co2_unit": "kg CO2/kWh",
+        "renewable_share_pct": 8.9
+      },
+      {
+        "id": "ef://iea/grid/malaysia/2024",
+        "country": "Malaysia",
+        "country_code": "MYS",
+        "iso2": "MY",
+        "co2_factor": 0.560,
+        "co2_unit": "kg CO2/kWh",
+        "renewable_share_pct": 24.1
+      },
+      {
+        "id": "ef://iea/grid/new_zealand/2024",
+        "country": "New Zealand",
+        "country_code": "NZL",
+        "iso2": "NZ",
+        "co2_factor": 0.098,
+        "co2_unit": "kg CO2/kWh",
+        "renewable_share_pct": 87.1,
+        "notes": "High renewable share"
+      },
+      {
+        "id": "ef://iea/grid/philippines/2024",
+        "country": "Philippines",
+        "country_code": "PHL",
+        "iso2": "PH",
+        "co2_factor": 0.620,
+        "co2_unit": "kg CO2/kWh",
+        "renewable_share_pct": 22.8
+      },
+      {
+        "id": "ef://iea/grid/singapore/2024",
+        "country": "Singapore",
+        "country_code": "SGP",
+        "iso2": "SG",
+        "co2_factor": 0.408,
+        "co2_unit": "kg CO2/kWh",
+        "renewable_share_pct": 3.5,
+        "notes": "Gas-dominated"
+      },
+      {
+        "id": "ef://iea/grid/taiwan/2024",
+        "country": "Chinese Taipei (Taiwan)",
+        "country_code": "TWN",
+        "iso2": "TW",
+        "co2_factor": 0.495,
+        "co2_unit": "kg CO2/kWh",
+        "renewable_share_pct": 8.6
+      },
+      {
+        "id": "ef://iea/grid/thailand/2024",
+        "country": "Thailand",
+        "country_code": "THA",
+        "iso2": "TH",
+        "co2_factor": 0.450,
+        "co2_unit": "kg CO2/kWh",
+        "renewable_share_pct": 15.2
+      },
+      {
+        "id": "ef://iea/grid/vietnam/2024",
+        "country": "Vietnam",
+        "country_code": "VNM",
+        "iso2": "VN",
+        "co2_factor": 0.520,
+        "co2_unit": "kg CO2/kWh",
+        "renewable_share_pct": 35.6
+      }
+    ],
+    "middle_east_africa": [
+      {
+        "id": "ef://iea/grid/egypt/2024",
+        "country": "Egypt",
+        "country_code": "EGY",
+        "iso2": "EG",
+        "co2_factor": 0.450,
+        "co2_unit": "kg CO2/kWh",
+        "renewable_share_pct": 12.0
+      },
+      {
+        "id": "ef://iea/grid/israel/2024",
+        "country": "Israel",
+        "country_code": "ISR",
+        "iso2": "IL",
+        "co2_factor": 0.520,
+        "co2_unit": "kg CO2/kWh",
+        "renewable_share_pct": 9.1
+      },
+      {
+        "id": "ef://iea/grid/nigeria/2024",
+        "country": "Nigeria",
+        "country_code": "NGA",
+        "iso2": "NG",
+        "co2_factor": 0.410,
+        "co2_unit": "kg CO2/kWh",
+        "renewable_share_pct": 19.2
+      },
+      {
+        "id": "ef://iea/grid/saudi_arabia/2024",
+        "country": "Saudi Arabia",
+        "country_code": "SAU",
+        "iso2": "SA",
+        "co2_factor": 0.680,
+        "co2_unit": "kg CO2/kWh",
+        "renewable_share_pct": 0.4
+      },
+      {
+        "id": "ef://iea/grid/south_africa/2024",
+        "country": "South Africa",
+        "country_code": "ZAF",
+        "iso2": "ZA",
+        "co2_factor": 0.928,
+        "co2_unit": "kg CO2/kWh",
+        "renewable_share_pct": 7.3,
+        "notes": "Very high coal share"
+      },
+      {
+        "id": "ef://iea/grid/uae/2024",
+        "country": "United Arab Emirates",
+        "country_code": "ARE",
+        "iso2": "AE",
+        "co2_factor": 0.420,
+        "co2_unit": "kg CO2/kWh",
+        "renewable_share_pct": 7.0
+      }
+    ],
+    "russia_cis": [
+      {
+        "id": "ef://iea/grid/russia/2024",
+        "country": "Russia",
+        "country_code": "RUS",
+        "iso2": "RU",
+        "co2_factor": 0.335,
+        "co2_unit": "kg CO2/kWh",
+        "renewable_share_pct": 20.8
+      },
+      {
+        "id": "ef://iea/grid/kazakhstan/2024",
+        "country": "Kazakhstan",
+        "country_code": "KAZ",
+        "iso2": "KZ",
+        "co2_factor": 0.640,
+        "co2_unit": "kg CO2/kWh",
+        "renewable_share_pct": 12.5
+      }
+    ]
+  }
+}

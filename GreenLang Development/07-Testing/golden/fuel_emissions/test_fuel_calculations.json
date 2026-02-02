@@ -1,0 +1,325 @@
+{
+  "suite": "Fuel Emissions Calculations",
+  "version": "1.0.0",
+  "description": "Golden tests for fuel-based emission calculations with tolerance verification",
+  "tests": [
+    {
+      "test_id": "FUEL-ELEC-001",
+      "description": "Electricity - India grid factor",
+      "tool_name": "calculate_fuel_emissions",
+      "input": {
+        "fuel_type": "electricity",
+        "consumption": {"value": 1000000, "unit": "kWh"},
+        "country": "IN"
+      },
+      "expected_output": {
+        "co2e_emissions_kg": 710000.0,
+        "emission_factor": 0.71,
+        "unit": "kgCO2e"
+      },
+      "tolerance": 0.01,
+      "tags": ["electricity", "india", "grid"]
+    },
+    {
+      "test_id": "FUEL-ELEC-002",
+      "description": "Electricity - US grid factor",
+      "tool_name": "calculate_fuel_emissions",
+      "input": {
+        "fuel_type": "electricity",
+        "consumption": {"value": 1000000, "unit": "kWh"},
+        "country": "US"
+      },
+      "expected_output": {
+        "co2e_emissions_kg": 385000.0,
+        "emission_factor": 0.385,
+        "unit": "kgCO2e"
+      },
+      "tolerance": 0.01,
+      "tags": ["electricity", "usa", "grid"]
+    },
+    {
+      "test_id": "FUEL-ELEC-003",
+      "description": "Electricity - EU average grid factor",
+      "tool_name": "calculate_fuel_emissions",
+      "input": {
+        "fuel_type": "electricity",
+        "consumption": {"value": 1000000, "unit": "kWh"},
+        "country": "EU"
+      },
+      "expected_output": {
+        "co2e_emissions_kg": 230000.0,
+        "emission_factor": 0.23,
+        "unit": "kgCO2e"
+      },
+      "tolerance": 0.01,
+      "tags": ["electricity", "eu", "grid"]
+    },
+    {
+      "test_id": "FUEL-ELEC-004",
+      "description": "Electricity - Germany grid factor",
+      "tool_name": "calculate_fuel_emissions",
+      "input": {
+        "fuel_type": "electricity",
+        "consumption": {"value": 500000, "unit": "kWh"},
+        "country": "DE"
+      },
+      "expected_output": {
+        "co2e_emissions_kg": 175000.0,
+        "emission_factor": 0.35,
+        "unit": "kgCO2e"
+      },
+      "tolerance": 0.01,
+      "tags": ["electricity", "germany", "grid"]
+    },
+    {
+      "test_id": "FUEL-ELEC-005",
+      "description": "Electricity - China grid factor",
+      "tool_name": "calculate_fuel_emissions",
+      "input": {
+        "fuel_type": "electricity",
+        "consumption": {"value": 2000000, "unit": "kWh"},
+        "country": "CN"
+      },
+      "expected_output": {
+        "co2e_emissions_kg": 1140000.0,
+        "emission_factor": 0.57,
+        "unit": "kgCO2e"
+      },
+      "tolerance": 0.01,
+      "tags": ["electricity", "china", "grid"]
+    },
+    {
+      "test_id": "FUEL-DIES-001",
+      "description": "Diesel - 1000 liters",
+      "tool_name": "calculate_fuel_emissions",
+      "input": {
+        "fuel_type": "diesel",
+        "consumption": {"value": 1000, "unit": "liters"},
+        "country": "global"
+      },
+      "expected_output": {
+        "co2e_emissions_kg": 2680.0,
+        "emission_factor": 2.68,
+        "unit": "kgCO2e"
+      },
+      "tolerance": 0.01,
+      "tags": ["diesel", "combustion"]
+    },
+    {
+      "test_id": "FUEL-DIES-002",
+      "description": "Diesel - 50000 liters fleet",
+      "tool_name": "calculate_fuel_emissions",
+      "input": {
+        "fuel_type": "diesel",
+        "consumption": {"value": 50000, "unit": "liters"},
+        "country": "global"
+      },
+      "expected_output": {
+        "co2e_emissions_kg": 134000.0,
+        "emission_factor": 2.68,
+        "unit": "kgCO2e"
+      },
+      "tolerance": 0.01,
+      "tags": ["diesel", "fleet", "large"]
+    },
+    {
+      "test_id": "FUEL-GAS-001",
+      "description": "Natural gas - 10000 therms",
+      "tool_name": "calculate_fuel_emissions",
+      "input": {
+        "fuel_type": "natural_gas",
+        "consumption": {"value": 10000, "unit": "therms"},
+        "country": "global"
+      },
+      "expected_output": {
+        "co2e_emissions_kg": 53000.0,
+        "emission_factor": 5.3,
+        "unit": "kgCO2e"
+      },
+      "tolerance": 0.01,
+      "tags": ["natural_gas", "therms"]
+    },
+    {
+      "test_id": "FUEL-GAS-002",
+      "description": "Natural gas - 1000 cubic meters",
+      "tool_name": "calculate_fuel_emissions",
+      "input": {
+        "fuel_type": "natural_gas",
+        "consumption": {"value": 1000, "unit": "m3"},
+        "country": "global"
+      },
+      "expected_output": {
+        "co2e_emissions_kg": 1880.0,
+        "emission_factor": 1.88,
+        "unit": "kgCO2e"
+      },
+      "tolerance": 0.01,
+      "tags": ["natural_gas", "cubic_meters"]
+    },
+    {
+      "test_id": "FUEL-GAS-003",
+      "description": "Natural gas - 500000 cubic meters industrial",
+      "tool_name": "calculate_fuel_emissions",
+      "input": {
+        "fuel_type": "natural_gas",
+        "consumption": {"value": 500000, "unit": "m3"},
+        "country": "global"
+      },
+      "expected_output": {
+        "co2e_emissions_kg": 940000.0,
+        "emission_factor": 1.88,
+        "unit": "kgCO2e"
+      },
+      "tolerance": 0.01,
+      "tags": ["natural_gas", "industrial", "large"]
+    },
+    {
+      "test_id": "FUEL-GASO-001",
+      "description": "Gasoline/Petrol - 1000 liters",
+      "tool_name": "calculate_fuel_emissions",
+      "input": {
+        "fuel_type": "gasoline",
+        "consumption": {"value": 1000, "unit": "liters"},
+        "country": "global"
+      },
+      "expected_output": {
+        "co2e_emissions_kg": 2310.0,
+        "emission_factor": 2.31,
+        "unit": "kgCO2e"
+      },
+      "tolerance": 0.01,
+      "tags": ["gasoline", "petrol"]
+    },
+    {
+      "test_id": "FUEL-COAL-001",
+      "description": "Coal - 100 tonnes",
+      "tool_name": "calculate_fuel_emissions",
+      "input": {
+        "fuel_type": "coal",
+        "consumption": {"value": 100000, "unit": "kg"},
+        "country": "global"
+      },
+      "expected_output": {
+        "co2e_emissions_kg": 230000.0,
+        "emission_factor": 2.3,
+        "unit": "kgCO2e"
+      },
+      "tolerance": 0.01,
+      "tags": ["coal", "stationary"]
+    },
+    {
+      "test_id": "FUEL-LPG-001",
+      "description": "LPG - 5000 kg",
+      "tool_name": "calculate_fuel_emissions",
+      "input": {
+        "fuel_type": "lpg",
+        "consumption": {"value": 5000, "unit": "kg"},
+        "country": "global"
+      },
+      "expected_output": {
+        "co2e_emissions_kg": 14950.0,
+        "emission_factor": 2.99,
+        "unit": "kgCO2e"
+      },
+      "tolerance": 0.01,
+      "tags": ["lpg", "stationary"]
+    },
+    {
+      "test_id": "FUEL-ZERO-001",
+      "description": "Zero consumption - should return zero",
+      "tool_name": "calculate_fuel_emissions",
+      "input": {
+        "fuel_type": "electricity",
+        "consumption": {"value": 0, "unit": "kWh"},
+        "country": "IN"
+      },
+      "expected_output": {
+        "co2e_emissions_kg": 0.0
+      },
+      "tolerance": 0.01,
+      "tags": ["edge_case", "zero"]
+    },
+    {
+      "test_id": "FUEL-PREC-001",
+      "description": "Precision test - fractional consumption",
+      "tool_name": "calculate_fuel_emissions",
+      "input": {
+        "fuel_type": "electricity",
+        "consumption": {"value": 123456.789, "unit": "kWh"},
+        "country": "IN"
+      },
+      "expected_output": {
+        "co2e_emissions_kg": 87654.32019,
+        "emission_factor": 0.71
+      },
+      "tolerance": 0.0001,
+      "tags": ["precision", "fractional"]
+    },
+    {
+      "test_id": "FUEL-LARGE-001",
+      "description": "Large consumption - 1 TWh",
+      "tool_name": "calculate_fuel_emissions",
+      "input": {
+        "fuel_type": "electricity",
+        "consumption": {"value": 1000000000, "unit": "kWh"},
+        "country": "IN"
+      },
+      "expected_output": {
+        "co2e_emissions_kg": 710000000.0,
+        "emission_factor": 0.71
+      },
+      "tolerance": 0.01,
+      "tags": ["large", "twh"]
+    },
+    {
+      "test_id": "FUEL-MWH-001",
+      "description": "Unit conversion - MWh to kWh",
+      "tool_name": "calculate_fuel_emissions",
+      "input": {
+        "fuel_type": "electricity",
+        "consumption": {"value": 1500, "unit": "MWh"},
+        "country": "IN"
+      },
+      "expected_output": {
+        "co2e_emissions_kg": 1065000.0,
+        "emission_factor": 0.71
+      },
+      "tolerance": 0.01,
+      "tags": ["unit_conversion", "mwh"]
+    },
+    {
+      "test_id": "FUEL-HFO-001",
+      "description": "Heavy Fuel Oil - industrial",
+      "tool_name": "calculate_fuel_emissions",
+      "input": {
+        "fuel_type": "heavy_fuel_oil",
+        "consumption": {"value": 10000, "unit": "liters"},
+        "country": "global"
+      },
+      "expected_output": {
+        "co2e_emissions_kg": 30700.0,
+        "emission_factor": 3.07,
+        "unit": "kgCO2e"
+      },
+      "tolerance": 0.01,
+      "tags": ["hfo", "industrial"]
+    },
+    {
+      "test_id": "FUEL-BIO-001",
+      "description": "Biodiesel - B100",
+      "tool_name": "calculate_fuel_emissions",
+      "input": {
+        "fuel_type": "biodiesel",
+        "consumption": {"value": 1000, "unit": "liters"},
+        "country": "global"
+      },
+      "expected_output": {
+        "co2e_emissions_kg": 0.0,
+        "emission_factor": 0.0,
+        "note": "Biogenic CO2 - net zero"
+      },
+      "tolerance": 0.01,
+      "tags": ["biodiesel", "biogenic"]
+    }
+  ]
+}

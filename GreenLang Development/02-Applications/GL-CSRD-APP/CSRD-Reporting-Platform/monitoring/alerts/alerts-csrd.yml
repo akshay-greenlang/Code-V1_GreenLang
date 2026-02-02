@@ -1,0 +1,419 @@
+# ============================================================================
+# CSRD REPORTING PLATFORM - ESRS-SPECIFIC ALERT RULES
+# ============================================================================
+#
+# Enhanced alerting rules for CSRD/ESRS compliance monitoring
+# Includes alerts for:
+# - Compliance deadlines
+# - Data coverage gaps
+# - ESRS-specific validation failures
+# - Data quality issues
+#
+# Version: 1.0
+# Date: 2025-11-08
+# Author: GreenLang Operations Team (Team B3)
+#
+# ============================================================================
+
+groups:
+  # ==========================================================================
+  # ESRS COMPLIANCE DEADLINE ALERTS
+  # ==========================================================================
+  - name: csrd_compliance_deadlines
+    interval: 1h
+    rules:
+      - alert: ComplianceDeadlineUrgent
+        expr: csrd_compliance_deadline_days_remaining < 7
+        for: 1h
+        labels:
+          severity: critical
+          component: compliance
+          alert_type: deadline
+        annotations:
+          summary: "URGENT: Compliance deadline in {{ $value }} days"
+          description: "Compliance deadline '{{ $labels.deadline_type }}' for company {{ $labels.company_id }} is in {{ $value }} days. Immediate action required!"
+          action: "Review compliance tasks and ensure all ESRS standards are complete"
+          runbook_url: "https://docs.greenlang.io/runbooks/compliance-deadline"
+
+      - alert: ComplianceDeadlineWarning
+        expr: csrd_compliance_deadline_days_remaining < 30
+        for: 2h
+        labels:
+          severity: warning
+          component: compliance
+          alert_type: deadline
+        annotations:
+          summary: "Compliance deadline approaching in {{ $value }} days"
+          description: "Compliance deadline '{{ $labels.deadline_type }}' for company {{ $labels.company_id }} is in {{ $value }} days"
+          action: "Review progress on compliance tasks and prioritize remaining work"
+          runbook_url: "https://docs.greenlang.io/runbooks/compliance-deadline"
+
+      - alert: ComplianceDeadlineInfo
+        expr: csrd_compliance_deadline_days_remaining < 60
+        for: 6h
+        labels:
+          severity: info
+          component: compliance
+          alert_type: deadline
+        annotations:
+          summary: "Compliance deadline in {{ $value }} days"
+          description: "Compliance deadline '{{ $labels.deadline_type }}' for company {{ $labels.company_id }} is in {{ $value }} days"
+          action: "Monitor progress and plan work accordingly"
+
+  # ==========================================================================
+  # ESRS DATA COVERAGE ALERTS
+  # ==========================================================================
+  - name: csrd_esrs_data_coverage
+    interval: 30m
+    rules:
+      - alert: ESRSDataCoverageCritical
+        expr: csrd_esrs_data_point_coverage_ratio < 0.7
+        for: 1h
+        labels:
+          severity: critical
+          component: data_coverage
+          alert_type: data_gap
+        annotations:
+          summary: "CRITICAL: {{ $labels.esrs_standard }} data coverage below 70%"
+          description: "ESRS {{ $labels.esrs_standard }} data coverage for company {{ $labels.company_id }} is {{ $value | humanizePercentage }}. Critical data gaps detected!"
+          action: "Review missing data points and prioritize data collection for {{ $labels.esrs_standard }}"
+          runbook_url: "https://docs.greenlang.io/runbooks/data-coverage"
+
+      - alert: ESRSDataCoverageLow
+        expr: csrd_esrs_data_point_coverage_ratio < 0.85
+        for: 2h
+        labels:
+          severity: warning
+          component: data_coverage
+          alert_type: data_gap
+        annotations:
+          summary: "{{ $labels.esrs_standard }} data coverage below 85%"
+          description: "ESRS {{ $labels.esrs_standard }} data coverage for company {{ $labels.company_id }} is {{ $value | humanizePercentage }}"
+          action: "Investigate missing data points and schedule data collection"
+          runbook_url: "https://docs.greenlang.io/runbooks/data-coverage"
+
+      - alert: ESRSMissingDataPoints
+        expr: csrd_esrs_missing_data_points_total > 50
+        for: 2h
+        labels:
+          severity: warning
+          component: data_coverage
+          alert_type: missing_data
+        annotations:
+          summary: "{{ $value }} missing data points in {{ $labels.esrs_standard }}"
+          description: "ESRS {{ $labels.esrs_standard }} for company {{ $labels.company_id }} has {{ $value }} missing data points"
+          action: "Review data point requirements and collect missing data"
+          runbook_url: "https://docs.greenlang.io/runbooks/missing-data"
+
+      - alert: ESRSMissingDataPointsCritical
+        expr: csrd_esrs_missing_data_points_total > 100
+        for: 1h
+        labels:
+          severity: critical
+          component: data_coverage
+          alert_type: missing_data
+        annotations:
+          summary: "CRITICAL: {{ $value }} missing data points in {{ $labels.esrs_standard }}"
+          description: "ESRS {{ $labels.esrs_standard }} for company {{ $labels.company_id }} has {{ $value }} missing data points. Severe data gaps!"
+          action: "Immediate data collection required for {{ $labels.esrs_standard }}"
+          runbook_url: "https://docs.greenlang.io/runbooks/missing-data"
+
+  # ==========================================================================
+  # ESRS DATA QUALITY ALERTS
+  # ==========================================================================
+  - name: csrd_esrs_data_quality
+    interval: 30m
+    rules:
+      - alert: ESRSDataQualityLow
+        expr: csrd_esrs_data_quality_score < 80
+        for: 1h
+        labels:
+          severity: warning
+          component: data_quality
+          alert_type: quality_issue
+        annotations:
+          summary: "Low data quality score for {{ $labels.esrs_standard }}"
+          description: "ESRS {{ $labels.esrs_standard }} for company {{ $labels.company_id }} has quality score of {{ $value }}/100"
+          action: "Review data quality issues and improve data collection processes"
+          runbook_url: "https://docs.greenlang.io/runbooks/data-quality"
+
+      - alert: ESRSDataQualityCritical
+        expr: csrd_esrs_data_quality_score < 60
+        for: 30m
+        labels:
+          severity: critical
+          component: data_quality
+          alert_type: quality_issue
+        annotations:
+          summary: "CRITICAL: Data quality score for {{ $labels.esrs_standard }} below 60"
+          description: "ESRS {{ $labels.esrs_standard }} for company {{ $labels.company_id }} has critically low quality score of {{ $value }}/100"
+          action: "Immediate data quality remediation required"
+          runbook_url: "https://docs.greenlang.io/runbooks/data-quality"
+
+      - alert: ESRSDataCompletenessLow
+        expr: csrd_esrs_data_completeness_ratio < 0.85
+        for: 2h
+        labels:
+          severity: warning
+          component: data_quality
+          alert_type: completeness
+        annotations:
+          summary: "Data completeness for {{ $labels.esrs_standard }} below 85%"
+          description: "ESRS {{ $labels.esrs_standard }} for company {{ $labels.company_id }} has completeness ratio of {{ $value | humanizePercentage }}"
+          action: "Review incomplete data records and complete missing fields"
+
+      - alert: ESRSDataAccuracyLow
+        expr: csrd_esrs_data_accuracy_ratio < 0.90
+        for: 2h
+        labels:
+          severity: warning
+          component: data_quality
+          alert_type: accuracy
+        annotations:
+          summary: "Data accuracy for {{ $labels.esrs_standard }} below 90%"
+          description: "ESRS {{ $labels.esrs_standard }} for company {{ $labels.company_id }} has accuracy ratio of {{ $value | humanizePercentage }}"
+          action: "Review and validate data for accuracy issues"
+
+      - alert: ESRSDataTimelinessIssue
+        expr: csrd_esrs_data_timeliness_ratio < 0.90
+        for: 2h
+        labels:
+          severity: warning
+          component: data_quality
+          alert_type: timeliness
+        annotations:
+          summary: "Outdated data detected for {{ $labels.esrs_standard }}"
+          description: "ESRS {{ $labels.esrs_standard }} for company {{ $labels.company_id }} has timeliness ratio of {{ $value | humanizePercentage }}"
+          action: "Update outdated data records to current reporting period"
+
+  # ==========================================================================
+  # ESRS VALIDATION ALERTS
+  # ==========================================================================
+  - name: csrd_esrs_validation
+    interval: 15m
+    rules:
+      - alert: ESRSValidationErrorsHigh
+        expr: sum by (esrs_standard, company_id) (rate(csrd_validation_errors_total{severity="error"}[10m])) > 0.5
+        for: 10m
+        labels:
+          severity: critical
+          component: validation
+          alert_type: validation_errors
+        annotations:
+          summary: "High validation error rate for {{ $labels.esrs_standard }}"
+          description: "ESRS {{ $labels.esrs_standard }} for company {{ $labels.company_id }} has {{ $value }} validation errors/sec"
+          action: "Review and fix validation errors in {{ $labels.esrs_standard }} data"
+          runbook_url: "https://docs.greenlang.io/runbooks/validation-errors"
+
+      - alert: ESRSValidationWarningsHigh
+        expr: sum by (esrs_standard, company_id) (rate(csrd_validation_errors_total{severity="warning"}[10m])) > 1.0
+        for: 15m
+        labels:
+          severity: warning
+          component: validation
+          alert_type: validation_warnings
+        annotations:
+          summary: "High validation warning rate for {{ $labels.esrs_standard }}"
+          description: "ESRS {{ $labels.esrs_standard }} for company {{ $labels.company_id }} has {{ $value }} validation warnings/sec"
+          action: "Review validation warnings and address data issues"
+
+      - alert: ESRSValidationRulesNotApplied
+        expr: csrd_validation_rules_applied_total == 0
+        for: 5m
+        labels:
+          severity: critical
+          component: validation
+          alert_type: validation_config
+        annotations:
+          summary: "No validation rules applied for {{ $labels.esrs_standard }}"
+          description: "ESRS {{ $labels.esrs_standard }} has no validation rules configured or applied"
+          action: "Check validation configuration for {{ $labels.esrs_standard }}"
+          runbook_url: "https://docs.greenlang.io/runbooks/validation-config"
+
+  # ==========================================================================
+  # ESRS-SPECIFIC STANDARD ALERTS
+  # ==========================================================================
+  - name: csrd_esrs_e1_climate
+    interval: 1h
+    rules:
+      - alert: ESRSE1EmissionsDataMissing
+        expr: csrd_esrs_missing_data_points_total{esrs_standard="E1"} > 30
+        for: 2h
+        labels:
+          severity: critical
+          component: esrs_e1
+          alert_type: climate_data
+        annotations:
+          summary: "ESRS E1 Climate Change: Missing emissions data"
+          description: "Company {{ $labels.company_id }} missing {{ $value }} climate-related data points in ESRS E1"
+          action: "Collect Scope 1, 2, and 3 emissions data. Review GHG inventory completeness"
+          runbook_url: "https://docs.greenlang.io/runbooks/esrs-e1"
+
+      - alert: ESRSE1CoverageInsufficient
+        expr: csrd_esrs_data_point_coverage_ratio{esrs_standard="E1"} < 0.90
+        for: 4h
+        labels:
+          severity: warning
+          component: esrs_e1
+          alert_type: climate_coverage
+        annotations:
+          summary: "ESRS E1 Climate Change: Insufficient data coverage"
+          description: "Company {{ $labels.company_id }} ESRS E1 coverage at {{ $value | humanizePercentage }}, below 90% threshold"
+          action: "Prioritize climate data collection to meet ESRS E1 requirements"
+
+  - name: csrd_esrs_s1_workforce
+    interval: 1h
+    rules:
+      - alert: ESRSS1WorkforceDataMissing
+        expr: csrd_esrs_missing_data_points_total{esrs_standard="S1"} > 25
+        for: 2h
+        labels:
+          severity: critical
+          component: esrs_s1
+          alert_type: workforce_data
+        annotations:
+          summary: "ESRS S1 Own Workforce: Missing workforce data"
+          description: "Company {{ $labels.company_id }} missing {{ $value }} workforce-related data points in ESRS S1"
+          action: "Collect employee data including diversity, health & safety, training metrics"
+          runbook_url: "https://docs.greenlang.io/runbooks/esrs-s1"
+
+  - name: csrd_esrs_g1_governance
+    interval: 1h
+    rules:
+      - alert: ESRSG1GovernanceDataMissing
+        expr: csrd_esrs_missing_data_points_total{esrs_standard="G1"} > 20
+        for: 2h
+        labels:
+          severity: critical
+          component: esrs_g1
+          alert_type: governance_data
+        annotations:
+          summary: "ESRS G1 Business Conduct: Missing governance data"
+          description: "Company {{ $labels.company_id }} missing {{ $value }} governance-related data points in ESRS G1"
+          action: "Collect business conduct, ethics, anti-corruption data"
+          runbook_url: "https://docs.greenlang.io/runbooks/esrs-g1"
+
+  # ==========================================================================
+  # COMPLIANCE TASK ALERTS
+  # ==========================================================================
+  - name: csrd_compliance_tasks
+    interval: 6h
+    rules:
+      - alert: ComplianceTasksOverdue
+        expr: csrd_compliance_tasks_total{status="overdue"} > 0
+        for: 1h
+        labels:
+          severity: critical
+          component: compliance
+          alert_type: tasks
+        annotations:
+          summary: "{{ $value }} overdue compliance tasks"
+          description: "Company {{ $labels.company_id }} has {{ $value }} overdue compliance tasks"
+          action: "Review and complete overdue tasks immediately"
+          runbook_url: "https://docs.greenlang.io/runbooks/compliance-tasks"
+
+      - alert: ComplianceTasksPending
+        expr: csrd_compliance_tasks_total{status="pending"} > 50
+        for: 6h
+        labels:
+          severity: warning
+          component: compliance
+          alert_type: tasks
+        annotations:
+          summary: "{{ $value }} pending compliance tasks"
+          description: "Company {{ $labels.company_id }} has {{ $value }} pending compliance tasks"
+          action: "Review and prioritize pending tasks"
+
+      - alert: ComplianceScoreLow
+        expr: csrd_compliance_score < 70
+        for: 2h
+        labels:
+          severity: critical
+          component: compliance
+          alert_type: score
+        annotations:
+          summary: "Compliance score below 70%"
+          description: "Company {{ $labels.company_id }} compliance score is {{ $value }}%, below acceptable threshold"
+          action: "Review all ESRS standards and address compliance gaps"
+          runbook_url: "https://docs.greenlang.io/runbooks/compliance-score"
+
+  # ==========================================================================
+  # XBRL GENERATION ALERTS
+  # ==========================================================================
+  - name: csrd_xbrl_generation
+    interval: 30m
+    rules:
+      - alert: XBRLGenerationFailureRate
+        expr: rate(csrd_xbrl_validation_errors_total[10m]) > 0.1
+        for: 10m
+        labels:
+          severity: critical
+          component: xbrl
+          alert_type: generation_failure
+        annotations:
+          summary: "High XBRL validation error rate"
+          description: "XBRL validation errors occurring at {{ $value }} errors/sec"
+          action: "Review XBRL taxonomy mapping and data formatting"
+          runbook_url: "https://docs.greenlang.io/runbooks/xbrl-errors"
+
+      - alert: XBRLGenerationSlow
+        expr: histogram_quantile(0.95, rate(csrd_xbrl_generation_duration_seconds_bucket[10m])) > 300
+        for: 15m
+        labels:
+          severity: warning
+          component: xbrl
+          alert_type: performance
+        annotations:
+          summary: "XBRL generation taking too long"
+          description: "XBRL generation p95 latency is {{ $value }}s (threshold: 300s)"
+          action: "Investigate XBRL generation performance issues"
+
+  # ==========================================================================
+  # REPORT GENERATION ALERTS
+  # ==========================================================================
+  - name: csrd_report_generation
+    interval: 30m
+    rules:
+      - alert: ReportGenerationFailureRateHigh
+        expr: rate(csrd_report_generation_failures_total[10m]) > 0.05
+        for: 10m
+        labels:
+          severity: critical
+          component: reporting
+          alert_type: generation_failure
+        annotations:
+          summary: "High report generation failure rate"
+          description: "Report generation failures at {{ $value }} failures/sec for {{ $labels.report_type }}"
+          action: "Investigate report generation errors for {{ $labels.report_type }}"
+          runbook_url: "https://docs.greenlang.io/runbooks/report-failures"
+
+# ============================================================================
+# ALERTING BEST PRACTICES FOR CSRD/ESRS
+# ============================================================================
+#
+# 1. COMPLIANCE-FIRST ALERTING
+#    - Prioritize alerts that impact compliance deadlines
+#    - Set appropriate thresholds based on regulatory requirements
+#
+# 2. DATA COVERAGE MONITORING
+#    - Alert on missing data points early (60+ days before deadline)
+#    - Different thresholds for different ESRS standards based on complexity
+#
+# 3. ACTIONABLE ALERTS
+#    - Each alert includes specific actions to take
+#    - Link to runbooks with detailed remediation steps
+#
+# 4. SEVERITY LEVELS
+#    - critical: Immediate compliance impact, <7 days to deadline
+#    - warning: Approaching thresholds, 7-30 days to deadline
+#    - info: Awareness, >30 days to deadline
+#
+# 5. ALERT GROUPING
+#    - Group by ESRS standard for better tracking
+#    - Separate alerts for data gaps vs quality issues
+#
+# 6. INTEGRATION WITH COMPLIANCE WORKFLOW
+#    - Alerts should trigger tasks in compliance management system
+#    - Track remediation progress
+#
+# ============================================================================

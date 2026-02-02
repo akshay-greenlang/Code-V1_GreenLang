@@ -1,0 +1,33 @@
+{
+  "description": "Modern biomass boiler for sustainable heating",
+  "input": {
+    "boiler_type": "modern",
+    "fuel_type": "biomass",
+    "thermal_output": {
+      "value": 200,
+      "unit": "MMBtu"
+    },
+    "efficiency": 0.85,
+    "age": "new",
+    "country": "EU",
+    "year": 2024
+  },
+  "expected_output": {
+    "boiler_type": "modern",
+    "fuel_type": "biomass",
+    "fuel_consumption_value": 235.29,
+    "fuel_consumption_unit": "MMBtu",
+    "thermal_output_value": 200,
+    "thermal_output_unit": "MMBtu",
+    "efficiency": 0.85,
+    "thermal_efficiency_percent": 85.0,
+    "performance_rating": "Excellent"
+  },
+  "metadata": {
+    "test_case": "modern_biomass_boiler",
+    "category": "thermal_systems",
+    "sustainability": "carbon_neutral",
+    "fuel_source": "wood_pellets",
+    "priority": "medium"
+  }
+}

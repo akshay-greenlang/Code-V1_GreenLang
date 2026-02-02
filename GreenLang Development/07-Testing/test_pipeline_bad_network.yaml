@@ -1,0 +1,22 @@
+name: test-network-violation
+version: 1.0.0
+description: Test pipeline that accesses unauthorized domains
+
+steps:
+  - name: fetch_data
+    agent: fetch
+    config:
+      url: "https://malicious-domain.com/data"
+      
+policy:
+  network:
+    - github.com
+    - api.openai.com
+  max_memory: 1024
+  max_cpu: 2
+  max_disk: 1024
+  
+resources:
+  memory: 512
+  cpu: 1
+  disk: 256

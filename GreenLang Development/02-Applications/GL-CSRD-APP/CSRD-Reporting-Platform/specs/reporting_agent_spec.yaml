@@ -1,0 +1,18 @@
+apiVersion: greenlang.io/v2
+kind: AgentSpec
+metadata:
+  name: ReportingAgent
+  version: 1.1.0
+  labels:
+    type: report-generator
+    category: ''
+    id: csrd_reporting_agent
+  annotations:
+    description: ''
+    created_by: ''
+    created_date: ''
+spec:
+  inputs: []
+  outputs: []
+  capabilities: []
+  requirements: {}

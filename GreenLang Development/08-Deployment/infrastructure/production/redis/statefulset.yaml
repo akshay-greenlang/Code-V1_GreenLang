@@ -1,0 +1,238 @@
+# GreenLang Climate OS - Redis Sentinel Cluster
+# INFRA-003: Set up Redis caching cluster with high availability
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redis-sentinel
+  namespace: greenlang-production
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: redis
+spec:
+  serviceName: redis-sentinel
+  replicas: 3
+  podManagementPolicy: OrderedReady
+  updateStrategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: greenlang
+      app.kubernetes.io/component: redis
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: greenlang
+        app.kubernetes.io/component: redis
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9121"
+    spec:
+      serviceAccountName: greenlang-core
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+
+      initContainers:
+        - name: init-config
+          image: redis:7.2-alpine
+          command:
+            - sh
+            - -c
+            - |
+              # Determine if this is master or replica
+              REDIS_MASTER_HOST="redis-sentinel-0.redis-sentinel.greenlang-production.svc.cluster.local"
+
+              if [ "$(hostname)" = "redis-sentinel-0" ]; then
+                echo "Configuring as master..."
+                cp /mnt/config/redis-master.conf /mnt/data/redis.conf
+              else
+                echo "Configuring as replica of $REDIS_MASTER_HOST..."
+                cp /mnt/config/redis-replica.conf /mnt/data/redis.conf
+                echo "replicaof $REDIS_MASTER_HOST 6379" >> /mnt/data/redis.conf
+              fi
+
+              # Configure sentinel
+              cp /mnt/config/sentinel.conf /mnt/data/sentinel.conf
+              echo "sentinel monitor greenlang-master $REDIS_MASTER_HOST 6379 2" >> /mnt/data/sentinel.conf
+          volumeMounts:
+            - name: redis-config
+              mountPath: /mnt/config
+            - name: redis-data
+              mountPath: /mnt/data
+
+      containers:
+        # Redis Server
+        - name: redis
+          image: redis:7.2-alpine
+          command:
+            - redis-server
+            - /data/redis.conf
+          ports:
+            - containerPort: 6379
+              name: redis
+          env:
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: redis-credentials
+                  key: password
+          resources:
+            requests:
+              cpu: "500m"
+              memory: 2Gi
+            limits:
+              cpu: "2"
+              memory: 8Gi
+          volumeMounts:
+            - name: redis-data
+              mountPath: /data
+          livenessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - redis-cli -a $REDIS_PASSWORD ping | grep PONG
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+          readinessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - redis-cli -a $REDIS_PASSWORD ping | grep PONG
+            initialDelaySeconds: 5
+            periodSeconds: 5
+
+        # Redis Sentinel
+        - name: sentinel
+          image: redis:7.2-alpine
+          command:
+            - redis-sentinel
+            - /data/sentinel.conf
+          ports:
+            - containerPort: 26379
+              name: sentinel
+          env:
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: redis-credentials
+                  key: password
+          resources:
+            requests:
+              cpu: "100m"
+              memory: 128Mi
+            limits:
+              cpu: "500m"
+              memory: 512Mi
+          volumeMounts:
+            - name: redis-data
+              mountPath: /data
+
+        # Redis Exporter for Prometheus
+        - name: redis-exporter
+          image: oliver006/redis_exporter:v1.57.0-alpine
+          ports:
+            - containerPort: 9121
+              name: metrics
+          env:
+            - name: REDIS_ADDR
+              value: "redis://localhost:6379"
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: redis-credentials
+                  key: password
+          resources:
+            requests:
+              cpu: "50m"
+              memory: 64Mi
+            limits:
+              cpu: "200m"
+              memory: 256Mi
+
+      volumes:
+        - name: redis-config
+          configMap:
+            name: redis-config
+
+  volumeClaimTemplates:
+    - metadata:
+        name: redis-data
+        labels:
+          app.kubernetes.io/name: greenlang
+          app.kubernetes.io/component: redis
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: fast-ssd
+        resources:
+          requests:
+            storage: 20Gi
+---
+# Redis Headless Service (for StatefulSet)
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-sentinel
+  namespace: greenlang-production
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: redis
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+    - port: 6379
+      targetPort: 6379
+      name: redis
+    - port: 26379
+      targetPort: 26379
+      name: sentinel
+    - port: 9121
+      targetPort: 9121
+      name: metrics
+  selector:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: redis
+---
+# Redis Master Service (for write operations)
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-master
+  namespace: greenlang-production
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: redis
+spec:
+  type: ClusterIP
+  ports:
+    - port: 6379
+      targetPort: 6379
+      name: redis
+  selector:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: redis
+    redis-role: master
+---
+# Redis Read Service (for read operations - load balanced)
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-read
+  namespace: greenlang-production
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: redis
+spec:
+  type: ClusterIP
+  ports:
+    - port: 6379
+      targetPort: 6379
+      name: redis
+  selector:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: redis

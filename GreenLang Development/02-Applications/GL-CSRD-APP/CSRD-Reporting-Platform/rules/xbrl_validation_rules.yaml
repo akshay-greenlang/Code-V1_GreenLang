@@ -1,0 +1,383 @@
+# ============================================================================
+# XBRL/ESEF VALIDATION RULES
+# ============================================================================
+#
+# Validation rules for ESEF (European Single Electronic Format) compliance
+# and ESRS XBRL taxonomy tagging
+#
+# Version: 1.0.0
+# Total Rules: 45
+# ============================================================================
+
+metadata:
+  title: "XBRL/ESEF Validation Rules"
+  version: "1.0.0"
+  total_rules: 45
+  last_updated: "2025-10-18"
+  applicable_regulation: "Commission Delegated Regulation (EU) 2019/815"
+  taxonomy: "ESRS XBRL Taxonomy v1.0"
+
+# ============================================================================
+# ESEF PACKAGE STRUCTURE RULES
+# ============================================================================
+
+esef_package_rules:
+  - rule_id: "XBRL-PKG001"
+    rule_name: "ESEF Package Format"
+    severity: "critical"
+    description: "ESEF package must be a valid ZIP file"
+    validation:
+      check: "file_extension == '.zip' AND is_valid_zip == true"
+      error_message: "ESEF package must be a valid ZIP archive"
+    references:
+      - "ESEF RTS Art 3(2)"
+
+  - rule_id: "XBRL-PKG002"
+    rule_name: "Required Files Present"
+    severity: "critical"
+    description: "ESEF package must contain required files"
+    validation:
+      check: "package CONTAINS ['*.xhtml', 'META-INF/reports/reports.xml']"
+      error_message: "Missing required files in ESEF package"
+    required_files:
+      - "Inline XBRL report (*.xhtml)"
+      - "Reports file (META-INF/reports/reports.xml)"
+    references:
+      - "ESEF RTS Art 4"
+
+  - rule_id: "XBRL-PKG003"
+    rule_name: "File Naming Convention"
+    severity: "major"
+    description: "Files must follow ESEF naming conventions"
+    validation:
+      check: "xhtml_file MATCHES '{LEI}-{DATE}-{LANG}.xhtml'"
+      error_message: "XHTML file name does not follow ESEF convention"
+    references:
+      - "ESEF Guidance"
+
+# ============================================================================
+# iXBRL DOCUMENT STRUCTURE RULES
+# ============================================================================
+
+ixbrl_structure_rules:
+  - rule_id: "XBRL-STR001"
+    rule_name: "Valid XHTML Document"
+    severity: "critical"
+    description: "Document must be well-formed XHTML"
+    validation:
+      check: "is_well_formed_xml == true AND doctype == 'html'"
+      error_message: "Invalid XHTML structure"
+
+  - rule_id: "XBRL-STR002"
+    rule_name: "iXBRL Namespace Declarations"
+    severity: "critical"
+    description: "Required iXBRL namespaces must be declared"
+    validation:
+      check: "html_element CONTAINS namespaces ['ix', 'xbrli', 'esrs']"
+      error_message: "Missing required namespace: {namespace}"
+    required_namespaces:
+      - xmlns:ix="http://www.xbrl.org/2013/inlineXBRL"
+      - xmlns:xbrli="http://www.xbrl.org/2003/instance"
+      - xmlns:esrs="http://xbrl.efrag.org/taxonomy/esrs/2024"
+
+  - rule_id: "XBRL-STR003"
+    rule_name: "iXBRL Header Present"
+    severity: "critical"
+    description: "Document must contain ix:header element"
+    validation:
+      check: "document CONTAINS 'ix:header'"
+      error_message: "Missing ix:header element"
+
+  - rule_id: "XBRL-STR004"
+    rule_name: "iXBRL Resources Section"
+    severity: "critical"
+    description: "ix:resources section must be present with contexts and units"
+    validation:
+      check: "ix:header/ix:resources CONTAINS ['xbrli:context', 'xbrli:unit']"
+      error_message: "Missing required resources (contexts or units)"
+
+# ============================================================================
+# TAXONOMY VALIDATION RULES
+# ============================================================================
+
+taxonomy_rules:
+  - rule_id: "XBRL-TAX001"
+    rule_name: "ESRS Taxonomy Reference"
+    severity: "critical"
+    description: "Document must reference the ESRS XBRL taxonomy"
+    validation:
+      check: "ix:references CONTAINS 'esrs-taxonomy-*.xsd'"
+      error_message: "ESRS XBRL taxonomy not referenced"
+    references:
+      - "EFRAG ESRS XBRL Taxonomy"
+
+  - rule_id: "XBRL-TAX002"
+    rule_name: "Valid Taxonomy Version"
+    severity: "critical"
+    description: "Must use approved ESRS taxonomy version"
+    validation:
+      check: "taxonomy_version IN approved_versions"
+      error_message: "Invalid or outdated ESRS taxonomy version: {version}"
+    approved_versions:
+      - "v1.0"
+      - "v1.1"
+
+  - rule_id: "XBRL-TAX003"
+    rule_name: "Valid Element References"
+    severity: "critical"
+    description: "All tagged elements must exist in ESRS taxonomy"
+    validation:
+      check: "ALL(tagged_elements) IN esrs_taxonomy_elements"
+      error_message: "Invalid taxonomy element: {element_name}"
+
+# ============================================================================
+# CONTEXT VALIDATION RULES
+# ============================================================================
+
+context_rules:
+  - rule_id: "XBRL-CTX001"
+    rule_name: "Reporting Entity Identified"
+    severity: "critical"
+    description: "xbrli:entity must contain LEI or other identifier"
+    validation:
+      check: "xbrli:context/xbrli:entity/xbrli:identifier EXISTS AND LENGTH(identifier) > 0"
+      error_message: "Missing entity identifier in context"
+
+  - rule_id: "XBRL-CTX002"
+    rule_name: "LEI Code Format"
+    severity: "major"
+    description: "If using LEI, must be valid 20-character code"
+    validation:
+      check: "IF identifier_scheme == 'http://standards.iso.org/iso/17442' THEN LENGTH(identifier) == 20"
+      error_message: "Invalid LEI code format: {lei}"
+
+  - rule_id: "XBRL-CTX003"
+    rule_name: "Reporting Period Defined"
+    severity: "critical"
+    description: "Context must define reporting period (instant or duration)"
+    validation:
+      check: "xbrli:context/xbrli:period EXISTS AND (xbrli:instant EXISTS OR (xbrli:startDate EXISTS AND xbrli:endDate EXISTS))"
+      error_message: "Missing or invalid period in context {context_id}"
+
+  - rule_id: "XBRL-CTX004"
+    rule_name: "Context IDs Unique"
+    severity: "critical"
+    description: "All context IDs must be unique"
+    validation:
+      check: "COUNT(DISTINCT context_ids) == COUNT(contexts)"
+      error_message: "Duplicate context ID: {context_id}"
+
+  - rule_id: "XBRL-CTX005"
+    rule_name: "All Contexts Referenced"
+    severity: "warning"
+    description: "All defined contexts should be used"
+    validation:
+      check: "ALL(defined_contexts) IN used_contexts"
+      error_message: "Unused context: {context_id}"
+
+# ============================================================================
+# UNIT VALIDATION RULES
+# ============================================================================
+
+unit_rules:
+  - rule_id: "XBRL-UNIT001"
+    rule_name: "Valid Units Defined"
+    severity: "critical"
+    description: "Units must use ISO 4217 for currencies or valid UnitRegistry"
+    validation:
+      check: "unit IN [iso4217_currencies, valid_units]"
+      error_message: "Invalid unit: {unit}"
+    valid_units:
+      - "iso4217:EUR"
+      - "iso4217:USD"
+      - "esrs:tCO2e"  # tonnes CO2 equivalent
+      - "esrs:MWh"    # megawatt hours
+      - "esrs:m3"     # cubic meters
+      - "esrs:tonnes"
+      - "esrs:count"
+      - "esrs:percentage"
+
+  - rule_id: "XBRL-UNIT002"
+    rule_name: "Monetary Values Have Currency"
+    severity: "critical"
+    description: "Monetary values must specify currency unit"
+    validation:
+      check: "IF element_type == 'monetary' THEN unit IN iso4217_currencies"
+      error_message: "Monetary value missing currency unit"
+
+# ============================================================================
+# FACT VALIDATION RULES
+# ============================================================================
+
+fact_rules:
+  - rule_id: "XBRL-FACT001"
+    rule_name: "Fact Has Context Reference"
+    severity: "critical"
+    description: "Every fact must reference a valid context"
+    validation:
+      check: "fact.contextRef IN defined_context_ids"
+      error_message: "Fact references undefined context: {contextRef}"
+
+  - rule_id: "XBRL-FACT002"
+    rule_name: "Numeric Fact Has Unit"
+    severity: "critical"
+    description: "Numeric facts must have unit reference"
+    validation:
+      check: "IF fact_type == 'numeric' THEN fact.unitRef EXISTS AND fact.unitRef IN defined_unit_ids"
+      error_message: "Numeric fact missing or invalid unitRef"
+
+  - rule_id: "XBRL-FACT003"
+    rule_name: "Fact Value Type Match"
+    severity: "critical"
+    description: "Fact value must match element's data type"
+    validation:
+      check: "fact.value TYPE_MATCHES element.datatype"
+      error_message: "Type mismatch: {element} expects {expected_type}, got {actual_type}"
+
+  - rule_id: "XBRL-FACT004"
+    rule_name: "No Duplicate Facts"
+    severity: "critical"
+    description: "No duplicate facts (same element, context, unit)"
+    validation:
+      check: "COUNT(facts WHERE element==X AND context==Y AND unit==Z) <= 1"
+      error_message: "Duplicate fact: {element} in context {context}"
+
+  - rule_id: "XBRL-FACT005"
+    rule_name: "Mandatory Facts Present"
+    severity: "critical"
+    description: "Mandatory ESRS data points must be tagged"
+    validation:
+      check: "mandatory_esrs_elements SUBSET OF tagged_elements"
+      error_message: "Missing mandatory ESRS element: {element}"
+    mandatory_elements:
+      - "esrs:Scope1GHGEmissions"
+      - "esrs:Scope2GHGEmissionsLocationBased"
+      - "esrs:Scope3GHGEmissions"
+      - "esrs:TotalGHGEmissions"
+      - "esrs:TotalEnergyConsumption"
+
+# ============================================================================
+# CALCULATION VALIDATION RULES
+# ============================================================================
+
+calculation_rules:
+  - rule_id: "XBRL-CALC001"
+    rule_name: "Summation Consistency"
+    severity: "major"
+    description: "Calculation relationships must be consistent"
+    validation:
+      check: "parent_value == SUM(child_values) WITHIN tolerance"
+      error_message: "Calculation inconsistency: {parent} != SUM({children})"
+      tolerance: 2  # Allow EUR 2 or 2 units variance
+
+  - rule_id: "XBRL-CALC002"
+    rule_name: "GHG Emissions Calculation"
+    severity: "critical"
+    description: "Total GHG = Scope1 + Scope2 + Scope3"
+    validation:
+      check: "TotalGHGEmissions == (Scope1 + Scope2LocationBased + Scope3)"
+      error_message: "GHG emissions calculation error"
+      tolerance: 0.01
+
+# ============================================================================
+# DIMENSION VALIDATION RULES
+# ============================================================================
+
+dimension_rules:
+  - rule_id: "XBRL-DIM001"
+    rule_name: "Valid Dimension Members"
+    severity: "major"
+    description: "Dimension members must be from taxonomy"
+    validation:
+      check: "dimension_member IN taxonomy_dimension_members[dimension]"
+      error_message: "Invalid dimension member: {member} for dimension {dimension}"
+
+  - rule_id: "XBRL-DIM002"
+    rule_name: "Required Dimensions Present"
+    severity: "major"
+    description: "Required dimensional breakdowns must be present"
+    validation:
+      check: "IF element_requires_dimensions THEN segment.xbrldi:explicitMember EXISTS"
+      error_message: "Missing required dimension for {element}"
+
+# ============================================================================
+# PRESENTATION RULES
+# ============================================================================
+
+presentation_rules:
+  - rule_id: "XBRL-PRES001"
+    rule_name: "Human-Readable Content"
+    severity: "major"
+    description: "iXBRL must be human-readable in browser"
+    validation:
+      check: "html_content IS_READABLE AND css_present == true"
+      error_message: "Document not human-readable"
+
+  - rule_id: "XBRL-PRES002"
+    rule_name: "Fact Formatting"
+    severity: "minor"
+    description: "Numeric facts should have appropriate formatting"
+    validation:
+      check: "ix:nonFraction CONTAINS format OR decimals attributes"
+      error_message: "Missing formatting for numeric fact"
+
+# ============================================================================
+# DIGITAL SIGNATURE RULES (OPTIONAL)
+# ============================================================================
+
+signature_rules:
+  - rule_id: "XBRL-SIG001"
+    rule_name: "Valid Digital Signature"
+    severity: "major"
+    description: "If digital signature present, must be valid"
+    validation:
+      check: "IF digital_signature EXISTS THEN signature.is_valid == true"
+      error_message: "Invalid digital signature"
+    references:
+      - "eIDAS Regulation"
+
+# ============================================================================
+# FILE SIZE AND PERFORMANCE RULES
+# ============================================================================
+
+performance_rules:
+  - rule_id: "XBRL-PERF001"
+    rule_name: "File Size Limit"
+    severity: "warning"
+    description: "ESEF package should be under 100MB for efficient processing"
+    validation:
+      check: "package_size_mb < 100"
+      error_message: "Large ESEF package: {size}MB (recommend <100MB)"
+
+  - rule_id: "XBRL-PERF002"
+    rule_name: "Reasonable Number of Facts"
+    severity: "warning"
+    description: "Excessive facts may indicate over-tagging"
+    validation:
+      check: "COUNT(facts) < 10000"
+      error_message: "Excessive number of facts: {count}"
+
+# ============================================================================
+# VALIDATION EXECUTION NOTES
+# ============================================================================
+
+validation_tools:
+  recommended:
+    - "Arelle (Open source XBRL validator)"
+    - "EFRAG XBRL Validator"
+    - "European Securities and Markets Authority (ESMA) validator"
+
+execution_notes:
+  - "Run XBRL validation after all data has been tagged"
+  - "Critical errors prevent ESEF package generation"
+  - "Major errors allow generation but flag compliance issues"
+  - "Warning-level issues are logged but don't prevent submission"
+  - "Use official ESMA validator for final compliance check"
+  - "Maintain validation log for audit trail"
+
+esef_submission_requirements:
+  - "ESEF package must pass all critical validation rules"
+  - "Digital signature recommended (may be mandatory in some jurisdictions)"
+  - "Human-readable presentation required"
+  - "All mandatory ESRS data points must be tagged"
+  - "Package must be submitted to national competent authority"

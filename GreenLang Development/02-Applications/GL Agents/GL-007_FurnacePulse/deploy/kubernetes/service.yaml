@@ -1,0 +1,57 @@
+# GL-007 FurnacePulse Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-007-furnacepulse
+  namespace: greenlang
+  labels:
+    app: gl-007-furnacepulse
+    agent-id: GL-007
+    codename: FURNACEPULSE
+spec:
+  type: ClusterIP
+  selector:
+    app: gl-007-furnacepulse
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+      protocol: TCP
+    - name: metrics
+      port: 9090
+      targetPort: 9090
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-007-furnacepulse-headless
+  namespace: greenlang
+  labels:
+    app: gl-007-furnacepulse
+spec:
+  type: ClusterIP
+  clusterIP: None
+  selector:
+    app: gl-007-furnacepulse
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-007-furnacepulse-metrics
+  namespace: greenlang
+  labels:
+    app: gl-007-furnacepulse
+    monitoring: prometheus
+spec:
+  type: ClusterIP
+  selector:
+    app: gl-007-furnacepulse
+  ports:
+    - name: metrics
+      port: 9090
+      targetPort: 9090

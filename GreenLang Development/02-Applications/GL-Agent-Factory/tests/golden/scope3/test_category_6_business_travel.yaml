@@ -1,0 +1,341 @@
+# Golden Tests: Category 6 Business Travel - Scope 3 Emissions Agent (GL-006)
+# Test Count: 20 tests
+# Formula: emissions = distance_km * travel_factor
+# DEFRA Travel Factors (kgCO2e/passenger-km):
+#   - Air Short Haul (<1500km): 0.255
+#   - Air Medium Haul (1500-4000km): 0.156
+#   - Air Long Haul (>4000km): 0.195
+#   - Rail Average: 0.041
+#   - Rail High Speed: 0.006
+#   - Car Average: 0.171
+#   - Taxi: 0.203
+
+test_suite:
+  name: "Category 6 Business Travel Golden Tests"
+  agent_id: "emissions/scope3_v1"
+  version: "1.0.0"
+  description: "Validates Scope 3 Category 6 (Business Travel) calculations"
+
+tests:
+  # Air travel tests (1-10)
+  - test_id: "scope3_cat6_air_001"
+    test_name: "Air Short Haul One Way"
+    description: "Short haul flight (<1500km)"
+    tags: ["scope3", "category6", "air", "shorthaul"]
+    input:
+      category: "business_travel"
+      reporting_year: 2024
+      travel_data:
+        - mode: "air"
+          distance_km: 500
+          trip_type: "one_way"
+    expected:
+      category: "business_travel"
+      category_number: 6
+      category_name: "Business Travel"
+      total_emissions_kgco2e: 127.5
+
+  - test_id: "scope3_cat6_air_002"
+    test_name: "Air Short Haul Round Trip"
+    description: "Short haul flight round trip"
+    tags: ["scope3", "category6", "air", "shorthaul"]
+    input:
+      category: "business_travel"
+      reporting_year: 2024
+      travel_data:
+        - mode: "air"
+          distance_km: 800
+          trip_type: "round_trip"
+    expected:
+      total_emissions_kgco2e: 408.0
+
+  - test_id: "scope3_cat6_air_003"
+    test_name: "Air Medium Haul"
+    description: "Medium haul flight (1500-4000km)"
+    tags: ["scope3", "category6", "air", "mediumhaul"]
+    input:
+      category: "business_travel"
+      reporting_year: 2024
+      travel_data:
+        - mode: "air"
+          distance_km: 2500
+          trip_type: "one_way"
+    expected:
+      total_emissions_kgco2e: 390.0
+
+  - test_id: "scope3_cat6_air_004"
+    test_name: "Air Long Haul"
+    description: "Long haul flight (>4000km)"
+    tags: ["scope3", "category6", "air", "longhaul"]
+    input:
+      category: "business_travel"
+      reporting_year: 2024
+      travel_data:
+        - mode: "air"
+          distance_km: 8000
+          trip_type: "one_way"
+    expected:
+      total_emissions_kgco2e: 1560.0
+
+  - test_id: "scope3_cat6_air_005"
+    test_name: "Air Intercontinental Round Trip"
+    description: "Intercontinental flight round trip"
+    tags: ["scope3", "category6", "air", "intercontinental"]
+    input:
+      category: "business_travel"
+      reporting_year: 2024
+      travel_data:
+        - mode: "air"
+          distance_km: 10000
+          trip_type: "round_trip"
+    expected:
+      total_emissions_kgco2e: 3900.0
+
+  - test_id: "scope3_cat6_air_006"
+    test_name: "Multiple Flights"
+    description: "Multiple business flights"
+    tags: ["scope3", "category6", "air", "multiple"]
+    input:
+      category: "business_travel"
+      reporting_year: 2024
+      travel_data:
+        - mode: "air"
+          distance_km: 800
+          trip_type: "round_trip"
+        - mode: "air"
+          distance_km: 3000
+          trip_type: "round_trip"
+        - mode: "air"
+          distance_km: 6000
+          trip_type: "round_trip"
+    expected:
+      total_emissions_kgco2e: 3684.0
+
+  # Rail travel tests (7-10)
+  - test_id: "scope3_cat6_rail_007"
+    test_name: "Rail Average Trip"
+    description: "Standard rail journey"
+    tags: ["scope3", "category6", "rail"]
+    input:
+      category: "business_travel"
+      reporting_year: 2024
+      travel_data:
+        - mode: "rail_average"
+          distance_km: 300
+          trip_type: "one_way"
+    expected:
+      total_emissions_kgco2e: 12.3
+
+  - test_id: "scope3_cat6_rail_008"
+    test_name: "High Speed Rail"
+    description: "High-speed rail journey"
+    tags: ["scope3", "category6", "rail", "highspeed"]
+    input:
+      category: "business_travel"
+      reporting_year: 2024
+      travel_data:
+        - mode: "rail_highspeed"
+          distance_km: 500
+          trip_type: "round_trip"
+    expected:
+      total_emissions_kgco2e: 6.0
+
+  - test_id: "scope3_cat6_rail_009"
+    test_name: "Rail Long Distance"
+    description: "Long distance rail"
+    tags: ["scope3", "category6", "rail", "longdistance"]
+    input:
+      category: "business_travel"
+      reporting_year: 2024
+      travel_data:
+        - mode: "rail_average"
+          distance_km: 800
+          trip_type: "round_trip"
+    expected:
+      total_emissions_kgco2e: 65.6
+
+  - test_id: "scope3_cat6_rail_010"
+    test_name: "Rail Commuter"
+    description: "Commuter rail trips"
+    tags: ["scope3", "category6", "rail", "commuter"]
+    input:
+      category: "business_travel"
+      reporting_year: 2024
+      travel_data:
+        - mode: "rail_average"
+          distance_km: 50
+          trip_type: "round_trip"
+    expected:
+      total_emissions_kgco2e: 4.1
+
+  # Car and taxi tests (11-14)
+  - test_id: "scope3_cat6_car_011"
+    test_name: "Car Business Trip"
+    description: "Business car journey"
+    tags: ["scope3", "category6", "car"]
+    input:
+      category: "business_travel"
+      reporting_year: 2024
+      travel_data:
+        - mode: "car_average"
+          distance_km: 200
+          trip_type: "one_way"
+    expected:
+      total_emissions_kgco2e: 34.2
+
+  - test_id: "scope3_cat6_car_012"
+    test_name: "Electric Car Trip"
+    description: "Electric vehicle business trip"
+    tags: ["scope3", "category6", "car", "electric"]
+    input:
+      category: "business_travel"
+      reporting_year: 2024
+      travel_data:
+        - mode: "car_electric"
+          distance_km: 300
+          trip_type: "round_trip"
+    expected:
+      total_emissions_kgco2e: 31.8
+
+  - test_id: "scope3_cat6_car_013"
+    test_name: "Taxi Client Meeting"
+    description: "Taxi to client meeting"
+    tags: ["scope3", "category6", "taxi"]
+    input:
+      category: "business_travel"
+      reporting_year: 2024
+      travel_data:
+        - mode: "taxi"
+          distance_km: 25
+          trip_type: "round_trip"
+    expected:
+      total_emissions_kgco2e: 10.15
+
+  - test_id: "scope3_cat6_car_014"
+    test_name: "Bus Conference"
+    description: "Bus to conference"
+    tags: ["scope3", "category6", "bus"]
+    input:
+      category: "business_travel"
+      reporting_year: 2024
+      travel_data:
+        - mode: "bus"
+          distance_km: 100
+          trip_type: "round_trip"
+    expected:
+      total_emissions_kgco2e: 17.8
+
+  # Mixed mode tests (15-20)
+  - test_id: "scope3_cat6_mixed_015"
+    test_name: "Mixed Mode Conference"
+    description: "Flight plus local transport"
+    tags: ["scope3", "category6", "mixed"]
+    input:
+      category: "business_travel"
+      reporting_year: 2024
+      travel_data:
+        - mode: "air"
+          distance_km: 1200
+          trip_type: "round_trip"
+        - mode: "taxi"
+          distance_km: 40
+          trip_type: "one_way"
+    expected:
+      total_emissions_kgco2e: 620.32
+
+  - test_id: "scope3_cat6_mixed_016"
+    test_name: "European Business Trip"
+    description: "Combined rail and taxi"
+    tags: ["scope3", "category6", "mixed", "europe"]
+    input:
+      category: "business_travel"
+      reporting_year: 2024
+      travel_data:
+        - mode: "rail_highspeed"
+          distance_km: 400
+          trip_type: "round_trip"
+        - mode: "taxi"
+          distance_km: 30
+          trip_type: "round_trip"
+    expected:
+      total_emissions_kgco2e: 16.98
+
+  - test_id: "scope3_cat6_mixed_017"
+    test_name: "Annual Travel Mix"
+    description: "Full year business travel"
+    tags: ["scope3", "category6", "annual"]
+    input:
+      category: "business_travel"
+      reporting_year: 2024
+      travel_data:
+        - mode: "air"
+          distance_km: 5000
+          trip_type: "round_trip"
+        - mode: "air"
+          distance_km: 10000
+          trip_type: "round_trip"
+        - mode: "rail_average"
+          distance_km: 2000
+          trip_type: "round_trip"
+        - mode: "car_average"
+          distance_km: 3000
+          trip_type: "round_trip"
+    expected:
+      total_emissions_kgco2e: 7498.2
+
+  - test_id: "scope3_cat6_mixed_018"
+    test_name: "Sales Team Travel"
+    description: "Sales team quarterly travel"
+    tags: ["scope3", "category6", "sales"]
+    input:
+      category: "business_travel"
+      reporting_year: 2024
+      travel_data:
+        - mode: "air"
+          distance_km: 2000
+          trip_type: "round_trip"
+        - mode: "air"
+          distance_km: 2000
+          trip_type: "round_trip"
+        - mode: "car_average"
+          distance_km: 500
+          trip_type: "round_trip"
+        - mode: "taxi"
+          distance_km: 100
+          trip_type: "one_way"
+    expected:
+      total_emissions_kgco2e: 1636.14
+
+  - test_id: "scope3_cat6_mixed_019"
+    test_name: "Executive Travel"
+    description: "Executive international travel"
+    tags: ["scope3", "category6", "executive"]
+    input:
+      category: "business_travel"
+      reporting_year: 2024
+      travel_data:
+        - mode: "air"
+          distance_km: 12000
+          trip_type: "round_trip"
+        - mode: "taxi"
+          distance_km: 80
+          trip_type: "round_trip"
+    expected:
+      total_emissions_kgco2e: 4712.48
+
+  - test_id: "scope3_cat6_mixed_020"
+    test_name: "Low Carbon Travel Policy"
+    description: "Travel following low-carbon policy"
+    tags: ["scope3", "category6", "lowcarbon"]
+    input:
+      category: "business_travel"
+      reporting_year: 2024
+      travel_data:
+        - mode: "rail_highspeed"
+          distance_km: 1000
+          trip_type: "round_trip"
+        - mode: "car_electric"
+          distance_km: 200
+          trip_type: "round_trip"
+    expected:
+      total_emissions_kgco2e: 33.2

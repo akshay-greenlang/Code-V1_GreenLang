@@ -1,0 +1,134 @@
+# GL-017_Condensync Kubernetes Service Configuration
+# Service Exposure: ClusterIP + NodePort
+# Version: 1.0.0
+
+---
+# ClusterIP Service (Internal Access)
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-017-condensync
+  namespace: greenlang
+  labels:
+    app: gl-017-condensync
+    app.kubernetes.io/name: gl-017-condensync
+    app.kubernetes.io/component: condenser-optimization
+    app.kubernetes.io/part-of: greenlang
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9090"
+    prometheus.io/path: "/metrics"
+spec:
+  type: ClusterIP
+  selector:
+    app: gl-017-condensync
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8000
+      protocol: TCP
+    - name: metrics
+      port: 9090
+      targetPort: 9090
+      protocol: TCP
+    - name: grpc
+      port: 50051
+      targetPort: 50051
+      protocol: TCP
+  sessionAffinity: None
+
+---
+# NodePort Service (External Development/Testing Access)
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-017-condensync-nodeport
+  namespace: greenlang
+  labels:
+    app: gl-017-condensync
+    app.kubernetes.io/name: gl-017-condensync
+    app.kubernetes.io/component: condenser-optimization
+spec:
+  type: NodePort
+  selector:
+    app: gl-017-condensync
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8000
+      nodePort: 30017  # GL-017 specific port
+      protocol: TCP
+    - name: metrics
+      port: 9090
+      targetPort: 9090
+      nodePort: 30917  # Metrics port for GL-017
+      protocol: TCP
+  externalTrafficPolicy: Local
+
+---
+# Headless Service (for StatefulSets or direct pod access)
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-017-condensync-headless
+  namespace: greenlang
+  labels:
+    app: gl-017-condensync
+    app.kubernetes.io/name: gl-017-condensync
+    app.kubernetes.io/component: condenser-optimization
+spec:
+  type: ClusterIP
+  clusterIP: None
+  selector:
+    app: gl-017-condensync
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000
+      protocol: TCP
+    - name: grpc
+      port: 50051
+      targetPort: 50051
+      protocol: TCP
+
+---
+# LoadBalancer Service (External Access - Production)
+# Uncomment if direct LoadBalancer access is needed
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: gl-017-condensync-lb
+#   namespace: greenlang
+#   labels:
+#     app: gl-017-condensync
+#   annotations:
+#     # AWS NLB annotations
+#     service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+#     service.beta.kubernetes.io/aws-load-balancer-internal: "true"
+#     service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+#     service.beta.kubernetes.io/aws-load-balancer-backend-protocol: "http"
+#     # GCP annotations
+#     # cloud.google.com/load-balancer-type: "Internal"
+# spec:
+#   type: LoadBalancer
+#   selector:
+#     app: gl-017-condensync
+#   ports:
+#     - name: http
+#       port: 80
+#       targetPort: 8000
+#       protocol: TCP
+#   externalTrafficPolicy: Local
+#   healthCheckNodePort: 30000
+
+---
+# ExternalName Service (for external dependencies)
+# Use this to reference external services by DNS name
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: gl-017-condensync-external-db
+#   namespace: greenlang
+# spec:
+#   type: ExternalName
+#   externalName: condensync-db.external.greenlang.io

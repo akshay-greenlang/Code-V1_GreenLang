@@ -1,0 +1,158 @@
+name: Building Recommendation Agent (AI-Powered)
+version: 1.0.0
+kind: pack
+pack_schema_version: '1.0'
+author:
+  name: GreenLang Team
+  email: support@greenlang.io
+  organization: GreenLang
+license: MIT
+tags:
+- buildings
+- recommendations
+- emissions-reduction
+- roi-analysis
+- efficiency
+- hvac
+- lighting
+- renewable
+- ai-agent
+- citations
+id: buildings/recommendation_ai_v1
+summary: AI-powered carbon reduction recommendations with ROI analysis, implementation
+  roadmaps, and location-specific strategies for buildings
+owners:
+- greenlang-team
+ai:
+  system_prompt: 'You are a sustainability advisor for GreenLang helping organizations
+    reduce carbon emissions.
+
+
+    Your core responsibilities:
+
+    1. Analyze building energy usage patterns using tools
+
+    2. Generate ranked, actionable recommendations with ROI analysis
+
+    3. Assess retrofit requirements and implementation complexity
+
+    4. Create prioritized implementation roadmaps
+
+
+    CRITICAL GUIDELINES:
+
+    - YOU MUST USE PROVIDED TOOLS FOR ALL CALCULATIONS
+
+    - NEVER estimate or guess numeric values
+
+    - All numbers (emissions, costs, ROI, payback) must come from tools
+
+    - Prioritize recommendations by ROI and environmental impact
+
+    - Provide clear natural language explanations for each recommendation
+
+    - Format numbers clearly (e.g., "15,000 kg" not "15000.0")
+
+
+    Tool Usage:
+
+    1. Call analyze_energy_usage to identify inefficiencies
+
+    2. Call calculate_roi to compute financial metrics
+
+    3. Call rank_recommendations to prioritize by impact/cost
+
+    4. Call estimate_savings for potential benefits
+
+    5. Call generate_implementation_plan for roadmap
+
+    6. Synthesize all results into executive summary
+
+
+    Focus Areas:
+
+    - HVAC efficiency (highest impact for most buildings)
+
+    - Lighting upgrades (LED, occupancy sensors, daylight harvesting)
+
+    - Building envelope (insulation, windows, air sealing)
+
+    - Renewable energy (solar PV, renewable power agreements)
+
+    - Operations and energy management systems
+
+    - Location-specific incentives (IRA 2022 for US, EU Taxonomy, PAT for India)
+
+    '
+  budget:
+    max_cost_usd: 0.5
+  rag_collections:
+  - hvac_efficiency_standards
+  - building_lighting_practices
+  - renewable_energy_options
+  - building_envelope_improvements
+  - country_specific_incentives
+  tools:
+  - name: analyze_energy_usage
+    description: Analyze energy usage patterns and identify inefficiencies
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:analyze_energy_usage
+    safe: true
+  - name: calculate_roi
+    description: Calculate ROI and payback periods for recommendations
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:calculate_roi
+    safe: true
+  - name: rank_recommendations
+    description: Rank and prioritize recommendations by impact, cost, and ROI
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:rank_recommendations
+    safe: true
+  - name: estimate_savings
+    description: Estimate potential emissions and cost savings
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:estimate_savings
+    safe: true
+  - name: generate_implementation_plan
+    description: Generate phased implementation roadmap with timeline
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:generate_implementation_plan
+    safe: true
+realtime:
+  default_mode: replay
+  snapshot_path: null
+  connectors: []
+provenance:
+  gwp_set: AR6GWP100
+  pin_ef: false
+  record:
+  - inputs
+  - outputs
+  - factors
+  - code_sha
+  - seed

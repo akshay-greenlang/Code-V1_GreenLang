@@ -1,0 +1,65 @@
+{
+  "emissions_calculation": {
+    "prompt": "Calculate emissions for steel production",
+    "response": "{\n  \"total_emissions\": 2500,\n  \"emission_factor\": 2.5,\n  \"quantity\": 1000,\n  \"unit\": \"kg CO2e\",\n  \"methodology\": \"GHG Protocol\",\n  \"confidence\": 0.95\n}",
+    "tokens": 150,
+    "cost": 0.0015
+  },
+
+  "supplier_analysis": {
+    "prompt": "Analyze supplier sustainability",
+    "response": "Based on the provided data, the supplier shows strong sustainability performance:\n\n1. Certifications: ISO 14001, ISO 50001\n2. Emission Intensity: 2.5 kg CO2e/kg (industry average: 3.0)\n3. Sustainability Score: 8.5/10\n4. Risk Level: Low\n\nRecommendations:\n- Continue partnership\n- Request annual sustainability reports\n- Explore opportunities for further emission reductions",
+    "tokens": 200,
+    "cost": 0.002
+  },
+
+  "report_generation": {
+    "prompt": "Generate emissions report",
+    "response": "# Emissions Report Q1 2024\n\n## Executive Summary\nTotal emissions: 16,860 kg CO2e\n\n## Breakdown by Scope\n- Scope 1: 10,000 kg CO2e (59%)\n- Scope 2: 4,000 kg CO2e (24%)\n- Scope 3: 2,860 kg CO2e (17%)\n\n## Top Contributors\n1. Stationary Combustion: 10,000 kg CO2e\n2. Purchased Electricity: 4,000 kg CO2e\n3. Purchased Goods: 2,500 kg CO2e\n\n## Recommendations\n1. Transition to renewable energy\n2. Improve energy efficiency\n3. Engage suppliers on emissions reduction",
+    "tokens": 300,
+    "cost": 0.003
+  },
+
+  "data_validation": {
+    "prompt": "Validate emissions data",
+    "response": "{\n  \"valid\": true,\n  \"errors\": [],\n  \"warnings\": [\n    \"One entry is unverified (em_003)\"\n  ],\n  \"suggestions\": [\n    \"Consider third-party verification for business travel emissions\"\n  ]\n}",
+    "tokens": 120,
+    "cost": 0.0012
+  },
+
+  "trend_analysis": {
+    "prompt": "Analyze emission trends",
+    "response": "Emission trends show a 15% reduction compared to previous quarter:\n\n- Scope 1: -5% (improved energy efficiency)\n- Scope 2: -25% (renewable energy procurement)\n- Scope 3: +10% (increased business travel)\n\nThe overall trend is positive, but Scope 3 emissions require attention. Consider implementing a travel policy to reduce unnecessary trips.",
+    "tokens": 180,
+    "cost": 0.0018
+  },
+
+  "risk_assessment": {
+    "prompt": "Assess climate-related risks",
+    "response": "{\n  \"physical_risks\": {\n    \"acute\": [\"Flooding\", \"Extreme heat\"],\n    \"chronic\": [\"Sea level rise\", \"Water scarcity\"]\n  },\n  \"transition_risks\": {\n    \"policy\": [\"Carbon pricing\", \"Emissions regulations\"],\n    \"technology\": [\"Low-carbon technology adoption\"],\n    \"market\": [\"Customer preferences shift\"]\n  },\n  \"overall_risk_level\": \"Medium\",\n  \"mitigation_priority\": \"High\"\n}",
+    "tokens": 220,
+    "cost": 0.0022
+  },
+
+  "scenario_analysis": {
+    "prompt": "Model emissions under different scenarios",
+    "response": "Scenario Analysis Results:\n\n**Business as Usual (BAU)**\n- 2025: 20,000 kg CO2e (+19%)\n- 2030: 25,000 kg CO2e (+48%)\n\n**Moderate Action**\n- 2025: 15,000 kg CO2e (-11%)\n- 2030: 12,000 kg CO2e (-29%)\n\n**Aggressive Reduction**\n- 2025: 10,000 kg CO2e (-41%)\n- 2030: 5,000 kg CO2e (-70%)\n\nRecommendation: Pursue aggressive reduction pathway to align with Paris Agreement goals.",
+    "tokens": 250,
+    "cost": 0.0025
+  },
+
+  "simple_greeting": {
+    "prompt": "Say hello",
+    "response": "Hello! I'm ready to help with sustainability and emissions analysis.",
+    "tokens": 50,
+    "cost": 0.0005
+  },
+
+  "error_response": {
+    "prompt": "This will cause an error",
+    "response": null,
+    "error": "Invalid input format",
+    "tokens": 0,
+    "cost": 0.0
+  }
+}

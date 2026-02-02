@@ -1,0 +1,354 @@
+# GreenLang Climate OS - PostgreSQL Configuration
+# INFRA-002: PostgreSQL + TimescaleDB Configuration
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgresql-config
+  namespace: greenlang-production
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: postgresql
+data:
+  postgresql.conf: |
+    # GreenLang PostgreSQL + TimescaleDB Configuration
+    # Optimized for time-series emissions data
+
+    # Connection Settings
+    listen_addresses = '*'
+    port = 5432
+    max_connections = 200
+    superuser_reserved_connections = 3
+
+    # Memory Settings (adjust based on available RAM)
+    shared_buffers = 4GB
+    effective_cache_size = 12GB
+    work_mem = 64MB
+    maintenance_work_mem = 1GB
+    huge_pages = try
+
+    # Write Ahead Log
+    wal_level = replica
+    max_wal_senders = 10
+    wal_keep_size = 1GB
+    max_replication_slots = 10
+    synchronous_commit = on
+    checkpoint_completion_target = 0.9
+    checkpoint_timeout = 10min
+    max_wal_size = 4GB
+    min_wal_size = 1GB
+
+    # Query Planner
+    random_page_cost = 1.1
+    effective_io_concurrency = 200
+    default_statistics_target = 100
+
+    # Parallel Query
+    max_parallel_workers_per_gather = 4
+    max_parallel_workers = 8
+    max_parallel_maintenance_workers = 4
+    parallel_leader_participation = on
+
+    # Logging
+    logging_collector = on
+    log_directory = 'pg_log'
+    log_filename = 'postgresql-%Y-%m-%d_%H%M%S.log'
+    log_rotation_age = 1d
+    log_rotation_size = 100MB
+    log_min_duration_statement = 1000
+    log_checkpoints = on
+    log_connections = on
+    log_disconnections = on
+    log_lock_waits = on
+    log_statement = 'ddl'
+    log_temp_files = 0
+
+    # Autovacuum
+    autovacuum = on
+    autovacuum_max_workers = 4
+    autovacuum_naptime = 60s
+    autovacuum_vacuum_threshold = 50
+    autovacuum_vacuum_scale_factor = 0.02
+    autovacuum_analyze_threshold = 50
+    autovacuum_analyze_scale_factor = 0.01
+    autovacuum_vacuum_cost_delay = 2ms
+    autovacuum_vacuum_cost_limit = 1000
+
+    # TimescaleDB specific
+    shared_preload_libraries = 'timescaledb,pg_stat_statements'
+    timescaledb.max_background_workers = 8
+    timescaledb.telemetry_level = off
+
+    # Statistics
+    track_activities = on
+    track_counts = on
+    track_io_timing = on
+    track_functions = all
+
+    # Security
+    ssl = on
+    ssl_cert_file = '/var/lib/postgresql/server.crt'
+    ssl_key_file = '/var/lib/postgresql/server.key'
+    password_encryption = scram-sha-256
+
+  pg_hba.conf: |
+    # PostgreSQL Client Authentication Configuration
+    # TYPE  DATABASE        USER            ADDRESS                 METHOD
+
+    # Local connections
+    local   all             all                                     scram-sha-256
+
+    # IPv4 local connections
+    host    all             all             127.0.0.1/32            scram-sha-256
+
+    # IPv4 connections from Kubernetes pods
+    host    all             all             10.0.0.0/8              scram-sha-256
+    host    all             all             172.16.0.0/12           scram-sha-256
+    host    all             all             192.168.0.0/16          scram-sha-256
+
+    # Replication connections
+    host    replication     replicator      10.0.0.0/8              scram-sha-256
+    host    replication     replicator      172.16.0.0/12           scram-sha-256
+
+    # Reject all other connections
+    host    all             all             0.0.0.0/0               reject
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgresql-init-scripts
+  namespace: greenlang-production
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: postgresql
+data:
+  01-init-extensions.sql: |
+    -- GreenLang Database Initialization
+    -- Enable required extensions
+
+    -- TimescaleDB for time-series data
+    CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;
+
+    -- UUID generation
+    CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+    -- Cryptographic functions
+    CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+    -- Full-text search
+    CREATE EXTENSION IF NOT EXISTS pg_trgm;
+
+    -- Statistics
+    CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
+
+    -- PostGIS for geolocation (EUDR)
+    CREATE EXTENSION IF NOT EXISTS postgis;
+
+  02-create-schemas.sql: |
+    -- GreenLang Database Schemas
+
+    -- Core schema for platform infrastructure
+    CREATE SCHEMA IF NOT EXISTS core;
+    COMMENT ON SCHEMA core IS 'GreenLang core platform infrastructure';
+
+    -- Agents schema for agent management
+    CREATE SCHEMA IF NOT EXISTS agents;
+    COMMENT ON SCHEMA agents IS 'Agent definitions, configurations, and execution history';
+
+    -- Emissions schema for GHG calculations
+    CREATE SCHEMA IF NOT EXISTS emissions;
+    COMMENT ON SCHEMA emissions IS 'Emissions calculations and time-series data';
+
+    -- Factors schema for emission factors
+    CREATE SCHEMA IF NOT EXISTS factors;
+    COMMENT ON SCHEMA factors IS 'Emission factor library with provenance';
+
+    -- Lineage schema for data provenance
+    CREATE SCHEMA IF NOT EXISTS lineage;
+    COMMENT ON SCHEMA lineage IS 'Complete data lineage and audit trail';
+
+    -- Tenants schema for multi-tenancy
+    CREATE SCHEMA IF NOT EXISTS tenants;
+    COMMENT ON SCHEMA tenants IS 'Multi-tenant organization management';
+
+    -- Compliance schema for regulatory reporting
+    CREATE SCHEMA IF NOT EXISTS compliance;
+    COMMENT ON SCHEMA compliance IS 'Regulatory compliance data (CSRD, CBAM, EUDR, etc.)';
+
+  03-create-tables.sql: |
+    -- GreenLang Core Tables
+
+    -- Agent Registry
+    CREATE TABLE IF NOT EXISTS agents.registry (
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        agent_id VARCHAR(50) NOT NULL UNIQUE,
+        name VARCHAR(255) NOT NULL,
+        version VARCHAR(20) NOT NULL,
+        layer VARCHAR(50) NOT NULL,
+        sector VARCHAR(50),
+        description TEXT,
+        config JSONB NOT NULL DEFAULT '{}',
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        is_active BOOLEAN NOT NULL DEFAULT true
+    );
+    CREATE INDEX idx_agents_registry_layer ON agents.registry(layer);
+    CREATE INDEX idx_agents_registry_sector ON agents.registry(sector);
+
+    -- Agent Execution History (TimescaleDB hypertable)
+    CREATE TABLE IF NOT EXISTS agents.executions (
+        id UUID DEFAULT uuid_generate_v4(),
+        execution_id VARCHAR(100) NOT NULL,
+        agent_id VARCHAR(50) NOT NULL,
+        tenant_id UUID NOT NULL,
+        status VARCHAR(20) NOT NULL,
+        input_hash VARCHAR(64),
+        output_hash VARCHAR(64),
+        started_at TIMESTAMPTZ NOT NULL,
+        completed_at TIMESTAMPTZ,
+        duration_ms INTEGER,
+        error_message TEXT,
+        metadata JSONB DEFAULT '{}',
+        PRIMARY KEY (id, started_at)
+    );
+    SELECT create_hypertable('agents.executions', 'started_at', if_not_exists => TRUE);
+    CREATE INDEX idx_executions_agent ON agents.executions(agent_id, started_at DESC);
+    CREATE INDEX idx_executions_tenant ON agents.executions(tenant_id, started_at DESC);
+
+    -- Emissions Time Series (TimescaleDB hypertable)
+    CREATE TABLE IF NOT EXISTS emissions.measurements (
+        id UUID DEFAULT uuid_generate_v4(),
+        tenant_id UUID NOT NULL,
+        facility_id UUID NOT NULL,
+        scope INTEGER NOT NULL CHECK (scope IN (1, 2, 3)),
+        category VARCHAR(50),
+        source_type VARCHAR(100) NOT NULL,
+        emission_co2e NUMERIC(20, 6) NOT NULL,
+        emission_co2 NUMERIC(20, 6),
+        emission_ch4 NUMERIC(20, 6),
+        emission_n2o NUMERIC(20, 6),
+        emission_hfcs NUMERIC(20, 6),
+        emission_pfcs NUMERIC(20, 6),
+        emission_sf6 NUMERIC(20, 6),
+        emission_nf3 NUMERIC(20, 6),
+        unit VARCHAR(20) NOT NULL DEFAULT 'tCO2e',
+        activity_data JSONB,
+        emission_factor_id UUID,
+        calculation_method VARCHAR(100),
+        uncertainty_pct NUMERIC(5, 2),
+        measured_at TIMESTAMPTZ NOT NULL,
+        reported_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        lineage_id UUID,
+        metadata JSONB DEFAULT '{}',
+        PRIMARY KEY (id, measured_at)
+    );
+    SELECT create_hypertable('emissions.measurements', 'measured_at', if_not_exists => TRUE);
+    CREATE INDEX idx_emissions_tenant_scope ON emissions.measurements(tenant_id, scope, measured_at DESC);
+    CREATE INDEX idx_emissions_facility ON emissions.measurements(facility_id, measured_at DESC);
+
+    -- Emission Factors Library
+    CREATE TABLE IF NOT EXISTS factors.emission_factors (
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        factor_id VARCHAR(100) NOT NULL UNIQUE,
+        name VARCHAR(255) NOT NULL,
+        source VARCHAR(100) NOT NULL,
+        version VARCHAR(20),
+        category VARCHAR(100),
+        subcategory VARCHAR(100),
+        region VARCHAR(50),
+        country_code CHAR(2),
+        unit_input VARCHAR(50) NOT NULL,
+        unit_output VARCHAR(50) NOT NULL DEFAULT 'kgCO2e',
+        factor_value NUMERIC(20, 10) NOT NULL,
+        uncertainty_min NUMERIC(20, 10),
+        uncertainty_max NUMERIC(20, 10),
+        gwp_reference VARCHAR(20) DEFAULT 'AR6',
+        valid_from DATE,
+        valid_to DATE,
+        methodology TEXT,
+        provenance JSONB NOT NULL,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+    CREATE INDEX idx_factors_source ON factors.emission_factors(source, category);
+    CREATE INDEX idx_factors_region ON factors.emission_factors(region, country_code);
+
+    -- Data Lineage
+    CREATE TABLE IF NOT EXISTS lineage.traces (
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        trace_id VARCHAR(100) NOT NULL UNIQUE,
+        parent_trace_id VARCHAR(100),
+        entity_type VARCHAR(50) NOT NULL,
+        entity_id UUID NOT NULL,
+        operation VARCHAR(50) NOT NULL,
+        agent_id VARCHAR(50),
+        execution_id VARCHAR(100),
+        input_refs JSONB DEFAULT '[]',
+        output_refs JSONB DEFAULT '[]',
+        assumptions JSONB DEFAULT '[]',
+        citations JSONB DEFAULT '[]',
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        metadata JSONB DEFAULT '{}'
+    );
+    CREATE INDEX idx_lineage_entity ON lineage.traces(entity_type, entity_id);
+    CREATE INDEX idx_lineage_parent ON lineage.traces(parent_trace_id);
+
+    -- Tenants
+    CREATE TABLE IF NOT EXISTS tenants.organizations (
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        name VARCHAR(255) NOT NULL,
+        slug VARCHAR(100) NOT NULL UNIQUE,
+        settings JSONB NOT NULL DEFAULT '{}',
+        subscription_tier VARCHAR(50) NOT NULL DEFAULT 'starter',
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        is_active BOOLEAN NOT NULL DEFAULT true
+    );
+
+  04-create-indexes.sql: |
+    -- Additional Performance Indexes
+
+    -- Composite indexes for common queries
+    CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_emissions_scope_category
+        ON emissions.measurements(tenant_id, scope, category, measured_at DESC);
+
+    -- GIN index for JSONB queries
+    CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_agents_config_gin
+        ON agents.registry USING GIN (config);
+    CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_factors_provenance_gin
+        ON factors.emission_factors USING GIN (provenance);
+
+    -- BRIN index for time-series (efficient for large tables)
+    CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_emissions_brin
+        ON emissions.measurements USING BRIN (measured_at);
+
+  05-create-retention-policies.sql: |
+    -- TimescaleDB Data Retention Policies
+
+    -- Keep detailed execution logs for 90 days
+    SELECT add_retention_policy('agents.executions', INTERVAL '90 days', if_not_exists => TRUE);
+
+    -- Keep emissions data indefinitely (regulatory requirement)
+    -- But compress data older than 30 days
+    SELECT add_compression_policy('emissions.measurements', INTERVAL '30 days', if_not_exists => TRUE);
+    SELECT add_compression_policy('agents.executions', INTERVAL '30 days', if_not_exists => TRUE);
+
+    -- Create continuous aggregates for reporting
+    CREATE MATERIALIZED VIEW IF NOT EXISTS emissions.daily_totals
+    WITH (timescaledb.continuous) AS
+    SELECT
+        tenant_id,
+        facility_id,
+        scope,
+        time_bucket('1 day', measured_at) AS day,
+        SUM(emission_co2e) AS total_co2e,
+        COUNT(*) AS measurement_count
+    FROM emissions.measurements
+    GROUP BY tenant_id, facility_id, scope, time_bucket('1 day', measured_at)
+    WITH NO DATA;
+
+    SELECT add_continuous_aggregate_policy('emissions.daily_totals',
+        start_offset => INTERVAL '1 month',
+        end_offset => INTERVAL '1 hour',
+        schedule_interval => INTERVAL '1 hour',
+        if_not_exists => TRUE);

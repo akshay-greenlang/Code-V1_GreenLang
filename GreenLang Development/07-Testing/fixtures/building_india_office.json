@@ -1,0 +1,44 @@
+{
+  "building_name": "Tech Park Bangalore",
+  "building_type": "office",
+  "country": "IN",
+  "city": "Bangalore",
+  "climate_zone": "tropical",
+  "total_area": {
+    "value": 50000,
+    "unit": "sqft"
+  },
+  "occupancy": 250,
+  "floor_count": 5,
+  "building_age": 10,
+  "energy_sources": [
+    {
+      "fuel_type": "electricity",
+      "consumption": {
+        "value": 1500000,
+        "unit": "kWh"
+      },
+      "period": "annual"
+    },
+    {
+      "fuel_type": "diesel",
+      "consumption": {
+        "value": 5000,
+        "unit": "liters"
+      },
+      "period": "annual"
+    }
+  ],
+  "renewable_energy": {
+    "solar_pv": {
+      "installed_capacity_kw": 100,
+      "annual_generation_kwh": 150000
+    }
+  },
+  "certifications": ["LEED Gold"],
+  "metadata": {
+    "reporting_year": 2024,
+    "data_quality": "verified",
+    "submission_date": "2024-01-15"
+  }
+}

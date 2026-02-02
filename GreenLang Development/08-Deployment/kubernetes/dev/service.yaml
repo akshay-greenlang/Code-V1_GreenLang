@@ -1,0 +1,48 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: greenlang-api-service
+  namespace: greenlang-dev
+  labels:
+    app: greenlang-api
+    environment: development
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+spec:
+  type: ClusterIP
+  selector:
+    app: greenlang-api
+    tier: backend
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8000
+      protocol: TCP
+    - name: metrics
+      port: 9090
+      targetPort: 9090
+      protocol: TCP
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 10800
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: greenlang-api-headless
+  namespace: greenlang-dev
+  labels:
+    app: greenlang-api
+    environment: development
+spec:
+  type: ClusterIP
+  clusterIP: None
+  selector:
+    app: greenlang-api
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000
+      protocol: TCP

@@ -1,0 +1,20 @@
+# Valid Array Constraints Payload 002
+# Tests: Single item arrays
+# Schema: basic/array_constraints.yaml
+
+_test_metadata:
+  schema: "basic/array_constraints.yaml"
+  description: "Valid payload with single item arrays"
+  expected_valid: true
+
+tags:
+  - "single-tag"
+
+measurements:
+  - 0
+
+categories:
+  - "energy"
+
+priorities:
+  - 1

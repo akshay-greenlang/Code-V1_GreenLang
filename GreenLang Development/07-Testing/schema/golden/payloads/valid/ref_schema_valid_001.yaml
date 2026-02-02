@@ -1,0 +1,33 @@
+# Valid Reference Schema Payload 001
+# Tests: Valid $ref resolution
+# Schema: basic/ref_schema.yaml
+
+_test_metadata:
+  schema: "basic/ref_schema.yaml"
+  description: "Valid payload with referenced schemas"
+  expected_valid: true
+
+company_name: "Acme Corporation"
+
+billing_address:
+  street: "123 Main Street"
+  city: "San Francisco"
+  country: "US"
+  postal_code: "94102"
+
+shipping_address:
+  street: "456 Oak Avenue"
+  city: "Los Angeles"
+  country: "US"
+  postal_code: "90001"
+
+primary_contact:
+  name: "John Doe"
+  email: "john.doe@acme.com"
+  phone: "+14155551234"
+
+measurements:
+  - value: 100.5
+    unit: "kWh"
+  - value: 200.0
+    unit: "MWh"

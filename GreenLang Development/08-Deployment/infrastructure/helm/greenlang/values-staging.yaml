@@ -1,0 +1,276 @@
+# Staging environment values for greenlang
+# Mid-sized configuration between dev and production
+
+global:
+  environment: staging
+  storageClass: fast-ssd
+
+# Executor configuration - moderate for staging
+executor:
+  enabled: true
+  replicaCount: 2
+
+  resources:
+    requests:
+      cpu: 200m
+      memory: 256Mi
+    limits:
+      cpu: 400m
+      memory: 512Mi
+
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 6
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: 80
+
+  ingress:
+    enabled: true
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-staging
+      nginx.ingress.kubernetes.io/rate-limit: "50"
+    hosts:
+      - host: staging.greenlang.io
+        paths:
+          - path: /
+            pathType: Prefix
+    tls:
+      - secretName: greenlang-staging-tls-cert
+        hosts:
+          - staging.greenlang.io
+
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 1
+
+# Worker configuration - moderate for staging
+worker:
+  enabled: true
+  replicaCount: 3
+
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+      ephemeral-storage: 1Gi
+    limits:
+      cpu: 2000m
+      memory: 4Gi
+      ephemeral-storage: 3Gi
+
+  autoscaling:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: 80
+
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 2
+
+  config:
+    maxConcurrentTasks: 8
+    taskTimeout: 3000
+
+# Redis configuration - moderate for staging
+redis:
+  enabled: true
+  architecture: replication
+  auth:
+    enabled: true
+    existingSecret: greenlang-secrets
+    existingSecretPasswordKey: redis-password
+
+  master:
+    persistence:
+      enabled: true
+      size: 10Gi
+      storageClass: fast-ssd
+    resources:
+      requests:
+        cpu: 250m
+        memory: 1Gi
+      limits:
+        cpu: 1000m
+        memory: 4Gi
+
+  replica:
+    replicaCount: 1
+    persistence:
+      enabled: true
+      size: 10Gi
+      storageClass: fast-ssd
+    resources:
+      requests:
+        cpu: 250m
+        memory: 1Gi
+      limits:
+        cpu: 1000m
+        memory: 4Gi
+
+  sentinel:
+    enabled: true
+    quorum: 2
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 200m
+        memory: 256Mi
+
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+
+# PostgreSQL configuration - moderate for staging
+postgresql:
+  enabled: true
+  auth:
+    username: greenlang
+    database: greenlang
+    existingSecret: greenlang-secrets
+
+  primary:
+    persistence:
+      enabled: true
+      size: 100Gi
+      storageClass: fast-ssd
+    resources:
+      requests:
+        cpu: 500m
+        memory: 1Gi
+      limits:
+        cpu: 1000m
+        memory: 2Gi
+
+  readReplicas:
+    replicaCount: 1
+    persistence:
+      enabled: true
+      size: 100Gi
+    resources:
+      requests:
+        cpu: 250m
+        memory: 512Mi
+      limits:
+        cpu: 500m
+        memory: 1Gi
+
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+
+# Service configuration
+service:
+  type: LoadBalancer
+  port: 80
+  targetPort: 8080
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+
+# Ingress configuration
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-staging
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/rate-limit: "50"
+  hosts:
+    - host: staging.greenlang.io
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: greenlang-staging-tls-cert
+      hosts:
+        - staging.greenlang.io
+
+# Storage configuration - moderate for staging
+storage:
+  logs:
+    enabled: true
+    size: 50Gi
+    storageClass: efs-storage
+
+  backups:
+    enabled: true
+    size: 200Gi
+    storageClass: standard-storage
+
+  artifacts:
+    enabled: true
+    size: 50Gi
+    storageClass: efs-storage
+
+# Security configuration
+security:
+  podSecurityPolicy:
+    enabled: true
+  networkPolicy:
+    enabled: true
+
+# Monitoring configuration
+monitoring:
+  enabled: true
+  prometheus:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+      interval: 30s
+  grafana:
+    enabled: true
+    dashboards:
+      enabled: true
+  alerts:
+    enabled: true
+
+# Resource quotas - moderate for staging
+resourceQuota:
+  enabled: true
+  hard:
+    requests.cpu: "50"
+    requests.memory: "100Gi"
+    limits.cpu: "100"
+    limits.memory: "200Gi"
+    persistentvolumeclaims: "30"
+    pods: "100"
+
+# Limit ranges - moderate for staging
+limitRange:
+  enabled: true
+  limits:
+    - type: Container
+      default:
+        cpu: "1.5"
+        memory: "3Gi"
+      defaultRequest:
+        cpu: "375m"
+        memory: "768Mi"
+      max:
+        cpu: "6"
+        memory: "12Gi"
+      min:
+        cpu: "50m"
+        memory: "64Mi"
+
+# Topology spread - enabled for staging
+topologySpreadConstraints:
+  enabled: true
+  maxSkew: 2
+  topologyKey: topology.kubernetes.io/zone
+  whenUnsatisfiable: ScheduleAnyway
+
+# Environment variables
+env:
+  - name: APP_ENV
+    value: "staging"
+  - name: LOG_LEVEL
+    value: "INFO"
+  - name: DEBUG
+    value: "false"

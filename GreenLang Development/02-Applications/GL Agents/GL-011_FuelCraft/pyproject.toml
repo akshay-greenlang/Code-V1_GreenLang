@@ -1,0 +1,52 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gl-011-fuelcraft"
+version = "1.0.0"
+description = "GL-011 FUELCRAFT - Fuel Management Optimizer Agent"
+license = {text = "Proprietary"}
+authors = [{name = "GreenLang", email = "engineering@greenlang.io"}]
+keywords = ["fuel-management", "optimization", "carbon", "greenlang"]
+classifiers = [
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+requires-python = ">=3.10"
+dependencies = [
+    "pydantic>=2.0.0",
+    "fastapi>=0.100.0",
+    "uvicorn>=0.22.0",
+    "numpy>=1.24.0",
+    "scipy>=1.10.0",
+    "pandas>=2.0.0",
+    "highspy>=1.5.0",
+    "httpx>=0.24.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.3.0", "pytest-cov>=4.1.0", "ruff>=0.0.270", "mypy>=1.3.0", "hypothesis>=6.82.0"]
+ml = ["shap>=0.42.0", "scikit-learn>=1.2.0", "lime>=0.2.0"]
+streaming = ["kafka-python>=2.0.0", "aiokafka>=0.8.0"]
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+testpaths = ["tests"]
+asyncio_mode = "auto"
+
+[tool.ruff]
+line-length = 88
+select = ["E", "F", "I", "N", "W", "UP"]
+
+[tool.mypy]
+python_version = "3.10"
+disallow_untyped_defs = true
+
+[tool.coverage.run]
+source = ["core", "calculators", "optimization", "api"]
+branch = true
+
+[tool.coverage.report]
+fail_under = 85

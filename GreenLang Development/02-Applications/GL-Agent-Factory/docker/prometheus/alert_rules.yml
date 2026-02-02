@@ -1,0 +1,90 @@
+# GreenLang Alert Rules
+# Prometheus alerting rules for Agent Factory
+# Version: 1.0.0
+
+groups:
+  - name: greenlang-alerts
+    rules:
+      # High Error Rate
+      - alert: HighErrorRate
+        expr: rate(gl_errors_total[5m]) > 0.01
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High error rate detected"
+          description: "Error rate is {{ $value | humanizePercentage }} over the last 5 minutes"
+
+      # High Latency
+      - alert: HighLatency
+        expr: histogram_quantile(0.99, rate(gl_calculation_duration_seconds_bucket[5m])) > 1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High latency detected"
+          description: "P99 latency is {{ $value | humanizeDuration }} over the last 5 minutes"
+
+      # Service Down
+      - alert: ServiceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Service {{ $labels.job }} is down"
+          description: "{{ $labels.instance }} has been down for more than 1 minute"
+
+      # Low Calculation Success Rate
+      - alert: LowCalculationSuccessRate
+        expr: |
+          rate(gl_calculations_total{status="success"}[5m])
+          / rate(gl_calculations_total[5m]) < 0.95
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Low calculation success rate"
+          description: "Success rate is {{ $value | humanizePercentage }}"
+
+      # Emission Factor Cache Miss Rate
+      - alert: HighCacheMissRate
+        expr: |
+          rate(gl_ef_cache_misses_total[5m])
+          / rate(gl_ef_lookups_total[5m]) > 0.2
+        for: 15m
+        labels:
+          severity: info
+        annotations:
+          summary: "High emission factor cache miss rate"
+          description: "Cache miss rate is {{ $value | humanizePercentage }}"
+
+      # Database Connection Issues
+      - alert: DatabaseConnectionPoolExhausted
+        expr: gl_db_pool_available < 5
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Database connection pool nearly exhausted"
+          description: "Only {{ $value }} connections available"
+
+      # Memory Usage
+      - alert: HighMemoryUsage
+        expr: process_resident_memory_bytes / 1024 / 1024 > 450
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage"
+          description: "Memory usage is {{ $value | humanize }}MB"
+
+      # Certification Failures
+      - alert: AgentCertificationFailed
+        expr: gl_certification_failures_total > 0
+        for: 0m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Agent certification failed"
+          description: "{{ $value }} certification failures detected"

@@ -1,0 +1,14 @@
+agents:
+- validator
+- fuel
+- carbon
+- report
+- benchmark
+description: 'GreenLang project: Building_101'
+name: Building_101
+settings:
+  auto_validate: true
+  region: US
+  report_format: text
+version: 0.0.1
+workflows: []

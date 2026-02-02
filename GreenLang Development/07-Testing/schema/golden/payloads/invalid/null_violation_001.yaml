@@ -1,0 +1,19 @@
+# Invalid Payload - Null Violation (null not allowed)
+# Error Code: GLSCHEMA-E103 (INVALID_NULL)
+# Schema: basic/type_constraints.yaml
+
+_test_metadata:
+  schema: "basic/type_constraints.yaml"
+  description: "Null value where not allowed"
+  expected_valid: false
+  expected_errors:
+    - code: "GLSCHEMA-E103"
+      path: "/string_field"
+      severity: "error"
+
+string_field: null  # null not allowed for plain string type
+number_field: 3.14
+integer_field: 42
+boolean_field: true
+array_field: []
+object_field: {}

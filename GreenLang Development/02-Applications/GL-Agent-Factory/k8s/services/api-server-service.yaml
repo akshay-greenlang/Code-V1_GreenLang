@@ -1,0 +1,70 @@
+# GreenLang API Server Service
+# ClusterIP service for internal communication with LoadBalancer option
+apiVersion: v1
+kind: Service
+metadata:
+  name: api-server-service
+  namespace: greenlang-production
+  labels:
+    app.kubernetes.io/name: api-server
+    app.kubernetes.io/instance: production
+    app.kubernetes.io/component: service
+    app.kubernetes.io/part-of: greenlang-platform
+  annotations:
+    description: "API Server Service - Internal ClusterIP"
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9090"
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: api-server
+    app.kubernetes.io/instance: production
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8000
+    protocol: TCP
+  - name: metrics
+    port: 9090
+    targetPort: 9090
+    protocol: TCP
+  sessionAffinity: None
+---
+# External LoadBalancer service (for direct external access if needed)
+# Typically you would use Ingress instead, but this is available as an option
+apiVersion: v1
+kind: Service
+metadata:
+  name: api-server-lb
+  namespace: greenlang-production
+  labels:
+    app.kubernetes.io/name: api-server
+    app.kubernetes.io/instance: production
+    app.kubernetes.io/component: loadbalancer
+  annotations:
+    description: "API Server LoadBalancer - External Access"
+    # AWS annotations for NLB
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+    service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+    service.beta.kubernetes.io/aws-load-balancer-backend-protocol: "http"
+    # GCP annotations
+    # cloud.google.com/neg: '{"ingress": true}'
+spec:
+  type: LoadBalancer
+  selector:
+    app.kubernetes.io/name: api-server
+    app.kubernetes.io/instance: production
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8000
+    protocol: TCP
+  - name: https
+    port: 443
+    targetPort: 8000
+    protocol: TCP
+  externalTrafficPolicy: Local
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 3600

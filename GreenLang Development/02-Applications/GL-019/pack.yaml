@@ -1,0 +1,893 @@
+# ==============================================================================
+# GL-019 HEATSCHEDULER Process Heating Scheduler Agent
+# Pack Manifest (pack.yaml)
+# ==============================================================================
+# Pack Schema Version: 1.0
+# Agent ID: GL-019
+# Codename: HEATSCHEDULER
+# ==============================================================================
+
+kind: Pack
+pack_schema_version: "1.0"
+license: Apache-2.0
+
+# ==============================================================================
+# AGENT METADATA
+# ==============================================================================
+metadata:
+  # Core Identification
+  agent_id: GL-019
+  codename: HEATSCHEDULER
+  name: ProcessHeatingScheduler
+  version: "1.0.0"
+
+  # Classification
+  category: planning
+  type: coordinator
+  domain: energy_optimization
+
+  # Business Priority
+  priority: high
+  business_priority: P1
+  market_tam: "$7B"
+  target_date: "Q2 2026"
+
+  # Description
+  description: >-
+    Schedules process heating operations to minimize energy costs while meeting
+    production deadlines. Uses mixed-integer linear programming (MILP) optimization
+    with zero-hallucination guarantees for all cost calculations and deterministic
+    scheduling algorithms.
+
+  # Extended Description
+  long_description: |
+    The HEATSCHEDULER agent provides comprehensive process heating schedule
+    optimization capabilities:
+
+    1. PRODUCTION SCHEDULE INTEGRATION
+       - Real-time sync with ERP/MES systems (SAP, Oracle)
+       - Production batch and work order ingestion
+       - Maintenance window awareness
+       - Equipment availability tracking
+       - Production deadline constraint management
+       - Multi-product scheduling support
+
+    2. ENERGY TARIFF MANAGEMENT
+       - Time-of-Use (ToU) rate optimization
+       - Demand charge minimization
+       - Real-time pricing (RTP) integration
+       - Critical peak pricing (CPP) response
+       - Tiered rate structure handling
+       - Rate change notification and re-optimization
+
+    3. EQUIPMENT AVAILABILITY TRACKING
+       - Furnace, boiler, and heater capacity monitoring
+       - Equipment efficiency curves
+       - Thermal storage utilization
+       - Maintenance schedule integration
+       - Equipment status from SCADA/DCS
+       - Capacity constraint management
+
+    4. HEATING SCHEDULE OPTIMIZATION
+       - Mixed-Integer Linear Programming (MILP) solver
+       - Minimize total energy cost objective
+       - Production deadline constraints
+       - Equipment capacity constraints
+       - Thermal ramp rate constraints
+       - Load balancing across equipment
+       - Multi-horizon optimization (day-ahead, hour-ahead)
+
+    5. LOAD SHIFTING RECOMMENDATIONS
+       - Peak-to-off-peak load transfer
+       - Thermal mass utilization
+       - Pre-heating strategies
+       - Demand response integration
+       - What-if scenario analysis
+       - Savings quantification
+
+    6. DEMAND RESPONSE INTEGRATION
+       - OpenADR 2.0b protocol support
+       - Grid operator signal handling (PJM, ERCOT, CAISO)
+       - Curtailment event response
+       - Economic demand response
+       - Emergency demand response
+       - Automatic schedule adjustment
+
+    7. COST SAVINGS FORECASTING
+       - Baseline vs. optimized comparison
+       - Savings by category (load shift, demand reduction, peak avoidance)
+       - Annual savings projections
+       - ROI and payback calculations
+       - Carbon emissions reduction quantification
+
+    8. PERFORMANCE REPORTING
+       - Real-time schedule status dashboards
+       - Energy cost tracking
+       - Savings achievement reports
+       - Production compliance metrics
+       - Equipment utilization reports
+       - Executive summary generation
+
+    Zero-Hallucination Guarantee: All energy cost calculations use deterministic
+    formulas. MILP optimization uses scipy.optimize with reproducible solver settings.
+    No AI is used for numeric calculations, ensuring 100% accuracy and auditability.
+
+apiVersion: greenlang.io/v1
+
+# ==============================================================================
+# RUNTIME SPECIFICATION
+# ==============================================================================
+spec:
+  runtime:
+    language: python
+    version: "3.11"
+    framework: fastapi
+    entry_point: main:app
+    deterministic: true
+    temperature: 0.0
+    seed: 42
+    zero_hallucination: true
+    max_retries: 3
+    cache_ttl_seconds: 300  # 5 minutes for schedule data
+
+    batch_processing:
+      enabled: true
+      max_batch_size: 100
+      parallel_workers: 4
+
+  # ============================================================================
+  # DEPENDENCIES
+  # ============================================================================
+  dependencies:
+    required:
+      # Web Framework
+      - fastapi>=0.104.1
+      - uvicorn[standard]>=0.24.0
+      - pydantic>=2.5.0
+      - pydantic-settings>=2.1.0
+
+      # Database & Cache
+      - asyncpg>=0.29.0
+      - sqlalchemy>=2.0.23
+      - redis>=5.0.1
+
+      # Numerical Computing & Optimization
+      - numpy>=1.26.2
+      - scipy>=1.11.4
+      - pandas>=2.1.3
+      - PuLP>=2.7.0  # MILP optimization
+
+      # Industrial Protocols
+      - opcua>=0.98.13
+      - asyncua>=1.0.0
+      - pymodbus>=3.5.0
+
+      # Monitoring
+      - prometheus-client>=0.19.0
+
+      # Utilities
+      - python-dateutil>=2.8.2
+      - pytz>=2023.3
+      - pyyaml>=6.0.1
+      - croniter>=2.0.1  # Schedule parsing
+
+    optional:
+      # Observability
+      - opentelemetry-api>=1.21.0
+      - opentelemetry-sdk>=1.21.0
+      - opentelemetry-exporter-otlp>=1.21.0
+
+      # Advanced Analytics
+      - matplotlib>=3.8.2
+      - plotly>=5.18.0
+
+      # Reporting
+      - reportlab>=4.0.7
+      - openpyxl>=3.1.2
+
+      # Logging
+      - structlog>=23.2.0
+
+      # Demand Response
+      - openleadr>=0.5.30  # OpenADR 2.0b client
+
+    development:
+      - pytest>=7.4.3
+      - pytest-asyncio>=0.21.1
+      - pytest-cov>=4.1.0
+      - black>=23.12.0
+      - ruff>=0.1.7
+      - mypy>=1.7.1
+
+  # ============================================================================
+  # RESOURCE REQUIREMENTS
+  # ============================================================================
+  resources:
+    cpu:
+      requests: "500m"
+      limits: "2000m"
+    memory:
+      requests: "1Gi"
+      limits: "4Gi"  # MILP solver needs more memory
+    storage: "20Gi"
+    gpu: false
+
+  # ============================================================================
+  # NETWORK PORTS
+  # ============================================================================
+  ports:
+    - name: http
+      port: 8080
+      protocol: TCP
+      description: "Main API endpoint"
+    - name: metrics
+      port: 9090
+      protocol: TCP
+      description: "Prometheus metrics endpoint"
+    - name: health
+      port: 8081
+      protocol: TCP
+      description: "Health check endpoint"
+
+  # ============================================================================
+  # INPUT SPECIFICATION
+  # ============================================================================
+  inputs:
+    - name: production_schedule
+      type: object
+      required: true
+      description: "Production schedule from ERP/MES systems"
+      schema:
+        schedule_id:
+          type: string
+          description: "Unique schedule identifier"
+        planning_horizon_hours:
+          type: integer
+          range: [1, 168]
+          description: "Planning horizon (1 hour to 7 days)"
+        batches:
+          type: array
+          items:
+            type: object
+            properties:
+              batch_id:
+                type: string
+              product_id:
+                type: string
+              quantity:
+                type: number
+              deadline:
+                type: string
+                format: datetime
+              priority:
+                type: string
+                enum: [CRITICAL, HIGH, MEDIUM, LOW, FLEXIBLE]
+              heating_requirements:
+                type: object
+                properties:
+                  equipment_type:
+                    type: string
+                  temperature_c:
+                    type: number
+                  duration_minutes:
+                    type: integer
+                  power_kw:
+                    type: number
+
+    - name: energy_tariffs
+      type: object
+      required: true
+      description: "Energy tariff structure and rates"
+      schema:
+        tariff_id:
+          type: string
+        utility_name:
+          type: string
+        tariff_type:
+          type: string
+          enum: [TIME_OF_USE, DEMAND_CHARGE, REAL_TIME, TIERED, FLAT_RATE, CRITICAL_PEAK]
+        effective_date:
+          type: string
+          format: date
+        rates:
+          type: array
+          items:
+            type: object
+            properties:
+              period_name:
+                type: string
+              rate_kwh:
+                type: number
+                unit: "$/kWh"
+              start_hour:
+                type: integer
+              end_hour:
+                type: integer
+              days:
+                type: array
+                items:
+                  type: string
+        demand_charges:
+          type: object
+          properties:
+            rate_kw:
+              type: number
+              unit: "$/kW"
+            measurement_window_minutes:
+              type: integer
+            peak_window_start:
+              type: integer
+            peak_window_end:
+              type: integer
+
+    - name: equipment_availability
+      type: object
+      required: true
+      description: "Heating equipment status and availability"
+      schema:
+        equipment:
+          type: array
+          items:
+            type: object
+            properties:
+              equipment_id:
+                type: string
+              equipment_type:
+                type: string
+                enum: [ELECTRIC_FURNACE, GAS_FURNACE, INDUCTION_FURNACE, BOILER, HEAT_TREATMENT, OVEN, KILN, DRYER]
+              capacity_kw:
+                type: number
+              efficiency_percent:
+                type: number
+                range: [50, 100]
+              status:
+                type: string
+                enum: [AVAILABLE, IN_USE, MAINTENANCE, STANDBY, FAULT, OFFLINE]
+              availability_windows:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    start:
+                      type: string
+                      format: datetime
+                    end:
+                      type: string
+                      format: datetime
+
+  # ============================================================================
+  # OUTPUT SPECIFICATION
+  # ============================================================================
+  outputs:
+    - name: optimized_schedule
+      type: object
+      description: "Optimized heating schedule with cost minimization"
+      schema:
+        schedule_id:
+          type: string
+        optimization_timestamp:
+          type: string
+          format: datetime
+        planning_horizon_start:
+          type: string
+          format: datetime
+        planning_horizon_end:
+          type: string
+          format: datetime
+        tasks:
+          type: array
+          items:
+            type: object
+            properties:
+              task_id:
+                type: string
+              batch_id:
+                type: string
+              equipment_id:
+                type: string
+              scheduled_start:
+                type: string
+                format: datetime
+              scheduled_end:
+                type: string
+                format: datetime
+              power_kw:
+                type: number
+              energy_kwh:
+                type: number
+              estimated_cost_usd:
+                type: number
+              tariff_period:
+                type: string
+        total_energy_kwh:
+          type: number
+        total_cost_usd:
+          type: number
+        peak_demand_kw:
+          type: number
+        demand_charge_usd:
+          type: number
+        optimization_status:
+          type: string
+          enum: [OPTIMAL, FEASIBLE, INFEASIBLE, TIMEOUT]
+        solver_time_seconds:
+          type: number
+        provenance_hash:
+          type: string
+
+    - name: cost_savings_forecast
+      type: object
+      description: "Cost savings analysis and forecast"
+      schema:
+        analysis_id:
+          type: string
+        analysis_timestamp:
+          type: string
+          format: datetime
+        baseline_cost_usd:
+          type: number
+          description: "Cost with original schedule"
+        optimized_cost_usd:
+          type: number
+          description: "Cost with optimized schedule"
+        savings_usd:
+          type: number
+        savings_percent:
+          type: number
+        savings_breakdown:
+          type: object
+          properties:
+            load_shifting_savings_usd:
+              type: number
+            demand_charge_savings_usd:
+              type: number
+            peak_avoidance_savings_usd:
+              type: number
+        annual_projected_savings_usd:
+          type: number
+        carbon_reduction_kg_co2:
+          type: number
+        provenance_hash:
+          type: string
+
+  # ============================================================================
+  # INTEGRATIONS
+  # ============================================================================
+  integrations:
+    erp_systems:
+      - name: SAP_S4HANA
+        protocol: "REST API / RFC"
+        description: "SAP S/4HANA production planning"
+        required: false
+      - name: SAP_ECC
+        protocol: "RFC/BAPI"
+        description: "SAP ECC production planning"
+        required: false
+      - name: Oracle_ERP_Cloud
+        protocol: "REST API"
+        description: "Oracle ERP Cloud production planning"
+        required: false
+
+    energy_management:
+      - name: Energy_Management_System
+        protocol: "OPC UA / Modbus"
+        description: "Plant energy management system"
+        required: true
+      - name: Utility_Tariff_API
+        protocol: "REST API"
+        description: "Utility tariff data provider"
+        required: true
+
+    scada_dcs_systems:
+      - name: OPC_UA
+        protocol: "OPC UA"
+        description: "Equipment status from SCADA"
+        required: true
+      - name: Modbus_TCP
+        protocol: "Modbus TCP"
+        description: "Legacy equipment integration"
+        required: false
+
+    demand_response:
+      - name: OpenADR
+        protocol: "OpenADR 2.0b"
+        description: "Demand response signal handling"
+        required: false
+      - name: Grid_Operator
+        protocol: "REST API"
+        description: "ISO/RTO grid signals"
+        required: false
+
+    greenlang_agents:
+      - name: GL-001_THERMOSYNC
+        description: "Process heat orchestrator coordination"
+        required: false
+      - name: GL-009_THERMALIQ
+        description: "Thermal efficiency calculations"
+        required: false
+      - name: GL-013_PREDICTMAINT
+        description: "Predictive maintenance for heating equipment"
+        required: false
+      - name: GL-023_LOADBALANCER
+        description: "Heat load balancing coordination"
+        required: false
+
+  # ============================================================================
+  # CAPABILITIES
+  # ============================================================================
+  capabilities:
+    production_integration:
+      - erp_schedule_sync
+      - work_order_tracking
+      - batch_scheduling
+      - maintenance_window_awareness
+      - deadline_constraint_management
+
+    tariff_management:
+      - time_of_use_optimization
+      - demand_charge_minimization
+      - real_time_pricing_response
+      - critical_peak_avoidance
+      - tariff_change_notification
+
+    equipment_tracking:
+      - availability_monitoring
+      - capacity_constraint_management
+      - efficiency_curve_modeling
+      - thermal_storage_optimization
+      - maintenance_schedule_integration
+
+    schedule_optimization:
+      - milp_optimization
+      - load_shifting
+      - peak_shaving
+      - thermal_mass_utilization
+      - multi_equipment_balancing
+
+    demand_response:
+      - openADR_integration
+      - curtailment_response
+      - economic_dr
+      - emergency_dr
+      - grid_signal_handling
+
+    analytics:
+      - cost_savings_calculation
+      - baseline_comparison
+      - roi_analysis
+      - carbon_reduction_tracking
+      - what_if_scenarios
+
+  # ============================================================================
+  # COMPLIANCE
+  # ============================================================================
+  compliance:
+    standards:
+      - standard: ISO_50001
+        version: "2018"
+        description: "ISO 50001 - Energy Management Systems"
+
+      - standard: ISO_50006
+        version: "2014"
+        description: "ISO 50006 - Energy baseline and EnPI"
+
+      - standard: FERC_ORDER_2222
+        version: "2020"
+        description: "FERC Order 2222 - DER aggregation in wholesale markets"
+
+      - standard: OpenADR_2_0b
+        version: "2.0b"
+        description: "OpenADR 2.0b - Automated Demand Response"
+
+      - standard: ASHRAE_GUIDELINE_14
+        version: "2014"
+        description: "ASHRAE Guideline 14 - Measurement of Energy Savings"
+
+    audit_trail:
+      enabled: true
+      retention_days: 2555  # 7 years
+      provenance_tracking: true
+      hash_algorithm: SHA-256
+      immutable: true
+
+    zero_hallucination: true
+    deterministic_calculations: true
+
+    validation:
+      input_validation: true
+      output_validation: true
+      schedule_feasibility_check: true
+      cost_calculation_validation: true
+      deadline_compliance_check: true
+
+  # ============================================================================
+  # MONITORING
+  # ============================================================================
+  monitoring:
+    metrics_enabled: true
+    metrics_port: 9090
+    metrics_path: /metrics
+
+    dashboards:
+      - schedule_optimization_overview
+      - energy_cost_tracking
+      - demand_response_status
+      - equipment_utilization
+      - savings_achievement
+      - production_compliance
+
+    alerts:
+      - name: optimization_failure
+        condition: "optimization_status == 'INFEASIBLE'"
+        severity: high
+        description: "Schedule optimization failed - no feasible solution"
+
+      - name: deadline_risk
+        condition: "deadline_margin_minutes < 30"
+        severity: high
+        description: "Production deadline at risk"
+
+      - name: demand_spike
+        condition: "peak_demand_kw > demand_limit_kw * 0.95"
+        severity: medium
+        description: "Peak demand approaching limit"
+
+      - name: tariff_change
+        condition: "tariff_changed == true"
+        severity: low
+        description: "Energy tariff rates changed"
+
+      - name: dr_event_active
+        condition: "dr_event_active == true"
+        severity: high
+        description: "Demand response event in progress"
+
+      - name: equipment_unavailable
+        condition: "equipment_status == 'FAULT'"
+        severity: high
+        description: "Heating equipment fault"
+
+  # ============================================================================
+  # SECURITY
+  # ============================================================================
+  security:
+    authentication: oauth2
+    authorization: rbac
+    encryption: tls_1_3
+    secrets_management: kubernetes
+    api_key_required: true
+    audit_logging: true
+
+    roles:
+      - admin
+      - production_planner
+      - energy_manager
+      - operations_engineer
+      - operator
+      - viewer
+
+  # ============================================================================
+  # DEPLOYMENT
+  # ============================================================================
+  deployment:
+    replicas: 3
+    strategy: rolling_update
+    max_surge: 1
+    max_unavailable: 0
+
+    health_check:
+      liveness:
+        path: /health/liveness
+        interval: 10s
+        timeout: 5s
+        failure_threshold: 3
+
+      readiness:
+        path: /health/readiness
+        interval: 5s
+        timeout: 3s
+        failure_threshold: 3
+
+    autoscaling:
+      enabled: true
+      min_replicas: 2
+      max_replicas: 10
+      target_cpu_percent: 70
+      target_memory_percent: 80
+
+  # ============================================================================
+  # DATA RETENTION
+  # ============================================================================
+  data_retention:
+    real_time_data:
+      retention_days: 90
+      compression: true
+      archive_to: s3
+
+    schedules:
+      retention_days: 365
+      compression: true
+
+    optimization_results:
+      retention_days: 2555  # 7 years
+      immutable: true
+
+    audit_logs:
+      retention_days: 2555
+      immutable: true
+      encryption: true
+
+# ==============================================================================
+# AUTHOR & DOCUMENTATION
+# ==============================================================================
+authors:
+  - name: GreenLang AI Agent Factory
+    email: agents@greenlang.io
+
+repository: https://github.com/greenlang/agents/gl-019
+documentation: https://docs.greenlang.io/agents/gl-019
+changelog: https://github.com/greenlang/agents/gl-019/blob/main/CHANGELOG.md
+
+tags:
+  - scheduling
+  - optimization
+  - energy-management
+  - demand-response
+  - process-heating
+  - load-shifting
+  - cost-reduction
+  - milp
+  - production-planning
+  - industrial
+  - deterministic
+  - zero-hallucination
+
+# ==============================================================================
+# BUSINESS METRICS
+# ==============================================================================
+business:
+  tam: "$7B"
+  target_date: "Q2 2026"
+  priority: P1
+
+  value_proposition:
+    - Reduce energy costs by 15-25%
+    - Reduce demand charges by 20-35%
+    - 99% production deadline compliance
+    - Automated demand response participation
+    - Carbon emissions reduction tracking
+    - ROI typically 12-18 months
+
+  target_customers:
+    - industrial_manufacturing
+    - chemical_processing
+    - refineries
+    - food_beverage_processing
+    - pulp_paper_mills
+    - metals_processing
+    - glass_ceramics
+    - automotive_manufacturing
+
+  use_cases:
+    - production_schedule_optimization
+    - energy_cost_minimization
+    - demand_charge_reduction
+    - demand_response_participation
+    - load_shifting
+    - peak_shaving
+    - what_if_analysis
+    - carbon_accounting
+
+  roi_metrics:
+    - metric: energy_cost_reduction
+      target: 15
+      unit: percent
+      measurement_frequency: monthly
+
+    - metric: demand_charge_reduction
+      target: 25
+      unit: percent
+      measurement_frequency: monthly
+
+    - metric: production_deadline_compliance
+      target: 99
+      unit: percent
+      measurement_frequency: weekly
+
+    - metric: payback_period
+      target: 18
+      unit: months
+
+    - metric: annual_savings_per_facility
+      target: 500000
+      unit: USD
+      per_unit: true
+
+# ==============================================================================
+# TECHNICAL SPECIFICATIONS
+# ==============================================================================
+technical:
+  architecture:
+    pattern: microservice
+    design: event_driven
+    messaging: async
+    state_management: stateless
+    data_persistence: postgresql
+
+  scalability:
+    horizontal: true
+    vertical: true
+    max_facilities_per_instance: 10
+    max_equipment_per_facility: 100
+    max_optimization_horizon_hours: 168
+
+  reliability:
+    availability: 99.9
+    mtbf_hours: 8760
+    mttr_minutes: 30
+    data_loss_tolerance: zero
+
+  performance:
+    latency_p50_ms: 50
+    latency_p95_ms: 200
+    latency_p99_ms: 500
+    optimization_time_small_ms: 100  # <10 equipment
+    optimization_time_large_ms: 5000  # 100 equipment
+    throughput_schedules_per_minute: 60
+
+  testing:
+    unit_test_coverage_percent: 90
+    integration_test_coverage_percent: 80
+    e2e_test_coverage_percent: 70
+    load_testing: required
+    chaos_testing: recommended
+
+# ==============================================================================
+# VERSION HISTORY
+# ==============================================================================
+version_history:
+  - version: "1.0.0"
+    date: "2025-12-03"
+    status: production
+    changes:
+      - Initial production release
+      - Production schedule integration (SAP, Oracle)
+      - Energy tariff management (ToU, demand, real-time)
+      - Equipment availability tracking
+      - MILP schedule optimization
+      - Load shifting recommendations
+      - Demand response integration (OpenADR)
+      - Cost savings forecasting
+      - Zero-hallucination calculations
+    breaking_changes: []
+
+# ==============================================================================
+# ROADMAP
+# ==============================================================================
+roadmap:
+  - version: "1.1.0"
+    target_date: "Q3 2026"
+    features:
+      - Predictive demand forecasting (ML-based)
+      - Multi-site fleet optimization
+      - Carbon credit integration
+      - Advanced what-if simulations
+      - Mobile app support
+
+  - version: "1.2.0"
+    target_date: "Q4 2026"
+    features:
+      - Autonomous schedule execution
+      - Digital twin integration
+      - Renewable energy integration
+      - Battery storage optimization
+      - Grid services participation
+
+  - version: "2.0.0"
+    target_date: "Q2 2027"
+    features:
+      - AI-enhanced schedule recommendations
+      - Distributed optimization
+      - Blockchain-based energy trading
+      - Edge computing deployment
+      - Global multi-region support

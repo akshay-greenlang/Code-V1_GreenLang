@@ -1,0 +1,39 @@
+apiVersion: v2
+name: greenlang-agents
+description: GreenLang Agent Factory - Production Deployment Chart
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+
+keywords:
+  - greenlang
+  - agents
+  - carbon
+  - sustainability
+  - ai
+
+home: https://greenlang.io
+sources:
+  - https://github.com/greenlang/agent-factory
+
+maintainers:
+  - name: GreenLang DevOps
+    email: devops@greenlang.io
+
+dependencies:
+  - name: fuel-analyzer
+    version: "1.0.0"
+    condition: fuel-analyzer.enabled
+  - name: carbon-intensity
+    version: "1.0.0"
+    condition: carbon-intensity.enabled
+  - name: energy-performance
+    version: "1.0.0"
+    condition: energy-performance.enabled
+  - name: eudr-compliance
+    version: "1.0.0"
+    condition: eudr-compliance.enabled
+
+annotations:
+  category: AI/ML
+  licenses: Apache-2.0

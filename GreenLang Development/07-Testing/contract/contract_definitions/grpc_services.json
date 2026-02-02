@@ -1,0 +1,160 @@
+{
+  "name": "grpc-services-contract",
+  "version": "1.0.0",
+  "contract_type": "grpc",
+  "provider": "greenlang_core",
+  "consumer": "all_clients",
+  "schema": {
+    "services": {
+      "CalculationService": {
+        "description": "Service for performing emission calculations",
+        "package": "greenlang.v1",
+        "methods": {
+          "Calculate": {
+            "description": "Perform a single emission calculation",
+            "request_type": "CalculateRequest",
+            "response_type": "CalculateResponse",
+            "request_schema": {
+              "type": "object",
+              "required": ["input_data", "calculation_type"],
+              "properties": {
+                "input_data": {
+                  "type": "object",
+                  "required": ["fuel_type", "quantity", "unit"],
+                  "properties": {
+                    "fuel_type": {"type": "string"},
+                    "quantity": {"type": "number"},
+                    "unit": {"type": "string"},
+                    "region": {"type": "string"}
+                  }
+                },
+                "calculation_type": {
+                  "type": "string",
+                  "enum": ["scope1", "scope2", "scope3"]
+                },
+                "options": {
+                  "type": "object",
+                  "properties": {
+                    "include_provenance": {"type": "boolean"},
+                    "emission_factor_source": {"type": "string"}
+                  }
+                }
+              }
+            },
+            "response_schema": {
+              "type": "object",
+              "required": ["result", "provenance_hash", "execution_time_ms"],
+              "properties": {
+                "result": {
+                  "type": "object",
+                  "required": ["emissions_kg_co2e"],
+                  "properties": {
+                    "emissions_kg_co2e": {"type": "number"},
+                    "emissions_tonnes_co2e": {"type": "number"},
+                    "emission_factor": {"type": "number"}
+                  }
+                },
+                "provenance_hash": {"type": "string"},
+                "execution_time_ms": {"type": "number"}
+              }
+            }
+          },
+          "BatchCalculate": {
+            "description": "Perform multiple calculations in batch",
+            "request_type": "BatchCalculateRequest",
+            "response_type": "BatchCalculateResponse",
+            "request_schema": {
+              "type": "object",
+              "required": ["calculations"],
+              "properties": {
+                "calculations": {
+                  "type": "array",
+                  "maxItems": 1000
+                },
+                "options": {
+                  "type": "object",
+                  "properties": {
+                    "parallel": {"type": "boolean"},
+                    "fail_fast": {"type": "boolean"}
+                  }
+                }
+              }
+            },
+            "response_schema": {
+              "type": "object",
+              "required": ["results", "summary"],
+              "properties": {
+                "results": {"type": "array"},
+                "summary": {
+                  "type": "object",
+                  "required": ["total", "succeeded", "failed"],
+                  "properties": {
+                    "total": {"type": "integer"},
+                    "succeeded": {"type": "integer"},
+                    "failed": {"type": "integer"}
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "AgentService": {
+        "description": "Service for invoking GreenLang agents",
+        "package": "greenlang.v1",
+        "methods": {
+          "InvokeAgent": {
+            "description": "Invoke an agent with input data",
+            "request_type": "InvokeAgentRequest",
+            "response_type": "InvokeAgentResponse",
+            "request_schema": {
+              "type": "object",
+              "required": ["agent_id", "input"],
+              "properties": {
+                "agent_id": {"type": "string"},
+                "input": {"type": "object"},
+                "options": {"type": "object"}
+              }
+            },
+            "response_schema": {
+              "type": "object",
+              "required": ["agent_id", "execution_id", "result"],
+              "properties": {
+                "agent_id": {"type": "string"},
+                "execution_id": {"type": "string"},
+                "result": {"type": "object"},
+                "execution_time_ms": {"type": "number"}
+              }
+            }
+          },
+          "ListAgents": {
+            "description": "List available agents",
+            "request_type": "ListAgentsRequest",
+            "response_type": "ListAgentsResponse"
+          }
+        }
+      },
+      "StreamingService": {
+        "description": "Service for streaming calculations",
+        "package": "greenlang.v1",
+        "methods": {
+          "StreamCalculations": {
+            "description": "Bidirectional streaming for calculations",
+            "stream_type": "bidirectional",
+            "request_type": "StreamCalculationsRequest",
+            "response_type": "StreamCalculationsResponse"
+          }
+        }
+      }
+    },
+    "error_codes": {
+      "INVALID_ARGUMENT": "Request contains invalid data",
+      "NOT_FOUND": "Requested resource not found",
+      "PERMISSION_DENIED": "Caller lacks permission",
+      "RESOURCE_EXHAUSTED": "Rate limit exceeded",
+      "INTERNAL": "Internal server error",
+      "UNAVAILABLE": "Service temporarily unavailable",
+      "DEADLINE_EXCEEDED": "Request timed out"
+    }
+  }
+}

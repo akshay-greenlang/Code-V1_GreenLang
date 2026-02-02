@@ -1,0 +1,21 @@
+# Valid payload for simple_object schema
+# This payload includes all required fields and valid optional fields.
+
+_test_metadata:
+  schema: "basic/simple_object.yaml"
+  description: "Valid simple object with all fields"
+  expected_valid: true
+
+name: "Test Object"
+quantity: 42
+status: "active"
+price: 99.99
+is_verified: true
+tags:
+  - "test"
+  - "example"
+  - "golden"
+metadata:
+  created_at: "2025-01-15T10:30:00Z"
+  updated_at: "2025-01-28T14:45:00Z"
+  version: 1

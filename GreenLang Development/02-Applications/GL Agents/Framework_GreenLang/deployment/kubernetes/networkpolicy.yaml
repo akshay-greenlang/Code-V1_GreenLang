@@ -1,0 +1,304 @@
+# GreenLang Agent Network Policy Template
+# Template Version: 1.0.0
+# Customize: Replace ${VARIABLE} placeholders with actual values
+#
+# Purpose: Implements network segmentation and security using Kubernetes Network Policies
+
+---
+# Default Deny All Ingress (Namespace Level)
+# Apply this first to deny all ingress by default
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-ingress
+  namespace: ${NAMESPACE}
+  labels:
+    app.kubernetes.io/part-of: greenlang
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+
+---
+# Default Deny All Egress (Namespace Level)
+# Apply this to deny all egress by default
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-egress
+  namespace: ${NAMESPACE}
+  labels:
+    app.kubernetes.io/part-of: greenlang
+spec:
+  podSelector: {}
+  policyTypes:
+    - Egress
+
+---
+# Agent Ingress Policy
+# Allow traffic from ingress controller and internal services
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: ${AGENT_ID}-ingress
+  namespace: ${NAMESPACE}
+  labels:
+    app: ${AGENT_ID}
+    app.kubernetes.io/name: ${AGENT_ID}
+spec:
+  podSelector:
+    matchLabels:
+      app: ${AGENT_ID}
+  policyTypes:
+    - Ingress
+  ingress:
+    # Allow from Ingress Controller
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: ingress-nginx
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 8000
+
+    # Allow from same namespace (inter-service communication)
+    - from:
+        - podSelector: {}
+      ports:
+        - protocol: TCP
+          port: 8000
+        - protocol: TCP
+          port: 9090
+
+    # Allow from monitoring namespace (Prometheus scraping)
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+          podSelector:
+            matchLabels:
+              app: prometheus
+      ports:
+        - protocol: TCP
+          port: 8000
+        - protocol: TCP
+          port: 9090
+
+    # Allow from Istio sidecar (if using service mesh)
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: istio-system
+      ports:
+        - protocol: TCP
+          port: 8000
+        - protocol: TCP
+          port: 15090
+
+---
+# Agent Egress Policy
+# Allow outbound traffic to required services
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: ${AGENT_ID}-egress
+  namespace: ${NAMESPACE}
+  labels:
+    app: ${AGENT_ID}
+    app.kubernetes.io/name: ${AGENT_ID}
+spec:
+  podSelector:
+    matchLabels:
+      app: ${AGENT_ID}
+  policyTypes:
+    - Egress
+  egress:
+    # Allow DNS resolution
+    - to:
+        - namespaceSelector: {}
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+
+    # Allow to Database (PostgreSQL)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: database
+          podSelector:
+            matchLabels:
+              app: postgresql
+      ports:
+        - protocol: TCP
+          port: 5432
+
+    # Allow to Redis
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: cache
+          podSelector:
+            matchLabels:
+              app: redis
+      ports:
+        - protocol: TCP
+          port: 6379
+
+    # Allow to other agents in same namespace
+    - to:
+        - podSelector: {}
+      ports:
+        - protocol: TCP
+          port: 8000
+
+    # Allow to external services (HTTPS)
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 10.0.0.0/8
+              - 172.16.0.0/12
+              - 192.168.0.0/16
+      ports:
+        - protocol: TCP
+          port: 443
+
+    # Allow to AWS services (us-east-1)
+    - to:
+        - ipBlock:
+            cidr: 52.94.0.0/15  # AWS S3
+        - ipBlock:
+            cidr: 52.119.0.0/16  # AWS S3
+      ports:
+        - protocol: TCP
+          port: 443
+
+---
+# Inter-Agent Communication Policy
+# Allow specific agents to communicate with each other
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: ${AGENT_ID}-inter-agent
+  namespace: ${NAMESPACE}
+  labels:
+    app: ${AGENT_ID}
+spec:
+  podSelector:
+    matchLabels:
+      app: ${AGENT_ID}
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Allow from specific agents
+    - from:
+        - podSelector:
+            matchLabels:
+              greenlang.io/agent-group: thermal
+      ports:
+        - protocol: TCP
+          port: 8000
+  egress:
+    # Allow to specific agents
+    - to:
+        - podSelector:
+            matchLabels:
+              greenlang.io/agent-group: thermal
+      ports:
+        - protocol: TCP
+          port: 8000
+
+---
+# Monitoring Access Policy
+# Allow Prometheus and Grafana to access metrics
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-monitoring
+  namespace: ${NAMESPACE}
+  labels:
+    app.kubernetes.io/part-of: greenlang
+spec:
+  podSelector:
+    matchLabels:
+      greenlang.io/monitoring: enabled
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+      ports:
+        - protocol: TCP
+          port: 9090
+        - protocol: TCP
+          port: 8000
+
+---
+# Admin Access Policy
+# Allow kubectl exec/logs from authorized namespaces
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-admin-access
+  namespace: ${NAMESPACE}
+  labels:
+    app.kubernetes.io/part-of: greenlang
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: kube-system
+        - namespaceSelector:
+            matchLabels:
+              name: admin
+
+---
+# Cilium Network Policy (Alternative - More Features)
+# Uncomment if using Cilium CNI
+# apiVersion: cilium.io/v2
+# kind: CiliumNetworkPolicy
+# metadata:
+#   name: ${AGENT_ID}-cilium-policy
+#   namespace: ${NAMESPACE}
+# spec:
+#   endpointSelector:
+#     matchLabels:
+#       app: ${AGENT_ID}
+#   ingress:
+#     - fromEndpoints:
+#         - matchLabels:
+#             io.kubernetes.pod.namespace: ingress-nginx
+#       toPorts:
+#         - ports:
+#             - port: "8000"
+#               protocol: TCP
+#           rules:
+#             http:
+#               - method: "GET"
+#                 path: "/api/v1/health"
+#               - method: "GET"
+#                 path: "/api/v1/ready"
+#               - method: "POST"
+#                 path: "/api/v1/.*"
+#   egress:
+#     - toFQDNs:
+#         - matchPattern: "*.amazonaws.com"
+#       toPorts:
+#         - ports:
+#             - port: "443"
+#               protocol: TCP

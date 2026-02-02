@@ -1,0 +1,206 @@
+{
+  "metadata": {
+    "description": "Sample economizer configurations for GL-020 ECONOPULSE testing",
+    "version": "1.0.0",
+    "created_date": "2025-01-01"
+  },
+  "economizers": [
+    {
+      "economizer_id": "ECON-001",
+      "name": "Primary Boiler Economizer",
+      "economizer_type": "bare_tube",
+      "flow_arrangement": "counter_flow",
+      "design_heat_duty_kw": 2500.0,
+      "design_u_value_w_m2k": 45.0,
+      "heat_transfer_area_m2": 350.0,
+      "tube_diameter_mm": 50.8,
+      "tube_count": 120,
+      "tube_passes": 2,
+      "fin_density_per_m": 0,
+      "design_water_flow_kg_s": 12.5,
+      "design_gas_flow_kg_s": 18.0,
+      "design_water_inlet_c": 105.0,
+      "design_water_outlet_c": 145.0,
+      "design_gas_inlet_c": 380.0,
+      "design_gas_outlet_c": 175.0,
+      "min_approach_temp_c": 25.0,
+      "commissioning_date": "2020-06-15"
+    },
+    {
+      "economizer_id": "ECON-002",
+      "name": "Secondary Economizer with Fins",
+      "economizer_type": "finned_tube",
+      "flow_arrangement": "counter_flow",
+      "design_heat_duty_kw": 3500.0,
+      "design_u_value_w_m2k": 55.0,
+      "heat_transfer_area_m2": 420.0,
+      "tube_diameter_mm": 38.1,
+      "tube_count": 180,
+      "tube_passes": 4,
+      "fin_density_per_m": 275,
+      "design_water_flow_kg_s": 15.0,
+      "design_gas_flow_kg_s": 22.0,
+      "design_water_inlet_c": 100.0,
+      "design_water_outlet_c": 150.0,
+      "design_gas_inlet_c": 420.0,
+      "design_gas_outlet_c": 165.0,
+      "min_approach_temp_c": 20.0,
+      "commissioning_date": "2021-03-20"
+    },
+    {
+      "economizer_id": "ECON-003",
+      "name": "High Efficiency Extended Surface",
+      "economizer_type": "extended_surface",
+      "flow_arrangement": "cross_flow",
+      "design_heat_duty_kw": 5000.0,
+      "design_u_value_w_m2k": 65.0,
+      "heat_transfer_area_m2": 600.0,
+      "tube_diameter_mm": 31.75,
+      "tube_count": 250,
+      "tube_passes": 6,
+      "fin_density_per_m": 350,
+      "design_water_flow_kg_s": 25.0,
+      "design_gas_flow_kg_s": 35.0,
+      "design_water_inlet_c": 95.0,
+      "design_water_outlet_c": 155.0,
+      "design_gas_inlet_c": 450.0,
+      "design_gas_outlet_c": 155.0,
+      "min_approach_temp_c": 15.0,
+      "commissioning_date": "2022-08-10"
+    },
+    {
+      "economizer_id": "ECON-004",
+      "name": "Condensing Flue Gas Economizer",
+      "economizer_type": "condensing",
+      "flow_arrangement": "counter_flow",
+      "design_heat_duty_kw": 1500.0,
+      "design_u_value_w_m2k": 80.0,
+      "heat_transfer_area_m2": 200.0,
+      "tube_diameter_mm": 25.4,
+      "tube_count": 300,
+      "tube_passes": 4,
+      "fin_density_per_m": 0,
+      "design_water_flow_kg_s": 8.0,
+      "design_gas_flow_kg_s": 12.0,
+      "design_water_inlet_c": 40.0,
+      "design_water_outlet_c": 80.0,
+      "design_gas_inlet_c": 180.0,
+      "design_gas_outlet_c": 55.0,
+      "min_approach_temp_c": 10.0,
+      "commissioning_date": "2023-01-05"
+    }
+  ],
+  "baselines": [
+    {
+      "economizer_id": "ECON-001",
+      "baseline_date": "2024-01-15",
+      "clean_u_value_w_m2k": 45.0,
+      "clean_effectiveness": 0.745,
+      "clean_heat_duty_kw": 2500.0,
+      "clean_approach_temp_c": 30.0,
+      "clean_gas_pressure_drop_kpa": 0.8,
+      "clean_water_pressure_drop_kpa": 25.0,
+      "reference_conditions": {
+        "gas_flow_kg_s": 18.0,
+        "water_flow_kg_s": 12.5,
+        "gas_inlet_c": 380.0,
+        "water_inlet_c": 105.0
+      }
+    },
+    {
+      "economizer_id": "ECON-002",
+      "baseline_date": "2024-02-20",
+      "clean_u_value_w_m2k": 55.0,
+      "clean_effectiveness": 0.78,
+      "clean_heat_duty_kw": 3500.0,
+      "clean_approach_temp_c": 25.0,
+      "clean_gas_pressure_drop_kpa": 1.2,
+      "clean_water_pressure_drop_kpa": 30.0,
+      "reference_conditions": {
+        "gas_flow_kg_s": 22.0,
+        "water_flow_kg_s": 15.0,
+        "gas_inlet_c": 420.0,
+        "water_inlet_c": 100.0
+      }
+    }
+  ],
+  "alert_configurations": [
+    {
+      "alert_id": "ALERT-FOULING-001",
+      "name": "High Fouling Factor Alert",
+      "alert_type": "threshold",
+      "parameter": "fouling_factor_m2k_w",
+      "threshold_high": 0.0008,
+      "threshold_low": null,
+      "rate_of_change_limit": null,
+      "severity": "warning",
+      "enabled": true,
+      "cooldown_minutes": 120,
+      "deduplication_window_minutes": 60
+    },
+    {
+      "alert_id": "ALERT-EFF-001",
+      "name": "Low Effectiveness Alert",
+      "alert_type": "threshold",
+      "parameter": "effectiveness",
+      "threshold_high": null,
+      "threshold_low": 0.60,
+      "rate_of_change_limit": null,
+      "severity": "warning",
+      "enabled": true,
+      "cooldown_minutes": 60,
+      "deduplication_window_minutes": 30
+    },
+    {
+      "alert_id": "ALERT-ROC-001",
+      "name": "Rapid Fouling Increase Alert",
+      "alert_type": "rate_of_change",
+      "parameter": "fouling_factor_m2k_w",
+      "threshold_high": null,
+      "threshold_low": null,
+      "rate_of_change_limit": 0.0001,
+      "severity": "critical",
+      "enabled": true,
+      "cooldown_minutes": 30,
+      "deduplication_window_minutes": 15
+    },
+    {
+      "alert_id": "ALERT-APPROACH-001",
+      "name": "High Approach Temperature Alert",
+      "alert_type": "threshold",
+      "parameter": "approach_temp_c",
+      "threshold_high": 50.0,
+      "threshold_low": null,
+      "rate_of_change_limit": null,
+      "severity": "warning",
+      "enabled": true,
+      "cooldown_minutes": 60,
+      "deduplication_window_minutes": 30
+    },
+    {
+      "alert_id": "ALERT-UVALUE-001",
+      "name": "Critical U-Value Drop Alert",
+      "alert_type": "threshold",
+      "parameter": "u_value_w_m2k",
+      "threshold_high": null,
+      "threshold_low": 25.0,
+      "rate_of_change_limit": null,
+      "severity": "critical",
+      "enabled": true,
+      "cooldown_minutes": 30,
+      "deduplication_window_minutes": 15
+    }
+  ],
+  "fouling_thresholds": {
+    "clean": 0.0002,
+    "light": 0.0004,
+    "moderate": 0.0007,
+    "heavy": 0.001,
+    "severe": 0.0015
+  },
+  "cleaning_schedule_defaults": {
+    "recommended_interval_days": 180,
+    "emergency_threshold_m2k_w": 0.001,
+    "scheduled_threshold_m2k_w": 0.0008
+  }
+}

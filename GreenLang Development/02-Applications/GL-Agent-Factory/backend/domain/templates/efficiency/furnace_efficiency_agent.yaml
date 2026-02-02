@@ -1,0 +1,962 @@
+# =============================================================================
+# Furnace Efficiency Agent Template
+# GreenLang Agent Factory - Process Heat Applications
+# =============================================================================
+# Standard: API 560 - Fired Heaters for General Refinery Service
+# Version: 1.0.0
+# =============================================================================
+
+metadata:
+  template_id: furnace_efficiency_agent
+  name: Fired Heater Efficiency Calculation Agent
+  description: >
+    Calculates fired heater/furnace efficiency per API 560 standards.
+    Supports radiant and convection section analysis, tube metal temperature
+    calculations, and heat duty verification for process furnaces.
+  category: efficiency
+  version: "1.0.0"
+  status: production
+  author: GreenLang Engineering Team
+  created_at: "2024-12-01T00:00:00Z"
+  updated_at: "2024-12-11T00:00:00Z"
+
+  tags:
+    - fired_heater
+    - furnace
+    - process_heating
+    - API_560
+    - refinery
+    - petrochemical
+
+  equipment_types:
+    - cabin_heater
+    - cylindrical_heater
+    - box_heater
+    - reformer_furnace
+    - cracking_furnace
+    - vacuum_heater
+
+  industries:
+    - oil_gas
+    - petrochemical
+    - chemical
+    - refining
+
+  applicable_standards:
+    - API 560
+    - API 530
+    - API 579-1
+    - NFPA 87
+
+  compliance_frameworks:
+    - API Standards
+    - OSHA PSM
+    - EPA MACT
+
+# =============================================================================
+# Input Schema
+# =============================================================================
+
+input_schema:
+  name: FurnaceEfficiencyInput
+  description: Input parameters for fired heater efficiency calculation
+  version: "1.0.0"
+
+  fields:
+    # Heater configuration
+    heater_type:
+      type: enum
+      description: Type of fired heater
+      required: true
+      allowed_values:
+        - cabin
+        - cylindrical
+        - box
+        - reformer
+        - pyrolysis
+
+    heater_service:
+      type: string
+      description: Process service (e.g., crude heating, vacuum residue)
+      required: true
+
+    design_duty:
+      type: float
+      description: Design heat duty
+      required: true
+      unit: MW
+      min_value: 0.1
+      max_value: 500
+
+    # Fuel inputs
+    fuel_type:
+      type: enum
+      description: Type of fuel
+      required: true
+      allowed_values:
+        - natural_gas
+        - refinery_fuel_gas
+        - fuel_oil
+        - mixed
+
+    fuel_flow_rate:
+      type: float
+      description: Fuel consumption rate
+      required: true
+      unit: kg/hr
+      min_value: 0
+
+    fuel_lower_heating_value:
+      type: float
+      description: Lower heating value of fuel
+      required: true
+      unit: MJ/kg
+      min_value: 10
+      max_value: 60
+
+    fuel_higher_heating_value:
+      type: float
+      description: Higher heating value of fuel
+      required: false
+      unit: MJ/kg
+
+    # Process fluid inputs
+    process_fluid:
+      type: string
+      description: Process fluid being heated
+      required: true
+
+    process_flow_rate:
+      type: float
+      description: Process fluid mass flow rate
+      required: true
+      unit: kg/hr
+      min_value: 0
+
+    process_inlet_temperature:
+      type: float
+      description: Process fluid inlet temperature
+      required: true
+      unit: celsius
+      min_value: -50
+      max_value: 500
+
+    process_outlet_temperature:
+      type: float
+      description: Process fluid outlet temperature
+      required: true
+      unit: celsius
+      min_value: 0
+      max_value: 900
+
+    process_inlet_pressure:
+      type: float
+      description: Process fluid inlet pressure
+      required: true
+      unit: bar_g
+      min_value: 0
+
+    process_specific_heat:
+      type: float
+      description: Average specific heat of process fluid
+      required: true
+      unit: kJ/kg-K
+      min_value: 0.5
+      max_value: 10
+
+    # Combustion parameters
+    excess_air:
+      type: float
+      description: Excess air percentage
+      required: true
+      unit: percent
+      min_value: 5
+      max_value: 50
+
+    combustion_air_temperature:
+      type: float
+      description: Combustion air temperature
+      required: true
+      unit: celsius
+      min_value: -20
+      max_value: 350
+
+    flue_gas_temperature:
+      type: float
+      description: Flue gas temperature leaving convection section
+      required: true
+      unit: celsius
+      min_value: 100
+      max_value: 600
+
+    flue_gas_o2:
+      type: float
+      description: Oxygen in flue gas (dry basis)
+      required: false
+      unit: percent
+      min_value: 0
+      max_value: 15
+
+    draft_type:
+      type: enum
+      description: Type of draft system
+      required: false
+      allowed_values:
+        - natural
+        - forced
+        - induced
+        - balanced
+      default: natural
+
+    # Radiant section
+    radiant_tube_surface:
+      type: float
+      description: Radiant section tube surface area
+      required: true
+      unit: m2
+      min_value: 10
+      max_value: 10000
+
+    radiant_absorption_factor:
+      type: float
+      description: Radiant absorption factor
+      required: false
+      unit: dimensionless
+      min_value: 0.5
+      max_value: 1.0
+      default: 0.85
+
+    firebox_temperature:
+      type: float
+      description: Average firebox temperature
+      required: false
+      unit: celsius
+      min_value: 600
+      max_value: 1400
+
+    # Convection section
+    convection_tube_surface:
+      type: float
+      description: Convection section tube surface area
+      required: false
+      unit: m2
+      min_value: 0
+
+    convection_inlet_temp:
+      type: float
+      description: Flue gas temperature entering convection section
+      required: false
+      unit: celsius
+
+    # Shield section
+    shield_section_surface:
+      type: float
+      description: Shield/shock section tube surface area
+      required: false
+      unit: m2
+      default: 0
+
+    # Ambient conditions
+    ambient_temperature:
+      type: float
+      description: Ambient air temperature
+      required: true
+      unit: celsius
+      min_value: -50
+      max_value: 60
+
+    ambient_humidity:
+      type: float
+      description: Ambient relative humidity
+      required: false
+      unit: percent
+      default: 50
+
+    # Efficiency credits
+    air_preheater_present:
+      type: boolean
+      description: Whether air preheater is installed
+      required: false
+      default: false
+
+    air_preheater_effectiveness:
+      type: float
+      description: Air preheater effectiveness
+      required: false
+      unit: percent
+      min_value: 0
+      max_value: 90
+
+# =============================================================================
+# Output Schema
+# =============================================================================
+
+output_schema:
+  name: FurnaceEfficiencyOutput
+  description: Results of fired heater efficiency calculation
+  version: "1.0.0"
+
+  fields:
+    # Efficiency results
+    thermal_efficiency_lhv:
+      type: float
+      description: Thermal efficiency based on LHV
+      unit: percent
+
+    thermal_efficiency_hhv:
+      type: float
+      description: Thermal efficiency based on HHV
+      unit: percent
+
+    radiant_efficiency:
+      type: float
+      description: Radiant section efficiency
+      unit: percent
+
+    convection_efficiency:
+      type: float
+      description: Convection section heat recovery
+      unit: percent
+
+    # Heat duty breakdown
+    absorbed_duty:
+      type: float
+      description: Total heat absorbed by process fluid
+      unit: MW
+
+    radiant_duty:
+      type: float
+      description: Heat absorbed in radiant section
+      unit: MW
+
+    convection_duty:
+      type: float
+      description: Heat absorbed in convection section
+      unit: MW
+
+    shield_duty:
+      type: float
+      description: Heat absorbed in shield section
+      unit: MW
+
+    fired_duty:
+      type: float
+      description: Total heat released from fuel
+      unit: MW
+
+    # Heat losses
+    stack_loss:
+      type: float
+      description: Heat loss in stack gases
+      unit: percent
+
+    radiation_loss:
+      type: float
+      description: Casing radiation loss
+      unit: percent
+
+    unaccounted_loss:
+      type: float
+      description: Unaccounted heat loss
+      unit: percent
+
+    total_losses:
+      type: float
+      description: Total heat losses
+      unit: percent
+
+    # Combustion analysis
+    excess_air_calculated:
+      type: float
+      description: Excess air from O2 measurement
+      unit: percent
+
+    flue_gas_flow:
+      type: float
+      description: Flue gas mass flow rate
+      unit: kg/hr
+
+    air_fuel_ratio:
+      type: float
+      description: Air to fuel mass ratio
+      unit: kg/kg
+
+    adiabatic_flame_temp:
+      type: float
+      description: Adiabatic flame temperature
+      unit: celsius
+
+    # Process verification
+    actual_duty_ratio:
+      type: float
+      description: Actual duty as fraction of design
+      unit: percent
+
+    process_delta_t:
+      type: float
+      description: Process fluid temperature rise
+      unit: celsius
+
+    # Tube metal temperatures
+    max_tube_metal_temp:
+      type: float
+      description: Maximum tube metal temperature estimate
+      unit: celsius
+
+    tube_metal_temp_margin:
+      type: float
+      description: Margin below design tube temperature
+      unit: celsius
+
+    # Emissions
+    co2_emissions:
+      type: float
+      description: CO2 emission rate
+      unit: kg/hr
+
+    nox_estimate:
+      type: float
+      description: Estimated NOx emissions
+      unit: ppm
+
+    # Improvement potential
+    efficiency_gap:
+      type: float
+      description: Gap from best-in-class efficiency
+      unit: percent
+
+    fuel_savings_potential:
+      type: float
+      description: Potential fuel savings
+      unit: kg/hr
+
+    recommendations:
+      type: list
+      description: Efficiency improvement recommendations
+
+    # Provenance
+    provenance_hash:
+      type: string
+      description: SHA-256 provenance hash
+
+    calculation_timestamp:
+      type: datetime
+      description: Calculation timestamp
+
+    source_references:
+      type: list
+      description: Standards and formulas used
+
+# =============================================================================
+# Formulas
+# =============================================================================
+
+formulas:
+  - id: API560_THERMAL_EFFICIENCY
+    name: Fired Heater Thermal Efficiency
+    description: Overall thermal efficiency per API 560
+    equation: "eta = Q_absorbed / Q_released * 100"
+    variables:
+      Q_absorbed:
+        description: Heat absorbed by process fluid
+        unit: MW
+        type: float
+      Q_released:
+        description: Heat released from fuel combustion
+        unit: MW
+        type: float
+    source:
+      standard: API 560
+      section: "7.3"
+      edition: "2022"
+    application: Primary efficiency metric for fired heaters
+    uncertainty: 2.0
+
+  - id: API560_RADIANT_HEAT_TRANSFER
+    name: Radiant Section Heat Transfer
+    description: Heat absorbed in radiant section
+    equation: "Q_rad = A_rad * alpha * sigma * (T_g^4 - T_t^4)"
+    variables:
+      A_rad:
+        description: Radiant tube surface area
+        unit: m2
+        type: float
+      alpha:
+        description: Absorption factor
+        unit: dimensionless
+        type: float
+      sigma:
+        description: Stefan-Boltzmann constant
+        unit: W/m2-K4
+        type: float
+      T_g:
+        description: Gas temperature
+        unit: kelvin
+        type: float
+      T_t:
+        description: Tube surface temperature
+        unit: kelvin
+        type: float
+    source:
+      standard: API 560
+      section: "7.2.2"
+      edition: "2022"
+    application: Radiant section design and analysis
+
+  - id: API560_CONVECTION_DUTY
+    name: Convection Section Heat Transfer
+    description: Heat absorbed in convection section
+    equation: "Q_conv = U * A * LMTD"
+    variables:
+      U:
+        description: Overall heat transfer coefficient
+        unit: W/m2-K
+        type: float
+      A:
+        description: Heat transfer surface area
+        unit: m2
+        type: float
+      LMTD:
+        description: Log mean temperature difference
+        unit: kelvin
+        type: float
+    source:
+      standard: API 560
+      section: "7.2.3"
+      edition: "2022"
+    application: Convection section analysis
+
+  - id: STACK_LOSS_CALCULATION
+    name: Stack Heat Loss
+    description: Heat loss in flue gas leaving stack
+    equation: "L_stack = m_fg * Cp_fg * (T_stack - T_ambient) / Q_in * 100"
+    variables:
+      m_fg:
+        description: Flue gas mass flow
+        unit: kg/hr
+        type: float
+      Cp_fg:
+        description: Flue gas specific heat
+        unit: kJ/kg-K
+        type: float
+      T_stack:
+        description: Stack temperature
+        unit: celsius
+        type: float
+      T_ambient:
+        description: Ambient temperature
+        unit: celsius
+        type: float
+      Q_in:
+        description: Heat input
+        unit: kJ/hr
+        type: float
+    source:
+      standard: API 560
+      section: "7.3.2"
+      edition: "2022"
+    application: Stack loss determination
+
+  - id: CASING_RADIATION_LOSS
+    name: Casing Radiation Loss
+    description: Heat loss from furnace casing
+    equation: "L_rad = 0.5 + 0.005 * Q_fired"
+    variables:
+      Q_fired:
+        description: Fired duty
+        unit: MW
+        type: float
+      L_rad:
+        description: Radiation loss
+        unit: percent
+        type: float
+    source:
+      standard: API 560
+      section: "7.3.3"
+      edition: "2022"
+    application: Estimate of casing heat loss
+    limitations:
+      - Empirical correlation
+      - Valid for well-insulated furnaces
+
+  - id: ADIABATIC_FLAME_TEMP
+    name: Adiabatic Flame Temperature
+    description: Theoretical maximum flame temperature
+    equation: "T_aft = T_air + (LHV * (1 + EA/100)) / (Cp_fg * (1 + AF * (1 + EA/100)))"
+    variables:
+      T_air:
+        description: Combustion air temperature
+        unit: kelvin
+        type: float
+      LHV:
+        description: Lower heating value
+        unit: kJ/kg
+        type: float
+      EA:
+        description: Excess air
+        unit: percent
+        type: float
+      Cp_fg:
+        description: Flue gas specific heat
+        unit: kJ/kg-K
+        type: float
+      AF:
+        description: Stoichiometric air-fuel ratio
+        unit: kg/kg
+        type: float
+    source:
+      standard: API 560
+      section: "7.1.3"
+      edition: "2022"
+    application: Combustion analysis
+
+# =============================================================================
+# Standards References
+# =============================================================================
+
+standards:
+  - code: API 560
+    title: Fired Heaters for General Refinery Service
+    edition: "2022"
+    sections:
+      - "Section 7: Thermal Design"
+      - "Section 8: Mechanical Design"
+    requirements:
+      - Thermal efficiency calculation
+      - Heat flux limits
+      - Tube metal temperature limits
+    compliance_level: required
+
+  - code: API 530
+    title: Calculation of Heater-Tube Thickness in Petroleum Refineries
+    edition: "2022"
+    sections:
+      - "Section 4: Design Considerations"
+    requirements:
+      - Tube thickness calculation
+      - Allowable stress values
+    compliance_level: required
+
+  - code: NFPA 87
+    title: Recommended Practice for Fluid Heaters
+    edition: "2021"
+    sections:
+      - "Chapter 4: Design Considerations"
+      - "Chapter 5: Safety Systems"
+    requirements:
+      - Combustion safety
+      - Emergency procedures
+    compliance_level: recommended
+
+# =============================================================================
+# Safety Constraints
+# =============================================================================
+
+safety_constraints:
+  - id: SC_EXCESS_AIR_MIN
+    name: Minimum Excess Air
+    description: Ensure sufficient excess air for complete combustion
+    condition: "excess_air >= 10"
+    action: warn
+    severity: warning
+    standard_reference: API 560
+    message: "Excess air {excess_air}% below recommended 10% minimum"
+
+  - id: SC_EXCESS_AIR_MAX
+    name: Maximum Excess Air
+    description: Prevent excessive heat loss from high excess air
+    condition: "excess_air <= 35"
+    action: warn
+    severity: warning
+    message: "Excess air {excess_air}% above 35% - efficiency loss"
+
+  - id: SC_STACK_TEMP_HIGH
+    name: High Stack Temperature
+    description: Flag high stack temperature indicating poor heat recovery
+    condition: "flue_gas_temperature <= 350"
+    action: warn
+    severity: warning
+    parameters:
+      max_stack_temp: 350
+    message: "Stack temperature {flue_gas_temperature}C exceeds 350C"
+
+  - id: SC_STACK_TEMP_LOW
+    name: Low Stack Temperature
+    description: Prevent acid dew point corrosion
+    condition: "flue_gas_temperature >= 120"
+    action: warn
+    severity: error
+    message: "Stack temperature {flue_gas_temperature}C below acid dew point risk zone"
+
+  - id: SC_DUTY_OVERLOAD
+    name: Duty Overload Check
+    description: Verify heater not exceeding design duty
+    condition: "actual_duty_ratio <= 110"
+    action: warn
+    severity: error
+    message: "Heater at {actual_duty_ratio}% of design duty - overload condition"
+
+  - id: SC_TUBE_TEMP_LIMIT
+    name: Tube Metal Temperature Limit
+    description: Ensure tube temperature within design limits
+    condition: "max_tube_metal_temp <= 650"
+    action: reject
+    severity: critical
+    standard_reference: API 530
+    message: "Estimated tube metal temperature {max_tube_metal_temp}C exceeds limit"
+
+  - id: SC_EFFICIENCY_LOW
+    name: Low Efficiency Alert
+    description: Flag abnormally low efficiency
+    condition: "thermal_efficiency_lhv >= 75"
+    action: warn
+    severity: warning
+    message: "Thermal efficiency {thermal_efficiency_lhv}% below 75%"
+
+# =============================================================================
+# Processing Pipeline
+# =============================================================================
+
+processing:
+  steps:
+    - id: STEP_01_VALIDATE_INPUTS
+      name: Input Validation
+      type: validation
+      description: Validate all input parameters
+      inputs:
+        - all_input_fields
+      outputs:
+        - validation_status
+      constraints:
+        - SC_EXCESS_AIR_MIN
+        - SC_EXCESS_AIR_MAX
+      error_handling: reject
+
+    - id: STEP_02_CALCULATE_PROCESS_DUTY
+      name: Process Heat Duty
+      type: calculation
+      description: Calculate heat absorbed by process fluid
+      inputs:
+        - process_flow_rate
+        - process_specific_heat
+        - process_inlet_temperature
+        - process_outlet_temperature
+      outputs:
+        - absorbed_duty
+        - process_delta_t
+      error_handling: propagate
+
+    - id: STEP_03_CALCULATE_FIRED_DUTY
+      name: Fired Duty Calculation
+      type: calculation
+      description: Calculate heat released from fuel
+      inputs:
+        - fuel_flow_rate
+        - fuel_lower_heating_value
+      outputs:
+        - fired_duty
+      error_handling: propagate
+
+    - id: STEP_04_CALCULATE_RADIANT_SECTION
+      name: Radiant Section Analysis
+      type: calculation
+      description: Analyze radiant section performance
+      inputs:
+        - radiant_tube_surface
+        - radiant_absorption_factor
+        - firebox_temperature
+      outputs:
+        - radiant_duty
+        - radiant_efficiency
+      formula_refs:
+        - API560_RADIANT_HEAT_TRANSFER
+      error_handling: propagate
+
+    - id: STEP_05_CALCULATE_CONVECTION_SECTION
+      name: Convection Section Analysis
+      type: calculation
+      description: Analyze convection section performance
+      inputs:
+        - convection_tube_surface
+        - convection_inlet_temp
+        - flue_gas_temperature
+      outputs:
+        - convection_duty
+        - convection_efficiency
+      formula_refs:
+        - API560_CONVECTION_DUTY
+      error_handling: default
+
+    - id: STEP_06_CALCULATE_HEAT_LOSSES
+      name: Heat Loss Calculation
+      type: calculation
+      description: Calculate all heat losses
+      inputs:
+        - flue_gas_temperature
+        - ambient_temperature
+        - fired_duty
+      outputs:
+        - stack_loss
+        - radiation_loss
+        - unaccounted_loss
+        - total_losses
+      formula_refs:
+        - STACK_LOSS_CALCULATION
+        - CASING_RADIATION_LOSS
+      constraints:
+        - SC_STACK_TEMP_HIGH
+        - SC_STACK_TEMP_LOW
+      error_handling: propagate
+
+    - id: STEP_07_CALCULATE_EFFICIENCY
+      name: Efficiency Calculation
+      type: calculation
+      description: Calculate overall thermal efficiency
+      inputs:
+        - absorbed_duty
+        - fired_duty
+      outputs:
+        - thermal_efficiency_lhv
+        - thermal_efficiency_hhv
+      formula_refs:
+        - API560_THERMAL_EFFICIENCY
+      constraints:
+        - SC_EFFICIENCY_LOW
+      error_handling: propagate
+
+    - id: STEP_08_COMBUSTION_ANALYSIS
+      name: Combustion Analysis
+      type: calculation
+      description: Analyze combustion conditions
+      inputs:
+        - fuel_flow_rate
+        - excess_air
+        - combustion_air_temperature
+        - flue_gas_o2
+      outputs:
+        - excess_air_calculated
+        - flue_gas_flow
+        - air_fuel_ratio
+        - adiabatic_flame_temp
+      formula_refs:
+        - ADIABATIC_FLAME_TEMP
+      error_handling: propagate
+
+    - id: STEP_09_TUBE_TEMPERATURE
+      name: Tube Temperature Estimate
+      type: calculation
+      description: Estimate maximum tube metal temperature
+      inputs:
+        - radiant_duty
+        - radiant_tube_surface
+        - firebox_temperature
+      outputs:
+        - max_tube_metal_temp
+        - tube_metal_temp_margin
+      constraints:
+        - SC_TUBE_TEMP_LIMIT
+      error_handling: propagate
+
+    - id: STEP_10_DUTY_VERIFICATION
+      name: Duty Verification
+      type: calculation
+      description: Verify actual vs design duty
+      inputs:
+        - absorbed_duty
+        - design_duty
+      outputs:
+        - actual_duty_ratio
+      constraints:
+        - SC_DUTY_OVERLOAD
+      error_handling: propagate
+
+    - id: STEP_11_EMISSIONS
+      name: Emissions Calculation
+      type: calculation
+      description: Calculate CO2 and NOx emissions
+      inputs:
+        - fuel_flow_rate
+        - fuel_type
+      outputs:
+        - co2_emissions
+        - nox_estimate
+      error_handling: default
+
+    - id: STEP_12_RECOMMENDATIONS
+      name: Generate Recommendations
+      type: decision
+      description: Generate improvement recommendations
+      inputs:
+        - thermal_efficiency_lhv
+        - stack_loss
+        - excess_air_calculated
+      outputs:
+        - efficiency_gap
+        - fuel_savings_potential
+        - recommendations
+      error_handling: default
+
+    - id: STEP_13_PROVENANCE
+      name: Provenance Tracking
+      type: output
+      description: Generate provenance hash
+      inputs:
+        - all_inputs
+        - all_outputs
+      outputs:
+        - provenance_hash
+        - calculation_timestamp
+        - source_references
+      error_handling: propagate
+
+# =============================================================================
+# Zero-Hallucination Configuration
+# =============================================================================
+
+zero_hallucination:
+  enabled: true
+  calculation_mode: deterministic
+  allowed_operations:
+    - arithmetic
+    - formula_evaluation
+    - table_lookup
+    - interpolation
+    - unit_conversion
+  forbidden_operations:
+    - llm_numeric_calculation
+    - ml_prediction_for_efficiency
+  require_formula_citation: true
+  require_provenance: true
+  llm_allowed_for:
+    - recommendation_generation
+    - root_cause_analysis
+
+# =============================================================================
+# Test Cases
+# =============================================================================
+
+test_cases:
+  - name: Crude Heater - Normal Operation
+    description: Typical crude oil heater operation
+    inputs:
+      heater_type: cabin
+      heater_service: crude_heating
+      design_duty: 50
+      fuel_type: refinery_fuel_gas
+      fuel_flow_rate: 4200
+      fuel_lower_heating_value: 45
+      process_fluid: crude_oil
+      process_flow_rate: 500000
+      process_inlet_temperature: 180
+      process_outlet_temperature: 360
+      process_inlet_pressure: 15
+      process_specific_heat: 2.5
+      excess_air: 15
+      combustion_air_temperature: 25
+      flue_gas_temperature: 200
+      radiant_tube_surface: 800
+      ambient_temperature: 30
+    expected_outputs:
+      thermal_efficiency_lhv:
+        min: 85
+        max: 92

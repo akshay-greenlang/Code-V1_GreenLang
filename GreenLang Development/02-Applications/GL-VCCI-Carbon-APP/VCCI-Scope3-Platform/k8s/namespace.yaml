@@ -1,0 +1,44 @@
+# ==============================================================================
+# GL-VCCI Kubernetes Namespace Configuration
+# ==============================================================================
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: vcci-production
+  labels:
+    name: vcci-production
+    app.kubernetes.io/name: gl-vcci
+    app.kubernetes.io/component: platform
+    app.kubernetes.io/managed-by: kubernetes
+    environment: production
+    team: carbon-intelligence
+  annotations:
+    description: "GL-VCCI Scope 3 Carbon Intelligence Platform - Production Environment"
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: vcci-staging
+  labels:
+    name: vcci-staging
+    app.kubernetes.io/name: gl-vcci
+    app.kubernetes.io/component: platform
+    app.kubernetes.io/managed-by: kubernetes
+    environment: staging
+    team: carbon-intelligence
+  annotations:
+    description: "GL-VCCI Scope 3 Carbon Intelligence Platform - Staging Environment"
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: vcci-dev
+  labels:
+    name: vcci-dev
+    app.kubernetes.io/name: gl-vcci
+    app.kubernetes.io/component: platform
+    app.kubernetes.io/managed-by: kubernetes
+    environment: development
+    team: carbon-intelligence
+  annotations:
+    description: "GL-VCCI Scope 3 Carbon Intelligence Platform - Development Environment"

@@ -1,0 +1,624 @@
+# GL-001 ThermalCommand - High Availability Deployment
+# Multi-replica deployment with anti-affinity, resource management, and health checks
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: greenlang
+  labels:
+    name: greenlang
+    istio-injection: enabled
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: gl-001-thermalcommand
+  namespace: greenlang
+  labels:
+    app: gl-001-thermalcommand
+    app.kubernetes.io/name: thermalcommand
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/component: orchestrator
+    app.kubernetes.io/part-of: greenlang
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gl-001-thermalcommand-config
+  namespace: greenlang
+  labels:
+    app: gl-001-thermalcommand
+data:
+  ENVIRONMENT: "production"
+  LOG_LEVEL: "INFO"
+  LOG_FORMAT: "json"
+  METRICS_ENABLED: "true"
+  METRICS_PORT: "9090"
+  TRACING_ENABLED: "true"
+  TRACING_SAMPLE_RATE: "0.1"
+  KAFKA_CONSUMER_GROUP: "gl-001-thermalcommand"
+  KAFKA_AUTO_OFFSET_RESET: "earliest"
+  REDIS_MAX_CONNECTIONS: "100"
+  DB_POOL_SIZE: "20"
+  DB_MAX_OVERFLOW: "30"
+  SAFETY_LEVEL: "SIL_3"
+  WATCHDOG_TIMEOUT_MS: "5000"
+  EXPLAINABILITY_ENABLED: "true"
+  UNCERTAINTY_QUANTIFICATION: "true"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gl-001-thermalcommand
+  namespace: greenlang
+  labels:
+    app: gl-001-thermalcommand
+    app.kubernetes.io/name: thermalcommand
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/component: orchestrator
+    app.kubernetes.io/part-of: greenlang
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9090"
+    prometheus.io/path: "/metrics"
+spec:
+  replicas: 3
+  revisionHistoryLimit: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: gl-001-thermalcommand
+  template:
+    metadata:
+      labels:
+        app: gl-001-thermalcommand
+        app.kubernetes.io/name: thermalcommand
+        app.kubernetes.io/version: "1.0.0"
+        version: v1.0.0
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+        prometheus.io/path: "/metrics"
+        sidecar.istio.io/inject: "true"
+        checksum/config: "{{ include (print $.Template.BasePath \"/configmap.yaml\") . | sha256sum }}"
+    spec:
+      serviceAccountName: gl-001-thermalcommand
+      terminationGracePeriodSeconds: 60
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+
+      # Anti-affinity: distribute pods across zones and nodes
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  app: gl-001-thermalcommand
+              topologyKey: topology.kubernetes.io/zone
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: gl-001-thermalcommand
+                topologyKey: kubernetes.io/hostname
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 50
+              preference:
+                matchExpressions:
+                  - key: node.kubernetes.io/instance-type
+                    operator: In
+                    values:
+                      - m5.xlarge
+                      - m5.2xlarge
+                      - m6i.xlarge
+                      - m6i.2xlarge
+
+      # Topology spread for even distribution
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: DoNotSchedule
+          labelSelector:
+            matchLabels:
+              app: gl-001-thermalcommand
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: gl-001-thermalcommand
+
+      # Init containers for dependency checks
+      initContainers:
+        - name: wait-for-postgres
+          image: postgres:14-alpine
+          command:
+            - sh
+            - -c
+            - |
+              until pg_isready -h ${DB_HOST} -p ${DB_PORT} -U ${DB_USER}; do
+                echo "Waiting for PostgreSQL..."
+                sleep 2
+              done
+              echo "PostgreSQL is ready"
+          env:
+            - name: DB_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: gl-001-db-credentials
+                  key: host
+            - name: DB_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: gl-001-db-credentials
+                  key: port
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: gl-001-db-credentials
+                  key: username
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+
+        - name: wait-for-redis
+          image: redis:7-alpine
+          command:
+            - sh
+            - -c
+            - |
+              until redis-cli -h ${REDIS_HOST} -p ${REDIS_PORT} ping; do
+                echo "Waiting for Redis..."
+                sleep 2
+              done
+              echo "Redis is ready"
+          env:
+            - name: REDIS_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: gl-001-redis-credentials
+                  key: host
+            - name: REDIS_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: gl-001-redis-credentials
+                  key: port
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+
+        - name: wait-for-kafka
+          image: confluentinc/cp-kafka:7.5.0
+          command:
+            - sh
+            - -c
+            - |
+              until kafka-broker-api-versions --bootstrap-server ${KAFKA_BROKERS}; do
+                echo "Waiting for Kafka..."
+                sleep 2
+              done
+              echo "Kafka is ready"
+          env:
+            - name: KAFKA_BROKERS
+              valueFrom:
+                configMapKeyRef:
+                  name: gl-001-thermalcommand-config
+                  key: KAFKA_BROKERS
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 100m
+              memory: 256Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+
+      containers:
+        - name: thermalcommand
+          image: gcr.io/greenlang/gl-001-thermalcommand:1.0.0
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+            - name: grpc
+              containerPort: 50051
+              protocol: TCP
+            - name: metrics
+              containerPort: 9090
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: gl-001-thermalcommand-config
+          env:
+            # Database
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: gl-001-db-credentials
+                  key: url
+            # Redis
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: gl-001-redis-credentials
+                  key: url
+            # Kafka
+            - name: KAFKA_BROKERS
+              valueFrom:
+                secretKeyRef:
+                  name: gl-001-kafka-credentials
+                  key: brokers
+            - name: KAFKA_SASL_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: gl-001-kafka-credentials
+                  key: username
+            - name: KAFKA_SASL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: gl-001-kafka-credentials
+                  key: password
+            # API Authentication
+            - name: API_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: gl-001-api-credentials
+                  key: secret-key
+            # OPC-UA
+            - name: OPCUA_ENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  name: gl-001-opcua-credentials
+                  key: endpoint
+            # Pod Info
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+
+          # Resource management
+          resources:
+            requests:
+              cpu: 500m
+              memory: 1Gi
+              ephemeral-storage: 1Gi
+            limits:
+              cpu: 2000m
+              memory: 4Gi
+              ephemeral-storage: 5Gi
+
+          # Health probes
+          startupProbe:
+            httpGet:
+              path: /api/v1/health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 5
+            failureThreshold: 30  # Allow up to 2.5 minutes for startup
+
+          livenessProbe:
+            httpGet:
+              path: /api/v1/health
+              port: http
+            initialDelaySeconds: 0
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+          readinessProbe:
+            httpGet:
+              path: /api/v1/ready
+              port: http
+            initialDelaySeconds: 0
+            periodSeconds: 5
+            timeoutSeconds: 3
+            successThreshold: 1
+            failureThreshold: 3
+
+          # Security context
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+
+          # Volume mounts
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+            - name: cache
+              mountPath: /app/.cache
+            - name: config
+              mountPath: /app/config
+              readOnly: true
+
+          # Lifecycle hooks
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - sh
+                  - -c
+                  - |
+                    echo "Graceful shutdown initiated"
+                    # Stop accepting new requests
+                    curl -X POST http://localhost:8000/api/v1/admin/drain
+                    # Wait for in-flight requests
+                    sleep 30
+                    echo "Shutdown complete"
+
+      volumes:
+        - name: tmp
+          emptyDir:
+            medium: Memory
+            sizeLimit: 256Mi
+        - name: cache
+          emptyDir:
+            sizeLimit: 1Gi
+        - name: config
+          configMap:
+            name: gl-001-thermalcommand-config
+
+      # DNS configuration
+      dnsPolicy: ClusterFirst
+      dnsConfig:
+        options:
+          - name: ndots
+            value: "2"
+          - name: single-request-reopen
+
+---
+# Service for internal communication
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-001-thermalcommand
+  namespace: greenlang
+  labels:
+    app: gl-001-thermalcommand
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9090"
+spec:
+  type: ClusterIP
+  sessionAffinity: None
+  selector:
+    app: gl-001-thermalcommand
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8000
+      protocol: TCP
+    - name: grpc
+      port: 50051
+      targetPort: 50051
+      protocol: TCP
+    - name: metrics
+      port: 9090
+      targetPort: 9090
+      protocol: TCP
+---
+# Headless service for StatefulSet-like behavior
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-001-thermalcommand-headless
+  namespace: greenlang
+  labels:
+    app: gl-001-thermalcommand
+spec:
+  type: ClusterIP
+  clusterIP: None
+  selector:
+    app: gl-001-thermalcommand
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000
+    - name: grpc
+      port: 50051
+      targetPort: 50051
+---
+# Horizontal Pod Autoscaler
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: gl-001-thermalcommand-hpa
+  namespace: greenlang
+  labels:
+    app: gl-001-thermalcommand
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: gl-001-thermalcommand
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+    - type: Pods
+      pods:
+        metric:
+          name: http_requests_per_second
+        target:
+          type: AverageValue
+          averageValue: "100"
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Percent
+          value: 25
+          periodSeconds: 60
+    scaleUp:
+      stabilizationWindowSeconds: 0
+      policies:
+        - type: Percent
+          value: 100
+          periodSeconds: 15
+        - type: Pods
+          value: 2
+          periodSeconds: 60
+      selectPolicy: Max
+---
+# Pod Disruption Budget
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: gl-001-thermalcommand-pdb
+  namespace: greenlang
+  labels:
+    app: gl-001-thermalcommand
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: gl-001-thermalcommand
+---
+# Ingress
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: gl-001-thermalcommand-ingress
+  namespace: greenlang
+  labels:
+    app: gl-001-thermalcommand
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+    nginx.ingress.kubernetes.io/rate-limit-window: "1s"
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - gl-001.greenlang.io
+      secretName: gl-001-tls
+  rules:
+    - host: gl-001.greenlang.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: gl-001-thermalcommand
+                port:
+                  number: 80
+---
+# Network Policy
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: gl-001-thermalcommand-network-policy
+  namespace: greenlang
+spec:
+  podSelector:
+    matchLabels:
+      app: gl-001-thermalcommand
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: ingress-nginx
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+        - podSelector:
+            matchLabels:
+              app: gl-001-thermalcommand
+      ports:
+        - protocol: TCP
+          port: 8000
+        - protocol: TCP
+          port: 50051
+        - protocol: TCP
+          port: 9090
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: greenlang
+      ports:
+        - protocol: TCP
+          port: 5432  # PostgreSQL
+        - protocol: TCP
+          port: 6379  # Redis
+        - protocol: TCP
+          port: 9092  # Kafka
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: UDP
+          port: 53  # DNS
+        - protocol: TCP
+          port: 443  # HTTPS (external APIs)

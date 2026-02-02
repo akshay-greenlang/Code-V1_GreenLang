@@ -1,0 +1,53 @@
+{
+  "metadata": {
+    "building_type": "commercial_office",
+    "area": 50000,
+    "area_unit": "sqft",
+    "location": {
+      "country": "US",
+      "region": "California",
+      "city": "San Francisco"
+    },
+    "occupancy": 250,
+    "floor_count": 12,
+    "building_age": 15,
+    "climate_zone": "3A",
+    "construction_year": 2009,
+    "operating_hours": 10
+  },
+  "energy_consumption": {
+    "electricity": {
+      "value": 1500000,
+      "unit": "kWh"
+    },
+    "natural_gas": {
+      "value": 25000,
+      "unit": "therms"
+    },
+    "diesel": {
+      "value": 500,
+      "unit": "gallons"
+    },
+    "solar_pv_generation": {
+      "value": 100000,
+      "unit": "kWh"
+    },
+    "period": "annual"
+  },
+  "hvac_system": {
+    "hvac_type": "chiller",
+    "hvac_efficiency_cop": 3.5,
+    "cooling_capacity": 150,
+    "age": 10
+  },
+  "building_envelope": {
+    "window_to_wall_ratio": 0.4,
+    "insulation_r_value": 20,
+    "glazing_type": "double"
+  },
+  "appliance_loads": {
+    "lighting_load": 150000,
+    "it_load": 200000,
+    "plug_load": 100000
+  }
+}

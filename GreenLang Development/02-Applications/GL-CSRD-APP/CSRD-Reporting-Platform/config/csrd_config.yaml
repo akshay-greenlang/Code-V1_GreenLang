@@ -1,0 +1,231 @@
+# ============================================================================
+# CSRD/ESRS DIGITAL REPORTING PLATFORM - CONFIGURATION
+# ============================================================================
+# Version: 1.0.0
+# Description: Main configuration file for CSRD pipeline
+
+# ----------------------------------------------------------------------------
+# PATHS - Reference Data & Resources
+# ----------------------------------------------------------------------------
+paths:
+  # Data files
+  esrs_data_points: "data/esrs_data_points.json"
+  emission_factors: "data/emission_factors.json"
+  esrs_formulas: "data/esrs_formulas.yaml"
+  framework_mappings: "data/framework_mappings.json"
+  industry_benchmarks: "data/industry_benchmarks.json"
+  esrs_xbrl_taxonomy: "data/esrs_xbrl_taxonomy_v1.xsd"
+
+  # Schemas
+  esg_data_schema: "schemas/esg_data.schema.json"
+  company_profile_schema: "schemas/company_profile.schema.json"
+  materiality_schema: "schemas/materiality.schema.json"
+  csrd_report_schema: "schemas/csrd_report.schema.json"
+
+  # Validation Rules
+  compliance_rules: "rules/esrs_compliance_rules.yaml"
+  data_quality_rules: "rules/data_quality_rules.yaml"
+  xbrl_validation_rules: "rules/xbrl_validation_rules.yaml"
+
+  # Output directories
+  output_dir: "output"
+  reports_dir: "output/reports"
+  audit_trails_dir: "output/audit_trails"
+  temp_dir: "output/temp"
+
+# ----------------------------------------------------------------------------
+# AGENT CONFIGURATION
+# ----------------------------------------------------------------------------
+agents:
+  # Agent 1: Intake Agent
+  intake:
+    enabled: true
+    performance_target_records_per_sec: 1000
+    max_file_size_mb: 500
+    supported_formats: ["csv", "json", "excel", "parquet"]
+    data_quality_threshold: 0.80  # Minimum 80% completeness
+
+  # Agent 2: Materiality Agent
+  materiality:
+    enabled: true
+    llm_provider: "openai"  # or "anthropic"
+    llm_model: "gpt-4o"  # or "claude-3.5-sonnet"
+    temperature: 0.3  # Lower for consistency
+    max_tokens: 4000
+    requires_human_review: true
+    materiality_thresholds:
+      impact_threshold: 5.0
+      financial_threshold: 5.0
+      double_materiality_rule: "either_or"  # or "both_required"
+
+  # Agent 3: Calculator Agent
+  calculator:
+    enabled: true
+    zero_hallucination: true
+    deterministic: true
+    target_latency_ms: 5
+    calculation_verification: true
+    rounding_decimals: 2
+
+  # Agent 4: Aggregator Agent
+  aggregator:
+    enabled: true
+    supported_frameworks: ["TCFD", "GRI", "SASB"]
+    enable_benchmarking: true
+    enable_trend_analysis: true
+    time_series_years: 3
+
+  # Agent 5: Reporting Agent
+  reporting:
+    enabled: true
+    xbrl_generation: true
+    pdf_generation: true
+    esef_packaging: true
+    supported_languages: ["en", "de", "fr", "es"]
+    default_language: "en"
+    llm_for_narratives: true  # AI-assisted narrative generation
+    narrative_review_required: true
+
+  # Agent 6: Audit Agent
+  audit:
+    enabled: true
+    execute_all_rules: true
+    re_verify_calculations: true
+    generate_auditor_package: true
+    compliance_threshold: "PASS"  # PASS, WARNING, or FAIL
+
+# ----------------------------------------------------------------------------
+# PIPELINE CONFIGURATION
+# ----------------------------------------------------------------------------
+pipeline:
+  name: "csrd-end-to-end"
+  version: "1.0.0"
+  target_total_time_minutes: 30
+  enable_progress_reporting: true
+  enable_provenance_tracking: true
+  parallel_processing: false  # Set to true for production with large datasets
+
+  # Error handling
+  stop_on_critical_error: true
+  retry_on_failure: false
+  max_retries: 3
+
+  # Logging
+  log_level: "INFO"  # DEBUG, INFO, WARNING, ERROR, CRITICAL
+  log_to_file: true
+  log_file: "output/logs/csrd_pipeline.log"
+
+# ----------------------------------------------------------------------------
+# AI/LLM CONFIGURATION
+# ----------------------------------------------------------------------------
+llm:
+  # OpenAI Configuration
+  openai:
+    api_key_env_var: "OPENAI_API_KEY"
+    organization: ""
+    default_model: "gpt-4o"
+    embedding_model: "text-embedding-3-large"
+    max_retries: 3
+    timeout_seconds: 60
+
+  # Anthropic Configuration
+  anthropic:
+    api_key_env_var: "ANTHROPIC_API_KEY"
+    default_model: "claude-3-5-sonnet-20241022"
+    max_retries: 3
+    timeout_seconds: 60
+
+  # Vector Database for RAG
+  vector_db:
+    provider: "pinecone"  # or "chromadb" for local
+    index_name: "esrs-guidance"
+    dimension: 3072  # For text-embedding-3-large
+    metric: "cosine"
+
+# ----------------------------------------------------------------------------
+# DATABASE CONFIGURATION (Optional)
+# ----------------------------------------------------------------------------
+database:
+  enabled: false
+  provider: "postgresql"
+  host: "localhost"
+  port: 5432
+  database: "csrd_db"
+  username_env_var: "DB_USERNAME"
+  password_env_var: "DB_PASSWORD"
+
+# ----------------------------------------------------------------------------
+# PERFORMANCE TARGETS
+# ----------------------------------------------------------------------------
+performance:
+  intake_agent_records_per_sec: 1000
+  materiality_agent_max_minutes: 10
+  calculator_agent_ms_per_metric: 5
+  aggregator_agent_max_minutes: 2
+  reporting_agent_max_minutes: 5
+  audit_agent_max_minutes: 3
+  total_pipeline_max_minutes: 30
+
+# ----------------------------------------------------------------------------
+# QUALITY THRESHOLDS
+# ----------------------------------------------------------------------------
+quality:
+  data_completeness_min: 0.80
+  data_accuracy_target: "high"
+  calculation_accuracy: 1.00  # 100%
+  xbrl_validation_required: true
+  compliance_validation_required: true
+
+# ----------------------------------------------------------------------------
+# SECURITY & PRIVACY
+# ----------------------------------------------------------------------------
+security:
+  encrypt_sensitive_data: false
+  hash_algorithm: "sha256"
+  audit_trail_retention_days: 2555  # 7 years
+  pii_detection: false
+  data_anonymization: false
+
+# ----------------------------------------------------------------------------
+# FEATURE FLAGS
+# ----------------------------------------------------------------------------
+features:
+  enable_ai_materiality: true
+  enable_ai_narratives: true
+  enable_xbrl_generation: true
+  enable_pdf_reports: true
+  enable_benchmarking: true
+  enable_trend_analysis: true
+  enable_multi_language: true
+  enable_email_notifications: false
+
+# ----------------------------------------------------------------------------
+# REPORTING PREFERENCES
+# ----------------------------------------------------------------------------
+reporting:
+  default_output_format: "json"
+  include_audit_trail: true
+  include_calculation_provenance: true
+  include_data_quality_report: true
+  generate_executive_summary: true
+  generate_compliance_checklist: true
+
+# ----------------------------------------------------------------------------
+# ESRS COVERAGE
+# ----------------------------------------------------------------------------
+esrs_coverage:
+  standards: ["E1", "E2", "E3", "E4", "E5", "S1", "S2", "S3", "S4", "G1", "ESRS-1", "ESRS-2"]
+  total_data_points: 1082
+  mandatory_standards: ["ESRS-1", "ESRS-2"]
+  conditional_standards: ["E1", "E2", "E3", "E4", "E5", "S1", "S2", "S3", "S4", "G1"]
+
+# ----------------------------------------------------------------------------
+# VERSION & METADATA
+# ----------------------------------------------------------------------------
+metadata:
+  config_version: "1.0.0"
+  csrd_regulation: "2022/2464"
+  esrs_set: "Set 1"
+  esrs_regulation: "2023/2772"
+  esef_regulation: "2019/815"
+  last_updated: "2025-10-18"

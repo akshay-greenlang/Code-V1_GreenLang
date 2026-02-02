@@ -1,0 +1,90 @@
+apiVersion: greenlang.io/v2
+kind: AgentSpec
+metadata:
+  name: EmissionsCalculatorAgent_AI
+  version: 1.0.0
+  labels:
+    type: calculator
+    category: cbam
+    id: cbam-emissions-calculator-v1
+    tags: cbam,emissions-calculation,carbon-accounting,deterministic,zero-hallucination
+  annotations:
+    description: Calculates embedded CO2 emissions for each shipment using default
+      emission factors or supplier-provided actual data. 100% deterministic, zero
+      hallucinated numbers.
+    created_by: GreenLang CBAM Team
+    created_date: '2025-10-15'
+spec:
+  inputs:
+  - name: validated_shipments
+    type: data
+    format: json
+    schema: ../schemas/shipment.schema.json
+    required: true
+    description: Validated and enriched shipments from ShipmentIntakeAgent_AI
+  - name: reference_data
+    type: data
+    format: json
+    schema: ''
+    required: true
+    description: ''
+  outputs:
+  - name: shipments_with_emissions
+    type: data
+    format: JSON
+    schema: ''
+    description: Shipments with detailed emissions calculations
+    structure: "{\n  \"metadata\": {\n    \"calculated_at\": \"ISO8601 timestamp\"\
+      ,\n    \"total_shipments\": int,\n    \"calculation_methods\": {\n      \"default_values\"\
+      : int,\n      \"actual_data\": int,\n      \"complex_goods\": int\n    },\n\
+      \    \"total_emissions_tco2\": float\n  },\n  \"shipments\": [\n    {\n    \
+      \  // Original shipment fields\n      \"emissions_calculation\": {\n       \
+      \ \"calculation_method\": \"default_values|actual_data|complex_goods\",\n  \
+      \      \"emission_factor_source\": \"EU Default|Supplier EPD\",\n        \"\
+      emission_factor_direct_tco2_per_ton\": float,\n        \"emission_factor_indirect_tco2_per_ton\"\
+      : float,\n        \"emission_factor_total_tco2_per_ton\": float,\n        \"\
+      direct_emissions_tco2\": float,\n        \"indirect_emissions_tco2\": float,\n\
+      \        \"total_emissions_tco2\": float,\n        \"calculation_formula\":\
+      \ \"total = mass_tonnes × emission_factor\",\n        \"data_quality\": \"high|medium|low\"\
+      ,\n        \"complex_goods_components\": [...],  // If applicable\n        \"\
+      validation_status\": \"valid|warning|error\",\n        \"notes\": \"...\"\n\
+      \      }\n    }\n  ],\n  \"validation_warnings\": [...]\n}\n"
+  capabilities:
+  - name: capability_1
+    description: Calculate direct (Scope 1) emissions per shipment
+  - name: capability_2
+    description: Calculate indirect (Scope 2) emissions per shipment
+  - name: capability_3
+    description: Apply EU default emission factors when actual data unavailable
+  - name: capability_4
+    description: Apply supplier actual emission factors when available
+  - name: capability_5
+    description: Handle complex goods with precursor materials
+  - name: capability_6
+    description: Validate emissions calculations (sanity checks)
+  - name: capability_7
+    description: Track calculation method used (default vs actual)
+  - name: capability_8
+    description: Output detailed emissions breakdown for each shipment
+  requirements:
+    performance:
+    - Processing time <3ms per shipment
+    quality:
+    - 100% calculation accuracy (no rounding errors beyond 3 decimals)
+    - ZERO hallucinated emission factors or numbers
+    - All calculations traceable and reproducible
+    - Support for all 5 CBAM product groups
+    - Correct handling of complex goods up to 20% cap
+    - Validation catches impossible values (negative, extreme)
+  description: Calculate embedded emissions for every CBAM shipment with 100% accuracy
+    using deterministic tools (NO LLM for calculations)
+  dependencies:
+    python_version: '>=3.9'
+    required_packages:
+    - pyyaml>=6.0
+    - pydantic>=2.0.0
+    required_files:
+    - ../data/emission_factors.py
+    - ../rules/cbam_rules.yaml
+    optional_files:
+    - ../examples/demo_suppliers.yaml

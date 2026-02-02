@@ -1,0 +1,64 @@
+name: beta-smoke
+version: "1.0"
+description: "Minimal smoke test pipeline for GreenLang v0.2.0b2"
+
+# Test basic functionality with simple calculations
+inputs:
+  - name: test_value
+    type: number
+    default: 100
+    description: "Test input value for validation"
+
+  - name: building_type
+    type: string
+    default: "office"
+    description: "Building type for basic validation"
+
+steps:
+  - name: basic_validation
+    description: "Basic functionality test step"
+    agent: mock
+    code: |
+      # Test basic calculations and data flow
+      outputs = {}
+
+      # Validate inputs are available
+      test_value = inputs.get('test_value', 0)
+      building_type = inputs.get('building_type', 'unknown')
+
+      # Perform basic calculations
+      outputs['input_validation'] = {
+          'test_value_received': test_value,
+          'building_type_received': building_type,
+          'inputs_valid': test_value > 0 and building_type != 'unknown'
+      }
+
+      # Test basic math operations
+      outputs['calculations'] = {
+          'doubled_value': test_value * 2,
+          'squared_value': test_value ** 2,
+          'percentage': (test_value / 100) * 100
+      }
+
+      # Test string operations
+      outputs['string_operations'] = {
+          'building_type_upper': building_type.upper(),
+          'building_type_length': len(building_type)
+      }
+
+      # Overall test status
+      outputs['test_status'] = 'PASS'
+      outputs['timestamp'] = 'test_execution_time'
+
+outputs:
+  - name: input_validation
+    description: "Results of input validation"
+
+  - name: calculations
+    description: "Basic calculation results"
+
+  - name: string_operations
+    description: "String operation results"
+
+  - name: test_status
+    description: "Overall test execution status"

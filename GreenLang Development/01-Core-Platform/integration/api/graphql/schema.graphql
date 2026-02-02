@@ -1,0 +1,735 @@
+# GreenLang GraphQL Schema
+# Phase 4 - Comprehensive API Layer
+
+scalar DateTime
+scalar JSON
+scalar Upload
+
+# ==============================================================================
+# Enums
+# ==============================================================================
+
+enum PermissionAction {
+  CREATE
+  READ
+  UPDATE
+  DELETE
+  EXECUTE
+  LIST
+  APPROVE
+  ADMIN
+  ALL
+}
+
+enum ResourceType {
+  PIPELINE
+  PACK
+  DATASET
+  MODEL
+  AGENT
+  WORKFLOW
+  TENANT
+  USER
+  ROLE
+  API_KEY
+  CLUSTER
+  NAMESPACE
+  SECRET
+  CONFIG
+  ALL
+}
+
+enum ExecutionStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+  CANCELLED
+  TIMEOUT
+}
+
+enum SortOrder {
+  ASC
+  DESC
+}
+
+enum AgentStatus {
+  ENABLED
+  DISABLED
+  ARCHIVED
+}
+
+enum WorkflowStepStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+  SKIPPED
+}
+
+enum SubscriptionEvent {
+  CREATED
+  UPDATED
+  DELETED
+  STATUS_CHANGED
+  PROGRESS_UPDATE
+}
+
+# ==============================================================================
+# Input Types
+# ==============================================================================
+
+input PaginationInput {
+  page: Int = 1
+  pageSize: Int = 20
+  offset: Int
+  limit: Int
+}
+
+input SortInput {
+  field: String!
+  order: SortOrder = ASC
+}
+
+input FilterInput {
+  field: String!
+  operator: FilterOperator!
+  value: JSON!
+}
+
+enum FilterOperator {
+  EQUALS
+  NOT_EQUALS
+  CONTAINS
+  NOT_CONTAINS
+  GREATER_THAN
+  LESS_THAN
+  GREATER_THAN_OR_EQUAL
+  LESS_THAN_OR_EQUAL
+  IN
+  NOT_IN
+  IS_NULL
+  IS_NOT_NULL
+  STARTS_WITH
+  ENDS_WITH
+}
+
+input AgentFilterInput {
+  name: String
+  version: String
+  status: AgentStatus
+  tags: [String!]
+  createdAfter: DateTime
+  createdBefore: DateTime
+}
+
+input WorkflowFilterInput {
+  name: String
+  version: String
+  tags: [String!]
+  createdAfter: DateTime
+  createdBefore: DateTime
+}
+
+input ExecutionFilterInput {
+  status: ExecutionStatus
+  workflowId: ID
+  agentId: ID
+  userId: ID
+  startedAfter: DateTime
+  startedBefore: DateTime
+  completedAfter: DateTime
+  completedBefore: DateTime
+}
+
+input CreateAgentInput {
+  name: String!
+  description: String!
+  version: String = "0.0.1"
+  enabled: Boolean = true
+  parameters: JSON
+  resourcePaths: [String!]
+  logLevel: String = "INFO"
+  tags: [String!]
+  metadata: JSON
+}
+
+input UpdateAgentInput {
+  name: String
+  description: String
+  version: String
+  enabled: Boolean
+  parameters: JSON
+  resourcePaths: [String!]
+  logLevel: String
+  tags: [String!]
+  metadata: JSON
+}
+
+input CreateWorkflowInput {
+  name: String!
+  description: String!
+  version: String = "0.0.1"
+  steps: [WorkflowStepInput!]!
+  outputMapping: JSON
+  metadata: JSON
+  tags: [String!]
+}
+
+input UpdateWorkflowInput {
+  name: String
+  description: String
+  version: String
+  steps: [WorkflowStepInput!]
+  outputMapping: JSON
+  metadata: JSON
+  tags: [String!]
+}
+
+input WorkflowStepInput {
+  name: String!
+  agentId: ID!
+  description: String
+  inputMapping: JSON
+  outputKey: String
+  condition: String
+  onFailure: String = "stop"
+  retryCount: Int = 0
+  timeout: Int
+}
+
+input ExecuteWorkflowInput {
+  workflowId: ID!
+  inputData: JSON!
+  context: JSON
+  tags: [String!]
+}
+
+input ExecuteSingleAgentInput {
+  agentId: ID!
+  inputData: JSON!
+  context: JSON
+  tags: [String!]
+}
+
+input CreateRoleInput {
+  name: String!
+  description: String
+  permissions: [PermissionInput!]!
+  parentRoles: [String!]
+  metadata: JSON
+}
+
+input UpdateRoleInput {
+  description: String
+  permissions: [PermissionInput!]
+  parentRoles: [String!]
+  metadata: JSON
+}
+
+input PermissionInput {
+  resource: String!
+  action: String!
+  scope: String
+  conditions: JSON
+}
+
+input AssignRoleInput {
+  userId: ID!
+  roleNames: [String!]!
+}
+
+input CreateAPIKeyInput {
+  name: String!
+  description: String
+  scopes: [String!]
+  expiresIn: Int
+  allowedIps: [String!]
+  allowedOrigins: [String!]
+  rateLimit: Int
+}
+
+# ==============================================================================
+# Object Types
+# ==============================================================================
+
+type PageInfo {
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  startCursor: String
+  endCursor: String
+  totalCount: Int!
+  totalPages: Int!
+  currentPage: Int!
+}
+
+type Permission {
+  resource: String!
+  action: String!
+  scope: String
+  conditions: JSON
+}
+
+type Role {
+  name: String!
+  description: String
+  permissions: [Permission!]!
+  parentRoles: [String!]!
+  metadata: JSON
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type User {
+  id: ID!
+  tenantId: ID!
+  username: String!
+  email: String!
+  active: Boolean!
+  roles: [Role!]!
+  permissions: [Permission!]!
+  createdAt: DateTime!
+  lastLogin: DateTime
+  metadata: JSON
+}
+
+type APIKey {
+  keyId: ID!
+  name: String!
+  description: String
+  displayKey: String!
+  scopes: [String!]!
+  tenantId: ID!
+  createdAt: DateTime!
+  expiresAt: DateTime
+  lastUsedAt: DateTime
+  useCount: Int!
+  active: Boolean!
+  allowedIps: [String!]!
+  allowedOrigins: [String!]!
+  rateLimit: Int
+}
+
+type AgentMetrics {
+  executionTimeMs: Float!
+  inputSize: Int!
+  outputSize: Int!
+  recordsProcessed: Int!
+  cacheHits: Int!
+  cacheMisses: Int!
+  customMetrics: JSON
+}
+
+type AgentStats {
+  executions: Int!
+  successes: Int!
+  failures: Int!
+  successRate: Float!
+  totalTimeMs: Float!
+  avgTimeMs: Float!
+  customCounters: JSON
+  customTimers: JSON
+}
+
+type Agent {
+  id: ID!
+  name: String!
+  description: String!
+  version: String!
+  enabled: Boolean!
+  parameters: JSON
+  resourcePaths: [String!]!
+  logLevel: String!
+  tags: [String!]!
+  metadata: JSON
+  stats: AgentStats!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+
+  # Relationships
+  workflows: [Workflow!]!
+  executions(
+    pagination: PaginationInput
+    filter: ExecutionFilterInput
+    sort: [SortInput!]
+  ): ExecutionConnection!
+}
+
+type WorkflowStep {
+  name: String!
+  agentId: ID!
+  agent: Agent
+  description: String
+  inputMapping: JSON
+  outputKey: String
+  condition: String
+  onFailure: String!
+  retryCount: Int!
+  timeout: Int
+}
+
+type Workflow {
+  id: ID!
+  name: String!
+  description: String!
+  version: String!
+  steps: [WorkflowStep!]!
+  outputMapping: JSON
+  metadata: JSON
+  tags: [String!]!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+
+  # Relationships
+  agents: [Agent!]!
+  executions(
+    pagination: PaginationInput
+    filter: ExecutionFilterInput
+    sort: [SortInput!]
+  ): ExecutionConnection!
+}
+
+type ExecutionStepResult {
+  stepName: String!
+  agentId: ID!
+  status: WorkflowStepStatus!
+  result: JSON
+  error: String
+  metrics: AgentMetrics
+  startedAt: DateTime
+  completedAt: DateTime
+  duration: Float
+  attempts: Int!
+}
+
+type Execution {
+  id: ID!
+  executionId: String!
+  workflowId: ID
+  workflow: Workflow
+  agentId: ID
+  agent: Agent
+  userId: ID
+  user: User
+  status: ExecutionStatus!
+  inputData: JSON!
+  outputData: JSON
+  context: JSON
+  errors: [JSON!]!
+  tags: [String!]!
+
+  # Step results
+  stepResults: [ExecutionStepResult!]!
+
+  # Metrics
+  totalDuration: Float
+  startedAt: DateTime!
+  completedAt: DateTime
+
+  # Metadata
+  metadata: JSON
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type ExecutionResult {
+  success: Boolean!
+  execution: Execution!
+  errors: [String!]
+}
+
+# ==============================================================================
+# Connection Types (for pagination)
+# ==============================================================================
+
+type AgentEdge {
+  node: Agent!
+  cursor: String!
+}
+
+type AgentConnection {
+  edges: [AgentEdge!]!
+  nodes: [Agent!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type WorkflowEdge {
+  node: Workflow!
+  cursor: String!
+}
+
+type WorkflowConnection {
+  edges: [WorkflowEdge!]!
+  nodes: [Workflow!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type ExecutionEdge {
+  node: Execution!
+  cursor: String!
+}
+
+type ExecutionConnection {
+  edges: [ExecutionEdge!]!
+  nodes: [Execution!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type RoleEdge {
+  node: Role!
+  cursor: String!
+}
+
+type RoleConnection {
+  edges: [RoleEdge!]!
+  nodes: [Role!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+# ==============================================================================
+# Query Types
+# ==============================================================================
+
+type Query {
+  # Agent queries
+  agent(id: ID!): Agent
+  agents(
+    pagination: PaginationInput
+    filter: AgentFilterInput
+    sort: [SortInput!]
+  ): AgentConnection!
+
+  # Workflow queries
+  workflow(id: ID!): Workflow
+  workflows(
+    pagination: PaginationInput
+    filter: WorkflowFilterInput
+    sort: [SortInput!]
+  ): WorkflowConnection!
+
+  # Execution queries
+  execution(id: ID!): Execution
+  executions(
+    pagination: PaginationInput
+    filter: ExecutionFilterInput
+    sort: [SortInput!]
+  ): ExecutionConnection!
+
+  # RBAC queries
+  role(name: String!): Role
+  roles(
+    pagination: PaginationInput
+    sort: [SortInput!]
+  ): RoleConnection!
+
+  user(id: ID!): User
+  currentUser: User!
+
+  # Permission checks
+  checkPermission(
+    resource: String!
+    action: String!
+    context: JSON
+  ): Boolean!
+
+  # API Key queries
+  apiKey(keyId: ID!): APIKey
+  apiKeys(pagination: PaginationInput): [APIKey!]!
+
+  # System queries
+  systemHealth: SystemHealth!
+  metrics(
+    timeRange: TimeRangeInput
+    aggregation: AggregationType
+  ): [Metric!]!
+}
+
+type SystemHealth {
+  status: String!
+  version: String!
+  uptime: Float!
+  agentCount: Int!
+  workflowCount: Int!
+  executionCount: Int!
+  timestamp: DateTime!
+  checks: [HealthCheck!]!
+}
+
+type HealthCheck {
+  name: String!
+  status: String!
+  message: String
+  latency: Float
+}
+
+type Metric {
+  name: String!
+  value: Float!
+  unit: String
+  timestamp: DateTime!
+  labels: JSON
+}
+
+input TimeRangeInput {
+  start: DateTime!
+  end: DateTime!
+}
+
+enum AggregationType {
+  SUM
+  AVG
+  MIN
+  MAX
+  COUNT
+}
+
+# ==============================================================================
+# Mutation Types
+# ==============================================================================
+
+type Mutation {
+  # Agent mutations
+  createAgent(input: CreateAgentInput!): Agent!
+  updateAgent(id: ID!, input: UpdateAgentInput!): Agent!
+  deleteAgent(id: ID!): Boolean!
+  enableAgent(id: ID!): Agent!
+  disableAgent(id: ID!): Agent!
+
+  # Workflow mutations
+  createWorkflow(input: CreateWorkflowInput!): Workflow!
+  updateWorkflow(id: ID!, input: UpdateWorkflowInput!): Workflow!
+  deleteWorkflow(id: ID!): Boolean!
+  cloneWorkflow(id: ID!, name: String!): Workflow!
+
+  # Execution mutations
+  executeWorkflow(input: ExecuteWorkflowInput!): ExecutionResult!
+  executeSingleAgent(input: ExecuteSingleAgentInput!): ExecutionResult!
+  cancelExecution(id: ID!): Execution!
+  retryExecution(id: ID!): ExecutionResult!
+
+  # RBAC mutations
+  createRole(input: CreateRoleInput!): Role!
+  updateRole(name: String!, input: UpdateRoleInput!): Role!
+  deleteRole(name: String!): Boolean!
+  assignRole(input: AssignRoleInput!): User!
+  revokeRole(userId: ID!, roleName: String!): User!
+
+  # API Key mutations
+  createAPIKey(input: CreateAPIKeyInput!): APIKey!
+  revokeAPIKey(keyId: ID!): Boolean!
+  rotateAPIKey(keyId: ID!): APIKey!
+
+  # Batch mutations
+  batchCreateAgents(inputs: [CreateAgentInput!]!): [Agent!]!
+  batchDeleteExecutions(ids: [ID!]!): Int!
+}
+
+# ==============================================================================
+# Subscription Types
+# ==============================================================================
+
+type Subscription {
+  # Execution subscriptions
+  executionUpdated(
+    executionId: ID
+    workflowId: ID
+    agentId: ID
+    userId: ID
+  ): ExecutionUpdate!
+
+  executionStatusChanged(
+    executionId: ID
+  ): ExecutionStatusUpdate!
+
+  executionProgress(
+    executionId: ID!
+  ): ExecutionProgress!
+
+  # Agent subscriptions
+  agentUpdated(agentId: ID): AgentUpdate!
+
+  # Workflow subscriptions
+  workflowUpdated(workflowId: ID): WorkflowUpdate!
+
+  # System subscriptions
+  systemMetrics(interval: Int = 5000): SystemMetrics!
+}
+
+type ExecutionUpdate {
+  event: SubscriptionEvent!
+  execution: Execution!
+  timestamp: DateTime!
+}
+
+type ExecutionStatusUpdate {
+  executionId: ID!
+  oldStatus: ExecutionStatus
+  newStatus: ExecutionStatus!
+  timestamp: DateTime!
+}
+
+type ExecutionProgress {
+  executionId: ID!
+  currentStep: String
+  completedSteps: Int!
+  totalSteps: Int!
+  progress: Float!
+  estimatedTimeRemaining: Float
+  timestamp: DateTime!
+}
+
+type AgentUpdate {
+  event: SubscriptionEvent!
+  agent: Agent!
+  timestamp: DateTime!
+}
+
+type WorkflowUpdate {
+  event: SubscriptionEvent!
+  workflow: Workflow!
+  timestamp: DateTime!
+}
+
+type SystemMetrics {
+  cpuUsage: Float!
+  memoryUsage: Float!
+  activeExecutions: Int!
+  requestsPerSecond: Float!
+  timestamp: DateTime!
+}
+
+# ==============================================================================
+# Directives
+# ==============================================================================
+
+directive @auth(
+  requires: PermissionAction
+) on FIELD_DEFINITION | OBJECT
+
+directive @rateLimit(
+  max: Int!
+  window: Int!
+) on FIELD_DEFINITION
+
+directive @complexity(
+  value: Int!
+  multipliers: [String!]
+) on FIELD_DEFINITION
+
+directive @deprecated(
+  reason: String = "This field is deprecated"
+) on FIELD_DEFINITION | ENUM_VALUE
+
+# ==============================================================================
+# Schema Definition
+# ==============================================================================
+
+schema {
+  query: Query
+  mutation: Mutation
+  subscription: Subscription
+}

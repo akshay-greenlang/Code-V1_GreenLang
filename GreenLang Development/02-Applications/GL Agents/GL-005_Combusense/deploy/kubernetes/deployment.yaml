@@ -1,0 +1,170 @@
+# GL-005 Combusense Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gl-005-combusense
+  namespace: greenlang
+  labels:
+    app: gl-005-combusense
+    agent-id: GL-005
+    codename: COMBUSENSE
+    version: v1.0.0
+    tier: production
+    domain: combustion-control
+  annotations:
+    kubernetes.io/description: "GL-005 Combusense - Combustion Control Agent"
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9090"
+    prometheus.io/path: "/metrics"
+spec:
+  replicas: 2
+  revisionHistoryLimit: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: gl-005-combusense
+  template:
+    metadata:
+      labels:
+        app: gl-005-combusense
+        agent-id: GL-005
+        codename: COMBUSENSE
+        version: v1.0.0
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: gl-005-combusense-sa
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: gl-005-combusense
+                topologyKey: kubernetes.io/hostname
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: gl-005-combusense
+      containers:
+        - name: gl-005-combusense
+          image: gcr.io/greenlang/gl-005-combusense:v1.0.0
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+            - name: metrics
+              containerPort: 9090
+              protocol: TCP
+          env:
+            - name: ENVIRONMENT
+              valueFrom:
+                configMapKeyRef:
+                  name: gl-005-combusense-config
+                  key: ENVIRONMENT
+            - name: GL005_LOG_LEVEL
+              valueFrom:
+                configMapKeyRef:
+                  name: gl-005-combusense-config
+                  key: LOG_LEVEL
+            - name: GL005_API_PORT
+              value: "8080"
+            - name: GL005_METRICS_PORT
+              value: "9090"
+            - name: GL005_DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: gl-005-combusense-secrets
+                  key: database-url
+            - name: GL005_REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: gl-005-combusense-secrets
+                  key: redis-url
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "4Gi"
+              cpu: "2000m"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          startupProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            failureThreshold: 30
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1000
+            capabilities:
+              drop:
+                - ALL
+          volumeMounts:
+            - name: config-volume
+              mountPath: /app/config
+              readOnly: true
+            - name: tmp-volume
+              mountPath: /tmp
+            - name: logs-volume
+              mountPath: /var/log/greenlang
+            - name: combustion-data-volume
+              mountPath: /var/data/combustion_control
+      volumes:
+        - name: config-volume
+          configMap:
+            name: gl-005-combusense-config
+        - name: tmp-volume
+          emptyDir: {}
+        - name: logs-volume
+          emptyDir: {}
+        - name: combustion-data-volume
+          emptyDir: {}
+      terminationGracePeriodSeconds: 30
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always

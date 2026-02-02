@@ -1,0 +1,327 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://greenlang.io/schemas/cbam/supplier/v1",
+  "title": "CBAM Supplier Profile",
+  "description": "Schema for a supplier (manufacturer/producer) of CBAM-covered goods. Contains supplier information and actual emissions data if available.",
+  "type": "object",
+  "required": [
+    "supplier_id",
+    "company_name",
+    "country_iso",
+    "product_groups",
+    "actual_emissions_available"
+  ],
+  "properties": {
+    "supplier_id": {
+      "type": "string",
+      "description": "Unique identifier for this supplier",
+      "minLength": 1,
+      "maxLength": 50,
+      "examples": ["SUP-0001", "SUP-0007", "SUPPLIER-CN-BAOSTEEL"]
+    },
+    "company_name": {
+      "type": "string",
+      "description": "Legal name of the supplier company",
+      "minLength": 1,
+      "maxLength": 200,
+      "examples": ["Baosteel Group", "Rusal", "Tata Steel", "Erdemir"]
+    },
+    "country_iso": {
+      "type": "string",
+      "pattern": "^[A-Z]{2}$",
+      "description": "ISO 3166-1 alpha-2 country code where supplier is located",
+      "examples": ["CN", "RU", "IN", "TR", "UA"]
+    },
+    "country_name": {
+      "type": "string",
+      "description": "Human-readable country name",
+      "examples": ["China", "Russia", "India", "Turkey", "Ukraine"]
+    },
+    "address": {
+      "type": "object",
+      "description": "Physical address of supplier's main production facility",
+      "properties": {
+        "street": {
+          "type": "string",
+          "maxLength": 200
+        },
+        "city": {
+          "type": "string",
+          "maxLength": 100,
+          "examples": ["Shanghai", "Moscow", "Mumbai", "Istanbul"]
+        },
+        "region": {
+          "type": "string",
+          "description": "State, province, or region",
+          "maxLength": 100
+        },
+        "postal_code": {
+          "type": "string",
+          "maxLength": 20
+        },
+        "country": {
+          "type": "string",
+          "maxLength": 100
+        }
+      }
+    },
+    "contact": {
+      "type": "object",
+      "description": "Primary contact information for CBAM reporting",
+      "properties": {
+        "person": {
+          "type": "string",
+          "description": "Name of primary contact person",
+          "maxLength": 100
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "Contact email address",
+          "maxLength": 100
+        },
+        "phone": {
+          "type": "string",
+          "description": "Contact phone number with country code",
+          "maxLength": 30,
+          "examples": ["+86-21-123456", "+7-495-234567", "+91-22-345678"]
+        },
+        "website": {
+          "type": "string",
+          "format": "uri",
+          "description": "Company website URL"
+        }
+      }
+    },
+    "product_groups": {
+      "type": "array",
+      "description": "List of CBAM product groups this supplier produces",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "enum": ["cement", "steel", "aluminum", "fertilizers", "hydrogen", "electricity"]
+      },
+      "examples": [["steel"], ["cement"], ["aluminum", "steel"]]
+    },
+    "cn_codes_produced": {
+      "type": "array",
+      "description": "List of CN codes for products this supplier manufactures",
+      "items": {
+        "type": "string",
+        "pattern": "^[0-9]{8}$"
+      },
+      "examples": [["72031000", "72081000"], ["25232900", "25231000"]]
+    },
+    "production_capacity_tons_per_year": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Annual production capacity in metric tonnes",
+      "examples": [850000, 380000, 165000]
+    },
+    "certifications": {
+      "type": "array",
+      "description": "List of environmental certifications held by the supplier",
+      "items": {
+        "type": "string"
+      },
+      "examples": [
+        ["ISO 14001", "ISO 14064", "EPD Program"],
+        ["ISO 14001"],
+        []
+      ]
+    },
+    "actual_emissions_available": {
+      "type": "boolean",
+      "description": "Whether this supplier has provided actual emissions data (true) or defaults will be used (false)"
+    },
+    "actual_emissions_data": {
+      "type": ["object", "null"],
+      "description": "Actual emissions data from the supplier. Null if not available.",
+      "properties": {
+        "direct_emissions_tco2_per_ton": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Direct (Scope 1) emissions in tonnes CO2e per tonne of product",
+          "examples": [1.813, 0.766, 10.000]
+        },
+        "indirect_emissions_tco2_per_ton": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Indirect (Scope 2) emissions in tonnes CO2e per tonne of product",
+          "examples": [0.148, 0.134, 9.800]
+        },
+        "total_emissions_tco2_per_ton": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Total emissions (Direct + Indirect) in tonnes CO2e per tonne of product",
+          "examples": [1.961, 0.900, 11.500]
+        },
+        "data_quality": {
+          "type": "string",
+          "enum": ["high", "medium", "low"],
+          "description": "Quality assessment of the emissions data"
+        },
+        "data_completeness_pct": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Percentage of data that is measured (vs estimated)",
+          "examples": [98, 82, 67]
+        },
+        "methodology": {
+          "type": "string",
+          "description": "Methodology used to calculate emissions",
+          "maxLength": 500,
+          "examples": ["Cradle-to-gate LCA per CBAM guidelines", "ISO 14064 methodology"]
+        },
+        "reporting_year": {
+          "type": "integer",
+          "minimum": 2020,
+          "maximum": 2030,
+          "description": "Year for which emissions data was reported",
+          "examples": [2023, 2022, 2021]
+        },
+        "certifications": {
+          "type": "array",
+          "description": "Certifications/verifications for this emissions data",
+          "items": {
+            "type": "string"
+          },
+          "examples": [
+            ["ISO 14064", "EPD Verified", "Third-party audited"],
+            ["EPD Self-declared", "Internal audit"]
+          ]
+        },
+        "boundary": {
+          "type": "string",
+          "description": "System boundary for emissions calculation",
+          "maxLength": 500,
+          "examples": ["Cradle-to-gate (raw materials extraction through factory gate)"]
+        },
+        "scope_1_included": {
+          "type": "boolean",
+          "description": "Whether Scope 1 (direct) emissions are included"
+        },
+        "scope_2_included": {
+          "type": "boolean",
+          "description": "Whether Scope 2 (indirect/electricity) emissions are included"
+        },
+        "scope_3_included": {
+          "type": "boolean",
+          "description": "Whether any Scope 3 (upstream/downstream) emissions are included",
+          "default": false
+        },
+        "precursor_materials": {
+          "type": "array",
+          "description": "List of precursor materials and their emissions if this is a complex good",
+          "items": {
+            "type": "object",
+            "properties": {
+              "material_name": {
+                "type": "string"
+              },
+              "cn_code": {
+                "type": "string",
+                "pattern": "^[0-9]{8}$"
+              },
+              "mass_fraction": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "emissions_tco2_per_ton": {
+                "type": "number",
+                "minimum": 0
+              }
+            }
+          }
+        },
+        "notes": {
+          "type": "string",
+          "description": "Additional notes about the emissions data",
+          "maxLength": 2000
+        }
+      },
+      "required": [
+        "direct_emissions_tco2_per_ton",
+        "indirect_emissions_tco2_per_ton",
+        "total_emissions_tco2_per_ton",
+        "data_quality"
+      ]
+    },
+    "eori_number": {
+      "type": "string",
+      "description": "Economic Operators Registration and Identification number (if trading with EU)",
+      "pattern": "^[A-Z]{2}[A-Z0-9]{1,15}$"
+    },
+    "tax_id": {
+      "type": "string",
+      "description": "Tax identification number in supplier's country",
+      "maxLength": 50
+    },
+    "facility_ids": {
+      "type": "array",
+      "description": "List of facility identifiers for this supplier",
+      "items": {
+        "type": "string"
+      }
+    },
+    "notes": {
+      "type": "string",
+      "description": "General notes about this supplier",
+      "maxLength": 2000
+    },
+    "last_updated": {
+      "type": "string",
+      "format": "date",
+      "description": "Date this supplier record was last updated"
+    },
+    "data_source": {
+      "type": "string",
+      "description": "Source of this supplier data",
+      "maxLength": 200,
+      "examples": ["Demo data - synthetic supplier profile", "Supplier self-reported", "Third-party database"]
+    }
+  },
+  "additionalProperties": true,
+  "examples": [
+    {
+      "supplier_id": "SUP-0001",
+      "company_name": "Baosteel Group",
+      "country_iso": "CN",
+      "country_name": "China",
+      "address": {
+        "city": "Shanghai",
+        "postal_code": "200000",
+        "country": "China"
+      },
+      "contact": {
+        "person": "Zhang Wang",
+        "email": "exports@baosteelgroupexample.com",
+        "phone": "+86-21-123456"
+      },
+      "product_groups": ["steel"],
+      "cn_codes_produced": ["72031000", "72081000"],
+      "production_capacity_tons_per_year": 850000,
+      "certifications": ["ISO 14001", "ISO 14064", "EPD Program"],
+      "actual_emissions_available": true,
+      "actual_emissions_data": {
+        "direct_emissions_tco2_per_ton": 1.813,
+        "indirect_emissions_tco2_per_ton": 0.148,
+        "total_emissions_tco2_per_ton": 1.961,
+        "data_quality": "high",
+        "data_completeness_pct": 98,
+        "methodology": "Cradle-to-gate LCA per CBAM guidelines",
+        "reporting_year": 2023,
+        "certifications": ["ISO 14064", "EPD Verified", "Third-party audited"],
+        "boundary": "Cradle-to-gate (raw materials extraction through factory gate)",
+        "scope_1_included": true,
+        "scope_2_included": true,
+        "scope_3_included": false,
+        "notes": "High quality actual emissions data from supplier EPD"
+      },
+      "last_updated": "2025-10-15",
+      "data_source": "Demo data - synthetic supplier profile"
+    }
+  ]
+}

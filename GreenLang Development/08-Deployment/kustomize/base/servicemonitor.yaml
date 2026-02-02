@@ -1,0 +1,40 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: greenlang-agents
+  namespace: greenlang-agents
+  labels:
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      agent-type: calculator
+  endpoints:
+    - port: metrics
+      interval: 30s
+      scrapeTimeout: 10s
+      path: /metrics
+  namespaceSelector:
+    matchNames:
+      - greenlang-agents
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: eudr-compliance
+  namespace: greenlang-agents
+  labels:
+    release: prometheus
+    criticality: high
+spec:
+  selector:
+    matchLabels:
+      app: eudr-compliance
+  endpoints:
+    - port: metrics
+      interval: 15s  # More frequent scraping for critical agent
+      scrapeTimeout: 10s
+      path: /metrics
+  namespaceSelector:
+    matchNames:
+      - greenlang-agents

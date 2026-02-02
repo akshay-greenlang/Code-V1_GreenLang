@@ -1,0 +1,261 @@
+# GL-003 UnifiedSteam Property-Based Testing Workflow
+# Author: GL-TestEngineer
+# Version: 1.0.0
+#
+# This workflow runs Hypothesis property-based tests for comprehensive
+# validation of thermodynamic calculations and safety systems.
+
+name: Property-Based Tests
+
+on:
+  push:
+    branches: [main, master, develop]
+    paths:
+      - 'thermodynamics/**'
+      - 'safety/**'
+      - 'optimization/**'
+      - 'integration/**'
+      - 'tests/property/**'
+  pull_request:
+    branches: [main, master, develop]
+  schedule:
+    # Run full tests weekly on Sunday at midnight
+    - cron: '0 0 * * 0'
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: 'Hypothesis profile to use'
+        required: false
+        default: 'ci'
+        type: choice
+        options:
+          - quick
+          - ci
+          - full
+          - exhaustive
+
+env:
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  # Quick smoke tests on every push
+  smoke-tests:
+    name: Smoke Tests
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest hypothesis numpy pydantic
+          pip install -e .
+        working-directory: .
+
+      - name: Run smoke tests
+        env:
+          HYPOTHESIS_PROFILE: quick
+        run: |
+          pytest tests/property/ -v --tb=short -m hypothesis -x
+        working-directory: .
+
+  # Standard CI tests on PRs and pushes
+  ci-tests:
+    name: CI Property Tests
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' || github.event_name == 'push'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest hypothesis numpy pydantic pytest-cov pytest-html
+          pip install -e .
+        working-directory: .
+
+      - name: Run CI property tests
+        env:
+          HYPOTHESIS_PROFILE: ci
+        run: |
+          pytest tests/property/ \
+            -v \
+            --tb=short \
+            -m hypothesis \
+            --cov=. \
+            --cov-report=xml \
+            --cov-report=term-missing \
+            --junitxml=test-results/property-tests.xml
+        working-directory: .
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./coverage.xml
+          flags: property-tests
+          name: property-coverage
+        continue-on-error: true
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: property-test-results
+          path: test-results/
+          retention-days: 30
+
+  # Full tests for scheduled runs and manual triggers
+  full-tests:
+    name: Full Property Tests
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.event.inputs.profile != 'quick' && github.event.inputs.profile != 'ci')
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest hypothesis numpy pydantic pytest-cov pytest-html pytest-xdist
+          pip install -e .
+        working-directory: .
+
+      - name: Determine profile
+        id: profile
+        run: |
+          if [ "${{ github.event_name }}" == "schedule" ]; then
+            echo "profile=full" >> $GITHUB_OUTPUT
+          else
+            echo "profile=${{ github.event.inputs.profile }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Run full property tests
+        env:
+          HYPOTHESIS_PROFILE: ${{ steps.profile.outputs.profile }}
+        run: |
+          pytest tests/property/ \
+            -v \
+            --tb=long \
+            -m hypothesis \
+            -n auto \
+            --cov=. \
+            --cov-report=xml \
+            --cov-report=html \
+            --html=test-reports/property-tests-full.html \
+            --self-contained-html \
+            --junitxml=test-results/property-tests-full.xml
+        working-directory: .
+        timeout-minutes: 60
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report
+          path: htmlcov/
+          retention-days: 30
+
+      - name: Upload test report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-report
+          path: test-reports/
+          retention-days: 30
+
+  # Matrix testing for different Python versions
+  compatibility-tests:
+    name: Python ${{ matrix.python-version }} Compatibility
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule'
+
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.9', '3.10', '3.11', '3.12']
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest hypothesis numpy pydantic
+          pip install -e .
+        working-directory: .
+
+      - name: Run compatibility tests
+        env:
+          HYPOTHESIS_PROFILE: ci
+        run: |
+          pytest tests/property/ -v --tb=short -m hypothesis
+        working-directory: .
+
+  # Stateful tests (run separately due to complexity)
+  stateful-tests:
+    name: Stateful Tests
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' || github.event_name == 'schedule'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest hypothesis numpy pydantic
+          pip install -e .
+        working-directory: .
+
+      - name: Run stateful tests
+        env:
+          HYPOTHESIS_PROFILE: ci
+        run: |
+          pytest tests/property/test_state_machines.py \
+            -v \
+            --tb=short \
+            -m "stateful or hypothesis" \
+            --junitxml=test-results/stateful-tests.xml
+        working-directory: .
+        timeout-minutes: 30
+
+      - name: Upload results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: stateful-test-results
+          path: test-results/
+          retention-days: 30

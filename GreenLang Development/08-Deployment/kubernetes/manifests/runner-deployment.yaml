@@ -1,0 +1,319 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: greenlang-runner
+  namespace: greenlang-system
+  labels:
+    app.kubernetes.io/name: greenlang-runner
+    app.kubernetes.io/part-of: greenlang
+    app.kubernetes.io/version: "0.2.0"
+    greenlang.io/container-type: runner
+  annotations:
+    # Force image verification
+    container.securityContext.allowPrivilegeEscalation: "false"
+    container.securityContext.readOnlyRootFilesystem: "true"
+spec:
+  replicas: 3
+  revisionHistoryLimit: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: greenlang-runner
+      app.kubernetes.io/part-of: greenlang
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: greenlang-runner
+        app.kubernetes.io/part-of: greenlang
+        app.kubernetes.io/version: "0.2.0"
+        greenlang.io/container-type: runner
+      annotations:
+        # Security annotations
+        container.apparmor.security.beta.kubernetes.io/greenlang: runtime/default
+        # Prometheus metrics
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: greenlang-runner
+      automountServiceAccountToken: false  # Minimize token exposure
+
+      # Security context at pod level
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+        fsGroupChangePolicy: "OnRootMismatch"
+        seccompProfile:
+          type: RuntimeDefault
+        seLinuxOptions:
+          level: "s0:c123,c456"
+
+      containers:
+      - name: greenlang
+        image: ghcr.io/akshay-greenlang/greenlang-runner:0.2.0@sha256:example
+        imagePullPolicy: IfNotPresent
+
+        # Container security context
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 10001
+          runAsGroup: 10001
+          capabilities:
+            drop:
+            - ALL
+          seccompProfile:
+            type: RuntimeDefault
+
+        ports:
+        - name: http
+          containerPort: 8080
+          protocol: TCP
+        - name: metrics
+          containerPort: 9090
+          protocol: TCP
+
+        env:
+        - name: GL_LOG_LEVEL
+          value: "INFO"
+        - name: GL_BACKEND
+          value: "kubernetes"
+        - name: GL_CACHE_DIR
+          value: "/var/cache/greenlang"
+        - name: GL_LOG_DIR
+          value: "/var/log/greenlang"
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+            ephemeral-storage: 1Gi
+          limits:
+            cpu: 1000m
+            memory: 1Gi
+            ephemeral-storage: 5Gi
+
+        # Liveness probe
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: http
+            scheme: HTTP
+            httpHeaders:
+            - name: User-Agent
+              value: "Kubernetes-Liveness-Probe"
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 3
+
+        # Readiness probe
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: http
+            scheme: HTTP
+            httpHeaders:
+            - name: User-Agent
+              value: "Kubernetes-Readiness-Probe"
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 3
+
+        # Startup probe for slow starts
+        startupProbe:
+          httpGet:
+            path: /health
+            port: http
+            scheme: HTTP
+          initialDelaySeconds: 0
+          periodSeconds: 10
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 30
+
+        volumeMounts:
+        - name: cache
+          mountPath: /var/cache/greenlang
+        - name: logs
+          mountPath: /var/log/greenlang
+        - name: tmp
+          mountPath: /tmp
+        - name: config
+          mountPath: /etc/greenlang
+          readOnly: true
+
+      volumes:
+      - name: cache
+        emptyDir:
+          sizeLimit: 5Gi
+      - name: logs
+        emptyDir:
+          sizeLimit: 1Gi
+      - name: tmp
+        emptyDir:
+          sizeLimit: 1Gi
+      - name: config
+        configMap:
+          name: greenlang-config
+          defaultMode: 0444
+
+      # Node affinity for better placement
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app.kubernetes.io/name
+                  operator: In
+                  values:
+                  - greenlang-runner
+              topologyKey: kubernetes.io/hostname
+
+      # Tolerations for node taints
+      tolerations:
+      - key: "greenlang.io/workload"
+        operator: "Equal"
+        value: "runner"
+        effect: "NoSchedule"
+
+      # Priority class
+      priorityClassName: greenlang-normal
+
+      # DNS policy
+      dnsPolicy: ClusterFirst
+
+      # Restart policy
+      restartPolicy: Always
+
+      # Termination grace period
+      terminationGracePeriodSeconds: 30
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: greenlang-runner
+  namespace: greenlang-system
+  labels:
+    app.kubernetes.io/name: greenlang-runner
+    app.kubernetes.io/part-of: greenlang
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: greenlang-runner
+    app.kubernetes.io/part-of: greenlang
+  ports:
+  - name: http
+    port: 8080
+    targetPort: http
+    protocol: TCP
+  - name: metrics
+    port: 9090
+    targetPort: metrics
+    protocol: TCP
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: greenlang-runner
+  namespace: greenlang-system
+  labels:
+    app.kubernetes.io/name: greenlang-runner
+    app.kubernetes.io/part-of: greenlang
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: greenlang-runner
+  namespace: greenlang-system
+rules:
+# Minimal permissions for runner
+- apiGroups: [""]
+  resources: ["configmaps"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["get"]
+  resourceNames: ["greenlang-runner-secrets"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: greenlang-runner
+  namespace: greenlang-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: greenlang-runner
+subjects:
+- kind: ServiceAccount
+  name: greenlang-runner
+  namespace: greenlang-system
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: greenlang-config
+  namespace: greenlang-system
+data:
+  config.yaml: |
+    # GreenLang Runner Configuration
+    server:
+      host: "0.0.0.0"
+      port: 8080
+      metrics_port: 9090
+
+    security:
+      enable_tls: true
+      require_auth: true
+      allowed_origins:
+      - "https://greenlang.io"
+      - "https://hub.greenlang.io"
+
+    runtime:
+      max_workers: 10
+      timeout: 300
+      memory_limit: "1Gi"
+
+    logging:
+      level: "INFO"
+      format: "json"
+      output: "stdout"
+
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: greenlang-normal
+value: 500
+globalDefault: false
+description: "Normal priority for GreenLang workloads"

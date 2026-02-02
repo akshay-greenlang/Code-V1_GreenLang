@@ -1,0 +1,957 @@
+# =============================================================================
+# Combustion Safety Agent Template
+# GreenLang Agent Factory - Process Heat Applications
+# =============================================================================
+# Standards: NFPA 85, NFPA 86, IEC 61511
+# Version: 1.0.0
+# =============================================================================
+
+metadata:
+  template_id: combustion_safety_agent
+  name: Combustion Safety Compliance Agent
+  description: >
+    Verifies combustion safety system compliance with NFPA 85/86 requirements.
+    Checks purge sequences, flame supervision, safety shutoff valves, and
+    burner management system logic for boilers, furnaces, and ovens.
+  category: safety
+  version: "1.0.0"
+  status: production
+  author: GreenLang Engineering Team
+  created_at: "2024-12-01T00:00:00Z"
+  updated_at: "2024-12-11T00:00:00Z"
+
+  tags:
+    - combustion_safety
+    - NFPA_85
+    - NFPA_86
+    - BMS
+    - flame_supervision
+    - purge
+    - safety_shutoff
+
+  equipment_types:
+    - boiler
+    - furnace
+    - oven
+    - dryer
+    - fired_heater
+    - hrsg
+    - duct_burner
+
+  industries:
+    - oil_gas
+    - power_generation
+    - petrochemical
+    - chemical
+    - manufacturing
+
+  applicable_standards:
+    - NFPA 85
+    - NFPA 86
+    - IEC 61511
+    - FM Global
+
+  compliance_frameworks:
+    - NFPA
+    - FM Global
+    - OSHA PSM
+
+# =============================================================================
+# Input Schema
+# =============================================================================
+
+input_schema:
+  name: CombustionSafetyInput
+  description: Combustion safety verification input parameters
+  version: "1.0.0"
+
+  fields:
+    # Equipment identification
+    equipment_type:
+      type: enum
+      description: Type of combustion equipment
+      required: true
+      allowed_values:
+        - single_burner_boiler
+        - multiple_burner_boiler
+        - hrsg
+        - process_furnace
+        - class_a_oven
+        - class_b_oven
+        - class_c_furnace
+        - class_d_furnace
+
+    equipment_tag:
+      type: string
+      description: Equipment tag number
+      required: true
+
+    heat_input:
+      type: float
+      description: Total heat input capacity
+      required: true
+      unit: MMBtu/hr
+      min_value: 0
+
+    fuel_type:
+      type: enum
+      description: Primary fuel type
+      required: true
+      allowed_values:
+        - natural_gas
+        - fuel_oil
+        - dual_fuel
+        - mixed_gas
+        - propane
+        - hydrogen
+
+    # Furnace/firebox parameters
+    furnace_volume:
+      type: float
+      description: Furnace/firebox volume
+      required: true
+      unit: ft3
+      min_value: 1
+
+    combustion_air_flow:
+      type: float
+      description: Combustion air flow rate at full fire
+      required: true
+      unit: ft3/min
+      min_value: 0
+
+    purge_air_flow:
+      type: float
+      description: Air flow during purge
+      required: false
+      unit: ft3/min
+
+    # Burner configuration
+    number_of_burners:
+      type: integer
+      description: Total number of burners
+      required: true
+      min_value: 1
+
+    burner_arrangement:
+      type: enum
+      description: Burner arrangement
+      required: false
+      allowed_values:
+        - floor_fired
+        - wall_fired
+        - roof_fired
+        - combination
+
+    pilot_type:
+      type: enum
+      description: Type of pilot/igniter
+      required: true
+      allowed_values:
+        - continuous_pilot
+        - interrupted_pilot
+        - intermittent_pilot
+        - direct_spark
+        - hot_surface
+        - none
+
+    # Safety shutoff valves
+    ssov_configuration:
+      type: enum
+      description: Safety shutoff valve configuration
+      required: true
+      allowed_values:
+        - single_block
+        - double_block
+        - double_block_bleed
+
+    ssov_size:
+      type: float
+      description: Safety shutoff valve size
+      required: false
+      unit: inch
+
+    ssov_closing_time:
+      type: float
+      description: SSOV closing time
+      required: true
+      unit: seconds
+      max_value: 5
+
+    vent_valve_present:
+      type: boolean
+      description: Whether vent valve is installed between SSOVs
+      required: true
+
+    # Flame supervision
+    flame_detector_type:
+      type: enum
+      description: Type of flame detector
+      required: true
+      allowed_values:
+        - uv
+        - ir
+        - uv_ir
+        - flame_rod
+        - scanner
+
+    flame_failure_response_time:
+      type: float
+      description: Flame failure response time setting
+      required: true
+      unit: seconds
+      max_value: 4
+
+    flame_supervision_per_burner:
+      type: boolean
+      description: Individual flame supervision for each burner
+      required: true
+
+    # Timing parameters
+    pre_purge_time:
+      type: float
+      description: Pre-ignition purge time
+      required: true
+      unit: seconds
+      min_value: 0
+
+    post_purge_time:
+      type: float
+      description: Post-purge time
+      required: false
+      unit: seconds
+      default: 0
+
+    trial_for_ignition_pilot:
+      type: float
+      description: Trial for ignition time - pilot
+      required: true
+      unit: seconds
+
+    trial_for_ignition_main:
+      type: float
+      description: Trial for ignition time - main flame
+      required: true
+      unit: seconds
+
+    # Interlocks
+    combustion_air_proving:
+      type: boolean
+      description: Combustion air flow proving interlock
+      required: true
+
+    atomizing_media_proving:
+      type: boolean
+      description: Atomizing media proving (for oil burners)
+      required: false
+      default: false
+
+    fuel_pressure_proving:
+      type: boolean
+      description: Fuel pressure proving interlock
+      required: true
+
+    low_fire_start:
+      type: boolean
+      description: Low fire start interlock
+      required: true
+
+    high_temperature_cutoff:
+      type: float
+      description: High temperature safety cutoff setpoint
+      required: false
+      unit: celsius
+
+    low_water_cutoff:
+      type: boolean
+      description: Low water cutoff (for boilers)
+      required: false
+      default: false
+
+    # Leak test
+    valve_proving_system:
+      type: boolean
+      description: Automatic valve proving system installed
+      required: true
+
+    leak_test_frequency:
+      type: enum
+      description: Fuel valve leak test frequency
+      required: false
+      allowed_values:
+        - each_start
+        - daily
+        - weekly
+        - none
+      default: each_start
+
+    # Operating mode
+    modulating_control:
+      type: boolean
+      description: Whether burner has modulating control
+      required: false
+      default: true
+
+    low_fire_hold_time:
+      type: float
+      description: Low fire hold time before modulation
+      required: false
+      unit: seconds
+      default: 0
+
+# =============================================================================
+# Output Schema
+# =============================================================================
+
+output_schema:
+  name: CombustionSafetyOutput
+  description: Combustion safety compliance assessment results
+  version: "1.0.0"
+
+  fields:
+    # Overall compliance
+    overall_compliance:
+      type: string
+      description: Overall NFPA compliance status
+
+    compliance_score:
+      type: float
+      description: Compliance score (0-100)
+      unit: percent
+
+    applicable_standard:
+      type: string
+      description: Applicable NFPA standard chapter
+
+    # Purge verification
+    purge_compliance:
+      type: boolean
+      description: Purge sequence compliance
+
+    required_purge_time:
+      type: float
+      description: Minimum required purge time
+      unit: seconds
+
+    actual_purge_time:
+      type: float
+      description: Actual configured purge time
+      unit: seconds
+
+    purge_air_changes:
+      type: float
+      description: Number of air changes during purge
+      unit: dimensionless
+
+    purge_deficiencies:
+      type: list
+      description: List of purge deficiencies
+
+    # SSOV compliance
+    ssov_compliance:
+      type: boolean
+      description: Safety shutoff valve compliance
+
+    ssov_requirement:
+      type: string
+      description: Required SSOV configuration
+
+    ssov_deficiencies:
+      type: list
+      description: List of SSOV deficiencies
+
+    # Flame supervision
+    flame_detection_compliance:
+      type: boolean
+      description: Flame detection compliance
+
+    ffrt_requirement:
+      type: float
+      description: Required flame failure response time
+      unit: seconds
+
+    flame_deficiencies:
+      type: list
+      description: Flame supervision deficiencies
+
+    # Timing verification
+    tfi_pilot_compliance:
+      type: boolean
+      description: Trial for ignition (pilot) compliance
+
+    tfi_main_compliance:
+      type: boolean
+      description: Trial for ignition (main) compliance
+
+    max_tfi_pilot:
+      type: float
+      description: Maximum allowed TFI for pilot
+      unit: seconds
+
+    max_tfi_main:
+      type: float
+      description: Maximum allowed TFI for main
+      unit: seconds
+
+    timing_deficiencies:
+      type: list
+      description: Timing parameter deficiencies
+
+    # Interlock verification
+    interlock_compliance:
+      type: boolean
+      description: Safety interlock compliance
+
+    required_interlocks:
+      type: list
+      description: List of required interlocks
+
+    missing_interlocks:
+      type: list
+      description: Missing required interlocks
+
+    interlock_deficiencies:
+      type: list
+      description: Interlock deficiencies
+
+    # Valve proving
+    valve_proving_compliance:
+      type: boolean
+      description: Valve proving compliance
+
+    valve_proving_requirement:
+      type: string
+      description: Valve proving requirement
+
+    # All deficiencies
+    all_deficiencies:
+      type: list
+      description: Complete list of all deficiencies
+
+    critical_deficiencies:
+      type: list
+      description: Critical safety deficiencies
+
+    # Recommendations
+    recommendations:
+      type: list
+      description: Remediation recommendations
+
+    priority_actions:
+      type: list
+      description: High priority corrective actions
+
+    # Risk assessment
+    risk_level:
+      type: string
+      description: Overall risk level
+
+    explosion_risk_factors:
+      type: list
+      description: Factors contributing to explosion risk
+
+    # Provenance
+    provenance_hash:
+      type: string
+      description: SHA-256 compliance check hash
+
+    calculation_timestamp:
+      type: datetime
+      description: Assessment timestamp
+
+    source_references:
+      type: list
+      description: Standards and clauses referenced
+
+# =============================================================================
+# Formulas
+# =============================================================================
+
+formulas:
+  - id: NFPA85_PURGE_TIME
+    name: Minimum Purge Time (NFPA 85)
+    description: Calculate minimum pre-purge time for 4 volume changes
+    equation: "t_purge = (4 * V_furnace) / Q_air"
+    variables:
+      t_purge:
+        description: Required purge time
+        unit: minutes
+        type: float
+      V_furnace:
+        description: Furnace volume
+        unit: ft3
+        type: float
+      Q_air:
+        description: Purge air flow rate
+        unit: ft3/min
+        type: float
+    source:
+      standard: NFPA 85
+      section: "4.6.2.2"
+      edition: "2023"
+    application: Pre-ignition purge time calculation
+    limitations:
+      - Minimum 4 air changes required
+      - Minimum 15 seconds regardless of calculation
+
+  - id: NFPA85_FFRT
+    name: Flame Failure Response Time
+    description: Maximum flame failure response time
+    equation: "FFRT_max = 4 seconds for main burner, 10 seconds for pilot"
+    variables:
+      FFRT:
+        description: Flame failure response time
+        unit: seconds
+        type: float
+    source:
+      standard: NFPA 85
+      section: "4.7.3"
+      edition: "2023"
+    application: Flame supervision timing
+
+  - id: NFPA85_TFI_LIMITS
+    name: Trial for Ignition Limits
+    description: Maximum trial for ignition times
+    equation: "TFI_pilot <= 10s, TFI_main <= 10s (gas), TFI_main <= 15s (oil)"
+    variables:
+      TFI_pilot:
+        description: Trial for pilot ignition
+        unit: seconds
+        type: float
+      TFI_main:
+        description: Trial for main flame ignition
+        unit: seconds
+        type: float
+    source:
+      standard: NFPA 85
+      section: "4.6.2.5"
+      edition: "2023"
+    application: Ignition sequence timing
+
+  - id: NFPA86_PURGE_REQUIREMENT
+    name: NFPA 86 Purge Requirement
+    description: Purge requirements for ovens and furnaces
+    equation: "4 volume changes at 25% LEL maximum"
+    variables:
+      V_changes:
+        description: Volume changes required
+        unit: dimensionless
+        type: integer
+    source:
+      standard: NFPA 86
+      section: "8.4.1.1"
+      edition: "2023"
+    application: Oven/furnace purge requirements
+
+# =============================================================================
+# Standards References
+# =============================================================================
+
+standards:
+  - code: NFPA 85
+    title: Boiler and Combustion Systems Hazards Code
+    edition: "2023"
+    sections:
+      - "Chapter 4: Single Burner Boilers"
+      - "Chapter 5: Multiple Burner Boilers"
+      - "Chapter 9: HRSGs"
+    requirements:
+      - Purge sequence
+      - Flame supervision
+      - Safety shutoff valves
+      - Timing parameters
+      - Interlocks
+    compliance_level: required
+
+  - code: NFPA 86
+    title: Standard for Ovens and Furnaces
+    edition: "2023"
+    sections:
+      - "Chapter 8: Class A Ovens"
+      - "Chapter 9: Class B Ovens"
+      - "Chapter 10: Class C Furnaces"
+    requirements:
+      - Safety equipment
+      - Ventilation
+      - Purge requirements
+    compliance_level: required
+
+  - code: FM Global
+    title: FM Property Loss Prevention Data Sheets
+    edition: "2023"
+    sections:
+      - "6-0: Elements of Industrial Heating Equipment"
+      - "6-4: Oil and Gas-Fired Heaters"
+    requirements:
+      - Additional insurance requirements
+    compliance_level: recommended
+
+# =============================================================================
+# Safety Constraints
+# =============================================================================
+
+safety_constraints:
+  - id: SC_PURGE_MIN
+    name: Minimum Purge Requirement
+    description: Pre-ignition purge must provide 4 air changes minimum
+    condition: "purge_air_changes >= 4"
+    action: reject
+    severity: critical
+    standard_reference: NFPA 85 Section 4.6.2.2
+    message: "CRITICAL: Purge provides only {purge_air_changes} air changes, minimum 4 required"
+
+  - id: SC_FFRT_LIMIT
+    name: Flame Failure Response Time Limit
+    description: FFRT must not exceed 4 seconds for main burner
+    condition: "flame_failure_response_time <= 4"
+    action: reject
+    severity: critical
+    standard_reference: NFPA 85 Section 4.7.3
+    message: "CRITICAL: FFRT of {flame_failure_response_time}s exceeds 4s limit"
+
+  - id: SC_TFI_PILOT
+    name: Trial for Ignition - Pilot
+    description: TFI for pilot must not exceed 10 seconds
+    condition: "trial_for_ignition_pilot <= 10"
+    action: reject
+    severity: critical
+    standard_reference: NFPA 85 Section 4.6.2.5
+    message: "CRITICAL: TFI pilot {trial_for_ignition_pilot}s exceeds 10s limit"
+
+  - id: SC_TFI_MAIN
+    name: Trial for Ignition - Main
+    description: TFI for main flame must not exceed limits
+    condition: "trial_for_ignition_main <= 15"
+    action: reject
+    severity: critical
+    standard_reference: NFPA 85 Section 4.6.2.5
+    message: "CRITICAL: TFI main {trial_for_ignition_main}s exceeds limit"
+
+  - id: SC_SSOV_CLOSING
+    name: SSOV Closing Time
+    description: SSOV must close within 1 second
+    condition: "ssov_closing_time <= 1"
+    action: warn
+    severity: error
+    standard_reference: NFPA 85 Section 4.5.4
+    message: "SSOV closing time {ssov_closing_time}s exceeds 1s recommendation"
+
+  - id: SC_DOUBLE_BLOCK
+    name: Double Block Requirement
+    description: Large installations require double block
+    condition: "heat_input < 400 or ssov_configuration != 'single_block'"
+    action: warn
+    severity: error
+    standard_reference: NFPA 85 Section 4.5.2
+    message: "Heat input {heat_input} MMBtu/hr requires double block SSOVs"
+
+  - id: SC_VENT_VALVE
+    name: Vent Valve Requirement
+    description: Double block requires vent valve
+    condition: "ssov_configuration == 'single_block' or vent_valve_present"
+    action: warn
+    severity: error
+    standard_reference: NFPA 85 Section 4.5.3
+    message: "Double block configuration requires vent valve"
+
+  - id: SC_AIR_PROVING
+    name: Combustion Air Proving Required
+    description: Combustion air proving is mandatory
+    condition: "combustion_air_proving == true"
+    action: reject
+    severity: critical
+    standard_reference: NFPA 85 Section 4.4.3
+    message: "CRITICAL: Combustion air proving interlock required"
+
+  - id: SC_LOW_FIRE_START
+    name: Low Fire Start Required
+    description: Low fire start is mandatory
+    condition: "low_fire_start == true"
+    action: reject
+    severity: critical
+    standard_reference: NFPA 85 Section 4.6.2.4
+    message: "CRITICAL: Low fire start interlock required"
+
+# =============================================================================
+# Processing Pipeline
+# =============================================================================
+
+processing:
+  steps:
+    - id: STEP_01_VALIDATE_INPUTS
+      name: Input Validation
+      type: validation
+      description: Validate all input parameters
+      inputs:
+        - all_input_fields
+      outputs:
+        - validation_status
+      error_handling: reject
+
+    - id: STEP_02_DETERMINE_STANDARD
+      name: Determine Applicable Standard
+      type: classification
+      description: Determine applicable NFPA chapter
+      inputs:
+        - equipment_type
+        - heat_input
+        - number_of_burners
+      outputs:
+        - applicable_standard
+      error_handling: propagate
+
+    - id: STEP_03_PURGE_VERIFICATION
+      name: Purge Sequence Verification
+      type: calculation
+      description: Verify purge timing meets requirements
+      inputs:
+        - furnace_volume
+        - combustion_air_flow
+        - purge_air_flow
+        - pre_purge_time
+      outputs:
+        - required_purge_time
+        - actual_purge_time
+        - purge_air_changes
+        - purge_compliance
+        - purge_deficiencies
+      formula_refs:
+        - NFPA85_PURGE_TIME
+      constraints:
+        - SC_PURGE_MIN
+      error_handling: propagate
+
+    - id: STEP_04_SSOV_VERIFICATION
+      name: SSOV Verification
+      type: validation
+      description: Verify safety shutoff valve configuration
+      inputs:
+        - heat_input
+        - ssov_configuration
+        - ssov_closing_time
+        - vent_valve_present
+        - valve_proving_system
+      outputs:
+        - ssov_compliance
+        - ssov_requirement
+        - ssov_deficiencies
+      constraints:
+        - SC_DOUBLE_BLOCK
+        - SC_VENT_VALVE
+        - SC_SSOV_CLOSING
+      error_handling: propagate
+
+    - id: STEP_05_FLAME_SUPERVISION
+      name: Flame Supervision Verification
+      type: validation
+      description: Verify flame detection system
+      inputs:
+        - flame_detector_type
+        - flame_failure_response_time
+        - flame_supervision_per_burner
+        - number_of_burners
+      outputs:
+        - flame_detection_compliance
+        - ffrt_requirement
+        - flame_deficiencies
+      formula_refs:
+        - NFPA85_FFRT
+      constraints:
+        - SC_FFRT_LIMIT
+      error_handling: propagate
+
+    - id: STEP_06_TIMING_VERIFICATION
+      name: Timing Parameter Verification
+      type: validation
+      description: Verify all timing parameters
+      inputs:
+        - trial_for_ignition_pilot
+        - trial_for_ignition_main
+        - fuel_type
+        - pilot_type
+      outputs:
+        - tfi_pilot_compliance
+        - tfi_main_compliance
+        - max_tfi_pilot
+        - max_tfi_main
+        - timing_deficiencies
+      formula_refs:
+        - NFPA85_TFI_LIMITS
+      constraints:
+        - SC_TFI_PILOT
+        - SC_TFI_MAIN
+      error_handling: propagate
+
+    - id: STEP_07_INTERLOCK_VERIFICATION
+      name: Interlock Verification
+      type: validation
+      description: Verify all required interlocks present
+      inputs:
+        - combustion_air_proving
+        - fuel_pressure_proving
+        - low_fire_start
+        - atomizing_media_proving
+        - low_water_cutoff
+        - equipment_type
+      outputs:
+        - interlock_compliance
+        - required_interlocks
+        - missing_interlocks
+        - interlock_deficiencies
+      constraints:
+        - SC_AIR_PROVING
+        - SC_LOW_FIRE_START
+      error_handling: propagate
+
+    - id: STEP_08_VALVE_PROVING
+      name: Valve Proving Verification
+      type: validation
+      description: Verify valve proving system
+      inputs:
+        - valve_proving_system
+        - leak_test_frequency
+        - ssov_configuration
+      outputs:
+        - valve_proving_compliance
+        - valve_proving_requirement
+      error_handling: propagate
+
+    - id: STEP_09_COMPILE_DEFICIENCIES
+      name: Compile All Deficiencies
+      type: aggregation
+      description: Compile all compliance deficiencies
+      inputs:
+        - purge_deficiencies
+        - ssov_deficiencies
+        - flame_deficiencies
+        - timing_deficiencies
+        - interlock_deficiencies
+      outputs:
+        - all_deficiencies
+        - critical_deficiencies
+        - compliance_score
+      error_handling: propagate
+
+    - id: STEP_10_RISK_ASSESSMENT
+      name: Risk Assessment
+      type: decision
+      description: Assess overall safety risk
+      inputs:
+        - all_deficiencies
+        - critical_deficiencies
+      outputs:
+        - risk_level
+        - explosion_risk_factors
+        - overall_compliance
+      error_handling: propagate
+
+    - id: STEP_11_RECOMMENDATIONS
+      name: Generate Recommendations
+      type: decision
+      description: Generate remediation recommendations
+      inputs:
+        - all_deficiencies
+        - critical_deficiencies
+        - risk_level
+      outputs:
+        - recommendations
+        - priority_actions
+      error_handling: default
+
+    - id: STEP_12_PROVENANCE
+      name: Provenance Tracking
+      type: output
+      description: Generate compliance check provenance
+      inputs:
+        - all_inputs
+        - all_outputs
+      outputs:
+        - provenance_hash
+        - calculation_timestamp
+        - source_references
+      error_handling: propagate
+
+# =============================================================================
+# Zero-Hallucination Configuration
+# =============================================================================
+
+zero_hallucination:
+  enabled: true
+  calculation_mode: deterministic
+  allowed_operations:
+    - arithmetic
+    - formula_evaluation
+    - table_lookup
+    - comparison
+    - boolean_logic
+  forbidden_operations:
+    - llm_safety_determination
+    - ml_compliance_prediction
+  require_formula_citation: true
+  require_provenance: true
+  llm_allowed_for:
+    - recommendation_narrative
+    - risk_communication
+
+# =============================================================================
+# Test Cases
+# =============================================================================
+
+test_cases:
+  - name: Compliant Single Burner Boiler
+    description: Fully compliant single burner gas boiler
+    inputs:
+      equipment_type: single_burner_boiler
+      equipment_tag: B-101
+      heat_input: 50
+      fuel_type: natural_gas
+      furnace_volume: 500
+      combustion_air_flow: 2000
+      number_of_burners: 1
+      pilot_type: interrupted_pilot
+      ssov_configuration: double_block_bleed
+      ssov_closing_time: 0.5
+      vent_valve_present: true
+      flame_detector_type: uv
+      flame_failure_response_time: 3
+      flame_supervision_per_burner: true
+      pre_purge_time: 120
+      trial_for_ignition_pilot: 10
+      trial_for_ignition_main: 10
+      combustion_air_proving: true
+      fuel_pressure_proving: true
+      low_fire_start: true
+      valve_proving_system: true
+    expected_outputs:
+      overall_compliance: COMPLIANT
+      compliance_score:
+        min: 95
+        max: 100
+
+  - name: Non-Compliant - Purge Deficient
+    description: Boiler with insufficient purge
+    inputs:
+      equipment_type: single_burner_boiler
+      equipment_tag: B-102
+      heat_input: 50
+      fuel_type: natural_gas
+      furnace_volume: 500
+      combustion_air_flow: 2000
+      number_of_burners: 1
+      pilot_type: interrupted_pilot
+      ssov_configuration: double_block_bleed
+      ssov_closing_time: 0.5
+      vent_valve_present: true
+      flame_detector_type: uv
+      flame_failure_response_time: 3
+      flame_supervision_per_burner: true
+      pre_purge_time: 30
+      trial_for_ignition_pilot: 10
+      trial_for_ignition_main: 10
+      combustion_air_proving: true
+      fuel_pressure_proving: true
+      low_fire_start: true
+      valve_proving_system: true
+    expected_outputs:
+      overall_compliance: NON-COMPLIANT
+      purge_compliance: false

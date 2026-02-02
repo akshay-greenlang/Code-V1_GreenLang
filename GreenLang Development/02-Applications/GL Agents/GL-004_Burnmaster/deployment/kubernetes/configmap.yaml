@@ -1,0 +1,315 @@
+# GL-004 BURNMASTER - Kubernetes ConfigMaps and Secrets
+# =====================================================
+# Configuration management for different environments
+
+---
+# Main Application ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gl004-burnmaster-config
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: gl004-burnmaster
+    app.kubernetes.io/component: configuration
+data:
+  # Environment settings
+  GL_ENVIRONMENT: "production"
+  GL_LOG_LEVEL: "INFO"
+  GL_LOG_FORMAT: "json"
+
+  # Server configuration
+  GL_HTTP_HOST: "0.0.0.0"
+  GL_HTTP_PORT: "8080"
+  GL_GRPC_HOST: "0.0.0.0"
+  GL_GRPC_PORT: "50051"
+  GL_METRICS_PORT: "9090"
+
+  # Kafka configuration
+  KAFKA_BOOTSTRAP_SERVERS: "kafka.kafka.svc.cluster.local:9092"
+  KAFKA_CONSUMER_GROUP: "gl004-burnmaster"
+  KAFKA_AUTO_OFFSET_RESET: "earliest"
+  KAFKA_ENABLE_AUTO_COMMIT: "false"
+  KAFKA_TOPICS_COMBUSTION_DATA: "combustion.sensor.data"
+  KAFKA_TOPICS_CONTROL_COMMANDS: "combustion.control.commands"
+  KAFKA_TOPICS_ALERTS: "combustion.alerts"
+
+  # InfluxDB configuration
+  INFLUXDB_URL: "http://influxdb.databases.svc.cluster.local:8086"
+  INFLUXDB_ORG: "greenlang"
+  INFLUXDB_BUCKET: "burnmaster"
+  INFLUXDB_RETENTION: "30d"
+
+  # Redis configuration
+  REDIS_HOST: "redis.databases.svc.cluster.local"
+  REDIS_PORT: "6379"
+  REDIS_DB: "0"
+  REDIS_MAX_CONNECTIONS: "100"
+  REDIS_SOCKET_TIMEOUT: "5"
+
+  # PostgreSQL configuration
+  POSTGRES_HOST: "postgres.databases.svc.cluster.local"
+  POSTGRES_PORT: "5432"
+  POSTGRES_DB: "burnmaster"
+  POSTGRES_POOL_SIZE: "20"
+  POSTGRES_MAX_OVERFLOW: "10"
+
+  # OPC-UA configuration
+  OPCUA_SECURITY_MODE: "SignAndEncrypt"
+  OPCUA_SECURITY_POLICY: "Basic256Sha256"
+  OPCUA_SUBSCRIPTION_INTERVAL: "500"
+  OPCUA_TIMEOUT: "30000"
+
+  # ML Model configuration
+  ML_MODEL_PATH: "/app/models"
+  ML_INFERENCE_TIMEOUT: "5000"
+  ML_BATCH_SIZE: "64"
+  ML_DEVICE: "cpu"
+
+  # Feature flags
+  FEATURE_CAUSAL_INFERENCE: "true"
+  FEATURE_PREDICTIVE_MAINTENANCE: "true"
+  FEATURE_AUTO_OPTIMIZATION: "false"
+  FEATURE_ADVANCED_ANALYTICS: "true"
+
+  # Observability
+  OTEL_EXPORTER_OTLP_ENDPOINT: "http://jaeger-collector.monitoring.svc.cluster.local:4317"
+  OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
+  OTEL_TRACES_SAMPLER: "parentbased_traceidratio"
+  OTEL_TRACES_SAMPLER_ARG: "0.1"
+
+  # Performance tuning
+  WORKER_PROCESSES: "4"
+  WORKER_THREADS: "8"
+  MAX_CONCURRENT_REQUESTS: "1000"
+  REQUEST_TIMEOUT: "60"
+  KEEP_ALIVE_TIMEOUT: "75"
+
+---
+# Logging Configuration ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gl004-burnmaster-logging
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: gl004-burnmaster
+    app.kubernetes.io/component: logging-config
+data:
+  logging.yaml: |
+    version: 1
+    disable_existing_loggers: false
+
+    formatters:
+      standard:
+        format: '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+      json:
+        class: pythonjsonlogger.jsonlogger.JsonFormatter
+        format: '%(asctime)s %(name)s %(levelname)s %(message)s'
+
+    filters:
+      correlation_id:
+        (): gl004_burnmaster.logging.CorrelationIdFilter
+
+    handlers:
+      console:
+        class: logging.StreamHandler
+        level: INFO
+        formatter: json
+        filters: [correlation_id]
+        stream: ext://sys.stdout
+
+      file:
+        class: logging.handlers.RotatingFileHandler
+        level: DEBUG
+        formatter: json
+        filters: [correlation_id]
+        filename: /app/logs/burnmaster.log
+        maxBytes: 104857600  # 100MB
+        backupCount: 10
+
+      error_file:
+        class: logging.handlers.RotatingFileHandler
+        level: ERROR
+        formatter: json
+        filters: [correlation_id]
+        filename: /app/logs/errors.log
+        maxBytes: 52428800  # 50MB
+        backupCount: 5
+
+    loggers:
+      gl004_burnmaster:
+        level: DEBUG
+        handlers: [console, file, error_file]
+        propagate: false
+
+      asyncua:
+        level: WARNING
+        handlers: [console]
+        propagate: false
+
+      kafka:
+        level: WARNING
+        handlers: [console]
+        propagate: false
+
+      influxdb_client:
+        level: WARNING
+        handlers: [console]
+        propagate: false
+
+    root:
+      level: INFO
+      handlers: [console]
+
+---
+# Feature Flags ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gl004-burnmaster-features
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: gl004-burnmaster
+    app.kubernetes.io/component: feature-flags
+data:
+  features.json: |
+    {
+      "features": {
+        "causal_inference": {
+          "enabled": true,
+          "description": "Enable causal inference for root cause analysis",
+          "rollout_percentage": 100
+        },
+        "predictive_maintenance": {
+          "enabled": true,
+          "description": "Enable predictive maintenance alerts",
+          "rollout_percentage": 100
+        },
+        "auto_optimization": {
+          "enabled": false,
+          "description": "Enable automatic combustion optimization",
+          "rollout_percentage": 0,
+          "requires_approval": true
+        },
+        "advanced_analytics": {
+          "enabled": true,
+          "description": "Enable advanced analytics dashboard",
+          "rollout_percentage": 100
+        },
+        "ml_inference_v2": {
+          "enabled": false,
+          "description": "Use V2 ML inference engine",
+          "rollout_percentage": 10
+        },
+        "real_time_alerts": {
+          "enabled": true,
+          "description": "Enable real-time alerting system",
+          "rollout_percentage": 100
+        },
+        "data_export": {
+          "enabled": true,
+          "description": "Enable data export functionality",
+          "rollout_percentage": 100
+        }
+      },
+      "environments": {
+        "production": {
+          "auto_optimization": false,
+          "ml_inference_v2": false
+        },
+        "staging": {
+          "auto_optimization": true,
+          "ml_inference_v2": true
+        }
+      }
+    }
+
+---
+# Secrets (example - use sealed secrets or external secrets operator in production)
+apiVersion: v1
+kind: Secret
+metadata:
+  name: gl004-burnmaster-secrets
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: gl004-burnmaster
+    app.kubernetes.io/component: secrets
+type: Opaque
+stringData:
+  # Database credentials
+  POSTGRES_USER: "burnmaster_app"
+  POSTGRES_PASSWORD: "CHANGE_ME_IN_PRODUCTION"
+  DATABASE_URL: "postgresql://burnmaster_app:CHANGE_ME_IN_PRODUCTION@postgres.databases.svc.cluster.local:5432/burnmaster"
+
+  # Redis credentials
+  REDIS_PASSWORD: "CHANGE_ME_IN_PRODUCTION"
+  REDIS_URL: "redis://:CHANGE_ME_IN_PRODUCTION@redis.databases.svc.cluster.local:6379/0"
+
+  # InfluxDB credentials
+  INFLUXDB_TOKEN: "CHANGE_ME_IN_PRODUCTION"
+
+  # Kafka credentials (if using SASL)
+  KAFKA_SASL_USERNAME: "burnmaster"
+  KAFKA_SASL_PASSWORD: "CHANGE_ME_IN_PRODUCTION"
+
+  # OPC-UA credentials
+  OPCUA_USERNAME: "opcua_client"
+  OPCUA_PASSWORD: "CHANGE_ME_IN_PRODUCTION"
+
+  # API keys
+  API_SECRET_KEY: "CHANGE_ME_IN_PRODUCTION"
+  JWT_SECRET_KEY: "CHANGE_ME_IN_PRODUCTION"
+
+  # External service credentials
+  SLACK_WEBHOOK_URL: "https://hooks.slack.com/services/CHANGE_ME"
+  PAGERDUTY_INTEGRATION_KEY: "CHANGE_ME_IN_PRODUCTION"
+
+---
+# External Secrets Example (using External Secrets Operator)
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+  name: gl004-burnmaster-external-secrets
+  namespace: greenlang
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    name: aws-secrets-manager
+    kind: ClusterSecretStore
+  target:
+    name: gl004-burnmaster-secrets
+    creationPolicy: Owner
+  data:
+    - secretKey: DATABASE_URL
+      remoteRef:
+        key: greenlang/gl004-burnmaster/database
+        property: url
+    - secretKey: REDIS_PASSWORD
+      remoteRef:
+        key: greenlang/gl004-burnmaster/redis
+        property: password
+    - secretKey: INFLUXDB_TOKEN
+      remoteRef:
+        key: greenlang/gl004-burnmaster/influxdb
+        property: token
+    - secretKey: API_SECRET_KEY
+      remoteRef:
+        key: greenlang/gl004-burnmaster/api
+        property: secret_key
+
+---
+# TLS Certificate Secret (if not using cert-manager)
+apiVersion: v1
+kind: Secret
+metadata:
+  name: gl004-burnmaster-tls
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: gl004-burnmaster
+type: kubernetes.io/tls
+data:
+  # Base64 encoded certificate and key
+  # In production, use cert-manager or external certificate management
+  tls.crt: LS0tLS1CRUdJTi...  # Placeholder
+  tls.key: LS0tLS1CRUdJTi...  # Placeholder

@@ -1,0 +1,174 @@
+# ============================================================================
+# GreenLang Agent Factory - CBAM Importer Copilot ServiceMonitor
+# ============================================================================
+# Prometheus ServiceMonitor for the CBAM Importer Copilot Agent
+# Enables automatic service discovery and metrics scraping.
+#
+# Agent: CBAM Importer Copilot (regulatory/cbam_importer_v1)
+# Scrape Path: /metrics
+# Scrape Port: 8000
+# Scrape Interval: 15 seconds
+#
+# Created: 2025-12-03
+# Team: Monitoring & Observability
+# ============================================================================
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: cbam-importer-agent
+  namespace: monitoring
+  labels:
+    app: cbam-api
+    agent-type: regulatory
+    team: greenlang
+    app.kubernetes.io/name: cbam-importer-agent
+    app.kubernetes.io/component: monitoring
+    app.kubernetes.io/part-of: greenlang-agent-factory
+    release: prometheus
+  annotations:
+    description: "ServiceMonitor for CBAM Importer Copilot Agent metrics"
+    agent-id: "regulatory/cbam_importer_v1"
+    agent-version: "1.0.0"
+spec:
+  # Job label for Prometheus
+  jobLabel: cbam-importer-agent
+
+  # Selector for target services
+  selector:
+    matchLabels:
+      app: cbam-api
+    matchExpressions:
+      - key: monitoring
+        operator: NotIn
+        values: ["disabled"]
+
+  # Target namespaces
+  namespaceSelector:
+    matchNames:
+      - gl-cbam
+      - greenlang
+      - default
+
+  # Endpoint configuration
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 15s
+      scrapeTimeout: 10s
+      scheme: http
+      honorLabels: true
+
+      # Add agent-specific labels
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_service_name]
+          targetLabel: service
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod
+        - sourceLabels: []
+          targetLabel: agent_id
+          replacement: "regulatory/cbam_importer_v1"
+        - sourceLabels: []
+          targetLabel: agent_type
+          replacement: "regulatory"
+        - sourceLabels: []
+          targetLabel: agent_name
+          replacement: "cbam-importer"
+
+      # Metric relabeling for better organization
+      metricRelabelings:
+        # Rename generic metrics with agent prefix
+        - sourceLabels: [__name__]
+          regex: 'python_(.+)'
+          targetLabel: __name__
+          replacement: 'greenlang_python_${1}'
+
+        # Add environment label based on namespace
+        - sourceLabels: [namespace]
+          regex: '.*-prod'
+          targetLabel: environment
+          replacement: 'production'
+        - sourceLabels: [namespace]
+          regex: '.*-staging'
+          targetLabel: environment
+          replacement: 'staging'
+        - sourceLabels: [namespace]
+          regex: '.*-dev'
+          targetLabel: environment
+          replacement: 'development'
+
+---
+# ============================================================================
+# Service for CBAM Agent Metrics (if needed)
+# ============================================================================
+# This extends the existing cbam-api Service with metrics port.
+# Note: The existing deployment already has prometheus annotations.
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: cbam-api-metrics
+  namespace: gl-cbam
+  labels:
+    app: cbam-api
+    component: metrics
+    monitoring: enabled
+    app.kubernetes.io/name: cbam-api
+    app.kubernetes.io/component: metrics
+spec:
+  type: ClusterIP
+  selector:
+    app: cbam-api
+    component: backend
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000
+      protocol: TCP
+
+---
+# ============================================================================
+# PodMonitor Alternative
+# ============================================================================
+
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: cbam-importer-agent-pods
+  namespace: monitoring
+  labels:
+    app: cbam-api
+    release: prometheus
+spec:
+  jobLabel: cbam-importer-agent
+
+  selector:
+    matchLabels:
+      app: cbam-api
+      component: backend
+
+  namespaceSelector:
+    matchNames:
+      - gl-cbam
+      - greenlang
+      - default
+
+  podMetricsEndpoints:
+    - port: http
+      path: /metrics
+      interval: 15s
+      scrapeTimeout: 10s
+
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace
+        - sourceLabels: []
+          targetLabel: agent_id
+          replacement: "regulatory/cbam_importer_v1"
+        - sourceLabels: []
+          targetLabel: agent_type
+          replacement: "regulatory"

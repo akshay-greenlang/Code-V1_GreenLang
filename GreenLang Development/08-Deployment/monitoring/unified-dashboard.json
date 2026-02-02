@@ -1,0 +1,469 @@
+{
+  "dashboard": {
+    "title": "GreenLang Platform - Unified Dashboard",
+    "tags": ["greenlang", "platform", "unified"],
+    "timezone": "utc",
+    "schemaVersion": 38,
+    "version": 1,
+    "refresh": "30s",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Platform Overview",
+        "type": "row",
+        "collapsed": false,
+        "gridPos": {"h": 1, "w": 24, "x": 0, "y": 0}
+      },
+      {
+        "id": 2,
+        "title": "Overall Platform Health",
+        "type": "stat",
+        "gridPos": {"h": 4, "w": 6, "x": 0, "y": 1},
+        "targets": [
+          {
+            "expr": "up{job=~\"cbam-app|csrd-app|vcci-backend\"}",
+            "legendFormat": "{{job}}"
+          }
+        ],
+        "options": {
+          "colorMode": "background",
+          "graphMode": "none",
+          "orientation": "auto"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "thresholds": {
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 1, "color": "green"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 3,
+        "title": "Total HTTP Requests/sec",
+        "type": "graph",
+        "gridPos": {"h": 4, "w": 9, "x": 6, "y": 1},
+        "targets": [
+          {
+            "expr": "sum(rate(http_requests_total[5m])) by (app)",
+            "legendFormat": "{{app}}"
+          }
+        ]
+      },
+      {
+        "id": 4,
+        "title": "Error Rate (%)",
+        "type": "graph",
+        "gridPos": {"h": 4, "w": 9, "x": 15, "y": 1},
+        "targets": [
+          {
+            "expr": "sum(rate(http_errors_total[5m])) by (app) / sum(rate(http_requests_total[5m])) by (app) * 100",
+            "legendFormat": "{{app}}"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "thresholds": {
+              "steps": [
+                {"value": 0, "color": "green"},
+                {"value": 1, "color": "yellow"},
+                {"value": 5, "color": "red"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 5,
+        "title": "GL-CBAM-APP",
+        "type": "row",
+        "collapsed": false,
+        "gridPos": {"h": 1, "w": 24, "x": 0, "y": 5}
+      },
+      {
+        "id": 6,
+        "title": "CBAM Reports Generated Today",
+        "type": "stat",
+        "gridPos": {"h": 3, "w": 4, "x": 0, "y": 6},
+        "targets": [
+          {
+            "expr": "sum(increase(cbam_reports_generated_total[24h]))"
+          }
+        ]
+      },
+      {
+        "id": 7,
+        "title": "CBAM Response Time (p95)",
+        "type": "gauge",
+        "gridPos": {"h": 3, "w": 4, "x": 4, "y": 6},
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{app=\"cbam\"}[5m])) by (le))"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "s",
+            "thresholds": {
+              "steps": [
+                {"value": 0, "color": "green"},
+                {"value": 0.5, "color": "yellow"},
+                {"value": 1, "color": "red"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 8,
+        "title": "CBAM Shipments Processed",
+        "type": "graph",
+        "gridPos": {"h": 3, "w": 8, "x": 8, "y": 6},
+        "targets": [
+          {
+            "expr": "sum(rate(cbam_shipments_processed_total[5m]))",
+            "legendFormat": "Shipments/sec"
+          }
+        ]
+      },
+      {
+        "id": 9,
+        "title": "CBAM CPU & Memory",
+        "type": "graph",
+        "gridPos": {"h": 3, "w": 8, "x": 16, "y": 6},
+        "targets": [
+          {
+            "expr": "rate(process_cpu_seconds_total{job=\"cbam-app\"}[5m]) * 100",
+            "legendFormat": "CPU %"
+          },
+          {
+            "expr": "process_resident_memory_bytes{job=\"cbam-app\"} / 1024 / 1024 / 1024",
+            "legendFormat": "Memory GB"
+          }
+        ]
+      },
+      {
+        "id": 10,
+        "title": "GL-CSRD-APP",
+        "type": "row",
+        "collapsed": false,
+        "gridPos": {"h": 1, "w": 24, "x": 0, "y": 9}
+      },
+      {
+        "id": 11,
+        "title": "CSRD Reports Generated (Monthly)",
+        "type": "stat",
+        "gridPos": {"h": 3, "w": 4, "x": 0, "y": 10},
+        "targets": [
+          {
+            "expr": "sum(increase(csrd_reports_generated_total[30d]))"
+          }
+        ]
+      },
+      {
+        "id": 12,
+        "title": "LLM API Cost Today",
+        "type": "stat",
+        "gridPos": {"h": 3, "w": 4, "x": 4, "y": 10},
+        "targets": [
+          {
+            "expr": "sum(increase(llm_api_cost_usd{app=\"csrd\"}[24h]))"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "currencyUSD"
+          }
+        }
+      },
+      {
+        "id": 13,
+        "title": "CSRD Worker Queue Depth",
+        "type": "graph",
+        "gridPos": {"h": 3, "w": 8, "x": 8, "y": 10},
+        "targets": [
+          {
+            "expr": "celery_queue_length{app=\"csrd\"}",
+            "legendFormat": "{{queue}}"
+          }
+        ]
+      },
+      {
+        "id": 14,
+        "title": "CSRD CPU & Memory",
+        "type": "graph",
+        "gridPos": {"h": 3, "w": 8, "x": 16, "y": 10},
+        "targets": [
+          {
+            "expr": "rate(process_cpu_seconds_total{job=\"csrd-web\"}[5m]) * 100",
+            "legendFormat": "Web CPU %"
+          },
+          {
+            "expr": "rate(process_cpu_seconds_total{job=\"csrd-worker\"}[5m]) * 100",
+            "legendFormat": "Worker CPU %"
+          },
+          {
+            "expr": "process_resident_memory_bytes{job=~\"csrd-web|csrd-worker\"} / 1024 / 1024 / 1024",
+            "legendFormat": "{{job}} Memory GB"
+          }
+        ]
+      },
+      {
+        "id": 15,
+        "title": "GL-VCCI-APP",
+        "type": "row",
+        "collapsed": false,
+        "gridPos": {"h": 1, "w": 24, "x": 0, "y": 13}
+      },
+      {
+        "id": 16,
+        "title": "VCCI Emissions Calculated Today",
+        "type": "stat",
+        "gridPos": {"h": 3, "w": 4, "x": 0, "y": 14},
+        "targets": [
+          {
+            "expr": "sum(increase(vcci_emissions_calculated_total[24h]))"
+          }
+        ]
+      },
+      {
+        "id": 17,
+        "title": "VCCI Entities Resolved",
+        "type": "stat",
+        "gridPos": {"h": 3, "w": 4, "x": 4, "y": 14},
+        "targets": [
+          {
+            "expr": "sum(increase(vcci_entities_resolved_total[24h]))"
+          }
+        ]
+      },
+      {
+        "id": 18,
+        "title": "VCCI Worker Queue Depth",
+        "type": "graph",
+        "gridPos": {"h": 3, "w": 8, "x": 8, "y": 14},
+        "targets": [
+          {
+            "expr": "celery_queue_length{app=\"vcci\"}",
+            "legendFormat": "{{queue}}"
+          }
+        ]
+      },
+      {
+        "id": 19,
+        "title": "VCCI CPU & Memory",
+        "type": "graph",
+        "gridPos": {"h": 3, "w": 8, "x": 16, "y": 14},
+        "targets": [
+          {
+            "expr": "rate(process_cpu_seconds_total{job=\"vcci-backend\"}[5m]) * 100",
+            "legendFormat": "Backend CPU %"
+          },
+          {
+            "expr": "rate(process_cpu_seconds_total{job=\"vcci-worker\"}[5m]) * 100",
+            "legendFormat": "Worker CPU %"
+          },
+          {
+            "expr": "process_resident_memory_bytes{job=~\"vcci-backend|vcci-worker\"} / 1024 / 1024 / 1024",
+            "legendFormat": "{{job}} Memory GB"
+          }
+        ]
+      },
+      {
+        "id": 20,
+        "title": "Infrastructure",
+        "type": "row",
+        "collapsed": false,
+        "gridPos": {"h": 1, "w": 24, "x": 0, "y": 17}
+      },
+      {
+        "id": 21,
+        "title": "PostgreSQL Connections",
+        "type": "graph",
+        "gridPos": {"h": 4, "w": 8, "x": 0, "y": 18},
+        "targets": [
+          {
+            "expr": "pg_stat_database_numbackends",
+            "legendFormat": "{{datname}}"
+          },
+          {
+            "expr": "pg_settings_max_connections",
+            "legendFormat": "Max Connections"
+          }
+        ]
+      },
+      {
+        "id": 22,
+        "title": "PostgreSQL Query Duration (p95)",
+        "type": "graph",
+        "gridPos": {"h": 4, "w": 8, "x": 8, "y": 18},
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(pg_stat_statements_mean_time_seconds_bucket[5m])) by (le))",
+            "legendFormat": "p95 Query Time"
+          }
+        ]
+      },
+      {
+        "id": 23,
+        "title": "Redis Memory Usage",
+        "type": "graph",
+        "gridPos": {"h": 4, "w": 8, "x": 16, "y": 18},
+        "targets": [
+          {
+            "expr": "redis_memory_used_bytes / redis_memory_max_bytes * 100",
+            "legendFormat": "Memory Usage %"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "thresholds": {
+              "steps": [
+                {"value": 0, "color": "green"},
+                {"value": 80, "color": "yellow"},
+                {"value": 90, "color": "red"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 24,
+        "title": "Weaviate Query Latency",
+        "type": "graph",
+        "gridPos": {"h": 4, "w": 8, "x": 0, "y": 22},
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(weaviate_query_duration_seconds_bucket[5m])) by (le))",
+            "legendFormat": "p95 Query Time"
+          }
+        ]
+      },
+      {
+        "id": 25,
+        "title": "Message Queue Depth",
+        "type": "graph",
+        "gridPos": {"h": 4, "w": 8, "x": 8, "y": 22},
+        "targets": [
+          {
+            "expr": "rabbitmq_queue_messages{queue=~\".*\"}",
+            "legendFormat": "{{queue}}"
+          }
+        ]
+      },
+      {
+        "id": 26,
+        "title": "S3 Storage Usage",
+        "type": "stat",
+        "gridPos": {"h": 4, "w": 8, "x": 16, "y": 22},
+        "targets": [
+          {
+            "expr": "sum(aws_s3_bucket_size_bytes) / 1024 / 1024 / 1024 / 1024",
+            "legendFormat": "Total TB"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "decbytes"
+          }
+        }
+      },
+      {
+        "id": 27,
+        "title": "Business Metrics",
+        "type": "row",
+        "collapsed": false,
+        "gridPos": {"h": 1, "w": 24, "x": 0, "y": 26}
+      },
+      {
+        "id": 28,
+        "title": "Total Carbon Footprint Tracked (tCO2)",
+        "type": "stat",
+        "gridPos": {"h": 4, "w": 6, "x": 0, "y": 27},
+        "targets": [
+          {
+            "expr": "sum(cbam_total_emissions_tco2 + vcci_scope3_emissions_tco2)"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "decimals": 2
+          }
+        }
+      },
+      {
+        "id": 29,
+        "title": "Active Organizations",
+        "type": "stat",
+        "gridPos": {"h": 4, "w": 6, "x": 6, "y": 27},
+        "targets": [
+          {
+            "expr": "count(count by (org_id) (http_requests_total{status=\"200\"}))"
+          }
+        ]
+      },
+      {
+        "id": 30,
+        "title": "Active Users (24h)",
+        "type": "stat",
+        "gridPos": {"h": 4, "w": 6, "x": 12, "y": 27},
+        "targets": [
+          {
+            "expr": "count(count by (user_id) (http_requests_total{status=\"200\"}[24h]))"
+          }
+        ]
+      },
+      {
+        "id": 31,
+        "title": "Total LLM API Cost (30d)",
+        "type": "stat",
+        "gridPos": {"h": 4, "w": 6, "x": 18, "y": 27},
+        "targets": [
+          {
+            "expr": "sum(increase(llm_api_cost_usd[30d]))"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "currencyUSD"
+          }
+        }
+      },
+      {
+        "id": 32,
+        "title": "Alerts & Incidents",
+        "type": "row",
+        "collapsed": false,
+        "gridPos": {"h": 1, "w": 24, "x": 0, "y": 31}
+      },
+      {
+        "id": 33,
+        "title": "Active Alerts",
+        "type": "table",
+        "gridPos": {"h": 6, "w": 12, "x": 0, "y": 32},
+        "targets": [
+          {
+            "expr": "ALERTS{alertstate=\"firing\"}",
+            "format": "table"
+          }
+        ]
+      },
+      {
+        "id": 34,
+        "title": "Error Log Rate",
+        "type": "graph",
+        "gridPos": {"h": 6, "w": 12, "x": 12, "y": 32},
+        "targets": [
+          {
+            "expr": "sum(rate(log_messages_total{level=\"error\"}[5m])) by (app)",
+            "legendFormat": "{{app}}"
+          }
+        ]
+      }
+    ]
+  }
+}

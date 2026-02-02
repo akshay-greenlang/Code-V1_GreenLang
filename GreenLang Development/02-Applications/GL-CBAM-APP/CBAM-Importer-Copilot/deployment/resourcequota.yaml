@@ -1,0 +1,80 @@
+# ============================================================================
+# GL-CBAM-APP - Resource Quota
+# ============================================================================
+# Namespace-level resource limits to prevent resource exhaustion
+# ============================================================================
+
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: cbam-resource-quota
+  namespace: gl-cbam
+  labels:
+    app.kubernetes.io/name: cbam-api
+    app.kubernetes.io/component: resource-quota
+    app.kubernetes.io/part-of: gl-cbam-app
+  annotations:
+    description: "Namespace-level resource limits for gl-cbam"
+    maturity-score-impact: "+1"
+spec:
+  hard:
+    # CPU limits
+    requests.cpu: "32"      # Total CPU requests across all pods
+    limits.cpu: "32"        # Total CPU limits across all pods
+
+    # Memory limits
+    requests.memory: "64Gi" # Total memory requests across all pods
+    limits.memory: "64Gi"   # Total memory limits across all pods
+
+    # Storage limits
+    requests.storage: "500Gi"              # Total PVC storage requests
+    persistentvolumeclaims: "10"          # Maximum number of PVCs
+
+    # Object limits
+    pods: "50"                            # Maximum number of pods
+    services: "20"                        # Maximum number of services
+    services.loadbalancers: "2"           # Maximum number of LoadBalancer services
+    services.nodeports: "5"               # Maximum number of NodePort services
+    configmaps: "50"                      # Maximum number of ConfigMaps
+    secrets: "50"                         # Maximum number of Secrets
+    replicationcontrollers: "20"          # Maximum number of RCs
+
+    # Resource-specific limits
+    count/deployments.apps: "20"          # Maximum number of Deployments
+    count/statefulsets.apps: "10"         # Maximum number of StatefulSets
+    count/jobs.batch: "100"               # Maximum number of Jobs
+    count/cronjobs.batch: "20"            # Maximum number of CronJobs
+
+# ============================================================================
+# USAGE
+# ============================================================================
+#
+# Apply ResourceQuota:
+#   kubectl apply -f deployment/resourcequota.yaml
+#
+# View ResourceQuota:
+#   kubectl get resourcequota -n gl-cbam
+#   kubectl describe resourcequota cbam-resource-quota -n gl-cbam
+#
+# View current usage:
+#   kubectl get resourcequota cbam-resource-quota -n gl-cbam -o yaml
+#
+# Monitor quota usage:
+#   kubectl get resourcequota -n gl-cbam --watch
+#
+# View quota limits and usage:
+#   kubectl describe ns gl-cbam
+#
+# Check if quota is exceeded:
+#   kubectl get events -n gl-cbam | grep quota
+#
+# Output shows:
+#   - Hard limits (configured maximum)
+#   - Used (current usage)
+#   - Available percentage
+#
+# Example output:
+#   NAME                   AGE   REQUEST                                                    LIMIT
+#   cbam-resource-quota    1m    pods: 3/50, requests.cpu: 3/32, requests.memory: 3Gi/64Gi  ...
+#
+# ============================================================================

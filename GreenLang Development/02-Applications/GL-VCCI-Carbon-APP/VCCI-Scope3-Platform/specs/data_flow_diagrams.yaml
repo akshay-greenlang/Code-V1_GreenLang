@@ -1,0 +1,789 @@
+# Data Flow Diagrams
+# GL-VCCI Scope 3 Platform - System Architecture
+#
+# Version: 1.0.0
+# Date: January 2025
+# Purpose: End-to-end data flow documentation for SOC 2, architecture review
+
+# ============================================================================
+# DOCUMENT METADATA
+# ============================================================================
+metadata:
+  name: "Data Flow Diagrams"
+  version: "1.0.0"
+  type: "architecture_documentation"
+  category: "system_design"
+
+  description: >
+    Comprehensive data flow diagrams for GL-VCCI Scope 3 platform covering:
+    - High-level system architecture
+    - Agent-level data flows (5 agents)
+    - Core service interactions (4 services)
+    - External integrations (ERP, factor sources, PCF networks)
+    - Data persistence and caching
+    - Security boundaries and multi-tenant isolation
+
+  purpose: >
+    Provide visual documentation for:
+    - SOC 2 audit (data flow diagrams required)
+    - Developer onboarding (system architecture understanding)
+    - Security reviews (data flow across trust boundaries)
+    - Performance optimization (identify bottlenecks)
+
+  diagram_format: "Mermaid (text-based, version-controllable)"
+
+# ============================================================================
+# DIAGRAM 1: HIGH-LEVEL SYSTEM ARCHITECTURE
+# ============================================================================
+diagram_1_high_level:
+  name: "High-Level System Architecture"
+  description: "30,000-foot view of GL-VCCI platform components and data flow"
+
+  mermaid_diagram: |
+    graph TB
+        subgraph "External Data Sources"
+            ERP[ERP Systems<br/>SAP, Oracle, Workday]
+            FactorSources[Factor Sources<br/>ecoinvent, DESNZ, EPA]
+            PCFNetworks[PCF Networks<br/>PACT, Catena-X, SAP SDX]
+            ExtIdentifiers[External Identifiers<br/>LEI, DUNS, OpenCorporates]
+        end
+
+        subgraph "GL-VCCI Platform"
+            subgraph "Ingestion Layer"
+                IntakeAgent[ValueChainIntakeAgent<br/>Data Ingestion & Quality]
+            end
+
+            subgraph "Core Services Layer"
+                FactorBroker[Factor Broker<br/>Runtime EF Resolution]
+                PolicyEngine[Policy Engine<br/>OPA Calculator Logic]
+                EntityMDM[Entity MDM<br/>Supplier Resolution]
+                PCFExchange[PCF Exchange<br/>PACT Integration]
+            end
+
+            subgraph "Processing Layer"
+                CalcAgent[Scope3CalculatorAgent<br/>Emissions Calculations]
+                HotspotAgent[HotspotAnalysisAgent<br/>Pareto & Scenarios]
+            end
+
+            subgraph "Engagement Layer"
+                EngageAgent[SupplierEngagementAgent<br/>Outreach & Portal]
+                ReportAgent[Scope3ReportingAgent<br/>ESRS, CDP, IFRS S2]
+            end
+
+            subgraph "Data Layer"
+                PostgreSQL[(PostgreSQL<br/>Emissions Data)]
+                Redis[(Redis<br/>Cache)]
+                S3[(S3<br/>Provenance & Reports)]
+                Weaviate[(Weaviate<br/>Vector Search)]
+            end
+        end
+
+        subgraph "Outputs"
+            Reports[Reports<br/>ESRS, CDP, IFRS S2, ISO 14083]
+            API[REST APIs<br/>Customer Integrations]
+            Portal[Supplier Portal<br/>Web UI]
+        end
+
+        %% Data flows
+        ERP -->|Procurement Data| IntakeAgent
+        IntakeAgent -->|Resolved Entities| EntityMDM
+        IntakeAgent -->|Validated Data| PostgreSQL
+
+        FactorSources -->|Emission Factors| FactorBroker
+        FactorBroker -->|Cached Factors| Redis
+
+        PCFNetworks -->|Supplier PCFs| PCFExchange
+        PCFExchange -->|Tier 1 Data| PostgreSQL
+
+        ExtIdentifiers -->|Company Data| EntityMDM
+        EntityMDM -->|Enriched Entities| PostgreSQL
+        EntityMDM -->|Embeddings| Weaviate
+
+        PostgreSQL -->|Input Data| CalcAgent
+        PolicyEngine -->|Calculation Logic| CalcAgent
+        FactorBroker -->|Emission Factors| CalcAgent
+        CalcAgent -->|Emissions Results| PostgreSQL
+        CalcAgent -->|Provenance Chain| S3
+
+        PostgreSQL -->|Emissions Data| HotspotAgent
+        HotspotAgent -->|Analysis Results| PostgreSQL
+
+        PostgreSQL -->|Supplier List| EngageAgent
+        EngageAgent -->|Consent Status| PostgreSQL
+        EngageAgent -->|Email Campaigns| Portal
+
+        PostgreSQL -->|All Data| ReportAgent
+        ReportAgent -->|Reports| S3
+        ReportAgent -->|Exports| Reports
+
+        PostgreSQL -->|Query Results| API
+        S3 -->|Report Files| API
+
+  components_explained:
+    ingestion_layer:
+      - component: "ValueChainIntakeAgent"
+        purpose: "Ingest procurement, logistics, supplier data from multiple sources"
+        inputs: ["ERP APIs (SAP, Oracle, Workday)", "CSV/Excel uploads", "PDF invoices (OCR)"]
+        outputs: ["Validated data → PostgreSQL", "Entity resolution requests → EntityMDM"]
+
+    core_services_layer:
+      - component: "Factor Broker"
+        purpose: "Runtime emission factor resolution with license compliance"
+        inputs: ["Factor queries (product, region, GWP standard)"]
+        outputs: ["Emission factors with provenance"]
+        data_sources: ["ecoinvent ($60K/year, runtime API)", "DESNZ (20K factors, free)", "EPA (15K factors, free)"]
+
+      - component: "Policy Engine (OPA)"
+        purpose: "Versioned calculator logic for Cat 1, 4, 6"
+        inputs: ["Input data (quantity, distance, spend)"]
+        outputs: ["Calculation formulas (Rego policies)"]
+        policies: ["category_1_purchased_goods.rego", "category_4_transport.rego", "category_6_travel.rego"]
+
+      - component: "Entity MDM"
+        purpose: "Two-stage supplier resolution (vector + BERT)"
+        inputs: ["Supplier names (fuzzy, ambiguous)"]
+        outputs: ["Canonical entities (95% auto-match)"]
+        external_sources: ["LEI (1.7M entities)", "DUNS (400M businesses)", "OpenCorporates (200M companies)"]
+
+      - component: "PCF Exchange"
+        purpose: "Import/export supplier PCFs via PACT, Catena-X, SAP SDX"
+        inputs: ["PACT Pathfinder v2.0 PCFs"]
+        outputs: ["Tier 1 supplier-specific data"]
+        target: "30% Cat 1 coverage by Q2 post-launch"
+
+    processing_layer:
+      - component: "Scope3CalculatorAgent"
+        purpose: "Calculate emissions for Cat 1, 4, 6 with uncertainty"
+        inputs: ["Procurement data", "Logistics data", "Travel data"]
+        outputs: ["Emissions (tCO2e)", "Uncertainty (±X%)", "Provenance chain"]
+
+      - component: "HotspotAnalysisAgent"
+        purpose: "Pareto analysis, scenario modeling"
+        inputs: ["Emissions results"]
+        outputs: ["Top 20% suppliers (80% of emissions)", "Abatement scenarios"]
+
+    engagement_layer:
+      - component: "SupplierEngagementAgent"
+        purpose: "Consent-aware email outreach, supplier portal"
+        inputs: ["Supplier list (top 20% spend)"]
+        outputs: ["Email campaigns", "Portal invitations"]
+        compliance: "GDPR/CCPA opt-out enforcement"
+
+      - component: "Scope3ReportingAgent"
+        purpose: "Multi-standard reporting (ESRS, CDP, IFRS S2, ISO 14083)"
+        inputs: ["All emissions data"]
+        outputs: ["XBRL (ESRS)", "Excel (CDP)", "PDF (IFRS S2)", "Certificate (ISO 14083)"]
+
+    data_layer:
+      - component: "PostgreSQL"
+        purpose: "Primary data store (multi-tenant, partitioned)"
+        tables: ["suppliers", "procurement_data", "emissions_calculations", "consent_registry"]
+        partitioning: "By tenant_id (namespace isolation)"
+
+      - component: "Redis"
+        purpose: "Caching layer (emission factors, calculation results)"
+        ttl: "24 hours (ecoinvent license compliance)"
+
+      - component: "S3"
+        purpose: "Object storage (provenance chains, reports, raw files)"
+        buckets: ["vcci-provenance", "vcci-reports", "vcci-raw-data"]
+
+      - component: "Weaviate"
+        purpose: "Vector database (entity similarity search)"
+        embeddings: "sentence-transformers/all-MiniLM-L6-v2"
+
+# ============================================================================
+# DIAGRAM 2: VALUECHAIN INTAKE AGENT (DATA INGESTION)
+# ============================================================================
+diagram_2_intake_agent:
+  name: "ValueChainIntakeAgent Data Flow"
+  description: "Detailed data flow for procurement data ingestion and validation"
+
+  mermaid_diagram: |
+    sequenceDiagram
+        participant ERP as ERP System<br/>(SAP/Oracle/Workday)
+        participant Intake as ValueChainIntakeAgent
+        participant EntityMDM as Entity MDM Service
+        participant FactorBroker as Factor Broker
+        participant PostgreSQL as PostgreSQL
+        participant S3 as S3 (Raw Data)
+
+        ERP->>Intake: Extract procurement data (OData/REST API)
+        Note over ERP,Intake: Delta extraction (timestamp-based)
+
+        Intake->>Intake: Parse & transform (SAP → JSON Schema)
+        Intake->>Intake: Validate against procurement_v1.0.json
+
+        alt Validation fails
+            Intake->>PostgreSQL: Log validation errors
+            Intake->>Intake: Queue for human review
+        end
+
+        Intake->>EntityMDM: Resolve supplier name<br/>"Acme Corp" → canonical entity
+        EntityMDM->>EntityMDM: Stage 1: Vector similarity (Weaviate)
+        EntityMDM->>EntityMDM: Stage 2: BERT re-ranking
+        EntityMDM->>Intake: Return canonical entity (95% confidence)
+
+        alt Confidence < 95%
+            EntityMDM->>PostgreSQL: Queue for human review
+        end
+
+        Intake->>FactorBroker: Prefetch emission factor<br/>(product="Steel", region="US")
+        FactorBroker->>Intake: Return factor (ecoinvent: 1.85 kgCO2e/kg)
+
+        Intake->>PostgreSQL: Insert procurement record<br/>(supplier_id, product, quantity, spend)
+        Intake->>S3: Archive raw data<br/>(audit trail, 7-year retention)
+
+        Intake->>Intake: Calculate DQI score<br/>(ILCD pedigree matrix)
+        Intake->>PostgreSQL: Update DQI score
+
+  data_quality_checks:
+    - check: "Schema validation"
+      rule: "Validate against procurement_v1.0.json"
+      action_on_fail: "Log error, queue for human review"
+
+    - check: "Required fields"
+      rule: "supplier_name, product, quantity, unit, spend_usd all present"
+      action_on_fail: "Reject record"
+
+    - check: "Data type validation"
+      rule: "quantity > 0, spend_usd >= 0"
+      action_on_fail: "Flag as anomaly"
+
+    - check: "Entity resolution confidence"
+      rule: "Confidence >= 95%"
+      action_on_fail: "Queue for human review"
+
+    - check: "Duplicate detection"
+      rule: "Check (supplier_id, product, date) uniqueness"
+      action_on_fail: "Skip duplicate, log warning"
+
+# ============================================================================
+# DIAGRAM 3: SCOPE3 CALCULATOR AGENT (EMISSIONS CALCULATION)
+# ============================================================================
+diagram_3_calculator_agent:
+  name: "Scope3CalculatorAgent Data Flow"
+  description: "End-to-end emissions calculation with provenance tracking"
+
+  mermaid_diagram: |
+    sequenceDiagram
+        participant PostgreSQL as PostgreSQL
+        participant Calc as Scope3CalculatorAgent
+        participant PolicyEngine as Policy Engine (OPA)
+        participant FactorBroker as Factor Broker
+        participant PCFExchange as PCF Exchange
+        participant Redis as Redis Cache
+        participant S3 as S3 (Provenance)
+
+        PostgreSQL->>Calc: Fetch procurement record<br/>(supplier_id, product="Steel", quantity=1000 kg)
+
+        Calc->>PCFExchange: Check if supplier has PCF<br/>(supplier_id, product)
+
+        alt Supplier has PCF (Tier 1)
+            PCFExchange->>Calc: Return supplier PCF<br/>(2.1 kgCO2e/kg, PACT Pathfinder)
+            Calc->>PolicyEngine: Execute policy: category_1_purchased_goods.rego<br/>(tier=1, quantity=1000, supplier_pcf=2.1)
+            PolicyEngine->>Calc: Return emissions: 2,100 kgCO2e
+        else No PCF (Tier 2)
+            Calc->>FactorBroker: Request emission factor<br/>(product="Steel", region="US", gwp="AR6")
+            FactorBroker->>Redis: Check cache
+            alt Cache hit
+                Redis->>FactorBroker: Return cached factor (1.85 kgCO2e/kg)
+            else Cache miss
+                FactorBroker->>FactorBroker: Query ecoinvent API
+                FactorBroker->>Redis: Cache factor (TTL=24h)
+            end
+            FactorBroker->>Calc: Return factor (1.85 kgCO2e/kg)
+            Calc->>PolicyEngine: Execute policy: category_1_purchased_goods.rego<br/>(tier=2, quantity=1000, product_ef=1.85)
+            PolicyEngine->>Calc: Return emissions: 1,850 kgCO2e
+        end
+
+        Calc->>Calc: Monte Carlo uncertainty<br/>(10,000 iterations)
+        Note over Calc: Result: 1,850 ± 15% (p5=1,573, p95=2,128)
+
+        Calc->>Calc: Build provenance chain<br/>(SHA-256 hashes)
+        Note over Calc: input_hash + factor_hash + policy_version
+
+        Calc->>PostgreSQL: Insert emissions_calculation<br/>(emissions_tco2e=1.85, tier=2, dqi=4.2)
+        Calc->>S3: Store provenance chain<br/>(immutable audit trail)
+
+        Calc->>Calc: Emit OpenTelemetry trace<br/>(distributed tracing)
+
+  calculation_tiers:
+    tier_1:
+      name: "Supplier-Specific PCF"
+      data_source: "PCF Exchange (PACT Pathfinder)"
+      uncertainty: "±5%"
+      dqi_score: "4.5-5.0 (excellent)"
+
+    tier_2:
+      name: "Average-Data (Product EF)"
+      data_source: "Factor Broker (ecoinvent, DESNZ, EPA)"
+      uncertainty: "±20%"
+      dqi_score: "3.5-4.4 (good)"
+
+    tier_3:
+      name: "Spend-Based (Economic Intensity)"
+      data_source: "Factor Broker (economic intensity factors)"
+      uncertainty: "±50%"
+      dqi_score: "2.5-3.4 (fair)"
+
+# ============================================================================
+# DIAGRAM 4: SUPPLIER ENGAGEMENT AGENT (CONSENT-AWARE OUTREACH)
+# ============================================================================
+diagram_4_engagement_agent:
+  name: "SupplierEngagementAgent Data Flow"
+  description: "Privacy-compliant supplier engagement workflow"
+
+  mermaid_diagram: |
+    sequenceDiagram
+        participant PostgreSQL as PostgreSQL
+        participant Engage as SupplierEngagementAgent
+        participant ConsentAPI as Consent API<br/>(Privacy Model)
+        participant SendGrid as SendGrid<br/>(Email Service)
+        participant Portal as Supplier Portal
+
+        PostgreSQL->>Engage: Fetch top 20% spend suppliers<br/>(Pareto: 225 suppliers → 80% emissions)
+
+        loop For each supplier
+            Engage->>ConsentAPI: GET /api/v1/privacy/consent/status/{email}
+
+            alt consent_status == 'opted_in'
+                ConsentAPI->>Engage: Status: opted_in, can_send=true
+                Engage->>SendGrid: Send engagement email<br/>(unsubscribe link in footer)
+                SendGrid->>Engage: Email sent (message_id)
+                Engage->>PostgreSQL: Update consent_registry<br/>(last_email_sent_at=NOW())
+
+            else consent_status == 'opted_out'
+                ConsentAPI->>Engage: Status: opted_out, can_send=false
+                Engage->>PostgreSQL: Log suppression event<br/>(suppression_reason='opted_out')
+
+            else consent_status == 'pending' OR not_found
+                ConsentAPI->>Engage: Status: pending, can_send=true (initial outreach)
+                Engage->>SendGrid: Send opt-in invitation<br/>(with opt-in link)
+                SendGrid->>Engage: Email sent
+                Engage->>PostgreSQL: Create consent record<br/>(consent_status='pending')
+
+            else consent_status == 'expired'
+                ConsentAPI->>Engage: Status: expired, can_send=false
+                Engage->>SendGrid: Send consent refresh email<br/>('Your consent has expired, click to renew')
+                SendGrid->>Engage: Email sent
+            end
+        end
+
+        Note over Portal: Supplier clicks opt-in link
+        Portal->>ConsentAPI: POST /api/v1/privacy/consent/grant<br/>(email, lawful_basis='consent')
+        ConsentAPI->>PostgreSQL: Update consent_registry<br/>(consent_status='opted_in')
+        ConsentAPI->>Portal: Confirmation: "You've opted in"
+
+  email_sequence:
+    - email: "Initial Invitation"
+      day: 0
+      content: "Invitation to Scope 3 supplier program with opt-in link"
+      action: "Create consent record (status='pending')"
+
+    - email: "Follow-Up 1"
+      day: 7
+      condition: "If no response"
+      content: "Reminder: We'd like to collaborate on Scope 3 emissions"
+
+    - email: "Follow-Up 2"
+      day: 21
+      condition: "If still no response"
+      content: "Final invitation: Click to opt-in or we'll remove you from our list"
+
+    - email: "Consent Refresh"
+      day: 730
+      condition: "If consent_expiry_at approaching (EU: 2 years)"
+      content: "Your consent is expiring, click to renew"
+
+# ============================================================================
+# DIAGRAM 5: MULTI-TENANT DATA ISOLATION
+# ============================================================================
+diagram_5_multi_tenant:
+  name: "Multi-Tenant Data Isolation"
+  description: "Security boundaries and tenant isolation mechanisms"
+
+  mermaid_diagram: |
+    graph TB
+        subgraph "Tenant A"
+            TenantA_User[Customer A User]
+            TenantA_Namespace[K8s Namespace: tenant-a]
+            TenantA_DB[PostgreSQL<br/>WHERE tenant_id='tenant-a']
+            TenantA_Keys[AWS KMS Key A]
+        end
+
+        subgraph "Tenant B"
+            TenantB_User[Customer B User]
+            TenantB_Namespace[K8s Namespace: tenant-b]
+            TenantB_DB[PostgreSQL<br/>WHERE tenant_id='tenant-b']
+            TenantB_Keys[AWS KMS Key B]
+        end
+
+        subgraph "Shared Infrastructure"
+            LB[Load Balancer<br/>Route by tenant_id]
+            PostgreSQL[(PostgreSQL<br/>Partitioned by tenant_id)]
+            Redis[(Redis<br/>Key prefix: tenant-a:*)]
+            S3[(S3 Buckets<br/>tenant-a/, tenant-b/)]
+        end
+
+        TenantA_User -->|JWT with tenant_id=A| LB
+        TenantB_User -->|JWT with tenant_id=B| LB
+
+        LB -->|Route to namespace| TenantA_Namespace
+        LB -->|Route to namespace| TenantB_Namespace
+
+        TenantA_Namespace -->|Query with tenant_id=A| PostgreSQL
+        TenantB_Namespace -->|Query with tenant_id=B| PostgreSQL
+
+        PostgreSQL -->|Partition A| TenantA_DB
+        PostgreSQL -->|Partition B| TenantB_DB
+
+        TenantA_Namespace -->|Get tenant-a:*| Redis
+        TenantB_Namespace -->|Get tenant-b:*| Redis
+
+        TenantA_Namespace -->|Read tenant-a/*| S3
+        TenantB_Namespace -->|Read tenant-b/*| S3
+
+        TenantA_Namespace -->|Decrypt with Key A| TenantA_Keys
+        TenantB_Namespace -->|Decrypt with Key B| TenantB_Keys
+
+  isolation_mechanisms:
+    network_layer:
+      mechanism: "Kubernetes Network Policies"
+      description: "Prevent cross-namespace traffic"
+      implementation: "NetworkPolicy: deny all from other namespaces"
+
+    database_layer:
+      mechanism: "Row-Level Security (RLS)"
+      description: "Automatic tenant_id filtering"
+      implementation: "WHERE tenant_id = current_setting('app.current_tenant')"
+
+    cache_layer:
+      mechanism: "Key Prefixing"
+      description: "Redis keys prefixed with tenant_id"
+      implementation: "Key format: tenant-{tenant_id}:{resource_type}:{resource_id}"
+
+    storage_layer:
+      mechanism: "S3 Bucket Prefixes"
+      description: "Separate directories per tenant"
+      implementation: "s3://vcci-data/{tenant_id}/provenance/{file}"
+
+    encryption_layer:
+      mechanism: "Separate KMS Keys"
+      description: "Each tenant has dedicated CMK"
+      implementation: "KMS Key Alias: tenant-{tenant_id}-cmk"
+
+# ============================================================================
+# DIAGRAM 6: EXTERNAL INTEGRATIONS
+# ============================================================================
+diagram_6_external_integrations:
+  name: "External Integrations Data Flow"
+  description: "Connections to ERP, factor sources, PCF networks, external identifiers"
+
+  mermaid_diagram: |
+    graph LR
+        subgraph "GL-VCCI Platform"
+            Connectors[ERP Connectors]
+            FactorBroker[Factor Broker]
+            PCFExchange[PCF Exchange]
+            EntityMDM[Entity MDM]
+        end
+
+        subgraph "ERP Systems"
+            SAP[SAP S/4HANA<br/>OData API]
+            Oracle[Oracle Fusion<br/>REST API]
+            Workday[Workday<br/>RaaS]
+        end
+
+        subgraph "Factor Sources"
+            ecoinvent[ecoinvent v3.10<br/>$60K/year, Runtime API]
+            DESNZ[UK DESNZ<br/>20K factors, Free]
+            EPA[US EPA<br/>15K factors, Free]
+        end
+
+        subgraph "PCF Networks"
+            PACT[PACT Pathfinder v2.0<br/>Supplier PCFs]
+            CatenaX[Catena-X<br/>Automotive, $80K/year]
+            SAPSDX[SAP SDX<br/>Ariba, S/4HANA]
+        end
+
+        subgraph "External Identifiers"
+            LEI[GLEIF LEI<br/>1.7M entities, $10K/year]
+            DUNS[D&B DUNS<br/>400M businesses, $100K/year]
+            OpenCorp[OpenCorporates<br/>200M+ companies, Free]
+        end
+
+        SAP -->|Purchase Orders, Goods Receipts| Connectors
+        Oracle -->|Procurement Data| Connectors
+        Workday -->|Expense Reports| Connectors
+
+        ecoinvent -->|Emission Factors| FactorBroker
+        DESNZ -->|Emission Factors| FactorBroker
+        EPA -->|Emission Factors| FactorBroker
+
+        PACT -->|Supplier PCFs| PCFExchange
+        CatenaX -->|Automotive PCFs| PCFExchange
+        SAPSDX -->|Ariba Supplier PCFs| PCFExchange
+
+        LEI -->|Company Data| EntityMDM
+        DUNS -->|Company Data| EntityMDM
+        OpenCorp -->|Company Data| EntityMDM
+
+  integration_details:
+    sap_s4hana:
+      protocol: "OData v2/v4"
+      authentication: "OAuth 2.0 (client credentials)"
+      endpoints:
+        - "/sap/opu/odata/sap/MM_PUR_PO_MAINT_V2_SRV (Purchase Orders)"
+        - "/sap/opu/odata/sap/MD_SUPPLIER_MASTER_SRV (Vendor Master)"
+      delta_extraction: "ChangedOn field filtering"
+      rate_limit: "10 requests/minute (configurable)"
+
+    oracle_fusion:
+      protocol: "REST API"
+      authentication: "OAuth 2.0"
+      endpoints:
+        - "/fscmRestApi/resources/11.13.18.05/purchaseOrders"
+        - "/fscmRestApi/resources/11.13.18.05/suppliers"
+      delta_extraction: "LastUpdateDate filtering"
+      rate_limit: "100 requests/minute"
+
+    ecoinvent:
+      protocol: "REST API (licensed)"
+      authentication: "API key"
+      license_restrictions: "Runtime API only, no bulk redistribution"
+      cache_ttl: "24 hours (within license terms)"
+
+    pact_pathfinder:
+      protocol: "REST API"
+      authentication: "OAuth 2.0"
+      data_format: "JSON (PACT Pathfinder v2.0 schema)"
+      validation: "jsonschema validation against PACT spec"
+
+# ============================================================================
+# DIAGRAM 7: REPORTING AGENT (MULTI-STANDARD EXPORT)
+# ============================================================================
+diagram_7_reporting_agent:
+  name: "Scope3ReportingAgent Data Flow"
+  description: "Multi-standard report generation (ESRS, CDP, IFRS S2, ISO 14083)"
+
+  mermaid_diagram: |
+    sequenceDiagram
+        participant PostgreSQL as PostgreSQL
+        participant Report as Scope3ReportingAgent
+        participant Standards as Standards Mapping Matrix
+        participant S3 as S3 (Reports)
+        participant Customer as Customer
+
+        Customer->>Report: Request ESRS E1 report<br/>(reporting_period=2024)
+
+        Report->>PostgreSQL: Query emissions_calculations<br/>(WHERE year=2024 AND category IN (1,4,6))
+        PostgreSQL->>Report: Return emissions data<br/>(Cat 1: 45K tCO2e, Cat 4: 12K, Cat 6: 5K)
+
+        Report->>Standards: Load standards_mapping_matrix.yaml
+        Standards->>Report: Return ESRS E1-6 mappings<br/>(AR 44a, AR 44d, AR 44f)
+
+        Report->>Report: Transform data to ESRS format<br/>(Cat 1 → AR 44a, Cat 4 → AR 44d, Cat 6 → AR 44f)
+        Report->>Report: Generate XBRL (python-xbrl)
+
+        Report->>S3: Store ESRS report<br/>(s3://vcci-reports/{tenant_id}/esrs_e1_2024.xbrl)
+        Report->>Customer: Return download link<br/>(signed URL, expires in 7 days)
+
+        Customer->>Report: Request CDP Climate Change export
+        Report->>PostgreSQL: Query emissions_calculations
+        Report->>Standards: Load CDP mappings<br/>(C6.5a, C6.5b, C6.5c)
+        Report->>Report: Auto-populate CDP Excel template<br/>(40% auto-populated)
+        Report->>S3: Store CDP export<br/>(s3://vcci-reports/{tenant_id}/cdp_2024.xlsx)
+        Report->>Customer: Return download link
+
+  report_types:
+    - report: "ESRS E1 (Climate Change)"
+      format: "XBRL"
+      standard: "EU CSRD"
+      auto_population: "100% (for Scope 3 component)"
+      fields:
+        - "AR 44: Total Scope 3 emissions (tCO2e)"
+        - "AR 44a-o: Scope 3 by category"
+        - "AR 47: % calculated using supplier-specific data (PCF coverage)"
+
+    - report: "CDP Climate Change 2024+"
+      format: "Excel (.xlsx)"
+      standard: "CDP"
+      auto_population: "40%"
+      fields:
+        - "C6.5a: Scope 3 emissions by category"
+        - "C6.5b: Calculation methodology"
+        - "C6.5c: % supplier-specific data"
+
+    - report: "IFRS S2 Climate-related Disclosures"
+      format: "PDF + JSON"
+      standard: "IFRS S2"
+      auto_population: "50%"
+      fields:
+        - "Para 29(a)(iii): Scope 3 emissions breakdown"
+        - "Para 29(b): Measurement approach"
+
+    - report: "ISO 14083 Certificate of Conformance"
+      format: "PDF"
+      standard: "ISO 14083:2023"
+      auto_population: "100%"
+      fields:
+        - "Transport emissions by mode (road, rail, air, sea)"
+        - "Test suite results (50/50 passed, 0.0% variance)"
+        - "Conformance statement"
+
+# ============================================================================
+# DATA STORES
+# ============================================================================
+data_stores:
+  postgresql:
+    description: "Primary data store (multi-tenant, partitioned)"
+
+    tables:
+      - table: "suppliers"
+        columns: ["supplier_id", "tenant_id", "canonical_name", "lei_code", "duns_number"]
+        partitioning: "BY LIST (tenant_id)"
+        indexes: ["idx_suppliers_tenant_id", "idx_suppliers_lei_code"]
+
+      - table: "procurement_data"
+        columns: ["procurement_id", "tenant_id", "supplier_id", "product", "quantity", "unit", "spend_usd"]
+        partitioning: "BY LIST (tenant_id)"
+        retention: "7 years"
+
+      - table: "emissions_calculations"
+        columns: ["calculation_id", "tenant_id", "category", "emissions_tco2e", "tier", "dqi_score", "uncertainty"]
+        partitioning: "BY LIST (tenant_id)"
+        indexes: ["idx_emissions_tenant_category"]
+
+      - table: "consent_registry"
+        columns: ["consent_id", "email", "consent_status", "lawful_basis", "country_code"]
+        indexes: ["idx_consent_email", "idx_consent_status_country"]
+
+  redis:
+    description: "Caching layer (emission factors, calculation results)"
+
+    key_patterns:
+      - pattern: "tenant-{tenant_id}:factor:{product}:{region}:{gwp}"
+        ttl: "86400 seconds (24 hours)"
+        example: "tenant-acme:factor:steel:us:ar6 → {value: 1.85, unit: 'kgCO2e/kg'}"
+
+      - pattern: "tenant-{tenant_id}:calculation:{calculation_id}"
+        ttl: "3600 seconds (1 hour)"
+        example: "tenant-acme:calculation:calc-123 → {emissions: 1850, tier: 2}"
+
+  s3:
+    description: "Object storage (provenance chains, reports, raw data)"
+
+    buckets:
+      - bucket: "vcci-provenance"
+        contents: "Immutable provenance chains (SHA-256 hashes)"
+        versioning: "Enabled"
+        retention: "7 years"
+
+      - bucket: "vcci-reports"
+        contents: "Generated reports (ESRS, CDP, IFRS S2, ISO 14083)"
+        versioning: "Enabled"
+        retention: "7 years"
+
+      - bucket: "vcci-raw-data"
+        contents: "Raw ERP extracts, uploaded files"
+        versioning: "Enabled"
+        lifecycle: "Transition to Glacier after 90 days"
+
+  weaviate:
+    description: "Vector database (entity similarity search)"
+
+    classes:
+      - class: "Supplier"
+        vector_dimension: 384
+        embedding_model: "sentence-transformers/all-MiniLM-L6-v2"
+        properties: ["supplier_name", "country", "industry"]
+        index: "HNSW (Hierarchical Navigable Small World)"
+
+# ============================================================================
+# SECURITY CHECKPOINTS
+# ============================================================================
+security_checkpoints:
+  - checkpoint: "API Gateway (Authentication)"
+    location: "Load Balancer"
+    mechanism: "JWT validation (tenant_id, user_id, roles)"
+    action_on_fail: "HTTP 401 Unauthorized"
+
+  - checkpoint: "Authorization (RBAC)"
+    location: "Application Layer"
+    mechanism: "Check user role (Admin, Analyst, CustomerSuccess)"
+    action_on_fail: "HTTP 403 Forbidden"
+
+  - checkpoint: "Tenant Isolation"
+    location: "Database Query"
+    mechanism: "Row-Level Security (WHERE tenant_id = current_tenant)"
+    action_on_fail: "Empty result set (data leak prevention)"
+
+  - checkpoint: "Consent Enforcement"
+    location: "SupplierEngagementAgent"
+    mechanism: "Consent API check before email send"
+    action_on_fail: "Suppress email, log suppression event"
+
+  - checkpoint: "Data Encryption"
+    location: "Data Layer"
+    mechanism: "AES-256 at rest (PostgreSQL TDE, S3 SSE-KMS), TLS 1.3 in transit"
+    action_on_fail: "Reject connection"
+
+  - checkpoint: "Audit Logging"
+    location: "All Layers"
+    mechanism: "OpenTelemetry distributed tracing, CloudTrail logs"
+    action_on_fail: "Alert on logging failure"
+
+# ============================================================================
+# PERFORMANCE CONSIDERATIONS
+# ============================================================================
+performance_considerations:
+  caching_strategy:
+    - resource: "Emission Factors"
+      cache_location: "Redis"
+      ttl: "24 hours"
+      cache_hit_target: ">=85%"
+      benefit: "Reduce ecoinvent API calls (cost reduction)"
+
+    - resource: "Calculation Results"
+      cache_location: "Redis"
+      ttl: "1 hour"
+      cache_hit_target: ">=60%"
+      benefit: "Faster report generation"
+
+  database_optimization:
+    - optimization: "Partitioning by tenant_id"
+      benefit: "Faster queries, better cache locality"
+
+    - optimization: "Indexes on high-cardinality columns"
+      indexes: ["supplier_id", "category", "date"]
+      benefit: "Sub-second query response times"
+
+    - optimization: "Materialized views for aggregations"
+      views: ["mv_emissions_by_category", "mv_top_suppliers_by_emissions"]
+      refresh: "Daily (midnight UTC)"
+
+  asynchronous_processing:
+    - task: "Emissions calculations (bulk)"
+      mechanism: "Celery task queue"
+      workers: "10 parallel workers"
+      throughput: "10,000 calculations/second"
+
+    - task: "Report generation"
+      mechanism: "Celery task queue"
+      workers: "5 parallel workers"
+      sla: "Generate report within 5 minutes"
+
+# ============================================================================
+# CHANGELOG
+# ============================================================================
+changelog:
+  - version: "1.0.0"
+    date: "2025-01-25"
+    changes:
+      - "Initial data flow diagrams specification"
+      - "7 comprehensive diagrams (high-level, agents, services, integrations)"
+      - "Mermaid diagram syntax (text-based, version-controllable)"
+      - "Multi-tenant isolation mechanisms"
+      - "Security checkpoints and data stores"
+      - "Performance considerations (caching, DB optimization)"

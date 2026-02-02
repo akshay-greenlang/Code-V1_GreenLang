@@ -1,0 +1,4 @@
+name: test-gpl-pack
+version: 1.0.0  
+kind: pack
+license: GPL-3.0

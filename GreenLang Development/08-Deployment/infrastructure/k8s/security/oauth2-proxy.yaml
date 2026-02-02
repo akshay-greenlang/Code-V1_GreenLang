@@ -1,0 +1,853 @@
+# =============================================================================
+# GreenLang Process Heat Agents - OAuth2 Proxy for Service Protection
+# =============================================================================
+# TASK-152: Implement OAuth2/OIDC (Keycloak) for Process Heat Agents
+#
+# This deployment provides OAuth2 Proxy for protecting GreenLang services:
+#   - Authenticates users via Keycloak before allowing access
+#   - Injects authentication headers for downstream services
+#   - Supports token refresh flows
+#   - High availability configuration
+#   - Redis session storage for horizontal scaling
+#
+# Protected Services:
+#   - GreenLang Dashboard
+#   - GreenLang API (additional layer)
+#   - Internal admin interfaces
+#   - Monitoring dashboards (Grafana, etc.)
+#
+# OWASP Compliance:
+#   - A07:2021: Proper authentication before access
+#   - A02:2021: Secure session management
+#   - A09:2021: Security logging
+# =============================================================================
+
+---
+# =============================================================================
+# SECRET: OAuth2 Proxy Configuration
+# =============================================================================
+apiVersion: v1
+kind: Secret
+metadata:
+  name: oauth2-proxy-credentials
+  namespace: greenlang-security
+  labels:
+    app.kubernetes.io/name: oauth2-proxy
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: security
+  annotations:
+    description: "OAuth2 Proxy credentials - managed by external-secrets"
+type: Opaque
+stringData:
+  # Client credentials for Keycloak
+  client-id: greenlang-oauth2-proxy
+  client-secret: "${OAUTH2_PROXY_CLIENT_SECRET}"
+
+  # Cookie secret for session encryption (32-byte base64)
+  cookie-secret: "${OAUTH2_PROXY_COOKIE_SECRET}"
+
+  # Redis password for session storage
+  redis-password: "${OAUTH2_PROXY_REDIS_PASSWORD}"
+
+---
+# =============================================================================
+# CONFIGMAP: OAuth2 Proxy Configuration
+# =============================================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: oauth2-proxy-config
+  namespace: greenlang-security
+  labels:
+    app.kubernetes.io/name: oauth2-proxy
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: security
+data:
+  oauth2-proxy.cfg: |
+    ## OAuth2 Proxy Configuration for GreenLang
+    ## https://oauth2-proxy.github.io/oauth2-proxy/docs/configuration/overview
+
+    # ==========================================================================
+    # Provider Configuration (Keycloak OIDC)
+    # ==========================================================================
+    provider = "keycloak-oidc"
+    provider_display_name = "GreenLang Identity"
+
+    # Keycloak realm URLs
+    oidc_issuer_url = "https://auth.greenlang.io/realms/greenlang"
+    login_url = "https://auth.greenlang.io/realms/greenlang/protocol/openid-connect/auth"
+    redeem_url = "https://auth.greenlang.io/realms/greenlang/protocol/openid-connect/token"
+    profile_url = "https://auth.greenlang.io/realms/greenlang/protocol/openid-connect/userinfo"
+    validate_url = "https://auth.greenlang.io/realms/greenlang/protocol/openid-connect/userinfo"
+    oidc_jwks_url = "https://auth.greenlang.io/realms/greenlang/protocol/openid-connect/certs"
+
+    # Client configuration
+    client_id = "greenlang-oauth2-proxy"
+    # client_secret loaded from environment
+
+    # ==========================================================================
+    # Scope and Claims
+    # ==========================================================================
+    scope = "openid profile email roles greenlang-agents"
+
+    # OIDC settings
+    oidc_email_claim = "email"
+    oidc_groups_claim = "groups"
+
+    # JWT claim extraction
+    set_xauthrequest = true
+    set_authorization_header = true
+    pass_access_token = true
+    pass_authorization_header = true
+
+    # ==========================================================================
+    # Cookie Configuration
+    # ==========================================================================
+    cookie_name = "_greenlang_oauth2"
+    cookie_secure = true
+    cookie_httponly = true
+    cookie_samesite = "lax"
+    cookie_expire = "168h"  # 7 days
+    cookie_refresh = "1h"   # Refresh every hour
+    cookie_domains = [".greenlang.io"]
+
+    # ==========================================================================
+    # Session Storage (Redis)
+    # ==========================================================================
+    session_store_type = "redis"
+    redis_connection_url = "redis://oauth2-proxy-redis:6379"
+    # redis_password loaded from environment
+    redis_use_sentinel = false
+
+    # ==========================================================================
+    # Upstream Configuration
+    # ==========================================================================
+    upstreams = ["static://200"]
+
+    # Proxy headers
+    reverse_proxy = true
+    real_client_ip_header = "X-Forwarded-For"
+
+    # ==========================================================================
+    # Security Settings
+    # ==========================================================================
+    # Email domain restrictions (allow all for now, use Keycloak for restrictions)
+    email_domains = ["*"]
+
+    # Skip authentication for specific paths
+    skip_auth_routes = [
+      "^/health$",
+      "^/ready$",
+      "^/metrics$",
+      "^/api/v[0-9]+/public/.*"
+    ]
+
+    # Allowed groups (Keycloak groups)
+    # allowed_groups = ["/administrators", "/operators", "/sustainability", "/auditors"]
+
+    # PKCE for enhanced security
+    code_challenge_method = "S256"
+
+    # ==========================================================================
+    # Logging
+    # ==========================================================================
+    logging_filename = ""
+    logging_max_size = 100
+    logging_max_age = 7
+    logging_local_time = true
+    logging_compress = false
+    standard_logging = true
+    auth_logging = true
+    request_logging = true
+
+    # ==========================================================================
+    # HTTP Configuration
+    # ==========================================================================
+    http_address = "0.0.0.0:4180"
+    metrics_address = "0.0.0.0:44180"
+
+    # Timeouts
+    upstream_timeout = "30s"
+
+---
+# =============================================================================
+# SERVICE: OAuth2 Proxy
+# =============================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: oauth2-proxy
+  namespace: greenlang-security
+  labels:
+    app.kubernetes.io/name: oauth2-proxy
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: security
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "44180"
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 4180
+      targetPort: http
+    - name: metrics
+      port: 44180
+      targetPort: metrics
+  selector:
+    app.kubernetes.io/name: oauth2-proxy
+
+---
+# =============================================================================
+# DEPLOYMENT: OAuth2 Proxy
+# =============================================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: oauth2-proxy
+  namespace: greenlang-security
+  labels:
+    app.kubernetes.io/name: oauth2-proxy
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: security
+    app.kubernetes.io/version: "7.5.1"
+  annotations:
+    description: "OAuth2 Proxy for GreenLang service protection"
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: oauth2-proxy
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: oauth2-proxy
+        app.kubernetes.io/part-of: greenlang-platform
+        app.kubernetes.io/component: security
+        sidecar.istio.io/inject: "true"
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "44180"
+    spec:
+      serviceAccountName: oauth2-proxy-sa
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 2000
+        runAsGroup: 2000
+        fsGroup: 2000
+        seccompProfile:
+          type: RuntimeDefault
+
+      # Anti-affinity for HA
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  app.kubernetes.io/name: oauth2-proxy
+              topologyKey: kubernetes.io/hostname
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/name: oauth2-proxy
+                topologyKey: topology.kubernetes.io/zone
+
+      containers:
+        - name: oauth2-proxy
+          image: quay.io/oauth2-proxy/oauth2-proxy:v7.5.1
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          args:
+            - --config=/etc/oauth2-proxy/oauth2-proxy.cfg
+          ports:
+            - name: http
+              containerPort: 4180
+              protocol: TCP
+            - name: metrics
+              containerPort: 44180
+              protocol: TCP
+          env:
+            - name: OAUTH2_PROXY_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: oauth2-proxy-credentials
+                  key: client-id
+            - name: OAUTH2_PROXY_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: oauth2-proxy-credentials
+                  key: client-secret
+            - name: OAUTH2_PROXY_COOKIE_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: oauth2-proxy-credentials
+                  key: cookie-secret
+            - name: OAUTH2_PROXY_REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: oauth2-proxy-credentials
+                  key: redis-password
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          volumeMounts:
+            - name: config
+              mountPath: /etc/oauth2-proxy
+              readOnly: true
+            - name: tmp
+              mountPath: /tmp
+          livenessProbe:
+            httpGet:
+              path: /ping
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /ping
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+
+      volumes:
+        - name: config
+          configMap:
+            name: oauth2-proxy-config
+        - name: tmp
+          emptyDir: {}
+
+---
+# =============================================================================
+# SERVICE ACCOUNT: OAuth2 Proxy
+# =============================================================================
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: oauth2-proxy-sa
+  namespace: greenlang-security
+  labels:
+    app.kubernetes.io/name: oauth2-proxy
+automountServiceAccountToken: false
+
+---
+# =============================================================================
+# HORIZONTAL POD AUTOSCALER: OAuth2 Proxy
+# =============================================================================
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: oauth2-proxy-hpa
+  namespace: greenlang-security
+  labels:
+    app.kubernetes.io/name: oauth2-proxy
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: oauth2-proxy
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Pods
+          value: 1
+          periodSeconds: 60
+
+---
+# =============================================================================
+# POD DISRUPTION BUDGET: OAuth2 Proxy
+# =============================================================================
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: oauth2-proxy-pdb
+  namespace: greenlang-security
+  labels:
+    app.kubernetes.io/name: oauth2-proxy
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: oauth2-proxy
+
+---
+# =============================================================================
+# SERVICE: Redis for OAuth2 Proxy Sessions
+# =============================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: oauth2-proxy-redis
+  namespace: greenlang-security
+  labels:
+    app.kubernetes.io/name: oauth2-proxy-redis
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: cache
+spec:
+  type: ClusterIP
+  ports:
+    - name: redis
+      port: 6379
+      targetPort: redis
+  selector:
+    app.kubernetes.io/name: oauth2-proxy-redis
+
+---
+# =============================================================================
+# STATEFULSET: Redis for OAuth2 Proxy Sessions
+# =============================================================================
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: oauth2-proxy-redis
+  namespace: greenlang-security
+  labels:
+    app.kubernetes.io/name: oauth2-proxy-redis
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: cache
+  annotations:
+    description: "Redis for OAuth2 Proxy session storage"
+spec:
+  serviceName: oauth2-proxy-redis
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: oauth2-proxy-redis
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: oauth2-proxy-redis
+        app.kubernetes.io/part-of: greenlang-platform
+        app.kubernetes.io/component: cache
+    spec:
+      serviceAccountName: oauth2-proxy-redis-sa
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999
+        runAsGroup: 999
+        fsGroup: 999
+        seccompProfile:
+          type: RuntimeDefault
+
+      containers:
+        - name: redis
+          image: redis:7-alpine
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          command:
+            - redis-server
+            - --requirepass
+            - $(REDIS_PASSWORD)
+            - --maxmemory
+            - 256mb
+            - --maxmemory-policy
+            - allkeys-lru
+            - --appendonly
+            - "yes"
+            - --appendfsync
+            - everysec
+          env:
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: oauth2-proxy-credentials
+                  key: redis-password
+          ports:
+            - name: redis
+              containerPort: 6379
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            - name: tmp
+              mountPath: /tmp
+          livenessProbe:
+            exec:
+              command:
+                - redis-cli
+                - -a
+                - $(REDIS_PASSWORD)
+                - ping
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            timeoutSeconds: 5
+          readinessProbe:
+            exec:
+              command:
+                - redis-cli
+                - -a
+                - $(REDIS_PASSWORD)
+                - ping
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+
+      volumes:
+        - name: tmp
+          emptyDir: {}
+
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+        labels:
+          app.kubernetes.io/name: oauth2-proxy-redis
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        storageClassName: greenlang-production-ssd
+        resources:
+          requests:
+            storage: 1Gi
+
+---
+# =============================================================================
+# SERVICE ACCOUNT: Redis
+# =============================================================================
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: oauth2-proxy-redis-sa
+  namespace: greenlang-security
+  labels:
+    app.kubernetes.io/name: oauth2-proxy-redis
+automountServiceAccountToken: false
+
+---
+# =============================================================================
+# NETWORK POLICY: OAuth2 Proxy
+# =============================================================================
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: oauth2-proxy-network-policy
+  namespace: greenlang-security
+  labels:
+    app.kubernetes.io/name: oauth2-proxy
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: oauth2-proxy
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Allow from Istio ingress
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: istio-system
+      ports:
+        - protocol: TCP
+          port: 4180
+    # Allow from GreenLang services needing auth
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: greenlang-production
+        - namespaceSelector:
+            matchLabels:
+              name: greenlang-agents
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+      ports:
+        - protocol: TCP
+          port: 4180
+    # Allow Prometheus scraping
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+      ports:
+        - protocol: TCP
+          port: 44180
+  egress:
+    # Allow to Keycloak
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: keycloak
+      ports:
+        - protocol: TCP
+          port: 8443
+    # Allow to Redis
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: oauth2-proxy-redis
+      ports:
+        - protocol: TCP
+          port: 6379
+    # Allow DNS
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+    # Allow external Keycloak (if external)
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+      ports:
+        - protocol: TCP
+          port: 443
+
+---
+# =============================================================================
+# NETWORK POLICY: Redis
+# =============================================================================
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: oauth2-proxy-redis-network-policy
+  namespace: greenlang-security
+  labels:
+    app.kubernetes.io/name: oauth2-proxy-redis
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: oauth2-proxy-redis
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Allow from OAuth2 Proxy only
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: oauth2-proxy
+      ports:
+        - protocol: TCP
+          port: 6379
+  egress:
+    # Allow DNS
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: UDP
+          port: 53
+
+---
+# =============================================================================
+# INGRESS CONFIGURATION: Protected Services
+# =============================================================================
+# This configuration shows how to protect services with OAuth2 Proxy
+# using Istio VirtualService annotations
+# =============================================================================
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: greenlang-protected-services
+  namespace: greenlang-security
+  labels:
+    app.kubernetes.io/name: oauth2-proxy
+    app.kubernetes.io/part-of: greenlang-platform
+  annotations:
+    description: "Virtual service for OAuth2 Proxy protected endpoints"
+spec:
+  hosts:
+    - dashboard.greenlang.io
+    - admin.greenlang.io
+  gateways:
+    - istio-system/greenlang-gateway
+  http:
+    # OAuth2 Proxy callback
+    - match:
+        - uri:
+            prefix: /oauth2/
+      route:
+        - destination:
+            host: oauth2-proxy
+            port:
+              number: 4180
+
+    # Protected routes - proxy to OAuth2 Proxy first
+    - match:
+        - uri:
+            prefix: /
+      route:
+        - destination:
+            host: oauth2-proxy
+            port:
+              number: 4180
+
+---
+# =============================================================================
+# EXTERNAL AUTHORIZATION: Istio Integration
+# =============================================================================
+# This configures Istio to use OAuth2 Proxy for external authorization
+# =============================================================================
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: ext-authz-oauth2-proxy
+  namespace: greenlang-production
+  labels:
+    app.kubernetes.io/name: oauth2-proxy
+    app.kubernetes.io/part-of: greenlang-platform
+  annotations:
+    description: "External authorization via OAuth2 Proxy for protected services"
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/requires-auth: "true"
+  action: CUSTOM
+  provider:
+    name: oauth2-proxy
+  rules:
+    - to:
+        - operation:
+            paths:
+              - "/api/*"
+              - "/dashboard/*"
+              - "/admin/*"
+
+---
+# =============================================================================
+# ENVOY FILTER: OAuth2 Proxy External Authorization
+# =============================================================================
+# This EnvoyFilter configures the external authorization provider
+# =============================================================================
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: oauth2-proxy-ext-authz
+  namespace: istio-system
+  labels:
+    app.kubernetes.io/name: oauth2-proxy
+    app.kubernetes.io/part-of: greenlang-platform
+spec:
+  workloadSelector:
+    labels:
+      istio: ingressgateway
+  configPatches:
+    - applyTo: HTTP_FILTER
+      match:
+        context: GATEWAY
+        listener:
+          filterChain:
+            filter:
+              name: envoy.filters.network.http_connection_manager
+              subFilter:
+                name: envoy.filters.http.router
+      patch:
+        operation: INSERT_BEFORE
+        value:
+          name: envoy.filters.http.ext_authz
+          typed_config:
+            "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthz
+            transport_api_version: V3
+            http_service:
+              server_uri:
+                uri: oauth2-proxy.greenlang-security.svc.cluster.local:4180
+                cluster: outbound|4180||oauth2-proxy.greenlang-security.svc.cluster.local
+                timeout: 10s
+              path_prefix: /oauth2/auth
+              authorization_request:
+                allowed_headers:
+                  patterns:
+                    - exact: cookie
+                    - exact: authorization
+                    - prefix: x-forwarded-
+                    - exact: x-request-id
+              authorization_response:
+                allowed_upstream_headers:
+                  patterns:
+                    - exact: authorization
+                    - prefix: x-auth-request-
+                allowed_client_headers:
+                  patterns:
+                    - exact: set-cookie
+            failure_mode_allow: false
+            status_on_error:
+              code: ServiceUnavailable
+
+---
+# =============================================================================
+# SERVICE MONITOR: OAuth2 Proxy (Prometheus)
+# =============================================================================
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: oauth2-proxy
+  namespace: greenlang-security
+  labels:
+    app.kubernetes.io/name: oauth2-proxy
+    app.kubernetes.io/part-of: greenlang-platform
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: oauth2-proxy
+  endpoints:
+    - port: metrics
+      interval: 30s
+      path: /metrics
+  namespaceSelector:
+    matchNames:
+      - greenlang-security
+
+---
+# =============================================================================
+# CONFIGMAP: OAuth2 Proxy Nginx Auth Request (Alternative)
+# =============================================================================
+# For services using Nginx Ingress, use these annotations
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: oauth2-proxy-nginx-annotations
+  namespace: greenlang-security
+  labels:
+    app.kubernetes.io/name: oauth2-proxy
+data:
+  # Example annotations for Nginx Ingress
+  annotations.yaml: |
+    nginx.ingress.kubernetes.io/auth-url: "https://oauth2-proxy.greenlang-security.svc.cluster.local:4180/oauth2/auth"
+    nginx.ingress.kubernetes.io/auth-signin: "https://auth.greenlang.io/oauth2/start?rd=$escaped_request_uri"
+    nginx.ingress.kubernetes.io/auth-response-headers: "Authorization,X-Auth-Request-User,X-Auth-Request-Email,X-Auth-Request-Groups"
+    nginx.ingress.kubernetes.io/auth-cache-key: "$cookie__greenlang_oauth2"
+    nginx.ingress.kubernetes.io/auth-cache-duration: "200 202 401 30m"

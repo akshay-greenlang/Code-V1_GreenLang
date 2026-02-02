@@ -1,0 +1,50 @@
+name: carbon_footprint_workflow
+description: Complete carbon footprint calculation workflow for buildings
+version: 0.0.1
+
+steps:
+  - name: validate_input
+    agent_id: validator
+    description: Validate and clean input data
+    on_failure: stop
+
+  - name: calculate_emissions
+    agent_id: fuel
+    description: Calculate emissions for each fuel type
+    on_failure: skip
+
+  - name: aggregate_carbon
+    agent_id: carbon
+    description: Aggregate all emissions into total carbon footprint
+    input_mapping:
+      emissions: results.calculate_emissions.data
+
+  - name: benchmark_analysis
+    agent_id: benchmark
+    description: Compare against industry benchmarks
+    input_mapping:
+      total_emissions_kg: results.aggregate_carbon.data.total_co2e_kg
+      building_area: input.building_info.area
+      building_type: input.building_info.type
+    condition: "'area' in context['input'].get('building_info', {})"
+    on_failure: skip
+
+  - name: generate_report
+    agent_id: report
+    description: Generate comprehensive report
+    input_mapping:
+      carbon_data: results.aggregate_carbon.data
+      building_info: input.building_info
+      format: input.report_format
+
+output_mapping:
+  total_emissions_tons: results.aggregate_carbon.data.total_co2e_tons
+  total_emissions_kg: results.aggregate_carbon.data.total_co2e_kg
+  emissions_breakdown: results.aggregate_carbon.data.emissions_breakdown
+  benchmark_rating: results.benchmark_analysis.data.rating
+  report: results.generate_report.data.report
+
+metadata:
+  author: GreenLang Team
+  category: carbon_accounting
+  industry: commercial_buildings

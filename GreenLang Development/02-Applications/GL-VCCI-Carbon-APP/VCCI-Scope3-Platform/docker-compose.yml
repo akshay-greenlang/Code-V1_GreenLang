@@ -1,0 +1,260 @@
+# ==============================================================================
+# GL-VCCI Scope 3 Carbon Intelligence Platform
+# Docker Compose - Local Development Stack
+# ==============================================================================
+
+version: '3.9'
+
+services:
+  # ============================================================================
+  # Database - PostgreSQL
+  # ============================================================================
+  postgres:
+    image: postgres:15-alpine
+    container_name: vcci-postgres
+    environment:
+      POSTGRES_DB: vcci
+      POSTGRES_USER: vcci
+      POSTGRES_PASSWORD: vcci_dev_password
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=en_US.utf8"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vcci"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - vcci-network
+
+  # ============================================================================
+  # Cache - Redis
+  # ============================================================================
+  redis:
+    image: redis:7-alpine
+    container_name: vcci-redis
+    command: redis-server --appendonly yes --requirepass vcci_redis_password
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - vcci-network
+
+  # ============================================================================
+  # Vector Database - Weaviate
+  # ============================================================================
+  weaviate:
+    image: semitechnologies/weaviate:1.23.0
+    container_name: vcci-weaviate
+    environment:
+      QUERY_DEFAULTS_LIMIT: 25
+      AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED: "true"
+      PERSISTENCE_DATA_PATH: "/var/lib/weaviate"
+      DEFAULT_VECTORIZER_MODULE: "none"
+      CLUSTER_HOSTNAME: "weaviate"
+    ports:
+      - "8080:8080"
+    volumes:
+      - weaviate_data:/var/lib/weaviate
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/v1/.well-known/ready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - vcci-network
+
+  # ============================================================================
+  # Backend API
+  # ============================================================================
+  backend-api:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: vcci-backend-api
+    environment:
+      APP_ENV: development
+      DATABASE_URL: postgresql://vcci:vcci_dev_password@postgres:5432/vcci
+      REDIS_URL: redis://:vcci_redis_password@redis:6379/0
+      WEAVIATE_URL: http://weaviate:8080
+      CELERY_BROKER_URL: redis://:vcci_redis_password@redis:6379/1
+      CELERY_RESULT_BACKEND: redis://:vcci_redis_password@redis:6379/2
+      JWT_SECRET: dev_secret_key_change_in_production
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      LOG_LEVEL: DEBUG
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./services:/app/services
+      - ./agents:/app/agents
+      - ./connectors:/app/connectors
+      - ./utils:/app/utils
+      - ./config:/app/config
+      - ./backend:/app
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      weaviate:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - vcci-network
+    command: >
+      sh -c "alembic upgrade head &&
+             uvicorn main:app --host 0.0.0.0 --port 8000 --reload --log-level debug"
+
+  # ============================================================================
+  # Celery Worker
+  # ============================================================================
+  worker:
+    build:
+      context: .
+      dockerfile: worker/Dockerfile
+    container_name: vcci-worker
+    environment:
+      APP_ENV: development
+      DATABASE_URL: postgresql://vcci:vcci_dev_password@postgres:5432/vcci
+      REDIS_URL: redis://:vcci_redis_password@redis:6379/0
+      WEAVIATE_URL: http://weaviate:8080
+      CELERY_BROKER_URL: redis://:vcci_redis_password@redis:6379/1
+      CELERY_RESULT_BACKEND: redis://:vcci_redis_password@redis:6379/2
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      C_FORCE_ROOT: "true"
+    volumes:
+      - ./services:/app/services
+      - ./agents:/app/agents
+      - ./connectors:/app/connectors
+      - ./utils:/app/utils
+      - ./config:/app/config
+      - ./worker:/app
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      backend-api:
+        condition: service_healthy
+    networks:
+      - vcci-network
+    command: celery -A celery_app worker --loglevel=info --concurrency=2
+
+  # ============================================================================
+  # Celery Beat (Scheduler)
+  # ============================================================================
+  beat:
+    build:
+      context: .
+      dockerfile: worker/Dockerfile
+    container_name: vcci-beat
+    environment:
+      APP_ENV: development
+      DATABASE_URL: postgresql://vcci:vcci_dev_password@postgres:5432/vcci
+      REDIS_URL: redis://:vcci_redis_password@redis:6379/0
+      CELERY_BROKER_URL: redis://:vcci_redis_password@redis:6379/1
+      CELERY_RESULT_BACKEND: redis://:vcci_redis_password@redis:6379/2
+      C_FORCE_ROOT: "true"
+    volumes:
+      - ./worker:/app
+    depends_on:
+      - redis
+      - worker
+    networks:
+      - vcci-network
+    command: celery -A celery_app beat --loglevel=info
+
+  # ============================================================================
+  # Flower (Celery Monitoring)
+  # ============================================================================
+  flower:
+    build:
+      context: .
+      dockerfile: worker/Dockerfile
+    container_name: vcci-flower
+    environment:
+      CELERY_BROKER_URL: redis://:vcci_redis_password@redis:6379/1
+      CELERY_RESULT_BACKEND: redis://:vcci_redis_password@redis:6379/2
+      FLOWER_PORT: 5555
+    ports:
+      - "5555:5555"
+    depends_on:
+      - redis
+      - worker
+    networks:
+      - vcci-network
+    command: celery -A celery_app flower --port=5555
+
+  # ============================================================================
+  # Frontend (React)
+  # ============================================================================
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+      target: builder
+    container_name: vcci-frontend
+    environment:
+      REACT_APP_API_URL: http://localhost:8000
+      REACT_APP_ENV: development
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend/src:/build/src
+      - ./frontend/public:/build/public
+      - node_modules:/build/node_modules
+    networks:
+      - vcci-network
+    command: npm start
+
+  # ============================================================================
+  # Nginx (Reverse Proxy - Optional for local)
+  # ============================================================================
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: vcci-nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./deployment/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - backend-api
+      - frontend
+    networks:
+      - vcci-network
+
+# ==============================================================================
+# Volumes
+# ==============================================================================
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  weaviate_data:
+    driver: local
+  node_modules:
+    driver: local
+
+# ==============================================================================
+# Networks
+# ==============================================================================
+networks:
+  vcci-network:
+    driver: bridge
+    name: vcci-network

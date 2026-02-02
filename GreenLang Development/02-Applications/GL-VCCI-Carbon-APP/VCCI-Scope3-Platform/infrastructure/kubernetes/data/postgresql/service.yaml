@@ -1,0 +1,69 @@
+---
+# Headless service for StatefulSet
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgresql-headless
+  namespace: vcci-platform
+  labels:
+    app: postgresql
+    component: database
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+    - name: postgresql
+      port: 5432
+      targetPort: postgresql
+      protocol: TCP
+  selector:
+    app: postgresql
+  publishNotReadyAddresses: true
+
+---
+# Regular service for client connections
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgresql
+  namespace: vcci-platform
+  labels:
+    app: postgresql
+    component: database
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9187"
+spec:
+  type: ClusterIP
+  ports:
+    - name: postgresql
+      port: 5432
+      targetPort: postgresql
+      protocol: TCP
+    - name: metrics
+      port: 9187
+      targetPort: metrics
+      protocol: TCP
+  selector:
+    app: postgresql
+
+---
+# Read-replica service (routes to all replicas)
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgresql-read
+  namespace: vcci-platform
+  labels:
+    app: postgresql
+    component: database
+spec:
+  type: ClusterIP
+  sessionAffinity: ClientIP
+  ports:
+    - name: postgresql
+      port: 5432
+      targetPort: postgresql
+      protocol: TCP
+  selector:
+    app: postgresql

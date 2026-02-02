@@ -1,0 +1,12 @@
+# Valid Enum Constraints Payload 002
+# Tests: Nullable enum value
+# Schema: basic/enum_constraints.yaml
+
+_test_metadata:
+  schema: "basic/enum_constraints.yaml"
+  description: "Valid payload with nullable enum"
+  expected_valid: true
+
+status: "draft"
+priority: 1
+nullable_status: null

@@ -1,0 +1,84 @@
+# =============================================================================
+# GL-017 CONDENSYNC - Production Dependencies
+# Condenser Optimization Agent
+# =============================================================================
+# Pin all versions for reproducible builds
+# Last updated: December 2025
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Core Framework
+# -----------------------------------------------------------------------------
+fastapi==0.109.2                    # High-performance async web framework
+uvicorn[standard]==0.27.1           # ASGI server with uvloop
+pydantic==2.6.1                     # Data validation and settings
+pydantic-settings==2.1.0            # Settings management with env support
+python-multipart>=0.0.22             # Form data parsing for FastAPI
+httpx>=0.28.1                       # Async HTTP client
+
+# -----------------------------------------------------------------------------
+# Scientific Computing
+# -----------------------------------------------------------------------------
+numpy==1.26.4                       # Numerical computing foundation
+pandas==2.2.0                       # Data manipulation and analysis
+scipy==1.12.0                       # Scientific algorithms
+iapws==1.5.3                        # IAPWS-IF97 steam tables (critical for accuracy)
+
+# -----------------------------------------------------------------------------
+# Data Storage & Caching
+# -----------------------------------------------------------------------------
+sqlalchemy==2.0.25                  # SQL toolkit and ORM
+alembic==1.13.1                     # Database migrations
+redis==5.0.1                        # Redis client for caching
+aiocache==0.12.2                    # Async caching framework
+
+# -----------------------------------------------------------------------------
+# Observability & Monitoring
+# -----------------------------------------------------------------------------
+prometheus-client==0.19.0           # Prometheus metrics
+opentelemetry-api==1.22.0           # OpenTelemetry tracing API
+opentelemetry-sdk==1.22.0           # OpenTelemetry SDK
+opentelemetry-instrumentation-fastapi==0.43b0  # FastAPI instrumentation
+structlog==24.1.0                   # Structured logging
+python-json-logger==2.0.7           # JSON log formatting
+
+# -----------------------------------------------------------------------------
+# Integration & Messaging
+# -----------------------------------------------------------------------------
+asyncua==1.1.0                      # OPC-UA async client
+aiokafka==0.10.0                    # Async Kafka client
+confluent-kafka==2.3.0              # High-performance Kafka client
+
+# -----------------------------------------------------------------------------
+# Machine Learning & Prediction
+# -----------------------------------------------------------------------------
+# Note: Used for fouling prediction, NOT for calculation paths
+scikit-learn==1.4.0                 # ML utilities (for curve fitting only)
+lifelines==0.28.0                   # Survival analysis for TTF prediction
+
+# -----------------------------------------------------------------------------
+# Explainability
+# -----------------------------------------------------------------------------
+shap==0.44.1                        # SHAP values for feature importance
+
+# -----------------------------------------------------------------------------
+# Configuration & Utilities
+# -----------------------------------------------------------------------------
+pyyaml==6.0.1                       # YAML configuration support
+python-dotenv>=1.2.1                # Environment variable loading
+click==8.1.7                        # CLI framework
+rich==13.7.0                        # Rich terminal output
+tenacity==8.2.3                     # Retry logic with backoff
+
+# -----------------------------------------------------------------------------
+# Security
+# -----------------------------------------------------------------------------
+python-jose[cryptography]==3.3.0    # JWT handling
+passlib[bcrypt]==1.7.4              # Password hashing
+cryptography==42.0.2                # Cryptographic primitives
+
+# =============================================================================
+# Development Dependencies (install with: pip install -r requirements-dev.txt)
+# =============================================================================
+# Moved to requirements-dev.txt to keep production image lean
+# =============================================================================

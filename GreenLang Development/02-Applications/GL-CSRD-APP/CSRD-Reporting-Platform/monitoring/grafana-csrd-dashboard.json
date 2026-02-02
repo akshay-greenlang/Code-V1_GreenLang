@@ -1,0 +1,773 @@
+{
+  "dashboard": {
+    "id": null,
+    "uid": "csrd-compliance-overview",
+    "title": "CSRD Compliance Monitoring Dashboard",
+    "description": "Comprehensive monitoring dashboard for CSRD/ESRS reporting platform",
+    "tags": ["csrd", "esrs", "compliance", "sustainability"],
+    "timezone": "browser",
+    "schemaVersion": 38,
+    "version": 1,
+    "refresh": "30s",
+    "time": {
+      "from": "now-6h",
+      "to": "now"
+    },
+    "timepicker": {
+      "refresh_intervals": ["10s", "30s", "1m", "5m", "15m", "30m", "1h"],
+      "time_options": ["5m", "15m", "1h", "6h", "12h", "24h", "2d", "7d", "30d"]
+    },
+    "panels": [
+      {
+        "id": 1,
+        "type": "row",
+        "title": "ESRS Compliance Overview",
+        "gridPos": {"h": 1, "w": 24, "x": 0, "y": 0},
+        "collapsed": false
+      },
+      {
+        "id": 2,
+        "type": "stat",
+        "title": "Overall Compliance Score",
+        "description": "Overall CSRD compliance score across all standards",
+        "gridPos": {"h": 6, "w": 4, "x": 0, "y": 1},
+        "targets": [
+          {
+            "expr": "avg(csrd_compliance_score)",
+            "legendFormat": "Compliance Score",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 70, "color": "yellow"},
+                {"value": 90, "color": "green"}
+              ]
+            }
+          }
+        },
+        "options": {
+          "colorMode": "background",
+          "graphMode": "area",
+          "orientation": "auto"
+        }
+      },
+      {
+        "id": 3,
+        "type": "stat",
+        "title": "Days Until Deadline",
+        "description": "Days remaining until next compliance deadline",
+        "gridPos": {"h": 6, "w": 4, "x": 4, "y": 1},
+        "targets": [
+          {
+            "expr": "min(csrd_compliance_deadline_days_remaining)",
+            "legendFormat": "Days Remaining",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "d",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 30, "color": "yellow"},
+                {"value": 60, "color": "green"}
+              ]
+            }
+          }
+        },
+        "options": {
+          "colorMode": "background",
+          "graphMode": "none",
+          "orientation": "auto"
+        }
+      },
+      {
+        "id": 4,
+        "type": "gauge",
+        "title": "ESRS E1 Coverage",
+        "description": "Climate Change data point coverage",
+        "gridPos": {"h": 6, "w": 4, "x": 8, "y": 1},
+        "targets": [
+          {
+            "expr": "avg(csrd_esrs_data_point_coverage_ratio{esrs_standard=\"E1\"})",
+            "legendFormat": "E1 Coverage",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percentunit",
+            "min": 0,
+            "max": 1,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 0.8, "color": "yellow"},
+                {"value": 0.95, "color": "green"}
+              ]
+            }
+          }
+        },
+        "options": {
+          "showThresholdLabels": true,
+          "showThresholdMarkers": true
+        }
+      },
+      {
+        "id": 5,
+        "type": "gauge",
+        "title": "ESRS S1 Coverage",
+        "description": "Own Workforce data point coverage",
+        "gridPos": {"h": 6, "w": 4, "x": 12, "y": 1},
+        "targets": [
+          {
+            "expr": "avg(csrd_esrs_data_point_coverage_ratio{esrs_standard=\"S1\"})",
+            "legendFormat": "S1 Coverage",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percentunit",
+            "min": 0,
+            "max": 1,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 0.8, "color": "yellow"},
+                {"value": 0.95, "color": "green"}
+              ]
+            }
+          }
+        },
+        "options": {
+          "showThresholdLabels": true,
+          "showThresholdMarkers": true
+        }
+      },
+      {
+        "id": 6,
+        "type": "gauge",
+        "title": "ESRS G1 Coverage",
+        "description": "Business Conduct data point coverage",
+        "gridPos": {"h": 6, "w": 4, "x": 16, "y": 1},
+        "targets": [
+          {
+            "expr": "avg(csrd_esrs_data_point_coverage_ratio{esrs_standard=\"G1\"})",
+            "legendFormat": "G1 Coverage",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percentunit",
+            "min": 0,
+            "max": 1,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 0.8, "color": "yellow"},
+                {"value": 0.95, "color": "green"}
+              ]
+            }
+          }
+        },
+        "options": {
+          "showThresholdLabels": true,
+          "showThresholdMarkers": true
+        }
+      },
+      {
+        "id": 7,
+        "type": "stat",
+        "title": "Data Quality Score",
+        "description": "Overall data quality score",
+        "gridPos": {"h": 6, "w": 4, "x": 20, "y": 1},
+        "targets": [
+          {
+            "expr": "avg(csrd_esrs_data_quality_score)",
+            "legendFormat": "Quality Score",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "none",
+            "decimals": 1,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 80, "color": "yellow"},
+                {"value": 95, "color": "green"}
+              ]
+            }
+          }
+        },
+        "options": {
+          "colorMode": "background",
+          "graphMode": "area"
+        }
+      },
+      {
+        "id": 8,
+        "type": "row",
+        "title": "ESRS Data Coverage by Standard",
+        "gridPos": {"h": 1, "w": 24, "x": 0, "y": 7},
+        "collapsed": false
+      },
+      {
+        "id": 9,
+        "type": "bargauge",
+        "title": "ESRS Standards Coverage",
+        "description": "Data point coverage for all ESRS standards",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+        "targets": [
+          {
+            "expr": "avg by (esrs_standard) (csrd_esrs_data_point_coverage_ratio)",
+            "legendFormat": "{{esrs_standard}}",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percentunit",
+            "min": 0,
+            "max": 1,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 0.8, "color": "yellow"},
+                {"value": 0.95, "color": "green"}
+              ]
+            }
+          }
+        },
+        "options": {
+          "orientation": "horizontal",
+          "displayMode": "gradient",
+          "showUnfilled": true
+        }
+      },
+      {
+        "id": 10,
+        "type": "table",
+        "title": "ESRS Data Point Details",
+        "description": "Detailed breakdown of required vs available data points",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+        "targets": [
+          {
+            "expr": "csrd_esrs_required_data_points_total",
+            "legendFormat": "{{esrs_standard}}",
+            "refId": "A",
+            "format": "table"
+          },
+          {
+            "expr": "csrd_esrs_available_data_points_total",
+            "legendFormat": "{{esrs_standard}}",
+            "refId": "B",
+            "format": "table"
+          },
+          {
+            "expr": "csrd_esrs_missing_data_points_total",
+            "legendFormat": "{{esrs_standard}}",
+            "refId": "C",
+            "format": "table"
+          }
+        ],
+        "options": {
+          "showHeader": true,
+          "sortBy": [{"displayName": "ESRS Standard", "desc": false}]
+        },
+        "fieldConfig": {
+          "overrides": [
+            {
+              "matcher": {"id": "byName", "options": "Value #C"},
+              "properties": [
+                {
+                  "id": "custom.cellOptions",
+                  "value": {
+                    "type": "color-background",
+                    "mode": "gradient"
+                  }
+                },
+                {
+                  "id": "thresholds",
+                  "value": {
+                    "mode": "absolute",
+                    "steps": [
+                      {"value": 0, "color": "green"},
+                      {"value": 10, "color": "yellow"},
+                      {"value": 30, "color": "red"}
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "id": 11,
+        "type": "row",
+        "title": "Validation & Data Quality",
+        "gridPos": {"h": 1, "w": 24, "x": 0, "y": 16},
+        "collapsed": false
+      },
+      {
+        "id": 12,
+        "type": "graph",
+        "title": "Validation Errors Over Time",
+        "description": "Validation errors by ESRS standard",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 17},
+        "targets": [
+          {
+            "expr": "sum by (esrs_standard) (rate(csrd_validation_errors_total[5m]))",
+            "legendFormat": "{{esrs_standard}}",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "errors/sec"
+          }
+        },
+        "options": {
+          "legend": {"displayMode": "table", "placement": "bottom"},
+          "tooltip": {"mode": "multi"}
+        }
+      },
+      {
+        "id": 13,
+        "type": "piechart",
+        "title": "Validation Errors by Type",
+        "description": "Distribution of validation errors by error type",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 17},
+        "targets": [
+          {
+            "expr": "sum by (error_type) (increase(csrd_validation_errors_total[1h]))",
+            "legendFormat": "{{error_type}}",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "legend": {"displayMode": "table", "placement": "right"},
+          "pieType": "donut"
+        }
+      },
+      {
+        "id": 14,
+        "type": "row",
+        "title": "Agent Performance",
+        "gridPos": {"h": 1, "w": 24, "x": 0, "y": 25},
+        "collapsed": false
+      },
+      {
+        "id": 15,
+        "type": "graph",
+        "title": "Agent Execution Duration",
+        "description": "Average agent execution time by agent and operation",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 26},
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, sum by (agent_name, le) (rate(csrd_agent_execution_duration_seconds_bucket[5m])))",
+            "legendFormat": "{{agent_name}} (p95)",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "s"
+          }
+        },
+        "options": {
+          "legend": {"displayMode": "table", "placement": "bottom"},
+          "tooltip": {"mode": "multi"}
+        }
+      },
+      {
+        "id": 16,
+        "type": "stat",
+        "title": "Agent Execution Success Rate",
+        "description": "Success rate for all agents",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 26},
+        "targets": [
+          {
+            "expr": "sum(rate(csrd_agent_execution_total{status=\"success\"}[5m])) / sum(rate(csrd_agent_execution_total[5m]))",
+            "legendFormat": "Success Rate",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percentunit",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 0.95, "color": "yellow"},
+                {"value": 0.99, "color": "green"}
+              ]
+            }
+          }
+        },
+        "options": {
+          "colorMode": "background",
+          "graphMode": "area"
+        }
+      },
+      {
+        "id": 17,
+        "type": "row",
+        "title": "Report Generation",
+        "gridPos": {"h": 1, "w": 24, "x": 0, "y": 34},
+        "collapsed": false
+      },
+      {
+        "id": 18,
+        "type": "stat",
+        "title": "Reports Generated (Last 24h)",
+        "description": "Total reports generated in the last 24 hours",
+        "gridPos": {"h": 6, "w": 6, "x": 0, "y": 35},
+        "targets": [
+          {
+            "expr": "sum(increase(csrd_reports_generated_total{status=\"success\"}[24h]))",
+            "legendFormat": "Reports",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short"
+          }
+        },
+        "options": {
+          "colorMode": "value",
+          "graphMode": "area"
+        }
+      },
+      {
+        "id": 19,
+        "type": "graph",
+        "title": "Report Generation Duration",
+        "description": "Report generation time by type and format",
+        "gridPos": {"h": 6, "w": 18, "x": 6, "y": 35},
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, sum by (report_type, format, le) (rate(csrd_report_generation_duration_seconds_bucket[5m])))",
+            "legendFormat": "{{report_type}} ({{format}}) - p95",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "s"
+          }
+        },
+        "options": {
+          "legend": {"displayMode": "table", "placement": "bottom"},
+          "tooltip": {"mode": "multi"}
+        }
+      },
+      {
+        "id": 20,
+        "type": "row",
+        "title": "API Performance",
+        "gridPos": {"h": 1, "w": 24, "x": 0, "y": 41},
+        "collapsed": false
+      },
+      {
+        "id": 21,
+        "type": "graph",
+        "title": "API Request Rate",
+        "description": "HTTP requests per second",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 42},
+        "targets": [
+          {
+            "expr": "sum(rate(csrd_http_requests_total[5m]))",
+            "legendFormat": "Total Requests",
+            "refId": "A"
+          },
+          {
+            "expr": "sum(rate(csrd_http_requests_total{status_code=~\"5..\"}[5m]))",
+            "legendFormat": "5xx Errors",
+            "refId": "B"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "reqps"
+          }
+        },
+        "options": {
+          "legend": {"displayMode": "table", "placement": "bottom"},
+          "tooltip": {"mode": "multi"}
+        }
+      },
+      {
+        "id": 22,
+        "type": "graph",
+        "title": "API Latency (p95)",
+        "description": "95th percentile request latency by endpoint",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 42},
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, sum by (endpoint, le) (rate(csrd_http_request_duration_seconds_bucket[5m])))",
+            "legendFormat": "{{endpoint}}",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "s"
+          }
+        },
+        "options": {
+          "legend": {"displayMode": "table", "placement": "bottom"},
+          "tooltip": {"mode": "multi"}
+        }
+      },
+      {
+        "id": 23,
+        "type": "row",
+        "title": "LLM API Usage & Costs",
+        "gridPos": {"h": 1, "w": 24, "x": 0, "y": 50},
+        "collapsed": false
+      },
+      {
+        "id": 24,
+        "type": "stat",
+        "title": "LLM API Cost (Last 24h)",
+        "description": "Total LLM API costs in the last 24 hours",
+        "gridPos": {"h": 6, "w": 6, "x": 0, "y": 51},
+        "targets": [
+          {
+            "expr": "sum(increase(csrd_llm_api_cost_usd_total[24h]))",
+            "legendFormat": "Cost",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "currencyUSD",
+            "decimals": 2
+          }
+        },
+        "options": {
+          "colorMode": "value",
+          "graphMode": "area"
+        }
+      },
+      {
+        "id": 25,
+        "type": "graph",
+        "title": "LLM Token Usage",
+        "description": "LLM tokens used by provider and type",
+        "gridPos": {"h": 6, "w": 9, "x": 6, "y": 51},
+        "targets": [
+          {
+            "expr": "sum by (provider, type) (rate(csrd_llm_api_tokens_used_total[5m]))",
+            "legendFormat": "{{provider}} - {{type}}",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "tokens/sec"
+          }
+        },
+        "options": {
+          "legend": {"displayMode": "table", "placement": "bottom"}
+        }
+      },
+      {
+        "id": 26,
+        "type": "graph",
+        "title": "LLM API Call Duration",
+        "description": "LLM API call latency by provider",
+        "gridPos": {"h": 6, "w": 9, "x": 15, "y": 51},
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, sum by (provider, le) (rate(csrd_llm_api_duration_seconds_bucket[5m])))",
+            "legendFormat": "{{provider}} (p95)",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "s"
+          }
+        },
+        "options": {
+          "legend": {"displayMode": "table", "placement": "bottom"}
+        }
+      },
+      {
+        "id": 27,
+        "type": "row",
+        "title": "System Health",
+        "gridPos": {"h": 1, "w": 24, "x": 0, "y": 57},
+        "collapsed": false
+      },
+      {
+        "id": 28,
+        "type": "stat",
+        "title": "Service Health",
+        "description": "Overall service health status",
+        "gridPos": {"h": 4, "w": 6, "x": 0, "y": 58},
+        "targets": [
+          {
+            "expr": "min(csrd_health_check_status)",
+            "legendFormat": "Health",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "mappings": [
+              {"value": 1, "text": "HEALTHY", "color": "green"},
+              {"value": 0, "text": "UNHEALTHY", "color": "red"}
+            ],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 1, "color": "green"}
+              ]
+            }
+          }
+        },
+        "options": {
+          "colorMode": "background"
+        }
+      },
+      {
+        "id": 29,
+        "type": "stat",
+        "title": "Data Records Processed (24h)",
+        "description": "Total data records processed in the last 24 hours",
+        "gridPos": {"h": 4, "w": 6, "x": 6, "y": 58},
+        "targets": [
+          {
+            "expr": "sum(increase(csrd_data_records_processed_total{status=\"success\"}[24h]))",
+            "legendFormat": "Records",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short"
+          }
+        },
+        "options": {
+          "colorMode": "value"
+        }
+      },
+      {
+        "id": 30,
+        "type": "stat",
+        "title": "Authentication Success Rate",
+        "description": "Authentication success rate",
+        "gridPos": {"h": 4, "w": 6, "x": 12, "y": 58},
+        "targets": [
+          {
+            "expr": "sum(rate(csrd_authentication_attempts_total{status=\"success\"}[5m])) / sum(rate(csrd_authentication_attempts_total[5m]))",
+            "legendFormat": "Success Rate",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percentunit",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 0.95, "color": "yellow"},
+                {"value": 0.99, "color": "green"}
+              ]
+            }
+          }
+        },
+        "options": {
+          "colorMode": "background"
+        }
+      },
+      {
+        "id": 31,
+        "type": "stat",
+        "title": "Encryption Operations (24h)",
+        "description": "Total encryption operations in the last 24 hours",
+        "gridPos": {"h": 4, "w": 6, "x": 18, "y": 58},
+        "targets": [
+          {
+            "expr": "sum(increase(csrd_encryption_operations_total[24h]))",
+            "legendFormat": "Operations",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short"
+          }
+        },
+        "options": {
+          "colorMode": "value"
+        }
+      }
+    ],
+    "templating": {
+      "list": [
+        {
+          "name": "company_id",
+          "type": "query",
+          "label": "Company",
+          "query": "label_values(csrd_esrs_data_point_coverage_ratio, company_id)",
+          "refresh": 1,
+          "multi": false,
+          "includeAll": false
+        },
+        {
+          "name": "esrs_standard",
+          "type": "custom",
+          "label": "ESRS Standard",
+          "query": "ESRS-2,ESRS-E1,ESRS-E2,ESRS-E3,ESRS-E4,ESRS-E5,ESRS-S1,ESRS-S2,ESRS-S3,ESRS-S4,ESRS-G1",
+          "multi": true,
+          "includeAll": true
+        }
+      ]
+    },
+    "annotations": {
+      "list": [
+        {
+          "name": "Deployments",
+          "datasource": "Prometheus",
+          "enable": true,
+          "expr": "changes(csrd_application_info[5m]) > 0",
+          "iconColor": "blue",
+          "tagKeys": "version"
+        },
+        {
+          "name": "Compliance Deadlines",
+          "datasource": "Prometheus",
+          "enable": true,
+          "expr": "csrd_compliance_deadline_days_remaining < 30",
+          "iconColor": "red",
+          "tagKeys": "deadline_type"
+        }
+      ]
+    }
+  }
+}
