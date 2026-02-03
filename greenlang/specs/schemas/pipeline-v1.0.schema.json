@@ -1,0 +1,264 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://greenlang.io/schemas/pipeline-v1.0.schema.json",
+  "title": "GreenLang Pipeline Definition",
+  "description": "Schema for GreenLang gl.yaml pipeline definition files (GLIP v1)",
+  "type": "object",
+  "required": ["api_version", "kind", "metadata", "steps"],
+  "properties": {
+    "api_version": {
+      "type": "string",
+      "enum": ["glip/v1"],
+      "description": "API version (GLIP protocol version)"
+    },
+    "kind": {
+      "type": "string",
+      "const": "Pipeline",
+      "description": "Resource kind"
+    },
+    "metadata": {
+      "$ref": "#/$defs/metadata",
+      "description": "Pipeline metadata"
+    },
+    "parameters": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/parameter"},
+      "description": "Pipeline input parameters"
+    },
+    "steps": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/step"},
+      "minItems": 1,
+      "description": "Pipeline execution steps"
+    },
+    "outputs": {
+      "type": "object",
+      "additionalProperties": {"type": "string"},
+      "description": "Output mapping (name -> path expression)"
+    },
+    "policy": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          {"type": "string"},
+          {"$ref": "#/$defs/inlinePolicy"}
+        ]
+      },
+      "description": "Policy attachments"
+    }
+  },
+  "$defs": {
+    "metadata": {
+      "type": "object",
+      "required": ["name"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]*[a-z0-9]$|^[a-z0-9]$",
+          "description": "Pipeline identifier"
+        },
+        "description": {
+          "type": "string",
+          "description": "Pipeline description"
+        },
+        "version": {
+          "type": "string",
+          "description": "Pipeline version"
+        },
+        "labels": {
+          "type": "object",
+          "additionalProperties": {"type": "string"},
+          "description": "Arbitrary labels"
+        }
+      }
+    },
+    "parameter": {
+      "type": "object",
+      "required": ["name", "type"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Parameter name"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["string", "number", "boolean", "array", "object"],
+          "description": "Parameter type"
+        },
+        "required": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether parameter is required"
+        },
+        "default": {
+          "description": "Default value"
+        },
+        "description": {
+          "type": "string",
+          "description": "Parameter description"
+        },
+        "validation": {
+          "$ref": "#/$defs/parameterValidation",
+          "description": "Validation rules"
+        }
+      }
+    },
+    "parameterValidation": {
+      "type": "object",
+      "properties": {
+        "min": {"type": "number"},
+        "max": {"type": "number"},
+        "pattern": {"type": "string"},
+        "enum": {"type": "array"}
+      }
+    },
+    "step": {
+      "type": "object",
+      "required": ["name", "agent"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]*[a-z0-9]$|^[a-z0-9]$",
+          "description": "Step identifier (unique within pipeline)"
+        },
+        "agent": {
+          "type": "string",
+          "description": "Agent to invoke"
+        },
+        "description": {
+          "type": "string",
+          "description": "Step description"
+        },
+        "inputs": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Input mapping (field -> value or ${expression})"
+        },
+        "outputs": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Output field names"
+        },
+        "condition": {
+          "type": "string",
+          "description": "Condition expression for execution"
+        },
+        "retry": {
+          "$ref": "#/$defs/retryConfig",
+          "description": "Retry configuration"
+        },
+        "on_failure": {
+          "type": "string",
+          "enum": ["stop", "skip", "continue"],
+          "default": "stop",
+          "description": "Failure handling strategy"
+        },
+        "timeout_seconds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 86400,
+          "description": "Step timeout in seconds"
+        },
+        "resources": {
+          "$ref": "#/$defs/resourceRequirements",
+          "description": "Resource requirements"
+        },
+        "deterministic": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether step produces deterministic output"
+        }
+      }
+    },
+    "retryConfig": {
+      "type": "object",
+      "properties": {
+        "attempts": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10,
+          "default": 1,
+          "description": "Total attempts (1 = no retry)"
+        },
+        "backoff": {
+          "type": "string",
+          "enum": ["none", "linear", "exponential"],
+          "default": "exponential",
+          "description": "Backoff strategy"
+        },
+        "delay_seconds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 300,
+          "default": 5,
+          "description": "Initial delay between retries"
+        },
+        "max_delay_seconds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 3600,
+          "default": 60,
+          "description": "Maximum delay between retries"
+        },
+        "retry_on": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Error codes to retry on"
+        }
+      }
+    },
+    "resourceRequirements": {
+      "type": "object",
+      "properties": {
+        "cpu": {
+          "type": "number",
+          "minimum": 0.1,
+          "description": "CPU cores"
+        },
+        "memory": {
+          "type": "string",
+          "pattern": "^[0-9]+(Mi|Gi)$",
+          "description": "Memory limit (e.g., '1Gi')"
+        },
+        "gpu": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "GPU count"
+        },
+        "ephemeral_storage": {
+          "type": "string",
+          "pattern": "^[0-9]+(Mi|Gi)$",
+          "description": "Ephemeral storage (e.g., '10Gi')"
+        }
+      }
+    },
+    "inlinePolicy": {
+      "type": "object",
+      "required": ["name", "rules"],
+      "properties": {
+        "inline": {
+          "type": "object",
+          "properties": {
+            "name": {"type": "string"},
+            "rules": {
+              "type": "array",
+              "items": {"$ref": "#/$defs/policyRule"}
+            }
+          }
+        }
+      }
+    },
+    "policyRule": {
+      "type": "object",
+      "required": ["rule"],
+      "properties": {
+        "rule": {"type": "string"},
+        "limit": {"type": "number"},
+        "action": {
+          "type": "string",
+          "enum": ["allow", "deny", "warn"]
+        }
+      }
+    }
+  }
+}

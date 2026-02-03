@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "greenlang-cli"
 version = "0.3.0"
-description = "Climate Intelligence Platform - Enterprise infrastructure with powerful SDK for climate-aware applications"
+description = "GreenLang: Deterministic execution engine + pack format for climate calculations and compliance workflows"
 readme = "README.md"
 authors = [{ name = "GreenLang Maintainers", email = "maintainers@greenlang.io" }]
 license = { text = "MIT" }

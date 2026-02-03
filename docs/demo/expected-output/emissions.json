@@ -1,0 +1,322 @@
+{
+  "calculation_id": "calc_8f7e6d5c4b3a2190",
+  "shipment_id": "SHIP-2025-EU-00142",
+  "calculation_timestamp": "2025-11-09T10:30:45.123456Z",
+  "calculation_duration_ms": 847,
+  "status": "COMPLETED",
+  "summary": {
+    "total_embedded_emissions": {
+      "value": 1247.35,
+      "unit": "tCO2e"
+    },
+    "direct_emissions": {
+      "value": 925.0,
+      "unit": "tCO2e",
+      "percentage": 74.2
+    },
+    "indirect_emissions": {
+      "value": 285.85,
+      "unit": "tCO2e",
+      "percentage": 22.9
+    },
+    "transport_emissions": {
+      "value": 36.5,
+      "unit": "tCO2e",
+      "percentage": 2.9
+    },
+    "cbam_certificates_required": 1247.35,
+    "emission_intensity": {
+      "value": 2.495,
+      "unit": "tCO2e/tonne_product"
+    }
+  },
+  "detailed_breakdown": {
+    "direct_emissions": {
+      "scope": "SCOPE_1",
+      "components": [
+        {
+          "category": "COMBUSTION_EMISSIONS",
+          "description": "CO2 from fuel combustion in production process",
+          "value": 485.0,
+          "unit": "tCO2e",
+          "calculation": {
+            "formula": "quantity_tonnes * combustion_emission_factor",
+            "inputs": {
+              "quantity_tonnes": 500.0,
+              "combustion_emission_factor": 0.97,
+              "combustion_emission_factor_unit": "tCO2e/t"
+            },
+            "result": 485.0
+          }
+        },
+        {
+          "category": "PROCESS_EMISSIONS",
+          "description": "CO2 from chemical reactions in steelmaking",
+          "value": 440.0,
+          "unit": "tCO2e",
+          "calculation": {
+            "formula": "quantity_tonnes * process_emission_factor",
+            "inputs": {
+              "quantity_tonnes": 500.0,
+              "process_emission_factor": 0.88,
+              "process_emission_factor_unit": "tCO2e/t"
+            },
+            "result": 440.0
+          }
+        }
+      ],
+      "subtotal": {
+        "value": 925.0,
+        "unit": "tCO2e"
+      }
+    },
+    "indirect_emissions": {
+      "scope": "SCOPE_2",
+      "components": [
+        {
+          "category": "ELECTRICITY_CONSUMPTION",
+          "description": "CO2 from purchased electricity for production",
+          "value": 285.85,
+          "unit": "tCO2e",
+          "calculation": {
+            "formula": "electricity_mwh * grid_emission_factor",
+            "inputs": {
+              "electricity_mwh": 125.5,
+              "grid_emission_factor": 2.28,
+              "grid_emission_factor_unit": "tCO2e/MWh",
+              "grid_emission_factor_source": "IEA_2024",
+              "grid_emission_factor_country": "TR"
+            },
+            "result": 286.14,
+            "result_rounded": 285.85
+          }
+        }
+      ],
+      "subtotal": {
+        "value": 285.85,
+        "unit": "tCO2e"
+      }
+    },
+    "transport_emissions": {
+      "scope": "SCOPE_3",
+      "components": [
+        {
+          "category": "ROAD_TRANSPORT_ORIGIN",
+          "description": "Truck transport from plant to port (origin)",
+          "value": 0.65,
+          "unit": "tCO2e",
+          "calculation": {
+            "formula": "quantity_tonnes * distance_km * emission_factor / 1000000",
+            "inputs": {
+              "quantity_tonnes": 500.0,
+              "distance_km": 15,
+              "emission_factor": 87.0,
+              "emission_factor_unit": "gCO2/t-km",
+              "vehicle_type": "HEAVY_TRUCK"
+            },
+            "result": 0.6525,
+            "result_rounded": 0.65
+          }
+        },
+        {
+          "category": "SEA_TRANSPORT",
+          "description": "Container ship from Iskenderun to Hamburg",
+          "value": 34.76,
+          "unit": "tCO2e",
+          "calculation": {
+            "formula": "quantity_tonnes * distance_km * emission_factor / 1000000",
+            "inputs": {
+              "quantity_tonnes": 500.0,
+              "distance_km": 4200,
+              "emission_factor": 16.56,
+              "emission_factor_unit": "gCO2/t-km",
+              "vessel_type": "CONTAINER_SHIP",
+              "source": "GLEC_Framework_v3"
+            },
+            "result": 34.776,
+            "result_rounded": 34.76
+          }
+        },
+        {
+          "category": "ROAD_TRANSPORT_DESTINATION",
+          "description": "Truck transport from port to facility (destination)",
+          "value": 1.09,
+          "unit": "tCO2e",
+          "calculation": {
+            "formula": "quantity_tonnes * distance_km * emission_factor / 1000000",
+            "inputs": {
+              "quantity_tonnes": 500.0,
+              "distance_km": 25,
+              "emission_factor": 87.0,
+              "emission_factor_unit": "gCO2/t-km",
+              "vehicle_type": "HEAVY_TRUCK"
+            },
+            "result": 1.0875,
+            "result_rounded": 1.09
+          }
+        }
+      ],
+      "subtotal": {
+        "value": 36.5,
+        "unit": "tCO2e"
+      }
+    },
+    "precursor_emissions": {
+      "included_in_direct": true,
+      "note": "Precursor emissions are included in the declared specific embedded emissions",
+      "breakdown": [
+        {
+          "precursor": "Iron ore",
+          "origin": "BR",
+          "embedded_emissions": 42.5,
+          "unit": "tCO2e"
+        },
+        {
+          "precursor": "Coking coal",
+          "origin": "AU",
+          "embedded_emissions": 16.25,
+          "unit": "tCO2e"
+        }
+      ]
+    }
+  },
+  "emission_factors_used": [
+    {
+      "factor_id": "EF-STEEL-BF-BOF-2024",
+      "description": "Steel production via BF-BOF route",
+      "value": 1.85,
+      "unit": "tCO2e/tonne",
+      "source": "Declared by installation (verified)",
+      "verification_report": "VR-2024-TR-00234",
+      "valid_from": "2024-01-01",
+      "valid_to": "2024-12-31"
+    },
+    {
+      "factor_id": "EF-GRID-TR-2024",
+      "description": "Turkey national grid emission factor",
+      "value": 2.28,
+      "unit": "tCO2e/MWh",
+      "source": "IEA Emission Factors 2024",
+      "valid_from": "2024-01-01",
+      "valid_to": "2024-12-31"
+    },
+    {
+      "factor_id": "EF-TRANSPORT-SEA-CONTAINER",
+      "description": "Container ship emission factor",
+      "value": 16.56,
+      "unit": "gCO2/t-km",
+      "source": "GLEC Framework v3.0",
+      "valid_from": "2023-06-01",
+      "valid_to": null
+    },
+    {
+      "factor_id": "EF-TRANSPORT-ROAD-TRUCK",
+      "description": "Heavy truck emission factor",
+      "value": 87.0,
+      "unit": "gCO2/t-km",
+      "source": "GLEC Framework v3.0",
+      "valid_from": "2023-06-01",
+      "valid_to": null
+    }
+  ],
+  "cbam_compliance": {
+    "declaration_period": "2025-Q4",
+    "product_category": "IRON_STEEL",
+    "cn_code": "7208100000",
+    "applicable_regulation": "EU Regulation 2023/956 (CBAM)",
+    "default_values_used": false,
+    "actual_values_verified": true,
+    "carbon_price_adjustment": {
+      "applicable": false,
+      "reason": "No carbon pricing mechanism applies in country of origin (TR)",
+      "amount_eur": 0.0
+    },
+    "certificates_required": {
+      "quantity": 1247.35,
+      "unit": "CBAM_CERTIFICATES",
+      "note": "1 certificate = 1 tonne CO2e"
+    }
+  },
+  "provenance": {
+    "calculation_id": "calc_8f7e6d5c4b3a2190",
+    "algorithm": {
+      "name": "CBAM Emissions Calculator",
+      "version": "2.1.0",
+      "methodology": "EU CBAM Implementing Regulation (EU) 2023/1773"
+    },
+    "input_hash": {
+      "algorithm": "SHA-256",
+      "value": "a1b2c3d4e5f67890abcdef1234567890a1b2c3d4e5f67890abcdef1234567890"
+    },
+    "output_hash": {
+      "algorithm": "SHA-256",
+      "value": "e5f6a1b2c3d47890123456789abcdef0e5f6a1b2c3d47890123456789abcdef0"
+    },
+    "determinism": {
+      "seed": "0x8f7e6d5c4b3a2190",
+      "reproducible": true,
+      "verification_command": "gl cbam verify emissions.json --hash e5f6a1b2c3d4..."
+    },
+    "emission_factor_database": {
+      "name": "EU-CBAM-2024-Q4",
+      "version": "2024.4.1",
+      "last_updated": "2024-10-15T00:00:00Z"
+    },
+    "transport_model": {
+      "name": "GLEC Framework",
+      "version": "3.0",
+      "source": "Global Logistics Emissions Council"
+    },
+    "audit_trail": [
+      {
+        "timestamp": "2025-11-09T10:30:45.001Z",
+        "event": "CALCULATION_STARTED",
+        "details": "Input validation initiated"
+      },
+      {
+        "timestamp": "2025-11-09T10:30:45.123Z",
+        "event": "VALIDATION_PASSED",
+        "details": "Schema validation successful, 0 warnings"
+      },
+      {
+        "timestamp": "2025-11-09T10:30:45.234Z",
+        "event": "EMISSION_FACTORS_LOADED",
+        "details": "Loaded 4 emission factors from EU-CBAM-2024-Q4"
+      },
+      {
+        "timestamp": "2025-11-09T10:30:45.456Z",
+        "event": "DIRECT_EMISSIONS_CALCULATED",
+        "details": "Scope 1 emissions: 925.00 tCO2e"
+      },
+      {
+        "timestamp": "2025-11-09T10:30:45.567Z",
+        "event": "INDIRECT_EMISSIONS_CALCULATED",
+        "details": "Scope 2 emissions: 285.85 tCO2e"
+      },
+      {
+        "timestamp": "2025-11-09T10:30:45.678Z",
+        "event": "TRANSPORT_EMISSIONS_CALCULATED",
+        "details": "Scope 3 transport emissions: 36.50 tCO2e"
+      },
+      {
+        "timestamp": "2025-11-09T10:30:45.789Z",
+        "event": "AGGREGATION_COMPLETED",
+        "details": "Total embedded emissions: 1,247.35 tCO2e"
+      },
+      {
+        "timestamp": "2025-11-09T10:30:45.847Z",
+        "event": "CALCULATION_COMPLETED",
+        "details": "Output written to emissions.json"
+      }
+    ]
+  },
+  "metadata": {
+    "greenlang_version": "1.0.0",
+    "api_version": "v1",
+    "schema_version": "CBAM-OUTPUT-2024-01",
+    "generated_at": "2025-11-09T10:30:45.847Z",
+    "generated_by": "gl-cbam-calculator",
+    "processing_node": "calc-worker-eu-west-1a",
+    "request_id": "req_9a8b7c6d5e4f3210"
+  }
+}

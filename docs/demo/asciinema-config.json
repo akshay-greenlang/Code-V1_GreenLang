@@ -1,0 +1,140 @@
+{
+  "$schema": "https://asciinema.org/schema/config.json",
+  "title": "GreenLang CBAM Workflow Demo",
+  "description": "Complete demonstration of the CBAM (Carbon Border Adjustment Mechanism) workflow using GreenLang's deterministic climate calculation platform. Shows data validation, emissions calculation, provenance verification, and regulatory export.",
+  "author": "GreenLang Team",
+  "author_url": "https://greenlang.io",
+  "cols": 120,
+  "rows": 35,
+  "idle_time_limit": 2,
+  "theme": {
+    "name": "greenlang-dark",
+    "foreground": "#e0e0e0",
+    "background": "#1a1a2e",
+    "cursor": "#00d26a",
+    "selection": "#3d5a80",
+    "black": "#1a1a2e",
+    "red": "#ff6b6b",
+    "green": "#00d26a",
+    "yellow": "#feca57",
+    "blue": "#54a0ff",
+    "magenta": "#a55eea",
+    "cyan": "#48dbfb",
+    "white": "#e0e0e0",
+    "bright_black": "#576574",
+    "bright_red": "#ff8787",
+    "bright_green": "#2ed573",
+    "bright_yellow": "#fed330",
+    "bright_blue": "#70a1ff",
+    "bright_magenta": "#c56cf0",
+    "bright_cyan": "#7bed9f",
+    "bright_white": "#ffffff"
+  },
+  "environment": {
+    "SHELL": "/bin/bash",
+    "TERM": "xterm-256color",
+    "LANG": "en_US.UTF-8",
+    "PS1": "\\[\\033[0;36m\\]$ \\[\\033[0m\\]"
+  },
+  "recording": {
+    "command": "./demo-script.sh",
+    "output_file": "demo.cast",
+    "env": {
+      "GREENLANG_ENV": "demo",
+      "GREENLANG_API_KEY": "demo_key_for_recording"
+    },
+    "stdin": false,
+    "append": false,
+    "raw": false,
+    "overwrite": true
+  },
+  "playback": {
+    "speed": 1.0,
+    "idle_time_limit": 2,
+    "poster": "npt:0:05",
+    "autoplay": false,
+    "preload": true,
+    "loop": false,
+    "start_at": "0:00",
+    "markers": [
+      { "time": "0:00", "label": "Introduction" },
+      { "time": "0:15", "label": "Environment Setup" },
+      { "time": "0:35", "label": "Input Data" },
+      { "time": "1:05", "label": "Validation" },
+      { "time": "1:25", "label": "Calculation" },
+      { "time": "1:55", "label": "Results" },
+      { "time": "2:30", "label": "Provenance" },
+      { "time": "3:05", "label": "Verification" },
+      { "time": "3:25", "label": "Export" },
+      { "time": "3:45", "label": "Summary" }
+    ]
+  },
+  "upload": {
+    "visibility": "public",
+    "api_url": "https://asciinema.org",
+    "install_id": null
+  },
+  "embed": {
+    "width": "100%",
+    "height": "auto",
+    "rows": 35,
+    "cols": 120,
+    "autoplay": false,
+    "preload": true,
+    "loop": false,
+    "start_at": 0,
+    "speed": 1,
+    "idle_time_limit": 2,
+    "theme": "greenlang-dark",
+    "poster": "npt:0:05",
+    "fit": "width",
+    "controls": true
+  },
+  "gif": {
+    "width": 800,
+    "height": null,
+    "fps": 10,
+    "speed": 1.5,
+    "loop": 0,
+    "theme": "greenlang-dark"
+  },
+  "svg": {
+    "width": 800,
+    "height": null,
+    "still_frame": null
+  },
+  "output": {
+    "cast_file": "demo.cast",
+    "gif_file": "demo.gif",
+    "svg_file": "demo.svg",
+    "mp4_file": "demo.mp4"
+  },
+  "metadata": {
+    "version": "1.0.0",
+    "created": "2025-11-09",
+    "duration_estimate": "4:00",
+    "target_audience": [
+      "Sustainability Managers",
+      "Compliance Officers",
+      "Developers",
+      "Auditors"
+    ],
+    "tags": [
+      "CBAM",
+      "carbon",
+      "emissions",
+      "EU regulation",
+      "compliance",
+      "GreenLang",
+      "climate",
+      "sustainability",
+      "demo"
+    ],
+    "languages": ["en"],
+    "accessibility": {
+      "closed_captions": true,
+      "audio_description": false,
+      "transcript": true
+    }
+  }
+}

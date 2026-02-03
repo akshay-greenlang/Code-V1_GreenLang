@@ -1,0 +1,398 @@
+# ==============================================================================
+# GreenLang Release Smoke Test Workflow
+# ==============================================================================
+#
+# Runs smoke tests after PyPI/TestPyPI publish to verify release integrity.
+#
+# Triggers:
+#   - After release-orchestration workflow completes
+#   - Manual dispatch with version and source options
+#   - On workflow_call for use by other workflows
+#
+# Tests:
+#   - Package installation from PyPI/TestPyPI
+#   - CLI command functionality (gl --version, gl doctor, etc.)
+#   - Python module imports
+#   - Basic agent and pack functionality
+#   - Cross-platform compatibility (Linux, macOS, Windows)
+#   - Multi-Python version compatibility (3.10, 3.11, 3.12)
+#
+# ==============================================================================
+
+name: Release Smoke Tests
+
+on:
+  # Trigger after release workflow completes
+  workflow_run:
+    workflows: ["Release Orchestration"]
+    types:
+      - completed
+
+  # Manual trigger for testing
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to test (e.g., 0.3.0)'
+        required: false
+        type: string
+      source:
+        description: 'Package source'
+        required: true
+        default: 'pypi'
+        type: choice
+        options:
+          - pypi
+          - testpypi
+          - local
+      python_version:
+        description: 'Python version (blank for all)'
+        required: false
+        type: string
+      os:
+        description: 'Operating system (blank for all)'
+        required: false
+        type: string
+      strict:
+        description: 'Strict mode (fail on warnings)'
+        required: false
+        default: false
+        type: boolean
+
+  # Allow calling from other workflows
+  workflow_call:
+    inputs:
+      version:
+        description: 'Version to test'
+        required: false
+        type: string
+      source:
+        description: 'Package source (pypi, testpypi, local)'
+        required: false
+        default: 'pypi'
+        type: string
+    secrets:
+      PYPI_TOKEN:
+        required: false
+
+permissions:
+  contents: read
+  actions: read
+
+env:
+  # Default timeout for smoke tests
+  SMOKE_TIMEOUT: 300
+
+jobs:
+  # ===========================================================================
+  # Determine Test Matrix
+  # ===========================================================================
+  prepare:
+    name: Prepare Test Matrix
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      source: ${{ steps.config.outputs.source }}
+      matrix: ${{ steps.matrix.outputs.matrix }}
+      should_run: ${{ steps.check.outputs.should_run }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Check if should run
+        id: check
+        run: |
+          # For workflow_run, only run if the release was successful
+          if [[ "${{ github.event_name }}" == "workflow_run" ]]; then
+            if [[ "${{ github.event.workflow_run.conclusion }}" != "success" ]]; then
+              echo "should_run=false" >> $GITHUB_OUTPUT
+              echo "Skipping smoke tests - release workflow did not succeed"
+              exit 0
+            fi
+          fi
+          echo "should_run=true" >> $GITHUB_OUTPUT
+
+      - name: Determine version
+        id: version
+        run: |
+          if [[ -n "${{ inputs.version }}" ]]; then
+            VERSION="${{ inputs.version }}"
+          else
+            # Extract from pyproject.toml
+            VERSION=$(grep '^version = ' pyproject.toml | sed 's/version = "\(.*\)"/\1/')
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Testing version: $VERSION"
+
+      - name: Configure source
+        id: config
+        run: |
+          SOURCE="${{ inputs.source || 'pypi' }}"
+          echo "source=$SOURCE" >> $GITHUB_OUTPUT
+          echo "Package source: $SOURCE"
+
+      - name: Build test matrix
+        id: matrix
+        run: |
+          # Determine OS list
+          if [[ -n "${{ inputs.os }}" ]]; then
+            OS_LIST='["${{ inputs.os }}"]'
+          else
+            OS_LIST='["ubuntu-latest", "macos-latest", "windows-latest"]'
+          fi
+
+          # Determine Python version list
+          if [[ -n "${{ inputs.python_version }}" ]]; then
+            PY_LIST='["${{ inputs.python_version }}"]'
+          else
+            PY_LIST='["3.10", "3.11", "3.12"]'
+          fi
+
+          # Build matrix JSON
+          MATRIX=$(cat <<EOF
+          {
+            "os": $OS_LIST,
+            "python": $PY_LIST
+          }
+          EOF
+          )
+
+          echo "matrix=$(echo $MATRIX | jq -c .)" >> $GITHUB_OUTPUT
+          echo "Test matrix: $MATRIX"
+
+  # ===========================================================================
+  # Run Smoke Tests
+  # ===========================================================================
+  smoke-test:
+    name: Smoke Test (${{ matrix.os }}, Python ${{ matrix.python }})
+    needs: prepare
+    if: needs.prepare.outputs.should_run == 'true'
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.prepare.outputs.matrix) }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+          cache: 'pip'
+
+      - name: Install package (PyPI)
+        if: needs.prepare.outputs.source == 'pypi'
+        run: |
+          python -m pip install --upgrade pip
+          if [[ -n "${{ needs.prepare.outputs.version }}" ]]; then
+            pip install "greenlang-cli==${{ needs.prepare.outputs.version }}"
+          else
+            pip install greenlang-cli
+          fi
+        shell: bash
+
+      - name: Install package (TestPyPI)
+        if: needs.prepare.outputs.source == 'testpypi'
+        run: |
+          python -m pip install --upgrade pip
+          if [[ -n "${{ needs.prepare.outputs.version }}" ]]; then
+            pip install --index-url https://test.pypi.org/simple/ \
+              --extra-index-url https://pypi.org/simple/ \
+              "greenlang-cli==${{ needs.prepare.outputs.version }}"
+          else
+            pip install --index-url https://test.pypi.org/simple/ \
+              --extra-index-url https://pypi.org/simple/ \
+              greenlang-cli
+          fi
+        shell: bash
+
+      - name: Install package (Local)
+        if: needs.prepare.outputs.source == 'local'
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[test]"
+        shell: bash
+
+      - name: Install test dependencies
+        run: |
+          pip install pytest pytest-timeout
+        shell: bash
+
+      - name: Verify CLI installation
+        run: |
+          echo "=== Verifying CLI Installation ==="
+          gl --version
+          gl doctor
+        shell: bash
+
+      - name: Verify Python imports
+        run: |
+          echo "=== Verifying Python Imports ==="
+          python -c "import greenlang; print(f'Version: {greenlang.__version__}')"
+          python -c "from greenlang.agents.base import BaseAgent; print('BaseAgent imported')"
+          python -c "from greenlang.ecosystem.packs.loader import PackLoader; print('PackLoader imported')"
+          python -c "from greenlang.cli.main import app; print('CLI app imported')"
+        shell: bash
+
+      - name: Run smoke tests
+        env:
+          GL_EXPECTED_VERSION: ${{ needs.prepare.outputs.version }}
+          GL_SMOKE_STRICT: ${{ inputs.strict && '1' || '0' }}
+        run: |
+          echo "=== Running Smoke Test Suite ==="
+          python -m pytest tests/smoke/test_release_smoke.py -v --tb=short --timeout=60
+        shell: bash
+
+      - name: Test CLI commands
+        run: |
+          echo "=== Testing CLI Commands ==="
+          gl --help
+          gl version
+          gl pack --help
+          gl pack list
+          gl init --help
+        shell: bash
+
+      - name: Test basic agent functionality
+        run: |
+          echo "=== Testing Basic Agent Functionality ==="
+          python -c "
+          from greenlang.agents.base import BaseAgent, AgentConfig, AgentResult
+          from typing import Dict, Any
+
+          class TestAgent(BaseAgent):
+              def execute(self, input_data: Dict[str, Any]) -> AgentResult:
+                  return AgentResult(success=True, data={'test': 'passed'})
+
+          agent = TestAgent(AgentConfig(name='SmokeTestAgent', description='CI smoke test'))
+          result = agent.run({'input': 'test'})
+          assert result.success, 'Agent execution failed'
+          print('Agent test passed!')
+          "
+        shell: bash
+
+  # ===========================================================================
+  # Summary Report
+  # ===========================================================================
+  report:
+    name: Generate Summary Report
+    needs: [prepare, smoke-test]
+    if: always() && needs.prepare.outputs.should_run == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Generate report
+        run: |
+          echo "# Smoke Test Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Configuration" >> $GITHUB_STEP_SUMMARY
+          echo "- **Version**: ${{ needs.prepare.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Source**: ${{ needs.prepare.outputs.source }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Triggered by**: ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          echo "## Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Check job status
+          if [[ "${{ needs.smoke-test.result }}" == "success" ]]; then
+            echo ":white_check_mark: **All smoke tests passed**" >> $GITHUB_STEP_SUMMARY
+          elif [[ "${{ needs.smoke-test.result }}" == "failure" ]]; then
+            echo ":x: **Some smoke tests failed**" >> $GITHUB_STEP_SUMMARY
+          else
+            echo ":warning: **Smoke tests skipped or cancelled**" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Tested Configurations" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| OS | Python | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----|--------|--------|" >> $GITHUB_STEP_SUMMARY
+
+          # This would need to be expanded with actual matrix results
+          echo "| ubuntu-latest | 3.10, 3.11, 3.12 | See jobs |" >> $GITHUB_STEP_SUMMARY
+          echo "| macos-latest | 3.10, 3.11, 3.12 | See jobs |" >> $GITHUB_STEP_SUMMARY
+          echo "| windows-latest | 3.10, 3.11, 3.12 | See jobs |" >> $GITHUB_STEP_SUMMARY
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Next Steps" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [[ "${{ needs.smoke-test.result }}" == "success" ]]; then
+            echo "- Release is verified and ready for announcement" >> $GITHUB_STEP_SUMMARY
+            echo "- Update documentation if needed" >> $GITHUB_STEP_SUMMARY
+            echo "- Monitor PyPI download statistics" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- Investigate failing tests" >> $GITHUB_STEP_SUMMARY
+            echo "- Consider yanking the release if critical issues found" >> $GITHUB_STEP_SUMMARY
+            echo "- Prepare hotfix if necessary" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Notify on failure
+        if: needs.smoke-test.result == 'failure'
+        run: |
+          echo "::error::Smoke tests failed for version ${{ needs.prepare.outputs.version }}"
+          echo "Please investigate the failing tests before announcing the release."
+
+  # ===========================================================================
+  # Notification (Optional)
+  # ===========================================================================
+  notify:
+    name: Send Notifications
+    needs: [prepare, smoke-test, report]
+    if: always() && needs.prepare.outputs.should_run == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Prepare notification
+        id: notification
+        run: |
+          VERSION="${{ needs.prepare.outputs.version }}"
+          RESULT="${{ needs.smoke-test.result }}"
+
+          if [[ "$RESULT" == "success" ]]; then
+            EMOJI=":white_check_mark:"
+            STATUS="PASSED"
+            COLOR="good"
+          else
+            EMOJI=":x:"
+            STATUS="FAILED"
+            COLOR="danger"
+          fi
+
+          echo "emoji=$EMOJI" >> $GITHUB_OUTPUT
+          echo "status=$STATUS" >> $GITHUB_OUTPUT
+          echo "color=$COLOR" >> $GITHUB_OUTPUT
+
+      - name: Log notification
+        run: |
+          echo "${{ steps.notification.outputs.emoji }} GreenLang v${{ needs.prepare.outputs.version }} smoke tests ${{ steps.notification.outputs.status }}"
+
+      # Uncomment and configure for Slack notifications
+      # - name: Notify Slack
+      #   if: always()
+      #   uses: 8398a7/action-slack@v3
+      #   with:
+      #     status: custom
+      #     custom_payload: |
+      #       {
+      #         "attachments": [{
+      #           "color": "${{ steps.notification.outputs.color }}",
+      #           "title": "GreenLang Smoke Tests",
+      #           "text": "${{ steps.notification.outputs.emoji }} Version ${{ needs.prepare.outputs.version }} smoke tests ${{ steps.notification.outputs.status }}",
+      #           "fields": [
+      #             {"title": "Source", "value": "${{ needs.prepare.outputs.source }}", "short": true},
+      #             {"title": "Run", "value": "<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Details>", "short": true}
+      #           ]
+      #         }]
+      #       }
+      #   env:
+      #     SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

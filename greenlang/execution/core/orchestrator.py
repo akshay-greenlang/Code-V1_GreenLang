@@ -757,14 +757,67 @@ class Orchestrator:
         return self._format_workflow_output(workflow, context)
 
     def _should_execute_step(self, step, context: Dict) -> bool:
+        """
+        Evaluate whether a step should execute based on its condition.
+
+        IMPORTANT: Condition evaluation errors are NOT silent failures.
+        If a condition cannot be evaluated, the error is logged and recorded
+        in the context, and the step is skipped with a warning.
+
+        Args:
+            step: The workflow step to evaluate
+            context: Current execution context
+
+        Returns:
+            True if step should execute, False otherwise
+        """
         if not step.condition:
             return True
 
         try:
             # Safe expression evaluation using AST
-            return self._evaluate_condition(step.condition, context)
+            result = self._evaluate_condition(step.condition, context)
+            self.logger.debug(
+                f"Step '{step.name}' condition '{step.condition}' evaluated to {result}"
+            )
+            return result
+        except ValidationError as e:
+            # Structured validation errors - log with full context
+            error_msg = f"Condition evaluation failed for step '{step.name}': {e.message}"
+            self.logger.error(error_msg)
+            self.logger.error(f"Condition: {step.condition}")
+            self.logger.error(f"Context: {e.context}")
+            # Record the error in context for visibility
+            context.setdefault("condition_errors", []).append({
+                "step": step.name,
+                "condition": step.condition,
+                "error": str(e),
+                "error_type": "ValidationError"
+            })
+            return False
+        except SyntaxError as e:
+            # Syntax errors in the condition expression
+            error_msg = f"Invalid condition syntax for step '{step.name}': {e}"
+            self.logger.error(error_msg)
+            self.logger.error(f"Condition: {step.condition}")
+            context.setdefault("condition_errors", []).append({
+                "step": step.name,
+                "condition": step.condition,
+                "error": str(e),
+                "error_type": "SyntaxError"
+            })
+            return False
         except Exception as e:
-            self.logger.error(f"Error evaluating condition: {e}")
+            # Unexpected errors - log with stack trace
+            error_msg = f"Unexpected error evaluating condition for step '{step.name}': {e}"
+            self.logger.error(error_msg, exc_info=True)
+            self.logger.error(f"Condition: {step.condition}")
+            context.setdefault("condition_errors", []).append({
+                "step": step.name,
+                "condition": step.condition,
+                "error": str(e),
+                "error_type": type(e).__name__
+            })
             return False
 
     def _evaluate_condition(self, expression: str, context: Dict) -> bool:
@@ -847,6 +900,20 @@ class Orchestrator:
                 if isinstance(value, dict):
                     return value.get(node.attr)
                 return getattr(value, node.attr)
+            # Support for literal containers (lists, tuples, dicts, sets)
+            # This enables expressions like: x in [1, 2, 3] or key in {"a": 1, "b": 2}
+            if isinstance(node, ast.List):
+                return [eval_node(elem) for elem in node.elts]
+            if isinstance(node, ast.Tuple):
+                return tuple(eval_node(elem) for elem in node.elts)
+            if isinstance(node, ast.Dict):
+                return {
+                    eval_node(k): eval_node(v)
+                    for k, v in zip(node.keys, node.values)
+                    if k is not None  # Handle dict unpacking case
+                }
+            if isinstance(node, ast.Set):
+                return {eval_node(elem) for elem in node.elts}
             raise ValidationError(
                 message=f"Unsupported expression in workflow condition",
                 context={

@@ -1,0 +1,275 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://greenlang.io/schemas/pack-v1.0.schema.json",
+  "title": "GreenLang Pack Manifest",
+  "description": "Schema for GreenLang pack.yaml manifest files (v1.0)",
+  "type": "object",
+  "required": ["name", "version", "kind", "pack_schema_version"],
+  "properties": {
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*[a-z0-9]$|^[a-z0-9]$",
+      "maxLength": 64,
+      "description": "Pack identifier (lowercase alphanumeric with hyphens)"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$",
+      "description": "Semantic version (MAJOR.MINOR.PATCH)"
+    },
+    "kind": {
+      "type": "string",
+      "const": "pack",
+      "description": "Resource kind (must be 'pack')"
+    },
+    "pack_schema_version": {
+      "type": "string",
+      "enum": ["1.0"],
+      "description": "Pack schema version"
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 1000,
+      "description": "Brief description of the pack"
+    },
+    "author": {
+      "$ref": "#/$defs/author",
+      "description": "Pack author information"
+    },
+    "license": {
+      "type": "string",
+      "description": "SPDX license identifier"
+    },
+    "contents": {
+      "$ref": "#/$defs/contents",
+      "description": "Pack contents specification"
+    },
+    "dependencies": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          {"$ref": "#/$defs/packDependency"},
+          {"type": "string", "description": "pip-style dependency string"}
+        ]
+      },
+      "description": "Required dependencies"
+    },
+    "capabilities": {
+      "$ref": "#/$defs/capabilities",
+      "description": "Required runtime capabilities"
+    },
+    "policy": {
+      "$ref": "#/$defs/policy",
+      "description": "Policy constraints"
+    },
+    "security": {
+      "$ref": "#/$defs/security",
+      "description": "Security requirements"
+    },
+    "provenance": {
+      "$ref": "#/$defs/provenance",
+      "description": "Provenance settings"
+    },
+    "compat": {
+      "$ref": "#/$defs/compatibility",
+      "description": "Compatibility requirements"
+    },
+    "metadata": {
+      "$ref": "#/$defs/metadata",
+      "description": "Additional metadata"
+    },
+    "tests": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "Test file patterns"
+    },
+    "test_command": {
+      "type": "string",
+      "description": "Command to run tests"
+    },
+    "card": {
+      "type": "string",
+      "description": "Path to CARD.md"
+    },
+    "min_greenlang_version": {
+      "type": "string",
+      "description": "Minimum GreenLang version required"
+    },
+    "publisher": {
+      "type": "string",
+      "description": "Publisher identifier"
+    }
+  },
+  "$defs": {
+    "author": {
+      "type": "object",
+      "required": ["name"],
+      "properties": {
+        "name": {"type": "string"},
+        "email": {"type": "string", "format": "email"},
+        "organization": {"type": "string"}
+      }
+    },
+    "contents": {
+      "type": "object",
+      "properties": {
+        "agents": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/agentSpec"}
+        },
+        "pipelines": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/pipelineRef"}
+        },
+        "datasets": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/datasetSpec"}
+        },
+        "reports": {
+          "type": "array",
+          "items": {"type": "string"}
+        }
+      }
+    },
+    "agentSpec": {
+      "type": "object",
+      "required": ["name", "class_path"],
+      "properties": {
+        "name": {"type": "string"},
+        "class_path": {"type": "string", "pattern": "^[a-zA-Z_][a-zA-Z0-9_.]*:[a-zA-Z_][a-zA-Z0-9_]*$"},
+        "description": {"type": "string"},
+        "inputs": {
+          "type": "object",
+          "additionalProperties": {"type": "string"}
+        },
+        "outputs": {
+          "type": "object",
+          "additionalProperties": {"type": "string"}
+        }
+      }
+    },
+    "pipelineRef": {
+      "oneOf": [
+        {"type": "string"},
+        {
+          "type": "object",
+          "required": ["name", "file"],
+          "properties": {
+            "name": {"type": "string"},
+            "file": {"type": "string"},
+            "description": {"type": "string"}
+          }
+        }
+      ]
+    },
+    "datasetSpec": {
+      "type": "object",
+      "required": ["name", "path"],
+      "properties": {
+        "name": {"type": "string"},
+        "path": {"type": "string"},
+        "format": {"type": "string", "enum": ["json", "csv", "parquet", "yaml"]},
+        "card": {"type": "string"},
+        "size": {"type": "string"}
+      }
+    },
+    "packDependency": {
+      "type": "object",
+      "required": ["name", "version"],
+      "properties": {
+        "name": {"type": "string"},
+        "version": {"type": "string"}
+      }
+    },
+    "capabilities": {
+      "type": "object",
+      "properties": {
+        "fs": {"$ref": "#/$defs/fsCapability"},
+        "net": {"$ref": "#/$defs/netCapability"},
+        "clock": {"$ref": "#/$defs/boolCapability"},
+        "subprocess": {"$ref": "#/$defs/subprocessCapability"}
+      }
+    },
+    "fsCapability": {
+      "type": "object",
+      "properties": {
+        "allow": {"type": "boolean"},
+        "read": {"$ref": "#/$defs/allowDenyList"},
+        "write": {"$ref": "#/$defs/allowDenyList"}
+      }
+    },
+    "netCapability": {
+      "type": "object",
+      "properties": {
+        "allow": {"type": "boolean"},
+        "outbound": {"$ref": "#/$defs/allowDenyList"}
+      }
+    },
+    "boolCapability": {
+      "type": "object",
+      "properties": {
+        "allow": {"type": "boolean"}
+      }
+    },
+    "subprocessCapability": {
+      "type": "object",
+      "properties": {
+        "allow": {"type": "boolean"},
+        "allowlist": {"type": "array", "items": {"type": "string"}},
+        "denylist": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "allowDenyList": {
+      "type": "object",
+      "properties": {
+        "allowlist": {"type": "array", "items": {"type": "string"}},
+        "denylist": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "policy": {
+      "type": "object",
+      "properties": {
+        "install": {"type": "string"},
+        "runtime": {"type": "string"},
+        "network": {"type": "array", "items": {"type": "string"}},
+        "data_residency": {"type": "array", "items": {"type": "string"}},
+        "ef_vintage_min": {"type": "integer", "minimum": 2000, "maximum": 2100},
+        "license_allowlist": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "security": {
+      "type": "object",
+      "properties": {
+        "sbom": {"type": "string"},
+        "signatures": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "properties": {
+        "sbom": {"type": "boolean"},
+        "signing": {"type": "boolean"}
+      }
+    },
+    "compatibility": {
+      "type": "object",
+      "properties": {
+        "greenlang": {"type": "string"},
+        "python": {"type": "string"}
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "authors": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/author"}
+        },
+        "homepage": {"type": "string", "format": "uri"},
+        "repository": {"type": "string", "format": "uri"},
+        "publisher": {"type": "string"},
+        "tags": {"type": "array", "items": {"type": "string"}}
+      }
+    }
+  }
+}

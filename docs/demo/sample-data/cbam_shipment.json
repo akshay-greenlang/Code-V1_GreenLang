@@ -1,0 +1,177 @@
+{
+  "shipment_id": "SHIP-2025-EU-00142",
+  "declaration_type": "CBAM_TRANSITIONAL",
+  "declaration_period": "2025-Q4",
+  "submission_date": "2025-11-09",
+  "importer": {
+    "name": "Acme Manufacturing GmbH",
+    "eori_number": "DE123456789012345",
+    "address": {
+      "street": "Industriestrasse 42",
+      "city": "Hamburg",
+      "postal_code": "20457",
+      "country": "DE"
+    },
+    "contact": {
+      "name": "Maria Schmidt",
+      "email": "m.schmidt@acme-manufacturing.de",
+      "phone": "+49 40 123 4567"
+    }
+  },
+  "exporter": {
+    "name": "Turkish Steel Works A.S.",
+    "installation_id": "TR-INST-2024-00891",
+    "address": {
+      "city": "Iskenderun",
+      "country": "TR"
+    },
+    "verification_status": "VERIFIED",
+    "verification_body": "TUV Rheinland Turkey"
+  },
+  "goods": [
+    {
+      "line_item": 1,
+      "cn_code": "7208100000",
+      "cn_code_description": "Hot-rolled products of iron or non-alloy steel, in coils, of a width >= 600 mm, with patterns in relief",
+      "goods_description": "Hot-rolled steel sheets for automotive manufacturing",
+      "cbam_product_category": "IRON_STEEL",
+      "quantity": {
+        "value": 500.0,
+        "unit": "TONNES"
+      },
+      "customs_value": {
+        "value": 425000.00,
+        "currency": "EUR"
+      },
+      "production_data": {
+        "production_route": "BF-BOF",
+        "production_route_description": "Blast Furnace with Basic Oxygen Furnace",
+        "installation_production_capacity_tonnes": 2500000,
+        "specific_embedded_emissions": {
+          "value": 1.85,
+          "unit": "tCO2e/t",
+          "determination_method": "ACTUAL_VERIFIED",
+          "verification_report_id": "VR-2024-TR-00234"
+        },
+        "direct_emissions": {
+          "combustion_emissions": {
+            "value": 0.97,
+            "unit": "tCO2e/t",
+            "fuel_types": ["natural_gas", "coke"]
+          },
+          "process_emissions": {
+            "value": 0.88,
+            "unit": "tCO2e/t",
+            "source": "chemical_reduction"
+          }
+        },
+        "indirect_emissions": {
+          "electricity_consumption": {
+            "value": 125.5,
+            "unit": "MWh",
+            "per_unit": "shipment"
+          },
+          "grid_emission_factor": {
+            "value": 2.28,
+            "unit": "tCO2e/MWh",
+            "source": "IEA_2024",
+            "country": "TR"
+          }
+        },
+        "precursors": [
+          {
+            "name": "Iron ore",
+            "cn_code": "2601110000",
+            "origin_country": "BR",
+            "quantity_tonnes": 850.0,
+            "embedded_emissions_tco2e": 42.5
+          },
+          {
+            "name": "Coking coal",
+            "cn_code": "2701120000",
+            "origin_country": "AU",
+            "quantity_tonnes": 325.0,
+            "embedded_emissions_tco2e": 16.25
+          }
+        ]
+      },
+      "carbon_price_paid": {
+        "instrument_type": "NONE",
+        "amount": 0.0,
+        "currency": "EUR",
+        "description": "No carbon pricing mechanism in Turkey for steel production"
+      }
+    }
+  ],
+  "transport": {
+    "legs": [
+      {
+        "sequence": 1,
+        "mode": "ROAD",
+        "origin": "Iskenderun Steel Plant",
+        "destination": "Iskenderun Port",
+        "distance_km": 15,
+        "vehicle_type": "HEAVY_TRUCK",
+        "fuel_type": "DIESEL"
+      },
+      {
+        "sequence": 2,
+        "mode": "SEA",
+        "origin": "Iskenderun Port, Turkey",
+        "destination": "Hamburg Port, Germany",
+        "origin_port_code": "TRISE",
+        "destination_port_code": "DEHAM",
+        "distance_km": 4200,
+        "vessel_type": "CONTAINER_SHIP",
+        "vessel_imo": "IMO9876543",
+        "fuel_type": "HFO"
+      },
+      {
+        "sequence": 3,
+        "mode": "ROAD",
+        "origin": "Hamburg Port",
+        "destination": "Acme Manufacturing Facility",
+        "distance_km": 25,
+        "vehicle_type": "HEAVY_TRUCK",
+        "fuel_type": "DIESEL"
+      }
+    ],
+    "total_distance_km": 4240,
+    "transport_emission_factor": {
+      "value": 8.69,
+      "unit": "gCO2/t-km",
+      "source": "GLEC_Framework_v3"
+    }
+  },
+  "documents": [
+    {
+      "type": "BILL_OF_LADING",
+      "reference": "BL-2025-ISK-00892",
+      "date": "2025-10-15"
+    },
+    {
+      "type": "COMMERCIAL_INVOICE",
+      "reference": "INV-2025-TSW-04521",
+      "date": "2025-10-14"
+    },
+    {
+      "type": "VERIFICATION_STATEMENT",
+      "reference": "VR-2024-TR-00234",
+      "date": "2025-09-30",
+      "issuer": "TUV Rheinland Turkey"
+    },
+    {
+      "type": "CUSTOMS_DECLARATION",
+      "reference": "DE-IMP-2025-00142789",
+      "date": "2025-10-28"
+    }
+  ],
+  "metadata": {
+    "created_at": "2025-11-09T10:30:00Z",
+    "created_by": "m.schmidt@acme-manufacturing.de",
+    "greenlang_version": "1.0.0",
+    "schema_version": "CBAM-2024-01",
+    "data_quality_score": 98.5,
+    "completeness_check": "PASSED"
+  }
+}

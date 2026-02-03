@@ -13,7 +13,14 @@
 
 ## What is GreenLang?
 
-GreenLang is a **Climate Operating System** that provides the infrastructure, calculation engines, and regulatory frameworks needed to build production-ready climate intelligence applications. Think of it as the foundation layer for climate-aware software.
+> **GreenLang is a deterministic execution engine + pack format for climate calculations and compliance workflows.**
+
+GreenLang is a **Climate Operating System** that provides the infrastructure, calculation engines, and regulatory frameworks needed to build production-ready climate intelligence applications. It prioritizes **auditability over cleverness** - every calculation is reproducible, every number is traceable, and every output is verifiable.
+
+**Core Components:**
+- **Packs**: Self-contained, versioned bundles of agents, pipelines, and datasets
+- **Execution Engine**: Deterministic pipeline orchestration with full provenance
+- **Verification**: SBOM generation, signing, and artifact verification
 
 Instead of building carbon accounting, emissions tracking, and regulatory compliance from scratch, GreenLang provides:
 
