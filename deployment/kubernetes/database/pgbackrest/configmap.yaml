@@ -1,0 +1,257 @@
+# pgBackRest Configuration for GreenLang PostgreSQL Backups
+# Provides comprehensive backup configuration with S3 storage, encryption, and retention policies
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pgbackrest-config
+  namespace: greenlang-database
+  labels:
+    app.kubernetes.io/name: pgbackrest
+    app.kubernetes.io/component: backup
+    app.kubernetes.io/part-of: greenlang
+    app.kubernetes.io/managed-by: kubernetes
+  annotations:
+    description: "pgBackRest configuration for GreenLang PostgreSQL backup and recovery"
+data:
+  pgbackrest.conf: |
+    # pgBackRest Configuration File
+    # GreenLang Database Backup Configuration
+
+    # ============================================================================
+    # Global Settings
+    # ============================================================================
+    [global]
+    # Repository configuration - S3 backend
+    repo1-type=s3
+    repo1-path=/pgbackrest/greenlang
+    repo1-s3-bucket=greenlang-pgbackrest-backups
+    repo1-s3-endpoint=s3.amazonaws.com
+    repo1-s3-region=us-east-1
+    repo1-s3-key-type=auto
+    repo1-s3-uri-style=host
+
+    # Encryption settings - AES-256-CBC
+    repo1-cipher-type=aes-256-cbc
+
+    # Compression settings - lz4 for optimal speed/compression balance
+    compress-type=lz4
+    compress-level=6
+
+    # Retention policies
+    # Full backups: 4 (monthly retention)
+    repo1-retention-full=4
+    repo1-retention-full-type=count
+
+    # Differential backups: 7 (weekly retention)
+    repo1-retention-diff=7
+
+    # Archive retention tied to full backup retention
+    repo1-retention-archive=4
+    repo1-retention-archive-type=full
+
+    # Process settings
+    process-max=4
+
+    # Buffer sizes for optimal performance
+    buffer-size=4194304
+
+    # Protocol timeout (seconds)
+    protocol-timeout=1830
+
+    # Database timeout for queries
+    db-timeout=1800
+
+    # Start/stop timeout
+    start-fast=y
+    stop-auto=y
+
+    # Delta restore (only restore changed files)
+    delta=y
+
+    # Archive settings
+    archive-async=y
+    archive-push-queue-max=4GiB
+    archive-get-queue-max=128MiB
+
+    # Logging
+    log-level-console=info
+    log-level-file=detail
+    log-path=/var/log/pgbackrest
+    log-timestamp=y
+
+    # Backup settings
+    backup-standby=y
+    checkpoint-timeout=900
+
+    # ============================================================================
+    # Stanza Configuration: greenlang
+    # ============================================================================
+    [greenlang]
+    # Primary PostgreSQL connection
+    pg1-path=/var/lib/postgresql/data
+    pg1-port=5432
+    pg1-socket-path=/var/run/postgresql
+    pg1-user=postgres
+
+    # Recovery target settings (for PITR)
+    recovery-option=recovery_target_action=promote
+
+    # Standby configuration (if applicable)
+    # pg2-host=greenlang-postgresql-replica
+    # pg2-path=/var/lib/postgresql/data
+    # pg2-port=5432
+
+    # ============================================================================
+    # Global Archive Push Settings
+    # ============================================================================
+    [global:archive-push]
+    compress-level=3
+
+    # ============================================================================
+    # Global Archive Get Settings
+    # ============================================================================
+    [global:archive-get]
+    process-max=2
+
+  # Additional configuration for backup verification
+  backup-verify.conf: |
+    # Backup Verification Configuration
+    verify_wal_continuity=true
+    verify_backup_integrity=true
+    verify_checksum=true
+    alert_on_failure=true
+    alert_webhook_url=/etc/pgbackrest/secrets/slack-webhook
+    max_wal_gap_seconds=300
+
+  # Restore configuration template
+  restore.conf: |
+    # Restore Configuration Template
+    # Used for point-in-time recovery operations
+
+    [global]
+    # Restore-specific settings
+    delta=y
+    process-max=4
+
+    # Recovery settings
+    recovery-option=recovery_target_action=promote
+    recovery-option=restore_command='pgbackrest --stanza=greenlang archive-get %f "%p"'
+
+    [greenlang]
+    pg1-path=/var/lib/postgresql/data-restored
+
+---
+# ConfigMap for backup scripts and utilities
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pgbackrest-scripts
+  namespace: greenlang-database
+  labels:
+    app.kubernetes.io/name: pgbackrest
+    app.kubernetes.io/component: backup-scripts
+    app.kubernetes.io/part-of: greenlang
+data:
+  pre-backup.sh: |
+    #!/bin/bash
+    # Pre-backup hook script
+    set -e
+
+    echo "[$(date -Iseconds)] Starting pre-backup checks..."
+
+    # Verify PostgreSQL is running
+    if ! pg_isready -h localhost -p 5432; then
+      echo "ERROR: PostgreSQL is not ready"
+      exit 1
+    fi
+
+    # Check available disk space
+    AVAILABLE_SPACE=$(df -P /var/lib/postgresql | tail -1 | awk '{print $4}')
+    MIN_SPACE=10485760  # 10GB in KB
+
+    if [ "$AVAILABLE_SPACE" -lt "$MIN_SPACE" ]; then
+      echo "ERROR: Insufficient disk space for backup"
+      exit 1
+    fi
+
+    # Verify stanza exists
+    if ! pgbackrest --stanza=greenlang info > /dev/null 2>&1; then
+      echo "WARNING: Stanza not found, creating..."
+      pgbackrest --stanza=greenlang stanza-create
+    fi
+
+    echo "[$(date -Iseconds)] Pre-backup checks completed successfully"
+
+  post-backup.sh: |
+    #!/bin/bash
+    # Post-backup hook script
+    set -e
+
+    BACKUP_TYPE="${1:-full}"
+    BACKUP_STATUS="${2:-success}"
+
+    echo "[$(date -Iseconds)] Post-backup processing for ${BACKUP_TYPE} backup..."
+
+    # Get backup info
+    BACKUP_INFO=$(pgbackrest --stanza=greenlang info --output=json)
+
+    # Send notification
+    if [ -f /etc/pgbackrest/secrets/slack-webhook ]; then
+      WEBHOOK_URL=$(cat /etc/pgbackrest/secrets/slack-webhook)
+
+      if [ "$BACKUP_STATUS" == "success" ]; then
+        COLOR="good"
+        MESSAGE="PostgreSQL ${BACKUP_TYPE} backup completed successfully"
+      else
+        COLOR="danger"
+        MESSAGE="PostgreSQL ${BACKUP_TYPE} backup FAILED"
+      fi
+
+      curl -s -X POST "$WEBHOOK_URL" \
+        -H 'Content-type: application/json' \
+        -d "{
+          \"attachments\": [{
+            \"color\": \"${COLOR}\",
+            \"title\": \"pgBackRest Backup Notification\",
+            \"text\": \"${MESSAGE}\",
+            \"fields\": [
+              {\"title\": \"Stanza\", \"value\": \"greenlang\", \"short\": true},
+              {\"title\": \"Type\", \"value\": \"${BACKUP_TYPE}\", \"short\": true}
+            ],
+            \"ts\": $(date +%s)
+          }]
+        }"
+    fi
+
+    # Update Prometheus metrics
+    if [ -f /var/lib/pgbackrest/metrics/backup.prom ]; then
+      echo "# HELP pgbackrest_last_backup_timestamp Last backup timestamp" > /var/lib/pgbackrest/metrics/backup.prom
+      echo "# TYPE pgbackrest_last_backup_timestamp gauge" >> /var/lib/pgbackrest/metrics/backup.prom
+      echo "pgbackrest_last_backup_timestamp{stanza=\"greenlang\",type=\"${BACKUP_TYPE}\"} $(date +%s)" >> /var/lib/pgbackrest/metrics/backup.prom
+
+      echo "# HELP pgbackrest_last_backup_status Last backup status (1=success, 0=failure)" >> /var/lib/pgbackrest/metrics/backup.prom
+      echo "# TYPE pgbackrest_last_backup_status gauge" >> /var/lib/pgbackrest/metrics/backup.prom
+      if [ "$BACKUP_STATUS" == "success" ]; then
+        echo "pgbackrest_last_backup_status{stanza=\"greenlang\",type=\"${BACKUP_TYPE}\"} 1" >> /var/lib/pgbackrest/metrics/backup.prom
+      else
+        echo "pgbackrest_last_backup_status{stanza=\"greenlang\",type=\"${BACKUP_TYPE}\"} 0" >> /var/lib/pgbackrest/metrics/backup.prom
+      fi
+    fi
+
+    echo "[$(date -Iseconds)] Post-backup processing completed"
+
+  expire-backups.sh: |
+    #!/bin/bash
+    # Backup expiration script
+    set -e
+
+    echo "[$(date -Iseconds)] Running backup expiration..."
+
+    pgbackrest --stanza=greenlang expire \
+      --log-level-console=info
+
+    echo "[$(date -Iseconds)] Backup expiration completed"
+
+    # Report current retention status
+    pgbackrest --stanza=greenlang info

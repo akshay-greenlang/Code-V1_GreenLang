@@ -1,0 +1,201 @@
+---
+# Primary (Write) Service for Patroni PostgreSQL Cluster
+# Routes traffic only to the current primary/master node
+apiVersion: v1
+kind: Service
+metadata:
+  name: patroni-primary
+  namespace: greenlang-db
+  labels:
+    app: patroni
+    cluster-name: greenlang-cluster
+    component: database
+    role: primary
+    part-of: greenlang
+  annotations:
+    # Service description
+    description: "Primary PostgreSQL service for write operations"
+    # Prometheus annotations
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9187"
+spec:
+  type: ClusterIP
+  # Session affinity for connection pooling
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 10800  # 3 hours
+  ports:
+    - name: postgresql
+      port: 5432
+      targetPort: 5432
+      protocol: TCP
+    - name: patroni-api
+      port: 8008
+      targetPort: 8008
+      protocol: TCP
+    - name: metrics
+      port: 9187
+      targetPort: 9187
+      protocol: TCP
+  selector:
+    app: patroni
+    cluster-name: greenlang-cluster
+    # This label is set by Patroni on the current primary
+    role: master
+
+---
+# Headless service for StatefulSet DNS resolution
+apiVersion: v1
+kind: Service
+metadata:
+  name: patroni
+  namespace: greenlang-db
+  labels:
+    app: patroni
+    cluster-name: greenlang-cluster
+    component: database
+    part-of: greenlang
+  annotations:
+    description: "Headless service for Patroni StatefulSet"
+spec:
+  type: ClusterIP
+  clusterIP: None
+  publishNotReadyAddresses: true
+  ports:
+    - name: postgresql
+      port: 5432
+      targetPort: 5432
+      protocol: TCP
+    - name: patroni-api
+      port: 8008
+      targetPort: 8008
+      protocol: TCP
+  selector:
+    app: patroni
+    cluster-name: greenlang-cluster
+
+---
+# External LoadBalancer for Primary (optional - for external access)
+apiVersion: v1
+kind: Service
+metadata:
+  name: patroni-primary-external
+  namespace: greenlang-db
+  labels:
+    app: patroni
+    cluster-name: greenlang-cluster
+    component: database
+    role: primary-external
+    part-of: greenlang
+  annotations:
+    description: "External LoadBalancer for primary PostgreSQL access"
+    # AWS NLB annotations (if using AWS)
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+    service.beta.kubernetes.io/aws-load-balancer-internal: "true"
+    service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+    # GCP annotations (if using GCP)
+    cloud.google.com/load-balancer-type: "Internal"
+spec:
+  type: LoadBalancer
+  # Preserve client IP
+  externalTrafficPolicy: Local
+  ports:
+    - name: postgresql
+      port: 5432
+      targetPort: 5432
+      protocol: TCP
+  selector:
+    app: patroni
+    cluster-name: greenlang-cluster
+    role: master
+
+---
+# Network Policy for Primary Service
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: patroni-primary-network-policy
+  namespace: greenlang-db
+  labels:
+    app: patroni
+    component: security
+spec:
+  podSelector:
+    matchLabels:
+      app: patroni
+      cluster-name: greenlang-cluster
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Allow PostgreSQL connections from application namespace
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: greenlang
+        - namespaceSelector:
+            matchLabels:
+              name: greenlang-staging
+      ports:
+        - protocol: TCP
+          port: 5432
+    # Allow Patroni API from within the namespace (for cluster coordination)
+    - from:
+        - podSelector:
+            matchLabels:
+              app: patroni
+      ports:
+        - protocol: TCP
+          port: 8008
+    # Allow metrics scraping from monitoring namespace
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+      ports:
+        - protocol: TCP
+          port: 8008
+        - protocol: TCP
+          port: 9187
+    # Allow pgbouncer connections
+    - from:
+        - podSelector:
+            matchLabels:
+              app: pgbouncer
+      ports:
+        - protocol: TCP
+          port: 5432
+  egress:
+    # Allow DNS resolution
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+    # Allow Patroni cluster communication
+    - to:
+        - podSelector:
+            matchLabels:
+              app: patroni
+      ports:
+        - protocol: TCP
+          port: 5432
+        - protocol: TCP
+          port: 8008
+    # Allow S3 backup (AWS endpoints)
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+      ports:
+        - protocol: TCP
+          port: 443
+    # Allow Kubernetes API for DCS
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+      ports:
+        - protocol: TCP
+          port: 443

@@ -1,0 +1,234 @@
+{{/*
+Patroni Configuration ConfigMap
+This configures Patroni for high availability cluster management
+*/}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "timescaledb-ha.patroniConfigMapName" . }}
+  namespace: {{ include "timescaledb-ha.namespace" . }}
+  labels:
+    {{- include "timescaledb-ha.labels" . | nindent 4 }}
+data:
+  patroni.yaml: |
+    # Patroni Configuration for TimescaleDB HA
+    # Documentation: https://patroni.readthedocs.io/
+
+    scope: {{ .Values.cluster.name }}
+    name: {{ "{{" }} env.POD_NAME {{ "}}" }}
+    namespace: {{ include "timescaledb-ha.namespace" . }}
+
+    log:
+      level: {{ .Values.patroni.logLevel }}
+      format: '%(asctime)s %(levelname)s: %(message)s'
+      dateformat: '%Y-%m-%d %H:%M:%S'
+
+    # REST API configuration
+    restapi:
+      listen: 0.0.0.0:8008
+      connect_address: {{ "{{" }} env.POD_IP {{ "}}" }}:8008
+      authentication:
+        username: patroni
+        password: {{ "{{" }} env.PATRONI_RESTAPI_PASSWORD {{ "}}" }}
+
+    # Kubernetes DCS (Distributed Configuration Store)
+    kubernetes:
+      namespace: {{ include "timescaledb-ha.namespace" . }}
+      labels:
+        cluster-name: {{ .Values.cluster.name }}
+        app.kubernetes.io/name: {{ include "timescaledb-ha.name" . }}
+      use_endpoints: {{ .Values.patroni.kubernetes.use_endpoints }}
+      scope_label: {{ .Values.patroni.kubernetes.scope_label }}
+      role_label: {{ .Values.patroni.kubernetes.role_label }}
+      pod_ip: {{ "{{" }} env.POD_IP {{ "}}" }}
+      ports:
+        - name: postgresql
+          port: 5432
+
+    # Bootstrap configuration (used when initializing new cluster)
+    bootstrap:
+      dcs:
+        ttl: {{ .Values.patroni.ttl }}
+        loop_wait: {{ .Values.patroni.loop_wait }}
+        retry_timeout: {{ .Values.patroni.retry_timeout }}
+        maximum_lag_on_failover: {{ .Values.patroni.maximum_lag_on_failover }}
+        {{- if .Values.patroni.synchronous.enabled }}
+        synchronous_mode: true
+        synchronous_mode_strict: false
+        synchronous_node_count: {{ .Values.patroni.synchronous.num_replicas }}
+        {{- end }}
+
+        postgresql:
+          use_pg_rewind: {{ .Values.patroni.pg_rewind.enabled }}
+          use_slots: true
+          parameters:
+            # Connection settings
+            max_connections: {{ .Values.postgresql.parameters.max_connections | default 200 }}
+
+            # WAL settings
+            wal_level: replica
+            wal_keep_size: 1GB
+            max_wal_senders: {{ .Values.postgresql.parameters.max_wal_senders | default 10 }}
+            max_replication_slots: {{ .Values.postgresql.parameters.max_replication_slots | default 10 }}
+            hot_standby: 'on'
+            hot_standby_feedback: 'on'
+
+            {{- if .Values.patroni.synchronous.enabled }}
+            # Synchronous replication
+            synchronous_commit: {{ .Values.patroni.synchronous.mode }}
+            synchronous_standby_names: '*'
+            {{- end }}
+
+            # TimescaleDB settings
+            shared_preload_libraries: 'timescaledb,pg_stat_statements'
+            timescaledb.max_background_workers: {{ .Values.postgresql.parameters | dig "timescaledb.max_background_workers" "8" }}
+
+      # Method for initialization
+      method: initdb
+
+      initdb:
+        - encoding: UTF8
+        - locale: en_US.UTF-8
+        - data-checksums
+
+      # Post-init scripts
+      post_init: /etc/patroni/post_init.sh
+
+      # pg_hba.conf entries
+      pg_hba:
+        {{- range .Values.postgresql.pg_hba }}
+        - {{ . | quote }}
+        {{- end }}
+
+      # Users to create
+      users:
+        {{ .Values.postgresql.username }}:
+          password: {{ "{{" }} env.PATRONI_SUPERUSER_PASSWORD {{ "}}" }}
+          options:
+            - superuser
+            - createdb
+            - createrole
+
+        {{ .Values.postgresql.replication.username }}:
+          password: {{ "{{" }} env.PATRONI_REPLICATION_PASSWORD {{ "}}" }}
+          options:
+            - replication
+
+    # PostgreSQL configuration
+    postgresql:
+      listen: 0.0.0.0:5432
+      connect_address: {{ "{{" }} env.POD_IP {{ "}}" }}:5432
+      data_dir: {{ .Values.persistence.mountPath }}/pgdata
+      bin_dir: /usr/lib/postgresql/{{ .Values.postgresql.version }}/bin
+
+      authentication:
+        superuser:
+          username: {{ .Values.postgresql.username }}
+          password: {{ "{{" }} env.PATRONI_SUPERUSER_PASSWORD {{ "}}" }}
+        replication:
+          username: {{ .Values.postgresql.replication.username }}
+          password: {{ "{{" }} env.PATRONI_REPLICATION_PASSWORD {{ "}}" }}
+        rewind:
+          username: {{ .Values.postgresql.username }}
+          password: {{ "{{" }} env.PATRONI_SUPERUSER_PASSWORD {{ "}}" }}
+
+      {{- if .Values.tls.enabled }}
+      # TLS configuration
+      ssl: 'on'
+      ssl_cert_file: /etc/ssl/postgresql/tls.crt
+      ssl_key_file: /etc/ssl/postgresql/tls.key
+      {{- end }}
+
+      parameters:
+        # Include custom postgresql.conf
+        include_if_exists: '/etc/postgresql/postgresql.conf'
+
+      # pg_hba.conf
+      pg_hba:
+        {{- range .Values.postgresql.pg_hba }}
+        - {{ . | quote }}
+        {{- end }}
+
+      # pg_ident.conf
+      pg_ident: []
+
+      # Recovery settings
+      recovery_conf:
+        restore_command: 'echo "Restore command placeholder"'
+
+      # Create physical replication slot on replica
+      create_replica_methods:
+        - basebackup
+
+      basebackup:
+        max-rate: 100M
+        checkpoint: fast
+
+      # Callbacks for cluster events
+      callbacks:
+        on_start: /etc/patroni/callbacks/on_start.sh
+        on_stop: /etc/patroni/callbacks/on_stop.sh
+        on_role_change: /etc/patroni/callbacks/on_role_change.sh
+        on_restart: /etc/patroni/callbacks/on_restart.sh
+
+    # Tags for this node
+    tags:
+      nofailover: false
+      noloadbalance: false
+      clonefrom: false
+      nosync: false
+
+    # Watchdog configuration (for split-brain protection)
+    watchdog:
+      mode: off  # Requires privileged container, consider 'automatic' or 'required' for production
+
+  post_init.sh: |
+    #!/bin/bash
+    set -e
+
+    echo "Running post-init script..."
+
+    # Wait for PostgreSQL to be ready
+    until pg_isready -h localhost -p 5432; do
+      echo "Waiting for PostgreSQL to start..."
+      sleep 2
+    done
+
+    # Create extensions
+    psql -v ON_ERROR_STOP=1 --username "$PATRONI_SUPERUSER_USERNAME" --dbname "{{ .Values.postgresql.database }}" <<-EOSQL
+      -- Enable TimescaleDB
+      CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;
+
+      -- Enable pg_stat_statements for query analysis
+      CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
+
+      -- Enable additional useful extensions
+      CREATE EXTENSION IF NOT EXISTS pg_trgm;
+      CREATE EXTENSION IF NOT EXISTS btree_gist;
+
+      -- Grant permissions
+      GRANT ALL PRIVILEGES ON DATABASE {{ .Values.postgresql.database }} TO {{ .Values.postgresql.username }};
+    EOSQL
+
+    echo "Post-init script completed successfully"
+
+  on_start.sh: |
+    #!/bin/bash
+    echo "Patroni started: $(hostname) - Role: $1"
+
+  on_stop.sh: |
+    #!/bin/bash
+    echo "Patroni stopped: $(hostname)"
+
+  on_role_change.sh: |
+    #!/bin/bash
+    echo "Role changed on $(hostname): $1 -> $2"
+
+    # Update Kubernetes labels to reflect role change
+    if [ -n "$KUBERNETES_SERVICE_HOST" ]; then
+      kubectl label pod $(hostname) role=$2 --overwrite 2>/dev/null || true
+    fi
+
+  on_restart.sh: |
+    #!/bin/bash
+    echo "Patroni restarted: $(hostname) - Role: $1"

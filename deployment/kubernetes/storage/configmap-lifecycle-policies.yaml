@@ -1,0 +1,664 @@
+# Lifecycle Policies ConfigMap for GreenLang Storage
+# Defines retention policies for all artifact types
+#
+# Policy Types:
+# - BUILD_ARTIFACTS: 30 days active, 90 days archive, 365 days delete
+# - CALCULATION_RESULTS: 90 days active, 1 year archive, 7 years compliance
+# - REPORTS: 1 year active, 7 years archive (CSRD compliance)
+# - AUDIT_LOGS: 7 years immutable (SOX compliance)
+# - ML_MODELS: 90 days active, 1 year archive
+# - TEMPORARY: 7 days delete
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: lifecycle-policies
+  namespace: greenlang-storage
+  labels:
+    app.kubernetes.io/name: lifecycle-policies
+    app.kubernetes.io/component: storage-lifecycle
+    app.kubernetes.io/part-of: greenlang-storage
+    app.kubernetes.io/managed-by: kubernetes
+  annotations:
+    description: "Comprehensive lifecycle policies for GreenLang artifact storage"
+    version: "1.0.0"
+    compliance.frameworks: "CSRD,SOX,GDPR,GHG-Protocol"
+data:
+  lifecycle-policies.yaml: |
+    # GreenLang Storage Lifecycle Policies
+    # Version: 1.0.0
+    # Last Updated: 2024-01-15
+    #
+    # This configuration defines retention and lifecycle policies for all
+    # artifact types in the GreenLang storage system.
+
+    # ==========================================================================
+    # Global Settings
+    # ==========================================================================
+    global:
+      # Default timezone for policy evaluation
+      timezone: "UTC"
+      # Enable strict mode (fail on policy violations)
+      strict_mode: true
+      # Enable audit logging for all policy actions
+      audit_logging: true
+      # Default notification channels
+      notification_channels:
+        - slack
+        - email
+      # Cost optimization settings
+      cost_optimization:
+        enabled: true
+        prefer_glacier_instant_retrieval: true
+        minimum_archive_size_bytes: 131072  # 128 KB
+
+    # ==========================================================================
+    # BUILD_ARTIFACTS Policy
+    # ==========================================================================
+    # Build artifacts include compiled binaries, packages, and CI/CD outputs
+    # Retention: 30 days active -> 90 days archive -> 365 days delete
+    policies:
+      - name: BUILD_ARTIFACTS
+        display_name: "Build Artifacts"
+        description: "CI/CD build outputs, binaries, and packages"
+
+        # Applicable buckets and prefixes
+        targets:
+          - bucket_env_var: BUILD_ARTIFACTS_BUCKET
+            prefixes:
+              - "builds/"
+              - "packages/"
+              - "binaries/"
+              - "ci/artifacts/"
+              - "releases/dev/"
+              - "releases/staging/"
+
+        # Retention configuration
+        retention:
+          # Active storage (STANDARD class)
+          active:
+            duration_days: 30
+            storage_class: "STANDARD"
+            description: "Keep in hot storage for 30 days for quick access"
+
+          # Archive storage (GLACIER)
+          archive:
+            duration_days: 90
+            storage_class: "GLACIER"
+            description: "Archive to Glacier after 30 days, keep for 90 days"
+            min_object_size_bytes: 131072  # 128 KB minimum for cost efficiency
+            restore_tier: "Standard"  # Standard restore (3-5 hours)
+            restore_days: 7
+
+          # Deletion
+          delete:
+            duration_days: 365
+            description: "Delete after 1 year total"
+
+        # Compliance settings
+        compliance:
+          required: false
+          framework: null
+          audit_trail: true
+          immutable: false
+
+        # Legal hold settings
+        legal_hold:
+          enabled: true
+          check_before_delete: true
+          check_before_archive: true
+
+        # Exclusions - objects matching these patterns are not subject to this policy
+        exclusions:
+          - pattern: "*.release.*"
+            reason: "Release artifacts have separate retention"
+          - pattern: "*-stable-*"
+            reason: "Stable artifacts retained longer"
+          - pattern: "production/*"
+            reason: "Production artifacts follow production policy"
+          - tag_key: "retain"
+            tag_value: "true"
+            reason: "Explicitly marked for retention"
+
+        # Tag requirements
+        tags:
+          required:
+            - "artifact_type"
+            - "build_id"
+          optional:
+            - "environment"
+            - "version"
+            - "commit_sha"
+
+        # Notifications
+        notifications:
+          on_archive: true
+          on_delete: true
+          on_restore: true
+          channels:
+            - type: slack
+              channel: "#devops-notifications"
+
+      # ========================================================================
+      # CALCULATION_RESULTS Policy
+      # ========================================================================
+      # Emission calculations, analysis results, and processed data
+      # Retention: 90 days active -> 1 year archive -> 7 years compliance
+      - name: CALCULATION_RESULTS
+        display_name: "Calculation Results"
+        description: "Emission calculations, analysis results, and processed sustainability data"
+
+        targets:
+          - bucket_env_var: CALCULATION_RESULTS_BUCKET
+            prefixes:
+              - "calculations/"
+              - "emissions/"
+              - "analysis/"
+              - "results/"
+              - "processed/"
+
+        retention:
+          active:
+            duration_days: 90
+            storage_class: "STANDARD"
+            description: "Keep in hot storage for 90 days for analysis access"
+
+          archive:
+            duration_days: 365
+            storage_class: "GLACIER"
+            description: "Archive to Glacier after 90 days"
+            min_object_size_bytes: 131072
+            restore_tier: "Standard"
+            restore_days: 14
+
+          # Compliance retention - 7 years total
+          compliance_archive:
+            duration_days: 2555  # 7 years
+            storage_class: "DEEP_ARCHIVE"
+            description: "Move to Deep Archive for compliance retention"
+            restore_tier: "Standard"  # 12 hours restore
+            restore_days: 30
+
+          delete:
+            duration_days: null  # Never delete automatically due to compliance
+            requires_approval: true
+            approval_roles:
+              - "compliance-officer"
+              - "data-protection-officer"
+
+        compliance:
+          required: true
+          framework: "CSRD"
+          audit_trail: true
+          immutable: false
+          data_classification: "confidential"
+          gdpr_relevant: true
+          retention_justification: "CSRD requires 7 years retention of sustainability data"
+
+        legal_hold:
+          enabled: true
+          check_before_delete: true
+          check_before_archive: true
+          default_hold_types:
+            - "regulatory"
+            - "audit"
+
+        exclusions:
+          - tag_key: "test_data"
+            tag_value: "true"
+            reason: "Test data can be deleted sooner"
+
+        tags:
+          required:
+            - "artifact_type"
+            - "calculation_type"
+            - "data_classification"
+          optional:
+            - "organization_id"
+            - "reporting_period"
+            - "scope"  # Scope 1, 2, 3
+
+        notifications:
+          on_archive: true
+          on_compliance_archive: true
+          on_delete: true
+          on_legal_hold: true
+          channels:
+            - type: slack
+              channel: "#sustainability-data"
+            - type: email
+              recipients:
+                - "compliance@greenlang.io"
+
+      # ========================================================================
+      # REPORTS Policy
+      # ========================================================================
+      # Generated reports including CSRD, sustainability, and audit reports
+      # Retention: 1 year active -> 7 years archive (CSRD compliance)
+      - name: REPORTS
+        display_name: "Reports"
+        description: "CSRD reports, sustainability reports, audit reports"
+
+        targets:
+          - bucket_env_var: REPORTS_BUCKET
+            prefixes:
+              - "reports/"
+              - "csrd/"
+              - "sustainability/"
+              - "annual/"
+              - "quarterly/"
+              - "audit-reports/"
+
+        retention:
+          active:
+            duration_days: 365
+            storage_class: "STANDARD"
+            description: "Keep reports in hot storage for 1 year"
+
+          archive:
+            duration_days: 2555  # 7 years
+            storage_class: "DEEP_ARCHIVE"
+            description: "Archive to Deep Archive for 7 years (CSRD requirement)"
+            min_object_size_bytes: 262144  # 256 KB
+            restore_tier: "Standard"
+            restore_days: 30
+
+          delete:
+            duration_days: null  # Never delete - compliance requirement
+            requires_approval: true
+            approval_roles:
+              - "compliance-officer"
+              - "legal"
+              - "cfo"
+
+        compliance:
+          required: true
+          framework: "CSRD"
+          additional_frameworks:
+            - "GHG Protocol"
+            - "TCFD"
+            - "SASB"
+          audit_trail: true
+          immutable: false  # Final reports should be tagged as immutable
+          data_classification: "confidential"
+          retention_justification: "CSRD Article 40 requires 7 years document retention"
+
+        legal_hold:
+          enabled: true
+          check_before_delete: true
+          check_before_archive: false  # Archive is allowed under legal hold
+          default_hold_types:
+            - "regulatory"
+            - "litigation"
+            - "audit"
+
+        exclusions:
+          - pattern: "*-draft-*"
+            reason: "Draft reports follow shorter retention"
+          - pattern: "*-preview-*"
+            reason: "Preview reports are temporary"
+          - tag_key: "status"
+            tag_value: "draft"
+            reason: "Drafts can be deleted after finalization"
+
+        tags:
+          required:
+            - "artifact_type"
+            - "report_type"
+            - "reporting_period"
+            - "status"  # draft, final, archived
+          optional:
+            - "organization_id"
+            - "submission_date"
+            - "regulatory_body"
+
+        notifications:
+          on_archive: true
+          on_delete: true
+          on_legal_hold: true
+          channels:
+            - type: slack
+              channel: "#compliance-alerts"
+            - type: email
+              recipients:
+                - "compliance@greenlang.io"
+                - "legal@greenlang.io"
+
+      # ========================================================================
+      # AUDIT_LOGS Policy
+      # ========================================================================
+      # System audit logs for SOX compliance
+      # Retention: 7 years immutable (SOX compliance)
+      - name: AUDIT_LOGS
+        display_name: "Audit Logs"
+        description: "System audit logs, access logs, change logs for SOX compliance"
+
+        targets:
+          - bucket_env_var: AUDIT_LOGS_BUCKET
+            prefixes:
+              - "audit/"
+              - "logs/audit/"
+              - "access-logs/"
+              - "change-logs/"
+              - "security-logs/"
+
+        retention:
+          active:
+            duration_days: 2555  # 7 years
+            storage_class: "STANDARD"  # Keep accessible for compliance queries
+            description: "Immutable storage for 7 years (SOX requirement)"
+
+          archive:
+            duration_days: null  # No archive - must remain queryable
+            storage_class: null
+
+          delete:
+            duration_days: null  # Never delete
+            requires_approval: true
+            approval_roles:
+              - "ciso"
+              - "legal"
+              - "external-auditor"
+
+        compliance:
+          required: true
+          framework: "SOX"
+          additional_frameworks:
+            - "PCI-DSS"
+            - "ISO 27001"
+          audit_trail: true
+          immutable: true
+          object_lock: true
+          object_lock_mode: "COMPLIANCE"  # Cannot be overridden
+          object_lock_retention_days: 2555
+          data_classification: "restricted"
+          retention_justification: "SOX Section 802 requires 7 years audit log retention"
+
+        legal_hold:
+          enabled: true
+          default_hold: true  # All audit logs under permanent hold
+          check_before_delete: true
+          check_before_archive: true
+          default_hold_types:
+            - "regulatory"
+            - "sox"
+
+        exclusions: []  # No exclusions for audit logs
+
+        tags:
+          required:
+            - "artifact_type"
+            - "log_source"
+            - "log_type"
+          optional:
+            - "system_id"
+            - "user_id"
+            - "action_type"
+
+        notifications:
+          on_access: true  # Notify on any access
+          on_delete_attempt: true  # Alert on deletion attempts
+          channels:
+            - type: pagerduty
+              severity: "high"
+            - type: slack
+              channel: "#security-alerts"
+            - type: email
+              recipients:
+                - "security@greenlang.io"
+                - "compliance@greenlang.io"
+
+      # ========================================================================
+      # ML_MODELS Policy
+      # ========================================================================
+      # Machine learning models and related artifacts
+      # Retention: 90 days active -> 1 year archive
+      - name: ML_MODELS
+        display_name: "ML Models"
+        description: "Machine learning models, training artifacts, and model metadata"
+
+        targets:
+          - bucket_env_var: ML_MODELS_BUCKET
+            prefixes:
+              - "models/"
+              - "ml/"
+              - "training/"
+              - "checkpoints/"
+
+        retention:
+          active:
+            duration_days: 90
+            storage_class: "STANDARD"
+            description: "Keep active models in hot storage for 90 days"
+
+          archive:
+            duration_days: 365
+            storage_class: "GLACIER"
+            description: "Archive deprecated models for 1 year"
+            min_object_size_bytes: 1048576  # 1 MB (models are typically large)
+            restore_tier: "Expedited"  # 1-5 minutes for model inference needs
+            restore_days: 7
+
+          delete:
+            duration_days: 730  # 2 years total
+            requires_approval: true
+            approval_roles:
+              - "ml-lead"
+              - "tech-lead"
+
+        compliance:
+          required: false
+          framework: null
+          audit_trail: true
+          immutable: false
+
+        legal_hold:
+          enabled: true
+          check_before_delete: true
+
+        exclusions:
+          - tag_key: "model_status"
+            tag_value: "production"
+            reason: "Production models retained separately"
+          - pattern: "*/checkpoint-*"
+            reason: "Checkpoints can be deleted after training"
+
+        tags:
+          required:
+            - "artifact_type"
+            - "model_type"
+            - "model_version"
+          optional:
+            - "model_status"  # training, validated, production, deprecated
+            - "accuracy"
+            - "training_date"
+            - "framework"  # tensorflow, pytorch, etc.
+
+        notifications:
+          on_archive: true
+          on_delete: true
+          channels:
+            - type: slack
+              channel: "#ml-team"
+
+      # ========================================================================
+      # TEMPORARY Policy
+      # ========================================================================
+      # Temporary files, caches, and scratch data
+      # Retention: 7 days delete
+      - name: TEMPORARY
+        display_name: "Temporary Files"
+        description: "Temporary uploads, cache files, scratch data"
+
+        targets:
+          - bucket_env_var: TEMP_FILES_BUCKET
+            prefixes:
+              - "tmp/"
+              - "temp/"
+              - "scratch/"
+              - "cache/"
+              - "uploads/pending/"
+
+        retention:
+          active:
+            duration_days: 7
+            storage_class: "STANDARD"
+            description: "Temporary storage for 7 days maximum"
+
+          archive:
+            duration_days: null  # No archive for temp files
+            storage_class: null
+
+          delete:
+            duration_days: 7
+            requires_approval: false
+            description: "Auto-delete after 7 days"
+
+        compliance:
+          required: false
+          framework: null
+          audit_trail: false
+          immutable: false
+
+        legal_hold:
+          enabled: false  # No legal hold for temp files
+
+        exclusions: []
+
+        tags:
+          required:
+            - "artifact_type"
+          optional:
+            - "created_by"
+            - "purpose"
+
+        notifications:
+          on_delete: false  # No notifications for temp file cleanup
+          channels: []
+
+    # ==========================================================================
+    # Policy Enforcement Configuration
+    # ==========================================================================
+    enforcement:
+      # Schedule for policy enforcement jobs
+      schedule:
+        cleanup: "0 2 * * *"      # Daily at 2 AM UTC
+        archive: "0 1 * * 0"      # Weekly on Sunday at 1 AM UTC
+        retention_check: "0 3 * * *"  # Daily at 3 AM UTC
+
+      # Dry run mode (set to true to test without making changes)
+      dry_run: false
+
+      # Batch size for operations
+      batch_size: 1000
+
+      # Maximum concurrent operations
+      max_workers: 10
+
+      # Alerting thresholds
+      alerting:
+        # Alert if more than this percentage of objects are non-compliant
+        non_compliance_threshold_percent: 5
+        # Alert if cleanup job takes longer than this
+        job_duration_threshold_minutes: 120
+        # Alert on any deletion failures
+        alert_on_deletion_failures: true
+        # Alert on any archive failures
+        alert_on_archive_failures: true
+
+    # ==========================================================================
+    # Cost Optimization Rules
+    # ==========================================================================
+    cost_optimization:
+      # Intelligent tiering for unpredictable access patterns
+      intelligent_tiering:
+        enabled: true
+        applicable_policies:
+          - "BUILD_ARTIFACTS"
+          - "CALCULATION_RESULTS"
+        archive_access_tier_days: 90
+        deep_archive_access_tier_days: 180
+
+      # S3 Batch Operations for large-scale transitions
+      batch_operations:
+        enabled: true
+        threshold_objects: 10000
+        priority: 10
+
+      # Lifecycle rule optimization
+      lifecycle_rules:
+        # Combine small objects before archiving
+        combine_small_objects: false
+        small_object_threshold_bytes: 65536  # 64 KB
+        # Delete incomplete multipart uploads
+        abort_incomplete_multipart_days: 7
+        # Clean up expired delete markers
+        clean_expired_delete_markers: true
+
+    # ==========================================================================
+    # Compliance Frameworks Reference
+    # ==========================================================================
+    compliance_frameworks:
+      CSRD:
+        full_name: "Corporate Sustainability Reporting Directive"
+        region: "EU"
+        minimum_retention_years: 7
+        requirements:
+          - "Annual sustainability report retention"
+          - "Audit trail for reported data"
+          - "Data quality documentation"
+
+      SOX:
+        full_name: "Sarbanes-Oxley Act"
+        region: "US"
+        minimum_retention_years: 7
+        requirements:
+          - "Immutable audit logs"
+          - "Access control documentation"
+          - "Financial data integrity"
+
+      GDPR:
+        full_name: "General Data Protection Regulation"
+        region: "EU"
+        requirements:
+          - "Data minimization"
+          - "Right to erasure (with compliance exceptions)"
+          - "Data processing documentation"
+
+      GHG_Protocol:
+        full_name: "Greenhouse Gas Protocol"
+        region: "Global"
+        requirements:
+          - "Emission calculation methodology documentation"
+          - "Source data retention"
+          - "Verification audit trail"
+
+---
+# ConfigMap for lifecycle policy environment variables
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: lifecycle-policy-env
+  namespace: greenlang-storage
+  labels:
+    app.kubernetes.io/name: lifecycle-policies
+    app.kubernetes.io/component: storage-lifecycle
+data:
+  # Bucket names (override with actual values)
+  BUILD_ARTIFACTS_BUCKET: "greenlang-build-artifacts"
+  CALCULATION_RESULTS_BUCKET: "greenlang-calculations"
+  REPORTS_BUCKET: "greenlang-reports"
+  AUDIT_LOGS_BUCKET: "greenlang-audit-logs"
+  ML_MODELS_BUCKET: "greenlang-ml-models"
+  TEMP_FILES_BUCKET: "greenlang-temp"
+
+  # AWS Region
+  AWS_REGION: "us-east-1"
+
+  # Legal hold DynamoDB table
+  LEGAL_HOLD_TABLE: "greenlang-legal-holds"
+
+  # Compliance report bucket
+  COMPLIANCE_REPORT_BUCKET: "greenlang-compliance-reports"
+
+  # Manifest bucket
+  ARCHIVE_MANIFEST_BUCKET: "greenlang-archive-manifests"

@@ -1,0 +1,846 @@
+# Redis Prometheus Alerting Rules
+# Comprehensive monitoring for Redis instances, clusters, and Sentinel
+# Total: 27 alert rules covering availability, memory, replication, connections, performance, and sentinel
+
+groups:
+  # =============================================================================
+  # AVAILABILITY ALERTS (5 rules)
+  # Critical alerts for Redis instance and cluster availability
+  # =============================================================================
+  - name: redis_availability_alerts
+    interval: 30s
+    rules:
+      # -------------------------------------------------------------------------
+      # RedisDown - Instance not responding
+      # -------------------------------------------------------------------------
+      - alert: RedisDown
+        expr: redis_up == 0
+        for: 1m
+        labels:
+          severity: critical
+          team: infrastructure
+          service: redis
+          category: availability
+        annotations:
+          summary: "Redis instance is down"
+          description: |
+            Redis instance {{ $labels.instance }} has been down for more than 1 minute.
+            Current status: DOWN (redis_up = {{ $value }})
+
+            Impact: Applications depending on this Redis instance will experience failures.
+            Immediate action required.
+          runbook_url: "https://runbooks.greenlang.io/redis/instance-down"
+          dashboard_url: "https://grafana.greenlang.io/d/redis-overview?var-instance={{ $labels.instance }}"
+
+      # -------------------------------------------------------------------------
+      # RedisSentinelDown - Sentinel not responding
+      # -------------------------------------------------------------------------
+      - alert: RedisSentinelDown
+        expr: redis_sentinel_up == 0
+        for: 1m
+        labels:
+          severity: critical
+          team: infrastructure
+          service: redis-sentinel
+          category: availability
+        annotations:
+          summary: "Redis Sentinel is down"
+          description: |
+            Redis Sentinel instance {{ $labels.instance }} is not responding.
+            Current status: DOWN (redis_sentinel_up = {{ $value }})
+
+            Impact: Automatic failover capability is compromised. If master fails,
+            no automatic promotion will occur.
+          runbook_url: "https://runbooks.greenlang.io/redis/sentinel-down"
+          dashboard_url: "https://grafana.greenlang.io/d/redis-sentinel?var-instance={{ $labels.instance }}"
+
+      # -------------------------------------------------------------------------
+      # RedisClusterPartitioned - Cluster network partition detected
+      # -------------------------------------------------------------------------
+      - alert: RedisClusterPartitioned
+        expr: |
+          redis_cluster_state == 0
+          or
+          redis_cluster_slots_ok < 16384
+        for: 1m
+        labels:
+          severity: critical
+          team: infrastructure
+          service: redis-cluster
+          category: availability
+        annotations:
+          summary: "Redis cluster is partitioned or unhealthy"
+          description: |
+            Redis cluster {{ $labels.instance }} is experiencing a partition or slot coverage issue.
+            Cluster state: {{ $value }}
+            Expected slots covered: 16384
+
+            Impact: Data availability and consistency are compromised. Some keys may be
+            unreachable depending on which slots are affected.
+          runbook_url: "https://runbooks.greenlang.io/redis/cluster-partition"
+          dashboard_url: "https://grafana.greenlang.io/d/redis-cluster?var-instance={{ $labels.instance }}"
+
+      # -------------------------------------------------------------------------
+      # RedisNoMaster - No master available in replication group
+      # -------------------------------------------------------------------------
+      - alert: RedisNoMaster
+        expr: |
+          redis_instance_info{role="master"} == 0
+          and on(job)
+          count(redis_instance_info) by (job) > 0
+        for: 30s
+        labels:
+          severity: critical
+          team: infrastructure
+          service: redis
+          category: availability
+        annotations:
+          summary: "No Redis master available"
+          description: |
+            No Redis master is available in the replication group {{ $labels.job }}.
+            Current master count: {{ $value }}
+
+            Impact: All write operations will fail. Read operations to replicas may
+            return stale data.
+          runbook_url: "https://runbooks.greenlang.io/redis/no-master"
+          dashboard_url: "https://grafana.greenlang.io/d/redis-replication?var-job={{ $labels.job }}"
+
+      # -------------------------------------------------------------------------
+      # RedisMultipleMasters - Split-brain detected
+      # -------------------------------------------------------------------------
+      - alert: RedisMultipleMasters
+        expr: |
+          count(redis_instance_info{role="master"}) by (job) > 1
+        for: 1m
+        labels:
+          severity: critical
+          team: infrastructure
+          service: redis
+          category: availability
+        annotations:
+          summary: "Multiple Redis masters detected - split-brain condition"
+          description: |
+            Multiple Redis masters detected in replication group {{ $labels.job }}.
+            Number of masters: {{ $value }}
+
+            Impact: CRITICAL - Split-brain condition can cause data inconsistency
+            and data loss. Immediate intervention required.
+          runbook_url: "https://runbooks.greenlang.io/redis/split-brain"
+          dashboard_url: "https://grafana.greenlang.io/d/redis-replication?var-job={{ $labels.job }}"
+
+  # =============================================================================
+  # MEMORY ALERTS (5 rules)
+  # Alerts for Redis memory usage, fragmentation, and eviction
+  # =============================================================================
+  - name: redis_memory_alerts
+    interval: 30s
+    rules:
+      # -------------------------------------------------------------------------
+      # RedisHighMemoryUsage - Memory usage thresholds
+      # -------------------------------------------------------------------------
+      - alert: RedisHighMemoryUsageWarning
+        expr: |
+          (redis_memory_used_bytes / redis_memory_max_bytes) * 100 > 75
+          and
+          (redis_memory_used_bytes / redis_memory_max_bytes) * 100 <= 90
+        for: 5m
+        labels:
+          severity: warning
+          team: infrastructure
+          service: redis
+          category: memory
+        annotations:
+          summary: "Redis memory usage is high"
+          description: |
+            Redis instance {{ $labels.instance }} memory usage is above 75%.
+            Current usage: {{ printf "%.2f" $value }}%
+            Used memory: {{ with printf "redis_memory_used_bytes{instance='%s'}" $labels.instance | query }}{{ . | first | value | humanize1024 }}B{{ end }}
+            Max memory: {{ with printf "redis_memory_max_bytes{instance='%s'}" $labels.instance | query }}{{ . | first | value | humanize1024 }}B{{ end }}
+
+            Consider scaling or reviewing eviction policies.
+          runbook_url: "https://runbooks.greenlang.io/redis/high-memory"
+          dashboard_url: "https://grafana.greenlang.io/d/redis-memory?var-instance={{ $labels.instance }}"
+
+      - alert: RedisHighMemoryUsageCritical
+        expr: |
+          (redis_memory_used_bytes / redis_memory_max_bytes) * 100 > 90
+        for: 2m
+        labels:
+          severity: critical
+          team: infrastructure
+          service: redis
+          category: memory
+        annotations:
+          summary: "Redis memory usage is critically high"
+          description: |
+            Redis instance {{ $labels.instance }} memory usage is above 90%.
+            Current usage: {{ printf "%.2f" $value }}%
+
+            Impact: Redis may start evicting keys or rejecting writes depending on
+            the eviction policy. Immediate action required.
+          runbook_url: "https://runbooks.greenlang.io/redis/critical-memory"
+          dashboard_url: "https://grafana.greenlang.io/d/redis-memory?var-instance={{ $labels.instance }}"
+
+      # -------------------------------------------------------------------------
+      # RedisMemoryFragmentationHigh - High memory fragmentation ratio
+      # -------------------------------------------------------------------------
+      - alert: RedisMemoryFragmentationHigh
+        expr: |
+          redis_memory_fragmentation_ratio > 1.5
+        for: 10m
+        labels:
+          severity: warning
+          team: infrastructure
+          service: redis
+          category: memory
+        annotations:
+          summary: "Redis memory fragmentation is high"
+          description: |
+            Redis instance {{ $labels.instance }} has high memory fragmentation.
+            Fragmentation ratio: {{ printf "%.2f" $value }}
+            (Ratio > 1.5 indicates significant fragmentation)
+
+            This means Redis is using more memory than the data actually requires.
+            Consider restarting Redis during a maintenance window to defragment.
+          runbook_url: "https://runbooks.greenlang.io/redis/memory-fragmentation"
+          dashboard_url: "https://grafana.greenlang.io/d/redis-memory?var-instance={{ $labels.instance }}"
+
+      # -------------------------------------------------------------------------
+      # RedisOutOfMemory - Memory limit reached
+      # -------------------------------------------------------------------------
+      - alert: RedisOutOfMemory
+        expr: |
+          redis_memory_used_bytes >= redis_memory_max_bytes
+          and
+          redis_memory_max_bytes > 0
+        for: 1m
+        labels:
+          severity: critical
+          team: infrastructure
+          service: redis
+          category: memory
+        annotations:
+          summary: "Redis has reached memory limit"
+          description: |
+            Redis instance {{ $labels.instance }} has reached its memory limit.
+            Used memory: {{ $value | humanize1024 }}B
+
+            Impact: Depending on maxmemory-policy, Redis will either:
+            - Evict keys (volatile-*, allkeys-*)
+            - Return errors on writes (noeviction)
+          runbook_url: "https://runbooks.greenlang.io/redis/out-of-memory"
+          dashboard_url: "https://grafana.greenlang.io/d/redis-memory?var-instance={{ $labels.instance }}"
+
+      # -------------------------------------------------------------------------
+      # RedisHighEvictionRate - High key eviction rate
+      # -------------------------------------------------------------------------
+      - alert: RedisHighEvictionRate
+        expr: |
+          rate(redis_evicted_keys_total[5m]) > 100
+        for: 5m
+        labels:
+          severity: warning
+          team: infrastructure
+          service: redis
+          category: memory
+        annotations:
+          summary: "Redis is evicting keys at a high rate"
+          description: |
+            Redis instance {{ $labels.instance }} is evicting keys at {{ printf "%.2f" $value }} keys/second.
+
+            This indicates memory pressure. Applications may experience cache misses
+            and increased latency as data needs to be recomputed or fetched from
+            the source of truth.
+          runbook_url: "https://runbooks.greenlang.io/redis/high-eviction"
+          dashboard_url: "https://grafana.greenlang.io/d/redis-memory?var-instance={{ $labels.instance }}"
+
+      # -------------------------------------------------------------------------
+      # RedisMemoryRSSHigh - RSS significantly higher than used memory
+      # -------------------------------------------------------------------------
+      - alert: RedisMemoryRSSHigh
+        expr: |
+          (redis_memory_rss_bytes / redis_memory_used_bytes) > 1.5
+          and
+          redis_memory_used_bytes > 1073741824
+        for: 15m
+        labels:
+          severity: warning
+          team: infrastructure
+          service: redis
+          category: memory
+        annotations:
+          summary: "Redis RSS memory is significantly higher than used memory"
+          description: |
+            Redis instance {{ $labels.instance }} RSS to used memory ratio is {{ printf "%.2f" $value }}.
+            RSS memory: {{ with printf "redis_memory_rss_bytes{instance='%s'}" $labels.instance | query }}{{ . | first | value | humanize1024 }}B{{ end }}
+            Used memory: {{ with printf "redis_memory_used_bytes{instance='%s'}" $labels.instance | query }}{{ . | first | value | humanize1024 }}B{{ end }}
+
+            This indicates memory fragmentation or copy-on-write overhead during
+            BGSAVE/BGREWRITEAOF operations.
+          runbook_url: "https://runbooks.greenlang.io/redis/rss-high"
+          dashboard_url: "https://grafana.greenlang.io/d/redis-memory?var-instance={{ $labels.instance }}"
+
+  # =============================================================================
+  # REPLICATION ALERTS (5 rules)
+  # Alerts for Redis replication health and lag
+  # =============================================================================
+  - name: redis_replication_alerts
+    interval: 30s
+    rules:
+      # -------------------------------------------------------------------------
+      # RedisReplicationBroken - No connected replicas when expected
+      # -------------------------------------------------------------------------
+      - alert: RedisReplicationBroken
+        expr: |
+          redis_connected_slaves == 0
+          and
+          redis_instance_info{role="master"} == 1
+          and
+          redis_config_min_slaves_to_write > 0
+        for: 2m
+        labels:
+          severity: critical
+          team: infrastructure
+          service: redis
+          category: replication
+        annotations:
+          summary: "Redis master has no connected replicas"
+          description: |
+            Redis master {{ $labels.instance }} has no connected replicas.
+            Connected slaves: {{ $value }}
+
+            Impact: No data redundancy. If master fails, data loss will occur.
+            Writes may also fail if min-slaves-to-write is configured.
+          runbook_url: "https://runbooks.greenlang.io/redis/replication-broken"
+          dashboard_url: "https://grafana.greenlang.io/d/redis-replication?var-instance={{ $labels.instance }}"
+
+      # -------------------------------------------------------------------------
+      # RedisReplicationLagHigh - Replication lag thresholds
+      # -------------------------------------------------------------------------
+      - alert: RedisReplicationLagHighWarning
+        expr: |
+          redis_replication_backlog_bytes > 10240
+          and
+          redis_replication_backlog_bytes <= 1048576
+        for: 5m
+        labels:
+          severity: warning
+          team: infrastructure
+          service: redis
+          category: replication
+        annotations:
+          summary: "Redis replication lag is elevated"
+          description: |
+            Redis instance {{ $labels.instance }} replication lag is above 10KB.
+            Current lag: {{ $value | humanize1024 }}B
+
+            Replicas may be serving slightly stale data. Monitor for further increase.
+          runbook_url: "https://runbooks.greenlang.io/redis/replication-lag"
+          dashboard_url: "https://grafana.greenlang.io/d/redis-replication?var-instance={{ $labels.instance }}"
+
+      - alert: RedisReplicationLagHighCritical
+        expr: |
+          redis_replication_backlog_bytes > 1048576
+        for: 2m
+        labels:
+          severity: critical
+          team: infrastructure
+          service: redis
+          category: replication
+        annotations:
+          summary: "Redis replication lag is critically high"
+          description: |
+            Redis instance {{ $labels.instance }} replication lag exceeds 1MB.
+            Current lag: {{ $value | humanize1024 }}B
+
+            Impact: Replicas are significantly behind master. If master fails,
+            significant data loss may occur during failover.
+          runbook_url: "https://runbooks.greenlang.io/redis/critical-replication-lag"
+          dashboard_url: "https://grafana.greenlang.io/d/redis-replication?var-instance={{ $labels.instance }}"
+
+      # -------------------------------------------------------------------------
+      # RedisReplicationLinkDown - Master link is down
+      # -------------------------------------------------------------------------
+      - alert: RedisReplicationLinkDown
+        expr: |
+          redis_master_link_up == 0
+          and
+          redis_instance_info{role="slave"} == 1
+        for: 1m
+        labels:
+          severity: critical
+          team: infrastructure
+          service: redis
+          category: replication
+        annotations:
+          summary: "Redis replica master link is down"
+          description: |
+            Redis replica {{ $labels.instance }} has lost connection to its master.
+            Master link status: DOWN
+
+            Impact: This replica is not receiving updates and will serve stale data.
+            Replication will need to be re-established, potentially requiring a full sync.
+          runbook_url: "https://runbooks.greenlang.io/redis/master-link-down"
+          dashboard_url: "https://grafana.greenlang.io/d/redis-replication?var-instance={{ $labels.instance }}"
+
+      # -------------------------------------------------------------------------
+      # RedisSlaveSyncFailed - Sync with master failed
+      # -------------------------------------------------------------------------
+      - alert: RedisSlaveSyncFailed
+        expr: |
+          increase(redis_slave_sync_failed_total[5m]) > 0
+        for: 1m
+        labels:
+          severity: critical
+          team: infrastructure
+          service: redis
+          category: replication
+        annotations:
+          summary: "Redis replica sync with master failed"
+          description: |
+            Redis replica {{ $labels.instance }} failed to sync with master.
+            Sync failures in last 5 minutes: {{ $value }}
+
+            Impact: Replica data is inconsistent with master. Applications reading
+            from this replica may get stale or incorrect data.
+          runbook_url: "https://runbooks.greenlang.io/redis/sync-failed"
+          dashboard_url: "https://grafana.greenlang.io/d/redis-replication?var-instance={{ $labels.instance }}"
+
+      # -------------------------------------------------------------------------
+      # RedisSlaveReadOnly - Replica accepting writes (misconfiguration)
+      # -------------------------------------------------------------------------
+      - alert: RedisSlaveReadOnly
+        expr: |
+          redis_config_slave_read_only == 0
+          and
+          redis_instance_info{role="slave"} == 1
+        for: 5m
+        labels:
+          severity: warning
+          team: infrastructure
+          service: redis
+          category: replication
+        annotations:
+          summary: "Redis replica is not in read-only mode"
+          description: |
+            Redis replica {{ $labels.instance }} is configured to accept writes.
+            slave-read-only: no
+
+            Impact: Writes to this replica will not be replicated and will be lost
+            if the replica restarts or fails over. This is likely a misconfiguration.
+          runbook_url: "https://runbooks.greenlang.io/redis/slave-writable"
+          dashboard_url: "https://grafana.greenlang.io/d/redis-replication?var-instance={{ $labels.instance }}"
+
+  # =============================================================================
+  # CONNECTION ALERTS (4 rules)
+  # Alerts for Redis connection pool and client issues
+  # =============================================================================
+  - name: redis_connection_alerts
+    interval: 30s
+    rules:
+      # -------------------------------------------------------------------------
+      # RedisHighConnectionCount - Connection count thresholds
+      # -------------------------------------------------------------------------
+      - alert: RedisHighConnectionCountWarning
+        expr: |
+          (redis_connected_clients / redis_config_maxclients) * 100 > 80
+          and
+          (redis_connected_clients / redis_config_maxclients) * 100 <= 95
+        for: 5m
+        labels:
+          severity: warning
+          team: infrastructure
+          service: redis
+          category: connections
+        annotations:
+          summary: "Redis connection count is high"
+          description: |
+            Redis instance {{ $labels.instance }} is using more than 80% of max connections.
+            Current usage: {{ printf "%.2f" $value }}%
+            Connected clients: {{ with printf "redis_connected_clients{instance='%s'}" $labels.instance | query }}{{ . | first | value }}{{ end }}
+            Max clients: {{ with printf "redis_config_maxclients{instance='%s'}" $labels.instance | query }}{{ . | first | value }}{{ end }}
+
+            Consider increasing maxclients or reviewing connection pooling in applications.
+          runbook_url: "https://runbooks.greenlang.io/redis/high-connections"
+          dashboard_url: "https://grafana.greenlang.io/d/redis-connections?var-instance={{ $labels.instance }}"
+
+      - alert: RedisHighConnectionCountCritical
+        expr: |
+          (redis_connected_clients / redis_config_maxclients) * 100 > 95
+        for: 2m
+        labels:
+          severity: critical
+          team: infrastructure
+          service: redis
+          category: connections
+        annotations:
+          summary: "Redis connection count is critically high"
+          description: |
+            Redis instance {{ $labels.instance }} is using more than 95% of max connections.
+            Current usage: {{ printf "%.2f" $value }}%
+
+            Impact: New connections will be rejected soon. Applications will
+            experience connection failures.
+          runbook_url: "https://runbooks.greenlang.io/redis/critical-connections"
+          dashboard_url: "https://grafana.greenlang.io/d/redis-connections?var-instance={{ $labels.instance }}"
+
+      # -------------------------------------------------------------------------
+      # RedisRejectedConnections - Connections being refused
+      # -------------------------------------------------------------------------
+      - alert: RedisRejectedConnections
+        expr: |
+          increase(redis_rejected_connections_total[5m]) > 0
+        for: 1m
+        labels:
+          severity: critical
+          team: infrastructure
+          service: redis
+          category: connections
+        annotations:
+          summary: "Redis is rejecting connections"
+          description: |
+            Redis instance {{ $labels.instance }} has rejected {{ $value }} connections in the last 5 minutes.
+
+            Impact: Applications are failing to connect to Redis. This causes
+            application errors and degraded user experience.
+          runbook_url: "https://runbooks.greenlang.io/redis/rejected-connections"
+          dashboard_url: "https://grafana.greenlang.io/d/redis-connections?var-instance={{ $labels.instance }}"
+
+      # -------------------------------------------------------------------------
+      # RedisBlockedClients - Clients blocked on BLPOP/BRPOP
+      # -------------------------------------------------------------------------
+      - alert: RedisBlockedClients
+        expr: |
+          redis_blocked_clients > 10
+        for: 5m
+        labels:
+          severity: warning
+          team: infrastructure
+          service: redis
+          category: connections
+        annotations:
+          summary: "High number of blocked Redis clients"
+          description: |
+            Redis instance {{ $labels.instance }} has {{ $value }} blocked clients.
+
+            These clients are waiting on blocking operations (BLPOP, BRPOP, BLMOVE, etc.).
+            While this can be normal for queue patterns, excessive blocked clients may
+            indicate processing bottlenecks.
+          runbook_url: "https://runbooks.greenlang.io/redis/blocked-clients"
+          dashboard_url: "https://grafana.greenlang.io/d/redis-connections?var-instance={{ $labels.instance }}"
+
+      # -------------------------------------------------------------------------
+      # RedisClientOutputBufferLimit - Client output buffer exceeded
+      # -------------------------------------------------------------------------
+      - alert: RedisClientOutputBufferLimit
+        expr: |
+          redis_client_output_buffer_limit_reached_total > 0
+        for: 1m
+        labels:
+          severity: warning
+          team: infrastructure
+          service: redis
+          category: connections
+        annotations:
+          summary: "Redis client output buffer limit reached"
+          description: |
+            Redis instance {{ $labels.instance }} has clients hitting output buffer limits.
+            Clients affected: {{ $value }}
+
+            This typically happens when:
+            - Pub/Sub clients are slow to consume messages
+            - Large responses are being generated (e.g., KEYS *, large SMEMBERS)
+
+            Affected clients may be disconnected.
+          runbook_url: "https://runbooks.greenlang.io/redis/output-buffer-limit"
+          dashboard_url: "https://grafana.greenlang.io/d/redis-connections?var-instance={{ $labels.instance }}"
+
+  # =============================================================================
+  # PERFORMANCE ALERTS (4 rules)
+  # Alerts for Redis performance metrics
+  # =============================================================================
+  - name: redis_performance_alerts
+    interval: 30s
+    rules:
+      # -------------------------------------------------------------------------
+      # RedisSlowLogHigh - Too many slow commands
+      # -------------------------------------------------------------------------
+      - alert: RedisSlowLogHigh
+        expr: |
+          increase(redis_slowlog_length[5m]) > 10
+        for: 5m
+        labels:
+          severity: warning
+          team: infrastructure
+          service: redis
+          category: performance
+        annotations:
+          summary: "Redis slow log is growing"
+          description: |
+            Redis instance {{ $labels.instance }} has logged {{ $value }} slow commands in the last 5 minutes.
+
+            Slow commands (default: >10ms) can cause latency spikes for other operations
+            due to Redis's single-threaded nature. Review SLOWLOG GET to identify
+            problematic commands.
+          runbook_url: "https://runbooks.greenlang.io/redis/slow-commands"
+          dashboard_url: "https://grafana.greenlang.io/d/redis-performance?var-instance={{ $labels.instance }}"
+
+      # -------------------------------------------------------------------------
+      # RedisHighLatency - Command latency above threshold
+      # -------------------------------------------------------------------------
+      - alert: RedisHighLatency
+        expr: |
+          redis_commands_duration_seconds_total / redis_commands_processed_total > 0.1
+          or
+          histogram_quantile(0.99, rate(redis_command_latency_seconds_bucket[5m])) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+          team: infrastructure
+          service: redis
+          category: performance
+        annotations:
+          summary: "Redis command latency is high"
+          description: |
+            Redis instance {{ $labels.instance }} average command latency exceeds 100ms.
+            Current latency: {{ printf "%.3f" $value }}s
+
+            High latency can be caused by:
+            - Expensive commands (KEYS, SMEMBERS on large sets)
+            - Memory pressure causing swapping
+            - Network issues
+            - Persistence operations (BGSAVE)
+          runbook_url: "https://runbooks.greenlang.io/redis/high-latency"
+          dashboard_url: "https://grafana.greenlang.io/d/redis-performance?var-instance={{ $labels.instance }}"
+
+      # -------------------------------------------------------------------------
+      # RedisLowHitRate - Cache hit rate thresholds
+      # -------------------------------------------------------------------------
+      - alert: RedisLowHitRateWarning
+        expr: |
+          (
+            rate(redis_keyspace_hits_total[5m]) /
+            (rate(redis_keyspace_hits_total[5m]) + rate(redis_keyspace_misses_total[5m]))
+          ) * 100 < 80
+          and
+          (
+            rate(redis_keyspace_hits_total[5m]) /
+            (rate(redis_keyspace_hits_total[5m]) + rate(redis_keyspace_misses_total[5m]))
+          ) * 100 >= 50
+        for: 10m
+        labels:
+          severity: warning
+          team: infrastructure
+          service: redis
+          category: performance
+        annotations:
+          summary: "Redis cache hit rate is low"
+          description: |
+            Redis instance {{ $labels.instance }} cache hit rate is below 80%.
+            Current hit rate: {{ printf "%.2f" $value }}%
+
+            Low hit rates can indicate:
+            - Insufficient memory causing evictions
+            - Poor cache key design
+            - Application accessing non-existent keys
+          runbook_url: "https://runbooks.greenlang.io/redis/low-hit-rate"
+          dashboard_url: "https://grafana.greenlang.io/d/redis-performance?var-instance={{ $labels.instance }}"
+
+      - alert: RedisLowHitRateCritical
+        expr: |
+          (
+            rate(redis_keyspace_hits_total[5m]) /
+            (rate(redis_keyspace_hits_total[5m]) + rate(redis_keyspace_misses_total[5m]))
+          ) * 100 < 50
+          and
+          (rate(redis_keyspace_hits_total[5m]) + rate(redis_keyspace_misses_total[5m])) > 0
+        for: 5m
+        labels:
+          severity: critical
+          team: infrastructure
+          service: redis
+          category: performance
+        annotations:
+          summary: "Redis cache hit rate is critically low"
+          description: |
+            Redis instance {{ $labels.instance }} cache hit rate is below 50%.
+            Current hit rate: {{ printf "%.2f" $value }}%
+
+            Impact: Most cache lookups are misses. This defeats the purpose of caching
+            and puts load on backend data stores.
+          runbook_url: "https://runbooks.greenlang.io/redis/critical-hit-rate"
+          dashboard_url: "https://grafana.greenlang.io/d/redis-performance?var-instance={{ $labels.instance }}"
+
+      # -------------------------------------------------------------------------
+      # RedisHighCPU - CPU usage thresholds
+      # -------------------------------------------------------------------------
+      - alert: RedisHighCPUWarning
+        expr: |
+          rate(redis_cpu_user_seconds_total[5m]) * 100 > 70
+          and
+          rate(redis_cpu_user_seconds_total[5m]) * 100 <= 90
+        for: 5m
+        labels:
+          severity: warning
+          team: infrastructure
+          service: redis
+          category: performance
+        annotations:
+          summary: "Redis CPU usage is high"
+          description: |
+            Redis instance {{ $labels.instance }} CPU usage is above 70%.
+            Current CPU usage: {{ printf "%.2f" $value }}%
+
+            High CPU usage can indicate expensive operations or high throughput.
+            Review commands being executed and consider optimization.
+          runbook_url: "https://runbooks.greenlang.io/redis/high-cpu"
+          dashboard_url: "https://grafana.greenlang.io/d/redis-performance?var-instance={{ $labels.instance }}"
+
+      - alert: RedisHighCPUCritical
+        expr: |
+          rate(redis_cpu_user_seconds_total[5m]) * 100 > 90
+        for: 2m
+        labels:
+          severity: critical
+          team: infrastructure
+          service: redis
+          category: performance
+        annotations:
+          summary: "Redis CPU usage is critically high"
+          description: |
+            Redis instance {{ $labels.instance }} CPU usage is above 90%.
+            Current CPU usage: {{ printf "%.2f" $value }}%
+
+            Impact: Redis is CPU-bound and may not be able to process commands fast enough.
+            Command latency will increase significantly.
+          runbook_url: "https://runbooks.greenlang.io/redis/critical-cpu"
+          dashboard_url: "https://grafana.greenlang.io/d/redis-performance?var-instance={{ $labels.instance }}"
+
+  # =============================================================================
+  # SENTINEL ALERTS (4 rules)
+  # Alerts for Redis Sentinel monitoring and failover
+  # =============================================================================
+  - name: redis_sentinel_alerts
+    interval: 30s
+    rules:
+      # -------------------------------------------------------------------------
+      # RedisSentinelQuorumLost - Sentinel quorum not met
+      # -------------------------------------------------------------------------
+      - alert: RedisSentinelQuorumLost
+        expr: |
+          redis_sentinel_sentinels < redis_sentinel_quorum
+        for: 1m
+        labels:
+          severity: critical
+          team: infrastructure
+          service: redis-sentinel
+          category: sentinel
+        annotations:
+          summary: "Redis Sentinel quorum is not met"
+          description: |
+            Redis Sentinel for master {{ $labels.master_name }} does not have quorum.
+            Active sentinels: {{ $value }}
+            Required for quorum: {{ with printf "redis_sentinel_quorum{master_name='%s'}" $labels.master_name | query }}{{ . | first | value }}{{ end }}
+
+            Impact: CRITICAL - Automatic failover is disabled. If the master fails,
+            no automatic promotion will occur.
+          runbook_url: "https://runbooks.greenlang.io/redis/sentinel-quorum-lost"
+          dashboard_url: "https://grafana.greenlang.io/d/redis-sentinel?var-master={{ $labels.master_name }}"
+
+      # -------------------------------------------------------------------------
+      # RedisSentinelFailoverInProgress - Failover is happening
+      # -------------------------------------------------------------------------
+      - alert: RedisSentinelFailoverInProgress
+        expr: |
+          redis_sentinel_master_status != 0
+          or
+          changes(redis_sentinel_master_address[5m]) > 0
+        for: 0m
+        labels:
+          severity: warning
+          team: infrastructure
+          service: redis-sentinel
+          category: sentinel
+        annotations:
+          summary: "Redis Sentinel failover is in progress"
+          description: |
+            Redis Sentinel is performing a failover for master {{ $labels.master_name }}.
+
+            A new master is being promoted. Applications may experience brief
+            connection errors during the transition.
+
+            Monitor for completion and verify the new master is healthy.
+          runbook_url: "https://runbooks.greenlang.io/redis/sentinel-failover"
+          dashboard_url: "https://grafana.greenlang.io/d/redis-sentinel?var-master={{ $labels.master_name }}"
+
+      # -------------------------------------------------------------------------
+      # RedisSentinelMasterChanged - Master promotion completed
+      # -------------------------------------------------------------------------
+      - alert: RedisSentinelMasterChanged
+        expr: |
+          changes(redis_sentinel_master_address[10m]) > 0
+        for: 0m
+        labels:
+          severity: info
+          team: infrastructure
+          service: redis-sentinel
+          category: sentinel
+        annotations:
+          summary: "Redis Sentinel master has changed"
+          description: |
+            Redis Sentinel has promoted a new master for {{ $labels.master_name }}.
+            New master address: {{ $labels.master_address }}
+
+            This is an informational alert. Verify that:
+            - Applications have reconnected to the new master
+            - The old master (if still running) is now a replica
+            - Replication is working correctly
+          runbook_url: "https://runbooks.greenlang.io/redis/sentinel-master-changed"
+          dashboard_url: "https://grafana.greenlang.io/d/redis-sentinel?var-master={{ $labels.master_name }}"
+
+      # -------------------------------------------------------------------------
+      # RedisSentinelSubjectiveDown - SDOWN detected
+      # -------------------------------------------------------------------------
+      - alert: RedisSentinelSubjectiveDown
+        expr: |
+          redis_sentinel_master_sdown == 1
+        for: 30s
+        labels:
+          severity: warning
+          team: infrastructure
+          service: redis-sentinel
+          category: sentinel
+        annotations:
+          summary: "Redis Sentinel detected subjective down (SDOWN)"
+          description: |
+            Redis Sentinel has marked master {{ $labels.master_name }} as subjectively down (SDOWN).
+
+            This means a single Sentinel cannot reach the master. If enough Sentinels
+            agree (quorum), this will become ODOWN and trigger a failover.
+
+            Investigate network connectivity and master health immediately.
+          runbook_url: "https://runbooks.greenlang.io/redis/sentinel-sdown"
+          dashboard_url: "https://grafana.greenlang.io/d/redis-sentinel?var-master={{ $labels.master_name }}"
+
+      # -------------------------------------------------------------------------
+      # RedisSentinelObjectiveDown - ODOWN detected (bonus alert)
+      # -------------------------------------------------------------------------
+      - alert: RedisSentinelObjectiveDown
+        expr: |
+          redis_sentinel_master_odown == 1
+        for: 0m
+        labels:
+          severity: critical
+          team: infrastructure
+          service: redis-sentinel
+          category: sentinel
+        annotations:
+          summary: "Redis Sentinel detected objective down (ODOWN)"
+          description: |
+            Redis Sentinel has marked master {{ $labels.master_name }} as objectively down (ODOWN).
+            Multiple Sentinels have agreed the master is unreachable.
+
+            A failover should be initiated automatically. If not, manual intervention
+            may be required.
+          runbook_url: "https://runbooks.greenlang.io/redis/sentinel-odown"
+          dashboard_url: "https://grafana.greenlang.io/d/redis-sentinel?var-master={{ $labels.master_name }}"

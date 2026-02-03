@@ -1,0 +1,196 @@
+{{/*
+GreenLang Infrastructure Helm Chart - Network Policies
+*/}}
+
+{{- if .Values.security.networkPolicy.enabled }}
+---
+# Default deny all
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "greenlang.fullname" . }}-default-deny
+  namespace: {{ include "greenlang.namespace" . }}
+  labels:
+    {{- include "greenlang.labels" . | nindent 4 }}
+spec:
+  podSelector: {}
+  policyTypes:
+    {{- toYaml .Values.security.networkPolicy.policyTypes | nindent 4 }}
+
+---
+# Executor Network Policy
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "greenlang.fullname" . }}-executor
+  namespace: {{ include "greenlang.namespace" . }}
+  labels:
+    {{- include "greenlang.executor.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "greenlang.selectorLabels" . | nindent 6 }}
+      component: executor
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Allow from ingress controller
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: ingress-nginx
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+      ports:
+        - port: 8080
+          protocol: TCP
+    # Allow from monitoring
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+      ports:
+        - port: 9090
+          protocol: TCP
+    # Allow from workers
+    - from:
+        - podSelector:
+            matchLabels:
+              {{- include "greenlang.selectorLabels" . | nindent 14 }}
+              component: worker
+      ports:
+        - port: 8080
+          protocol: TCP
+  egress:
+    # Allow DNS
+    - to:
+        - namespaceSelector: {}
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - port: 53
+          protocol: UDP
+        - port: 53
+          protocol: TCP
+    # Allow Redis
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: redis
+      ports:
+        - port: 6379
+          protocol: TCP
+    # Allow PostgreSQL
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: postgresql
+      ports:
+        - port: 5432
+          protocol: TCP
+    # Allow workers
+    - to:
+        - podSelector:
+            matchLabels:
+              {{- include "greenlang.selectorLabels" . | nindent 14 }}
+              component: worker
+      ports:
+        - port: 8080
+          protocol: TCP
+
+---
+# Worker Network Policy
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "greenlang.fullname" . }}-worker
+  namespace: {{ include "greenlang.namespace" . }}
+  labels:
+    {{- include "greenlang.worker.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "greenlang.selectorLabels" . | nindent 6 }}
+      component: worker
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Allow from executor
+    - from:
+        - podSelector:
+            matchLabels:
+              {{- include "greenlang.selectorLabels" . | nindent 14 }}
+              component: executor
+      ports:
+        - port: 8080
+          protocol: TCP
+    # Allow from monitoring
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+      ports:
+        - port: 9090
+          protocol: TCP
+    # Allow inter-worker communication
+    - from:
+        - podSelector:
+            matchLabels:
+              {{- include "greenlang.selectorLabels" . | nindent 14 }}
+              component: worker
+      ports:
+        - port: 8080
+          protocol: TCP
+  egress:
+    # Allow DNS
+    - to:
+        - namespaceSelector: {}
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - port: 53
+          protocol: UDP
+        - port: 53
+          protocol: TCP
+    # Allow Redis
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: redis
+      ports:
+        - port: 6379
+          protocol: TCP
+    # Allow PostgreSQL
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: postgresql
+      ports:
+        - port: 5432
+          protocol: TCP
+    # Allow executor
+    - to:
+        - podSelector:
+            matchLabels:
+              {{- include "greenlang.selectorLabels" . | nindent 14 }}
+              component: executor
+      ports:
+        - port: 8080
+          protocol: TCP
+    # Allow external HTTPS (for API calls)
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 10.0.0.0/8
+              - 172.16.0.0/12
+              - 192.168.0.0/16
+      ports:
+        - port: 443
+          protocol: TCP
+{{- end }}

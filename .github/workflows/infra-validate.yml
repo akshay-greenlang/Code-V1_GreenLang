@@ -1,0 +1,608 @@
+# INFRA-001: GreenLang Infrastructure Validation Pipeline
+#
+# Comprehensive infrastructure validation on PRs:
+# - Terraform syntax and format validation
+# - Terraform security scanning (tfsec, checkov)
+# - Kubernetes manifest validation (kubeval, kubeconform)
+# - Infrastructure cost estimation
+# - Drift detection
+#
+# Security Compliance: SOC 2 CC7.1, ISO 27001 A.14.2.5
+# Author: GreenLang DevOps Team
+# Version: 1.0.0
+
+name: INFRA-001 Validate
+
+on:
+  pull_request:
+    branches: [main, master, develop]
+    paths:
+      - 'deployment/terraform/**'
+      - 'deployment/kubernetes/**'
+      - '.github/workflows/infra-validate.yml'
+      - '.github/workflows/infra-deploy.yml'
+
+  push:
+    branches: [main, master]
+    paths:
+      - 'deployment/terraform/**'
+      - 'deployment/kubernetes/**'
+
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to validate'
+        required: false
+        type: choice
+        options:
+          - all
+          - dev
+          - staging
+          - prod
+        default: 'all'
+      skip_security_scan:
+        description: 'Skip security scanning (for testing only)'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  pull-requests: write
+  security-events: write
+
+concurrency:
+  group: infra-validate-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+env:
+  TF_VERSION: '1.6.6'
+  TFSEC_VERSION: '1.28.4'
+  CHECKOV_VERSION: '3.1.0'
+  KUBECONFORM_VERSION: '0.6.4'
+
+jobs:
+  # ==========================================================================
+  # JOB 1: Terraform Format and Syntax Validation
+  # ==========================================================================
+  terraform-validate:
+    name: Terraform Validate
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        environment: [dev, staging, prod]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Terraform Format Check
+        id: fmt
+        working-directory: deployment/terraform
+        run: |
+          terraform fmt -check -recursive -diff
+        continue-on-error: true
+
+      - name: Terraform Init (modules only)
+        id: init
+        working-directory: deployment/terraform/environments/${{ matrix.environment }}
+        run: |
+          terraform init -backend=false
+        continue-on-error: true
+
+      - name: Terraform Validate
+        id: validate
+        working-directory: deployment/terraform/environments/${{ matrix.environment }}
+        run: |
+          terraform validate -no-color
+        continue-on-error: true
+
+      - name: Validation summary
+        run: |
+          echo "## Terraform Validation - ${{ matrix.environment }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Check | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Format | ${{ steps.fmt.outcome == 'success' && 'PASSED' || 'FAILED' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Init | ${{ steps.init.outcome == 'success' && 'PASSED' || 'FAILED' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Validate | ${{ steps.validate.outcome == 'success' && 'PASSED' || 'FAILED' }} |" >> $GITHUB_STEP_SUMMARY
+
+      - name: Check for failures
+        if: steps.fmt.outcome == 'failure' || steps.init.outcome == 'failure' || steps.validate.outcome == 'failure'
+        run: |
+          echo "::error::Terraform validation failed for ${{ matrix.environment }}"
+          exit 1
+
+  # ==========================================================================
+  # JOB 2: Terraform Security Scan (tfsec)
+  # ==========================================================================
+  tfsec-scan:
+    name: TFSec Security Scan
+    runs-on: ubuntu-latest
+    if: github.event.inputs.skip_security_scan != 'true'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run tfsec
+        uses: aquasecurity/tfsec-action@v1.0.3
+        with:
+          version: v${{ env.TFSEC_VERSION }}
+          soft_fail: false
+          additional_args: --format sarif --out tfsec-results.sarif
+
+      - name: Upload tfsec SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: tfsec-results.sarif
+          category: tfsec
+
+      - name: Run tfsec for JSON output
+        run: |
+          docker run --rm -v "$(pwd):/src" aquasec/tfsec:v${{ env.TFSEC_VERSION }} \
+            /src/deployment/terraform \
+            --format json \
+            --out /src/tfsec-results.json \
+            || true
+
+      - name: Analyze tfsec results
+        id: tfsec-analyze
+        run: |
+          if [ -f tfsec-results.json ]; then
+            CRITICAL=$(jq '[.results[]? | select(.severity=="CRITICAL")] | length' tfsec-results.json 2>/dev/null || echo "0")
+            HIGH=$(jq '[.results[]? | select(.severity=="HIGH")] | length' tfsec-results.json 2>/dev/null || echo "0")
+            MEDIUM=$(jq '[.results[]? | select(.severity=="MEDIUM")] | length' tfsec-results.json 2>/dev/null || echo "0")
+            LOW=$(jq '[.results[]? | select(.severity=="LOW")] | length' tfsec-results.json 2>/dev/null || echo "0")
+
+            echo "critical=$CRITICAL" >> $GITHUB_OUTPUT
+            echo "high=$HIGH" >> $GITHUB_OUTPUT
+            echo "medium=$MEDIUM" >> $GITHUB_OUTPUT
+            echo "low=$LOW" >> $GITHUB_OUTPUT
+
+            echo "## TFSec Security Scan Results" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "| Severity | Count |" >> $GITHUB_STEP_SUMMARY
+            echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+            echo "| Critical | $CRITICAL |" >> $GITHUB_STEP_SUMMARY
+            echo "| High | $HIGH |" >> $GITHUB_STEP_SUMMARY
+            echo "| Medium | $MEDIUM |" >> $GITHUB_STEP_SUMMARY
+            echo "| Low | $LOW |" >> $GITHUB_STEP_SUMMARY
+
+            # Fail on critical findings
+            if [ "$CRITICAL" -gt 0 ]; then
+              echo "::error::TFSec found $CRITICAL critical security issues!"
+              exit 1
+            fi
+
+            # Warn on high findings
+            if [ "$HIGH" -gt 0 ]; then
+              echo "::warning::TFSec found $HIGH high severity issues"
+            fi
+          fi
+
+      - name: Upload tfsec artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: tfsec-results
+          path: |
+            tfsec-results.sarif
+            tfsec-results.json
+          retention-days: 30
+
+  # ==========================================================================
+  # JOB 3: Checkov Security Scan
+  # ==========================================================================
+  checkov-scan:
+    name: Checkov Security Scan
+    runs-on: ubuntu-latest
+    if: github.event.inputs.skip_security_scan != 'true'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Checkov
+        run: |
+          pip install checkov==${{ env.CHECKOV_VERSION }}
+
+      - name: Run Checkov on Terraform
+        id: checkov-tf
+        run: |
+          checkov \
+            --directory deployment/terraform \
+            --framework terraform \
+            --output sarif \
+            --output-file-path checkov-tf-results.sarif \
+            --soft-fail \
+            || true
+
+          checkov \
+            --directory deployment/terraform \
+            --framework terraform \
+            --output json \
+            --output-file-path checkov-tf-results.json \
+            --soft-fail \
+            || true
+
+      - name: Run Checkov on Kubernetes manifests
+        id: checkov-k8s
+        run: |
+          checkov \
+            --directory deployment/kubernetes \
+            --framework kubernetes \
+            --output sarif \
+            --output-file-path checkov-k8s-results.sarif \
+            --soft-fail \
+            || true
+
+          checkov \
+            --directory deployment/kubernetes \
+            --framework kubernetes \
+            --output json \
+            --output-file-path checkov-k8s-results.json \
+            --soft-fail \
+            || true
+
+      - name: Upload Checkov SARIF (Terraform)
+        uses: github/codeql-action/upload-sarif@v3
+        if: always() && hashFiles('checkov-tf-results.sarif') != ''
+        with:
+          sarif_file: checkov-tf-results.sarif
+          category: checkov-terraform
+
+      - name: Upload Checkov SARIF (Kubernetes)
+        uses: github/codeql-action/upload-sarif@v3
+        if: always() && hashFiles('checkov-k8s-results.sarif') != ''
+        with:
+          sarif_file: checkov-k8s-results.sarif
+          category: checkov-kubernetes
+
+      - name: Analyze Checkov results
+        run: |
+          echo "## Checkov Security Scan Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          for file in checkov-tf-results.json checkov-k8s-results.json; do
+            if [ -f "$file" ]; then
+              PASSED=$(jq '.summary.passed // 0' "$file" 2>/dev/null || echo "0")
+              FAILED=$(jq '.summary.failed // 0' "$file" 2>/dev/null || echo "0")
+              SKIPPED=$(jq '.summary.skipped // 0' "$file" 2>/dev/null || echo "0")
+
+              TYPE=$(echo "$file" | grep -q "tf" && echo "Terraform" || echo "Kubernetes")
+
+              echo "### $TYPE" >> $GITHUB_STEP_SUMMARY
+              echo "| Status | Count |" >> $GITHUB_STEP_SUMMARY
+              echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+              echo "| Passed | $PASSED |" >> $GITHUB_STEP_SUMMARY
+              echo "| Failed | $FAILED |" >> $GITHUB_STEP_SUMMARY
+              echo "| Skipped | $SKIPPED |" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+            fi
+          done
+
+      - name: Upload Checkov artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: checkov-results
+          path: |
+            checkov-tf-results.*
+            checkov-k8s-results.*
+          retention-days: 30
+
+  # ==========================================================================
+  # JOB 4: Kubernetes Manifest Validation
+  # ==========================================================================
+  kubernetes-validate:
+    name: Kubernetes Manifest Validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install kubeconform
+        run: |
+          wget -q https://github.com/yannh/kubeconform/releases/download/v${{ env.KUBECONFORM_VERSION }}/kubeconform-linux-amd64.tar.gz
+          tar xzf kubeconform-linux-amd64.tar.gz
+          chmod +x kubeconform
+          sudo mv kubeconform /usr/local/bin/
+
+      - name: Validate Kubernetes manifests
+        id: kubeconform
+        run: |
+          echo "## Kubernetes Manifest Validation" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          ERRORS=0
+
+          # Find all YAML files in kubernetes directory
+          for file in $(find deployment/kubernetes -name "*.yaml" -o -name "*.yml" 2>/dev/null); do
+            echo "Validating: $file"
+
+            OUTPUT=$(kubeconform \
+              -strict \
+              -summary \
+              -output json \
+              -kubernetes-version 1.29.0 \
+              -schema-location default \
+              -schema-location 'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json' \
+              "$file" 2>&1) || true
+
+            # Check for errors in output
+            if echo "$OUTPUT" | jq -e '.invalid > 0 or .errors > 0' > /dev/null 2>&1; then
+              echo "::error::Validation failed for $file"
+              echo "$OUTPUT" | jq -r '.resources[] | select(.status != "statusValid") | "  - \(.filename): \(.status) - \(.msg // "unknown error")"'
+              ERRORS=$((ERRORS + 1))
+            else
+              echo "  PASSED"
+            fi
+          done
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ $ERRORS -gt 0 ]; then
+            echo "**Status: FAILED** ($ERRORS files with errors)" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          else
+            echo "**Status: PASSED** (all manifests valid)" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Validate with kubectl dry-run
+        run: |
+          # Install kubectl
+          curl -LO "https://dl.k8s.io/release/v1.29.0/bin/linux/amd64/kubectl"
+          chmod +x kubectl
+          sudo mv kubectl /usr/local/bin/
+
+          echo "Running kubectl dry-run validation..."
+
+          for file in $(find deployment/kubernetes -name "*.yaml" -o -name "*.yml" 2>/dev/null); do
+            echo "Dry-run: $file"
+            kubectl apply --dry-run=client -f "$file" > /dev/null 2>&1 || {
+              echo "::warning::kubectl dry-run warning for $file"
+            }
+          done
+
+          echo "kubectl dry-run validation complete"
+
+  # ==========================================================================
+  # JOB 5: Terraform Module Documentation
+  # ==========================================================================
+  terraform-docs:
+    name: Terraform Documentation Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup terraform-docs
+        run: |
+          wget -q https://terraform-docs.io/dl/v0.17.0/terraform-docs-v0.17.0-linux-amd64.tar.gz
+          tar -xzf terraform-docs-v0.17.0-linux-amd64.tar.gz
+          chmod +x terraform-docs
+          sudo mv terraform-docs /usr/local/bin/
+
+      - name: Check documentation
+        run: |
+          MODULES_DIR="deployment/terraform/modules"
+
+          if [ -d "$MODULES_DIR" ]; then
+            echo "## Terraform Module Documentation" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+
+            for module in $(find "$MODULES_DIR" -mindepth 1 -maxdepth 1 -type d); do
+              MODULE_NAME=$(basename "$module")
+              echo "Checking module: $MODULE_NAME"
+
+              # Generate docs and compare
+              terraform-docs markdown table "$module" > /tmp/generated-docs.md 2>/dev/null || true
+
+              if [ -f "$module/README.md" ]; then
+                echo "- $MODULE_NAME: README exists" >> $GITHUB_STEP_SUMMARY
+              else
+                echo "- $MODULE_NAME: README missing (consider adding)" >> $GITHUB_STEP_SUMMARY
+              fi
+            done
+          fi
+
+  # ==========================================================================
+  # JOB 6: Infrastructure Cost Estimation
+  # ==========================================================================
+  cost-estimation:
+    name: Infrastructure Cost Estimation
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Infracost
+        uses: infracost/actions/setup@v3
+        with:
+          api-key: ${{ secrets.INFRACOST_API_KEY }}
+
+      - name: Run Infracost
+        if: env.INFRACOST_API_KEY != ''
+        env:
+          INFRACOST_API_KEY: ${{ secrets.INFRACOST_API_KEY }}
+        run: |
+          infracost breakdown \
+            --path deployment/terraform/environments/dev \
+            --format json \
+            --out-file /tmp/infracost-dev.json
+
+          infracost breakdown \
+            --path deployment/terraform/environments/staging \
+            --format json \
+            --out-file /tmp/infracost-staging.json
+
+          infracost breakdown \
+            --path deployment/terraform/environments/prod \
+            --format json \
+            --out-file /tmp/infracost-prod.json
+        continue-on-error: true
+
+      - name: Generate cost summary
+        if: env.INFRACOST_API_KEY != ''
+        env:
+          INFRACOST_API_KEY: ${{ secrets.INFRACOST_API_KEY }}
+        run: |
+          echo "## Infrastructure Cost Estimation" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          for env in dev staging prod; do
+            if [ -f "/tmp/infracost-$env.json" ]; then
+              MONTHLY=$(jq -r '.totalMonthlyCost // "N/A"' "/tmp/infracost-$env.json")
+              echo "- **$env**: \$${MONTHLY}/month" >> $GITHUB_STEP_SUMMARY
+            fi
+          done
+        continue-on-error: true
+
+      - name: Post Infracost comment
+        if: env.INFRACOST_API_KEY != '' && github.event_name == 'pull_request'
+        uses: infracost/actions/comment@v1
+        env:
+          INFRACOST_API_KEY: ${{ secrets.INFRACOST_API_KEY }}
+        with:
+          path: /tmp/infracost-*.json
+          behavior: update
+        continue-on-error: true
+
+  # ==========================================================================
+  # JOB 7: Security Gate
+  # ==========================================================================
+  security-gate:
+    name: Infrastructure Security Gate
+    runs-on: ubuntu-latest
+    needs: [terraform-validate, tfsec-scan, checkov-scan, kubernetes-validate]
+    if: always()
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        continue-on-error: true
+
+      - name: Evaluate security gate
+        id: gate
+        run: |
+          echo "# Infrastructure Security Gate" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          GATE_PASSED=true
+
+          # Check Terraform validation
+          if [ "${{ needs.terraform-validate.result }}" != "success" ]; then
+            echo "- Terraform Validation: FAILED" >> $GITHUB_STEP_SUMMARY
+            GATE_PASSED=false
+          else
+            echo "- Terraform Validation: PASSED" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # Check tfsec
+          if [ "${{ needs.tfsec-scan.result }}" != "success" ] && [ "${{ needs.tfsec-scan.result }}" != "skipped" ]; then
+            echo "- TFSec Scan: FAILED" >> $GITHUB_STEP_SUMMARY
+            GATE_PASSED=false
+          else
+            echo "- TFSec Scan: PASSED" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # Check Checkov
+          if [ "${{ needs.checkov-scan.result }}" != "success" ] && [ "${{ needs.checkov-scan.result }}" != "skipped" ]; then
+            echo "- Checkov Scan: FAILED" >> $GITHUB_STEP_SUMMARY
+            GATE_PASSED=false
+          else
+            echo "- Checkov Scan: PASSED" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # Check Kubernetes validation
+          if [ "${{ needs.kubernetes-validate.result }}" != "success" ]; then
+            echo "- Kubernetes Validation: FAILED" >> $GITHUB_STEP_SUMMARY
+            GATE_PASSED=false
+          else
+            echo "- Kubernetes Validation: PASSED" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ "$GATE_PASSED" = false ]; then
+            echo "## INFRASTRUCTURE SECURITY GATE: FAILED" >> $GITHUB_STEP_SUMMARY
+            echo "gate_status=failed" >> $GITHUB_OUTPUT
+            exit 1
+          else
+            echo "## INFRASTRUCTURE SECURITY GATE: PASSED" >> $GITHUB_STEP_SUMMARY
+            echo "gate_status=passed" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Comment on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const tfValidate = '${{ needs.terraform-validate.result }}' === 'success' ? 'PASSED' : 'FAILED';
+            const tfsec = '${{ needs.tfsec-scan.result }}' === 'success' || '${{ needs.tfsec-scan.result }}' === 'skipped' ? 'PASSED' : 'FAILED';
+            const checkov = '${{ needs.checkov-scan.result }}' === 'success' || '${{ needs.checkov-scan.result }}' === 'skipped' ? 'PASSED' : 'FAILED';
+            const k8sValidate = '${{ needs.kubernetes-validate.result }}' === 'success' ? 'PASSED' : 'FAILED';
+
+            const allPassed = tfValidate === 'PASSED' && tfsec === 'PASSED' &&
+                             checkov === 'PASSED' && k8sValidate === 'PASSED';
+
+            const body = `## INFRA-001 Validation Results
+
+            | Check | Status |
+            |-------|--------|
+            | Terraform Validation | ${tfValidate} |
+            | TFSec Security Scan | ${tfsec} |
+            | Checkov Security Scan | ${checkov} |
+            | Kubernetes Validation | ${k8sValidate} |
+
+            **Infrastructure Security Gate: ${allPassed ? 'PASSED' : 'FAILED'}**
+
+            ${allPassed ? 'Infrastructure changes are ready for review.' : '> **Action Required:** Please address the validation findings before merging.'}
+
+            ---
+            *Workflow: INFRA-001 Validate | Run ID: ${{ github.run_id }}*
+            `;
+
+            // Find existing comment
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const botComment = comments.find(comment =>
+              comment.user.type === 'Bot' &&
+              comment.body.includes('INFRA-001 Validation Results')
+            );
+
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: body
+              });
+            } else {
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: body
+              });
+            }

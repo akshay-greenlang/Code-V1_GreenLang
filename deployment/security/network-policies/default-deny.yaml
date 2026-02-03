@@ -1,0 +1,69 @@
+# INFRA-001: Default Deny Network Policy
+# This policy denies all ingress and egress traffic by default
+# Must be applied to all namespaces for zero-trust networking
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: network-policy
+    security.greenlang.io/policy-type: default-deny
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+
+---
+# Default deny for greenlang-staging namespace
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+  namespace: greenlang-staging
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: network-policy
+    security.greenlang.io/policy-type: default-deny
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+
+---
+# Default deny for greenlang-dev namespace
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+  namespace: greenlang-dev
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: network-policy
+    security.greenlang.io/policy-type: default-deny
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+
+---
+# Default deny for monitoring namespace
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: network-policy
+    security.greenlang.io/policy-type: default-deny
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress

@@ -1,0 +1,105 @@
+{{- if .Values.networkPolicy.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "patroni.fullname" . }}-network-policy
+  namespace: {{ .Values.namespace | default .Release.Namespace }}
+  labels:
+    {{- include "patroni.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "patroni.selectorLabels" . | nindent 6 }}
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Allow PostgreSQL from application namespaces
+    {{- range .Values.networkPolicy.allowedNamespaces }}
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: {{ . }}
+      ports:
+        - protocol: TCP
+          port: {{ $.Values.postgresql.port }}
+    {{- end }}
+
+    # Allow Patroni REST API within cluster
+    - from:
+        - podSelector:
+            matchLabels:
+              app: patroni
+      ports:
+        - protocol: TCP
+          port: {{ .Values.patroni.restapi.port }}
+        - protocol: TCP
+          port: {{ .Values.postgresql.port }}
+
+    # Allow metrics scraping from monitoring namespace
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+      ports:
+        - protocol: TCP
+          port: {{ .Values.patroni.restapi.port }}
+        {{- if .Values.metrics.enabled }}
+        - protocol: TCP
+          port: {{ .Values.metrics.postgresExporter.port }}
+        {{- end }}
+
+    # Allow from pgbouncer
+    - from:
+        - podSelector:
+            matchLabels:
+              app: pgbouncer
+      ports:
+        - protocol: TCP
+          port: {{ .Values.postgresql.port }}
+
+    {{- with .Values.networkPolicy.additionalIngress }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+
+  egress:
+    # DNS resolution
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+
+    # Kubernetes API server (for DCS)
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+      ports:
+        - protocol: TCP
+          port: 443
+
+    # S3 for backups
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+      ports:
+        - protocol: TCP
+          port: 443
+
+    # Patroni cluster communication
+    - to:
+        - podSelector:
+            matchLabels:
+              app: patroni
+      ports:
+        - protocol: TCP
+          port: {{ .Values.postgresql.port }}
+        - protocol: TCP
+          port: {{ .Values.patroni.restapi.port }}
+
+    {{- with .Values.networkPolicy.additionalEgress }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+{{- end }}

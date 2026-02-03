@@ -1,0 +1,171 @@
+========================================================================
+  TimescaleDB HA Cluster - {{ .Release.Name }}
+========================================================================
+
+Congratulations! Your TimescaleDB high-availability cluster has been deployed.
+
+CLUSTER INFORMATION
+-------------------
+Cluster Name:     {{ .Values.cluster.name }}
+Namespace:        {{ include "timescaledb-ha.namespace" . }}
+Replicas:         {{ .Values.cluster.replicas }} (1 primary + {{ sub .Values.cluster.replicas 1 }} replicas)
+Database:         {{ .Values.postgresql.database }}
+PostgreSQL Port:  5432
+{{- if .Values.pgbouncer.enabled }}
+PgBouncer Port:   {{ .Values.pgbouncer.port }}
+{{- end }}
+
+SERVICES
+--------
+1. Primary (Read/Write):
+   {{ include "timescaledb-ha.primaryServiceName" . }}.{{ include "timescaledb-ha.namespace" . }}.svc.cluster.local:{{ .Values.service.primary.port }}
+
+{{- if .Values.service.replica.enabled }}
+2. Replica (Read-Only):
+   {{ include "timescaledb-ha.replicaServiceName" . }}.{{ include "timescaledb-ha.namespace" . }}.svc.cluster.local:{{ .Values.service.replica.port }}
+{{- end }}
+
+{{- if .Values.pgbouncer.enabled }}
+3. PgBouncer (Connection Pooling):
+   {{ include "timescaledb-ha.pgbouncerServiceName" . }}.{{ include "timescaledb-ha.namespace" . }}.svc.cluster.local:{{ .Values.service.pgbouncer.port }}
+{{- end }}
+
+4. Headless (StatefulSet DNS):
+   {{ include "timescaledb-ha.headlessServiceName" . }}.{{ include "timescaledb-ha.namespace" . }}.svc.cluster.local
+
+CONNECTING TO THE DATABASE
+--------------------------
+Get the PostgreSQL password:
+
+  export PGPASSWORD=$(kubectl get secret --namespace {{ include "timescaledb-ha.namespace" . }} {{ include "timescaledb-ha.secretName" . }} -o jsonpath="{.data.postgres-password}" | base64 -d)
+
+Connect to the primary using kubectl port-forward:
+
+  kubectl port-forward --namespace {{ include "timescaledb-ha.namespace" . }} svc/{{ include "timescaledb-ha.primaryServiceName" . }} 5432:5432
+
+  # In another terminal:
+  psql -h localhost -U {{ .Values.postgresql.username }} -d {{ .Values.postgresql.database }}
+
+{{- if .Values.pgbouncer.enabled }}
+
+Connect via PgBouncer (recommended for applications):
+
+  kubectl port-forward --namespace {{ include "timescaledb-ha.namespace" . }} svc/{{ include "timescaledb-ha.pgbouncerServiceName" . }} {{ .Values.pgbouncer.port }}:{{ .Values.pgbouncer.port }}
+
+  psql -h localhost -p {{ .Values.pgbouncer.port }} -U {{ .Values.postgresql.username }} -d {{ .Values.postgresql.database }}
+{{- end }}
+
+APPLICATION CONNECTION STRING
+-----------------------------
+{{- if .Values.pgbouncer.enabled }}
+Recommended (via PgBouncer):
+  postgresql://{{ .Values.postgresql.username }}:${PGPASSWORD}@{{ include "timescaledb-ha.pgbouncerServiceName" . }}.{{ include "timescaledb-ha.namespace" . }}.svc.cluster.local:{{ .Values.pgbouncer.port }}/{{ .Values.postgresql.database }}
+{{- end }}
+
+Direct connection to primary:
+  postgresql://{{ .Values.postgresql.username }}:${PGPASSWORD}@{{ include "timescaledb-ha.primaryServiceName" . }}.{{ include "timescaledb-ha.namespace" . }}.svc.cluster.local:{{ .Values.service.primary.port }}/{{ .Values.postgresql.database }}
+
+{{- if .Values.service.replica.enabled }}
+
+Read-only replica connection:
+  postgresql://{{ .Values.postgresql.username }}:${PGPASSWORD}@{{ include "timescaledb-ha.replicaServiceName" . }}.{{ include "timescaledb-ha.namespace" . }}.svc.cluster.local:{{ .Values.service.replica.port }}/{{ .Values.postgresql.database }}
+{{- end }}
+
+PATRONI CLUSTER MANAGEMENT
+--------------------------
+Check cluster status:
+
+  kubectl exec -n {{ include "timescaledb-ha.namespace" . }} {{ include "timescaledb-ha.fullname" . }}-0 -- patronictl list
+
+Perform a controlled switchover:
+
+  kubectl exec -n {{ include "timescaledb-ha.namespace" . }} {{ include "timescaledb-ha.fullname" . }}-0 -- patronictl switchover
+
+View cluster configuration:
+
+  kubectl exec -n {{ include "timescaledb-ha.namespace" . }} {{ include "timescaledb-ha.fullname" . }}-0 -- patronictl show-config
+
+{{- if .Values.patroni.synchronous.enabled }}
+
+SYNCHRONOUS REPLICATION
+-----------------------
+Synchronous replication is ENABLED with {{ .Values.patroni.synchronous.num_replicas }} sync replica(s).
+Mode: {{ .Values.patroni.synchronous.mode }}
+
+This ensures zero data loss on failover but may impact write latency.
+{{- end }}
+
+{{- if .Values.backup.enabled }}
+
+BACKUP CONFIGURATION
+--------------------
+Backup is enabled using pgBackRest.
+
+Schedule:
+  - Full backup: {{ .Values.backup.schedule.full }}
+  - Differential: {{ .Values.backup.schedule.differential }}
+  - Incremental:  {{ .Values.backup.schedule.incremental }}
+
+Retention:
+  - Full backups: {{ .Values.backup.retention.full }}
+  - WAL archives: {{ .Values.backup.retention.archive }} days
+
+To manually trigger a backup:
+  kubectl exec -n {{ include "timescaledb-ha.namespace" . }} {{ include "timescaledb-ha.fullname" . }}-0 -- pgbackrest --stanza=main backup --type=full
+{{- end }}
+
+{{- if .Values.metrics.enabled }}
+
+MONITORING
+----------
+Prometheus metrics are enabled and exposed on port {{ .Values.metrics.port }}.
+
+{{- if .Values.metrics.serviceMonitor.enabled }}
+ServiceMonitor has been created for automatic Prometheus discovery.
+{{- end }}
+
+{{- if .Values.metrics.prometheusRule.enabled }}
+PrometheusRules have been created for alerting.
+{{- end }}
+
+View metrics endpoint:
+  kubectl port-forward --namespace {{ include "timescaledb-ha.namespace" . }} {{ include "timescaledb-ha.fullname" . }}-0 {{ .Values.metrics.port }}:{{ .Values.metrics.port }}
+  curl http://localhost:{{ .Values.metrics.port }}/metrics
+{{- end }}
+
+USEFUL COMMANDS
+---------------
+# View pod status
+kubectl get pods -n {{ include "timescaledb-ha.namespace" . }} -l cluster-name={{ .Values.cluster.name }}
+
+# View pod logs
+kubectl logs -n {{ include "timescaledb-ha.namespace" . }} {{ include "timescaledb-ha.fullname" . }}-0 -c timescaledb
+
+# View Patroni logs
+kubectl logs -n {{ include "timescaledb-ha.namespace" . }} {{ include "timescaledb-ha.fullname" . }}-0 -c timescaledb | grep -i patroni
+
+# Check PVCs
+kubectl get pvc -n {{ include "timescaledb-ha.namespace" . }} -l cluster-name={{ .Values.cluster.name }}
+
+# View events
+kubectl get events -n {{ include "timescaledb-ha.namespace" . }} --sort-by='.lastTimestamp'
+
+TROUBLESHOOTING
+---------------
+If the cluster fails to start:
+
+1. Check pod status and events:
+   kubectl describe pod -n {{ include "timescaledb-ha.namespace" . }} {{ include "timescaledb-ha.fullname" . }}-0
+
+2. Check init container logs:
+   kubectl logs -n {{ include "timescaledb-ha.namespace" . }} {{ include "timescaledb-ha.fullname" . }}-0 -c init-permissions
+
+3. Verify storage provisioning:
+   kubectl get pvc -n {{ include "timescaledb-ha.namespace" . }}
+
+4. Check Patroni REST API:
+   kubectl exec -n {{ include "timescaledb-ha.namespace" . }} {{ include "timescaledb-ha.fullname" . }}-0 -- curl -s localhost:8008/patroni
+
+For more help, visit: https://docs.greenlang.io/timescaledb-ha
+
+========================================================================

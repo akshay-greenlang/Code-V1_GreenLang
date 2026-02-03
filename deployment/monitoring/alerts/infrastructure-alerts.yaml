@@ -1,0 +1,378 @@
+# GreenLang Infrastructure Alerts
+# INFRA-001: Production monitoring alerts for infrastructure components
+# Covers: CPU, Memory, Disk, Network for VPC, EKS, RDS, ElastiCache
+
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: greenlang-infrastructure-alerts
+  namespace: monitoring
+  labels:
+    app: greenlang
+    component: infrastructure
+    prometheus: main
+    role: alert-rules
+spec:
+  groups:
+    # ===========================================
+    # Node/VM Level Alerts
+    # ===========================================
+    - name: greenlang.infrastructure.node
+      interval: 30s
+      rules:
+        # High CPU Usage - Warning
+        - alert: NodeHighCpuUsageWarning
+          expr: |
+            100 - (avg by (node, cluster) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 70
+          for: 10m
+          labels:
+            severity: warning
+            team: platform
+            component: node
+            runbook: high-cpu-runbook
+          annotations:
+            summary: "Node {{ $labels.node }} CPU usage above 70%"
+            description: |
+              Node {{ $labels.node }} in cluster {{ $labels.cluster }} has CPU usage of {{ $value | printf "%.1f" }}%
+              which has been above 70% for more than 10 minutes.
+            impact: "Performance degradation possible. Applications may experience slowdowns."
+            action: "Review running workloads. Consider scaling or redistributing load."
+            dashboard: "https://grafana.greenlang.io/d/greenlang-infra-overview"
+
+        # High CPU Usage - Critical
+        - alert: NodeHighCpuUsageCritical
+          expr: |
+            100 - (avg by (node, cluster) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 85
+          for: 5m
+          labels:
+            severity: critical
+            team: platform
+            component: node
+            runbook: high-cpu-runbook
+          annotations:
+            summary: "CRITICAL: Node {{ $labels.node }} CPU usage above 85%"
+            description: |
+              Node {{ $labels.node }} in cluster {{ $labels.cluster }} has CPU usage of {{ $value | printf "%.1f" }}%
+              which has been above 85% for more than 5 minutes.
+            impact: "Severe performance degradation. Risk of service disruption."
+            action: "Immediate attention required. Scale cluster or terminate non-critical workloads."
+            dashboard: "https://grafana.greenlang.io/d/greenlang-infra-overview"
+
+        # High Memory Usage - Warning
+        - alert: NodeHighMemoryUsageWarning
+          expr: |
+            (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 70
+          for: 10m
+          labels:
+            severity: warning
+            team: platform
+            component: node
+            runbook: high-memory-runbook
+          annotations:
+            summary: "Node {{ $labels.node }} memory usage above 70%"
+            description: |
+              Node {{ $labels.node }} has memory usage of {{ $value | printf "%.1f" }}%
+              which has been above 70% for more than 10 minutes.
+            impact: "Memory pressure may cause OOM kills and application instability."
+            action: "Review memory-intensive pods. Consider adding nodes or increasing node size."
+            dashboard: "https://grafana.greenlang.io/d/greenlang-infra-overview"
+
+        # High Memory Usage - Critical
+        - alert: NodeHighMemoryUsageCritical
+          expr: |
+            (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 85
+          for: 5m
+          labels:
+            severity: critical
+            team: platform
+            component: node
+            runbook: high-memory-runbook
+          annotations:
+            summary: "CRITICAL: Node {{ $labels.node }} memory usage above 85%"
+            description: |
+              Node {{ $labels.node }} has memory usage of {{ $value | printf "%.1f" }}%
+              which has been above 85% for more than 5 minutes. OOM kills are imminent.
+            impact: "Pods will be OOM killed. Service disruption likely."
+            action: "Immediate action required. Scale cluster or evict non-critical pods."
+            dashboard: "https://grafana.greenlang.io/d/greenlang-infra-overview"
+
+        # High Disk Usage - Warning
+        - alert: NodeHighDiskUsageWarning
+          expr: |
+            (1 - (node_filesystem_avail_bytes{mountpoint="/", fstype!="rootfs"} / node_filesystem_size_bytes{mountpoint="/", fstype!="rootfs"})) * 100 > 70
+          for: 15m
+          labels:
+            severity: warning
+            team: platform
+            component: node
+            runbook: high-disk-runbook
+          annotations:
+            summary: "Node {{ $labels.node }} disk usage above 70%"
+            description: |
+              Node {{ $labels.node }} has disk usage of {{ $value | printf "%.1f" }}% on root filesystem.
+            impact: "Disk space running low. May affect logging and container operations."
+            action: "Clean up old images, logs, and unused data. Consider expanding disk."
+            dashboard: "https://grafana.greenlang.io/d/greenlang-infra-overview"
+
+        # High Disk Usage - Critical
+        - alert: NodeHighDiskUsageCritical
+          expr: |
+            (1 - (node_filesystem_avail_bytes{mountpoint="/", fstype!="rootfs"} / node_filesystem_size_bytes{mountpoint="/", fstype!="rootfs"})) * 100 > 85
+          for: 10m
+          labels:
+            severity: critical
+            team: platform
+            component: node
+            runbook: high-disk-runbook
+          annotations:
+            summary: "CRITICAL: Node {{ $labels.node }} disk usage above 85%"
+            description: |
+              Node {{ $labels.node }} has disk usage of {{ $value | printf "%.1f" }}% on root filesystem.
+              Disk exhaustion imminent.
+            impact: "Node may become unresponsive. Pods will fail to start."
+            action: "Immediately free disk space. Clean images and logs. Expand volume if needed."
+            dashboard: "https://grafana.greenlang.io/d/greenlang-infra-overview"
+
+        # Node Not Ready
+        - alert: NodeNotReady
+          expr: |
+            kube_node_status_condition{condition="Ready", status="true"} == 0
+          for: 5m
+          labels:
+            severity: critical
+            team: platform
+            component: node
+          annotations:
+            summary: "Node {{ $labels.node }} is not ready"
+            description: |
+              Node {{ $labels.node }} has been in NotReady state for more than 5 minutes.
+            impact: "Pods on this node may be unavailable. Cluster capacity reduced."
+            action: "Investigate node health. Check kubelet logs and node conditions."
+            dashboard: "https://grafana.greenlang.io/d/greenlang-k8s-cluster"
+
+    # ===========================================
+    # RDS PostgreSQL Alerts
+    # ===========================================
+    - name: greenlang.infrastructure.rds
+      interval: 30s
+      rules:
+        # RDS High CPU
+        - alert: RDSHighCpuUsage
+          expr: |
+            aws_rds_cpuutilization_average > 80
+          for: 10m
+          labels:
+            severity: warning
+            team: platform
+            component: rds
+            runbook: rds-high-cpu-runbook
+          annotations:
+            summary: "RDS {{ $labels.dbinstance_identifier }} CPU above 80%"
+            description: |
+              RDS instance {{ $labels.dbinstance_identifier }} has CPU utilization of {{ $value | printf "%.1f" }}%.
+            impact: "Database queries may slow down. Application latency will increase."
+            action: "Review slow queries. Consider scaling RDS instance or optimizing queries."
+            dashboard: "https://grafana.greenlang.io/d/greenlang-infra-overview"
+
+        # RDS Critical CPU
+        - alert: RDSCriticalCpuUsage
+          expr: |
+            aws_rds_cpuutilization_average > 90
+          for: 5m
+          labels:
+            severity: critical
+            team: platform
+            component: rds
+            runbook: rds-high-cpu-runbook
+          annotations:
+            summary: "CRITICAL: RDS {{ $labels.dbinstance_identifier }} CPU above 90%"
+            description: |
+              RDS instance {{ $labels.dbinstance_identifier }} has CPU utilization of {{ $value | printf "%.1f" }}%.
+              Database performance severely impacted.
+            impact: "Database operations may fail. Application outage possible."
+            action: "Immediately scale up RDS instance or terminate expensive queries."
+            dashboard: "https://grafana.greenlang.io/d/greenlang-infra-overview"
+
+        # RDS High Connections
+        - alert: RDSHighConnectionCount
+          expr: |
+            aws_rds_database_connections_average > 80
+          for: 10m
+          labels:
+            severity: warning
+            team: platform
+            component: rds
+            runbook: database-connection-runbook
+          annotations:
+            summary: "RDS {{ $labels.dbinstance_identifier }} connection count high"
+            description: |
+              RDS instance {{ $labels.dbinstance_identifier }} has {{ $value | printf "%.0f" }} connections.
+            impact: "Connection pool exhaustion possible. New connections may be rejected."
+            action: "Review connection pooling settings. Check for connection leaks."
+            dashboard: "https://grafana.greenlang.io/d/greenlang-infra-overview"
+
+        # RDS Low Storage
+        - alert: RDSLowFreeStorage
+          expr: |
+            (aws_rds_free_storage_space_average / 1073741824) < 10
+          for: 15m
+          labels:
+            severity: warning
+            team: platform
+            component: rds
+          annotations:
+            summary: "RDS {{ $labels.dbinstance_identifier }} low on storage"
+            description: |
+              RDS instance {{ $labels.dbinstance_identifier }} has only {{ $value | printf "%.1f" }} GB free.
+            impact: "Database may become read-only when storage is exhausted."
+            action: "Increase allocated storage. Clean up old data or enable storage autoscaling."
+            dashboard: "https://grafana.greenlang.io/d/greenlang-infra-overview"
+
+        # RDS Critical Low Storage
+        - alert: RDSCriticalLowStorage
+          expr: |
+            (aws_rds_free_storage_space_average / 1073741824) < 5
+          for: 5m
+          labels:
+            severity: critical
+            team: platform
+            component: rds
+          annotations:
+            summary: "CRITICAL: RDS {{ $labels.dbinstance_identifier }} storage critically low"
+            description: |
+              RDS instance {{ $labels.dbinstance_identifier }} has only {{ $value | printf "%.1f" }} GB free.
+              Storage exhaustion imminent.
+            impact: "Database will become read-only. Application writes will fail."
+            action: "Immediately increase storage allocation."
+            dashboard: "https://grafana.greenlang.io/d/greenlang-infra-overview"
+
+        # RDS High Read Latency
+        - alert: RDSHighReadLatency
+          expr: |
+            aws_rds_read_latency_average > 0.02
+          for: 10m
+          labels:
+            severity: warning
+            team: platform
+            component: rds
+          annotations:
+            summary: "RDS {{ $labels.dbinstance_identifier }} read latency high"
+            description: |
+              RDS instance {{ $labels.dbinstance_identifier }} has read latency of {{ $value | printf "%.3f" }} seconds.
+            impact: "Read-heavy queries will be slow. Application response times affected."
+            action: "Check IOPS limits. Consider provisioned IOPS or instance upgrade."
+            dashboard: "https://grafana.greenlang.io/d/greenlang-infra-overview"
+
+    # ===========================================
+    # ElastiCache Redis Alerts
+    # ===========================================
+    - name: greenlang.infrastructure.elasticache
+      interval: 30s
+      rules:
+        # ElastiCache High CPU
+        - alert: ElastiCacheHighCpuUsage
+          expr: |
+            aws_elasticache_cpuutilization_average > 70
+          for: 10m
+          labels:
+            severity: warning
+            team: platform
+            component: elasticache
+          annotations:
+            summary: "ElastiCache {{ $labels.cache_cluster_id }} CPU above 70%"
+            description: |
+              ElastiCache cluster {{ $labels.cache_cluster_id }} has CPU utilization of {{ $value | printf "%.1f" }}%.
+            impact: "Cache operations may slow down. Application latency will increase."
+            action: "Review cache access patterns. Consider scaling cache cluster."
+            dashboard: "https://grafana.greenlang.io/d/greenlang-infra-overview"
+
+        # ElastiCache High Memory
+        - alert: ElastiCacheHighMemoryUsage
+          expr: |
+            (aws_elasticache_bytes_used_for_cache_average / aws_elasticache_bytes_used_for_cache_maximum) * 100 > 80
+          for: 10m
+          labels:
+            severity: warning
+            team: platform
+            component: elasticache
+          annotations:
+            summary: "ElastiCache {{ $labels.cache_cluster_id }} memory above 80%"
+            description: |
+              ElastiCache cluster {{ $labels.cache_cluster_id }} memory usage at {{ $value | printf "%.1f" }}%.
+            impact: "Cache evictions will increase. Cache hit rate will drop."
+            action: "Review TTL settings. Consider scaling cache or removing stale data."
+            dashboard: "https://grafana.greenlang.io/d/greenlang-infra-overview"
+
+        # ElastiCache Low Hit Rate
+        - alert: ElastiCacheLowHitRate
+          expr: |
+            (aws_elasticache_cache_hits_sum / (aws_elasticache_cache_hits_sum + aws_elasticache_cache_misses_sum)) * 100 < 80
+          for: 30m
+          labels:
+            severity: warning
+            team: platform
+            component: elasticache
+          annotations:
+            summary: "ElastiCache {{ $labels.cache_cluster_id }} hit rate below 80%"
+            description: |
+              ElastiCache cluster {{ $labels.cache_cluster_id }} has cache hit rate of {{ $value | printf "%.1f" }}%.
+            impact: "More requests hitting the database. Higher latency and database load."
+            action: "Review caching strategy. Adjust TTLs or cache warming patterns."
+            dashboard: "https://grafana.greenlang.io/d/greenlang-infra-overview"
+
+        # ElastiCache High Evictions
+        - alert: ElastiCacheHighEvictions
+          expr: |
+            rate(aws_elasticache_evictions_sum[5m]) > 100
+          for: 10m
+          labels:
+            severity: warning
+            team: platform
+            component: elasticache
+          annotations:
+            summary: "ElastiCache {{ $labels.cache_cluster_id }} high eviction rate"
+            description: |
+              ElastiCache cluster {{ $labels.cache_cluster_id }} evicting {{ $value | printf "%.0f" }} keys/second.
+            impact: "Frequently accessed data being evicted. Cache effectiveness reduced."
+            action: "Increase cache memory or adjust maxmemory-policy."
+            dashboard: "https://grafana.greenlang.io/d/greenlang-infra-overview"
+
+    # ===========================================
+    # Network/VPC Alerts
+    # ===========================================
+    - name: greenlang.infrastructure.network
+      interval: 30s
+      rules:
+        # NAT Gateway High Utilization
+        - alert: NATGatewayHighUtilization
+          expr: |
+            (aws_natgateway_connection_established_count / 55000) * 100 > 80
+          for: 10m
+          labels:
+            severity: warning
+            team: platform
+            component: network
+          annotations:
+            summary: "NAT Gateway {{ $labels.nat_gateway_id }} connection utilization high"
+            description: |
+              NAT Gateway {{ $labels.nat_gateway_id }} at {{ $value | printf "%.1f" }}% connection capacity.
+            impact: "New outbound connections may be throttled or rejected."
+            action: "Consider adding additional NAT Gateways or optimizing connection reuse."
+            dashboard: "https://grafana.greenlang.io/d/greenlang-infra-overview"
+
+        # High Network Error Rate
+        - alert: HighNetworkErrorRate
+          expr: |
+            rate(node_network_receive_errs_total[5m]) + rate(node_network_transmit_errs_total[5m]) > 10
+          for: 5m
+          labels:
+            severity: warning
+            team: platform
+            component: network
+          annotations:
+            summary: "High network errors on node {{ $labels.node }}"
+            description: |
+              Node {{ $labels.node }} experiencing {{ $value | printf "%.1f" }} network errors/second.
+            impact: "Network connectivity issues. Packet loss affecting application reliability."
+            action: "Check network interface health. Review security group rules."
+            dashboard: "https://grafana.greenlang.io/d/greenlang-infra-overview"

@@ -1,0 +1,586 @@
+## TimescaleDB HA Helm Chart Default Values
+## Production-ready configuration with Patroni for High Availability
+
+## -----------------------------------------------------------------------------
+## Global Configuration
+## -----------------------------------------------------------------------------
+global:
+  imageRegistry: ""
+  imagePullSecrets: []
+  storageClass: "gp3"
+
+## -----------------------------------------------------------------------------
+## TimescaleDB Image Configuration
+## -----------------------------------------------------------------------------
+image:
+  repository: timescale/timescaledb-ha
+  tag: pg15-latest
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+## -----------------------------------------------------------------------------
+## Cluster Configuration
+## -----------------------------------------------------------------------------
+cluster:
+  ## Name of the Patroni cluster
+  name: "timescaledb-ha"
+
+  ## Number of replicas (1 primary + N-1 replicas)
+  replicas: 3
+
+  ## Namespace for cluster resources
+  namespace: ""
+
+## -----------------------------------------------------------------------------
+## PostgreSQL Configuration
+## -----------------------------------------------------------------------------
+postgresql:
+  ## PostgreSQL version
+  version: "15"
+
+  ## Database name to create
+  database: "greenlang"
+
+  ## PostgreSQL superuser
+  username: "postgres"
+
+  ## Password for superuser (will be generated if not provided)
+  password: ""
+
+  ## Replication user
+  replication:
+    username: "replicator"
+    password: ""
+
+  ## Additional PostgreSQL parameters
+  parameters:
+    ## Memory settings
+    shared_buffers: "2GB"
+    effective_cache_size: "6GB"
+    work_mem: "64MB"
+    maintenance_work_mem: "512MB"
+
+    ## Checkpoint settings
+    checkpoint_completion_target: "0.9"
+    wal_buffers: "64MB"
+    min_wal_size: "1GB"
+    max_wal_size: "4GB"
+
+    ## Connection settings
+    max_connections: "200"
+
+    ## TimescaleDB settings
+    timescaledb.max_background_workers: "8"
+    timescaledb.telemetry_level: "off"
+
+    ## Logging
+    log_min_duration_statement: "1000"
+    log_checkpoints: "on"
+    log_connections: "on"
+    log_disconnections: "on"
+    log_lock_waits: "on"
+    log_temp_files: "0"
+
+    ## Replication
+    wal_level: "replica"
+    max_wal_senders: "10"
+    max_replication_slots: "10"
+    hot_standby: "on"
+
+    ## Performance
+    random_page_cost: "1.1"
+    effective_io_concurrency: "200"
+
+    ## Autovacuum
+    autovacuum_max_workers: "4"
+    autovacuum_naptime: "10s"
+    autovacuum_vacuum_scale_factor: "0.05"
+    autovacuum_analyze_scale_factor: "0.02"
+
+  ## pg_hba.conf entries
+  pg_hba:
+    - "local all all trust"
+    - "host all all 127.0.0.1/32 scram-sha-256"
+    - "host all all ::1/128 scram-sha-256"
+    - "host all all 0.0.0.0/0 scram-sha-256"
+    - "host replication replicator 0.0.0.0/0 scram-sha-256"
+
+## -----------------------------------------------------------------------------
+## Patroni Configuration
+## -----------------------------------------------------------------------------
+patroni:
+  ## Log level
+  logLevel: "INFO"
+
+  ## Scope (cluster name in DCS)
+  scope: "{{ .Release.Name }}"
+
+  ## TTL settings
+  ttl: 30
+  loop_wait: 10
+  retry_timeout: 10
+  maximum_lag_on_failover: 33554432  # 32MB
+
+  ## DCS (Distributed Configuration Store) using Kubernetes
+  kubernetes:
+    use_endpoints: true
+    scope_label: "cluster-name"
+    role_label: "role"
+    labels:
+      app.kubernetes.io/name: "timescaledb"
+
+  ## Bootstrap configuration
+  bootstrap:
+    dcs:
+      ttl: 30
+      loop_wait: 10
+      retry_timeout: 10
+      maximum_lag_on_failover: 33554432
+
+      postgresql:
+        use_pg_rewind: true
+        use_slots: true
+        parameters:
+          wal_level: "replica"
+          hot_standby: "on"
+          max_connections: 200
+          max_wal_senders: 10
+          max_replication_slots: 10
+          wal_keep_size: "1GB"
+
+    ## Initialize from existing backup
+    method: "initdb"
+
+    ## Post-init SQL
+    post_init: |
+      CREATE EXTENSION IF NOT EXISTS timescaledb;
+      CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
+
+  ## Failover configuration
+  failover:
+    ## Automatic failover enabled
+    enabled: true
+
+    ## Timeout before triggering failover (seconds)
+    timeout: 30
+
+  ## Synchronous replication
+  synchronous:
+    ## Enable synchronous replication
+    enabled: false
+
+    ## Number of synchronous replicas (0 = async only)
+    num_replicas: 0
+
+    ## Synchronous mode: "off", "on", or "remote_apply"
+    mode: "on"
+
+  ## pg_rewind configuration
+  pg_rewind:
+    enabled: true
+    username: "postgres"
+
+## -----------------------------------------------------------------------------
+## PgBouncer Sidecar Configuration
+## -----------------------------------------------------------------------------
+pgbouncer:
+  enabled: true
+
+  image:
+    repository: bitnami/pgbouncer
+    tag: "1.21.0"
+    pullPolicy: IfNotPresent
+
+  ## PgBouncer port
+  port: 6432
+
+  ## Pool mode: session, transaction, statement
+  poolMode: "transaction"
+
+  ## Connection limits
+  maxClientConn: 1000
+  defaultPoolSize: 25
+  minPoolSize: 5
+  reservePoolSize: 5
+  reservePoolTimeout: 5
+
+  ## Authentication
+  authType: "scram-sha-256"
+
+  ## Resources
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "128Mi"
+    limits:
+      cpu: "500m"
+      memory: "256Mi"
+
+## -----------------------------------------------------------------------------
+## Resource Configuration
+## -----------------------------------------------------------------------------
+resources:
+  requests:
+    cpu: "2"
+    memory: "8Gi"
+  limits:
+    cpu: "8"
+    memory: "32Gi"
+
+## -----------------------------------------------------------------------------
+## Storage Configuration
+## -----------------------------------------------------------------------------
+persistence:
+  enabled: true
+
+  ## Storage class
+  storageClass: "gp3"
+
+  ## Access mode
+  accessModes:
+    - ReadWriteOnce
+
+  ## Size
+  size: 500Gi
+
+  ## Annotations
+  annotations: {}
+
+  ## Mount path
+  mountPath: "/var/lib/postgresql/data"
+
+  ## WAL storage (separate volume for better performance)
+  wal:
+    enabled: true
+    size: 50Gi
+    storageClass: "gp3"
+    mountPath: "/var/lib/postgresql/wal"
+
+## -----------------------------------------------------------------------------
+## Backup Configuration (pgBackRest)
+## -----------------------------------------------------------------------------
+backup:
+  enabled: true
+
+  ## pgBackRest image
+  image:
+    repository: pgbackrest/pgbackrest
+    tag: "2.48"
+    pullPolicy: IfNotPresent
+
+  ## Backup schedule (cron format)
+  schedule:
+    full: "0 2 * * 0"      # Weekly full backup on Sunday at 2 AM
+    differential: "0 2 * * 1-6"  # Daily differential backups
+    incremental: "0 */6 * * *"   # Every 6 hours incremental
+
+  ## Retention policy
+  retention:
+    full: 4              # Keep 4 full backups
+    differential: 7      # Keep 7 differential backups
+    archive: 14          # Keep 14 days of WAL archives
+
+  ## S3 storage configuration
+  s3:
+    enabled: true
+    bucket: ""
+    region: "us-east-1"
+    endpoint: ""
+    accessKey: ""
+    secretKey: ""
+    path: "/backups"
+
+  ## Compression
+  compress: true
+  compressType: "lz4"
+  compressLevel: 6
+
+  ## Encryption
+  encrypt: true
+  encryptType: "aes-256-cbc"
+
+  ## Resources for backup jobs
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "512Mi"
+    limits:
+      cpu: "2"
+      memory: "2Gi"
+
+## -----------------------------------------------------------------------------
+## Service Configuration
+## -----------------------------------------------------------------------------
+service:
+  ## Primary service
+  primary:
+    type: ClusterIP
+    port: 5432
+    annotations: {}
+
+  ## Replica service (load balanced across replicas)
+  replica:
+    enabled: true
+    type: ClusterIP
+    port: 5432
+    annotations: {}
+
+  ## PgBouncer service
+  pgbouncer:
+    type: ClusterIP
+    port: 6432
+    annotations: {}
+
+## -----------------------------------------------------------------------------
+## Network Policy
+## -----------------------------------------------------------------------------
+networkPolicy:
+  enabled: true
+
+  ## Allow ingress from specific namespaces
+  allowedNamespaces: []
+
+  ## Allow ingress from specific pod selectors
+  allowedPodSelectors: []
+
+  ## Additional ingress rules
+  additionalIngress: []
+
+  ## Additional egress rules
+  additionalEgress: []
+
+## -----------------------------------------------------------------------------
+## Pod Disruption Budget
+## -----------------------------------------------------------------------------
+podDisruptionBudget:
+  enabled: true
+
+  ## Minimum available pods
+  minAvailable: 2
+
+  ## Maximum unavailable pods (alternative to minAvailable)
+  # maxUnavailable: 1
+
+## -----------------------------------------------------------------------------
+## Security Configuration
+## -----------------------------------------------------------------------------
+securityContext:
+  ## Pod security context
+  pod:
+    runAsNonRoot: true
+    runAsUser: 70
+    runAsGroup: 70
+    fsGroup: 70
+    fsGroupChangePolicy: "OnRootMismatch"
+
+  ## Container security context
+  container:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: false
+    capabilities:
+      drop:
+        - ALL
+
+## -----------------------------------------------------------------------------
+## Pod Configuration
+## -----------------------------------------------------------------------------
+## Node selector
+nodeSelector: {}
+
+## Tolerations
+tolerations: []
+
+## Affinity (anti-affinity is configured by default for HA)
+affinity: {}
+
+## Pod anti-affinity for HA
+podAntiAffinity:
+  enabled: true
+  type: "hard"  # "hard" or "soft"
+  topologyKey: "topology.kubernetes.io/zone"
+
+## Topology spread constraints
+topologySpreadConstraints:
+  enabled: true
+  maxSkew: 1
+  topologyKey: "topology.kubernetes.io/zone"
+  whenUnsatisfiable: "DoNotSchedule"
+
+## Pod annotations
+podAnnotations: {}
+
+## Pod labels
+podLabels: {}
+
+## Priority class
+priorityClassName: ""
+
+## Termination grace period
+terminationGracePeriodSeconds: 600
+
+## -----------------------------------------------------------------------------
+## Service Account
+## -----------------------------------------------------------------------------
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}
+  automountServiceAccountToken: true
+
+## RBAC
+rbac:
+  create: true
+
+## -----------------------------------------------------------------------------
+## TLS Configuration
+## -----------------------------------------------------------------------------
+tls:
+  enabled: true
+
+  ## Use cert-manager for certificate management
+  certManager:
+    enabled: true
+    issuerRef:
+      name: "letsencrypt-prod"
+      kind: "ClusterIssuer"
+    duration: "8760h"  # 1 year
+    renewBefore: "720h"  # 30 days
+
+  ## Or provide existing secret
+  existingSecret: ""
+
+  ## Certificate common name
+  commonName: ""
+
+  ## Subject alternative names
+  dnsNames: []
+
+## -----------------------------------------------------------------------------
+## Metrics Configuration
+## -----------------------------------------------------------------------------
+metrics:
+  enabled: true
+
+  ## Prometheus postgres exporter
+  image:
+    repository: prometheuscommunity/postgres-exporter
+    tag: "v0.15.0"
+    pullPolicy: IfNotPresent
+
+  ## Port for metrics
+  port: 9187
+
+  ## Custom queries
+  customQueries: |
+    pg_replication:
+      query: "SELECT CASE WHEN NOT pg_is_in_recovery() THEN 0 ELSE GREATEST(0, EXTRACT(EPOCH FROM (now() - pg_last_xact_replay_timestamp()))) END AS lag"
+      master: true
+      metrics:
+        - lag:
+            usage: "GAUGE"
+            description: "Replication lag behind master in seconds"
+
+    pg_postmaster:
+      query: "SELECT pg_postmaster_start_time as start_time_seconds from pg_postmaster_start_time()"
+      master: true
+      metrics:
+        - start_time_seconds:
+            usage: "GAUGE"
+            description: "Time at which postmaster started"
+
+  ## Resources
+  resources:
+    requests:
+      cpu: "50m"
+      memory: "64Mi"
+    limits:
+      cpu: "200m"
+      memory: "128Mi"
+
+  ## ServiceMonitor for Prometheus Operator
+  serviceMonitor:
+    enabled: true
+    namespace: ""
+    interval: "30s"
+    scrapeTimeout: "10s"
+    labels: {}
+    relabelings: []
+    metricRelabelings: []
+
+  ## PrometheusRule for alerting
+  prometheusRule:
+    enabled: true
+    namespace: ""
+    labels: {}
+    rules: []
+
+## -----------------------------------------------------------------------------
+## Init Containers
+## -----------------------------------------------------------------------------
+initContainers: []
+
+## -----------------------------------------------------------------------------
+## Sidecar Containers
+## -----------------------------------------------------------------------------
+sidecars: []
+
+## -----------------------------------------------------------------------------
+## Extra Volumes
+## -----------------------------------------------------------------------------
+extraVolumes: []
+
+## -----------------------------------------------------------------------------
+## Extra Volume Mounts
+## -----------------------------------------------------------------------------
+extraVolumeMounts: []
+
+## -----------------------------------------------------------------------------
+## Extra Environment Variables
+## -----------------------------------------------------------------------------
+extraEnv: []
+
+## -----------------------------------------------------------------------------
+## Extra Environment Variables from ConfigMaps/Secrets
+## -----------------------------------------------------------------------------
+extraEnvFrom: []
+
+## -----------------------------------------------------------------------------
+## Lifecycle Hooks
+## -----------------------------------------------------------------------------
+lifecycle:
+  preStop:
+    exec:
+      command:
+        - /bin/sh
+        - -c
+        - |
+          # Graceful shutdown: trigger failover if primary
+          if patronictl switchover --force 2>/dev/null; then
+            echo "Switchover triggered successfully"
+            sleep 10
+          fi
+
+## -----------------------------------------------------------------------------
+## Hooks Configuration
+## -----------------------------------------------------------------------------
+hooks:
+  ## Pre-install job
+  preInstall:
+    enabled: true
+    backoffLimit: 3
+    ttlSecondsAfterFinished: 300
+
+  ## Post-install job
+  postInstall:
+    enabled: true
+    backoffLimit: 3
+    ttlSecondsAfterFinished: 300
+
+  ## Pre-upgrade job
+  preUpgrade:
+    enabled: true
+    backoffLimit: 3
+    ttlSecondsAfterFinished: 600

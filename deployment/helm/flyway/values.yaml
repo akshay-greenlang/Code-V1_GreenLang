@@ -1,0 +1,357 @@
+# =============================================================================
+# GreenLang Flyway Helm Chart Values
+# =============================================================================
+# Default configuration values for Flyway database migrations
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Global Configuration
+# -----------------------------------------------------------------------------
+global:
+  # Environment name (development, staging, production)
+  environment: production
+
+  # Image pull secrets for private registries
+  imagePullSecrets: []
+  # - name: regcred
+
+  # Pod security standards
+  podSecurityStandards:
+    enabled: true
+
+# -----------------------------------------------------------------------------
+# Namespace Configuration
+# -----------------------------------------------------------------------------
+namespace: greenlang
+
+# Create namespace if it doesn't exist
+createNamespace: false
+
+# -----------------------------------------------------------------------------
+# Flyway Image Configuration
+# -----------------------------------------------------------------------------
+image:
+  repository: flyway/flyway
+  tag: "9.22.3"
+  pullPolicy: IfNotPresent
+
+# Init container image (for waiting on database)
+initImage:
+  repository: postgres
+  tag: "15-alpine"
+  pullPolicy: IfNotPresent
+
+# -----------------------------------------------------------------------------
+# Database Configuration
+# -----------------------------------------------------------------------------
+database:
+  # Connection via PgBouncer
+  host: pgbouncer.database.svc.cluster.local
+  port: 6432
+  name: greenlang
+
+  # Direct connection (bypass PgBouncer for DDL)
+  directHost: postgres.database.svc.cluster.local
+  directPort: 5432
+
+  # JDBC URL (auto-generated if not specified)
+  # jdbcUrl: jdbc:postgresql://host:port/database
+
+  # SSL mode
+  sslMode: require
+
+  # Connection pool settings
+  connectRetries: 10
+  connectRetriesInterval: 5
+
+# -----------------------------------------------------------------------------
+# Migration Configuration
+# -----------------------------------------------------------------------------
+migration:
+  # Schema configuration
+  schemas:
+    - public
+    - metrics
+    - audit
+
+  defaultSchema: public
+  createSchemas: true
+
+  # Migration locations
+  locations:
+    - filesystem:/flyway/sql
+  # Uncomment to add S3 location
+  # - s3:greenlang-migrations/sql
+
+  # Baseline configuration
+  baselineOnMigrate: true
+  baselineVersion: "0"
+  baselineDescription: "GreenLang initial baseline"
+
+  # Validation
+  validateOnMigrate: true
+  validateMigrationNaming: true
+  cleanOnValidationError: false
+
+  # Execution
+  outOfOrder: false
+  mixed: true
+  group: false
+  lockRetryCount: 50
+
+  # Safety
+  cleanDisabled: true
+  failOnMissingLocations: true
+
+# -----------------------------------------------------------------------------
+# TimescaleDB Configuration (Placeholders)
+# -----------------------------------------------------------------------------
+timescaledb:
+  # Retention policy (days)
+  retentionDays: 90
+
+  # Compression policy (days after which to compress)
+  compressionAfterDays: 7
+
+  # Chunk interval for hypertables
+  chunkInterval: "1 day"
+
+  # Compression settings
+  compressionSegmentBy: organization_id
+  compressionOrderBy: "timestamp DESC"
+
+# -----------------------------------------------------------------------------
+# Secrets Configuration
+# -----------------------------------------------------------------------------
+secrets:
+  # Use existing secret for database credentials
+  existingSecret: ""
+
+  # Secret key names
+  usernameKey: username
+  passwordKey: password
+
+  # Create secret from values (not recommended for production)
+  create: false
+  username: greenlang_migrations
+  password: ""  # Never set in values.yaml
+
+  # External secrets configuration
+  externalSecrets:
+    enabled: true
+    refreshInterval: 1h
+    secretStoreRef:
+      name: aws-secrets-manager
+      kind: ClusterSecretStore
+    remoteRef:
+      key: greenlang/database/migrations
+
+# AWS credentials for S3 migrations
+aws:
+  # Use existing secret
+  existingSecret: ""
+
+  # Create secret from values
+  create: false
+  accessKeyId: ""
+  secretAccessKey: ""
+  region: us-east-1
+
+  # External secrets
+  externalSecrets:
+    enabled: false
+    remoteRef:
+      key: greenlang/aws/flyway-s3
+
+# -----------------------------------------------------------------------------
+# Job Configuration
+# -----------------------------------------------------------------------------
+job:
+  # Job name suffix (useful for tracking)
+  nameSuffix: ""
+
+  # Retry configuration
+  backoffLimit: 3
+  activeDeadlineSeconds: 600
+
+  # Cleanup
+  ttlSecondsAfterFinished: 86400
+
+  # Helm hooks
+  hooks:
+    enabled: true
+    weight: "-5"
+    deletePolicy: before-hook-creation
+
+# -----------------------------------------------------------------------------
+# Resource Configuration
+# -----------------------------------------------------------------------------
+resources:
+  flyway:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+  initContainer:
+    requests:
+      cpu: 50m
+      memory: 32Mi
+    limits:
+      cpu: 100m
+      memory: 64Mi
+
+# -----------------------------------------------------------------------------
+# Security Configuration
+# -----------------------------------------------------------------------------
+securityContext:
+  pod:
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
+
+  container:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    capabilities:
+      drop:
+        - ALL
+
+# Service account configuration
+serviceAccount:
+  create: true
+  name: flyway-migrations
+  annotations: {}
+  # eks.amazonaws.com/role-arn: arn:aws:iam::ACCOUNT_ID:role/flyway-role
+
+# RBAC configuration
+rbac:
+  create: true
+
+# -----------------------------------------------------------------------------
+# Node Selection
+# -----------------------------------------------------------------------------
+nodeSelector:
+  kubernetes.io/os: linux
+
+tolerations:
+  - key: "database"
+    operator: "Equal"
+    value: "true"
+    effect: "NoSchedule"
+
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchLabels:
+              app: flyway
+          topologyKey: kubernetes.io/hostname
+
+# -----------------------------------------------------------------------------
+# Network Policies
+# -----------------------------------------------------------------------------
+networkPolicy:
+  enabled: true
+
+  # Egress rules
+  egress:
+    # Allow access to database
+    database:
+      enabled: true
+    # Allow access to AWS (for S3 and Secrets Manager)
+    aws:
+      enabled: true
+
+# -----------------------------------------------------------------------------
+# Monitoring and Logging
+# -----------------------------------------------------------------------------
+monitoring:
+  # Enable Prometheus annotations
+  prometheus:
+    enabled: false
+
+  # Logging configuration
+  logging:
+    # Output format: text, json
+    format: json
+    level: info
+
+# -----------------------------------------------------------------------------
+# Additional Jobs
+# -----------------------------------------------------------------------------
+additionalJobs:
+  # Validation job (for CI/CD)
+  validate:
+    enabled: true
+    backoffLimit: 1
+    activeDeadlineSeconds: 300
+
+  # Dry run job (for production preview)
+  dryRun:
+    enabled: true
+    backoffLimit: 1
+    activeDeadlineSeconds: 300
+
+# -----------------------------------------------------------------------------
+# SQL Migrations
+# -----------------------------------------------------------------------------
+# Note: In production, SQL files should be baked into a custom image
+# This is provided for development/testing only
+sqlMigrations:
+  # Mount SQL files from ConfigMap
+  configMap:
+    enabled: true
+    name: flyway-sql-migrations
+
+  # Or specify inline (not recommended for large migrations)
+  inline: {}
+
+# -----------------------------------------------------------------------------
+# Custom Configuration
+# -----------------------------------------------------------------------------
+# Additional Flyway configuration
+extraConfig: {}
+  # flyway.batch: true
+  # flyway.stream: true
+
+# Extra environment variables
+extraEnv: []
+# - name: FLYWAY_LICENSE_KEY
+#   valueFrom:
+#     secretKeyRef:
+#       name: flyway-license
+#       key: license-key
+
+# Extra volume mounts
+extraVolumeMounts: []
+
+# Extra volumes
+extraVolumes: []
+
+# -----------------------------------------------------------------------------
+# Pod Annotations and Labels
+# -----------------------------------------------------------------------------
+podAnnotations:
+  sidecar.istio.io/inject: "false"
+
+podLabels: {}
+
+# -----------------------------------------------------------------------------
+# Environment-Specific Overrides
+# -----------------------------------------------------------------------------
+# Use with --values flag or in CI/CD
+# Example: helm install --values values-production.yaml
+
+# Development defaults (override in values-dev.yaml)
+# database:
+#   host: postgres-dev.database.svc.cluster.local
+#   port: 5432
+# timescaledb:
+#   retentionDays: 30
+#   compressionAfterDays: 3

@@ -1,0 +1,515 @@
+# TLS Certificates for GreenLang
+# INFRA-001: Certificate definitions for all services
+#
+# Apply after cluster issuers are configured:
+# kubectl apply -f certificates.yaml
+
+---
+# API Service TLS Certificate
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: greenlang-api-tls
+  namespace: istio-system
+  labels:
+    app.kubernetes.io/name: greenlang-api-tls
+    app.kubernetes.io/component: certificates
+    app.kubernetes.io/part-of: greenlang
+spec:
+  # Secret name that will hold the certificate
+  secretName: greenlang-api-tls
+
+  # Certificate duration
+  duration: 2160h  # 90 days
+  renewBefore: 360h  # 15 days
+
+  # Subject information
+  subject:
+    organizations:
+      - GreenLang Inc
+
+  # Private key configuration
+  privateKey:
+    algorithm: RSA
+    encoding: PKCS1
+    size: 2048
+    rotationPolicy: Always
+
+  # Usage
+  usages:
+    - server auth
+    - digital signature
+    - key encipherment
+
+  # DNS names covered by this certificate
+  dnsNames:
+    - api.greenlang.io
+    - api-staging.greenlang.io
+    - api-dev.greenlang.io
+
+  # Issuer reference
+  issuerRef:
+    name: letsencrypt-prod-dns
+    kind: ClusterIssuer
+    group: cert-manager.io
+
+---
+# Web Application TLS Certificate
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: greenlang-web-tls
+  namespace: istio-system
+  labels:
+    app.kubernetes.io/name: greenlang-web-tls
+    app.kubernetes.io/component: certificates
+    app.kubernetes.io/part-of: greenlang
+spec:
+  secretName: greenlang-web-tls
+  duration: 2160h
+  renewBefore: 360h
+
+  subject:
+    organizations:
+      - GreenLang Inc
+
+  privateKey:
+    algorithm: RSA
+    encoding: PKCS1
+    size: 2048
+    rotationPolicy: Always
+
+  usages:
+    - server auth
+    - digital signature
+    - key encipherment
+
+  dnsNames:
+    - app.greenlang.io
+    - app-staging.greenlang.io
+    - app-dev.greenlang.io
+    - www.greenlang.io
+
+  issuerRef:
+    name: letsencrypt-prod-dns
+    kind: ClusterIssuer
+    group: cert-manager.io
+
+---
+# Admin Portal TLS Certificate
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: greenlang-admin-tls
+  namespace: istio-system
+  labels:
+    app.kubernetes.io/name: greenlang-admin-tls
+    app.kubernetes.io/component: certificates
+    app.kubernetes.io/part-of: greenlang
+spec:
+  secretName: greenlang-admin-tls
+  duration: 2160h
+  renewBefore: 360h
+
+  subject:
+    organizations:
+      - GreenLang Inc
+
+  privateKey:
+    algorithm: RSA
+    encoding: PKCS1
+    size: 2048
+    rotationPolicy: Always
+
+  usages:
+    - server auth
+    - digital signature
+    - key encipherment
+
+  dnsNames:
+    - admin.greenlang.io
+
+  issuerRef:
+    name: letsencrypt-prod-dns
+    kind: ClusterIssuer
+    group: cert-manager.io
+
+---
+# gRPC Service TLS Certificate
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: greenlang-grpc-tls
+  namespace: istio-system
+  labels:
+    app.kubernetes.io/name: greenlang-grpc-tls
+    app.kubernetes.io/component: certificates
+    app.kubernetes.io/part-of: greenlang
+spec:
+  secretName: greenlang-grpc-tls
+  duration: 2160h
+  renewBefore: 360h
+
+  subject:
+    organizations:
+      - GreenLang Inc
+
+  privateKey:
+    algorithm: RSA
+    encoding: PKCS1
+    size: 2048
+    rotationPolicy: Always
+
+  usages:
+    - server auth
+    - digital signature
+    - key encipherment
+
+  dnsNames:
+    - grpc.greenlang.io
+
+  issuerRef:
+    name: letsencrypt-prod-dns
+    kind: ClusterIssuer
+    group: cert-manager.io
+
+---
+# Development Wildcard Certificate
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: greenlang-dev-wildcard-tls
+  namespace: istio-system
+  labels:
+    app.kubernetes.io/name: greenlang-dev-wildcard-tls
+    app.kubernetes.io/component: certificates
+    app.kubernetes.io/part-of: greenlang
+spec:
+  secretName: greenlang-dev-wildcard-tls
+  duration: 2160h
+  renewBefore: 360h
+
+  subject:
+    organizations:
+      - GreenLang Inc
+
+  privateKey:
+    algorithm: RSA
+    encoding: PKCS1
+    size: 2048
+    rotationPolicy: Always
+
+  usages:
+    - server auth
+    - digital signature
+    - key encipherment
+
+  # Wildcard certificate requires DNS-01 challenge
+  dnsNames:
+    - "*.dev.greenlang.io"
+    - dev.greenlang.io
+
+  issuerRef:
+    name: letsencrypt-prod-dns
+    kind: ClusterIssuer
+    group: cert-manager.io
+
+---
+# Staging Wildcard Certificate
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: greenlang-staging-wildcard-tls
+  namespace: istio-system
+  labels:
+    app.kubernetes.io/name: greenlang-staging-wildcard-tls
+    app.kubernetes.io/component: certificates
+    app.kubernetes.io/part-of: greenlang
+spec:
+  secretName: greenlang-staging-wildcard-tls
+  duration: 2160h
+  renewBefore: 360h
+
+  subject:
+    organizations:
+      - GreenLang Inc
+
+  privateKey:
+    algorithm: RSA
+    encoding: PKCS1
+    size: 2048
+    rotationPolicy: Always
+
+  usages:
+    - server auth
+    - digital signature
+    - key encipherment
+
+  dnsNames:
+    - "*.staging.greenlang.io"
+    - staging.greenlang.io
+
+  issuerRef:
+    name: letsencrypt-prod-dns
+    kind: ClusterIssuer
+    group: cert-manager.io
+
+---
+# Internal mTLS Certificate for API Service
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: greenlang-api-mtls
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: greenlang-api-mtls
+    app.kubernetes.io/component: certificates
+    app.kubernetes.io/part-of: greenlang
+spec:
+  secretName: greenlang-api-mtls
+  duration: 8760h  # 1 year
+  renewBefore: 720h  # 30 days
+
+  subject:
+    organizations:
+      - GreenLang Inc
+    organizationalUnits:
+      - API Service
+
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+    rotationPolicy: Always
+
+  usages:
+    - server auth
+    - client auth
+    - digital signature
+    - key encipherment
+
+  dnsNames:
+    - greenlang-api
+    - greenlang-api.greenlang
+    - greenlang-api.greenlang.svc
+    - greenlang-api.greenlang.svc.cluster.local
+
+  issuerRef:
+    name: greenlang-ca-issuer
+    kind: ClusterIssuer
+    group: cert-manager.io
+
+---
+# Internal mTLS Certificate for Worker Service
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: greenlang-worker-mtls
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: greenlang-worker-mtls
+    app.kubernetes.io/component: certificates
+    app.kubernetes.io/part-of: greenlang
+spec:
+  secretName: greenlang-worker-mtls
+  duration: 8760h
+  renewBefore: 720h
+
+  subject:
+    organizations:
+      - GreenLang Inc
+    organizationalUnits:
+      - Worker Service
+
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+    rotationPolicy: Always
+
+  usages:
+    - server auth
+    - client auth
+    - digital signature
+    - key encipherment
+
+  dnsNames:
+    - greenlang-worker
+    - greenlang-worker.greenlang
+    - greenlang-worker.greenlang.svc
+    - greenlang-worker.greenlang.svc.cluster.local
+
+  issuerRef:
+    name: greenlang-ca-issuer
+    kind: ClusterIssuer
+    group: cert-manager.io
+
+---
+# Internal mTLS Certificate for gRPC Service
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: greenlang-grpc-mtls
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: greenlang-grpc-mtls
+    app.kubernetes.io/component: certificates
+    app.kubernetes.io/part-of: greenlang
+spec:
+  secretName: greenlang-grpc-mtls
+  duration: 8760h
+  renewBefore: 720h
+
+  subject:
+    organizations:
+      - GreenLang Inc
+    organizationalUnits:
+      - gRPC Service
+
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+    rotationPolicy: Always
+
+  usages:
+    - server auth
+    - client auth
+    - digital signature
+    - key encipherment
+
+  dnsNames:
+    - greenlang-grpc
+    - greenlang-grpc.greenlang
+    - greenlang-grpc.greenlang.svc
+    - greenlang-grpc.greenlang.svc.cluster.local
+
+  issuerRef:
+    name: greenlang-ca-issuer
+    kind: ClusterIssuer
+    group: cert-manager.io
+
+---
+# Grafana TLS Certificate
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: grafana-tls
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: grafana-tls
+    app.kubernetes.io/component: certificates
+    app.kubernetes.io/part-of: greenlang
+spec:
+  secretName: grafana-tls
+  duration: 2160h
+  renewBefore: 360h
+
+  subject:
+    organizations:
+      - GreenLang Inc
+
+  privateKey:
+    algorithm: RSA
+    encoding: PKCS1
+    size: 2048
+    rotationPolicy: Always
+
+  usages:
+    - server auth
+    - digital signature
+    - key encipherment
+
+  dnsNames:
+    - grafana.greenlang.io
+    - metrics.greenlang.io
+
+  issuerRef:
+    name: letsencrypt-prod-dns
+    kind: ClusterIssuer
+    group: cert-manager.io
+
+---
+# Prometheus TLS Certificate (internal)
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: prometheus-tls
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: prometheus-tls
+    app.kubernetes.io/component: certificates
+    app.kubernetes.io/part-of: greenlang
+spec:
+  secretName: prometheus-tls
+  duration: 8760h
+  renewBefore: 720h
+
+  subject:
+    organizations:
+      - GreenLang Inc
+    organizationalUnits:
+      - Monitoring
+
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+    rotationPolicy: Always
+
+  usages:
+    - server auth
+    - client auth
+    - digital signature
+    - key encipherment
+
+  dnsNames:
+    - prometheus
+    - prometheus.monitoring
+    - prometheus.monitoring.svc
+    - prometheus.monitoring.svc.cluster.local
+
+  issuerRef:
+    name: greenlang-ca-issuer
+    kind: ClusterIssuer
+    group: cert-manager.io
+
+---
+# AlertManager TLS Certificate (internal)
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: alertmanager-tls
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: alertmanager-tls
+    app.kubernetes.io/component: certificates
+    app.kubernetes.io/part-of: greenlang
+spec:
+  secretName: alertmanager-tls
+  duration: 8760h
+  renewBefore: 720h
+
+  subject:
+    organizations:
+      - GreenLang Inc
+    organizationalUnits:
+      - Monitoring
+
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+    rotationPolicy: Always
+
+  usages:
+    - server auth
+    - client auth
+    - digital signature
+    - key encipherment
+
+  dnsNames:
+    - alertmanager
+    - alertmanager.monitoring
+    - alertmanager.monitoring.svc
+    - alertmanager.monitoring.svc.cluster.local
+
+  issuerRef:
+    name: greenlang-ca-issuer
+    kind: ClusterIssuer
+    group: cert-manager.io

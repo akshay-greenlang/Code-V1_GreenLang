@@ -1,0 +1,504 @@
+# =============================================================================
+# GreenLang Database Migrations CI/CD Pipeline
+# =============================================================================
+# Description: Validates, tests, and applies Flyway database migrations
+# Triggers: PR to main (validate), Push to main (apply)
+# =============================================================================
+
+name: Database Migrations
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - 'deployment/database/migrations/**'
+      - 'deployment/helm/flyway/**'
+      - '.github/workflows/database-migrations.yml'
+
+  pull_request:
+    branches:
+      - main
+      - master
+    paths:
+      - 'deployment/database/migrations/**'
+      - 'deployment/helm/flyway/**'
+      - '.github/workflows/database-migrations.yml'
+
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - development
+          - staging
+          - production
+      action:
+        description: 'Migration action'
+        required: true
+        default: 'info'
+        type: choice
+        options:
+          - info
+          - validate
+          - migrate
+          - repair
+      dry_run:
+        description: 'Dry run (show what would be done)'
+        required: false
+        default: true
+        type: boolean
+
+# Prevent concurrent migrations
+concurrency:
+  group: database-migrations-${{ github.event.inputs.environment || 'default' }}
+  cancel-in-progress: false
+
+env:
+  FLYWAY_VERSION: '9.22.3'
+  POSTGRES_VERSION: '15'
+  HELM_VERSION: '3.13.0'
+
+jobs:
+  # ===========================================================================
+  # Validate Migrations (runs on all PRs)
+  # ===========================================================================
+  validate:
+    name: Validate Migrations
+    runs-on: ubuntu-latest
+
+    services:
+      # Local PostgreSQL for testing
+      postgres:
+        image: timescale/timescaledb:latest-pg15
+        env:
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_DB: test_greenlang
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Java (for Flyway)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Install Flyway
+        run: |
+          wget -qO- https://repo1.maven.org/maven2/org/flywaydb/flyway-commandline/${{ env.FLYWAY_VERSION }}/flyway-commandline-${{ env.FLYWAY_VERSION }}-linux-x64.tar.gz | tar -xvz
+          sudo ln -s $(pwd)/flyway-${{ env.FLYWAY_VERSION }}/flyway /usr/local/bin/flyway
+          flyway --version
+
+      - name: Validate SQL syntax
+        run: |
+          echo "Validating SQL files..."
+          for file in deployment/database/migrations/sql/*.sql; do
+            echo "Checking: $file"
+            # Basic syntax validation using PostgreSQL
+            PGPASSWORD=test_password psql -h localhost -U test_user -d test_greenlang \
+              -c "SET client_min_messages TO WARNING;" \
+              -f "$file" --single-transaction || {
+                echo "Error in $file"
+                exit 1
+              }
+          done
+          echo "All SQL files validated successfully"
+
+      - name: Check migration naming convention
+        run: |
+          echo "Checking migration naming conventions..."
+          for file in deployment/database/migrations/sql/V*.sql; do
+            filename=$(basename "$file")
+            if ! [[ $filename =~ ^V[0-9]+__[a-z_]+\.sql$ ]]; then
+              echo "Invalid migration name: $filename"
+              echo "Expected format: V###__description_with_underscores.sql"
+              exit 1
+            fi
+          done
+          echo "All migration names follow convention"
+
+      - name: Run Flyway validate
+        env:
+          FLYWAY_URL: jdbc:postgresql://localhost:5432/test_greenlang
+          FLYWAY_USER: test_user
+          FLYWAY_PASSWORD: test_password
+          FLYWAY_LOCATIONS: filesystem:deployment/database/migrations/sql
+          FLYWAY_SCHEMAS: public,metrics,audit
+          FLYWAY_BASELINE_ON_MIGRATE: true
+          FLYWAY_PLACEHOLDERS_ENVIRONMENT: test
+          FLYWAY_PLACEHOLDERS_RETENTION_DAYS: 30
+          FLYWAY_PLACEHOLDERS_COMPRESSION_AFTER_DAYS: 3
+          FLYWAY_PLACEHOLDERS_CHUNK_INTERVAL: 1 day
+        run: |
+          echo "Running Flyway validate..."
+          flyway validate || exit 1
+
+      - name: Run Flyway info
+        env:
+          FLYWAY_URL: jdbc:postgresql://localhost:5432/test_greenlang
+          FLYWAY_USER: test_user
+          FLYWAY_PASSWORD: test_password
+          FLYWAY_LOCATIONS: filesystem:deployment/database/migrations/sql
+          FLYWAY_SCHEMAS: public,metrics,audit
+          FLYWAY_BASELINE_ON_MIGRATE: true
+          FLYWAY_PLACEHOLDERS_ENVIRONMENT: test
+          FLYWAY_PLACEHOLDERS_RETENTION_DAYS: 30
+          FLYWAY_PLACEHOLDERS_COMPRESSION_AFTER_DAYS: 3
+          FLYWAY_PLACEHOLDERS_CHUNK_INTERVAL: 1 day
+        run: |
+          echo "Migration status:"
+          flyway info
+
+      - name: Test migration (fresh database)
+        env:
+          FLYWAY_URL: jdbc:postgresql://localhost:5432/test_greenlang
+          FLYWAY_USER: test_user
+          FLYWAY_PASSWORD: test_password
+          FLYWAY_LOCATIONS: filesystem:deployment/database/migrations/sql
+          FLYWAY_SCHEMAS: public,metrics,audit
+          FLYWAY_BASELINE_ON_MIGRATE: true
+          FLYWAY_PLACEHOLDERS_ENVIRONMENT: test
+          FLYWAY_PLACEHOLDERS_RETENTION_DAYS: 30
+          FLYWAY_PLACEHOLDERS_COMPRESSION_AFTER_DAYS: 3
+          FLYWAY_PLACEHOLDERS_CHUNK_INTERVAL: 1 day
+        run: |
+          echo "Testing migrations on fresh database..."
+          flyway migrate
+          echo "Migration successful!"
+          flyway info
+
+      - name: Verify schema
+        run: |
+          echo "Verifying schema..."
+          PGPASSWORD=test_password psql -h localhost -U test_user -d test_greenlang -c "
+            SELECT table_schema, table_name
+            FROM information_schema.tables
+            WHERE table_schema IN ('public', 'metrics', 'audit')
+            ORDER BY table_schema, table_name;
+          "
+
+          echo ""
+          echo "Checking hypertables..."
+          PGPASSWORD=test_password psql -h localhost -U test_user -d test_greenlang -c "
+            SELECT hypertable_schema, hypertable_name
+            FROM timescaledb_information.hypertables
+            ORDER BY hypertable_schema, hypertable_name;
+          "
+
+  # ===========================================================================
+  # Lint Helm Chart
+  # ===========================================================================
+  lint-helm:
+    name: Lint Helm Chart
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: ${{ env.HELM_VERSION }}
+
+      - name: Lint Flyway Helm chart
+        run: |
+          helm lint deployment/helm/flyway/
+
+      - name: Template Helm chart (validate syntax)
+        run: |
+          helm template greenlang-flyway deployment/helm/flyway/ \
+            --set database.host=test-db \
+            --set secrets.existingSecret=test-secret \
+            > /dev/null
+
+          echo "Helm chart templates rendered successfully"
+
+  # ===========================================================================
+  # Dry Run for Production (manual trigger)
+  # ===========================================================================
+  dry-run:
+    name: Dry Run (Production Preview)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.dry_run == 'true'
+    environment: ${{ github.event.inputs.environment }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+
+      - name: Configure kubectl
+        run: |
+          aws eks update-kubeconfig --name greenlang-${{ github.event.inputs.environment }} --region ${{ secrets.AWS_REGION }}
+
+      - name: Run Flyway dry run job
+        run: |
+          echo "Running dry-run migration job..."
+
+          # Create a unique job name
+          JOB_NAME="flyway-dryrun-$(date +%s)"
+
+          # Apply the dry-run job
+          kubectl apply -f - <<EOF
+          apiVersion: batch/v1
+          kind: Job
+          metadata:
+            name: ${JOB_NAME}
+            namespace: greenlang
+          spec:
+            backoffLimit: 1
+            activeDeadlineSeconds: 300
+            ttlSecondsAfterFinished: 3600
+            template:
+              spec:
+                restartPolicy: Never
+                containers:
+                  - name: flyway
+                    image: flyway/flyway:${{ env.FLYWAY_VERSION }}
+                    command: ["/bin/sh", "-c"]
+                    args:
+                      - |
+                        echo "=== Migration Status ==="
+                        flyway info
+                        echo ""
+                        echo "=== Validation ==="
+                        flyway validate
+                        echo ""
+                        echo "DRY RUN COMPLETE"
+                    envFrom:
+                      - configMapRef:
+                          name: flyway-config
+                      - secretRef:
+                          name: flyway-credentials
+                    volumeMounts:
+                      - name: sql
+                        mountPath: /flyway/sql
+                volumes:
+                  - name: sql
+                    configMap:
+                      name: flyway-sql-migrations
+          EOF
+
+          # Wait for job completion
+          kubectl wait --for=condition=complete job/${JOB_NAME} -n greenlang --timeout=300s
+
+          # Get logs
+          kubectl logs job/${JOB_NAME} -n greenlang
+
+  # ===========================================================================
+  # Apply Migrations (only on main branch merge)
+  # ===========================================================================
+  migrate-staging:
+    name: Apply Migrations (Staging)
+    runs-on: ubuntu-latest
+    needs: [validate, lint-helm]
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    environment: staging
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+
+      - name: Configure kubectl
+        run: |
+          aws eks update-kubeconfig --name greenlang-staging --region ${{ secrets.AWS_REGION }}
+
+      - name: Setup Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: ${{ env.HELM_VERSION }}
+
+      - name: Deploy Flyway migration job
+        run: |
+          echo "Deploying migration to staging..."
+
+          helm upgrade --install greenlang-flyway deployment/helm/flyway/ \
+            --namespace greenlang-staging \
+            --create-namespace \
+            --set global.environment=staging \
+            --set database.host=${{ secrets.STAGING_DB_HOST }} \
+            --set secrets.existingSecret=flyway-credentials \
+            --set timescaledb.retentionDays=60 \
+            --wait \
+            --timeout 10m
+
+      - name: Verify migration status
+        run: |
+          # Wait for migration job to complete
+          JOB_NAME=$(kubectl get jobs -n greenlang-staging -l app=flyway,component=migration -o jsonpath='{.items[0].metadata.name}')
+
+          kubectl wait --for=condition=complete job/${JOB_NAME} -n greenlang-staging --timeout=600s
+
+          # Get migration logs
+          kubectl logs job/${JOB_NAME} -n greenlang-staging
+
+          # Verify migration status
+          echo ""
+          echo "Migration completed successfully for staging!"
+
+  # ===========================================================================
+  # Apply Migrations (Production - requires approval)
+  # ===========================================================================
+  migrate-production:
+    name: Apply Migrations (Production)
+    runs-on: ubuntu-latest
+    needs: [migrate-staging]
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    environment:
+      name: production
+      url: https://greenlang.io
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+
+      - name: Configure kubectl
+        run: |
+          aws eks update-kubeconfig --name greenlang-production --region ${{ secrets.AWS_REGION }}
+
+      - name: Setup Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: ${{ env.HELM_VERSION }}
+
+      - name: Create database snapshot (backup before migration)
+        run: |
+          echo "Creating database snapshot before migration..."
+          aws rds create-db-cluster-snapshot \
+            --db-cluster-identifier greenlang-production \
+            --db-cluster-snapshot-identifier "pre-migration-$(date +%Y%m%d-%H%M%S)"
+
+          echo "Snapshot created successfully"
+
+      - name: Deploy Flyway migration job
+        run: |
+          echo "Deploying migration to production..."
+
+          helm upgrade --install greenlang-flyway deployment/helm/flyway/ \
+            --namespace greenlang \
+            --set global.environment=production \
+            --set database.host=${{ secrets.PROD_DB_HOST }} \
+            --set secrets.existingSecret=flyway-credentials \
+            --set timescaledb.retentionDays=365 \
+            --wait \
+            --timeout 15m
+
+      - name: Verify migration status
+        run: |
+          # Wait for migration job to complete
+          JOB_NAME=$(kubectl get jobs -n greenlang -l app=flyway,component=migration -o jsonpath='{.items[0].metadata.name}')
+
+          kubectl wait --for=condition=complete job/${JOB_NAME} -n greenlang --timeout=900s
+
+          # Get migration logs
+          kubectl logs job/${JOB_NAME} -n greenlang
+
+          # Verify migration status
+          echo ""
+          echo "Migration completed successfully for production!"
+
+      - name: Send notification
+        if: always()
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          channel-id: 'deployments'
+          slack-message: |
+            Database Migration: ${{ job.status }}
+            Environment: Production
+            Commit: ${{ github.sha }}
+            Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+
+  # ===========================================================================
+  # Manual Migration (workflow dispatch)
+  # ===========================================================================
+  manual-migration:
+    name: Manual Migration
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.dry_run != 'true'
+    environment: ${{ github.event.inputs.environment }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+
+      - name: Configure kubectl
+        run: |
+          aws eks update-kubeconfig --name greenlang-${{ github.event.inputs.environment }} --region ${{ secrets.AWS_REGION }}
+
+      - name: Install Flyway
+        run: |
+          wget -qO- https://repo1.maven.org/maven2/org/flywaydb/flyway-commandline/${{ env.FLYWAY_VERSION }}/flyway-commandline-${{ env.FLYWAY_VERSION }}-linux-x64.tar.gz | tar -xvz
+          sudo ln -s $(pwd)/flyway-${{ env.FLYWAY_VERSION }}/flyway /usr/local/bin/flyway
+
+      - name: Run Flyway command
+        run: |
+          echo "Running Flyway ${{ github.event.inputs.action }} on ${{ github.event.inputs.environment }}..."
+
+          # Get database credentials from Kubernetes secret
+          DB_USER=$(kubectl get secret flyway-credentials -n greenlang -o jsonpath='{.data.username}' | base64 -d)
+          DB_PASS=$(kubectl get secret flyway-credentials -n greenlang -o jsonpath='{.data.password}' | base64 -d)
+          DB_HOST=$(kubectl get configmap flyway-config -n greenlang -o jsonpath='{.data.db_host}')
+
+          export FLYWAY_URL="jdbc:postgresql://${DB_HOST}:5432/greenlang"
+          export FLYWAY_USER="${DB_USER}"
+          export FLYWAY_PASSWORD="${DB_PASS}"
+          export FLYWAY_LOCATIONS="filesystem:deployment/database/migrations/sql"
+          export FLYWAY_SCHEMAS="public,metrics,audit"
+
+          flyway ${{ github.event.inputs.action }}

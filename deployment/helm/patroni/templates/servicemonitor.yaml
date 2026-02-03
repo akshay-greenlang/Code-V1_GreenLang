@@ -1,0 +1,79 @@
+{{- if and .Values.metrics.enabled .Values.metrics.serviceMonitor.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "patroni.fullname" . }}-monitor
+  namespace: {{ .Values.metrics.serviceMonitor.namespace | default (.Values.namespace | default .Release.Namespace) }}
+  labels:
+    {{- include "patroni.labels" . | nindent 4 }}
+    {{- with .Values.metrics.serviceMonitor.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  jobLabel: patroni
+  selector:
+    matchLabels:
+      {{- include "patroni.selectorLabels" . | nindent 6 }}
+  namespaceSelector:
+    matchNames:
+      - {{ .Values.namespace | default .Release.Namespace }}
+  endpoints:
+    # Patroni API metrics
+    - port: patroni-api
+      path: /metrics
+      interval: {{ .Values.metrics.serviceMonitor.interval }}
+      scrapeTimeout: {{ .Values.metrics.serviceMonitor.scrapeTimeout }}
+      scheme: http
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod
+        - sourceLabels: [__meta_kubernetes_pod_label_role]
+          targetLabel: role
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace
+    {{- if .Values.metrics.postgresExporter.enabled }}
+    # PostgreSQL exporter metrics
+    - port: metrics
+      path: /metrics
+      interval: {{ .Values.metrics.serviceMonitor.interval }}
+      scrapeTimeout: {{ .Values.metrics.serviceMonitor.scrapeTimeout }}
+      scheme: http
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod
+        - sourceLabels: [__meta_kubernetes_pod_label_role]
+          targetLabel: role
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace
+    {{- end }}
+{{- end }}
+
+{{- if and .Values.metrics.enabled .Values.metrics.podMonitor.enabled }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: {{ include "patroni.fullname" . }}-pod-monitor
+  namespace: {{ .Values.metrics.serviceMonitor.namespace | default (.Values.namespace | default .Release.Namespace) }}
+  labels:
+    {{- include "patroni.labels" . | nindent 4 }}
+    {{- with .Values.metrics.serviceMonitor.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "patroni.selectorLabels" . | nindent 6 }}
+  namespaceSelector:
+    matchNames:
+      - {{ .Values.namespace | default .Release.Namespace }}
+  podMetricsEndpoints:
+    - port: patroni-api
+      path: /metrics
+      interval: {{ .Values.metrics.podMonitor.interval }}
+    {{- if .Values.metrics.postgresExporter.enabled }}
+    - port: metrics
+      path: /metrics
+      interval: {{ .Values.metrics.podMonitor.interval }}
+    {{- end }}
+{{- end }}

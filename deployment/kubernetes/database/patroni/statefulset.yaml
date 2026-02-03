@@ -1,0 +1,561 @@
+---
+# Patroni StatefulSet for PostgreSQL/TimescaleDB HA Cluster
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: patroni
+  namespace: greenlang-db
+  labels:
+    app: patroni
+    cluster-name: greenlang-cluster
+    component: database
+    part-of: greenlang
+spec:
+  serviceName: patroni
+  replicas: 3
+  podManagementPolicy: OrderedReady
+  updateStrategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: patroni
+      cluster-name: greenlang-cluster
+  template:
+    metadata:
+      labels:
+        app: patroni
+        cluster-name: greenlang-cluster
+        component: database
+        part-of: greenlang
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8008"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: patroni
+      terminationGracePeriodSeconds: 300
+
+      # Security context for the pod
+      securityContext:
+        runAsUser: 999
+        runAsGroup: 999
+        fsGroup: 999
+        runAsNonRoot: true
+
+      # Pod anti-affinity to spread across nodes
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  app: patroni
+                  cluster-name: greenlang-cluster
+              topologyKey: kubernetes.io/hostname
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: patroni
+                    cluster-name: greenlang-cluster
+                topologyKey: topology.kubernetes.io/zone
+
+      # Topology spread constraints for zone distribution
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: DoNotSchedule
+          labelSelector:
+            matchLabels:
+              app: patroni
+              cluster-name: greenlang-cluster
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: DoNotSchedule
+          labelSelector:
+            matchLabels:
+              app: patroni
+              cluster-name: greenlang-cluster
+
+      # Init containers
+      initContainers:
+        # Set correct permissions on data directory
+        - name: init-chmod-data
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              mkdir -p /var/lib/postgresql/data/pgdata
+              chmod 700 /var/lib/postgresql/data/pgdata
+              chown -R 999:999 /var/lib/postgresql/data
+          volumeMounts:
+            - name: pgdata
+              mountPath: /var/lib/postgresql/data
+          securityContext:
+            runAsUser: 0
+            runAsNonRoot: false
+
+        # Copy scripts to shared volume
+        - name: init-scripts
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              cp /config-scripts/*.sh /scripts/
+              chmod +x /scripts/*.sh
+              chown -R 999:999 /scripts
+          volumeMounts:
+            - name: scripts
+              mountPath: /scripts
+            - name: patroni-config
+              mountPath: /config-scripts
+          securityContext:
+            runAsUser: 0
+            runAsNonRoot: false
+
+      containers:
+        # Main Patroni + PostgreSQL/TimescaleDB container
+        - name: patroni
+          image: timescale/timescaledb-ha:pg15-ts2.13-patroni
+          imagePullPolicy: IfNotPresent
+
+          ports:
+            - name: postgresql
+              containerPort: 5432
+              protocol: TCP
+            - name: patroni-api
+              containerPort: 8008
+              protocol: TCP
+
+          env:
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: PATRONI_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: PATRONI_SCOPE
+              value: greenlang-cluster
+            - name: PATRONI_KUBERNETES_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: PATRONI_KUBERNETES_LABELS
+              value: "{app: patroni, cluster-name: greenlang-cluster}"
+            - name: PATRONI_KUBERNETES_USE_ENDPOINTS
+              value: "true"
+            - name: PATRONI_SUPERUSER_USERNAME
+              value: postgres
+            - name: PATRONI_SUPERUSER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: patroni-credentials
+                  key: superuser-password
+            - name: PATRONI_REPLICATION_USERNAME
+              value: replicator
+            - name: PATRONI_REPLICATION_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: patroni-credentials
+                  key: replication-password
+            - name: PATRONI_RESTAPI_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: patroni-credentials
+                  key: restapi-password
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: patroni-credentials
+                  key: superuser-password
+            - name: REPLICATION_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: patroni-credentials
+                  key: replication-password
+            - name: ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: patroni-credentials
+                  key: admin-password
+            - name: GREENLANG_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: patroni-credentials
+                  key: greenlang-password
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+            - name: PATRONI_POSTGRESQL_DATA_DIR
+              value: /var/lib/postgresql/data/pgdata
+            - name: PATRONI_POSTGRESQL_PGPASS
+              value: /tmp/pgpass
+            - name: PATRONI_LOG_LEVEL
+              value: INFO
+
+            # pgBackRest environment
+            - name: PGBACKREST_STANZA
+              value: greenlang
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: pgbackrest-s3-credentials
+                  key: access-key-id
+                  optional: true
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: pgbackrest-s3-credentials
+                  key: secret-access-key
+                  optional: true
+            - name: PGBACKREST_REPO1_CIPHER_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: pgbackrest-s3-credentials
+                  key: cipher-pass
+                  optional: true
+
+          volumeMounts:
+            - name: pgdata
+              mountPath: /var/lib/postgresql/data
+            - name: patroni-config
+              mountPath: /etc/patroni
+            - name: pgbackrest-config
+              mountPath: /etc/pgbackrest
+            - name: scripts
+              mountPath: /scripts
+            - name: shm
+              mountPath: /dev/shm
+
+          resources:
+            requests:
+              memory: "8Gi"
+              cpu: "2000m"
+            limits:
+              memory: "16Gi"
+              cpu: "4000m"
+
+          # Liveness probe - checks if Patroni API is responding
+          livenessProbe:
+            httpGet:
+              path: /liveness
+              port: 8008
+              scheme: HTTP
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+            successThreshold: 1
+
+          # Readiness probe - checks if PostgreSQL is ready to accept connections
+          readinessProbe:
+            httpGet:
+              path: /readiness
+              port: 8008
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+            successThreshold: 1
+
+          # Startup probe - allows more time for initial startup
+          startupProbe:
+            httpGet:
+              path: /liveness
+              port: 8008
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 30
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            capabilities:
+              drop:
+                - ALL
+
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - /bin/sh
+                  - -c
+                  - |
+                    # Graceful shutdown
+                    patronictl pause --wait greenlang-cluster || true
+                    sleep 5
+                    pg_ctl stop -m fast -D $PGDATA || true
+
+        # Metrics exporter sidecar
+        - name: postgres-exporter
+          image: prometheuscommunity/postgres-exporter:v0.15.0
+          imagePullPolicy: IfNotPresent
+
+          ports:
+            - name: metrics
+              containerPort: 9187
+              protocol: TCP
+
+          env:
+            - name: DATA_SOURCE_URI
+              value: "localhost:5432/postgres?sslmode=disable"
+            - name: DATA_SOURCE_USER
+              value: postgres
+            - name: DATA_SOURCE_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: patroni-credentials
+                  key: superuser-password
+            - name: PG_EXPORTER_EXTEND_QUERY_PATH
+              value: /etc/postgres-exporter/queries.yaml
+            - name: PG_EXPORTER_AUTO_DISCOVER_DATABASES
+              value: "true"
+            - name: PG_EXPORTER_EXCLUDE_DATABASES
+              value: "template0,template1"
+
+          volumeMounts:
+            - name: exporter-queries
+              mountPath: /etc/postgres-exporter
+
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "50m"
+            limits:
+              memory: "128Mi"
+              cpu: "100m"
+
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 9187
+            initialDelaySeconds: 30
+            periodSeconds: 10
+
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 9187
+            initialDelaySeconds: 10
+            periodSeconds: 5
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            capabilities:
+              drop:
+                - ALL
+
+      volumes:
+        - name: patroni-config
+          configMap:
+            name: patroni-config
+            defaultMode: 0755
+        - name: pgbackrest-config
+          configMap:
+            name: pgbackrest-config
+            defaultMode: 0644
+        - name: scripts
+          emptyDir: {}
+        - name: shm
+          emptyDir:
+            medium: Memory
+            sizeLimit: 1Gi
+        - name: exporter-queries
+          configMap:
+            name: postgres-exporter-queries
+            optional: true
+
+  # Persistent volume claims
+  volumeClaimTemplates:
+    - metadata:
+        name: pgdata
+        labels:
+          app: patroni
+          cluster-name: greenlang-cluster
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        storageClassName: fast-ssd
+        resources:
+          requests:
+            storage: 500Gi
+
+---
+# Postgres Exporter Custom Queries ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-exporter-queries
+  namespace: greenlang-db
+  labels:
+    app: patroni
+    component: monitoring
+data:
+  queries.yaml: |
+    pg_replication:
+      query: |
+        SELECT
+          CASE WHEN NOT pg_is_in_recovery() THEN 0
+          ELSE GREATEST(0, EXTRACT(EPOCH FROM (now() - pg_last_xact_replay_timestamp())))
+          END AS lag_seconds
+      master: true
+      metrics:
+        - lag_seconds:
+            usage: "GAUGE"
+            description: "Replication lag in seconds"
+
+    pg_postmaster:
+      query: "SELECT pg_postmaster_start_time as start_time_seconds from pg_postmaster_start_time()"
+      master: true
+      metrics:
+        - start_time_seconds:
+            usage: "GAUGE"
+            description: "Time at which postmaster started"
+
+    pg_stat_user_tables:
+      query: |
+        SELECT
+          current_database() datname,
+          schemaname,
+          relname,
+          seq_scan,
+          seq_tup_read,
+          idx_scan,
+          idx_tup_fetch,
+          n_tup_ins,
+          n_tup_upd,
+          n_tup_del,
+          n_tup_hot_upd,
+          n_live_tup,
+          n_dead_tup,
+          n_mod_since_analyze,
+          COALESCE(last_vacuum, '1970-01-01Z') as last_vacuum,
+          COALESCE(last_autovacuum, '1970-01-01Z') as last_autovacuum,
+          COALESCE(last_analyze, '1970-01-01Z') as last_analyze,
+          COALESCE(last_autoanalyze, '1970-01-01Z') as last_autoanalyze,
+          vacuum_count,
+          autovacuum_count,
+          analyze_count,
+          autoanalyze_count
+        FROM pg_stat_user_tables
+      metrics:
+        - datname:
+            usage: "LABEL"
+            description: "Name of current database"
+        - schemaname:
+            usage: "LABEL"
+            description: "Name of the schema"
+        - relname:
+            usage: "LABEL"
+            description: "Name of the table"
+        - seq_scan:
+            usage: "COUNTER"
+            description: "Number of sequential scans"
+        - seq_tup_read:
+            usage: "COUNTER"
+            description: "Number of live rows fetched by sequential scans"
+        - idx_scan:
+            usage: "COUNTER"
+            description: "Number of index scans"
+        - idx_tup_fetch:
+            usage: "COUNTER"
+            description: "Number of live rows fetched by index scans"
+        - n_tup_ins:
+            usage: "COUNTER"
+            description: "Number of rows inserted"
+        - n_tup_upd:
+            usage: "COUNTER"
+            description: "Number of rows updated"
+        - n_tup_del:
+            usage: "COUNTER"
+            description: "Number of rows deleted"
+        - n_tup_hot_upd:
+            usage: "COUNTER"
+            description: "Number of rows HOT updated"
+        - n_live_tup:
+            usage: "GAUGE"
+            description: "Estimated number of live rows"
+        - n_dead_tup:
+            usage: "GAUGE"
+            description: "Estimated number of dead rows"
+        - n_mod_since_analyze:
+            usage: "GAUGE"
+            description: "Estimated number of rows modified since analyze"
+        - last_vacuum:
+            usage: "GAUGE"
+            description: "Last time table was vacuumed"
+        - last_autovacuum:
+            usage: "GAUGE"
+            description: "Last time table was auto-vacuumed"
+        - last_analyze:
+            usage: "GAUGE"
+            description: "Last time table was analyzed"
+        - last_autoanalyze:
+            usage: "GAUGE"
+            description: "Last time table was auto-analyzed"
+        - vacuum_count:
+            usage: "COUNTER"
+            description: "Number of times vacuumed"
+        - autovacuum_count:
+            usage: "COUNTER"
+            description: "Number of times auto-vacuumed"
+        - analyze_count:
+            usage: "COUNTER"
+            description: "Number of times analyzed"
+        - autoanalyze_count:
+            usage: "COUNTER"
+            description: "Number of times auto-analyzed"
+
+    pg_database_size:
+      query: |
+        SELECT pg_database.datname, pg_database_size(pg_database.datname) as size_bytes
+        FROM pg_database
+        WHERE datistemplate = false
+      master: true
+      metrics:
+        - datname:
+            usage: "LABEL"
+            description: "Name of the database"
+        - size_bytes:
+            usage: "GAUGE"
+            description: "Database size in bytes"
+
+    timescaledb_chunks:
+      query: |
+        SELECT
+          hypertable_schema,
+          hypertable_name,
+          count(*) as chunk_count,
+          sum(pg_relation_size(format('%I.%I', chunk_schema, chunk_name)::regclass)) as total_bytes
+        FROM timescaledb_information.chunks
+        GROUP BY hypertable_schema, hypertable_name
+      master: true
+      metrics:
+        - hypertable_schema:
+            usage: "LABEL"
+            description: "Schema of the hypertable"
+        - hypertable_name:
+            usage: "LABEL"
+            description: "Name of the hypertable"
+        - chunk_count:
+            usage: "GAUGE"
+            description: "Number of chunks"
+        - total_bytes:
+            usage: "GAUGE"
+            description: "Total size in bytes"

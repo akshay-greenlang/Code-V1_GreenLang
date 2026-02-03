@@ -1,0 +1,303 @@
+# INFRA-001: GreenLang Application-Specific Network Policies
+# Defines precise network rules for GreenLang microservices
+# Implements defense-in-depth with least-privilege access
+---
+# API Service Network Policy
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: greenlang-api-policy
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: network-policy
+    security.greenlang.io/policy-type: app-specific
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: greenlang-app
+      app.kubernetes.io/component: api
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Allow from ingress controller
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 8000
+    # Allow from worker pods
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/component: worker
+      ports:
+        - protocol: TCP
+          port: 8000
+    # Allow Prometheus scraping
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: prometheus
+      ports:
+        - protocol: TCP
+          port: 8000
+  egress:
+    # Allow access to PostgreSQL
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/component: database
+      ports:
+        - protocol: TCP
+          port: 5432
+    # Allow access to Redis
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/component: cache
+      ports:
+        - protocol: TCP
+          port: 6379
+    # Allow access to external RDS (AWS)
+    - to:
+        - ipBlock:
+            cidr: 10.0.0.0/8  # VPC CIDR
+      ports:
+        - protocol: TCP
+          port: 5432
+    # Allow access to external ElastiCache (AWS)
+    - to:
+        - ipBlock:
+            cidr: 10.0.0.0/8
+      ports:
+        - protocol: TCP
+          port: 6379
+    # Allow HTTPS egress for external APIs
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 10.0.0.0/8
+              - 172.16.0.0/12
+              - 192.168.0.0/16
+      ports:
+        - protocol: TCP
+          port: 443
+
+---
+# Worker Service Network Policy
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: greenlang-worker-policy
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: network-policy
+    security.greenlang.io/policy-type: app-specific
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: greenlang-app
+      app.kubernetes.io/component: worker
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Allow Prometheus scraping
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: prometheus
+      ports:
+        - protocol: TCP
+          port: 8000
+  egress:
+    # Allow access to API service
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/component: api
+      ports:
+        - protocol: TCP
+          port: 8000
+    # Allow access to PostgreSQL
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/component: database
+      ports:
+        - protocol: TCP
+          port: 5432
+    # Allow access to Redis (for job queue)
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/component: cache
+      ports:
+        - protocol: TCP
+          port: 6379
+    # Allow external RDS/ElastiCache access
+    - to:
+        - ipBlock:
+            cidr: 10.0.0.0/8
+      ports:
+        - protocol: TCP
+          port: 5432
+        - protocol: TCP
+          port: 6379
+    # Allow S3 access for data storage
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 10.0.0.0/8
+              - 172.16.0.0/12
+              - 192.168.0.0/16
+      ports:
+        - protocol: TCP
+          port: 443
+
+---
+# Database Network Policy (in-cluster PostgreSQL)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: greenlang-database-policy
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: network-policy
+    security.greenlang.io/policy-type: app-specific
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: greenlang-app
+      app.kubernetes.io/component: database
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Only allow from API and Worker
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: greenlang-app
+          podSelector:
+            matchExpressions:
+              - key: app.kubernetes.io/component
+                operator: In
+                values:
+                  - api
+                  - worker
+      ports:
+        - protocol: TCP
+          port: 5432
+    # Allow Prometheus to scrape PostgreSQL exporter
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: prometheus
+      ports:
+        - protocol: TCP
+          port: 9187  # postgres_exporter
+  egress: []  # No egress needed
+
+---
+# Redis Cache Network Policy
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: greenlang-cache-policy
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: network-policy
+    security.greenlang.io/policy-type: app-specific
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: greenlang-app
+      app.kubernetes.io/component: cache
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Only allow from API and Worker
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: greenlang-app
+          podSelector:
+            matchExpressions:
+              - key: app.kubernetes.io/component
+                operator: In
+                values:
+                  - api
+                  - worker
+      ports:
+        - protocol: TCP
+          port: 6379
+    # Allow Prometheus to scrape Redis exporter
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: prometheus
+      ports:
+        - protocol: TCP
+          port: 9121  # redis_exporter
+  egress: []  # No egress needed
+
+---
+# Inter-namespace communication policy for migrations
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: greenlang-migration-policy
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: network-policy
+    security.greenlang.io/policy-type: app-specific
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: greenlang-app
+      app.kubernetes.io/component: migration
+  policyTypes:
+    - Egress
+  egress:
+    # Allow database access for migrations
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/component: database
+      ports:
+        - protocol: TCP
+          port: 5432
+    # Allow external RDS access
+    - to:
+        - ipBlock:
+            cidr: 10.0.0.0/8
+      ports:
+        - protocol: TCP
+          port: 5432

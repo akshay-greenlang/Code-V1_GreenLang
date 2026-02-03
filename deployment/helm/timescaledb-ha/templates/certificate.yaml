@@ -1,0 +1,154 @@
+{{/*
+Certificate resource for TLS encryption using cert-manager
+*/}}
+{{- if and .Values.tls.enabled .Values.tls.certManager.enabled }}
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ include "timescaledb-ha.fullname" . }}-tls
+  namespace: {{ include "timescaledb-ha.namespace" . }}
+  labels:
+    {{- include "timescaledb-ha.labels" . | nindent 4 }}
+spec:
+  # Secret name where the TLS certificate will be stored
+  secretName: {{ include "timescaledb-ha.tlsSecretName" . }}
+
+  # Certificate duration and renewal
+  duration: {{ .Values.tls.certManager.duration | default "8760h" }}  # 1 year
+  renewBefore: {{ .Values.tls.certManager.renewBefore | default "720h" }}  # 30 days
+
+  # Subject information
+  subject:
+    organizations:
+      - GreenLang
+
+  # Private key settings
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+    rotationPolicy: Always
+
+  # Usage
+  usages:
+    - server auth
+    - client auth
+    - digital signature
+    - key encipherment
+
+  # Common name
+  commonName: {{ .Values.tls.commonName | default (printf "%s.%s.svc.cluster.local" (include "timescaledb-ha.fullname" .) (include "timescaledb-ha.namespace" .)) }}
+
+  # DNS names for the certificate
+  dnsNames:
+    # Primary service
+    - {{ include "timescaledb-ha.primaryServiceName" . }}
+    - {{ include "timescaledb-ha.primaryServiceName" . }}.{{ include "timescaledb-ha.namespace" . }}
+    - {{ include "timescaledb-ha.primaryServiceName" . }}.{{ include "timescaledb-ha.namespace" . }}.svc
+    - {{ include "timescaledb-ha.primaryServiceName" . }}.{{ include "timescaledb-ha.namespace" . }}.svc.cluster.local
+
+    # Replica service
+    {{- if .Values.service.replica.enabled }}
+    - {{ include "timescaledb-ha.replicaServiceName" . }}
+    - {{ include "timescaledb-ha.replicaServiceName" . }}.{{ include "timescaledb-ha.namespace" . }}
+    - {{ include "timescaledb-ha.replicaServiceName" . }}.{{ include "timescaledb-ha.namespace" . }}.svc
+    - {{ include "timescaledb-ha.replicaServiceName" . }}.{{ include "timescaledb-ha.namespace" . }}.svc.cluster.local
+    {{- end }}
+
+    # Headless service (for StatefulSet pods)
+    - {{ include "timescaledb-ha.headlessServiceName" . }}
+    - {{ include "timescaledb-ha.headlessServiceName" . }}.{{ include "timescaledb-ha.namespace" . }}
+    - {{ include "timescaledb-ha.headlessServiceName" . }}.{{ include "timescaledb-ha.namespace" . }}.svc
+    - {{ include "timescaledb-ha.headlessServiceName" . }}.{{ include "timescaledb-ha.namespace" . }}.svc.cluster.local
+
+    # Individual pod DNS names (for direct connections)
+    {{- range $i := until (int .Values.cluster.replicas) }}
+    - {{ include "timescaledb-ha.fullname" $ }}-{{ $i }}.{{ include "timescaledb-ha.headlessServiceName" $ }}
+    - {{ include "timescaledb-ha.fullname" $ }}-{{ $i }}.{{ include "timescaledb-ha.headlessServiceName" $ }}.{{ include "timescaledb-ha.namespace" $ }}
+    - {{ include "timescaledb-ha.fullname" $ }}-{{ $i }}.{{ include "timescaledb-ha.headlessServiceName" $ }}.{{ include "timescaledb-ha.namespace" $ }}.svc
+    - {{ include "timescaledb-ha.fullname" $ }}-{{ $i }}.{{ include "timescaledb-ha.headlessServiceName" $ }}.{{ include "timescaledb-ha.namespace" $ }}.svc.cluster.local
+    {{- end }}
+
+    {{- if .Values.pgbouncer.enabled }}
+    # PgBouncer service
+    - {{ include "timescaledb-ha.pgbouncerServiceName" . }}
+    - {{ include "timescaledb-ha.pgbouncerServiceName" . }}.{{ include "timescaledb-ha.namespace" . }}
+    - {{ include "timescaledb-ha.pgbouncerServiceName" . }}.{{ include "timescaledb-ha.namespace" . }}.svc
+    - {{ include "timescaledb-ha.pgbouncerServiceName" . }}.{{ include "timescaledb-ha.namespace" . }}.svc.cluster.local
+    {{- end }}
+
+    # Custom DNS names from values
+    {{- with .Values.tls.dnsNames }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+
+  # Certificate issuer reference
+  issuerRef:
+    name: {{ .Values.tls.certManager.issuerRef.name }}
+    kind: {{ .Values.tls.certManager.issuerRef.kind }}
+    {{- if .Values.tls.certManager.issuerRef.group }}
+    group: {{ .Values.tls.certManager.issuerRef.group }}
+    {{- end }}
+{{- end }}
+
+---
+{{/*
+If not using cert-manager, create a self-signed certificate as a fallback
+This is NOT recommended for production - use cert-manager or provide existing secret
+*/}}
+{{- if and .Values.tls.enabled (not .Values.tls.certManager.enabled) (not .Values.tls.existingSecret) }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ include "timescaledb-ha.tlsSecretName" . }}
+  namespace: {{ include "timescaledb-ha.namespace" . }}
+  labels:
+    {{- include "timescaledb-ha.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/resource-policy": keep
+    description: "Self-signed certificate - NOT recommended for production"
+type: kubernetes.io/tls
+data:
+  # Placeholder - in production, use cert-manager or provide existing secret
+  # These values should be replaced with actual certificates
+  tls.crt: {{ "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUQ=" | b64enc }}
+  tls.key: {{ "LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tCk1JSUV2Z0lC" | b64enc }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "timescaledb-ha.fullname" . }}-tls-warning
+  namespace: {{ include "timescaledb-ha.namespace" . }}
+  labels:
+    {{- include "timescaledb-ha.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": post-install
+    "helm.sh/hook-weight": "5"
+data:
+  WARNING: |
+    SECURITY WARNING: Using placeholder TLS certificates!
+
+    The TimescaleDB cluster is configured with TLS enabled but cert-manager
+    is disabled and no existing secret was provided. This means placeholder
+    certificates are being used which is NOT SECURE for production.
+
+    To fix this, either:
+    1. Enable cert-manager:
+       tls:
+         certManager:
+           enabled: true
+           issuerRef:
+             name: your-issuer
+             kind: ClusterIssuer
+
+    2. Provide an existing TLS secret:
+       tls:
+         existingSecret: my-tls-secret
+
+    3. Disable TLS (not recommended):
+       tls:
+         enabled: false
+
+    Please update your configuration and re-deploy.
+{{- end }}

@@ -1,0 +1,373 @@
+# PgBouncer Prometheus Alert Rules
+# GreenLang Production Monitoring
+# These alerts cover PgBouncer connection pooler health, pool utilization, and performance
+
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: pgbouncer-alerts
+  namespace: monitoring
+  labels:
+    app: pgbouncer
+    prometheus: greenlang
+    role: alert-rules
+spec:
+  groups:
+    - name: pgbouncer.availability
+      interval: 30s
+      rules:
+        # PgBouncer down
+        - alert: PgBouncerDown
+          expr: pgbouncer_up == 0
+          for: 1m
+          labels:
+            severity: critical
+            service: pgbouncer
+            team: database
+          annotations:
+            summary: "PgBouncer is down"
+            description: "PgBouncer instance {{ $labels.instance }} has been down for more than 1 minute. Database connections will fail."
+            runbook_url: "https://runbooks.greenlang.io/pgbouncer/instance-down"
+            dashboard_url: "https://grafana.greenlang.io/d/pgbouncer-metrics"
+
+        # PgBouncer exporter down
+        - alert: PgBouncerExporterDown
+          expr: up{job=~".*pgbouncer.*"} == 0
+          for: 5m
+          labels:
+            severity: warning
+            service: pgbouncer
+            team: database
+          annotations:
+            summary: "PgBouncer exporter is down"
+            description: "PgBouncer exporter for instance {{ $labels.instance }} has been down for more than 5 minutes. Monitoring data is unavailable."
+
+        # PgBouncer restarted recently
+        - alert: PgBouncerRestarted
+          expr: |
+            time() - pgbouncer_stats_total_xact_count < 300
+            and changes(pgbouncer_stats_total_xact_count[5m]) > 0
+          for: 1m
+          labels:
+            severity: info
+            service: pgbouncer
+            team: database
+          annotations:
+            summary: "PgBouncer was recently restarted"
+            description: "PgBouncer instance {{ $labels.instance }} appears to have been restarted within the last 5 minutes."
+
+    - name: pgbouncer.pools
+      interval: 30s
+      rules:
+        # Pool exhausted (>95% utilization)
+        - alert: PgBouncerPoolExhausted
+          expr: |
+            100 * (pgbouncer_pools_server_active + pgbouncer_pools_server_used) / pgbouncer_databases_pool_size > 95
+          for: 5m
+          labels:
+            severity: critical
+            service: pgbouncer
+            team: database
+          annotations:
+            summary: "PgBouncer connection pool is exhausted"
+            description: "PgBouncer pool for database {{ $labels.database }} on {{ $labels.instance }} is {{ printf \"%.1f\" $value }}% utilized. New connections may be queued or rejected."
+            runbook_url: "https://runbooks.greenlang.io/pgbouncer/pool-exhausted"
+
+        # Pool utilization high (>80%)
+        - alert: PgBouncerPoolUtilizationHigh
+          expr: |
+            100 * (pgbouncer_pools_server_active + pgbouncer_pools_server_used) / pgbouncer_databases_pool_size > 80
+          for: 10m
+          labels:
+            severity: warning
+            service: pgbouncer
+            team: database
+          annotations:
+            summary: "PgBouncer connection pool utilization is high"
+            description: "PgBouncer pool for database {{ $labels.database }} on {{ $labels.instance }} is {{ printf \"%.1f\" $value }}% utilized."
+            runbook_url: "https://runbooks.greenlang.io/pgbouncer/pool-high-utilization"
+
+        # All pools exhausted
+        - alert: PgBouncerAllPoolsExhausted
+          expr: |
+            100 * sum(pgbouncer_pools_server_active + pgbouncer_pools_server_used) by (instance) / sum(pgbouncer_databases_pool_size) by (instance) > 90
+          for: 5m
+          labels:
+            severity: critical
+            service: pgbouncer
+            team: database
+          annotations:
+            summary: "All PgBouncer pools are near exhaustion"
+            description: "Overall PgBouncer pool utilization on {{ $labels.instance }} is {{ printf \"%.1f\" $value }}%."
+            runbook_url: "https://runbooks.greenlang.io/pgbouncer/all-pools-exhausted"
+
+        # No active server connections (pool unused)
+        - alert: PgBouncerPoolUnused
+          expr: |
+            pgbouncer_pools_server_active == 0
+            and pgbouncer_pools_client_active > 0
+          for: 5m
+          labels:
+            severity: warning
+            service: pgbouncer
+            team: database
+          annotations:
+            summary: "PgBouncer pool has no active server connections"
+            description: "PgBouncer pool for database {{ $labels.database }} on {{ $labels.instance }} has {{ $labels.client_active }} active clients but no active server connections."
+
+    - name: pgbouncer.wait_queue
+      interval: 30s
+      rules:
+        # Wait queue not empty
+        - alert: PgBouncerWaitQueueHigh
+          expr: pgbouncer_pools_client_waiting > 10
+          for: 5m
+          labels:
+            severity: warning
+            service: pgbouncer
+            team: database
+          annotations:
+            summary: "PgBouncer has clients waiting for connections"
+            description: "PgBouncer pool for database {{ $labels.database }} on {{ $labels.instance }} has {{ $value }} clients waiting for a connection."
+            runbook_url: "https://runbooks.greenlang.io/pgbouncer/wait-queue"
+
+        # Wait queue critical
+        - alert: PgBouncerWaitQueueCritical
+          expr: pgbouncer_pools_client_waiting > 50
+          for: 2m
+          labels:
+            severity: critical
+            service: pgbouncer
+            team: database
+          annotations:
+            summary: "PgBouncer wait queue is critically high"
+            description: "PgBouncer pool for database {{ $labels.database }} on {{ $labels.instance }} has {{ $value }} clients waiting. Applications may experience timeouts."
+            runbook_url: "https://runbooks.greenlang.io/pgbouncer/wait-queue-critical"
+
+        # Average wait time high
+        - alert: PgBouncerWaitTimeHigh
+          expr: |
+            pgbouncer_stats_avg_wait_time / 1000 > 100
+          for: 5m
+          labels:
+            severity: warning
+            service: pgbouncer
+            team: database
+          annotations:
+            summary: "PgBouncer average wait time is high"
+            description: "PgBouncer pool for database {{ $labels.database }} on {{ $labels.instance }} has an average wait time of {{ printf \"%.0f\" (divf $value 1000) }}ms."
+            runbook_url: "https://runbooks.greenlang.io/pgbouncer/high-wait-time"
+
+        # Wait time critical (>500ms)
+        - alert: PgBouncerWaitTimeCritical
+          expr: |
+            pgbouncer_stats_avg_wait_time / 1000 > 500
+          for: 2m
+          labels:
+            severity: critical
+            service: pgbouncer
+            team: database
+          annotations:
+            summary: "PgBouncer average wait time is critically high"
+            description: "PgBouncer pool for database {{ $labels.database }} on {{ $labels.instance }} has an average wait time of {{ printf \"%.0f\" (divf $value 1000) }}ms. This will severely impact application performance."
+            runbook_url: "https://runbooks.greenlang.io/pgbouncer/critical-wait-time"
+
+    - name: pgbouncer.connections
+      interval: 30s
+      rules:
+        # Client connections high
+        - alert: PgBouncerClientConnectionsHigh
+          expr: |
+            sum(pgbouncer_pools_client_active) by (instance) > pgbouncer_config_max_client_conn * 0.8
+          for: 10m
+          labels:
+            severity: warning
+            service: pgbouncer
+            team: database
+          annotations:
+            summary: "PgBouncer client connections approaching limit"
+            description: "PgBouncer instance {{ $labels.instance }} has {{ $value }} active client connections, approaching the max_client_conn limit."
+
+        # Client connections critical
+        - alert: PgBouncerClientConnectionsCritical
+          expr: |
+            sum(pgbouncer_pools_client_active) by (instance) > pgbouncer_config_max_client_conn * 0.95
+          for: 2m
+          labels:
+            severity: critical
+            service: pgbouncer
+            team: database
+          annotations:
+            summary: "PgBouncer client connections near limit"
+            description: "PgBouncer instance {{ $labels.instance }} has {{ $value }} active client connections, very close to the max_client_conn limit. New connections will be rejected."
+
+        # Server connections to single database high
+        - alert: PgBouncerServerConnectionsHigh
+          expr: |
+            pgbouncer_pools_server_active > pgbouncer_databases_pool_size * 0.9
+          for: 10m
+          labels:
+            severity: warning
+            service: pgbouncer
+            team: database
+          annotations:
+            summary: "PgBouncer server connections high for database"
+            description: "PgBouncer pool for database {{ $labels.database }} on {{ $labels.instance }} is using {{ $value }} server connections, approaching pool_size limit."
+
+    - name: pgbouncer.performance
+      interval: 30s
+      rules:
+        # Transaction time high
+        - alert: PgBouncerTransactionTimeHigh
+          expr: |
+            pgbouncer_stats_avg_xact_time / 1000 > 1000
+          for: 10m
+          labels:
+            severity: warning
+            service: pgbouncer
+            team: database
+          annotations:
+            summary: "PgBouncer average transaction time is high"
+            description: "Average transaction time for database {{ $labels.database }} on {{ $labels.instance }} is {{ printf \"%.0f\" (divf $value 1000) }}ms."
+
+        # Query time high
+        - alert: PgBouncerQueryTimeHigh
+          expr: |
+            pgbouncer_stats_avg_query_time / 1000 > 500
+          for: 10m
+          labels:
+            severity: warning
+            service: pgbouncer
+            team: database
+          annotations:
+            summary: "PgBouncer average query time is high"
+            description: "Average query time for database {{ $labels.database }} on {{ $labels.instance }} is {{ printf \"%.0f\" (divf $value 1000) }}ms."
+
+        # Query rate dropped significantly
+        - alert: PgBouncerQueryRateDropped
+          expr: |
+            rate(pgbouncer_stats_total_query_count[5m]) < rate(pgbouncer_stats_total_query_count[1h] offset 5m) * 0.5
+            and rate(pgbouncer_stats_total_query_count[1h] offset 5m) > 10
+          for: 10m
+          labels:
+            severity: warning
+            service: pgbouncer
+            team: database
+          annotations:
+            summary: "PgBouncer query rate has dropped significantly"
+            description: "Query rate for database {{ $labels.database }} on {{ $labels.instance }} has dropped by more than 50%."
+
+        # Transaction rate dropped
+        - alert: PgBouncerTransactionRateDropped
+          expr: |
+            rate(pgbouncer_stats_total_xact_count[5m]) < rate(pgbouncer_stats_total_xact_count[1h] offset 5m) * 0.5
+            and rate(pgbouncer_stats_total_xact_count[1h] offset 5m) > 10
+          for: 10m
+          labels:
+            severity: warning
+            service: pgbouncer
+            team: database
+          annotations:
+            summary: "PgBouncer transaction rate has dropped significantly"
+            description: "Transaction rate for database {{ $labels.database }} on {{ $labels.instance }} has dropped by more than 50%."
+
+    - name: pgbouncer.backend
+      interval: 30s
+      rules:
+        # Backend PostgreSQL connection failed
+        - alert: PgBouncerBackendConnectionFailed
+          expr: |
+            increase(pgbouncer_stats_total_server_conn_errors[5m]) > 0
+          for: 1m
+          labels:
+            severity: warning
+            service: pgbouncer
+            team: database
+          annotations:
+            summary: "PgBouncer backend connection errors"
+            description: "PgBouncer on {{ $labels.instance }} has experienced {{ $value }} backend connection errors to PostgreSQL in the last 5 minutes."
+            runbook_url: "https://runbooks.greenlang.io/pgbouncer/backend-connection-errors"
+
+        # Backend connection error rate high
+        - alert: PgBouncerBackendConnectionErrorRateHigh
+          expr: |
+            rate(pgbouncer_stats_total_server_conn_errors[5m]) > 1
+          for: 5m
+          labels:
+            severity: critical
+            service: pgbouncer
+            team: database
+          annotations:
+            summary: "PgBouncer backend connection error rate is high"
+            description: "PgBouncer on {{ $labels.instance }} is experiencing {{ printf \"%.2f\" $value }} backend connection errors per second."
+            runbook_url: "https://runbooks.greenlang.io/pgbouncer/backend-connection-error-rate"
+
+        # Server connections in login state
+        - alert: PgBouncerServerLoginStuck
+          expr: |
+            pgbouncer_pools_server_login > 0
+          for: 5m
+          labels:
+            severity: warning
+            service: pgbouncer
+            team: database
+          annotations:
+            summary: "PgBouncer has server connections stuck in login"
+            description: "PgBouncer pool for database {{ $labels.database }} on {{ $labels.instance }} has {{ $value }} connections stuck in login state."
+
+        # Server connections being tested
+        - alert: PgBouncerServerTestingHigh
+          expr: |
+            pgbouncer_pools_server_tested > 5
+          for: 5m
+          labels:
+            severity: info
+            service: pgbouncer
+            team: database
+          annotations:
+            summary: "PgBouncer has many connections being tested"
+            description: "PgBouncer pool for database {{ $labels.database }} on {{ $labels.instance }} has {{ $value }} connections being tested."
+
+    - name: pgbouncer.database
+      interval: 60s
+      rules:
+        # Database paused
+        - alert: PgBouncerDatabasePaused
+          expr: |
+            pgbouncer_databases_paused == 1
+          for: 5m
+          labels:
+            severity: critical
+            service: pgbouncer
+            team: database
+          annotations:
+            summary: "PgBouncer database is paused"
+            description: "Database {{ $labels.database }} on PgBouncer {{ $labels.instance }} is paused. No queries are being processed."
+            runbook_url: "https://runbooks.greenlang.io/pgbouncer/database-paused"
+
+        # Database disabled
+        - alert: PgBouncerDatabaseDisabled
+          expr: |
+            pgbouncer_databases_disabled == 1
+          for: 5m
+          labels:
+            severity: critical
+            service: pgbouncer
+            team: database
+          annotations:
+            summary: "PgBouncer database is disabled"
+            description: "Database {{ $labels.database }} on PgBouncer {{ $labels.instance }} is disabled. New connections are being rejected."
+            runbook_url: "https://runbooks.greenlang.io/pgbouncer/database-disabled"
+
+        # Reserve pool being used
+        - alert: PgBouncerReservePoolInUse
+          expr: |
+            pgbouncer_databases_current_connections > pgbouncer_databases_pool_size
+          for: 10m
+          labels:
+            severity: warning
+            service: pgbouncer
+            team: database
+          annotations:
+            summary: "PgBouncer is using reserve pool connections"
+            description: "Database {{ $labels.database }} on PgBouncer {{ $labels.instance }} is using {{ $value }} connections, which exceeds pool_size. Reserve pool is being used."

@@ -1,0 +1,109 @@
+{{/*
+GreenLang Infrastructure Helm Chart - Service Configurations
+*/}}
+
+{{- if .Values.executor.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "greenlang.fullname" . }}-executor
+  namespace: {{ include "greenlang.namespace" . }}
+  labels:
+    {{- include "greenlang.executor.labels" . | nindent 4 }}
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "{{ .Values.executor.service.metricsPort | default 9090 }}"
+    {{- with .Values.executor.service.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  type: {{ .Values.executor.service.type | default "ClusterIP" }}
+  selector:
+    {{- include "greenlang.selectorLabels" . | nindent 4 }}
+    component: executor
+  ports:
+    - name: http
+      port: {{ .Values.executor.service.port | default 80 }}
+      targetPort: {{ .Values.executor.service.targetPort | default 8080 }}
+      protocol: TCP
+    - name: metrics
+      port: {{ .Values.executor.service.metricsPort | default 9090 }}
+      targetPort: {{ .Values.executor.service.metricsPort | default 9090 }}
+      protocol: TCP
+{{- end }}
+
+{{- if .Values.worker.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "greenlang.fullname" . }}-worker
+  namespace: {{ include "greenlang.namespace" . }}
+  labels:
+    {{- include "greenlang.worker.labels" . | nindent 4 }}
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9090"
+spec:
+  type: ClusterIP
+  selector:
+    {{- include "greenlang.selectorLabels" . | nindent 4 }}
+    component: worker
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
+      protocol: TCP
+    - name: metrics
+      port: 9090
+      targetPort: 9090
+      protocol: TCP
+{{- end }}
+
+---
+# Headless service for worker discovery
+{{- if .Values.worker.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "greenlang.fullname" . }}-worker-headless
+  namespace: {{ include "greenlang.namespace" . }}
+  labels:
+    {{- include "greenlang.worker.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  clusterIP: None
+  selector:
+    {{- include "greenlang.selectorLabels" . | nindent 4 }}
+    component: worker
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+      protocol: TCP
+{{- end }}
+
+---
+# Main service (LoadBalancer for external access)
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "greenlang.fullname" . }}
+  namespace: {{ include "greenlang.namespace" . }}
+  labels:
+    {{- include "greenlang.labels" . | nindent 4 }}
+  {{- with .Values.service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ .Values.service.type | default "ClusterIP" }}
+  selector:
+    {{- include "greenlang.selectorLabels" . | nindent 4 }}
+    component: executor
+  ports:
+    - name: http
+      port: {{ .Values.service.port | default 80 }}
+      targetPort: {{ .Values.service.targetPort | default 8080 }}
+      protocol: TCP

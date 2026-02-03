@@ -1,0 +1,385 @@
+#------------------------------------------------------------------------------
+# S3 Event Processing Rules ConfigMap
+# GreenLang Kubernetes Infrastructure
+#------------------------------------------------------------------------------
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: s3-event-rules
+  namespace: greenlang-storage
+  labels:
+    app: s3-event-processor
+    component: configuration
+data:
+  event-rules.yaml: |
+    # GreenLang S3 Event Processing Rules
+    # Version: 1.0.0
+
+    global:
+      default_retry_count: 3
+      default_retry_delay_seconds: 30
+      max_retry_delay_seconds: 300
+      backoff_multiplier: 2.0
+      dead_letter_after_retries: true
+      enable_metrics: true
+      enable_tracing: true
+
+    # Event routing rules
+    routing:
+      # Artifact events routing
+      - name: artifact-upload
+        description: "Route artifact upload events to validation pipeline"
+        source_queue: greenlang-artifact-processing
+        conditions:
+          - field: "eventName"
+            operator: "prefix"
+            value: "ObjectCreated"
+          - field: "s3.object.key"
+            operator: "prefix"
+            value: "artifacts/"
+        actions:
+          - type: validate_artifact
+            handler: artifact_validator
+            config:
+              max_file_size_mb: 100
+              allowed_extensions:
+                - ".zip"
+                - ".tar.gz"
+                - ".jar"
+                - ".whl"
+                - ".rpm"
+                - ".deb"
+              checksum_validation: true
+              virus_scan: true
+          - type: tag_object
+            handler: s3_tagger
+            config:
+              tags:
+                processed: "true"
+                validated: "pending"
+          - type: notify
+            handler: sns_publisher
+            config:
+              topic: greenlang-artifact-processed
+              include_metadata: true
+
+      # Report events routing
+      - name: report-upload
+        description: "Route report upload events to indexing pipeline"
+        source_queue: greenlang-report-indexing
+        conditions:
+          - field: "eventName"
+            operator: "prefix"
+            value: "ObjectCreated"
+          - field: "s3.object.key"
+            operator: "prefix"
+            value: "reports/"
+        actions:
+          - type: extract_metadata
+            handler: metadata_extractor
+            config:
+              extract_from_filename: true
+              extract_from_content: true
+              supported_formats:
+                - pdf
+                - html
+                - xlsx
+                - csv
+                - json
+          - type: index_report
+            handler: opensearch_indexer
+            config:
+              index_name: greenlang-reports
+              pipeline: report-enrichment
+              include_content_preview: true
+              max_content_size_kb: 100
+          - type: update_catalog
+            handler: catalog_updater
+            config:
+              catalog_table: reports
+              update_search_index: true
+
+      # Delete events routing
+      - name: object-deletion
+        description: "Route object deletion events to audit pipeline"
+        source_queue: greenlang-audit-events
+        conditions:
+          - field: "eventName"
+            operator: "prefix"
+            value: "ObjectRemoved"
+        actions:
+          - type: audit_log
+            handler: audit_logger
+            config:
+              log_level: "INFO"
+              include_user_context: true
+              include_request_id: true
+          - type: compliance_check
+            handler: compliance_checker
+            config:
+              check_retention_policy: true
+              alert_on_violation: true
+          - type: update_inventory
+            handler: inventory_updater
+            config:
+              mark_as_deleted: true
+              preserve_metadata: true
+
+      # Lifecycle transition events
+      - name: lifecycle-transition
+        description: "Handle lifecycle transition events"
+        source_queue: greenlang-audit-events
+        conditions:
+          - field: "eventName"
+            operator: "in"
+            values:
+              - "LifecycleExpiration:Delete"
+              - "LifecycleTransition"
+        actions:
+          - type: audit_log
+            handler: audit_logger
+            config:
+              log_level: "INFO"
+              event_type: "lifecycle"
+          - type: cost_tracking
+            handler: cost_tracker
+            config:
+              track_storage_class_changes: true
+              update_cost_allocation: true
+
+      # Replication events routing
+      - name: replication-status
+        description: "Handle replication status events"
+        source_queue: greenlang-audit-events
+        conditions:
+          - field: "eventName"
+            operator: "prefix"
+            value: "Replication"
+        actions:
+          - type: replication_monitor
+            handler: replication_monitor
+            config:
+              alert_on_failure: true
+              retry_failed_replications: true
+              max_retry_attempts: 3
+          - type: audit_log
+            handler: audit_logger
+            config:
+              log_level: "WARN"
+              event_type: "replication"
+
+    # Processing actions configuration
+    actions:
+      artifact_validator:
+        handler_class: "handlers.ArtifactValidatorHandler"
+        timeout_seconds: 300
+        retry_policy:
+          max_retries: 3
+          backoff_type: "exponential"
+          initial_delay_seconds: 10
+        quarantine:
+          enabled: true
+          bucket_suffix: "-quarantine"
+          notification_topic: greenlang-security-alerts
+        validation_rules:
+          - name: file_size_check
+            enabled: true
+            max_size_mb: 100
+            error_action: quarantine
+          - name: extension_check
+            enabled: true
+            allowed_extensions:
+              - ".zip"
+              - ".tar.gz"
+              - ".jar"
+              - ".whl"
+            error_action: quarantine
+          - name: checksum_verification
+            enabled: true
+            algorithms:
+              - sha256
+              - md5
+            error_action: quarantine
+          - name: malware_scan
+            enabled: true
+            scanner: clamav
+            scan_timeout_seconds: 60
+            error_action: quarantine
+
+      metadata_extractor:
+        handler_class: "handlers.MetadataExtractorHandler"
+        timeout_seconds: 120
+        retry_policy:
+          max_retries: 2
+          backoff_type: "linear"
+          initial_delay_seconds: 5
+        extraction_config:
+          pdf:
+            extract_text: true
+            extract_images: false
+            max_pages: 100
+          html:
+            extract_text: true
+            extract_links: true
+            extract_tables: true
+          xlsx:
+            extract_sheets: true
+            extract_formulas: false
+            max_rows: 10000
+          csv:
+            detect_delimiter: true
+            extract_headers: true
+            sample_rows: 100
+
+      opensearch_indexer:
+        handler_class: "handlers.OpenSearchIndexerHandler"
+        timeout_seconds: 60
+        retry_policy:
+          max_retries: 3
+          backoff_type: "exponential"
+          initial_delay_seconds: 5
+        index_config:
+          refresh_interval: "5s"
+          number_of_shards: 3
+          number_of_replicas: 2
+        mapping:
+          dynamic: "strict"
+          properties:
+            title:
+              type: "text"
+              analyzer: "standard"
+            content_preview:
+              type: "text"
+              analyzer: "standard"
+            file_path:
+              type: "keyword"
+            bucket:
+              type: "keyword"
+            created_at:
+              type: "date"
+            file_size:
+              type: "long"
+            content_type:
+              type: "keyword"
+            tags:
+              type: "keyword"
+
+      audit_logger:
+        handler_class: "handlers.AuditLoggerHandler"
+        timeout_seconds: 30
+        retry_policy:
+          max_retries: 5
+          backoff_type: "exponential"
+          initial_delay_seconds: 2
+        output:
+          s3_bucket: "greenlang-audit-logs"
+          s3_prefix: "s3-events/"
+          partition_by:
+            - year
+            - month
+            - day
+          format: "json"
+          compression: "gzip"
+        enrichment:
+          include_user_identity: true
+          include_source_ip: true
+          include_user_agent: true
+          resolve_iam_user: true
+
+      cost_tracker:
+        handler_class: "handlers.CostTrackerHandler"
+        timeout_seconds: 60
+        retry_policy:
+          max_retries: 2
+          backoff_type: "linear"
+          initial_delay_seconds: 10
+        tracking_config:
+          metrics_namespace: "GreenLang/S3/Costs"
+          dimensions:
+            - bucket
+            - storage_class
+            - team
+          alert_thresholds:
+            daily_cost_usd: 100
+            monthly_cost_usd: 2000
+
+    # Retry policies
+    retry_policies:
+      default:
+        max_retries: 3
+        initial_delay_seconds: 30
+        max_delay_seconds: 300
+        backoff_type: "exponential"
+        backoff_multiplier: 2.0
+        jitter: true
+        jitter_factor: 0.1
+
+      critical:
+        max_retries: 5
+        initial_delay_seconds: 10
+        max_delay_seconds: 600
+        backoff_type: "exponential"
+        backoff_multiplier: 2.0
+        jitter: true
+        jitter_factor: 0.2
+
+      fast_fail:
+        max_retries: 1
+        initial_delay_seconds: 5
+        max_delay_seconds: 5
+        backoff_type: "fixed"
+        jitter: false
+
+    # Dead letter queue configuration
+    dead_letter:
+      enabled: true
+      retention_days: 14
+      alert_threshold: 10
+      alert_topic: greenlang-dlq-alerts
+      reprocess:
+        enabled: true
+        schedule: "0 */4 * * *"  # Every 4 hours
+        max_messages_per_run: 100
+
+---
+#------------------------------------------------------------------------------
+# Event Processor Configuration ConfigMap
+#------------------------------------------------------------------------------
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: s3-event-processor-config
+  namespace: greenlang-storage
+  labels:
+    app: s3-event-processor
+    component: configuration
+data:
+  environment: "production"
+  log_level: "INFO"
+  aws_region: "us-east-1"
+
+  # SQS Queue URLs
+  sqs_artifact_queue_url: "https://sqs.us-east-1.amazonaws.com/ACCOUNT_ID/greenlang-artifact-processing"
+  sqs_report_queue_url: "https://sqs.us-east-1.amazonaws.com/ACCOUNT_ID/greenlang-report-indexing"
+  sqs_audit_queue_url: "https://sqs.us-east-1.amazonaws.com/ACCOUNT_ID/greenlang-audit-events"
+
+  # DLQ URLs
+  dlq_artifact_url: "https://sqs.us-east-1.amazonaws.com/ACCOUNT_ID/greenlang-artifact-processing-dlq"
+  dlq_report_url: "https://sqs.us-east-1.amazonaws.com/ACCOUNT_ID/greenlang-report-indexing-dlq"
+  dlq_audit_url: "https://sqs.us-east-1.amazonaws.com/ACCOUNT_ID/greenlang-audit-events-dlq"
+
+  # Processing configuration
+  max_concurrent_messages: "10"
+  visibility_timeout: "300"
+  wait_time_seconds: "20"
+  max_batch_size: "10"
+
+  # OpenSearch configuration
+  opensearch_endpoint: "https://greenlang-search.us-east-1.es.amazonaws.com"
+  opensearch_index_prefix: "greenlang"
+
+  # Feature flags
+  enable_virus_scan: "true"
+  enable_text_extraction: "true"
+  enable_cost_tracking: "true"
+  enable_compliance_checks: "true"

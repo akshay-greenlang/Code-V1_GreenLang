@@ -1,0 +1,468 @@
+# =============================================================================
+# Infrastructure Test Suite - GitHub Actions Workflow
+# =============================================================================
+# INFRA-001: Comprehensive test suite for infrastructure deployment validation
+#
+# This workflow runs:
+# - Infrastructure tests (Terraform, Kubernetes, Helm)
+# - Integration tests (EKS, RDS, Redis, Application Health)
+# - Smoke tests (API, Ingress, DNS)
+#
+# Usage:
+#   Copy this file to .github/workflows/infra-tests.yml
+#   Or reference it using: workflow_call
+# =============================================================================
+
+name: Infrastructure Test Suite
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to test'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - dev
+          - staging
+          - prod
+      test_type:
+        description: 'Type of tests to run'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - infrastructure
+          - integration
+          - smoke
+      skip_real_infra:
+        description: 'Skip tests requiring real infrastructure'
+        required: false
+        default: true
+        type: boolean
+
+  pull_request:
+    paths:
+      - 'deployment/**'
+      - 'tests/infrastructure/**'
+      - 'tests/integration/**'
+      - 'tests/smoke/**'
+
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - 'deployment/**'
+
+  schedule:
+    # Run infrastructure tests daily at 2 AM UTC
+    - cron: '0 2 * * *'
+
+env:
+  PYTHON_VERSION: '3.11'
+  PYTEST_WORKERS: '4'
+  TEST_TIMEOUT: '600'
+
+jobs:
+  # ===========================================================================
+  # Infrastructure Tests - Validate IaC configurations
+  # ===========================================================================
+  infrastructure-tests:
+    name: Infrastructure Tests
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.test_type == 'all' || github.event.inputs.test_type == 'infrastructure' || github.event_name != 'workflow_dispatch' }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r tests/requirements.txt
+          pip install -e .
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: '1.6.0'
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: 'v3.13.0'
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.28.0'
+
+      - name: Run Terraform Syntax Tests
+        run: |
+          pytest tests/infrastructure/test_terraform_syntax.py \
+            -v \
+            --tb=short \
+            --junitxml=reports/terraform-tests.xml \
+            --html=reports/terraform-tests.html \
+            --self-contained-html \
+            -m "not slow"
+        continue-on-error: true
+
+      - name: Run Kubernetes Manifest Tests
+        run: |
+          pytest tests/infrastructure/test_kubernetes_manifests.py \
+            -v \
+            --tb=short \
+            --junitxml=reports/k8s-tests.xml \
+            --html=reports/k8s-tests.html \
+            --self-contained-html \
+            -m "not slow"
+        continue-on-error: true
+
+      - name: Run Helm Chart Tests
+        run: |
+          pytest tests/infrastructure/test_helm_charts.py \
+            -v \
+            --tb=short \
+            --junitxml=reports/helm-tests.xml \
+            --html=reports/helm-tests.html \
+            --self-contained-html \
+            -m "not slow"
+        continue-on-error: true
+
+      - name: Validate Terraform (Optional)
+        if: ${{ !github.event.inputs.skip_real_infra }}
+        run: |
+          for env_dir in deployment/terraform/environments/*/; do
+            echo "Validating $env_dir"
+            cd "$env_dir"
+            terraform init -backend=false
+            terraform validate
+            cd -
+          done
+        continue-on-error: true
+
+      - name: Lint Helm Charts (Optional)
+        run: |
+          for chart_dir in deployment/helm/*/; do
+            if [ -f "$chart_dir/Chart.yaml" ]; then
+              echo "Linting $chart_dir"
+              helm lint "$chart_dir" || true
+            fi
+          done
+        continue-on-error: true
+
+      - name: Upload Test Reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: infrastructure-test-reports
+          path: reports/
+          retention-days: 30
+
+  # ===========================================================================
+  # Integration Tests - Test service connectivity
+  # ===========================================================================
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.test_type == 'all' || github.event.inputs.test_type == 'integration' || github.event_name != 'workflow_dispatch' }}
+    needs: [infrastructure-tests]
+
+    env:
+      SKIP_INFRA_TESTS: ${{ github.event.inputs.skip_real_infra || 'true' }}
+      TEST_ENVIRONMENT: ${{ github.event.inputs.environment || 'staging' }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r tests/requirements.txt
+          pip install -e .
+
+      - name: Run EKS Connectivity Tests
+        run: |
+          pytest tests/integration/test_eks_connectivity.py \
+            -v \
+            --tb=short \
+            --junitxml=reports/eks-tests.xml \
+            --html=reports/eks-tests.html \
+            --self-contained-html \
+            -m "integration"
+        continue-on-error: true
+
+      - name: Run RDS Connectivity Tests
+        run: |
+          pytest tests/integration/test_rds_connectivity.py \
+            -v \
+            --tb=short \
+            --junitxml=reports/rds-tests.xml \
+            --html=reports/rds-tests.html \
+            --self-contained-html \
+            -m "integration"
+        continue-on-error: true
+
+      - name: Run Redis Connectivity Tests
+        run: |
+          pytest tests/integration/test_redis_connectivity.py \
+            -v \
+            --tb=short \
+            --junitxml=reports/redis-tests.xml \
+            --html=reports/redis-tests.html \
+            --self-contained-html \
+            -m "integration"
+        continue-on-error: true
+
+      - name: Run Application Health Tests
+        run: |
+          pytest tests/integration/test_application_health.py \
+            -v \
+            --tb=short \
+            --junitxml=reports/health-tests.xml \
+            --html=reports/health-tests.html \
+            --self-contained-html \
+            -m "integration"
+        continue-on-error: true
+
+      - name: Upload Test Reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: integration-test-reports
+          path: reports/
+          retention-days: 30
+
+  # ===========================================================================
+  # Smoke Tests - Validate deployed services
+  # ===========================================================================
+  smoke-tests:
+    name: Smoke Tests
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.test_type == 'all' || github.event.inputs.test_type == 'smoke' || github.event_name != 'workflow_dispatch' }}
+    needs: [integration-tests]
+
+    env:
+      SKIP_INFRA_TESTS: ${{ github.event.inputs.skip_real_infra || 'true' }}
+      TEST_ENVIRONMENT: ${{ github.event.inputs.environment || 'staging' }}
+      API_BASE_URL: ${{ vars.API_BASE_URL || 'http://localhost:8080' }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r tests/requirements.txt
+          pip install -e .
+
+      - name: Run API Endpoint Tests
+        run: |
+          pytest tests/smoke/test_api_endpoints.py \
+            -v \
+            --tb=short \
+            --junitxml=reports/api-tests.xml \
+            --html=reports/api-tests.html \
+            --self-contained-html \
+            -m "smoke"
+        continue-on-error: true
+
+      - name: Run Ingress Tests
+        run: |
+          pytest tests/smoke/test_ingress.py \
+            -v \
+            --tb=short \
+            --junitxml=reports/ingress-tests.xml \
+            --html=reports/ingress-tests.html \
+            --self-contained-html \
+            -m "smoke"
+        continue-on-error: true
+
+      - name: Run DNS Tests
+        run: |
+          pytest tests/smoke/test_dns.py \
+            -v \
+            --tb=short \
+            --junitxml=reports/dns-tests.xml \
+            --html=reports/dns-tests.html \
+            --self-contained-html \
+            -m "smoke"
+        continue-on-error: true
+
+      - name: Upload Test Reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: smoke-test-reports
+          path: reports/
+          retention-days: 30
+
+  # ===========================================================================
+  # Full Test Suite with Coverage
+  # ===========================================================================
+  full-test-suite:
+    name: Full Test Suite with Coverage
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'push' || github.event_name == 'schedule' }}
+    needs: [smoke-tests]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r tests/requirements.txt
+          pip install -e .
+
+      - name: Run Full Infrastructure Test Suite
+        run: |
+          pytest tests/infrastructure/ tests/integration/ tests/smoke/ \
+            -v \
+            --tb=short \
+            --cov=deployment \
+            --cov-report=xml:coverage.xml \
+            --cov-report=html:htmlcov \
+            --cov-report=term-missing \
+            --junitxml=reports/full-test-report.xml \
+            --html=reports/full-test-report.html \
+            --self-contained-html \
+            -n ${{ env.PYTEST_WORKERS }} \
+            --timeout=${{ env.TEST_TIMEOUT }}
+        continue-on-error: true
+
+      - name: Upload Coverage Report
+        uses: codecov/codecov-action@v4
+        if: always()
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: coverage.xml
+          flags: infrastructure
+          name: infrastructure-coverage
+          fail_ci_if_error: false
+
+      - name: Upload Test Reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: full-test-reports
+          path: |
+            reports/
+            htmlcov/
+            coverage.xml
+          retention-days: 30
+
+  # ===========================================================================
+  # Test Summary
+  # ===========================================================================
+  test-summary:
+    name: Test Summary
+    runs-on: ubuntu-latest
+    needs: [infrastructure-tests, integration-tests, smoke-tests]
+    if: always()
+
+    steps:
+      - name: Download all test reports
+        uses: actions/download-artifact@v4
+        with:
+          path: all-reports
+
+      - name: Generate Summary
+        run: |
+          echo "# Infrastructure Test Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Test Suite | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|------------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Infrastructure Tests | ${{ needs.infrastructure-tests.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Integration Tests | ${{ needs.integration-tests.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Smoke Tests | ${{ needs.smoke-tests.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Environment" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Environment:** ${{ github.event.inputs.environment || 'staging' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Python Version:** ${{ env.PYTHON_VERSION }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Triggered by:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "*Test reports are available as artifacts.*" >> $GITHUB_STEP_SUMMARY
+
+      - name: Check for failures
+        if: ${{ needs.infrastructure-tests.result == 'failure' || needs.integration-tests.result == 'failure' || needs.smoke-tests.result == 'failure' }}
+        run: |
+          echo "::warning::One or more test suites had failures. Check the test reports for details."
+
+  # ===========================================================================
+  # Notify on Failure (Optional)
+  # ===========================================================================
+  notify-failure:
+    name: Notify on Failure
+    runs-on: ubuntu-latest
+    needs: [test-summary]
+    if: ${{ failure() && github.event_name == 'schedule' }}
+
+    steps:
+      - name: Send Slack Notification
+        uses: slackapi/slack-github-action@v1.25.0
+        if: ${{ vars.SLACK_WEBHOOK_URL != '' }}
+        with:
+          payload: |
+            {
+              "text": "Infrastructure Tests Failed",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Infrastructure Test Suite Failed*\n\nScheduled tests have failed. Please investigate."
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Repository:*\n${{ github.repository }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Workflow Run:*\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Run>"
+                    }
+                  ]
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ vars.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK

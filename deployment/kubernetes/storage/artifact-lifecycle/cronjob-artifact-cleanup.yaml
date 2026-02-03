@@ -1,0 +1,434 @@
+# Artifact Cleanup CronJob
+# Cleans up old build artifacts and temporary files on a daily schedule
+# Sends notifications to Slack/webhook on completion
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: artifact-cleanup
+  namespace: greenlang-storage
+  labels:
+    app.kubernetes.io/name: artifact-cleanup
+    app.kubernetes.io/component: lifecycle-management
+    app.kubernetes.io/part-of: greenlang-storage
+    app.kubernetes.io/managed-by: kubernetes
+spec:
+  # Schedule: Daily at 2 AM UTC
+  schedule: "0 2 * * *"
+  # Timezone support (Kubernetes 1.27+)
+  timeZone: "UTC"
+  # Concurrency policy - do not allow concurrent runs
+  concurrencyPolicy: Forbid
+  # Keep job history
+  successfulJobsHistoryLimit: 7
+  failedJobsHistoryLimit: 3
+  # Start deadline - job must start within 1 hour of scheduled time
+  startingDeadlineSeconds: 3600
+  jobTemplate:
+    metadata:
+      labels:
+        app.kubernetes.io/name: artifact-cleanup
+        app.kubernetes.io/component: lifecycle-management
+    spec:
+      # Job timeout - 4 hours max
+      activeDeadlineSeconds: 14400
+      # Retry failed jobs up to 3 times
+      backoffLimit: 3
+      # TTL for completed jobs
+      ttlSecondsAfterFinished: 86400
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: artifact-cleanup
+            app.kubernetes.io/component: lifecycle-management
+          annotations:
+            prometheus.io/scrape: "true"
+            prometheus.io/port: "9090"
+            prometheus.io/path: "/metrics"
+        spec:
+          restartPolicy: OnFailure
+          serviceAccountName: artifact-lifecycle-sa
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            fsGroup: 1000
+            seccompProfile:
+              type: RuntimeDefault
+
+          # Init container to verify connectivity
+          initContainers:
+          - name: verify-connectivity
+            image: greenlang/artifact-lifecycle:v1.0.0
+            imagePullPolicy: IfNotPresent
+            command:
+            - /bin/sh
+            - -c
+            - |
+              echo "Verifying S3 connectivity..."
+              python3 -c "import boto3; s3 = boto3.client('s3'); s3.list_buckets()" || exit 1
+              echo "Verifying notification endpoints..."
+              curl -sf "${SLACK_WEBHOOK_URL}" -d '{"text":"Connectivity check"}' || echo "Warning: Slack webhook not reachable"
+              echo "Connectivity verified."
+            env:
+            - name: AWS_REGION
+              valueFrom:
+                configMapKeyRef:
+                  name: artifact-lifecycle-config
+                  key: aws_region
+            - name: SLACK_WEBHOOK_URL
+              valueFrom:
+                secretKeyRef:
+                  name: artifact-lifecycle-secrets
+                  key: slack_webhook_url
+                  optional: true
+            envFrom:
+            - secretRef:
+                name: aws-credentials
+            resources:
+              requests:
+                cpu: 50m
+                memory: 64Mi
+              limits:
+                cpu: 100m
+                memory: 128Mi
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities:
+                drop:
+                - ALL
+
+          containers:
+          - name: artifact-cleanup
+            image: greenlang/artifact-lifecycle:v1.0.0
+            imagePullPolicy: IfNotPresent
+            command:
+            - python3
+            - /app/scripts/cleanup-artifacts.py
+            args:
+            - "--config=/config/cleanup-config.yaml"
+            - "--metrics-port=9090"
+            - "--log-level=INFO"
+            env:
+            # AWS Configuration
+            - name: AWS_REGION
+              valueFrom:
+                configMapKeyRef:
+                  name: artifact-lifecycle-config
+                  key: aws_region
+            - name: AWS_DEFAULT_REGION
+              valueFrom:
+                configMapKeyRef:
+                  name: artifact-lifecycle-config
+                  key: aws_region
+            # S3 Bucket Configuration
+            - name: BUILD_ARTIFACTS_BUCKET
+              valueFrom:
+                configMapKeyRef:
+                  name: artifact-lifecycle-config
+                  key: build_artifacts_bucket
+            - name: TEMP_FILES_BUCKET
+              valueFrom:
+                configMapKeyRef:
+                  name: artifact-lifecycle-config
+                  key: temp_files_bucket
+            # Retention Configuration
+            - name: BUILD_ARTIFACT_RETENTION_DAYS
+              value: "30"
+            - name: TEMP_FILE_RETENTION_DAYS
+              value: "7"
+            # Notification Configuration
+            - name: SLACK_WEBHOOK_URL
+              valueFrom:
+                secretKeyRef:
+                  name: artifact-lifecycle-secrets
+                  key: slack_webhook_url
+                  optional: true
+            - name: WEBHOOK_URL
+              valueFrom:
+                secretKeyRef:
+                  name: artifact-lifecycle-secrets
+                  key: generic_webhook_url
+                  optional: true
+            # Dry run mode (set to "true" to test without deleting)
+            - name: DRY_RUN
+              valueFrom:
+                configMapKeyRef:
+                  name: artifact-lifecycle-config
+                  key: dry_run
+                  optional: true
+            # Prometheus pushgateway for metrics
+            - name: PUSHGATEWAY_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: artifact-lifecycle-config
+                  key: pushgateway_url
+                  optional: true
+            envFrom:
+            - secretRef:
+                name: aws-credentials
+            resources:
+              requests:
+                cpu: 200m
+                memory: 512Mi
+              limits:
+                cpu: 1000m
+                memory: 2Gi
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities:
+                drop:
+                - ALL
+            volumeMounts:
+            - name: config
+              mountPath: /config
+              readOnly: true
+            - name: scripts
+              mountPath: /app/scripts
+              readOnly: true
+            - name: tmp
+              mountPath: /tmp
+            - name: cache
+              mountPath: /home/appuser/.cache
+
+          # Sidecar container for metrics collection
+          - name: metrics-exporter
+            image: prom/pushgateway:v1.6.2
+            imagePullPolicy: IfNotPresent
+            ports:
+            - name: metrics
+              containerPort: 9090
+              protocol: TCP
+            resources:
+              requests:
+                cpu: 50m
+                memory: 64Mi
+              limits:
+                cpu: 100m
+                memory: 128Mi
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities:
+                drop:
+                - ALL
+
+          volumes:
+          - name: config
+            configMap:
+              name: artifact-cleanup-config
+          - name: scripts
+            configMap:
+              name: artifact-lifecycle-scripts
+              defaultMode: 0555
+          - name: tmp
+            emptyDir:
+              sizeLimit: 1Gi
+          - name: cache
+            emptyDir:
+              sizeLimit: 500Mi
+
+          # Node affinity for cost optimization
+          affinity:
+            nodeAffinity:
+              preferredDuringSchedulingIgnoredDuringExecution:
+              - weight: 100
+                preference:
+                  matchExpressions:
+                  - key: node.kubernetes.io/instance-type
+                    operator: In
+                    values:
+                    - t3.medium
+                    - t3.large
+              - weight: 50
+                preference:
+                  matchExpressions:
+                  - key: topology.kubernetes.io/zone
+                    operator: In
+                    values:
+                    - us-east-1a
+                    - us-east-1b
+
+          # Tolerations for spot instances
+          tolerations:
+          - key: "spot"
+            operator: "Equal"
+            value: "true"
+            effect: "NoSchedule"
+
+---
+# ConfigMap for cleanup configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: artifact-cleanup-config
+  namespace: greenlang-storage
+  labels:
+    app.kubernetes.io/name: artifact-cleanup
+    app.kubernetes.io/component: lifecycle-management
+data:
+  cleanup-config.yaml: |
+    # Artifact Cleanup Configuration
+    version: "1.0"
+
+    # Global settings
+    global:
+      dry_run: false
+      batch_size: 1000
+      max_workers: 10
+      log_level: INFO
+      metrics_enabled: true
+
+    # Cleanup targets
+    targets:
+      # Build artifacts cleanup
+      - name: build_artifacts
+        bucket: "${BUILD_ARTIFACTS_BUCKET}"
+        prefixes:
+          - "builds/"
+          - "packages/"
+          - "binaries/"
+        retention_days: 30
+        exclude_patterns:
+          - "*.release.*"
+          - "*-stable-*"
+          - "production/*"
+        filters:
+          # Only clean artifacts not tagged as 'keep'
+          - type: tag
+            key: retain
+            value: "false"
+            condition: "equals"
+          # Skip artifacts with legal hold
+          - type: tag
+            key: legal_hold
+            value: "true"
+            condition: "not_equals"
+
+      # Temporary files cleanup
+      - name: temp_files
+        bucket: "${TEMP_FILES_BUCKET}"
+        prefixes:
+          - "tmp/"
+          - "temp/"
+          - "scratch/"
+          - "uploads/pending/"
+        retention_days: 7
+        exclude_patterns: []
+        filters: []
+
+      # Failed build artifacts
+      - name: failed_builds
+        bucket: "${BUILD_ARTIFACTS_BUCKET}"
+        prefixes:
+          - "builds/failed/"
+          - "ci/failed/"
+        retention_days: 3
+        exclude_patterns: []
+        filters: []
+
+      # CI/CD cache
+      - name: ci_cache
+        bucket: "${BUILD_ARTIFACTS_BUCKET}"
+        prefixes:
+          - "cache/ci/"
+          - "cache/build/"
+        retention_days: 14
+        exclude_patterns: []
+        filters: []
+
+    # Notification settings
+    notifications:
+      slack:
+        enabled: true
+        channel: "#devops-alerts"
+        on_success: true
+        on_failure: true
+        include_stats: true
+      webhook:
+        enabled: true
+        on_success: true
+        on_failure: true
+        retry_count: 3
+        retry_delay_seconds: 5
+
+    # Statistics reporting
+    reporting:
+      # Report cleanup statistics
+      include_object_count: true
+      include_size_freed: true
+      include_duration: true
+      include_errors: true
+      # Group by prefix
+      group_by_prefix: true
+      # Export to S3
+      export_to_s3:
+        enabled: true
+        bucket: "${BUILD_ARTIFACTS_BUCKET}"
+        prefix: "reports/cleanup/"
+        format: "json"
+
+---
+# ServiceAccount for artifact cleanup
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: artifact-lifecycle-sa
+  namespace: greenlang-storage
+  labels:
+    app.kubernetes.io/name: artifact-lifecycle
+    app.kubernetes.io/component: lifecycle-management
+  annotations:
+    # EKS IAM Role annotation
+    eks.amazonaws.com/role-arn: arn:aws:iam::ACCOUNT_ID:role/greenlang-artifact-lifecycle-role
+
+---
+# Role for artifact lifecycle jobs
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: artifact-lifecycle-role
+  namespace: greenlang-storage
+rules:
+- apiGroups: [""]
+  resources: ["configmaps"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["get"]
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "list"]
+- apiGroups: ["batch"]
+  resources: ["jobs"]
+  verbs: ["get", "list", "watch"]
+
+---
+# RoleBinding for artifact lifecycle
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: artifact-lifecycle-rolebinding
+  namespace: greenlang-storage
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: artifact-lifecycle-role
+subjects:
+- kind: ServiceAccount
+  name: artifact-lifecycle-sa
+  namespace: greenlang-storage
+
+---
+# PodDisruptionBudget (for high availability of batch jobs)
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: artifact-cleanup-pdb
+  namespace: greenlang-storage
+spec:
+  minAvailable: 0
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: artifact-cleanup

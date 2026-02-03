@@ -1,0 +1,116 @@
+{{- if .Values.serviceAccount.create }}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ include "patroni.serviceAccountName" . }}
+  namespace: {{ .Values.namespace | default .Release.Namespace }}
+  labels:
+    {{- include "patroni.labels" . | nindent 4 }}
+  {{- with .Values.serviceAccount.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+automountServiceAccountToken: {{ .Values.serviceAccount.automountServiceAccountToken }}
+{{- end }}
+
+{{- if .Values.rbac.create }}
+---
+# Role for Patroni to manage Kubernetes endpoints and configmaps
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "patroni.fullname" . }}-role
+  namespace: {{ .Values.namespace | default .Release.Namespace }}
+  labels:
+    {{- include "patroni.labels" . | nindent 4 }}
+rules:
+  # Endpoints are used by Patroni for leader election and DCS
+  - apiGroups: [""]
+    resources: ["endpoints"]
+    verbs: ["create", "get", "list", "patch", "update", "watch", "delete"]
+
+  # ConfigMaps can be used as alternative DCS storage
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["create", "get", "list", "patch", "update", "watch", "delete"]
+
+  # Pods - for getting pod information and labels
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch", "patch"]
+
+  # Services - for updating service selectors during failover
+  - apiGroups: [""]
+    resources: ["services"]
+    verbs: ["get", "list", "watch", "patch"]
+
+  # Secrets - for accessing credentials
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "list", "watch"]
+
+  # Events - for creating events on failover/switchover
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["create", "patch"]
+
+  # Leases - alternative leader election mechanism
+  - apiGroups: ["coordination.k8s.io"]
+    resources: ["leases"]
+    verbs: ["create", "get", "list", "patch", "update", "watch", "delete"]
+
+---
+# RoleBinding to bind the role to the service account
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "patroni.fullname" . }}-rolebinding
+  namespace: {{ .Values.namespace | default .Release.Namespace }}
+  labels:
+    {{- include "patroni.labels" . | nindent 4 }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "patroni.serviceAccountName" . }}
+    namespace: {{ .Values.namespace | default .Release.Namespace }}
+roleRef:
+  kind: Role
+  name: {{ include "patroni.fullname" . }}-role
+  apiGroup: rbac.authorization.k8s.io
+
+---
+# ClusterRole for cross-namespace operations (optional)
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "patroni.fullname" . }}-cluster-role
+  labels:
+    {{- include "patroni.labels" . | nindent 4 }}
+rules:
+  # Node information for topology awareness
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["get", "list", "watch"]
+
+  # For reading cluster-wide configuration
+  - apiGroups: [""]
+    resources: ["namespaces"]
+    verbs: ["get", "list"]
+
+---
+# ClusterRoleBinding for cross-namespace operations
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "patroni.fullname" . }}-cluster-rolebinding
+  labels:
+    {{- include "patroni.labels" . | nindent 4 }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "patroni.serviceAccountName" . }}
+    namespace: {{ .Values.namespace | default .Release.Namespace }}
+roleRef:
+  kind: ClusterRole
+  name: {{ include "patroni.fullname" . }}-cluster-role
+  apiGroup: rbac.authorization.k8s.io
+{{- end }}

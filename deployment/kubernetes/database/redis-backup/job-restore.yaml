@@ -1,0 +1,549 @@
+# Redis Restore Job Template
+# Used to restore Redis data from S3 backups
+# Deploy with: kubectl create -f job-restore.yaml
+# Or use: kubectl apply -f job-restore.yaml
+#
+# Required parameters (set via environment or ConfigMap):
+#   - BACKUP_TIMESTAMP: The timestamp of the backup to restore (e.g., 20240115_060000)
+#   - BACKUP_TYPE: Type of backup to restore (rdb or aof)
+#
+# Example usage:
+#   kubectl create job redis-restore-manual --from=cronjob/redis-backup-rdb -n greenlang
+#   kubectl set env job/redis-restore-manual BACKUP_TIMESTAMP=20240115_060000
+#
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: redis-restore
+  namespace: greenlang
+  labels:
+    app: redis
+    component: restore
+    app.kubernetes.io/name: redis-backup
+    app.kubernetes.io/component: restore
+  annotations:
+    description: "Restore Redis data from S3 backup"
+spec:
+  # Job timeout (1 hour)
+  activeDeadlineSeconds: 3600
+
+  # No automatic retries for restore operations
+  backoffLimit: 0
+
+  # Keep job for manual inspection
+  ttlSecondsAfterFinished: 86400  # 24 hours
+
+  template:
+    metadata:
+      labels:
+        app: redis
+        component: restore
+      annotations:
+        description: "Redis restore operation - manual verification required"
+    spec:
+      serviceAccountName: redis-backup-sa
+      restartPolicy: Never
+
+      # Security context
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+
+      initContainers:
+        # Verify backup exists before proceeding
+        - name: verify-backup
+          image: amazon/aws-cli:latest
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+
+              echo "Verifying backup exists: ${BACKUP_TIMESTAMP}"
+
+              if [ "$BACKUP_TYPE" = "rdb" ]; then
+                  BACKUP_FILE="redis_rdb_${BACKUP_TIMESTAMP}.rdb.gz"
+                  S3_PATH="s3://${S3_BUCKET}/${S3_PREFIX}/rdb/${BACKUP_FILE}"
+              else
+                  BACKUP_FILE="redis_aof_${BACKUP_TIMESTAMP}.aof.gz"
+                  S3_PATH="s3://${S3_BUCKET}/${S3_PREFIX}/aof/${BACKUP_FILE}"
+              fi
+
+              if ! aws s3 ls "$S3_PATH" > /dev/null 2>&1; then
+                  echo "ERROR: Backup not found: $S3_PATH"
+                  echo "Available backups:"
+                  aws s3 ls "s3://${S3_BUCKET}/${S3_PREFIX}/${BACKUP_TYPE}/" | tail -20
+                  exit 1
+              fi
+
+              echo "Backup verified: $S3_PATH"
+          env:
+            - name: BACKUP_TIMESTAMP
+              valueFrom:
+                configMapKeyRef:
+                  name: redis-restore-params
+                  key: BACKUP_TIMESTAMP
+            - name: BACKUP_TYPE
+              valueFrom:
+                configMapKeyRef:
+                  name: redis-restore-params
+                  key: BACKUP_TYPE
+                  optional: true
+            - name: S3_BUCKET
+              valueFrom:
+                configMapKeyRef:
+                  name: redis-backup-config
+                  key: S3_BUCKET
+            - name: S3_PREFIX
+              valueFrom:
+                configMapKeyRef:
+                  name: redis-backup-config
+                  key: S3_PREFIX
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: redis-backup-credentials
+                  key: AWS_ACCESS_KEY_ID
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: redis-backup-credentials
+                  key: AWS_SECRET_ACCESS_KEY
+            - name: AWS_DEFAULT_REGION
+              valueFrom:
+                configMapKeyRef:
+                  name: redis-backup-config
+                  key: S3_REGION
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "50m"
+            limits:
+              memory: "128Mi"
+              cpu: "100m"
+
+      containers:
+        - name: restore
+          image: greenlang/redis-backup:latest
+          imagePullPolicy: Always
+
+          command:
+            - /bin/bash
+            - /scripts/restore-rdb.sh
+
+          env:
+            # Restore parameters
+            - name: BACKUP_TIMESTAMP
+              valueFrom:
+                configMapKeyRef:
+                  name: redis-restore-params
+                  key: BACKUP_TIMESTAMP
+            - name: BACKUP_TYPE
+              valueFrom:
+                configMapKeyRef:
+                  name: redis-restore-params
+                  key: BACKUP_TYPE
+                  optional: true
+            - name: DRY_RUN
+              valueFrom:
+                configMapKeyRef:
+                  name: redis-restore-params
+                  key: DRY_RUN
+                  optional: true
+
+            # Redis connection
+            - name: REDIS_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: redis-backup-config
+                  key: REDIS_HOST
+            - name: REDIS_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: redis-backup-config
+                  key: REDIS_PORT
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: redis-backup-credentials
+                  key: REDIS_PASSWORD
+
+            # S3 configuration
+            - name: S3_BUCKET
+              valueFrom:
+                configMapKeyRef:
+                  name: redis-backup-config
+                  key: S3_BUCKET
+            - name: S3_REGION
+              valueFrom:
+                configMapKeyRef:
+                  name: redis-backup-config
+                  key: S3_REGION
+            - name: S3_PREFIX
+              valueFrom:
+                configMapKeyRef:
+                  name: redis-backup-config
+                  key: S3_PREFIX
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: redis-backup-credentials
+                  key: AWS_ACCESS_KEY_ID
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: redis-backup-credentials
+                  key: AWS_SECRET_ACCESS_KEY
+
+            # Restore settings
+            - name: RESTORE_TIMEOUT
+              valueFrom:
+                configMapKeyRef:
+                  name: redis-backup-config
+                  key: RESTORE_TIMEOUT
+            - name: RESTORE_VERIFY_DATA
+              valueFrom:
+                configMapKeyRef:
+                  name: redis-backup-config
+                  key: RESTORE_VERIFY_DATA
+            - name: RESTORE_STOP_TIMEOUT
+              valueFrom:
+                configMapKeyRef:
+                  name: redis-backup-config
+                  key: RESTORE_STOP_TIMEOUT
+            - name: VERIFY_CHECKSUM
+              valueFrom:
+                configMapKeyRef:
+                  name: redis-backup-config
+                  key: VERIFY_CHECKSUM
+            - name: LOG_LEVEL
+              valueFrom:
+                configMapKeyRef:
+                  name: redis-backup-config
+                  key: LOG_LEVEL
+
+          volumeMounts:
+            - name: scripts
+              mountPath: /scripts
+              readOnly: true
+            - name: restore-data
+              mountPath: /restore
+            - name: tmp
+              mountPath: /tmp
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "500m"
+            limits:
+              memory: "1Gi"
+              cpu: "1000m"
+
+      volumes:
+        - name: scripts
+          configMap:
+            name: redis-restore-scripts
+            defaultMode: 0755
+        - name: restore-data
+          emptyDir:
+            sizeLimit: 20Gi
+        - name: tmp
+          emptyDir:
+            sizeLimit: 1Gi
+
+---
+# ConfigMap for restore parameters (create/update before running restore)
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: redis-restore-params
+  namespace: greenlang
+  labels:
+    app: redis
+    component: restore
+data:
+  # REQUIRED: Timestamp of the backup to restore
+  # Format: YYYYMMDD_HHMMSS (e.g., 20240115_060000)
+  BACKUP_TIMESTAMP: "REPLACE_WITH_TIMESTAMP"
+
+  # Backup type to restore: rdb or aof (default: rdb)
+  BACKUP_TYPE: "rdb"
+
+  # Dry run mode - validates backup without actually restoring
+  DRY_RUN: "false"
+
+---
+# ConfigMap for restore scripts
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: redis-restore-scripts
+  namespace: greenlang
+  labels:
+    app: redis
+    component: restore
+data:
+  restore-rdb.sh: |
+    #!/bin/bash
+    # Redis RDB Restore Script
+    # Restores Redis data from S3 backup
+
+    set -euo pipefail
+
+    RESTORE_DIR="/restore"
+    BACKUP_TYPE="${BACKUP_TYPE:-rdb}"
+    DRY_RUN="${DRY_RUN:-false}"
+
+    log() {
+        local level="$1"
+        shift
+        echo "{\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"level\":\"$level\",\"component\":\"redis-restore\",\"message\":\"$*\"}"
+    }
+
+    cleanup() {
+        log "INFO" "Cleaning up temporary files"
+        rm -rf "${RESTORE_DIR}"/* 2>/dev/null || true
+    }
+    trap cleanup EXIT
+
+    verify_redis_connection() {
+        log "INFO" "Verifying Redis connection"
+        if ! redis-cli -h "$REDIS_HOST" -p "$REDIS_PORT" -a "$REDIS_PASSWORD" ping | grep -q PONG; then
+            log "ERROR" "Cannot connect to Redis"
+            exit 1
+        fi
+        log "INFO" "Redis connection verified"
+    }
+
+    download_backup() {
+        local backup_file
+        local s3_path
+
+        if [ "$BACKUP_TYPE" = "rdb" ]; then
+            backup_file="redis_rdb_${BACKUP_TIMESTAMP}.rdb.gz"
+            s3_path="s3://${S3_BUCKET}/${S3_PREFIX}/rdb/${backup_file}"
+        else
+            backup_file="redis_aof_${BACKUP_TIMESTAMP}.aof.gz"
+            s3_path="s3://${S3_BUCKET}/${S3_PREFIX}/aof/${backup_file}"
+        fi
+
+        log "INFO" "Downloading backup from S3: ${s3_path}"
+        aws s3 cp "${s3_path}" "${RESTORE_DIR}/${backup_file}"
+        aws s3 cp "${s3_path}.sha256" "${RESTORE_DIR}/${backup_file}.sha256"
+
+        # Verify checksum
+        if [ "$VERIFY_CHECKSUM" = "true" ]; then
+            log "INFO" "Verifying backup checksum"
+            local expected_checksum=$(cat "${RESTORE_DIR}/${backup_file}.sha256" | cut -d' ' -f1)
+            local actual_checksum=$(sha256sum "${RESTORE_DIR}/${backup_file}" | cut -d' ' -f1)
+
+            if [ "$expected_checksum" != "$actual_checksum" ]; then
+                log "ERROR" "Checksum mismatch! Expected: ${expected_checksum}, Got: ${actual_checksum}"
+                exit 1
+            fi
+            log "INFO" "Checksum verified successfully"
+        fi
+
+        # Decompress
+        log "INFO" "Decompressing backup"
+        gunzip "${RESTORE_DIR}/${backup_file}"
+
+        echo "${backup_file%.gz}"
+    }
+
+    stop_redis_safely() {
+        log "INFO" "Stopping Redis safely"
+
+        # Get current info
+        local dbsize=$(redis-cli -h "$REDIS_HOST" -p "$REDIS_PORT" -a "$REDIS_PASSWORD" DBSIZE | grep -oP '\d+')
+        log "INFO" "Current database size: ${dbsize} keys"
+
+        # Trigger final save
+        log "INFO" "Triggering final BGSAVE before shutdown"
+        redis-cli -h "$REDIS_HOST" -p "$REDIS_PORT" -a "$REDIS_PASSWORD" BGSAVE
+
+        # Wait for save to complete
+        local start_time=$(date +%s)
+        while true; do
+            local current_time=$(date +%s)
+            local elapsed=$((current_time - start_time))
+
+            if [ $elapsed -gt "${RESTORE_STOP_TIMEOUT:-60}" ]; then
+                log "WARN" "BGSAVE timeout during shutdown preparation"
+                break
+            fi
+
+            local bgsave_in_progress=$(redis-cli -h "$REDIS_HOST" -p "$REDIS_PORT" -a "$REDIS_PASSWORD" INFO persistence | grep rdb_bgsave_in_progress | cut -d: -f2 | tr -d '\r')
+            if [ "$bgsave_in_progress" = "0" ]; then
+                break
+            fi
+            sleep 2
+        done
+
+        # Scale down Redis StatefulSet
+        log "INFO" "Scaling down Redis StatefulSet"
+        kubectl scale statefulset redis-master -n greenlang --replicas=0
+
+        # Wait for pods to terminate
+        log "INFO" "Waiting for Redis pods to terminate"
+        kubectl wait --for=delete pod/redis-master-0 -n greenlang --timeout="${RESTORE_STOP_TIMEOUT:-60}s" || true
+
+        log "INFO" "Redis stopped successfully"
+    }
+
+    replace_data_files() {
+        local backup_file="$1"
+
+        log "INFO" "Replacing Redis data files"
+
+        # Get PVC name
+        local pvc_name="redis-data-redis-master-0"
+
+        # Create temporary pod to access PVC
+        log "INFO" "Creating temporary pod to access Redis data volume"
+
+        cat <<EOFPOD | kubectl apply -f -
+    apiVersion: v1
+    kind: Pod
+    metadata:
+      name: redis-restore-helper
+      namespace: greenlang
+      labels:
+        app: redis-restore-helper
+    spec:
+      containers:
+      - name: helper
+        image: redis:7.2-alpine
+        command: ["sleep", "3600"]
+        volumeMounts:
+        - name: redis-data
+          mountPath: /data
+      volumes:
+      - name: redis-data
+        persistentVolumeClaim:
+          claimName: ${pvc_name}
+      restartPolicy: Never
+    EOFPOD
+
+        # Wait for helper pod to be ready
+        kubectl wait --for=condition=Ready pod/redis-restore-helper -n greenlang --timeout=120s
+
+        # Backup existing data
+        log "INFO" "Backing up existing dump.rdb"
+        kubectl exec -n greenlang redis-restore-helper -- mv /data/dump.rdb /data/dump.rdb.backup 2>/dev/null || true
+
+        # Copy new backup file to PVC
+        log "INFO" "Copying restored backup to Redis data volume"
+        kubectl cp "${RESTORE_DIR}/${backup_file}" greenlang/redis-restore-helper:/data/dump.rdb
+
+        # Set correct permissions
+        kubectl exec -n greenlang redis-restore-helper -- chown 1000:1000 /data/dump.rdb
+        kubectl exec -n greenlang redis-restore-helper -- chmod 644 /data/dump.rdb
+
+        # Verify file
+        local file_size=$(kubectl exec -n greenlang redis-restore-helper -- stat -c%s /data/dump.rdb)
+        log "INFO" "Restored file size: ${file_size} bytes"
+
+        # Delete helper pod
+        kubectl delete pod redis-restore-helper -n greenlang --wait=true
+
+        log "INFO" "Data files replaced successfully"
+    }
+
+    start_redis() {
+        log "INFO" "Starting Redis"
+
+        # Scale up Redis StatefulSet
+        kubectl scale statefulset redis-master -n greenlang --replicas=1
+
+        # Wait for Redis to be ready
+        log "INFO" "Waiting for Redis to be ready"
+        kubectl wait --for=condition=Ready pod/redis-master-0 -n greenlang --timeout="${RESTORE_TIMEOUT:-600}s"
+
+        # Verify Redis is accepting connections
+        local retries=30
+        while [ $retries -gt 0 ]; do
+            if redis-cli -h "$REDIS_HOST" -p "$REDIS_PORT" -a "$REDIS_PASSWORD" ping | grep -q PONG; then
+                log "INFO" "Redis started and accepting connections"
+                break
+            fi
+            retries=$((retries - 1))
+            sleep 2
+        done
+
+        if [ $retries -eq 0 ]; then
+            log "ERROR" "Redis failed to start properly"
+            exit 1
+        fi
+    }
+
+    verify_restore() {
+        log "INFO" "Verifying restored data"
+
+        # Get database info
+        local dbsize=$(redis-cli -h "$REDIS_HOST" -p "$REDIS_PORT" -a "$REDIS_PASSWORD" DBSIZE | grep -oP '\d+')
+        local memory=$(redis-cli -h "$REDIS_HOST" -p "$REDIS_PORT" -a "$REDIS_PASSWORD" INFO memory | grep used_memory_human | cut -d: -f2 | tr -d '\r')
+        local last_save=$(redis-cli -h "$REDIS_HOST" -p "$REDIS_PORT" -a "$REDIS_PASSWORD" LASTSAVE)
+
+        log "INFO" "Restore verification:"
+        log "INFO" "  - Database size: ${dbsize} keys"
+        log "INFO" "  - Memory usage: ${memory}"
+        log "INFO" "  - Last save timestamp: ${last_save}"
+
+        if [ "$dbsize" -eq 0 ]; then
+            log "WARN" "Database is empty after restore - verify this is expected"
+        fi
+
+        log "INFO" "Restore completed successfully"
+    }
+
+    main() {
+        log "INFO" "=== Redis Restore Operation ==="
+        log "INFO" "Backup timestamp: ${BACKUP_TIMESTAMP}"
+        log "INFO" "Backup type: ${BACKUP_TYPE}"
+        log "INFO" "Dry run: ${DRY_RUN}"
+
+        # Verify connection first
+        verify_redis_connection
+
+        # Download and verify backup
+        local backup_file=$(download_backup)
+        log "INFO" "Backup downloaded: ${backup_file}"
+
+        if [ "$DRY_RUN" = "true" ]; then
+            log "INFO" "Dry run mode - skipping actual restore"
+            log "INFO" "Backup verified and ready for restore"
+            exit 0
+        fi
+
+        # Confirm restore (in non-automated contexts)
+        log "WARN" "=== RESTORE WILL OVERWRITE EXISTING DATA ==="
+        log "INFO" "Proceeding with restore in 10 seconds..."
+        sleep 10
+
+        # Stop Redis
+        stop_redis_safely
+
+        # Replace data files
+        replace_data_files "$backup_file"
+
+        # Start Redis
+        start_redis
+
+        # Verify
+        if [ "$RESTORE_VERIFY_DATA" = "true" ]; then
+            verify_restore
+        fi
+
+        log "INFO" "=== Restore Operation Complete ==="
+    }
+
+    main "$@"

@@ -1,0 +1,301 @@
+# PostgreSQL ServiceMonitor for Prometheus Operator
+# GreenLang Production Monitoring
+# This ServiceMonitor configures Prometheus to scrape PostgreSQL and TimescaleDB metrics
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: postgresql
+  namespace: monitoring
+  labels:
+    app: postgresql
+    release: prometheus
+    team: database
+spec:
+  # Job name in Prometheus
+  jobLabel: postgresql
+
+  # Namespace selector - where PostgreSQL services are deployed
+  namespaceSelector:
+    matchNames:
+      - greenlang
+      - greenlang-staging
+      - greenlang-production
+
+  # Service selector - match PostgreSQL exporter services
+  selector:
+    matchLabels:
+      app: postgresql
+      component: exporter
+    matchExpressions:
+      - key: monitoring
+        operator: In
+        values:
+          - "true"
+          - "enabled"
+
+  # Endpoints configuration
+  endpoints:
+    # Primary PostgreSQL exporter endpoint
+    - port: metrics
+      interval: 30s
+      scrapeTimeout: 10s
+      path: /metrics
+      scheme: http
+
+      # Metric relabeling to add useful labels
+      metricRelabelings:
+        # Keep only relevant metrics to reduce cardinality
+        - sourceLabels: [__name__]
+          regex: "pg_(up|static|stat_database_.*|stat_user_tables_.*|stat_activity_.*|locks_.*|replication_.*|settings_.*|stat_bgwriter_.*|stat_wal_.*|database_size_bytes)"
+          action: keep
+
+        # Add environment label based on namespace
+        - sourceLabels: [namespace]
+          targetLabel: environment
+          regex: "greenlang-(.*)"
+          replacement: "$1"
+
+        # Normalize database names
+        - sourceLabels: [datname]
+          targetLabel: database
+          regex: "(.*)"
+          replacement: "$1"
+
+      # Relabeling for target identification
+      relabelings:
+        # Keep the service name
+        - sourceLabels: [__meta_kubernetes_service_name]
+          targetLabel: service
+
+        # Keep the pod name
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod
+
+        # Add node information
+        - sourceLabels: [__meta_kubernetes_pod_node_name]
+          targetLabel: node
+
+        # Add namespace
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace
+
+        # Add cluster role (primary/replica)
+        - sourceLabels: [__meta_kubernetes_pod_label_role]
+          targetLabel: role
+
+        # Add PostgreSQL version if available
+        - sourceLabels: [__meta_kubernetes_pod_label_postgresql_version]
+          targetLabel: postgresql_version
+
+    # TimescaleDB-specific metrics endpoint (if using separate exporter)
+    - port: timescale-metrics
+      interval: 60s
+      scrapeTimeout: 15s
+      path: /metrics
+      scheme: http
+
+      metricRelabelings:
+        # Keep TimescaleDB specific metrics
+        - sourceLabels: [__name__]
+          regex: "timescaledb_(hypertable_.*|continuous_aggregate_.*|bgw_.*|retention_.*|compression_.*)"
+          action: keep
+
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_service_name]
+          targetLabel: service
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace
+
+  # Target labels from service
+  targetLabels:
+    - app
+    - release
+    - cluster
+
+---
+# ServiceMonitor for PostgreSQL replicas
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: postgresql-replicas
+  namespace: monitoring
+  labels:
+    app: postgresql
+    component: replica
+    release: prometheus
+    team: database
+spec:
+  jobLabel: postgresql-replica
+
+  namespaceSelector:
+    matchNames:
+      - greenlang
+      - greenlang-staging
+      - greenlang-production
+
+  selector:
+    matchLabels:
+      app: postgresql
+      component: exporter
+      role: replica
+
+  endpoints:
+    - port: metrics
+      interval: 30s
+      scrapeTimeout: 10s
+      path: /metrics
+      scheme: http
+
+      metricRelabelings:
+        # Focus on replication-specific metrics for replicas
+        - sourceLabels: [__name__]
+          regex: "pg_(up|replication_.*|stat_wal_receiver_.*|stat_database_.*|stat_activity_count)"
+          action: keep
+
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_service_name]
+          targetLabel: service
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace
+        - sourceLabels: [__meta_kubernetes_pod_label_statefulset_kubernetes_io_pod_name]
+          targetLabel: replica_name
+
+  targetLabels:
+    - app
+    - role
+
+---
+# PodMonitor for direct pod scraping (alternative to ServiceMonitor)
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: postgresql-pods
+  namespace: monitoring
+  labels:
+    app: postgresql
+    release: prometheus
+    team: database
+spec:
+  jobLabel: postgresql-pod
+
+  namespaceSelector:
+    matchNames:
+      - greenlang
+      - greenlang-staging
+      - greenlang-production
+
+  selector:
+    matchLabels:
+      app: postgresql
+    matchExpressions:
+      - key: postgres-exporter
+        operator: In
+        values:
+          - "true"
+          - "enabled"
+
+  podMetricsEndpoints:
+    - port: exporter
+      interval: 30s
+      scrapeTimeout: 10s
+      path: /metrics
+      scheme: http
+
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace
+        - sourceLabels: [__meta_kubernetes_pod_label_role]
+          targetLabel: role
+        - sourceLabels: [__meta_kubernetes_pod_label_cluster_name]
+          targetLabel: cluster
+
+---
+# PrometheusRule for recording rules (pre-computed metrics)
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: postgresql-recording-rules
+  namespace: monitoring
+  labels:
+    app: postgresql
+    prometheus: greenlang
+    role: recording-rules
+spec:
+  groups:
+    - name: postgresql.recording
+      interval: 30s
+      rules:
+        # Connection utilization percentage
+        - record: postgresql:connection_utilization:percent
+          expr: |
+            100 * (sum(pg_stat_activity_count) by (instance, namespace) / pg_settings_max_connections)
+
+        # Cache hit ratio
+        - record: postgresql:cache_hit_ratio:percent
+          expr: |
+            100 * (pg_stat_database_blks_hit / (pg_stat_database_blks_hit + pg_stat_database_blks_read))
+
+        # Transaction rate (commits per second)
+        - record: postgresql:transaction_rate:commits_per_second
+          expr: |
+            rate(pg_stat_database_xact_commit[5m])
+
+        # Rollback rate
+        - record: postgresql:transaction_rate:rollbacks_per_second
+          expr: |
+            rate(pg_stat_database_xact_rollback[5m])
+
+        # Replication lag in bytes (max across all replicas)
+        - record: postgresql:replication_lag:max_bytes
+          expr: |
+            max(pg_replication_lag_bytes) by (instance, namespace)
+
+        # Active connections by state
+        - record: postgresql:connections:by_state
+          expr: |
+            sum(pg_stat_activity_count) by (instance, namespace, state)
+
+        # Database size
+        - record: postgresql:database_size:bytes
+          expr: |
+            pg_stat_database_size_bytes
+
+        # Dead tuples ratio
+        - record: postgresql:dead_tuples:ratio
+          expr: |
+            pg_stat_user_tables_n_dead_tup / (pg_stat_user_tables_n_live_tup + pg_stat_user_tables_n_dead_tup + 1)
+
+    - name: timescaledb.recording
+      interval: 60s
+      rules:
+        # Total hypertable size
+        - record: timescaledb:hypertables:total_bytes
+          expr: |
+            sum(timescaledb_hypertable_total_bytes) by (instance, namespace)
+
+        # Compression ratio
+        - record: timescaledb:compression:ratio
+          expr: |
+            1 - (timescaledb_hypertable_compressed_total_bytes / timescaledb_hypertable_before_compression_total_bytes)
+
+        # Total chunk count
+        - record: timescaledb:chunks:total_count
+          expr: |
+            sum(timescaledb_hypertable_num_chunks) by (instance, namespace)
+
+        # Uncompressed chunk count
+        - record: timescaledb:chunks:uncompressed_count
+          expr: |
+            sum(timescaledb_hypertable_num_chunks - timescaledb_hypertable_num_compressed_chunks) by (instance, namespace)
+
+        # Background job failure rate
+        - record: timescaledb:bgw_jobs:failure_rate
+          expr: |
+            rate(timescaledb_bgw_job_total_failures[1h]) / (rate(timescaledb_bgw_job_total_runs[1h]) + 0.001)

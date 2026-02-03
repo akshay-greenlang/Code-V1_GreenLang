@@ -1,0 +1,479 @@
+# GreenLang Application Alerts
+# INFRA-001: Production monitoring alerts for application layer
+# Covers: Error rates, latency, throughput, and agent-specific metrics
+
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: greenlang-application-alerts
+  namespace: monitoring
+  labels:
+    app: greenlang
+    component: application
+    prometheus: main
+    role: alert-rules
+spec:
+  groups:
+    # ===========================================
+    # API Error Rate Alerts
+    # ===========================================
+    - name: greenlang.application.errors
+      interval: 30s
+      rules:
+        # High Error Rate - Warning
+        - alert: HighErrorRateWarning
+          expr: |
+            (sum(rate(http_requests_total{status=~"5.."}[5m])) by (namespace, service)
+            / sum(rate(http_requests_total[5m])) by (namespace, service)) * 100 > 1
+          for: 5m
+          labels:
+            severity: warning
+            team: application
+            component: api
+          annotations:
+            summary: "Service {{ $labels.service }} error rate above 1%"
+            description: |
+              Service {{ $labels.service }} in namespace {{ $labels.namespace }} has
+              an error rate of {{ $value | printf "%.2f" }}% (5xx responses).
+            impact: "Some user requests are failing. User experience degraded."
+            action: "Check application logs and recent deployments."
+            dashboard: "https://grafana.greenlang.io/d/greenlang-api-perf"
+
+        # High Error Rate - Critical
+        - alert: HighErrorRateCritical
+          expr: |
+            (sum(rate(http_requests_total{status=~"5.."}[5m])) by (namespace, service)
+            / sum(rate(http_requests_total[5m])) by (namespace, service)) * 100 > 5
+          for: 2m
+          labels:
+            severity: critical
+            team: application
+            component: api
+          annotations:
+            summary: "CRITICAL: Service {{ $labels.service }} error rate above 5%"
+            description: |
+              Service {{ $labels.service }} in namespace {{ $labels.namespace }} has
+              a critical error rate of {{ $value | printf "%.2f" }}% (5xx responses).
+            impact: "Significant portion of requests failing. Major user impact."
+            action: "Immediately investigate. Consider rollback if recent deployment."
+            dashboard: "https://grafana.greenlang.io/d/greenlang-api-perf"
+
+        # Error Spike Detection
+        - alert: ErrorRateSpike
+          expr: |
+            (sum(rate(http_requests_total{status=~"5.."}[5m])) by (namespace, service)
+            / sum(rate(http_requests_total{status=~"5.."}[1h])) by (namespace, service)) > 3
+            and sum(rate(http_requests_total{status=~"5.."}[5m])) by (namespace, service) > 0.1
+          for: 2m
+          labels:
+            severity: warning
+            team: application
+            component: api
+          annotations:
+            summary: "Error rate spike detected for {{ $labels.service }}"
+            description: |
+              Service {{ $labels.service }} error rate has increased by {{ $value | printf "%.1f" }}x
+              compared to the hourly average.
+            impact: "Sudden increase in errors. May indicate new issue."
+            action: "Investigate recent changes or external dependencies."
+            dashboard: "https://grafana.greenlang.io/d/greenlang-api-perf"
+
+        # Endpoint Error Rate
+        - alert: EndpointHighErrorRate
+          expr: |
+            (sum(rate(http_requests_total{status=~"5.."}[5m])) by (namespace, service, endpoint)
+            / sum(rate(http_requests_total[5m])) by (namespace, service, endpoint)) * 100 > 10
+          for: 5m
+          labels:
+            severity: warning
+            team: application
+            component: api
+          annotations:
+            summary: "Endpoint {{ $labels.endpoint }} error rate above 10%"
+            description: |
+              Endpoint {{ $labels.endpoint }} on service {{ $labels.service }} has
+              an error rate of {{ $value | printf "%.2f" }}%.
+            impact: "Specific functionality affected. Feature may be broken."
+            action: "Check endpoint-specific logs and dependencies."
+            dashboard: "https://grafana.greenlang.io/d/greenlang-api-perf"
+
+    # ===========================================
+    # API Latency Alerts
+    # ===========================================
+    - name: greenlang.application.latency
+      interval: 30s
+      rules:
+        # High P50 Latency
+        - alert: HighP50Latency
+          expr: |
+            histogram_quantile(0.50, sum(rate(http_request_duration_seconds_bucket[5m])) by (le, namespace, service)) > 0.2
+          for: 10m
+          labels:
+            severity: warning
+            team: application
+            component: api
+          annotations:
+            summary: "Service {{ $labels.service }} P50 latency above 200ms"
+            description: |
+              Service {{ $labels.service }} in namespace {{ $labels.namespace }} has
+              P50 latency of {{ $value | printf "%.3f" }} seconds.
+            impact: "Median response time elevated. General slowness for users."
+            action: "Review slow queries and external service dependencies."
+            dashboard: "https://grafana.greenlang.io/d/greenlang-api-perf"
+
+        # High P95 Latency - Warning
+        - alert: HighP95LatencyWarning
+          expr: |
+            histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le, namespace, service)) > 0.5
+          for: 10m
+          labels:
+            severity: warning
+            team: application
+            component: api
+          annotations:
+            summary: "Service {{ $labels.service }} P95 latency above 500ms"
+            description: |
+              Service {{ $labels.service }} in namespace {{ $labels.namespace }} has
+              P95 latency of {{ $value | printf "%.3f" }} seconds.
+            impact: "5% of requests are slow. User experience degraded."
+            action: "Identify slow requests. Check database and cache performance."
+            dashboard: "https://grafana.greenlang.io/d/greenlang-api-perf"
+
+        # High P95 Latency - Critical
+        - alert: HighP95LatencyCritical
+          expr: |
+            histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le, namespace, service)) > 2
+          for: 5m
+          labels:
+            severity: critical
+            team: application
+            component: api
+          annotations:
+            summary: "CRITICAL: Service {{ $labels.service }} P95 latency above 2s"
+            description: |
+              Service {{ $labels.service }} in namespace {{ $labels.namespace }} has
+              critically high P95 latency of {{ $value | printf "%.3f" }} seconds.
+            impact: "Severe performance degradation. Users experiencing timeouts."
+            action: "Immediately investigate. Check for database locks or resource exhaustion."
+            dashboard: "https://grafana.greenlang.io/d/greenlang-api-perf"
+
+        # High P99 Latency
+        - alert: HighP99Latency
+          expr: |
+            histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket[5m])) by (le, namespace, service)) > 5
+          for: 5m
+          labels:
+            severity: warning
+            team: application
+            component: api
+          annotations:
+            summary: "Service {{ $labels.service }} P99 latency above 5s"
+            description: |
+              Service {{ $labels.service }} in namespace {{ $labels.namespace }} has
+              P99 latency of {{ $value | printf "%.3f" }} seconds.
+            impact: "Some requests timing out. Worst-case performance poor."
+            action: "Investigate outlier requests. Check for edge cases."
+            dashboard: "https://grafana.greenlang.io/d/greenlang-api-perf"
+
+        # Latency Spike
+        - alert: LatencySpike
+          expr: |
+            (histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le, namespace, service))
+            / histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[1h])) by (le, namespace, service))) > 2
+          for: 5m
+          labels:
+            severity: warning
+            team: application
+            component: api
+          annotations:
+            summary: "Latency spike detected for {{ $labels.service }}"
+            description: |
+              Service {{ $labels.service }} P95 latency has increased by {{ $value | printf "%.1f" }}x
+              compared to the hourly average.
+            impact: "Sudden performance degradation detected."
+            action: "Check for load increase, deployment, or dependency issues."
+            dashboard: "https://grafana.greenlang.io/d/greenlang-api-perf"
+
+    # ===========================================
+    # Throughput Alerts
+    # ===========================================
+    - name: greenlang.application.throughput
+      interval: 30s
+      rules:
+        # Low Traffic (possible issue)
+        - alert: UnexpectedlyLowTraffic
+          expr: |
+            sum(rate(http_requests_total[5m])) by (namespace, service) < 0.1
+            and sum(rate(http_requests_total[1h])) by (namespace, service) > 1
+          for: 10m
+          labels:
+            severity: warning
+            team: application
+            component: api
+          annotations:
+            summary: "Unexpectedly low traffic for {{ $labels.service }}"
+            description: |
+              Service {{ $labels.service }} has very low traffic compared to historical baseline.
+              Current rate: {{ $value | printf "%.3f" }} req/s
+            impact: "Service may not be receiving traffic. Potential routing or DNS issue."
+            action: "Verify ingress, load balancer, and DNS configuration."
+            dashboard: "https://grafana.greenlang.io/d/greenlang-api-perf"
+
+        # Traffic Spike
+        - alert: TrafficSpike
+          expr: |
+            (sum(rate(http_requests_total[5m])) by (namespace, service)
+            / sum(rate(http_requests_total[1h])) by (namespace, service)) > 3
+          for: 5m
+          labels:
+            severity: info
+            team: application
+            component: api
+          annotations:
+            summary: "Traffic spike detected for {{ $labels.service }}"
+            description: |
+              Service {{ $labels.service }} traffic has increased by {{ $value | printf "%.1f" }}x
+              compared to the hourly average.
+            impact: "Higher load than normal. Monitor for resource constraints."
+            action: "Verify HPA is scaling. Monitor resource usage."
+            dashboard: "https://grafana.greenlang.io/d/greenlang-api-perf"
+
+    # ===========================================
+    # GreenLang Agent Alerts
+    # ===========================================
+    - name: greenlang.application.agents
+      interval: 30s
+      rules:
+        # Agent Task Failure Rate
+        - alert: AgentHighTaskFailureRate
+          expr: |
+            (sum(rate(greenlang_agent_tasks_total{status="failed"}[5m])) by (namespace, agent_type)
+            / sum(rate(greenlang_agent_tasks_total[5m])) by (namespace, agent_type)) * 100 > 5
+          for: 5m
+          labels:
+            severity: warning
+            team: application
+            component: agent
+          annotations:
+            summary: "Agent {{ $labels.agent_type }} task failure rate above 5%"
+            description: |
+              Agent {{ $labels.agent_type }} in namespace {{ $labels.namespace }} has
+              a task failure rate of {{ $value | printf "%.2f" }}%.
+            impact: "Agent tasks failing. Automated operations degraded."
+            action: "Check agent logs and task configurations."
+            dashboard: "https://grafana.greenlang.io/d/greenlang-agents"
+
+        # Agent Task Failure Rate Critical
+        - alert: AgentCriticalTaskFailureRate
+          expr: |
+            (sum(rate(greenlang_agent_tasks_total{status="failed"}[5m])) by (namespace, agent_type)
+            / sum(rate(greenlang_agent_tasks_total[5m])) by (namespace, agent_type)) * 100 > 20
+          for: 2m
+          labels:
+            severity: critical
+            team: application
+            component: agent
+          annotations:
+            summary: "CRITICAL: Agent {{ $labels.agent_type }} failure rate above 20%"
+            description: |
+              Agent {{ $labels.agent_type }} in namespace {{ $labels.namespace }} has
+              a critical task failure rate of {{ $value | printf "%.2f" }}%.
+            impact: "Major agent degradation. Automated operations severely impacted."
+            action: "Immediately investigate agent health and dependencies."
+            dashboard: "https://grafana.greenlang.io/d/greenlang-agents"
+
+        # Agent Task Duration High
+        - alert: AgentHighTaskDuration
+          expr: |
+            histogram_quantile(0.95, sum(rate(greenlang_agent_task_duration_seconds_bucket[5m])) by (le, namespace, agent_type)) > 60
+          for: 10m
+          labels:
+            severity: warning
+            team: application
+            component: agent
+          annotations:
+            summary: "Agent {{ $labels.agent_type }} P95 task duration above 60s"
+            description: |
+              Agent {{ $labels.agent_type }} in namespace {{ $labels.namespace }} has
+              P95 task duration of {{ $value | printf "%.1f" }} seconds.
+            impact: "Agent tasks taking too long. Queue may back up."
+            action: "Review task complexity and LLM response times."
+            dashboard: "https://grafana.greenlang.io/d/greenlang-agents"
+
+        # Agent Queue Depth High
+        - alert: AgentHighQueueDepth
+          expr: |
+            sum(greenlang_agent_queue_depth) by (namespace, agent_type) > 100
+          for: 10m
+          labels:
+            severity: warning
+            team: application
+            component: agent
+          annotations:
+            summary: "Agent {{ $labels.agent_type }} queue depth above 100"
+            description: |
+              Agent {{ $labels.agent_type }} in namespace {{ $labels.namespace }} has
+              {{ $value | printf "%.0f" }} tasks queued.
+            impact: "Task processing backlog. Delays in agent responses."
+            action: "Scale agent instances or investigate processing bottleneck."
+            dashboard: "https://grafana.greenlang.io/d/greenlang-agents"
+
+        # Agent No Active Instances
+        - alert: AgentNoActiveInstances
+          expr: |
+            sum(greenlang_agent_instances_active) by (namespace, agent_type) == 0
+          for: 5m
+          labels:
+            severity: critical
+            team: application
+            component: agent
+          annotations:
+            summary: "CRITICAL: No active instances for agent {{ $labels.agent_type }}"
+            description: |
+              Agent {{ $labels.agent_type }} in namespace {{ $labels.namespace }} has
+              zero active instances. Agent functionality is completely unavailable.
+            impact: "Agent completely offline. No tasks can be processed."
+            action: "Immediately check agent deployment and pod status."
+            dashboard: "https://grafana.greenlang.io/d/greenlang-agents"
+
+        # Agent Unhealthy
+        - alert: AgentUnhealthy
+          expr: |
+            greenlang_agent_health_status == 0
+          for: 5m
+          labels:
+            severity: warning
+            team: application
+            component: agent
+          annotations:
+            summary: "Agent {{ $labels.agent_type }} reporting unhealthy"
+            description: |
+              Agent {{ $labels.agent_type }} on pod {{ $labels.pod }} is reporting
+              unhealthy status.
+            impact: "Agent may not be processing tasks correctly."
+            action: "Check agent logs and dependency connections."
+            dashboard: "https://grafana.greenlang.io/d/greenlang-agents"
+
+    # ===========================================
+    # LLM API Alerts
+    # ===========================================
+    - name: greenlang.application.llm
+      interval: 30s
+      rules:
+        # LLM High Error Rate
+        - alert: LLMHighErrorRate
+          expr: |
+            (sum(rate(greenlang_llm_requests_total{status="error"}[5m])) by (namespace, provider, model)
+            / sum(rate(greenlang_llm_requests_total[5m])) by (namespace, provider, model)) * 100 > 5
+          for: 5m
+          labels:
+            severity: warning
+            team: application
+            component: llm
+          annotations:
+            summary: "LLM {{ $labels.provider }}/{{ $labels.model }} error rate above 5%"
+            description: |
+              LLM provider {{ $labels.provider }} model {{ $labels.model }} has
+              an error rate of {{ $value | printf "%.2f" }}%.
+            impact: "Agent LLM calls failing. Task quality degraded."
+            action: "Check LLM provider status and API key validity."
+            dashboard: "https://grafana.greenlang.io/d/greenlang-agents"
+
+        # LLM High Latency
+        - alert: LLMHighLatency
+          expr: |
+            histogram_quantile(0.95, sum(rate(greenlang_llm_request_duration_seconds_bucket[5m])) by (le, namespace, provider, model)) > 30
+          for: 10m
+          labels:
+            severity: warning
+            team: application
+            component: llm
+          annotations:
+            summary: "LLM {{ $labels.provider }}/{{ $labels.model }} P95 latency above 30s"
+            description: |
+              LLM provider {{ $labels.provider }} model {{ $labels.model }} has
+              P95 latency of {{ $value | printf "%.1f" }} seconds.
+            impact: "Agent task durations increased. User wait times longer."
+            action: "Check LLM provider status. Consider model or provider change."
+            dashboard: "https://grafana.greenlang.io/d/greenlang-agents"
+
+        # LLM Rate Limited
+        - alert: LLMRateLimited
+          expr: |
+            sum(rate(greenlang_llm_requests_total{error_type="rate_limit"}[5m])) by (namespace, provider, model) > 0.1
+          for: 5m
+          labels:
+            severity: warning
+            team: application
+            component: llm
+          annotations:
+            summary: "LLM {{ $labels.provider }}/{{ $labels.model }} being rate limited"
+            description: |
+              LLM provider {{ $labels.provider }} model {{ $labels.model }} is
+              experiencing rate limiting.
+            impact: "Some LLM requests delayed or failing. Agent tasks slowed."
+            action: "Reduce request rate or request quota increase from provider."
+            dashboard: "https://grafana.greenlang.io/d/greenlang-agents"
+
+    # ===========================================
+    # Database Connection Alerts
+    # ===========================================
+    - name: greenlang.application.database
+      interval: 30s
+      rules:
+        # Database Connection Pool Exhausted
+        - alert: DatabaseConnectionPoolExhausted
+          expr: |
+            (greenlang_db_connections_active / greenlang_db_connections_max) * 100 > 80
+          for: 5m
+          labels:
+            severity: warning
+            team: application
+            component: database
+            runbook: database-connection-runbook
+          annotations:
+            summary: "Database connection pool above 80%"
+            description: |
+              Service {{ $labels.service }} in namespace {{ $labels.namespace }} has
+              used {{ $value | printf "%.1f" }}% of its database connection pool.
+            impact: "New database connections may be delayed or fail."
+            action: "Review connection pooling. Check for connection leaks."
+            dashboard: "https://grafana.greenlang.io/d/greenlang-api-perf"
+
+        # Database Connection Pool Critical
+        - alert: DatabaseConnectionPoolCritical
+          expr: |
+            (greenlang_db_connections_active / greenlang_db_connections_max) * 100 > 95
+          for: 2m
+          labels:
+            severity: critical
+            team: application
+            component: database
+            runbook: database-connection-runbook
+          annotations:
+            summary: "CRITICAL: Database connection pool above 95%"
+            description: |
+              Service {{ $labels.service }} in namespace {{ $labels.namespace }} has
+              used {{ $value | printf "%.1f" }}% of its database connection pool.
+            impact: "Database connections exhausted. Requests will fail."
+            action: "Immediately investigate connection usage. Restart if needed."
+            dashboard: "https://grafana.greenlang.io/d/greenlang-api-perf"
+
+        # Database Query Errors
+        - alert: HighDatabaseQueryErrorRate
+          expr: |
+            (sum(rate(greenlang_db_queries_total{status="error"}[5m])) by (namespace, service)
+            / sum(rate(greenlang_db_queries_total[5m])) by (namespace, service)) * 100 > 1
+          for: 5m
+          labels:
+            severity: warning
+            team: application
+            component: database
+          annotations:
+            summary: "High database query error rate for {{ $labels.service }}"
+            description: |
+              Service {{ $labels.service }} has a database query error rate of
+              {{ $value | printf "%.2f" }}%.
+            impact: "Database operations failing. Data consistency at risk."
+            action: "Check database logs and query patterns."
+            dashboard: "https://grafana.greenlang.io/d/greenlang-api-perf"

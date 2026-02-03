@@ -1,0 +1,70 @@
+# Redis Backup Configuration
+# Defines backup settings, retention policies, and storage configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: redis-backup-config
+  namespace: greenlang
+  labels:
+    app: redis
+    component: backup
+    app.kubernetes.io/name: redis-backup
+    app.kubernetes.io/component: configuration
+data:
+  # S3 Storage Configuration
+  S3_BUCKET: "greenlang-redis-backups"
+  S3_REGION: "us-east-1"
+  S3_PREFIX: "redis-backups"
+  S3_ENDPOINT: ""  # Leave empty for AWS, set for MinIO/custom S3
+
+  # Backup Retention Policy
+  RDB_RETENTION_DAYS: "7"      # Keep RDB snapshots for 7 days
+  AOF_RETENTION_DAYS: "1"      # Keep AOF backups for 1 day
+  MAX_BACKUPS_KEEP: "28"       # Maximum number of RDB backups to retain
+
+  # Encryption Settings
+  ENCRYPTION_ENABLED: "true"
+  ENCRYPTION_ALGORITHM: "AES256"  # S3 server-side encryption
+  KMS_KEY_ID: ""                  # Optional: KMS key for SSE-KMS encryption
+
+  # Compression Settings
+  COMPRESSION_ENABLED: "true"
+  COMPRESSION_TYPE: "gzip"
+  COMPRESSION_LEVEL: "6"        # 1-9, 6 is balanced speed/size
+
+  # Redis Connection Settings
+  REDIS_HOST: "redis-master.greenlang.svc.cluster.local"
+  REDIS_PORT: "6379"
+  REDIS_MASTER_NAME: "mymaster"  # For Sentinel setups
+  REDIS_SENTINEL_ENABLED: "false"
+  REDIS_SENTINEL_HOST: "redis-sentinel.greenlang.svc.cluster.local"
+  REDIS_SENTINEL_PORT: "26379"
+
+  # Backup Behavior Settings
+  BGSAVE_TIMEOUT: "300"         # Timeout for BGSAVE in seconds
+  BGSAVE_RETRY_COUNT: "3"       # Number of retries for BGSAVE
+  BGSAVE_RETRY_DELAY: "10"      # Delay between retries in seconds
+
+  # Verification Settings
+  VERIFY_BACKUP: "true"
+  VERIFY_CHECKSUM: "true"
+  MIN_BACKUP_SIZE_BYTES: "1024" # Minimum valid backup size (1KB)
+
+  # Notification Settings
+  SLACK_WEBHOOK_ENABLED: "false"
+  SLACK_CHANNEL: "#redis-alerts"
+  PAGERDUTY_ENABLED: "false"
+
+  # Restore Settings
+  RESTORE_TIMEOUT: "600"        # Timeout for restore operations in seconds
+  RESTORE_VERIFY_DATA: "true"   # Verify data integrity after restore
+  RESTORE_STOP_TIMEOUT: "60"    # Timeout for Redis graceful shutdown
+
+  # Logging
+  LOG_LEVEL: "INFO"             # DEBUG, INFO, WARN, ERROR
+  LOG_FORMAT: "json"            # json or text
+
+  # Performance Settings
+  UPLOAD_PART_SIZE: "5242880"   # 5MB multipart upload size
+  UPLOAD_CONCURRENCY: "4"       # Concurrent upload threads
+  DOWNLOAD_CONCURRENCY: "4"     # Concurrent download threads

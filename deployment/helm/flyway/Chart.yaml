@@ -1,0 +1,99 @@
+# =============================================================================
+# GreenLang Flyway Helm Chart
+# =============================================================================
+# Description: Helm chart for Flyway database migrations
+# =============================================================================
+
+apiVersion: v2
+name: greenlang-flyway
+description: |
+  Helm chart for GreenLang Flyway database migrations.
+  Manages PostgreSQL/TimescaleDB schema migrations with support for:
+  - Automated migrations on deploy
+  - Dry-run validation for production
+  - Multi-environment configuration
+  - External secrets integration
+  - CI/CD pipeline hooks
+
+type: application
+
+# Chart version (follows SemVer)
+version: 1.0.0
+
+# Application version (Flyway version)
+appVersion: "9.22.3"
+
+# Kubernetes version requirement
+kubeVersion: ">=1.25.0-0"
+
+# Chart home page
+home: https://github.com/greenlang/greenlang
+
+# Chart sources
+sources:
+  - https://github.com/greenlang/greenlang
+  - https://flywaydb.org/documentation/
+
+# Maintainers
+maintainers:
+  - name: GreenLang Platform Team
+    email: platform@greenlang.io
+    url: https://greenlang.io
+
+# Keywords for search
+keywords:
+  - flyway
+  - database
+  - migration
+  - postgresql
+  - timescaledb
+  - schema
+  - greenlang
+
+# Chart annotations
+annotations:
+  # Artifact Hub annotations
+  artifacthub.io/category: database
+  artifacthub.io/license: Apache-2.0
+  artifacthub.io/operator: "false"
+  artifacthub.io/prerelease: "false"
+  artifacthub.io/signKey: |
+    fingerprint: XXXX
+    url: https://greenlang.io/pgp-key.asc
+
+  # Links
+  artifacthub.io/links: |
+    - name: Documentation
+      url: https://docs.greenlang.io/database/migrations
+    - name: Flyway Documentation
+      url: https://flywaydb.org/documentation/
+
+  # Changes for this version
+  artifacthub.io/changes: |
+    - kind: added
+      description: Initial release with TimescaleDB support
+    - kind: added
+      description: Multi-environment configuration
+    - kind: added
+      description: External secrets integration
+    - kind: added
+      description: Dry-run job for production validation
+
+  # Container images used
+  artifacthub.io/containsSecurityUpdates: "false"
+  artifacthub.io/images: |
+    - name: flyway
+      image: flyway/flyway:9.22.3
+    - name: postgres-client
+      image: postgres:15-alpine
+
+# Dependencies (none required, but listed for reference)
+dependencies: []
+  # Uncomment if using external-secrets as a dependency
+  # - name: external-secrets
+  #   version: "0.9.x"
+  #   repository: https://charts.external-secrets.io
+  #   condition: externalSecrets.enabled
+
+# Icon (base64 encoded or URL)
+icon: https://greenlang.io/assets/images/logo.png

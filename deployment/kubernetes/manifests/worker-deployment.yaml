@@ -91,9 +91,12 @@ spec:
         prometheus.io/scrape: "true"
         prometheus.io/port: "9090"
         prometheus.io/path: "/metrics"
-        config/checksum: "{{ .Values.configChecksum }}"
+        # ConfigMap checksum for rolling updates when config changes
+        # Update this value when worker-config.yaml changes to trigger redeployment
+        config/checksum: "${CONFIG_CHECKSUM}"
     spec:
-      serviceAccountName: greenlang-executor
+      serviceAccountName: greenlang-worker
+      automountServiceAccountToken: true
 
       # Topology spread for high availability
       topologySpreadConstraints:

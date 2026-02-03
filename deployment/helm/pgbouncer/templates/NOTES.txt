@@ -1,0 +1,118 @@
+Congratulations! PgBouncer has been deployed successfully.
+
+===============================================================================
+  PgBouncer Connection Pooler for GreenLang
+===============================================================================
+
+CHART: {{ .Chart.Name }}-{{ .Chart.Version }}
+NAMESPACE: {{ include "pgbouncer.namespace" . }}
+RELEASE: {{ .Release.Name }}
+
+-------------------------------------------------------------------------------
+  Connection Information
+-------------------------------------------------------------------------------
+
+PgBouncer is available at:
+  - Service: {{ include "pgbouncer.fullname" . }}.{{ include "pgbouncer.namespace" . }}.svc.cluster.local:{{ .Values.service.port }}
+
+{{- if .Values.headlessService.enabled }}
+  - Headless: {{ include "pgbouncer.fullname" . }}-headless.{{ include "pgbouncer.namespace" . }}.svc.cluster.local:{{ .Values.service.port }}
+{{- end }}
+
+Connection String Format:
+  postgresql://user:password@{{ include "pgbouncer.fullname" . }}.{{ include "pgbouncer.namespace" . }}:{{ .Values.service.port }}/{{ .Values.postgresql.database }}
+
+To get the connection string from the secret:
+  kubectl get secret {{ include "pgbouncer.secretName" . }} -n {{ include "pgbouncer.namespace" . }} -o jsonpath="{.data.connection-string}" | base64 -d
+
+-------------------------------------------------------------------------------
+  Configuration
+-------------------------------------------------------------------------------
+
+Pool Mode: {{ .Values.pgbouncer.poolMode }}
+Max Client Connections: {{ .Values.pgbouncer.maxClientConn }}
+Default Pool Size: {{ .Values.pgbouncer.defaultPoolSize }}
+Reserve Pool Size: {{ .Values.pgbouncer.reservePoolSize }}
+Authentication Type: {{ .Values.pgbouncer.authType }}
+
+-------------------------------------------------------------------------------
+  Deployment Status
+-------------------------------------------------------------------------------
+
+Replicas: {{ .Values.replicaCount }}
+{{- if .Values.autoscaling.enabled }}
+Autoscaling: Enabled ({{ .Values.autoscaling.minReplicas }}-{{ .Values.autoscaling.maxReplicas }} replicas)
+{{- else }}
+Autoscaling: Disabled
+{{- end }}
+
+{{- if .Values.podDisruptionBudget.enabled }}
+Pod Disruption Budget: minAvailable={{ .Values.podDisruptionBudget.minAvailable }}
+{{- end }}
+
+To check deployment status:
+  kubectl get deployment {{ include "pgbouncer.fullname" . }} -n {{ include "pgbouncer.namespace" . }}
+  kubectl get pods -l app.kubernetes.io/name={{ include "pgbouncer.name" . }} -n {{ include "pgbouncer.namespace" . }}
+
+-------------------------------------------------------------------------------
+  Monitoring
+-------------------------------------------------------------------------------
+
+{{- if .Values.exporter.enabled }}
+Prometheus Exporter: Enabled
+Metrics Endpoint: http://{{ include "pgbouncer.fullname" . }}.{{ include "pgbouncer.namespace" . }}:{{ .Values.service.metricsPort }}/metrics
+
+To view metrics:
+  kubectl port-forward svc/{{ include "pgbouncer.fullname" . }} {{ .Values.service.metricsPort }}:{{ .Values.service.metricsPort }} -n {{ include "pgbouncer.namespace" . }}
+  curl http://localhost:{{ .Values.service.metricsPort }}/metrics
+{{- else }}
+Prometheus Exporter: Disabled
+{{- end }}
+
+{{- if .Values.serviceMonitor.enabled }}
+ServiceMonitor: Enabled (Prometheus will auto-discover)
+{{- end }}
+
+{{- if .Values.prometheusRule.enabled }}
+Alert Rules: Enabled
+{{- end }}
+
+-------------------------------------------------------------------------------
+  Admin Console
+-------------------------------------------------------------------------------
+
+To connect to PgBouncer admin console:
+  kubectl exec -it $(kubectl get pod -l app.kubernetes.io/name={{ include "pgbouncer.name" . }} -n {{ include "pgbouncer.namespace" . }} -o jsonpath="{.items[0].metadata.name}") -n {{ include "pgbouncer.namespace" . }} -- psql -U pgbouncer_admin -p 5432 pgbouncer
+
+Useful admin commands:
+  SHOW POOLS;       -- Show pool status
+  SHOW DATABASES;   -- Show database connections
+  SHOW STATS;       -- Show statistics
+  SHOW CLIENTS;     -- Show client connections
+  SHOW SERVERS;     -- Show server connections
+  SHOW CONFIG;      -- Show configuration
+
+-------------------------------------------------------------------------------
+  Troubleshooting
+-------------------------------------------------------------------------------
+
+View logs:
+  kubectl logs -l app.kubernetes.io/name={{ include "pgbouncer.name" . }} -n {{ include "pgbouncer.namespace" . }} -c pgbouncer
+
+Check events:
+  kubectl get events -n {{ include "pgbouncer.namespace" . }} --sort-by='.lastTimestamp'
+
+Test connectivity:
+  kubectl run pg-test --rm -it --image=postgres:15 --restart=Never -- \
+    psql "postgresql://user:password@{{ include "pgbouncer.fullname" . }}.{{ include "pgbouncer.namespace" . }}:{{ .Values.service.port }}/{{ .Values.postgresql.database }}"
+
+===============================================================================
+  Documentation
+===============================================================================
+
+For more information, see:
+- PgBouncer: https://www.pgbouncer.org/
+- Chart Source: {{ .Chart.Home }}
+- GreenLang: https://greenlang.io/docs/database
+
+===============================================================================

@@ -1,0 +1,199 @@
+{{/*
+GreenLang Agent Factory - Vertical Pod Autoscaler Templates
+Automatically adjusts container resources based on usage patterns
+*/}}
+
+{{- if and .Values.vpa .Values.vpa.enabled }}
+---
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: {{ include "greenlang-agents.fullname" . }}-api-gateway
+  namespace: {{ include "greenlang-agents.namespace" . }}
+  labels:
+    {{- include "greenlang-agents.labels" . | nindent 4 }}
+    app.kubernetes.io/component: api-gateway
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "greenlang-agents.fullname" . }}-api-gateway
+  updatePolicy:
+    updateMode: {{ .Values.vpa.updateMode | default "Auto" }}
+  resourcePolicy:
+    containerPolicies:
+      - containerName: api-gateway
+        minAllowed:
+          cpu: {{ .Values.vpa.apiGateway.minCpu | default "100m" }}
+          memory: {{ .Values.vpa.apiGateway.minMemory | default "256Mi" }}
+        maxAllowed:
+          cpu: {{ .Values.vpa.apiGateway.maxCpu | default "4" }}
+          memory: {{ .Values.vpa.apiGateway.maxMemory | default "8Gi" }}
+        controlledResources:
+          - cpu
+          - memory
+        controlledValues: RequestsAndLimits
+
+{{- if and (index .Values "fuel-analyzer") (index .Values "fuel-analyzer" "enabled") }}
+---
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: {{ include "greenlang-agents.fullname" . }}-fuel-analyzer
+  namespace: {{ include "greenlang-agents.namespace" . }}
+  labels:
+    {{- include "greenlang-agents.labels" . | nindent 4 }}
+    app.kubernetes.io/component: fuel-analyzer
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "greenlang-agents.fullname" . }}-fuel-analyzer
+  updatePolicy:
+    updateMode: {{ .Values.vpa.updateMode | default "Auto" }}
+  resourcePolicy:
+    containerPolicies:
+      - containerName: fuel-analyzer
+        minAllowed:
+          cpu: {{ .Values.vpa.agents.minCpu | default "100m" }}
+          memory: {{ .Values.vpa.agents.minMemory | default "256Mi" }}
+        maxAllowed:
+          cpu: {{ .Values.vpa.agents.maxCpu | default "4" }}
+          memory: {{ .Values.vpa.agents.maxMemory | default "8Gi" }}
+        controlledResources:
+          - cpu
+          - memory
+        controlledValues: RequestsAndLimits
+{{- end }}
+
+{{- if and (index .Values "carbon-intensity") (index .Values "carbon-intensity" "enabled") }}
+---
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: {{ include "greenlang-agents.fullname" . }}-carbon-intensity
+  namespace: {{ include "greenlang-agents.namespace" . }}
+  labels:
+    {{- include "greenlang-agents.labels" . | nindent 4 }}
+    app.kubernetes.io/component: carbon-intensity
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "greenlang-agents.fullname" . }}-carbon-intensity
+  updatePolicy:
+    updateMode: {{ .Values.vpa.updateMode | default "Auto" }}
+  resourcePolicy:
+    containerPolicies:
+      - containerName: carbon-intensity
+        minAllowed:
+          cpu: {{ .Values.vpa.agents.minCpu | default "100m" }}
+          memory: {{ .Values.vpa.agents.minMemory | default "256Mi" }}
+        maxAllowed:
+          cpu: {{ .Values.vpa.agents.maxCpu | default "4" }}
+          memory: {{ .Values.vpa.agents.maxMemory | default "8Gi" }}
+        controlledResources:
+          - cpu
+          - memory
+        controlledValues: RequestsAndLimits
+{{- end }}
+
+{{- if and (index .Values "energy-performance") (index .Values "energy-performance" "enabled") }}
+---
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: {{ include "greenlang-agents.fullname" . }}-energy-performance
+  namespace: {{ include "greenlang-agents.namespace" . }}
+  labels:
+    {{- include "greenlang-agents.labels" . | nindent 4 }}
+    app.kubernetes.io/component: energy-performance
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "greenlang-agents.fullname" . }}-energy-performance
+  updatePolicy:
+    updateMode: {{ .Values.vpa.updateMode | default "Auto" }}
+  resourcePolicy:
+    containerPolicies:
+      - containerName: energy-performance
+        minAllowed:
+          cpu: {{ .Values.vpa.agents.minCpu | default "100m" }}
+          memory: {{ .Values.vpa.agents.minMemory | default "256Mi" }}
+        maxAllowed:
+          cpu: {{ .Values.vpa.agents.maxCpu | default "4" }}
+          memory: {{ .Values.vpa.agents.maxMemory | default "8Gi" }}
+        controlledResources:
+          - cpu
+          - memory
+        controlledValues: RequestsAndLimits
+{{- end }}
+
+{{- if and (index .Values "eudr-compliance") (index .Values "eudr-compliance" "enabled") }}
+---
+# EUDR Compliance VPA - Higher limits for critical agent
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: {{ include "greenlang-agents.fullname" . }}-eudr-compliance
+  namespace: {{ include "greenlang-agents.namespace" . }}
+  labels:
+    {{- include "greenlang-agents.labels" . | nindent 4 }}
+    app.kubernetes.io/component: eudr-compliance
+  annotations:
+    description: "Critical compliance agent - higher resource limits"
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "greenlang-agents.fullname" . }}-eudr-compliance
+  updatePolicy:
+    updateMode: {{ .Values.vpa.updateMode | default "Auto" }}
+  resourcePolicy:
+    containerPolicies:
+      - containerName: eudr-compliance
+        minAllowed:
+          cpu: {{ .Values.vpa.eudrCompliance.minCpu | default "500m" }}
+          memory: {{ .Values.vpa.eudrCompliance.minMemory | default "1Gi" }}
+        maxAllowed:
+          cpu: {{ .Values.vpa.eudrCompliance.maxCpu | default "8" }}
+          memory: {{ .Values.vpa.eudrCompliance.maxMemory | default "16Gi" }}
+        controlledResources:
+          - cpu
+          - memory
+        controlledValues: RequestsAndLimits
+{{- end }}
+
+{{- if and .Values.worker .Values.worker.enabled }}
+---
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: {{ include "greenlang-agents.fullname" . }}-worker
+  namespace: {{ include "greenlang-agents.namespace" . }}
+  labels:
+    {{- include "greenlang-agents.labels" . | nindent 4 }}
+    app.kubernetes.io/component: worker
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "greenlang-agents.fullname" . }}-worker
+  updatePolicy:
+    updateMode: {{ .Values.vpa.updateMode | default "Auto" }}
+  resourcePolicy:
+    containerPolicies:
+      - containerName: worker
+        minAllowed:
+          cpu: {{ .Values.vpa.worker.minCpu | default "250m" }}
+          memory: {{ .Values.vpa.worker.minMemory | default "512Mi" }}
+        maxAllowed:
+          cpu: {{ .Values.vpa.worker.maxCpu | default "8" }}
+          memory: {{ .Values.vpa.worker.maxMemory | default "16Gi" }}
+        controlledResources:
+          - cpu
+          - memory
+        controlledValues: RequestsAndLimits
+{{- end }}
+{{- end }}

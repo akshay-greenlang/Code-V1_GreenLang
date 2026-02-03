@@ -1,0 +1,333 @@
+---
+# job-failover-test.yaml
+#
+# Kubernetes CronJob for automated weekly failover testing
+# Validates database HA capabilities and measures RTO/RPO
+#
+# Author: GreenLang Database Operations Team
+# Version: 1.0.0
+# Date: 2026-02-03
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: failover-test-scripts
+  namespace: database
+  labels:
+    app: failover-test
+    component: database-dr
+data:
+  test-failover.sh: |
+    #!/bin/bash
+    set -euo pipefail
+
+    # Configuration
+    PATRONI_CONFIG="/etc/patroni/patroni.yml"
+    CLUSTER_NAME="${CLUSTER_NAME:-greenlang-db}"
+    DB_USER="${POSTGRES_USER:-postgres}"
+    DB_NAME="${POSTGRES_DB:-greenlang}"
+    SLACK_WEBHOOK="${SLACK_WEBHOOK_URL:-}"
+
+    # Test tracking
+    TEST_ID="test_$(date +%Y%m%d_%H%M%S)"
+    REPORT_FILE="/tmp/failover_test_report.json"
+
+    log() {
+        echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*"
+    }
+
+    send_slack() {
+        local status="$1"
+        local message="$2"
+
+        if [ -n "$SLACK_WEBHOOK" ]; then
+            local color
+            case "$status" in
+                "success") color="good" ;;
+                "error") color="danger" ;;
+                *) color="warning" ;;
+            esac
+
+            curl -s -X POST "$SLACK_WEBHOOK" \
+                -H 'Content-Type: application/json' \
+                -d "{
+                    \"attachments\": [{
+                        \"color\": \"$color\",
+                        \"title\": \"Failover Test - $status\",
+                        \"text\": \"$message\",
+                        \"fields\": [
+                            {\"title\": \"Cluster\", \"value\": \"$CLUSTER_NAME\", \"short\": true},
+                            {\"title\": \"Test ID\", \"value\": \"$TEST_ID\", \"short\": true}
+                        ]
+                    }]
+                }" || true
+        fi
+    }
+
+    get_primary() {
+        patronictl -c "$PATRONI_CONFIG" list -f json | jq -r '.[] | select(.Role == "Leader") | .Member'
+    }
+
+    get_replica() {
+        patronictl -c "$PATRONI_CONFIG" list -f json | jq -r '.[] | select(.Role == "Sync Standby" or .Role == "Replica") | .Member' | head -1
+    }
+
+    # Main test execution
+    log "Starting failover test: $TEST_ID"
+    send_slack "info" "Starting weekly failover test"
+
+    # Get current state
+    ORIGINAL_PRIMARY=$(get_primary)
+    TARGET_REPLICA=$(get_replica)
+
+    if [ -z "$ORIGINAL_PRIMARY" ] || [ -z "$TARGET_REPLICA" ]; then
+        log "ERROR: Cannot identify primary or replica"
+        send_slack "error" "Failover test failed: Cannot identify cluster nodes"
+        exit 1
+    fi
+
+    log "Original primary: $ORIGINAL_PRIMARY"
+    log "Target replica: $TARGET_REPLICA"
+
+    # Create test data
+    log "Creating test data..."
+    PGPASSWORD="${POSTGRES_PASSWORD}" psql -h "${ORIGINAL_PRIMARY}" -U "$DB_USER" -d "$DB_NAME" -c "
+        CREATE TABLE IF NOT EXISTS failover_test_${TEST_ID} (
+            id SERIAL PRIMARY KEY,
+            data TEXT,
+            created_at TIMESTAMP DEFAULT NOW()
+        );
+        INSERT INTO failover_test_${TEST_ID} (data) VALUES ('pre-failover-data');
+    "
+
+    # Execute failover
+    log "Executing failover..."
+    FAILOVER_START=$(date +%s.%N)
+
+    patronictl -c "$PATRONI_CONFIG" switchover \
+        --master "$ORIGINAL_PRIMARY" \
+        --candidate "$TARGET_REPLICA" \
+        --scheduled now \
+        --force
+
+    # Wait for failover to complete
+    log "Waiting for failover..."
+    MAX_WAIT=120
+    ELAPSED=0
+
+    while [ $ELAPSED -lt $MAX_WAIT ]; do
+        NEW_PRIMARY=$(get_primary)
+        if [ "$NEW_PRIMARY" == "$TARGET_REPLICA" ]; then
+            FAILOVER_END=$(date +%s.%N)
+            break
+        fi
+        sleep 2
+        ELAPSED=$((ELAPSED + 2))
+    done
+
+    # Calculate RTO
+    RTO=$(echo "$FAILOVER_END - $FAILOVER_START" | bc)
+    log "Failover completed in $RTO seconds"
+
+    # Verify data integrity (RPO check)
+    log "Verifying data integrity..."
+    DATA_CHECK=$(PGPASSWORD="${POSTGRES_PASSWORD}" psql -h "$TARGET_REPLICA" -U "$DB_USER" -d "$DB_NAME" -t -c "
+        SELECT count(*) FROM failover_test_${TEST_ID};
+    " | tr -d ' ')
+
+    if [ "$DATA_CHECK" -gt 0 ]; then
+        RPO=0
+        DATA_LOSS="false"
+        log "Data integrity verified - no data loss"
+    else
+        RPO="unknown"
+        DATA_LOSS="true"
+        log "WARNING: Potential data loss detected"
+    fi
+
+    # Verify write capability
+    log "Testing write capability on new primary..."
+    WRITE_TEST=$(PGPASSWORD="${POSTGRES_PASSWORD}" psql -h "$TARGET_REPLICA" -U "$DB_USER" -d "$DB_NAME" -c "
+        INSERT INTO failover_test_${TEST_ID} (data) VALUES ('post-failover-data');
+        SELECT 'success';
+    " 2>&1 || echo "failed")
+
+    if echo "$WRITE_TEST" | grep -q "success"; then
+        WRITE_CAPABLE="true"
+        log "Write capability verified"
+    else
+        WRITE_CAPABLE="false"
+        log "ERROR: Write capability test failed"
+    fi
+
+    # Switchback to original primary
+    log "Executing switchback..."
+    sleep 30  # Wait for original to rejoin as replica
+
+    patronictl -c "$PATRONI_CONFIG" switchover \
+        --master "$TARGET_REPLICA" \
+        --candidate "$ORIGINAL_PRIMARY" \
+        --scheduled now \
+        --force || true
+
+    sleep 30
+
+    FINAL_PRIMARY=$(get_primary)
+    if [ "$FINAL_PRIMARY" == "$ORIGINAL_PRIMARY" ]; then
+        SWITCHBACK_SUCCESS="true"
+        log "Switchback successful"
+    else
+        SWITCHBACK_SUCCESS="false"
+        log "WARNING: Switchback may have issues"
+    fi
+
+    # Cleanup
+    log "Cleaning up test data..."
+    PGPASSWORD="${POSTGRES_PASSWORD}" psql -h "$FINAL_PRIMARY" -U "$DB_USER" -d "$DB_NAME" -c "
+        DROP TABLE IF EXISTS failover_test_${TEST_ID};
+    " || true
+
+    # Generate report
+    cat > "$REPORT_FILE" << EOF
+    {
+        "test_id": "$TEST_ID",
+        "timestamp": "$(date -Iseconds)",
+        "cluster": "$CLUSTER_NAME",
+        "original_primary": "$ORIGINAL_PRIMARY",
+        "failover_target": "$TARGET_REPLICA",
+        "rto_seconds": $RTO,
+        "rpo_seconds": $RPO,
+        "data_loss": $DATA_LOSS,
+        "write_capable": $WRITE_CAPABLE,
+        "switchback_success": $SWITCHBACK_SUCCESS,
+        "test_passed": $([ "$DATA_LOSS" == "false" ] && [ "$WRITE_CAPABLE" == "true" ] && echo "true" || echo "false")
+    }
+    EOF
+
+    # Determine result
+    if [ "$DATA_LOSS" == "false" ] && [ "$WRITE_CAPABLE" == "true" ]; then
+        log "Failover test PASSED"
+        send_slack "success" "Failover test PASSED. RTO: ${RTO}s, RPO: ${RPO}s, No data loss"
+        exit 0
+    else
+        log "Failover test FAILED"
+        send_slack "error" "Failover test FAILED. Data loss: $DATA_LOSS, Write capable: $WRITE_CAPABLE"
+        exit 1
+    fi
+
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: failover-test
+  namespace: database
+  labels:
+    app: failover-test
+    component: database-dr
+spec:
+  # Run every Sunday at 3:00 AM UTC
+  schedule: "0 3 * * 0"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 5
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 0  # Don't retry failed tests
+      activeDeadlineSeconds: 1800  # 30 minute timeout
+      template:
+        metadata:
+          labels:
+            app: failover-test
+            component: database-dr
+        spec:
+          serviceAccountName: database-admin
+          restartPolicy: Never
+
+          containers:
+          - name: failover-test
+            image: postgres:14-alpine
+            command: ["/bin/bash", "/scripts/test-failover.sh"]
+
+            env:
+            - name: CLUSTER_NAME
+              value: "greenlang-db"
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: greenlang-db-credentials
+                  key: username
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: greenlang-db-credentials
+                  key: password
+            - name: POSTGRES_DB
+              value: "greenlang"
+            - name: SLACK_WEBHOOK_URL
+              valueFrom:
+                secretKeyRef:
+                  name: slack-webhooks
+                  key: database-alerts
+                  optional: true
+
+            volumeMounts:
+            - name: scripts
+              mountPath: /scripts
+            - name: patroni-config
+              mountPath: /etc/patroni
+
+            resources:
+              requests:
+                cpu: "100m"
+                memory: "256Mi"
+              limits:
+                cpu: "500m"
+                memory: "512Mi"
+
+          volumes:
+          - name: scripts
+            configMap:
+              name: failover-test-scripts
+              defaultMode: 0755
+          - name: patroni-config
+            configMap:
+              name: patroni-config
+
+---
+# ServiceAccount for failover test
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: database-admin
+  namespace: database
+
+---
+# Role for database operations
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: database-admin-role
+  namespace: database
+rules:
+- apiGroups: [""]
+  resources: ["pods", "pods/exec", "services", "configmaps", "secrets"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["apps"]
+  resources: ["statefulsets"]
+  verbs: ["get", "list", "watch"]
+
+---
+# RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: database-admin-binding
+  namespace: database
+subjects:
+- kind: ServiceAccount
+  name: database-admin
+  namespace: database
+roleRef:
+  kind: Role
+  name: database-admin-role
+  apiGroup: rbac.authorization.k8s.io

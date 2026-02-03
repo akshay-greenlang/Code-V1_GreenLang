@@ -182,8 +182,10 @@ spec:
             class: nginx
       - dns01:
           route53:
-            region: us-east-1
-            hostedZoneID: Z1234567890ABC
+            region: ${AWS_REGION}
+            # Replace with actual Route53 hosted zone ID
+            # Example: Z0123456789ABCDEFGHIJ
+            hostedZoneID: ${AWS_ROUTE53_HOSTED_ZONE_ID}
 
 ---
 # Certificate issuer for Let's Encrypt (staging)

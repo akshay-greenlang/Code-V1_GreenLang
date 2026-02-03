@@ -1,0 +1,407 @@
+{{/*
+GreenLang Agent Factory - Horizontal Pod Autoscaler Templates
+Production-ready HPA with custom metrics support
+*/}}
+
+{{- if and .Values.apiGateway.autoscaling .Values.apiGateway.autoscaling.enabled }}
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ include "greenlang-agents.fullname" . }}-api-gateway
+  namespace: {{ include "greenlang-agents.namespace" . }}
+  labels:
+    {{- include "greenlang-agents.labels" . | nindent 4 }}
+    app.kubernetes.io/component: api-gateway
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "greenlang-agents.fullname" . }}-api-gateway
+  minReplicas: {{ .Values.apiGateway.autoscaling.minReplicas | default 3 }}
+  maxReplicas: {{ .Values.apiGateway.autoscaling.maxReplicas | default 10 }}
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.apiGateway.autoscaling.targetCPUUtilizationPercentage | default 70 }}
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.apiGateway.autoscaling.targetMemoryUtilizationPercentage | default 80 }}
+    {{- if .Values.apiGateway.autoscaling.customMetrics }}
+    {{- range .Values.apiGateway.autoscaling.customMetrics }}
+    - type: {{ .type }}
+      {{- if eq .type "Pods" }}
+      pods:
+        metric:
+          name: {{ .pods.metric.name }}
+        target:
+          type: {{ .pods.target.type }}
+          averageValue: {{ .pods.target.averageValue | quote }}
+      {{- end }}
+      {{- if eq .type "External" }}
+      external:
+        metric:
+          name: {{ .external.metric.name }}
+          {{- if .external.metric.selector }}
+          selector:
+            matchLabels:
+              {{- toYaml .external.metric.selector.matchLabels | nindent 14 }}
+          {{- end }}
+        target:
+          type: {{ .external.target.type }}
+          {{- if eq .external.target.type "AverageValue" }}
+          averageValue: {{ .external.target.averageValue | quote }}
+          {{- else }}
+          value: {{ .external.target.value | quote }}
+          {{- end }}
+      {{- end }}
+    {{- end }}
+    {{- end }}
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: {{ .Values.apiGateway.autoscaling.scaleUpStabilizationWindowSeconds | default 60 }}
+      policies:
+        - type: Percent
+          value: 50
+          periodSeconds: 30
+        - type: Pods
+          value: 2
+          periodSeconds: 30
+      selectPolicy: Max
+    scaleDown:
+      stabilizationWindowSeconds: {{ .Values.apiGateway.autoscaling.scaleDownStabilizationWindowSeconds | default 300 }}
+      policies:
+        - type: Percent
+          value: 10
+          periodSeconds: 60
+      selectPolicy: Min
+{{- end }}
+
+{{- if and (index .Values "fuel-analyzer") (index .Values "fuel-analyzer" "autoscaling") (index .Values "fuel-analyzer" "autoscaling" "enabled") }}
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ include "greenlang-agents.fullname" . }}-fuel-analyzer
+  namespace: {{ include "greenlang-agents.namespace" . }}
+  labels:
+    {{- include "greenlang-agents.labels" . | nindent 4 }}
+    app.kubernetes.io/component: fuel-analyzer
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "greenlang-agents.fullname" . }}-fuel-analyzer
+  minReplicas: {{ index .Values "fuel-analyzer" "autoscaling" "minReplicas" | default 3 }}
+  maxReplicas: {{ index .Values "fuel-analyzer" "autoscaling" "maxReplicas" | default 10 }}
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ index .Values "fuel-analyzer" "autoscaling" "targetCPUUtilizationPercentage" | default 70 }}
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: {{ index .Values "fuel-analyzer" "autoscaling" "targetMemoryUtilizationPercentage" | default 80 }}
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+        - type: Percent
+          value: 50
+          periodSeconds: 30
+        - type: Pods
+          value: 2
+          periodSeconds: 30
+      selectPolicy: Max
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Percent
+          value: 10
+          periodSeconds: 60
+      selectPolicy: Min
+{{- end }}
+
+{{- if and (index .Values "carbon-intensity") (index .Values "carbon-intensity" "autoscaling") (index .Values "carbon-intensity" "autoscaling" "enabled") }}
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ include "greenlang-agents.fullname" . }}-carbon-intensity
+  namespace: {{ include "greenlang-agents.namespace" . }}
+  labels:
+    {{- include "greenlang-agents.labels" . | nindent 4 }}
+    app.kubernetes.io/component: carbon-intensity
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "greenlang-agents.fullname" . }}-carbon-intensity
+  minReplicas: {{ index .Values "carbon-intensity" "autoscaling" "minReplicas" | default 3 }}
+  maxReplicas: {{ index .Values "carbon-intensity" "autoscaling" "maxReplicas" | default 10 }}
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ index .Values "carbon-intensity" "autoscaling" "targetCPUUtilizationPercentage" | default 70 }}
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: {{ index .Values "carbon-intensity" "autoscaling" "targetMemoryUtilizationPercentage" | default 80 }}
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+        - type: Percent
+          value: 50
+          periodSeconds: 30
+        - type: Pods
+          value: 2
+          periodSeconds: 30
+      selectPolicy: Max
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Percent
+          value: 10
+          periodSeconds: 60
+      selectPolicy: Min
+{{- end }}
+
+{{- if and (index .Values "energy-performance") (index .Values "energy-performance" "autoscaling") (index .Values "energy-performance" "autoscaling" "enabled") }}
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ include "greenlang-agents.fullname" . }}-energy-performance
+  namespace: {{ include "greenlang-agents.namespace" . }}
+  labels:
+    {{- include "greenlang-agents.labels" . | nindent 4 }}
+    app.kubernetes.io/component: energy-performance
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "greenlang-agents.fullname" . }}-energy-performance
+  minReplicas: {{ index .Values "energy-performance" "autoscaling" "minReplicas" | default 3 }}
+  maxReplicas: {{ index .Values "energy-performance" "autoscaling" "maxReplicas" | default 10 }}
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ index .Values "energy-performance" "autoscaling" "targetCPUUtilizationPercentage" | default 70 }}
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: {{ index .Values "energy-performance" "autoscaling" "targetMemoryUtilizationPercentage" | default 80 }}
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+        - type: Percent
+          value: 50
+          periodSeconds: 30
+        - type: Pods
+          value: 2
+          periodSeconds: 30
+      selectPolicy: Max
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Percent
+          value: 10
+          periodSeconds: 60
+      selectPolicy: Min
+{{- end }}
+
+{{- if and (index .Values "eudr-compliance") (index .Values "eudr-compliance" "autoscaling") (index .Values "eudr-compliance" "autoscaling" "enabled") }}
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ include "greenlang-agents.fullname" . }}-eudr-compliance
+  namespace: {{ include "greenlang-agents.namespace" . }}
+  labels:
+    {{- include "greenlang-agents.labels" . | nindent 4 }}
+    app.kubernetes.io/component: eudr-compliance
+  annotations:
+    # EUDR is critical - more aggressive scaling
+    description: "Critical compliance agent - aggressive scaling enabled"
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "greenlang-agents.fullname" . }}-eudr-compliance
+  minReplicas: {{ index .Values "eudr-compliance" "autoscaling" "minReplicas" | default 5 }}
+  maxReplicas: {{ index .Values "eudr-compliance" "autoscaling" "maxReplicas" | default 20 }}
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ index .Values "eudr-compliance" "autoscaling" "targetCPUUtilizationPercentage" | default 60 }}
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: {{ index .Values "eudr-compliance" "autoscaling" "targetMemoryUtilizationPercentage" | default 70 }}
+    # Custom metric for EUDR compliance queue depth
+    - type: Pods
+      pods:
+        metric:
+          name: eudr_compliance_queue_depth
+        target:
+          type: AverageValue
+          averageValue: "10"
+  behavior:
+    scaleUp:
+      # Fast scale up for compliance critical workloads
+      stabilizationWindowSeconds: 30
+      policies:
+        - type: Percent
+          value: 100
+          periodSeconds: 15
+        - type: Pods
+          value: 4
+          periodSeconds: 15
+      selectPolicy: Max
+    scaleDown:
+      # Slow scale down to maintain capacity
+      stabilizationWindowSeconds: 600
+      policies:
+        - type: Percent
+          value: 5
+          periodSeconds: 120
+      selectPolicy: Min
+{{- end }}
+
+{{- if and .Values.worker .Values.worker.autoscaling .Values.worker.autoscaling.enabled }}
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ include "greenlang-agents.fullname" . }}-worker
+  namespace: {{ include "greenlang-agents.namespace" . }}
+  labels:
+    {{- include "greenlang-agents.labels" . | nindent 4 }}
+    app.kubernetes.io/component: worker
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "greenlang-agents.fullname" . }}-worker
+  minReplicas: {{ .Values.worker.autoscaling.minReplicas | default 3 }}
+  maxReplicas: {{ .Values.worker.autoscaling.maxReplicas | default 20 }}
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.worker.autoscaling.targetCPUUtilizationPercentage | default 70 }}
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.worker.autoscaling.targetMemoryUtilizationPercentage | default 80 }}
+    {{- if .Values.worker.autoscaling.customMetrics }}
+    {{- range .Values.worker.autoscaling.customMetrics }}
+    - type: {{ .type }}
+      {{- if eq .type "Pods" }}
+      pods:
+        metric:
+          name: {{ .pods.metric.name }}
+        target:
+          type: {{ .pods.target.type }}
+          averageValue: {{ .pods.target.averageValue | quote }}
+      {{- end }}
+    {{- end }}
+    {{- end }}
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+        - type: Percent
+          value: 50
+          periodSeconds: 30
+        - type: Pods
+          value: 3
+          periodSeconds: 30
+      selectPolicy: Max
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Percent
+          value: 10
+          periodSeconds: 60
+      selectPolicy: Min
+{{- end }}
+
+{{- if and .Values.scheduler .Values.scheduler.autoscaling .Values.scheduler.autoscaling.enabled }}
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ include "greenlang-agents.fullname" . }}-scheduler
+  namespace: {{ include "greenlang-agents.namespace" . }}
+  labels:
+    {{- include "greenlang-agents.labels" . | nindent 4 }}
+    app.kubernetes.io/component: scheduler
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "greenlang-agents.fullname" . }}-scheduler
+  minReplicas: {{ .Values.scheduler.autoscaling.minReplicas | default 2 }}
+  maxReplicas: {{ .Values.scheduler.autoscaling.maxReplicas | default 5 }}
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.scheduler.autoscaling.targetCPUUtilizationPercentage | default 70 }}
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.scheduler.autoscaling.targetMemoryUtilizationPercentage | default 80 }}
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 120
+      policies:
+        - type: Pods
+          value: 1
+          periodSeconds: 60
+      selectPolicy: Max
+    scaleDown:
+      stabilizationWindowSeconds: 600
+      policies:
+        - type: Pods
+          value: 1
+          periodSeconds: 120
+      selectPolicy: Min
+{{- end }}

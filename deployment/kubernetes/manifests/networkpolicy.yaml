@@ -101,3 +101,282 @@ spec:
   policyTypes:
   - Ingress
   - Egress
+
+---
+# Network Policy for greenlang namespace - allow executor traffic
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: greenlang-executor-policy
+  namespace: greenlang
+  labels:
+    app: greenlang
+    component: executor
+spec:
+  podSelector:
+    matchLabels:
+      app: greenlang
+      component: executor
+  policyTypes:
+  - Ingress
+  - Egress
+
+  ingress:
+  # Allow from ingress controller
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: ingress-nginx
+    ports:
+    - protocol: TCP
+      port: 8080
+
+  # Allow from other greenlang pods
+  - from:
+    - podSelector:
+        matchLabels:
+          app: greenlang
+    ports:
+    - protocol: TCP
+      port: 8080
+    - protocol: TCP
+      port: 9090
+
+  # Allow from monitoring namespace
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: monitoring
+    ports:
+    - protocol: TCP
+      port: 9090
+
+  egress:
+  # Allow DNS
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: kube-system
+    ports:
+    - protocol: UDP
+      port: 53
+    - protocol: TCP
+      port: 53
+
+  # Allow to Redis
+  - to:
+    - podSelector:
+        matchLabels:
+          app: redis-sentinel
+    ports:
+    - protocol: TCP
+      port: 6379
+    - protocol: TCP
+      port: 26379
+
+  # Allow to worker pods
+  - to:
+    - podSelector:
+        matchLabels:
+          app: greenlang
+          component: worker
+    ports:
+    - protocol: TCP
+      port: 8080
+    - protocol: TCP
+      port: 9090
+
+  # Allow external HTTPS (for API calls, registries)
+  - to:
+    - ipBlock:
+        cidr: 0.0.0.0/0
+        except:
+        - 10.0.0.0/8
+        - 172.16.0.0/12
+        - 192.168.0.0/16
+    ports:
+    - protocol: TCP
+      port: 443
+
+---
+# Network Policy for worker pods
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: greenlang-worker-policy
+  namespace: greenlang
+  labels:
+    app: greenlang
+    component: worker
+spec:
+  podSelector:
+    matchLabels:
+      app: greenlang
+      component: worker
+  policyTypes:
+  - Ingress
+  - Egress
+
+  ingress:
+  # Allow from executor pods
+  - from:
+    - podSelector:
+        matchLabels:
+          app: greenlang
+          component: executor
+    ports:
+    - protocol: TCP
+      port: 8080
+    - protocol: TCP
+      port: 9090
+
+  # Allow from other workers (internal communication)
+  - from:
+    - podSelector:
+        matchLabels:
+          app: greenlang
+          component: worker
+    ports:
+    - protocol: TCP
+      port: 8080
+
+  # Allow from monitoring namespace
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: monitoring
+    ports:
+    - protocol: TCP
+      port: 9090
+
+  egress:
+  # Allow DNS
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: kube-system
+    ports:
+    - protocol: UDP
+      port: 53
+    - protocol: TCP
+      port: 53
+
+  # Allow to Redis
+  - to:
+    - podSelector:
+        matchLabels:
+          app: redis-sentinel
+    ports:
+    - protocol: TCP
+      port: 6379
+    - protocol: TCP
+      port: 26379
+
+  # Allow to executor for callbacks
+  - to:
+    - podSelector:
+        matchLabels:
+          app: greenlang
+          component: executor
+    ports:
+    - protocol: TCP
+      port: 8080
+
+  # Allow external HTTPS (for LLM APIs, external services)
+  - to:
+    - ipBlock:
+        cidr: 0.0.0.0/0
+        except:
+        - 10.0.0.0/8
+        - 172.16.0.0/12
+        - 192.168.0.0/16
+    ports:
+    - protocol: TCP
+      port: 443
+
+---
+# Network Policy for Redis Sentinel
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: greenlang-redis-policy
+  namespace: greenlang
+  labels:
+    app: redis-sentinel
+spec:
+  podSelector:
+    matchLabels:
+      app: redis-sentinel
+  policyTypes:
+  - Ingress
+  - Egress
+
+  ingress:
+  # Allow from greenlang pods
+  - from:
+    - podSelector:
+        matchLabels:
+          app: greenlang
+    ports:
+    - protocol: TCP
+      port: 6379
+    - protocol: TCP
+      port: 26379
+
+  # Allow from other Redis replicas
+  - from:
+    - podSelector:
+        matchLabels:
+          app: redis-sentinel
+    ports:
+    - protocol: TCP
+      port: 6379
+    - protocol: TCP
+      port: 26379
+
+  # Allow metrics scraping
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: monitoring
+    ports:
+    - protocol: TCP
+      port: 9121
+
+  egress:
+  # Allow DNS
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: kube-system
+    ports:
+    - protocol: UDP
+      port: 53
+    - protocol: TCP
+      port: 53
+
+  # Allow to other Redis replicas
+  - to:
+    - podSelector:
+        matchLabels:
+          app: redis-sentinel
+    ports:
+    - protocol: TCP
+      port: 6379
+    - protocol: TCP
+      port: 26379
+
+---
+# Default deny policy for greenlang namespace
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: greenlang-default-deny
+  namespace: greenlang
+  labels:
+    app: greenlang
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress

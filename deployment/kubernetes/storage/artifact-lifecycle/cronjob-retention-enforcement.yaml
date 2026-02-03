@@ -1,0 +1,520 @@
+# Retention Enforcement CronJob
+# Enforces retention policies, handles legal holds, generates compliance reports
+# Runs daily at 3 AM UTC
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: retention-enforcement
+  namespace: greenlang-storage
+  labels:
+    app.kubernetes.io/name: retention-enforcement
+    app.kubernetes.io/component: lifecycle-management
+    app.kubernetes.io/part-of: greenlang-storage
+    app.kubernetes.io/managed-by: kubernetes
+spec:
+  # Schedule: Daily at 3 AM UTC
+  schedule: "0 3 * * *"
+  timeZone: "UTC"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 7
+  failedJobsHistoryLimit: 3
+  startingDeadlineSeconds: 3600
+  jobTemplate:
+    metadata:
+      labels:
+        app.kubernetes.io/name: retention-enforcement
+        app.kubernetes.io/component: lifecycle-management
+    spec:
+      activeDeadlineSeconds: 21600  # 6 hours max
+      backoffLimit: 2
+      ttlSecondsAfterFinished: 86400
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: retention-enforcement
+            app.kubernetes.io/component: lifecycle-management
+          annotations:
+            prometheus.io/scrape: "true"
+            prometheus.io/port: "9090"
+            prometheus.io/path: "/metrics"
+        spec:
+          restartPolicy: OnFailure
+          serviceAccountName: artifact-lifecycle-sa
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            fsGroup: 1000
+            seccompProfile:
+              type: RuntimeDefault
+
+          initContainers:
+          - name: verify-compliance-access
+            image: greenlang/artifact-lifecycle:v1.0.0
+            imagePullPolicy: IfNotPresent
+            command:
+            - /bin/sh
+            - -c
+            - |
+              echo "Verifying compliance database access..."
+              python3 -c "
+              import boto3
+              import os
+              # Verify DynamoDB access for legal hold tracking
+              dynamodb = boto3.client('dynamodb')
+              table_name = os.environ.get('LEGAL_HOLD_TABLE', 'greenlang-legal-holds')
+              try:
+                  dynamodb.describe_table(TableName=table_name)
+                  print(f'Legal hold table {table_name} accessible')
+              except Exception as e:
+                  print(f'Warning: Legal hold table not accessible: {e}')
+              " || exit 1
+              echo "Compliance access verified."
+            env:
+            - name: AWS_REGION
+              valueFrom:
+                configMapKeyRef:
+                  name: artifact-lifecycle-config
+                  key: aws_region
+            - name: LEGAL_HOLD_TABLE
+              valueFrom:
+                configMapKeyRef:
+                  name: artifact-lifecycle-config
+                  key: legal_hold_table
+                  optional: true
+            envFrom:
+            - secretRef:
+                name: aws-credentials
+            resources:
+              requests:
+                cpu: 50m
+                memory: 64Mi
+              limits:
+                cpu: 100m
+                memory: 128Mi
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities:
+                drop:
+                - ALL
+
+          containers:
+          - name: retention-enforcement
+            image: greenlang/artifact-lifecycle:v1.0.0
+            imagePullPolicy: IfNotPresent
+            command:
+            - python3
+            - /app/scripts/enforce-retention.py
+            args:
+            - "--config=/config/retention-config.yaml"
+            - "--metrics-port=9090"
+            - "--log-level=INFO"
+            - "--generate-compliance-report"
+            env:
+            # AWS Configuration
+            - name: AWS_REGION
+              valueFrom:
+                configMapKeyRef:
+                  name: artifact-lifecycle-config
+                  key: aws_region
+            - name: AWS_DEFAULT_REGION
+              valueFrom:
+                configMapKeyRef:
+                  name: artifact-lifecycle-config
+                  key: aws_region
+            # S3 Bucket Configuration
+            - name: BUILD_ARTIFACTS_BUCKET
+              valueFrom:
+                configMapKeyRef:
+                  name: artifact-lifecycle-config
+                  key: build_artifacts_bucket
+            - name: CALCULATION_RESULTS_BUCKET
+              valueFrom:
+                configMapKeyRef:
+                  name: artifact-lifecycle-config
+                  key: calculation_results_bucket
+            - name: REPORTS_BUCKET
+              valueFrom:
+                configMapKeyRef:
+                  name: artifact-lifecycle-config
+                  key: reports_bucket
+            - name: AUDIT_LOGS_BUCKET
+              valueFrom:
+                configMapKeyRef:
+                  name: artifact-lifecycle-config
+                  key: audit_logs_bucket
+            - name: ML_MODELS_BUCKET
+              valueFrom:
+                configMapKeyRef:
+                  name: artifact-lifecycle-config
+                  key: ml_models_bucket
+            - name: TEMP_FILES_BUCKET
+              valueFrom:
+                configMapKeyRef:
+                  name: artifact-lifecycle-config
+                  key: temp_files_bucket
+            # Compliance Configuration
+            - name: LEGAL_HOLD_TABLE
+              valueFrom:
+                configMapKeyRef:
+                  name: artifact-lifecycle-config
+                  key: legal_hold_table
+            - name: COMPLIANCE_REPORT_BUCKET
+              valueFrom:
+                configMapKeyRef:
+                  name: artifact-lifecycle-config
+                  key: compliance_report_bucket
+            # Alert Configuration
+            - name: SLACK_WEBHOOK_URL
+              valueFrom:
+                secretKeyRef:
+                  name: artifact-lifecycle-secrets
+                  key: slack_webhook_url
+                  optional: true
+            - name: PAGERDUTY_ROUTING_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: artifact-lifecycle-secrets
+                  key: pagerduty_routing_key
+                  optional: true
+            # Dry run mode
+            - name: DRY_RUN
+              valueFrom:
+                configMapKeyRef:
+                  name: artifact-lifecycle-config
+                  key: dry_run
+                  optional: true
+            envFrom:
+            - secretRef:
+                name: aws-credentials
+            resources:
+              requests:
+                cpu: 300m
+                memory: 768Mi
+              limits:
+                cpu: 1500m
+                memory: 3Gi
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities:
+                drop:
+                - ALL
+            volumeMounts:
+            - name: config
+              mountPath: /config
+              readOnly: true
+            - name: scripts
+              mountPath: /app/scripts
+              readOnly: true
+            - name: tmp
+              mountPath: /tmp
+            - name: cache
+              mountPath: /home/appuser/.cache
+            - name: reports
+              mountPath: /reports
+
+          volumes:
+          - name: config
+            configMap:
+              name: retention-enforcement-config
+          - name: scripts
+            configMap:
+              name: artifact-lifecycle-scripts
+              defaultMode: 0555
+          - name: tmp
+            emptyDir:
+              sizeLimit: 1Gi
+          - name: cache
+            emptyDir:
+              sizeLimit: 500Mi
+          - name: reports
+            emptyDir:
+              sizeLimit: 1Gi
+
+          affinity:
+            nodeAffinity:
+              preferredDuringSchedulingIgnoredDuringExecution:
+              - weight: 100
+                preference:
+                  matchExpressions:
+                  - key: node.kubernetes.io/instance-type
+                    operator: In
+                    values:
+                    - t3.large
+                    - t3.xlarge
+
+          tolerations:
+          - key: "spot"
+            operator: "Equal"
+            value: "true"
+            effect: "NoSchedule"
+
+---
+# ConfigMap for retention enforcement configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: retention-enforcement-config
+  namespace: greenlang-storage
+  labels:
+    app.kubernetes.io/name: retention-enforcement
+    app.kubernetes.io/component: lifecycle-management
+data:
+  retention-config.yaml: |
+    # Retention Enforcement Configuration
+    version: "1.0"
+
+    # Global settings
+    global:
+      dry_run: false
+      batch_size: 500
+      max_workers: 5
+      log_level: INFO
+      metrics_enabled: true
+      # Strict mode - fail on any policy violation
+      strict_mode: false
+
+    # Retention policies per artifact type
+    policies:
+      # Build artifacts
+      - name: build_artifacts
+        artifact_type: BUILD_ARTIFACTS
+        bucket: "${BUILD_ARTIFACTS_BUCKET}"
+        prefixes:
+          - "builds/"
+          - "packages/"
+          - "binaries/"
+        retention:
+          active_days: 30
+          archive_days: 90
+          delete_days: 365
+          archive_storage_class: "GLACIER"
+        compliance:
+          required: false
+          framework: null
+        legal_hold:
+          check_enabled: true
+          table: "${LEGAL_HOLD_TABLE}"
+
+      # Calculation results
+      - name: calculation_results
+        artifact_type: CALCULATION_RESULTS
+        bucket: "${CALCULATION_RESULTS_BUCKET}"
+        prefixes:
+          - "calculations/"
+          - "emissions/"
+        retention:
+          active_days: 90
+          archive_days: 365
+          delete_days: 2555  # 7 years for compliance
+          archive_storage_class: "GLACIER"
+        compliance:
+          required: true
+          framework: "CSRD"
+          audit_trail: true
+        legal_hold:
+          check_enabled: true
+          table: "${LEGAL_HOLD_TABLE}"
+
+      # Reports
+      - name: reports
+        artifact_type: REPORTS
+        bucket: "${REPORTS_BUCKET}"
+        prefixes:
+          - "reports/"
+        retention:
+          active_days: 365
+          archive_days: 2555  # 7 years
+          delete_days: null  # Never delete (compliance)
+          archive_storage_class: "DEEP_ARCHIVE"
+        compliance:
+          required: true
+          framework: "CSRD"
+          audit_trail: true
+          immutable: false
+        legal_hold:
+          check_enabled: true
+          table: "${LEGAL_HOLD_TABLE}"
+
+      # Audit logs
+      - name: audit_logs
+        artifact_type: AUDIT_LOGS
+        bucket: "${AUDIT_LOGS_BUCKET}"
+        prefixes:
+          - "audit/"
+          - "logs/audit/"
+        retention:
+          active_days: 2555  # 7 years immutable
+          archive_days: null
+          delete_days: null  # Never delete (SOX compliance)
+          archive_storage_class: null
+        compliance:
+          required: true
+          framework: "SOX"
+          audit_trail: true
+          immutable: true
+          object_lock: true
+        legal_hold:
+          check_enabled: true
+          table: "${LEGAL_HOLD_TABLE}"
+          default_hold: true
+
+      # ML models
+      - name: ml_models
+        artifact_type: ML_MODELS
+        bucket: "${ML_MODELS_BUCKET}"
+        prefixes:
+          - "models/"
+        retention:
+          active_days: 90
+          archive_days: 365
+          delete_days: 730  # 2 years
+          archive_storage_class: "GLACIER"
+        compliance:
+          required: false
+          framework: null
+        legal_hold:
+          check_enabled: true
+          table: "${LEGAL_HOLD_TABLE}"
+
+      # Temporary files
+      - name: temporary
+        artifact_type: TEMPORARY
+        bucket: "${TEMP_FILES_BUCKET}"
+        prefixes:
+          - "tmp/"
+          - "temp/"
+        retention:
+          active_days: 7
+          archive_days: null  # No archive
+          delete_days: 7
+          archive_storage_class: null
+        compliance:
+          required: false
+          framework: null
+        legal_hold:
+          check_enabled: false
+
+    # Legal hold configuration
+    legal_hold:
+      # DynamoDB table for tracking holds
+      table_name: "${LEGAL_HOLD_TABLE}"
+      # Check frequency
+      check_on_delete: true
+      check_on_archive: true
+      # Hold types
+      hold_types:
+        - litigation
+        - regulatory
+        - audit
+        - internal_investigation
+      # Notification on hold
+      notify_on_hold_block: true
+
+    # Compliance reporting
+    compliance_reporting:
+      enabled: true
+      # Report destination
+      bucket: "${COMPLIANCE_REPORT_BUCKET}"
+      prefix: "compliance/retention/"
+      # Report format
+      format: "json"
+      # Include sections
+      sections:
+        - policy_summary
+        - violations
+        - legal_holds
+        - upcoming_deletions
+        - archived_objects
+        - immutable_objects
+      # Generate PDF summary
+      generate_pdf: true
+      # Email report
+      email_report:
+        enabled: true
+        recipients:
+          - compliance@greenlang.io
+          - security@greenlang.io
+
+    # Alerting configuration
+    alerting:
+      # Policy violations
+      on_violation:
+        enabled: true
+        severity: "warning"
+        channels:
+          - slack
+          - pagerduty
+      # Immutability bypass attempts
+      on_immutability_violation:
+        enabled: true
+        severity: "critical"
+        channels:
+          - slack
+          - pagerduty
+      # Legal hold blocks
+      on_legal_hold_block:
+        enabled: true
+        severity: "info"
+        channels:
+          - slack
+      # Upcoming compliance deadlines
+      on_upcoming_deadline:
+        enabled: true
+        severity: "warning"
+        days_before: 30
+        channels:
+          - slack
+
+    # Notification channels
+    notifications:
+      slack:
+        enabled: true
+        channel: "#compliance-alerts"
+        on_success: true
+        on_failure: true
+        on_violation: true
+      pagerduty:
+        enabled: true
+        severity_mapping:
+          critical: "critical"
+          warning: "warning"
+          info: "info"
+      email:
+        enabled: true
+        smtp_configmap: "smtp-config"
+
+---
+# Global artifact lifecycle ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: artifact-lifecycle-config
+  namespace: greenlang-storage
+  labels:
+    app.kubernetes.io/name: artifact-lifecycle
+    app.kubernetes.io/component: lifecycle-management
+data:
+  # AWS Region
+  aws_region: "us-east-1"
+
+  # S3 Buckets
+  build_artifacts_bucket: "greenlang-build-artifacts"
+  calculation_results_bucket: "greenlang-calculations"
+  reports_bucket: "greenlang-reports"
+  audit_logs_bucket: "greenlang-audit-logs"
+  ml_models_bucket: "greenlang-ml-models"
+  temp_files_bucket: "greenlang-temp"
+  archive_manifest_bucket: "greenlang-archive-manifests"
+  compliance_report_bucket: "greenlang-compliance-reports"
+
+  # DynamoDB Tables
+  legal_hold_table: "greenlang-legal-holds"
+
+  # Prometheus Pushgateway
+  pushgateway_url: "http://prometheus-pushgateway.monitoring:9091"
+
+  # Dry run mode (set to "true" for testing)
+  dry_run: "false"

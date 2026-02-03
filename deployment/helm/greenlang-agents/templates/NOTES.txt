@@ -1,0 +1,185 @@
+================================================================================
+    GreenLang Agent Factory - Deployment Complete
+================================================================================
+
+{{ if .Release.IsUpgrade }}
+UPGRADE COMPLETE!
+{{ else }}
+INSTALLATION COMPLETE!
+{{ end }}
+
+Release Name: {{ .Release.Name }}
+Namespace: {{ include "greenlang-agents.namespace" . }}
+Chart Version: {{ .Chart.Version }}
+App Version: {{ .Chart.AppVersion }}
+Environment: {{ .Values.global.environment | default "production" }}
+
+================================================================================
+    DEPLOYED COMPONENTS
+================================================================================
+
+1. API Gateway:
+   {{- if .Values.apiGateway }}
+   - Replicas: {{ .Values.apiGateway.replicaCount | default "3" }}
+   - Service: {{ include "greenlang-agents.fullname" . }}-api-gateway
+   {{- end }}
+
+2. Agent Runners:
+   {{- if index .Values "fuel-analyzer" }}
+   {{- if index .Values "fuel-analyzer" "enabled" }}
+   - Fuel Analyzer: {{ index .Values "fuel-analyzer" "replicaCount" | default "3" }} replicas
+   {{- end }}
+   {{- end }}
+   {{- if index .Values "carbon-intensity" }}
+   {{- if index .Values "carbon-intensity" "enabled" }}
+   - Carbon Intensity: {{ index .Values "carbon-intensity" "replicaCount" | default "3" }} replicas
+   {{- end }}
+   {{- end }}
+   {{- if index .Values "energy-performance" }}
+   {{- if index .Values "energy-performance" "enabled" }}
+   - Energy Performance: {{ index .Values "energy-performance" "replicaCount" | default "3" }} replicas
+   {{- end }}
+   {{- end }}
+   {{- if index .Values "eudr-compliance" }}
+   {{- if index .Values "eudr-compliance" "enabled" }}
+   - EUDR Compliance (Critical): {{ index .Values "eudr-compliance" "replicaCount" | default "5" }} replicas
+   {{- end }}
+   {{- end }}
+
+3. Background Services:
+   {{- if .Values.worker }}
+   - Workers: {{ .Values.worker.replicaCount | default "3" }} replicas
+   {{- end }}
+   {{- if .Values.scheduler }}
+   - Scheduler: {{ .Values.scheduler.replicaCount | default "2" }} replicas
+   {{- end }}
+
+================================================================================
+    ACCESS INFORMATION
+================================================================================
+
+{{- if .Values.ingress.enabled }}
+The application is accessible via:
+
+{{- range .Values.ingress.hosts }}
+  - https://{{ .host }}
+{{- end }}
+
+{{- if .Values.ingress.tls }}
+TLS is enabled with certificates from: {{ .Values.ingress.clusterIssuer | default "letsencrypt-prod" }}
+{{- end }}
+{{- else }}
+To access the API Gateway, run:
+
+  kubectl port-forward svc/{{ include "greenlang-agents.fullname" . }}-api-gateway 8000:80 -n {{ include "greenlang-agents.namespace" . }}
+
+Then access: http://localhost:8000
+{{- end }}
+
+================================================================================
+    HEALTH CHECKS
+================================================================================
+
+Check deployment status:
+
+  kubectl get deployments -n {{ include "greenlang-agents.namespace" . }}
+
+Check pod status:
+
+  kubectl get pods -n {{ include "greenlang-agents.namespace" . }}
+
+Check HPA status:
+
+  kubectl get hpa -n {{ include "greenlang-agents.namespace" . }}
+
+Check PDB status:
+
+  kubectl get pdb -n {{ include "greenlang-agents.namespace" . }}
+
+View API Gateway logs:
+
+  kubectl logs -l app.kubernetes.io/component=api-gateway -n {{ include "greenlang-agents.namespace" . }} -f
+
+================================================================================
+    MONITORING
+================================================================================
+
+{{- if .Values.monitoring.enabled }}
+Monitoring is ENABLED.
+
+{{- if .Values.monitoring.serviceMonitor.enabled }}
+ServiceMonitors are configured for Prometheus Operator.
+Metrics will be scraped at interval: {{ .Values.monitoring.serviceMonitor.interval | default "30s" }}
+
+Key metrics to monitor:
+  - agent_requests_total (counter)
+  - agent_request_duration_seconds (histogram)
+  - eudr_compliance_checks_total (counter)
+  - greenlang_active_tasks (gauge)
+{{- end }}
+
+{{- if .Values.monitoring.prometheusRule.enabled }}
+PrometheusRules are configured with alerts for:
+  - Agent availability (99.9% SLO)
+  - EUDR compliance (99.95% SLO)
+  - High error rates
+  - High latency
+  - Pod availability
+{{- end }}
+{{- else }}
+Monitoring is DISABLED. Enable it by setting monitoring.enabled=true
+{{- end }}
+
+================================================================================
+    SECURITY
+================================================================================
+
+{{- if .Values.networkPolicy.enabled }}
+Network Policies: ENABLED (Zero-trust model)
+{{- else }}
+Network Policies: DISABLED (Consider enabling for production)
+{{- end }}
+
+{{- if .Values.common.podSecurityContext }}
+Pod Security Context:
+  - runAsNonRoot: {{ .Values.common.podSecurityContext.runAsNonRoot | default "true" }}
+  - runAsUser: {{ .Values.common.podSecurityContext.runAsUser | default "1000" }}
+  - fsGroup: {{ .Values.common.podSecurityContext.fsGroup | default "1000" }}
+{{- end }}
+
+{{- if .Values.common.containerSecurityContext }}
+Container Security Context:
+  - allowPrivilegeEscalation: {{ .Values.common.containerSecurityContext.allowPrivilegeEscalation | default "false" }}
+  - readOnlyRootFilesystem: {{ .Values.common.containerSecurityContext.readOnlyRootFilesystem | default "true" }}
+{{- end }}
+
+================================================================================
+    TROUBLESHOOTING
+================================================================================
+
+If pods are not starting:
+
+  kubectl describe pod <pod-name> -n {{ include "greenlang-agents.namespace" . }}
+
+If agents are not responding:
+
+  kubectl logs <pod-name> -n {{ include "greenlang-agents.namespace" . }}
+
+Check External Secrets status:
+
+  kubectl get externalsecrets -n {{ include "greenlang-agents.namespace" . }}
+
+Check service endpoints:
+
+  kubectl get endpoints -n {{ include "greenlang-agents.namespace" . }}
+
+================================================================================
+    DOCUMENTATION
+================================================================================
+
+For more information, visit:
+  - Documentation: https://docs.greenlang.io
+  - Runbooks: https://docs.greenlang.io/runbooks
+  - Support: support@greenlang.io
+
+================================================================================

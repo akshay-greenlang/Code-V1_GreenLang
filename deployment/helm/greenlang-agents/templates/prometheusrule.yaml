@@ -1,0 +1,350 @@
+{{/*
+GreenLang Agent Factory - PrometheusRule Templates
+Alert rules and recording rules for agent monitoring
+*/}}
+
+{{- if and .Values.monitoring.enabled .Values.monitoring.prometheusRule.enabled }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ include "greenlang-agents.fullname" . }}-alerts
+  namespace: {{ include "greenlang-agents.namespace" . }}
+  labels:
+    {{- include "greenlang-agents.labels" . | nindent 4 }}
+    {{- with .Values.monitoring.prometheusRule.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  groups:
+    # Agent Availability Alerts
+    - name: greenlang-agents.availability
+      interval: 30s
+      rules:
+        - alert: AgentHighErrorRate
+          expr: |
+            sum(rate(agent_requests_total{status="error"}[5m])) by (agent)
+            /
+            sum(rate(agent_requests_total[5m])) by (agent) > 0.01
+          for: 5m
+          labels:
+            severity: critical
+            team: platform
+          annotations:
+            summary: "High error rate for {{ $labels.agent }}"
+            description: "Error rate is {{ $value | humanizePercentage }} for agent {{ $labels.agent }}"
+            runbook_url: "https://docs.greenlang.io/runbooks/high-error-rate"
+
+        - alert: AgentDown
+          expr: up{job=~".*greenlang-agents.*"} == 0
+          for: 2m
+          labels:
+            severity: critical
+            team: platform
+          annotations:
+            summary: "Agent {{ $labels.job }} is down"
+            description: "Agent {{ $labels.job }} has been down for more than 2 minutes"
+            runbook_url: "https://docs.greenlang.io/runbooks/agent-down"
+
+        - alert: AgentReplicasUnavailable
+          expr: |
+            kube_deployment_status_replicas_available{namespace="{{ include "greenlang-agents.namespace" . }}"} <
+            kube_deployment_status_replicas_desired{namespace="{{ include "greenlang-agents.namespace" . }}"}
+          for: 5m
+          labels:
+            severity: warning
+            team: platform
+          annotations:
+            summary: "Agent {{ $labels.deployment }} has unavailable replicas"
+            description: "Deployment {{ $labels.deployment }} has {{ $value }} unavailable replicas"
+
+    # Agent Performance Alerts
+    - name: greenlang-agents.performance
+      interval: 30s
+      rules:
+        - alert: AgentHighLatency
+          expr: |
+            histogram_quantile(0.95, sum(rate(agent_request_duration_seconds_bucket[5m])) by (agent, le)) > 0.5
+          for: 5m
+          labels:
+            severity: warning
+            team: platform
+          annotations:
+            summary: "High latency for {{ $labels.agent }}"
+            description: "P95 latency is {{ $value | humanizeDuration }} for agent {{ $labels.agent }}"
+
+        - alert: AgentHighLatencyCritical
+          expr: |
+            histogram_quantile(0.99, sum(rate(agent_request_duration_seconds_bucket[5m])) by (agent, le)) > 2
+          for: 5m
+          labels:
+            severity: critical
+            team: platform
+          annotations:
+            summary: "Critical latency for {{ $labels.agent }}"
+            description: "P99 latency is {{ $value | humanizeDuration }} for agent {{ $labels.agent }}"
+            runbook_url: "https://docs.greenlang.io/runbooks/high-latency"
+
+        - alert: AgentHighCPUUsage
+          expr: |
+            sum(rate(container_cpu_usage_seconds_total{namespace="{{ include "greenlang-agents.namespace" . }}", container!=""}[5m])) by (pod)
+            /
+            sum(kube_pod_container_resource_limits{namespace="{{ include "greenlang-agents.namespace" . }}", resource="cpu"}) by (pod) > 0.9
+          for: 10m
+          labels:
+            severity: warning
+            team: platform
+          annotations:
+            summary: "High CPU usage for {{ $labels.pod }}"
+            description: "Pod {{ $labels.pod }} CPU usage is above 90%"
+
+        - alert: AgentHighMemoryUsage
+          expr: |
+            sum(container_memory_working_set_bytes{namespace="{{ include "greenlang-agents.namespace" . }}", container!=""}) by (pod)
+            /
+            sum(kube_pod_container_resource_limits{namespace="{{ include "greenlang-agents.namespace" . }}", resource="memory"}) by (pod) > 0.9
+          for: 10m
+          labels:
+            severity: warning
+            team: platform
+          annotations:
+            summary: "High memory usage for {{ $labels.pod }}"
+            description: "Pod {{ $labels.pod }} memory usage is above 90%"
+
+    # EUDR Compliance Specific Alerts (Critical Agent)
+    - name: greenlang-agents.eudr-compliance
+      interval: 15s
+      rules:
+        - alert: EUDRComplianceAgentDown
+          expr: up{job=~".*eudr-compliance.*"} == 0
+          for: 1m
+          labels:
+            severity: critical
+            team: compliance
+            pagerduty: "true"
+          annotations:
+            summary: "EUDR Compliance Agent is DOWN"
+            description: "Critical: EUDR Compliance Agent has been down for more than 1 minute. Immediate action required."
+            runbook_url: "https://docs.greenlang.io/runbooks/eudr-compliance-down"
+
+        - alert: EUDRComplianceHighErrorRate
+          expr: |
+            sum(rate(eudr_compliance_requests_total{status="error"}[5m]))
+            /
+            sum(rate(eudr_compliance_requests_total[5m])) > 0.005
+          for: 2m
+          labels:
+            severity: critical
+            team: compliance
+            pagerduty: "true"
+          annotations:
+            summary: "EUDR Compliance Agent high error rate"
+            description: "EUDR Compliance error rate is {{ $value | humanizePercentage }} (SLO: 0.5%)"
+            runbook_url: "https://docs.greenlang.io/runbooks/eudr-high-error-rate"
+
+        - alert: EUDRComplianceHighLatency
+          expr: |
+            histogram_quantile(0.95, sum(rate(eudr_request_duration_seconds_bucket[5m])) by (le)) > 0.25
+          for: 3m
+          labels:
+            severity: critical
+            team: compliance
+          annotations:
+            summary: "EUDR Compliance high latency"
+            description: "EUDR Compliance P95 latency is {{ $value | humanizeDuration }} (SLO: 250ms)"
+
+        - alert: EUDRComplianceLowReplicas
+          expr: |
+            kube_deployment_status_replicas_available{deployment=~".*eudr-compliance.*"} < 3
+          for: 2m
+          labels:
+            severity: critical
+            team: compliance
+          annotations:
+            summary: "EUDR Compliance has insufficient replicas"
+            description: "EUDR Compliance has only {{ $value }} available replicas (minimum: 3)"
+
+    # API Gateway Alerts
+    - name: greenlang-agents.api-gateway
+      interval: 30s
+      rules:
+        - alert: APIGatewayHighErrorRate
+          expr: |
+            sum(rate(http_requests_total{job=~".*api-gateway.*", status=~"5.."}[5m]))
+            /
+            sum(rate(http_requests_total{job=~".*api-gateway.*"}[5m])) > 0.01
+          for: 5m
+          labels:
+            severity: critical
+            team: platform
+          annotations:
+            summary: "API Gateway high error rate"
+            description: "API Gateway error rate is {{ $value | humanizePercentage }}"
+
+        - alert: APIGatewayDown
+          expr: up{job=~".*api-gateway.*"} == 0
+          for: 1m
+          labels:
+            severity: critical
+            team: platform
+            pagerduty: "true"
+          annotations:
+            summary: "API Gateway is DOWN"
+            description: "API Gateway has been down for more than 1 minute"
+            runbook_url: "https://docs.greenlang.io/runbooks/api-gateway-down"
+
+        - alert: APIGatewayHighLatency
+          expr: |
+            histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job=~".*api-gateway.*"}[5m])) by (le)) > 0.1
+          for: 5m
+          labels:
+            severity: warning
+            team: platform
+          annotations:
+            summary: "API Gateway P95 latency is high"
+            description: "API Gateway P95 latency is {{ $value | humanizeDuration }}"
+
+    # SLO Alerts
+    - name: greenlang-agents.slo
+      interval: 1m
+      rules:
+        - alert: AgentAvailabilitySLOBreach
+          expr: |
+            (1 - (
+              sum(rate(agent_requests_total{status!="error"}[30d]))
+              /
+              sum(rate(agent_requests_total[30d]))
+            )) > 0.001
+          for: 5m
+          labels:
+            severity: critical
+            team: platform
+            slo: availability
+          annotations:
+            summary: "Agent availability SLO breach"
+            description: "Agent availability is below 99.9% over 30 days"
+
+        - alert: ErrorBudgetBurnRateHigh
+          expr: |
+            (
+              1 - (
+                sum(rate(agent_requests_total{status!="error"}[1h]))
+                /
+                sum(rate(agent_requests_total[1h]))
+              )
+            ) / 0.001 > 2
+          for: 5m
+          labels:
+            severity: warning
+            team: platform
+            slo: error-budget
+          annotations:
+            summary: "Error budget burn rate is high"
+            description: "Error budget burn rate is {{ $value }}x sustainable rate"
+
+---
+# Recording Rules for Agent Metrics
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ include "greenlang-agents.fullname" . }}-recording
+  namespace: {{ include "greenlang-agents.namespace" . }}
+  labels:
+    {{- include "greenlang-agents.labels" . | nindent 4 }}
+    {{- with .Values.monitoring.prometheusRule.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  groups:
+    - name: greenlang-agents.recording
+      interval: 30s
+      rules:
+        # Request rates
+        - record: greenlang:agent:request_rate:5m
+          expr: sum(rate(agent_requests_total[5m])) by (agent, status)
+
+        - record: greenlang:agent:total_request_rate:5m
+          expr: sum(rate(agent_requests_total[5m])) by (agent)
+
+        # Error rates
+        - record: greenlang:agent:error_rate:5m
+          expr: |
+            sum(rate(agent_requests_total{status="error"}[5m])) by (agent)
+            /
+            sum(rate(agent_requests_total[5m])) by (agent) * 100
+
+        # Latency percentiles
+        - record: greenlang:agent:latency_p50:5m
+          expr: histogram_quantile(0.50, sum(rate(agent_request_duration_seconds_bucket[5m])) by (agent, le))
+
+        - record: greenlang:agent:latency_p95:5m
+          expr: histogram_quantile(0.95, sum(rate(agent_request_duration_seconds_bucket[5m])) by (agent, le))
+
+        - record: greenlang:agent:latency_p99:5m
+          expr: histogram_quantile(0.99, sum(rate(agent_request_duration_seconds_bucket[5m])) by (agent, le))
+
+        # Availability
+        - record: greenlang:agent:availability:5m
+          expr: |
+            sum(rate(agent_requests_total{status!="error"}[5m])) by (agent)
+            /
+            sum(rate(agent_requests_total[5m])) by (agent)
+
+        # EUDR specific metrics
+        - record: greenlang:eudr:compliance_check_rate:5m
+          expr: sum(rate(eudr_compliance_checks_total[5m]))
+
+        - record: greenlang:eudr:compliance_success_rate:5m
+          expr: |
+            sum(rate(eudr_compliance_checks_total{result="pass"}[5m]))
+            /
+            sum(rate(eudr_compliance_checks_total[5m])) * 100
+
+        # API Gateway metrics
+        - record: greenlang:api_gateway:request_rate:5m
+          expr: sum(rate(http_requests_total{job=~".*api-gateway.*"}[5m])) by (method, path, status)
+
+        - record: greenlang:api_gateway:error_rate:5m
+          expr: |
+            sum(rate(http_requests_total{job=~".*api-gateway.*", status=~"5.."}[5m]))
+            /
+            sum(rate(http_requests_total{job=~".*api-gateway.*"}[5m])) * 100
+
+    # SLO Recording Rules
+    - name: greenlang-agents.slo.recording
+      interval: 1m
+      rules:
+        - record: greenlang:slo:agent_availability_30d
+          expr: |
+            sum(rate(agent_requests_total{status!="error"}[30d]))
+            /
+            sum(rate(agent_requests_total[30d]))
+
+        - record: greenlang:slo:eudr_availability_30d
+          expr: |
+            sum(rate(eudr_compliance_requests_total{status!="error"}[30d]))
+            /
+            sum(rate(eudr_compliance_requests_total[30d]))
+
+        - record: greenlang:slo:error_budget_remaining
+          expr: |
+            1 - (
+              (1 - greenlang:slo:agent_availability_30d) / (1 - 0.999)
+            )
+
+        - record: greenlang:slo:eudr_error_budget_remaining
+          expr: |
+            1 - (
+              (1 - greenlang:slo:eudr_availability_30d) / (1 - 0.9995)
+            )
+
+        - record: greenlang:slo:burn_rate_1h
+          expr: |
+            (
+              1 - (
+                sum(rate(agent_requests_total{status!="error"}[1h]))
+                /
+                sum(rate(agent_requests_total[1h]))
+              )
+            ) / (1 - 0.999)
+{{- end }}

@@ -3,6 +3,9 @@ kind: ConfigMap
 metadata:
   name: greenlang-config
   namespace: greenlang
+  labels:
+    app: greenlang
+    component: config
 data:
   config.yaml: |
     # GreenLang Configuration
@@ -11,24 +14,32 @@ data:
       namespace: greenlang
       image: greenlang/executor:latest
       service_account: greenlang-executor
-      
+
     logging:
       level: INFO
       format: json
-      
+      output: stdout
+
     metrics:
       enabled: true
       port: 9090
-      
+      path: /metrics
+
+    health:
+      enabled: true
+      port: 8080
+      liveness_path: /health
+      readiness_path: /ready
+
     registry:
       url: https://hub.greenlang.io
       cache_ttl: 3600
-      
+
     execution:
       default_timeout: 3600
       max_retries: 3
       cleanup_after: 86400
-      
+
     resources:
       default:
         cpu: "100m"
@@ -36,28 +47,67 @@ data:
       limits:
         cpu: "2"
         memory: "4Gi"
-        
+
+    security:
+      enable_tls: false
+      require_auth: true
+
   pipeline-defaults.yaml: |
     # Default pipeline settings
     defaults:
       image: greenlang/executor:latest
       timeout: 300
       retries: 3
-      
+
     labels:
       managed-by: greenlang
       version: v1
-      
+
     annotations:
       greenlang.io/executor-version: "1.0.0"
+
 ---
+# Environment-specific ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: greenlang-env-config
+  namespace: greenlang
+  labels:
+    app: greenlang
+    component: config
+data:
+  # Environment variables that are not sensitive
+  APP_ENV: "production"
+  LOG_LEVEL: "INFO"
+  METRICS_ENABLED: "true"
+  METRICS_PORT: "9090"
+  HEALTH_PORT: "8080"
+  REDIS_SENTINEL_SERVICE: "redis-sentinel"
+  REDIS_SENTINEL_PORT: "26379"
+  REDIS_MASTER_NAME: "greenlang-master"
+  OTEL_EXPORTER_OTLP_ENDPOINT: "http://jaeger-collector.monitoring:4317"
+  OTEL_SERVICE_NAME: "greenlang"
+  OTEL_TRACES_SAMPLER: "parentbased_traceidratio"
+  OTEL_TRACES_SAMPLER_ARG: "0.1"
+
+---
+# Docker registry secret
 apiVersion: v1
 kind: Secret
 metadata:
   name: greenlang-registry
   namespace: greenlang
+  labels:
+    app: greenlang
+    component: registry
 type: kubernetes.io/dockerconfigjson
 data:
   # Base64 encoded Docker registry credentials
-  # Replace with actual credentials
-  .dockerconfigjson: ewogICJhdXRocyI6IHsKICAgICJodWIuZ3JlZW5sYW5nLmlvIjogewogICAgICAiYXV0aCI6ICJZV1J0YVc0NmNHRnpjM2R2Y21RPSIKICAgIH0KICB9Cn0=
+  # Replace with actual credentials using:
+  # kubectl create secret docker-registry greenlang-registry \
+  #   --docker-server=hub.greenlang.io \
+  #   --docker-username=USER \
+  #   --docker-password=TOKEN \
+  #   --dry-run=client -o yaml
+  .dockerconfigjson: "${DOCKER_CONFIG_JSON}"

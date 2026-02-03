@@ -1,0 +1,343 @@
+# Velero Backup Schedules for GreenLang
+# INFRA-001: Automated Backup Configuration
+# Version: 1.0.0
+---
+# Hourly Backup - Critical Data (last 24 hours retention)
+apiVersion: velero.io/v1
+kind: Schedule
+metadata:
+  name: greenlang-hourly-backup
+  namespace: velero
+  labels:
+    app.kubernetes.io/name: velero
+    backup-type: hourly
+spec:
+  # Every hour at minute 0
+  schedule: "0 * * * *"
+  template:
+    # Include GreenLang namespace
+    includedNamespaces:
+      - greenlang
+    # Include specific resource types
+    includedResources:
+      - configmaps
+      - secrets
+      - persistentvolumeclaims
+    # Exclude system resources
+    excludedResources:
+      - events
+      - events.events.k8s.io
+    # Label selector for critical resources
+    labelSelector:
+      matchLabels:
+        backup-priority: critical
+    # Snapshot volumes
+    snapshotVolumes: true
+    # Storage location
+    storageLocation: greenlang-backup-location
+    # Volume snapshot location
+    volumeSnapshotLocations:
+      - greenlang-ebs-snapshot-location
+    # Time to live - 24 hours
+    ttl: 24h
+    # Include cluster resources
+    includeClusterResources: false
+    # Hooks
+    hooks:
+      resources: []
+    # Metadata
+    metadata:
+      labels:
+        backup-schedule: hourly
+        environment: production
+
+---
+# Daily Backup - Full Application State (7 days retention)
+apiVersion: velero.io/v1
+kind: Schedule
+metadata:
+  name: greenlang-daily-backup
+  namespace: velero
+  labels:
+    app.kubernetes.io/name: velero
+    backup-type: daily
+spec:
+  # Every day at 2:00 AM UTC
+  schedule: "0 2 * * *"
+  template:
+    # Include all GreenLang namespaces
+    includedNamespaces:
+      - greenlang
+      - greenlang-staging
+      - monitoring
+    # Include all resources
+    includedResources:
+      - "*"
+    # Exclude non-essential resources
+    excludedResources:
+      - events
+      - events.events.k8s.io
+      - pods
+      - replicasets
+    # Snapshot volumes
+    snapshotVolumes: true
+    # Storage location
+    storageLocation: greenlang-backup-location
+    # Volume snapshot location
+    volumeSnapshotLocations:
+      - greenlang-ebs-snapshot-location
+    # Time to live - 7 days
+    ttl: 168h
+    # Include cluster resources
+    includeClusterResources: true
+    # Pre-backup hooks
+    hooks:
+      resources:
+        - name: pre-backup-postgres
+          includedNamespaces:
+            - greenlang
+          labelSelector:
+            matchLabels:
+              app: postgresql
+          pre:
+            - exec:
+                container: postgresql
+                command:
+                  - /bin/bash
+                  - -c
+                  - "pg_dump -U postgres greenlang > /tmp/pre-backup-dump.sql"
+                onError: Continue
+                timeout: 300s
+        - name: pre-backup-redis
+          includedNamespaces:
+            - greenlang
+          labelSelector:
+            matchLabels:
+              app: redis
+          pre:
+            - exec:
+                container: redis
+                command:
+                  - /bin/bash
+                  - -c
+                  - "redis-cli BGSAVE"
+                onError: Continue
+                timeout: 60s
+    # Metadata
+    metadata:
+      labels:
+        backup-schedule: daily
+        environment: production
+
+---
+# Weekly Backup - Comprehensive (30 days retention)
+apiVersion: velero.io/v1
+kind: Schedule
+metadata:
+  name: greenlang-weekly-backup
+  namespace: velero
+  labels:
+    app.kubernetes.io/name: velero
+    backup-type: weekly
+spec:
+  # Every Sunday at 3:00 AM UTC
+  schedule: "0 3 * * 0"
+  template:
+    # Include all namespaces
+    includedNamespaces:
+      - greenlang
+      - greenlang-staging
+      - greenlang-dev
+      - monitoring
+      - velero
+      - ingress-nginx
+      - cert-manager
+    # Include all resources
+    includedResources:
+      - "*"
+    # Exclude minimal resources
+    excludedResources:
+      - events
+      - events.events.k8s.io
+    # Snapshot volumes
+    snapshotVolumes: true
+    # Storage location
+    storageLocation: greenlang-backup-location
+    # Volume snapshot location
+    volumeSnapshotLocations:
+      - greenlang-ebs-snapshot-location
+    # Time to live - 30 days
+    ttl: 720h
+    # Include cluster resources
+    includeClusterResources: true
+    # Ordered resources for proper restore sequence
+    orderedResources:
+      "persistentvolumes": "pv-postgres,pv-redis,pv-weaviate"
+      "persistentvolumeclaims": "pvc-postgres,pvc-redis,pvc-weaviate"
+    # Hooks
+    hooks:
+      resources:
+        - name: pre-backup-consistency-check
+          includedNamespaces:
+            - greenlang
+          labelSelector:
+            matchLabels:
+              app: postgresql
+          pre:
+            - exec:
+                container: postgresql
+                command:
+                  - /bin/bash
+                  - -c
+                  - |
+                    echo "Starting pre-backup consistency check..."
+                    pg_isready -U postgres
+                    psql -U postgres -c "SELECT 1;" > /dev/null
+                    echo "Database is ready for backup"
+                onError: Fail
+                timeout: 60s
+    # Metadata
+    metadata:
+      labels:
+        backup-schedule: weekly
+        environment: production
+        compliance: required
+
+---
+# Monthly Backup - Archive (1 year retention)
+apiVersion: velero.io/v1
+kind: Schedule
+metadata:
+  name: greenlang-monthly-backup
+  namespace: velero
+  labels:
+    app.kubernetes.io/name: velero
+    backup-type: monthly
+spec:
+  # First day of month at 4:00 AM UTC
+  schedule: "0 4 1 * *"
+  template:
+    # Include all namespaces
+    includedNamespaces:
+      - "*"
+    # Include all resources
+    includedResources:
+      - "*"
+    # Exclude only events
+    excludedResources:
+      - events
+      - events.events.k8s.io
+    # Snapshot volumes
+    snapshotVolumes: true
+    # Storage location (archive tier)
+    storageLocation: greenlang-backup-location-archive
+    # Volume snapshot location
+    volumeSnapshotLocations:
+      - greenlang-ebs-snapshot-location
+    # Time to live - 1 year (365 days)
+    ttl: 8760h
+    # Include cluster resources
+    includeClusterResources: true
+    # Metadata
+    metadata:
+      labels:
+        backup-schedule: monthly
+        environment: production
+        compliance: required
+        archive: true
+
+---
+# On-Demand Backup Template (for manual backups before deployments)
+apiVersion: velero.io/v1
+kind: Backup
+metadata:
+  name: greenlang-pre-deployment-template
+  namespace: velero
+  labels:
+    app.kubernetes.io/name: velero
+    backup-type: on-demand
+spec:
+  # Include GreenLang namespace
+  includedNamespaces:
+    - greenlang
+  # Include all resources
+  includedResources:
+    - "*"
+  # Exclude pods and replicasets (will be recreated)
+  excludedResources:
+    - events
+    - events.events.k8s.io
+    - pods
+    - replicasets
+  # Snapshot volumes
+  snapshotVolumes: true
+  # Storage location
+  storageLocation: greenlang-backup-location
+  # Volume snapshot location
+  volumeSnapshotLocations:
+    - greenlang-ebs-snapshot-location
+  # Time to live - 48 hours (temporary backup)
+  ttl: 48h
+  # Include cluster resources
+  includeClusterResources: false
+  # Hooks
+  hooks:
+    resources:
+      - name: notify-backup-start
+        includedNamespaces:
+          - greenlang
+        labelSelector:
+          matchLabels:
+            app: greenlang-api
+        pre:
+          - exec:
+              container: greenlang-api
+              command:
+                - /bin/sh
+                - -c
+                - 'echo "Pre-deployment backup started at $(date)"'
+              onError: Continue
+              timeout: 30s
+  # Metadata
+  metadata:
+    labels:
+      backup-type: pre-deployment
+      trigger: manual
+
+---
+# Disaster Recovery Backup (triggered by alert)
+apiVersion: velero.io/v1
+kind: Backup
+metadata:
+  name: greenlang-disaster-recovery-template
+  namespace: velero
+  labels:
+    app.kubernetes.io/name: velero
+    backup-type: disaster-recovery
+spec:
+  # Include all namespaces
+  includedNamespaces:
+    - "*"
+  # Include all resources
+  includedResources:
+    - "*"
+  # Minimal exclusions
+  excludedResources:
+    - events
+    - events.events.k8s.io
+  # Snapshot volumes
+  snapshotVolumes: true
+  # Storage location
+  storageLocation: greenlang-backup-location
+  # Volume snapshot location
+  volumeSnapshotLocations:
+    - greenlang-ebs-snapshot-location
+  # Time to live - 90 days
+  ttl: 2160h
+  # Include cluster resources
+  includeClusterResources: true
+  # Metadata
+  metadata:
+    labels:
+      backup-type: disaster-recovery
+      priority: critical

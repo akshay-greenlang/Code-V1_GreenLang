@@ -1,0 +1,409 @@
+# Istio Virtual Services for GreenLang
+# INFRA-001: Traffic routing configuration
+#
+# Virtual Services define how requests are routed to services within the mesh
+
+---
+# API Service Virtual Service
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: greenlang-api
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: greenlang-api
+    app.kubernetes.io/component: networking
+    app.kubernetes.io/part-of: greenlang
+spec:
+  hosts:
+    - "api.greenlang.io"
+    - "api-staging.greenlang.io"
+    - "api-dev.greenlang.io"
+  gateways:
+    - istio-system/greenlang-gateway
+  http:
+    # Health check endpoint (no auth required)
+    - name: "health-check"
+      match:
+        - uri:
+            prefix: /api/v1/health
+        - uri:
+            prefix: /api/v1/ready
+      route:
+        - destination:
+            host: greenlang-api.greenlang.svc.cluster.local
+            port:
+              number: 8000
+      timeout: 5s
+      retries:
+        attempts: 2
+        perTryTimeout: 2s
+        retryOn: 5xx,reset,connect-failure
+
+    # API v2 routes (canary deployment)
+    - name: "api-v2-canary"
+      match:
+        - headers:
+            x-api-version:
+              exact: "v2"
+        - uri:
+            prefix: /api/v2
+      route:
+        - destination:
+            host: greenlang-api.greenlang.svc.cluster.local
+            port:
+              number: 8000
+            subset: v2
+          weight: 100
+      timeout: 30s
+      retries:
+        attempts: 3
+        perTryTimeout: 10s
+        retryOn: 5xx,reset,connect-failure,retriable-4xx
+
+    # API v1 routes (stable)
+    - name: "api-v1-stable"
+      match:
+        - uri:
+            prefix: /api/v1
+      route:
+        # Weighted routing for canary deployments
+        - destination:
+            host: greenlang-api.greenlang.svc.cluster.local
+            port:
+              number: 8000
+            subset: stable
+          weight: 90
+        - destination:
+            host: greenlang-api.greenlang.svc.cluster.local
+            port:
+              number: 8000
+            subset: canary
+          weight: 10
+      timeout: 30s
+      retries:
+        attempts: 3
+        perTryTimeout: 10s
+        retryOn: 5xx,reset,connect-failure
+      fault:
+        delay:
+          percentage:
+            value: 0.1
+          fixedDelay: 5s
+      headers:
+        request:
+          add:
+            x-request-start: "%START_TIME%"
+        response:
+          add:
+            x-envoy-upstream-service-time: "%RESPONSE_TIME%"
+
+    # Default route
+    - name: "default"
+      route:
+        - destination:
+            host: greenlang-api.greenlang.svc.cluster.local
+            port:
+              number: 8000
+            subset: stable
+
+---
+# Web Application Virtual Service
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: greenlang-web
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: greenlang-web
+    app.kubernetes.io/component: networking
+    app.kubernetes.io/part-of: greenlang
+spec:
+  hosts:
+    - "app.greenlang.io"
+    - "app-staging.greenlang.io"
+    - "app-dev.greenlang.io"
+  gateways:
+    - istio-system/greenlang-gateway
+  http:
+    # Static assets (cached aggressively)
+    - name: "static-assets"
+      match:
+        - uri:
+            prefix: /static
+        - uri:
+            regex: ".*\\.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf)$"
+      route:
+        - destination:
+            host: greenlang-web.greenlang.svc.cluster.local
+            port:
+              number: 3000
+      timeout: 10s
+      headers:
+        response:
+          add:
+            cache-control: "public, max-age=31536000, immutable"
+
+    # WebSocket connections
+    - name: "websocket"
+      match:
+        - uri:
+            prefix: /ws
+        - headers:
+            upgrade:
+              exact: websocket
+      route:
+        - destination:
+            host: greenlang-web.greenlang.svc.cluster.local
+            port:
+              number: 3000
+      timeout: 0s  # No timeout for WebSocket
+
+    # Main application routes
+    - name: "main"
+      route:
+        - destination:
+            host: greenlang-web.greenlang.svc.cluster.local
+            port:
+              number: 3000
+            subset: stable
+          weight: 100
+      timeout: 30s
+      retries:
+        attempts: 2
+        perTryTimeout: 15s
+        retryOn: 5xx,reset,connect-failure
+
+---
+# Admin Portal Virtual Service
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: greenlang-admin
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: greenlang-admin
+    app.kubernetes.io/component: networking
+    app.kubernetes.io/part-of: greenlang
+spec:
+  hosts:
+    - "admin.greenlang.io"
+  gateways:
+    - istio-system/greenlang-gateway
+  http:
+    # Admin API routes
+    - name: "admin-api"
+      match:
+        - uri:
+            prefix: /api/admin
+      route:
+        - destination:
+            host: greenlang-admin.greenlang.svc.cluster.local
+            port:
+              number: 8080
+      timeout: 60s
+      retries:
+        attempts: 2
+        perTryTimeout: 30s
+        retryOn: 5xx,reset,connect-failure
+
+    # Admin web interface
+    - name: "admin-web"
+      route:
+        - destination:
+            host: greenlang-admin.greenlang.svc.cluster.local
+            port:
+              number: 8080
+      timeout: 30s
+
+---
+# Internal API Virtual Service (mesh-internal traffic)
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: greenlang-api-internal
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: greenlang-api-internal
+    app.kubernetes.io/component: networking
+    app.kubernetes.io/part-of: greenlang
+spec:
+  hosts:
+    - "greenlang-api.greenlang.svc.cluster.local"
+  http:
+    # Circuit breaker for internal calls
+    - name: "internal-api"
+      route:
+        - destination:
+            host: greenlang-api.greenlang.svc.cluster.local
+            port:
+              number: 8000
+            subset: stable
+          weight: 95
+        - destination:
+            host: greenlang-api.greenlang.svc.cluster.local
+            port:
+              number: 8000
+            subset: canary
+          weight: 5
+      timeout: 15s
+      retries:
+        attempts: 3
+        perTryTimeout: 5s
+        retryOn: 5xx,reset,connect-failure,retriable-4xx
+
+---
+# Worker Service Virtual Service
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: greenlang-worker
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: greenlang-worker
+    app.kubernetes.io/component: networking
+    app.kubernetes.io/part-of: greenlang
+spec:
+  hosts:
+    - "greenlang-worker.greenlang.svc.cluster.local"
+  http:
+    - name: "worker-internal"
+      route:
+        - destination:
+            host: greenlang-worker.greenlang.svc.cluster.local
+            port:
+              number: 8001
+      timeout: 300s  # Long timeout for background jobs
+      retries:
+        attempts: 1
+        perTryTimeout: 300s
+        retryOn: reset,connect-failure
+
+---
+# gRPC Virtual Service
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: greenlang-grpc
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: greenlang-grpc
+    app.kubernetes.io/component: networking
+    app.kubernetes.io/part-of: greenlang
+spec:
+  hosts:
+    - "grpc.greenlang.io"
+  gateways:
+    - istio-system/greenlang-grpc-gateway
+  http:
+    # gRPC health check
+    - name: "grpc-health"
+      match:
+        - uri:
+            exact: /grpc.health.v1.Health/Check
+      route:
+        - destination:
+            host: greenlang-grpc.greenlang.svc.cluster.local
+            port:
+              number: 9090
+      timeout: 5s
+
+    # gRPC streaming
+    - name: "grpc-stream"
+      match:
+        - uri:
+            prefix: /greenlang.v1
+      route:
+        - destination:
+            host: greenlang-grpc.greenlang.svc.cluster.local
+            port:
+              number: 9090
+      timeout: 0s  # No timeout for streaming
+      retries:
+        attempts: 3
+        perTryTimeout: 10s
+        retryOn: unavailable,resource-exhausted
+
+---
+# Mirror traffic for testing (shadow deployment)
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: greenlang-api-mirror
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: greenlang-api-mirror
+    app.kubernetes.io/component: networking
+    app.kubernetes.io/part-of: greenlang
+  annotations:
+    description: "Shadow traffic to test new versions"
+spec:
+  hosts:
+    - "greenlang-api-shadow.greenlang.svc.cluster.local"
+  http:
+    - name: "shadow-traffic"
+      route:
+        - destination:
+            host: greenlang-api.greenlang.svc.cluster.local
+            port:
+              number: 8000
+            subset: stable
+      mirror:
+        host: greenlang-api.greenlang.svc.cluster.local
+        subset: shadow
+      mirrorPercentage:
+        value: 10.0
+
+---
+# External Service Virtual Service (Egress)
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: external-openai-api
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: external-openai-api
+    app.kubernetes.io/component: networking
+    app.kubernetes.io/part-of: greenlang
+spec:
+  hosts:
+    - "api.openai.com"
+  http:
+    - name: "openai-api"
+      route:
+        - destination:
+            host: api.openai.com
+            port:
+              number: 443
+      timeout: 120s
+      retries:
+        attempts: 2
+        perTryTimeout: 60s
+        retryOn: 5xx,reset,connect-failure
+
+---
+# External Service Virtual Service (Anthropic)
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: external-anthropic-api
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: external-anthropic-api
+    app.kubernetes.io/component: networking
+    app.kubernetes.io/part-of: greenlang
+spec:
+  hosts:
+    - "api.anthropic.com"
+  http:
+    - name: "anthropic-api"
+      route:
+        - destination:
+            host: api.anthropic.com
+            port:
+              number: 443
+      timeout: 120s
+      retries:
+        attempts: 2
+        perTryTimeout: 60s
+        retryOn: 5xx,reset,connect-failure

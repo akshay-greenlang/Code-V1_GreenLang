@@ -1,0 +1,841 @@
+# S3 Prometheus Alert Rules for GreenLang
+# Comprehensive alerting for S3 availability, performance, storage, lifecycle, security, and costs
+# Version: 1.0.0
+
+groups:
+  # ============================================================================
+  # S3 AVAILABILITY ALERTS
+  # Monitor bucket accessibility and replication health
+  # ============================================================================
+  - name: s3_availability_alerts
+    interval: 30s
+    rules:
+      - alert: S3BucketAccessDenied
+        expr: |
+          sum by (bucket_name, environment) (
+            increase(aws_s3_errors_total{error_type="AccessDenied"}[5m])
+          ) > 10
+        for: 5m
+        labels:
+          severity: critical
+          service: s3
+          category: availability
+        annotations:
+          summary: "S3 bucket access denied errors detected"
+          description: |
+            Bucket {{ $labels.bucket_name }} in {{ $labels.environment }} is experiencing
+            access denied errors. Current rate: {{ $value | printf "%.0f" }} errors in the last 5 minutes.
+            This may indicate IAM policy issues or incorrect bucket policies.
+          runbook_url: "https://wiki.greenlang.io/runbooks/s3-access-denied"
+          dashboard_url: "https://grafana.greenlang.io/d/s3-overview-greenlang"
+
+      - alert: S3BucketNotFound
+        expr: |
+          sum by (bucket_name, environment) (
+            increase(aws_s3_errors_total{error_type="NoSuchBucket"}[5m])
+          ) > 5
+        for: 2m
+        labels:
+          severity: critical
+          service: s3
+          category: availability
+        annotations:
+          summary: "S3 bucket not found errors detected"
+          description: |
+            Requests to bucket {{ $labels.bucket_name }} in {{ $labels.environment }} are failing
+            with NoSuchBucket errors. The bucket may have been deleted or the name is incorrect.
+            Current error count: {{ $value | printf "%.0f" }} in the last 5 minutes.
+          runbook_url: "https://wiki.greenlang.io/runbooks/s3-bucket-not-found"
+
+      - alert: S3ReplicationLagHigh
+        expr: |
+          aws_s3_replication_latency_seconds{} > 3600
+        for: 15m
+        labels:
+          severity: warning
+          service: s3
+          category: availability
+        annotations:
+          summary: "S3 cross-region replication lag is high"
+          description: |
+            Replication lag for bucket {{ $labels.bucket_name }} to {{ $labels.destination_bucket }}
+            is {{ $value | humanizeDuration }}. This exceeds the 1-hour threshold.
+            Consider checking replication rules and destination bucket health.
+          runbook_url: "https://wiki.greenlang.io/runbooks/s3-replication-lag"
+
+      - alert: S3ReplicationLagCritical
+        expr: |
+          aws_s3_replication_latency_seconds{} > 21600
+        for: 10m
+        labels:
+          severity: critical
+          service: s3
+          category: availability
+        annotations:
+          summary: "S3 cross-region replication lag is critical"
+          description: |
+            Replication lag for bucket {{ $labels.bucket_name }} to {{ $labels.destination_bucket }}
+            is {{ $value | humanizeDuration }}. This exceeds the 6-hour critical threshold.
+            Immediate investigation required for disaster recovery compliance.
+          runbook_url: "https://wiki.greenlang.io/runbooks/s3-replication-lag"
+          pagerduty_severity: critical
+
+      - alert: S3ReplicationPendingObjectsHigh
+        expr: |
+          aws_s3_objects_pending_replication{} > 10000
+        for: 30m
+        labels:
+          severity: warning
+          service: s3
+          category: availability
+        annotations:
+          summary: "High number of objects pending replication"
+          description: |
+            Bucket {{ $labels.bucket_name }} has {{ $value | printf "%.0f" }} objects pending replication.
+            This may indicate replication bottlenecks or destination issues.
+          runbook_url: "https://wiki.greenlang.io/runbooks/s3-replication-pending"
+
+      - alert: S3BucketVersioningDisabled
+        expr: |
+          aws_s3_bucket_versioning_enabled{} == 0
+        for: 1h
+        labels:
+          severity: warning
+          service: s3
+          category: availability
+        annotations:
+          summary: "S3 bucket versioning is disabled"
+          description: |
+            Bucket {{ $labels.bucket_name }} in {{ $labels.environment }} does not have versioning enabled.
+            This may impact data recovery capabilities and compliance requirements.
+          runbook_url: "https://wiki.greenlang.io/runbooks/s3-versioning"
+
+  # ============================================================================
+  # S3 PERFORMANCE ALERTS
+  # Monitor latency, throughput, and error rates
+  # ============================================================================
+  - name: s3_performance_alerts
+    interval: 30s
+    rules:
+      - alert: S3HighLatency
+        expr: |
+          histogram_quantile(0.95,
+            sum by (bucket_name, environment, le) (
+              rate(aws_s3_first_byte_latency_seconds_bucket[5m])
+            )
+          ) > 0.2
+        for: 10m
+        labels:
+          severity: warning
+          service: s3
+          category: performance
+        annotations:
+          summary: "S3 first byte latency is high"
+          description: |
+            P95 first byte latency for bucket {{ $labels.bucket_name }} in {{ $labels.environment }}
+            is {{ $value | printf "%.3f" }}s, exceeding the 200ms threshold.
+            This may impact application performance.
+          runbook_url: "https://wiki.greenlang.io/runbooks/s3-high-latency"
+          dashboard_url: "https://grafana.greenlang.io/d/s3-overview-greenlang"
+
+      - alert: S3HighLatencyCritical
+        expr: |
+          histogram_quantile(0.99,
+            sum by (bucket_name, environment, le) (
+              rate(aws_s3_first_byte_latency_seconds_bucket[5m])
+            )
+          ) > 0.5
+        for: 5m
+        labels:
+          severity: critical
+          service: s3
+          category: performance
+        annotations:
+          summary: "S3 first byte latency is critically high"
+          description: |
+            P99 first byte latency for bucket {{ $labels.bucket_name }} in {{ $labels.environment }}
+            is {{ $value | printf "%.3f" }}s, exceeding the 500ms critical threshold.
+            Immediate investigation required.
+          runbook_url: "https://wiki.greenlang.io/runbooks/s3-high-latency"
+          pagerduty_severity: high
+
+      - alert: S3High4xxErrorRate
+        expr: |
+          (
+            sum by (bucket_name, environment) (rate(aws_s3_4xx_errors[5m]))
+            /
+            sum by (bucket_name, environment) (rate(aws_s3_all_requests[5m]))
+          ) * 100 > 1
+        for: 10m
+        labels:
+          severity: warning
+          service: s3
+          category: performance
+        annotations:
+          summary: "S3 4xx error rate is elevated"
+          description: |
+            Bucket {{ $labels.bucket_name }} in {{ $labels.environment }} has a 4xx error rate
+            of {{ $value | printf "%.2f" }}%, exceeding the 1% threshold.
+            Common causes: missing objects, permission issues, invalid requests.
+          runbook_url: "https://wiki.greenlang.io/runbooks/s3-4xx-errors"
+
+      - alert: S3High4xxErrorRateCritical
+        expr: |
+          (
+            sum by (bucket_name, environment) (rate(aws_s3_4xx_errors[5m]))
+            /
+            sum by (bucket_name, environment) (rate(aws_s3_all_requests[5m]))
+          ) * 100 > 5
+        for: 5m
+        labels:
+          severity: critical
+          service: s3
+          category: performance
+        annotations:
+          summary: "S3 4xx error rate is critically high"
+          description: |
+            Bucket {{ $labels.bucket_name }} in {{ $labels.environment }} has a 4xx error rate
+            of {{ $value | printf "%.2f" }}%, exceeding the 5% critical threshold.
+            Immediate investigation required.
+          runbook_url: "https://wiki.greenlang.io/runbooks/s3-4xx-errors"
+          pagerduty_severity: high
+
+      - alert: S3High5xxErrorRate
+        expr: |
+          (
+            sum by (bucket_name, environment) (rate(aws_s3_5xx_errors[5m]))
+            /
+            sum by (bucket_name, environment) (rate(aws_s3_all_requests[5m]))
+          ) * 100 > 0.1
+        for: 5m
+        labels:
+          severity: critical
+          service: s3
+          category: performance
+        annotations:
+          summary: "S3 5xx server error rate detected"
+          description: |
+            Bucket {{ $labels.bucket_name }} in {{ $labels.environment }} has a 5xx error rate
+            of {{ $value | printf "%.3f" }}%, exceeding the 0.1% threshold.
+            This indicates S3 service issues. Check AWS Service Health Dashboard.
+          runbook_url: "https://wiki.greenlang.io/runbooks/s3-5xx-errors"
+          pagerduty_severity: critical
+
+      - alert: S3ThrottlingDetected
+        expr: |
+          sum by (bucket_name, environment) (
+            increase(aws_s3_throttled_requests[5m])
+          ) > 10
+        for: 5m
+        labels:
+          severity: warning
+          service: s3
+          category: performance
+        annotations:
+          summary: "S3 request throttling detected"
+          description: |
+            Bucket {{ $labels.bucket_name }} in {{ $labels.environment }} is being throttled.
+            {{ $value | printf "%.0f" }} throttled requests in the last 5 minutes.
+            Consider implementing request rate limiting or using S3 Transfer Acceleration.
+          runbook_url: "https://wiki.greenlang.io/runbooks/s3-throttling"
+
+      - alert: S3ThrottlingCritical
+        expr: |
+          sum by (bucket_name, environment) (
+            increase(aws_s3_throttled_requests[5m])
+          ) > 100
+        for: 5m
+        labels:
+          severity: critical
+          service: s3
+          category: performance
+        annotations:
+          summary: "S3 request throttling is critical"
+          description: |
+            Bucket {{ $labels.bucket_name }} in {{ $labels.environment }} is experiencing severe throttling.
+            {{ $value | printf "%.0f" }} throttled requests in the last 5 minutes.
+            Immediate action required to prevent service degradation.
+          runbook_url: "https://wiki.greenlang.io/runbooks/s3-throttling"
+          pagerduty_severity: high
+
+      - alert: S3TotalRequestLatencyHigh
+        expr: |
+          histogram_quantile(0.95,
+            sum by (bucket_name, environment, le) (
+              rate(aws_s3_total_request_latency_seconds_bucket[5m])
+            )
+          ) > 5
+        for: 10m
+        labels:
+          severity: warning
+          service: s3
+          category: performance
+        annotations:
+          summary: "S3 total request latency is high"
+          description: |
+            P95 total request latency for bucket {{ $labels.bucket_name }} in {{ $labels.environment }}
+            is {{ $value | printf "%.2f" }}s. This may indicate large object transfers or network issues.
+          runbook_url: "https://wiki.greenlang.io/runbooks/s3-request-latency"
+
+  # ============================================================================
+  # S3 STORAGE ALERTS
+  # Monitor storage capacity, growth, and quotas
+  # ============================================================================
+  - name: s3_storage_alerts
+    interval: 1m
+    rules:
+      - alert: S3BucketSizeGrowthAnomaly
+        expr: |
+          (
+            aws_s3_bucket_size_bytes
+            -
+            aws_s3_bucket_size_bytes offset 24h
+          ) / aws_s3_bucket_size_bytes offset 24h * 100 > 50
+        for: 1h
+        labels:
+          severity: warning
+          service: s3
+          category: storage
+        annotations:
+          summary: "Anomalous S3 bucket size growth detected"
+          description: |
+            Bucket {{ $labels.bucket_name }} in {{ $labels.environment }} has grown by
+            {{ $value | printf "%.1f" }}% in the last 24 hours. This exceeds the 50% threshold.
+            Investigate for unexpected data ingestion or potential data leak.
+          runbook_url: "https://wiki.greenlang.io/runbooks/s3-storage-growth"
+
+      - alert: S3BucketSizeShrinkAnomaly
+        expr: |
+          (
+            aws_s3_bucket_size_bytes offset 24h
+            -
+            aws_s3_bucket_size_bytes
+          ) / aws_s3_bucket_size_bytes offset 24h * 100 > 30
+        for: 1h
+        labels:
+          severity: warning
+          service: s3
+          category: storage
+        annotations:
+          summary: "Anomalous S3 bucket size decrease detected"
+          description: |
+            Bucket {{ $labels.bucket_name }} in {{ $labels.environment }} has shrunk by
+            {{ $value | printf "%.1f" }}% in the last 24 hours. Verify this is expected behavior.
+          runbook_url: "https://wiki.greenlang.io/runbooks/s3-storage-decrease"
+
+      - alert: S3StorageQuotaWarning
+        expr: |
+          (
+            aws_s3_bucket_size_bytes / aws_s3_bucket_quota_bytes
+          ) * 100 > 80
+        for: 30m
+        labels:
+          severity: warning
+          service: s3
+          category: storage
+        annotations:
+          summary: "S3 bucket approaching storage quota"
+          description: |
+            Bucket {{ $labels.bucket_name }} in {{ $labels.environment }} is at
+            {{ $value | printf "%.1f" }}% of its storage quota.
+            Consider increasing quota or implementing lifecycle policies.
+          runbook_url: "https://wiki.greenlang.io/runbooks/s3-storage-quota"
+
+      - alert: S3StorageQuotaCritical
+        expr: |
+          (
+            aws_s3_bucket_size_bytes / aws_s3_bucket_quota_bytes
+          ) * 100 > 95
+        for: 15m
+        labels:
+          severity: critical
+          service: s3
+          category: storage
+        annotations:
+          summary: "S3 bucket storage quota critical"
+          description: |
+            Bucket {{ $labels.bucket_name }} in {{ $labels.environment }} is at
+            {{ $value | printf "%.1f" }}% of its storage quota.
+            Immediate action required to prevent write failures.
+          runbook_url: "https://wiki.greenlang.io/runbooks/s3-storage-quota"
+          pagerduty_severity: critical
+
+      - alert: S3ObjectCountHigh
+        expr: |
+          aws_s3_number_of_objects > 100000000
+        for: 1h
+        labels:
+          severity: warning
+          service: s3
+          category: storage
+        annotations:
+          summary: "S3 bucket has very high object count"
+          description: |
+            Bucket {{ $labels.bucket_name }} in {{ $labels.environment }} contains
+            {{ $value | humanize }} objects. High object counts can impact list operations
+            and increase costs. Consider using S3 Inventory for large-scale object management.
+          runbook_url: "https://wiki.greenlang.io/runbooks/s3-object-count"
+
+      - alert: S3ObjectCountGrowthAnomaly
+        expr: |
+          (
+            aws_s3_number_of_objects
+            -
+            aws_s3_number_of_objects offset 24h
+          ) / aws_s3_number_of_objects offset 24h * 100 > 100
+        for: 2h
+        labels:
+          severity: warning
+          service: s3
+          category: storage
+        annotations:
+          summary: "Anomalous S3 object count growth"
+          description: |
+            Bucket {{ $labels.bucket_name }} object count has increased by
+            {{ $value | printf "%.1f" }}% in the last 24 hours.
+            Investigate for unexpected data ingestion patterns.
+          runbook_url: "https://wiki.greenlang.io/runbooks/s3-object-growth"
+
+      - alert: S3EmptyBucketWithTraffic
+        expr: |
+          aws_s3_number_of_objects == 0
+          AND
+          sum by (bucket_name, environment) (rate(aws_s3_all_requests[5m])) > 1
+        for: 30m
+        labels:
+          severity: warning
+          service: s3
+          category: storage
+        annotations:
+          summary: "Empty S3 bucket receiving traffic"
+          description: |
+            Bucket {{ $labels.bucket_name }} in {{ $labels.environment }} has no objects
+            but is receiving requests. This may indicate misconfigured applications.
+          runbook_url: "https://wiki.greenlang.io/runbooks/s3-empty-bucket"
+
+  # ============================================================================
+  # S3 LIFECYCLE ALERTS
+  # Monitor lifecycle rules and transitions
+  # ============================================================================
+  - name: s3_lifecycle_alerts
+    interval: 5m
+    rules:
+      - alert: S3LifecycleTransitionFailed
+        expr: |
+          sum by (bucket_name, environment, transition_type) (
+            increase(aws_s3_lifecycle_transition_failures_total[1h])
+          ) > 0
+        for: 15m
+        labels:
+          severity: warning
+          service: s3
+          category: lifecycle
+        annotations:
+          summary: "S3 lifecycle transition failures detected"
+          description: |
+            Lifecycle transition {{ $labels.transition_type }} for bucket {{ $labels.bucket_name }}
+            in {{ $labels.environment }} has failed {{ $value | printf "%.0f" }} times in the last hour.
+            Check object access permissions and lifecycle rule configuration.
+          runbook_url: "https://wiki.greenlang.io/runbooks/s3-lifecycle-failure"
+
+      - alert: S3ObjectsNotTransitioning
+        expr: |
+          (
+            sum by (bucket_name, environment) (
+              increase(aws_s3_lifecycle_transitions_total[24h])
+            ) == 0
+          )
+          AND
+          (
+            aws_s3_bucket_lifecycle_rules_count > 0
+          )
+          AND
+          (
+            aws_s3_number_of_objects > 1000
+          )
+        for: 48h
+        labels:
+          severity: warning
+          service: s3
+          category: lifecycle
+        annotations:
+          summary: "S3 lifecycle transitions not occurring"
+          description: |
+            Bucket {{ $labels.bucket_name }} in {{ $labels.environment }} has lifecycle rules
+            configured but no transitions have occurred in 48 hours.
+            Verify lifecycle rule configurations and object age requirements.
+          runbook_url: "https://wiki.greenlang.io/runbooks/s3-lifecycle-stalled"
+
+      - alert: S3ExpirationNotWorking
+        expr: |
+          (
+            sum by (bucket_name, environment) (
+              increase(aws_s3_lifecycle_expirations_total[7d])
+            ) == 0
+          )
+          AND
+          (
+            aws_s3_bucket_expiration_rules_count > 0
+          )
+          AND
+          (
+            aws_s3_number_of_objects > 1000
+          )
+        for: 1d
+        labels:
+          severity: warning
+          service: s3
+          category: lifecycle
+        annotations:
+          summary: "S3 lifecycle expirations not occurring"
+          description: |
+            Bucket {{ $labels.bucket_name }} in {{ $labels.environment }} has expiration rules
+            configured but no expirations have occurred in 7 days.
+            This may lead to unexpected storage costs.
+          runbook_url: "https://wiki.greenlang.io/runbooks/s3-expiration-stalled"
+
+      - alert: S3LifecycleRulesMissing
+        expr: |
+          (
+            aws_s3_bucket_lifecycle_rules_count == 0
+          )
+          AND
+          (
+            aws_s3_bucket_size_bytes > 1099511627776
+          )
+        for: 24h
+        labels:
+          severity: info
+          service: s3
+          category: lifecycle
+        annotations:
+          summary: "Large S3 bucket without lifecycle rules"
+          description: |
+            Bucket {{ $labels.bucket_name }} in {{ $labels.environment }} is larger than 1TB
+            but has no lifecycle rules configured. Consider implementing lifecycle policies
+            for cost optimization.
+          runbook_url: "https://wiki.greenlang.io/runbooks/s3-lifecycle-missing"
+
+      - alert: S3GlacierRestoreStuck
+        expr: |
+          aws_s3_glacier_restore_in_progress_objects > 0
+          AND
+          (
+            time() - aws_s3_glacier_restore_started_timestamp > 86400
+          )
+        for: 1h
+        labels:
+          severity: warning
+          service: s3
+          category: lifecycle
+        annotations:
+          summary: "S3 Glacier restore taking too long"
+          description: |
+            Glacier restore for {{ $value | printf "%.0f" }} objects in bucket {{ $labels.bucket_name }}
+            has been running for more than 24 hours. This may indicate restore issues.
+          runbook_url: "https://wiki.greenlang.io/runbooks/s3-glacier-restore"
+
+  # ============================================================================
+  # S3 SECURITY ALERTS
+  # Monitor security events and configuration issues
+  # ============================================================================
+  - name: s3_security_alerts
+    interval: 30s
+    rules:
+      - alert: S3UnauthorizedAccessAttempt
+        expr: |
+          sum by (bucket_name, environment, source_ip) (
+            increase(aws_s3_unauthorized_access_attempts_total[5m])
+          ) > 50
+        for: 5m
+        labels:
+          severity: critical
+          service: s3
+          category: security
+        annotations:
+          summary: "Potential S3 unauthorized access attack"
+          description: |
+            Bucket {{ $labels.bucket_name }} in {{ $labels.environment }} is experiencing
+            {{ $value | printf "%.0f" }} unauthorized access attempts from {{ $labels.source_ip }}
+            in the last 5 minutes. This may indicate a brute force or enumeration attack.
+          runbook_url: "https://wiki.greenlang.io/runbooks/s3-unauthorized-access"
+          pagerduty_severity: critical
+
+      - alert: S3PublicAccessDetected
+        expr: |
+          aws_s3_bucket_public_access_enabled == 1
+        for: 5m
+        labels:
+          severity: critical
+          service: s3
+          category: security
+        annotations:
+          summary: "S3 bucket with public access detected"
+          description: |
+            Bucket {{ $labels.bucket_name }} in {{ $labels.environment }} has public access enabled.
+            This is a critical security risk. Verify this is intentional and implement
+            appropriate access controls.
+          runbook_url: "https://wiki.greenlang.io/runbooks/s3-public-access"
+          pagerduty_severity: critical
+
+      - alert: S3EncryptionDisabled
+        expr: |
+          aws_s3_bucket_encryption_enabled == 0
+        for: 1h
+        labels:
+          severity: warning
+          service: s3
+          category: security
+        annotations:
+          summary: "S3 bucket without encryption"
+          description: |
+            Bucket {{ $labels.bucket_name }} in {{ $labels.environment }} does not have
+            default encryption enabled. This may violate compliance requirements.
+          runbook_url: "https://wiki.greenlang.io/runbooks/s3-encryption"
+
+      - alert: S3SuspiciousDeleteActivity
+        expr: |
+          sum by (bucket_name, environment) (
+            increase(aws_s3_delete_requests[5m])
+          ) > (
+            sum by (bucket_name, environment) (
+              avg_over_time(aws_s3_delete_requests[24h])
+            ) * 10
+          )
+        for: 5m
+        labels:
+          severity: warning
+          service: s3
+          category: security
+        annotations:
+          summary: "Suspicious S3 delete activity detected"
+          description: |
+            Bucket {{ $labels.bucket_name }} in {{ $labels.environment }} is experiencing
+            delete activity 10x higher than the 24-hour average.
+            Verify this is expected behavior.
+          runbook_url: "https://wiki.greenlang.io/runbooks/s3-suspicious-delete"
+
+      - alert: S3BucketPolicyChanged
+        expr: |
+          increase(aws_s3_bucket_policy_changes_total[5m]) > 0
+        for: 1m
+        labels:
+          severity: info
+          service: s3
+          category: security
+        annotations:
+          summary: "S3 bucket policy changed"
+          description: |
+            Bucket policy for {{ $labels.bucket_name }} in {{ $labels.environment }} was modified.
+            Review the change to ensure it aligns with security requirements.
+          runbook_url: "https://wiki.greenlang.io/runbooks/s3-policy-change"
+
+      - alert: S3AccessFromUnknownIP
+        expr: |
+          aws_s3_access_from_unknown_ip_total > 0
+        for: 5m
+        labels:
+          severity: warning
+          service: s3
+          category: security
+        annotations:
+          summary: "S3 access from unknown IP address"
+          description: |
+            Bucket {{ $labels.bucket_name }} received {{ $value | printf "%.0f" }} requests
+            from IP {{ $labels.source_ip }} which is not in the allowed IP list.
+          runbook_url: "https://wiki.greenlang.io/runbooks/s3-unknown-ip"
+
+      - alert: S3CrossAccountAccess
+        expr: |
+          aws_s3_cross_account_access_total > 0
+          AND
+          aws_s3_cross_account_access_allowed == 0
+        for: 5m
+        labels:
+          severity: critical
+          service: s3
+          category: security
+        annotations:
+          summary: "Unexpected S3 cross-account access"
+          description: |
+            Bucket {{ $labels.bucket_name }} received cross-account access from account
+            {{ $labels.source_account }} which is not explicitly allowed.
+          runbook_url: "https://wiki.greenlang.io/runbooks/s3-cross-account"
+          pagerduty_severity: high
+
+  # ============================================================================
+  # S3 COST ALERTS
+  # Monitor costs, anomalies, and budget compliance
+  # ============================================================================
+  - name: s3_cost_alerts
+    interval: 5m
+    rules:
+      - alert: S3CostAnomalyDetected
+        expr: |
+          (
+            aws_s3_estimated_monthly_cost_dollars
+            -
+            aws_s3_estimated_monthly_cost_dollars offset 7d
+          ) / aws_s3_estimated_monthly_cost_dollars offset 7d * 100 > 25
+        for: 6h
+        labels:
+          severity: warning
+          service: s3
+          category: cost
+        annotations:
+          summary: "S3 cost anomaly detected"
+          description: |
+            Estimated cost for bucket {{ $labels.bucket_name }} in {{ $labels.environment }}
+            has increased by {{ $value | printf "%.1f" }}% compared to 7 days ago.
+            Current estimate: ${{ printf "%.2f" (index $labels "aws_s3_estimated_monthly_cost_dollars") }}/month
+          runbook_url: "https://wiki.greenlang.io/runbooks/s3-cost-anomaly"
+          dashboard_url: "https://grafana.greenlang.io/d/s3-costs-greenlang"
+
+      - alert: S3DataTransferSpike
+        expr: |
+          sum by (bucket_name, environment) (
+            rate(aws_s3_bytes_downloaded[1h])
+          ) > (
+            sum by (bucket_name, environment) (
+              avg_over_time(rate(aws_s3_bytes_downloaded[1h])[7d:1h])
+            ) * 5
+          )
+        for: 1h
+        labels:
+          severity: warning
+          service: s3
+          category: cost
+        annotations:
+          summary: "S3 data transfer spike detected"
+          description: |
+            Data egress from bucket {{ $labels.bucket_name }} in {{ $labels.environment }}
+            is 5x higher than the 7-day average. This will significantly impact costs.
+            Current rate: {{ $value | humanizeBytes }}/s
+          runbook_url: "https://wiki.greenlang.io/runbooks/s3-transfer-spike"
+
+      - alert: S3RequestCostHigh
+        expr: |
+          sum by (bucket_name, environment) (aws_s3_request_cost_dollars) > 500
+        for: 1d
+        labels:
+          severity: warning
+          service: s3
+          category: cost
+        annotations:
+          summary: "S3 request costs are high"
+          description: |
+            Request costs for bucket {{ $labels.bucket_name }} in {{ $labels.environment }}
+            are ${{ $value | printf "%.2f" }}/month. Consider optimizing request patterns
+            or implementing caching.
+          runbook_url: "https://wiki.greenlang.io/runbooks/s3-request-cost"
+
+      - alert: S3BudgetWarning
+        expr: |
+          (
+            sum(aws_s3_estimated_monthly_cost_dollars{environment="prod"})
+            /
+            aws_s3_budget_limit_dollars{environment="prod"}
+          ) * 100 > 80
+        for: 1h
+        labels:
+          severity: warning
+          service: s3
+          category: cost
+        annotations:
+          summary: "S3 costs approaching budget limit"
+          description: |
+            S3 costs in production are at {{ $value | printf "%.1f" }}% of the monthly budget.
+            Review cost optimization opportunities.
+          runbook_url: "https://wiki.greenlang.io/runbooks/s3-budget-warning"
+
+      - alert: S3BudgetExceeded
+        expr: |
+          (
+            sum(aws_s3_estimated_monthly_cost_dollars{environment="prod"})
+            /
+            aws_s3_budget_limit_dollars{environment="prod"}
+          ) * 100 > 100
+        for: 30m
+        labels:
+          severity: critical
+          service: s3
+          category: cost
+        annotations:
+          summary: "S3 costs have exceeded budget"
+          description: |
+            S3 costs in production are at {{ $value | printf "%.1f" }}% of the monthly budget.
+            Immediate action required to control costs.
+          runbook_url: "https://wiki.greenlang.io/runbooks/s3-budget-exceeded"
+          pagerduty_severity: high
+
+      - alert: S3IntelligentTieringNotEnabled
+        expr: |
+          (
+            aws_s3_bucket_size_bytes > 107374182400
+          )
+          AND
+          (
+            sum by (bucket_name, environment) (
+              aws_s3_bucket_size_bytes{storage_class="INTELLIGENT_TIERING"}
+            ) == 0
+          )
+          AND
+          (
+            aws_s3_bucket_access_frequency < 0.1
+          )
+        for: 7d
+        labels:
+          severity: info
+          service: s3
+          category: cost
+        annotations:
+          summary: "S3 bucket may benefit from Intelligent Tiering"
+          description: |
+            Bucket {{ $labels.bucket_name }} in {{ $labels.environment }} is larger than 100GB
+            with low access frequency. Consider enabling Intelligent Tiering for automatic
+            cost optimization.
+          runbook_url: "https://wiki.greenlang.io/runbooks/s3-intelligent-tiering"
+
+      - alert: S3HighStorageClassCost
+        expr: |
+          (
+            sum by (bucket_name, environment) (
+              aws_s3_bucket_size_bytes{storage_class="STANDARD"}
+            ) / 1099511627776 * 0.023
+          ) > 1000
+        for: 24h
+        labels:
+          severity: warning
+          service: s3
+          category: cost
+        annotations:
+          summary: "High S3 Standard storage costs"
+          description: |
+            Bucket {{ $labels.bucket_name }} in {{ $labels.environment }} has STANDARD storage
+            costs exceeding $1000/month. Review data access patterns and consider
+            transitioning infrequently accessed data to cheaper storage classes.
+          runbook_url: "https://wiki.greenlang.io/runbooks/s3-storage-optimization"
+
+      - alert: S3UnusedBucketWithCost
+        expr: |
+          (
+            aws_s3_bucket_size_bytes > 1073741824
+          )
+          AND
+          (
+            sum by (bucket_name, environment) (
+              rate(aws_s3_all_requests[7d])
+            ) == 0
+          )
+        for: 30d
+        labels:
+          severity: info
+          service: s3
+          category: cost
+        annotations:
+          summary: "S3 bucket with storage but no access"
+          description: |
+            Bucket {{ $labels.bucket_name }} in {{ $labels.environment }} has
+            {{ $value | humanizeBytes }} of data but no access in 30 days.
+            Consider archiving to Glacier or deleting if no longer needed.
+          runbook_url: "https://wiki.greenlang.io/runbooks/s3-unused-bucket"

@@ -65,3 +65,111 @@ subjects:
 - kind: ServiceAccount
   name: greenlang-executor
   namespace: greenlang
+
+---
+# ServiceAccount for Worker
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: greenlang-worker
+  namespace: greenlang
+  labels:
+    app: greenlang
+    component: worker
+
+---
+# Role for Worker - more restrictive than executor
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: greenlang-worker
+  namespace: greenlang
+  labels:
+    app: greenlang
+    component: worker
+rules:
+# Read config and secrets
+- apiGroups: [""]
+  resources: ["configmaps"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["get"]
+  resourceNames: ["greenlang-secrets"]
+# Read pod status for health checks
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "list"]
+
+---
+# RoleBinding for Worker
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: greenlang-worker
+  namespace: greenlang
+  labels:
+    app: greenlang
+    component: worker
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: greenlang-worker
+subjects:
+- kind: ServiceAccount
+  name: greenlang-worker
+  namespace: greenlang
+
+---
+# ServiceAccount for API
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: greenlang-api
+  namespace: greenlang
+  labels:
+    app: greenlang
+    component: api
+
+---
+# Role for API
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: greenlang-api
+  namespace: greenlang
+  labels:
+    app: greenlang
+    component: api
+rules:
+# Read config and secrets
+- apiGroups: [""]
+  resources: ["configmaps"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["get"]
+  resourceNames: ["greenlang-secrets", "greenlang-registry"]
+# Read service endpoints
+- apiGroups: [""]
+  resources: ["endpoints", "services"]
+  verbs: ["get", "list", "watch"]
+
+---
+# RoleBinding for API
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: greenlang-api
+  namespace: greenlang
+  labels:
+    app: greenlang
+    component: api
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: greenlang-api
+subjects:
+- kind: ServiceAccount
+  name: greenlang-api
+  namespace: greenlang

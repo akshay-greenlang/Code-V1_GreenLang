@@ -1,0 +1,314 @@
+# INFRA-001: Role Bindings for GreenLang
+# Binds cluster roles to service accounts, users, and groups
+# Implements RBAC across all environments
+---
+# Cluster Admin Binding - SRE Team
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: greenlang-cluster-admin-binding
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: rbac
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: greenlang-cluster-admin
+subjects:
+  # SRE team group
+  - kind: Group
+    name: sre-team
+    apiGroup: rbac.authorization.k8s.io
+  # Platform admin service account
+  - kind: ServiceAccount
+    name: greenlang-platform-admin
+    namespace: greenlang
+
+---
+# Production Namespace Admin Binding
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: greenlang-namespace-admin-binding
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: rbac
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: greenlang-namespace-admin
+subjects:
+  # SRE team
+  - kind: Group
+    name: sre-team
+    apiGroup: rbac.authorization.k8s.io
+  # Tech leads
+  - kind: Group
+    name: tech-leads
+    apiGroup: rbac.authorization.k8s.io
+
+---
+# Staging Namespace Admin Binding
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: greenlang-namespace-admin-binding
+  namespace: greenlang-staging
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: rbac
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: greenlang-namespace-admin
+subjects:
+  - kind: Group
+    name: sre-team
+    apiGroup: rbac.authorization.k8s.io
+  - kind: Group
+    name: tech-leads
+    apiGroup: rbac.authorization.k8s.io
+  # Senior developers get admin on staging
+  - kind: Group
+    name: senior-developers
+    apiGroup: rbac.authorization.k8s.io
+
+---
+# Dev Namespace Admin Binding
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: greenlang-namespace-admin-binding
+  namespace: greenlang-dev
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: rbac
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: greenlang-namespace-admin
+subjects:
+  - kind: Group
+    name: sre-team
+    apiGroup: rbac.authorization.k8s.io
+  - kind: Group
+    name: developers
+    apiGroup: rbac.authorization.k8s.io
+
+---
+# Developer Binding - Production (limited access)
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: greenlang-developer-binding
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: rbac
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: greenlang-developer
+subjects:
+  - kind: Group
+    name: senior-developers
+    apiGroup: rbac.authorization.k8s.io
+
+---
+# Developer Binding - Staging
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: greenlang-developer-binding
+  namespace: greenlang-staging
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: rbac
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: greenlang-developer
+subjects:
+  - kind: Group
+    name: developers
+    apiGroup: rbac.authorization.k8s.io
+
+---
+# Viewer Binding - Production (all developers can view)
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: greenlang-viewer-binding
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: rbac
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: greenlang-viewer
+subjects:
+  - kind: Group
+    name: developers
+    apiGroup: rbac.authorization.k8s.io
+  - kind: Group
+    name: qa-team
+    apiGroup: rbac.authorization.k8s.io
+
+---
+# Viewer Binding - Staging
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: greenlang-viewer-binding
+  namespace: greenlang-staging
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: rbac
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: greenlang-viewer
+subjects:
+  - kind: Group
+    name: qa-team
+    apiGroup: rbac.authorization.k8s.io
+  - kind: Group
+    name: product-team
+    apiGroup: rbac.authorization.k8s.io
+
+---
+# CI/CD Binding - Production
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: greenlang-cicd-binding
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: rbac
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: greenlang-cicd
+subjects:
+  - kind: ServiceAccount
+    name: greenlang-cicd
+    namespace: greenlang
+
+---
+# CI/CD Binding - Staging
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: greenlang-cicd-binding
+  namespace: greenlang-staging
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: rbac
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: greenlang-cicd
+subjects:
+  - kind: ServiceAccount
+    name: greenlang-cicd
+    namespace: greenlang-staging
+
+---
+# CI/CD Binding - Dev
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: greenlang-cicd-binding
+  namespace: greenlang-dev
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: rbac
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: greenlang-cicd
+subjects:
+  - kind: ServiceAccount
+    name: greenlang-cicd
+    namespace: greenlang-dev
+
+---
+# Monitoring Binding - Cluster-wide
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: greenlang-monitoring-binding
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: rbac
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: greenlang-monitoring
+subjects:
+  - kind: ServiceAccount
+    name: prometheus
+    namespace: monitoring
+  - kind: ServiceAccount
+    name: grafana
+    namespace: monitoring
+
+---
+# Backup Operator Binding - Production
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: greenlang-backup-operator-binding
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: rbac
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: greenlang-backup-operator
+subjects:
+  - kind: ServiceAccount
+    name: greenlang-backup-operator
+    namespace: greenlang
+
+---
+# Application Service Account Binding
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: greenlang-app-binding
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: rbac
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: greenlang-viewer
+subjects:
+  - kind: ServiceAccount
+    name: greenlang-app
+    namespace: greenlang
+
+---
+# Monitoring Namespace Access
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: greenlang-monitoring-namespace-binding
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: rbac
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: greenlang-namespace-admin
+subjects:
+  - kind: Group
+    name: sre-team
+    apiGroup: rbac.authorization.k8s.io

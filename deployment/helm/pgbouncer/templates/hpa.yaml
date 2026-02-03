@@ -1,0 +1,59 @@
+{{/*
+PgBouncer Horizontal Pod Autoscaler Template
+*/}}
+{{- if .Values.autoscaling.enabled }}
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ include "pgbouncer.fullname" . }}
+  namespace: {{ include "pgbouncer.namespace" . }}
+  labels:
+    {{- include "pgbouncer.labels" . | nindent 4 }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "pgbouncer.fullname" . }}
+  minReplicas: {{ .Values.autoscaling.minReplicas }}
+  maxReplicas: {{ .Values.autoscaling.maxReplicas }}
+  metrics:
+    {{- if .Values.autoscaling.targetCPUUtilizationPercentage }}
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.autoscaling.targetCPUUtilizationPercentage }}
+    {{- end }}
+    {{- if .Values.autoscaling.targetMemoryUtilizationPercentage }}
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.autoscaling.targetMemoryUtilizationPercentage }}
+    {{- end }}
+  behavior:
+    {{- with .Values.autoscaling.scaleUp }}
+    scaleUp:
+      stabilizationWindowSeconds: {{ .stabilizationWindowSeconds }}
+      {{- with .policies }}
+      policies:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .selectPolicy }}
+      selectPolicy: {{ . }}
+      {{- end }}
+    {{- end }}
+    {{- with .Values.autoscaling.scaleDown }}
+    scaleDown:
+      stabilizationWindowSeconds: {{ .stabilizationWindowSeconds }}
+      {{- with .policies }}
+      policies:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .selectPolicy }}
+      selectPolicy: {{ . }}
+      {{- end }}
+    {{- end }}
+{{- end }}

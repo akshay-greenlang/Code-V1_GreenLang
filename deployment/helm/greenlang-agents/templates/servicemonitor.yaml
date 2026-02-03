@@ -1,0 +1,263 @@
+{{/*
+GreenLang Agent Factory - ServiceMonitor Templates
+Prometheus Operator ServiceMonitor for metrics scraping
+*/}}
+
+{{- if and .Values.monitoring.enabled .Values.monitoring.serviceMonitor.enabled }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "greenlang-agents.fullname" . }}-api-gateway
+  namespace: {{ include "greenlang-agents.namespace" . }}
+  labels:
+    {{- include "greenlang-agents.labels" . | nindent 4 }}
+    app.kubernetes.io/component: api-gateway
+    {{- with .Values.monitoring.serviceMonitor.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  namespaceSelector:
+    matchNames:
+      - {{ include "greenlang-agents.namespace" . }}
+  selector:
+    matchLabels:
+      {{- include "greenlang-agents.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: api-gateway
+  endpoints:
+    - port: metrics
+      interval: {{ .Values.monitoring.serviceMonitor.interval | default "30s" }}
+      scrapeTimeout: {{ .Values.monitoring.serviceMonitor.scrapeTimeout | default "10s" }}
+      path: /metrics
+      scheme: http
+      honorLabels: true
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace
+        - sourceLabels: [__meta_kubernetes_service_name]
+          targetLabel: service
+        - action: replace
+          replacement: api-gateway
+          targetLabel: component
+      metricRelabelings:
+        - sourceLabels: [__name__]
+          regex: 'go_.*'
+          action: drop
+    - port: http
+      interval: {{ .Values.monitoring.serviceMonitor.interval | default "30s" }}
+      scrapeTimeout: {{ .Values.monitoring.serviceMonitor.scrapeTimeout | default "10s" }}
+      path: /health
+      scheme: http
+
+{{- if and (index .Values "fuel-analyzer") (index .Values "fuel-analyzer" "enabled") }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "greenlang-agents.fullname" . }}-fuel-analyzer
+  namespace: {{ include "greenlang-agents.namespace" . }}
+  labels:
+    {{- include "greenlang-agents.labels" . | nindent 4 }}
+    app.kubernetes.io/component: fuel-analyzer
+    {{- with .Values.monitoring.serviceMonitor.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  namespaceSelector:
+    matchNames:
+      - {{ include "greenlang-agents.namespace" . }}
+  selector:
+    matchLabels:
+      {{- include "greenlang-agents.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: fuel-analyzer
+  endpoints:
+    - port: metrics
+      interval: {{ .Values.monitoring.serviceMonitor.interval | default "30s" }}
+      scrapeTimeout: {{ .Values.monitoring.serviceMonitor.scrapeTimeout | default "10s" }}
+      path: /metrics
+      scheme: http
+      honorLabels: true
+      relabelings:
+        - action: replace
+          replacement: fuel-analyzer
+          targetLabel: agent
+{{- end }}
+
+{{- if and (index .Values "carbon-intensity") (index .Values "carbon-intensity" "enabled") }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "greenlang-agents.fullname" . }}-carbon-intensity
+  namespace: {{ include "greenlang-agents.namespace" . }}
+  labels:
+    {{- include "greenlang-agents.labels" . | nindent 4 }}
+    app.kubernetes.io/component: carbon-intensity
+    {{- with .Values.monitoring.serviceMonitor.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  namespaceSelector:
+    matchNames:
+      - {{ include "greenlang-agents.namespace" . }}
+  selector:
+    matchLabels:
+      {{- include "greenlang-agents.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: carbon-intensity
+  endpoints:
+    - port: metrics
+      interval: {{ .Values.monitoring.serviceMonitor.interval | default "30s" }}
+      scrapeTimeout: {{ .Values.monitoring.serviceMonitor.scrapeTimeout | default "10s" }}
+      path: /metrics
+      scheme: http
+      honorLabels: true
+      relabelings:
+        - action: replace
+          replacement: carbon-intensity
+          targetLabel: agent
+{{- end }}
+
+{{- if and (index .Values "energy-performance") (index .Values "energy-performance" "enabled") }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "greenlang-agents.fullname" . }}-energy-performance
+  namespace: {{ include "greenlang-agents.namespace" . }}
+  labels:
+    {{- include "greenlang-agents.labels" . | nindent 4 }}
+    app.kubernetes.io/component: energy-performance
+    {{- with .Values.monitoring.serviceMonitor.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  namespaceSelector:
+    matchNames:
+      - {{ include "greenlang-agents.namespace" . }}
+  selector:
+    matchLabels:
+      {{- include "greenlang-agents.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: energy-performance
+  endpoints:
+    - port: metrics
+      interval: {{ .Values.monitoring.serviceMonitor.interval | default "30s" }}
+      scrapeTimeout: {{ .Values.monitoring.serviceMonitor.scrapeTimeout | default "10s" }}
+      path: /metrics
+      scheme: http
+      honorLabels: true
+      relabelings:
+        - action: replace
+          replacement: energy-performance
+          targetLabel: agent
+{{- end }}
+
+{{- if and (index .Values "eudr-compliance") (index .Values "eudr-compliance" "enabled") }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "greenlang-agents.fullname" . }}-eudr-compliance
+  namespace: {{ include "greenlang-agents.namespace" . }}
+  labels:
+    {{- include "greenlang-agents.labels" . | nindent 4 }}
+    app.kubernetes.io/component: eudr-compliance
+    {{- with .Values.monitoring.serviceMonitor.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    description: "Critical compliance agent - SLO monitored"
+spec:
+  namespaceSelector:
+    matchNames:
+      - {{ include "greenlang-agents.namespace" . }}
+  selector:
+    matchLabels:
+      {{- include "greenlang-agents.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: eudr-compliance
+  endpoints:
+    - port: metrics
+      # More frequent scraping for critical compliance agent
+      interval: {{ .Values.monitoring.serviceMonitor.eudrInterval | default "15s" }}
+      scrapeTimeout: {{ .Values.monitoring.serviceMonitor.scrapeTimeout | default "10s" }}
+      path: /metrics
+      scheme: http
+      honorLabels: true
+      relabelings:
+        - action: replace
+          replacement: eudr-compliance
+          targetLabel: agent
+        - action: replace
+          replacement: critical
+          targetLabel: criticality
+{{- end }}
+
+{{- if and .Values.worker .Values.worker.enabled }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "greenlang-agents.fullname" . }}-worker
+  namespace: {{ include "greenlang-agents.namespace" . }}
+  labels:
+    {{- include "greenlang-agents.labels" . | nindent 4 }}
+    app.kubernetes.io/component: worker
+    {{- with .Values.monitoring.serviceMonitor.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  namespaceSelector:
+    matchNames:
+      - {{ include "greenlang-agents.namespace" . }}
+  selector:
+    matchLabels:
+      {{- include "greenlang-agents.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: worker
+  endpoints:
+    - port: metrics
+      interval: {{ .Values.monitoring.serviceMonitor.interval | default "30s" }}
+      scrapeTimeout: {{ .Values.monitoring.serviceMonitor.scrapeTimeout | default "10s" }}
+      path: /metrics
+      scheme: http
+      honorLabels: true
+      relabelings:
+        - action: replace
+          replacement: worker
+          targetLabel: component
+{{- end }}
+
+{{- if and .Values.scheduler .Values.scheduler.enabled }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "greenlang-agents.fullname" . }}-scheduler
+  namespace: {{ include "greenlang-agents.namespace" . }}
+  labels:
+    {{- include "greenlang-agents.labels" . | nindent 4 }}
+    app.kubernetes.io/component: scheduler
+    {{- with .Values.monitoring.serviceMonitor.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  namespaceSelector:
+    matchNames:
+      - {{ include "greenlang-agents.namespace" . }}
+  selector:
+    matchLabels:
+      {{- include "greenlang-agents.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: scheduler
+  endpoints:
+    - port: metrics
+      interval: {{ .Values.monitoring.serviceMonitor.interval | default "30s" }}
+      scrapeTimeout: {{ .Values.monitoring.serviceMonitor.scrapeTimeout | default "10s" }}
+      path: /metrics
+      scheme: http
+      honorLabels: true
+      relabelings:
+        - action: replace
+          replacement: scheduler
+          targetLabel: component
+{{- end }}
+{{- end }}

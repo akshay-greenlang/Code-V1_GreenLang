@@ -1,0 +1,50 @@
+# Terraform files
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+crash.log
+crash.*.log
+
+# Override files
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# CLI configuration
+.terraformrc
+terraform.rc
+
+# Sensitive variable files
+# Do not commit actual tfvars files with secrets
+# Use terraform.tfvars.example as a template
+*.auto.tfvars
+secret.tfvars
+secrets.tfvars
+*.secret.tfvars
+
+# Keep terraform.tfvars in gitignore for environments with sensitive data
+# Uncomment if you don't want to track these
+# environments/*/terraform.tfvars
+
+# Backend bootstrap state (should be committed carefully)
+# backend-bootstrap/.terraform/
+# backend-bootstrap/terraform.tfstate*
+
+# Plan files
+*.tfplan
+plan.out
+
+# macOS
+.DS_Store
+
+# Editor files
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+
+# Log files
+*.log

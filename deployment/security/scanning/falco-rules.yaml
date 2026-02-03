@@ -1,0 +1,535 @@
+# INFRA-001: Falco Runtime Security Rules
+# Detects suspicious runtime behavior in containers
+# Provides real-time threat detection and alerting
+---
+# Falco Configuration ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: falco-config
+  namespace: falco
+  labels:
+    app.kubernetes.io/name: falco
+    app.kubernetes.io/component: runtime-security
+data:
+  falco.yaml: |
+    # Falco configuration
+    # https://falco.org/docs/configuration/
+
+    # Rules files to load
+    rules_file:
+      - /etc/falco/falco_rules.yaml
+      - /etc/falco/falco_rules.local.yaml
+      - /etc/falco/k8s_audit_rules.yaml
+      - /etc/falco/rules.d
+
+    # Time format for output
+    time_format_iso_8601: true
+
+    # Output settings
+    json_output: true
+    json_include_output_property: true
+    json_include_tags_property: true
+
+    # Log settings
+    log_stderr: true
+    log_syslog: false
+    log_level: info
+
+    # Output rate limiting
+    outputs_queue:
+      capacity: 0
+
+    # Priority filter (emergency, alert, critical, error, warning, notice, info, debug)
+    priority: warning
+
+    # Buffer size for syscall events
+    syscall_event_drops:
+      threshold: .1
+      actions:
+        - log
+        - alert
+      rate: .03333
+      max_burst: 1
+
+    # Metrics
+    metrics:
+      enabled: true
+      interval: 1h
+      output_rule: true
+      rules_counters_enabled: true
+
+    # gRPC output
+    grpc:
+      enabled: true
+      bind_address: "0.0.0.0:5060"
+      threadiness: 8
+
+    grpc_output:
+      enabled: true
+
+    # HTTP output for webhooks
+    http_output:
+      enabled: true
+      url: "http://falco-sidekick:2801"
+
+  # Custom rules for GreenLang
+  falco_rules.local.yaml: |
+    # GreenLang Custom Falco Rules
+    # Detect suspicious activity in GreenLang workloads
+
+    ##################################
+    # Container Escape Detection
+    ##################################
+
+    - rule: Container Escape via Privileged Container
+      desc: Detect attempts to escape container via privileged mode
+      condition: >
+        spawned_process and container and container.privileged=true
+        and proc.name in (shell_binaries)
+      output: >
+        Privileged container shell detected
+        (user=%user.name container=%container.name image=%container.image.repository
+        command=%proc.cmdline)
+      priority: CRITICAL
+      tags: [container, escape, privilege]
+
+    - rule: Container Escape via Host Mount
+      desc: Detect container accessing sensitive host paths
+      condition: >
+        open_read and container
+        and fd.name startswith /host/
+        and not fd.name startswith /host/var/log
+      output: >
+        Container accessing host filesystem
+        (user=%user.name container=%container.name image=%container.image.repository
+        path=%fd.name)
+      priority: CRITICAL
+      tags: [container, escape, host_mount]
+
+    ##################################
+    # GreenLang Application Rules
+    ##################################
+
+    - rule: GreenLang Unexpected Process
+      desc: Detect unexpected processes in GreenLang containers
+      condition: >
+        spawned_process and container
+        and container.image.repository contains "greenlang"
+        and not proc.name in (python, python3, uvicorn, gunicorn, celery, sh, bash)
+        and not proc.name in (curl, wget)
+      output: >
+        Unexpected process in GreenLang container
+        (user=%user.name container=%container.name process=%proc.name
+        cmdline=%proc.cmdline parent=%proc.pname)
+      priority: WARNING
+      tags: [greenlang, process]
+
+    - rule: GreenLang Database Access from Non-API Pod
+      desc: Detect database connections from unexpected pods
+      condition: >
+        outbound and container
+        and k8s.ns.name = "greenlang"
+        and fd.rport = 5432
+        and not k8s.pod.name contains "api"
+        and not k8s.pod.name contains "worker"
+        and not k8s.pod.name contains "migration"
+      output: >
+        Unexpected database access from non-API pod
+        (pod=%k8s.pod.name namespace=%k8s.ns.name dest=%fd.rip:%fd.rport)
+      priority: WARNING
+      tags: [greenlang, database, network]
+
+    - rule: GreenLang Secrets Access
+      desc: Detect reading of Kubernetes secrets
+      condition: >
+        open_read and container
+        and k8s.ns.name in (greenlang, greenlang-staging, greenlang-dev)
+        and fd.name startswith /var/run/secrets/kubernetes.io
+        and not proc.name in (python, python3)
+      output: >
+        Kubernetes secrets accessed by unexpected process
+        (user=%user.name process=%proc.name container=%container.name
+        secret=%fd.name)
+      priority: WARNING
+      tags: [greenlang, secrets]
+
+    ##################################
+    # Cryptocurrency Mining Detection
+    ##################################
+
+    - rule: Cryptocurrency Mining Detection
+      desc: Detect potential cryptocurrency mining activity
+      condition: >
+        spawned_process and container
+        and (proc.name in (xmrig, cpuminer, minerd, cgminer, bfgminer)
+             or proc.cmdline contains "stratum+tcp"
+             or proc.cmdline contains "pool.minexmr"
+             or proc.cmdline contains "cryptonight")
+      output: >
+        Potential cryptocurrency mining detected
+        (user=%user.name container=%container.name process=%proc.name
+        cmdline=%proc.cmdline)
+      priority: CRITICAL
+      tags: [cryptominer, malware]
+
+    ##################################
+    # Reverse Shell Detection
+    ##################################
+
+    - rule: Reverse Shell Detected
+      desc: Detect potential reverse shell connections
+      condition: >
+        spawned_process and container
+        and ((proc.name in (bash, sh, zsh) and proc.cmdline contains "-i")
+             or (proc.name = nc and proc.cmdline contains "-e")
+             or proc.cmdline contains "/dev/tcp/"
+             or proc.cmdline contains "bash -c 'sh -i'")
+      output: >
+        Potential reverse shell detected
+        (user=%user.name container=%container.name process=%proc.name
+        cmdline=%proc.cmdline)
+      priority: CRITICAL
+      tags: [reverse_shell, malware]
+
+    ##################################
+    # Data Exfiltration Detection
+    ##################################
+
+    - rule: Large Data Transfer to External IP
+      desc: Detect large data transfers to external IPs
+      condition: >
+        outbound and container
+        and fd.typechar = 4
+        and not fd.rip in rfc_1918_addresses
+        and evt.arg.res > 1048576
+      output: >
+        Large data transfer to external IP
+        (container=%container.name dest=%fd.rip:%fd.rport bytes=%evt.arg.res)
+      priority: WARNING
+      tags: [exfiltration, network]
+
+    - rule: Sensitive File Read
+      desc: Detect reading of sensitive files
+      condition: >
+        open_read and container
+        and (fd.name in (/etc/passwd, /etc/shadow, /etc/sudoers)
+             or fd.name startswith /root/.ssh
+             or fd.name startswith /home/*/.ssh)
+      output: >
+        Sensitive file read
+        (user=%user.name container=%container.name file=%fd.name)
+      priority: WARNING
+      tags: [sensitive_files, reconnaissance]
+
+    ##################################
+    # Package Management Detection
+    ##################################
+
+    - rule: Package Management in Container
+      desc: Detect package installation in running containers
+      condition: >
+        spawned_process and container
+        and proc.name in (apt, apt-get, yum, dnf, apk, pip, pip3, npm)
+        and not container.image.repository contains "builder"
+      output: >
+        Package management command in container
+        (user=%user.name container=%container.name process=%proc.name
+        cmdline=%proc.cmdline)
+      priority: NOTICE
+      tags: [package_management, container]
+
+    ##################################
+    # Suspicious Network Activity
+    ##################################
+
+    - rule: Outbound Connection to Tor Network
+      desc: Detect connections to known Tor exit nodes
+      condition: >
+        outbound and container
+        and fd.rport = 9050
+      output: >
+        Potential Tor network connection
+        (container=%container.name dest=%fd.rip:%fd.rport)
+      priority: WARNING
+      tags: [tor, network, evasion]
+
+    - rule: DNS Tunneling Suspected
+      desc: Detect potential DNS tunneling
+      condition: >
+        outbound and container
+        and fd.rport = 53
+        and evt.arg.data contains "TXT"
+        and evt.arg.res > 512
+      output: >
+        Potential DNS tunneling
+        (container=%container.name query_size=%evt.arg.res)
+      priority: WARNING
+      tags: [dns_tunneling, exfiltration]
+
+    ##################################
+    # Kubernetes API Access
+    ##################################
+
+    - rule: Kubectl Exec to Pod
+      desc: Detect kubectl exec commands
+      condition: >
+        spawned_process and container
+        and proc.pname = "runc:[2:INIT]"
+        and proc.name in (sh, bash, ash)
+        and container.id != host
+      output: >
+        Shell spawned via kubectl exec
+        (user=%user.name container=%container.name pod=%k8s.pod.name
+        namespace=%k8s.ns.name)
+      priority: NOTICE
+      tags: [kubectl, exec, shell]
+
+    - rule: Service Account Token Access
+      desc: Detect reading of service account token
+      condition: >
+        open_read and container
+        and fd.name = /var/run/secrets/kubernetes.io/serviceaccount/token
+      output: >
+        Service account token accessed
+        (user=%user.name container=%container.name process=%proc.name)
+      priority: NOTICE
+      tags: [kubernetes, serviceaccount, token]
+
+---
+# Falco DaemonSet
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: falco
+  namespace: falco
+  labels:
+    app.kubernetes.io/name: falco
+    app.kubernetes.io/component: runtime-security
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: falco
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: falco
+    spec:
+      serviceAccountName: falco
+      tolerations:
+        - effect: NoSchedule
+          key: node-role.kubernetes.io/master
+      containers:
+        - name: falco
+          image: falcosecurity/falco:0.37.0
+          securityContext:
+            privileged: true
+          args:
+            - /usr/bin/falco
+            - --cri
+            - /run/containerd/containerd.sock
+            - -K
+            - /var/run/secrets/kubernetes.io/serviceaccount/token
+            - -k
+            - https://$(KUBERNETES_SERVICE_HOST)
+            - -pk
+          env:
+            - name: FALCO_BPF_PROBE
+              value: ""
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8765
+            initialDelaySeconds: 60
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8765
+            initialDelaySeconds: 30
+            periodSeconds: 15
+          resources:
+            requests:
+              cpu: 100m
+              memory: 512Mi
+            limits:
+              cpu: 1
+              memory: 1Gi
+          volumeMounts:
+            - mountPath: /host/var/run/docker.sock
+              name: docker-socket
+              readOnly: true
+            - mountPath: /run/containerd/containerd.sock
+              name: containerd-socket
+              readOnly: true
+            - mountPath: /host/dev
+              name: dev-fs
+              readOnly: true
+            - mountPath: /host/proc
+              name: proc-fs
+              readOnly: true
+            - mountPath: /etc/falco
+              name: config
+      volumes:
+        - name: docker-socket
+          hostPath:
+            path: /var/run/docker.sock
+        - name: containerd-socket
+          hostPath:
+            path: /run/containerd/containerd.sock
+        - name: dev-fs
+          hostPath:
+            path: /dev
+        - name: proc-fs
+          hostPath:
+            path: /proc
+        - name: config
+          configMap:
+            name: falco-config
+
+---
+# Falco Sidekick for alert forwarding
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: falco-sidekick
+  namespace: falco
+  labels:
+    app.kubernetes.io/name: falco-sidekick
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: falco-sidekick
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: falco-sidekick
+    spec:
+      serviceAccountName: falco-sidekick
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+      containers:
+        - name: falco-sidekick
+          image: falcosecurity/falcosidekick:2.28.0
+          ports:
+            - name: http
+              containerPort: 2801
+          env:
+            # Slack integration
+            - name: SLACK_WEBHOOKURL
+              valueFrom:
+                secretKeyRef:
+                  name: falco-sidekick-secrets
+                  key: slack-webhook-url
+            - name: SLACK_CHANNEL
+              value: "#security-alerts"
+            - name: SLACK_MINIMUMPRIORITY
+              value: "warning"
+            # PagerDuty integration
+            - name: PAGERDUTY_ROUTINGKEY
+              valueFrom:
+                secretKeyRef:
+                  name: falco-sidekick-secrets
+                  key: pagerduty-routing-key
+            - name: PAGERDUTY_MINIMUMPRIORITY
+              value: "critical"
+            # Prometheus metrics
+            - name: PROMETHEUS_EXTRALABELS
+              value: "app:greenlang"
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+
+---
+# Falco ServiceAccount
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: falco
+  namespace: falco
+  labels:
+    app.kubernetes.io/name: falco
+
+---
+# Falco Sidekick ServiceAccount
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: falco-sidekick
+  namespace: falco
+  labels:
+    app.kubernetes.io/name: falco-sidekick
+
+---
+# Falco ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: falco
+  labels:
+    app.kubernetes.io/name: falco
+rules:
+  - apiGroups: [""]
+    resources: ["pods", "nodes"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["apps"]
+    resources: ["deployments", "daemonsets", "replicasets", "statefulsets"]
+    verbs: ["get", "list", "watch"]
+
+---
+# Falco ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: falco
+  labels:
+    app.kubernetes.io/name: falco
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: falco
+subjects:
+  - kind: ServiceAccount
+    name: falco
+    namespace: falco
+
+---
+# Falco Sidekick Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: falco-sidekick
+  namespace: falco
+  labels:
+    app.kubernetes.io/name: falco-sidekick
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 2801
+      targetPort: 2801
+  selector:
+    app.kubernetes.io/name: falco-sidekick
+
+---
+# Falco Sidekick Secrets (placeholder - replace with actual values)
+apiVersion: v1
+kind: Secret
+metadata:
+  name: falco-sidekick-secrets
+  namespace: falco
+  labels:
+    app.kubernetes.io/name: falco-sidekick
+type: Opaque
+stringData:
+  slack-webhook-url: "https://hooks.slack.com/services/PLACEHOLDER"
+  pagerduty-routing-key: "PLACEHOLDER"

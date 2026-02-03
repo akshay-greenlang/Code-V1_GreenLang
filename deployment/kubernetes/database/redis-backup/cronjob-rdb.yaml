@@ -1,0 +1,417 @@
+# Redis RDB Snapshot Backup CronJob
+# Runs every 6 hours to create and upload RDB snapshots to S3
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: redis-backup-rdb
+  namespace: greenlang
+  labels:
+    app: redis
+    component: backup
+    backup-type: rdb
+    app.kubernetes.io/name: redis-backup
+    app.kubernetes.io/component: cronjob-rdb
+spec:
+  # Run every 6 hours: 00:00, 06:00, 12:00, 18:00
+  schedule: "0 */6 * * *"
+
+  # Timezone for schedule (requires Kubernetes 1.27+)
+  # timeZone: "UTC"
+
+  # Concurrency policy - don't run concurrent backups
+  concurrencyPolicy: Forbid
+
+  # Keep history of completed/failed jobs
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+
+  # Deadline for starting job (5 minutes)
+  startingDeadlineSeconds: 300
+
+  # Suspend cronjob (set to true to pause backups)
+  suspend: false
+
+  jobTemplate:
+    metadata:
+      labels:
+        app: redis
+        component: backup
+        backup-type: rdb
+    spec:
+      # Job timeout (30 minutes)
+      activeDeadlineSeconds: 1800
+
+      # Retry failed jobs
+      backoffLimit: 2
+
+      # TTL for completed jobs (1 hour)
+      ttlSecondsAfterFinished: 3600
+
+      template:
+        metadata:
+          labels:
+            app: redis
+            component: backup
+            backup-type: rdb
+          annotations:
+            prometheus.io/scrape: "true"
+            prometheus.io/port: "9090"
+        spec:
+          serviceAccountName: redis-backup-sa
+          restartPolicy: OnFailure
+
+          # Security context
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            fsGroup: 1000
+
+          # Init container to wait for Redis to be ready
+          initContainers:
+            - name: wait-for-redis
+              image: redis:7.2-alpine
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  until redis-cli -h $REDIS_HOST -p $REDIS_PORT -a $REDIS_PASSWORD ping | grep -q PONG; do
+                    echo "Waiting for Redis to be ready..."
+                    sleep 5
+                  done
+                  echo "Redis is ready"
+              env:
+                - name: REDIS_HOST
+                  valueFrom:
+                    configMapKeyRef:
+                      name: redis-backup-config
+                      key: REDIS_HOST
+                - name: REDIS_PORT
+                  valueFrom:
+                    configMapKeyRef:
+                      name: redis-backup-config
+                      key: REDIS_PORT
+                - name: REDIS_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: redis-backup-credentials
+                      key: REDIS_PASSWORD
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop:
+                    - ALL
+              resources:
+                requests:
+                  memory: "32Mi"
+                  cpu: "50m"
+                limits:
+                  memory: "64Mi"
+                  cpu: "100m"
+
+          containers:
+            - name: backup-rdb
+              image: greenlang/redis-backup:latest
+              imagePullPolicy: Always
+
+              command:
+                - /bin/bash
+                - /scripts/backup-rdb.sh
+
+              env:
+                # Redis connection
+                - name: REDIS_HOST
+                  valueFrom:
+                    configMapKeyRef:
+                      name: redis-backup-config
+                      key: REDIS_HOST
+                - name: REDIS_PORT
+                  valueFrom:
+                    configMapKeyRef:
+                      name: redis-backup-config
+                      key: REDIS_PORT
+                - name: REDIS_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: redis-backup-credentials
+                      key: REDIS_PASSWORD
+
+                # S3 configuration
+                - name: S3_BUCKET
+                  valueFrom:
+                    configMapKeyRef:
+                      name: redis-backup-config
+                      key: S3_BUCKET
+                - name: S3_REGION
+                  valueFrom:
+                    configMapKeyRef:
+                      name: redis-backup-config
+                      key: S3_REGION
+                - name: S3_PREFIX
+                  valueFrom:
+                    configMapKeyRef:
+                      name: redis-backup-config
+                      key: S3_PREFIX
+                - name: AWS_ACCESS_KEY_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: redis-backup-credentials
+                      key: AWS_ACCESS_KEY_ID
+                - name: AWS_SECRET_ACCESS_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: redis-backup-credentials
+                      key: AWS_SECRET_ACCESS_KEY
+
+                # Backup settings
+                - name: BACKUP_TYPE
+                  value: "rdb"
+                - name: RETENTION_DAYS
+                  valueFrom:
+                    configMapKeyRef:
+                      name: redis-backup-config
+                      key: RDB_RETENTION_DAYS
+                - name: COMPRESSION_ENABLED
+                  valueFrom:
+                    configMapKeyRef:
+                      name: redis-backup-config
+                      key: COMPRESSION_ENABLED
+                - name: COMPRESSION_TYPE
+                  valueFrom:
+                    configMapKeyRef:
+                      name: redis-backup-config
+                      key: COMPRESSION_TYPE
+                - name: ENCRYPTION_ENABLED
+                  valueFrom:
+                    configMapKeyRef:
+                      name: redis-backup-config
+                      key: ENCRYPTION_ENABLED
+                - name: BGSAVE_TIMEOUT
+                  valueFrom:
+                    configMapKeyRef:
+                      name: redis-backup-config
+                      key: BGSAVE_TIMEOUT
+                - name: VERIFY_BACKUP
+                  valueFrom:
+                    configMapKeyRef:
+                      name: redis-backup-config
+                      key: VERIFY_BACKUP
+                - name: LOG_LEVEL
+                  valueFrom:
+                    configMapKeyRef:
+                      name: redis-backup-config
+                      key: LOG_LEVEL
+
+              volumeMounts:
+                - name: scripts
+                  mountPath: /scripts
+                  readOnly: true
+                - name: backup-data
+                  mountPath: /backup
+                - name: tmp
+                  mountPath: /tmp
+
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop:
+                    - ALL
+
+              resources:
+                requests:
+                  memory: "256Mi"
+                  cpu: "200m"
+                limits:
+                  memory: "512Mi"
+                  cpu: "500m"
+
+          volumes:
+            - name: scripts
+              configMap:
+                name: redis-backup-scripts
+                defaultMode: 0755
+            - name: backup-data
+              emptyDir:
+                sizeLimit: 10Gi
+            - name: tmp
+              emptyDir:
+                sizeLimit: 1Gi
+
+          # Tolerations for backup workloads
+          tolerations:
+            - key: "backup"
+              operator: "Equal"
+              value: "true"
+              effect: "NoSchedule"
+
+          # Node affinity - prefer nodes with SSD storage
+          affinity:
+            nodeAffinity:
+              preferredDuringSchedulingIgnoredDuringExecution:
+                - weight: 100
+                  preference:
+                    matchExpressions:
+                      - key: node.kubernetes.io/instance-type
+                        operator: In
+                        values:
+                          - m5.large
+                          - m5.xlarge
+                          - r5.large
+
+---
+# ConfigMap containing backup scripts
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: redis-backup-scripts
+  namespace: greenlang
+  labels:
+    app: redis
+    component: backup
+data:
+  backup-rdb.sh: |
+    #!/bin/bash
+    set -euo pipefail
+
+    # Source the main backup script
+    source /scripts/backup-rdb-main.sh
+
+  backup-rdb-main.sh: |
+    #!/bin/bash
+    # Redis RDB Backup Script
+    # See scripts/backup-rdb.sh for full implementation
+
+    set -euo pipefail
+
+    # Logging function
+    log() {
+        local level="$1"
+        shift
+        echo "{\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"level\":\"$level\",\"message\":\"$*\"}"
+    }
+
+    log "INFO" "Starting RDB backup job"
+
+    # Execute the backup script from mounted volume
+    exec /scripts/backup-rdb-full.sh
+
+  backup-rdb-full.sh: |
+    #!/bin/bash
+    # Full RDB backup implementation
+    # This is populated from scripts/backup-rdb.sh
+
+    set -euo pipefail
+
+    TIMESTAMP=$(date -u +%Y%m%d_%H%M%S)
+    BACKUP_NAME="redis_rdb_${TIMESTAMP}"
+    LOCAL_BACKUP_DIR="/backup"
+    S3_PATH="s3://${S3_BUCKET}/${S3_PREFIX}/rdb"
+
+    log() {
+        local level="$1"
+        shift
+        if [ "$LOG_LEVEL" = "DEBUG" ] || [ "$level" != "DEBUG" ]; then
+            echo "{\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"level\":\"$level\",\"component\":\"rdb-backup\",\"message\":\"$*\"}"
+        fi
+    }
+
+    cleanup() {
+        log "INFO" "Cleaning up temporary files"
+        rm -f "${LOCAL_BACKUP_DIR}"/*.rdb "${LOCAL_BACKUP_DIR}"/*.gz 2>/dev/null || true
+    }
+    trap cleanup EXIT
+
+    # Main backup logic
+    main() {
+        log "INFO" "Starting RDB backup: ${BACKUP_NAME}"
+
+        # 1. Trigger BGSAVE
+        log "INFO" "Triggering BGSAVE on Redis"
+        redis-cli -h "$REDIS_HOST" -p "$REDIS_PORT" -a "$REDIS_PASSWORD" BGSAVE
+
+        # 2. Wait for BGSAVE to complete
+        log "INFO" "Waiting for BGSAVE to complete (timeout: ${BGSAVE_TIMEOUT}s)"
+        local start_time=$(date +%s)
+        while true; do
+            local status=$(redis-cli -h "$REDIS_HOST" -p "$REDIS_PORT" -a "$REDIS_PASSWORD" LASTSAVE)
+            local current_time=$(date +%s)
+            local elapsed=$((current_time - start_time))
+
+            if [ $elapsed -gt "$BGSAVE_TIMEOUT" ]; then
+                log "ERROR" "BGSAVE timeout after ${elapsed}s"
+                exit 1
+            fi
+
+            local bgsave_in_progress=$(redis-cli -h "$REDIS_HOST" -p "$REDIS_PORT" -a "$REDIS_PASSWORD" INFO persistence | grep rdb_bgsave_in_progress | cut -d: -f2 | tr -d '\r')
+            if [ "$bgsave_in_progress" = "0" ]; then
+                log "INFO" "BGSAVE completed after ${elapsed}s"
+                break
+            fi
+
+            sleep 2
+        done
+
+        # 3. Copy RDB file
+        log "INFO" "Copying dump.rdb to backup directory"
+        kubectl exec -n greenlang redis-master-0 -- cat /data/dump.rdb > "${LOCAL_BACKUP_DIR}/${BACKUP_NAME}.rdb"
+
+        # 4. Verify file size
+        local file_size=$(stat -c%s "${LOCAL_BACKUP_DIR}/${BACKUP_NAME}.rdb")
+        if [ "$file_size" -lt "${MIN_BACKUP_SIZE_BYTES:-1024}" ]; then
+            log "ERROR" "Backup file too small: ${file_size} bytes"
+            exit 1
+        fi
+        log "INFO" "Backup file size: ${file_size} bytes"
+
+        # 5. Compress if enabled
+        if [ "$COMPRESSION_ENABLED" = "true" ]; then
+            log "INFO" "Compressing backup with ${COMPRESSION_TYPE}"
+            gzip -9 "${LOCAL_BACKUP_DIR}/${BACKUP_NAME}.rdb"
+            BACKUP_FILE="${LOCAL_BACKUP_DIR}/${BACKUP_NAME}.rdb.gz"
+        else
+            BACKUP_FILE="${LOCAL_BACKUP_DIR}/${BACKUP_NAME}.rdb"
+        fi
+
+        # 6. Generate checksum
+        local checksum=$(sha256sum "$BACKUP_FILE" | cut -d' ' -f1)
+        echo "$checksum" > "${BACKUP_FILE}.sha256"
+        log "INFO" "Backup checksum: ${checksum}"
+
+        # 7. Upload to S3
+        log "INFO" "Uploading backup to S3: ${S3_PATH}/"
+        local s3_args=""
+        if [ "$ENCRYPTION_ENABLED" = "true" ]; then
+            s3_args="--sse AES256"
+        fi
+
+        aws s3 cp "$BACKUP_FILE" "${S3_PATH}/${BACKUP_NAME}.rdb.gz" $s3_args
+        aws s3 cp "${BACKUP_FILE}.sha256" "${S3_PATH}/${BACKUP_NAME}.rdb.gz.sha256" $s3_args
+
+        # 8. Verify upload
+        if [ "$VERIFY_BACKUP" = "true" ]; then
+            log "INFO" "Verifying upload integrity"
+            local s3_checksum=$(aws s3 cp "${S3_PATH}/${BACKUP_NAME}.rdb.gz.sha256" - | cut -d' ' -f1)
+            if [ "$checksum" != "$s3_checksum" ]; then
+                log "ERROR" "Checksum verification failed"
+                exit 1
+            fi
+            log "INFO" "Upload verified successfully"
+        fi
+
+        # 9. Cleanup old backups
+        log "INFO" "Cleaning up backups older than ${RETENTION_DAYS} days"
+        local cutoff_date=$(date -u -d "-${RETENTION_DAYS} days" +%Y%m%d)
+        aws s3 ls "${S3_PATH}/" | while read -r line; do
+            local file_date=$(echo "$line" | awk '{print $4}' | grep -oP '\d{8}' | head -1)
+            if [ -n "$file_date" ] && [ "$file_date" -lt "$cutoff_date" ]; then
+                local file_name=$(echo "$line" | awk '{print $4}')
+                log "INFO" "Deleting old backup: ${file_name}"
+                aws s3 rm "${S3_PATH}/${file_name}"
+            fi
+        done
+
+        log "INFO" "RDB backup completed successfully: ${BACKUP_NAME}"
+    }
+
+    main "$@"

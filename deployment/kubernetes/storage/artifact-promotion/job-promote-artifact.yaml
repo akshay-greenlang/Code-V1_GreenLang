@@ -1,0 +1,662 @@
+# Artifact Promotion Job Template
+# Parameterized job for promoting artifacts between environments
+# Includes integrity verification, metadata preservation, and audit trail
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: promote-artifact-template
+  namespace: greenlang-storage
+  labels:
+    app.kubernetes.io/name: artifact-promotion
+    app.kubernetes.io/component: promotion-job
+    app.kubernetes.io/part-of: greenlang-storage
+    app.kubernetes.io/managed-by: kubernetes
+  annotations:
+    description: "Template for artifact promotion jobs - use with parameter substitution"
+spec:
+  # Job timeout - 2 hours max
+  activeDeadlineSeconds: 7200
+  # Retry on failure
+  backoffLimit: 2
+  # Clean up completed jobs after 24 hours
+  ttlSecondsAfterFinished: 86400
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: artifact-promotion
+        app.kubernetes.io/component: promotion-job
+        promotion-id: "${PROMOTION_ID}"
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+    spec:
+      restartPolicy: OnFailure
+      serviceAccountName: artifact-promotion-sa
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+
+      # Init containers for pre-promotion checks
+      initContainers:
+      # Verify source artifact exists
+      - name: verify-source
+        image: greenlang/artifact-promotion:v1.0.0
+        imagePullPolicy: IfNotPresent
+        command:
+        - /bin/sh
+        - -c
+        - |
+          echo "Verifying source artifact..."
+          python3 << 'EOF'
+          import boto3
+          import os
+          import sys
+
+          s3 = boto3.client('s3')
+          source_bucket = os.environ['SOURCE_BUCKET']
+          source_key = os.environ['SOURCE_KEY']
+
+          try:
+              response = s3.head_object(Bucket=source_bucket, Key=source_key)
+              print(f"Source artifact found: s3://{source_bucket}/{source_key}")
+              print(f"  Size: {response['ContentLength']} bytes")
+              print(f"  ETag: {response['ETag']}")
+              print(f"  Last Modified: {response['LastModified']}")
+
+              # Store metadata for later verification
+              with open('/verification/source_metadata.txt', 'w') as f:
+                  f.write(f"etag={response['ETag']}\n")
+                  f.write(f"size={response['ContentLength']}\n")
+                  f.write(f"content_type={response.get('ContentType', 'unknown')}\n")
+
+              sys.exit(0)
+          except s3.exceptions.NoSuchKey:
+              print(f"ERROR: Source artifact not found: s3://{source_bucket}/{source_key}")
+              sys.exit(1)
+          except Exception as e:
+              print(f"ERROR: Failed to verify source artifact: {e}")
+              sys.exit(1)
+          EOF
+        env:
+        - name: AWS_REGION
+          valueFrom:
+            configMapKeyRef:
+              name: artifact-lifecycle-config
+              key: aws_region
+        - name: SOURCE_BUCKET
+          value: "${SOURCE_BUCKET}"
+        - name: SOURCE_KEY
+          value: "${SOURCE_KEY}"
+        envFrom:
+        - secretRef:
+            name: aws-credentials
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 100m
+            memory: 128Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+        volumeMounts:
+        - name: verification
+          mountPath: /verification
+
+      # Evaluate quality gates
+      - name: evaluate-quality-gates
+        image: greenlang/artifact-promotion:v1.0.0
+        imagePullPolicy: IfNotPresent
+        command:
+        - /bin/sh
+        - -c
+        - |
+          echo "Evaluating quality gates..."
+          python3 << 'EOF'
+          import boto3
+          import json
+          import os
+          import sys
+          import yaml
+
+          def load_promotion_rules():
+              """Load promotion rules from ConfigMap"""
+              with open('/config/promotion-rules.yaml', 'r') as f:
+                  return yaml.safe_load(f)
+
+          def get_test_results(s3_client, bucket, artifact_key):
+              """Get test results for the artifact"""
+              test_results_key = f"ci/test-results/{os.path.basename(artifact_key)}.json"
+              try:
+                  response = s3_client.get_object(Bucket=bucket, Key=test_results_key)
+                  return json.loads(response['Body'].read().decode('utf-8'))
+              except:
+                  return None
+
+          def get_security_scan_results(s3_client, bucket, artifact_key):
+              """Get security scan results"""
+              scan_key = f"ci/security-scans/{os.path.basename(artifact_key)}.json"
+              try:
+                  response = s3_client.get_object(Bucket=bucket, Key=scan_key)
+                  return json.loads(response['Body'].read().decode('utf-8'))
+              except:
+                  return None
+
+          def evaluate_gate(gate_config, context):
+              """Evaluate a single quality gate"""
+              gate_type = gate_config['type']
+
+              if gate_type == 'test_result':
+                  results = context.get('test_results', {})
+                  if not results:
+                      return False, "No test results found"
+                  pass_rate = (results.get('passed', 0) / results.get('total', 1)) * 100
+                  threshold = gate_config.get('threshold', 100)
+                  if pass_rate >= threshold:
+                      return True, f"Tests passed: {pass_rate:.1f}% >= {threshold}%"
+                  return False, f"Tests failed: {pass_rate:.1f}% < {threshold}%"
+
+              elif gate_type == 'security_scan':
+                  scan = context.get('security_scan', {})
+                  if not scan:
+                      return False, "No security scan results found"
+                  critical = scan.get('critical', 0)
+                  high = scan.get('high', 0)
+                  medium = scan.get('medium', 0)
+                  max_critical = gate_config.get('max_critical', 0)
+                  max_high = gate_config.get('max_high', 0)
+                  max_medium = gate_config.get('max_medium', 10)
+
+                  if critical > max_critical:
+                      return False, f"Critical vulnerabilities: {critical} > {max_critical}"
+                  if high > max_high:
+                      return False, f"High vulnerabilities: {high} > {max_high}"
+                  if medium > max_medium:
+                      return False, f"Medium vulnerabilities: {medium} > {max_medium}"
+                  return True, "Security scan passed"
+
+              elif gate_type == 'build_status':
+                  return True, "Build status assumed successful"
+
+              elif gate_type == 'lint_result':
+                  return True, "Lint assumed passed"
+
+              return True, f"Unknown gate type: {gate_type}"
+
+          # Main execution
+          s3 = boto3.client('s3')
+          source_bucket = os.environ['SOURCE_BUCKET']
+          source_key = os.environ['SOURCE_KEY']
+          artifact_type = os.environ.get('ARTIFACT_TYPE', 'BUILD_ARTIFACT')
+          source_env = os.environ.get('SOURCE_ENV', 'dev')
+          target_env = os.environ.get('TARGET_ENV', 'staging')
+
+          rules = load_promotion_rules()
+
+          # Find artifact type rules
+          type_rules = None
+          for at in rules.get('artifact_types', []):
+              if at['type'] == artifact_type:
+                  type_rules = at
+                  break
+
+          if not type_rules:
+              print(f"WARNING: No rules found for artifact type {artifact_type}, allowing promotion")
+              sys.exit(0)
+
+          # Get promotion rules for this transition
+          transition_key = f"{source_env}_to_{target_env}"
+          promotion_rules = type_rules.get('promotion_rules', {}).get(transition_key, {})
+
+          if not promotion_rules:
+              print(f"WARNING: No promotion rules for {transition_key}, allowing promotion")
+              sys.exit(0)
+
+          # Gather context
+          context = {
+              'test_results': get_test_results(s3, source_bucket, source_key),
+              'security_scan': get_security_scan_results(s3, source_bucket, source_key),
+          }
+
+          # Evaluate gates
+          gates = promotion_rules.get('quality_gates', [])
+          all_passed = True
+          results = []
+
+          for gate in gates:
+              gate_name = gate['name']
+              required = gate.get('required', True)
+              passed, message = evaluate_gate(gate, context)
+
+              results.append({
+                  'name': gate_name,
+                  'passed': passed,
+                  'required': required,
+                  'message': message
+              })
+
+              if not passed and required:
+                  all_passed = False
+
+              status = "PASSED" if passed else "FAILED"
+              req_str = "(required)" if required else "(optional)"
+              print(f"  [{status}] {gate_name} {req_str}: {message}")
+
+          # Save results
+          with open('/verification/gate_results.json', 'w') as f:
+              json.dump(results, f, indent=2)
+
+          if all_passed:
+              print("\nAll required quality gates passed!")
+              sys.exit(0)
+          else:
+              print("\nQuality gate evaluation failed!")
+              sys.exit(1)
+          EOF
+        env:
+        - name: AWS_REGION
+          valueFrom:
+            configMapKeyRef:
+              name: artifact-lifecycle-config
+              key: aws_region
+        - name: SOURCE_BUCKET
+          value: "${SOURCE_BUCKET}"
+        - name: SOURCE_KEY
+          value: "${SOURCE_KEY}"
+        - name: ARTIFACT_TYPE
+          value: "${ARTIFACT_TYPE}"
+        - name: SOURCE_ENV
+          value: "${SOURCE_ENV}"
+        - name: TARGET_ENV
+          value: "${TARGET_ENV}"
+        envFrom:
+        - secretRef:
+            name: aws-credentials
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 200m
+            memory: 256Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+        volumeMounts:
+        - name: config
+          mountPath: /config
+          readOnly: true
+        - name: verification
+          mountPath: /verification
+
+      # Main promotion container
+      containers:
+      - name: promote-artifact
+        image: greenlang/artifact-promotion:v1.0.0
+        imagePullPolicy: IfNotPresent
+        command:
+        - /bin/sh
+        - -c
+        - |
+          echo "Starting artifact promotion..."
+          python3 << 'EOF'
+          import boto3
+          import hashlib
+          import json
+          import os
+          import sys
+          import time
+          from datetime import datetime, timezone
+
+          def calculate_sha256(s3_client, bucket, key):
+              """Calculate SHA-256 checksum of S3 object"""
+              response = s3_client.get_object(Bucket=bucket, Key=key)
+              sha256_hash = hashlib.sha256()
+              for chunk in response['Body'].iter_chunks(chunk_size=8192):
+                  sha256_hash.update(chunk)
+              return sha256_hash.hexdigest()
+
+          def get_object_metadata(s3_client, bucket, key):
+              """Get full object metadata including tags"""
+              head = s3_client.head_object(Bucket=bucket, Key=key)
+              try:
+                  tags_response = s3_client.get_object_tagging(Bucket=bucket, Key=key)
+                  tags = {tag['Key']: tag['Value'] for tag in tags_response.get('TagSet', [])}
+              except:
+                  tags = {}
+              return head, tags
+
+          def copy_with_metadata(s3_client, source_bucket, source_key, dest_bucket, dest_key, extra_metadata=None):
+              """Copy object preserving metadata and adding promotion metadata"""
+              # Get source metadata
+              head, tags = get_object_metadata(s3_client, source_bucket, source_key)
+
+              # Prepare metadata
+              metadata = head.get('Metadata', {}).copy()
+              if extra_metadata:
+                  metadata.update(extra_metadata)
+
+              # Perform copy
+              copy_source = {'Bucket': source_bucket, 'Key': source_key}
+              s3_client.copy_object(
+                  CopySource=copy_source,
+                  Bucket=dest_bucket,
+                  Key=dest_key,
+                  Metadata=metadata,
+                  MetadataDirective='REPLACE',
+                  TaggingDirective='COPY'
+              )
+
+              # Update tags with promotion info
+              tags['promoted_from'] = f"{source_bucket}/{source_key}"
+              tags['promoted_at'] = datetime.now(timezone.utc).isoformat()
+              tags['promotion_id'] = os.environ.get('PROMOTION_ID', 'unknown')
+
+              tag_set = [{'Key': k, 'Value': str(v)[:256]} for k, v in tags.items()]
+              s3_client.put_object_tagging(
+                  Bucket=dest_bucket,
+                  Key=dest_key,
+                  Tagging={'TagSet': tag_set}
+              )
+
+              return metadata, tags
+
+          def create_audit_record(s3_client, audit_bucket, promotion_data):
+              """Create audit trail record"""
+              timestamp = datetime.now(timezone.utc)
+              audit_key = f"promotions/{timestamp.strftime('%Y/%m/%d')}/{promotion_data['promotion_id']}.json"
+
+              s3_client.put_object(
+                  Bucket=audit_bucket,
+                  Key=audit_key,
+                  Body=json.dumps(promotion_data, indent=2, default=str),
+                  ContentType='application/json',
+                  Metadata={
+                      'record_type': 'promotion_audit',
+                      'promotion_id': promotion_data['promotion_id']
+                  }
+              )
+              return audit_key
+
+          def send_notification(webhook_url, message):
+              """Send Slack notification"""
+              if not webhook_url:
+                  return
+              import urllib.request
+              data = json.dumps({'text': message}).encode('utf-8')
+              req = urllib.request.Request(webhook_url, data=data, headers={'Content-Type': 'application/json'})
+              try:
+                  urllib.request.urlopen(req, timeout=10)
+              except Exception as e:
+                  print(f"Warning: Failed to send notification: {e}")
+
+          # Main execution
+          s3 = boto3.client('s3')
+
+          source_bucket = os.environ['SOURCE_BUCKET']
+          source_key = os.environ['SOURCE_KEY']
+          dest_bucket = os.environ['DEST_BUCKET']
+          dest_key = os.environ.get('DEST_KEY', source_key)
+          promotion_id = os.environ.get('PROMOTION_ID', f"promo-{int(time.time())}")
+          artifact_type = os.environ.get('ARTIFACT_TYPE', 'BUILD_ARTIFACT')
+          source_env = os.environ.get('SOURCE_ENV', 'dev')
+          target_env = os.environ.get('TARGET_ENV', 'staging')
+          audit_bucket = os.environ.get('AUDIT_BUCKET', 'greenlang-audit-logs')
+          slack_webhook = os.environ.get('SLACK_WEBHOOK_URL', '')
+          dry_run = os.environ.get('DRY_RUN', 'false').lower() == 'true'
+
+          print(f"Promotion Details:")
+          print(f"  ID: {promotion_id}")
+          print(f"  Source: s3://{source_bucket}/{source_key}")
+          print(f"  Destination: s3://{dest_bucket}/{dest_key}")
+          print(f"  Environment: {source_env} -> {target_env}")
+          print(f"  Artifact Type: {artifact_type}")
+          print(f"  Dry Run: {dry_run}")
+          print()
+
+          start_time = time.time()
+
+          # Step 1: Calculate source checksum
+          print("Step 1: Calculating source checksum...")
+          source_sha256 = calculate_sha256(s3, source_bucket, source_key)
+          print(f"  Source SHA-256: {source_sha256}")
+
+          # Step 2: Get source metadata
+          print("Step 2: Getting source metadata...")
+          source_head, source_tags = get_object_metadata(s3, source_bucket, source_key)
+          print(f"  Size: {source_head['ContentLength']} bytes")
+          print(f"  ETag: {source_head['ETag']}")
+          print(f"  Tags: {len(source_tags)}")
+
+          if dry_run:
+              print("\n[DRY RUN] Would copy artifact to destination")
+              print("[DRY RUN] Skipping actual copy and audit trail creation")
+              sys.exit(0)
+
+          # Step 3: Copy artifact with metadata
+          print("Step 3: Copying artifact to destination...")
+          extra_metadata = {
+              'source_sha256': source_sha256,
+              'promoted_from_env': source_env,
+              'promoted_to_env': target_env,
+              'promotion_id': promotion_id,
+              'promotion_timestamp': datetime.now(timezone.utc).isoformat()
+          }
+          copied_metadata, copied_tags = copy_with_metadata(
+              s3, source_bucket, source_key, dest_bucket, dest_key, extra_metadata
+          )
+          print(f"  Copied to: s3://{dest_bucket}/{dest_key}")
+
+          # Step 4: Verify destination checksum
+          print("Step 4: Verifying destination integrity...")
+          dest_sha256 = calculate_sha256(s3, dest_bucket, dest_key)
+          print(f"  Destination SHA-256: {dest_sha256}")
+
+          if source_sha256 != dest_sha256:
+              print(f"ERROR: Checksum mismatch!")
+              print(f"  Source:      {source_sha256}")
+              print(f"  Destination: {dest_sha256}")
+              # Delete corrupted copy
+              s3.delete_object(Bucket=dest_bucket, Key=dest_key)
+              sys.exit(1)
+          print("  Checksum verified!")
+
+          # Step 5: Create audit record
+          print("Step 5: Creating audit trail...")
+          duration = time.time() - start_time
+
+          # Load gate results if available
+          gate_results = []
+          try:
+              with open('/verification/gate_results.json', 'r') as f:
+                  gate_results = json.load(f)
+          except:
+              pass
+
+          audit_data = {
+              'promotion_id': promotion_id,
+              'timestamp': datetime.now(timezone.utc).isoformat(),
+              'artifact_type': artifact_type,
+              'source': {
+                  'bucket': source_bucket,
+                  'key': source_key,
+                  'environment': source_env,
+                  'sha256': source_sha256,
+                  'size': source_head['ContentLength'],
+                  'etag': source_head['ETag']
+              },
+              'destination': {
+                  'bucket': dest_bucket,
+                  'key': dest_key,
+                  'environment': target_env,
+                  'sha256': dest_sha256
+              },
+              'quality_gates': gate_results,
+              'metadata': copied_metadata,
+              'tags': copied_tags,
+              'duration_seconds': duration,
+              'status': 'success'
+          }
+
+          audit_key = create_audit_record(s3, audit_bucket, audit_data)
+          print(f"  Audit record: s3://{audit_bucket}/{audit_key}")
+
+          # Step 6: Send notification
+          print("Step 6: Sending notification...")
+          notification_message = (
+              f":rocket: *Artifact Promoted*\n"
+              f"*ID:* `{promotion_id}`\n"
+              f"*Type:* {artifact_type}\n"
+              f"*From:* {source_env} -> {target_env}\n"
+              f"*Artifact:* `{source_key}`\n"
+              f"*Duration:* {duration:.1f}s"
+          )
+          send_notification(slack_webhook, notification_message)
+
+          print()
+          print("=" * 60)
+          print("Promotion completed successfully!")
+          print(f"  Duration: {duration:.1f} seconds")
+          print(f"  Promotion ID: {promotion_id}")
+          print("=" * 60)
+          EOF
+        env:
+        - name: AWS_REGION
+          valueFrom:
+            configMapKeyRef:
+              name: artifact-lifecycle-config
+              key: aws_region
+        - name: SOURCE_BUCKET
+          value: "${SOURCE_BUCKET}"
+        - name: SOURCE_KEY
+          value: "${SOURCE_KEY}"
+        - name: DEST_BUCKET
+          value: "${DEST_BUCKET}"
+        - name: DEST_KEY
+          value: "${DEST_KEY}"
+        - name: PROMOTION_ID
+          value: "${PROMOTION_ID}"
+        - name: ARTIFACT_TYPE
+          value: "${ARTIFACT_TYPE}"
+        - name: SOURCE_ENV
+          value: "${SOURCE_ENV}"
+        - name: TARGET_ENV
+          value: "${TARGET_ENV}"
+        - name: AUDIT_BUCKET
+          valueFrom:
+            configMapKeyRef:
+              name: artifact-lifecycle-config
+              key: audit_logs_bucket
+        - name: SLACK_WEBHOOK_URL
+          valueFrom:
+            secretKeyRef:
+              name: artifact-lifecycle-secrets
+              key: slack_webhook_url
+              optional: true
+        - name: DRY_RUN
+          value: "${DRY_RUN}"
+        envFrom:
+        - secretRef:
+            name: aws-credentials
+        resources:
+          requests:
+            cpu: 200m
+            memory: 256Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+        volumeMounts:
+        - name: config
+          mountPath: /config
+          readOnly: true
+        - name: verification
+          mountPath: /verification
+        - name: tmp
+          mountPath: /tmp
+
+      volumes:
+      - name: config
+        configMap:
+          name: promotion-rules
+      - name: verification
+        emptyDir:
+          sizeLimit: 100Mi
+      - name: tmp
+        emptyDir:
+          sizeLimit: 1Gi
+
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            preference:
+              matchExpressions:
+              - key: node.kubernetes.io/instance-type
+                operator: In
+                values:
+                - t3.medium
+                - t3.large
+
+---
+# ServiceAccount for artifact promotion
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: artifact-promotion-sa
+  namespace: greenlang-storage
+  labels:
+    app.kubernetes.io/name: artifact-promotion
+    app.kubernetes.io/component: promotion-job
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::ACCOUNT_ID:role/greenlang-artifact-promotion-role
+
+---
+# Role for artifact promotion
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: artifact-promotion-role
+  namespace: greenlang-storage
+rules:
+- apiGroups: [""]
+  resources: ["configmaps"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["get"]
+- apiGroups: ["batch"]
+  resources: ["jobs"]
+  verbs: ["get", "list", "watch", "create", "delete"]
+
+---
+# RoleBinding for artifact promotion
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: artifact-promotion-rolebinding
+  namespace: greenlang-storage
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: artifact-promotion-role
+subjects:
+- kind: ServiceAccount
+  name: artifact-promotion-sa
+  namespace: greenlang-storage

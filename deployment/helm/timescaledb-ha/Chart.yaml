@@ -1,0 +1,37 @@
+apiVersion: v2
+name: timescaledb-ha
+description: Production-ready TimescaleDB with High Availability using Patroni
+type: application
+version: 1.0.0
+appVersion: "pg15-latest"
+kubeVersion: ">=1.23.0-0"
+
+keywords:
+  - timescaledb
+  - postgresql
+  - database
+  - timeseries
+  - patroni
+  - high-availability
+
+home: https://www.timescale.com/
+icon: https://www.timescale.com/images/timescale-logo.svg
+
+sources:
+  - https://github.com/timescale/timescaledb
+  - https://github.com/zalando/patroni
+
+maintainers:
+  - name: GreenLang DevOps
+    email: devops@greenlang.io
+
+annotations:
+  category: Database
+  licenses: Apache-2.0
+
+dependencies:
+  - name: prometheus-postgres-exporter
+    version: "5.0.0"
+    repository: "https://prometheus-community.github.io/helm-charts"
+    condition: metrics.enabled
+    alias: postgresExporter

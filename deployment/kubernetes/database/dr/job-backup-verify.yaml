@@ -1,0 +1,355 @@
+---
+# job-backup-verify.yaml
+#
+# Kubernetes CronJob for daily backup verification
+# Restores backups to a test instance and validates data integrity
+#
+# Author: GreenLang Database Operations Team
+# Version: 1.0.0
+# Date: 2026-02-03
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backup-verify-scripts
+  namespace: database
+  labels:
+    app: backup-verify
+    component: database-dr
+data:
+  verify-backup.sh: |
+    #!/bin/bash
+    set -euo pipefail
+
+    # Configuration
+    STANZA="${PGBACKREST_STANZA:-greenlang}"
+    DB_USER="${POSTGRES_USER:-postgres}"
+    DB_NAME="${POSTGRES_DB:-greenlang}"
+    SLACK_WEBHOOK="${SLACK_WEBHOOK_URL:-}"
+    VERIFY_ID="verify_$(date +%Y%m%d_%H%M%S)"
+    REPORT_FILE="/tmp/backup_verify_report.json"
+    RECOVERY_PGDATA="/tmp/pg_recovery"
+
+    log() {
+        echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*"
+    }
+
+    send_slack() {
+        local status="$1"
+        local message="$2"
+
+        if [ -n "$SLACK_WEBHOOK" ]; then
+            local color
+            case "$status" in
+                "success") color="good" ;;
+                "error") color="danger" ;;
+                *) color="warning" ;;
+            esac
+
+            curl -s -X POST "$SLACK_WEBHOOK" \
+                -H 'Content-Type: application/json' \
+                -d "{
+                    \"attachments\": [{
+                        \"color\": \"$color\",
+                        \"title\": \"Backup Verification - $status\",
+                        \"text\": \"$message\",
+                        \"fields\": [
+                            {\"title\": \"Stanza\", \"value\": \"$STANZA\", \"short\": true},
+                            {\"title\": \"Verify ID\", \"value\": \"$VERIFY_ID\", \"short\": true}
+                        ]
+                    }]
+                }" || true
+        fi
+    }
+
+    cleanup() {
+        log "Cleaning up..."
+        rm -rf "$RECOVERY_PGDATA"
+        pkill -f "postgres.*$RECOVERY_PGDATA" || true
+    }
+
+    trap cleanup EXIT
+
+    # Main verification
+    log "Starting backup verification: $VERIFY_ID"
+    send_slack "info" "Starting daily backup verification"
+
+    # Step 1: Check backup info
+    log "Checking backup status..."
+    BACKUP_INFO=$(pgbackrest info --stanza="$STANZA" --output=json)
+
+    if [ -z "$BACKUP_INFO" ] || [ "$BACKUP_INFO" == "[]" ]; then
+        log "ERROR: No backup information available"
+        send_slack "error" "Backup verification failed: No backups found"
+        exit 1
+    fi
+
+    LATEST_BACKUP=$(echo "$BACKUP_INFO" | jq -r '.[0].backup[-1]')
+    BACKUP_TYPE=$(echo "$LATEST_BACKUP" | jq -r '.type')
+    BACKUP_TIME=$(echo "$LATEST_BACKUP" | jq -r '.timestamp.stop')
+    BACKUP_SIZE=$(echo "$LATEST_BACKUP" | jq -r '.info.size')
+
+    log "Latest backup: type=$BACKUP_TYPE, time=$BACKUP_TIME, size=$BACKUP_SIZE"
+
+    # Step 2: Verify backup integrity
+    log "Verifying backup integrity..."
+    VERIFY_OUTPUT=$(pgbackrest verify --stanza="$STANZA" 2>&1) || true
+
+    if echo "$VERIFY_OUTPUT" | grep -q "completed successfully"; then
+        INTEGRITY_CHECK="passed"
+        log "Backup integrity check passed"
+    else
+        INTEGRITY_CHECK="failed"
+        log "WARNING: Backup integrity check had issues"
+    fi
+
+    # Step 3: Restore to test instance
+    log "Restoring backup to test instance..."
+    mkdir -p "$RECOVERY_PGDATA"
+    chmod 700 "$RECOVERY_PGDATA"
+
+    RESTORE_START=$(date +%s)
+
+    pgbackrest restore \
+        --stanza="$STANZA" \
+        --pg1-path="$RECOVERY_PGDATA" \
+        --type=immediate \
+        --target-action=promote \
+        --log-level-console=info 2>&1 | tee /tmp/restore.log
+
+    RESTORE_STATUS=$?
+    RESTORE_END=$(date +%s)
+    RESTORE_DURATION=$((RESTORE_END - RESTORE_START))
+
+    if [ $RESTORE_STATUS -ne 0 ]; then
+        log "ERROR: Restore failed"
+        send_slack "error" "Backup verification failed: Restore error"
+        exit 1
+    fi
+
+    log "Restore completed in $RESTORE_DURATION seconds"
+
+    # Step 4: Start recovered instance
+    log "Starting recovered PostgreSQL instance..."
+    cat >> "$RECOVERY_PGDATA/postgresql.auto.conf" << EOF
+    port = 5433
+    listen_addresses = 'localhost'
+    log_destination = 'stderr'
+    logging_collector = off
+    EOF
+
+    pg_ctl start -D "$RECOVERY_PGDATA" -l /tmp/pg_recovery.log -w -t 120
+
+    # Wait for PostgreSQL to be ready
+    MAX_WAIT=60
+    ELAPSED=0
+    while [ $ELAPSED -lt $MAX_WAIT ]; do
+        if pg_isready -h localhost -p 5433 2>/dev/null; then
+            break
+        fi
+        sleep 2
+        ELAPSED=$((ELAPSED + 2))
+    done
+
+    if ! pg_isready -h localhost -p 5433 2>/dev/null; then
+        log "ERROR: Recovered instance did not start"
+        send_slack "error" "Backup verification failed: Instance startup error"
+        exit 1
+    fi
+
+    log "Recovered instance started successfully"
+
+    # Step 5: Data integrity checks
+    log "Running data integrity checks..."
+
+    # Check database exists
+    DB_EXISTS=$(psql -h localhost -p 5433 -U "$DB_USER" -t -c "
+        SELECT 1 FROM pg_database WHERE datname = '$DB_NAME';
+    " 2>/dev/null | tr -d ' ')
+
+    if [ "$DB_EXISTS" != "1" ]; then
+        log "ERROR: Database $DB_NAME not found in backup"
+        DATA_INTEGRITY="failed"
+    else
+        log "Database $DB_NAME exists"
+
+        # Check table count
+        TABLE_COUNT=$(psql -h localhost -p 5433 -U "$DB_USER" -d "$DB_NAME" -t -c "
+            SELECT count(*) FROM pg_tables WHERE schemaname = 'public';
+        " 2>/dev/null | tr -d ' ')
+
+        log "Public tables: $TABLE_COUNT"
+
+        # Check for TimescaleDB
+        TIMESCALE_CHECK=$(psql -h localhost -p 5433 -U "$DB_USER" -d "$DB_NAME" -t -c "
+            SELECT extversion FROM pg_extension WHERE extname = 'timescaledb';
+        " 2>/dev/null | tr -d ' ')
+
+        if [ -n "$TIMESCALE_CHECK" ]; then
+            log "TimescaleDB version: $TIMESCALE_CHECK"
+
+            # Check hypertables
+            HYPERTABLE_COUNT=$(psql -h localhost -p 5433 -U "$DB_USER" -d "$DB_NAME" -t -c "
+                SELECT count(*) FROM timescaledb_information.hypertables;
+            " 2>/dev/null | tr -d ' ')
+
+            log "Hypertables: $HYPERTABLE_COUNT"
+        fi
+
+        # Check index validity
+        INVALID_INDEXES=$(psql -h localhost -p 5433 -U "$DB_USER" -d "$DB_NAME" -t -c "
+            SELECT count(*) FROM pg_index WHERE NOT indisvalid;
+        " 2>/dev/null | tr -d ' ')
+
+        if [ "${INVALID_INDEXES:-0}" -gt 0 ]; then
+            log "WARNING: $INVALID_INDEXES invalid indexes found"
+            DATA_INTEGRITY="warning"
+        else
+            log "All indexes are valid"
+            DATA_INTEGRITY="passed"
+        fi
+
+        # Get latest data timestamp (for RPO verification)
+        LATEST_DATA=$(psql -h localhost -p 5433 -U "$DB_USER" -d "$DB_NAME" -t -c "
+            SELECT max(created_at)::text FROM users;
+        " 2>/dev/null | tr -d ' ' || echo "unknown")
+
+        log "Latest data timestamp: $LATEST_DATA"
+    fi
+
+    # Step 6: Stop recovered instance
+    log "Stopping recovered instance..."
+    pg_ctl stop -D "$RECOVERY_PGDATA" -m fast || true
+
+    # Generate report
+    cat > "$REPORT_FILE" << EOF
+    {
+        "verify_id": "$VERIFY_ID",
+        "timestamp": "$(date -Iseconds)",
+        "stanza": "$STANZA",
+        "backup": {
+            "type": "$BACKUP_TYPE",
+            "time": "$BACKUP_TIME",
+            "size_bytes": $BACKUP_SIZE
+        },
+        "verification": {
+            "integrity_check": "$INTEGRITY_CHECK",
+            "restore_success": true,
+            "restore_duration_seconds": $RESTORE_DURATION,
+            "data_integrity": "${DATA_INTEGRITY:-unknown}",
+            "table_count": ${TABLE_COUNT:-0},
+            "invalid_indexes": ${INVALID_INDEXES:-0},
+            "latest_data": "${LATEST_DATA:-unknown}"
+        },
+        "result": "$([ "$DATA_INTEGRITY" == "passed" ] && echo "passed" || echo "failed")"
+    }
+    EOF
+
+    # Send result
+    if [ "${DATA_INTEGRITY:-failed}" == "passed" ]; then
+        log "Backup verification PASSED"
+        send_slack "success" "Backup verification PASSED. Restore time: ${RESTORE_DURATION}s, Tables: ${TABLE_COUNT:-0}, Latest data: ${LATEST_DATA:-unknown}"
+        exit 0
+    else
+        log "Backup verification FAILED or had warnings"
+        send_slack "error" "Backup verification FAILED. Data integrity: ${DATA_INTEGRITY:-unknown}"
+        exit 1
+    fi
+
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: backup-verify
+  namespace: database
+  labels:
+    app: backup-verify
+    component: database-dr
+spec:
+  # Run daily at 4:00 AM UTC
+  schedule: "0 4 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 7
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      activeDeadlineSeconds: 3600  # 1 hour timeout
+      template:
+        metadata:
+          labels:
+            app: backup-verify
+            component: database-dr
+        spec:
+          serviceAccountName: database-admin
+          restartPolicy: OnFailure
+
+          containers:
+          - name: backup-verify
+            image: postgres:14-alpine
+            command: ["/bin/bash", "/scripts/verify-backup.sh"]
+
+            env:
+            - name: PGBACKREST_STANZA
+              value: "greenlang"
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: greenlang-db-credentials
+                  key: username
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: greenlang-db-credentials
+                  key: password
+            - name: POSTGRES_DB
+              value: "greenlang"
+            - name: SLACK_WEBHOOK_URL
+              valueFrom:
+                secretKeyRef:
+                  name: slack-webhooks
+                  key: database-alerts
+                  optional: true
+
+            volumeMounts:
+            - name: scripts
+              mountPath: /scripts
+            - name: pgbackrest-config
+              mountPath: /etc/pgbackrest
+            - name: recovery-data
+              mountPath: /tmp
+
+            resources:
+              requests:
+                cpu: "500m"
+                memory: "1Gi"
+              limits:
+                cpu: "2"
+                memory: "4Gi"
+
+          volumes:
+          - name: scripts
+            configMap:
+              name: backup-verify-scripts
+              defaultMode: 0755
+          - name: pgbackrest-config
+            configMap:
+              name: pgbackrest-config
+          - name: recovery-data
+            emptyDir:
+              sizeLimit: 50Gi
+
+---
+# PersistentVolumeClaim for recovery workspace (optional, for larger databases)
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: backup-verify-workspace
+  namespace: database
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: gp3
+  resources:
+    requests:
+      storage: 100Gi

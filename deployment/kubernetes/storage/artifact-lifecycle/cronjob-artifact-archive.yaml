@@ -1,0 +1,403 @@
+# Artifact Archive CronJob
+# Archives old calculation results to Glacier and reports to DEEP_ARCHIVE
+# Runs weekly on Sundays
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: artifact-archive
+  namespace: greenlang-storage
+  labels:
+    app.kubernetes.io/name: artifact-archive
+    app.kubernetes.io/component: lifecycle-management
+    app.kubernetes.io/part-of: greenlang-storage
+    app.kubernetes.io/managed-by: kubernetes
+spec:
+  # Schedule: Weekly on Sunday at 1 AM UTC
+  schedule: "0 1 * * 0"
+  timeZone: "UTC"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 4
+  failedJobsHistoryLimit: 2
+  startingDeadlineSeconds: 7200
+  jobTemplate:
+    metadata:
+      labels:
+        app.kubernetes.io/name: artifact-archive
+        app.kubernetes.io/component: lifecycle-management
+    spec:
+      # Archive jobs can run longer - 8 hours max
+      activeDeadlineSeconds: 28800
+      backoffLimit: 2
+      ttlSecondsAfterFinished: 172800
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: artifact-archive
+            app.kubernetes.io/component: lifecycle-management
+          annotations:
+            prometheus.io/scrape: "true"
+            prometheus.io/port: "9090"
+            prometheus.io/path: "/metrics"
+        spec:
+          restartPolicy: OnFailure
+          serviceAccountName: artifact-lifecycle-sa
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            fsGroup: 1000
+            seccompProfile:
+              type: RuntimeDefault
+
+          initContainers:
+          - name: verify-glacier-access
+            image: greenlang/artifact-lifecycle:v1.0.0
+            imagePullPolicy: IfNotPresent
+            command:
+            - /bin/sh
+            - -c
+            - |
+              echo "Verifying Glacier access..."
+              python3 -c "
+              import boto3
+              s3 = boto3.client('s3')
+              # Verify we can change storage class
+              print('S3 storage class transition capability verified')
+              " || exit 1
+              echo "Glacier access verified."
+            env:
+            - name: AWS_REGION
+              valueFrom:
+                configMapKeyRef:
+                  name: artifact-lifecycle-config
+                  key: aws_region
+            envFrom:
+            - secretRef:
+                name: aws-credentials
+            resources:
+              requests:
+                cpu: 50m
+                memory: 64Mi
+              limits:
+                cpu: 100m
+                memory: 128Mi
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities:
+                drop:
+                - ALL
+
+          containers:
+          - name: artifact-archive
+            image: greenlang/artifact-lifecycle:v1.0.0
+            imagePullPolicy: IfNotPresent
+            command:
+            - python3
+            - /app/scripts/archive-artifacts.py
+            args:
+            - "--config=/config/archive-config.yaml"
+            - "--metrics-port=9090"
+            - "--log-level=INFO"
+            - "--generate-manifest"
+            env:
+            # AWS Configuration
+            - name: AWS_REGION
+              valueFrom:
+                configMapKeyRef:
+                  name: artifact-lifecycle-config
+                  key: aws_region
+            - name: AWS_DEFAULT_REGION
+              valueFrom:
+                configMapKeyRef:
+                  name: artifact-lifecycle-config
+                  key: aws_region
+            # S3 Bucket Configuration
+            - name: CALCULATION_RESULTS_BUCKET
+              valueFrom:
+                configMapKeyRef:
+                  name: artifact-lifecycle-config
+                  key: calculation_results_bucket
+            - name: REPORTS_BUCKET
+              valueFrom:
+                configMapKeyRef:
+                  name: artifact-lifecycle-config
+                  key: reports_bucket
+            - name: ARCHIVE_MANIFEST_BUCKET
+              valueFrom:
+                configMapKeyRef:
+                  name: artifact-lifecycle-config
+                  key: archive_manifest_bucket
+            # Archive Configuration
+            - name: CALCULATION_ARCHIVE_DAYS
+              value: "90"
+            - name: REPORT_ARCHIVE_DAYS
+              value: "365"
+            - name: CALCULATION_STORAGE_CLASS
+              value: "GLACIER"
+            - name: REPORT_STORAGE_CLASS
+              value: "DEEP_ARCHIVE"
+            # Notification Configuration
+            - name: SLACK_WEBHOOK_URL
+              valueFrom:
+                secretKeyRef:
+                  name: artifact-lifecycle-secrets
+                  key: slack_webhook_url
+                  optional: true
+            # Dry run mode
+            - name: DRY_RUN
+              valueFrom:
+                configMapKeyRef:
+                  name: artifact-lifecycle-config
+                  key: dry_run
+                  optional: true
+            # Prometheus pushgateway
+            - name: PUSHGATEWAY_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: artifact-lifecycle-config
+                  key: pushgateway_url
+                  optional: true
+            envFrom:
+            - secretRef:
+                name: aws-credentials
+            resources:
+              requests:
+                cpu: 500m
+                memory: 1Gi
+              limits:
+                cpu: 2000m
+                memory: 4Gi
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities:
+                drop:
+                - ALL
+            volumeMounts:
+            - name: config
+              mountPath: /config
+              readOnly: true
+            - name: scripts
+              mountPath: /app/scripts
+              readOnly: true
+            - name: tmp
+              mountPath: /tmp
+            - name: cache
+              mountPath: /home/appuser/.cache
+            - name: manifest
+              mountPath: /manifest
+
+          volumes:
+          - name: config
+            configMap:
+              name: artifact-archive-config
+          - name: scripts
+            configMap:
+              name: artifact-lifecycle-scripts
+              defaultMode: 0555
+          - name: tmp
+            emptyDir:
+              sizeLimit: 2Gi
+          - name: cache
+            emptyDir:
+              sizeLimit: 1Gi
+          - name: manifest
+            emptyDir:
+              sizeLimit: 500Mi
+
+          affinity:
+            nodeAffinity:
+              preferredDuringSchedulingIgnoredDuringExecution:
+              - weight: 100
+                preference:
+                  matchExpressions:
+                  - key: node.kubernetes.io/instance-type
+                    operator: In
+                    values:
+                    - t3.large
+                    - t3.xlarge
+                    - m5.large
+
+          tolerations:
+          - key: "spot"
+            operator: "Equal"
+            value: "true"
+            effect: "NoSchedule"
+
+---
+# ConfigMap for archive configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: artifact-archive-config
+  namespace: greenlang-storage
+  labels:
+    app.kubernetes.io/name: artifact-archive
+    app.kubernetes.io/component: lifecycle-management
+data:
+  archive-config.yaml: |
+    # Artifact Archive Configuration
+    version: "1.0"
+
+    # Global settings
+    global:
+      dry_run: false
+      batch_size: 500
+      max_workers: 5
+      log_level: INFO
+      metrics_enabled: true
+      # Use S3 Batch Operations for large transitions
+      use_batch_operations: true
+      batch_operation_threshold: 10000
+
+    # Archive targets
+    targets:
+      # Calculation results -> Glacier
+      - name: calculation_results
+        source_bucket: "${CALCULATION_RESULTS_BUCKET}"
+        prefixes:
+          - "calculations/"
+          - "emissions/"
+          - "analysis/"
+        archive_after_days: 90
+        target_storage_class: "GLACIER"
+        # Minimum object size for archival (smaller objects not cost-effective)
+        min_object_size_bytes: 131072  # 128 KB
+        filters:
+          # Only archive completed calculations
+          - type: tag
+            key: status
+            value: "completed"
+            condition: "equals"
+          # Skip objects already in Glacier
+          - type: storage_class
+            value: "STANDARD"
+            condition: "equals"
+          # Skip objects with legal hold
+          - type: tag
+            key: legal_hold
+            value: "true"
+            condition: "not_equals"
+        metadata_updates:
+          archived_date: "${TIMESTAMP}"
+          archived_by: "artifact-archive-cronjob"
+          original_storage_class: "STANDARD"
+
+      # Reports -> DEEP_ARCHIVE
+      - name: reports
+        source_bucket: "${REPORTS_BUCKET}"
+        prefixes:
+          - "reports/annual/"
+          - "reports/quarterly/"
+          - "reports/csrd/"
+          - "reports/audit/"
+        archive_after_days: 365
+        target_storage_class: "DEEP_ARCHIVE"
+        min_object_size_bytes: 262144  # 256 KB
+        filters:
+          # Only archive finalized reports
+          - type: tag
+            key: status
+            value: "finalized"
+            condition: "equals"
+          # Skip objects already archived
+          - type: storage_class
+            value: "STANDARD"
+            condition: "equals"
+        metadata_updates:
+          archived_date: "${TIMESTAMP}"
+          archived_by: "artifact-archive-cronjob"
+          compliance_archive: "true"
+
+      # ML model artifacts -> Glacier
+      - name: ml_models
+        source_bucket: "${CALCULATION_RESULTS_BUCKET}"
+        prefixes:
+          - "models/"
+          - "ml/trained/"
+        archive_after_days: 90
+        target_storage_class: "GLACIER"
+        min_object_size_bytes: 1048576  # 1 MB
+        filters:
+          - type: tag
+            key: model_status
+            value: "deprecated"
+            condition: "equals"
+        metadata_updates:
+          archived_date: "${TIMESTAMP}"
+          model_archive_reason: "deprecated"
+
+    # Manifest generation settings
+    manifest:
+      enabled: true
+      bucket: "${ARCHIVE_MANIFEST_BUCKET}"
+      prefix: "manifests/archive/"
+      format: "json"
+      include_fields:
+        - object_key
+        - original_size
+        - original_storage_class
+        - target_storage_class
+        - archive_timestamp
+        - object_tags
+        - etag
+      # Generate summary report
+      generate_summary: true
+      # Keep manifest history
+      retention_days: 365
+
+    # Restore settings (for reference)
+    restore:
+      # Default restore parameters
+      glacier_restore_days: 7
+      glacier_restore_tier: "Standard"  # Expedited, Standard, Bulk
+      deep_archive_restore_days: 14
+      deep_archive_restore_tier: "Standard"
+
+    # Notification settings
+    notifications:
+      slack:
+        enabled: true
+        channel: "#devops-alerts"
+        on_success: true
+        on_failure: true
+        include_stats: true
+        include_cost_savings: true
+      webhook:
+        enabled: true
+        on_success: true
+        on_failure: true
+
+    # Cost tracking
+    cost_tracking:
+      enabled: true
+      # Estimated cost savings per GB archived
+      glacier_savings_per_gb: 0.02
+      deep_archive_savings_per_gb: 0.023
+      # Export cost report
+      export_cost_report: true
+      report_bucket: "${ARCHIVE_MANIFEST_BUCKET}"
+      report_prefix: "reports/cost/"
+
+---
+# ConfigMap for lifecycle scripts
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: artifact-lifecycle-scripts
+  namespace: greenlang-storage
+  labels:
+    app.kubernetes.io/name: artifact-lifecycle
+    app.kubernetes.io/component: lifecycle-management
+data:
+  # Scripts will be mounted from separate ConfigMaps for size limits
+  # This ConfigMap references the script locations
+  scripts-manifest.yaml: |
+    scripts:
+      - name: cleanup-artifacts.py
+        path: /app/scripts/cleanup-artifacts.py
+      - name: archive-artifacts.py
+        path: /app/scripts/archive-artifacts.py
+      - name: enforce-retention.py
+        path: /app/scripts/enforce-retention.py

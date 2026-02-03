@@ -1,0 +1,357 @@
+{{/*
+PrometheusRule for TimescaleDB HA alerts
+Comprehensive alerting for database operations, replication, and performance
+*/}}
+{{- if and .Values.metrics.enabled .Values.metrics.prometheusRule.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ include "timescaledb-ha.fullname" . }}
+  namespace: {{ .Values.metrics.prometheusRule.namespace | default (include "timescaledb-ha.namespace" .) }}
+  labels:
+    {{- include "timescaledb-ha.labels" . | nindent 4 }}
+    {{- with .Values.metrics.prometheusRule.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  groups:
+    # -----------------------------------------------------------------------------
+    # Cluster Health Alerts
+    # -----------------------------------------------------------------------------
+    - name: timescaledb-ha.cluster
+      rules:
+        - alert: TimescaleDBClusterNoLeader
+          expr: |
+            count(patroni_postgres_running{cluster_name="{{ .Values.cluster.name }}", role="master"}) == 0
+          for: 30s
+          labels:
+            severity: critical
+            cluster: {{ .Values.cluster.name }}
+          annotations:
+            summary: "No leader in TimescaleDB cluster"
+            description: "The TimescaleDB cluster {{ .Values.cluster.name }} has no running primary. Immediate action required."
+            runbook_url: "https://docs.greenlang.io/runbooks/timescaledb-no-leader"
+
+        - alert: TimescaleDBClusterMultipleLeaders
+          expr: |
+            count(patroni_postgres_running{cluster_name="{{ .Values.cluster.name }}", role="master"}) > 1
+          for: 10s
+          labels:
+            severity: critical
+            cluster: {{ .Values.cluster.name }}
+          annotations:
+            summary: "Multiple leaders detected in TimescaleDB cluster"
+            description: "SPLIT BRAIN: Multiple primaries detected in cluster {{ .Values.cluster.name }}. This is a critical situation."
+            runbook_url: "https://docs.greenlang.io/runbooks/timescaledb-split-brain"
+
+        - alert: TimescaleDBClusterReplicasMissing
+          expr: |
+            count(patroni_postgres_running{cluster_name="{{ .Values.cluster.name }}", role="replica"}) < {{ sub .Values.cluster.replicas 1 }}
+          for: 5m
+          labels:
+            severity: warning
+            cluster: {{ .Values.cluster.name }}
+          annotations:
+            summary: "Missing replicas in TimescaleDB cluster"
+            description: "Expected {{ sub .Values.cluster.replicas 1 }} replicas but found {{ "{{ $value }}" }} in cluster {{ .Values.cluster.name }}."
+
+        - alert: TimescaleDBClusterPodNotHealthy
+          expr: |
+            patroni_postgres_running{cluster_name="{{ .Values.cluster.name }}"} == 0
+          for: 2m
+          labels:
+            severity: critical
+            cluster: {{ .Values.cluster.name }}
+          annotations:
+            summary: "TimescaleDB pod not healthy"
+            description: "Pod {{ "{{ $labels.pod }}" }} in cluster {{ .Values.cluster.name }} is not running PostgreSQL."
+
+    # -----------------------------------------------------------------------------
+    # Replication Alerts
+    # -----------------------------------------------------------------------------
+    - name: timescaledb-ha.replication
+      rules:
+        - alert: TimescaleDBReplicationLagHigh
+          expr: |
+            pg_replication_lag{cluster_name="{{ .Values.cluster.name }}"} > 30
+          for: 5m
+          labels:
+            severity: warning
+            cluster: {{ .Values.cluster.name }}
+          annotations:
+            summary: "High replication lag in TimescaleDB cluster"
+            description: "Replica {{ "{{ $labels.pod }}" }} has {{ "{{ $value | humanizeDuration }}" }} replication lag."
+
+        - alert: TimescaleDBReplicationLagCritical
+          expr: |
+            pg_replication_lag{cluster_name="{{ .Values.cluster.name }}"} > 300
+          for: 2m
+          labels:
+            severity: critical
+            cluster: {{ .Values.cluster.name }}
+          annotations:
+            summary: "Critical replication lag in TimescaleDB cluster"
+            description: "Replica {{ "{{ $labels.pod }}" }} has {{ "{{ $value | humanizeDuration }}" }} replication lag. Risk of data loss on failover."
+
+        - alert: TimescaleDBReplicationSlotInactive
+          expr: |
+            pg_replication_slots_active{cluster_name="{{ .Values.cluster.name }}"} == 0
+          for: 5m
+          labels:
+            severity: warning
+            cluster: {{ .Values.cluster.name }}
+          annotations:
+            summary: "Inactive replication slot"
+            description: "Replication slot {{ "{{ $labels.slot_name }}" }} on {{ "{{ $labels.pod }}" }} is inactive."
+
+        {{- if .Values.patroni.synchronous.enabled }}
+        - alert: TimescaleDBSyncReplicaDown
+          expr: |
+            pg_stat_replication_sync_state{cluster_name="{{ .Values.cluster.name }}", sync_state="sync"} == 0
+          for: 1m
+          labels:
+            severity: critical
+            cluster: {{ .Values.cluster.name }}
+          annotations:
+            summary: "Synchronous replica not available"
+            description: "No synchronous replica available for cluster {{ .Values.cluster.name }}. Writes may be blocked."
+        {{- end }}
+
+    # -----------------------------------------------------------------------------
+    # Performance Alerts
+    # -----------------------------------------------------------------------------
+    - name: timescaledb-ha.performance
+      rules:
+        - alert: TimescaleDBHighConnections
+          expr: |
+            pg_stat_database_numbackends{cluster_name="{{ .Values.cluster.name }}"} / pg_settings_max_connections{cluster_name="{{ .Values.cluster.name }}"} > 0.8
+          for: 5m
+          labels:
+            severity: warning
+            cluster: {{ .Values.cluster.name }}
+          annotations:
+            summary: "High database connections"
+            description: "Database {{ "{{ $labels.datname }}" }} is using {{ "{{ $value | humanizePercentage }}" }} of max connections."
+
+        - alert: TimescaleDBConnectionsExhausted
+          expr: |
+            pg_stat_database_numbackends{cluster_name="{{ .Values.cluster.name }}"} / pg_settings_max_connections{cluster_name="{{ .Values.cluster.name }}"} > 0.95
+          for: 2m
+          labels:
+            severity: critical
+            cluster: {{ .Values.cluster.name }}
+          annotations:
+            summary: "Database connections nearly exhausted"
+            description: "Database {{ "{{ $labels.datname }}" }} has {{ "{{ $value | humanizePercentage }}" }} connections used."
+
+        - alert: TimescaleDBDeadlocks
+          expr: |
+            rate(pg_stat_database_deadlocks{cluster_name="{{ .Values.cluster.name }}"}[5m]) > 0
+          for: 5m
+          labels:
+            severity: warning
+            cluster: {{ .Values.cluster.name }}
+          annotations:
+            summary: "Database deadlocks detected"
+            description: "{{ "{{ $value }}" }} deadlocks/sec detected in database {{ "{{ $labels.datname }}" }}."
+
+        - alert: TimescaleDBSlowQueries
+          expr: |
+            rate(pg_stat_statements_calls{cluster_name="{{ .Values.cluster.name }}", mean_time_seconds>1}[5m]) > 10
+          for: 10m
+          labels:
+            severity: warning
+            cluster: {{ .Values.cluster.name }}
+          annotations:
+            summary: "High rate of slow queries"
+            description: "{{ "{{ $value }}" }} slow queries/sec detected."
+
+        - alert: TimescaleDBCacheHitRatioLow
+          expr: |
+            pg_stat_database_blks_hit{cluster_name="{{ .Values.cluster.name }}"} /
+            (pg_stat_database_blks_hit{cluster_name="{{ .Values.cluster.name }}"} + pg_stat_database_blks_read{cluster_name="{{ .Values.cluster.name }}"}) < 0.9
+          for: 15m
+          labels:
+            severity: warning
+            cluster: {{ .Values.cluster.name }}
+          annotations:
+            summary: "Low cache hit ratio"
+            description: "Database {{ "{{ $labels.datname }}" }} has cache hit ratio of {{ "{{ $value | humanizePercentage }}" }}. Consider increasing shared_buffers."
+
+    # -----------------------------------------------------------------------------
+    # Storage Alerts
+    # -----------------------------------------------------------------------------
+    - name: timescaledb-ha.storage
+      rules:
+        - alert: TimescaleDBDiskSpaceWarning
+          expr: |
+            kubelet_volume_stats_available_bytes{persistentvolumeclaim=~"data-{{ include "timescaledb-ha.fullname" . }}.*"} /
+            kubelet_volume_stats_capacity_bytes{persistentvolumeclaim=~"data-{{ include "timescaledb-ha.fullname" . }}.*"} < 0.2
+          for: 10m
+          labels:
+            severity: warning
+            cluster: {{ .Values.cluster.name }}
+          annotations:
+            summary: "Low disk space on TimescaleDB volume"
+            description: "Volume {{ "{{ $labels.persistentvolumeclaim }}" }} has only {{ "{{ $value | humanizePercentage }}" }} space remaining."
+
+        - alert: TimescaleDBDiskSpaceCritical
+          expr: |
+            kubelet_volume_stats_available_bytes{persistentvolumeclaim=~"data-{{ include "timescaledb-ha.fullname" . }}.*"} /
+            kubelet_volume_stats_capacity_bytes{persistentvolumeclaim=~"data-{{ include "timescaledb-ha.fullname" . }}.*"} < 0.1
+          for: 5m
+          labels:
+            severity: critical
+            cluster: {{ .Values.cluster.name }}
+          annotations:
+            summary: "Critical disk space on TimescaleDB volume"
+            description: "Volume {{ "{{ $labels.persistentvolumeclaim }}" }} has only {{ "{{ $value | humanizePercentage }}" }} space remaining. Database may become read-only."
+
+        - alert: TimescaleDBWALDiskSpaceLow
+          expr: |
+            kubelet_volume_stats_available_bytes{persistentvolumeclaim=~"wal-{{ include "timescaledb-ha.fullname" . }}.*"} /
+            kubelet_volume_stats_capacity_bytes{persistentvolumeclaim=~"wal-{{ include "timescaledb-ha.fullname" . }}.*"} < 0.15
+          for: 5m
+          labels:
+            severity: critical
+            cluster: {{ .Values.cluster.name }}
+          annotations:
+            summary: "Low WAL disk space"
+            description: "WAL volume {{ "{{ $labels.persistentvolumeclaim }}" }} is running low on space. Risk of replication failure."
+
+        - alert: TimescaleDBTableBloat
+          expr: |
+            pg_stat_user_tables_n_dead_tup{cluster_name="{{ .Values.cluster.name }}"} /
+            (pg_stat_user_tables_n_live_tup{cluster_name="{{ .Values.cluster.name }}"} + 1) > 0.2
+          for: 30m
+          labels:
+            severity: warning
+            cluster: {{ .Values.cluster.name }}
+          annotations:
+            summary: "High table bloat detected"
+            description: "Table {{ "{{ $labels.schemaname }}" }}.{{ "{{ $labels.relname }}" }} has {{ "{{ $value | humanizePercentage }}" }} dead tuples."
+
+    # -----------------------------------------------------------------------------
+    # TimescaleDB Specific Alerts
+    # -----------------------------------------------------------------------------
+    - name: timescaledb-ha.timescaledb
+      rules:
+        - alert: TimescaleDBChunkCompressionFailed
+          expr: |
+            increase(timescaledb_compression_job_errors_total{cluster_name="{{ .Values.cluster.name }}"}[1h]) > 0
+          for: 5m
+          labels:
+            severity: warning
+            cluster: {{ .Values.cluster.name }}
+          annotations:
+            summary: "TimescaleDB chunk compression failed"
+            description: "Compression job failed {{ "{{ $value }}" }} times in the last hour."
+
+        - alert: TimescaleDBRetentionPolicyFailed
+          expr: |
+            increase(timescaledb_retention_job_errors_total{cluster_name="{{ .Values.cluster.name }}"}[1h]) > 0
+          for: 5m
+          labels:
+            severity: warning
+            cluster: {{ .Values.cluster.name }}
+          annotations:
+            summary: "TimescaleDB retention policy failed"
+            description: "Retention policy job failed {{ "{{ $value }}" }} times in the last hour."
+
+        - alert: TimescaleDBContinuousAggregateStaleness
+          expr: |
+            time() - timescaledb_continuous_aggregate_last_refresh_time{cluster_name="{{ .Values.cluster.name }}"} > 3600
+          for: 15m
+          labels:
+            severity: warning
+            cluster: {{ .Values.cluster.name }}
+          annotations:
+            summary: "Stale continuous aggregate"
+            description: "Continuous aggregate {{ "{{ $labels.view_name }}" }} has not been refreshed for over an hour."
+
+    # -----------------------------------------------------------------------------
+    # Backup Alerts
+    # -----------------------------------------------------------------------------
+    {{- if .Values.backup.enabled }}
+    - name: timescaledb-ha.backup
+      rules:
+        - alert: TimescaleDBBackupFailed
+          expr: |
+            time() - pgbackrest_last_full_backup_time{cluster_name="{{ .Values.cluster.name }}"} > 604800
+          for: 1h
+          labels:
+            severity: critical
+            cluster: {{ .Values.cluster.name }}
+          annotations:
+            summary: "TimescaleDB backup overdue"
+            description: "No successful full backup in the last 7 days for cluster {{ .Values.cluster.name }}."
+
+        - alert: TimescaleDBWALArchiveFailing
+          expr: |
+            rate(pg_stat_archiver_failed_count{cluster_name="{{ .Values.cluster.name }}"}[5m]) > 0
+          for: 10m
+          labels:
+            severity: warning
+            cluster: {{ .Values.cluster.name }}
+          annotations:
+            summary: "WAL archive failing"
+            description: "WAL archival is failing on {{ "{{ $labels.pod }}" }}. Point-in-time recovery may be compromised."
+
+        - alert: TimescaleDBArchiveLagHigh
+          expr: |
+            pg_stat_archiver_archived_count{cluster_name="{{ .Values.cluster.name }}"} - pg_stat_archiver_failed_count{cluster_name="{{ .Values.cluster.name }}"} < 0
+          for: 30m
+          labels:
+            severity: warning
+            cluster: {{ .Values.cluster.name }}
+          annotations:
+            summary: "High WAL archive lag"
+            description: "WAL archive is falling behind on {{ "{{ $labels.pod }}" }}."
+    {{- end }}
+
+    # -----------------------------------------------------------------------------
+    # Resource Alerts
+    # -----------------------------------------------------------------------------
+    - name: timescaledb-ha.resources
+      rules:
+        - alert: TimescaleDBHighCPU
+          expr: |
+            rate(container_cpu_usage_seconds_total{container="timescaledb", pod=~"{{ include "timescaledb-ha.fullname" . }}.*"}[5m]) > 0.9
+          for: 15m
+          labels:
+            severity: warning
+            cluster: {{ .Values.cluster.name }}
+          annotations:
+            summary: "High CPU usage on TimescaleDB pod"
+            description: "Pod {{ "{{ $labels.pod }}" }} is using {{ "{{ $value | humanizePercentage }}" }} CPU."
+
+        - alert: TimescaleDBHighMemory
+          expr: |
+            container_memory_usage_bytes{container="timescaledb", pod=~"{{ include "timescaledb-ha.fullname" . }}.*"} /
+            container_spec_memory_limit_bytes{container="timescaledb", pod=~"{{ include "timescaledb-ha.fullname" . }}.*"} > 0.9
+          for: 10m
+          labels:
+            severity: warning
+            cluster: {{ .Values.cluster.name }}
+          annotations:
+            summary: "High memory usage on TimescaleDB pod"
+            description: "Pod {{ "{{ $labels.pod }}" }} is using {{ "{{ $value | humanizePercentage }}" }} of memory limit."
+
+        - alert: TimescaleDBOOMKilled
+          expr: |
+            kube_pod_container_status_last_terminated_reason{container="timescaledb", pod=~"{{ include "timescaledb-ha.fullname" . }}.*", reason="OOMKilled"} == 1
+          for: 1m
+          labels:
+            severity: critical
+            cluster: {{ .Values.cluster.name }}
+          annotations:
+            summary: "TimescaleDB container OOM killed"
+            description: "Container {{ "{{ $labels.container }}" }} in pod {{ "{{ $labels.pod }}" }} was OOM killed."
+
+  {{- with .Values.metrics.prometheusRule.rules }}
+  # Custom rules from values
+    - name: timescaledb-ha.custom
+      rules:
+        {{- toYaml . | nindent 8 }}
+  {{- end }}
+{{- end }}

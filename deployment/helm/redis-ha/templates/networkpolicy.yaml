@@ -1,0 +1,104 @@
+{{- if .Values.networkPolicy.enabled }}
+apiVersion: {{ include "redis-ha.networkPolicy.apiVersion" . }}
+kind: NetworkPolicy
+metadata:
+  name: {{ include "redis-ha.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "redis-ha.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "redis-ha.selectorLabels" . | nindent 6 }}
+  policyTypes:
+    - Ingress
+    - Egress
+
+  ingress:
+    # Allow Redis traffic from pods with allowed labels
+    - ports:
+        - port: {{ .Values.redis.port }}
+          protocol: TCP
+      from:
+        # Allow traffic from same namespace
+        - podSelector: {}
+        {{- if .Values.networkPolicy.allowedLabels }}
+        # Allow traffic from pods with specific labels
+        - podSelector:
+            matchLabels:
+              {{- toYaml .Values.networkPolicy.allowedLabels | nindent 14 }}
+        {{- end }}
+
+    {{- if .Values.sentinel.enabled }}
+    # Allow Sentinel traffic from pods
+    - ports:
+        - port: {{ .Values.sentinel.port }}
+          protocol: TCP
+      from:
+        - podSelector: {}
+        {{- if .Values.networkPolicy.allowedLabels }}
+        - podSelector:
+            matchLabels:
+              {{- toYaml .Values.networkPolicy.allowedLabels | nindent 14 }}
+        {{- end }}
+    {{- end }}
+
+    {{- if .Values.exporter.enabled }}
+    # Allow metrics scraping (Prometheus)
+    - ports:
+        - port: {{ .Values.exporter.port }}
+          protocol: TCP
+      from:
+        # Allow from monitoring namespace (prometheus-operator)
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+        # Allow from same namespace
+        - podSelector: {}
+    {{- end }}
+
+    # Allow inter-pod communication for replication
+    - ports:
+        - port: {{ .Values.redis.port }}
+          protocol: TCP
+        {{- if .Values.sentinel.enabled }}
+        - port: {{ .Values.sentinel.port }}
+          protocol: TCP
+        {{- end }}
+      from:
+        - podSelector:
+            matchLabels:
+              {{- include "redis-ha.selectorLabels" . | nindent 14 }}
+
+    {{- with .Values.networkPolicy.additionalRules }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+
+  egress:
+    # Allow DNS resolution
+    - ports:
+        - port: 53
+          protocol: UDP
+        - port: 53
+          protocol: TCP
+      to: []
+
+    # Allow inter-pod communication for replication
+    - ports:
+        - port: {{ .Values.redis.port }}
+          protocol: TCP
+        {{- if .Values.sentinel.enabled }}
+        - port: {{ .Values.sentinel.port }}
+          protocol: TCP
+        {{- end }}
+      to:
+        - podSelector:
+            matchLabels:
+              {{- include "redis-ha.selectorLabels" . | nindent 14 }}
+
+    # Allow communication with Kubernetes API (for DNS resolution)
+    - ports:
+        - port: 443
+          protocol: TCP
+      to: []
+{{- end }}

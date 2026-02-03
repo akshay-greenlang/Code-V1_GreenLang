@@ -1,0 +1,109 @@
+{{/*
+GreenLang MLflow Helm Chart - PrometheusRule for Alerts
+*/}}
+
+{{- if and .Values.monitoring .Values.monitoring.enabled .Values.monitoring.prometheusRule.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ include "mlflow.fullname" . }}-alerts
+  namespace: {{ .Values.namespace.name }}
+  labels:
+    {{- include "mlflow.labels" . | nindent 4 }}
+    {{- with .Values.monitoring.prometheusRule.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  groups:
+    - name: mlflow.availability
+      interval: 30s
+      rules:
+        {{- if .Values.monitoring.prometheusRule.rules }}
+        {{- toYaml .Values.monitoring.prometheusRule.rules | nindent 8 }}
+        {{- else }}
+        - alert: MLflowDown
+          expr: up{job=~".*mlflow.*"} == 0
+          for: 2m
+          labels:
+            severity: critical
+            team: mlops
+          annotations:
+            summary: "MLflow is down"
+            description: "MLflow tracking server has been down for more than 2 minutes"
+
+        - alert: MLflowHighErrorRate
+          expr: |
+            sum(rate(mlflow_http_requests_total{status=~"5.."}[5m])) by (instance)
+            /
+            sum(rate(mlflow_http_requests_total[5m])) by (instance) > 0.05
+          for: 5m
+          labels:
+            severity: critical
+            team: mlops
+          annotations:
+            summary: "MLflow high error rate"
+            description: "MLflow error rate is {{ $value | humanizePercentage }}"
+
+        - alert: MLflowHighLatency
+          expr: |
+            histogram_quantile(0.95, sum(rate(mlflow_http_request_duration_seconds_bucket[5m])) by (le)) > 5
+          for: 10m
+          labels:
+            severity: warning
+            team: mlops
+          annotations:
+            summary: "MLflow P95 latency is high"
+            description: "MLflow P95 latency is {{ $value | humanizeDuration }}"
+
+        - alert: MLflowPodDown
+          expr: |
+            kube_deployment_status_replicas_available{deployment=~".*mlflow.*"} < 2
+          for: 5m
+          labels:
+            severity: critical
+            team: mlops
+          annotations:
+            summary: "MLflow has fewer than 2 replicas"
+            description: "MLflow tracking server has only {{ $value }} available replicas"
+
+        - alert: MLflowHighMemoryUsage
+          expr: |
+            sum(container_memory_working_set_bytes{pod=~".*mlflow.*", container!=""}) by (pod)
+            /
+            sum(kube_pod_container_resource_limits{pod=~".*mlflow.*", resource="memory"}) by (pod) > 0.9
+          for: 10m
+          labels:
+            severity: warning
+            team: mlops
+          annotations:
+            summary: "MLflow high memory usage"
+            description: "MLflow pod {{ $labels.pod }} memory usage is above 90%"
+        {{- end }}
+
+    - name: mlflow.recording
+      interval: 30s
+      rules:
+        - record: mlflow:request_rate:5m
+          expr: sum(rate(mlflow_http_requests_total[5m])) by (method, path, status)
+
+        - record: mlflow:error_rate:5m
+          expr: |
+            sum(rate(mlflow_http_requests_total{status=~"5.."}[5m]))
+            /
+            sum(rate(mlflow_http_requests_total[5m])) * 100
+
+        - record: mlflow:latency_p95:5m
+          expr: histogram_quantile(0.95, sum(rate(mlflow_http_request_duration_seconds_bucket[5m])) by (le))
+
+        - record: mlflow:latency_p99:5m
+          expr: histogram_quantile(0.99, sum(rate(mlflow_http_request_duration_seconds_bucket[5m])) by (le))
+
+        - record: mlflow:experiments_total
+          expr: sum(mlflow_experiments_total)
+
+        - record: mlflow:runs_total
+          expr: sum(mlflow_runs_total)
+
+        - record: mlflow:models_total
+          expr: sum(mlflow_registered_models_total)
+{{- end }}

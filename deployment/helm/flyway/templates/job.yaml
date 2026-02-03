@@ -1,0 +1,399 @@
+{{/*
+=============================================================================
+GreenLang Flyway Migration Job Template
+=============================================================================
+*/}}
+
+{{- $fullName := include "flyway.fullname" . -}}
+{{- $labels := include "flyway.labels" . -}}
+{{- $selectorLabels := include "flyway.selectorLabels" . -}}
+
+# =============================================================================
+# Migration Job
+# =============================================================================
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ $fullName }}-migrate{{ if .Values.job.nameSuffix }}-{{ .Values.job.nameSuffix }}{{ end }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- $labels | nindent 4 }}
+    app.kubernetes.io/component: migration
+  annotations:
+    description: "Flyway database migration job for GreenLang"
+    {{- if .Values.job.hooks.enabled }}
+    helm.sh/hook: pre-upgrade,pre-install
+    helm.sh/hook-weight: "{{ .Values.job.hooks.weight }}"
+    helm.sh/hook-delete-policy: {{ .Values.job.hooks.deletePolicy }}
+    {{- end }}
+spec:
+  backoffLimit: {{ .Values.job.backoffLimit }}
+  activeDeadlineSeconds: {{ .Values.job.activeDeadlineSeconds }}
+  ttlSecondsAfterFinished: {{ .Values.job.ttlSecondsAfterFinished }}
+
+  template:
+    metadata:
+      labels:
+        {{- $selectorLabels | nindent 8 }}
+        app.kubernetes.io/component: migration
+      annotations:
+        {{- toYaml .Values.podAnnotations | nindent 8 }}
+    spec:
+      restartPolicy: Never
+
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+      securityContext:
+        {{- toYaml .Values.securityContext.pod | nindent 8 }}
+
+      {{- if .Values.serviceAccount.create }}
+      serviceAccountName: {{ .Values.serviceAccount.name }}
+      {{- end }}
+
+      # Init container to wait for database
+      initContainers:
+        - name: wait-for-postgres
+          image: "{{ .Values.initImage.repository }}:{{ .Values.initImage.tag }}"
+          imagePullPolicy: {{ .Values.initImage.pullPolicy }}
+          command:
+            - /bin/sh
+            - -c
+            - |
+              echo "Waiting for PostgreSQL to be ready..."
+              until pg_isready -h $PGHOST -p $PGPORT -U $PGUSER; do
+                echo "PostgreSQL is unavailable - sleeping"
+                sleep 2
+              done
+              echo "PostgreSQL is ready!"
+          env:
+            - name: PGHOST
+              value: {{ .Values.database.host | quote }}
+            - name: PGPORT
+              value: {{ .Values.database.port | quote }}
+            - name: PGUSER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.existingSecret | default (printf "%s-credentials" $fullName) }}
+                  key: {{ .Values.secrets.usernameKey }}
+          resources:
+            {{- toYaml .Values.resources.initContainer | nindent 12 }}
+          securityContext:
+            {{- toYaml .Values.securityContext.container | nindent 12 }}
+
+      containers:
+        - name: flyway
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+
+          command:
+            - flyway
+          args:
+            - -url=$(FLYWAY_URL)
+            - -user=$(FLYWAY_USER)
+            - -password=$(FLYWAY_PASSWORD)
+            - -locations={{ join "," .Values.migration.locations }}
+            - -configFiles=/flyway/conf/flyway.conf
+            - -validateOnMigrate={{ .Values.migration.validateOnMigrate }}
+            - -baselineOnMigrate={{ .Values.migration.baselineOnMigrate }}
+            - -outOfOrder={{ .Values.migration.outOfOrder }}
+            - info
+            - migrate
+            - info
+
+          env:
+            # Database connection
+            - name: FLYWAY_URL
+              value: {{ include "flyway.jdbcUrl" . | quote }}
+            - name: FLYWAY_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.existingSecret | default (printf "%s-credentials" $fullName) }}
+                  key: {{ .Values.secrets.usernameKey }}
+            - name: FLYWAY_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.existingSecret | default (printf "%s-credentials" $fullName) }}
+                  key: {{ .Values.secrets.passwordKey }}
+
+            # Environment-specific placeholders
+            - name: ENVIRONMENT
+              value: {{ .Values.global.environment | quote }}
+            - name: RETENTION_DAYS
+              value: {{ .Values.timescaledb.retentionDays | quote }}
+            - name: COMPRESSION_AFTER_DAYS
+              value: {{ .Values.timescaledb.compressionAfterDays | quote }}
+            - name: CHUNK_INTERVAL
+              value: {{ .Values.timescaledb.chunkInterval | quote }}
+
+            {{- if .Values.aws.existingSecret }}
+            # AWS credentials
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.aws.existingSecret }}
+                  key: access_key_id
+                  optional: true
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.aws.existingSecret }}
+                  key: secret_access_key
+                  optional: true
+            {{- end }}
+            - name: AWS_REGION
+              value: {{ .Values.aws.region | quote }}
+
+            {{- with .Values.extraEnv }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+
+          volumeMounts:
+            - name: flyway-config
+              mountPath: /flyway/conf
+              readOnly: true
+            - name: flyway-sql
+              mountPath: /flyway/sql
+              readOnly: true
+            {{- with .Values.extraVolumeMounts }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+
+          resources:
+            {{- toYaml .Values.resources.flyway | nindent 12 }}
+
+          securityContext:
+            {{- toYaml .Values.securityContext.container | nindent 12 }}
+
+      volumes:
+        - name: flyway-config
+          configMap:
+            name: {{ $fullName }}-config
+        - name: flyway-sql
+          configMap:
+            name: {{ .Values.sqlMigrations.configMap.name | default (printf "%s-sql" $fullName) }}
+        {{- with .Values.extraVolumes }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+{{- if .Values.additionalJobs.validate.enabled }}
+---
+# =============================================================================
+# Validation Job
+# =============================================================================
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ $fullName }}-validate{{ if .Values.job.nameSuffix }}-{{ .Values.job.nameSuffix }}{{ end }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- $labels | nindent 4 }}
+    app.kubernetes.io/component: validation
+  annotations:
+    description: "Flyway validation job - does not apply migrations"
+spec:
+  backoffLimit: {{ .Values.additionalJobs.validate.backoffLimit }}
+  activeDeadlineSeconds: {{ .Values.additionalJobs.validate.activeDeadlineSeconds }}
+  ttlSecondsAfterFinished: 3600
+
+  template:
+    metadata:
+      labels:
+        {{- $selectorLabels | nindent 8 }}
+        app.kubernetes.io/component: validation
+    spec:
+      restartPolicy: Never
+      securityContext:
+        {{- toYaml .Values.securityContext.pod | nindent 8 }}
+
+      {{- if .Values.serviceAccount.create }}
+      serviceAccountName: {{ .Values.serviceAccount.name }}
+      {{- end }}
+
+      containers:
+        - name: flyway
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - flyway
+          args:
+            - -url=$(FLYWAY_URL)
+            - -user=$(FLYWAY_USER)
+            - -password=$(FLYWAY_PASSWORD)
+            - -locations={{ join "," .Values.migration.locations }}
+            - -configFiles=/flyway/conf/flyway.conf
+            - validate
+          env:
+            - name: FLYWAY_URL
+              value: {{ include "flyway.jdbcUrl" . | quote }}
+            - name: FLYWAY_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.existingSecret | default (printf "%s-credentials" $fullName) }}
+                  key: {{ .Values.secrets.usernameKey }}
+            - name: FLYWAY_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.existingSecret | default (printf "%s-credentials" $fullName) }}
+                  key: {{ .Values.secrets.passwordKey }}
+            - name: ENVIRONMENT
+              value: {{ .Values.global.environment | quote }}
+            - name: RETENTION_DAYS
+              value: {{ .Values.timescaledb.retentionDays | quote }}
+            - name: COMPRESSION_AFTER_DAYS
+              value: {{ .Values.timescaledb.compressionAfterDays | quote }}
+            - name: CHUNK_INTERVAL
+              value: {{ .Values.timescaledb.chunkInterval | quote }}
+          volumeMounts:
+            - name: flyway-config
+              mountPath: /flyway/conf
+              readOnly: true
+            - name: flyway-sql
+              mountPath: /flyway/sql
+              readOnly: true
+          resources:
+            {{- toYaml .Values.resources.flyway | nindent 12 }}
+          securityContext:
+            {{- toYaml .Values.securityContext.container | nindent 12 }}
+
+      volumes:
+        - name: flyway-config
+          configMap:
+            name: {{ $fullName }}-config
+        - name: flyway-sql
+          configMap:
+            name: {{ .Values.sqlMigrations.configMap.name | default (printf "%s-sql" $fullName) }}
+
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}
+
+{{- if .Values.additionalJobs.dryRun.enabled }}
+---
+# =============================================================================
+# Dry Run Job
+# =============================================================================
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ $fullName }}-dryrun{{ if .Values.job.nameSuffix }}-{{ .Values.job.nameSuffix }}{{ end }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- $labels | nindent 4 }}
+    app.kubernetes.io/component: dryrun
+  annotations:
+    description: "Flyway dry run job - shows pending migrations without applying"
+spec:
+  backoffLimit: {{ .Values.additionalJobs.dryRun.backoffLimit }}
+  activeDeadlineSeconds: {{ .Values.additionalJobs.dryRun.activeDeadlineSeconds }}
+  ttlSecondsAfterFinished: 3600
+
+  template:
+    metadata:
+      labels:
+        {{- $selectorLabels | nindent 8 }}
+        app.kubernetes.io/component: dryrun
+    spec:
+      restartPolicy: Never
+      securityContext:
+        {{- toYaml .Values.securityContext.pod | nindent 8 }}
+
+      {{- if .Values.serviceAccount.create }}
+      serviceAccountName: {{ .Values.serviceAccount.name }}
+      {{- end }}
+
+      containers:
+        - name: flyway
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - /bin/sh
+            - -c
+            - |
+              echo "=== Current Migration Status ==="
+              flyway -url=$FLYWAY_URL -user=$FLYWAY_USER -password=$FLYWAY_PASSWORD \
+                     -locations={{ join "," .Values.migration.locations }} \
+                     -configFiles=/flyway/conf/flyway.conf \
+                     info
+
+              echo ""
+              echo "=== Pending Migrations ==="
+              flyway -url=$FLYWAY_URL -user=$FLYWAY_USER -password=$FLYWAY_PASSWORD \
+                     -locations={{ join "," .Values.migration.locations }} \
+                     -configFiles=/flyway/conf/flyway.conf \
+                     info -pending
+
+              echo ""
+              echo "=== Validation Result ==="
+              flyway -url=$FLYWAY_URL -user=$FLYWAY_USER -password=$FLYWAY_PASSWORD \
+                     -locations={{ join "," .Values.migration.locations }} \
+                     -configFiles=/flyway/conf/flyway.conf \
+                     validate
+
+              echo ""
+              echo "DRY RUN COMPLETE - No migrations were applied"
+          env:
+            - name: FLYWAY_URL
+              value: {{ include "flyway.jdbcUrl" . | quote }}
+            - name: FLYWAY_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.existingSecret | default (printf "%s-credentials" $fullName) }}
+                  key: {{ .Values.secrets.usernameKey }}
+            - name: FLYWAY_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.existingSecret | default (printf "%s-credentials" $fullName) }}
+                  key: {{ .Values.secrets.passwordKey }}
+            - name: ENVIRONMENT
+              value: {{ .Values.global.environment | quote }}
+            - name: RETENTION_DAYS
+              value: {{ .Values.timescaledb.retentionDays | quote }}
+            - name: COMPRESSION_AFTER_DAYS
+              value: {{ .Values.timescaledb.compressionAfterDays | quote }}
+            - name: CHUNK_INTERVAL
+              value: {{ .Values.timescaledb.chunkInterval | quote }}
+          volumeMounts:
+            - name: flyway-config
+              mountPath: /flyway/conf
+              readOnly: true
+            - name: flyway-sql
+              mountPath: /flyway/sql
+              readOnly: true
+          resources:
+            {{- toYaml .Values.resources.flyway | nindent 12 }}
+          securityContext:
+            {{- toYaml .Values.securityContext.container | nindent 12 }}
+
+      volumes:
+        - name: flyway-config
+          configMap:
+            name: {{ $fullName }}-config
+        - name: flyway-sql
+          configMap:
+            name: {{ .Values.sqlMigrations.configMap.name | default (printf "%s-sql" $fullName) }}
+
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

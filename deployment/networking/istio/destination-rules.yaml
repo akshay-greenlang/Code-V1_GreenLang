@@ -1,0 +1,480 @@
+# Istio Destination Rules for GreenLang
+# INFRA-001: Load balancing and connection policies
+#
+# Destination Rules define policies that apply to traffic intended for a service after routing
+
+---
+# API Service Destination Rule
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: greenlang-api
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: greenlang-api
+    app.kubernetes.io/component: networking
+    app.kubernetes.io/part-of: greenlang
+spec:
+  host: greenlang-api.greenlang.svc.cluster.local
+  trafficPolicy:
+    # Connection pool settings
+    connectionPool:
+      tcp:
+        maxConnections: 100
+        connectTimeout: 10s
+        tcpKeepalive:
+          time: 7200s
+          interval: 75s
+          probes: 10
+      http:
+        h2UpgradePolicy: UPGRADE
+        http1MaxPendingRequests: 100
+        http2MaxRequests: 1000
+        maxRequestsPerConnection: 100
+        maxRetries: 3
+        idleTimeout: 60s
+        useClientProtocol: false
+
+    # Load balancing settings
+    loadBalancer:
+      simple: LEAST_REQUEST
+      localityLbSetting:
+        enabled: true
+        failover:
+          - from: us-east-1a
+            to: us-east-1b
+          - from: us-east-1b
+            to: us-east-1c
+          - from: us-east-1c
+            to: us-east-1a
+
+    # Circuit breaker (outlier detection)
+    outlierDetection:
+      consecutive5xxErrors: 5
+      consecutiveGatewayErrors: 5
+      interval: 10s
+      baseEjectionTime: 30s
+      maxEjectionPercent: 50
+      minHealthPercent: 30
+      splitExternalLocalOriginErrors: true
+      consecutiveLocalOriginFailures: 5
+
+    # TLS settings (mTLS)
+    tls:
+      mode: ISTIO_MUTUAL
+
+    # Port-level settings
+    portLevelSettings:
+      - port:
+          number: 8000
+        connectionPool:
+          http:
+            h2UpgradePolicy: UPGRADE
+        loadBalancer:
+          simple: ROUND_ROBIN
+
+  # Subsets for canary deployments
+  subsets:
+    - name: stable
+      labels:
+        version: stable
+      trafficPolicy:
+        loadBalancer:
+          simple: LEAST_REQUEST
+
+    - name: canary
+      labels:
+        version: canary
+      trafficPolicy:
+        loadBalancer:
+          simple: ROUND_ROBIN
+        connectionPool:
+          http:
+            http1MaxPendingRequests: 10
+            http2MaxRequests: 100
+
+    - name: v2
+      labels:
+        version: v2
+      trafficPolicy:
+        loadBalancer:
+          simple: LEAST_REQUEST
+
+    - name: shadow
+      labels:
+        version: shadow
+      trafficPolicy:
+        connectionPool:
+          http:
+            http1MaxPendingRequests: 10
+            http2MaxRequests: 50
+
+---
+# Web Application Destination Rule
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: greenlang-web
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: greenlang-web
+    app.kubernetes.io/component: networking
+    app.kubernetes.io/part-of: greenlang
+spec:
+  host: greenlang-web.greenlang.svc.cluster.local
+  trafficPolicy:
+    connectionPool:
+      tcp:
+        maxConnections: 200
+        connectTimeout: 5s
+      http:
+        h2UpgradePolicy: DO_NOT_UPGRADE
+        http1MaxPendingRequests: 200
+        http2MaxRequests: 500
+        maxRequestsPerConnection: 50
+        maxRetries: 2
+        idleTimeout: 120s
+
+    loadBalancer:
+      simple: ROUND_ROBIN
+      localityLbSetting:
+        enabled: true
+
+    outlierDetection:
+      consecutive5xxErrors: 3
+      interval: 5s
+      baseEjectionTime: 15s
+      maxEjectionPercent: 30
+
+    tls:
+      mode: ISTIO_MUTUAL
+
+  subsets:
+    - name: stable
+      labels:
+        version: stable
+
+    - name: canary
+      labels:
+        version: canary
+
+---
+# Admin Portal Destination Rule
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: greenlang-admin
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: greenlang-admin
+    app.kubernetes.io/component: networking
+    app.kubernetes.io/part-of: greenlang
+spec:
+  host: greenlang-admin.greenlang.svc.cluster.local
+  trafficPolicy:
+    connectionPool:
+      tcp:
+        maxConnections: 50
+        connectTimeout: 10s
+      http:
+        http1MaxPendingRequests: 50
+        http2MaxRequests: 100
+        maxRequestsPerConnection: 20
+        maxRetries: 2
+        idleTimeout: 300s
+
+    loadBalancer:
+      simple: ROUND_ROBIN
+      consistentHash:
+        httpCookie:
+          name: greenlang-admin-session
+          ttl: 3600s
+
+    outlierDetection:
+      consecutive5xxErrors: 5
+      interval: 10s
+      baseEjectionTime: 60s
+      maxEjectionPercent: 50
+
+    tls:
+      mode: ISTIO_MUTUAL
+
+  subsets:
+    - name: stable
+      labels:
+        version: stable
+
+---
+# Worker Service Destination Rule
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: greenlang-worker
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: greenlang-worker
+    app.kubernetes.io/component: networking
+    app.kubernetes.io/part-of: greenlang
+spec:
+  host: greenlang-worker.greenlang.svc.cluster.local
+  trafficPolicy:
+    connectionPool:
+      tcp:
+        maxConnections: 50
+        connectTimeout: 30s
+        tcpKeepalive:
+          time: 7200s
+          interval: 75s
+      http:
+        http1MaxPendingRequests: 20
+        http2MaxRequests: 50
+        maxRequestsPerConnection: 10
+        maxRetries: 1
+        idleTimeout: 600s
+
+    loadBalancer:
+      simple: ROUND_ROBIN
+
+    outlierDetection:
+      consecutive5xxErrors: 10
+      interval: 30s
+      baseEjectionTime: 120s
+      maxEjectionPercent: 20
+
+    tls:
+      mode: ISTIO_MUTUAL
+
+  subsets:
+    - name: default
+      labels:
+        app: greenlang-worker
+
+---
+# gRPC Service Destination Rule
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: greenlang-grpc
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: greenlang-grpc
+    app.kubernetes.io/component: networking
+    app.kubernetes.io/part-of: greenlang
+spec:
+  host: greenlang-grpc.greenlang.svc.cluster.local
+  trafficPolicy:
+    connectionPool:
+      tcp:
+        maxConnections: 100
+        connectTimeout: 5s
+      http:
+        h2UpgradePolicy: UPGRADE
+        http1MaxPendingRequests: 50
+        http2MaxRequests: 500
+        maxRequestsPerConnection: 0  # Unlimited for gRPC streaming
+        maxRetries: 3
+        idleTimeout: 0s  # No timeout for streaming
+
+    loadBalancer:
+      simple: LEAST_REQUEST
+
+    outlierDetection:
+      consecutive5xxErrors: 5
+      consecutiveGatewayErrors: 5
+      interval: 10s
+      baseEjectionTime: 30s
+      maxEjectionPercent: 30
+
+    tls:
+      mode: ISTIO_MUTUAL
+
+  subsets:
+    - name: stable
+      labels:
+        version: stable
+
+---
+# Database Proxy Destination Rule
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: greenlang-db-proxy
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: greenlang-db-proxy
+    app.kubernetes.io/component: networking
+    app.kubernetes.io/part-of: greenlang
+spec:
+  host: greenlang-db-proxy.greenlang.svc.cluster.local
+  trafficPolicy:
+    connectionPool:
+      tcp:
+        maxConnections: 100
+        connectTimeout: 5s
+        tcpKeepalive:
+          time: 600s
+          interval: 60s
+          probes: 5
+
+    loadBalancer:
+      simple: ROUND_ROBIN
+
+    outlierDetection:
+      consecutive5xxErrors: 3
+      interval: 5s
+      baseEjectionTime: 60s
+      maxEjectionPercent: 50
+
+    tls:
+      mode: ISTIO_MUTUAL
+
+---
+# Redis Cache Destination Rule
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: greenlang-redis
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: greenlang-redis
+    app.kubernetes.io/component: networking
+    app.kubernetes.io/part-of: greenlang
+spec:
+  host: greenlang-redis.greenlang.svc.cluster.local
+  trafficPolicy:
+    connectionPool:
+      tcp:
+        maxConnections: 200
+        connectTimeout: 2s
+        tcpKeepalive:
+          time: 300s
+          interval: 30s
+          probes: 5
+
+    loadBalancer:
+      simple: RANDOM
+
+    outlierDetection:
+      consecutive5xxErrors: 3
+      interval: 5s
+      baseEjectionTime: 30s
+      maxEjectionPercent: 30
+
+    tls:
+      mode: ISTIO_MUTUAL
+
+---
+# External OpenAI API Destination Rule
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: external-openai-api
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: external-openai-api
+    app.kubernetes.io/component: networking
+    app.kubernetes.io/part-of: greenlang
+spec:
+  host: api.openai.com
+  trafficPolicy:
+    connectionPool:
+      tcp:
+        maxConnections: 50
+        connectTimeout: 10s
+      http:
+        http1MaxPendingRequests: 25
+        http2MaxRequests: 100
+        maxRequestsPerConnection: 10
+        maxRetries: 2
+        idleTimeout: 120s
+
+    loadBalancer:
+      simple: ROUND_ROBIN
+
+    outlierDetection:
+      consecutive5xxErrors: 3
+      consecutiveGatewayErrors: 3
+      interval: 30s
+      baseEjectionTime: 60s
+      maxEjectionPercent: 100
+
+    tls:
+      mode: SIMPLE
+      sni: api.openai.com
+
+---
+# External Anthropic API Destination Rule
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: external-anthropic-api
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: external-anthropic-api
+    app.kubernetes.io/component: networking
+    app.kubernetes.io/part-of: greenlang
+spec:
+  host: api.anthropic.com
+  trafficPolicy:
+    connectionPool:
+      tcp:
+        maxConnections: 50
+        connectTimeout: 10s
+      http:
+        http1MaxPendingRequests: 25
+        http2MaxRequests: 100
+        maxRequestsPerConnection: 10
+        maxRetries: 2
+        idleTimeout: 120s
+
+    loadBalancer:
+      simple: ROUND_ROBIN
+
+    outlierDetection:
+      consecutive5xxErrors: 3
+      consecutiveGatewayErrors: 3
+      interval: 30s
+      baseEjectionTime: 60s
+      maxEjectionPercent: 100
+
+    tls:
+      mode: SIMPLE
+      sni: api.anthropic.com
+
+---
+# Global Default Destination Rule
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: global-default
+  namespace: istio-system
+  labels:
+    app.kubernetes.io/name: global-default
+    app.kubernetes.io/component: networking
+    app.kubernetes.io/part-of: greenlang
+spec:
+  host: "*.greenlang.svc.cluster.local"
+  trafficPolicy:
+    connectionPool:
+      tcp:
+        maxConnections: 100
+        connectTimeout: 10s
+      http:
+        http1MaxPendingRequests: 50
+        http2MaxRequests: 100
+        maxRequestsPerConnection: 50
+        maxRetries: 3
+
+    loadBalancer:
+      simple: ROUND_ROBIN
+      localityLbSetting:
+        enabled: true
+
+    outlierDetection:
+      consecutive5xxErrors: 5
+      interval: 10s
+      baseEjectionTime: 30s
+      maxEjectionPercent: 50
+
+    tls:
+      mode: ISTIO_MUTUAL

@@ -1,0 +1,135 @@
+# INFRA-001: Allow Ingress Controller Network Policy
+# Allows NGINX ingress controller to route traffic to application pods
+# Essential for external access to services
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-ingress-controller
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: network-policy
+    security.greenlang.io/policy-type: allow-ingress
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: greenlang-app
+  policyTypes:
+    - Ingress
+  ingress:
+    # Allow traffic from NGINX ingress controller
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 8000
+
+---
+# Allow ingress to staging
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-ingress-controller
+  namespace: greenlang-staging
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: network-policy
+    security.greenlang.io/policy-type: allow-ingress
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: greenlang-app
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 8000
+
+---
+# Allow ingress to dev
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-ingress-controller
+  namespace: greenlang-dev
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: network-policy
+    security.greenlang.io/policy-type: allow-ingress
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: greenlang-app
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 8000
+
+---
+# Allow external traffic to ingress controller
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-external-to-ingress
+  namespace: ingress-nginx
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: network-policy
+    security.greenlang.io/policy-type: allow-ingress
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: ingress-nginx
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Allow external traffic on HTTP/HTTPS ports
+    - from: []
+      ports:
+        - protocol: TCP
+          port: 80
+        - protocol: TCP
+          port: 443
+  egress:
+    # Allow ingress controller to reach backend services
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              app.kubernetes.io/part-of: greenlang
+      ports:
+        - protocol: TCP
+          port: 8000
+    # Allow access to monitoring namespace
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+      ports:
+        - protocol: TCP
+          port: 3000  # Grafana
+        - protocol: TCP
+          port: 9090  # Prometheus

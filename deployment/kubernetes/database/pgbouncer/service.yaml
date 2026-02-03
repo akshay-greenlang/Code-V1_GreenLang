@@ -1,0 +1,174 @@
+# PgBouncer Services for GreenLang
+# Provides ClusterIP and Headless services for connection pooling
+# Connection string: postgresql://user:pass@pgbouncer.greenlang-database:5432/greenlang
+---
+# ClusterIP Service - Main service for application connections
+apiVersion: v1
+kind: Service
+metadata:
+  name: pgbouncer
+  namespace: greenlang-database
+  labels:
+    app: pgbouncer
+    app.kubernetes.io/name: pgbouncer
+    app.kubernetes.io/component: connection-pooler
+    app.kubernetes.io/part-of: greenlang
+  annotations:
+    description: "ClusterIP service for PgBouncer connection pooling"
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9127"
+spec:
+  type: ClusterIP
+  selector:
+    app: pgbouncer
+  ports:
+    # PostgreSQL/PgBouncer port
+    - name: pgbouncer
+      port: 5432
+      targetPort: 5432
+      protocol: TCP
+    # Prometheus metrics port
+    - name: metrics
+      port: 9127
+      targetPort: 9127
+      protocol: TCP
+  # Session affinity for connection persistence (optional)
+  sessionAffinity: None
+  # Internal traffic policy for performance
+  internalTrafficPolicy: Local
+
+---
+# Headless Service - For direct pod access and StatefulSet-like behavior
+apiVersion: v1
+kind: Service
+metadata:
+  name: pgbouncer-headless
+  namespace: greenlang-database
+  labels:
+    app: pgbouncer
+    app.kubernetes.io/name: pgbouncer
+    app.kubernetes.io/component: connection-pooler
+    app.kubernetes.io/part-of: greenlang
+  annotations:
+    description: "Headless service for direct PgBouncer pod access"
+    # Disable load balancing for headless service
+    service.alpha.kubernetes.io/tolerate-unready-endpoints: "true"
+spec:
+  type: ClusterIP
+  clusterIP: None
+  selector:
+    app: pgbouncer
+  ports:
+    - name: pgbouncer
+      port: 5432
+      targetPort: 5432
+      protocol: TCP
+    - name: metrics
+      port: 9127
+      targetPort: 9127
+      protocol: TCP
+  # Publish not-ready endpoints for monitoring
+  publishNotReadyAddresses: true
+
+---
+# External Service (optional) - For external access via LoadBalancer
+# Uncomment if external access is needed
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: pgbouncer-external
+#   namespace: greenlang-database
+#   labels:
+#     app: pgbouncer
+#     app.kubernetes.io/name: pgbouncer
+#   annotations:
+#     description: "External LoadBalancer service for PgBouncer"
+#     # Cloud provider specific annotations
+#     # AWS: service.beta.kubernetes.io/aws-load-balancer-internal: "true"
+#     # GCP: cloud.google.com/load-balancer-type: "Internal"
+#     # Azure: service.beta.kubernetes.io/azure-load-balancer-internal: "true"
+# spec:
+#   type: LoadBalancer
+#   selector:
+#     app: pgbouncer
+#   ports:
+#     - name: pgbouncer
+#       port: 5432
+#       targetPort: 5432
+#       protocol: TCP
+#   # Restrict external access to specific CIDRs
+#   loadBalancerSourceRanges:
+#     - 10.0.0.0/8
+#     - 172.16.0.0/12
+#     - 192.168.0.0/16
+
+---
+# Network Policy - Restrict access to PgBouncer
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: pgbouncer-network-policy
+  namespace: greenlang-database
+  labels:
+    app: pgbouncer
+spec:
+  podSelector:
+    matchLabels:
+      app: pgbouncer
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Allow connections from GreenLang application namespaces
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              app.kubernetes.io/part-of: greenlang
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/part-of: greenlang
+      ports:
+        - protocol: TCP
+          port: 5432
+    # Allow Prometheus scraping
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+        - podSelector:
+            matchLabels:
+              app: prometheus
+      ports:
+        - protocol: TCP
+          port: 9127
+    # Allow admin access from specific namespace
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: greenlang-admin
+      ports:
+        - protocol: TCP
+          port: 5432
+  egress:
+    # Allow connections to PostgreSQL
+    - to:
+        - podSelector:
+            matchLabels:
+              app: postgresql
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: postgresql
+      ports:
+        - protocol: TCP
+          port: 5432
+    # Allow DNS resolution
+    - to:
+        - namespaceSelector: {}
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53

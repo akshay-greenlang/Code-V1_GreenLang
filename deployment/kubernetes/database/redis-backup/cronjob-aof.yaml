@@ -1,0 +1,322 @@
+# Redis AOF Backup CronJob
+# Runs every hour to backup and rotate AOF files
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: redis-backup-aof
+  namespace: greenlang
+  labels:
+    app: redis
+    component: backup
+    backup-type: aof
+    app.kubernetes.io/name: redis-backup
+    app.kubernetes.io/component: cronjob-aof
+spec:
+  # Run every hour at minute 30
+  schedule: "30 * * * *"
+
+  # Concurrency policy - don't run concurrent backups
+  concurrencyPolicy: Forbid
+
+  # Keep history of completed/failed jobs
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+
+  # Deadline for starting job (5 minutes)
+  startingDeadlineSeconds: 300
+
+  # Suspend cronjob (set to true to pause backups)
+  suspend: false
+
+  jobTemplate:
+    metadata:
+      labels:
+        app: redis
+        component: backup
+        backup-type: aof
+    spec:
+      # Job timeout (20 minutes)
+      activeDeadlineSeconds: 1200
+
+      # Retry failed jobs
+      backoffLimit: 2
+
+      # TTL for completed jobs (1 hour)
+      ttlSecondsAfterFinished: 3600
+
+      template:
+        metadata:
+          labels:
+            app: redis
+            component: backup
+            backup-type: aof
+          annotations:
+            prometheus.io/scrape: "true"
+            prometheus.io/port: "9090"
+        spec:
+          serviceAccountName: redis-backup-sa
+          restartPolicy: OnFailure
+
+          # Security context
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            fsGroup: 1000
+
+          # Init container to wait for Redis
+          initContainers:
+            - name: wait-for-redis
+              image: redis:7.2-alpine
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  until redis-cli -h $REDIS_HOST -p $REDIS_PORT -a $REDIS_PASSWORD ping | grep -q PONG; do
+                    echo "Waiting for Redis to be ready..."
+                    sleep 5
+                  done
+                  echo "Redis is ready"
+              env:
+                - name: REDIS_HOST
+                  valueFrom:
+                    configMapKeyRef:
+                      name: redis-backup-config
+                      key: REDIS_HOST
+                - name: REDIS_PORT
+                  valueFrom:
+                    configMapKeyRef:
+                      name: redis-backup-config
+                      key: REDIS_PORT
+                - name: REDIS_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: redis-backup-credentials
+                      key: REDIS_PASSWORD
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop:
+                    - ALL
+              resources:
+                requests:
+                  memory: "32Mi"
+                  cpu: "50m"
+                limits:
+                  memory: "64Mi"
+                  cpu: "100m"
+
+          containers:
+            - name: backup-aof
+              image: greenlang/redis-backup:latest
+              imagePullPolicy: Always
+
+              command:
+                - /bin/bash
+                - -c
+                - |
+                  set -euo pipefail
+
+                  TIMESTAMP=$(date -u +%Y%m%d_%H%M%S)
+                  BACKUP_NAME="redis_aof_${TIMESTAMP}"
+                  LOCAL_BACKUP_DIR="/backup"
+                  S3_PATH="s3://${S3_BUCKET}/${S3_PREFIX}/aof"
+
+                  log() {
+                      local level="$1"
+                      shift
+                      echo "{\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"level\":\"$level\",\"component\":\"aof-backup\",\"message\":\"$*\"}"
+                  }
+
+                  cleanup() {
+                      log "INFO" "Cleaning up temporary files"
+                      rm -f "${LOCAL_BACKUP_DIR}"/*.aof "${LOCAL_BACKUP_DIR}"/*.gz 2>/dev/null || true
+                  }
+                  trap cleanup EXIT
+
+                  log "INFO" "Starting AOF backup: ${BACKUP_NAME}"
+
+                  # 1. Trigger BGREWRITEAOF to compact AOF
+                  log "INFO" "Triggering BGREWRITEAOF"
+                  redis-cli -h "$REDIS_HOST" -p "$REDIS_PORT" -a "$REDIS_PASSWORD" BGREWRITEAOF || true
+
+                  # 2. Wait for BGREWRITEAOF to complete (with timeout)
+                  log "INFO" "Waiting for BGREWRITEAOF to complete"
+                  local start_time=$(date +%s)
+                  local timeout=300
+                  while true; do
+                      local current_time=$(date +%s)
+                      local elapsed=$((current_time - start_time))
+
+                      if [ $elapsed -gt $timeout ]; then
+                          log "WARN" "BGREWRITEAOF timeout, proceeding with current AOF"
+                          break
+                      fi
+
+                      local aof_rewrite=$(redis-cli -h "$REDIS_HOST" -p "$REDIS_PORT" -a "$REDIS_PASSWORD" INFO persistence | grep aof_rewrite_in_progress | cut -d: -f2 | tr -d '\r')
+                      if [ "$aof_rewrite" = "0" ]; then
+                          log "INFO" "BGREWRITEAOF completed"
+                          break
+                      fi
+
+                      sleep 5
+                  done
+
+                  # 3. Copy AOF file(s)
+                  log "INFO" "Copying AOF files to backup directory"
+
+                  # Check if using AOF manifest (Redis 7+) or single file
+                  if kubectl exec -n greenlang redis-master-0 -- ls /data/appendonlydir 2>/dev/null; then
+                      # Redis 7+ with multi-part AOF
+                      kubectl exec -n greenlang redis-master-0 -- tar -cf - /data/appendonlydir | tar -xf - -C "${LOCAL_BACKUP_DIR}/"
+                      tar -czf "${LOCAL_BACKUP_DIR}/${BACKUP_NAME}.tar.gz" -C "${LOCAL_BACKUP_DIR}" appendonlydir
+                      BACKUP_FILE="${LOCAL_BACKUP_DIR}/${BACKUP_NAME}.tar.gz"
+                  else
+                      # Legacy single AOF file
+                      kubectl exec -n greenlang redis-master-0 -- cat /data/appendonly.aof > "${LOCAL_BACKUP_DIR}/${BACKUP_NAME}.aof"
+
+                      # Compress
+                      if [ "$COMPRESSION_ENABLED" = "true" ]; then
+                          log "INFO" "Compressing AOF backup"
+                          gzip -9 "${LOCAL_BACKUP_DIR}/${BACKUP_NAME}.aof"
+                          BACKUP_FILE="${LOCAL_BACKUP_DIR}/${BACKUP_NAME}.aof.gz"
+                      else
+                          BACKUP_FILE="${LOCAL_BACKUP_DIR}/${BACKUP_NAME}.aof"
+                      fi
+                  fi
+
+                  # 4. Verify file size
+                  local file_size=$(stat -c%s "$BACKUP_FILE")
+                  log "INFO" "AOF backup file size: ${file_size} bytes"
+
+                  # 5. Generate checksum
+                  local checksum=$(sha256sum "$BACKUP_FILE" | cut -d' ' -f1)
+                  echo "$checksum" > "${BACKUP_FILE}.sha256"
+                  log "INFO" "Backup checksum: ${checksum}"
+
+                  # 6. Upload to S3
+                  log "INFO" "Uploading AOF backup to S3"
+                  local s3_args=""
+                  if [ "$ENCRYPTION_ENABLED" = "true" ]; then
+                      s3_args="--sse AES256"
+                  fi
+
+                  aws s3 cp "$BACKUP_FILE" "${S3_PATH}/$(basename $BACKUP_FILE)" $s3_args
+                  aws s3 cp "${BACKUP_FILE}.sha256" "${S3_PATH}/$(basename $BACKUP_FILE).sha256" $s3_args
+
+                  # 7. Cleanup old AOF backups (keep only last 24 hours worth)
+                  log "INFO" "Cleaning up AOF backups older than ${RETENTION_DAYS} day(s)"
+                  local cutoff_date=$(date -u -d "-${RETENTION_DAYS} days" +%Y%m%d)
+                  aws s3 ls "${S3_PATH}/" | while read -r line; do
+                      local file_date=$(echo "$line" | awk '{print $4}' | grep -oP '\d{8}' | head -1)
+                      if [ -n "$file_date" ] && [ "$file_date" -lt "$cutoff_date" ]; then
+                          local file_name=$(echo "$line" | awk '{print $4}')
+                          log "INFO" "Deleting old AOF backup: ${file_name}"
+                          aws s3 rm "${S3_PATH}/${file_name}"
+                      fi
+                  done
+
+                  log "INFO" "AOF backup completed successfully: ${BACKUP_NAME}"
+
+              env:
+                # Redis connection
+                - name: REDIS_HOST
+                  valueFrom:
+                    configMapKeyRef:
+                      name: redis-backup-config
+                      key: REDIS_HOST
+                - name: REDIS_PORT
+                  valueFrom:
+                    configMapKeyRef:
+                      name: redis-backup-config
+                      key: REDIS_PORT
+                - name: REDIS_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: redis-backup-credentials
+                      key: REDIS_PASSWORD
+
+                # S3 configuration
+                - name: S3_BUCKET
+                  valueFrom:
+                    configMapKeyRef:
+                      name: redis-backup-config
+                      key: S3_BUCKET
+                - name: S3_REGION
+                  valueFrom:
+                    configMapKeyRef:
+                      name: redis-backup-config
+                      key: S3_REGION
+                - name: S3_PREFIX
+                  valueFrom:
+                    configMapKeyRef:
+                      name: redis-backup-config
+                      key: S3_PREFIX
+                - name: AWS_ACCESS_KEY_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: redis-backup-credentials
+                      key: AWS_ACCESS_KEY_ID
+                - name: AWS_SECRET_ACCESS_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: redis-backup-credentials
+                      key: AWS_SECRET_ACCESS_KEY
+
+                # Backup settings
+                - name: RETENTION_DAYS
+                  valueFrom:
+                    configMapKeyRef:
+                      name: redis-backup-config
+                      key: AOF_RETENTION_DAYS
+                - name: COMPRESSION_ENABLED
+                  valueFrom:
+                    configMapKeyRef:
+                      name: redis-backup-config
+                      key: COMPRESSION_ENABLED
+                - name: ENCRYPTION_ENABLED
+                  valueFrom:
+                    configMapKeyRef:
+                      name: redis-backup-config
+                      key: ENCRYPTION_ENABLED
+                - name: LOG_LEVEL
+                  valueFrom:
+                    configMapKeyRef:
+                      name: redis-backup-config
+                      key: LOG_LEVEL
+
+              volumeMounts:
+                - name: backup-data
+                  mountPath: /backup
+                - name: tmp
+                  mountPath: /tmp
+
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop:
+                    - ALL
+
+              resources:
+                requests:
+                  memory: "256Mi"
+                  cpu: "200m"
+                limits:
+                  memory: "512Mi"
+                  cpu: "500m"
+
+          volumes:
+            - name: backup-data
+              emptyDir:
+                sizeLimit: 10Gi
+            - name: tmp
+              emptyDir:
+                sizeLimit: 1Gi
+
+          # Tolerations
+          tolerations:
+            - key: "backup"
+              operator: "Equal"
+              value: "true"
+              effect: "NoSchedule"

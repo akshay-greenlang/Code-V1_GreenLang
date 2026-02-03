@@ -1,0 +1,188 @@
+{{/*
+NetworkPolicy for TimescaleDB HA cluster
+Implements zero-trust network security model
+*/}}
+{{- if .Values.networkPolicy.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "timescaledb-ha.fullname" . }}
+  namespace: {{ include "timescaledb-ha.namespace" . }}
+  labels:
+    {{- include "timescaledb-ha.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "timescaledb-ha.selectorLabels" . | nindent 6 }}
+
+  policyTypes:
+    - Ingress
+    - Egress
+
+  ingress:
+    # Allow traffic from pods in the same cluster (for Patroni and replication)
+    - from:
+        - podSelector:
+            matchLabels:
+              {{- include "timescaledb-ha.selectorLabels" . | nindent 14 }}
+      ports:
+        - protocol: TCP
+          port: 5432  # PostgreSQL
+        - protocol: TCP
+          port: 8008  # Patroni API
+        {{- if .Values.pgbouncer.enabled }}
+        - protocol: TCP
+          port: {{ .Values.pgbouncer.port }}  # PgBouncer
+        {{- end }}
+
+    # Allow traffic from allowed namespaces
+    {{- if .Values.networkPolicy.allowedNamespaces }}
+    {{- range .Values.networkPolicy.allowedNamespaces }}
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: {{ . }}
+      ports:
+        - protocol: TCP
+          port: 5432
+        {{- if $.Values.pgbouncer.enabled }}
+        - protocol: TCP
+          port: {{ $.Values.pgbouncer.port }}
+        {{- end }}
+    {{- end }}
+    {{- end }}
+
+    # Allow traffic from pods with specific labels
+    {{- if .Values.networkPolicy.allowedPodSelectors }}
+    {{- range .Values.networkPolicy.allowedPodSelectors }}
+    - from:
+        - podSelector:
+            matchLabels:
+              {{- toYaml . | nindent 14 }}
+      ports:
+        - protocol: TCP
+          port: 5432
+        {{- if $.Values.pgbouncer.enabled }}
+        - protocol: TCP
+          port: {{ $.Values.pgbouncer.port }}
+        {{- end }}
+    {{- end }}
+    {{- end }}
+
+    # Allow Prometheus to scrape metrics
+    {{- if .Values.metrics.enabled }}
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: prometheus
+      ports:
+        - protocol: TCP
+          port: {{ .Values.metrics.port }}
+        - protocol: TCP
+          port: 8008  # Patroni metrics
+    {{- end }}
+
+    # Allow Kubernetes control plane
+    - from:
+        - namespaceSelector: {}
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/component: controller
+      ports:
+        - protocol: TCP
+          port: 8008
+
+    {{- with .Values.networkPolicy.additionalIngress }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+
+  egress:
+    # Allow DNS resolution
+    - to:
+        - namespaceSelector: {}
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+
+    # Allow communication within the cluster
+    - to:
+        - podSelector:
+            matchLabels:
+              {{- include "timescaledb-ha.selectorLabels" . | nindent 14 }}
+      ports:
+        - protocol: TCP
+          port: 5432
+        - protocol: TCP
+          port: 8008
+
+    # Allow connection to Kubernetes API (for Patroni DCS)
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+      ports:
+        - protocol: TCP
+          port: 443
+
+    # Allow backup to S3 (if using AWS)
+    {{- if and .Values.backup.enabled .Values.backup.s3.enabled }}
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+      ports:
+        - protocol: TCP
+          port: 443
+    {{- end }}
+
+    {{- with .Values.networkPolicy.additionalEgress }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+{{- end }}
+
+---
+{{/*
+Additional NetworkPolicy to allow ingress from same namespace by default
+*/}}
+{{- if .Values.networkPolicy.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "timescaledb-ha.fullname" . }}-same-namespace
+  namespace: {{ include "timescaledb-ha.namespace" . }}
+  labels:
+    {{- include "timescaledb-ha.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "timescaledb-ha.selectorLabels" . | nindent 6 }}
+
+  policyTypes:
+    - Ingress
+
+  ingress:
+    # Allow all traffic from the same namespace
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: {{ include "timescaledb-ha.namespace" . }}
+      ports:
+        - protocol: TCP
+          port: 5432
+        - protocol: TCP
+          port: 8008
+        {{- if .Values.pgbouncer.enabled }}
+        - protocol: TCP
+          port: {{ .Values.pgbouncer.port }}
+        {{- end }}
+        {{- if .Values.metrics.enabled }}
+        - protocol: TCP
+          port: {{ .Values.metrics.port }}
+        {{- end }}
+{{- end }}

@@ -1,0 +1,190 @@
+{{/*
+GreenLang Agent Factory - Pod Disruption Budget Templates
+Ensures high availability during node maintenance and cluster upgrades
+*/}}
+
+{{- if .Values.podDisruptionBudget.enabled }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "greenlang-agents.fullname" . }}-api-gateway
+  namespace: {{ include "greenlang-agents.namespace" . }}
+  labels:
+    {{- include "greenlang-agents.labels" . | nindent 4 }}
+    app.kubernetes.io/component: api-gateway
+spec:
+  {{- if .Values.apiGateway.podDisruptionBudget }}
+  {{- if .Values.apiGateway.podDisruptionBudget.minAvailable }}
+  minAvailable: {{ .Values.apiGateway.podDisruptionBudget.minAvailable }}
+  {{- else if .Values.apiGateway.podDisruptionBudget.maxUnavailable }}
+  maxUnavailable: {{ .Values.apiGateway.podDisruptionBudget.maxUnavailable }}
+  {{- else }}
+  minAvailable: {{ .Values.podDisruptionBudget.minAvailable | default 2 }}
+  {{- end }}
+  {{- else }}
+  minAvailable: {{ .Values.podDisruptionBudget.minAvailable | default 2 }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "greenlang-agents.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: api-gateway
+{{- end }}
+
+{{- if and (index .Values "fuel-analyzer") (index .Values "fuel-analyzer" "enabled") .Values.podDisruptionBudget.enabled }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "greenlang-agents.fullname" . }}-fuel-analyzer
+  namespace: {{ include "greenlang-agents.namespace" . }}
+  labels:
+    {{- include "greenlang-agents.labels" . | nindent 4 }}
+    app.kubernetes.io/component: fuel-analyzer
+spec:
+  {{- if and (index .Values "fuel-analyzer" "podDisruptionBudget") (index .Values "fuel-analyzer" "podDisruptionBudget" "minAvailable") }}
+  minAvailable: {{ index .Values "fuel-analyzer" "podDisruptionBudget" "minAvailable" }}
+  {{- else }}
+  minAvailable: {{ .Values.podDisruptionBudget.minAvailable | default 2 }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "greenlang-agents.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: fuel-analyzer
+{{- end }}
+
+{{- if and (index .Values "carbon-intensity") (index .Values "carbon-intensity" "enabled") .Values.podDisruptionBudget.enabled }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "greenlang-agents.fullname" . }}-carbon-intensity
+  namespace: {{ include "greenlang-agents.namespace" . }}
+  labels:
+    {{- include "greenlang-agents.labels" . | nindent 4 }}
+    app.kubernetes.io/component: carbon-intensity
+spec:
+  {{- if and (index .Values "carbon-intensity" "podDisruptionBudget") (index .Values "carbon-intensity" "podDisruptionBudget" "minAvailable") }}
+  minAvailable: {{ index .Values "carbon-intensity" "podDisruptionBudget" "minAvailable" }}
+  {{- else }}
+  minAvailable: {{ .Values.podDisruptionBudget.minAvailable | default 2 }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "greenlang-agents.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: carbon-intensity
+{{- end }}
+
+{{- if and (index .Values "energy-performance") (index .Values "energy-performance" "enabled") .Values.podDisruptionBudget.enabled }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "greenlang-agents.fullname" . }}-energy-performance
+  namespace: {{ include "greenlang-agents.namespace" . }}
+  labels:
+    {{- include "greenlang-agents.labels" . | nindent 4 }}
+    app.kubernetes.io/component: energy-performance
+spec:
+  {{- if and (index .Values "energy-performance" "podDisruptionBudget") (index .Values "energy-performance" "podDisruptionBudget" "minAvailable") }}
+  minAvailable: {{ index .Values "energy-performance" "podDisruptionBudget" "minAvailable" }}
+  {{- else }}
+  minAvailable: {{ .Values.podDisruptionBudget.minAvailable | default 2 }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "greenlang-agents.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: energy-performance
+{{- end }}
+
+{{- if and (index .Values "eudr-compliance") (index .Values "eudr-compliance" "enabled") .Values.podDisruptionBudget.enabled }}
+---
+# EUDR Compliance - Critical PDB with higher minAvailable
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "greenlang-agents.fullname" . }}-eudr-compliance
+  namespace: {{ include "greenlang-agents.namespace" . }}
+  labels:
+    {{- include "greenlang-agents.labels" . | nindent 4 }}
+    app.kubernetes.io/component: eudr-compliance
+  annotations:
+    description: "Critical compliance agent - requires higher availability"
+spec:
+  {{- if and (index .Values "eudr-compliance" "podDisruptionBudget") (index .Values "eudr-compliance" "podDisruptionBudget" "minAvailable") }}
+  minAvailable: {{ index .Values "eudr-compliance" "podDisruptionBudget" "minAvailable" }}
+  {{- else }}
+  # Default to 3 for EUDR compliance (higher than other agents)
+  minAvailable: 3
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "greenlang-agents.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: eudr-compliance
+{{- end }}
+
+{{- if and .Values.worker .Values.worker.enabled .Values.podDisruptionBudget.enabled }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "greenlang-agents.fullname" . }}-worker
+  namespace: {{ include "greenlang-agents.namespace" . }}
+  labels:
+    {{- include "greenlang-agents.labels" . | nindent 4 }}
+    app.kubernetes.io/component: worker
+spec:
+  {{- if and .Values.worker.podDisruptionBudget .Values.worker.podDisruptionBudget.minAvailable }}
+  minAvailable: {{ .Values.worker.podDisruptionBudget.minAvailable }}
+  {{- else }}
+  minAvailable: {{ .Values.podDisruptionBudget.minAvailable | default 2 }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "greenlang-agents.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: worker
+{{- end }}
+
+{{- if and .Values.scheduler .Values.scheduler.enabled .Values.podDisruptionBudget.enabled }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "greenlang-agents.fullname" . }}-scheduler
+  namespace: {{ include "greenlang-agents.namespace" . }}
+  labels:
+    {{- include "greenlang-agents.labels" . | nindent 4 }}
+    app.kubernetes.io/component: scheduler
+spec:
+  {{- if and .Values.scheduler.podDisruptionBudget .Values.scheduler.podDisruptionBudget.minAvailable }}
+  minAvailable: {{ .Values.scheduler.podDisruptionBudget.minAvailable }}
+  {{- else }}
+  minAvailable: 1
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "greenlang-agents.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: scheduler
+{{- end }}
+
+{{- if and .Values.agentRunner .Values.agentRunner.enabled .Values.podDisruptionBudget.enabled }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "greenlang-agents.fullname" . }}-agent-runner
+  namespace: {{ include "greenlang-agents.namespace" . }}
+  labels:
+    {{- include "greenlang-agents.labels" . | nindent 4 }}
+    app.kubernetes.io/component: agent-runner
+spec:
+  {{- if and .Values.agentRunner.podDisruptionBudget .Values.agentRunner.podDisruptionBudget.minAvailable }}
+  minAvailable: {{ .Values.agentRunner.podDisruptionBudget.minAvailable }}
+  {{- else }}
+  minAvailable: {{ .Values.podDisruptionBudget.minAvailable | default 2 }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "greenlang-agents.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: agent-runner
+{{- end }}

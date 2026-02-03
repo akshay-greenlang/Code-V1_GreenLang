@@ -1,0 +1,377 @@
+# Velero Backup Storage Locations for GreenLang
+# INFRA-001: S3 Backend Configuration
+# Version: 1.0.0
+---
+# Primary Backup Storage Location - S3 Standard
+apiVersion: velero.io/v1
+kind: BackupStorageLocation
+metadata:
+  name: greenlang-backup-location
+  namespace: velero
+  labels:
+    app.kubernetes.io/name: velero
+    storage-tier: standard
+spec:
+  # AWS S3 provider
+  provider: aws
+  # Default location
+  default: true
+  # S3 bucket configuration
+  objectStorage:
+    bucket: greenlang-velero-backups
+    prefix: production
+  # AWS configuration
+  config:
+    region: us-east-1
+    # Server-side encryption
+    s3ForcePathStyle: "false"
+    # Enable checksum validation
+    checksumAlgorithm: CRC32
+  # Access mode
+  accessMode: ReadWrite
+  # Backup sync period
+  backupSyncPeriod: 1m
+  # Validation frequency
+  validationFrequency: 1h
+  # Credential configuration
+  credential:
+    name: cloud-credentials
+    key: cloud
+
+---
+# Archive Storage Location - S3 Glacier Instant Retrieval
+apiVersion: velero.io/v1
+kind: BackupStorageLocation
+metadata:
+  name: greenlang-backup-location-archive
+  namespace: velero
+  labels:
+    app.kubernetes.io/name: velero
+    storage-tier: archive
+spec:
+  # AWS S3 provider
+  provider: aws
+  # Not default (used for monthly/archive backups)
+  default: false
+  # S3 bucket configuration
+  objectStorage:
+    bucket: greenlang-velero-backups-archive
+    prefix: archive
+  # AWS configuration
+  config:
+    region: us-east-1
+    s3ForcePathStyle: "false"
+    # Storage class for cost optimization
+    storageClass: GLACIER_IR
+    checksumAlgorithm: CRC32
+  # Access mode
+  accessMode: ReadWrite
+  # Less frequent sync for archive
+  backupSyncPeriod: 6h
+  # Validation frequency
+  validationFrequency: 24h
+  # Credential configuration
+  credential:
+    name: cloud-credentials
+    key: cloud
+
+---
+# Cross-Region Backup Storage Location (DR)
+apiVersion: velero.io/v1
+kind: BackupStorageLocation
+metadata:
+  name: greenlang-backup-location-dr
+  namespace: velero
+  labels:
+    app.kubernetes.io/name: velero
+    storage-tier: disaster-recovery
+spec:
+  # AWS S3 provider
+  provider: aws
+  # Not default
+  default: false
+  # S3 bucket configuration (different region)
+  objectStorage:
+    bucket: greenlang-velero-backups-dr
+    prefix: dr-replication
+  # AWS configuration - DR region
+  config:
+    region: eu-west-1
+    s3ForcePathStyle: "false"
+    checksumAlgorithm: CRC32
+  # Access mode
+  accessMode: ReadWrite
+  # Sync period
+  backupSyncPeriod: 5m
+  # Validation frequency
+  validationFrequency: 1h
+  # Credential configuration
+  credential:
+    name: cloud-credentials
+    key: cloud
+
+---
+# Staging Environment Storage Location
+apiVersion: velero.io/v1
+kind: BackupStorageLocation
+metadata:
+  name: greenlang-backup-location-staging
+  namespace: velero
+  labels:
+    app.kubernetes.io/name: velero
+    storage-tier: staging
+    environment: staging
+spec:
+  # AWS S3 provider
+  provider: aws
+  default: false
+  # S3 bucket configuration
+  objectStorage:
+    bucket: greenlang-velero-backups
+    prefix: staging
+  # AWS configuration
+  config:
+    region: us-east-1
+    s3ForcePathStyle: "false"
+    checksumAlgorithm: CRC32
+  # Access mode
+  accessMode: ReadWrite
+  # Sync period
+  backupSyncPeriod: 5m
+  # Validation frequency
+  validationFrequency: 2h
+  # Credential configuration
+  credential:
+    name: cloud-credentials
+    key: cloud
+
+---
+# Development Environment Storage Location
+apiVersion: velero.io/v1
+kind: BackupStorageLocation
+metadata:
+  name: greenlang-backup-location-dev
+  namespace: velero
+  labels:
+    app.kubernetes.io/name: velero
+    storage-tier: development
+    environment: development
+spec:
+  # AWS S3 provider
+  provider: aws
+  default: false
+  # S3 bucket configuration
+  objectStorage:
+    bucket: greenlang-velero-backups
+    prefix: development
+  # AWS configuration
+  config:
+    region: us-east-1
+    s3ForcePathStyle: "false"
+    # Reduced durability storage class for dev
+    storageClass: STANDARD_IA
+    checksumAlgorithm: CRC32
+  # Access mode
+  accessMode: ReadWrite
+  # Less frequent sync for dev
+  backupSyncPeriod: 15m
+  # Validation frequency
+  validationFrequency: 6h
+  # Credential configuration
+  credential:
+    name: cloud-credentials
+    key: cloud
+
+---
+# S3 Bucket Configuration (Terraform reference)
+# This ConfigMap provides reference for Terraform S3 bucket setup
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: s3-bucket-configuration
+  namespace: velero
+  labels:
+    app.kubernetes.io/name: velero
+    purpose: documentation
+data:
+  terraform-example.tf: |
+    # Primary Backup Bucket
+    resource "aws_s3_bucket" "velero_backups" {
+      bucket = "greenlang-velero-backups"
+
+      tags = {
+        Name        = "GreenLang Velero Backups"
+        Environment = "production"
+        Purpose     = "kubernetes-backup"
+      }
+    }
+
+    resource "aws_s3_bucket_versioning" "velero_backups" {
+      bucket = aws_s3_bucket.velero_backups.id
+
+      versioning_configuration {
+        status = "Enabled"
+      }
+    }
+
+    resource "aws_s3_bucket_server_side_encryption_configuration" "velero_backups" {
+      bucket = aws_s3_bucket.velero_backups.id
+
+      rule {
+        apply_server_side_encryption_by_default {
+          sse_algorithm     = "aws:kms"
+          kms_master_key_id = aws_kms_key.velero_key.arn
+        }
+        bucket_key_enabled = true
+      }
+    }
+
+    resource "aws_s3_bucket_lifecycle_configuration" "velero_backups" {
+      bucket = aws_s3_bucket.velero_backups.id
+
+      rule {
+        id     = "transition-to-glacier"
+        status = "Enabled"
+
+        filter {
+          prefix = "archive/"
+        }
+
+        transition {
+          days          = 30
+          storage_class = "GLACIER_IR"
+        }
+
+        transition {
+          days          = 90
+          storage_class = "DEEP_ARCHIVE"
+        }
+
+        expiration {
+          days = 365
+        }
+      }
+
+      rule {
+        id     = "cleanup-old-versions"
+        status = "Enabled"
+
+        noncurrent_version_expiration {
+          noncurrent_days = 30
+        }
+      }
+    }
+
+    resource "aws_s3_bucket_public_access_block" "velero_backups" {
+      bucket = aws_s3_bucket.velero_backups.id
+
+      block_public_acls       = true
+      block_public_policy     = true
+      ignore_public_acls      = true
+      restrict_public_buckets = true
+    }
+
+    # KMS Key for Encryption
+    resource "aws_kms_key" "velero_key" {
+      description             = "KMS key for Velero backups encryption"
+      deletion_window_in_days = 30
+      enable_key_rotation     = true
+
+      tags = {
+        Name    = "velero-backup-key"
+        Purpose = "backup-encryption"
+      }
+    }
+
+    # IAM Policy for Velero
+    resource "aws_iam_policy" "velero" {
+      name        = "velero-backup-policy"
+      description = "Policy for Velero to access S3 and EC2 for backups"
+
+      policy = jsonencode({
+        Version = "2012-10-17"
+        Statement = [
+          {
+            Effect = "Allow"
+            Action = [
+              "ec2:DescribeVolumes",
+              "ec2:DescribeSnapshots",
+              "ec2:CreateTags",
+              "ec2:CreateVolume",
+              "ec2:CreateSnapshot",
+              "ec2:DeleteSnapshot"
+            ]
+            Resource = "*"
+          },
+          {
+            Effect = "Allow"
+            Action = [
+              "s3:GetObject",
+              "s3:DeleteObject",
+              "s3:PutObject",
+              "s3:AbortMultipartUpload",
+              "s3:ListMultipartUploadParts"
+            ]
+            Resource = [
+              "${aws_s3_bucket.velero_backups.arn}/*"
+            ]
+          },
+          {
+            Effect = "Allow"
+            Action = [
+              "s3:ListBucket"
+            ]
+            Resource = [
+              aws_s3_bucket.velero_backups.arn
+            ]
+          },
+          {
+            Effect = "Allow"
+            Action = [
+              "kms:Encrypt",
+              "kms:Decrypt",
+              "kms:GenerateDataKey"
+            ]
+            Resource = [
+              aws_kms_key.velero_key.arn
+            ]
+          }
+        ]
+      })
+    }
+
+  cross-region-replication.json: |
+    {
+      "Role": "arn:aws:iam::ACCOUNT_ID:role/velero-replication-role",
+      "Rules": [
+        {
+          "ID": "ReplicateAll",
+          "Status": "Enabled",
+          "Priority": 1,
+          "DeleteMarkerReplication": {
+            "Status": "Disabled"
+          },
+          "Filter": {
+            "Prefix": "production/"
+          },
+          "Destination": {
+            "Bucket": "arn:aws:s3:::greenlang-velero-backups-dr",
+            "ReplicationTime": {
+              "Status": "Enabled",
+              "Time": {
+                "Minutes": 15
+              }
+            },
+            "Metrics": {
+              "Status": "Enabled",
+              "EventThreshold": {
+                "Minutes": 15
+              }
+            },
+            "EncryptionConfiguration": {
+              "ReplicaKmsKeyID": "arn:aws:kms:eu-west-1:ACCOUNT_ID:key/KEY_ID"
+            }
+          }
+        }
+      ]
+    }

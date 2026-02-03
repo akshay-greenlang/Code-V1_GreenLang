@@ -1,0 +1,21 @@
+apiVersion: v2
+name: redis-ha
+description: Production-ready Redis with Sentinel high availability
+type: application
+version: 1.0.0
+appVersion: "7.2"
+keywords:
+  - redis
+  - sentinel
+  - high-availability
+  - cache
+  - database
+home: https://redis.io
+sources:
+  - https://github.com/redis/redis
+maintainers:
+  - name: GreenLang DevOps
+    email: devops@greenlang.io
+annotations:
+  artifacthub.io/license: MIT
+  artifacthub.io/category: database

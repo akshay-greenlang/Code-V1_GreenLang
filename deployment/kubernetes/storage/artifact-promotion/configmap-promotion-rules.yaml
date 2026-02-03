@@ -1,0 +1,496 @@
+# Artifact Promotion Rules ConfigMap
+# Defines promotion rules, quality gates, approval requirements, and rollback policies
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: promotion-rules
+  namespace: greenlang-storage
+  labels:
+    app.kubernetes.io/name: artifact-promotion
+    app.kubernetes.io/component: promotion-rules
+    app.kubernetes.io/part-of: greenlang-storage
+    app.kubernetes.io/managed-by: kubernetes
+data:
+  promotion-rules.yaml: |
+    # Artifact Promotion Rules Configuration
+    # Version: 1.0
+    # Last Updated: 2024-01-15
+
+    # Global settings
+    global:
+      # Enable strict mode - all gates must pass
+      strict_mode: true
+      # Default timeout for promotion jobs
+      timeout_seconds: 3600
+      # Enable audit logging
+      audit_logging: true
+      # Require approval for production promotions
+      require_production_approval: true
+
+    # Promotion environments
+    environments:
+      - name: dev
+        order: 1
+        bucket_suffix: "-dev"
+        auto_promote: true
+        approval_required: false
+
+      - name: staging
+        order: 2
+        bucket_suffix: "-staging"
+        auto_promote: false
+        approval_required: false
+
+      - name: production
+        order: 3
+        bucket_suffix: "-prod"
+        auto_promote: false
+        approval_required: true
+        approvers:
+          - role: "release-manager"
+          - role: "tech-lead"
+          - team: "platform"
+        min_approvals: 2
+        approval_timeout_hours: 48
+
+    # Artifact type definitions and rules
+    artifact_types:
+      # Docker images
+      - type: DOCKER_IMAGE
+        display_name: "Docker Images"
+        source_prefix: "images/"
+        promotion_rules:
+          dev_to_staging:
+            quality_gates:
+              - name: unit_tests_passed
+                type: test_result
+                required: true
+                source: "ci/test-results"
+                threshold: 100
+              - name: security_scan_clean
+                type: security_scan
+                required: true
+                scanner: "trivy"
+                max_critical: 0
+                max_high: 0
+              - name: lint_passed
+                type: lint_result
+                required: true
+              - name: build_successful
+                type: build_status
+                required: true
+            auto_promote: true
+            notify_on_promotion: true
+
+          staging_to_production:
+            quality_gates:
+              - name: integration_tests_passed
+                type: test_result
+                required: true
+                source: "ci/integration-results"
+                threshold: 100
+              - name: e2e_tests_passed
+                type: test_result
+                required: true
+                source: "ci/e2e-results"
+                threshold: 95
+              - name: security_scan_clean
+                type: security_scan
+                required: true
+                scanner: "trivy"
+                max_critical: 0
+                max_high: 0
+                max_medium: 5
+              - name: performance_baseline
+                type: performance_test
+                required: true
+                p99_latency_ms: 500
+                throughput_min: 1000
+              - name: staging_soak_test
+                type: soak_test
+                required: true
+                min_duration_hours: 24
+                error_rate_max: 0.01
+            approval_required: true
+            min_staging_duration_hours: 48
+            notify_on_promotion: true
+            create_release_tag: true
+
+        rollback_policy:
+          auto_rollback: true
+          triggers:
+            - error_rate_threshold: 5.0
+            - latency_p99_threshold_ms: 1000
+            - crash_loop_count: 3
+          cooldown_minutes: 30
+          max_rollback_versions: 3
+
+      # Build artifacts (binaries, packages)
+      - type: BUILD_ARTIFACT
+        display_name: "Build Artifacts"
+        source_prefix: "builds/"
+        promotion_rules:
+          dev_to_staging:
+            quality_gates:
+              - name: build_successful
+                type: build_status
+                required: true
+              - name: unit_tests_passed
+                type: test_result
+                required: true
+                threshold: 100
+              - name: code_coverage
+                type: coverage
+                required: true
+                min_coverage: 80
+              - name: static_analysis_clean
+                type: static_analysis
+                required: true
+                max_issues: 0
+                severity: "critical"
+            auto_promote: false
+            notify_on_promotion: true
+
+          staging_to_production:
+            quality_gates:
+              - name: integration_tests_passed
+                type: test_result
+                required: true
+                threshold: 100
+              - name: security_scan_clean
+                type: security_scan
+                required: true
+                max_critical: 0
+                max_high: 0
+              - name: license_compliance
+                type: license_scan
+                required: true
+                blocked_licenses:
+                  - "GPL-3.0"
+                  - "AGPL-3.0"
+              - name: artifact_signed
+                type: signature_verification
+                required: true
+            approval_required: true
+            notify_on_promotion: true
+
+        rollback_policy:
+          auto_rollback: false
+          manual_approval_required: true
+
+      # ML Models
+      - type: ML_MODEL
+        display_name: "ML Models"
+        source_prefix: "models/"
+        promotion_rules:
+          dev_to_staging:
+            quality_gates:
+              - name: model_validation
+                type: ml_validation
+                required: true
+                metrics:
+                  accuracy_min: 0.90
+                  precision_min: 0.85
+                  recall_min: 0.85
+                  f1_min: 0.85
+              - name: bias_check
+                type: ml_fairness
+                required: true
+                max_disparity: 0.1
+              - name: data_drift_check
+                type: ml_drift
+                required: true
+                max_drift_score: 0.2
+            auto_promote: false
+            notify_on_promotion: true
+
+          staging_to_production:
+            quality_gates:
+              - name: a_b_test_results
+                type: ml_ab_test
+                required: true
+                min_sample_size: 10000
+                significance_level: 0.05
+                improvement_threshold: 0.01
+              - name: model_explainability
+                type: ml_explainability
+                required: true
+              - name: production_shadow_test
+                type: ml_shadow_test
+                required: true
+                min_duration_hours: 168
+                max_prediction_diff: 0.05
+            approval_required: true
+            min_staging_duration_hours: 168
+            notify_on_promotion: true
+
+        rollback_policy:
+          auto_rollback: true
+          triggers:
+            - prediction_accuracy_drop: 0.05
+            - latency_increase_percent: 50
+            - error_rate_threshold: 1.0
+          keep_previous_versions: 5
+
+      # Configuration artifacts
+      - type: CONFIG_ARTIFACT
+        display_name: "Configuration"
+        source_prefix: "configs/"
+        promotion_rules:
+          dev_to_staging:
+            quality_gates:
+              - name: config_validation
+                type: schema_validation
+                required: true
+              - name: secret_scan
+                type: secret_detection
+                required: true
+                blocked_patterns:
+                  - "password"
+                  - "api_key"
+                  - "secret"
+            auto_promote: true
+            notify_on_promotion: true
+
+          staging_to_production:
+            quality_gates:
+              - name: config_diff_review
+                type: diff_review
+                required: true
+              - name: environment_parity
+                type: env_check
+                required: true
+            approval_required: true
+            notify_on_promotion: true
+
+        rollback_policy:
+          auto_rollback: true
+          instant_rollback: true
+
+      # Report artifacts
+      - type: REPORT_ARTIFACT
+        display_name: "Reports"
+        source_prefix: "reports/"
+        promotion_rules:
+          dev_to_staging:
+            quality_gates:
+              - name: report_validation
+                type: schema_validation
+                required: true
+              - name: data_quality_check
+                type: data_quality
+                required: true
+                completeness_min: 0.99
+                accuracy_min: 0.99
+            auto_promote: false
+            notify_on_promotion: true
+
+          staging_to_production:
+            quality_gates:
+              - name: compliance_review
+                type: compliance_check
+                required: true
+                frameworks:
+                  - "CSRD"
+                  - "GHG Protocol"
+              - name: audit_trail_complete
+                type: audit_check
+                required: true
+            approval_required: true
+            approvers:
+              - role: "compliance-officer"
+              - role: "data-steward"
+            notify_on_promotion: true
+
+        rollback_policy:
+          auto_rollback: false
+          requires_compliance_approval: true
+
+    # Quality gate definitions
+    quality_gates:
+      # Test result gate
+      test_result:
+        description: "Verify test results meet threshold"
+        parameters:
+          - name: source
+            type: string
+            required: true
+          - name: threshold
+            type: number
+            default: 100
+        evaluation: |
+          passed = (test_pass_count / test_total_count) * 100 >= threshold
+
+      # Security scan gate
+      security_scan:
+        description: "Verify security scan results"
+        parameters:
+          - name: scanner
+            type: string
+            default: "trivy"
+          - name: max_critical
+            type: number
+            default: 0
+          - name: max_high
+            type: number
+            default: 0
+          - name: max_medium
+            type: number
+            default: 10
+        evaluation: |
+          passed = critical_count <= max_critical &&
+                   high_count <= max_high &&
+                   medium_count <= max_medium
+
+      # Coverage gate
+      coverage:
+        description: "Verify code coverage meets minimum"
+        parameters:
+          - name: min_coverage
+            type: number
+            default: 80
+        evaluation: |
+          passed = coverage_percent >= min_coverage
+
+      # Performance test gate
+      performance_test:
+        description: "Verify performance meets baseline"
+        parameters:
+          - name: p99_latency_ms
+            type: number
+            required: true
+          - name: throughput_min
+            type: number
+            required: true
+        evaluation: |
+          passed = p99_latency <= p99_latency_ms &&
+                   throughput >= throughput_min
+
+    # Rollback policies
+    rollback_policies:
+      # Automatic rollback configuration
+      automatic:
+        enabled: true
+        # Monitoring integration
+        monitoring:
+          prometheus_url: "http://prometheus.monitoring:9090"
+          check_interval_seconds: 30
+          evaluation_window_minutes: 5
+        # Default triggers
+        default_triggers:
+          - metric: "error_rate"
+            threshold: 5.0
+            operator: ">"
+          - metric: "p99_latency_ms"
+            threshold: 1000
+            operator: ">"
+        # Notification on rollback
+        notify_on_rollback: true
+        channels:
+          - slack
+          - pagerduty
+
+      # Manual rollback configuration
+      manual:
+        # Require approval for manual rollback
+        require_approval: false
+        # Allowed roles
+        allowed_roles:
+          - "release-manager"
+          - "tech-lead"
+          - "on-call-engineer"
+        # Audit all manual rollbacks
+        audit_required: true
+
+    # Notification configuration
+    notifications:
+      slack:
+        webhook_secret: "artifact-lifecycle-secrets"
+        webhook_key: "slack_webhook_url"
+        channels:
+          promotion: "#releases"
+          rollback: "#incidents"
+          approval_request: "#release-approvals"
+
+      email:
+        enabled: true
+        smtp_configmap: "smtp-config"
+        templates:
+          promotion: "promotion-notification"
+          rollback: "rollback-notification"
+          approval_request: "approval-request"
+
+      pagerduty:
+        enabled: true
+        routing_key_secret: "artifact-lifecycle-secrets"
+        routing_key_key: "pagerduty_routing_key"
+        severity_mapping:
+          promotion_failed: "warning"
+          rollback_triggered: "high"
+          approval_timeout: "low"
+
+    # Audit configuration
+    audit:
+      enabled: true
+      # Store audit logs
+      storage:
+        bucket: "greenlang-audit-logs"
+        prefix: "promotions/"
+      # Retention
+      retention_days: 2555  # 7 years
+      # Include in audit
+      include:
+        - promotion_request
+        - quality_gate_results
+        - approval_decisions
+        - rollback_events
+        - artifact_metadata
+
+---
+# ConfigMap for promotion environment mappings
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: promotion-environments
+  namespace: greenlang-storage
+  labels:
+    app.kubernetes.io/name: artifact-promotion
+    app.kubernetes.io/component: promotion-rules
+data:
+  environments.yaml: |
+    # Environment bucket mappings
+    environments:
+      dev:
+        buckets:
+          images: "greenlang-images-dev"
+          builds: "greenlang-builds-dev"
+          models: "greenlang-models-dev"
+          configs: "greenlang-configs-dev"
+          reports: "greenlang-reports-dev"
+        region: "us-east-1"
+        account_id: "111111111111"
+
+      staging:
+        buckets:
+          images: "greenlang-images-staging"
+          builds: "greenlang-builds-staging"
+          models: "greenlang-models-staging"
+          configs: "greenlang-configs-staging"
+          reports: "greenlang-reports-staging"
+        region: "us-east-1"
+        account_id: "222222222222"
+
+      production:
+        buckets:
+          images: "greenlang-images-prod"
+          builds: "greenlang-builds-prod"
+          models: "greenlang-models-prod"
+          configs: "greenlang-configs-prod"
+          reports: "greenlang-reports-prod"
+        region: "us-east-1"
+        account_id: "333333333333"
+        # Production-specific settings
+        cross_region_replication: true
+        replica_regions:
+          - "us-west-2"
+          - "eu-west-1"

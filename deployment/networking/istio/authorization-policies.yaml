@@ -1,0 +1,653 @@
+# Istio Authorization Policies for GreenLang
+# INFRA-001: mTLS enforcement and access control
+#
+# Authorization Policies define access control rules for workloads in the mesh
+
+---
+# Namespace-wide mTLS Strict Mode
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: default
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: default-peer-auth
+    app.kubernetes.io/component: security
+    app.kubernetes.io/part-of: greenlang
+spec:
+  mtls:
+    mode: STRICT
+
+---
+# Mesh-wide mTLS Policy
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: default
+  namespace: istio-system
+  labels:
+    app.kubernetes.io/name: mesh-peer-auth
+    app.kubernetes.io/component: security
+    app.kubernetes.io/part-of: greenlang
+spec:
+  mtls:
+    mode: STRICT
+
+---
+# Default Deny All Policy (Zero Trust)
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: deny-all
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: deny-all
+    app.kubernetes.io/component: security
+    app.kubernetes.io/part-of: greenlang
+spec:
+  {}  # Empty spec denies all traffic
+
+---
+# Allow Ingress Gateway Traffic
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-ingress-gateway
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: allow-ingress-gateway
+    app.kubernetes.io/component: security
+    app.kubernetes.io/part-of: greenlang
+spec:
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            namespaces:
+              - istio-system
+            principals:
+              - "cluster.local/ns/istio-system/sa/istio-ingressgateway-service-account"
+
+---
+# API Service Authorization Policy
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: greenlang-api-policy
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: greenlang-api-policy
+    app.kubernetes.io/component: security
+    app.kubernetes.io/part-of: greenlang
+spec:
+  selector:
+    matchLabels:
+      app: greenlang-api
+  action: ALLOW
+  rules:
+    # Allow from ingress gateway
+    - from:
+        - source:
+            namespaces:
+              - istio-system
+            principals:
+              - "cluster.local/ns/istio-system/sa/istio-ingressgateway-service-account"
+      to:
+        - operation:
+            methods:
+              - GET
+              - POST
+              - PUT
+              - PATCH
+              - DELETE
+              - OPTIONS
+            paths:
+              - "/api/*"
+              - "/health"
+              - "/ready"
+              - "/metrics"
+
+    # Allow from web frontend
+    - from:
+        - source:
+            namespaces:
+              - greenlang
+            principals:
+              - "cluster.local/ns/greenlang/sa/greenlang-web-sa"
+      to:
+        - operation:
+            methods:
+              - GET
+              - POST
+              - PUT
+              - PATCH
+              - DELETE
+            paths:
+              - "/api/*"
+
+    # Allow from admin portal
+    - from:
+        - source:
+            namespaces:
+              - greenlang
+            principals:
+              - "cluster.local/ns/greenlang/sa/greenlang-admin-sa"
+      to:
+        - operation:
+            methods:
+              - GET
+              - POST
+              - PUT
+              - PATCH
+              - DELETE
+            paths:
+              - "/api/*"
+
+    # Allow from worker service
+    - from:
+        - source:
+            namespaces:
+              - greenlang
+            principals:
+              - "cluster.local/ns/greenlang/sa/greenlang-worker-sa"
+      to:
+        - operation:
+            methods:
+              - GET
+              - POST
+            paths:
+              - "/api/internal/*"
+
+    # Allow Prometheus scraping
+    - from:
+        - source:
+            namespaces:
+              - monitoring
+      to:
+        - operation:
+            methods:
+              - GET
+            paths:
+              - "/metrics"
+            ports:
+              - "8000"
+
+---
+# Web Frontend Authorization Policy
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: greenlang-web-policy
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: greenlang-web-policy
+    app.kubernetes.io/component: security
+    app.kubernetes.io/part-of: greenlang
+spec:
+  selector:
+    matchLabels:
+      app: greenlang-web
+  action: ALLOW
+  rules:
+    # Allow from ingress gateway
+    - from:
+        - source:
+            namespaces:
+              - istio-system
+            principals:
+              - "cluster.local/ns/istio-system/sa/istio-ingressgateway-service-account"
+      to:
+        - operation:
+            methods:
+              - GET
+              - POST
+              - OPTIONS
+            paths:
+              - "/*"
+
+    # Allow Prometheus scraping
+    - from:
+        - source:
+            namespaces:
+              - monitoring
+      to:
+        - operation:
+            methods:
+              - GET
+            paths:
+              - "/metrics"
+
+---
+# Admin Portal Authorization Policy
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: greenlang-admin-policy
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: greenlang-admin-policy
+    app.kubernetes.io/component: security
+    app.kubernetes.io/part-of: greenlang
+spec:
+  selector:
+    matchLabels:
+      app: greenlang-admin
+  action: ALLOW
+  rules:
+    # Allow from ingress gateway (restricted to admin endpoints)
+    - from:
+        - source:
+            namespaces:
+              - istio-system
+            principals:
+              - "cluster.local/ns/istio-system/sa/istio-ingressgateway-service-account"
+      to:
+        - operation:
+            methods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+            paths:
+              - "/api/admin/*"
+              - "/admin/*"
+              - "/"
+              - "/static/*"
+
+    # Allow Prometheus scraping
+    - from:
+        - source:
+            namespaces:
+              - monitoring
+      to:
+        - operation:
+            methods:
+              - GET
+            paths:
+              - "/metrics"
+
+---
+# Worker Service Authorization Policy
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: greenlang-worker-policy
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: greenlang-worker-policy
+    app.kubernetes.io/component: security
+    app.kubernetes.io/part-of: greenlang
+spec:
+  selector:
+    matchLabels:
+      app: greenlang-worker
+  action: ALLOW
+  rules:
+    # Allow from API service (internal communication)
+    - from:
+        - source:
+            namespaces:
+              - greenlang
+            principals:
+              - "cluster.local/ns/greenlang/sa/greenlang-api-sa"
+      to:
+        - operation:
+            methods:
+              - POST
+            paths:
+              - "/jobs/*"
+              - "/tasks/*"
+
+    # Allow Prometheus scraping
+    - from:
+        - source:
+            namespaces:
+              - monitoring
+      to:
+        - operation:
+            methods:
+              - GET
+            paths:
+              - "/metrics"
+
+---
+# gRPC Service Authorization Policy
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: greenlang-grpc-policy
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: greenlang-grpc-policy
+    app.kubernetes.io/component: security
+    app.kubernetes.io/part-of: greenlang
+spec:
+  selector:
+    matchLabels:
+      app: greenlang-grpc
+  action: ALLOW
+  rules:
+    # Allow from ingress gateway
+    - from:
+        - source:
+            namespaces:
+              - istio-system
+            principals:
+              - "cluster.local/ns/istio-system/sa/istio-ingressgateway-service-account"
+      to:
+        - operation:
+            methods:
+              - POST
+            paths:
+              - "/greenlang.v1.*"
+              - "/grpc.health.v1.Health/*"
+
+    # Allow from internal services
+    - from:
+        - source:
+            namespaces:
+              - greenlang
+      to:
+        - operation:
+            methods:
+              - POST
+            paths:
+              - "/greenlang.v1.*"
+              - "/grpc.health.v1.Health/*"
+
+    # Allow Prometheus scraping
+    - from:
+        - source:
+            namespaces:
+              - monitoring
+      to:
+        - operation:
+            methods:
+              - GET
+            paths:
+              - "/metrics"
+
+---
+# Database Proxy Authorization Policy
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: greenlang-db-proxy-policy
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: greenlang-db-proxy-policy
+    app.kubernetes.io/component: security
+    app.kubernetes.io/part-of: greenlang
+spec:
+  selector:
+    matchLabels:
+      app: greenlang-db-proxy
+  action: ALLOW
+  rules:
+    # Allow from API service
+    - from:
+        - source:
+            namespaces:
+              - greenlang
+            principals:
+              - "cluster.local/ns/greenlang/sa/greenlang-api-sa"
+      to:
+        - operation:
+            ports:
+              - "5432"
+
+    # Allow from worker service
+    - from:
+        - source:
+            namespaces:
+              - greenlang
+            principals:
+              - "cluster.local/ns/greenlang/sa/greenlang-worker-sa"
+      to:
+        - operation:
+            ports:
+              - "5432"
+
+    # Allow from admin service
+    - from:
+        - source:
+            namespaces:
+              - greenlang
+            principals:
+              - "cluster.local/ns/greenlang/sa/greenlang-admin-sa"
+      to:
+        - operation:
+            ports:
+              - "5432"
+
+---
+# Redis Cache Authorization Policy
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: greenlang-redis-policy
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: greenlang-redis-policy
+    app.kubernetes.io/component: security
+    app.kubernetes.io/part-of: greenlang
+spec:
+  selector:
+    matchLabels:
+      app: greenlang-redis
+  action: ALLOW
+  rules:
+    # Allow from API service
+    - from:
+        - source:
+            namespaces:
+              - greenlang
+            principals:
+              - "cluster.local/ns/greenlang/sa/greenlang-api-sa"
+      to:
+        - operation:
+            ports:
+              - "6379"
+
+    # Allow from worker service
+    - from:
+        - source:
+            namespaces:
+              - greenlang
+            principals:
+              - "cluster.local/ns/greenlang/sa/greenlang-worker-sa"
+      to:
+        - operation:
+            ports:
+              - "6379"
+
+    # Allow from web service (session cache)
+    - from:
+        - source:
+            namespaces:
+              - greenlang
+            principals:
+              - "cluster.local/ns/greenlang/sa/greenlang-web-sa"
+      to:
+        - operation:
+            ports:
+              - "6379"
+
+---
+# Egress Gateway Authorization Policy
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: egress-gateway-policy
+  namespace: istio-system
+  labels:
+    app.kubernetes.io/name: egress-gateway-policy
+    app.kubernetes.io/component: security
+    app.kubernetes.io/part-of: greenlang
+spec:
+  selector:
+    matchLabels:
+      istio: egressgateway
+  action: ALLOW
+  rules:
+    # Allow from greenlang namespace
+    - from:
+        - source:
+            namespaces:
+              - greenlang
+
+---
+# Request Authentication (JWT validation)
+apiVersion: security.istio.io/v1beta1
+kind: RequestAuthentication
+metadata:
+  name: jwt-auth
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: jwt-auth
+    app.kubernetes.io/component: security
+    app.kubernetes.io/part-of: greenlang
+spec:
+  selector:
+    matchLabels:
+      app: greenlang-api
+  jwtRules:
+    - issuer: "https://auth.greenlang.io/"
+      jwksUri: "https://auth.greenlang.io/.well-known/jwks.json"
+      audiences:
+        - "api.greenlang.io"
+      forwardOriginalToken: true
+      fromHeaders:
+        - name: Authorization
+          prefix: "Bearer "
+      fromParams:
+        - access_token
+
+---
+# JWT-based Authorization Policy
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: require-jwt-api
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: require-jwt-api
+    app.kubernetes.io/component: security
+    app.kubernetes.io/part-of: greenlang
+spec:
+  selector:
+    matchLabels:
+      app: greenlang-api
+  action: ALLOW
+  rules:
+    # Allow unauthenticated access to health endpoints
+    - to:
+        - operation:
+            paths:
+              - "/api/v1/health"
+              - "/api/v1/ready"
+              - "/metrics"
+              - "/api/v1/auth/*"
+
+    # Require valid JWT for all other API endpoints
+    - from:
+        - source:
+            requestPrincipals:
+              - "https://auth.greenlang.io/*"
+      to:
+        - operation:
+            paths:
+              - "/api/*"
+      when:
+        - key: request.auth.claims[iss]
+          values:
+            - "https://auth.greenlang.io/"
+
+---
+# Admin-only Authorization Policy
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: admin-only-policy
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: admin-only-policy
+    app.kubernetes.io/component: security
+    app.kubernetes.io/part-of: greenlang
+spec:
+  selector:
+    matchLabels:
+      app: greenlang-admin
+  action: ALLOW
+  rules:
+    # Require admin role claim
+    - from:
+        - source:
+            requestPrincipals:
+              - "https://auth.greenlang.io/*"
+      to:
+        - operation:
+            paths:
+              - "/api/admin/*"
+      when:
+        - key: request.auth.claims[role]
+          values:
+            - "admin"
+            - "super_admin"
+
+---
+# Rate Limiting Config (EnvoyFilter)
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: rate-limit-filter
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: rate-limit-filter
+    app.kubernetes.io/component: security
+    app.kubernetes.io/part-of: greenlang
+spec:
+  workloadSelector:
+    labels:
+      app: greenlang-api
+  configPatches:
+    - applyTo: HTTP_FILTER
+      match:
+        context: SIDECAR_INBOUND
+        listener:
+          filterChain:
+            filter:
+              name: "envoy.filters.network.http_connection_manager"
+              subFilter:
+                name: "envoy.filters.http.router"
+      patch:
+        operation: INSERT_BEFORE
+        value:
+          name: envoy.filters.http.local_ratelimit
+          typed_config:
+            "@type": type.googleapis.com/envoy.extensions.filters.http.local_ratelimit.v3.LocalRateLimit
+            stat_prefix: http_local_rate_limiter
+            token_bucket:
+              max_tokens: 1000
+              tokens_per_fill: 100
+              fill_interval: 1s
+            filter_enabled:
+              runtime_key: local_rate_limit_enabled
+              default_value:
+                numerator: 100
+                denominator: HUNDRED
+            filter_enforced:
+              runtime_key: local_rate_limit_enforced
+              default_value:
+                numerator: 100
+                denominator: HUNDRED
+            response_headers_to_add:
+              - append: false
+                header:
+                  key: x-rate-limit-limit
+                  value: "1000"
+              - append: false
+                header:
+                  key: x-rate-limit-remaining
+                  value: "%DYNAMIC_METADATA(envoy.http.local_ratelimit:remaining)%"

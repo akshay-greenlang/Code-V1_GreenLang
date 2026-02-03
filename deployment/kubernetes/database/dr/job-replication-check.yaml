@@ -1,0 +1,474 @@
+---
+# job-replication-check.yaml
+#
+# Kubernetes CronJob for hourly replication health checks
+# Monitors replication lag and alerts when thresholds are exceeded
+#
+# Author: GreenLang Database Operations Team
+# Version: 1.0.0
+# Date: 2026-02-03
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: replication-check-scripts
+  namespace: database
+  labels:
+    app: replication-check
+    component: database-dr
+data:
+  check-replication.sh: |
+    #!/bin/bash
+    set -euo pipefail
+
+    # Configuration
+    PATRONI_CONFIG="${PATRONI_CONFIG:-/etc/patroni/patroni.yml}"
+    DB_HOST="${DB_HOST:-greenlang-db.database.svc.cluster.local}"
+    DB_PORT="${DB_PORT:-5432}"
+    DB_USER="${POSTGRES_USER:-postgres}"
+    DB_NAME="${POSTGRES_DB:-greenlang}"
+
+    # Alert thresholds
+    LAG_WARNING_BYTES="${LAG_WARNING_BYTES:-5242880}"    # 5MB
+    LAG_CRITICAL_BYTES="${LAG_CRITICAL_BYTES:-52428800}" # 50MB
+    LAG_WARNING_SECONDS="${LAG_WARNING_SECONDS:-30}"
+    LAG_CRITICAL_SECONDS="${LAG_CRITICAL_SECONDS:-120}"
+
+    # Notification
+    SLACK_WEBHOOK="${SLACK_WEBHOOK_URL:-}"
+    PAGERDUTY_KEY="${PAGERDUTY_ROUTING_KEY:-}"
+
+    # Metrics endpoint
+    PUSHGATEWAY_URL="${PUSHGATEWAY_URL:-}"
+
+    TIMESTAMP=$(date -Iseconds)
+    REPORT_FILE="/tmp/replication_check.json"
+
+    log() {
+        echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*"
+    }
+
+    send_slack() {
+        local status="$1"
+        local message="$2"
+
+        if [ -n "$SLACK_WEBHOOK" ]; then
+            local color
+            case "$status" in
+                "ok") color="good" ;;
+                "warning") color="warning" ;;
+                "critical") color="danger" ;;
+                *) color="#808080" ;;
+            esac
+
+            curl -s -X POST "$SLACK_WEBHOOK" \
+                -H 'Content-Type: application/json' \
+                -d "{
+                    \"attachments\": [{
+                        \"color\": \"$color\",
+                        \"title\": \"Replication Health Check - $status\",
+                        \"text\": \"$message\",
+                        \"fields\": [
+                            {\"title\": \"Timestamp\", \"value\": \"$TIMESTAMP\", \"short\": true}
+                        ]
+                    }]
+                }" || true
+        fi
+    }
+
+    send_pagerduty() {
+        local severity="$1"
+        local summary="$2"
+
+        if [ -n "$PAGERDUTY_KEY" ]; then
+            curl -s -X POST "https://events.pagerduty.com/v2/enqueue" \
+                -H 'Content-Type: application/json' \
+                -d "{
+                    \"routing_key\": \"$PAGERDUTY_KEY\",
+                    \"event_action\": \"trigger\",
+                    \"payload\": {
+                        \"summary\": \"$summary\",
+                        \"severity\": \"$severity\",
+                        \"source\": \"greenlang-db\",
+                        \"component\": \"replication\",
+                        \"timestamp\": \"$TIMESTAMP\"
+                    }
+                }" || true
+        fi
+    }
+
+    push_metrics() {
+        local metric_name="$1"
+        local value="$2"
+        local labels="${3:-}"
+
+        if [ -n "$PUSHGATEWAY_URL" ]; then
+            cat << EOF | curl -s --data-binary @- "$PUSHGATEWAY_URL/metrics/job/replication_check" || true
+    # TYPE $metric_name gauge
+    $metric_name{$labels} $value
+    EOF
+        fi
+    }
+
+    run_query() {
+        local query="$1"
+        PGPASSWORD="$POSTGRES_PASSWORD" psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -t -A -c "$query" 2>/dev/null
+    }
+
+    # Main check
+    log "Starting replication health check"
+
+    OVERALL_STATUS="ok"
+    ISSUES=()
+
+    # Check 1: Cluster status via Patroni
+    log "Checking cluster status..."
+    CLUSTER_STATUS=$(patronictl -c "$PATRONI_CONFIG" list -f json 2>/dev/null || echo "[]")
+
+    PRIMARY_COUNT=$(echo "$CLUSTER_STATUS" | jq '[.[] | select(.Role == "Leader")] | length')
+    TOTAL_NODES=$(echo "$CLUSTER_STATUS" | jq 'length')
+    RUNNING_NODES=$(echo "$CLUSTER_STATUS" | jq '[.[] | select(.State == "running")] | length')
+
+    if [ "$PRIMARY_COUNT" -ne 1 ]; then
+        OVERALL_STATUS="critical"
+        ISSUES+=("Primary count: $PRIMARY_COUNT (expected 1)")
+        log "CRITICAL: Primary count is $PRIMARY_COUNT"
+    fi
+
+    if [ "$RUNNING_NODES" -ne "$TOTAL_NODES" ]; then
+        if [ "$OVERALL_STATUS" != "critical" ]; then
+            OVERALL_STATUS="warning"
+        fi
+        ISSUES+=("Running nodes: $RUNNING_NODES/$TOTAL_NODES")
+        log "WARNING: Only $RUNNING_NODES of $TOTAL_NODES nodes running"
+    fi
+
+    # Check 2: Replication lag from pg_stat_replication
+    log "Checking replication lag..."
+    REPLICATION_INFO=$(run_query "
+        SELECT json_agg(row_to_json(r)) FROM (
+            SELECT
+                client_addr::text,
+                application_name,
+                state,
+                sync_state,
+                pg_wal_lsn_diff(sent_lsn, replay_lsn) AS lag_bytes,
+                EXTRACT(EPOCH FROM (now() - reply_time))::int AS lag_seconds
+            FROM pg_stat_replication
+        ) r;
+    " || echo "null")
+
+    if [ "$REPLICATION_INFO" != "null" ] && [ -n "$REPLICATION_INFO" ]; then
+        # Check each replica
+        MAX_LAG_BYTES=0
+        MAX_LAG_SECONDS=0
+
+        while read -r replica; do
+            APP_NAME=$(echo "$replica" | jq -r '.application_name // "unknown"')
+            LAG_BYTES=$(echo "$replica" | jq -r '.lag_bytes // 0')
+            LAG_SECONDS=$(echo "$replica" | jq -r '.lag_seconds // 0')
+            SYNC_STATE=$(echo "$replica" | jq -r '.sync_state // "unknown"')
+
+            # Track maximum lag
+            if [ "$LAG_BYTES" -gt "$MAX_LAG_BYTES" ]; then
+                MAX_LAG_BYTES=$LAG_BYTES
+            fi
+            if [ "$LAG_SECONDS" -gt "$MAX_LAG_SECONDS" ]; then
+                MAX_LAG_SECONDS=$LAG_SECONDS
+            fi
+
+            # Check thresholds
+            if [ "$LAG_BYTES" -gt "$LAG_CRITICAL_BYTES" ]; then
+                OVERALL_STATUS="critical"
+                ISSUES+=("$APP_NAME lag: ${LAG_BYTES} bytes (critical)")
+                log "CRITICAL: $APP_NAME has $LAG_BYTES bytes lag"
+            elif [ "$LAG_BYTES" -gt "$LAG_WARNING_BYTES" ]; then
+                if [ "$OVERALL_STATUS" == "ok" ]; then
+                    OVERALL_STATUS="warning"
+                fi
+                ISSUES+=("$APP_NAME lag: ${LAG_BYTES} bytes (warning)")
+                log "WARNING: $APP_NAME has $LAG_BYTES bytes lag"
+            else
+                log "OK: $APP_NAME lag: $LAG_BYTES bytes, sync: $SYNC_STATE"
+            fi
+
+        done < <(echo "$REPLICATION_INFO" | jq -c '.[]')
+
+        # Push metrics
+        push_metrics "postgres_replication_lag_bytes" "$MAX_LAG_BYTES" "cluster=\"greenlang-db\""
+        push_metrics "postgres_replication_lag_seconds" "$MAX_LAG_SECONDS" "cluster=\"greenlang-db\""
+    else
+        log "WARNING: No replication information available"
+        ISSUES+=("No replication connections found")
+        if [ "$OVERALL_STATUS" == "ok" ]; then
+            OVERALL_STATUS="warning"
+        fi
+    fi
+
+    # Check 3: WAL archive status
+    log "Checking WAL archive status..."
+    ARCHIVE_INFO=$(run_query "
+        SELECT
+            archived_count,
+            failed_count,
+            EXTRACT(EPOCH FROM (now() - last_archived_time))::int AS archive_age_seconds
+        FROM pg_stat_archiver;
+    " || echo "")
+
+    if [ -n "$ARCHIVE_INFO" ]; then
+        ARCHIVE_AGE=$(echo "$ARCHIVE_INFO" | cut -d'|' -f3)
+        FAILED_COUNT=$(echo "$ARCHIVE_INFO" | cut -d'|' -f2)
+
+        if [ "${ARCHIVE_AGE:-0}" -gt 300 ]; then
+            if [ "$OVERALL_STATUS" == "ok" ]; then
+                OVERALL_STATUS="warning"
+            fi
+            ISSUES+=("WAL archive delay: ${ARCHIVE_AGE}s")
+            log "WARNING: WAL archive is ${ARCHIVE_AGE}s behind"
+        fi
+
+        if [ "${FAILED_COUNT:-0}" -gt 0 ]; then
+            ISSUES+=("WAL archive failures: $FAILED_COUNT")
+            log "WARNING: $FAILED_COUNT WAL archive failures"
+        fi
+
+        push_metrics "postgres_wal_archive_age_seconds" "${ARCHIVE_AGE:-0}" "cluster=\"greenlang-db\""
+    fi
+
+    # Check 4: Replication slots
+    log "Checking replication slots..."
+    SLOT_INFO=$(run_query "
+        SELECT
+            slot_name,
+            active,
+            pg_wal_lsn_diff(pg_current_wal_lsn(), restart_lsn) AS retained_bytes
+        FROM pg_replication_slots;
+    " || echo "")
+
+    while IFS='|' read -r slot_name active retained_bytes; do
+        if [ -n "$slot_name" ]; then
+            if [ "$active" == "f" ]; then
+                if [ "$OVERALL_STATUS" == "ok" ]; then
+                    OVERALL_STATUS="warning"
+                fi
+                ISSUES+=("Inactive slot: $slot_name (retained: $retained_bytes bytes)")
+                log "WARNING: Slot $slot_name is inactive, retaining $retained_bytes bytes"
+            fi
+        fi
+    done <<< "$SLOT_INFO"
+
+    # Check 5: Synchronous replication
+    log "Checking synchronous replication..."
+    SYNC_CONFIG=$(run_query "SHOW synchronous_standby_names;" || echo "")
+
+    if [ -n "$SYNC_CONFIG" ]; then
+        SYNC_COUNT=$(run_query "SELECT count(*) FROM pg_stat_replication WHERE sync_state IN ('sync', 'quorum');" || echo "0")
+
+        if [ "${SYNC_COUNT:-0}" -eq 0 ]; then
+            OVERALL_STATUS="critical"
+            ISSUES+=("No synchronous standbys available")
+            log "CRITICAL: No synchronous standbys available"
+        else
+            log "OK: $SYNC_COUNT synchronous standbys"
+        fi
+
+        push_metrics "postgres_sync_standby_count" "${SYNC_COUNT:-0}" "cluster=\"greenlang-db\""
+    fi
+
+    # Generate report
+    cat > "$REPORT_FILE" << EOF
+    {
+        "timestamp": "$TIMESTAMP",
+        "overall_status": "$OVERALL_STATUS",
+        "cluster": {
+            "primary_count": $PRIMARY_COUNT,
+            "total_nodes": $TOTAL_NODES,
+            "running_nodes": $RUNNING_NODES
+        },
+        "replication": {
+            "max_lag_bytes": ${MAX_LAG_BYTES:-0},
+            "max_lag_seconds": ${MAX_LAG_SECONDS:-0}
+        },
+        "issues": $(printf '%s\n' "${ISSUES[@]:-}" | jq -R . | jq -s .),
+        "thresholds": {
+            "lag_warning_bytes": $LAG_WARNING_BYTES,
+            "lag_critical_bytes": $LAG_CRITICAL_BYTES
+        }
+    }
+    EOF
+
+    # Push overall status metric
+    case "$OVERALL_STATUS" in
+        "ok") STATUS_CODE=0 ;;
+        "warning") STATUS_CODE=1 ;;
+        "critical") STATUS_CODE=2 ;;
+        *) STATUS_CODE=3 ;;
+    esac
+    push_metrics "postgres_replication_health" "$STATUS_CODE" "cluster=\"greenlang-db\""
+
+    # Send notifications based on status
+    case "$OVERALL_STATUS" in
+        "critical")
+            log "CRITICAL: Replication health check failed"
+            ISSUE_LIST=$(printf ', %s' "${ISSUES[@]}")
+            send_slack "critical" "Replication health CRITICAL: ${ISSUE_LIST:2}"
+            send_pagerduty "critical" "PostgreSQL replication critical: ${ISSUE_LIST:2}"
+            exit 2
+            ;;
+        "warning")
+            log "WARNING: Replication health check has warnings"
+            ISSUE_LIST=$(printf ', %s' "${ISSUES[@]}")
+            send_slack "warning" "Replication health WARNING: ${ISSUE_LIST:2}"
+            exit 1
+            ;;
+        *)
+            log "OK: Replication health check passed"
+            # Only notify if recovering from previous issue
+            if [ -f /tmp/last_status ] && [ "$(cat /tmp/last_status)" != "ok" ]; then
+                send_slack "ok" "Replication health recovered - all checks passed"
+            fi
+            echo "ok" > /tmp/last_status
+            exit 0
+            ;;
+    esac
+
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: replication-check
+  namespace: database
+  labels:
+    app: replication-check
+    component: database-dr
+spec:
+  # Run every hour
+  schedule: "0 * * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 24
+  failedJobsHistoryLimit: 5
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      activeDeadlineSeconds: 300  # 5 minute timeout
+      template:
+        metadata:
+          labels:
+            app: replication-check
+            component: database-dr
+        spec:
+          serviceAccountName: database-admin
+          restartPolicy: OnFailure
+
+          containers:
+          - name: replication-check
+            image: postgres:14-alpine
+            command: ["/bin/bash", "/scripts/check-replication.sh"]
+
+            env:
+            - name: PATRONI_CONFIG
+              value: "/etc/patroni/patroni.yml"
+            - name: DB_HOST
+              value: "greenlang-db.database.svc.cluster.local"
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: greenlang-db-credentials
+                  key: username
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: greenlang-db-credentials
+                  key: password
+            - name: POSTGRES_DB
+              value: "greenlang"
+            - name: LAG_WARNING_BYTES
+              value: "5242880"
+            - name: LAG_CRITICAL_BYTES
+              value: "52428800"
+            - name: SLACK_WEBHOOK_URL
+              valueFrom:
+                secretKeyRef:
+                  name: slack-webhooks
+                  key: database-alerts
+                  optional: true
+            - name: PAGERDUTY_ROUTING_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: pagerduty-keys
+                  key: database
+                  optional: true
+            - name: PUSHGATEWAY_URL
+              value: "http://prometheus-pushgateway.monitoring.svc.cluster.local:9091"
+
+            volumeMounts:
+            - name: scripts
+              mountPath: /scripts
+            - name: patroni-config
+              mountPath: /etc/patroni
+
+            resources:
+              requests:
+                cpu: "50m"
+                memory: "64Mi"
+              limits:
+                cpu: "200m"
+                memory: "128Mi"
+
+          volumes:
+          - name: scripts
+            configMap:
+              name: replication-check-scripts
+              defaultMode: 0755
+          - name: patroni-config
+            configMap:
+              name: patroni-config
+
+---
+# PrometheusRule for replication alerts
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: postgres-replication-alerts
+  namespace: database
+  labels:
+    prometheus: database
+spec:
+  groups:
+  - name: postgres-replication
+    rules:
+    - alert: PostgresReplicationLagHigh
+      expr: postgres_replication_lag_bytes > 10485760
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "PostgreSQL replication lag is high"
+        description: "Replication lag is {{ $value | humanize }} bytes"
+
+    - alert: PostgresReplicationLagCritical
+      expr: postgres_replication_lag_bytes > 52428800
+      for: 2m
+      labels:
+        severity: critical
+      annotations:
+        summary: "PostgreSQL replication lag is critical"
+        description: "Replication lag is {{ $value | humanize }} bytes"
+
+    - alert: PostgresNoSyncStandby
+      expr: postgres_sync_standby_count == 0
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "No synchronous standby available"
+        description: "PostgreSQL cluster has no synchronous standbys"
+
+    - alert: PostgresReplicationHealthDegraded
+      expr: postgres_replication_health > 0
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "PostgreSQL replication health degraded"
+        description: "Replication health check reports status {{ $value }}"

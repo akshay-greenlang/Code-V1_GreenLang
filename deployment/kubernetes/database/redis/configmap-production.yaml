@@ -1,0 +1,540 @@
+# =============================================================================
+# Redis Production ConfigMap
+# =============================================================================
+# Complete production-ready Kubernetes configuration
+# Deploy: kubectl apply -f configmap-production.yaml -n greenlang
+# =============================================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: redis-production-config
+  namespace: greenlang
+  labels:
+    app: redis
+    component: primary
+    workload: production
+    app.kubernetes.io/name: redis
+    app.kubernetes.io/component: primary
+    app.kubernetes.io/part-of: greenlang
+data:
+  redis.conf: |
+    # =============================================================================
+    # Redis Production Configuration
+    # =============================================================================
+    # Complete production-ready configuration
+    # Priority: Security, reliability, performance, observability
+    # =============================================================================
+
+    # Network Configuration
+    bind 0.0.0.0
+    port 6379
+    tcp-keepalive 300
+    timeout 0
+    tcp-backlog 511
+    maxclients 10000
+    tcp-nodelay yes
+
+    # Security Configuration
+    protected-mode yes
+    # Password set via environment variable
+    # requirepass ${REDIS_PASSWORD}
+    # masterauth ${REDIS_PASSWORD}
+
+    # Memory Configuration
+    maxmemory 8gb
+    maxmemory-policy volatile-lru
+    maxmemory-samples 10
+
+    # Active Defragmentation
+    activedefrag yes
+    active-defrag-ignore-bytes 100mb
+    active-defrag-threshold-lower 10
+    active-defrag-threshold-upper 100
+    active-defrag-cycle-min 1
+    active-defrag-cycle-max 25
+    active-defrag-max-scan-fields 1000
+
+    # Jemalloc
+    jemalloc-bg-thread yes
+
+    # OOM Score Adjustment
+    oom-score-adj no
+    oom-score-adj-values 0 200 800
+
+    # RDB Persistence
+    save 900 1
+    save 300 10
+    save 60 10000
+    dbfilename dump.rdb
+    dir /data
+    stop-writes-on-bgsave-error yes
+    rdbcompression yes
+    rdbchecksum yes
+    sanitize-dump-payload clients
+
+    # AOF Persistence
+    appendonly yes
+    appendfilename "appendonly.aof"
+    appenddirname "appendonlydir"
+    appendfsync everysec
+    no-appendfsync-on-rewrite no
+    auto-aof-rewrite-percentage 100
+    auto-aof-rewrite-min-size 64mb
+    aof-load-truncated yes
+    aof-use-rdb-preamble yes
+    aof-timestamp-enabled no
+
+    # Replication
+    replica-serve-stale-data yes
+    replica-read-only yes
+    replica-ignore-maxmemory yes
+    repl-diskless-sync yes
+    repl-diskless-sync-delay 5
+    repl-diskless-sync-max-replicas 0
+    repl-diskless-load on-empty-db
+    repl-backlog-size 128mb
+    repl-backlog-ttl 3600
+    repl-timeout 60
+    repl-disable-tcp-nodelay no
+    replica-priority 100
+    min-replicas-to-write 1
+    min-replicas-max-lag 10
+
+    # Lazy Freeing
+    lazyfree-lazy-eviction yes
+    lazyfree-lazy-expire yes
+    lazyfree-lazy-server-del yes
+    replica-lazy-flush yes
+    lazyfree-lazy-user-del yes
+    lazyfree-lazy-user-flush yes
+
+    # Threading
+    io-threads 4
+    io-threads-do-reads yes
+
+    # Client Configuration
+    client-output-buffer-limit normal 0 0 0
+    client-output-buffer-limit replica 512mb 128mb 60
+    client-output-buffer-limit pubsub 64mb 16mb 60
+    client-query-buffer-limit 1gb
+    proto-max-bulk-len 512mb
+
+    # Slow Log
+    slowlog-log-slower-than 10000
+    slowlog-max-len 1024
+
+    # Latency Monitoring
+    latency-monitor-threshold 50
+
+    # Logging
+    loglevel notice
+    logfile ""
+
+    # Keyspace Notifications
+    notify-keyspace-events "Ex"
+
+    # Advanced Configuration
+    hz 10
+    dynamic-hz yes
+    active-expire-effort 1
+    hash-max-listpack-entries 512
+    hash-max-listpack-value 64
+    list-max-listpack-size -2
+    list-compress-depth 0
+    set-max-intset-entries 512
+    set-max-listpack-entries 128
+    set-max-listpack-value 64
+    zset-max-listpack-entries 128
+    zset-max-listpack-value 64
+    hll-sparse-max-bytes 3000
+    stream-node-max-bytes 4096
+    stream-node-max-entries 100
+    activerehashing yes
+    lua-time-limit 5000
+
+    # Debug (Disabled)
+    crash-log-enabled no
+    crash-memcheck-enabled no
+---
+# =============================================================================
+# Redis Secret (Template - Replace with actual values)
+# =============================================================================
+apiVersion: v1
+kind: Secret
+metadata:
+  name: redis-production-secrets
+  namespace: greenlang
+  labels:
+    app: redis
+    component: primary
+type: Opaque
+stringData:
+  # IMPORTANT: Replace with actual secure passwords
+  redis-password: "CHANGE_ME_TO_SECURE_PASSWORD"
+---
+# =============================================================================
+# Redis Production StatefulSet
+# =============================================================================
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redis-production
+  namespace: greenlang
+  labels:
+    app: redis
+    component: primary
+spec:
+  serviceName: redis-production
+  replicas: 3
+  selector:
+    matchLabels:
+      app: redis
+      component: primary
+  updateStrategy:
+    type: RollingUpdate
+  podManagementPolicy: OrderedReady
+  template:
+    metadata:
+      labels:
+        app: redis
+        component: primary
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9121"
+    spec:
+      terminationGracePeriodSeconds: 60
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                      - redis
+                  - key: component
+                    operator: In
+                    values:
+                      - primary
+              topologyKey: kubernetes.io/hostname
+      initContainers:
+        - name: init-sysctl
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              echo never > /host-sys/kernel/mm/transparent_hugepage/enabled || true
+              sysctl -w net.core.somaxconn=65535 || true
+              sysctl -w vm.overcommit_memory=1 || true
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - name: host-sys
+              mountPath: /host-sys
+        - name: init-config
+          image: redis:7.2-alpine
+          command:
+            - sh
+            - -c
+            - |
+              cp /etc/redis-config/redis.conf /data/redis.conf
+              echo "requirepass $REDIS_PASSWORD" >> /data/redis.conf
+              echo "masterauth $REDIS_PASSWORD" >> /data/redis.conf
+          env:
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: redis-production-secrets
+                  key: redis-password
+          volumeMounts:
+            - name: redis-config
+              mountPath: /etc/redis-config
+            - name: redis-data
+              mountPath: /data
+      containers:
+        - name: redis
+          image: redis:7.2-alpine
+          imagePullPolicy: IfNotPresent
+          command:
+            - redis-server
+            - /data/redis.conf
+          ports:
+            - containerPort: 6379
+              name: redis
+              protocol: TCP
+          resources:
+            requests:
+              memory: "8Gi"
+              cpu: "1000m"
+            limits:
+              memory: "10Gi"
+              cpu: "4000m"
+          env:
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: redis-production-secrets
+                  key: redis-password
+          volumeMounts:
+            - name: redis-data
+              mountPath: /data
+          livenessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - redis-cli -a $REDIS_PASSWORD ping | grep PONG
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - redis-cli -a $REDIS_PASSWORD ping | grep PONG
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            successThreshold: 1
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - sh
+                  - -c
+                  - redis-cli -a $REDIS_PASSWORD BGSAVE && sleep 10
+        - name: redis-exporter
+          image: oliver006/redis_exporter:v1.55.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 9121
+              name: metrics
+              protocol: TCP
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "100m"
+            limits:
+              memory: "128Mi"
+              cpu: "200m"
+          env:
+            - name: REDIS_ADDR
+              value: "redis://localhost:6379"
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: redis-production-secrets
+                  key: redis-password
+      volumes:
+        - name: redis-config
+          configMap:
+            name: redis-production-config
+        - name: host-sys
+          hostPath:
+            path: /sys
+  volumeClaimTemplates:
+    - metadata:
+        name: redis-data
+        labels:
+          app: redis
+          component: primary
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        storageClassName: fast-ssd
+        resources:
+          requests:
+            storage: 100Gi
+---
+# =============================================================================
+# Redis Production Headless Service
+# =============================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-production
+  namespace: greenlang
+  labels:
+    app: redis
+    component: primary
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+    - port: 6379
+      targetPort: 6379
+      protocol: TCP
+      name: redis
+    - port: 9121
+      targetPort: 9121
+      protocol: TCP
+      name: metrics
+  selector:
+    app: redis
+    component: primary
+---
+# =============================================================================
+# Redis Production Client Service
+# =============================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-production-client
+  namespace: greenlang
+  labels:
+    app: redis
+    component: primary
+spec:
+  type: ClusterIP
+  ports:
+    - port: 6379
+      targetPort: 6379
+      protocol: TCP
+      name: redis
+  selector:
+    app: redis
+    component: primary
+---
+# =============================================================================
+# Pod Disruption Budget
+# =============================================================================
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: redis-production-pdb
+  namespace: greenlang
+  labels:
+    app: redis
+    component: primary
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: redis
+      component: primary
+---
+# =============================================================================
+# Network Policy
+# =============================================================================
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: redis-production-network-policy
+  namespace: greenlang
+  labels:
+    app: redis
+    component: primary
+spec:
+  podSelector:
+    matchLabels:
+      app: redis
+      component: primary
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Allow from application pods
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/part-of: greenlang
+      ports:
+        - protocol: TCP
+          port: 6379
+    # Allow from Prometheus
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+          podSelector:
+            matchLabels:
+              app: prometheus
+      ports:
+        - protocol: TCP
+          port: 9121
+    # Allow from other Redis pods (replication)
+    - from:
+        - podSelector:
+            matchLabels:
+              app: redis
+              component: primary
+      ports:
+        - protocol: TCP
+          port: 6379
+  egress:
+    # Allow to other Redis pods (replication)
+    - to:
+        - podSelector:
+            matchLabels:
+              app: redis
+              component: primary
+      ports:
+        - protocol: TCP
+          port: 6379
+    # Allow DNS
+    - to:
+        - namespaceSelector: {}
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+---
+# =============================================================================
+# Horizontal Pod Autoscaler (Read Replicas)
+# =============================================================================
+# Note: Redis primary doesn't scale horizontally, but read replicas can
+# This HPA is for a separate read-replica deployment
+# apiVersion: autoscaling/v2
+# kind: HorizontalPodAutoscaler
+# metadata:
+#   name: redis-read-replicas-hpa
+#   namespace: greenlang
+# spec:
+#   scaleTargetRef:
+#     apiVersion: apps/v1
+#     kind: Deployment
+#     name: redis-read-replicas
+#   minReplicas: 2
+#   maxReplicas: 10
+#   metrics:
+#     - type: Resource
+#       resource:
+#         name: cpu
+#         target:
+#           type: Utilization
+#           averageUtilization: 70
+---
+# =============================================================================
+# ServiceMonitor for Prometheus Operator
+# =============================================================================
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: redis-production-monitor
+  namespace: greenlang
+  labels:
+    app: redis
+    component: primary
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: redis
+      component: primary
+  namespaceSelector:
+    matchNames:
+      - greenlang
+  endpoints:
+    - port: metrics
+      interval: 30s
+      scrapeTimeout: 10s
+      path: /metrics

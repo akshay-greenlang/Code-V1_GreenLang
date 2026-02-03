@@ -1,0 +1,527 @@
+# pgBackRest Point-in-Time Recovery (PITR) Job Template
+# Template for restoring PostgreSQL database to a specific point in time
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: pgbackrest-pitr-restore
+  namespace: greenlang-database
+  labels:
+    app.kubernetes.io/name: pgbackrest
+    app.kubernetes.io/component: restore
+    app.kubernetes.io/part-of: greenlang
+    restore-type: pitr
+  annotations:
+    description: "Point-in-time recovery job for GreenLang PostgreSQL database"
+    # Configuration annotations (update these for each restore)
+    restore/target-time: "2024-01-15 14:30:00+00"
+    restore/target-action: "promote"
+    restore/instance-name: "greenlang-postgresql-restored"
+spec:
+  # Do not retry failed restores automatically
+  backoffLimit: 0
+
+  # Active deadline for job completion (6 hours)
+  activeDeadlineSeconds: 21600
+
+  # Keep job for 24 hours after completion for debugging
+  ttlSecondsAfterFinished: 86400
+
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: pgbackrest
+        app.kubernetes.io/component: restore
+        restore-type: pitr
+      annotations:
+        restore/target-time: "2024-01-15 14:30:00+00"
+    spec:
+      serviceAccountName: pgbackrest-restore-sa
+      restartPolicy: Never
+
+      # Security context
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999
+        runAsGroup: 999
+        fsGroup: 999
+        seccompProfile:
+          type: RuntimeDefault
+
+      # Init containers for restore preparation
+      initContainers:
+        # Step 1: Validate restore parameters
+        - name: validate-restore-params
+          image: pgbackrest/pgbackrest:2.49
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/bash
+            - -c
+            - |
+              set -e
+
+              echo "=============================================="
+              echo "POINT-IN-TIME RECOVERY - PARAMETER VALIDATION"
+              echo "=============================================="
+              echo ""
+
+              # Get target time from environment
+              TARGET_TIME="${RESTORE_TARGET_TIME}"
+
+              if [ -z "$TARGET_TIME" ]; then
+                echo "ERROR: RESTORE_TARGET_TIME environment variable is not set"
+                echo "Please set the target recovery time in the job specification"
+                exit 1
+              fi
+
+              echo "Target recovery time: $TARGET_TIME"
+
+              # Validate target time format
+              if ! date -d "$TARGET_TIME" > /dev/null 2>&1; then
+                echo "ERROR: Invalid target time format: $TARGET_TIME"
+                echo "Expected format: YYYY-MM-DD HH:MM:SS+TZ (e.g., 2024-01-15 14:30:00+00)"
+                exit 1
+              fi
+
+              # Check if target time is in the past
+              TARGET_EPOCH=$(date -d "$TARGET_TIME" +%s)
+              CURRENT_EPOCH=$(date +%s)
+
+              if [ "$TARGET_EPOCH" -gt "$CURRENT_EPOCH" ]; then
+                echo "ERROR: Target time is in the future"
+                exit 1
+              fi
+
+              # Verify backup availability
+              echo ""
+              echo "Checking backup availability..."
+              pgbackrest --stanza=greenlang info --output=json > /tmp/backup-info.json
+
+              BACKUP_COUNT=$(jq '.[0].backup | length' /tmp/backup-info.json)
+
+              if [ "$BACKUP_COUNT" -eq 0 ]; then
+                echo "ERROR: No backups found in repository"
+                exit 1
+              fi
+
+              echo "Found $BACKUP_COUNT backup(s) in repository"
+
+              # Check if we have a backup before the target time
+              OLDEST_BACKUP_TIME=$(jq -r '.[0].backup[0].timestamp.start' /tmp/backup-info.json)
+              OLDEST_EPOCH=$(date -d "$OLDEST_BACKUP_TIME" +%s)
+
+              if [ "$TARGET_EPOCH" -lt "$OLDEST_EPOCH" ]; then
+                echo "ERROR: Target time ($TARGET_TIME) is before oldest backup ($OLDEST_BACKUP_TIME)"
+                exit 1
+              fi
+
+              # Check WAL archive availability
+              echo ""
+              echo "Verifying WAL archive availability..."
+
+              # List available WAL timeline
+              pgbackrest --stanza=greenlang archive-get --ls > /tmp/wal-list.txt 2>&1 || true
+
+              echo ""
+              echo "Validation completed successfully!"
+              echo "Ready to proceed with restore to: $TARGET_TIME"
+              echo ""
+
+          env:
+            - name: RESTORE_TARGET_TIME
+              value: "2024-01-15 14:30:00+00"  # Update this value
+            - name: PGBACKREST_REPO1_CIPHER_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: pgbackrest-secrets
+                  key: encryption-passphrase
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: pgbackrest-secrets
+                  key: aws-access-key-id
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: pgbackrest-secrets
+                  key: aws-secret-access-key
+
+          volumeMounts:
+            - name: pgbackrest-config
+              mountPath: /etc/pgbackrest/pgbackrest.conf
+              subPath: pgbackrest.conf
+            - name: temp-volume
+              mountPath: /tmp
+
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "200m"
+              memory: "256Mi"
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            capabilities:
+              drop:
+                - ALL
+
+        # Step 2: Prepare target directory
+        - name: prepare-restore-directory
+          image: postgres:15
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/bash
+            - -c
+            - |
+              set -e
+
+              echo "Preparing restore directory..."
+
+              RESTORE_DIR="/var/lib/postgresql/data-restored"
+
+              # Check if directory exists and is not empty
+              if [ -d "$RESTORE_DIR" ] && [ "$(ls -A $RESTORE_DIR 2>/dev/null)" ]; then
+                echo "WARNING: Restore directory is not empty"
+                echo "Contents:"
+                ls -la "$RESTORE_DIR"
+
+                if [ "${FORCE_OVERWRITE}" != "true" ]; then
+                  echo "ERROR: Set FORCE_OVERWRITE=true to proceed with overwriting"
+                  exit 1
+                fi
+
+                echo "FORCE_OVERWRITE is set, clearing directory..."
+                rm -rf "$RESTORE_DIR"/*
+              fi
+
+              # Create directory structure
+              mkdir -p "$RESTORE_DIR"
+              chmod 700 "$RESTORE_DIR"
+
+              echo "Restore directory prepared: $RESTORE_DIR"
+
+          env:
+            - name: FORCE_OVERWRITE
+              value: "false"  # Set to "true" to overwrite existing data
+
+          volumeMounts:
+            - name: restore-data
+              mountPath: /var/lib/postgresql/data-restored
+
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "200m"
+              memory: "256Mi"
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            capabilities:
+              drop:
+                - ALL
+
+      containers:
+        # Main restore container
+        - name: pgbackrest-restore
+          image: pgbackrest/pgbackrest:2.49
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/bash
+            - /scripts/restore-pitr.sh
+          env:
+            - name: RESTORE_TARGET_TIME
+              value: "2024-01-15 14:30:00+00"  # Update this value
+            - name: RESTORE_TARGET_ACTION
+              value: "promote"
+            - name: RESTORE_DIR
+              value: "/var/lib/postgresql/data-restored"
+            - name: STANZA
+              value: "greenlang"
+            - name: PGBACKREST_REPO1_CIPHER_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: pgbackrest-secrets
+                  key: encryption-passphrase
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: pgbackrest-secrets
+                  key: aws-access-key-id
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: pgbackrest-secrets
+                  key: aws-secret-access-key
+
+          volumeMounts:
+            - name: pgbackrest-config
+              mountPath: /etc/pgbackrest/pgbackrest.conf
+              subPath: pgbackrest.conf
+            - name: restore-scripts
+              mountPath: /scripts
+            - name: restore-data
+              mountPath: /var/lib/postgresql/data-restored
+            - name: pgbackrest-logs
+              mountPath: /var/log/pgbackrest
+            - name: temp-volume
+              mountPath: /tmp
+
+          resources:
+            requests:
+              cpu: "1000m"
+              memory: "2Gi"
+            limits:
+              cpu: "4000m"
+              memory: "8Gi"
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            capabilities:
+              drop:
+                - ALL
+
+        # Validation sidecar
+        - name: restore-validator
+          image: postgres:15
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/bash
+            - -c
+            - |
+              set -e
+
+              RESTORE_DIR="/var/lib/postgresql/data-restored"
+
+              echo "Waiting for restore to complete..."
+
+              # Wait for restore to finish
+              while [ ! -f "$RESTORE_DIR/recovery.signal" ] && [ ! -f "$RESTORE_DIR/standby.signal" ]; do
+                if [ -f "$RESTORE_DIR/PG_VERSION" ]; then
+                  echo "PostgreSQL data directory detected, checking for recovery signal..."
+                fi
+                sleep 30
+              done
+
+              echo "Recovery signal detected. Restore appears complete."
+
+              # Wait additional time for WAL replay
+              sleep 60
+
+              # Validate PostgreSQL can start
+              echo "Starting PostgreSQL for validation..."
+
+              # Create temporary postgresql.conf for validation
+              cat > "$RESTORE_DIR/postgresql.conf.validate" << 'PGCONF'
+              listen_addresses = 'localhost'
+              port = 5433
+              max_connections = 10
+              shared_buffers = 128MB
+              PGCONF
+
+              # Attempt to start PostgreSQL
+              pg_ctl -D "$RESTORE_DIR" -o "-c config_file=$RESTORE_DIR/postgresql.conf.validate" start || {
+                echo "ERROR: PostgreSQL failed to start"
+                exit 1
+              }
+
+              # Wait for PostgreSQL to be ready
+              sleep 10
+
+              # Run validation queries
+              echo "Running validation queries..."
+
+              psql -h localhost -p 5433 -U postgres -c "SELECT version();" || {
+                echo "ERROR: Cannot connect to restored database"
+                pg_ctl -D "$RESTORE_DIR" stop
+                exit 1
+              }
+
+              psql -h localhost -p 5433 -U postgres -c "SELECT pg_is_in_recovery();" || true
+
+              # Check for data integrity
+              psql -h localhost -p 5433 -U postgres -c "\dt" greenlang || true
+
+              # Stop PostgreSQL
+              pg_ctl -D "$RESTORE_DIR" stop
+
+              echo ""
+              echo "=============================================="
+              echo "RESTORE VALIDATION COMPLETED SUCCESSFULLY"
+              echo "=============================================="
+              echo ""
+              echo "The restored database is ready at: $RESTORE_DIR"
+              echo "To use this restore:"
+              echo "1. Stop the current PostgreSQL instance"
+              echo "2. Move or backup current data directory"
+              echo "3. Move restored data to the data directory"
+              echo "4. Start PostgreSQL"
+              echo ""
+
+          volumeMounts:
+            - name: restore-data
+              mountPath: /var/lib/postgresql/data-restored
+
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "512Mi"
+            limits:
+              cpu: "1000m"
+              memory: "1Gi"
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            capabilities:
+              drop:
+                - ALL
+
+      volumes:
+        - name: pgbackrest-config
+          configMap:
+            name: pgbackrest-config
+        - name: restore-scripts
+          configMap:
+            name: pgbackrest-restore-scripts
+            defaultMode: 0755
+        - name: restore-data
+          persistentVolumeClaim:
+            claimName: pgbackrest-restore-pvc
+        - name: pgbackrest-logs
+          emptyDir:
+            sizeLimit: 1Gi
+        - name: temp-volume
+          emptyDir:
+            sizeLimit: 1Gi
+
+      # Node affinity for restore jobs
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: node-role.kubernetes.io/database
+                    operator: Exists
+
+      # Tolerations for database nodes
+      tolerations:
+        - key: "dedicated"
+          operator: "Equal"
+          value: "database"
+          effect: "NoSchedule"
+
+---
+# ServiceAccount for restore operations
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: pgbackrest-restore-sa
+  namespace: greenlang-database
+  labels:
+    app.kubernetes.io/name: pgbackrest
+    app.kubernetes.io/component: restore
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::ACCOUNT_ID:role/pgbackrest-restore-role
+
+---
+# PVC for restore data
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pgbackrest-restore-pvc
+  namespace: greenlang-database
+  labels:
+    app.kubernetes.io/name: pgbackrest
+    app.kubernetes.io/component: restore
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: gp3
+  resources:
+    requests:
+      storage: 500Gi
+
+---
+# ConfigMap for restore scripts
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pgbackrest-restore-scripts
+  namespace: greenlang-database
+  labels:
+    app.kubernetes.io/name: pgbackrest
+    app.kubernetes.io/component: restore-scripts
+data:
+  restore-pitr.sh: |
+    #!/bin/bash
+    # Point-in-Time Recovery Script for pgBackRest
+    set -e
+
+    echo "=============================================="
+    echo "POINT-IN-TIME RECOVERY - STARTING RESTORE"
+    echo "=============================================="
+    echo ""
+    echo "Target Time: ${RESTORE_TARGET_TIME}"
+    echo "Target Action: ${RESTORE_TARGET_ACTION}"
+    echo "Restore Directory: ${RESTORE_DIR}"
+    echo "Stanza: ${STANZA}"
+    echo ""
+
+    # Start restore
+    echo "[$(date -Iseconds)] Starting pgBackRest restore..."
+
+    pgbackrest --stanza=${STANZA} restore \
+      --target="${RESTORE_TARGET_TIME}" \
+      --target-action=${RESTORE_TARGET_ACTION} \
+      --type=time \
+      --pg1-path=${RESTORE_DIR} \
+      --delta \
+      --process-max=4 \
+      --log-level-console=info \
+      --log-level-file=detail
+
+    RESTORE_STATUS=$?
+
+    if [ $RESTORE_STATUS -eq 0 ]; then
+      echo ""
+      echo "[$(date -Iseconds)] Restore completed successfully!"
+      echo ""
+
+      # Create recovery configuration
+      echo "[$(date -Iseconds)] Configuring recovery settings..."
+
+      cat >> "${RESTORE_DIR}/postgresql.auto.conf" << EOF
+
+    # Recovery configuration added by pgBackRest PITR restore
+    # Target time: ${RESTORE_TARGET_TIME}
+    restore_command = 'pgbackrest --stanza=${STANZA} archive-get %f "%p"'
+    recovery_target_time = '${RESTORE_TARGET_TIME}'
+    recovery_target_action = '${RESTORE_TARGET_ACTION}'
+    EOF
+
+      # Create recovery signal file
+      touch "${RESTORE_DIR}/recovery.signal"
+
+      echo "[$(date -Iseconds)] Recovery configuration created"
+
+      # Set permissions
+      chmod 700 "${RESTORE_DIR}"
+      chmod 600 "${RESTORE_DIR}"/*.conf 2>/dev/null || true
+
+      echo ""
+      echo "=============================================="
+      echo "RESTORE COMPLETED"
+      echo "=============================================="
+
+    else
+      echo ""
+      echo "[$(date -Iseconds)] Restore FAILED with status: $RESTORE_STATUS"
+      exit $RESTORE_STATUS
+    fi

@@ -1,0 +1,418 @@
+# PostgreSQL Prometheus Alert Rules
+# GreenLang Production Monitoring
+# These alerts cover core PostgreSQL health, performance, and replication metrics
+
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: postgresql-alerts
+  namespace: monitoring
+  labels:
+    app: postgresql
+    prometheus: greenlang
+    role: alert-rules
+spec:
+  groups:
+    - name: postgresql.availability
+      interval: 30s
+      rules:
+        # PostgreSQL instance down - Critical
+        - alert: PostgreSQLDown
+          expr: pg_up == 0
+          for: 1m
+          labels:
+            severity: critical
+            service: postgresql
+            team: database
+          annotations:
+            summary: "PostgreSQL instance is down"
+            description: "PostgreSQL instance {{ $labels.instance }} has been down for more than 1 minute."
+            runbook_url: "https://runbooks.greenlang.io/postgresql/instance-down"
+            dashboard_url: "https://grafana.greenlang.io/d/postgresql-overview"
+
+        # PostgreSQL not responding to queries
+        - alert: PostgreSQLNotResponding
+          expr: pg_static{} == 0
+          for: 2m
+          labels:
+            severity: critical
+            service: postgresql
+            team: database
+          annotations:
+            summary: "PostgreSQL is not responding to queries"
+            description: "PostgreSQL instance {{ $labels.instance }} is not responding to health check queries for more than 2 minutes."
+            runbook_url: "https://runbooks.greenlang.io/postgresql/not-responding"
+
+        # PostgreSQL exporter down
+        - alert: PostgreSQLExporterDown
+          expr: up{job=~".*postgres.*"} == 0
+          for: 5m
+          labels:
+            severity: warning
+            service: postgresql
+            team: database
+          annotations:
+            summary: "PostgreSQL exporter is down"
+            description: "PostgreSQL exporter for instance {{ $labels.instance }} has been down for more than 5 minutes. Monitoring data is unavailable."
+
+    - name: postgresql.replication
+      interval: 30s
+      rules:
+        # Replication lag warning (>1MB)
+        - alert: PostgreSQLReplicationLagHigh
+          expr: pg_replication_lag_bytes > 1048576
+          for: 5m
+          labels:
+            severity: warning
+            service: postgresql
+            team: database
+          annotations:
+            summary: "PostgreSQL replication lag is high"
+            description: "PostgreSQL replication lag on {{ $labels.instance }} is {{ $value | humanize1024 }}B, exceeding 1MB threshold for more than 5 minutes."
+            runbook_url: "https://runbooks.greenlang.io/postgresql/replication-lag"
+
+        # Replication lag critical (>10MB)
+        - alert: PostgreSQLReplicationLagCritical
+          expr: pg_replication_lag_bytes > 10485760
+          for: 5m
+          labels:
+            severity: critical
+            service: postgresql
+            team: database
+          annotations:
+            summary: "PostgreSQL replication lag is critically high"
+            description: "PostgreSQL replication lag on {{ $labels.instance }} is {{ $value | humanize1024 }}B, exceeding 10MB critical threshold for more than 5 minutes."
+            runbook_url: "https://runbooks.greenlang.io/postgresql/replication-lag-critical"
+
+        # Replication lag in seconds
+        - alert: PostgreSQLReplicationLagSeconds
+          expr: pg_replication_lag_seconds > 30
+          for: 5m
+          labels:
+            severity: critical
+            service: postgresql
+            team: database
+          annotations:
+            summary: "PostgreSQL replication lag exceeds 30 seconds"
+            description: "PostgreSQL replication on {{ $labels.instance }} is {{ $value | humanizeDuration }} behind the primary."
+            runbook_url: "https://runbooks.greenlang.io/postgresql/replication-lag-time"
+
+        # Replica disconnected
+        - alert: PostgreSQLReplicaDisconnected
+          expr: pg_stat_replication_state{state!="streaming"} == 1
+          for: 5m
+          labels:
+            severity: critical
+            service: postgresql
+            team: database
+          annotations:
+            summary: "PostgreSQL replica is not streaming"
+            description: "PostgreSQL replica {{ $labels.application_name }} on {{ $labels.instance }} is in state '{{ $labels.state }}' instead of streaming."
+            runbook_url: "https://runbooks.greenlang.io/postgresql/replica-disconnected"
+
+        # Replication slot inactive
+        - alert: PostgreSQLReplicationSlotInactive
+          expr: pg_replication_slots_active{active="false"} == 1
+          for: 10m
+          labels:
+            severity: warning
+            service: postgresql
+            team: database
+          annotations:
+            summary: "PostgreSQL replication slot is inactive"
+            description: "Replication slot {{ $labels.slot_name }} on {{ $labels.instance }} has been inactive for more than 10 minutes. This may cause WAL accumulation."
+            runbook_url: "https://runbooks.greenlang.io/postgresql/replication-slot-inactive"
+
+    - name: postgresql.connections
+      interval: 30s
+      rules:
+        # Connections approaching limit (>80%)
+        - alert: PostgreSQLConnectionsExhausted
+          expr: |
+            100 * (sum(pg_stat_activity_count) by (instance) / pg_settings_max_connections) > 80
+          for: 5m
+          labels:
+            severity: warning
+            service: postgresql
+            team: database
+          annotations:
+            summary: "PostgreSQL connections are running high"
+            description: "PostgreSQL instance {{ $labels.instance }} is using {{ printf \"%.1f\" $value }}% of available connections."
+            runbook_url: "https://runbooks.greenlang.io/postgresql/connections-high"
+
+        # Connections critical (>95%)
+        - alert: PostgreSQLConnectionsCritical
+          expr: |
+            100 * (sum(pg_stat_activity_count) by (instance) / pg_settings_max_connections) > 95
+          for: 2m
+          labels:
+            severity: critical
+            service: postgresql
+            team: database
+          annotations:
+            summary: "PostgreSQL connections nearly exhausted"
+            description: "PostgreSQL instance {{ $labels.instance }} is using {{ printf \"%.1f\" $value }}% of available connections. New connections may be rejected."
+            runbook_url: "https://runbooks.greenlang.io/postgresql/connections-critical"
+
+        # Too many idle connections
+        - alert: PostgreSQLIdleConnectionsHigh
+          expr: |
+            sum(pg_stat_activity_count{state="idle"}) by (instance) > 100
+          for: 30m
+          labels:
+            severity: warning
+            service: postgresql
+            team: database
+          annotations:
+            summary: "High number of idle PostgreSQL connections"
+            description: "PostgreSQL instance {{ $labels.instance }} has {{ $value }} idle connections. Consider using connection pooling."
+
+        # Long-running idle in transaction
+        - alert: PostgreSQLIdleInTransactionLong
+          expr: |
+            max(pg_stat_activity_max_tx_duration{state="idle in transaction"}) by (instance) > 300
+          for: 5m
+          labels:
+            severity: warning
+            service: postgresql
+            team: database
+          annotations:
+            summary: "Long-running idle in transaction"
+            description: "PostgreSQL instance {{ $labels.instance }} has connections idle in transaction for more than {{ $value | humanizeDuration }}."
+            runbook_url: "https://runbooks.greenlang.io/postgresql/idle-in-transaction"
+
+    - name: postgresql.locks
+      interval: 30s
+      rules:
+        # Deadlocks detected
+        - alert: PostgreSQLDeadlocks
+          expr: rate(pg_stat_database_deadlocks[5m]) > 0
+          for: 1m
+          labels:
+            severity: warning
+            service: postgresql
+            team: database
+          annotations:
+            summary: "PostgreSQL deadlocks detected"
+            description: "PostgreSQL database {{ $labels.datname }} on {{ $labels.instance }} is experiencing deadlocks at a rate of {{ printf \"%.2f\" $value }}/s."
+            runbook_url: "https://runbooks.greenlang.io/postgresql/deadlocks"
+
+        # High deadlock rate
+        - alert: PostgreSQLDeadlocksHigh
+          expr: rate(pg_stat_database_deadlocks[5m]) > 1
+          for: 5m
+          labels:
+            severity: critical
+            service: postgresql
+            team: database
+          annotations:
+            summary: "High PostgreSQL deadlock rate"
+            description: "PostgreSQL database {{ $labels.datname }} on {{ $labels.instance }} is experiencing a high deadlock rate of {{ printf \"%.2f\" $value }}/s."
+            runbook_url: "https://runbooks.greenlang.io/postgresql/deadlocks-high"
+
+        # Lock waits
+        - alert: PostgreSQLLockWaitsHigh
+          expr: |
+            sum(pg_locks_count{granted="false"}) by (instance) > 10
+          for: 5m
+          labels:
+            severity: warning
+            service: postgresql
+            team: database
+          annotations:
+            summary: "High number of PostgreSQL lock waits"
+            description: "PostgreSQL instance {{ $labels.instance }} has {{ $value }} queries waiting for locks."
+            runbook_url: "https://runbooks.greenlang.io/postgresql/lock-waits"
+
+    - name: postgresql.performance
+      interval: 30s
+      rules:
+        # Slow queries
+        - alert: PostgreSQLSlowQueries
+          expr: |
+            pg_stat_activity_max_tx_duration{state="active"} > 10
+          for: 5m
+          labels:
+            severity: warning
+            service: postgresql
+            team: database
+          annotations:
+            summary: "PostgreSQL slow queries detected"
+            description: "PostgreSQL instance {{ $labels.instance }} has queries running for more than {{ $value | humanizeDuration }}."
+            runbook_url: "https://runbooks.greenlang.io/postgresql/slow-queries"
+
+        # Very slow queries (>60s)
+        - alert: PostgreSQLVerySlowQueries
+          expr: |
+            pg_stat_activity_max_tx_duration{state="active"} > 60
+          for: 2m
+          labels:
+            severity: critical
+            service: postgresql
+            team: database
+          annotations:
+            summary: "PostgreSQL very slow queries detected"
+            description: "PostgreSQL instance {{ $labels.instance }} has queries running for more than {{ $value | humanizeDuration }}. Investigate immediately."
+            runbook_url: "https://runbooks.greenlang.io/postgresql/very-slow-queries"
+
+        # Cache hit ratio low (<90%)
+        - alert: PostgreSQLCacheHitRatioLow
+          expr: |
+            100 * (pg_stat_database_blks_hit / (pg_stat_database_blks_hit + pg_stat_database_blks_read)) < 90
+            and pg_stat_database_blks_read > 0
+          for: 15m
+          labels:
+            severity: warning
+            service: postgresql
+            team: database
+          annotations:
+            summary: "PostgreSQL cache hit ratio is low"
+            description: "PostgreSQL database {{ $labels.datname }} on {{ $labels.instance }} has a cache hit ratio of {{ printf \"%.1f\" $value }}%, which is below the 90% threshold."
+            runbook_url: "https://runbooks.greenlang.io/postgresql/cache-hit-ratio"
+
+        # Cache hit ratio critical (<80%)
+        - alert: PostgreSQLCacheHitRatioCritical
+          expr: |
+            100 * (pg_stat_database_blks_hit / (pg_stat_database_blks_hit + pg_stat_database_blks_read)) < 80
+            and pg_stat_database_blks_read > 0
+          for: 15m
+          labels:
+            severity: critical
+            service: postgresql
+            team: database
+          annotations:
+            summary: "PostgreSQL cache hit ratio is critically low"
+            description: "PostgreSQL database {{ $labels.datname }} on {{ $labels.instance }} has a cache hit ratio of {{ printf \"%.1f\" $value }}%. Consider increasing shared_buffers."
+            runbook_url: "https://runbooks.greenlang.io/postgresql/cache-hit-ratio-critical"
+
+        # High transaction rollback rate
+        - alert: PostgreSQLHighRollbackRate
+          expr: |
+            rate(pg_stat_database_xact_rollback[5m]) / (rate(pg_stat_database_xact_commit[5m]) + rate(pg_stat_database_xact_rollback[5m])) > 0.05
+          for: 10m
+          labels:
+            severity: warning
+            service: postgresql
+            team: database
+          annotations:
+            summary: "High PostgreSQL transaction rollback rate"
+            description: "PostgreSQL database {{ $labels.datname }} on {{ $labels.instance }} has a rollback rate of {{ printf \"%.1f\" (mulf $value 100) }}%."
+
+    - name: postgresql.storage
+      interval: 60s
+      rules:
+        # Disk space low (<10%)
+        - alert: PostgreSQLDiskSpaceLow
+          expr: |
+            (pg_database_size_bytes / pg_tablespace_size_bytes) * 100 > 90
+          for: 10m
+          labels:
+            severity: warning
+            service: postgresql
+            team: database
+          annotations:
+            summary: "PostgreSQL disk space is running low"
+            description: "PostgreSQL tablespace on {{ $labels.instance }} is {{ printf \"%.1f\" $value }}% full."
+            runbook_url: "https://runbooks.greenlang.io/postgresql/disk-space"
+
+        # Database size growing rapidly
+        - alert: PostgreSQLDatabaseGrowthRapid
+          expr: |
+            predict_linear(pg_stat_database_size_bytes[1h], 24 * 3600) > pg_stat_database_size_bytes * 1.5
+          for: 30m
+          labels:
+            severity: warning
+            service: postgresql
+            team: database
+          annotations:
+            summary: "PostgreSQL database growing rapidly"
+            description: "PostgreSQL database {{ $labels.datname }} on {{ $labels.instance }} is projected to grow by more than 50% in the next 24 hours."
+
+        # WAL directory size high
+        - alert: PostgreSQLWALDirectoryLarge
+          expr: pg_wal_directory_size_bytes > 10737418240
+          for: 30m
+          labels:
+            severity: warning
+            service: postgresql
+            team: database
+          annotations:
+            summary: "PostgreSQL WAL directory is large"
+            description: "PostgreSQL WAL directory on {{ $labels.instance }} is {{ $value | humanize1024 }}B. Check for replication issues or archive failures."
+            runbook_url: "https://runbooks.greenlang.io/postgresql/wal-size"
+
+    - name: postgresql.checkpoints
+      interval: 60s
+      rules:
+        # Too many checkpoints requested
+        - alert: PostgreSQLCheckpointsTooFrequent
+          expr: |
+            rate(pg_stat_bgwriter_checkpoints_req[5m]) > rate(pg_stat_bgwriter_checkpoints_timed[5m])
+          for: 30m
+          labels:
+            severity: warning
+            service: postgresql
+            team: database
+          annotations:
+            summary: "PostgreSQL checkpoints triggered too frequently"
+            description: "PostgreSQL instance {{ $labels.instance }} is triggering requested checkpoints more often than timed checkpoints. Consider increasing checkpoint_segments or max_wal_size."
+            runbook_url: "https://runbooks.greenlang.io/postgresql/checkpoints"
+
+        # Checkpoint completion ratio low
+        - alert: PostgreSQLCheckpointCompletionRatioLow
+          expr: |
+            pg_stat_bgwriter_checkpoint_sync_time / (pg_stat_bgwriter_checkpoint_write_time + pg_stat_bgwriter_checkpoint_sync_time) > 0.5
+          for: 30m
+          labels:
+            severity: warning
+            service: postgresql
+            team: database
+          annotations:
+            summary: "PostgreSQL checkpoint sync time is high"
+            description: "PostgreSQL instance {{ $labels.instance }} is spending too much time on checkpoint sync. Consider tuning checkpoint_completion_target."
+
+    - name: postgresql.vacuum
+      interval: 60s
+      rules:
+        # Tables need vacuum
+        - alert: PostgreSQLTablesNeedVacuum
+          expr: |
+            pg_stat_user_tables_n_dead_tup > 10000
+            and pg_stat_user_tables_n_dead_tup > pg_stat_user_tables_n_live_tup * 0.1
+          for: 1h
+          labels:
+            severity: warning
+            service: postgresql
+            team: database
+          annotations:
+            summary: "PostgreSQL tables need vacuuming"
+            description: "Table {{ $labels.relname }} in database {{ $labels.datname }} on {{ $labels.instance }} has {{ $value }} dead tuples and needs vacuuming."
+            runbook_url: "https://runbooks.greenlang.io/postgresql/vacuum"
+
+        # Autovacuum not running
+        - alert: PostgreSQLAutovacuumNotRunning
+          expr: |
+            pg_stat_user_tables_last_autovacuum < (time() - 86400)
+            and pg_stat_user_tables_n_dead_tup > 1000
+          for: 1h
+          labels:
+            severity: warning
+            service: postgresql
+            team: database
+          annotations:
+            summary: "PostgreSQL autovacuum not running"
+            description: "Table {{ $labels.relname }} on {{ $labels.instance }} has not been autovacuumed in over 24 hours."
+
+        # Transaction ID wraparound approaching
+        - alert: PostgreSQLXIDWraparoundApproaching
+          expr: |
+            pg_database_age > 1000000000
+          for: 1h
+          labels:
+            severity: critical
+            service: postgresql
+            team: database
+          annotations:
+            summary: "PostgreSQL XID wraparound approaching"
+            description: "Database {{ $labels.datname }} on {{ $labels.instance }} has transaction age {{ $value }}. XID wraparound is imminent. Run VACUUM FREEZE immediately."
+            runbook_url: "https://runbooks.greenlang.io/postgresql/xid-wraparound"

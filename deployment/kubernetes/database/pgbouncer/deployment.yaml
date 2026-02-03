@@ -1,0 +1,283 @@
+# PgBouncer Deployment for GreenLang
+# Provides connection pooling for PostgreSQL with high availability
+# Connection string: postgresql://user:pass@pgbouncer.greenlang-database:5432/greenlang
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pgbouncer
+  namespace: greenlang-database
+  labels:
+    app: pgbouncer
+    app.kubernetes.io/name: pgbouncer
+    app.kubernetes.io/component: connection-pooler
+    app.kubernetes.io/part-of: greenlang
+    app.kubernetes.io/managed-by: kubectl
+  annotations:
+    description: "PgBouncer connection pooler for PostgreSQL"
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: pgbouncer
+  template:
+    metadata:
+      labels:
+        app: pgbouncer
+        app.kubernetes.io/name: pgbouncer
+        app.kubernetes.io/component: connection-pooler
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9127"
+        prometheus.io/path: "/metrics"
+        checksum/config: "{{ include (print $.Template.BasePath \"/configmap.yaml\") . | sha256sum }}"
+    spec:
+      # Security context for pod-level security
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+
+      # Service account for RBAC
+      serviceAccountName: pgbouncer
+
+      # Anti-affinity to spread pods across nodes for HA
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                      - pgbouncer
+              topologyKey: kubernetes.io/hostname
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - pgbouncer
+                topologyKey: topology.kubernetes.io/zone
+
+      # Topology spread for even distribution
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: pgbouncer
+
+      # Termination grace period for connection draining
+      terminationGracePeriodSeconds: 30
+
+      containers:
+        # Main PgBouncer container
+        - name: pgbouncer
+          image: bitnami/pgbouncer:1.21.0
+          imagePullPolicy: IfNotPresent
+
+          # Security context for container-level security
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+
+          ports:
+            - name: pgbouncer
+              containerPort: 5432
+              protocol: TCP
+
+          # Resource limits and requests
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "250m"
+            limits:
+              memory: "256Mi"
+              cpu: "500m"
+
+          # Environment variables
+          env:
+            - name: PGBOUNCER_PORT
+              value: "5432"
+            - name: PGBOUNCER_DATABASE
+              value: "greenlang"
+            - name: PGBOUNCER_POOL_MODE
+              value: "transaction"
+            - name: PGBOUNCER_MAX_CLIENT_CONN
+              value: "1000"
+            - name: PGBOUNCER_DEFAULT_POOL_SIZE
+              value: "20"
+            - name: PGBOUNCER_AUTH_TYPE
+              value: "md5"
+            - name: POSTGRESQL_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: pgbouncer-secrets
+                  key: postgresql-host
+            - name: POSTGRESQL_PORT
+              value: "5432"
+            - name: POSTGRESQL_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: pgbouncer-secrets
+                  key: postgresql-username
+            - name: POSTGRESQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: pgbouncer-secrets
+                  key: postgresql-password
+            - name: PGBOUNCER_AUTH_USER
+              valueFrom:
+                secretKeyRef:
+                  name: pgbouncer-secrets
+                  key: pgbouncer-auth-user
+            - name: PGBOUNCER_AUTH_QUERY
+              value: "SELECT usename, passwd FROM pg_shadow WHERE usename=$1"
+
+          # Liveness probe - checks if PgBouncer is running
+          livenessProbe:
+            tcpSocket:
+              port: pgbouncer
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+            successThreshold: 1
+
+          # Readiness probe - checks if PgBouncer can accept connections
+          readinessProbe:
+            tcpSocket:
+              port: pgbouncer
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+            successThreshold: 1
+
+          # Startup probe - allows slow startup
+          startupProbe:
+            tcpSocket:
+              port: pgbouncer
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            failureThreshold: 30
+
+          # Volume mounts
+          volumeMounts:
+            - name: pgbouncer-config
+              mountPath: /bitnami/pgbouncer/conf
+              readOnly: true
+            - name: tmp
+              mountPath: /tmp
+            - name: run
+              mountPath: /var/run/pgbouncer
+
+          # Lifecycle hooks for graceful shutdown
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - /bin/sh
+                  - -c
+                  - |
+                    # Signal PgBouncer to stop accepting new connections
+                    # and wait for existing connections to drain
+                    sleep 5
+
+        # PgBouncer Exporter sidecar for Prometheus metrics
+        - name: pgbouncer-exporter
+          image: prometheuscommunity/pgbouncer-exporter:v0.7.0
+          imagePullPolicy: IfNotPresent
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+
+          ports:
+            - name: metrics
+              containerPort: 9127
+              protocol: TCP
+
+          resources:
+            requests:
+              memory: "32Mi"
+              cpu: "50m"
+            limits:
+              memory: "64Mi"
+              cpu: "100m"
+
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: pgbouncer-secrets
+                  key: exporter-database-url
+
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: metrics
+            initialDelaySeconds: 10
+            periodSeconds: 10
+
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: metrics
+            initialDelaySeconds: 5
+            periodSeconds: 5
+
+      # Volumes
+      volumes:
+        - name: pgbouncer-config
+          configMap:
+            name: pgbouncer-config
+            defaultMode: 0440
+        - name: tmp
+          emptyDir:
+            sizeLimit: 10Mi
+        - name: run
+          emptyDir:
+            sizeLimit: 10Mi
+
+      # Node selector for database workloads
+      nodeSelector:
+        workload-type: database
+
+      # Tolerations for database nodes
+      tolerations:
+        - key: "database"
+          operator: "Equal"
+          value: "true"
+          effect: "NoSchedule"
+
+---
+# Service Account for PgBouncer
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: pgbouncer
+  namespace: greenlang-database
+  labels:
+    app: pgbouncer
+    app.kubernetes.io/name: pgbouncer
+automountServiceAccountToken: false

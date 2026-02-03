@@ -1,0 +1,516 @@
+# GreenLang MLflow Helm Chart - Production Values
+# Production environment overrides for high availability and security
+# =============================================================================
+
+# Global settings - Production
+global:
+  imageRegistry: "ghcr.io"
+  imagePullSecrets:
+    - name: ghcr-pull-secret
+  storageClass: "gp3-encrypted"
+
+  greenlang:
+    environment: production
+    provenanceEnabled: true
+    sha256Tracking: true
+    experimentPrefix: "greenlang-process-heat-prod"
+
+# Namespace configuration
+namespace:
+  create: true
+  name: greenlang-mlops
+  labels:
+    app.kubernetes.io/part-of: greenlang-mlops
+    environment: production
+
+# =============================================================================
+# MLflow Tracking Server - Production Configuration
+# =============================================================================
+mlflow:
+  image:
+    registry: ghcr.io
+    repository: mlflow/mlflow
+    tag: "v2.10.0"
+    pullPolicy: IfNotPresent
+
+  # HA configuration - Production
+  replicaCount: 5
+
+  # Service Account with IRSA
+  serviceAccount:
+    create: true
+    name: mlflow-sa-prod
+    annotations:
+      eks.amazonaws.com/role-arn: "arn:aws:iam::ACCOUNT_ID:role/greenlang-mlflow-prod-role"
+
+  # Strict pod security context
+  podSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    fsGroup: 1000
+    seccompProfile:
+      type: RuntimeDefault
+
+  # Strict container security context
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    capabilities:
+      drop:
+        - ALL
+
+  # Production resources
+  resources:
+    requests:
+      cpu: 1000m
+      memory: 2Gi
+    limits:
+      cpu: 4000m
+      memory: 8Gi
+
+  # Gunicorn - Production tuning
+  gunicorn:
+    workers: 8
+    threads: 4
+    timeout: 600
+    logLevel: warning
+
+  # Probes - Production tuning
+  livenessProbe:
+    httpGet:
+      path: /health
+      port: 5000
+    initialDelaySeconds: 60
+    periodSeconds: 15
+    timeoutSeconds: 10
+    failureThreshold: 5
+
+  readinessProbe:
+    httpGet:
+      path: /health
+      port: 5000
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    successThreshold: 1
+
+  startupProbe:
+    httpGet:
+      path: /health
+      port: 5000
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    failureThreshold: 30
+
+  # Pod anti-affinity - Strict for production
+  affinity:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        - labelSelector:
+            matchLabels:
+              app: mlflow
+              component: tracking-server
+          topologyKey: kubernetes.io/hostname
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: node-type
+                operator: In
+                values:
+                  - mlops
+                  - compute
+
+  # Topology spread - Production
+  topologySpreadConstraints:
+    - maxSkew: 1
+      topologyKey: topology.kubernetes.io/zone
+      whenUnsatisfiable: DoNotSchedule
+      labelSelector:
+        matchLabels:
+          app: mlflow
+          component: tracking-server
+
+  # Node selector
+  nodeSelector:
+    node-type: mlops
+
+  # Tolerations
+  tolerations:
+    - key: dedicated
+      value: mlops
+      effect: NoSchedule
+
+# =============================================================================
+# Autoscaling - Production
+# =============================================================================
+autoscaling:
+  enabled: true
+  minReplicas: 5
+  maxReplicas: 20
+
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+    - type: Pods
+      pods:
+        metric:
+          name: mlflow_http_requests_per_second
+        target:
+          type: AverageValue
+          averageValue: "100"
+
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 30
+      policies:
+        - type: Percent
+          value: 100
+          periodSeconds: 15
+        - type: Pods
+          value: 4
+          periodSeconds: 15
+      selectPolicy: Max
+    scaleDown:
+      stabilizationWindowSeconds: 600
+      policies:
+        - type: Percent
+          value: 5
+          periodSeconds: 120
+      selectPolicy: Min
+
+# =============================================================================
+# Pod Disruption Budget - Production
+# =============================================================================
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 3
+
+# =============================================================================
+# Service Configuration - Production
+# =============================================================================
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 5000
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "5000"
+    prometheus.io/path: "/metrics"
+
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 3600
+
+# =============================================================================
+# Ingress Configuration - Production
+# =============================================================================
+ingress:
+  enabled: true
+  className: nginx
+
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/limit-rps: "100"
+    nginx.ingress.kubernetes.io/limit-connections: "50"
+    nginx.ingress.kubernetes.io/limit-burst-multiplier: "5"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-body-size: "1g"
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      more_set_headers "X-Frame-Options: DENY";
+      more_set_headers "X-Content-Type-Options: nosniff";
+      more_set_headers "X-XSS-Protection: 1; mode=block";
+      more_set_headers "Referrer-Policy: strict-origin-when-cross-origin";
+      more_set_headers "Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'";
+    # Authentication
+    nginx.ingress.kubernetes.io/auth-type: basic
+    nginx.ingress.kubernetes.io/auth-secret: mlflow-basic-auth
+    nginx.ingress.kubernetes.io/auth-realm: "GreenLang MLflow - Authentication Required"
+
+  hosts:
+    - host: mlflow.greenlang.io
+      paths:
+        - path: /
+          pathType: Prefix
+
+  tls:
+    - secretName: mlflow-prod-tls
+      hosts:
+        - mlflow.greenlang.io
+
+# =============================================================================
+# PostgreSQL - Production (External RDS Recommended)
+# =============================================================================
+postgresql:
+  enabled: false  # Use external RDS in production
+
+# External PostgreSQL (AWS RDS)
+externalDatabase:
+  enabled: true
+  host: "greenlang-mlflow-prod.cluster-xxxx.us-east-1.rds.amazonaws.com"
+  port: 5432
+  database: mlflow
+  username: mlflow
+  existingSecret: mlflow-postgresql-secret
+  existingSecretPasswordKey: password
+
+# =============================================================================
+# MinIO - Disabled for Production (Use S3)
+# =============================================================================
+minio:
+  enabled: false
+
+# =============================================================================
+# External S3 Configuration - Production
+# =============================================================================
+externalS3:
+  enabled: true
+  endpoint: ""  # Empty for AWS S3
+  bucket: "greenlang-mlflow-artifacts-prod"
+  region: "us-east-1"
+  existingSecret: mlflow-s3-secret
+
+# =============================================================================
+# External Secrets - Production
+# =============================================================================
+externalSecrets:
+  enabled: true
+  refreshInterval: 30m  # More frequent refresh for production
+
+  secretStoreRef:
+    name: aws-secrets-manager-prod
+    kind: ClusterSecretStore
+
+  postgresql:
+    secretKey: greenlang/prod/mlflow/postgresql
+    data:
+      - key: username
+        property: username
+      - key: password
+        property: password
+
+  s3:
+    secretKey: greenlang/prod/mlflow/s3
+    data:
+      - key: access-key-id
+        property: AWS_ACCESS_KEY_ID
+      - key: secret-access-key
+        property: AWS_SECRET_ACCESS_KEY
+
+# =============================================================================
+# Monitoring - Production
+# =============================================================================
+monitoring:
+  enabled: true
+
+  serviceMonitor:
+    enabled: true
+    interval: 15s
+    scrapeTimeout: 10s
+    labels:
+      release: prometheus
+      environment: production
+
+  prometheusRule:
+    enabled: true
+    labels:
+      release: prometheus
+      environment: production
+
+    rules:
+      - alert: MLflowDown
+        expr: up{job=~".*mlflow.*"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          team: mlops
+          pagerduty: "true"
+        annotations:
+          summary: "MLflow is DOWN - Production"
+          description: "MLflow tracking server has been down for more than 1 minute"
+          runbook_url: "https://runbooks.greenlang.io/mlflow-down"
+
+      - alert: MLflowHighErrorRate
+        expr: |
+          sum(rate(mlflow_http_requests_total{status=~"5.."}[5m])) by (instance)
+          /
+          sum(rate(mlflow_http_requests_total[5m])) by (instance) > 0.01
+        for: 3m
+        labels:
+          severity: critical
+          team: mlops
+        annotations:
+          summary: "MLflow high error rate"
+          description: "MLflow error rate is {{ $value | humanizePercentage }} (SLO: 1%)"
+
+      - alert: MLflowHighLatency
+        expr: |
+          histogram_quantile(0.95, sum(rate(mlflow_http_request_duration_seconds_bucket[5m])) by (le)) > 2
+        for: 5m
+        labels:
+          severity: warning
+          team: mlops
+        annotations:
+          summary: "MLflow P95 latency is high"
+          description: "MLflow P95 latency is {{ $value | humanizeDuration }} (SLO: 2s)"
+
+      - alert: MLflowPodDown
+        expr: |
+          kube_deployment_status_replicas_available{deployment=~".*mlflow.*"} < 3
+        for: 2m
+        labels:
+          severity: critical
+          team: mlops
+        annotations:
+          summary: "MLflow has insufficient replicas"
+          description: "MLflow has only {{ $value }} available replicas (minimum: 3)"
+
+  grafanaDashboard:
+    enabled: true
+    labels:
+      grafana_dashboard: "1"
+
+# =============================================================================
+# Network Policy - Production (Strict)
+# =============================================================================
+networkPolicy:
+  enabled: true
+
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: ingress-nginx
+      ports:
+        - port: 5000
+          protocol: TCP
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: greenlang-agents
+      ports:
+        - port: 5000
+          protocol: TCP
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+      ports:
+        - port: 5000
+          protocol: TCP
+
+  egress:
+    - to:
+        - namespaceSelector: {}
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - port: 53
+          protocol: UDP
+        - port: 53
+          protocol: TCP
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 10.0.0.0/8
+              - 172.16.0.0/12
+              - 192.168.0.0/16
+      ports:
+        - port: 443
+          protocol: TCP
+        - port: 5432
+          protocol: TCP
+
+# =============================================================================
+# GreenLang Integration - Production
+# =============================================================================
+processHeatIntegration:
+  enabled: true
+
+  experiments:
+    - name: "greenlang-fuel-analyzer-prod"
+      description: "Production fuel emission factor analysis"
+      tags:
+        agent: fuel-analyzer
+        domain: process-heat
+        environment: production
+
+    - name: "greenlang-carbon-intensity-prod"
+      description: "Production carbon intensity prediction"
+      tags:
+        agent: carbon-intensity
+        domain: process-heat
+        environment: production
+
+    - name: "greenlang-energy-performance-prod"
+      description: "Production energy performance optimization"
+      tags:
+        agent: energy-performance
+        domain: process-heat
+        environment: production
+
+  modelRegistry:
+    stages:
+      - None
+      - Development
+      - Staging
+      - Production
+      - Archived
+
+    autoPromote:
+      enabled: false  # Manual promotion in production
+
+  provenance:
+    enabled: true
+    hashAlgorithm: SHA-256
+    trackInputData: true
+    trackModelParams: true
+    trackMetrics: true
+    trackEnvironment: true
+
+# =============================================================================
+# Certificates - Production
+# =============================================================================
+certificates:
+  enabled: true
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  privateKey:
+    algorithm: RSA
+    size: 4096
+
+# =============================================================================
+# Init Containers
+# =============================================================================
+initContainers:
+  waitForPostgres:
+    enabled: true
+    image:
+      repository: busybox
+      tag: "1.36"
+
+  waitForMinio:
+    enabled: false  # Using external S3
+
+  createBucket:
+    enabled: false  # Using external S3

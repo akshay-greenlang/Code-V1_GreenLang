@@ -1,0 +1,172 @@
+================================================================================
+    GreenLang MLflow - Deployment Complete
+================================================================================
+
+{{ if .Release.IsUpgrade }}
+UPGRADE COMPLETE!
+{{ else }}
+INSTALLATION COMPLETE!
+{{ end }}
+
+Release Name: {{ .Release.Name }}
+Namespace: {{ .Values.namespace.name }}
+Chart Version: {{ .Chart.Version }}
+App Version: {{ .Chart.AppVersion }}
+
+================================================================================
+    DEPLOYED COMPONENTS
+================================================================================
+
+1. MLflow Tracking Server:
+   - Replicas: {{ .Values.mlflow.replicaCount | default 3 }}
+   - Service: {{ include "mlflow.fullname" . }}-tracking
+   - Port: {{ .Values.service.port | default 80 }}
+
+2. Backend Store:
+   {{- if .Values.postgresql.enabled }}
+   - PostgreSQL (In-cluster)
+   - Database: {{ .Values.postgresql.auth.database | default "mlflow" }}
+   {{- else }}
+   - External PostgreSQL
+   {{- end }}
+
+3. Artifact Storage:
+   {{- if .Values.minio.enabled }}
+   - MinIO (In-cluster)
+   - Bucket: {{ .Values.minio.defaultBuckets | default "greenlang-mlflow-artifacts" }}
+   {{- else if .Values.externalS3.enabled }}
+   - External S3: {{ .Values.externalS3.bucket }}
+   {{- end }}
+
+================================================================================
+    ACCESS INFORMATION
+================================================================================
+
+{{- if .Values.ingress.enabled }}
+MLflow UI is accessible at:
+
+{{- range .Values.ingress.hosts }}
+  - https://{{ .host }}
+{{- end }}
+{{- else }}
+To access the MLflow UI, run:
+
+  kubectl port-forward svc/{{ include "mlflow.fullname" . }}-tracking 5000:{{ .Values.service.port | default 80 }} -n {{ .Values.namespace.name }}
+
+Then access: http://localhost:5000
+{{- end }}
+
+================================================================================
+    CONFIGURATION
+================================================================================
+
+MLflow Tracking URI:
+  - Internal: http://{{ include "mlflow.fullname" . }}-tracking.{{ .Values.namespace.name }}.svc.cluster.local:{{ .Values.service.port | default 80 }}
+  {{- if .Values.ingress.enabled }}
+  {{- range .Values.ingress.hosts }}
+  - External: https://{{ .host }}
+  {{- end }}
+  {{- end }}
+
+Artifact Root:
+  - {{ include "mlflow.artifactRoot" . }}
+
+Backend Store:
+  - PostgreSQL: {{ include "mlflow.postgresql.host" . }}:{{ include "mlflow.postgresql.port" . }}
+
+================================================================================
+    GREENLANG INTEGRATION
+================================================================================
+
+{{- if .Values.processHeatIntegration.enabled }}
+Process Heat Agent Integration is ENABLED.
+
+Pre-configured experiments:
+{{- range .Values.processHeatIntegration.experiments }}
+  - {{ .name }}: {{ .description }}
+{{- end }}
+
+Model Registry Stages:
+{{- range .Values.processHeatIntegration.modelRegistry.stages }}
+  - {{ . }}
+{{- end }}
+
+{{- if .Values.processHeatIntegration.provenance.enabled }}
+Provenance Tracking:
+  - Hash Algorithm: {{ .Values.processHeatIntegration.provenance.hashAlgorithm | default "SHA-256" }}
+  - Track Input Data: {{ .Values.processHeatIntegration.provenance.trackInputData | default true }}
+  - Track Model Params: {{ .Values.processHeatIntegration.provenance.trackModelParams | default true }}
+{{- end }}
+{{- end }}
+
+================================================================================
+    HEALTH CHECKS
+================================================================================
+
+Check deployment status:
+
+  kubectl get deployments -n {{ .Values.namespace.name }}
+
+Check pod status:
+
+  kubectl get pods -n {{ .Values.namespace.name }} -l app=mlflow
+
+View MLflow logs:
+
+  kubectl logs -l app=mlflow,component=tracking-server -n {{ .Values.namespace.name }} -f
+
+Check health endpoint:
+
+  kubectl exec -n {{ .Values.namespace.name }} deploy/{{ include "mlflow.fullname" . }}-tracking -- curl -s http://localhost:5000/health
+
+================================================================================
+    MONITORING
+================================================================================
+
+{{- if and .Values.monitoring .Values.monitoring.enabled }}
+Monitoring is ENABLED.
+
+{{- if .Values.monitoring.serviceMonitor.enabled }}
+ServiceMonitor is configured for Prometheus Operator.
+{{- end }}
+
+{{- if .Values.monitoring.prometheusRule.enabled }}
+PrometheusRules are configured with alerts.
+{{- end }}
+
+Key metrics:
+  - mlflow_http_requests_total
+  - mlflow_http_request_duration_seconds
+  - mlflow_experiments_total
+  - mlflow_runs_total
+  - mlflow_registered_models_total
+{{- end }}
+
+================================================================================
+    TROUBLESHOOTING
+================================================================================
+
+If pods are not starting:
+
+  kubectl describe pod -l app=mlflow -n {{ .Values.namespace.name }}
+
+Check PostgreSQL connectivity:
+
+  kubectl exec -n {{ .Values.namespace.name }} deploy/{{ include "mlflow.fullname" . }}-tracking -- nc -zv {{ include "mlflow.postgresql.host" . }} 5432
+
+{{- if .Values.minio.enabled }}
+Check MinIO connectivity:
+
+  kubectl exec -n {{ .Values.namespace.name }} deploy/{{ include "mlflow.fullname" . }}-tracking -- nc -zv {{ include "mlflow.fullname" . }}-minio 9000
+{{- end }}
+
+================================================================================
+    DOCUMENTATION
+================================================================================
+
+For more information:
+  - MLflow Documentation: https://mlflow.org/docs/latest/index.html
+  - GreenLang MLOps Guide: https://docs.greenlang.io/mlops
+  - Process Heat Agents: https://docs.greenlang.io/agents/process-heat
+
+================================================================================

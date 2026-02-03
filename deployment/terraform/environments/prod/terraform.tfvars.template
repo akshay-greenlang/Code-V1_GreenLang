@@ -1,0 +1,178 @@
+# =============================================================================
+# GreenLang Production Environment Variables - TEMPLATE
+# =============================================================================
+#
+# INSTRUCTIONS:
+# 1. Copy this file to terraform.tfvars
+# 2. Replace all ${...} placeholders with your actual values
+# 3. Never commit terraform.tfvars with real values to version control
+#
+# Required Placeholders:
+#   ${AWS_ACCOUNT_ID}           - Your 12-digit AWS account ID
+#   ${CLOUDFRONT_DISTRIBUTION_ID} - CloudFront distribution ID (e.g., E1ABCDEF123456)
+#   ${DR_KMS_KEY_ID}            - KMS key ID for disaster recovery region
+#
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Region Configuration
+# -----------------------------------------------------------------------------
+# Primary region for production workloads
+aws_region = "us-east-1"
+
+# Disaster recovery region for cross-region replication
+dr_region  = "us-west-2"
+
+# -----------------------------------------------------------------------------
+# VPC Configuration
+# -----------------------------------------------------------------------------
+# Production VPC CIDR block - ensure no overlap with other environments
+# Dev: 10.0.0.0/16, Staging: 10.1.0.0/16, Prod: 10.2.0.0/16
+vpc_cidr = "10.2.0.0/16"
+
+# Availability zones for high availability deployment
+availability_zones = [
+  "us-east-1a",
+  "us-east-1b",
+  "us-east-1c"
+]
+
+# -----------------------------------------------------------------------------
+# EKS Configuration
+# -----------------------------------------------------------------------------
+# Kubernetes version for EKS cluster
+eks_cluster_version = "1.28"
+
+# Security: Restrict EKS API endpoint public access in production
+# Access the cluster through VPN or bastion host instead
+enable_eks_public_access = false
+eks_public_access_cidrs  = []  # No public access - use VPN/bastion
+
+# -----------------------------------------------------------------------------
+# RDS Configuration
+# -----------------------------------------------------------------------------
+# PostgreSQL engine version for RDS
+rds_engine_version = "15.4"
+
+# -----------------------------------------------------------------------------
+# ELB Configuration
+# -----------------------------------------------------------------------------
+# ELB Account ID for us-east-1 (AWS-managed, do not change)
+# See: https://docs.aws.amazon.com/elasticloadbalancing/latest/application/enable-access-logging.html
+elb_account_id = "127311923021"
+
+# -----------------------------------------------------------------------------
+# CORS Configuration
+# -----------------------------------------------------------------------------
+# Allowed origins for CORS - production domains only
+cors_allowed_origins = [
+  "https://greenlang.io",
+  "https://www.greenlang.io",
+  "https://app.greenlang.io",
+  "https://api.greenlang.io"
+]
+
+# -----------------------------------------------------------------------------
+# GitHub OIDC Configuration
+# -----------------------------------------------------------------------------
+# Set to true if you need to create the OIDC provider (first-time setup)
+# Set to false if the provider already exists in your account
+create_github_oidc_provider = false
+
+# GitHub OIDC Provider ARN
+# Replace ${AWS_ACCOUNT_ID} with your 12-digit AWS account ID
+# Example: arn:aws:iam::123456789012:oidc-provider/token.actions.githubusercontent.com
+github_oidc_provider_arn = "arn:aws:iam::${AWS_ACCOUNT_ID}:oidc-provider/token.actions.githubusercontent.com"
+
+# GitHub organization and repository for CI/CD
+github_org  = "greenlang"
+github_repo = "greenlang-app"
+
+# -----------------------------------------------------------------------------
+# ECR Repository Configuration
+# -----------------------------------------------------------------------------
+# ECR repository ARNs that the application can pull images from
+# Replace ${AWS_ACCOUNT_ID} with your 12-digit AWS account ID
+ecr_repository_arns = [
+  "arn:aws:ecr:us-east-1:${AWS_ACCOUNT_ID}:repository/greenlang/*"
+]
+
+# -----------------------------------------------------------------------------
+# SNS/SQS Configuration
+# -----------------------------------------------------------------------------
+# SNS topic ARNs for CloudWatch alarms and notifications
+# Replace ${AWS_ACCOUNT_ID} with your 12-digit AWS account ID
+alarm_sns_topic_arns = [
+  "arn:aws:sns:us-east-1:${AWS_ACCOUNT_ID}:greenlang-prod-alerts"
+]
+
+# SNS topic for ElastiCache notifications
+elasticache_notification_topic_arn = "arn:aws:sns:us-east-1:${AWS_ACCOUNT_ID}:greenlang-prod-alerts"
+
+# SQS queue ARNs for application messaging
+sqs_queue_arns = [
+  "arn:aws:sqs:us-east-1:${AWS_ACCOUNT_ID}:greenlang-prod-*"
+]
+
+# SNS topic ARNs for application events
+sns_topic_arns = [
+  "arn:aws:sns:us-east-1:${AWS_ACCOUNT_ID}:greenlang-prod-*"
+]
+
+# -----------------------------------------------------------------------------
+# Secrets Manager Configuration
+# -----------------------------------------------------------------------------
+# Secrets ARNs for application secrets access
+# Replace ${AWS_ACCOUNT_ID} with your 12-digit AWS account ID
+app_secrets_arns = [
+  "arn:aws:secretsmanager:us-east-1:${AWS_ACCOUNT_ID}:secret:greenlang-prod/*"
+]
+
+# Secrets ARNs for AI agent configurations
+agent_secrets_arns = [
+  "arn:aws:secretsmanager:us-east-1:${AWS_ACCOUNT_ID}:secret:greenlang-prod/agents/*"
+]
+
+# Secrets ARNs for CI/CD pipeline credentials
+cicd_secrets_arns = [
+  "arn:aws:secretsmanager:us-east-1:${AWS_ACCOUNT_ID}:secret:greenlang-prod/cicd/*"
+]
+
+# External Secrets Operator allowed ARNs
+external_secrets_allowed_arns = [
+  "arn:aws:secretsmanager:us-east-1:${AWS_ACCOUNT_ID}:secret:greenlang-prod/*"
+]
+
+# -----------------------------------------------------------------------------
+# CloudFront Configuration
+# -----------------------------------------------------------------------------
+# CloudFront distribution ARN for CDN access
+# Replace ${AWS_ACCOUNT_ID} with your 12-digit AWS account ID
+# Replace ${CLOUDFRONT_DISTRIBUTION_ID} with your CloudFront distribution ID
+# Example distribution ID: E1ABCDEF123456 (14 alphanumeric characters)
+cloudfront_distribution_arn = "arn:aws:cloudfront::${AWS_ACCOUNT_ID}:distribution/${CLOUDFRONT_DISTRIBUTION_ID}"
+
+# -----------------------------------------------------------------------------
+# Disaster Recovery Configuration
+# -----------------------------------------------------------------------------
+# S3 bucket ARN for DR data replication in us-west-2
+# Replace ${AWS_ACCOUNT_ID} with your 12-digit AWS account ID
+dr_data_bucket_arn = "arn:aws:s3:::greenlang-prod-data-dr-${AWS_ACCOUNT_ID}"
+
+# KMS key ARN for DR region encryption
+# Replace ${AWS_ACCOUNT_ID} with your 12-digit AWS account ID
+# Replace ${DR_KMS_KEY_ID} with the KMS key ID in your DR region
+# Example key ID: 12345678-1234-1234-1234-123456789012 (UUID format)
+dr_kms_key_arn = "arn:aws:kms:us-west-2:${AWS_ACCOUNT_ID}:key/${DR_KMS_KEY_ID}"
+
+# -----------------------------------------------------------------------------
+# Cross-Account Access Configuration
+# -----------------------------------------------------------------------------
+# Enable if you need to allow access from other AWS accounts
+enable_cross_account_access = false
+
+# List of trusted AWS account IDs (12-digit account numbers)
+trusted_account_ids = []
+
+# ARNs of resources in other accounts that need access
+cross_account_resource_arns = []

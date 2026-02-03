@@ -1,0 +1,351 @@
+# PgBouncer ServiceMonitor for Prometheus Operator
+# GreenLang Production Monitoring
+# This ServiceMonitor configures Prometheus to scrape PgBouncer connection pooler metrics
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: pgbouncer
+  namespace: monitoring
+  labels:
+    app: pgbouncer
+    release: prometheus
+    team: database
+spec:
+  # Job name in Prometheus
+  jobLabel: pgbouncer
+
+  # Namespace selector - where PgBouncer services are deployed
+  namespaceSelector:
+    matchNames:
+      - greenlang
+      - greenlang-staging
+      - greenlang-production
+
+  # Service selector - match PgBouncer exporter services
+  selector:
+    matchLabels:
+      app: pgbouncer
+      component: exporter
+    matchExpressions:
+      - key: monitoring
+        operator: In
+        values:
+          - "true"
+          - "enabled"
+
+  # Endpoints configuration
+  endpoints:
+    # PgBouncer exporter endpoint
+    - port: metrics
+      interval: 15s
+      scrapeTimeout: 10s
+      path: /metrics
+      scheme: http
+
+      # Metric relabeling to optimize storage
+      metricRelabelings:
+        # Keep only relevant PgBouncer metrics
+        - sourceLabels: [__name__]
+          regex: "pgbouncer_(up|config_.*|pools_.*|databases_.*|stats_.*|lists_.*)"
+          action: keep
+
+        # Add environment label based on namespace
+        - sourceLabels: [namespace]
+          targetLabel: environment
+          regex: "greenlang-(.*)"
+          replacement: "$1"
+
+        # Rename database label for consistency
+        - sourceLabels: [database]
+          targetLabel: db
+          regex: "(.*)"
+          replacement: "$1"
+
+        # Drop high-cardinality labels if needed
+        - regex: "^(addr|host)$"
+          action: labeldrop
+
+      # Relabeling for target identification
+      relabelings:
+        # Keep the service name
+        - sourceLabels: [__meta_kubernetes_service_name]
+          targetLabel: service
+
+        # Keep the pod name
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod
+
+        # Add node information
+        - sourceLabels: [__meta_kubernetes_pod_node_name]
+          targetLabel: node
+
+        # Add namespace
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace
+
+        # Add cluster identification
+        - sourceLabels: [__meta_kubernetes_pod_label_cluster]
+          targetLabel: cluster
+
+        # Add pool mode
+        - sourceLabels: [__meta_kubernetes_pod_label_pool_mode]
+          targetLabel: pool_mode
+
+  # Target labels to copy from the service
+  targetLabels:
+    - app
+    - release
+    - cluster
+
+---
+# PodMonitor for direct pod scraping of PgBouncer
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: pgbouncer-pods
+  namespace: monitoring
+  labels:
+    app: pgbouncer
+    release: prometheus
+    team: database
+spec:
+  jobLabel: pgbouncer-pod
+
+  namespaceSelector:
+    matchNames:
+      - greenlang
+      - greenlang-staging
+      - greenlang-production
+
+  selector:
+    matchLabels:
+      app: pgbouncer
+    matchExpressions:
+      - key: pgbouncer-exporter
+        operator: In
+        values:
+          - "true"
+          - "enabled"
+
+  podMetricsEndpoints:
+    - port: exporter
+      interval: 15s
+      scrapeTimeout: 10s
+      path: /metrics
+      scheme: http
+
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace
+        - sourceLabels: [__meta_kubernetes_pod_label_cluster]
+          targetLabel: cluster
+        - sourceLabels: [__meta_kubernetes_pod_label_pool_mode]
+          targetLabel: pool_mode
+
+---
+# PrometheusRule for PgBouncer recording rules
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: pgbouncer-recording-rules
+  namespace: monitoring
+  labels:
+    app: pgbouncer
+    prometheus: greenlang
+    role: recording-rules
+spec:
+  groups:
+    - name: pgbouncer.recording
+      interval: 15s
+      rules:
+        # Pool utilization percentage
+        - record: pgbouncer:pool_utilization:percent
+          expr: |
+            100 * (pgbouncer_pools_server_active + pgbouncer_pools_server_used) / pgbouncer_databases_pool_size
+
+        # Total client connections
+        - record: pgbouncer:client_connections:total
+          expr: |
+            sum(pgbouncer_pools_client_active + pgbouncer_pools_client_waiting) by (instance, namespace)
+
+        # Total server connections
+        - record: pgbouncer:server_connections:total
+          expr: |
+            sum(pgbouncer_pools_server_active + pgbouncer_pools_server_idle + pgbouncer_pools_server_used) by (instance, namespace)
+
+        # Wait queue length
+        - record: pgbouncer:wait_queue:length
+          expr: |
+            sum(pgbouncer_pools_client_waiting) by (instance, namespace)
+
+        # Average wait time in milliseconds
+        - record: pgbouncer:wait_time:avg_ms
+          expr: |
+            pgbouncer_stats_avg_wait_time / 1000
+
+        # Transaction rate
+        - record: pgbouncer:transaction_rate:per_second
+          expr: |
+            rate(pgbouncer_stats_total_xact_count[5m])
+
+        # Query rate
+        - record: pgbouncer:query_rate:per_second
+          expr: |
+            rate(pgbouncer_stats_total_query_count[5m])
+
+        # Average transaction time in milliseconds
+        - record: pgbouncer:transaction_time:avg_ms
+          expr: |
+            pgbouncer_stats_avg_xact_time / 1000
+
+        # Average query time in milliseconds
+        - record: pgbouncer:query_time:avg_ms
+          expr: |
+            pgbouncer_stats_avg_query_time / 1000
+
+        # Network throughput - received
+        - record: pgbouncer:network:received_bytes_per_second
+          expr: |
+            rate(pgbouncer_stats_total_received[5m])
+
+        # Network throughput - sent
+        - record: pgbouncer:network:sent_bytes_per_second
+          expr: |
+            rate(pgbouncer_stats_total_sent[5m])
+
+        # Client-to-server connection ratio
+        - record: pgbouncer:connection_ratio:client_to_server
+          expr: |
+            sum(pgbouncer_pools_client_active) by (instance, namespace, database) /
+            (sum(pgbouncer_pools_server_active) by (instance, namespace, database) + 0.001)
+
+        # Pool efficiency (queries per server connection)
+        - record: pgbouncer:efficiency:queries_per_connection
+          expr: |
+            rate(pgbouncer_stats_total_query_count[5m]) /
+            (sum(pgbouncer_pools_server_active) by (instance, namespace, database) + 0.001)
+
+---
+# ConfigMap for PgBouncer Grafana dashboard provisioning
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pgbouncer-dashboard-config
+  namespace: monitoring
+  labels:
+    grafana_dashboard: "1"
+    app: pgbouncer
+data:
+  pgbouncer-dashboard.json: |
+    {
+      "annotations": {
+        "list": []
+      },
+      "description": "PgBouncer connection pooler metrics",
+      "editable": true,
+      "gnetId": null,
+      "graphTooltip": 1,
+      "links": [],
+      "panels": [],
+      "schemaVersion": 38,
+      "tags": ["pgbouncer", "database"],
+      "templating": {
+        "list": []
+      },
+      "time": {
+        "from": "now-1h",
+        "to": "now"
+      },
+      "title": "PgBouncer Overview",
+      "uid": "pgbouncer-k8s",
+      "version": 1
+    }
+
+---
+# NetworkPolicy to allow Prometheus to scrape PgBouncer
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-prometheus-to-pgbouncer
+  namespace: greenlang
+spec:
+  podSelector:
+    matchLabels:
+      app: pgbouncer
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: prometheus
+      ports:
+        - protocol: TCP
+          port: 9127  # PgBouncer exporter port
+
+---
+# Service for PgBouncer metrics exposure
+apiVersion: v1
+kind: Service
+metadata:
+  name: pgbouncer-metrics
+  namespace: greenlang
+  labels:
+    app: pgbouncer
+    component: exporter
+    monitoring: "true"
+spec:
+  type: ClusterIP
+  selector:
+    app: pgbouncer
+  ports:
+    - name: metrics
+      port: 9127
+      targetPort: 9127
+      protocol: TCP
+
+---
+# ServiceAccount for PgBouncer exporter
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: pgbouncer-exporter
+  namespace: greenlang
+  labels:
+    app: pgbouncer
+    component: exporter
+
+---
+# Role for PgBouncer exporter
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: pgbouncer-exporter
+  namespace: greenlang
+rules:
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get"]
+    resourceNames: ["pgbouncer-credentials"]
+
+---
+# RoleBinding for PgBouncer exporter
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: pgbouncer-exporter
+  namespace: greenlang
+subjects:
+  - kind: ServiceAccount
+    name: pgbouncer-exporter
+    namespace: greenlang
+roleRef:
+  kind: Role
+  name: pgbouncer-exporter
+  apiGroup: rbac.authorization.k8s.io

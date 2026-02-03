@@ -1,0 +1,24 @@
+{{/*
+PodDisruptionBudget - Ensures high availability during voluntary disruptions
+*/}}
+{{- if .Values.podDisruptionBudget.enabled }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "timescaledb-ha.fullname" . }}
+  namespace: {{ include "timescaledb-ha.namespace" . }}
+  labels:
+    {{- include "timescaledb-ha.labels" . | nindent 4 }}
+spec:
+  {{- if .Values.podDisruptionBudget.minAvailable }}
+  minAvailable: {{ .Values.podDisruptionBudget.minAvailable }}
+  {{- else if .Values.podDisruptionBudget.maxUnavailable }}
+  maxUnavailable: {{ .Values.podDisruptionBudget.maxUnavailable }}
+  {{- else }}
+  # Default: require at least 2 pods available for HA
+  minAvailable: 2
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "timescaledb-ha.selectorLabels" . | nindent 6 }}
+{{- end }}

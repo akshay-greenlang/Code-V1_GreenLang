@@ -1,0 +1,314 @@
+---
+# Namespace for Patroni PostgreSQL Cluster
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: greenlang-db
+  labels:
+    name: greenlang-db
+    part-of: greenlang
+    istio-injection: disabled
+
+---
+# ServiceAccount for Patroni pods
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: patroni
+  namespace: greenlang-db
+  labels:
+    app: patroni
+    cluster-name: greenlang-cluster
+    component: database
+automountServiceAccountToken: true
+
+---
+# Role for Patroni to manage Kubernetes endpoints and configmaps
+# Required for Patroni DCS (Distributed Configuration Store) functionality
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: patroni-role
+  namespace: greenlang-db
+  labels:
+    app: patroni
+    cluster-name: greenlang-cluster
+rules:
+  # Endpoints are used by Patroni for leader election and DCS
+  - apiGroups: [""]
+    resources: ["endpoints"]
+    verbs: ["create", "get", "list", "patch", "update", "watch", "delete"]
+
+  # ConfigMaps can be used as alternative DCS storage
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["create", "get", "list", "patch", "update", "watch", "delete"]
+
+  # Pods - for getting pod information and labels
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch", "patch"]
+
+  # Services - for updating service selectors during failover
+  - apiGroups: [""]
+    resources: ["services"]
+    verbs: ["get", "list", "watch", "patch"]
+
+  # Secrets - for accessing credentials (optional, if using K8s secrets)
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "list", "watch"]
+
+  # Events - for creating events on failover/switchover
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["create", "patch"]
+
+  # Leases - alternative leader election mechanism
+  - apiGroups: ["coordination.k8s.io"]
+    resources: ["leases"]
+    verbs: ["create", "get", "list", "patch", "update", "watch", "delete"]
+
+---
+# RoleBinding to bind the role to the service account
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: patroni-rolebinding
+  namespace: greenlang-db
+  labels:
+    app: patroni
+    cluster-name: greenlang-cluster
+subjects:
+  - kind: ServiceAccount
+    name: patroni
+    namespace: greenlang-db
+roleRef:
+  kind: Role
+  name: patroni-role
+  apiGroup: rbac.authorization.k8s.io
+
+---
+# ClusterRole for cross-namespace operations (optional)
+# Only needed if Patroni needs to interact with resources outside its namespace
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: patroni-cluster-role
+  labels:
+    app: patroni
+    cluster-name: greenlang-cluster
+rules:
+  # Node information for topology awareness
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["get", "list", "watch"]
+
+  # For reading cluster-wide configuration
+  - apiGroups: [""]
+    resources: ["namespaces"]
+    verbs: ["get", "list"]
+
+---
+# ClusterRoleBinding for cross-namespace operations
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: patroni-cluster-rolebinding
+  labels:
+    app: patroni
+    cluster-name: greenlang-cluster
+subjects:
+  - kind: ServiceAccount
+    name: patroni
+    namespace: greenlang-db
+roleRef:
+  kind: ClusterRole
+  name: patroni-cluster-role
+  apiGroup: rbac.authorization.k8s.io
+
+---
+# Secret for Patroni credentials
+# IMPORTANT: In production, use external secrets management (Vault, AWS Secrets Manager, etc.)
+apiVersion: v1
+kind: Secret
+metadata:
+  name: patroni-credentials
+  namespace: greenlang-db
+  labels:
+    app: patroni
+    cluster-name: greenlang-cluster
+    component: credentials
+type: Opaque
+stringData:
+  # Superuser password - should be generated securely
+  superuser-password: "CHANGE_ME_SUPERUSER_PASSWORD"
+  # Replication user password
+  replication-password: "CHANGE_ME_REPLICATION_PASSWORD"
+  # Patroni REST API password
+  restapi-password: "CHANGE_ME_RESTAPI_PASSWORD"
+  # Admin user password
+  admin-password: "CHANGE_ME_ADMIN_PASSWORD"
+  # Application user password
+  greenlang-password: "CHANGE_ME_GREENLANG_PASSWORD"
+
+---
+# Secret for pgBackRest S3 credentials (optional)
+apiVersion: v1
+kind: Secret
+metadata:
+  name: pgbackrest-s3-credentials
+  namespace: greenlang-db
+  labels:
+    app: patroni
+    cluster-name: greenlang-cluster
+    component: backup
+type: Opaque
+stringData:
+  access-key-id: "CHANGE_ME_AWS_ACCESS_KEY"
+  secret-access-key: "CHANGE_ME_AWS_SECRET_KEY"
+  cipher-pass: "CHANGE_ME_BACKUP_ENCRYPTION_KEY"
+
+---
+# NetworkPolicy to restrict access to Patroni pods
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: patroni-network-policy
+  namespace: greenlang-db
+  labels:
+    app: patroni
+    cluster-name: greenlang-cluster
+    component: security
+spec:
+  podSelector:
+    matchLabels:
+      app: patroni
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Allow PostgreSQL from application namespaces
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              access-patroni: "true"
+      ports:
+        - protocol: TCP
+          port: 5432
+
+    # Allow Patroni REST API within cluster
+    - from:
+        - podSelector:
+            matchLabels:
+              app: patroni
+      ports:
+        - protocol: TCP
+          port: 8008
+        - protocol: TCP
+          port: 5432
+
+    # Allow metrics scraping
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+      ports:
+        - protocol: TCP
+          port: 8008
+        - protocol: TCP
+          port: 9187
+
+    # Allow from pgbouncer
+    - from:
+        - podSelector:
+            matchLabels:
+              app: pgbouncer
+      ports:
+        - protocol: TCP
+          port: 5432
+
+  egress:
+    # DNS resolution
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+
+    # Kubernetes API server (for DCS)
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+      ports:
+        - protocol: TCP
+          port: 443
+
+    # S3 for backups
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+      ports:
+        - protocol: TCP
+          port: 443
+
+    # Patroni cluster communication
+    - to:
+        - podSelector:
+            matchLabels:
+              app: patroni
+      ports:
+        - protocol: TCP
+          port: 5432
+        - protocol: TCP
+          port: 8008
+
+---
+# ResourceQuota for the namespace
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: patroni-resource-quota
+  namespace: greenlang-db
+  labels:
+    app: patroni
+spec:
+  hard:
+    requests.cpu: "12"
+    requests.memory: "48Gi"
+    limits.cpu: "24"
+    limits.memory: "96Gi"
+    persistentvolumeclaims: "6"
+    requests.storage: "3Ti"
+
+---
+# LimitRange for default resource limits
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: patroni-limit-range
+  namespace: greenlang-db
+  labels:
+    app: patroni
+spec:
+  limits:
+    - type: Container
+      default:
+        cpu: "2"
+        memory: "8Gi"
+      defaultRequest:
+        cpu: "500m"
+        memory: "2Gi"
+      max:
+        cpu: "8"
+        memory: "32Gi"
+      min:
+        cpu: "100m"
+        memory: "256Mi"
+    - type: PersistentVolumeClaim
+      max:
+        storage: "1Ti"
+      min:
+        storage: "10Gi"

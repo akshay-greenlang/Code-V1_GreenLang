@@ -1,0 +1,347 @@
+# Velero Volume Snapshot Locations for GreenLang
+# INFRA-001: EBS Snapshot Configuration
+# Version: 1.0.0
+---
+# Primary EBS Volume Snapshot Location
+apiVersion: velero.io/v1
+kind: VolumeSnapshotLocation
+metadata:
+  name: greenlang-ebs-snapshot-location
+  namespace: velero
+  labels:
+    app.kubernetes.io/name: velero
+    snapshot-provider: aws-ebs
+    environment: production
+spec:
+  # AWS EBS provider
+  provider: aws
+  # AWS configuration
+  config:
+    # Region for snapshots
+    region: us-east-1
+    # Profile (optional, uses default if not specified)
+    # profile: "default"
+  # Credential configuration
+  credential:
+    name: cloud-credentials
+    key: cloud
+
+---
+# Cross-Region Snapshot Location (DR)
+apiVersion: velero.io/v1
+kind: VolumeSnapshotLocation
+metadata:
+  name: greenlang-ebs-snapshot-location-dr
+  namespace: velero
+  labels:
+    app.kubernetes.io/name: velero
+    snapshot-provider: aws-ebs
+    environment: disaster-recovery
+spec:
+  # AWS EBS provider
+  provider: aws
+  # AWS configuration - DR region
+  config:
+    region: eu-west-1
+  # Credential configuration
+  credential:
+    name: cloud-credentials
+    key: cloud
+
+---
+# Staging Environment Snapshot Location
+apiVersion: velero.io/v1
+kind: VolumeSnapshotLocation
+metadata:
+  name: greenlang-ebs-snapshot-location-staging
+  namespace: velero
+  labels:
+    app.kubernetes.io/name: velero
+    snapshot-provider: aws-ebs
+    environment: staging
+spec:
+  provider: aws
+  config:
+    region: us-east-1
+  credential:
+    name: cloud-credentials
+    key: cloud
+
+---
+# CSI Volume Snapshot Class for EBS
+apiVersion: snapshot.storage.k8s.io/v1
+kind: VolumeSnapshotClass
+metadata:
+  name: ebs-snapshot-class
+  labels:
+    velero.io/csi-volumesnapshot-class: "true"
+    app.kubernetes.io/name: velero
+  annotations:
+    snapshot.storage.kubernetes.io/is-default-class: "true"
+driver: ebs.csi.aws.com
+deletionPolicy: Retain
+parameters:
+  # Encryption for snapshots
+  encrypted: "true"
+  # Optional: specify KMS key
+  # kmsKeyId: "arn:aws:kms:us-east-1:ACCOUNT_ID:key/KEY_ID"
+
+---
+# CSI Volume Snapshot Class for Fast Snapshots
+apiVersion: snapshot.storage.k8s.io/v1
+kind: VolumeSnapshotClass
+metadata:
+  name: ebs-snapshot-class-fast
+  labels:
+    velero.io/csi-volumesnapshot-class: "true"
+    app.kubernetes.io/name: velero
+driver: ebs.csi.aws.com
+deletionPolicy: Retain
+parameters:
+  encrypted: "true"
+  # Fast snapshot restore (additional cost)
+  fastSnapshotRestoreEnabled: "false"
+
+---
+# Storage Class for Velero Restored Volumes
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: ebs-gp3-velero
+  labels:
+    app.kubernetes.io/name: velero
+    purpose: backup-restore
+provisioner: ebs.csi.aws.com
+parameters:
+  type: gp3
+  iops: "3000"
+  throughput: "125"
+  encrypted: "true"
+reclaimPolicy: Retain
+allowVolumeExpansion: true
+volumeBindingMode: WaitForFirstConsumer
+
+---
+# PodVolumeBackup Configuration (for file-level backups)
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: velero-pod-volume-backup-config
+  namespace: velero
+  labels:
+    app.kubernetes.io/name: velero
+data:
+  # Default uploader type
+  uploaderType: restic
+
+  # Parallelism settings
+  parallelFilesUpload: "10"
+
+  # Compression
+  compression: "true"
+
+  # Example annotation for pods requiring file-level backup
+  example-annotation: |
+    # Add this annotation to pods that need file-level backup:
+    metadata:
+      annotations:
+        backup.velero.io/backup-volumes: "data-volume,config-volume"
+
+    # To exclude volumes from backup:
+    metadata:
+      annotations:
+        backup.velero.io/backup-volumes-excludes: "cache-volume,tmp-volume"
+
+---
+# Example VolumeSnapshot for PostgreSQL
+apiVersion: snapshot.storage.k8s.io/v1
+kind: VolumeSnapshot
+metadata:
+  name: postgres-snapshot-template
+  namespace: greenlang
+  labels:
+    app: postgresql
+    backup-type: manual
+spec:
+  volumeSnapshotClassName: ebs-snapshot-class
+  source:
+    # Reference to the PVC to snapshot
+    persistentVolumeClaimName: postgres-data-pvc
+
+---
+# Example VolumeSnapshot for Redis
+apiVersion: snapshot.storage.k8s.io/v1
+kind: VolumeSnapshot
+metadata:
+  name: redis-snapshot-template
+  namespace: greenlang
+  labels:
+    app: redis
+    backup-type: manual
+spec:
+  volumeSnapshotClassName: ebs-snapshot-class
+  source:
+    persistentVolumeClaimName: redis-data-pvc
+
+---
+# Example VolumeSnapshot for Weaviate
+apiVersion: snapshot.storage.k8s.io/v1
+kind: VolumeSnapshot
+metadata:
+  name: weaviate-snapshot-template
+  namespace: greenlang
+  labels:
+    app: weaviate
+    backup-type: manual
+spec:
+  volumeSnapshotClassName: ebs-snapshot-class
+  source:
+    persistentVolumeClaimName: weaviate-data-pvc
+
+---
+# Data Protection Policy ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: velero-data-protection-policy
+  namespace: velero
+  labels:
+    app.kubernetes.io/name: velero
+data:
+  policy.yaml: |
+    # GreenLang Data Protection Policy
+    # Version: 1.0.0
+
+    retention:
+      hourly:
+        count: 24
+        ttl: 24h
+      daily:
+        count: 7
+        ttl: 168h
+      weekly:
+        count: 4
+        ttl: 720h
+      monthly:
+        count: 12
+        ttl: 8760h
+
+    encryption:
+      enabled: true
+      algorithm: AES-256
+      keyRotation: 90d
+
+    replication:
+      enabled: true
+      destinations:
+        - region: eu-west-1
+          delay: 15m
+        - region: ap-southeast-1
+          delay: 1h
+
+    verification:
+      enabled: true
+      frequency: daily
+      checksumValidation: true
+      restoreTest: weekly
+
+    compliance:
+      dataClassification: confidential
+      retentionRequirements:
+        - regulation: GDPR
+          minRetention: 30d
+          maxRetention: 365d
+        - regulation: SOC2
+          minRetention: 90d
+      auditLogging: true
+      immutableBackups: true
+
+    alerting:
+      backupFailure:
+        severity: critical
+        notify:
+          - slack: "#platform-alerts"
+          - pagerduty: true
+      backupWarning:
+        severity: warning
+        notify:
+          - slack: "#platform-alerts"
+      restoreFailure:
+        severity: critical
+        notify:
+          - slack: "#platform-alerts"
+          - pagerduty: true
+
+---
+# Prometheus Rules for Backup Monitoring
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: velero-alerts
+  namespace: velero
+  labels:
+    app.kubernetes.io/name: velero
+    prometheus: main
+spec:
+  groups:
+    - name: velero.rules
+      rules:
+        - alert: VeleroBackupFailed
+          expr: |
+            increase(velero_backup_failure_total[1h]) > 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Velero backup failed"
+            description: "Velero backup has failed. Check backup logs for details."
+
+        - alert: VeleroBackupPartialFailure
+          expr: |
+            increase(velero_backup_partial_failure_total[1h]) > 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Velero backup partially failed"
+            description: "Velero backup completed with partial failures."
+
+        - alert: VeleroScheduledBackupMissing
+          expr: |
+            time() - velero_backup_last_successful_timestamp{schedule!=""} > 86400
+          for: 1h
+          labels:
+            severity: warning
+          annotations:
+            summary: "Scheduled backup missing"
+            description: "No successful backup in the last 24 hours for schedule {{ $labels.schedule }}"
+
+        - alert: VeleroBackupStorageLocationUnavailable
+          expr: |
+            velero_backup_storage_location_available == 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Backup storage location unavailable"
+            description: "Backup storage location {{ $labels.name }} is not available."
+
+        - alert: VeleroVolumeSnapshotFailed
+          expr: |
+            increase(velero_volume_snapshot_failure_total[1h]) > 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Volume snapshot failed"
+            description: "EBS volume snapshot has failed. Check Velero logs."
+
+        - alert: VeleroRestoreFailed
+          expr: |
+            increase(velero_restore_failure_total[1h]) > 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Velero restore failed"
+            description: "Velero restore operation has failed."

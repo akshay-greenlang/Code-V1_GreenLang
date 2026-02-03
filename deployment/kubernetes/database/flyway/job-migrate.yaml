@@ -1,0 +1,468 @@
+# =============================================================================
+# GreenLang Flyway Migration Kubernetes Job
+# =============================================================================
+# Description: Kubernetes Job for running Flyway database migrations
+# Usage: kubectl apply -f job-migrate.yaml
+# =============================================================================
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: flyway-migrate-{{ .Release.Revision | default "manual" }}
+  namespace: {{ .Values.namespace | default "greenlang" }}
+  labels:
+    app: flyway
+    component: database-migration
+    app.kubernetes.io/name: flyway
+    app.kubernetes.io/component: migration
+    app.kubernetes.io/part-of: greenlang
+    app.kubernetes.io/managed-by: kubectl
+  annotations:
+    description: "Flyway database migration job for GreenLang"
+    helm.sh/hook: pre-upgrade,pre-install
+    helm.sh/hook-weight: "-5"
+    helm.sh/hook-delete-policy: before-hook-creation
+spec:
+  # Job configuration
+  backoffLimit: 3
+  activeDeadlineSeconds: 600  # 10 minute timeout
+  ttlSecondsAfterFinished: 86400  # Clean up after 24 hours
+
+  template:
+    metadata:
+      labels:
+        app: flyway
+        component: database-migration
+      annotations:
+        sidecar.istio.io/inject: "false"  # Disable service mesh for migration jobs
+    spec:
+      restartPolicy: Never
+
+      # Security context
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+
+      # Service account for RBAC
+      serviceAccountName: flyway-migrations
+
+      # Init container to wait for database
+      initContainers:
+        - name: wait-for-postgres
+          image: postgres:15-alpine
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/sh
+            - -c
+            - |
+              echo "Waiting for PostgreSQL to be ready..."
+              until pg_isready -h $PGHOST -p $PGPORT -U $PGUSER; do
+                echo "PostgreSQL is unavailable - sleeping"
+                sleep 2
+              done
+              echo "PostgreSQL is ready!"
+          env:
+            - name: PGHOST
+              valueFrom:
+                configMapKeyRef:
+                  name: flyway-config
+                  key: db_host
+            - name: PGPORT
+              valueFrom:
+                configMapKeyRef:
+                  name: flyway-config
+                  key: db_port
+            - name: PGUSER
+              valueFrom:
+                secretKeyRef:
+                  name: flyway-credentials
+                  key: username
+          resources:
+            requests:
+              cpu: 50m
+              memory: 32Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+
+      containers:
+        - name: flyway
+          image: flyway/flyway:9.22.3
+          imagePullPolicy: IfNotPresent
+
+          # Migration command
+          command:
+            - flyway
+          args:
+            - -url=$(FLYWAY_URL)
+            - -user=$(FLYWAY_USER)
+            - -password=$(FLYWAY_PASSWORD)
+            - -locations=filesystem:/flyway/sql
+            - -configFiles=/flyway/conf/flyway.conf
+            - -validateOnMigrate=true
+            - -baselineOnMigrate=true
+            - -outOfOrder=false
+            - info
+            - migrate
+            - info
+
+          # Environment variables
+          env:
+            # Database connection
+            - name: FLYWAY_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: flyway-config
+                  key: jdbc_url
+            - name: FLYWAY_USER
+              valueFrom:
+                secretKeyRef:
+                  name: flyway-credentials
+                  key: username
+            - name: FLYWAY_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: flyway-credentials
+                  key: password
+
+            # Environment-specific placeholders
+            - name: ENVIRONMENT
+              valueFrom:
+                configMapKeyRef:
+                  name: flyway-config
+                  key: environment
+            - name: RETENTION_DAYS
+              valueFrom:
+                configMapKeyRef:
+                  name: flyway-config
+                  key: retention_days
+            - name: COMPRESSION_AFTER_DAYS
+              valueFrom:
+                configMapKeyRef:
+                  name: flyway-config
+                  key: compression_after_days
+            - name: CHUNK_INTERVAL
+              valueFrom:
+                configMapKeyRef:
+                  name: flyway-config
+                  key: chunk_interval
+
+            # AWS credentials for S3 migrations (if used)
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: flyway-aws-credentials
+                  key: access_key_id
+                  optional: true
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: flyway-aws-credentials
+                  key: secret_access_key
+                  optional: true
+            - name: AWS_REGION
+              valueFrom:
+                configMapKeyRef:
+                  name: flyway-config
+                  key: aws_region
+                  optional: true
+
+          # Volume mounts
+          volumeMounts:
+            - name: flyway-config
+              mountPath: /flyway/conf
+              readOnly: true
+            - name: flyway-sql
+              mountPath: /flyway/sql
+              readOnly: true
+
+          # Resource limits
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+
+          # Security context
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+
+      # Volumes
+      volumes:
+        - name: flyway-config
+          configMap:
+            name: flyway-config
+            items:
+              - key: flyway.conf
+                path: flyway.conf
+        - name: flyway-sql
+          configMap:
+            name: flyway-sql-migrations
+
+      # Node selection
+      nodeSelector:
+        kubernetes.io/os: linux
+
+      # Tolerations for dedicated database nodes
+      tolerations:
+        - key: "database"
+          operator: "Equal"
+          value: "true"
+          effect: "NoSchedule"
+
+      # Affinity rules
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: flyway
+                topologyKey: kubernetes.io/hostname
+
+---
+# =============================================================================
+# Flyway Validate Job (for CI/CD validation)
+# =============================================================================
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: flyway-validate-{{ .Release.Revision | default "manual" }}
+  namespace: {{ .Values.namespace | default "greenlang" }}
+  labels:
+    app: flyway
+    component: database-validation
+  annotations:
+    description: "Flyway validation job - does not apply migrations"
+spec:
+  backoffLimit: 1
+  activeDeadlineSeconds: 300
+  ttlSecondsAfterFinished: 3600
+
+  template:
+    metadata:
+      labels:
+        app: flyway
+        component: database-validation
+    spec:
+      restartPolicy: Never
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+
+      containers:
+        - name: flyway
+          image: flyway/flyway:9.22.3
+          command:
+            - flyway
+          args:
+            - -url=$(FLYWAY_URL)
+            - -user=$(FLYWAY_USER)
+            - -password=$(FLYWAY_PASSWORD)
+            - -locations=filesystem:/flyway/sql
+            - -configFiles=/flyway/conf/flyway.conf
+            - validate
+          env:
+            - name: FLYWAY_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: flyway-config
+                  key: jdbc_url
+            - name: FLYWAY_USER
+              valueFrom:
+                secretKeyRef:
+                  name: flyway-credentials
+                  key: username
+            - name: FLYWAY_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: flyway-credentials
+                  key: password
+          volumeMounts:
+            - name: flyway-config
+              mountPath: /flyway/conf
+              readOnly: true
+            - name: flyway-sql
+              mountPath: /flyway/sql
+              readOnly: true
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+
+      volumes:
+        - name: flyway-config
+          configMap:
+            name: flyway-config
+        - name: flyway-sql
+          configMap:
+            name: flyway-sql-migrations
+
+---
+# =============================================================================
+# Flyway Dry Run Job (for production verification)
+# =============================================================================
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: flyway-dryrun-{{ .Release.Revision | default "manual" }}
+  namespace: {{ .Values.namespace | default "greenlang" }}
+  labels:
+    app: flyway
+    component: database-dryrun
+  annotations:
+    description: "Flyway dry run job - shows pending migrations without applying"
+spec:
+  backoffLimit: 1
+  activeDeadlineSeconds: 300
+  ttlSecondsAfterFinished: 3600
+
+  template:
+    metadata:
+      labels:
+        app: flyway
+        component: database-dryrun
+    spec:
+      restartPolicy: Never
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+
+      containers:
+        - name: flyway
+          image: flyway/flyway:9.22.3
+          command:
+            - /bin/sh
+            - -c
+            - |
+              echo "=== Current Migration Status ==="
+              flyway -url=$FLYWAY_URL -user=$FLYWAY_USER -password=$FLYWAY_PASSWORD \
+                     -locations=filesystem:/flyway/sql -configFiles=/flyway/conf/flyway.conf \
+                     info
+
+              echo ""
+              echo "=== Pending Migrations ==="
+              flyway -url=$FLYWAY_URL -user=$FLYWAY_USER -password=$FLYWAY_PASSWORD \
+                     -locations=filesystem:/flyway/sql -configFiles=/flyway/conf/flyway.conf \
+                     info -pending
+
+              echo ""
+              echo "=== Validation Result ==="
+              flyway -url=$FLYWAY_URL -user=$FLYWAY_USER -password=$FLYWAY_PASSWORD \
+                     -locations=filesystem:/flyway/sql -configFiles=/flyway/conf/flyway.conf \
+                     validate
+
+              echo ""
+              echo "DRY RUN COMPLETE - No migrations were applied"
+          env:
+            - name: FLYWAY_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: flyway-config
+                  key: jdbc_url
+            - name: FLYWAY_USER
+              valueFrom:
+                secretKeyRef:
+                  name: flyway-credentials
+                  key: username
+            - name: FLYWAY_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: flyway-credentials
+                  key: password
+          volumeMounts:
+            - name: flyway-config
+              mountPath: /flyway/conf
+              readOnly: true
+            - name: flyway-sql
+              mountPath: /flyway/sql
+              readOnly: true
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+
+      volumes:
+        - name: flyway-config
+          configMap:
+            name: flyway-config
+        - name: flyway-sql
+          configMap:
+            name: flyway-sql-migrations
+
+---
+# =============================================================================
+# Service Account for Flyway
+# =============================================================================
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: flyway-migrations
+  namespace: {{ .Values.namespace | default "greenlang" }}
+  labels:
+    app: flyway
+    component: database-migration
+
+---
+# =============================================================================
+# RBAC Role for Flyway
+# =============================================================================
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: flyway-migrations
+  namespace: {{ .Values.namespace | default "greenlang" }}
+rules:
+  - apiGroups: [""]
+    resources: ["configmaps", "secrets"]
+    verbs: ["get", "list"]
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: flyway-migrations
+  namespace: {{ .Values.namespace | default "greenlang" }}
+subjects:
+  - kind: ServiceAccount
+    name: flyway-migrations
+roleRef:
+  kind: Role
+  name: flyway-migrations
+  apiGroup: rbac.authorization.k8s.io

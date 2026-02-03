@@ -1,0 +1,478 @@
+# =============================================================================
+# PostgreSQL/TimescaleDB ConfigMap - Staging Environment
+# =============================================================================
+# Medium resource settings for staging/QA
+# Optimized for: 16GB RAM, 4 CPU cores, SSD storage
+# =============================================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgresql-config-staging
+  namespace: greenlang-staging
+  labels:
+    app: postgresql
+    environment: staging
+    tier: database
+    managed-by: greenlang-devops
+  annotations:
+    description: "PostgreSQL configuration for staging environment"
+    last-updated: "2026-02-03"
+data:
+  # Main PostgreSQL configuration
+  postgresql.conf: |
+    # =============================================================================
+    # PostgreSQL Staging Configuration
+    # =============================================================================
+    # Optimized for: 16GB RAM, 4 CPU cores, SSD storage
+    # =============================================================================
+
+    # -----------------------------------------------------------------------------
+    # CONNECTION SETTINGS
+    # -----------------------------------------------------------------------------
+    listen_addresses = '*'
+    port = 5432
+    max_connections = 100
+    superuser_reserved_connections = 3
+
+    # TCP settings
+    tcp_keepalives_idle = 600
+    tcp_keepalives_interval = 30
+    tcp_keepalives_count = 10
+
+    # -----------------------------------------------------------------------------
+    # MEMORY CONFIGURATION (16GB RAM)
+    # -----------------------------------------------------------------------------
+    shared_buffers = 4GB
+    effective_cache_size = 12GB
+    work_mem = 128MB
+    maintenance_work_mem = 1GB
+    huge_pages = try
+    temp_buffers = 32MB
+
+    # -----------------------------------------------------------------------------
+    # WAL CONFIGURATION
+    # -----------------------------------------------------------------------------
+    wal_level = replica
+    wal_buffers = 32MB
+    checkpoint_timeout = 15min
+    checkpoint_completion_target = 0.9
+    max_wal_size = 4GB
+    min_wal_size = 1GB
+    wal_compression = on
+    archive_mode = on
+    archive_command = '/bin/true'
+
+    # -----------------------------------------------------------------------------
+    # QUERY PLANNER
+    # -----------------------------------------------------------------------------
+    random_page_cost = 1.1
+    effective_io_concurrency = 200
+    default_statistics_target = 100
+
+    # JIT Compilation
+    jit = on
+    jit_above_cost = 100000
+
+    # -----------------------------------------------------------------------------
+    # PARALLEL QUERY
+    # -----------------------------------------------------------------------------
+    max_parallel_workers_per_gather = 2
+    max_parallel_workers = 4
+    max_parallel_maintenance_workers = 2
+    parallel_leader_participation = on
+
+    # -----------------------------------------------------------------------------
+    # AUTOVACUUM
+    # -----------------------------------------------------------------------------
+    autovacuum = on
+    autovacuum_max_workers = 3
+    autovacuum_naptime = 30s
+    autovacuum_vacuum_threshold = 50
+    autovacuum_analyze_threshold = 50
+    autovacuum_vacuum_scale_factor = 0.05
+    autovacuum_analyze_scale_factor = 0.02
+    autovacuum_vacuum_cost_delay = 5ms
+    autovacuum_vacuum_cost_limit = 500
+
+    # -----------------------------------------------------------------------------
+    # REPLICATION (Single standby for testing)
+    # -----------------------------------------------------------------------------
+    max_wal_senders = 5
+    max_replication_slots = 5
+    wal_keep_size = 2GB
+    hot_standby = on
+    hot_standby_feedback = on
+    synchronous_commit = on
+
+    # -----------------------------------------------------------------------------
+    # LOGGING
+    # -----------------------------------------------------------------------------
+    logging_collector = on
+    log_directory = 'log'
+    log_filename = 'postgresql-%Y-%m-%d_%H%M%S.log'
+    log_rotation_age = 1d
+    log_rotation_size = 100MB
+    log_min_duration_statement = 500
+    log_checkpoints = on
+    log_connections = on
+    log_disconnections = on
+    log_lock_waits = on
+    log_statement = 'ddl'
+    log_temp_files = 0
+    log_line_prefix = '%m [%p] %q%u@%d '
+    log_timezone = 'UTC'
+    log_autovacuum_min_duration = 1000
+
+    # -----------------------------------------------------------------------------
+    # SECURITY
+    # -----------------------------------------------------------------------------
+    ssl = on
+    ssl_cert_file = '/etc/postgresql/certs/server.crt'
+    ssl_key_file = '/etc/postgresql/certs/server.key'
+    password_encryption = scram-sha-256
+
+    # Statement timeout
+    statement_timeout = 300000
+
+    # Idle transaction timeout
+    idle_in_transaction_session_timeout = 600000
+
+  # TimescaleDB configuration
+  timescaledb.conf: |
+    # TimescaleDB Staging Configuration
+    shared_preload_libraries = 'timescaledb,pg_stat_statements'
+    timescaledb.max_background_workers = 4
+    timescaledb.telemetry_level = off
+
+    # Query optimizations
+    timescaledb.enable_optimizations = on
+    timescaledb.enable_chunk_append = on
+    timescaledb.enable_parallel_chunk_append = on
+    timescaledb.enable_constraint_aware_append = on
+    timescaledb.enable_ordered_append = on
+
+    # pg_stat_statements
+    pg_stat_statements.max = 5000
+    pg_stat_statements.track = all
+    pg_stat_statements.track_utility = on
+    pg_stat_statements.track_planning = on
+
+  # Replication configuration
+  replication.conf: |
+    # Replication settings for staging
+    max_wal_senders = 5
+    max_replication_slots = 5
+    wal_keep_size = 2GB
+    hot_standby = on
+    hot_standby_feedback = on
+    synchronous_commit = on
+
+  # pg_hba.conf for staging
+  pg_hba.conf: |
+    # TYPE  DATABASE        USER            ADDRESS                 METHOD
+    # Local connections
+    local   all             all                                     scram-sha-256
+    # IPv4 connections from cluster
+    host    all             all             10.0.0.0/8              scram-sha-256
+    host    all             all             172.16.0.0/12           scram-sha-256
+    host    all             all             192.168.0.0/16          scram-sha-256
+    # IPv6 connections
+    host    all             all             ::1/128                 scram-sha-256
+    # Replication
+    local   replication     replicator                              scram-sha-256
+    host    replication     replicator      10.0.0.0/8              scram-sha-256
+
+---
+# External Secret for staging (using External Secrets Operator)
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+  name: postgresql-credentials-staging
+  namespace: greenlang-staging
+  labels:
+    app: postgresql
+    environment: staging
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    kind: ClusterSecretStore
+    name: aws-secrets-manager
+  target:
+    name: postgresql-credentials-staging
+    creationPolicy: Owner
+  data:
+    - secretKey: POSTGRES_USER
+      remoteRef:
+        key: greenlang/staging/postgresql
+        property: username
+    - secretKey: POSTGRES_PASSWORD
+      remoteRef:
+        key: greenlang/staging/postgresql
+        property: password
+    - secretKey: POSTGRES_DB
+      remoteRef:
+        key: greenlang/staging/postgresql
+        property: database
+    - secretKey: DATABASE_URL
+      remoteRef:
+        key: greenlang/staging/postgresql
+        property: connection_string
+    - secretKey: REPLICATION_USER
+      remoteRef:
+        key: greenlang/staging/postgresql
+        property: replication_user
+    - secretKey: REPLICATION_PASSWORD
+      remoteRef:
+        key: greenlang/staging/postgresql
+        property: replication_password
+
+---
+# PersistentVolumeClaim for staging
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgresql-data-staging
+  namespace: greenlang-staging
+  labels:
+    app: postgresql
+    environment: staging
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Gi
+  storageClassName: gp3
+
+---
+# PostgreSQL StatefulSet for staging
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgresql-staging
+  namespace: greenlang-staging
+  labels:
+    app: postgresql
+    environment: staging
+spec:
+  serviceName: postgresql-staging
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgresql
+      environment: staging
+  template:
+    metadata:
+      labels:
+        app: postgresql
+        environment: staging
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9187"
+    spec:
+      serviceAccountName: postgresql-staging
+      securityContext:
+        runAsUser: 999
+        runAsGroup: 999
+        fsGroup: 999
+      containers:
+        - name: postgresql
+          image: timescale/timescaledb:2.14.0-pg15
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5432
+              name: postgresql
+          envFrom:
+            - secretRef:
+                name: postgresql-credentials-staging
+          volumeMounts:
+            - name: postgresql-data
+              mountPath: /var/lib/postgresql/data
+            - name: postgresql-config
+              mountPath: /etc/postgresql/postgresql.conf
+              subPath: postgresql.conf
+            - name: postgresql-config
+              mountPath: /etc/postgresql/timescaledb.conf
+              subPath: timescaledb.conf
+            - name: postgresql-config
+              mountPath: /etc/postgresql/pg_hba.conf
+              subPath: pg_hba.conf
+            - name: postgresql-certs
+              mountPath: /etc/postgresql/certs
+              readOnly: true
+          args:
+            - -c
+            - config_file=/etc/postgresql/postgresql.conf
+            - -c
+            - hba_file=/etc/postgresql/pg_hba.conf
+          resources:
+            requests:
+              memory: "8Gi"
+              cpu: "2000m"
+            limits:
+              memory: "16Gi"
+              cpu: "4000m"
+          livenessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - $(POSTGRES_USER)
+                - -d
+                - $(POSTGRES_DB)
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 6
+          readinessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - $(POSTGRES_USER)
+                - -d
+                - $(POSTGRES_DB)
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            successThreshold: 1
+
+        # Postgres Exporter sidecar for metrics
+        - name: postgres-exporter
+          image: quay.io/prometheuscommunity/postgres-exporter:v0.15.0
+          ports:
+            - containerPort: 9187
+              name: metrics
+          env:
+            - name: DATA_SOURCE_URI
+              value: "localhost:5432/$(POSTGRES_DB)?sslmode=disable"
+            - name: DATA_SOURCE_USER
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql-credentials-staging
+                  key: POSTGRES_USER
+            - name: DATA_SOURCE_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql-credentials-staging
+                  key: POSTGRES_PASSWORD
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "50m"
+            limits:
+              memory: "128Mi"
+              cpu: "100m"
+
+      volumes:
+        - name: postgresql-config
+          configMap:
+            name: postgresql-config-staging
+        - name: postgresql-certs
+          secret:
+            secretName: postgresql-tls-staging
+            defaultMode: 0600
+        - name: postgresql-data
+          persistentVolumeClaim:
+            claimName: postgresql-data-staging
+
+---
+# Service for staging
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgresql-staging
+  namespace: greenlang-staging
+  labels:
+    app: postgresql
+    environment: staging
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9187"
+spec:
+  type: ClusterIP
+  ports:
+    - port: 5432
+      targetPort: 5432
+      name: postgresql
+    - port: 9187
+      targetPort: 9187
+      name: metrics
+  selector:
+    app: postgresql
+    environment: staging
+
+---
+# ServiceMonitor for Prometheus
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: postgresql-staging
+  namespace: greenlang-staging
+  labels:
+    app: postgresql
+    environment: staging
+spec:
+  selector:
+    matchLabels:
+      app: postgresql
+      environment: staging
+  endpoints:
+    - port: metrics
+      interval: 30s
+      path: /metrics
+
+---
+# PodDisruptionBudget
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: postgresql-staging-pdb
+  namespace: greenlang-staging
+spec:
+  minAvailable: 0
+  selector:
+    matchLabels:
+      app: postgresql
+      environment: staging
+
+---
+# NetworkPolicy
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: postgresql-staging-netpol
+  namespace: greenlang-staging
+spec:
+  podSelector:
+    matchLabels:
+      app: postgresql
+      environment: staging
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: greenlang-staging
+        - podSelector:
+            matchLabels:
+              access: postgresql
+      ports:
+        - protocol: TCP
+          port: 5432
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+      ports:
+        - protocol: TCP
+          port: 9187
+  egress:
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+      ports:
+        - protocol: TCP
+          port: 443

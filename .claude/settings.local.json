@@ -317,7 +317,12 @@
       "Bash(pip show:*)",
       "Bash(while read d)",
       "Bash(xcopy \"C:\\\\Users\\\\aksha\\\\Code-V1_GreenLang\\\\docs\\\\GL-PRD-FINAL\\\\*\" \"C:\\\\Users\\\\aksha\\\\Code-V1_GreenLang\\\\GreenLang Development\\\\05-Documentation\"\" /E /Y /I 2>nul || copy \"C:UsersakshaCode-V1_GreenLangdocsGL-PRD-FINAL*\" \"C:UsersakshaCode-V1_GreenLangGreenLang Development05-Documentation\"\")",
-      "Bash(robocopy:*)"
+      "Bash(robocopy:*)",
+      "Bash(.tf \")",
+      "Bash(aws sts get-caller-identity:*)",
+      "Bash(pip:*)",
+      "Bash(C:UsersakshaAppDataRoamingnpmralphy.cmd --version)",
+      "Bash(Select-Object -First 10)"
     ],
     "deny": [],
     "ask": []

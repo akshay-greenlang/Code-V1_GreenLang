@@ -1,0 +1,290 @@
+# =============================================================================
+# Redis Queuing ConfigMap
+# =============================================================================
+# Kubernetes ConfigMap for Redis Streams/queuing workload configuration
+# Deploy: kubectl apply -f configmap-queuing.yaml -n greenlang
+# =============================================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: redis-queuing-config
+  namespace: greenlang
+  labels:
+    app: redis
+    component: queue
+    workload: queuing
+    app.kubernetes.io/name: redis
+    app.kubernetes.io/component: queue
+    app.kubernetes.io/part-of: greenlang
+data:
+  redis.conf: |
+    # =============================================================================
+    # Redis Queuing Configuration
+    # =============================================================================
+    # Optimized for Redis Streams and message queuing workloads
+    # Priority: Durability - never lose messages
+    # =============================================================================
+
+    # Network Configuration
+    bind 0.0.0.0
+    port 6379
+    tcp-keepalive 300
+    timeout 0
+    tcp-backlog 511
+    maxclients 5000
+    tcp-nodelay yes
+
+    # Memory Configuration
+    maxmemory 4gb
+    maxmemory-policy noeviction
+    maxmemory-samples 10
+
+    # Active Defragmentation
+    activedefrag yes
+    active-defrag-ignore-bytes 100mb
+    active-defrag-threshold-lower 10
+    active-defrag-threshold-upper 100
+    active-defrag-cycle-min 1
+    active-defrag-cycle-max 25
+
+    # Jemalloc
+    jemalloc-bg-thread yes
+
+    # Persistence (AOF Enabled)
+    save ""
+    appendonly yes
+    appendfilename "appendonly.aof"
+    appenddirname "appendonlydir"
+    appendfsync everysec
+    no-appendfsync-on-rewrite no
+    auto-aof-rewrite-percentage 100
+    auto-aof-rewrite-min-size 64mb
+    aof-load-truncated yes
+    aof-use-rdb-preamble yes
+    aof-timestamp-enabled no
+
+    # Streams Configuration
+    stream-node-max-bytes 4096
+    stream-node-max-entries 100
+
+    # Replication
+    repl-backlog-size 128mb
+    repl-timeout 60
+    repl-diskless-sync no
+    min-replicas-to-write 1
+    min-replicas-max-lag 10
+
+    # Lazy Freeing
+    lazyfree-lazy-eviction yes
+    lazyfree-lazy-expire yes
+    lazyfree-lazy-server-del yes
+    replica-lazy-flush yes
+    lazyfree-lazy-user-del yes
+    lazyfree-lazy-user-flush yes
+
+    # Threading
+    io-threads 4
+    io-threads-do-reads yes
+
+    # Client Output Buffer Limits
+    client-output-buffer-limit normal 0 0 0
+    client-output-buffer-limit replica 512mb 128mb 60
+    client-output-buffer-limit pubsub 64mb 16mb 60
+
+    # Slow Log
+    slowlog-log-slower-than 10000
+    slowlog-max-len 256
+
+    # Latency Monitoring
+    latency-monitor-threshold 50
+
+    # Security
+    protected-mode no
+
+    # Logging
+    loglevel notice
+    logfile ""
+
+    # Advanced
+    hz 10
+    dynamic-hz yes
+    active-expire-effort 1
+    hash-max-ziplist-entries 512
+    hash-max-ziplist-value 64
+    list-max-ziplist-size -2
+    set-max-intset-entries 512
+    zset-max-ziplist-entries 128
+    zset-max-ziplist-value 64
+
+    # Data Directory
+    dir /data
+---
+# =============================================================================
+# Redis Queuing StatefulSet
+# =============================================================================
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redis-queue
+  namespace: greenlang
+  labels:
+    app: redis
+    component: queue
+spec:
+  serviceName: redis-queue
+  replicas: 3
+  selector:
+    matchLabels:
+      app: redis
+      component: queue
+  template:
+    metadata:
+      labels:
+        app: redis
+        component: queue
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9121"
+    spec:
+      terminationGracePeriodSeconds: 30
+      initContainers:
+        - name: init-sysctl
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              echo never > /host-sys/kernel/mm/transparent_hugepage/enabled
+              sysctl -w net.core.somaxconn=65535
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - name: host-sys
+              mountPath: /host-sys
+      containers:
+        - name: redis
+          image: redis:7.2-alpine
+          imagePullPolicy: IfNotPresent
+          command:
+            - redis-server
+            - /etc/redis/redis.conf
+          ports:
+            - containerPort: 6379
+              name: redis
+              protocol: TCP
+          resources:
+            requests:
+              memory: "4Gi"
+              cpu: "500m"
+            limits:
+              memory: "5Gi"
+              cpu: "2000m"
+          volumeMounts:
+            - name: redis-config
+              mountPath: /etc/redis
+            - name: redis-data
+              mountPath: /data
+          livenessProbe:
+            exec:
+              command:
+                - redis-cli
+                - ping
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            exec:
+              command:
+                - redis-cli
+                - ping
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            successThreshold: 1
+        - name: redis-exporter
+          image: oliver006/redis_exporter:v1.55.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 9121
+              name: metrics
+              protocol: TCP
+          resources:
+            requests:
+              memory: "32Mi"
+              cpu: "50m"
+            limits:
+              memory: "64Mi"
+              cpu: "100m"
+          env:
+            - name: REDIS_ADDR
+              value: "redis://localhost:6379"
+      volumes:
+        - name: redis-config
+          configMap:
+            name: redis-queuing-config
+        - name: host-sys
+          hostPath:
+            path: /sys
+  volumeClaimTemplates:
+    - metadata:
+        name: redis-data
+        labels:
+          app: redis
+          component: queue
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        storageClassName: fast-ssd
+        resources:
+          requests:
+            storage: 50Gi
+---
+# =============================================================================
+# Redis Queuing Headless Service
+# =============================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-queue
+  namespace: greenlang
+  labels:
+    app: redis
+    component: queue
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+    - port: 6379
+      targetPort: 6379
+      protocol: TCP
+      name: redis
+    - port: 9121
+      targetPort: 9121
+      protocol: TCP
+      name: metrics
+  selector:
+    app: redis
+    component: queue
+---
+# =============================================================================
+# Redis Queuing Client Service
+# =============================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-queue-client
+  namespace: greenlang
+  labels:
+    app: redis
+    component: queue
+spec:
+  type: ClusterIP
+  ports:
+    - port: 6379
+      targetPort: 6379
+      protocol: TCP
+      name: redis
+  selector:
+    app: redis
+    component: queue

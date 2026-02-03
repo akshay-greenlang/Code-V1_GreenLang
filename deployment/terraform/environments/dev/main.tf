@@ -1,24 +1,18 @@
 # GreenLang Development Environment
 # Terraform configuration for the development environment
+#
+# Prerequisites:
+# 1. Create S3 bucket for state: aws s3 mb s3://greenlang-terraform-state-${AWS_ACCOUNT_ID}
+# 2. Create DynamoDB table for locks: aws dynamodb create-table --table-name greenlang-terraform-locks ...
+# 3. Update bucket name below with your AWS account ID
+#
+# Usage:
+#   terraform init
+#   terraform plan -var-file="terraform.tfvars"
+#   terraform apply -var-file="terraform.tfvars"
 
+# Backend configuration - Update bucket name with your AWS account ID
 terraform {
-  required_version = ">= 1.0"
-
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = ">= 5.0"
-    }
-    random = {
-      source  = "hashicorp/random"
-      version = ">= 3.0"
-    }
-    kubernetes = {
-      source  = "hashicorp/kubernetes"
-      version = ">= 2.0"
-    }
-  }
-
   backend "s3" {
     bucket         = "greenlang-terraform-state"
     key            = "environments/dev/terraform.tfstate"
@@ -273,45 +267,4 @@ module "iam" {
   tags = local.common_tags
 }
 
-# -----------------------------------------------------------------------------
-# Outputs
-# -----------------------------------------------------------------------------
-output "vpc_id" {
-  description = "VPC ID"
-  value       = module.vpc.vpc_id
-}
-
-output "eks_cluster_name" {
-  description = "EKS cluster name"
-  value       = module.eks.cluster_name
-}
-
-output "eks_cluster_endpoint" {
-  description = "EKS cluster endpoint"
-  value       = module.eks.cluster_endpoint
-}
-
-output "rds_endpoint" {
-  description = "RDS endpoint"
-  value       = module.rds.endpoint
-}
-
-output "redis_endpoint" {
-  description = "Redis primary endpoint"
-  value       = module.elasticache.primary_endpoint_address
-}
-
-output "s3_buckets" {
-  description = "S3 bucket IDs"
-  value       = module.s3.all_bucket_ids
-}
-
-output "app_service_account_role_arn" {
-  description = "IAM role ARN for application service account"
-  value       = module.iam.app_service_account_role_arn
-}
-
-output "cicd_role_arn" {
-  description = "IAM role ARN for CI/CD"
-  value       = module.iam.cicd_deployment_role_arn
-}
+# Outputs are defined in outputs.tf

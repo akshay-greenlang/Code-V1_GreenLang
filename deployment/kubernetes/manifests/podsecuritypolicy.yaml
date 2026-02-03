@@ -1,93 +1,168 @@
+# GreenLang Pod Security Configuration
+# Compatible with Kubernetes 1.25+ (uses Pod Security Standards)
+#
+# Pod Security Standards (PSS) replaced PodSecurityPolicy (PSP) in K8s 1.25
+# This file uses the modern PSS approach with namespace labels
+#
+# Security Levels:
+# - privileged: Unrestricted (not used)
+# - baseline: Minimally restrictive, prevents known privilege escalations
+# - restricted: Heavily restricted, follows current Pod hardening best practices
+
+---
+# GreenLang System Namespace with Restricted Pod Security
 apiVersion: v1
 kind: Namespace
 metadata:
   name: greenlang-system
   labels:
-    # Enforce restricted Pod Security Standards
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: system
+    # Pod Security Standards - RESTRICTED level (most secure)
     pod-security.kubernetes.io/enforce: restricted
-    pod-security.kubernetes.io/audit: restricted
-    pod-security.kubernetes.io/warn: restricted
-    # For older clusters, use Pod Security Policy
     pod-security.kubernetes.io/enforce-version: latest
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/audit-version: latest
+    pod-security.kubernetes.io/warn: restricted
+    pod-security.kubernetes.io/warn-version: latest
 
 ---
-# For clusters still using PSP (deprecated but may be needed)
-apiVersion: policy/v1beta1
-kind: PodSecurityPolicy
+# GreenLang Application Namespace with Restricted Pod Security
+apiVersion: v1
+kind: Namespace
 metadata:
-  name: greenlang-restricted
-  annotations:
-    seccomp.security.alpha.kubernetes.io/allowedProfileNames: 'runtime/default,docker/default'
-    apparmor.security.beta.kubernetes.io/allowedProfileNames: 'runtime/default'
-    apparmor.security.beta.kubernetes.io/defaultProfileName: 'runtime/default'
-    seccomp.security.alpha.kubernetes.io/defaultProfileName: 'runtime/default'
-spec:
-  privileged: false
-  allowPrivilegeEscalation: false
-  requiredDropCapabilities:
-  - ALL
-  volumes:
-  - 'configMap'
-  - 'emptyDir'
-  - 'projected'
-  - 'secret'
-  - 'downwardAPI'
-  - 'persistentVolumeClaim'
-  hostNetwork: false
-  hostIPC: false
-  hostPID: false
-  runAsUser:
-    rule: 'MustRunAsNonRoot'
-    ranges:
-    - min: 10001
-      max: 65535
-  runAsGroup:
-    rule: 'MustRunAs'
-    ranges:
-    - min: 10001
-      max: 65535
-  seLinux:
-    rule: 'RunAsAny'
-  supplementalGroups:
-    rule: 'MustRunAs'
-    ranges:
-    - min: 10001
-      max: 65535
-  fsGroup:
-    rule: 'MustRunAs'
-    ranges:
-    - min: 10001
-      max: 65535
-  readOnlyRootFilesystem: true
+  name: greenlang
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: application
+    # Pod Security Standards - RESTRICTED level
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/enforce-version: latest
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/audit-version: latest
+    pod-security.kubernetes.io/warn: restricted
+    pod-security.kubernetes.io/warn-version: latest
 
 ---
+# GreenLang Agents Namespace with Restricted Pod Security
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: greenlang-agents
+  labels:
+    app.kubernetes.io/name: greenlang-agents
+    app.kubernetes.io/component: agents
+    # Pod Security Standards - RESTRICTED level
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/enforce-version: latest
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/audit-version: latest
+    pod-security.kubernetes.io/warn: restricted
+    pod-security.kubernetes.io/warn-version: latest
+
+---
+# Security-focused ClusterRole for GreenLang workloads
+# This replaces the PSP-based ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: greenlang-psp-restricted
+  name: greenlang-security-restricted
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: security
 rules:
-- apiGroups:
-  - policy
-  resources:
-  - podsecuritypolicies
-  verbs:
-  - use
-  resourceNames:
-  - greenlang-restricted
+  # Allow reading pod security policies for audit purposes (if PSP still exists)
+  - apiGroups: ["policy"]
+    resources: ["podsecuritypolicies"]
+    verbs: ["get", "list"]
+  # Allow reading security-related resources
+  - apiGroups: [""]
+    resources: ["serviceaccounts"]
+    verbs: ["get", "list"]
+  - apiGroups: ["rbac.authorization.k8s.io"]
+    resources: ["roles", "rolebindings"]
+    verbs: ["get", "list"]
 
 ---
+# Bind the security role to GreenLang service accounts
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: greenlang-psp-restricted-binding
+  name: greenlang-security-restricted-binding
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: security
 roleRef:
   kind: ClusterRole
-  name: greenlang-psp-restricted
+  name: greenlang-security-restricted
   apiGroup: rbac.authorization.k8s.io
 subjects:
-- kind: ServiceAccount
-  name: greenlang-runner
-  namespace: greenlang-system
-- kind: ServiceAccount
-  name: greenlang-executor
-  namespace: greenlang-system
+  - kind: ServiceAccount
+    name: greenlang-runner
+    namespace: greenlang-system
+  - kind: ServiceAccount
+    name: greenlang-executor
+    namespace: greenlang-system
+  - kind: ServiceAccount
+    name: default
+    namespace: greenlang
+  - kind: ServiceAccount
+    name: default
+    namespace: greenlang-agents
+
+---
+# ResourceQuota to enforce resource limits at namespace level
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: greenlang-quota
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: quota
+spec:
+  hard:
+    requests.cpu: "50"
+    requests.memory: "100Gi"
+    limits.cpu: "100"
+    limits.memory: "200Gi"
+    pods: "100"
+    services: "20"
+    secrets: "50"
+    configmaps: "50"
+    persistentvolumeclaims: "20"
+
+---
+# LimitRange to set default resource limits for pods
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: greenlang-limits
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: limits
+spec:
+  limits:
+    - type: Container
+      default:
+        cpu: "1000m"
+        memory: "2Gi"
+      defaultRequest:
+        cpu: "100m"
+        memory: "256Mi"
+      min:
+        cpu: "50m"
+        memory: "64Mi"
+      max:
+        cpu: "8000m"
+        memory: "16Gi"
+    - type: Pod
+      max:
+        cpu: "16000m"
+        memory: "32Gi"
+    - type: PersistentVolumeClaim
+      min:
+        storage: "1Gi"
+      max:
+        storage: "500Gi"

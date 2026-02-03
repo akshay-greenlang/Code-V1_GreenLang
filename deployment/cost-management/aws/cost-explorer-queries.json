@@ -1,0 +1,395 @@
+{
+  "metadata": {
+    "project": "GreenLang",
+    "description": "Common AWS Cost Explorer queries for cost analysis",
+    "version": "1.0.0",
+    "updated": "2026-02-03"
+  },
+  "queries": {
+    "monthly_cost_by_service": {
+      "description": "Get monthly costs broken down by AWS service",
+      "query": {
+        "TimePeriod": {
+          "Start": "2026-01-01",
+          "End": "2026-02-01"
+        },
+        "Granularity": "MONTHLY",
+        "Metrics": ["BlendedCost", "UnblendedCost", "UsageQuantity"],
+        "GroupBy": [
+          {
+            "Type": "DIMENSION",
+            "Key": "SERVICE"
+          }
+        ],
+        "Filter": {
+          "Tags": {
+            "Key": "Project",
+            "Values": ["GreenLang"]
+          }
+        }
+      },
+      "cli_command": "aws ce get-cost-and-usage --time-period Start=2026-01-01,End=2026-02-01 --granularity MONTHLY --metrics BlendedCost UnblendedCost --group-by Type=DIMENSION,Key=SERVICE --filter '{\"Tags\":{\"Key\":\"Project\",\"Values\":[\"GreenLang\"]}}'"
+    },
+    "daily_cost_trend": {
+      "description": "Get daily cost trend for the last 30 days",
+      "query": {
+        "TimePeriod": {
+          "Start": "{{30_days_ago}}",
+          "End": "{{today}}"
+        },
+        "Granularity": "DAILY",
+        "Metrics": ["BlendedCost"],
+        "Filter": {
+          "Tags": {
+            "Key": "Project",
+            "Values": ["GreenLang"]
+          }
+        }
+      },
+      "cli_command": "aws ce get-cost-and-usage --time-period Start=$(date -d '30 days ago' +%Y-%m-%d),End=$(date +%Y-%m-%d) --granularity DAILY --metrics BlendedCost --filter '{\"Tags\":{\"Key\":\"Project\",\"Values\":[\"GreenLang\"]}}'"
+    },
+    "cost_by_environment": {
+      "description": "Get costs broken down by environment tag",
+      "query": {
+        "TimePeriod": {
+          "Start": "2026-01-01",
+          "End": "2026-02-01"
+        },
+        "Granularity": "MONTHLY",
+        "Metrics": ["BlendedCost"],
+        "GroupBy": [
+          {
+            "Type": "TAG",
+            "Key": "Environment"
+          }
+        ],
+        "Filter": {
+          "Tags": {
+            "Key": "Project",
+            "Values": ["GreenLang"]
+          }
+        }
+      },
+      "cli_command": "aws ce get-cost-and-usage --time-period Start=2026-01-01,End=2026-02-01 --granularity MONTHLY --metrics BlendedCost --group-by Type=TAG,Key=Environment --filter '{\"Tags\":{\"Key\":\"Project\",\"Values\":[\"GreenLang\"]}}'"
+    },
+    "cost_by_cost_center": {
+      "description": "Get costs broken down by cost center",
+      "query": {
+        "TimePeriod": {
+          "Start": "2026-01-01",
+          "End": "2026-02-01"
+        },
+        "Granularity": "MONTHLY",
+        "Metrics": ["BlendedCost", "UnblendedCost"],
+        "GroupBy": [
+          {
+            "Type": "TAG",
+            "Key": "CostCenter"
+          }
+        ],
+        "Filter": {
+          "Tags": {
+            "Key": "Project",
+            "Values": ["GreenLang"]
+          }
+        }
+      },
+      "cli_command": "aws ce get-cost-and-usage --time-period Start=2026-01-01,End=2026-02-01 --granularity MONTHLY --metrics BlendedCost UnblendedCost --group-by Type=TAG,Key=CostCenter"
+    },
+    "ec2_cost_by_instance_type": {
+      "description": "Get EC2 costs broken down by instance type",
+      "query": {
+        "TimePeriod": {
+          "Start": "2026-01-01",
+          "End": "2026-02-01"
+        },
+        "Granularity": "MONTHLY",
+        "Metrics": ["BlendedCost", "UsageQuantity"],
+        "GroupBy": [
+          {
+            "Type": "DIMENSION",
+            "Key": "INSTANCE_TYPE"
+          }
+        ],
+        "Filter": {
+          "And": [
+            {
+              "Dimensions": {
+                "Key": "SERVICE",
+                "Values": ["Amazon Elastic Compute Cloud - Compute"]
+              }
+            },
+            {
+              "Tags": {
+                "Key": "Project",
+                "Values": ["GreenLang"]
+              }
+            }
+          ]
+        }
+      },
+      "cli_command": "aws ce get-cost-and-usage --time-period Start=2026-01-01,End=2026-02-01 --granularity MONTHLY --metrics BlendedCost UsageQuantity --group-by Type=DIMENSION,Key=INSTANCE_TYPE --filter '{\"And\":[{\"Dimensions\":{\"Key\":\"SERVICE\",\"Values\":[\"Amazon Elastic Compute Cloud - Compute\"]}},{\"Tags\":{\"Key\":\"Project\",\"Values\":[\"GreenLang\"]}}]}'"
+    },
+    "spot_vs_on_demand": {
+      "description": "Compare Spot vs On-Demand EC2 costs",
+      "query": {
+        "TimePeriod": {
+          "Start": "2026-01-01",
+          "End": "2026-02-01"
+        },
+        "Granularity": "MONTHLY",
+        "Metrics": ["BlendedCost", "UsageQuantity"],
+        "GroupBy": [
+          {
+            "Type": "DIMENSION",
+            "Key": "PURCHASE_TYPE"
+          }
+        ],
+        "Filter": {
+          "Dimensions": {
+            "Key": "SERVICE",
+            "Values": ["Amazon Elastic Compute Cloud - Compute"]
+          }
+        }
+      },
+      "cli_command": "aws ce get-cost-and-usage --time-period Start=2026-01-01,End=2026-02-01 --granularity MONTHLY --metrics BlendedCost UsageQuantity --group-by Type=DIMENSION,Key=PURCHASE_TYPE --filter '{\"Dimensions\":{\"Key\":\"SERVICE\",\"Values\":[\"Amazon Elastic Compute Cloud - Compute\"]}}'"
+    },
+    "data_transfer_costs": {
+      "description": "Analyze data transfer costs by usage type",
+      "query": {
+        "TimePeriod": {
+          "Start": "2026-01-01",
+          "End": "2026-02-01"
+        },
+        "Granularity": "MONTHLY",
+        "Metrics": ["BlendedCost", "UsageQuantity"],
+        "GroupBy": [
+          {
+            "Type": "DIMENSION",
+            "Key": "USAGE_TYPE"
+          }
+        ],
+        "Filter": {
+          "Dimensions": {
+            "Key": "USAGE_TYPE",
+            "Values": ["DataTransfer-Out-Bytes", "DataTransfer-In-Bytes", "DataTransfer-Regional-Bytes"],
+            "MatchOptions": ["CONTAINS"]
+          }
+        }
+      },
+      "cli_command": "aws ce get-cost-and-usage --time-period Start=2026-01-01,End=2026-02-01 --granularity MONTHLY --metrics BlendedCost UsageQuantity --group-by Type=DIMENSION,Key=USAGE_TYPE --filter '{\"Dimensions\":{\"Key\":\"USAGE_TYPE\",\"Values\":[\"DataTransfer\"],\"MatchOptions\":[\"CONTAINS\"]}}'"
+    },
+    "rds_costs_detailed": {
+      "description": "Detailed RDS costs by instance and usage type",
+      "query": {
+        "TimePeriod": {
+          "Start": "2026-01-01",
+          "End": "2026-02-01"
+        },
+        "Granularity": "MONTHLY",
+        "Metrics": ["BlendedCost", "UsageQuantity"],
+        "GroupBy": [
+          {
+            "Type": "DIMENSION",
+            "Key": "USAGE_TYPE"
+          }
+        ],
+        "Filter": {
+          "And": [
+            {
+              "Dimensions": {
+                "Key": "SERVICE",
+                "Values": ["Amazon Relational Database Service"]
+              }
+            },
+            {
+              "Tags": {
+                "Key": "Project",
+                "Values": ["GreenLang"]
+              }
+            }
+          ]
+        }
+      },
+      "cli_command": "aws ce get-cost-and-usage --time-period Start=2026-01-01,End=2026-02-01 --granularity MONTHLY --metrics BlendedCost UsageQuantity --group-by Type=DIMENSION,Key=USAGE_TYPE --filter '{\"And\":[{\"Dimensions\":{\"Key\":\"SERVICE\",\"Values\":[\"Amazon Relational Database Service\"]}},{\"Tags\":{\"Key\":\"Project\",\"Values\":[\"GreenLang\"]}}]}'"
+    },
+    "s3_costs_by_bucket": {
+      "description": "S3 costs broken down by storage type",
+      "query": {
+        "TimePeriod": {
+          "Start": "2026-01-01",
+          "End": "2026-02-01"
+        },
+        "Granularity": "MONTHLY",
+        "Metrics": ["BlendedCost", "UsageQuantity"],
+        "GroupBy": [
+          {
+            "Type": "DIMENSION",
+            "Key": "USAGE_TYPE"
+          }
+        ],
+        "Filter": {
+          "Dimensions": {
+            "Key": "SERVICE",
+            "Values": ["Amazon Simple Storage Service"]
+          }
+        }
+      },
+      "cli_command": "aws ce get-cost-and-usage --time-period Start=2026-01-01,End=2026-02-01 --granularity MONTHLY --metrics BlendedCost UsageQuantity --group-by Type=DIMENSION,Key=USAGE_TYPE --filter '{\"Dimensions\":{\"Key\":\"SERVICE\",\"Values\":[\"Amazon Simple Storage Service\"]}}'"
+    },
+    "cost_forecast": {
+      "description": "Get cost forecast for the next month",
+      "query": {
+        "TimePeriod": {
+          "Start": "{{today}}",
+          "End": "{{30_days_later}}"
+        },
+        "Granularity": "MONTHLY",
+        "Metric": "BLENDED_COST",
+        "Filter": {
+          "Tags": {
+            "Key": "Project",
+            "Values": ["GreenLang"]
+          }
+        },
+        "PredictionIntervalLevel": 80
+      },
+      "cli_command": "aws ce get-cost-forecast --time-period Start=$(date +%Y-%m-%d),End=$(date -d '+30 days' +%Y-%m-%d) --granularity MONTHLY --metric BLENDED_COST --filter '{\"Tags\":{\"Key\":\"Project\",\"Values\":[\"GreenLang\"]}}'"
+    },
+    "savings_plan_coverage": {
+      "description": "Analyze Savings Plans coverage",
+      "query": {
+        "TimePeriod": {
+          "Start": "2026-01-01",
+          "End": "2026-02-01"
+        },
+        "Granularity": "MONTHLY",
+        "Metrics": ["SpendCoveredBySavingsPlans", "OnDemandCost", "TotalCost"],
+        "GroupBy": [
+          {
+            "Type": "DIMENSION",
+            "Key": "SERVICE"
+          }
+        ]
+      },
+      "cli_command": "aws ce get-savings-plans-coverage --time-period Start=2026-01-01,End=2026-02-01 --granularity MONTHLY --group-by Type=DIMENSION,Key=SERVICE"
+    },
+    "savings_plan_utilization": {
+      "description": "Analyze Savings Plans utilization",
+      "query": {
+        "TimePeriod": {
+          "Start": "2026-01-01",
+          "End": "2026-02-01"
+        },
+        "Granularity": "MONTHLY"
+      },
+      "cli_command": "aws ce get-savings-plans-utilization --time-period Start=2026-01-01,End=2026-02-01 --granularity MONTHLY"
+    },
+    "reserved_instance_coverage": {
+      "description": "Analyze Reserved Instance coverage",
+      "query": {
+        "TimePeriod": {
+          "Start": "2026-01-01",
+          "End": "2026-02-01"
+        },
+        "Granularity": "MONTHLY",
+        "GroupBy": [
+          {
+            "Type": "DIMENSION",
+            "Key": "SERVICE"
+          }
+        ]
+      },
+      "cli_command": "aws ce get-reservation-coverage --time-period Start=2026-01-01,End=2026-02-01 --granularity MONTHLY --group-by Type=DIMENSION,Key=SERVICE"
+    },
+    "rightsizing_recommendations": {
+      "description": "Get EC2 rightsizing recommendations",
+      "query": {
+        "Service": "AmazonEC2",
+        "PageSize": 100,
+        "Configuration": {
+          "BenefitsConsidered": true,
+          "RecommendationTarget": "SAME_INSTANCE_FAMILY"
+        }
+      },
+      "cli_command": "aws ce get-rightsizing-recommendation --service AmazonEC2 --configuration BenefitsConsidered=true,RecommendationTarget=SAME_INSTANCE_FAMILY"
+    },
+    "anomaly_detection": {
+      "description": "Get cost anomalies for the last 30 days",
+      "query": {
+        "DateInterval": {
+          "StartDate": "{{30_days_ago}}",
+          "EndDate": "{{today}}"
+        },
+        "TotalImpact": {
+          "NumericOperator": "GREATER_THAN_OR_EQUAL",
+          "StartValue": 100
+        }
+      },
+      "cli_command": "aws ce get-anomalies --date-interval StartDate=$(date -d '30 days ago' +%Y-%m-%d),EndDate=$(date +%Y-%m-%d) --total-impact NumericOperator=GREATER_THAN_OR_EQUAL,StartValue=100"
+    },
+    "untagged_resources_cost": {
+      "description": "Find costs from untagged resources",
+      "query": {
+        "TimePeriod": {
+          "Start": "2026-01-01",
+          "End": "2026-02-01"
+        },
+        "Granularity": "MONTHLY",
+        "Metrics": ["BlendedCost"],
+        "GroupBy": [
+          {
+            "Type": "DIMENSION",
+            "Key": "SERVICE"
+          }
+        ],
+        "Filter": {
+          "Not": {
+            "Tags": {
+              "Key": "Project",
+              "MatchOptions": ["PRESENT"]
+            }
+          }
+        }
+      },
+      "cli_command": "aws ce get-cost-and-usage --time-period Start=2026-01-01,End=2026-02-01 --granularity MONTHLY --metrics BlendedCost --group-by Type=DIMENSION,Key=SERVICE --filter '{\"Not\":{\"Tags\":{\"Key\":\"Project\",\"MatchOptions\":[\"PRESENT\"]}}}'"
+    }
+  },
+  "scheduled_reports": {
+    "weekly_summary": {
+      "description": "Weekly cost summary report",
+      "schedule": "0 8 * * 1",
+      "queries": ["monthly_cost_by_service", "cost_by_environment", "spot_vs_on_demand"],
+      "recipients": ["finops@greenlang.io"],
+      "format": "CSV"
+    },
+    "monthly_detailed": {
+      "description": "Monthly detailed cost report",
+      "schedule": "0 8 1 * *",
+      "queries": ["monthly_cost_by_service", "cost_by_cost_center", "ec2_cost_by_instance_type", "data_transfer_costs", "savings_plan_coverage"],
+      "recipients": ["finops@greenlang.io", "leadership@greenlang.io"],
+      "format": "PDF"
+    },
+    "daily_anomaly_check": {
+      "description": "Daily anomaly detection check",
+      "schedule": "0 7 * * *",
+      "queries": ["anomaly_detection", "daily_cost_trend"],
+      "recipients": ["finops@greenlang.io"],
+      "format": "JSON"
+    }
+  },
+  "automation_scripts": {
+    "generate_monthly_report": {
+      "description": "Script to generate monthly cost report",
+      "script": "#!/bin/bash\nSTART_DATE=$(date -d 'first day of last month' +%Y-%m-%d)\nEND_DATE=$(date -d 'first day of this month' +%Y-%m-%d)\naws ce get-cost-and-usage \\\n  --time-period Start=$START_DATE,End=$END_DATE \\\n  --granularity MONTHLY \\\n  --metrics BlendedCost UnblendedCost UsageQuantity \\\n  --group-by Type=DIMENSION,Key=SERVICE \\\n  --filter '{\"Tags\":{\"Key\":\"Project\",\"Values\":[\"GreenLang\"]}}' \\\n  --output json > monthly_report_$(date +%Y%m).json"
+    },
+    "check_budget_status": {
+      "description": "Script to check budget status",
+      "script": "#!/bin/bash\naws budgets describe-budgets --account-id $(aws sts get-caller-identity --query Account --output text) --output table"
+    },
+    "export_to_s3": {
+      "description": "Export cost report to S3",
+      "script": "#!/bin/bash\nREPORT_NAME=\"cost-report-$(date +%Y%m%d).json\"\naws ce get-cost-and-usage \\\n  --time-period Start=$(date -d '30 days ago' +%Y-%m-%d),End=$(date +%Y-%m-%d) \\\n  --granularity DAILY \\\n  --metrics BlendedCost \\\n  --group-by Type=DIMENSION,Key=SERVICE \\\n  --output json > /tmp/$REPORT_NAME\naws s3 cp /tmp/$REPORT_NAME s3://greenlang-cost-reports/$REPORT_NAME"
+    }
+  }
+}

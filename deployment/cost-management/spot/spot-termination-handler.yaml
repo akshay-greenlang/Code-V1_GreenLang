@@ -1,0 +1,504 @@
+# AWS Node Termination Handler Configuration
+# INFRA-001: Cost Management and Optimization
+# Handles graceful termination of Spot instances and scheduled events
+
+---
+# Namespace for termination handler
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: aws-node-termination-handler
+  labels:
+    name: aws-node-termination-handler
+    app.kubernetes.io/name: aws-node-termination-handler
+
+---
+# ServiceAccount for Node Termination Handler
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: aws-node-termination-handler
+  namespace: aws-node-termination-handler
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::ACCOUNT_ID:role/AWSNodeTerminationHandlerRole
+
+---
+# ClusterRole for Node Termination Handler
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: aws-node-termination-handler
+rules:
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["get", "list", "patch", "update"]
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list"]
+  - apiGroups: [""]
+    resources: ["pods/eviction"]
+    verbs: ["create"]
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["create", "patch"]
+  - apiGroups: ["extensions", "apps"]
+    resources: ["daemonsets"]
+    verbs: ["get"]
+
+---
+# ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: aws-node-termination-handler
+subjects:
+  - kind: ServiceAccount
+    name: aws-node-termination-handler
+    namespace: aws-node-termination-handler
+roleRef:
+  kind: ClusterRole
+  name: aws-node-termination-handler
+  apiGroup: rbac.authorization.k8s.io
+
+---
+# ConfigMap for Node Termination Handler
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: aws-node-termination-handler-config
+  namespace: aws-node-termination-handler
+data:
+  # Enable IMDS interruption monitoring
+  ENABLE_SPOT_INTERRUPTION_DRAINING: "true"
+
+  # Enable scheduled event draining
+  ENABLE_SCHEDULED_EVENT_DRAINING: "true"
+
+  # Enable rebalance recommendation draining
+  ENABLE_REBALANCE_DRAINING: "true"
+
+  # Enable rebalance monitoring
+  ENABLE_REBALANCE_MONITORING: "true"
+
+  # Metadata tries
+  METADATA_TRIES: "3"
+
+  # Cordon and drain settings
+  CORDON_ONLY: "false"
+  TAINT_NODE: "true"
+
+  # Grace period for pod termination
+  POD_TERMINATION_GRACE_PERIOD: "120"
+
+  # Node termination grace period
+  NODE_TERMINATION_GRACE_PERIOD: "120"
+
+  # Delete local data (emptyDir volumes)
+  DELETE_LOCAL_DATA: "true"
+
+  # Ignore daemon sets when draining
+  IGNORE_DAEMON_SETS: "true"
+
+  # Drain timeout
+  DRAIN_TIMEOUT: "180"
+
+  # Webhook settings
+  WEBHOOK_URL: ""
+  WEBHOOK_HEADERS: ""
+  WEBHOOK_TEMPLATE: |
+    {
+      "text": "Node {{.NodeName}} received {{.EventKind}} event. Instance: {{.InstanceID}}, Node: {{.NodeName}}, Description: {{.Description}}"
+    }
+
+  # Prometheus metrics
+  ENABLE_PROMETHEUS_SERVER: "true"
+  PROMETHEUS_SERVER_PORT: "9092"
+
+  # Logging
+  LOG_LEVEL: "info"
+  JSON_LOGGING: "true"
+
+  # AWS Region
+  AWS_REGION: "us-east-1"
+
+  # Emit Kubernetes events
+  EMIT_KUBERNETES_EVENTS: "true"
+
+  # Use provider ID
+  USE_PROVIDER_ID: "true"
+
+---
+# DaemonSet for Node Termination Handler (IMDS mode)
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: aws-node-termination-handler
+  namespace: aws-node-termination-handler
+  labels:
+    app.kubernetes.io/name: aws-node-termination-handler
+    app.kubernetes.io/instance: aws-node-termination-handler
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: aws-node-termination-handler
+      app.kubernetes.io/instance: aws-node-termination-handler
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: aws-node-termination-handler
+        app.kubernetes.io/instance: aws-node-termination-handler
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9092"
+    spec:
+      serviceAccountName: aws-node-termination-handler
+      priorityClassName: system-node-critical
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+
+      nodeSelector:
+        kubernetes.io/os: linux
+
+      # Run on all nodes including spot
+      tolerations:
+        - operator: Exists
+
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: eks.amazonaws.com/compute-type
+                    operator: NotIn
+                    values:
+                      - fargate
+
+      containers:
+        - name: aws-node-termination-handler
+          image: public.ecr.aws/aws-ec2/aws-node-termination-handler:v1.21.0
+          imagePullPolicy: IfNotPresent
+
+          envFrom:
+            - configMapRef:
+                name: aws-node-termination-handler-config
+
+          env:
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: WEBHOOK_URL
+              valueFrom:
+                secretKeyRef:
+                  name: aws-node-termination-handler-webhook
+                  key: webhook-url
+                  optional: true
+
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi
+
+          ports:
+            - name: http-metrics
+              containerPort: 9092
+              protocol: TCP
+
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+
+---
+# Secret for webhook URL (placeholder)
+apiVersion: v1
+kind: Secret
+metadata:
+  name: aws-node-termination-handler-webhook
+  namespace: aws-node-termination-handler
+type: Opaque
+stringData:
+  webhook-url: "https://hooks.slack.com/services/XXXXX/XXXXX/XXXXX"
+
+---
+# ServiceMonitor for Prometheus
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: aws-node-termination-handler
+  namespace: aws-node-termination-handler
+  labels:
+    app.kubernetes.io/name: aws-node-termination-handler
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: aws-node-termination-handler
+  endpoints:
+    - port: http-metrics
+      interval: 30s
+      path: /metrics
+
+---
+# Service for metrics
+apiVersion: v1
+kind: Service
+metadata:
+  name: aws-node-termination-handler
+  namespace: aws-node-termination-handler
+  labels:
+    app.kubernetes.io/name: aws-node-termination-handler
+spec:
+  type: ClusterIP
+  ports:
+    - port: 9092
+      targetPort: 9092
+      protocol: TCP
+      name: http-metrics
+  selector:
+    app.kubernetes.io/name: aws-node-termination-handler
+
+---
+# PrometheusRule for termination alerts
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: aws-node-termination-handler-alerts
+  namespace: aws-node-termination-handler
+  labels:
+    app.kubernetes.io/name: aws-node-termination-handler
+spec:
+  groups:
+    - name: spot-termination-alerts
+      rules:
+        # Spot interruption received
+        - alert: SpotInterruptionReceived
+          expr: |
+            increase(actions_node_total{action="cordon-and-drain",node_action="spot-itn"}[5m]) > 0
+          for: 0m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Spot instance interruption notice received"
+            description: "A spot instance has received a 2-minute interruption warning"
+            runbook_url: "https://wiki.greenlang.io/runbooks/spot-interruption"
+
+        # Scheduled event received
+        - alert: ScheduledEventReceived
+          expr: |
+            increase(actions_node_total{action="cordon-and-drain",node_action="scheduled-event"}[5m]) > 0
+          for: 0m
+          labels:
+            severity: info
+          annotations:
+            summary: "AWS scheduled event received"
+            description: "An AWS scheduled maintenance event has been received"
+
+        # Rebalance recommendation received
+        - alert: RebalanceRecommendationReceived
+          expr: |
+            increase(actions_node_total{action="cordon-and-drain",node_action="rebalance-recommendation"}[5m]) > 0
+          for: 0m
+          labels:
+            severity: info
+          annotations:
+            summary: "EC2 rebalance recommendation received"
+            description: "An EC2 rebalance recommendation has been received for a spot instance"
+
+        # High interruption rate
+        - alert: HighSpotInterruptionRate
+          expr: |
+            sum(increase(actions_node_total{node_action="spot-itn"}[1h])) > 5
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "High spot instance interruption rate"
+            description: "More than 5 spot interruptions in the last hour"
+            recommendation: "Consider diversifying instance types or increasing on-demand capacity"
+
+        # Node drain failure
+        - alert: NodeDrainFailure
+          expr: |
+            increase(actions_node_total{action="cordon-and-drain",result="error"}[10m]) > 0
+          for: 0m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Node drain operation failed"
+            description: "Failed to drain node during termination handling"
+
+---
+# PodDisruptionBudget for critical workloads
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: greenlang-api-pdb
+  namespace: greenlang
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: greenlang-api
+
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: greenlang-worker-pdb
+  namespace: greenlang
+spec:
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: greenlang-worker
+
+---
+# Queue based draining configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: spot-termination-config
+  namespace: aws-node-termination-handler
+data:
+  # SQS Queue configuration for queue-processor mode
+  sqs-config.yaml: |
+    # Use this configuration for queue-processor mode with EventBridge
+    queueURL: https://sqs.us-east-1.amazonaws.com/ACCOUNT_ID/greenlang-nth-queue
+
+    # EventBridge rules to create:
+    # 1. EC2 Spot Instance Interruption Warning
+    # 2. EC2 Instance Rebalance Recommendation
+    # 3. EC2 Instance State-change Notification
+    # 4. AWS Health Events
+
+    # Example EventBridge rule pattern for Spot Interruption:
+    # {
+    #   "source": ["aws.ec2"],
+    #   "detail-type": ["EC2 Spot Instance Interruption Warning"]
+    # }
+
+    # Example EventBridge rule pattern for Rebalance:
+    # {
+    #   "source": ["aws.ec2"],
+    #   "detail-type": ["EC2 Instance Rebalance Recommendation"]
+    # }
+
+  # Graceful shutdown script for applications
+  graceful-shutdown.sh: |
+    #!/bin/bash
+    # Graceful shutdown script for spot instance termination
+
+    echo "Starting graceful shutdown..."
+
+    # Stop accepting new work
+    curl -X POST http://localhost:8080/admin/stop-accepting-work || true
+
+    # Wait for in-flight requests to complete
+    MAX_WAIT=90
+    CURRENT_WAIT=0
+
+    while [ $CURRENT_WAIT -lt $MAX_WAIT ]; do
+      ACTIVE_REQUESTS=$(curl -s http://localhost:8080/metrics | grep active_requests | awk '{print $2}')
+
+      if [ "$ACTIVE_REQUESTS" == "0" ] || [ -z "$ACTIVE_REQUESTS" ]; then
+        echo "All requests completed"
+        break
+      fi
+
+      echo "Waiting for $ACTIVE_REQUESTS active requests to complete..."
+      sleep 5
+      CURRENT_WAIT=$((CURRENT_WAIT + 5))
+    done
+
+    echo "Graceful shutdown complete"
+
+---
+# Helm values for aws-node-termination-handler chart
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nth-helm-values
+  namespace: aws-node-termination-handler
+data:
+  values.yaml: |
+    # Helm values for aws-node-termination-handler
+    # Install with: helm install aws-node-termination-handler \
+    #   --namespace aws-node-termination-handler \
+    #   eks/aws-node-termination-handler \
+    #   -f values.yaml
+
+    enableSpotInterruptionDraining: true
+    enableScheduledEventDraining: true
+    enableRebalanceMonitoring: true
+    enableRebalanceDraining: true
+
+    # Webhook for notifications
+    webhookURL: ""
+    webhookTemplate: |
+      {
+        "text": ":warning: *Spot Termination Alert*\nNode: {{.NodeName}}\nEvent: {{.EventKind}}\nInstance: {{.InstanceID}}"
+      }
+
+    # Pod settings
+    podTerminationGracePeriod: 120
+    nodeTerminationGracePeriod: 120
+
+    # Resource limits
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 100m
+        memory: 128Mi
+
+    # Priority
+    priorityClassName: system-node-critical
+
+    # Tolerations to run on all nodes
+    tolerations:
+      - operator: Exists
+
+    # Node selector
+    nodeSelector:
+      kubernetes.io/os: linux
+
+    # Prometheus metrics
+    enablePrometheusServer: true
+    prometheusServerPort: 9092
+
+    # ServiceMonitor for Prometheus Operator
+    serviceMonitor:
+      enabled: true
+      interval: 30s
+
+    # JSON logging
+    jsonLogging: true
+    logLevel: info
+
+    # Emit Kubernetes events
+    emitKubernetesEvents: true

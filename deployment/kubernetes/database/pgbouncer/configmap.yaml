@@ -1,0 +1,252 @@
+# PgBouncer Configuration ConfigMap
+# Contains pgbouncer.ini and userlist.txt template
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pgbouncer-config
+  namespace: greenlang-database
+  labels:
+    app: pgbouncer
+    app.kubernetes.io/name: pgbouncer
+    app.kubernetes.io/component: connection-pooler
+    app.kubernetes.io/part-of: greenlang
+data:
+  # Main PgBouncer configuration file
+  pgbouncer.ini: |
+    ;; PgBouncer Configuration for GreenLang
+    ;; Connection string: postgresql://user:pass@pgbouncer.greenlang-database:5432/greenlang
+
+    ;;; Database Configuration
+    [databases]
+    ; Primary GreenLang database
+    greenlang = host=${POSTGRESQL_HOST} port=5432 dbname=greenlang auth_user=${PGBOUNCER_AUTH_USER}
+
+    ; Read replicas (optional - uncomment when read replicas are available)
+    ; greenlang_ro = host=${POSTGRESQL_HOST_RO} port=5432 dbname=greenlang auth_user=${PGBOUNCER_AUTH_USER}
+
+    ; Additional databases for multi-tenant support
+    * = host=${POSTGRESQL_HOST} port=5432 auth_user=${PGBOUNCER_AUTH_USER}
+
+    ;;; PgBouncer Settings
+    [pgbouncer]
+
+    ;; Administrative settings
+    listen_addr = 0.0.0.0
+    listen_port = 5432
+    unix_socket_dir = /var/run/pgbouncer
+    unix_socket_mode = 0777
+
+    ;; Authentication
+    auth_type = md5
+    auth_file = /bitnami/pgbouncer/conf/userlist.txt
+    auth_user = ${PGBOUNCER_AUTH_USER}
+    auth_query = SELECT usename, passwd FROM pg_shadow WHERE usename=$1
+
+    ;; Pool Mode Configuration
+    ; transaction - release connection back to pool after transaction ends (recommended for most apps)
+    ; session - connection released when client disconnects (legacy apps)
+    ; statement - connection released after each statement (read-only workloads)
+    pool_mode = transaction
+
+    ;; Connection Limits
+    ; Maximum number of client connections allowed
+    max_client_conn = 1000
+
+    ; Default number of server connections allowed per user/database pair
+    default_pool_size = 20
+
+    ; Minimum pool size - connections kept open even when idle
+    min_pool_size = 5
+
+    ; Reserve pool - additional connections for burst traffic
+    reserve_pool_size = 5
+
+    ; Time in seconds before reserve pool connections are used
+    reserve_pool_timeout = 3
+
+    ; Maximum number of connections in database (sum of all pools)
+    max_db_connections = 100
+
+    ; Maximum number of connections per user
+    max_user_connections = 50
+
+    ;; Connection Queue
+    ; Maximum time to wait for connection from pool (seconds)
+    query_timeout = 0
+    query_wait_timeout = 120
+    client_idle_timeout = 0
+    client_login_timeout = 60
+
+    ;; Server Connection Settings
+    ; Time between connection retries
+    server_connect_timeout = 15
+    server_login_retry = 15
+
+    ; Idle server connection timeout
+    server_idle_timeout = 600
+
+    ; Time to wait for server response
+    server_lifetime = 3600
+
+    ; Check server connection health before use
+    server_check_delay = 30
+    server_check_query = SELECT 1
+
+    ; Reset query after each transaction (important for transaction pooling)
+    server_reset_query = DISCARD ALL
+
+    ; Reset queries for named prepared statements
+    server_reset_query_always = 0
+
+    ;; Logging
+    log_connections = 1
+    log_disconnections = 1
+    log_pooler_errors = 1
+    log_stats = 1
+    stats_period = 60
+    verbose = 0
+
+    ;; Application Name Configuration
+    ; Add client host to application_name for better tracing
+    application_name_add_host = 1
+
+    ;; TLS/SSL Configuration (uncomment for TLS)
+    ; client_tls_sslmode = prefer
+    ; client_tls_cert_file = /etc/pgbouncer/tls/tls.crt
+    ; client_tls_key_file = /etc/pgbouncer/tls/tls.key
+    ; client_tls_ca_file = /etc/pgbouncer/tls/ca.crt
+    ; server_tls_sslmode = verify-full
+    ; server_tls_ca_file = /etc/pgbouncer/tls/ca.crt
+
+    ;; Admin Console
+    admin_users = pgbouncer_admin
+    stats_users = pgbouncer_stats, prometheus
+
+    ;; Dangerous Timeouts (use with caution)
+    ; Set these only if you understand the implications
+    ; query_timeout = 300
+    ; idle_transaction_timeout = 0
+
+    ;; Memory Settings
+    ; These are automatically calculated, but can be overridden
+    ; pkt_buf = 4096
+    ; sbuf_lookahead = 0
+
+    ;; TCP Settings
+    tcp_defer_accept = 1
+    tcp_keepalive = 1
+    tcp_keepcnt = 5
+    tcp_keepidle = 30
+    tcp_keepintvl = 10
+    tcp_socket_buffer = 0
+    tcp_user_timeout = 0
+
+    ;; DNS Settings
+    dns_max_ttl = 15
+    dns_nxdomain_ttl = 15
+    dns_zone_check_period = 0
+
+    ;; So_reuseport for better performance on Linux
+    so_reuseport = 1
+
+    ;; Ignore startup parameters that might cause issues
+    ignore_startup_parameters = extra_float_digits
+
+  # User list template - actual passwords should be in secrets
+  # Format: "username" "password_hash"
+  # Password hash can be: plain text, md5, or scram-sha-256
+  userlist.txt: |
+    ; PgBouncer User List
+    ; Format: "username" "md5<hash>" or "username" "password"
+    ;
+    ; This file is a template. Actual credentials should be mounted from secrets.
+    ; Use auth_query for dynamic authentication against PostgreSQL.
+    ;
+    ; Admin users for PgBouncer console
+    "pgbouncer_admin" ""
+    "pgbouncer_stats" ""
+    "prometheus" ""
+    ;
+    ; Application users (populated from secrets or auth_query)
+    ; "greenlang_app" ""
+    ; "greenlang_readonly" ""
+    ; "greenlang_admin" ""
+
+---
+# Additional ConfigMap for custom scripts
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pgbouncer-scripts
+  namespace: greenlang-database
+  labels:
+    app: pgbouncer
+data:
+  # Health check script
+  health-check.sh: |
+    #!/bin/bash
+    set -e
+
+    # Check if PgBouncer is accepting connections
+    PGPASSWORD=$PGBOUNCER_PASSWORD psql -h localhost -p 5432 -U pgbouncer_stats pgbouncer -c "SHOW POOLS;" > /dev/null 2>&1
+
+    if [ $? -eq 0 ]; then
+        echo "PgBouncer is healthy"
+        exit 0
+    else
+        echo "PgBouncer health check failed"
+        exit 1
+    fi
+
+  # Connection stats script
+  show-stats.sh: |
+    #!/bin/bash
+    set -e
+
+    echo "=== PgBouncer Statistics ==="
+    echo ""
+
+    echo "--- Pools ---"
+    PGPASSWORD=$PGBOUNCER_PASSWORD psql -h localhost -p 5432 -U pgbouncer_stats pgbouncer -c "SHOW POOLS;"
+
+    echo ""
+    echo "--- Databases ---"
+    PGPASSWORD=$PGBOUNCER_PASSWORD psql -h localhost -p 5432 -U pgbouncer_stats pgbouncer -c "SHOW DATABASES;"
+
+    echo ""
+    echo "--- Stats ---"
+    PGPASSWORD=$PGBOUNCER_PASSWORD psql -h localhost -p 5432 -U pgbouncer_stats pgbouncer -c "SHOW STATS;"
+
+    echo ""
+    echo "--- Active Clients ---"
+    PGPASSWORD=$PGBOUNCER_PASSWORD psql -h localhost -p 5432 -U pgbouncer_stats pgbouncer -c "SHOW CLIENTS;"
+
+  # Graceful shutdown script
+  graceful-shutdown.sh: |
+    #!/bin/bash
+    set -e
+
+    echo "Initiating graceful shutdown..."
+
+    # Disable new connections
+    PGPASSWORD=$PGBOUNCER_PASSWORD psql -h localhost -p 5432 -U pgbouncer_admin pgbouncer -c "DISABLE greenlang;"
+
+    # Wait for active queries to complete (max 30 seconds)
+    for i in {1..30}; do
+        ACTIVE=$(PGPASSWORD=$PGBOUNCER_PASSWORD psql -h localhost -p 5432 -U pgbouncer_stats pgbouncer -t -c "SHOW POOLS;" | grep -c "cl_active" || true)
+        if [ "$ACTIVE" -eq 0 ]; then
+            echo "All connections drained"
+            break
+        fi
+        echo "Waiting for $ACTIVE active connections to complete..."
+        sleep 1
+    done
+
+    # Kill remaining connections if any
+    PGPASSWORD=$PGBOUNCER_PASSWORD psql -h localhost -p 5432 -U pgbouncer_admin pgbouncer -c "KILL greenlang;"
+
+    # Shutdown
+    PGPASSWORD=$PGBOUNCER_PASSWORD psql -h localhost -p 5432 -U pgbouncer_admin pgbouncer -c "SHUTDOWN;"
+
+    echo "Shutdown complete"

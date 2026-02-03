@@ -1,0 +1,298 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "patroni.configMapName" . }}
+  namespace: {{ .Values.namespace | default .Release.Namespace }}
+  labels:
+    {{- include "patroni.labels" . | nindent 4 }}
+data:
+  patroni.yml: |
+    scope: {{ .Values.patroni.scope }}
+    namespace: /greenlang/
+    name: "{{`{{ .Env.PATRONI_NAME }}`}}"
+
+    restapi:
+      listen: 0.0.0.0:{{ .Values.patroni.restapi.port }}
+      connect_address: "{{`{{ .Env.POD_IP }}`}}:{{ .Values.patroni.restapi.port }}"
+      {{- if .Values.patroni.restapi.authentication.enabled }}
+      authentication:
+        username: {{ .Values.patroni.restapi.authentication.username }}
+        password: "{{`{{ .Env.PATRONI_RESTAPI_PASSWORD }}`}}"
+      {{- end }}
+
+    kubernetes:
+      namespace: {{ .Values.namespace | default .Release.Namespace }}
+      labels:
+        app: patroni
+        cluster-name: {{ .Values.clusterName }}
+      use_endpoints: true
+      pod_ip: "{{`{{ .Env.POD_IP }}`}}"
+      ports:
+        - name: postgresql
+          port: {{ .Values.postgresql.port }}
+
+    bootstrap:
+      dcs:
+        ttl: {{ .Values.patroni.dcs.ttl }}
+        loop_wait: {{ .Values.patroni.dcs.loop_wait }}
+        retry_timeout: {{ .Values.patroni.dcs.retry_timeout }}
+        maximum_lag_on_failover: {{ .Values.patroni.dcs.maximum_lag_on_failover }}
+        master_start_timeout: {{ .Values.patroni.dcs.master_start_timeout }}
+        synchronous_mode: {{ .Values.patroni.dcs.synchronous_mode }}
+        synchronous_mode_strict: {{ .Values.patroni.dcs.synchronous_mode_strict }}
+        postgresql:
+          use_pg_rewind: true
+          use_slots: true
+          parameters:
+            {{- range $key, $value := .Values.postgresql.parameters }}
+            {{ $key }}: {{ $value | quote }}
+            {{- end }}
+
+      initdb:
+        {{- range .Values.patroni.bootstrap.initdb }}
+        - {{ . }}
+        {{- end }}
+
+      {{- if .Values.patroni.bootstrap.post_init }}
+      post_init: {{ .Values.patroni.bootstrap.post_init }}
+      {{- end }}
+
+      users:
+        {{- range $user, $config := .Values.patroni.bootstrap.users }}
+        {{ $user }}:
+          password: "{{`{{ .Env.`}}{{ upper $user }}_PASSWORD{{` }}`}}"
+          options:
+            {{- range $config.options }}
+            - {{ . }}
+            {{- end }}
+        {{- end }}
+
+    postgresql:
+      listen: 0.0.0.0:{{ .Values.postgresql.port }}
+      connect_address: "{{`{{ .Env.POD_IP }}`}}:{{ .Values.postgresql.port }}"
+      data_dir: {{ .Values.postgresql.dataDir }}
+      bin_dir: {{ .Values.postgresql.binDir }}
+      config_dir: {{ .Values.postgresql.dataDir }}
+
+      authentication:
+        replication:
+          username: replicator
+          password: "{{`{{ .Env.REPLICATION_PASSWORD }}`}}"
+        superuser:
+          username: postgres
+          password: "{{`{{ .Env.POSTGRES_PASSWORD }}`}}"
+        rewind:
+          username: postgres
+          password: "{{`{{ .Env.POSTGRES_PASSWORD }}`}}"
+
+      pg_hba:
+        {{- range .Values.postgresql.pg_hba }}
+        - {{ . }}
+        {{- end }}
+
+      callbacks:
+        on_start: /scripts/on_start.sh
+        on_stop: /scripts/on_stop.sh
+        on_role_change: /scripts/on_role_change.sh
+        on_restart: /scripts/on_restart.sh
+
+      create_replica_methods:
+        {{- range .Values.postgresql.create_replica_methods }}
+        - {{ . }}
+        {{- end }}
+
+      {{- if .Values.backup.enabled }}
+      pgbackrest:
+        command: pgbackrest --stanza={{ .Values.backup.pgbackrest.stanza }} --delta restore
+        keep_data: true
+        no_params: true
+      {{- end }}
+
+      basebackup:
+        checkpoint: fast
+        max-rate: 100M
+
+    watchdog:
+      mode: off
+      device: /dev/watchdog
+      safety_margin: 5
+
+    tags:
+      nofailover: false
+      noloadbalance: false
+      clonefrom: false
+      nosync: false
+
+  post-init.sh: |
+    #!/bin/bash
+    set -e
+
+    echo "Running post-initialization scripts..."
+
+    # Create TimescaleDB extension
+    psql -U postgres -d postgres -c "CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;"
+
+    # Create additional extensions
+    psql -U postgres -d postgres -c "CREATE EXTENSION IF NOT EXISTS pg_stat_statements;"
+    psql -U postgres -d postgres -c "CREATE EXTENSION IF NOT EXISTS pgcrypto;"
+    psql -U postgres -d postgres -c "CREATE EXTENSION IF NOT EXISTS uuid-ossp;"
+
+    # Create greenlang database
+    psql -U postgres -c "CREATE DATABASE greenlang OWNER greenlang;"
+    psql -U postgres -d greenlang -c "CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;"
+    psql -U postgres -d greenlang -c "CREATE EXTENSION IF NOT EXISTS pg_stat_statements;"
+    psql -U postgres -d greenlang -c "CREATE EXTENSION IF NOT EXISTS pgcrypto;"
+    psql -U postgres -d greenlang -c "CREATE EXTENSION IF NOT EXISTS uuid-ossp;"
+
+    echo "Post-initialization completed successfully."
+
+  on_role_change.sh: |
+    #!/bin/bash
+    set -e
+
+    ROLE=$1
+    ACTION=$2
+    CLUSTER=$3
+
+    echo "Role change detected: $ROLE $ACTION $CLUSTER"
+
+    # Notify monitoring system (if available)
+    curl -s -X POST "http://alertmanager.monitoring:9093/api/v1/alerts" \
+      -H "Content-Type: application/json" \
+      -d "[{
+        \"labels\": {
+          \"alertname\": \"PatroniRoleChange\",
+          \"cluster\": \"$CLUSTER\",
+          \"pod\": \"$HOSTNAME\",
+          \"role\": \"$ROLE\",
+          \"action\": \"$ACTION\"
+        },
+        \"annotations\": {
+          \"summary\": \"Patroni role changed to $ROLE\",
+          \"description\": \"Pod $HOSTNAME changed role to $ROLE in cluster $CLUSTER\"
+        }
+      }]" 2>/dev/null || true
+
+  on_start.sh: |
+    #!/bin/bash
+    set -e
+    echo "PostgreSQL started on $HOSTNAME"
+
+  on_stop.sh: |
+    #!/bin/bash
+    set -e
+    echo "PostgreSQL stopped on $HOSTNAME"
+
+  on_restart.sh: |
+    #!/bin/bash
+    set -e
+    echo "PostgreSQL restarted on $HOSTNAME"
+
+---
+{{- if .Values.backup.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "patroni.fullname" . }}-pgbackrest
+  namespace: {{ .Values.namespace | default .Release.Namespace }}
+  labels:
+    {{- include "patroni.labels" . | nindent 4 }}
+data:
+  pgbackrest.conf: |
+    [global]
+    repo1-type={{ .Values.backup.pgbackrest.repoType }}
+    repo1-path=/{{ .Values.backup.pgbackrest.stanza }}-backups
+    {{- if eq .Values.backup.pgbackrest.repoType "s3" }}
+    repo1-s3-bucket={{ .Values.backup.pgbackrest.s3.bucket }}
+    repo1-s3-endpoint={{ .Values.backup.pgbackrest.s3.endpoint }}
+    repo1-s3-region={{ .Values.backup.pgbackrest.s3.region }}
+    {{- end }}
+    repo1-retention-full={{ .Values.backup.pgbackrest.retention.full }}
+    repo1-retention-diff={{ .Values.backup.pgbackrest.retention.diff }}
+    {{- if .Values.backup.pgbackrest.encryption.enabled }}
+    repo1-cipher-type={{ .Values.backup.pgbackrest.encryption.type }}
+    {{- end }}
+
+    process-max={{ .Values.backup.pgbackrest.processMax }}
+    log-level-console=info
+    log-level-file=detail
+    start-fast=y
+    delta=y
+    compress-type={{ .Values.backup.pgbackrest.compression.type }}
+    compress-level={{ .Values.backup.pgbackrest.compression.level }}
+
+    [{{ .Values.backup.pgbackrest.stanza }}]
+    pg1-path={{ .Values.postgresql.dataDir }}
+    pg1-port={{ .Values.postgresql.port }}
+    pg1-socket-path=/var/run/postgresql
+{{- end }}
+
+---
+{{- if and .Values.metrics.enabled .Values.metrics.postgresExporter.enabled .Values.metrics.postgresExporter.customQueries.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "patroni.fullname" . }}-exporter-queries
+  namespace: {{ .Values.namespace | default .Release.Namespace }}
+  labels:
+    {{- include "patroni.labels" . | nindent 4 }}
+data:
+  queries.yaml: |
+    pg_replication:
+      query: |
+        SELECT
+          CASE WHEN NOT pg_is_in_recovery() THEN 0
+          ELSE GREATEST(0, EXTRACT(EPOCH FROM (now() - pg_last_xact_replay_timestamp())))
+          END AS lag_seconds
+      master: true
+      metrics:
+        - lag_seconds:
+            usage: "GAUGE"
+            description: "Replication lag in seconds"
+
+    pg_postmaster:
+      query: "SELECT pg_postmaster_start_time as start_time_seconds from pg_postmaster_start_time()"
+      master: true
+      metrics:
+        - start_time_seconds:
+            usage: "GAUGE"
+            description: "Time at which postmaster started"
+
+    pg_database_size:
+      query: |
+        SELECT pg_database.datname, pg_database_size(pg_database.datname) as size_bytes
+        FROM pg_database
+        WHERE datistemplate = false
+      master: true
+      metrics:
+        - datname:
+            usage: "LABEL"
+            description: "Name of the database"
+        - size_bytes:
+            usage: "GAUGE"
+            description: "Database size in bytes"
+
+    timescaledb_chunks:
+      query: |
+        SELECT
+          hypertable_schema,
+          hypertable_name,
+          count(*) as chunk_count,
+          sum(pg_relation_size(format('%I.%I', chunk_schema, chunk_name)::regclass)) as total_bytes
+        FROM timescaledb_information.chunks
+        GROUP BY hypertable_schema, hypertable_name
+      master: true
+      metrics:
+        - hypertable_schema:
+            usage: "LABEL"
+            description: "Schema of the hypertable"
+        - hypertable_name:
+            usage: "LABEL"
+            description: "Name of the hypertable"
+        - chunk_count:
+            usage: "GAUGE"
+            description: "Number of chunks"
+        - total_bytes:
+            usage: "GAUGE"
+            description: "Total size in bytes"
+{{- end }}

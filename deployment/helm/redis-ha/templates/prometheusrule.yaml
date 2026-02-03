@@ -1,0 +1,378 @@
+{{- if .Values.prometheusRule.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ include "redis-ha.fullname" . }}
+  {{- if .Values.prometheusRule.namespace }}
+  namespace: {{ .Values.prometheusRule.namespace }}
+  {{- else }}
+  namespace: {{ .Release.Namespace }}
+  {{- end }}
+  labels:
+    {{- include "redis-ha.labels" . | nindent 4 }}
+    {{- with .Values.prometheusRule.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- with .Values.prometheusRule.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  groups:
+    # Availability Alerts
+    - name: redis-ha.availability
+      rules:
+        - alert: RedisDown
+          expr: redis_up == 0
+          for: 2m
+          labels:
+            severity: critical
+            component: redis
+          annotations:
+            summary: "Redis instance is down"
+            description: "Redis instance {{ "{{" }} $labels.pod {{ "}}" }} in namespace {{ "{{" }} $labels.namespace {{ "}}" }} has been down for more than 2 minutes."
+            runbook_url: "https://docs.greenlang.io/runbooks/redis-down"
+
+        - alert: RedisMasterLinkDown
+          expr: redis_connected_slaves == 0 and redis_instance_info{role="master"} == 1
+          for: 1m
+          labels:
+            severity: critical
+            component: redis
+          annotations:
+            summary: "Redis master has no connected replicas"
+            description: "Redis master {{ "{{" }} $labels.pod {{ "}}" }} has no connected replicas for more than 1 minute."
+            runbook_url: "https://docs.greenlang.io/runbooks/redis-replication"
+
+        - alert: RedisReplicaLinkDown
+          expr: redis_master_link_up == 0
+          for: 1m
+          labels:
+            severity: warning
+            component: redis
+          annotations:
+            summary: "Redis replica disconnected from master"
+            description: "Redis replica {{ "{{" }} $labels.pod {{ "}}" }} is disconnected from master for more than 1 minute."
+            runbook_url: "https://docs.greenlang.io/runbooks/redis-replication"
+
+        - alert: RedisSentinelDown
+          expr: redis_sentinel_masters == 0
+          for: 2m
+          labels:
+            severity: critical
+            component: redis-sentinel
+          annotations:
+            summary: "Redis Sentinel is not monitoring any masters"
+            description: "Redis Sentinel {{ "{{" }} $labels.pod {{ "}}" }} is not monitoring any masters for more than 2 minutes."
+            runbook_url: "https://docs.greenlang.io/runbooks/redis-sentinel"
+
+        - alert: RedisSentinelInsufficientQuorum
+          expr: redis_sentinel_sentinels < {{ .Values.sentinel.quorum }}
+          for: 5m
+          labels:
+            severity: critical
+            component: redis-sentinel
+          annotations:
+            summary: "Insufficient Sentinel quorum"
+            description: "Only {{ "{{" }} $value {{ "}}" }} Sentinels are available, which is below the quorum requirement of {{ .Values.sentinel.quorum }}."
+            runbook_url: "https://docs.greenlang.io/runbooks/redis-sentinel"
+
+        - alert: RedisTooFewReplicas
+          expr: redis_connected_slaves < {{ sub .Values.redis.replicas 1 }}
+          for: 5m
+          labels:
+            severity: warning
+            component: redis
+          annotations:
+            summary: "Redis has fewer replicas than expected"
+            description: "Redis master {{ "{{" }} $labels.pod {{ "}}" }} has {{ "{{" }} $value {{ "}}" }} connected replicas, expected {{ sub .Values.redis.replicas 1 }}."
+            runbook_url: "https://docs.greenlang.io/runbooks/redis-replication"
+
+    # Memory Alerts
+    - name: redis-ha.memory
+      rules:
+        - alert: RedisMemoryHigh
+          expr: (redis_memory_used_bytes / redis_memory_max_bytes) * 100 > 80
+          for: 5m
+          labels:
+            severity: warning
+            component: redis
+          annotations:
+            summary: "Redis memory usage is high"
+            description: "Redis {{ "{{" }} $labels.pod {{ "}}" }} memory usage is at {{ "{{" }} $value | printf \"%.1f\" {{ "}}" }}%."
+            runbook_url: "https://docs.greenlang.io/runbooks/redis-memory"
+
+        - alert: RedisMemoryCritical
+          expr: (redis_memory_used_bytes / redis_memory_max_bytes) * 100 > 90
+          for: 2m
+          labels:
+            severity: critical
+            component: redis
+          annotations:
+            summary: "Redis memory usage is critical"
+            description: "Redis {{ "{{" }} $labels.pod {{ "}}" }} memory usage is at {{ "{{" }} $value | printf \"%.1f\" {{ "}}" }}%. Evictions may occur."
+            runbook_url: "https://docs.greenlang.io/runbooks/redis-memory"
+
+        - alert: RedisMemoryFragmentationHigh
+          expr: redis_memory_fragmentation_ratio > 1.5
+          for: 10m
+          labels:
+            severity: warning
+            component: redis
+          annotations:
+            summary: "Redis memory fragmentation is high"
+            description: "Redis {{ "{{" }} $labels.pod {{ "}}" }} has memory fragmentation ratio of {{ "{{" }} $value | printf \"%.2f\" {{ "}}" }}."
+            runbook_url: "https://docs.greenlang.io/runbooks/redis-memory"
+
+        - alert: RedisEvictedKeysHigh
+          expr: rate(redis_evicted_keys_total[5m]) > 100
+          for: 5m
+          labels:
+            severity: warning
+            component: redis
+          annotations:
+            summary: "Redis is evicting keys"
+            description: "Redis {{ "{{" }} $labels.pod {{ "}}" }} is evicting {{ "{{" }} $value | printf \"%.0f\" {{ "}}" }} keys per second due to memory pressure."
+            runbook_url: "https://docs.greenlang.io/runbooks/redis-memory"
+
+    # Performance Alerts
+    - name: redis-ha.performance
+      rules:
+        - alert: RedisLatencyHigh
+          expr: redis_commands_duration_seconds_total / redis_commands_total > 0.01
+          for: 5m
+          labels:
+            severity: warning
+            component: redis
+          annotations:
+            summary: "Redis command latency is high"
+            description: "Redis {{ "{{" }} $labels.pod {{ "}}" }} average command latency is {{ "{{" }} $value | printf \"%.3f\" {{ "}}" }}s."
+            runbook_url: "https://docs.greenlang.io/runbooks/redis-performance"
+
+        - alert: RedisSlowlogEntriesHigh
+          expr: increase(redis_slowlog_length[5m]) > 10
+          for: 5m
+          labels:
+            severity: warning
+            component: redis
+          annotations:
+            summary: "Redis has many slow queries"
+            description: "Redis {{ "{{" }} $labels.pod {{ "}}" }} has {{ "{{" }} $value | printf \"%.0f\" {{ "}}" }} new slow log entries in the last 5 minutes."
+            runbook_url: "https://docs.greenlang.io/runbooks/redis-performance"
+
+        - alert: RedisBlockedClientsHigh
+          expr: redis_blocked_clients > 10
+          for: 5m
+          labels:
+            severity: warning
+            component: redis
+          annotations:
+            summary: "Redis has many blocked clients"
+            description: "Redis {{ "{{" }} $labels.pod {{ "}}" }} has {{ "{{" }} $value {{ "}}" }} blocked clients."
+            runbook_url: "https://docs.greenlang.io/runbooks/redis-performance"
+
+        - alert: RedisCPUHigh
+          expr: rate(redis_cpu_user_seconds_total[5m]) + rate(redis_cpu_sys_seconds_total[5m]) > 0.8
+          for: 5m
+          labels:
+            severity: warning
+            component: redis
+          annotations:
+            summary: "Redis CPU usage is high"
+            description: "Redis {{ "{{" }} $labels.pod {{ "}}" }} CPU usage is at {{ "{{" }} $value | printf \"%.1f\" {{ "}}" }}%."
+            runbook_url: "https://docs.greenlang.io/runbooks/redis-performance"
+
+    # Connection Alerts
+    - name: redis-ha.connections
+      rules:
+        - alert: RedisConnectionsHigh
+          expr: redis_connected_clients > 5000
+          for: 5m
+          labels:
+            severity: warning
+            component: redis
+          annotations:
+            summary: "Redis has many connected clients"
+            description: "Redis {{ "{{" }} $labels.pod {{ "}}" }} has {{ "{{" }} $value {{ "}}" }} connected clients."
+            runbook_url: "https://docs.greenlang.io/runbooks/redis-connections"
+
+        - alert: RedisRejectedConnectionsHigh
+          expr: rate(redis_rejected_connections_total[5m]) > 0
+          for: 5m
+          labels:
+            severity: warning
+            component: redis
+          annotations:
+            summary: "Redis is rejecting connections"
+            description: "Redis {{ "{{" }} $labels.pod {{ "}}" }} is rejecting {{ "{{" }} $value | printf \"%.0f\" {{ "}}" }} connections per second."
+            runbook_url: "https://docs.greenlang.io/runbooks/redis-connections"
+
+        - alert: RedisClientOutputBufferLimitReached
+          expr: redis_client_recent_max_output_buffer > 100000000
+          for: 5m
+          labels:
+            severity: warning
+            component: redis
+          annotations:
+            summary: "Redis client output buffer is high"
+            description: "Redis {{ "{{" }} $labels.pod {{ "}}" }} has a client with output buffer of {{ "{{" }} $value | humanize {{ "}}" }}B."
+            runbook_url: "https://docs.greenlang.io/runbooks/redis-connections"
+
+    # Replication Alerts
+    - name: redis-ha.replication
+      rules:
+        - alert: RedisReplicationLagHigh
+          expr: redis_replica_repl_offset - redis_master_repl_offset > 10000000
+          for: 5m
+          labels:
+            severity: warning
+            component: redis
+          annotations:
+            summary: "Redis replication lag is high"
+            description: "Redis replica {{ "{{" }} $labels.pod {{ "}}" }} has replication lag of {{ "{{" }} $value | humanize {{ "}}" }} bytes."
+            runbook_url: "https://docs.greenlang.io/runbooks/redis-replication"
+
+        - alert: RedisReplicationBroken
+          expr: redis_master_last_io_seconds_ago > 60
+          for: 1m
+          labels:
+            severity: critical
+            component: redis
+          annotations:
+            summary: "Redis replication appears broken"
+            description: "Redis replica {{ "{{" }} $labels.pod {{ "}}" }} has not received data from master for {{ "{{" }} $value {{ "}}" }} seconds."
+            runbook_url: "https://docs.greenlang.io/runbooks/redis-replication"
+
+        - alert: RedisPartialResyncRequired
+          expr: increase(redis_replica_partial_resync_denied[1h]) > 0
+          for: 0m
+          labels:
+            severity: warning
+            component: redis
+          annotations:
+            summary: "Redis partial resync was denied"
+            description: "Redis replica {{ "{{" }} $labels.pod {{ "}}" }} had to perform a full resync instead of partial."
+            runbook_url: "https://docs.greenlang.io/runbooks/redis-replication"
+
+    # Persistence Alerts
+    - name: redis-ha.persistence
+      rules:
+        - alert: RedisRDBSaveFailed
+          expr: redis_rdb_last_bgsave_status == 0
+          for: 5m
+          labels:
+            severity: critical
+            component: redis
+          annotations:
+            summary: "Redis RDB save failed"
+            description: "Redis {{ "{{" }} $labels.pod {{ "}}" }} last RDB background save failed."
+            runbook_url: "https://docs.greenlang.io/runbooks/redis-persistence"
+
+        - alert: RedisAOFRewriteFailed
+          expr: redis_aof_last_rewrite_status == 0
+          for: 5m
+          labels:
+            severity: warning
+            component: redis
+          annotations:
+            summary: "Redis AOF rewrite failed"
+            description: "Redis {{ "{{" }} $labels.pod {{ "}}" }} last AOF rewrite failed."
+            runbook_url: "https://docs.greenlang.io/runbooks/redis-persistence"
+
+        - alert: RedisAOFEnabled
+          expr: redis_aof_enabled == 0 and redis_instance_info{role="master"} == 1
+          for: 5m
+          labels:
+            severity: warning
+            component: redis
+          annotations:
+            summary: "Redis AOF is disabled on master"
+            description: "Redis master {{ "{{" }} $labels.pod {{ "}}" }} does not have AOF persistence enabled."
+            runbook_url: "https://docs.greenlang.io/runbooks/redis-persistence"
+
+        - alert: RedisRDBSaveStale
+          expr: time() - redis_rdb_last_save_timestamp_seconds > 86400
+          for: 5m
+          labels:
+            severity: warning
+            component: redis
+          annotations:
+            summary: "Redis RDB save is stale"
+            description: "Redis {{ "{{" }} $labels.pod {{ "}}" }} has not saved RDB snapshot in over 24 hours."
+            runbook_url: "https://docs.greenlang.io/runbooks/redis-persistence"
+
+    # Sentinel-specific Alerts
+    - name: redis-ha.sentinel
+      rules:
+        - alert: RedisSentinelMasterDown
+          expr: redis_sentinel_master_status == 0
+          for: 1m
+          labels:
+            severity: critical
+            component: redis-sentinel
+          annotations:
+            summary: "Sentinel reports master is down"
+            description: "Redis Sentinel {{ "{{" }} $labels.pod {{ "}}" }} reports that the master is down."
+            runbook_url: "https://docs.greenlang.io/runbooks/redis-sentinel"
+
+        - alert: RedisSentinelFailoverInProgress
+          expr: redis_sentinel_master_status == 2
+          for: 0m
+          labels:
+            severity: warning
+            component: redis-sentinel
+          annotations:
+            summary: "Sentinel failover in progress"
+            description: "Redis Sentinel {{ "{{" }} $labels.pod {{ "}}" }} is performing a failover."
+            runbook_url: "https://docs.greenlang.io/runbooks/redis-sentinel"
+
+        - alert: RedisSentinelFailoverAborted
+          expr: increase(redis_sentinel_failover_state{state="abort"}[1h]) > 0
+          for: 0m
+          labels:
+            severity: warning
+            component: redis-sentinel
+          annotations:
+            summary: "Sentinel failover was aborted"
+            description: "Redis Sentinel {{ "{{" }} $labels.pod {{ "}}" }} aborted a failover attempt in the last hour."
+            runbook_url: "https://docs.greenlang.io/runbooks/redis-sentinel"
+
+        - alert: RedisSentinelConfigOutOfSync
+          expr: stddev(redis_sentinel_sentinels) > 0
+          for: 10m
+          labels:
+            severity: warning
+            component: redis-sentinel
+          annotations:
+            summary: "Sentinel configurations are out of sync"
+            description: "Redis Sentinels have inconsistent views of the cluster."
+            runbook_url: "https://docs.greenlang.io/runbooks/redis-sentinel"
+
+    # Cluster Health Summary
+    - name: redis-ha.cluster
+      rules:
+        - alert: RedisClusterUnhealthy
+          expr: |
+            (count(redis_up == 1) by (namespace) < {{ .Values.redis.replicas }})
+            or
+            (count(redis_sentinel_masters > 0) by (namespace) < {{ .Values.sentinel.quorum }})
+          for: 5m
+          labels:
+            severity: critical
+            component: redis
+          annotations:
+            summary: "Redis cluster is unhealthy"
+            description: "Redis HA cluster in namespace {{ "{{" }} $labels.namespace {{ "}}" }} is in an unhealthy state."
+            runbook_url: "https://docs.greenlang.io/runbooks/redis-cluster"
+
+        - alert: RedisClusterDegraded
+          expr: count(redis_up == 1) by (namespace) < {{ .Values.redis.replicas }}
+          for: 2m
+          labels:
+            severity: warning
+            component: redis
+          annotations:
+            summary: "Redis cluster is degraded"
+            description: "Redis HA cluster has {{ "{{" }} $value {{ "}}" }} instances running, expected {{ .Values.redis.replicas }}."
+            runbook_url: "https://docs.greenlang.io/runbooks/redis-cluster"
+{{- end }}

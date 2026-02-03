@@ -1,0 +1,40 @@
+{{/*
+GreenLang MLflow Helm Chart - ServiceMonitor for Prometheus
+*/}}
+
+{{- if and .Values.monitoring .Values.monitoring.enabled .Values.monitoring.serviceMonitor.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "mlflow.fullname" . }}-tracking
+  namespace: {{ .Values.namespace.name }}
+  labels:
+    {{- include "mlflow.labels" . | nindent 4 }}
+    component: tracking-server
+    {{- with .Values.monitoring.serviceMonitor.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  namespaceSelector:
+    matchNames:
+      - {{ .Values.namespace.name }}
+  selector:
+    matchLabels:
+      {{- include "mlflow.selectorLabels" . | nindent 6 }}
+      component: tracking-server
+  endpoints:
+    - port: http
+      interval: {{ .Values.monitoring.serviceMonitor.interval | default "30s" }}
+      scrapeTimeout: {{ .Values.monitoring.serviceMonitor.scrapeTimeout | default "10s" }}
+      path: /metrics
+      scheme: http
+      honorLabels: true
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace
+        - action: replace
+          replacement: mlflow
+          targetLabel: application
+{{- end }}

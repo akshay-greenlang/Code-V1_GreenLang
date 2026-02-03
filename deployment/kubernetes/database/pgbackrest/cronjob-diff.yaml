@@ -1,0 +1,285 @@
+# pgBackRest Differential Backup CronJob
+# Executes weekly differential backups every Sunday at 2 AM UTC
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: pgbackrest-backup-diff
+  namespace: greenlang-database
+  labels:
+    app.kubernetes.io/name: pgbackrest
+    app.kubernetes.io/component: backup-diff
+    app.kubernetes.io/part-of: greenlang
+    backup-type: differential
+  annotations:
+    description: "Weekly differential backup of GreenLang PostgreSQL database"
+spec:
+  # Schedule: Every Sunday at 2:00 AM UTC
+  schedule: "0 2 * * 0"
+
+  # Timezone for schedule interpretation
+  timeZone: "UTC"
+
+  # Concurrency policy - do not allow concurrent backups
+  concurrencyPolicy: Forbid
+
+  # Keep history for debugging
+  successfulJobsHistoryLimit: 4
+  failedJobsHistoryLimit: 5
+
+  # Deadline for starting the job (4 hours)
+  startingDeadlineSeconds: 14400
+
+  # Suspend the cronjob (set to true for maintenance)
+  suspend: false
+
+  jobTemplate:
+    metadata:
+      labels:
+        app.kubernetes.io/name: pgbackrest
+        app.kubernetes.io/component: backup-diff
+        backup-type: differential
+    spec:
+      # TTL for completed jobs (7 days)
+      ttlSecondsAfterFinished: 604800
+
+      # Backoff limit for retries
+      backoffLimit: 3
+
+      # Active deadline for job completion (2 hours)
+      activeDeadlineSeconds: 7200
+
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: pgbackrest
+            app.kubernetes.io/component: backup-diff
+            backup-type: differential
+          annotations:
+            prometheus.io/scrape: "true"
+            prometheus.io/port: "9187"
+        spec:
+          serviceAccountName: pgbackrest-backup-sa
+          restartPolicy: OnFailure
+
+          # Security context
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 999
+            runAsGroup: 999
+            fsGroup: 999
+            seccompProfile:
+              type: RuntimeDefault
+
+          # Init container to run pre-backup checks
+          initContainers:
+            - name: pre-backup-check
+              image: pgbackrest/pgbackrest:2.49
+              imagePullPolicy: IfNotPresent
+              command:
+                - /bin/bash
+                - -c
+                - |
+                  set -e
+
+                  echo "[$(date -Iseconds)] Running pre-backup checks for differential backup..."
+
+                  # Check if a full backup exists (required for differential)
+                  FULL_BACKUP_COUNT=$(pgbackrest --stanza=greenlang info --output=json | \
+                    jq '.[0].backup | map(select(.type == "full")) | length')
+
+                  if [ "$FULL_BACKUP_COUNT" -eq 0 ]; then
+                    echo "ERROR: No full backup found. Differential backup requires a full backup first."
+                    echo "Please run a full backup before scheduling differential backups."
+                    exit 1
+                  fi
+
+                  echo "[$(date -Iseconds)] Full backup found. Proceeding with differential backup..."
+
+                  # Run standard pre-backup script
+                  /scripts/pre-backup.sh
+
+              volumeMounts:
+                - name: pgbackrest-config
+                  mountPath: /etc/pgbackrest/pgbackrest.conf
+                  subPath: pgbackrest.conf
+                - name: pgbackrest-scripts
+                  mountPath: /scripts
+                - name: pgbackrest-secrets
+                  mountPath: /etc/pgbackrest/secrets
+                  readOnly: true
+              env:
+                - name: PGBACKREST_REPO1_CIPHER_PASS
+                  valueFrom:
+                    secretKeyRef:
+                      name: pgbackrest-secrets
+                      key: encryption-passphrase
+                - name: AWS_ACCESS_KEY_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: pgbackrest-secrets
+                      key: aws-access-key-id
+                - name: AWS_SECRET_ACCESS_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: pgbackrest-secrets
+                      key: aws-secret-access-key
+              resources:
+                requests:
+                  cpu: "100m"
+                  memory: "128Mi"
+                limits:
+                  cpu: "200m"
+                  memory: "256Mi"
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop:
+                    - ALL
+
+          containers:
+            - name: pgbackrest-diff-backup
+              image: pgbackrest/pgbackrest:2.49
+              imagePullPolicy: IfNotPresent
+              command:
+                - /bin/bash
+                - -c
+                - |
+                  set -e
+
+                  echo "[$(date -Iseconds)] Starting DIFFERENTIAL backup for stanza: greenlang"
+
+                  # Execute differential backup
+                  pgbackrest --stanza=greenlang --type=diff backup \
+                    --log-level-console=info \
+                    --log-level-file=detail
+
+                  BACKUP_STATUS=$?
+
+                  if [ $BACKUP_STATUS -eq 0 ]; then
+                    echo "[$(date -Iseconds)] Differential backup completed successfully"
+                    /scripts/post-backup.sh diff success
+
+                    # Run expiration after successful backup
+                    /scripts/expire-backups.sh
+
+                    # Verify the backup
+                    echo "[$(date -Iseconds)] Verifying backup integrity..."
+                    pgbackrest --stanza=greenlang --set=latest verify
+                  else
+                    echo "[$(date -Iseconds)] Differential backup FAILED with status: $BACKUP_STATUS"
+                    /scripts/post-backup.sh diff failure
+                    exit $BACKUP_STATUS
+                  fi
+
+                  # Print backup info
+                  pgbackrest --stanza=greenlang info
+
+              volumeMounts:
+                - name: pgbackrest-config
+                  mountPath: /etc/pgbackrest/pgbackrest.conf
+                  subPath: pgbackrest.conf
+                - name: pgbackrest-scripts
+                  mountPath: /scripts
+                - name: pgbackrest-secrets
+                  mountPath: /etc/pgbackrest/secrets
+                  readOnly: true
+                - name: pgbackrest-logs
+                  mountPath: /var/log/pgbackrest
+                - name: pgbackrest-metrics
+                  mountPath: /var/lib/pgbackrest/metrics
+                - name: pgbackrest-spool
+                  mountPath: /var/spool/pgbackrest
+
+              env:
+                - name: PGBACKREST_REPO1_CIPHER_PASS
+                  valueFrom:
+                    secretKeyRef:
+                      name: pgbackrest-secrets
+                      key: encryption-passphrase
+                - name: AWS_ACCESS_KEY_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: pgbackrest-secrets
+                      key: aws-access-key-id
+                - name: AWS_SECRET_ACCESS_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: pgbackrest-secrets
+                      key: aws-secret-access-key
+                - name: PGHOST
+                  value: "greenlang-postgresql"
+                - name: PGPORT
+                  value: "5432"
+                - name: PGUSER
+                  valueFrom:
+                    secretKeyRef:
+                      name: pgbackrest-secrets
+                      key: pg-username
+                - name: PGPASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: pgbackrest-secrets
+                      key: pg-password
+
+              resources:
+                requests:
+                  cpu: "500m"
+                  memory: "512Mi"
+                limits:
+                  cpu: "1500m"
+                  memory: "2Gi"
+
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: false
+                capabilities:
+                  drop:
+                    - ALL
+
+          volumes:
+            - name: pgbackrest-config
+              configMap:
+                name: pgbackrest-config
+            - name: pgbackrest-scripts
+              configMap:
+                name: pgbackrest-scripts
+                defaultMode: 0755
+            - name: pgbackrest-secrets
+              secret:
+                secretName: pgbackrest-secrets
+            - name: pgbackrest-logs
+              emptyDir:
+                sizeLimit: 1Gi
+            - name: pgbackrest-metrics
+              emptyDir:
+                sizeLimit: 100Mi
+            - name: pgbackrest-spool
+              emptyDir:
+                sizeLimit: 5Gi
+
+          # Node affinity for backup jobs
+          affinity:
+            nodeAffinity:
+              preferredDuringSchedulingIgnoredDuringExecution:
+                - weight: 100
+                  preference:
+                    matchExpressions:
+                      - key: node-role.kubernetes.io/backup
+                        operator: Exists
+            podAntiAffinity:
+              preferredDuringSchedulingIgnoredDuringExecution:
+                - weight: 100
+                  podAffinityTerm:
+                    labelSelector:
+                      matchLabels:
+                        app.kubernetes.io/name: greenlang-postgresql
+                    topologyKey: kubernetes.io/hostname
+
+          # Tolerations for dedicated backup nodes
+          tolerations:
+            - key: "dedicated"
+              operator: "Equal"
+              value: "backup"
+              effect: "NoSchedule"

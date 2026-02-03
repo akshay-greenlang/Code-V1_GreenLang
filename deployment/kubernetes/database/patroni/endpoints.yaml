@@ -1,0 +1,222 @@
+---
+# Leader Endpoint - Managed by Patroni for DCS
+# This endpoint is automatically created and managed by Patroni
+# The annotations and subsets are updated based on leader election
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: patroni-leader
+  namespace: greenlang-db
+  labels:
+    app: patroni
+    cluster-name: greenlang-cluster
+    component: dcs
+    part-of: greenlang
+  annotations:
+    # This annotation is managed by Patroni
+    patroni.kubernetes.io/leader: ""
+    description: "Leader endpoint managed by Patroni DCS"
+# Note: subsets are managed by Patroni and will be populated automatically
+subsets: []
+
+---
+# Sync Standby Endpoint - Managed by Patroni
+# Points to the synchronous standby when synchronous replication is enabled
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: patroni-sync-standby
+  namespace: greenlang-db
+  labels:
+    app: patroni
+    cluster-name: greenlang-cluster
+    component: dcs
+    role: sync-standby
+    part-of: greenlang
+  annotations:
+    patroni.kubernetes.io/sync-standby: ""
+    description: "Sync standby endpoint managed by Patroni DCS"
+subsets: []
+
+---
+# Cluster Configuration Endpoint
+# Used by Patroni to store cluster-wide configuration
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: patroni-config
+  namespace: greenlang-db
+  labels:
+    app: patroni
+    cluster-name: greenlang-cluster
+    component: dcs
+    part-of: greenlang
+  annotations:
+    # Patroni stores cluster config in this annotation
+    patroni.kubernetes.io/config: ""
+    description: "Cluster configuration endpoint managed by Patroni DCS"
+subsets: []
+
+---
+# Failover Endpoint
+# Used to track failover history and prevent split-brain
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: patroni-failover
+  namespace: greenlang-db
+  labels:
+    app: patroni
+    cluster-name: greenlang-cluster
+    component: dcs
+    part-of: greenlang
+  annotations:
+    # Tracks failover state
+    patroni.kubernetes.io/failover: ""
+    description: "Failover tracking endpoint managed by Patroni DCS"
+subsets: []
+
+---
+# Initialize Endpoint
+# Used during cluster initialization
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: patroni-initialize
+  namespace: greenlang-db
+  labels:
+    app: patroni
+    cluster-name: greenlang-cluster
+    component: dcs
+    part-of: greenlang
+  annotations:
+    patroni.kubernetes.io/initialize: ""
+    description: "Initialization endpoint managed by Patroni DCS"
+subsets: []
+
+---
+# History Endpoint
+# Stores cluster history for timeline tracking
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: patroni-history
+  namespace: greenlang-db
+  labels:
+    app: patroni
+    cluster-name: greenlang-cluster
+    component: dcs
+    part-of: greenlang
+  annotations:
+    patroni.kubernetes.io/history: ""
+    description: "History endpoint managed by Patroni DCS"
+subsets: []
+
+---
+# Status Endpoint
+# Used for cluster status information
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: patroni-status
+  namespace: greenlang-db
+  labels:
+    app: patroni
+    cluster-name: greenlang-cluster
+    component: dcs
+    part-of: greenlang
+  annotations:
+    patroni.kubernetes.io/status: ""
+    description: "Status endpoint managed by Patroni DCS"
+subsets: []
+
+---
+# ConfigMap for DCS (Alternative to Endpoints)
+# Some Patroni setups prefer ConfigMaps over Endpoints for DCS
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: patroni-dcs-config
+  namespace: greenlang-db
+  labels:
+    app: patroni
+    cluster-name: greenlang-cluster
+    component: dcs
+    part-of: greenlang
+  annotations:
+    description: "DCS ConfigMap for Patroni cluster coordination"
+data:
+  # Initial empty config - Patroni will populate this
+  config: |
+    {}
+
+---
+# Lease for Leader Election (Kubernetes 1.14+)
+# Modern alternative to Endpoints-based leader election
+apiVersion: coordination.k8s.io/v1
+kind: Lease
+metadata:
+  name: patroni-leader-lease
+  namespace: greenlang-db
+  labels:
+    app: patroni
+    cluster-name: greenlang-cluster
+    component: dcs
+    part-of: greenlang
+spec:
+  # These fields are managed by Patroni
+  holderIdentity: ""
+  leaseDurationSeconds: 30
+  # acquireTime and renewTime are set by the lease holder
+
+---
+# EndpointSlice (Kubernetes 1.21+)
+# Modern replacement for Endpoints, provides better scalability
+apiVersion: discovery.k8s.io/v1
+kind: EndpointSlice
+metadata:
+  name: patroni-leader-slice
+  namespace: greenlang-db
+  labels:
+    app: patroni
+    cluster-name: greenlang-cluster
+    component: dcs
+    kubernetes.io/service-name: patroni-primary
+    endpointslice.kubernetes.io/managed-by: patroni
+addressType: IPv4
+ports:
+  - name: postgresql
+    protocol: TCP
+    port: 5432
+  - name: patroni-api
+    protocol: TCP
+    port: 8008
+# Endpoints are populated by Patroni
+endpoints: []
+
+---
+# Service for DCS health checking
+apiVersion: v1
+kind: Service
+metadata:
+  name: patroni-dcs
+  namespace: greenlang-db
+  labels:
+    app: patroni
+    cluster-name: greenlang-cluster
+    component: dcs
+    part-of: greenlang
+  annotations:
+    description: "DCS coordination service for Patroni health checks"
+spec:
+  type: ClusterIP
+  clusterIP: None
+  publishNotReadyAddresses: true
+  ports:
+    - name: patroni-api
+      port: 8008
+      targetPort: 8008
+      protocol: TCP
+  selector:
+    app: patroni
+    cluster-name: greenlang-cluster

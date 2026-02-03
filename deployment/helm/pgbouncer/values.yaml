@@ -1,0 +1,641 @@
+# Default values for PgBouncer Helm chart
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# -- Override the chart name
+nameOverride: ""
+
+# -- Override the full name
+fullnameOverride: ""
+
+# -- Namespace to deploy to
+namespace: greenlang-database
+
+# -- Common labels to add to all resources
+commonLabels:
+  app.kubernetes.io/part-of: greenlang
+  app.kubernetes.io/managed-by: helm
+
+# -- Common annotations to add to all resources
+commonAnnotations: {}
+
+# =============================================================================
+# PgBouncer Image Configuration
+# =============================================================================
+image:
+  # -- PgBouncer image repository
+  repository: bitnami/pgbouncer
+  # -- PgBouncer image tag
+  tag: "1.21.0"
+  # -- Image pull policy
+  pullPolicy: IfNotPresent
+
+# -- Image pull secrets for private registries
+imagePullSecrets: []
+
+# =============================================================================
+# PgBouncer Configuration
+# =============================================================================
+pgbouncer:
+  # -- Pool mode: transaction, session, or statement
+  poolMode: transaction
+
+  # -- Maximum number of client connections
+  maxClientConn: 1000
+
+  # -- Default pool size per user/database pair
+  defaultPoolSize: 20
+
+  # -- Minimum pool size (connections kept open when idle)
+  minPoolSize: 5
+
+  # -- Reserve pool size for burst traffic
+  reservePoolSize: 5
+
+  # -- Time before reserve pool is used (seconds)
+  reservePoolTimeout: 3
+
+  # -- Maximum connections per database
+  maxDbConnections: 100
+
+  # -- Maximum connections per user
+  maxUserConnections: 50
+
+  # -- Query timeout (0 = disabled)
+  queryTimeout: 0
+
+  # -- Query wait timeout (seconds)
+  queryWaitTimeout: 120
+
+  # -- Client idle timeout (0 = disabled)
+  clientIdleTimeout: 0
+
+  # -- Client login timeout (seconds)
+  clientLoginTimeout: 60
+
+  # -- Server idle timeout (seconds)
+  serverIdleTimeout: 600
+
+  # -- Server lifetime (seconds)
+  serverLifetime: 3600
+
+  # -- Server check delay (seconds)
+  serverCheckDelay: 30
+
+  # -- Server check query
+  serverCheckQuery: "SELECT 1"
+
+  # -- Server reset query (for transaction mode)
+  serverResetQuery: "DISCARD ALL"
+
+  # -- Authentication type: md5, scram-sha-256, plain, trust
+  authType: md5
+
+  # -- Add client host to application_name
+  applicationNameAddHost: true
+
+  # -- Log connections
+  logConnections: true
+
+  # -- Log disconnections
+  logDisconnections: true
+
+  # -- Log pooler errors
+  logPoolerErrors: true
+
+  # -- Log statistics
+  logStats: true
+
+  # -- Statistics period (seconds)
+  statsPeriod: 60
+
+  # -- Verbose logging
+  verbose: 0
+
+  # -- Admin users (comma-separated)
+  adminUsers: pgbouncer_admin
+
+  # -- Stats users (comma-separated)
+  statsUsers: pgbouncer_stats,prometheus
+
+  # -- Ignore startup parameters
+  ignoreStartupParameters: extra_float_digits
+
+  # -- Enable TCP keepalive
+  tcpKeepalive: true
+
+  # -- DNS max TTL
+  dnsMaxTtl: 15
+
+  # -- Enable SO_REUSEPORT
+  soReuseport: true
+
+  # -- Custom pgbouncer.ini settings (appended to generated config)
+  extraConfig: ""
+
+# =============================================================================
+# PostgreSQL Backend Configuration
+# =============================================================================
+postgresql:
+  # -- PostgreSQL host
+  host: postgresql.greenlang-database.svc.cluster.local
+
+  # -- PostgreSQL port
+  port: 5432
+
+  # -- Database name
+  database: greenlang
+
+  # -- Use existing secret for PostgreSQL credentials
+  existingSecret: ""
+
+  # -- Secret key for PostgreSQL host
+  secretKeyHost: postgresql-host
+
+  # -- Secret key for PostgreSQL username
+  secretKeyUsername: postgresql-username
+
+  # -- Secret key for PostgreSQL password
+  secretKeyPassword: postgresql-password
+
+# =============================================================================
+# Deployment Configuration
+# =============================================================================
+replicaCount: 3
+
+# -- Deployment strategy
+strategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 1
+    maxUnavailable: 0
+
+# -- Pod management policy
+podManagementPolicy: ""
+
+# -- Minimum ready seconds
+minReadySeconds: 0
+
+# -- Revision history limit
+revisionHistoryLimit: 10
+
+# =============================================================================
+# Pod Configuration
+# =============================================================================
+# -- Pod annotations
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "9127"
+  prometheus.io/path: "/metrics"
+
+# -- Pod labels
+podLabels: {}
+
+# -- Pod security context
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
+  fsGroup: 1000
+  seccompProfile:
+    type: RuntimeDefault
+
+# -- Container security context
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL
+
+# =============================================================================
+# Resource Configuration
+# =============================================================================
+resources:
+  requests:
+    memory: "128Mi"
+    cpu: "250m"
+  limits:
+    memory: "256Mi"
+    cpu: "500m"
+
+# =============================================================================
+# Probes Configuration
+# =============================================================================
+livenessProbe:
+  enabled: true
+  tcpSocket:
+    port: pgbouncer
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+  successThreshold: 1
+
+readinessProbe:
+  enabled: true
+  tcpSocket:
+    port: pgbouncer
+  initialDelaySeconds: 5
+  periodSeconds: 5
+  timeoutSeconds: 3
+  failureThreshold: 3
+  successThreshold: 1
+
+startupProbe:
+  enabled: true
+  tcpSocket:
+    port: pgbouncer
+  initialDelaySeconds: 5
+  periodSeconds: 5
+  failureThreshold: 30
+
+# =============================================================================
+# Service Configuration
+# =============================================================================
+service:
+  # -- Service type
+  type: ClusterIP
+
+  # -- Service port
+  port: 5432
+
+  # -- Metrics port
+  metricsPort: 9127
+
+  # -- Service annotations
+  annotations: {}
+
+  # -- Session affinity
+  sessionAffinity: None
+
+  # -- Internal traffic policy
+  internalTrafficPolicy: Local
+
+# -- Headless service for direct pod access
+headlessService:
+  enabled: true
+
+# =============================================================================
+# Horizontal Pod Autoscaler
+# =============================================================================
+autoscaling:
+  enabled: true
+
+  # -- Minimum replicas
+  minReplicas: 3
+
+  # -- Maximum replicas
+  maxReplicas: 10
+
+  # -- Target CPU utilization percentage
+  targetCPUUtilizationPercentage: 70
+
+  # -- Target memory utilization percentage
+  targetMemoryUtilizationPercentage: 80
+
+  # -- Scale up behavior
+  scaleUp:
+    stabilizationWindowSeconds: 60
+    policies:
+      - type: Pods
+        value: 2
+        periodSeconds: 60
+      - type: Percent
+        value: 100
+        periodSeconds: 60
+    selectPolicy: Max
+
+  # -- Scale down behavior
+  scaleDown:
+    stabilizationWindowSeconds: 300
+    policies:
+      - type: Pods
+        value: 1
+        periodSeconds: 120
+      - type: Percent
+        value: 10
+        periodSeconds: 120
+    selectPolicy: Min
+
+# =============================================================================
+# Pod Disruption Budget
+# =============================================================================
+podDisruptionBudget:
+  enabled: true
+
+  # -- Minimum available pods
+  minAvailable: 2
+
+  # -- Maximum unavailable pods (alternative to minAvailable)
+  # maxUnavailable: 1
+
+  # -- Unhealthy pod eviction policy
+  unhealthyPodEvictionPolicy: IfHealthyBudget
+
+# =============================================================================
+# Affinity and Scheduling
+# =============================================================================
+# -- Node selector
+nodeSelector:
+  workload-type: database
+
+# -- Tolerations
+tolerations:
+  - key: "database"
+    operator: "Equal"
+    value: "true"
+    effect: "NoSchedule"
+
+# -- Pod anti-affinity
+affinity:
+  podAntiAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchExpressions:
+            - key: app.kubernetes.io/name
+              operator: In
+              values:
+                - pgbouncer
+        topologyKey: kubernetes.io/hostname
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+              - key: app.kubernetes.io/name
+                operator: In
+                values:
+                  - pgbouncer
+          topologyKey: topology.kubernetes.io/zone
+
+# -- Topology spread constraints
+topologySpreadConstraints:
+  - maxSkew: 1
+    topologyKey: topology.kubernetes.io/zone
+    whenUnsatisfiable: ScheduleAnyway
+    labelSelector:
+      matchLabels:
+        app.kubernetes.io/name: pgbouncer
+
+# =============================================================================
+# Service Account
+# =============================================================================
+serviceAccount:
+  # -- Create service account
+  create: true
+
+  # -- Service account name
+  name: ""
+
+  # -- Service account annotations
+  annotations: {}
+
+  # -- Automount service account token
+  automountServiceAccountToken: false
+
+# =============================================================================
+# PgBouncer Exporter (Prometheus metrics sidecar)
+# =============================================================================
+exporter:
+  enabled: true
+
+  image:
+    repository: prometheuscommunity/pgbouncer-exporter
+    tag: "v0.7.0"
+    pullPolicy: IfNotPresent
+
+  resources:
+    requests:
+      memory: "32Mi"
+      cpu: "50m"
+    limits:
+      memory: "64Mi"
+      cpu: "100m"
+
+  securityContext:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    capabilities:
+      drop:
+        - ALL
+
+  # -- Exporter database URL (template)
+  # Uses pgbouncer_stats user to connect to pgbouncer admin console
+  databaseUrl: ""
+
+# =============================================================================
+# Prometheus Monitoring
+# =============================================================================
+serviceMonitor:
+  enabled: true
+
+  # -- ServiceMonitor namespace (defaults to release namespace)
+  namespace: ""
+
+  # -- Scrape interval
+  interval: 30s
+
+  # -- Scrape timeout
+  scrapeTimeout: 10s
+
+  # -- Additional labels for ServiceMonitor
+  labels:
+    release: prometheus
+    prometheus: greenlang
+
+  # -- Metric relabelings
+  metricRelabelings: []
+
+  # -- Target relabelings
+  relabelings: []
+
+# -- Prometheus rules for alerting
+prometheusRule:
+  enabled: true
+
+  # -- PrometheusRule namespace
+  namespace: ""
+
+  # -- Additional labels
+  labels:
+    prometheus: greenlang
+    role: alert-rules
+
+  # -- Alert rules
+  rules:
+    - alert: PgBouncerHighClientConnections
+      expr: (sum(pgbouncer_pools_client_active_connections) / sum(pgbouncer_config_max_client_conn)) * 100 > 80
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "PgBouncer client connections high"
+
+    - alert: PgBouncerClientsWaiting
+      expr: sum(pgbouncer_pools_client_waiting_connections) > 10
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "PgBouncer has clients waiting"
+
+    - alert: PgBouncerPodDown
+      expr: up{job="pgbouncer"} == 0
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "PgBouncer pod is down"
+
+# =============================================================================
+# Network Policy
+# =============================================================================
+networkPolicy:
+  enabled: true
+
+  # -- Ingress rules
+  ingress:
+    # -- Allow from GreenLang namespaces
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              app.kubernetes.io/part-of: greenlang
+      ports:
+        - protocol: TCP
+          port: 5432
+
+    # -- Allow Prometheus scraping
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+      ports:
+        - protocol: TCP
+          port: 9127
+
+  # -- Egress rules
+  egress:
+    # -- Allow to PostgreSQL
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: postgresql
+      ports:
+        - protocol: TCP
+          port: 5432
+
+    # -- Allow DNS
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+
+# =============================================================================
+# External Secrets
+# =============================================================================
+externalSecrets:
+  enabled: true
+
+  # -- Secret store reference
+  secretStoreRef:
+    name: greenlang-secret-store
+    kind: ClusterSecretStore
+
+  # -- Refresh interval
+  refreshInterval: 1h
+
+  # -- Remote references for secrets
+  remoteRefs:
+    postgresqlHost:
+      key: greenlang/database/postgresql
+      property: host
+    postgresqlUsername:
+      key: greenlang/database/postgresql
+      property: admin_username
+    postgresqlPassword:
+      key: greenlang/database/postgresql
+      property: admin_password
+    pgbouncerAuthUser:
+      key: greenlang/database/pgbouncer
+      property: auth_user
+    pgbouncerStatsUser:
+      key: greenlang/database/pgbouncer
+      property: stats_user
+    pgbouncerStatsPassword:
+      key: greenlang/database/pgbouncer
+      property: stats_password
+    appUsername:
+      key: greenlang/database/application
+      property: username
+    appPassword:
+      key: greenlang/database/application
+      property: password
+
+# =============================================================================
+# TLS Configuration
+# =============================================================================
+tls:
+  enabled: false
+
+  # -- Use existing secret for TLS
+  existingSecret: ""
+
+  # -- Secret keys
+  certKey: tls.crt
+  keyKey: tls.key
+  caKey: ca.crt
+
+  # -- Client TLS mode: disable, allow, prefer, require, verify-ca, verify-full
+  clientTlsMode: prefer
+
+  # -- Server TLS mode
+  serverTlsMode: verify-full
+
+# =============================================================================
+# Volumes
+# =============================================================================
+extraVolumes: []
+
+extraVolumeMounts: []
+
+# =============================================================================
+# Init Containers
+# =============================================================================
+initContainers: []
+
+# =============================================================================
+# Sidecar Containers
+# =============================================================================
+sidecars: []
+
+# =============================================================================
+# Lifecycle Hooks
+# =============================================================================
+lifecycle:
+  preStop:
+    exec:
+      command:
+        - /bin/sh
+        - -c
+        - sleep 5
+
+# =============================================================================
+# Priority Class
+# =============================================================================
+priorityClassName: ""
+
+# =============================================================================
+# Termination Grace Period
+# =============================================================================
+terminationGracePeriodSeconds: 30
+
+# =============================================================================
+# DNS Configuration
+# =============================================================================
+dnsPolicy: ClusterFirst
+
+dnsConfig: {}

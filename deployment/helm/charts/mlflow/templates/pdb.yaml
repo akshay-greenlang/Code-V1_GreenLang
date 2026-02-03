@@ -1,0 +1,26 @@
+{{/*
+GreenLang MLflow Helm Chart - Pod Disruption Budget
+*/}}
+
+{{- if and .Values.podDisruptionBudget .Values.podDisruptionBudget.enabled }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "mlflow.fullname" . }}-tracking
+  namespace: {{ .Values.namespace.name }}
+  labels:
+    {{- include "mlflow.labels" . | nindent 4 }}
+    component: tracking-server
+spec:
+  {{- if .Values.podDisruptionBudget.minAvailable }}
+  minAvailable: {{ .Values.podDisruptionBudget.minAvailable }}
+  {{- else if .Values.podDisruptionBudget.maxUnavailable }}
+  maxUnavailable: {{ .Values.podDisruptionBudget.maxUnavailable }}
+  {{- else }}
+  minAvailable: 2
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "mlflow.selectorLabels" . | nindent 6 }}
+      component: tracking-server
+{{- end }}

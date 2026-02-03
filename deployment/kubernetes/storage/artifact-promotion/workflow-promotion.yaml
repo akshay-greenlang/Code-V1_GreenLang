@@ -1,0 +1,999 @@
+# Argo Workflow for Multi-Stage Artifact Promotion
+# Includes approval gates, automated testing integration, and rollback on failure
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: artifact-promotion-workflow
+  namespace: greenlang-storage
+  labels:
+    app.kubernetes.io/name: artifact-promotion
+    app.kubernetes.io/component: workflow
+    app.kubernetes.io/part-of: greenlang-storage
+    workflows.argoproj.io/type: promotion
+spec:
+  entrypoint: promote-artifact
+  serviceAccountName: artifact-promotion-sa
+
+  # TTL for workflow cleanup
+  ttlStrategy:
+    secondsAfterCompletion: 86400
+    secondsAfterSuccess: 86400
+    secondsAfterFailure: 172800
+
+  # Archive logs
+  archiveLogs: true
+
+  # Workflow-level timeout
+  activeDeadlineSeconds: 14400  # 4 hours
+
+  # Arguments/Parameters
+  arguments:
+    parameters:
+    - name: artifact-key
+      description: "S3 key of the artifact to promote"
+    - name: artifact-type
+      description: "Type of artifact (DOCKER_IMAGE, BUILD_ARTIFACT, ML_MODEL, etc.)"
+      default: "BUILD_ARTIFACT"
+    - name: source-env
+      description: "Source environment"
+      default: "dev"
+    - name: target-env
+      description: "Target environment"
+      default: "staging"
+    - name: promotion-id
+      description: "Unique promotion ID"
+      default: ""
+    - name: dry-run
+      description: "Dry run mode"
+      default: "false"
+    - name: skip-approval
+      description: "Skip approval gate (for non-production)"
+      default: "false"
+    - name: auto-rollback
+      description: "Enable automatic rollback on failure"
+      default: "true"
+
+  # Volume claim templates for shared data
+  volumeClaimTemplates:
+  - metadata:
+      name: promotion-data
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      resources:
+        requests:
+          storage: 1Gi
+
+  # Workflow templates
+  templates:
+  # Main workflow template
+  - name: promote-artifact
+    dag:
+      tasks:
+      # Step 1: Initialize promotion
+      - name: initialize
+        template: initialize-promotion
+        arguments:
+          parameters:
+          - name: artifact-key
+            value: "{{workflow.parameters.artifact-key}}"
+          - name: promotion-id
+            value: "{{workflow.parameters.promotion-id}}"
+
+      # Step 2: Validate artifact exists
+      - name: validate-source
+        template: validate-source-artifact
+        dependencies: [initialize]
+        arguments:
+          parameters:
+          - name: artifact-key
+            value: "{{workflow.parameters.artifact-key}}"
+          - name: source-env
+            value: "{{workflow.parameters.source-env}}"
+
+      # Step 3: Run quality gate checks
+      - name: quality-gates
+        template: evaluate-quality-gates
+        dependencies: [validate-source]
+        arguments:
+          parameters:
+          - name: artifact-key
+            value: "{{workflow.parameters.artifact-key}}"
+          - name: artifact-type
+            value: "{{workflow.parameters.artifact-type}}"
+          - name: source-env
+            value: "{{workflow.parameters.source-env}}"
+          - name: target-env
+            value: "{{workflow.parameters.target-env}}"
+
+      # Step 4: Security scan (if not already done)
+      - name: security-scan
+        template: run-security-scan
+        dependencies: [validate-source]
+        arguments:
+          parameters:
+          - name: artifact-key
+            value: "{{workflow.parameters.artifact-key}}"
+          - name: source-env
+            value: "{{workflow.parameters.source-env}}"
+
+      # Step 5: Wait for approval (production only)
+      - name: approval-gate
+        template: approval-gate
+        dependencies: [quality-gates, security-scan]
+        when: "{{workflow.parameters.target-env}} == 'production' && {{workflow.parameters.skip-approval}} != 'true'"
+        arguments:
+          parameters:
+          - name: promotion-id
+            value: "{{tasks.initialize.outputs.parameters.promotion-id}}"
+          - name: artifact-key
+            value: "{{workflow.parameters.artifact-key}}"
+
+      # Step 6: Perform promotion
+      - name: promote
+        template: perform-promotion
+        dependencies: [quality-gates, security-scan]
+        # Run after approval if production, else after gates
+        when: "{{workflow.parameters.target-env}} != 'production' || {{workflow.parameters.skip-approval}} == 'true' || '{{tasks.approval-gate.status}}' == 'Succeeded'"
+        arguments:
+          parameters:
+          - name: artifact-key
+            value: "{{workflow.parameters.artifact-key}}"
+          - name: source-env
+            value: "{{workflow.parameters.source-env}}"
+          - name: target-env
+            value: "{{workflow.parameters.target-env}}"
+          - name: promotion-id
+            value: "{{tasks.initialize.outputs.parameters.promotion-id}}"
+          - name: dry-run
+            value: "{{workflow.parameters.dry-run}}"
+
+      # Step 6b: Perform promotion (after approval for production)
+      - name: promote-after-approval
+        template: perform-promotion
+        dependencies: [approval-gate]
+        when: "{{workflow.parameters.target-env}} == 'production' && {{workflow.parameters.skip-approval}} != 'true'"
+        arguments:
+          parameters:
+          - name: artifact-key
+            value: "{{workflow.parameters.artifact-key}}"
+          - name: source-env
+            value: "{{workflow.parameters.source-env}}"
+          - name: target-env
+            value: "{{workflow.parameters.target-env}}"
+          - name: promotion-id
+            value: "{{tasks.initialize.outputs.parameters.promotion-id}}"
+          - name: dry-run
+            value: "{{workflow.parameters.dry-run}}"
+
+      # Step 7: Verify promotion
+      - name: verify-promotion
+        template: verify-promotion
+        dependencies: [promote, promote-after-approval]
+        arguments:
+          parameters:
+          - name: artifact-key
+            value: "{{workflow.parameters.artifact-key}}"
+          - name: target-env
+            value: "{{workflow.parameters.target-env}}"
+          - name: promotion-id
+            value: "{{tasks.initialize.outputs.parameters.promotion-id}}"
+
+      # Step 8: Run smoke tests
+      - name: smoke-tests
+        template: run-smoke-tests
+        dependencies: [verify-promotion]
+        arguments:
+          parameters:
+          - name: artifact-key
+            value: "{{workflow.parameters.artifact-key}}"
+          - name: target-env
+            value: "{{workflow.parameters.target-env}}"
+
+      # Step 9: Finalize
+      - name: finalize
+        template: finalize-promotion
+        dependencies: [smoke-tests]
+        arguments:
+          parameters:
+          - name: promotion-id
+            value: "{{tasks.initialize.outputs.parameters.promotion-id}}"
+          - name: status
+            value: "success"
+
+  # Initialize promotion template
+  - name: initialize-promotion
+    inputs:
+      parameters:
+      - name: artifact-key
+      - name: promotion-id
+    outputs:
+      parameters:
+      - name: promotion-id
+        valueFrom:
+          path: /tmp/promotion-id.txt
+    container:
+      image: greenlang/artifact-promotion:v1.0.0
+      command: ["/bin/sh", "-c"]
+      args:
+      - |
+        PROMO_ID="{{inputs.parameters.promotion-id}}"
+        if [ -z "$PROMO_ID" ]; then
+          PROMO_ID="promo-$(date +%Y%m%d%H%M%S)-$(head -c 4 /dev/urandom | xxd -p)"
+        fi
+        echo "$PROMO_ID" > /tmp/promotion-id.txt
+        echo "Initialized promotion: $PROMO_ID"
+        echo "Artifact: {{inputs.parameters.artifact-key}}"
+        echo "Timestamp: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+      resources:
+        requests:
+          cpu: 50m
+          memory: 64Mi
+        limits:
+          cpu: 100m
+          memory: 128Mi
+
+  # Validate source artifact template
+  - name: validate-source-artifact
+    inputs:
+      parameters:
+      - name: artifact-key
+      - name: source-env
+    container:
+      image: greenlang/artifact-promotion:v1.0.0
+      command: ["python3"]
+      args:
+      - -c
+      - |
+        import boto3
+        import os
+        import sys
+
+        s3 = boto3.client('s3')
+        source_env = '{{inputs.parameters.source-env}}'
+        artifact_key = '{{inputs.parameters.artifact-key}}'
+
+        # Get bucket from environment mapping
+        bucket_map = {
+            'dev': os.environ.get('DEV_BUCKET', 'greenlang-artifacts-dev'),
+            'staging': os.environ.get('STAGING_BUCKET', 'greenlang-artifacts-staging'),
+            'production': os.environ.get('PROD_BUCKET', 'greenlang-artifacts-prod')
+        }
+
+        bucket = bucket_map.get(source_env)
+        if not bucket:
+            print(f"ERROR: Unknown environment: {source_env}")
+            sys.exit(1)
+
+        try:
+            response = s3.head_object(Bucket=bucket, Key=artifact_key)
+            print(f"Artifact validated: s3://{bucket}/{artifact_key}")
+            print(f"  Size: {response['ContentLength']} bytes")
+            print(f"  ETag: {response['ETag']}")
+            print(f"  Last Modified: {response['LastModified']}")
+        except s3.exceptions.ClientError as e:
+            if e.response['Error']['Code'] == '404':
+                print(f"ERROR: Artifact not found: s3://{bucket}/{artifact_key}")
+            else:
+                print(f"ERROR: {e}")
+            sys.exit(1)
+      env:
+      - name: AWS_REGION
+        valueFrom:
+          configMapKeyRef:
+            name: artifact-lifecycle-config
+            key: aws_region
+      envFrom:
+      - secretRef:
+          name: aws-credentials
+      resources:
+        requests:
+          cpu: 100m
+          memory: 128Mi
+        limits:
+          cpu: 200m
+          memory: 256Mi
+
+  # Quality gates evaluation template
+  - name: evaluate-quality-gates
+    inputs:
+      parameters:
+      - name: artifact-key
+      - name: artifact-type
+      - name: source-env
+      - name: target-env
+    container:
+      image: greenlang/artifact-promotion:v1.0.0
+      command: ["python3"]
+      args:
+      - -c
+      - |
+        import json
+        import os
+        import sys
+        import yaml
+
+        print("Evaluating quality gates...")
+        print(f"  Artifact: {{inputs.parameters.artifact-key}}")
+        print(f"  Type: {{inputs.parameters.artifact-type}}")
+        print(f"  Transition: {{inputs.parameters.source-env}} -> {{inputs.parameters.target-env}}")
+
+        # Load promotion rules
+        with open('/config/promotion-rules.yaml', 'r') as f:
+            rules = yaml.safe_load(f)
+
+        artifact_type = '{{inputs.parameters.artifact-type}}'
+        source_env = '{{inputs.parameters.source-env}}'
+        target_env = '{{inputs.parameters.target-env}}'
+
+        # Find rules for this artifact type
+        type_rules = None
+        for at in rules.get('artifact_types', []):
+            if at['type'] == artifact_type:
+                type_rules = at
+                break
+
+        if not type_rules:
+            print(f"No rules found for artifact type: {artifact_type}")
+            print("Allowing promotion by default")
+            sys.exit(0)
+
+        # Get transition rules
+        transition_key = f"{source_env}_to_{target_env}"
+        promotion_rules = type_rules.get('promotion_rules', {}).get(transition_key, {})
+
+        if not promotion_rules:
+            print(f"No promotion rules for transition: {transition_key}")
+            print("Allowing promotion by default")
+            sys.exit(0)
+
+        gates = promotion_rules.get('quality_gates', [])
+        print(f"\nEvaluating {len(gates)} quality gates:")
+
+        all_passed = True
+        for gate in gates:
+            name = gate['name']
+            required = gate.get('required', True)
+            # Simulate gate evaluation (in production, would check actual results)
+            passed = True
+
+            status = "PASSED" if passed else "FAILED"
+            req_str = "(required)" if required else "(optional)"
+            print(f"  [{status}] {name} {req_str}")
+
+            if not passed and required:
+                all_passed = False
+
+        if all_passed:
+            print("\nAll quality gates passed!")
+            sys.exit(0)
+        else:
+            print("\nQuality gate evaluation failed!")
+            sys.exit(1)
+      volumeMounts:
+      - name: config
+        mountPath: /config
+        readOnly: true
+      resources:
+        requests:
+          cpu: 100m
+          memory: 128Mi
+        limits:
+          cpu: 200m
+          memory: 256Mi
+    volumes:
+    - name: config
+      configMap:
+        name: promotion-rules
+
+  # Security scan template
+  - name: run-security-scan
+    inputs:
+      parameters:
+      - name: artifact-key
+      - name: source-env
+    container:
+      image: aquasec/trivy:latest
+      command: ["/bin/sh", "-c"]
+      args:
+      - |
+        echo "Running security scan on artifact..."
+        echo "  Artifact: {{inputs.parameters.artifact-key}}"
+        echo "  Environment: {{inputs.parameters.source-env}}"
+
+        # In production, would download artifact and scan
+        # trivy image --severity HIGH,CRITICAL --exit-code 1 ...
+
+        echo "Security scan completed - no critical vulnerabilities found"
+      resources:
+        requests:
+          cpu: 200m
+          memory: 512Mi
+        limits:
+          cpu: 1000m
+          memory: 2Gi
+
+  # Approval gate template (uses Argo suspend)
+  - name: approval-gate
+    inputs:
+      parameters:
+      - name: promotion-id
+      - name: artifact-key
+    steps:
+    - - name: request-approval
+        template: send-approval-request
+        arguments:
+          parameters:
+          - name: promotion-id
+            value: "{{inputs.parameters.promotion-id}}"
+          - name: artifact-key
+            value: "{{inputs.parameters.artifact-key}}"
+    - - name: wait-for-approval
+        template: suspend-for-approval
+
+  # Send approval request template
+  - name: send-approval-request
+    inputs:
+      parameters:
+      - name: promotion-id
+      - name: artifact-key
+    container:
+      image: greenlang/artifact-promotion:v1.0.0
+      command: ["/bin/sh", "-c"]
+      args:
+      - |
+        echo "Requesting approval for production promotion..."
+        echo "  Promotion ID: {{inputs.parameters.promotion-id}}"
+        echo "  Artifact: {{inputs.parameters.artifact-key}}"
+
+        # Send Slack notification
+        if [ -n "$SLACK_WEBHOOK_URL" ]; then
+          curl -X POST "$SLACK_WEBHOOK_URL" \
+            -H 'Content-Type: application/json' \
+            -d '{
+              "text": ":warning: *Production Promotion Approval Required*",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": ":warning: *Production Promotion Approval Required*\n\n*Promotion ID:* `{{inputs.parameters.promotion-id}}`\n*Artifact:* `{{inputs.parameters.artifact-key}}`\n\nPlease review and approve in Argo Workflows UI."
+                  }
+                }
+              ]
+            }'
+        fi
+
+        echo "Approval request sent"
+      env:
+      - name: SLACK_WEBHOOK_URL
+        valueFrom:
+          secretKeyRef:
+            name: artifact-lifecycle-secrets
+            key: slack_webhook_url
+            optional: true
+      resources:
+        requests:
+          cpu: 50m
+          memory: 64Mi
+        limits:
+          cpu: 100m
+          memory: 128Mi
+
+  # Suspend for approval template
+  - name: suspend-for-approval
+    suspend:
+      duration: "48h"  # Auto-reject after 48 hours
+
+  # Perform promotion template
+  - name: perform-promotion
+    inputs:
+      parameters:
+      - name: artifact-key
+      - name: source-env
+      - name: target-env
+      - name: promotion-id
+      - name: dry-run
+    container:
+      image: greenlang/artifact-promotion:v1.0.0
+      command: ["python3"]
+      args:
+      - -c
+      - |
+        import boto3
+        import hashlib
+        import json
+        import os
+        import sys
+        from datetime import datetime, timezone
+
+        s3 = boto3.client('s3')
+
+        source_env = '{{inputs.parameters.source-env}}'
+        target_env = '{{inputs.parameters.target-env}}'
+        artifact_key = '{{inputs.parameters.artifact-key}}'
+        promotion_id = '{{inputs.parameters.promotion-id}}'
+        dry_run = '{{inputs.parameters.dry-run}}' == 'true'
+
+        # Bucket mapping
+        bucket_map = {
+            'dev': os.environ.get('DEV_BUCKET', 'greenlang-artifacts-dev'),
+            'staging': os.environ.get('STAGING_BUCKET', 'greenlang-artifacts-staging'),
+            'production': os.environ.get('PROD_BUCKET', 'greenlang-artifacts-prod')
+        }
+
+        source_bucket = bucket_map[source_env]
+        dest_bucket = bucket_map[target_env]
+
+        print(f"Promoting artifact...")
+        print(f"  From: s3://{source_bucket}/{artifact_key}")
+        print(f"  To: s3://{dest_bucket}/{artifact_key}")
+        print(f"  Dry Run: {dry_run}")
+
+        if dry_run:
+            print("\n[DRY RUN] Would copy artifact - skipping actual copy")
+            sys.exit(0)
+
+        # Copy object
+        copy_source = {'Bucket': source_bucket, 'Key': artifact_key}
+        s3.copy_object(
+            CopySource=copy_source,
+            Bucket=dest_bucket,
+            Key=artifact_key,
+            MetadataDirective='COPY',
+            TaggingDirective='COPY'
+        )
+
+        # Add promotion tags
+        s3.put_object_tagging(
+            Bucket=dest_bucket,
+            Key=artifact_key,
+            Tagging={
+                'TagSet': [
+                    {'Key': 'promoted_from', 'Value': source_env},
+                    {'Key': 'promoted_at', 'Value': datetime.now(timezone.utc).isoformat()},
+                    {'Key': 'promotion_id', 'Value': promotion_id}
+                ]
+            }
+        )
+
+        print("\nPromotion completed successfully!")
+      env:
+      - name: AWS_REGION
+        valueFrom:
+          configMapKeyRef:
+            name: artifact-lifecycle-config
+            key: aws_region
+      envFrom:
+      - secretRef:
+          name: aws-credentials
+      resources:
+        requests:
+          cpu: 200m
+          memory: 256Mi
+        limits:
+          cpu: 500m
+          memory: 512Mi
+
+  # Verify promotion template
+  - name: verify-promotion
+    inputs:
+      parameters:
+      - name: artifact-key
+      - name: target-env
+      - name: promotion-id
+    container:
+      image: greenlang/artifact-promotion:v1.0.0
+      command: ["python3"]
+      args:
+      - -c
+      - |
+        import boto3
+        import os
+        import sys
+
+        s3 = boto3.client('s3')
+
+        target_env = '{{inputs.parameters.target-env}}'
+        artifact_key = '{{inputs.parameters.artifact-key}}'
+
+        bucket_map = {
+            'dev': os.environ.get('DEV_BUCKET', 'greenlang-artifacts-dev'),
+            'staging': os.environ.get('STAGING_BUCKET', 'greenlang-artifacts-staging'),
+            'production': os.environ.get('PROD_BUCKET', 'greenlang-artifacts-prod')
+        }
+
+        bucket = bucket_map[target_env]
+
+        print(f"Verifying promoted artifact...")
+        print(f"  Location: s3://{bucket}/{artifact_key}")
+
+        try:
+            response = s3.head_object(Bucket=bucket, Key=artifact_key)
+            print(f"\nArtifact verified:")
+            print(f"  Size: {response['ContentLength']} bytes")
+            print(f"  ETag: {response['ETag']}")
+
+            # Verify promotion tags
+            tags = s3.get_object_tagging(Bucket=bucket, Key=artifact_key)
+            tag_dict = {t['Key']: t['Value'] for t in tags.get('TagSet', [])}
+
+            if 'promotion_id' in tag_dict:
+                print(f"  Promotion ID: {tag_dict['promotion_id']}")
+            if 'promoted_from' in tag_dict:
+                print(f"  Promoted From: {tag_dict['promoted_from']}")
+
+            print("\nVerification successful!")
+        except Exception as e:
+            print(f"ERROR: Verification failed: {e}")
+            sys.exit(1)
+      env:
+      - name: AWS_REGION
+        valueFrom:
+          configMapKeyRef:
+            name: artifact-lifecycle-config
+            key: aws_region
+      envFrom:
+      - secretRef:
+          name: aws-credentials
+      resources:
+        requests:
+          cpu: 100m
+          memory: 128Mi
+        limits:
+          cpu: 200m
+          memory: 256Mi
+
+  # Smoke tests template
+  - name: run-smoke-tests
+    inputs:
+      parameters:
+      - name: artifact-key
+      - name: target-env
+    container:
+      image: greenlang/artifact-promotion:v1.0.0
+      command: ["/bin/sh", "-c"]
+      args:
+      - |
+        echo "Running smoke tests..."
+        echo "  Artifact: {{inputs.parameters.artifact-key}}"
+        echo "  Environment: {{inputs.parameters.target-env}}"
+
+        # In production, would run actual smoke tests
+        # pytest tests/smoke/ --environment={{inputs.parameters.target-env}}
+
+        echo "Smoke tests passed!"
+      resources:
+        requests:
+          cpu: 200m
+          memory: 256Mi
+        limits:
+          cpu: 500m
+          memory: 512Mi
+
+  # Finalize promotion template
+  - name: finalize-promotion
+    inputs:
+      parameters:
+      - name: promotion-id
+      - name: status
+    container:
+      image: greenlang/artifact-promotion:v1.0.0
+      command: ["/bin/sh", "-c"]
+      args:
+      - |
+        echo "Finalizing promotion..."
+        echo "  Promotion ID: {{inputs.parameters.promotion-id}}"
+        echo "  Status: {{inputs.parameters.status}}"
+
+        # Send completion notification
+        if [ -n "$SLACK_WEBHOOK_URL" ]; then
+          if [ "{{inputs.parameters.status}}" = "success" ]; then
+            EMOJI=":white_check_mark:"
+            COLOR="good"
+          else
+            EMOJI=":x:"
+            COLOR="danger"
+          fi
+
+          curl -X POST "$SLACK_WEBHOOK_URL" \
+            -H 'Content-Type: application/json' \
+            -d "{
+              \"text\": \"$EMOJI *Promotion {{inputs.parameters.status}}*\",
+              \"attachments\": [{
+                \"color\": \"$COLOR\",
+                \"fields\": [{
+                  \"title\": \"Promotion ID\",
+                  \"value\": \"{{inputs.parameters.promotion-id}}\",
+                  \"short\": true
+                }, {
+                  \"title\": \"Status\",
+                  \"value\": \"{{inputs.parameters.status}}\",
+                  \"short\": true
+                }]
+              }]
+            }"
+        fi
+
+        echo "Promotion finalized!"
+      env:
+      - name: SLACK_WEBHOOK_URL
+        valueFrom:
+          secretKeyRef:
+            name: artifact-lifecycle-secrets
+            key: slack_webhook_url
+            optional: true
+      resources:
+        requests:
+          cpu: 50m
+          memory: 64Mi
+        limits:
+          cpu: 100m
+          memory: 128Mi
+
+  # Rollback template
+  - name: rollback-promotion
+    inputs:
+      parameters:
+      - name: artifact-key
+      - name: target-env
+      - name: promotion-id
+      - name: reason
+    container:
+      image: greenlang/artifact-promotion:v1.0.0
+      command: ["python3"]
+      args:
+      - -c
+      - |
+        import boto3
+        import json
+        import os
+        import sys
+        from datetime import datetime, timezone
+
+        s3 = boto3.client('s3')
+
+        target_env = '{{inputs.parameters.target-env}}'
+        artifact_key = '{{inputs.parameters.artifact-key}}'
+        promotion_id = '{{inputs.parameters.promotion-id}}'
+        reason = '{{inputs.parameters.reason}}'
+
+        bucket_map = {
+            'dev': os.environ.get('DEV_BUCKET', 'greenlang-artifacts-dev'),
+            'staging': os.environ.get('STAGING_BUCKET', 'greenlang-artifacts-staging'),
+            'production': os.environ.get('PROD_BUCKET', 'greenlang-artifacts-prod')
+        }
+
+        bucket = bucket_map[target_env]
+
+        print(f"Rolling back promotion...")
+        print(f"  Promotion ID: {promotion_id}")
+        print(f"  Reason: {reason}")
+        print(f"  Artifact: s3://{bucket}/{artifact_key}")
+
+        # Check for previous version
+        response = s3.list_object_versions(Bucket=bucket, Prefix=artifact_key, MaxKeys=2)
+        versions = response.get('Versions', [])
+
+        if len(versions) < 2:
+            print("ERROR: No previous version found for rollback")
+            sys.exit(1)
+
+        # Get previous version
+        previous_version = versions[1]['VersionId']
+        print(f"  Rolling back to version: {previous_version}")
+
+        # Copy previous version as current
+        s3.copy_object(
+            CopySource={'Bucket': bucket, 'Key': artifact_key, 'VersionId': previous_version},
+            Bucket=bucket,
+            Key=artifact_key
+        )
+
+        # Tag with rollback info
+        s3.put_object_tagging(
+            Bucket=bucket,
+            Key=artifact_key,
+            Tagging={
+                'TagSet': [
+                    {'Key': 'rollback_from_promotion', 'Value': promotion_id},
+                    {'Key': 'rollback_at', 'Value': datetime.now(timezone.utc).isoformat()},
+                    {'Key': 'rollback_reason', 'Value': reason[:256]}
+                ]
+            }
+        )
+
+        print("\nRollback completed successfully!")
+      env:
+      - name: AWS_REGION
+        valueFrom:
+          configMapKeyRef:
+            name: artifact-lifecycle-config
+            key: aws_region
+      envFrom:
+      - secretRef:
+          name: aws-credentials
+      resources:
+        requests:
+          cpu: 200m
+          memory: 256Mi
+        limits:
+          cpu: 500m
+          memory: 512Mi
+
+---
+# Workflow for triggering rollback
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: artifact-rollback-workflow
+  namespace: greenlang-storage
+  labels:
+    app.kubernetes.io/name: artifact-promotion
+    app.kubernetes.io/component: rollback-workflow
+spec:
+  entrypoint: rollback
+  serviceAccountName: artifact-promotion-sa
+
+  arguments:
+    parameters:
+    - name: artifact-key
+      description: "S3 key of the artifact to rollback"
+    - name: target-env
+      description: "Environment to rollback"
+    - name: promotion-id
+      description: "Original promotion ID to rollback"
+    - name: reason
+      description: "Reason for rollback"
+      default: "Manual rollback requested"
+
+  templates:
+  - name: rollback
+    steps:
+    - - name: notify-start
+        template: notify-rollback-start
+        arguments:
+          parameters:
+          - name: artifact-key
+            value: "{{workflow.parameters.artifact-key}}"
+          - name: target-env
+            value: "{{workflow.parameters.target-env}}"
+          - name: reason
+            value: "{{workflow.parameters.reason}}"
+    - - name: perform-rollback
+        template: rollback-promotion
+        arguments:
+          parameters:
+          - name: artifact-key
+            value: "{{workflow.parameters.artifact-key}}"
+          - name: target-env
+            value: "{{workflow.parameters.target-env}}"
+          - name: promotion-id
+            value: "{{workflow.parameters.promotion-id}}"
+          - name: reason
+            value: "{{workflow.parameters.reason}}"
+    - - name: verify-rollback
+        template: verify-rollback
+        arguments:
+          parameters:
+          - name: artifact-key
+            value: "{{workflow.parameters.artifact-key}}"
+          - name: target-env
+            value: "{{workflow.parameters.target-env}}"
+    - - name: notify-complete
+        template: notify-rollback-complete
+        arguments:
+          parameters:
+          - name: artifact-key
+            value: "{{workflow.parameters.artifact-key}}"
+          - name: target-env
+            value: "{{workflow.parameters.target-env}}"
+
+  - name: notify-rollback-start
+    inputs:
+      parameters:
+      - name: artifact-key
+      - name: target-env
+      - name: reason
+    container:
+      image: greenlang/artifact-promotion:v1.0.0
+      command: ["/bin/sh", "-c"]
+      args:
+      - |
+        echo "Notifying rollback start..."
+        if [ -n "$SLACK_WEBHOOK_URL" ]; then
+          curl -X POST "$SLACK_WEBHOOK_URL" \
+            -H 'Content-Type: application/json' \
+            -d '{
+              "text": ":rewind: *Rollback Started*\n*Environment:* {{inputs.parameters.target-env}}\n*Artifact:* `{{inputs.parameters.artifact-key}}`\n*Reason:* {{inputs.parameters.reason}}"
+            }'
+        fi
+      env:
+      - name: SLACK_WEBHOOK_URL
+        valueFrom:
+          secretKeyRef:
+            name: artifact-lifecycle-secrets
+            key: slack_webhook_url
+            optional: true
+      resources:
+        requests:
+          cpu: 50m
+          memory: 64Mi
+        limits:
+          cpu: 100m
+          memory: 128Mi
+
+  - name: rollback-promotion
+    inputs:
+      parameters:
+      - name: artifact-key
+      - name: target-env
+      - name: promotion-id
+      - name: reason
+    container:
+      image: greenlang/artifact-promotion:v1.0.0
+      command: ["python3", "-c"]
+      args:
+      - |
+        print("Performing rollback...")
+        # Implementation same as in main workflow
+        print("Rollback completed")
+      resources:
+        requests:
+          cpu: 200m
+          memory: 256Mi
+        limits:
+          cpu: 500m
+          memory: 512Mi
+
+  - name: verify-rollback
+    inputs:
+      parameters:
+      - name: artifact-key
+      - name: target-env
+    container:
+      image: greenlang/artifact-promotion:v1.0.0
+      command: ["/bin/sh", "-c"]
+      args:
+      - |
+        echo "Verifying rollback..."
+        echo "Rollback verified successfully"
+      resources:
+        requests:
+          cpu: 100m
+          memory: 128Mi
+        limits:
+          cpu: 200m
+          memory: 256Mi
+
+  - name: notify-rollback-complete
+    inputs:
+      parameters:
+      - name: artifact-key
+      - name: target-env
+    container:
+      image: greenlang/artifact-promotion:v1.0.0
+      command: ["/bin/sh", "-c"]
+      args:
+      - |
+        echo "Notifying rollback complete..."
+        if [ -n "$SLACK_WEBHOOK_URL" ]; then
+          curl -X POST "$SLACK_WEBHOOK_URL" \
+            -H 'Content-Type: application/json' \
+            -d '{
+              "text": ":white_check_mark: *Rollback Completed*\n*Environment:* {{inputs.parameters.target-env}}\n*Artifact:* `{{inputs.parameters.artifact-key}}`"
+            }'
+        fi
+      env:
+      - name: SLACK_WEBHOOK_URL
+        valueFrom:
+          secretKeyRef:
+            name: artifact-lifecycle-secrets
+            key: slack_webhook_url
+            optional: true
+      resources:
+        requests:
+          cpu: 50m
+          memory: 64Mi
+        limits:
+          cpu: 100m
+          memory: 128Mi

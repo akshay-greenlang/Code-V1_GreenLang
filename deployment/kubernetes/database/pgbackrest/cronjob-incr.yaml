@@ -1,0 +1,312 @@
+# pgBackRest Incremental Backup CronJob
+# Executes daily incremental backups Monday through Saturday at 2 AM UTC
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: pgbackrest-backup-incr
+  namespace: greenlang-database
+  labels:
+    app.kubernetes.io/name: pgbackrest
+    app.kubernetes.io/component: backup-incr
+    app.kubernetes.io/part-of: greenlang
+    backup-type: incremental
+  annotations:
+    description: "Daily incremental backup of GreenLang PostgreSQL database (Mon-Sat)"
+spec:
+  # Schedule: Monday through Saturday at 2:00 AM UTC
+  schedule: "0 2 * * 1-6"
+
+  # Timezone for schedule interpretation
+  timeZone: "UTC"
+
+  # Concurrency policy - do not allow concurrent backups
+  concurrencyPolicy: Forbid
+
+  # Keep history for debugging
+  successfulJobsHistoryLimit: 7
+  failedJobsHistoryLimit: 5
+
+  # Deadline for starting the job (2 hours)
+  startingDeadlineSeconds: 7200
+
+  # Suspend the cronjob (set to true for maintenance)
+  suspend: false
+
+  jobTemplate:
+    metadata:
+      labels:
+        app.kubernetes.io/name: pgbackrest
+        app.kubernetes.io/component: backup-incr
+        backup-type: incremental
+    spec:
+      # TTL for completed jobs (3 days)
+      ttlSecondsAfterFinished: 259200
+
+      # Backoff limit for retries
+      backoffLimit: 3
+
+      # Active deadline for job completion (1 hour)
+      activeDeadlineSeconds: 3600
+
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: pgbackrest
+            app.kubernetes.io/component: backup-incr
+            backup-type: incremental
+          annotations:
+            prometheus.io/scrape: "true"
+            prometheus.io/port: "9187"
+        spec:
+          serviceAccountName: pgbackrest-backup-sa
+          restartPolicy: OnFailure
+
+          # Security context
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 999
+            runAsGroup: 999
+            fsGroup: 999
+            seccompProfile:
+              type: RuntimeDefault
+
+          # Init container to run pre-backup checks
+          initContainers:
+            - name: pre-backup-check
+              image: pgbackrest/pgbackrest:2.49
+              imagePullPolicy: IfNotPresent
+              command:
+                - /bin/bash
+                - -c
+                - |
+                  set -e
+
+                  echo "[$(date -Iseconds)] Running pre-backup checks for incremental backup..."
+
+                  # Check if any backup exists (required for incremental)
+                  BACKUP_COUNT=$(pgbackrest --stanza=greenlang info --output=json | \
+                    jq '.[0].backup | length')
+
+                  if [ "$BACKUP_COUNT" -eq 0 ]; then
+                    echo "ERROR: No backup found. Incremental backup requires a prior backup."
+                    echo "Please run a full backup before scheduling incremental backups."
+                    exit 1
+                  fi
+
+                  # Check for recent backup (within last 8 days)
+                  LATEST_BACKUP_TIMESTAMP=$(pgbackrest --stanza=greenlang info --output=json | \
+                    jq -r '.[0].backup[-1].timestamp.stop')
+
+                  LATEST_EPOCH=$(date -d "$LATEST_BACKUP_TIMESTAMP" +%s 2>/dev/null || echo "0")
+                  CURRENT_EPOCH=$(date +%s)
+                  EIGHT_DAYS_AGO=$((CURRENT_EPOCH - 691200))
+
+                  if [ "$LATEST_EPOCH" -lt "$EIGHT_DAYS_AGO" ]; then
+                    echo "WARNING: Latest backup is more than 8 days old."
+                    echo "Consider running a full or differential backup first."
+                  fi
+
+                  echo "[$(date -Iseconds)] Prior backup found. Proceeding with incremental backup..."
+
+                  # Run standard pre-backup script
+                  /scripts/pre-backup.sh
+
+              volumeMounts:
+                - name: pgbackrest-config
+                  mountPath: /etc/pgbackrest/pgbackrest.conf
+                  subPath: pgbackrest.conf
+                - name: pgbackrest-scripts
+                  mountPath: /scripts
+                - name: pgbackrest-secrets
+                  mountPath: /etc/pgbackrest/secrets
+                  readOnly: true
+              env:
+                - name: PGBACKREST_REPO1_CIPHER_PASS
+                  valueFrom:
+                    secretKeyRef:
+                      name: pgbackrest-secrets
+                      key: encryption-passphrase
+                - name: AWS_ACCESS_KEY_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: pgbackrest-secrets
+                      key: aws-access-key-id
+                - name: AWS_SECRET_ACCESS_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: pgbackrest-secrets
+                      key: aws-secret-access-key
+              resources:
+                requests:
+                  cpu: "100m"
+                  memory: "128Mi"
+                limits:
+                  cpu: "200m"
+                  memory: "256Mi"
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop:
+                    - ALL
+
+          containers:
+            - name: pgbackrest-incr-backup
+              image: pgbackrest/pgbackrest:2.49
+              imagePullPolicy: IfNotPresent
+              command:
+                - /bin/bash
+                - -c
+                - |
+                  set -e
+
+                  echo "[$(date -Iseconds)] Starting INCREMENTAL backup for stanza: greenlang"
+
+                  # Execute incremental backup
+                  pgbackrest --stanza=greenlang --type=incr backup \
+                    --log-level-console=info \
+                    --log-level-file=detail
+
+                  BACKUP_STATUS=$?
+
+                  if [ $BACKUP_STATUS -eq 0 ]; then
+                    echo "[$(date -Iseconds)] Incremental backup completed successfully"
+                    /scripts/post-backup.sh incr success
+
+                    # Verify the backup (quick verification for incremental)
+                    echo "[$(date -Iseconds)] Quick verification of backup..."
+                    pgbackrest --stanza=greenlang info
+                  else
+                    echo "[$(date -Iseconds)] Incremental backup FAILED with status: $BACKUP_STATUS"
+                    /scripts/post-backup.sh incr failure
+                    exit $BACKUP_STATUS
+                  fi
+
+                  # Report backup chain
+                  echo "[$(date -Iseconds)] Current backup chain:"
+                  pgbackrest --stanza=greenlang info --output=text
+
+              volumeMounts:
+                - name: pgbackrest-config
+                  mountPath: /etc/pgbackrest/pgbackrest.conf
+                  subPath: pgbackrest.conf
+                - name: pgbackrest-scripts
+                  mountPath: /scripts
+                - name: pgbackrest-secrets
+                  mountPath: /etc/pgbackrest/secrets
+                  readOnly: true
+                - name: pgbackrest-logs
+                  mountPath: /var/log/pgbackrest
+                - name: pgbackrest-metrics
+                  mountPath: /var/lib/pgbackrest/metrics
+                - name: pgbackrest-spool
+                  mountPath: /var/spool/pgbackrest
+
+              env:
+                - name: PGBACKREST_REPO1_CIPHER_PASS
+                  valueFrom:
+                    secretKeyRef:
+                      name: pgbackrest-secrets
+                      key: encryption-passphrase
+                - name: AWS_ACCESS_KEY_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: pgbackrest-secrets
+                      key: aws-access-key-id
+                - name: AWS_SECRET_ACCESS_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: pgbackrest-secrets
+                      key: aws-secret-access-key
+                - name: PGHOST
+                  value: "greenlang-postgresql"
+                - name: PGPORT
+                  value: "5432"
+                - name: PGUSER
+                  valueFrom:
+                    secretKeyRef:
+                      name: pgbackrest-secrets
+                      key: pg-username
+                - name: PGPASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: pgbackrest-secrets
+                      key: pg-password
+
+              resources:
+                requests:
+                  cpu: "250m"
+                  memory: "256Mi"
+                limits:
+                  cpu: "1000m"
+                  memory: "1Gi"
+
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: false
+                capabilities:
+                  drop:
+                    - ALL
+
+          volumes:
+            - name: pgbackrest-config
+              configMap:
+                name: pgbackrest-config
+            - name: pgbackrest-scripts
+              configMap:
+                name: pgbackrest-scripts
+                defaultMode: 0755
+            - name: pgbackrest-secrets
+              secret:
+                secretName: pgbackrest-secrets
+            - name: pgbackrest-logs
+              emptyDir:
+                sizeLimit: 512Mi
+            - name: pgbackrest-metrics
+              emptyDir:
+                sizeLimit: 100Mi
+            - name: pgbackrest-spool
+              emptyDir:
+                sizeLimit: 2Gi
+
+          # Node affinity for backup jobs
+          affinity:
+            nodeAffinity:
+              preferredDuringSchedulingIgnoredDuringExecution:
+                - weight: 100
+                  preference:
+                    matchExpressions:
+                      - key: node-role.kubernetes.io/backup
+                        operator: Exists
+            podAntiAffinity:
+              preferredDuringSchedulingIgnoredDuringExecution:
+                - weight: 100
+                  podAffinityTerm:
+                    labelSelector:
+                      matchLabels:
+                        app.kubernetes.io/name: greenlang-postgresql
+                    topologyKey: kubernetes.io/hostname
+
+          # Tolerations for dedicated backup nodes
+          tolerations:
+            - key: "dedicated"
+              operator: "Equal"
+              value: "backup"
+              effect: "NoSchedule"
+
+---
+# PodDisruptionBudget for backup jobs (optional, for HA scenarios)
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: pgbackrest-backup-pdb
+  namespace: greenlang-database
+  labels:
+    app.kubernetes.io/name: pgbackrest
+    app.kubernetes.io/component: backup
+spec:
+  minAvailable: 0
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: pgbackrest

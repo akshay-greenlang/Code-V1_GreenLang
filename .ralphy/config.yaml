@@ -1,75 +1,357 @@
-# Ralphy Configuration
+# GreenLang Climate OS - Ralphy Configuration
 # https://github.com/michaelshimeles/ralphy
+# =============================================================================
+#
+# This configuration defines the project-wide settings, commands, and rules
+# for Ralphy automation tasks.
+#
+# Quick Commands:
+#   ralphy run .ralphy/tasks/infra-001-local.yaml       # Local validation only
+#   ralphy run .ralphy/tasks/infra-001-complete.yaml    # Full deployment
+#   ralphy validate deployment/terraform/INFRA-001-TASKS.yaml  # Validate config
+#
+# =============================================================================
 
-# Project info
 project:
-  name: "greenlang"
+  name: "GreenLang Climate OS"
   language: "Python"
   framework: "FastAPI"
-  description: "GreenLang Climate Operating System - Agentic runtime + DSL for enterprise climate data, emissions, and decarbonization"
+  description: "Deterministic execution engine + pack format for climate calculations and compliance workflows"
+  version: "1.0.0"
+  repository: "github.com/greenlang/infrastructure"
 
-# Commands for Python project
+# =============================================================================
+# Commands - All available automation commands
+# =============================================================================
 commands:
-  test: "pytest tests/ -v"
-  lint: "ruff check . --fix"
-  build: "python -m build"
+  # Application Commands
+  test: "pytest tests/ -v --tb=short"
+  test_coverage: "pytest tests/ -v --cov=greenlang --cov-report=html --cov-report=term"
+  lint: "ruff check greenlang/"
+  lint_fix: "ruff check greenlang/ --fix"
+  format: "ruff format greenlang/"
+  format_check: "ruff format greenlang/ --check"
   typecheck: "mypy greenlang/"
-  format: "ruff format ."
+  build: "python -m build"
 
-# Rules - instructions the AI MUST follow
+  # Terraform Commands - Module validation
+  terraform_fmt: "terraform fmt -recursive deployment/terraform"
+  terraform_fmt_check: "terraform fmt -check -recursive deployment/terraform"
+  terraform_validate_modules: |
+    for module in vpc eks rds elasticache s3 iam; do
+      cd deployment/terraform/modules/$module && terraform init -backend=false && terraform validate && cd -
+    done
+
+  # Terraform Commands - Environment specific
+  terraform_init_dev: "cd deployment/terraform/environments/dev && terraform init -reconfigure"
+  terraform_init_staging: "cd deployment/terraform/environments/staging && terraform init -reconfigure"
+  terraform_init_prod: "cd deployment/terraform/environments/prod && terraform init -reconfigure"
+
+  terraform_plan_dev: "cd deployment/terraform/environments/dev && terraform plan -var-file=terraform.tfvars"
+  terraform_plan_staging: "cd deployment/terraform/environments/staging && terraform plan -var-file=terraform.tfvars"
+  terraform_plan_prod: "cd deployment/terraform/environments/prod && terraform plan -var-file=terraform.tfvars"
+
+  terraform_apply_dev: "cd deployment/terraform/environments/dev && terraform apply -var-file=terraform.tfvars -auto-approve"
+  terraform_apply_staging: "cd deployment/terraform/environments/staging && terraform apply -var-file=terraform.tfvars -auto-approve"
+  terraform_apply_prod: "cd deployment/terraform/environments/prod && terraform apply -var-file=terraform.tfvars"
+
+  # Kubernetes Commands
+  kubectl_dev: "aws eks update-kubeconfig --name greenlang-dev-eks --region us-east-1"
+  kubectl_staging: "aws eks update-kubeconfig --name greenlang-staging-eks --region us-east-1"
+  kubectl_prod: "aws eks update-kubeconfig --name greenlang-prod-eks --region us-east-1"
+
+  # Helm Commands
+  helm_lint: "helm lint deployment/infrastructure/helm/greenlang --strict"
+  helm_template_dev: "helm template greenlang deployment/infrastructure/helm/greenlang -f deployment/infrastructure/helm/greenlang/values-dev.yaml"
+  helm_template_staging: "helm template greenlang deployment/infrastructure/helm/greenlang -f deployment/infrastructure/helm/greenlang/values-staging.yaml"
+  helm_template_prod: "helm template greenlang deployment/infrastructure/helm/greenlang -f deployment/infrastructure/helm/greenlang/values-prod.yaml"
+
+  helm_deploy_dev: "helm upgrade --install greenlang deployment/infrastructure/helm/greenlang -n greenlang -f deployment/infrastructure/helm/greenlang/values-dev.yaml --wait"
+  helm_deploy_staging: "helm upgrade --install greenlang deployment/infrastructure/helm/greenlang -n greenlang -f deployment/infrastructure/helm/greenlang/values-staging.yaml --wait"
+  helm_deploy_prod: "helm upgrade --install greenlang deployment/infrastructure/helm/greenlang -n greenlang -f deployment/infrastructure/helm/greenlang/values-prod.yaml --wait"
+
+  # Security Scanning
+  security_scan: "tfsec deployment/terraform --format lovely || true"
+  security_scan_json: "tfsec deployment/terraform --format json --out tfsec-results.json || true"
+  trivy_scan: "trivy config deployment/terraform"
+
+  # Monitoring Commands
+  prometheus_config_check: "promtool check config deployment/monitoring/prometheus.yml"
+  alertmanager_config_check: "amtool check-config deployment/monitoring/alertmanager-config.yml"
+
+  # Docker Commands
+  docker_build: "docker build -t greenlang/app:latest -f Dockerfile ."
+  docker_build_dev: "docker build -t greenlang/app:dev -f Dockerfile --target development ."
+  docker_push: "docker push greenlang/app:latest"
+
+  # LocalStack Commands
+  localstack_start: "docker compose -f deployment/docker/docker-compose.localstack.yaml up -d"
+  localstack_stop: "docker compose -f deployment/docker/docker-compose.localstack.yaml down"
+  localstack_logs: "docker compose -f deployment/docker/docker-compose.localstack.yaml logs -f"
+
+  # Ralphy Task Commands
+  infra_local: "ralphy run .ralphy/tasks/infra-001-local.yaml"
+  infra_complete_dev: "ralphy run .ralphy/tasks/infra-001-complete.yaml --environment dev"
+  infra_complete_staging: "ralphy run .ralphy/tasks/infra-001-complete.yaml --environment staging"
+  infra_complete_prod: "ralphy run .ralphy/tasks/infra-001-complete.yaml --environment prod"
+  infra_validate: "ralphy validate deployment/terraform/INFRA-001-TASKS.yaml"
+
+  # Utility Commands
+  clean: "rm -rf .terraform .pytest_cache __pycache__ .mypy_cache .ruff_cache dist build *.egg-info"
+  docs: "terraform-docs markdown table deployment/terraform/modules/*"
+
+# =============================================================================
+# Rules - Coding and operational standards
+# =============================================================================
 rules:
-  - "CRITICAL: NEVER modify files in 2026_PRD_MVP/ directory"
-  - "CRITICAL: NEVER modify files in cbam-pack-mvp/ directory"
-  - "Always update imports after moving any Python files"
-  - "Run tests after each major reorganization phase"
-  - "Create backward-compatible re-exports when moving public modules"
-  - "Follow PEP 8 naming conventions"
-  - "Use singular names for Python modules (e.g., 'config' not 'configs')"
-  - "Keep all changes in atomic commits for easy rollback"
-  - "Preserve existing functionality - no breaking changes to public API"
-  - "Update any CI/CD paths when moving files"
-  - "Add deprecation warnings before removing backward compatibility"
+  # Application Rules
+  - "All agents must implement BaseAgent from greenlang.agents.base"
+  - "Every calculation must produce deterministic output with provenance"
+  - "Follow zero-hallucination architecture - tools first, LLM second"
+  - "Use Pydantic models for all data schemas"
+  - "All emission factors must have citations and version tracking"
+  - "Test coverage minimum 85%"
+  - "Use DeterministicClock for timestamps in calculations"
 
-# Boundaries - files/folders the AI should not modify
+  # Infrastructure Rules
+  - "All Terraform changes must go through terraform plan review"
+  - "Production deployments require approval from platform-engineering team"
+  - "All S3 buckets must have encryption enabled"
+  - "All RDS instances must have encryption at rest"
+  - "EKS clusters must use private endpoint access only in production"
+  - "All secrets must be stored in AWS Secrets Manager, never in code"
+  - "All infrastructure changes must be tagged with ticket IDs"
+
+  # Deployment Rules
+  - "Never deploy directly to production without staging validation"
+  - "All deployments must have rollback procedures defined"
+  - "Monitoring and alerting must be verified post-deployment"
+  - "Database migrations must be backward compatible"
+  - "Helm values must be environment-specific"
+
+  # Security Rules
+  - "No hardcoded credentials or API keys"
+  - "All network traffic must use TLS"
+  - "Security groups must follow least-privilege principle"
+  - "IAM roles must have minimal required permissions"
+  - "All container images must pass vulnerability scanning"
+
+# =============================================================================
+# Boundaries - Files and directories that should not be modified
+# =============================================================================
 boundaries:
   never_touch:
-    - "2026_PRD_MVP/**"
-    - "cbam-pack-mvp/**"
     - "*.lock"
-    - ".git/**"
-    - "node_modules/**"
-    - "__pycache__/**"
-    - "*.pyc"
     - ".env*"
-    - "credentials*"
-    - "secrets*"
+    - "**/__pycache__/**"
+    - "**/node_modules/**"
+    - "*.pyc"
+    - ".git/**"
+    - "ralphy-agent/**"
+    - "**/.terraform/**"
+    - "**/terraform.tfstate*"
+    - "**/*.tfvars"  # May contain sensitive defaults
 
-# Validation settings
-validation:
-  run_tests: true
-  run_lint: true
-  require_passing: true
+  sensitive_files:
+    - "deployment/terraform/environments/*/terraform.tfvars"
+    - "deployment/terraform/environments/*/*.auto.tfvars"
+    - "**/*.secret*"
+    - "**/credentials*"
+    - "**/.env*"
+    - "**/secrets/**"
+    - "**/*.pem"
+    - "**/*.key"
+    - "**/kubeconfig*"
 
-# GitHub integration
-github:
-  owner: "akshay-greenlang"
-  repo: "Code-V1_GreenLang"
-  cleanup_script: "scripts/github_api_cleanup.py"
+  read_only:
+    - "deployment/terraform/modules/**/*.tf"  # Modules should be stable
+    - ".ralphy/tasks/*.yaml"  # Task definitions should be versioned
 
-# Current tasks
+# =============================================================================
+# Notifications
+# =============================================================================
+notifications:
+  enabled: true
+  channels:
+    slack:
+      enabled: true
+      # webhook_url: "{{ secrets.slack_webhook_url }}"
+      channels:
+        dev: "#greenlang-dev"
+        staging: "#greenlang-staging"
+        prod: "#greenlang-prod"
+        alerts: "#greenlang-alerts"
+
+    pagerduty:
+      enabled: true
+      # routing_key: "{{ secrets.pagerduty_routing_key }}"
+      services:
+        prod: "greenlang-prod-infra"
+
+  triggers:
+    on_deployment_start: true
+    on_deployment_success: true
+    on_deployment_failure: true
+    on_rollback: true
+    on_approval_required: true
+
+# =============================================================================
+# Capabilities
+# =============================================================================
+capabilities:
+  browser: "auto"
+  docker: true
+  kubernetes: true
+  terraform: true
+  aws: true
+  helm: true
+
+# =============================================================================
+# Infrastructure Configuration
+# =============================================================================
+infrastructure:
+  aws_region: "us-east-1"
+  terraform_version: ">=1.6"
+  kubernetes_version: "1.28"
+  helm_version: ">=3.13"
+
+  state_backend:
+    type: "s3"
+    bucket: "greenlang-terraform-state"
+    region: "us-east-1"
+    encrypt: true
+    dynamodb_table: "greenlang-terraform-locks"
+
+  environments:
+    dev:
+      cluster_name: "greenlang-dev-eks"
+      node_count: 3
+      auto_approve: true
+      enable_monitoring: true
+
+    staging:
+      cluster_name: "greenlang-staging-eks"
+      node_count: 5
+      auto_approve: true
+      enable_monitoring: true
+      enable_canary: true
+
+    prod:
+      cluster_name: "greenlang-prod-eks"
+      node_count: 11
+      auto_approve: false
+      enable_monitoring: true
+      enable_canary: true
+      requires_approval: true
+      min_approvers: 2
+
+# =============================================================================
+# Quality Gates
+# =============================================================================
+quality_gates:
+  terraform:
+    - "terraform fmt -check passes"
+    - "terraform validate passes"
+    - "terraform plan shows no errors"
+    - "Security scan clean (tfsec) - no CRITICAL issues"
+    - "Cost estimation within budget"
+    - "No resources marked for destruction without approval"
+
+  kubernetes:
+    - "All pods in Running state"
+    - "Health checks passing"
+    - "Ingress has external IP/hostname"
+    - "Monitoring stack operational"
+    - "No high restart counts"
+    - "Resource requests and limits defined"
+
+  application:
+    - "All tests pass"
+    - "Coverage >= 85%"
+    - "No critical security vulnerabilities"
+    - "API endpoints responding"
+    - "Database migrations successful"
+    - "Lint checks pass"
+
+  security:
+    - "No exposed secrets in code"
+    - "All containers from approved registries"
+    - "Network policies applied"
+    - "RBAC configured correctly"
+    - "Encryption enabled for data at rest and in transit"
+
+# =============================================================================
+# Rollback Configuration
+# =============================================================================
+rollback:
+  enabled: true
+  strategies:
+    application:
+      type: "helm_rollback"
+      max_history: 10
+      timeout: "10m"
+
+    infrastructure:
+      type: "terraform_state_restore"
+      backup_retention: "30d"
+      require_approval: true
+
+  automatic_triggers:
+    - condition: "pod_crash_loop_backoff"
+      threshold: 3
+      action: "rollback_application"
+
+    - condition: "health_check_failure"
+      threshold: 5
+      duration: "5m"
+      action: "rollback_application"
+
+# =============================================================================
+# Artifact Storage
+# =============================================================================
+artifacts:
+  storage: "s3"
+  bucket_pattern: "greenlang-{environment}-artifacts"
+  retention:
+    terraform_plans: "7d"
+    deployment_reports: "365d"
+    diagnostics: "90d"
+    logs: "30d"
+
+# =============================================================================
+# Task References
+# =============================================================================
 tasks:
-  - id: "gh-cleanup-001"
-    name: "Close stale Friday Gate issues"
-    status: "completed"
-    completed_at: "2026-01-26T09:58:02Z"
-    result: "17 issues closed successfully"
-  - id: "gh-cleanup-002"
-    name: "Close superseded Dependabot PRs"
-    status: "completed"
-    completed_at: "2026-01-26T09:58:02Z"
-    result: "11 PRs closed successfully"
-  - id: "deps-update-001"
-    name: "Update dependencies for security"
-    status: "completed"
-    completed_at: "2026-01-26T09:45:00Z"
-    result: "11 packages updated in pyproject.toml, requirements.txt, requirements-pinned.txt"
+  local_validation:
+    path: ".ralphy/tasks/infra-001-local.yaml"
+    description: "Local development and validation tasks (no AWS required)"
+    estimated_duration: "15m"
+
+  complete_deployment:
+    path: ".ralphy/tasks/infra-001-complete.yaml"
+    description: "Complete end-to-end deployment orchestration"
+    estimated_duration: "90m"
+
+  infrastructure_tasks:
+    path: "deployment/terraform/INFRA-001-TASKS.yaml"
+    description: "Detailed infrastructure deployment tasks"
+    estimated_duration: "45m"
+
+# =============================================================================
+# Logging
+# =============================================================================
+logging:
+  level: "INFO"
+  format: "json"
+  destinations:
+    - type: "console"
+    - type: "file"
+      path: ".ralphy/logs/"
+      rotation: "daily"
+      retention: "7d"
+
+  include:
+    - timestamps
+    - task_context
+    - environment
+    - git_commit

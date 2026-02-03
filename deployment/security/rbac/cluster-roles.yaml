@@ -1,0 +1,346 @@
+# INFRA-001: Cluster Roles for GreenLang
+# Defines three-tier access model: admin, developer, viewer
+# Implements least-privilege access control
+---
+# Cluster Admin Role - Full cluster access
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: greenlang-cluster-admin
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: rbac
+    rbac.greenlang.io/role-type: admin
+rules:
+  # Full access to all resources in greenlang namespaces
+  - apiGroups: [""]
+    resources: ["*"]
+    verbs: ["*"]
+  - apiGroups: ["apps"]
+    resources: ["*"]
+    verbs: ["*"]
+  - apiGroups: ["batch"]
+    resources: ["*"]
+    verbs: ["*"]
+  - apiGroups: ["networking.k8s.io"]
+    resources: ["*"]
+    verbs: ["*"]
+  - apiGroups: ["autoscaling"]
+    resources: ["*"]
+    verbs: ["*"]
+  - apiGroups: ["policy"]
+    resources: ["*"]
+    verbs: ["*"]
+  - apiGroups: ["rbac.authorization.k8s.io"]
+    resources: ["*"]
+    verbs: ["*"]
+
+---
+# Namespace Admin Role - Full namespace access
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: greenlang-namespace-admin
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: rbac
+    rbac.greenlang.io/role-type: admin
+rules:
+  # Core resources
+  - apiGroups: [""]
+    resources:
+      - pods
+      - pods/log
+      - pods/exec
+      - pods/portforward
+      - services
+      - endpoints
+      - persistentvolumeclaims
+      - configmaps
+      - secrets
+      - serviceaccounts
+      - events
+    verbs: ["*"]
+  # Apps resources
+  - apiGroups: ["apps"]
+    resources:
+      - deployments
+      - daemonsets
+      - replicasets
+      - statefulsets
+    verbs: ["*"]
+  # Batch resources
+  - apiGroups: ["batch"]
+    resources:
+      - jobs
+      - cronjobs
+    verbs: ["*"]
+  # Networking
+  - apiGroups: ["networking.k8s.io"]
+    resources:
+      - ingresses
+      - networkpolicies
+    verbs: ["*"]
+  # Autoscaling
+  - apiGroups: ["autoscaling"]
+    resources:
+      - horizontalpodautoscalers
+    verbs: ["*"]
+
+---
+# Developer Role - Deploy and debug access
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: greenlang-developer
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: rbac
+    rbac.greenlang.io/role-type: developer
+rules:
+  # Read-write on deployments
+  - apiGroups: ["apps"]
+    resources:
+      - deployments
+      - replicasets
+    verbs: ["get", "list", "watch", "create", "update", "patch"]
+  # Read-write on configmaps
+  - apiGroups: [""]
+    resources:
+      - configmaps
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  # Read-only on secrets (no create/update for security)
+  - apiGroups: [""]
+    resources:
+      - secrets
+    verbs: ["get", "list", "watch"]
+  # Pod operations for debugging
+  - apiGroups: [""]
+    resources:
+      - pods
+      - pods/log
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources:
+      - pods/exec
+      - pods/portforward
+    verbs: ["create"]
+  # Read services and endpoints
+  - apiGroups: [""]
+    resources:
+      - services
+      - endpoints
+      - events
+    verbs: ["get", "list", "watch"]
+  # Read HPA
+  - apiGroups: ["autoscaling"]
+    resources:
+      - horizontalpodautoscalers
+    verbs: ["get", "list", "watch"]
+  # Read ingress
+  - apiGroups: ["networking.k8s.io"]
+    resources:
+      - ingresses
+    verbs: ["get", "list", "watch"]
+  # Jobs for one-off tasks
+  - apiGroups: ["batch"]
+    resources:
+      - jobs
+    verbs: ["get", "list", "watch", "create", "delete"]
+
+---
+# Viewer Role - Read-only access
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: greenlang-viewer
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: rbac
+    rbac.greenlang.io/role-type: viewer
+rules:
+  # Read-only on core resources
+  - apiGroups: [""]
+    resources:
+      - pods
+      - pods/log
+      - services
+      - endpoints
+      - persistentvolumeclaims
+      - configmaps
+      - events
+      - namespaces
+    verbs: ["get", "list", "watch"]
+  # Read-only on apps resources
+  - apiGroups: ["apps"]
+    resources:
+      - deployments
+      - daemonsets
+      - replicasets
+      - statefulsets
+    verbs: ["get", "list", "watch"]
+  # Read-only on batch resources
+  - apiGroups: ["batch"]
+    resources:
+      - jobs
+      - cronjobs
+    verbs: ["get", "list", "watch"]
+  # Read-only on networking
+  - apiGroups: ["networking.k8s.io"]
+    resources:
+      - ingresses
+      - networkpolicies
+    verbs: ["get", "list", "watch"]
+  # Read-only on autoscaling
+  - apiGroups: ["autoscaling"]
+    resources:
+      - horizontalpodautoscalers
+    verbs: ["get", "list", "watch"]
+  # NO access to secrets for viewers
+
+---
+# CI/CD Role - Deployment automation
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: greenlang-cicd
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: rbac
+    rbac.greenlang.io/role-type: automation
+rules:
+  # Deployment management
+  - apiGroups: ["apps"]
+    resources:
+      - deployments
+      - deployments/scale
+    verbs: ["get", "list", "watch", "create", "update", "patch"]
+  - apiGroups: ["apps"]
+    resources:
+      - replicasets
+    verbs: ["get", "list", "watch"]
+  # ConfigMap and Secret management
+  - apiGroups: [""]
+    resources:
+      - configmaps
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: [""]
+    resources:
+      - secrets
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  # Service management
+  - apiGroups: [""]
+    resources:
+      - services
+    verbs: ["get", "list", "watch", "create", "update", "patch"]
+  # Pod status checking
+  - apiGroups: [""]
+    resources:
+      - pods
+      - pods/log
+    verbs: ["get", "list", "watch"]
+  # Ingress management
+  - apiGroups: ["networking.k8s.io"]
+    resources:
+      - ingresses
+    verbs: ["get", "list", "watch", "create", "update", "patch"]
+  # Jobs for migrations
+  - apiGroups: ["batch"]
+    resources:
+      - jobs
+    verbs: ["get", "list", "watch", "create", "delete"]
+  # HPA management
+  - apiGroups: ["autoscaling"]
+    resources:
+      - horizontalpodautoscalers
+    verbs: ["get", "list", "watch", "create", "update", "patch"]
+
+---
+# Monitoring Role - Prometheus/Grafana access
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: greenlang-monitoring
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: rbac
+    rbac.greenlang.io/role-type: monitoring
+rules:
+  # Read pods for service discovery
+  - apiGroups: [""]
+    resources:
+      - pods
+      - services
+      - endpoints
+      - nodes
+      - nodes/proxy
+      - nodes/metrics
+    verbs: ["get", "list", "watch"]
+  # Read configmaps for Prometheus config
+  - apiGroups: [""]
+    resources:
+      - configmaps
+    verbs: ["get", "list", "watch"]
+  # Access metrics endpoint
+  - apiGroups: [""]
+    resources:
+      - pods/portforward
+    verbs: ["create"]
+  # Read deployments for dashboard
+  - apiGroups: ["apps"]
+    resources:
+      - deployments
+      - replicasets
+      - daemonsets
+      - statefulsets
+    verbs: ["get", "list", "watch"]
+  # Access metrics APIs
+  - nonResourceURLs:
+      - /metrics
+      - /metrics/*
+    verbs: ["get"]
+
+---
+# Backup Operator Role
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: greenlang-backup-operator
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: rbac
+    rbac.greenlang.io/role-type: operator
+rules:
+  # Read secrets for database credentials
+  - apiGroups: [""]
+    resources:
+      - secrets
+    verbs: ["get", "list"]
+  # Read configmaps for backup configuration
+  - apiGroups: [""]
+    resources:
+      - configmaps
+    verbs: ["get", "list", "watch"]
+  # Manage backup jobs
+  - apiGroups: ["batch"]
+    resources:
+      - jobs
+      - cronjobs
+    verbs: ["get", "list", "watch", "create", "update", "delete"]
+  # Read pods for status
+  - apiGroups: [""]
+    resources:
+      - pods
+      - pods/log
+    verbs: ["get", "list", "watch"]
+  # PVC management for snapshots
+  - apiGroups: [""]
+    resources:
+      - persistentvolumeclaims
+    verbs: ["get", "list", "watch", "create"]
+  # Volume snapshots
+  - apiGroups: ["snapshot.storage.k8s.io"]
+    resources:
+      - volumesnapshots
+      - volumesnapshotcontents
+    verbs: ["get", "list", "watch", "create", "delete"]

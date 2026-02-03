@@ -1,0 +1,320 @@
+---
+# Patroni Configuration ConfigMap
+# PostgreSQL/TimescaleDB High Availability Cluster Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: patroni-config
+  namespace: greenlang-db
+  labels:
+    app: patroni
+    component: database
+    part-of: greenlang
+data:
+  # Main Patroni configuration
+  patroni.yml: |
+    scope: greenlang-cluster
+    namespace: /greenlang/
+    name: "{{ .Env.PATRONI_NAME }}"
+
+    restapi:
+      listen: 0.0.0.0:8008
+      connect_address: "{{ .Env.POD_IP }}:8008"
+      authentication:
+        username: patroni
+        password: "{{ .Env.PATRONI_RESTAPI_PASSWORD }}"
+
+    # Distributed Configuration Store (Kubernetes endpoints)
+    kubernetes:
+      namespace: greenlang-db
+      labels:
+        app: patroni
+        cluster-name: greenlang-cluster
+      use_endpoints: true
+      pod_ip: "{{ .Env.POD_IP }}"
+      ports:
+        - name: postgresql
+          port: 5432
+
+    # Bootstrap configuration
+    bootstrap:
+      dcs:
+        ttl: 30
+        loop_wait: 10
+        retry_timeout: 10
+        maximum_lag_on_failover: 1048576
+        master_start_timeout: 300
+        synchronous_mode: false
+        synchronous_mode_strict: false
+        postgresql:
+          use_pg_rewind: true
+          use_slots: true
+          parameters:
+            # Connection settings
+            max_connections: 200
+            superuser_reserved_connections: 5
+
+            # Memory settings
+            shared_buffers: 4GB
+            effective_cache_size: 12GB
+            work_mem: 64MB
+            maintenance_work_mem: 1GB
+            huge_pages: try
+
+            # WAL settings
+            wal_level: replica
+            wal_buffers: 64MB
+            min_wal_size: 2GB
+            max_wal_size: 8GB
+            wal_compression: on
+            wal_log_hints: "on"
+
+            # Replication settings
+            hot_standby: "on"
+            max_wal_senders: 10
+            max_replication_slots: 10
+            hot_standby_feedback: on
+            wal_keep_size: 2GB
+
+            # Archiving
+            archive_mode: "on"
+            archive_command: 'pgbackrest --stanza=greenlang archive-push %p'
+            archive_timeout: 60
+
+            # Checkpoints
+            checkpoint_timeout: 15min
+            checkpoint_completion_target: 0.9
+
+            # Background writer
+            bgwriter_delay: 20ms
+            bgwriter_lru_maxpages: 1000
+            bgwriter_lru_multiplier: 10.0
+
+            # Logging
+            log_destination: stderr
+            logging_collector: off
+            log_min_duration_statement: 1000
+            log_checkpoints: on
+            log_connections: on
+            log_disconnections: on
+            log_lock_waits: on
+            log_statement: ddl
+            log_temp_files: 0
+            log_autovacuum_min_duration: 1000
+
+            # Statistics
+            track_activities: on
+            track_counts: on
+            track_io_timing: on
+            track_functions: all
+
+            # Autovacuum
+            autovacuum: on
+            autovacuum_max_workers: 4
+            autovacuum_naptime: 30s
+            autovacuum_vacuum_threshold: 50
+            autovacuum_analyze_threshold: 50
+            autovacuum_vacuum_scale_factor: 0.1
+            autovacuum_analyze_scale_factor: 0.05
+            autovacuum_vacuum_cost_delay: 2ms
+            autovacuum_vacuum_cost_limit: 1000
+
+            # TimescaleDB settings
+            shared_preload_libraries: timescaledb,pg_stat_statements
+            timescaledb.max_background_workers: 8
+            timescaledb.last_tuned: 'greenlang-patroni'
+
+            # pg_stat_statements
+            pg_stat_statements.max: 10000
+            pg_stat_statements.track: all
+
+      # Database initialization
+      initdb:
+        - encoding: UTF8
+        - data-checksums
+        - locale: en_US.UTF-8
+
+      # Post-initialization scripts
+      post_init: /scripts/post-init.sh
+
+      # Users created at bootstrap
+      users:
+        admin:
+          password: "{{ .Env.ADMIN_PASSWORD }}"
+          options:
+            - createrole
+            - createdb
+        replicator:
+          password: "{{ .Env.REPLICATION_PASSWORD }}"
+          options:
+            - replication
+        greenlang:
+          password: "{{ .Env.GREENLANG_PASSWORD }}"
+          options:
+            - createdb
+
+    # PostgreSQL configuration
+    postgresql:
+      listen: 0.0.0.0:5432
+      connect_address: "{{ .Env.POD_IP }}:5432"
+      data_dir: /var/lib/postgresql/data/pgdata
+      bin_dir: /usr/lib/postgresql/15/bin
+      config_dir: /var/lib/postgresql/data/pgdata
+
+      authentication:
+        replication:
+          username: replicator
+          password: "{{ .Env.REPLICATION_PASSWORD }}"
+        superuser:
+          username: postgres
+          password: "{{ .Env.POSTGRES_PASSWORD }}"
+        rewind:
+          username: postgres
+          password: "{{ .Env.POSTGRES_PASSWORD }}"
+
+      pg_hba:
+        - local all all trust
+        - host all all 127.0.0.1/32 md5
+        - host all all ::1/128 md5
+        - host replication replicator 0.0.0.0/0 md5
+        - host all all 0.0.0.0/0 md5
+
+      callbacks:
+        on_start: /scripts/on_start.sh
+        on_stop: /scripts/on_stop.sh
+        on_role_change: /scripts/on_role_change.sh
+        on_restart: /scripts/on_restart.sh
+
+      create_replica_methods:
+        - pgbackrest
+        - basebackup
+
+      pgbackrest:
+        command: pgbackrest --stanza=greenlang --delta restore
+        keep_data: true
+        no_params: true
+
+      basebackup:
+        checkpoint: fast
+        max-rate: 100M
+
+    # Watchdog for fencing (optional, requires elevated permissions)
+    watchdog:
+      mode: off  # Can be: off, automatic, required
+      device: /dev/watchdog
+      safety_margin: 5
+
+    # Tags for this node
+    tags:
+      nofailover: false
+      noloadbalance: false
+      clonefrom: false
+      nosync: false
+
+  # Post-initialization script
+  post-init.sh: |
+    #!/bin/bash
+    set -e
+
+    echo "Running post-initialization scripts..."
+
+    # Create TimescaleDB extension
+    psql -U postgres -d postgres -c "CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;"
+
+    # Create additional extensions
+    psql -U postgres -d postgres -c "CREATE EXTENSION IF NOT EXISTS pg_stat_statements;"
+    psql -U postgres -d postgres -c "CREATE EXTENSION IF NOT EXISTS pgcrypto;"
+    psql -U postgres -d postgres -c "CREATE EXTENSION IF NOT EXISTS uuid-ossp;"
+
+    # Create greenlang database
+    psql -U postgres -c "CREATE DATABASE greenlang OWNER greenlang;"
+    psql -U postgres -d greenlang -c "CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;"
+    psql -U postgres -d greenlang -c "CREATE EXTENSION IF NOT EXISTS pg_stat_statements;"
+    psql -U postgres -d greenlang -c "CREATE EXTENSION IF NOT EXISTS pgcrypto;"
+    psql -U postgres -d greenlang -c "CREATE EXTENSION IF NOT EXISTS uuid-ossp;"
+
+    echo "Post-initialization completed successfully."
+
+  # Callback: On role change
+  on_role_change.sh: |
+    #!/bin/bash
+    set -e
+
+    ROLE=$1
+    ACTION=$2
+    CLUSTER=$3
+
+    echo "Role change detected: $ROLE $ACTION $CLUSTER"
+
+    # Notify monitoring system
+    curl -s -X POST "http://alertmanager.monitoring:9093/api/v1/alerts" \
+      -H "Content-Type: application/json" \
+      -d "[{
+        \"labels\": {
+          \"alertname\": \"PatroniRoleChange\",
+          \"cluster\": \"$CLUSTER\",
+          \"pod\": \"$HOSTNAME\",
+          \"role\": \"$ROLE\",
+          \"action\": \"$ACTION\"
+        },
+        \"annotations\": {
+          \"summary\": \"Patroni role changed to $ROLE\",
+          \"description\": \"Pod $HOSTNAME changed role to $ROLE in cluster $CLUSTER\"
+        }
+      }]" || true
+
+    # Log to metrics endpoint
+    echo "patroni_role_change{cluster=\"$CLUSTER\",pod=\"$HOSTNAME\",role=\"$ROLE\"} 1" >> /tmp/metrics
+
+  # Callback: On start
+  on_start.sh: |
+    #!/bin/bash
+    set -e
+    echo "PostgreSQL started on $HOSTNAME"
+
+  # Callback: On stop
+  on_stop.sh: |
+    #!/bin/bash
+    set -e
+    echo "PostgreSQL stopped on $HOSTNAME"
+
+  # Callback: On restart
+  on_restart.sh: |
+    #!/bin/bash
+    set -e
+    echo "PostgreSQL restarted on $HOSTNAME"
+
+---
+# pgBackRest Configuration ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pgbackrest-config
+  namespace: greenlang-db
+  labels:
+    app: patroni
+    component: backup
+data:
+  pgbackrest.conf: |
+    [global]
+    repo1-type=s3
+    repo1-path=/greenlang-backups
+    repo1-s3-bucket=greenlang-db-backups
+    repo1-s3-endpoint=s3.amazonaws.com
+    repo1-s3-region=us-east-1
+    repo1-retention-full=4
+    repo1-retention-diff=14
+    repo1-cipher-type=aes-256-cbc
+
+    process-max=4
+    log-level-console=info
+    log-level-file=detail
+    start-fast=y
+    delta=y
+    compress-type=lz4
+    compress-level=6
+
+    [greenlang]
+    pg1-path=/var/lib/postgresql/data/pgdata
+    pg1-port=5432
+    pg1-socket-path=/var/run/postgresql

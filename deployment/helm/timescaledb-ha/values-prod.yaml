@@ -1,0 +1,331 @@
+## TimescaleDB HA - Production Configuration
+## These values override defaults for production deployment
+## Usage: helm install timescaledb-ha ./timescaledb-ha -f values-prod.yaml
+
+## -----------------------------------------------------------------------------
+## Cluster Configuration - Production
+## -----------------------------------------------------------------------------
+cluster:
+  name: "timescaledb-ha-prod"
+  replicas: 3  # 1 primary + 2 replicas across AZs
+
+## -----------------------------------------------------------------------------
+## PostgreSQL Configuration - Production
+## -----------------------------------------------------------------------------
+postgresql:
+  database: "greenlang_prod"
+
+  ## Optimized parameters for production workloads
+  parameters:
+    ## Memory settings (tuned for larger instances)
+    shared_buffers: "8GB"
+    effective_cache_size: "24GB"
+    work_mem: "256MB"
+    maintenance_work_mem: "2GB"
+    huge_pages: "try"
+
+    ## Checkpoint settings
+    checkpoint_completion_target: "0.9"
+    wal_buffers: "256MB"
+    min_wal_size: "4GB"
+    max_wal_size: "16GB"
+    checkpoint_timeout: "15min"
+
+    ## Connection settings
+    max_connections: "500"
+
+    ## TimescaleDB settings
+    timescaledb.max_background_workers: "16"
+    timescaledb.telemetry_level: "off"
+
+    ## Logging - Production
+    log_min_duration_statement: "500"
+    log_checkpoints: "on"
+    log_connections: "on"
+    log_disconnections: "on"
+    log_lock_waits: "on"
+    log_temp_files: "0"
+    log_autovacuum_min_duration: "1000"
+
+    ## Replication
+    wal_level: "replica"
+    max_wal_senders: "16"
+    max_replication_slots: "16"
+    hot_standby: "on"
+    hot_standby_feedback: "on"
+    wal_keep_size: "4GB"
+
+    ## Performance
+    random_page_cost: "1.1"
+    effective_io_concurrency: "300"
+    parallel_tuple_cost: "0.01"
+    parallel_setup_cost: "100"
+    max_parallel_workers_per_gather: "4"
+    max_parallel_workers: "8"
+    max_parallel_maintenance_workers: "4"
+
+    ## Autovacuum - Aggressive for production
+    autovacuum_max_workers: "6"
+    autovacuum_naptime: "5s"
+    autovacuum_vacuum_scale_factor: "0.02"
+    autovacuum_analyze_scale_factor: "0.01"
+    autovacuum_vacuum_cost_delay: "2ms"
+    autovacuum_vacuum_cost_limit: "1000"
+
+    ## Statement statistics
+    pg_stat_statements.max: "10000"
+    pg_stat_statements.track: "all"
+
+## -----------------------------------------------------------------------------
+## Patroni Configuration - Production
+## -----------------------------------------------------------------------------
+patroni:
+  logLevel: "WARNING"
+
+  ## Tighter TTL for faster failover detection
+  ttl: 30
+  loop_wait: 10
+  retry_timeout: 10
+  maximum_lag_on_failover: 16777216  # 16MB - stricter lag limit
+
+  ## Synchronous replication for production
+  synchronous:
+    enabled: true
+    num_replicas: 1
+    mode: "remote_apply"  # Strongest consistency
+
+  ## pg_rewind for faster recovery
+  pg_rewind:
+    enabled: true
+
+  ## Failover configuration
+  failover:
+    enabled: true
+    timeout: 30
+
+  ## Bootstrap with synchronous mode
+  bootstrap:
+    dcs:
+      ttl: 30
+      loop_wait: 10
+      retry_timeout: 10
+      maximum_lag_on_failover: 16777216
+
+      synchronous_mode: true
+      synchronous_mode_strict: false
+      synchronous_node_count: 1
+
+      postgresql:
+        use_pg_rewind: true
+        use_slots: true
+        parameters:
+          synchronous_commit: "remote_apply"
+          synchronous_standby_names: "*"
+
+## -----------------------------------------------------------------------------
+## PgBouncer Configuration - Production
+## -----------------------------------------------------------------------------
+pgbouncer:
+  enabled: true
+  poolMode: "transaction"
+
+  ## Higher limits for production
+  maxClientConn: 5000
+  defaultPoolSize: 50
+  minPoolSize: 10
+  reservePoolSize: 10
+  reservePoolTimeout: 3
+
+  ## Production resources
+  resources:
+    requests:
+      cpu: "250m"
+      memory: "256Mi"
+    limits:
+      cpu: "1"
+      memory: "512Mi"
+
+## -----------------------------------------------------------------------------
+## Resource Configuration - Production
+## -----------------------------------------------------------------------------
+resources:
+  requests:
+    cpu: "4"
+    memory: "16Gi"
+  limits:
+    cpu: "16"
+    memory: "64Gi"
+
+## -----------------------------------------------------------------------------
+## Storage Configuration - Production
+## -----------------------------------------------------------------------------
+persistence:
+  enabled: true
+  storageClass: "gp3"
+  size: 1000Gi
+
+  ## Separate WAL volume for production
+  wal:
+    enabled: true
+    size: 100Gi
+    storageClass: "gp3"
+
+## -----------------------------------------------------------------------------
+## Backup Configuration - Production
+## -----------------------------------------------------------------------------
+backup:
+  enabled: true
+
+  ## More frequent backups for production
+  schedule:
+    full: "0 1 * * 0"           # Weekly full on Sunday at 1 AM
+    differential: "0 1 * * 1-6"  # Daily differential at 1 AM
+    incremental: "0 */4 * * *"   # Every 4 hours incremental
+
+  ## Longer retention for production
+  retention:
+    full: 8               # Keep 8 weeks of full backups
+    differential: 14      # Keep 14 differential backups
+    archive: 30           # Keep 30 days of WAL archives
+
+  ## Encryption required for production
+  encrypt: true
+  encryptType: "aes-256-cbc"
+
+  ## Production backup resources
+  resources:
+    requests:
+      cpu: "1"
+      memory: "1Gi"
+    limits:
+      cpu: "4"
+      memory: "4Gi"
+
+## -----------------------------------------------------------------------------
+## Network Policy - Production
+## -----------------------------------------------------------------------------
+networkPolicy:
+  enabled: true
+
+  ## Only allow from application namespaces
+  allowedNamespaces:
+    - "greenlang-prod"
+    - "greenlang-staging"
+
+## -----------------------------------------------------------------------------
+## Pod Disruption Budget - Production
+## -----------------------------------------------------------------------------
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 2
+
+## -----------------------------------------------------------------------------
+## Security Configuration - Production (Stricter)
+## -----------------------------------------------------------------------------
+securityContext:
+  pod:
+    runAsNonRoot: true
+    runAsUser: 70
+    runAsGroup: 70
+    fsGroup: 70
+    fsGroupChangePolicy: "OnRootMismatch"
+    seccompProfile:
+      type: RuntimeDefault
+
+  container:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: false
+    runAsNonRoot: true
+    runAsUser: 70
+    runAsGroup: 70
+    capabilities:
+      drop:
+        - ALL
+
+## -----------------------------------------------------------------------------
+## Pod Anti-Affinity - Production (Strict AZ distribution)
+## -----------------------------------------------------------------------------
+podAntiAffinity:
+  enabled: true
+  type: "hard"
+  topologyKey: "topology.kubernetes.io/zone"
+
+## Topology spread constraints for even distribution
+topologySpreadConstraints:
+  enabled: true
+  maxSkew: 1
+  topologyKey: "topology.kubernetes.io/zone"
+  whenUnsatisfiable: "DoNotSchedule"
+
+## Node selector for database nodes
+nodeSelector:
+  node-role.kubernetes.io/database: "true"
+
+## Tolerations for dedicated database nodes
+tolerations:
+  - key: "dedicated"
+    operator: "Equal"
+    value: "database"
+    effect: "NoSchedule"
+
+## Priority class for critical workload
+priorityClassName: "system-cluster-critical"
+
+## Longer grace period for production
+terminationGracePeriodSeconds: 900
+
+## -----------------------------------------------------------------------------
+## TLS Configuration - Production
+## -----------------------------------------------------------------------------
+tls:
+  enabled: true
+  certManager:
+    enabled: true
+    issuerRef:
+      name: "letsencrypt-prod"
+      kind: "ClusterIssuer"
+    duration: "2160h"    # 90 days
+    renewBefore: "360h"  # 15 days
+
+## -----------------------------------------------------------------------------
+## Metrics Configuration - Production
+## -----------------------------------------------------------------------------
+metrics:
+  enabled: true
+
+  ## More resources for production metrics
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "128Mi"
+    limits:
+      cpu: "500m"
+      memory: "256Mi"
+
+  serviceMonitor:
+    enabled: true
+    interval: "15s"
+    scrapeTimeout: "10s"
+    labels:
+      prometheus: "production"
+
+  prometheusRule:
+    enabled: true
+    labels:
+      prometheus: "production"
+
+## -----------------------------------------------------------------------------
+## Production Pod Annotations
+## -----------------------------------------------------------------------------
+podAnnotations:
+  cluster-autoscaler.kubernetes.io/safe-to-evict: "false"
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "9187"
+
+## -----------------------------------------------------------------------------
+## Production Pod Labels
+## -----------------------------------------------------------------------------
+podLabels:
+  environment: "production"
+  criticality: "high"
+  data-classification: "confidential"

@@ -1,0 +1,110 @@
+# Headless service for StatefulSet
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "redis-ha.headlessServiceName" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "redis-ha.labels" . | nindent 4 }}
+    service-type: headless
+spec:
+  type: ClusterIP
+  clusterIP: None
+  publishNotReadyAddresses: true
+  ports:
+    - name: redis
+      port: {{ .Values.redis.port }}
+      targetPort: redis
+      protocol: TCP
+    {{- if .Values.sentinel.enabled }}
+    - name: sentinel
+      port: {{ .Values.sentinel.port }}
+      targetPort: sentinel
+      protocol: TCP
+    {{- end }}
+    {{- if .Values.exporter.enabled }}
+    - name: metrics
+      port: {{ .Values.exporter.port }}
+      targetPort: metrics
+      protocol: TCP
+    {{- end }}
+  selector:
+    {{- include "redis-ha.selectorLabels" . | nindent 4 }}
+
+---
+# Master service (for writes) - routes to current master only
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "redis-ha.masterServiceName" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "redis-ha.labels" . | nindent 4 }}
+    service-type: master
+  annotations:
+    # This service requires Sentinel-aware client or manual tracking
+    # Clients should use Sentinel for master discovery
+    description: "Redis master service - use Sentinel for automatic master discovery"
+spec:
+  type: ClusterIP
+  ports:
+    - name: redis
+      port: {{ .Values.redis.port }}
+      targetPort: redis
+      protocol: TCP
+  selector:
+    {{- include "redis-ha.selectorLabels" . | nindent 4 }}
+    # Note: This selector routes to all pods. For true master routing,
+    # use a Sentinel-aware client or implement a master-election label webhook
+
+---
+# Read service (for reads) - load balanced across all replicas
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "redis-ha.readServiceName" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "redis-ha.labels" . | nindent 4 }}
+    service-type: read
+  annotations:
+    description: "Redis read service - load balanced across all replicas"
+spec:
+  type: ClusterIP
+  ports:
+    - name: redis
+      port: {{ .Values.redis.port }}
+      targetPort: redis
+      protocol: TCP
+    {{- if .Values.exporter.enabled }}
+    - name: metrics
+      port: {{ .Values.exporter.port }}
+      targetPort: metrics
+      protocol: TCP
+    {{- end }}
+  selector:
+    {{- include "redis-ha.selectorLabels" . | nindent 4 }}
+
+---
+{{- if .Values.sentinel.enabled }}
+# Sentinel service (for client discovery)
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "redis-ha.sentinelServiceName" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "redis-ha.labels" . | nindent 4 }}
+    service-type: sentinel
+  annotations:
+    description: "Redis Sentinel service - use for master discovery"
+spec:
+  type: ClusterIP
+  ports:
+    - name: sentinel
+      port: {{ .Values.sentinel.port }}
+      targetPort: sentinel
+      protocol: TCP
+  selector:
+    {{- include "redis-ha.selectorLabels" . | nindent 4 }}
+{{- end }}

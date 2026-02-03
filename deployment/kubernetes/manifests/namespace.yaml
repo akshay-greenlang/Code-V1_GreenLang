@@ -1,3 +1,7 @@
+# GreenLang Namespace Definitions
+# This file defines all namespaces used by GreenLang
+---
+# Production namespace
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -5,35 +9,103 @@ metadata:
   labels:
     app: greenlang
     environment: production
+    kubernetes.io/metadata.name: greenlang
+    # Pod Security Standards
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/enforce-version: latest
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/warn: restricted
+
 ---
+# Development namespace
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: greenlang-dev
+  labels:
+    app: greenlang
+    environment: development
+    kubernetes.io/metadata.name: greenlang-dev
+    pod-security.kubernetes.io/enforce: baseline
+    pod-security.kubernetes.io/warn: restricted
+
+---
+# Staging namespace
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: greenlang-staging
+  labels:
+    app: greenlang
+    environment: staging
+    kubernetes.io/metadata.name: greenlang-staging
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/enforce-version: latest
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/warn: restricted
+
+---
+# System namespace (for runners)
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: greenlang-system
+  labels:
+    app: greenlang
+    environment: system
+    kubernetes.io/metadata.name: greenlang-system
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/enforce-version: latest
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/warn: restricted
+
+---
+# ResourceQuota for production namespace
 apiVersion: v1
 kind: ResourceQuota
 metadata:
   name: greenlang-quota
   namespace: greenlang
+  labels:
+    app: greenlang
 spec:
   hard:
     requests.cpu: "100"
     requests.memory: 200Gi
     limits.cpu: "200"
     limits.memory: 400Gi
-    persistentvolumeclaims: "10"
-    pods: "100"
+    persistentvolumeclaims: "50"
+    pods: "200"
+    services: "50"
+    secrets: "100"
+    configmaps: "100"
+
 ---
+# LimitRange for production namespace
 apiVersion: v1
 kind: LimitRange
 metadata:
   name: greenlang-limits
   namespace: greenlang
+  labels:
+    app: greenlang
 spec:
   limits:
-  - default:
+  - type: Container
+    default:
       cpu: "1"
       memory: 2Gi
     defaultRequest:
       cpu: 100m
       memory: 128Mi
-    type: Container
-  - max:
-      storage: 10Gi
-    type: PersistentVolumeClaim
+    min:
+      cpu: 50m
+      memory: 64Mi
+    max:
+      cpu: "8"
+      memory: 16Gi
+  - type: PersistentVolumeClaim
+    min:
+      storage: 1Gi
+    max:
+      storage: 500Gi

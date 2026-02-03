@@ -1,0 +1,434 @@
+{{/*
+TimescaleDB StatefulSet with Patroni for High Availability
+*/}}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "timescaledb-ha.fullname" . }}
+  namespace: {{ include "timescaledb-ha.namespace" . }}
+  labels:
+    {{- include "timescaledb-ha.labels" . | nindent 4 }}
+  annotations:
+    checksum/patroni-config: {{ include (print $.Template.BasePath "/configmap-patroni.yaml") . | sha256sum }}
+    checksum/postgres-config: {{ include (print $.Template.BasePath "/configmap-postgres.yaml") . | sha256sum }}
+    checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
+spec:
+  serviceName: {{ include "timescaledb-ha.headlessServiceName" . }}
+  replicas: {{ .Values.cluster.replicas }}
+  podManagementPolicy: OrderedReady
+  updateStrategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      {{- include "timescaledb-ha.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "timescaledb-ha.selectorLabels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      annotations:
+        checksum/patroni-config: {{ include (print $.Template.BasePath "/configmap-patroni.yaml") . | sha256sum }}
+        checksum/postgres-config: {{ include (print $.Template.BasePath "/configmap-postgres.yaml") . | sha256sum }}
+        {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      serviceAccountName: {{ include "timescaledb-ha.serviceAccountName" . }}
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if .Values.priorityClassName }}
+      priorityClassName: {{ .Values.priorityClassName | quote }}
+      {{- end }}
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
+      securityContext:
+        {{- toYaml .Values.securityContext.pod | nindent 8 }}
+
+      {{- if .Values.podAntiAffinity.enabled }}
+      affinity:
+        podAntiAffinity:
+          {{- include "timescaledb-ha.podAntiAffinity" . | nindent 10 }}
+        {{- with .Values.affinity }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- else if .Values.affinity }}
+      affinity:
+        {{- toYaml .Values.affinity | nindent 8 }}
+      {{- end }}
+
+      {{- if .Values.topologySpreadConstraints.enabled }}
+      topologySpreadConstraints:
+        {{- include "timescaledb-ha.topologySpreadConstraints" . | nindent 8 }}
+      {{- end }}
+
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+      initContainers:
+        # Set permissions on data directory
+        - name: init-permissions
+          image: {{ include "timescaledb-ha.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+              echo "Setting up data directories..."
+
+              # Create directories if they don't exist
+              mkdir -p {{ .Values.persistence.mountPath }}/pgdata
+              mkdir -p /var/run/postgresql
+
+              {{- if .Values.persistence.wal.enabled }}
+              mkdir -p {{ .Values.persistence.wal.mountPath }}
+              {{- end }}
+
+              # Set ownership
+              chown -R 70:70 {{ .Values.persistence.mountPath }}
+              chown -R 70:70 /var/run/postgresql
+              {{- if .Values.persistence.wal.enabled }}
+              chown -R 70:70 {{ .Values.persistence.wal.mountPath }}
+              {{- end }}
+
+              echo "Permissions setup complete"
+          securityContext:
+            runAsUser: 0
+            runAsNonRoot: false
+          volumeMounts:
+            - name: data
+              mountPath: {{ .Values.persistence.mountPath }}
+            {{- if .Values.persistence.wal.enabled }}
+            - name: wal
+              mountPath: {{ .Values.persistence.wal.mountPath }}
+            {{- end }}
+            - name: run
+              mountPath: /var/run/postgresql
+
+        {{- with .Values.initContainers }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+
+      containers:
+        # Main TimescaleDB container with Patroni
+        - name: timescaledb
+          image: {{ include "timescaledb-ha.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          securityContext:
+            {{- toYaml .Values.securityContext.container | nindent 12 }}
+
+          ports:
+            - name: postgresql
+              containerPort: 5432
+              protocol: TCP
+            - name: patroni
+              containerPort: 8008
+              protocol: TCP
+
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+
+            # Patroni settings
+            - name: PATRONI_KUBERNETES_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: PATRONI_KUBERNETES_POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: PATRONI_KUBERNETES_LABELS
+              value: '{"cluster-name": "{{ .Values.cluster.name }}"}'
+            - name: PATRONI_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: PATRONI_SCOPE
+              value: {{ .Values.cluster.name | quote }}
+            - name: PATRONI_RESTAPI_CONNECT_ADDRESS
+              value: "$(POD_IP):8008"
+            - name: PATRONI_POSTGRESQL_CONNECT_ADDRESS
+              value: "$(POD_IP):5432"
+            - name: PATRONI_POSTGRESQL_DATA_DIR
+              value: "{{ .Values.persistence.mountPath }}/pgdata"
+            - name: PATRONI_REPLICATION_USERNAME
+              value: {{ .Values.postgresql.replication.username | quote }}
+            - name: PATRONI_REPLICATION_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "timescaledb-ha.secretName" . }}
+                  key: replication-password
+            - name: PATRONI_SUPERUSER_USERNAME
+              value: {{ .Values.postgresql.username | quote }}
+            - name: PATRONI_SUPERUSER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "timescaledb-ha.secretName" . }}
+                  key: postgres-password
+
+            # PostgreSQL settings
+            - name: PGDATA
+              value: "{{ .Values.persistence.mountPath }}/pgdata"
+            - name: PGHOST
+              value: /var/run/postgresql
+            - name: PGPORT
+              value: "5432"
+
+            {{- if .Values.tls.enabled }}
+            - name: PATRONI_POSTGRESQL_SSL
+              value: "on"
+            - name: PATRONI_POSTGRESQL_SSL_CERT_FILE
+              value: /etc/ssl/postgresql/tls.crt
+            - name: PATRONI_POSTGRESQL_SSL_KEY_FILE
+              value: /etc/ssl/postgresql/tls.key
+            {{- end }}
+
+            {{- with .Values.extraEnv }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+
+          {{- with .Values.extraEnvFrom }}
+          envFrom:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+
+          volumeMounts:
+            - name: data
+              mountPath: {{ .Values.persistence.mountPath }}
+            {{- if .Values.persistence.wal.enabled }}
+            - name: wal
+              mountPath: {{ .Values.persistence.wal.mountPath }}
+            {{- end }}
+            - name: run
+              mountPath: /var/run/postgresql
+            - name: patroni-config
+              mountPath: /etc/patroni
+            - name: postgres-config
+              mountPath: /etc/postgresql
+            {{- if .Values.tls.enabled }}
+            - name: tls
+              mountPath: /etc/ssl/postgresql
+              readOnly: true
+            {{- end }}
+            {{- with .Values.extraVolumeMounts }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+
+          livenessProbe:
+            httpGet:
+              path: /liveness
+              port: patroni
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 6
+            successThreshold: 1
+
+          readinessProbe:
+            httpGet:
+              path: /readiness
+              port: patroni
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+            successThreshold: 1
+
+          {{- with .Values.lifecycle }}
+          lifecycle:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+
+        {{- if .Values.pgbouncer.enabled }}
+        # PgBouncer sidecar
+        - name: pgbouncer
+          image: {{ include "timescaledb-ha.pgbouncerImage" . }}
+          imagePullPolicy: {{ .Values.pgbouncer.image.pullPolicy }}
+          securityContext:
+            {{- toYaml .Values.securityContext.container | nindent 12 }}
+
+          ports:
+            - name: pgbouncer
+              containerPort: {{ .Values.pgbouncer.port }}
+              protocol: TCP
+
+          env:
+            - name: PGBOUNCER_DATABASE
+              value: {{ .Values.postgresql.database | quote }}
+            - name: PGBOUNCER_PORT
+              value: {{ .Values.pgbouncer.port | quote }}
+            - name: PGBOUNCER_POOL_MODE
+              value: {{ .Values.pgbouncer.poolMode | quote }}
+            - name: PGBOUNCER_MAX_CLIENT_CONN
+              value: {{ .Values.pgbouncer.maxClientConn | quote }}
+            - name: PGBOUNCER_DEFAULT_POOL_SIZE
+              value: {{ .Values.pgbouncer.defaultPoolSize | quote }}
+            - name: PGBOUNCER_MIN_POOL_SIZE
+              value: {{ .Values.pgbouncer.minPoolSize | quote }}
+            - name: PGBOUNCER_RESERVE_POOL_SIZE
+              value: {{ .Values.pgbouncer.reservePoolSize | quote }}
+            - name: PGBOUNCER_AUTH_TYPE
+              value: {{ .Values.pgbouncer.authType | quote }}
+            - name: POSTGRESQL_HOST
+              value: "127.0.0.1"
+            - name: POSTGRESQL_PORT
+              value: "5432"
+            - name: POSTGRESQL_USERNAME
+              value: {{ .Values.postgresql.username | quote }}
+            - name: POSTGRESQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "timescaledb-ha.secretName" . }}
+                  key: postgres-password
+
+          resources:
+            {{- toYaml .Values.pgbouncer.resources | nindent 12 }}
+
+          livenessProbe:
+            tcpSocket:
+              port: pgbouncer
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+          readinessProbe:
+            tcpSocket:
+              port: pgbouncer
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+        {{- end }}
+
+        {{- if .Values.metrics.enabled }}
+        # Prometheus postgres exporter sidecar
+        - name: metrics
+          image: {{ include "timescaledb-ha.metricsImage" . }}
+          imagePullPolicy: {{ .Values.metrics.image.pullPolicy }}
+          securityContext:
+            {{- toYaml .Values.securityContext.container | nindent 12 }}
+
+          ports:
+            - name: metrics
+              containerPort: {{ .Values.metrics.port }}
+              protocol: TCP
+
+          env:
+            - name: DATA_SOURCE_URI
+              value: "127.0.0.1:5432/{{ .Values.postgresql.database }}?sslmode=disable"
+            - name: DATA_SOURCE_USER
+              value: {{ .Values.postgresql.username | quote }}
+            - name: DATA_SOURCE_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "timescaledb-ha.secretName" . }}
+                  key: postgres-password
+            - name: PG_EXPORTER_EXTEND_QUERY_PATH
+              value: /etc/postgres-exporter/queries.yaml
+
+          resources:
+            {{- toYaml .Values.metrics.resources | nindent 12 }}
+
+          volumeMounts:
+            - name: metrics-queries
+              mountPath: /etc/postgres-exporter
+
+          livenessProbe:
+            httpGet:
+              path: /
+              port: metrics
+            initialDelaySeconds: 15
+            periodSeconds: 10
+
+          readinessProbe:
+            httpGet:
+              path: /
+              port: metrics
+            initialDelaySeconds: 5
+            periodSeconds: 5
+        {{- end }}
+
+        {{- with .Values.sidecars }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+
+      volumes:
+        - name: run
+          emptyDir:
+            medium: Memory
+        - name: patroni-config
+          configMap:
+            name: {{ include "timescaledb-ha.patroniConfigMapName" . }}
+        - name: postgres-config
+          configMap:
+            name: {{ include "timescaledb-ha.postgresConfigMapName" . }}
+        {{- if .Values.tls.enabled }}
+        - name: tls
+          secret:
+            secretName: {{ include "timescaledb-ha.tlsSecretName" . }}
+            defaultMode: 0640
+        {{- end }}
+        {{- if .Values.metrics.enabled }}
+        - name: metrics-queries
+          configMap:
+            name: {{ include "timescaledb-ha.fullname" . }}-metrics-queries
+        {{- end }}
+        {{- with .Values.extraVolumes }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+        labels:
+          {{- include "timescaledb-ha.labels" . | nindent 10 }}
+        {{- with .Values.persistence.annotations }}
+        annotations:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+      spec:
+        accessModes:
+          {{- toYaml .Values.persistence.accessModes | nindent 10 }}
+        {{- include "timescaledb-ha.storageClass" . | nindent 8 }}
+        resources:
+          requests:
+            storage: {{ .Values.persistence.size | quote }}
+
+    {{- if .Values.persistence.wal.enabled }}
+    - metadata:
+        name: wal
+        labels:
+          {{- include "timescaledb-ha.labels" . | nindent 10 }}
+      spec:
+        accessModes:
+          {{- toYaml .Values.persistence.accessModes | nindent 10 }}
+        {{- include "timescaledb-ha.walStorageClass" . | nindent 8 }}
+        resources:
+          requests:
+            storage: {{ .Values.persistence.wal.size | quote }}
+    {{- end }}

@@ -1,0 +1,173 @@
+{{- if .Values.service.headless.enabled }}
+---
+# Headless service for StatefulSet DNS resolution
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "patroni.headlessServiceName" . }}
+  namespace: {{ .Values.namespace | default .Release.Namespace }}
+  labels:
+    {{- include "patroni.labels" . | nindent 4 }}
+  {{- with .Values.service.headless.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: ClusterIP
+  clusterIP: None
+  publishNotReadyAddresses: true
+  ports:
+    - name: postgresql
+      port: {{ .Values.postgresql.port }}
+      targetPort: {{ .Values.postgresql.port }}
+      protocol: TCP
+    - name: patroni-api
+      port: {{ .Values.patroni.restapi.port }}
+      targetPort: {{ .Values.patroni.restapi.port }}
+      protocol: TCP
+  selector:
+    {{- include "patroni.selectorLabels" . | nindent 4 }}
+{{- end }}
+
+{{- if .Values.service.primary.enabled }}
+---
+# Primary (Write) Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "patroni.primaryServiceName" . }}
+  namespace: {{ .Values.namespace | default .Release.Namespace }}
+  labels:
+    {{- include "patroni.labels" . | nindent 4 }}
+    role: primary
+  annotations:
+    description: "Primary PostgreSQL service for write operations"
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "{{ .Values.metrics.postgresExporter.port }}"
+    {{- with .Values.service.primary.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  type: {{ .Values.service.primary.type }}
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 10800
+  ports:
+    - name: postgresql
+      port: {{ .Values.service.primary.port }}
+      targetPort: {{ .Values.postgresql.port }}
+      protocol: TCP
+    - name: patroni-api
+      port: {{ .Values.patroni.restapi.port }}
+      targetPort: {{ .Values.patroni.restapi.port }}
+      protocol: TCP
+    {{- if .Values.metrics.enabled }}
+    - name: metrics
+      port: {{ .Values.metrics.postgresExporter.port }}
+      targetPort: {{ .Values.metrics.postgresExporter.port }}
+      protocol: TCP
+    {{- end }}
+  selector:
+    {{- include "patroni.selectorLabels" . | nindent 4 }}
+    role: master
+{{- end }}
+
+{{- if .Values.service.replica.enabled }}
+---
+# Replica (Read) Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "patroni.replicaServiceName" . }}
+  namespace: {{ .Values.namespace | default .Release.Namespace }}
+  labels:
+    {{- include "patroni.labels" . | nindent 4 }}
+    role: replica
+  annotations:
+    description: "Replica PostgreSQL service for read-only operations"
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "{{ .Values.metrics.postgresExporter.port }}"
+    {{- with .Values.service.replica.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  type: {{ .Values.service.replica.type }}
+  sessionAffinity: None
+  ports:
+    - name: postgresql
+      port: {{ .Values.service.replica.port }}
+      targetPort: {{ .Values.postgresql.port }}
+      protocol: TCP
+    - name: patroni-api
+      port: {{ .Values.patroni.restapi.port }}
+      targetPort: {{ .Values.patroni.restapi.port }}
+      protocol: TCP
+    {{- if .Values.metrics.enabled }}
+    - name: metrics
+      port: {{ .Values.metrics.postgresExporter.port }}
+      targetPort: {{ .Values.metrics.postgresExporter.port }}
+      protocol: TCP
+    {{- end }}
+  selector:
+    {{- include "patroni.selectorLabels" . | nindent 4 }}
+    role: replica
+{{- end }}
+
+{{- if .Values.service.primaryExternal.enabled }}
+---
+# External LoadBalancer for Primary
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "patroni.primaryServiceName" . }}-external
+  namespace: {{ .Values.namespace | default .Release.Namespace }}
+  labels:
+    {{- include "patroni.labels" . | nindent 4 }}
+    role: primary-external
+  annotations:
+    description: "External LoadBalancer for primary PostgreSQL access"
+    {{- with .Values.service.primaryExternal.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  type: {{ .Values.service.primaryExternal.type }}
+  externalTrafficPolicy: Local
+  ports:
+    - name: postgresql
+      port: {{ .Values.service.primaryExternal.port }}
+      targetPort: {{ .Values.postgresql.port }}
+      protocol: TCP
+  selector:
+    {{- include "patroni.selectorLabels" . | nindent 4 }}
+    role: master
+{{- end }}
+
+{{- if .Values.service.replicaExternal.enabled }}
+---
+# External LoadBalancer for Replicas
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "patroni.replicaServiceName" . }}-external
+  namespace: {{ .Values.namespace | default .Release.Namespace }}
+  labels:
+    {{- include "patroni.labels" . | nindent 4 }}
+    role: replica-external
+  annotations:
+    description: "External LoadBalancer for replica PostgreSQL read access"
+    {{- with .Values.service.replicaExternal.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  type: {{ .Values.service.replicaExternal.type }}
+  externalTrafficPolicy: Local
+  ports:
+    - name: postgresql
+      port: {{ .Values.service.replicaExternal.port }}
+      targetPort: {{ .Values.postgresql.port }}
+      protocol: TCP
+  selector:
+    {{- include "patroni.selectorLabels" . | nindent 4 }}
+    role: replica
+{{- end }}

@@ -1,0 +1,431 @@
+#------------------------------------------------------------------------------
+# S3 Event Processor Deployment
+# GreenLang Kubernetes Infrastructure
+#------------------------------------------------------------------------------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: s3-event-processor
+  namespace: greenlang-storage
+  labels:
+    app: s3-event-processor
+    component: storage
+    tier: backend
+    version: v1.0.0
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: s3-event-processor
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: s3-event-processor
+        component: storage
+        tier: backend
+        version: v1.0.0
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: s3-event-processor-sa
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+
+      containers:
+        - name: event-processor
+          image: gcr.io/greenlang/s3-event-processor:v1.0.0
+          imagePullPolicy: Always
+
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+            - name: metrics
+              containerPort: 9090
+              protocol: TCP
+
+          env:
+            - name: ENVIRONMENT
+              valueFrom:
+                configMapKeyRef:
+                  name: s3-event-processor-config
+                  key: environment
+            - name: LOG_LEVEL
+              valueFrom:
+                configMapKeyRef:
+                  name: s3-event-processor-config
+                  key: log_level
+            - name: AWS_REGION
+              valueFrom:
+                configMapKeyRef:
+                  name: s3-event-processor-config
+                  key: aws_region
+            - name: SQS_ARTIFACT_QUEUE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: s3-event-processor-config
+                  key: sqs_artifact_queue_url
+            - name: SQS_REPORT_QUEUE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: s3-event-processor-config
+                  key: sqs_report_queue_url
+            - name: SQS_AUDIT_QUEUE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: s3-event-processor-config
+                  key: sqs_audit_queue_url
+            - name: MAX_CONCURRENT_MESSAGES
+              valueFrom:
+                configMapKeyRef:
+                  name: s3-event-processor-config
+                  key: max_concurrent_messages
+            - name: VISIBILITY_TIMEOUT
+              valueFrom:
+                configMapKeyRef:
+                  name: s3-event-processor-config
+                  key: visibility_timeout
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: s3-event-processor-aws-credentials
+                  key: aws_access_key_id
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: s3-event-processor-aws-credentials
+                  key: aws_secret_access_key
+
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            successThreshold: 1
+            failureThreshold: 3
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+            - name: event-rules
+              mountPath: /etc/greenlang/event-rules
+              readOnly: true
+
+        # Sidecar for DLQ processing
+        - name: dlq-processor
+          image: gcr.io/greenlang/s3-dlq-processor:v1.0.0
+          imagePullPolicy: Always
+
+          env:
+            - name: ENVIRONMENT
+              valueFrom:
+                configMapKeyRef:
+                  name: s3-event-processor-config
+                  key: environment
+            - name: DLQ_ARTIFACT_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: s3-event-processor-config
+                  key: dlq_artifact_url
+            - name: DLQ_REPORT_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: s3-event-processor-config
+                  key: dlq_report_url
+            - name: DLQ_AUDIT_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: s3-event-processor-config
+                  key: dlq_audit_url
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: s3-event-processor-aws-credentials
+                  key: aws_access_key_id
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: s3-event-processor-aws-credentials
+                  key: aws_secret_access_key
+
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "200m"
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+
+      volumes:
+        - name: tmp
+          emptyDir: {}
+        - name: event-rules
+          configMap:
+            name: s3-event-rules
+
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: s3-event-processor
+                topologyKey: kubernetes.io/hostname
+
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: s3-event-processor
+
+      terminationGracePeriodSeconds: 60
+
+---
+#------------------------------------------------------------------------------
+# Service Account with IRSA Annotation
+#------------------------------------------------------------------------------
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: s3-event-processor-sa
+  namespace: greenlang-storage
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::ACCOUNT_ID:role/greenlang-s3-event-processor-role
+  labels:
+    app: s3-event-processor
+
+---
+#------------------------------------------------------------------------------
+# Horizontal Pod Autoscaler - Queue Depth Based
+#------------------------------------------------------------------------------
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: s3-event-processor-hpa
+  namespace: greenlang-storage
+  labels:
+    app: s3-event-processor
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: s3-event-processor
+  minReplicas: 3
+  maxReplicas: 20
+  metrics:
+    - type: External
+      external:
+        metric:
+          name: sqs_approximate_number_of_messages_visible
+          selector:
+            matchLabels:
+              queue_name: greenlang-artifact-processing
+        target:
+          type: AverageValue
+          averageValue: "100"
+    - type: External
+      external:
+        metric:
+          name: sqs_approximate_number_of_messages_visible
+          selector:
+            matchLabels:
+              queue_name: greenlang-report-indexing
+        target:
+          type: AverageValue
+          averageValue: "50"
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+        - type: Pods
+          value: 4
+          periodSeconds: 60
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Pods
+          value: 2
+          periodSeconds: 120
+
+---
+#------------------------------------------------------------------------------
+# Service for Event Processor
+#------------------------------------------------------------------------------
+apiVersion: v1
+kind: Service
+metadata:
+  name: s3-event-processor-service
+  namespace: greenlang-storage
+  labels:
+    app: s3-event-processor
+spec:
+  type: ClusterIP
+  selector:
+    app: s3-event-processor
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
+      protocol: TCP
+    - name: metrics
+      port: 9090
+      targetPort: 9090
+      protocol: TCP
+
+---
+#------------------------------------------------------------------------------
+# Pod Disruption Budget
+#------------------------------------------------------------------------------
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: s3-event-processor-pdb
+  namespace: greenlang-storage
+  labels:
+    app: s3-event-processor
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: s3-event-processor
+
+---
+#------------------------------------------------------------------------------
+# Network Policy
+#------------------------------------------------------------------------------
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: s3-event-processor-netpol
+  namespace: greenlang-storage
+  labels:
+    app: s3-event-processor
+spec:
+  podSelector:
+    matchLabels:
+      app: s3-event-processor
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+        - podSelector:
+            matchLabels:
+              app: prometheus
+      ports:
+        - protocol: TCP
+          port: 9090
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: greenlang-storage
+      ports:
+        - protocol: TCP
+          port: 8080
+  egress:
+    # Allow AWS API access
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+      ports:
+        - protocol: TCP
+          port: 443
+    # Allow DNS
+    - to:
+        - namespaceSelector: {}
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+
+---
+#------------------------------------------------------------------------------
+# ServiceMonitor for Prometheus
+#------------------------------------------------------------------------------
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: s3-event-processor-monitor
+  namespace: greenlang-storage
+  labels:
+    app: s3-event-processor
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: s3-event-processor
+  endpoints:
+    - port: metrics
+      interval: 30s
+      path: /metrics
+  namespaceSelector:
+    matchNames:
+      - greenlang-storage

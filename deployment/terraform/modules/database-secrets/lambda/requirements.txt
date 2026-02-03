@@ -1,0 +1,9 @@
+# Lambda Rotation Function Dependencies
+# GreenLang Database Credentials Rotation
+
+# PostgreSQL database driver
+psycopg2-binary==2.9.9
+
+# AWS SDK (included in Lambda runtime, but pinned for local development)
+boto3==1.34.0
+botocore==1.34.0

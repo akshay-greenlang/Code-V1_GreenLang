@@ -1,0 +1,448 @@
+###############################################################################
+# GreenLang S3 Access RBAC Configuration
+#
+# This file defines RBAC roles and bindings for S3 credential access
+# including service accounts with IRSA (IAM Roles for Service Accounts).
+#
+# Author: GreenLang DevOps Team
+# Version: 1.0.0
+###############################################################################
+
+---
+###############################################################################
+# Service Account for S3 Read Access
+###############################################################################
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: greenlang-s3-reader
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: s3-access
+    storage.greenlang.io/access-level: read
+  annotations:
+    # IRSA annotation - replace with actual IAM role ARN
+    eks.amazonaws.com/role-arn: arn:aws:iam::ACCOUNT_ID:role/greenlang-s3-readonly-role
+    # STS regional endpoint for better performance
+    eks.amazonaws.com/sts-regional-endpoints: "true"
+automountServiceAccountToken: true
+
+---
+###############################################################################
+# Service Account for S3 Write Access
+###############################################################################
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: greenlang-s3-writer
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: s3-access
+    storage.greenlang.io/access-level: write
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::ACCOUNT_ID:role/greenlang-s3-writeonly-role
+    eks.amazonaws.com/sts-regional-endpoints: "true"
+automountServiceAccountToken: true
+
+---
+###############################################################################
+# Service Account for S3 Admin Access (restricted)
+###############################################################################
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: greenlang-s3-admin
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: s3-access
+    storage.greenlang.io/access-level: admin
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::ACCOUNT_ID:role/greenlang-s3-admin-role
+    eks.amazonaws.com/sts-regional-endpoints: "true"
+automountServiceAccountToken: true
+
+---
+###############################################################################
+# Service Account for Backup Jobs
+###############################################################################
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: greenlang-backup-sa
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: backup
+    storage.greenlang.io/access-level: backup
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::ACCOUNT_ID:role/greenlang-s3-backup-manager-role
+    eks.amazonaws.com/sts-regional-endpoints: "true"
+automountServiceAccountToken: true
+
+---
+###############################################################################
+# Service Account for Audit Log Access
+###############################################################################
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: greenlang-audit-reader
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: audit
+    storage.greenlang.io/access-level: audit-read
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::ACCOUNT_ID:role/greenlang-s3-audit-reader-role
+    eks.amazonaws.com/sts-regional-endpoints: "true"
+automountServiceAccountToken: true
+
+---
+###############################################################################
+# Role for accessing S3 credentials secret (read-only)
+###############################################################################
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: s3-credentials-reader
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: rbac
+rules:
+  - apiGroups: [""]
+    resources: ["secrets"]
+    resourceNames:
+      - greenlang-s3-credentials
+      - greenlang-s3-readonly-credentials
+    verbs: ["get"]
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    resourceNames:
+      - aws-config
+      - s3-config
+    verbs: ["get", "list", "watch"]
+
+---
+###############################################################################
+# Role for accessing S3 write credentials
+###############################################################################
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: s3-credentials-writer
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: rbac
+rules:
+  - apiGroups: [""]
+    resources: ["secrets"]
+    resourceNames:
+      - greenlang-s3-credentials
+      - greenlang-s3-write-credentials
+    verbs: ["get"]
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    resourceNames:
+      - aws-config
+      - s3-config
+    verbs: ["get", "list", "watch"]
+
+---
+###############################################################################
+# Role for S3 admin operations
+###############################################################################
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: s3-admin-role
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: rbac
+rules:
+  - apiGroups: [""]
+    resources: ["secrets"]
+    resourceNames:
+      - greenlang-s3-admin-credentials
+    verbs: ["get"]
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    resourceNames:
+      - aws-config
+      - s3-config
+      - s3-admin-config
+    verbs: ["get", "list", "watch"]
+  # Allow managing backup jobs
+  - apiGroups: ["batch"]
+    resources: ["jobs", "cronjobs"]
+    verbs: ["get", "list", "watch", "create", "delete"]
+
+---
+###############################################################################
+# Role for backup operations
+###############################################################################
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: s3-backup-role
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: rbac
+rules:
+  - apiGroups: [""]
+    resources: ["secrets"]
+    resourceNames:
+      - greenlang-s3-backup-credentials
+    verbs: ["get"]
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    resourceNames:
+      - aws-config
+      - s3-config
+      - backup-config
+    verbs: ["get", "list", "watch"]
+  # Allow creating events for backup status
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["create", "patch"]
+
+---
+###############################################################################
+# RoleBinding for S3 read access
+###############################################################################
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: s3-reader-binding
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: rbac
+subjects:
+  - kind: ServiceAccount
+    name: greenlang-s3-reader
+    namespace: greenlang
+  # Add application service accounts that need read access
+  - kind: ServiceAccount
+    name: greenlang-api
+    namespace: greenlang
+  - kind: ServiceAccount
+    name: greenlang-worker
+    namespace: greenlang
+roleRef:
+  kind: Role
+  name: s3-credentials-reader
+  apiGroup: rbac.authorization.k8s.io
+
+---
+###############################################################################
+# RoleBinding for S3 write access
+###############################################################################
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: s3-writer-binding
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: rbac
+subjects:
+  - kind: ServiceAccount
+    name: greenlang-s3-writer
+    namespace: greenlang
+  - kind: ServiceAccount
+    name: greenlang-api
+    namespace: greenlang
+roleRef:
+  kind: Role
+  name: s3-credentials-writer
+  apiGroup: rbac.authorization.k8s.io
+
+---
+###############################################################################
+# RoleBinding for S3 admin access
+###############################################################################
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: s3-admin-binding
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: rbac
+subjects:
+  - kind: ServiceAccount
+    name: greenlang-s3-admin
+    namespace: greenlang
+roleRef:
+  kind: Role
+  name: s3-admin-role
+  apiGroup: rbac.authorization.k8s.io
+
+---
+###############################################################################
+# RoleBinding for backup operations
+###############################################################################
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: s3-backup-binding
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: rbac
+subjects:
+  - kind: ServiceAccount
+    name: greenlang-backup-sa
+    namespace: greenlang
+roleRef:
+  kind: Role
+  name: s3-backup-role
+  apiGroup: rbac.authorization.k8s.io
+
+---
+###############################################################################
+# ClusterRole for cross-namespace S3 access (if needed)
+###############################################################################
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: greenlang-s3-cluster-access
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: rbac
+rules:
+  # Allow reading node information (for topology awareness)
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["get", "list"]
+  # Allow watching storage classes
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["storageclasses"]
+    verbs: ["get", "list", "watch"]
+
+---
+###############################################################################
+# ClusterRoleBinding for cross-namespace access
+###############################################################################
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: greenlang-s3-cluster-access-binding
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: rbac
+subjects:
+  - kind: ServiceAccount
+    name: greenlang-s3-admin
+    namespace: greenlang
+roleRef:
+  kind: ClusterRole
+  name: greenlang-s3-cluster-access
+  apiGroup: rbac.authorization.k8s.io
+
+---
+###############################################################################
+# Secret for S3 credentials (template - values should be from Secrets Manager)
+###############################################################################
+apiVersion: v1
+kind: Secret
+metadata:
+  name: greenlang-s3-credentials
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: credentials
+  annotations:
+    # Use External Secrets Operator or AWS Secrets Store CSI Driver
+    # to sync from AWS Secrets Manager
+    external-secrets.io/refresh-interval: "1h"
+type: Opaque
+stringData:
+  # These values should be managed by External Secrets or CSI driver
+  # Placeholder values shown for documentation
+  AWS_ACCESS_KEY_ID: "PLACEHOLDER"
+  AWS_SECRET_ACCESS_KEY: "PLACEHOLDER"
+  AWS_DEFAULT_REGION: "us-east-1"
+
+---
+###############################################################################
+# ConfigMap for AWS/S3 configuration
+###############################################################################
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: s3-config
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: config
+data:
+  AWS_DEFAULT_REGION: "us-east-1"
+  S3_APP_DATA_BUCKET: "greenlang-app-data"
+  S3_BACKUP_BUCKET: "greenlang-backups"
+  S3_AUDIT_LOGS_BUCKET: "greenlang-audit-logs"
+  S3_ACCESS_LOGS_BUCKET: "greenlang-access-logs"
+  # VPC endpoint configuration
+  S3_USE_VPC_ENDPOINT: "true"
+  # Encryption settings
+  S3_SSE_ALGORITHM: "aws:kms"
+  # Upload settings
+  S3_MULTIPART_THRESHOLD: "104857600"  # 100MB
+  S3_MULTIPART_CHUNKSIZE: "52428800"   # 50MB
+
+---
+###############################################################################
+# ResourceQuota for storage namespace
+###############################################################################
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: storage-resource-quota
+  namespace: greenlang-storage
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: quota
+spec:
+  hard:
+    pods: "20"
+    requests.cpu: "4"
+    requests.memory: "8Gi"
+    limits.cpu: "8"
+    limits.memory: "16Gi"
+    secrets: "20"
+    configmaps: "20"
+
+---
+###############################################################################
+# LimitRange for storage pods
+###############################################################################
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: storage-limit-range
+  namespace: greenlang-storage
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: limits
+spec:
+  limits:
+    - type: Container
+      default:
+        cpu: "500m"
+        memory: "512Mi"
+      defaultRequest:
+        cpu: "100m"
+        memory: "128Mi"
+      max:
+        cpu: "2"
+        memory: "4Gi"
+      min:
+        cpu: "50m"
+        memory: "64Mi"

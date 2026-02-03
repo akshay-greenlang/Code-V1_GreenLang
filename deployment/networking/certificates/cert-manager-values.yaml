@@ -1,0 +1,319 @@
+# cert-manager Helm Values for GreenLang
+# INFRA-001: Automatic TLS certificate management
+#
+# Install: helm install cert-manager jetstack/cert-manager \
+#          -n cert-manager --create-namespace \
+#          -f cert-manager-values.yaml
+
+# Global settings
+global:
+  # Log level
+  logLevel: 2
+
+  # Leader election namespace
+  leaderElection:
+    namespace: cert-manager
+
+  # Pod security policy
+  podSecurityPolicy:
+    enabled: false
+    useAppArmor: false
+
+  # Priority class
+  priorityClassName: system-cluster-critical
+
+# Install CRDs
+installCRDs: true
+
+# Replica count for HA
+replicaCount: 2
+
+# Image configuration
+image:
+  repository: quay.io/jetstack/cert-manager-controller
+  pullPolicy: IfNotPresent
+
+# Service account
+serviceAccount:
+  create: true
+  name: cert-manager
+  annotations:
+    # IRSA for AWS (Route53 DNS validation)
+    eks.amazonaws.com/role-arn: arn:aws:iam::ACCOUNT_ID:role/greenlang-cert-manager-role
+
+# RBAC
+rbac:
+  create: true
+
+# Resources
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 200m
+    memory: 256Mi
+
+# Node selector
+nodeSelector:
+  node-type: system
+
+# Tolerations
+tolerations:
+  - key: "node-type"
+    operator: "Equal"
+    value: "system"
+    effect: "NoSchedule"
+
+# Pod affinity for HA
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+              - key: app.kubernetes.io/name
+                operator: In
+                values:
+                  - cert-manager
+          topologyKey: kubernetes.io/hostname
+
+# Security context
+securityContext:
+  runAsNonRoot: true
+  seccompProfile:
+    type: RuntimeDefault
+
+containerSecurityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: true
+
+# Pod disruption budget
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+
+# Prometheus monitoring
+prometheus:
+  enabled: true
+  servicemonitor:
+    enabled: true
+    labels:
+      release: prometheus
+    interval: 30s
+    scrapeTimeout: 25s
+    honorLabels: false
+
+# Extra arguments
+extraArgs:
+  # DNS01 recursive nameservers
+  - --dns01-recursive-nameservers-only
+  - --dns01-recursive-nameservers=8.8.8.8:53,1.1.1.1:53
+  # Logging
+  - --v=2
+  # Leader election
+  - --leader-elect=true
+  # Cluster resource namespace
+  - --cluster-resource-namespace=cert-manager
+  # Maximum concurrent challenges
+  - --max-concurrent-challenges=60
+
+# Extra environment variables
+extraEnv:
+  - name: AWS_REGION
+    value: us-east-1
+
+# Webhook configuration
+webhook:
+  replicaCount: 2
+
+  image:
+    repository: quay.io/jetstack/cert-manager-webhook
+    pullPolicy: IfNotPresent
+
+  serviceAccount:
+    create: true
+    name: cert-manager-webhook
+
+  resources:
+    requests:
+      cpu: 25m
+      memory: 32Mi
+    limits:
+      cpu: 100m
+      memory: 64Mi
+
+  nodeSelector:
+    node-type: system
+
+  tolerations:
+    - key: "node-type"
+      operator: "Equal"
+      value: "system"
+      effect: "NoSchedule"
+
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+                - key: app.kubernetes.io/name
+                  operator: In
+                  values:
+                    - cert-manager-webhook
+            topologyKey: kubernetes.io/hostname
+
+  securityContext:
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
+    readOnlyRootFilesystem: true
+
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 1
+
+  # Timeout for the webhook
+  timeoutSeconds: 10
+
+  # Host network (required for some environments)
+  hostNetwork: false
+
+  # Service type
+  serviceType: ClusterIP
+
+# CA Injector configuration
+cainjector:
+  enabled: true
+  replicaCount: 2
+
+  image:
+    repository: quay.io/jetstack/cert-manager-cainjector
+    pullPolicy: IfNotPresent
+
+  serviceAccount:
+    create: true
+    name: cert-manager-cainjector
+
+  resources:
+    requests:
+      cpu: 25m
+      memory: 64Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi
+
+  nodeSelector:
+    node-type: system
+
+  tolerations:
+    - key: "node-type"
+      operator: "Equal"
+      value: "system"
+      effect: "NoSchedule"
+
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+                - key: app.kubernetes.io/name
+                  operator: In
+                  values:
+                    - cert-manager-cainjector
+            topologyKey: kubernetes.io/hostname
+
+  securityContext:
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
+    readOnlyRootFilesystem: true
+
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 1
+
+# Startup API check
+startupapicheck:
+  enabled: true
+  timeout: 1m
+  backoffLimit: 4
+
+  image:
+    repository: quay.io/jetstack/cert-manager-ctl
+    pullPolicy: IfNotPresent
+
+  resources:
+    requests:
+      cpu: 10m
+      memory: 32Mi
+    limits:
+      cpu: 50m
+      memory: 64Mi
+
+  nodeSelector:
+    node-type: system
+
+  tolerations:
+    - key: "node-type"
+      operator: "Equal"
+      value: "system"
+      effect: "NoSchedule"
+
+  securityContext:
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+
+# Feature gates
+featureGates: ""
+
+# DNS policy
+dns01RecursiveNameserversOnly: true
+dns01RecursiveNameservers: "8.8.8.8:53,1.1.1.1:53"
+
+---
+# IAM Policy for cert-manager (reference - apply via Terraform)
+# {
+#   "Version": "2012-10-17",
+#   "Statement": [
+#     {
+#       "Effect": "Allow",
+#       "Action": "route53:GetChange",
+#       "Resource": "arn:aws:route53:::change/*"
+#     },
+#     {
+#       "Effect": "Allow",
+#       "Action": [
+#         "route53:ChangeResourceRecordSets",
+#         "route53:ListResourceRecordSets"
+#       ],
+#       "Resource": "arn:aws:route53:::hostedzone/*"
+#     },
+#     {
+#       "Effect": "Allow",
+#       "Action": "route53:ListHostedZonesByName",
+#       "Resource": "*"
+#     }
+#   ]
+# }

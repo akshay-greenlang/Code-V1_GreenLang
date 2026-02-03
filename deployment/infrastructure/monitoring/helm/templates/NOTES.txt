@@ -1,0 +1,222 @@
+================================================================================
+    GreenLang Monitoring Stack - Deployment Complete
+================================================================================
+
+{{ if .Release.IsUpgrade }}
+UPGRADE COMPLETE!
+{{ else }}
+INSTALLATION COMPLETE!
+{{ end }}
+
+Release Name: {{ .Release.Name }}
+Namespace: {{ .Release.Namespace }}
+Chart Version: {{ .Chart.Version }}
+App Version: {{ .Chart.AppVersion }}
+Environment: {{ .Values.global.environment | default "production" }}
+
+================================================================================
+    DEPLOYED COMPONENTS
+================================================================================
+
+1. Prometheus:
+   {{- if .Values.prometheus.enabled }}
+   - Status: ENABLED
+   - Replicas: {{ .Values.prometheus.server.replicaCount | default 1 }}
+   - Retention: {{ .Values.prometheus.server.retention | default "15d" }}
+   - Storage: {{ .Values.prometheus.server.persistentVolume.size | default "100Gi" }}
+   {{- if .Values.prometheus.server.ingress.enabled }}
+   - URL: https://{{ (index .Values.prometheus.server.ingress.hosts 0) }}
+   {{- end }}
+   {{- else }}
+   - Status: DISABLED
+   {{- end }}
+
+2. Alertmanager:
+   {{- if .Values.prometheus.alertmanager.enabled }}
+   - Status: ENABLED
+   - Replicas: {{ .Values.prometheus.alertmanager.replicaCount | default 1 }}
+   {{- else }}
+   - Status: DISABLED
+   {{- end }}
+
+3. Grafana:
+   {{- if .Values.grafana.enabled }}
+   - Status: ENABLED
+   - Replicas: {{ .Values.grafana.replicas | default 1 }}
+   {{- if .Values.grafana.ingress.enabled }}
+   - URL: https://{{ (index .Values.grafana.ingress.hosts 0) }}
+   {{- end }}
+   {{- else }}
+   - Status: DISABLED
+   {{- end }}
+
+4. Loki (Log Aggregation):
+   {{- if .Values.loki.enabled }}
+   - Status: ENABLED
+   - Retention: {{ .Values.loki.loki.limits_config.retention_period | default "720h" }}
+   {{- else }}
+   - Status: DISABLED
+   {{- end }}
+
+5. Jaeger (Distributed Tracing):
+   {{- if .Values.jaeger.enabled }}
+   - Status: ENABLED
+   {{- if .Values.jaeger.ingress.enabled }}
+   - URL: https://{{ (index .Values.jaeger.ingress.hosts 0) }}
+   {{- end }}
+   {{- else }}
+   - Status: DISABLED
+   {{- end }}
+
+================================================================================
+    ACCESS INFORMATION
+================================================================================
+
+{{- if .Values.grafana.enabled }}
+Grafana:
+{{- if .Values.grafana.ingress.enabled }}
+  - URL: https://{{ (index .Values.grafana.ingress.hosts 0) }}
+{{- else }}
+  kubectl port-forward svc/{{ .Release.Name }}-grafana 3000:80 -n {{ .Release.Namespace }}
+  Access: http://localhost:3000
+{{- end }}
+  - Username: {{ .Values.grafana.adminUser | default "admin" }}
+  - Password: Retrieve with:
+    kubectl get secret {{ .Release.Name }}-grafana -n {{ .Release.Namespace }} -o jsonpath="{.data.admin-password}" | base64 -d
+{{- end }}
+
+{{- if .Values.prometheus.enabled }}
+Prometheus:
+{{- if .Values.prometheus.server.ingress.enabled }}
+  - URL: https://{{ (index .Values.prometheus.server.ingress.hosts 0) }}
+{{- else }}
+  kubectl port-forward svc/{{ .Release.Name }}-prometheus-server 9090:9090 -n {{ .Release.Namespace }}
+  Access: http://localhost:9090
+{{- end }}
+{{- end }}
+
+{{- if .Values.jaeger.enabled }}
+Jaeger:
+{{- if .Values.jaeger.ingress.enabled }}
+  - URL: https://{{ (index .Values.jaeger.ingress.hosts 0) }}
+{{- else }}
+  kubectl port-forward svc/{{ .Release.Name }}-jaeger-query 16686:16686 -n {{ .Release.Namespace }}
+  Access: http://localhost:16686
+{{- end }}
+{{- end }}
+
+================================================================================
+    CONFIGURED SERVICEMONITORS
+================================================================================
+
+{{- if .Values.serviceMonitors.eudrAgent.enabled }}
+- EUDR Agent: Scrape interval {{ .Values.serviceMonitors.eudrAgent.interval | default "15s" }}
+{{- end }}
+{{- if .Values.serviceMonitors.cbamAgent.enabled }}
+- CBAM Agent: Scrape interval {{ .Values.serviceMonitors.cbamAgent.interval | default "15s" }}
+{{- end }}
+{{- if .Values.serviceMonitors.sb253Agent.enabled }}
+- SB253 Agent: Scrape interval {{ .Values.serviceMonitors.sb253Agent.interval | default "15s" }}
+{{- end }}
+{{- if .Values.serviceMonitors.apiGateway.enabled }}
+- API Gateway: Scrape interval {{ .Values.serviceMonitors.apiGateway.interval | default "10s" }}
+{{- end }}
+{{- if .Values.serviceMonitors.emissionCalculator.enabled }}
+- Emission Calculator: Scrape interval {{ .Values.serviceMonitors.emissionCalculator.interval | default "15s" }}
+{{- end }}
+
+================================================================================
+    CONFIGURED ALERTS
+================================================================================
+
+{{- if .Values.alertRules.enabled }}
+Alert rules are ENABLED.
+
+Configured alert groups:
+{{- range .Values.alertRules.rules }}
+- {{ .name }}
+{{- end }}
+
+To view alerts:
+  kubectl get prometheusrules -n {{ .Release.Namespace }}
+{{- else }}
+Alert rules are DISABLED.
+{{- end }}
+
+================================================================================
+    SLO CONFIGURATION
+================================================================================
+
+{{- if .Values.slos.enabled }}
+SLOs are ENABLED.
+
+Configured SLOs:
+{{- range $name, $slo := .Values.slos.definitions }}
+- {{ $name }}: {{ $slo.target }}% over {{ $slo.window }}
+{{- end }}
+{{- else }}
+SLOs are DISABLED.
+{{- end }}
+
+================================================================================
+    HEALTH CHECKS
+================================================================================
+
+Check Prometheus status:
+  kubectl get pods -l app=prometheus -n {{ .Release.Namespace }}
+
+Check Grafana status:
+  kubectl get pods -l app.kubernetes.io/name=grafana -n {{ .Release.Namespace }}
+
+Check Alertmanager status:
+  kubectl get pods -l app=alertmanager -n {{ .Release.Namespace }}
+
+Check all monitoring pods:
+  kubectl get pods -n {{ .Release.Namespace }}
+
+View Prometheus targets:
+  curl http://{{ .Release.Name }}-prometheus-server:9090/api/v1/targets
+
+================================================================================
+    DATASOURCES
+================================================================================
+
+Grafana is configured with the following datasources:
+
+{{- if .Values.grafana.enabled }}
+{{- range .Values.grafana.datasources.datasources.yaml.datasources }}
+- {{ .name }} ({{ .type }}): {{ .url }}
+{{- end }}
+{{- end }}
+
+================================================================================
+    TROUBLESHOOTING
+================================================================================
+
+If Prometheus is not scraping targets:
+  kubectl logs -l app=prometheus-server -n {{ .Release.Namespace }}
+
+If Alertmanager is not sending alerts:
+  kubectl logs -l app=alertmanager -n {{ .Release.Namespace }}
+
+If Grafana dashboards are not loading:
+  kubectl logs -l app.kubernetes.io/name=grafana -n {{ .Release.Namespace }}
+
+Check ServiceMonitor status:
+  kubectl get servicemonitors -n {{ .Release.Namespace }}
+
+Check PrometheusRules:
+  kubectl get prometheusrules -n {{ .Release.Namespace }}
+
+================================================================================
+    DOCUMENTATION
+================================================================================
+
+For more information:
+  - Prometheus: https://prometheus.io/docs/
+  - Grafana: https://grafana.com/docs/
+  - Loki: https://grafana.com/docs/loki/
+  - Jaeger: https://www.jaegertracing.io/docs/
+  - GreenLang Monitoring: https://docs.greenlang.io/monitoring
+
+================================================================================

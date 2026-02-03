@@ -1,0 +1,54 @@
+# GreenLang Staging Environment Variables
+# Copy this file to terraform.tfvars and update values as needed
+
+# AWS Region
+aws_region = "us-east-1"
+
+# VPC Configuration
+vpc_cidr = "10.1.0.0/16"
+
+availability_zones = [
+  "us-east-1a",
+  "us-east-1b",
+  "us-east-1c"
+]
+
+# EKS Configuration
+eks_cluster_version = "1.28"
+
+# Allow public access to EKS API
+eks_public_access_cidrs = ["0.0.0.0/0"]
+
+# RDS Configuration
+rds_engine_version = "15.4"
+
+# ELB Account ID for Access Logs
+elb_account_id = "127311923021"  # us-east-1
+
+# CORS Configuration
+cors_allowed_origins = [
+  "https://staging.greenlang.io",
+  "https://staging-app.greenlang.io"
+]
+
+# GitHub OIDC Configuration for CI/CD
+# Set to false if OIDC provider was created in dev environment
+create_github_oidc_provider = false
+github_oidc_provider_arn    = null  # Set to ARN if OIDC provider exists
+
+# Your GitHub organization and repository name
+github_org  = "your-org"      # REQUIRED: Update with your GitHub org
+github_repo = "your-repo"     # REQUIRED: Update with your GitHub repo
+
+# ECR Repositories for CI/CD
+ecr_repository_arns = [
+  "arn:aws:ecr:us-east-1:ACCOUNT_ID:repository/greenlang/*"
+]
+
+# SNS/SQS Configuration for Alerts
+alarm_sns_topic_arns = []  # Add SNS topic ARNs for alarms
+sqs_queue_arns       = []  # Add SQS queue ARNs if needed
+sns_topic_arns       = []  # Add SNS topic ARNs for app notifications
+
+# CI/CD Secrets (if storing secrets in Secrets Manager)
+cicd_secrets_arns = []

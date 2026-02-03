@@ -1,0 +1,135 @@
+{{/*
+Primary Service - Routes traffic to the current Patroni leader
+*/}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "timescaledb-ha.primaryServiceName" . }}
+  namespace: {{ include "timescaledb-ha.namespace" . }}
+  labels:
+    {{- include "timescaledb-ha.labels" . | nindent 4 }}
+    service-type: primary
+  {{- with .Values.service.primary.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ .Values.service.primary.type }}
+  selector:
+    {{- include "timescaledb-ha.selectorLabels" . | nindent 4 }}
+    role: master
+  ports:
+    - name: postgresql
+      port: {{ .Values.service.primary.port }}
+      targetPort: postgresql
+      protocol: TCP
+    {{- if .Values.pgbouncer.enabled }}
+    - name: pgbouncer
+      port: {{ .Values.service.pgbouncer.port }}
+      targetPort: pgbouncer
+      protocol: TCP
+    {{- end }}
+    {{- if .Values.metrics.enabled }}
+    - name: metrics
+      port: {{ .Values.metrics.port }}
+      targetPort: metrics
+      protocol: TCP
+    {{- end }}
+
+---
+{{/*
+Replica Service - Load balanced across all replica pods
+*/}}
+{{- if .Values.service.replica.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "timescaledb-ha.replicaServiceName" . }}
+  namespace: {{ include "timescaledb-ha.namespace" . }}
+  labels:
+    {{- include "timescaledb-ha.labels" . | nindent 4 }}
+    service-type: replica
+  {{- with .Values.service.replica.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ .Values.service.replica.type }}
+  selector:
+    {{- include "timescaledb-ha.selectorLabels" . | nindent 4 }}
+    role: replica
+  ports:
+    - name: postgresql
+      port: {{ .Values.service.replica.port }}
+      targetPort: postgresql
+      protocol: TCP
+    {{- if .Values.pgbouncer.enabled }}
+    - name: pgbouncer
+      port: {{ .Values.service.pgbouncer.port }}
+      targetPort: pgbouncer
+      protocol: TCP
+    {{- end }}
+    {{- if .Values.metrics.enabled }}
+    - name: metrics
+      port: {{ .Values.metrics.port }}
+      targetPort: metrics
+      protocol: TCP
+    {{- end }}
+{{- end }}
+
+---
+{{/*
+Read Service - Load balanced across all pods (primary + replicas) for read queries
+*/}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "timescaledb-ha.fullname" . }}-read
+  namespace: {{ include "timescaledb-ha.namespace" . }}
+  labels:
+    {{- include "timescaledb-ha.labels" . | nindent 4 }}
+    service-type: read
+spec:
+  type: ClusterIP
+  selector:
+    {{- include "timescaledb-ha.selectorLabels" . | nindent 4 }}
+  ports:
+    - name: postgresql
+      port: {{ .Values.service.primary.port }}
+      targetPort: postgresql
+      protocol: TCP
+    {{- if .Values.pgbouncer.enabled }}
+    - name: pgbouncer
+      port: {{ .Values.service.pgbouncer.port }}
+      targetPort: pgbouncer
+      protocol: TCP
+    {{- end }}
+
+---
+{{/*
+PgBouncer Service (if enabled) - Dedicated service for connection pooling
+*/}}
+{{- if .Values.pgbouncer.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "timescaledb-ha.pgbouncerServiceName" . }}
+  namespace: {{ include "timescaledb-ha.namespace" . }}
+  labels:
+    {{- include "timescaledb-ha.labels" . | nindent 4 }}
+    service-type: pgbouncer
+  {{- with .Values.service.pgbouncer.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ .Values.service.pgbouncer.type }}
+  selector:
+    {{- include "timescaledb-ha.selectorLabels" . | nindent 4 }}
+    role: master
+  ports:
+    - name: pgbouncer
+      port: {{ .Values.service.pgbouncer.port }}
+      targetPort: pgbouncer
+      protocol: TCP
+{{- end }}

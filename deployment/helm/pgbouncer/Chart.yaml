@@ -1,0 +1,56 @@
+# PgBouncer Helm Chart for GreenLang
+# Provides connection pooling for PostgreSQL databases
+apiVersion: v2
+name: pgbouncer
+description: |
+  PgBouncer connection pooler for GreenLang PostgreSQL databases.
+  Provides high-availability connection pooling with transaction mode,
+  Prometheus monitoring, and horizontal pod autoscaling.
+
+type: application
+version: 1.0.0
+appVersion: "1.21.0"
+
+home: https://www.pgbouncer.org/
+icon: https://www.pgbouncer.org/pgbouncer.svg
+
+keywords:
+  - pgbouncer
+  - postgresql
+  - database
+  - connection-pooling
+  - greenlang
+
+maintainers:
+  - name: GreenLang Platform Team
+    email: platform@greenlang.io
+    url: https://greenlang.io
+
+sources:
+  - https://github.com/pgbouncer/pgbouncer
+  - https://github.com/bitnami/containers/tree/main/bitnami/pgbouncer
+
+dependencies:
+  # Optional: External Secrets Operator for secret management
+  # - name: external-secrets
+  #   version: "0.9.x"
+  #   repository: https://charts.external-secrets.io
+  #   condition: externalSecrets.enabled
+
+annotations:
+  artifacthub.io/category: database
+  artifacthub.io/license: MIT
+  artifacthub.io/signKey: |
+    fingerprint: XXXX
+    url: https://greenlang.io/pgp-key.pub
+  artifacthub.io/changes: |
+    - kind: added
+      description: Initial release of PgBouncer chart for GreenLang
+    - kind: added
+      description: Support for transaction pooling mode
+    - kind: added
+      description: Prometheus monitoring with ServiceMonitor
+    - kind: added
+      description: Horizontal Pod Autoscaler support
+    - kind: added
+      description: Pod Disruption Budget for HA

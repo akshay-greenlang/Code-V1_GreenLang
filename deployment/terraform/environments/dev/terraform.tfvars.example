@@ -1,0 +1,36 @@
+# GreenLang Development Environment Variables
+# Copy this file to terraform.tfvars and update values as needed
+
+# AWS Region
+aws_region = "us-east-1"
+
+# VPC Configuration
+vpc_cidr = "10.0.0.0/16"
+
+availability_zones = [
+  "us-east-1a",
+  "us-east-1b"
+]
+
+# EKS Configuration
+eks_cluster_version = "1.28"
+
+# Allow public access to EKS API (for development convenience)
+eks_public_access_cidrs = ["0.0.0.0/0"]
+
+# RDS Configuration
+rds_engine_version = "15.4"
+
+# ELB Account ID for Access Logs (varies by region)
+# See: https://docs.aws.amazon.com/elasticloadbalancing/latest/application/enable-access-logging.html
+elb_account_id = "127311923021"  # us-east-1
+
+# GitHub OIDC Configuration for CI/CD
+# Set create_github_oidc_provider to true if this is the first deployment
+# Set to false and provide github_oidc_provider_arn if OIDC provider already exists
+create_github_oidc_provider = true
+github_oidc_provider_arn    = null  # Will be created if create_github_oidc_provider is true
+
+# Your GitHub organization and repository name
+github_org  = "your-org"      # REQUIRED: Update with your GitHub org
+github_repo = "your-repo"     # REQUIRED: Update with your GitHub repo

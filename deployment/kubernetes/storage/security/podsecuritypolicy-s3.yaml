@@ -1,0 +1,385 @@
+###############################################################################
+# GreenLang S3 Pod Security Standards
+#
+# NOTE: PodSecurityPolicy is deprecated in Kubernetes 1.21+ and removed in 1.25+
+# This file contains Pod Security Standards (PSS) configurations using:
+# - Pod Security Admission (PSA) labels for namespaces
+# - Security contexts for pods
+#
+# For clusters < 1.25, the legacy PSP is also included (commented out)
+#
+# Author: GreenLang DevOps Team
+# Version: 1.0.0
+###############################################################################
+
+---
+###############################################################################
+# Namespace with Pod Security Standards Labels
+###############################################################################
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: greenlang-storage
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: storage
+    # Pod Security Standards - Restricted profile
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/enforce-version: latest
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/audit-version: latest
+    pod-security.kubernetes.io/warn: restricted
+    pod-security.kubernetes.io/warn-version: latest
+
+---
+###############################################################################
+# Security Context Constraints Template (for reference)
+# Apply these settings to all S3-accessing pods
+###############################################################################
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: s3-pod-security-template
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: security-config
+data:
+  pod-security-context.yaml: |
+    # Apply this securityContext to all S3-accessing pods
+    securityContext:
+      # Run as non-root user
+      runAsNonRoot: true
+      runAsUser: 1000
+      runAsGroup: 1000
+      fsGroup: 1000
+
+      # Seccomp profile
+      seccompProfile:
+        type: RuntimeDefault
+
+      # Prevent privilege escalation
+      supplementalGroups:
+        - 1000
+
+  container-security-context.yaml: |
+    # Apply this securityContext to all containers
+    securityContext:
+      # Non-root user
+      runAsNonRoot: true
+      runAsUser: 1000
+      runAsGroup: 1000
+
+      # Read-only root filesystem
+      readOnlyRootFilesystem: true
+
+      # No privilege escalation
+      allowPrivilegeEscalation: false
+
+      # Drop all capabilities
+      capabilities:
+        drop:
+          - ALL
+
+      # Seccomp profile
+      seccompProfile:
+        type: RuntimeDefault
+
+---
+###############################################################################
+# Example S3 Access Pod with Security Context
+###############################################################################
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: s3-access-example
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: s3-access-example
+    app.kubernetes.io/component: storage-client
+    storage.greenlang.io/s3-access: "true"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: s3-access-example
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: s3-access-example
+        app.kubernetes.io/component: storage-client
+        storage.greenlang.io/s3-access: "true"
+    spec:
+      # Service account with IRSA for S3 access
+      serviceAccountName: greenlang-s3-reader
+
+      # Pod-level security context
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+
+      # Prevent running on nodes with hostNetwork pods
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: security.greenlang.io/host-network
+                      operator: Exists
+                topologyKey: kubernetes.io/hostname
+
+      containers:
+        - name: s3-client
+          image: amazon/aws-cli:2.15.0
+          command: ["sleep", "infinity"]
+
+          # Container-level security context
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+
+          # Resource limits
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+
+          # Mount temp directory for AWS CLI
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+            - name: aws-config
+              mountPath: /.aws
+              readOnly: true
+
+          # Environment variables for AWS SDK
+          env:
+            - name: AWS_DEFAULT_REGION
+              value: us-east-1
+            - name: AWS_SDK_LOAD_CONFIG
+              value: "true"
+
+      # Volumes
+      volumes:
+        - name: tmp
+          emptyDir:
+            sizeLimit: 100Mi
+        - name: aws-config
+          configMap:
+            name: aws-config
+            optional: true
+
+      # DNS policy
+      dnsPolicy: ClusterFirst
+
+      # Automount service account token (required for IRSA)
+      automountServiceAccountToken: true
+
+---
+###############################################################################
+# Example Backup Job Pod with Security Context
+###############################################################################
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: s3-backup-job
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: s3-backup
+    app.kubernetes.io/component: backup-job
+spec:
+  schedule: "0 2 * * *"  # Daily at 2 AM
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 3
+      activeDeadlineSeconds: 3600
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: s3-backup
+            app.kubernetes.io/component: backup-job
+        spec:
+          serviceAccountName: greenlang-backup-sa
+          restartPolicy: OnFailure
+
+          # Pod security context
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            fsGroup: 1000
+            seccompProfile:
+              type: RuntimeDefault
+
+          containers:
+            - name: backup
+              image: greenlang/backup-tools:1.0.0
+
+              # Container security context
+              securityContext:
+                runAsNonRoot: true
+                runAsUser: 1000
+                readOnlyRootFilesystem: true
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop:
+                    - ALL
+
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  set -e
+                  echo "Starting backup..."
+                  # Backup logic here
+                  echo "Backup completed"
+
+              resources:
+                requests:
+                  cpu: 200m
+                  memory: 256Mi
+                limits:
+                  cpu: 1000m
+                  memory: 1Gi
+
+              volumeMounts:
+                - name: tmp
+                  mountPath: /tmp
+                - name: backup-scripts
+                  mountPath: /scripts
+                  readOnly: true
+
+          volumes:
+            - name: tmp
+              emptyDir:
+                sizeLimit: 1Gi
+            - name: backup-scripts
+              configMap:
+                name: backup-scripts
+                defaultMode: 0500
+
+---
+###############################################################################
+# ValidatingAdmissionPolicy for S3 Pod Security (K8s 1.26+)
+###############################################################################
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: s3-pod-security-policy
+spec:
+  failurePolicy: Fail
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["pods"]
+    namespaceSelector:
+      matchLabels:
+        app.kubernetes.io/component: storage
+  validations:
+    - expression: "object.spec.securityContext.runAsNonRoot == true"
+      message: "Pods must run as non-root"
+      reason: Forbidden
+
+    - expression: "object.spec.containers.all(c, c.securityContext.readOnlyRootFilesystem == true)"
+      message: "All containers must have read-only root filesystem"
+      reason: Forbidden
+
+    - expression: "object.spec.containers.all(c, c.securityContext.allowPrivilegeEscalation == false)"
+      message: "Privilege escalation must be disabled"
+      reason: Forbidden
+
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: s3-pod-security-policy-binding
+spec:
+  policyName: s3-pod-security-policy
+  validationActions:
+    - Deny
+  matchResources:
+    namespaceSelector:
+      matchLabels:
+        app.kubernetes.io/component: storage
+
+###############################################################################
+# Legacy PodSecurityPolicy (for K8s < 1.25) - COMMENTED OUT
+###############################################################################
+# ---
+# apiVersion: policy/v1beta1
+# kind: PodSecurityPolicy
+# metadata:
+#   name: greenlang-s3-access-psp
+#   labels:
+#     app.kubernetes.io/name: greenlang
+#     app.kubernetes.io/component: security
+# spec:
+#   # Privilege settings
+#   privileged: false
+#   allowPrivilegeEscalation: false
+#
+#   # Required security capabilities
+#   requiredDropCapabilities:
+#     - ALL
+#
+#   # Volume types allowed
+#   volumes:
+#     - 'configMap'
+#     - 'emptyDir'
+#     - 'projected'
+#     - 'secret'
+#     - 'downwardAPI'
+#     - 'persistentVolumeClaim'
+#
+#   # Host namespaces
+#   hostNetwork: false
+#   hostIPC: false
+#   hostPID: false
+#
+#   # User/Group settings
+#   runAsUser:
+#     rule: 'MustRunAsNonRoot'
+#   runAsGroup:
+#     rule: 'MustRunAs'
+#     ranges:
+#       - min: 1000
+#         max: 65535
+#   supplementalGroups:
+#     rule: 'MustRunAs'
+#     ranges:
+#       - min: 1000
+#         max: 65535
+#   fsGroup:
+#     rule: 'MustRunAs'
+#     ranges:
+#       - min: 1000
+#         max: 65535
+#
+#   # Read-only root filesystem
+#   readOnlyRootFilesystem: true
+#
+#   # SELinux
+#   seLinux:
+#     rule: 'RunAsAny'

@@ -1,0 +1,71 @@
+{{/*
+GreenLang Infrastructure Helm Chart - ServiceMonitor
+*/}}
+
+{{- if and .Values.monitoring.enabled .Values.monitoring.prometheus.serviceMonitor.enabled }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "greenlang.fullname" . }}-executor
+  namespace: {{ include "greenlang.namespace" . }}
+  labels:
+    {{- include "greenlang.executor.labels" . | nindent 4 }}
+    release: prometheus
+spec:
+  namespaceSelector:
+    matchNames:
+      - {{ include "greenlang.namespace" . }}
+  selector:
+    matchLabels:
+      {{- include "greenlang.selectorLabels" . | nindent 6 }}
+      component: executor
+  endpoints:
+    - port: metrics
+      interval: {{ .Values.monitoring.prometheus.serviceMonitor.interval | default "30s" }}
+      scrapeTimeout: {{ .Values.monitoring.prometheus.serviceMonitor.scrapeTimeout | default "10s" }}
+      path: /metrics
+      scheme: http
+      honorLabels: true
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace
+        - action: replace
+          replacement: executor
+          targetLabel: component
+
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "greenlang.fullname" . }}-worker
+  namespace: {{ include "greenlang.namespace" . }}
+  labels:
+    {{- include "greenlang.worker.labels" . | nindent 4 }}
+    release: prometheus
+spec:
+  namespaceSelector:
+    matchNames:
+      - {{ include "greenlang.namespace" . }}
+  selector:
+    matchLabels:
+      {{- include "greenlang.selectorLabels" . | nindent 6 }}
+      component: worker
+  endpoints:
+    - port: metrics
+      interval: {{ .Values.monitoring.prometheus.serviceMonitor.interval | default "30s" }}
+      scrapeTimeout: {{ .Values.monitoring.prometheus.serviceMonitor.scrapeTimeout | default "10s" }}
+      path: /metrics
+      scheme: http
+      honorLabels: true
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace
+        - action: replace
+          replacement: worker
+          targetLabel: component
+{{- end }}

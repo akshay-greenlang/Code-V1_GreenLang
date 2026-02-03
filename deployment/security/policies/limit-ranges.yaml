@@ -1,0 +1,227 @@
+# INFRA-001: Limit Ranges for GreenLang
+# Per-container and per-pod resource constraints
+# Ensures individual workloads don't consume excessive resources
+---
+# Production Limit Range
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: greenlang-limit-range
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: resource-management
+spec:
+  limits:
+    # Container-level limits
+    - type: Container
+      default:
+        cpu: "500m"
+        memory: "512Mi"
+        ephemeral-storage: "1Gi"
+      defaultRequest:
+        cpu: "100m"
+        memory: "128Mi"
+        ephemeral-storage: "500Mi"
+      min:
+        cpu: "10m"
+        memory: "16Mi"
+        ephemeral-storage: "50Mi"
+      max:
+        cpu: "4"
+        memory: "8Gi"
+        ephemeral-storage: "10Gi"
+      maxLimitRequestRatio:
+        cpu: "10"
+        memory: "4"
+
+    # Pod-level limits
+    - type: Pod
+      min:
+        cpu: "10m"
+        memory: "16Mi"
+      max:
+        cpu: "16"
+        memory: "32Gi"
+
+    # PVC limits
+    - type: PersistentVolumeClaim
+      min:
+        storage: "1Gi"
+      max:
+        storage: "100Gi"
+
+---
+# Staging Limit Range
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: greenlang-limit-range
+  namespace: greenlang-staging
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: resource-management
+spec:
+  limits:
+    # Container-level limits (lower than production)
+    - type: Container
+      default:
+        cpu: "250m"
+        memory: "256Mi"
+        ephemeral-storage: "500Mi"
+      defaultRequest:
+        cpu: "50m"
+        memory: "64Mi"
+        ephemeral-storage: "250Mi"
+      min:
+        cpu: "10m"
+        memory: "16Mi"
+        ephemeral-storage: "50Mi"
+      max:
+        cpu: "2"
+        memory: "4Gi"
+        ephemeral-storage: "5Gi"
+      maxLimitRequestRatio:
+        cpu: "10"
+        memory: "4"
+
+    # Pod-level limits
+    - type: Pod
+      min:
+        cpu: "10m"
+        memory: "16Mi"
+      max:
+        cpu: "8"
+        memory: "16Gi"
+
+    # PVC limits
+    - type: PersistentVolumeClaim
+      min:
+        storage: "1Gi"
+      max:
+        storage: "50Gi"
+
+---
+# Dev Limit Range
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: greenlang-limit-range
+  namespace: greenlang-dev
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: resource-management
+spec:
+  limits:
+    # Container-level limits (lowest)
+    - type: Container
+      default:
+        cpu: "200m"
+        memory: "256Mi"
+        ephemeral-storage: "500Mi"
+      defaultRequest:
+        cpu: "25m"
+        memory: "64Mi"
+        ephemeral-storage: "100Mi"
+      min:
+        cpu: "5m"
+        memory: "8Mi"
+        ephemeral-storage: "10Mi"
+      max:
+        cpu: "2"
+        memory: "4Gi"
+        ephemeral-storage: "5Gi"
+      maxLimitRequestRatio:
+        cpu: "20"  # More flexible for dev
+        memory: "8"
+
+    # Pod-level limits
+    - type: Pod
+      min:
+        cpu: "5m"
+        memory: "8Mi"
+      max:
+        cpu: "4"
+        memory: "8Gi"
+
+    # PVC limits
+    - type: PersistentVolumeClaim
+      min:
+        storage: "500Mi"
+      max:
+        storage: "20Gi"
+
+---
+# Monitoring Limit Range
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: monitoring-limit-range
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: resource-management
+spec:
+  limits:
+    # Container-level limits (higher for monitoring tools)
+    - type: Container
+      default:
+        cpu: "500m"
+        memory: "1Gi"
+        ephemeral-storage: "2Gi"
+      defaultRequest:
+        cpu: "100m"
+        memory: "256Mi"
+        ephemeral-storage: "500Mi"
+      min:
+        cpu: "10m"
+        memory: "32Mi"
+        ephemeral-storage: "100Mi"
+      max:
+        cpu: "4"
+        memory: "16Gi"  # Prometheus needs more memory
+        ephemeral-storage: "20Gi"
+      maxLimitRequestRatio:
+        cpu: "10"
+        memory: "4"
+
+    # Pod-level limits
+    - type: Pod
+      min:
+        cpu: "10m"
+        memory: "32Mi"
+      max:
+        cpu: "8"
+        memory: "32Gi"
+
+    # PVC limits (higher for metrics storage)
+    - type: PersistentVolumeClaim
+      min:
+        storage: "5Gi"
+      max:
+        storage: "200Gi"
+
+---
+# Special limit range for init containers (allow more resources during startup)
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: greenlang-init-limit-range
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: resource-management
+  annotations:
+    description: "Special limits for init containers"
+spec:
+  limits:
+    - type: Container
+      default:
+        cpu: "1"
+        memory: "1Gi"
+      defaultRequest:
+        cpu: "100m"
+        memory: "128Mi"
+      max:
+        cpu: "2"
+        memory: "2Gi"

@@ -1,0 +1,74 @@
+{{/*
+Headless Service for StatefulSet DNS resolution and Patroni DCS
+This service is required for:
+1. StatefulSet to get stable network identities (pod-0.service.namespace.svc.cluster.local)
+2. Patroni to discover cluster members via Kubernetes endpoints
+3. Direct pod-to-pod communication for replication
+*/}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "timescaledb-ha.headlessServiceName" . }}
+  namespace: {{ include "timescaledb-ha.namespace" . }}
+  labels:
+    {{- include "timescaledb-ha.labels" . | nindent 4 }}
+    service-type: headless
+  annotations:
+    # This annotation enables Patroni to use this service for leader election
+    service.alpha.kubernetes.io/tolerate-unready-endpoints: "true"
+spec:
+  type: ClusterIP
+  clusterIP: None
+  publishNotReadyAddresses: true
+  selector:
+    {{- include "timescaledb-ha.selectorLabels" . | nindent 4 }}
+  ports:
+    - name: postgresql
+      port: 5432
+      targetPort: postgresql
+      protocol: TCP
+    - name: patroni
+      port: 8008
+      targetPort: patroni
+      protocol: TCP
+    {{- if .Values.pgbouncer.enabled }}
+    - name: pgbouncer
+      port: {{ .Values.pgbouncer.port }}
+      targetPort: pgbouncer
+      protocol: TCP
+    {{- end }}
+    {{- if .Values.metrics.enabled }}
+    - name: metrics
+      port: {{ .Values.metrics.port }}
+      targetPort: metrics
+      protocol: TCP
+    {{- end }}
+
+---
+{{/*
+Config Service - Used by Patroni for DCS (Distributed Configuration Store)
+This service stores the cluster configuration and leader information
+*/}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "timescaledb-ha.fullname" . }}-config
+  namespace: {{ include "timescaledb-ha.namespace" . }}
+  labels:
+    {{- include "timescaledb-ha.labels" . | nindent 4 }}
+    service-type: config
+    cluster-name: {{ .Values.cluster.name }}
+  annotations:
+    # Allow Patroni to modify this service for leader election
+    service.alpha.kubernetes.io/tolerate-unready-endpoints: "true"
+spec:
+  type: ClusterIP
+  clusterIP: None
+  publishNotReadyAddresses: true
+  selector:
+    {{- include "timescaledb-ha.selectorLabels" . | nindent 4 }}
+  ports:
+    - name: patroni
+      port: 8008
+      targetPort: patroni
+      protocol: TCP

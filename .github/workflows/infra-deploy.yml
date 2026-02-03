@@ -1,0 +1,718 @@
+# INFRA-001: GreenLang Infrastructure Deployment Pipeline
+#
+# Production-grade infrastructure deployment with:
+# - OIDC authentication (no long-lived credentials)
+# - Environment-based deployment (dev, staging, prod)
+# - Terraform plan/apply with approval gates
+# - Kubernetes deployment after infrastructure ready
+# - Rollback capabilities
+# - Blue-green deployment support for production
+#
+# Security Compliance: SOC 2, ISO 27001
+# Author: GreenLang DevOps Team
+# Version: 1.0.0
+
+name: INFRA-001 Deploy
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - 'deployment/terraform/**'
+      - 'deployment/kubernetes/**'
+      - '.github/workflows/infra-deploy.yml'
+
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment for deployment'
+        required: true
+        type: choice
+        options:
+          - dev
+          - staging
+          - prod
+        default: 'dev'
+      action:
+        description: 'Deployment action'
+        required: true
+        type: choice
+        options:
+          - plan
+          - apply
+          - destroy
+          - rollback
+        default: 'plan'
+      terraform_version:
+        description: 'Terraform version to use'
+        required: false
+        type: string
+        default: '1.6.6'
+      skip_k8s_deploy:
+        description: 'Skip Kubernetes deployment'
+        required: false
+        type: boolean
+        default: false
+      rollback_revision:
+        description: 'Rollback to specific revision (for rollback action)'
+        required: false
+        type: string
+        default: ''
+
+# Required permissions for OIDC authentication
+permissions:
+  id-token: write      # Required for OIDC token
+  contents: read       # Required for checkout
+  pull-requests: write # Required for PR comments
+  actions: read        # Required for workflow status
+
+# Prevent concurrent deployments to the same environment
+concurrency:
+  group: infra-deploy-${{ github.event.inputs.environment || 'dev' }}
+  cancel-in-progress: false
+
+env:
+  AWS_REGION: us-east-1
+  TF_VERSION: ${{ github.event.inputs.terraform_version || '1.6.6' }}
+  TF_STATE_BUCKET: greenlang-terraform-state
+  TF_LOCK_TABLE: greenlang-terraform-locks
+  KUBECTL_VERSION: '1.29.0'
+
+jobs:
+  # ==========================================================================
+  # JOB 1: Determine deployment parameters
+  # ==========================================================================
+  setup:
+    name: Setup Deployment
+    runs-on: ubuntu-latest
+    outputs:
+      environment: ${{ steps.params.outputs.environment }}
+      action: ${{ steps.params.outputs.action }}
+      aws_role_arn: ${{ steps.params.outputs.aws_role_arn }}
+      eks_cluster_name: ${{ steps.params.outputs.eks_cluster_name }}
+      tf_workspace: ${{ steps.params.outputs.tf_workspace }}
+      should_deploy_k8s: ${{ steps.params.outputs.should_deploy_k8s }}
+
+    steps:
+      - name: Determine deployment parameters
+        id: params
+        run: |
+          # Determine environment
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            ENV="${{ github.event.inputs.environment }}"
+            ACTION="${{ github.event.inputs.action }}"
+          else
+            # Auto-deploy to dev on push to main
+            ENV="dev"
+            ACTION="apply"
+          fi
+
+          echo "environment=$ENV" >> $GITHUB_OUTPUT
+          echo "action=$ACTION" >> $GITHUB_OUTPUT
+          echo "tf_workspace=$ENV" >> $GITHUB_OUTPUT
+
+          # Set AWS role ARN based on environment
+          case $ENV in
+            dev)
+              echo "aws_role_arn=arn:aws:iam::123456789012:role/greenlang-dev-github-actions" >> $GITHUB_OUTPUT
+              echo "eks_cluster_name=greenlang-dev-eks" >> $GITHUB_OUTPUT
+              ;;
+            staging)
+              echo "aws_role_arn=arn:aws:iam::123456789012:role/greenlang-staging-github-actions" >> $GITHUB_OUTPUT
+              echo "eks_cluster_name=greenlang-staging-eks" >> $GITHUB_OUTPUT
+              ;;
+            prod)
+              echo "aws_role_arn=arn:aws:iam::123456789012:role/greenlang-prod-github-actions" >> $GITHUB_OUTPUT
+              echo "eks_cluster_name=greenlang-prod-eks" >> $GITHUB_OUTPUT
+              ;;
+          esac
+
+          # Determine if K8s deployment should run
+          if [[ "${{ github.event.inputs.skip_k8s_deploy }}" == "true" ]] || [[ "$ACTION" == "destroy" ]]; then
+            echo "should_deploy_k8s=false" >> $GITHUB_OUTPUT
+          else
+            echo "should_deploy_k8s=true" >> $GITHUB_OUTPUT
+          fi
+
+          echo "## Deployment Configuration" >> $GITHUB_STEP_SUMMARY
+          echo "- Environment: $ENV" >> $GITHUB_STEP_SUMMARY
+          echo "- Action: $ACTION" >> $GITHUB_STEP_SUMMARY
+          echo "- Triggered by: ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Actor: ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+
+  # ==========================================================================
+  # JOB 2: Terraform Plan
+  # ==========================================================================
+  terraform-plan:
+    name: Terraform Plan (${{ needs.setup.outputs.environment }})
+    runs-on: ubuntu-latest
+    needs: [setup]
+    environment: ${{ needs.setup.outputs.environment }}-plan
+    outputs:
+      plan_exit_code: ${{ steps.plan.outputs.exitcode }}
+      has_changes: ${{ steps.plan.outputs.has_changes }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ needs.setup.outputs.aws_role_arn }}
+          role-session-name: github-actions-terraform-plan
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+          terraform_wrapper: false
+
+      - name: Terraform Init
+        id: init
+        working-directory: deployment/terraform/environments/${{ needs.setup.outputs.environment }}
+        run: |
+          terraform init \
+            -backend-config="bucket=${{ env.TF_STATE_BUCKET }}" \
+            -backend-config="key=environments/${{ needs.setup.outputs.environment }}/terraform.tfstate" \
+            -backend-config="region=${{ env.AWS_REGION }}" \
+            -backend-config="dynamodb_table=${{ env.TF_LOCK_TABLE }}" \
+            -backend-config="encrypt=true"
+
+      - name: Terraform Validate
+        id: validate
+        working-directory: deployment/terraform/environments/${{ needs.setup.outputs.environment }}
+        run: terraform validate -no-color
+
+      - name: Terraform Plan
+        id: plan
+        working-directory: deployment/terraform/environments/${{ needs.setup.outputs.environment }}
+        run: |
+          set +e
+          terraform plan \
+            -detailed-exitcode \
+            -no-color \
+            -out=tfplan \
+            -var-file="${{ needs.setup.outputs.environment }}.tfvars" \
+            2>&1 | tee plan_output.txt
+
+          EXIT_CODE=$?
+          echo "exitcode=$EXIT_CODE" >> $GITHUB_OUTPUT
+
+          if [ $EXIT_CODE -eq 2 ]; then
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          fi
+
+          # Exit with success for codes 0 (no changes) and 2 (changes present)
+          if [ $EXIT_CODE -eq 0 ] || [ $EXIT_CODE -eq 2 ]; then
+            exit 0
+          else
+            exit $EXIT_CODE
+          fi
+
+      - name: Generate plan summary
+        working-directory: deployment/terraform/environments/${{ needs.setup.outputs.environment }}
+        run: |
+          echo "## Terraform Plan Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+
+          # Extract resource counts from plan
+          if grep -q "Plan:" plan_output.txt; then
+            grep "Plan:" plan_output.txt >> $GITHUB_STEP_SUMMARY
+          elif grep -q "No changes" plan_output.txt; then
+            echo "No changes. Infrastructure is up-to-date." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "Unable to determine plan results." >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload Terraform plan
+        uses: actions/upload-artifact@v4
+        with:
+          name: terraform-plan-${{ needs.setup.outputs.environment }}
+          path: |
+            deployment/terraform/environments/${{ needs.setup.outputs.environment }}/tfplan
+            deployment/terraform/environments/${{ needs.setup.outputs.environment }}/plan_output.txt
+          retention-days: 7
+
+      - name: Comment on PR (if applicable)
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const planOutput = fs.readFileSync('deployment/terraform/environments/${{ needs.setup.outputs.environment }}/plan_output.txt', 'utf8');
+
+            // Truncate if too long
+            const maxLength = 65000;
+            let body = `## Terraform Plan - ${{ needs.setup.outputs.environment }}
+
+            \`\`\`hcl
+            ${planOutput.length > maxLength ? planOutput.substring(0, maxLength) + '\n... (truncated)' : planOutput}
+            \`\`\`
+
+            **Exit Code:** ${{ steps.plan.outputs.exitcode }}
+            **Has Changes:** ${{ steps.plan.outputs.has_changes }}
+            `;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+
+  # ==========================================================================
+  # JOB 3: Terraform Apply (requires approval for staging/prod)
+  # ==========================================================================
+  terraform-apply:
+    name: Terraform Apply (${{ needs.setup.outputs.environment }})
+    runs-on: ubuntu-latest
+    needs: [setup, terraform-plan]
+    if: |
+      needs.setup.outputs.action == 'apply' &&
+      needs.terraform-plan.outputs.has_changes == 'true'
+    environment: ${{ needs.setup.outputs.environment }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download Terraform plan
+        uses: actions/download-artifact@v4
+        with:
+          name: terraform-plan-${{ needs.setup.outputs.environment }}
+          path: deployment/terraform/environments/${{ needs.setup.outputs.environment }}
+
+      - name: Configure AWS credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ needs.setup.outputs.aws_role_arn }}
+          role-session-name: github-actions-terraform-apply
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+          terraform_wrapper: false
+
+      - name: Terraform Init
+        working-directory: deployment/terraform/environments/${{ needs.setup.outputs.environment }}
+        run: |
+          terraform init \
+            -backend-config="bucket=${{ env.TF_STATE_BUCKET }}" \
+            -backend-config="key=environments/${{ needs.setup.outputs.environment }}/terraform.tfstate" \
+            -backend-config="region=${{ env.AWS_REGION }}" \
+            -backend-config="dynamodb_table=${{ env.TF_LOCK_TABLE }}" \
+            -backend-config="encrypt=true"
+
+      - name: Terraform Apply
+        id: apply
+        working-directory: deployment/terraform/environments/${{ needs.setup.outputs.environment }}
+        run: |
+          terraform apply \
+            -auto-approve \
+            -no-color \
+            tfplan \
+            2>&1 | tee apply_output.txt
+
+      - name: Capture Terraform Outputs
+        id: outputs
+        working-directory: deployment/terraform/environments/${{ needs.setup.outputs.environment }}
+        run: |
+          terraform output -json > terraform_outputs.json
+
+          # Extract key outputs for Kubernetes deployment
+          EKS_ENDPOINT=$(terraform output -raw eks_cluster_endpoint 2>/dev/null || echo "")
+          VPC_ID=$(terraform output -raw vpc_id 2>/dev/null || echo "")
+
+          echo "eks_endpoint=$EKS_ENDPOINT" >> $GITHUB_OUTPUT
+          echo "vpc_id=$VPC_ID" >> $GITHUB_OUTPUT
+
+      - name: Upload Terraform outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: terraform-outputs-${{ needs.setup.outputs.environment }}
+          path: deployment/terraform/environments/${{ needs.setup.outputs.environment }}/terraform_outputs.json
+          retention-days: 30
+
+      - name: Apply summary
+        run: |
+          echo "## Terraform Apply Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- Environment: ${{ needs.setup.outputs.environment }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Status: SUCCESS" >> $GITHUB_STEP_SUMMARY
+          echo "- Timestamp: $(date -u +"%Y-%m-%dT%H:%M:%SZ")" >> $GITHUB_STEP_SUMMARY
+
+  # ==========================================================================
+  # JOB 4: Kubernetes Deployment
+  # ==========================================================================
+  kubernetes-deploy:
+    name: Deploy to Kubernetes (${{ needs.setup.outputs.environment }})
+    runs-on: ubuntu-latest
+    needs: [setup, terraform-apply]
+    if: |
+      needs.setup.outputs.should_deploy_k8s == 'true' &&
+      needs.terraform-apply.result == 'success'
+    environment: ${{ needs.setup.outputs.environment }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ needs.setup.outputs.aws_role_arn }}
+          role-session-name: github-actions-k8s-deploy
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: v${{ env.KUBECTL_VERSION }}
+
+      - name: Configure kubectl for EKS
+        run: |
+          aws eks update-kubeconfig \
+            --region ${{ env.AWS_REGION }} \
+            --name ${{ needs.setup.outputs.eks_cluster_name }}
+
+      - name: Verify cluster connectivity
+        run: |
+          kubectl cluster-info
+          kubectl get nodes
+
+      - name: Create/Update namespace
+        run: |
+          kubectl apply -f deployment/kubernetes/manifests/namespace.yaml
+
+      - name: Apply RBAC configuration
+        run: |
+          kubectl apply -f deployment/kubernetes/manifests/rbac.yaml
+
+      - name: Apply ConfigMaps
+        run: |
+          if [ -f deployment/kubernetes/manifests/configmap.yaml ]; then
+            kubectl apply -f deployment/kubernetes/manifests/configmap.yaml
+          fi
+
+      - name: Apply Network Policies
+        run: |
+          if [ -f deployment/kubernetes/manifests/networkpolicy.yaml ]; then
+            kubectl apply -f deployment/kubernetes/manifests/networkpolicy.yaml
+          fi
+
+      - name: Deploy applications (Blue-Green for prod)
+        id: deploy
+        run: |
+          ENV="${{ needs.setup.outputs.environment }}"
+
+          if [ "$ENV" == "prod" ]; then
+            echo "Performing blue-green deployment for production..."
+
+            # Determine current active deployment
+            CURRENT=$(kubectl get svc greenlang-service -n greenlang -o jsonpath='{.spec.selector.version}' 2>/dev/null || echo "blue")
+
+            if [ "$CURRENT" == "blue" ]; then
+              NEW="green"
+            else
+              NEW="blue"
+            fi
+
+            echo "current_version=$CURRENT" >> $GITHUB_OUTPUT
+            echo "new_version=$NEW" >> $GITHUB_OUTPUT
+
+            # Deploy to new version
+            kubectl apply -f deployment/kubernetes/manifests/runner-deployment.yaml \
+              --dry-run=client -o yaml | \
+              sed "s/version: .*/version: $NEW/g" | \
+              kubectl apply -f -
+
+            # Wait for deployment to be ready
+            kubectl rollout status deployment/greenlang-runner -n greenlang-system --timeout=300s
+
+            # Run smoke tests before switching traffic
+            echo "Running pre-switch smoke tests..."
+            kubectl run smoke-test-$NEW --rm -i --restart=Never \
+              --image=curlimages/curl:latest \
+              -n greenlang-system \
+              -- curl -sf http://greenlang-runner:8080/health || {
+                echo "Smoke test failed! Rolling back..."
+                kubectl rollout undo deployment/greenlang-runner -n greenlang-system
+                exit 1
+              }
+
+            # Switch traffic to new version
+            kubectl patch svc greenlang-service -n greenlang \
+              -p "{\"spec\":{\"selector\":{\"version\":\"$NEW\"}}}"
+
+            echo "Blue-green deployment complete. Traffic now routing to: $NEW"
+          else
+            # Standard rolling deployment for dev/staging
+            kubectl apply -f deployment/kubernetes/manifests/runner-deployment.yaml
+            kubectl apply -f deployment/kubernetes/manifests/executor-deployment.yaml
+
+            # Wait for rollouts
+            kubectl rollout status deployment/greenlang-runner -n greenlang-system --timeout=300s
+          fi
+
+      - name: Apply Ingress configuration
+        run: |
+          if [ -f deployment/kubernetes/ingress.yaml ]; then
+            kubectl apply -f deployment/kubernetes/ingress.yaml
+          fi
+
+      - name: Verify deployment
+        run: |
+          echo "## Kubernetes Deployment Status" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          kubectl get pods -n greenlang-system >> $GITHUB_STEP_SUMMARY
+          kubectl get svc -n greenlang-system >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+
+      - name: Run post-deployment health checks
+        run: |
+          # Wait for services to be fully ready
+          sleep 30
+
+          # Health check
+          kubectl run health-check --rm -i --restart=Never \
+            --image=curlimages/curl:latest \
+            -n greenlang-system \
+            -- curl -sf http://greenlang-runner:8080/health
+
+          echo "Health check passed!"
+
+      - name: Record deployment for rollback
+        run: |
+          REVISION=$(kubectl rollout history deployment/greenlang-runner -n greenlang-system | tail -1 | awk '{print $1}')
+          echo "Deployment revision: $REVISION"
+          echo "revision=$REVISION" >> $GITHUB_OUTPUT
+
+  # ==========================================================================
+  # JOB 5: Rollback (manual trigger only)
+  # ==========================================================================
+  rollback:
+    name: Rollback Deployment
+    runs-on: ubuntu-latest
+    needs: [setup]
+    if: needs.setup.outputs.action == 'rollback'
+    environment: ${{ needs.setup.outputs.environment }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ needs.setup.outputs.aws_role_arn }}
+          role-session-name: github-actions-rollback
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: v${{ env.KUBECTL_VERSION }}
+
+      - name: Configure kubectl for EKS
+        run: |
+          aws eks update-kubeconfig \
+            --region ${{ env.AWS_REGION }} \
+            --name ${{ needs.setup.outputs.eks_cluster_name }}
+
+      - name: Show rollout history
+        run: |
+          echo "## Rollout History" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          kubectl rollout history deployment/greenlang-runner -n greenlang-system >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+
+      - name: Perform rollback
+        run: |
+          REVISION="${{ github.event.inputs.rollback_revision }}"
+
+          if [ -n "$REVISION" ]; then
+            echo "Rolling back to revision: $REVISION"
+            kubectl rollout undo deployment/greenlang-runner -n greenlang-system --to-revision=$REVISION
+          else
+            echo "Rolling back to previous revision"
+            kubectl rollout undo deployment/greenlang-runner -n greenlang-system
+          fi
+
+      - name: Wait for rollback to complete
+        run: |
+          kubectl rollout status deployment/greenlang-runner -n greenlang-system --timeout=300s
+
+      - name: Verify rollback
+        run: |
+          echo "## Rollback Status" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- Status: SUCCESS" >> $GITHUB_STEP_SUMMARY
+          echo "- Environment: ${{ needs.setup.outputs.environment }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          kubectl get pods -n greenlang-system >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+
+  # ==========================================================================
+  # JOB 6: Terraform Destroy (manual trigger only, requires prod approval)
+  # ==========================================================================
+  terraform-destroy:
+    name: Terraform Destroy (${{ needs.setup.outputs.environment }})
+    runs-on: ubuntu-latest
+    needs: [setup]
+    if: needs.setup.outputs.action == 'destroy'
+    environment: ${{ needs.setup.outputs.environment }}-destroy
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Confirm destruction
+        run: |
+          echo "::warning::DESTRUCTIVE OPERATION: Destroying infrastructure in ${{ needs.setup.outputs.environment }}"
+          echo ""
+          echo "This will destroy ALL infrastructure resources in the ${{ needs.setup.outputs.environment }} environment."
+          echo ""
+          echo "Environment: ${{ needs.setup.outputs.environment }}"
+          echo "Triggered by: ${{ github.actor }}"
+          echo "Timestamp: $(date -u)"
+
+      - name: Configure AWS credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ needs.setup.outputs.aws_role_arn }}
+          role-session-name: github-actions-terraform-destroy
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+          terraform_wrapper: false
+
+      - name: Terraform Init
+        working-directory: deployment/terraform/environments/${{ needs.setup.outputs.environment }}
+        run: |
+          terraform init \
+            -backend-config="bucket=${{ env.TF_STATE_BUCKET }}" \
+            -backend-config="key=environments/${{ needs.setup.outputs.environment }}/terraform.tfstate" \
+            -backend-config="region=${{ env.AWS_REGION }}" \
+            -backend-config="dynamodb_table=${{ env.TF_LOCK_TABLE }}" \
+            -backend-config="encrypt=true"
+
+      - name: Terraform Destroy
+        working-directory: deployment/terraform/environments/${{ needs.setup.outputs.environment }}
+        run: |
+          terraform destroy \
+            -auto-approve \
+            -no-color \
+            -var-file="${{ needs.setup.outputs.environment }}.tfvars"
+
+      - name: Destroy summary
+        run: |
+          echo "## Infrastructure Destroyed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- Environment: ${{ needs.setup.outputs.environment }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Status: DESTROYED" >> $GITHUB_STEP_SUMMARY
+          echo "- Triggered by: ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Timestamp: $(date -u +"%Y-%m-%dT%H:%M:%SZ")" >> $GITHUB_STEP_SUMMARY
+
+  # ==========================================================================
+  # JOB 7: Deployment Notification
+  # ==========================================================================
+  notify:
+    name: Send Notifications
+    runs-on: ubuntu-latest
+    needs: [setup, terraform-plan, terraform-apply, kubernetes-deploy]
+    if: always()
+
+    steps:
+      - name: Determine deployment status
+        id: status
+        run: |
+          if [[ "${{ needs.terraform-apply.result }}" == "success" ]] && \
+             [[ "${{ needs.kubernetes-deploy.result }}" == "success" || "${{ needs.kubernetes-deploy.result }}" == "skipped" ]]; then
+            echo "status=success" >> $GITHUB_OUTPUT
+            echo "emoji=:white_check_mark:" >> $GITHUB_OUTPUT
+          elif [[ "${{ needs.terraform-apply.result }}" == "skipped" ]] && \
+               [[ "${{ needs.terraform-plan.result }}" == "success" ]]; then
+            echo "status=planned" >> $GITHUB_OUTPUT
+            echo "emoji=:information_source:" >> $GITHUB_OUTPUT
+          else
+            echo "status=failed" >> $GITHUB_OUTPUT
+            echo "emoji=:x:" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Send Slack notification
+        if: env.SLACK_WEBHOOK_URL != ''
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          curl -X POST -H 'Content-type: application/json' \
+            --data "{
+              \"text\": \"${{ steps.status.outputs.emoji }} INFRA-001 Deployment\",
+              \"blocks\": [
+                {
+                  \"type\": \"section\",
+                  \"text\": {
+                    \"type\": \"mrkdwn\",
+                    \"text\": \"*INFRA-001 Deployment - ${{ needs.setup.outputs.environment }}*\n\nStatus: *${{ steps.status.outputs.status }}*\nTriggered by: ${{ github.actor }}\nAction: ${{ needs.setup.outputs.action }}\"
+                  }
+                },
+                {
+                  \"type\": \"context\",
+                  \"elements\": [
+                    {
+                      \"type\": \"mrkdwn\",
+                      \"text\": \"<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Workflow Run>\"
+                    }
+                  ]
+                }
+              ]
+            }" \
+            $SLACK_WEBHOOK_URL
+
+      - name: Create GitHub deployment status
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const status = '${{ steps.status.outputs.status }}';
+            const env = '${{ needs.setup.outputs.environment }}';
+
+            await github.rest.repos.createDeploymentStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              deployment_id: context.payload.deployment?.id || 0,
+              state: status === 'success' ? 'success' : status === 'planned' ? 'pending' : 'failure',
+              description: `Infrastructure deployment to ${env}`,
+              environment: env,
+              log_url: `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`
+            }).catch(err => console.log('Deployment status update skipped:', err.message));
+
+      - name: Final summary
+        run: |
+          echo "# INFRA-001 Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Overview" >> $GITHUB_STEP_SUMMARY
+          echo "- **Environment:** ${{ needs.setup.outputs.environment }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Action:** ${{ needs.setup.outputs.action }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status:** ${{ steps.status.outputs.status }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Triggered by:** ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Run ID:** ${{ github.run_id }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Job Results" >> $GITHUB_STEP_SUMMARY
+          echo "| Job | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Terraform Plan | ${{ needs.terraform-plan.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Terraform Apply | ${{ needs.terraform-apply.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Kubernetes Deploy | ${{ needs.kubernetes-deploy.result }} |" >> $GITHUB_STEP_SUMMARY

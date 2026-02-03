@@ -1,0 +1,250 @@
+# Kubecost Helm Values Configuration
+# INFRA-001: Cost Management and Optimization
+# Reference: https://docs.kubecost.com/install-and-configure/install/helm-install-params
+
+global:
+  # Prometheus integration settings
+  prometheus:
+    enabled: true
+    fqdn: http://prometheus-server.monitoring.svc.cluster.local
+
+  # Grafana integration
+  grafana:
+    enabled: true
+    domainName: grafana.monitoring.svc.cluster.local
+    proxy: false
+
+# Kubecost core configuration
+kubecostModel:
+  # Resource allocation
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+  # Data retention settings
+  etlFileStoreEnabled: true
+  etlDailyStoreDurationDays: 91
+  etlHourlyStoreDurationHours: 49
+  etlWeeklyStoreDurationWeeks: 53
+
+  # Cost allocation settings
+  allocationRunning: true
+  assetRunning: true
+
+  # Multi-cluster settings
+  federatedStoreBucket: ""
+  primaryCluster: true
+
+# Cost analyzer configuration
+kubecostFrontend:
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+# Network costs tracking
+networkCosts:
+  enabled: true
+  config:
+    # Enable traffic classification
+    trafficClassificationEnabled: true
+    # DNS lookups for destination identification
+    dnsLookupEnabled: true
+
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi
+
+  # Pod scheduling
+  tolerations: []
+  affinity: {}
+
+# Cluster controller for rightsizing recommendations
+clusterController:
+  enabled: true
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi
+
+# Savings features
+savings:
+  enabled: true
+  # Cluster sizing recommendations
+  clusterSizing:
+    enabled: true
+  # Abandoned workloads detection
+  abandonedWorkloads:
+    enabled: true
+
+# Product configuration
+kubecostProductConfigs:
+  # Cloud provider configuration for accurate pricing
+  cloudIntegrationSecret: "kubecost-cloud-integration"
+
+  # AWS pricing configuration
+  awsSpotEnabled: true
+  awsSpotRegion: "us-east-1"
+  awsSpotDataBucket: "greenlang-spot-data-feed"
+
+  # Cluster name for identification
+  clusterName: "greenlang-production"
+
+  # Currency settings
+  currencyCode: "USD"
+
+  # Custom pricing for on-premises or specific rates
+  customPricesEnabled: false
+
+  # Shared namespace costs
+  sharedNamespaces: "kube-system,monitoring,logging"
+  sharedOverhead: "0"
+
+  # Labels for cost allocation
+  labelMappingConfigs:
+    enabled: true
+    labels:
+      - key: "app"
+        aggregationType: "label"
+      - key: "team"
+        aggregationType: "label"
+      - key: "environment"
+        aggregationType: "label"
+      - key: "cost-center"
+        aggregationType: "label"
+
+# Service account configuration
+serviceAccount:
+  create: true
+  name: kubecost
+  annotations:
+    # AWS IRSA annotation for cost data access
+    eks.amazonaws.com/role-arn: "arn:aws:iam::ACCOUNT_ID:role/kubecost-s3-access"
+
+# Persistent storage for cost data
+persistentVolume:
+  enabled: true
+  size: 32Gi
+  storageClass: "gp3"
+  annotations: {}
+
+# Ingress configuration
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    nginx.ingress.kubernetes.io/auth-type: basic
+    nginx.ingress.kubernetes.io/auth-secret: kubecost-basic-auth
+    nginx.ingress.kubernetes.io/auth-realm: "Kubecost Authentication"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+  hosts:
+    - host: kubecost.greenlang.io
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: kubecost-tls
+      hosts:
+        - kubecost.greenlang.io
+
+# Pod security context
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1001
+  fsGroup: 1001
+
+# Node selector for placement
+nodeSelector:
+  kubernetes.io/os: linux
+
+# Tolerations for scheduling
+tolerations: []
+
+# Pod affinity rules
+affinity:
+  nodeAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        preference:
+          matchExpressions:
+            - key: node-type
+              operator: In
+              values:
+                - monitoring
+
+# Prometheus configuration (if using built-in)
+prometheus:
+  server:
+    enabled: false  # Using external Prometheus
+  alertmanager:
+    enabled: false
+  pushgateway:
+    enabled: false
+  nodeExporter:
+    enabled: false
+
+# Grafana configuration (if using built-in)
+grafana:
+  sidecar:
+    dashboards:
+      enabled: true
+      label: grafana_dashboard
+    datasources:
+      enabled: true
+      label: grafana_datasource
+
+# Reporting and export settings
+reporting:
+  # Email reports
+  emailReports:
+    enabled: false
+    schedule: "0 8 * * 1"  # Weekly Monday 8am
+    recipients: []
+
+  # Scheduled reports
+  scheduledReports:
+    enabled: true
+    reports:
+      - name: "weekly-cost-report"
+        schedule: "0 8 * * 1"
+        aggregation: "namespace"
+        window: "lastweek"
+        format: "pdf"
+
+# Cost model tuning
+costModel:
+  # CPU cost per core hour (customize based on actual costs)
+  CPU: "0.031611"
+  # GPU cost per hour
+  GPU: "0.95"
+  # RAM cost per GB hour
+  RAM: "0.004237"
+  # Storage cost per GB month
+  storage: "0.04"
+  # Storage class specific costs
+  storageClass:
+    gp3: "0.08"
+    gp2: "0.10"
+    io1: "0.125"
+
+# Thanos integration for long-term storage
+thanos:
+  enabled: false
+  query:
+    enabled: false
+  store:
+    enabled: false

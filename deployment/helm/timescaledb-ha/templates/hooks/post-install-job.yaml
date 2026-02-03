@@ -1,0 +1,228 @@
+{{/*
+Post-install Job: Validate cluster health and configuration
+*/}}
+{{- if .Values.hooks.postInstall.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "timescaledb-ha.fullname" . }}-post-install
+  namespace: {{ include "timescaledb-ha.namespace" . }}
+  labels:
+    {{- include "timescaledb-ha.labels" . | nindent 4 }}
+    app.kubernetes.io/component: post-install-hook
+  annotations:
+    "helm.sh/hook": post-install
+    "helm.sh/hook-weight": "5"
+    "helm.sh/hook-delete-policy": hook-succeeded,before-hook-creation
+spec:
+  backoffLimit: {{ .Values.hooks.postInstall.backoffLimit }}
+  ttlSecondsAfterFinished: {{ .Values.hooks.postInstall.ttlSecondsAfterFinished }}
+  template:
+    metadata:
+      labels:
+        {{- include "timescaledb-ha.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: post-install-hook
+    spec:
+      restartPolicy: OnFailure
+      serviceAccountName: {{ include "timescaledb-ha.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.securityContext.pod | nindent 8 }}
+
+      # Wait for the cluster to be ready before running validation
+      initContainers:
+        - name: wait-for-cluster
+          image: {{ include "timescaledb-ha.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          securityContext:
+            {{- toYaml .Values.securityContext.container | nindent 12 }}
+          command:
+            - /bin/bash
+            - -c
+            - |
+              set -e
+              echo "Waiting for cluster to become ready..."
+
+              MAX_RETRIES=60
+              RETRY_INTERVAL=10
+              RETRIES=0
+
+              while [ $RETRIES -lt $MAX_RETRIES ]; do
+                # Check if primary service has endpoints
+                PRIMARY_ENDPOINTS=$(kubectl get endpoints {{ include "timescaledb-ha.primaryServiceName" . }} -n {{ include "timescaledb-ha.namespace" . }} -o jsonpath='{.subsets[*].addresses[*].ip}' 2>/dev/null || echo "")
+
+                if [ -n "$PRIMARY_ENDPOINTS" ]; then
+                  echo "Primary service is ready with endpoints: $PRIMARY_ENDPOINTS"
+                  break
+                fi
+
+                echo "Waiting for primary to become available... (attempt $((RETRIES+1))/$MAX_RETRIES)"
+                RETRIES=$((RETRIES+1))
+                sleep $RETRY_INTERVAL
+              done
+
+              if [ $RETRIES -eq $MAX_RETRIES ]; then
+                echo "WARNING: Timeout waiting for primary, proceeding anyway..."
+              fi
+
+              # Additional wait for cluster stabilization
+              echo "Waiting additional 30 seconds for cluster stabilization..."
+              sleep 30
+
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "100m"
+              memory: "128Mi"
+
+      containers:
+        - name: post-install
+          image: {{ include "timescaledb-ha.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          securityContext:
+            {{- toYaml .Values.securityContext.container | nindent 12 }}
+
+          command:
+            - /bin/bash
+            - -c
+            - |
+              set -e
+              echo "=========================================="
+              echo "TimescaleDB HA Post-Install Validation"
+              echo "=========================================="
+              echo ""
+
+              PRIMARY_HOST="{{ include "timescaledb-ha.primaryServiceName" . }}.{{ include "timescaledb-ha.namespace" . }}.svc.cluster.local"
+              PGPASSWORD=$POSTGRES_PASSWORD
+
+              # Function to run SQL query
+              run_sql() {
+                PGPASSWORD=$POSTGRES_PASSWORD psql -h $PRIMARY_HOST -U {{ .Values.postgresql.username }} -d {{ .Values.postgresql.database }} -t -c "$1" 2>/dev/null
+              }
+
+              # Test database connectivity
+              echo "[1/7] Testing database connectivity..."
+              MAX_RETRIES=30
+              RETRIES=0
+              while [ $RETRIES -lt $MAX_RETRIES ]; do
+                if PGPASSWORD=$POSTGRES_PASSWORD psql -h $PRIMARY_HOST -U {{ .Values.postgresql.username }} -d postgres -c "SELECT 1" > /dev/null 2>&1; then
+                  echo "  - Database connection successful"
+                  break
+                fi
+                echo "  - Retrying database connection... (attempt $((RETRIES+1))/$MAX_RETRIES)"
+                RETRIES=$((RETRIES+1))
+                sleep 5
+              done
+
+              if [ $RETRIES -eq $MAX_RETRIES ]; then
+                echo "ERROR: Failed to connect to database"
+                exit 1
+              fi
+              echo ""
+
+              # Check PostgreSQL version
+              echo "[2/7] Checking PostgreSQL version..."
+              PG_VERSION=$(run_sql "SELECT version();")
+              echo "  - $PG_VERSION"
+              echo ""
+
+              # Check TimescaleDB extension
+              echo "[3/7] Verifying TimescaleDB extension..."
+              TSDB_VERSION=$(run_sql "SELECT extversion FROM pg_extension WHERE extname = 'timescaledb';")
+              if [ -n "$TSDB_VERSION" ]; then
+                echo "  - TimescaleDB version: $TSDB_VERSION"
+              else
+                echo "WARNING: TimescaleDB extension not installed"
+                echo "  - Installing TimescaleDB..."
+                run_sql "CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;"
+                TSDB_VERSION=$(run_sql "SELECT extversion FROM pg_extension WHERE extname = 'timescaledb';")
+                echo "  - TimescaleDB installed: $TSDB_VERSION"
+              fi
+              echo ""
+
+              # Check replication status
+              echo "[4/7] Checking replication status..."
+              REPLICATION_STATUS=$(run_sql "SELECT client_addr, state, sent_lsn, replay_lsn, sync_state FROM pg_stat_replication;")
+              if [ -n "$REPLICATION_STATUS" ]; then
+                echo "  - Replication active:"
+                echo "$REPLICATION_STATUS" | while read line; do
+                  echo "    $line"
+                done
+              else
+                echo "  - No active replication (this may be normal if cluster is still initializing)"
+              fi
+              echo ""
+
+              # Check Patroni cluster status
+              echo "[5/7] Checking Patroni cluster health..."
+              PATRONI_MEMBERS=$(curl -s "http://{{ include "timescaledb-ha.fullname" . }}-0.{{ include "timescaledb-ha.headlessServiceName" . }}:8008/cluster" 2>/dev/null || echo "{}")
+              if [ "$PATRONI_MEMBERS" != "{}" ]; then
+                echo "  - Patroni cluster info:"
+                echo "$PATRONI_MEMBERS" | python3 -c "import sys, json; data = json.load(sys.stdin); print(f'    Scope: {data.get(\"scope\", \"N/A\")}'); [print(f'    Member: {m.get(\"name\", \"N/A\")} - Role: {m.get(\"role\", \"N/A\")} - State: {m.get(\"state\", \"N/A\")} - Timeline: {m.get(\"timeline\", \"N/A\")}') for m in data.get('members', [])]" 2>/dev/null || echo "    (Could not parse Patroni response)"
+              else
+                echo "  - Could not retrieve Patroni cluster info"
+              fi
+              echo ""
+
+              # Verify database exists
+              echo "[6/7] Verifying database configuration..."
+              DB_EXISTS=$(run_sql "SELECT datname FROM pg_database WHERE datname = '{{ .Values.postgresql.database }}';")
+              if [ -n "$DB_EXISTS" ]; then
+                echo "  - Database '{{ .Values.postgresql.database }}' exists"
+              else
+                echo "  - Creating database '{{ .Values.postgresql.database }}'..."
+                PGPASSWORD=$POSTGRES_PASSWORD psql -h $PRIMARY_HOST -U {{ .Values.postgresql.username }} -d postgres -c "CREATE DATABASE {{ .Values.postgresql.database }};"
+              fi
+
+              # Check installed extensions
+              EXTENSIONS=$(run_sql "SELECT extname, extversion FROM pg_extension ORDER BY extname;")
+              echo "  - Installed extensions:"
+              echo "$EXTENSIONS" | while read line; do
+                [ -n "$line" ] && echo "    - $line"
+              done
+              echo ""
+
+              # Summary
+              echo "[7/7] Cluster Summary..."
+              echo "  ============================================"
+              echo "  Cluster Name: {{ .Values.cluster.name }}"
+              echo "  Primary Service: {{ include "timescaledb-ha.primaryServiceName" . }}"
+              {{- if .Values.service.replica.enabled }}
+              echo "  Replica Service: {{ include "timescaledb-ha.replicaServiceName" . }}"
+              {{- end }}
+              {{- if .Values.pgbouncer.enabled }}
+              echo "  PgBouncer Service: {{ include "timescaledb-ha.pgbouncerServiceName" . }}"
+              {{- end }}
+              echo "  Database: {{ .Values.postgresql.database }}"
+              echo "  PostgreSQL Port: 5432"
+              {{- if .Values.pgbouncer.enabled }}
+              echo "  PgBouncer Port: {{ .Values.pgbouncer.port }}"
+              {{- end }}
+              echo "  ============================================"
+              echo ""
+              echo "=========================================="
+              echo "Post-install validation completed successfully!"
+              echo "=========================================="
+
+          env:
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "timescaledb-ha.secretName" . }}
+                  key: postgres-password
+            - name: PGHOST
+              value: "{{ include "timescaledb-ha.primaryServiceName" . }}.{{ include "timescaledb-ha.namespace" . }}.svc.cluster.local"
+            - name: PGUSER
+              value: {{ .Values.postgresql.username | quote }}
+            - name: PGDATABASE
+              value: {{ .Values.postgresql.database | quote }}
+
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "200m"
+              memory: "256Mi"
+{{- end }}

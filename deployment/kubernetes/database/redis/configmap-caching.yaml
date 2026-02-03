@@ -1,0 +1,219 @@
+# =============================================================================
+# Redis Caching ConfigMap
+# =============================================================================
+# Kubernetes ConfigMap for Redis caching workload configuration
+# Deploy: kubectl apply -f configmap-caching.yaml -n greenlang
+# =============================================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: redis-caching-config
+  namespace: greenlang
+  labels:
+    app: redis
+    component: cache
+    workload: caching
+    app.kubernetes.io/name: redis
+    app.kubernetes.io/component: cache
+    app.kubernetes.io/part-of: greenlang
+data:
+  redis.conf: |
+    # =============================================================================
+    # Redis Caching Configuration
+    # =============================================================================
+    # Optimized for high-performance caching workloads
+    # Priority: Speed over durability - no persistence
+    # =============================================================================
+
+    # Network Configuration
+    bind 0.0.0.0
+    port 6379
+    tcp-keepalive 300
+    timeout 0
+    tcp-backlog 511
+    maxclients 10000
+    tcp-nodelay yes
+
+    # Memory Configuration
+    maxmemory 6gb
+    maxmemory-policy allkeys-lru
+    maxmemory-samples 10
+
+    # Active Defragmentation
+    activedefrag yes
+    active-defrag-ignore-bytes 100mb
+    active-defrag-threshold-lower 10
+    active-defrag-threshold-upper 100
+    active-defrag-cycle-min 1
+    active-defrag-cycle-max 25
+    active-defrag-max-scan-fields 1000
+
+    # Jemalloc
+    jemalloc-bg-thread yes
+
+    # Persistence (DISABLED for caching)
+    save ""
+    appendonly no
+
+    # Replication
+    repl-backlog-size 64mb
+    repl-timeout 60
+    repl-diskless-sync no
+    min-replicas-to-write 0
+    min-replicas-max-lag 10
+
+    # Lazy Freeing
+    lazyfree-lazy-eviction yes
+    lazyfree-lazy-expire yes
+    lazyfree-lazy-server-del yes
+    replica-lazy-flush yes
+    lazyfree-lazy-user-del yes
+    lazyfree-lazy-user-flush yes
+
+    # Threading
+    io-threads 4
+    io-threads-do-reads yes
+
+    # Client Output Buffer Limits
+    client-output-buffer-limit normal 0 0 0
+    client-output-buffer-limit replica 256mb 64mb 60
+    client-output-buffer-limit pubsub 32mb 8mb 60
+
+    # Slow Log
+    slowlog-log-slower-than 10000
+    slowlog-max-len 128
+
+    # Latency Monitoring
+    latency-monitor-threshold 100
+
+    # Security
+    protected-mode no
+
+    # Logging
+    loglevel notice
+    logfile ""
+
+    # Advanced
+    hz 10
+    dynamic-hz yes
+    active-expire-effort 1
+    list-compress-depth 0
+    set-max-intset-entries 512
+    hash-max-ziplist-entries 512
+    hash-max-ziplist-value 64
+    list-max-ziplist-size -2
+    zset-max-ziplist-entries 128
+    zset-max-ziplist-value 64
+---
+# =============================================================================
+# Redis Caching Deployment
+# =============================================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-cache
+  namespace: greenlang
+  labels:
+    app: redis
+    component: cache
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+      component: cache
+  template:
+    metadata:
+      labels:
+        app: redis
+        component: cache
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9121"
+    spec:
+      containers:
+        - name: redis
+          image: redis:7.2-alpine
+          imagePullPolicy: IfNotPresent
+          command:
+            - redis-server
+            - /etc/redis/redis.conf
+          ports:
+            - containerPort: 6379
+              name: redis
+              protocol: TCP
+          resources:
+            requests:
+              memory: "6Gi"
+              cpu: "500m"
+            limits:
+              memory: "7Gi"
+              cpu: "2000m"
+          volumeMounts:
+            - name: redis-config
+              mountPath: /etc/redis
+          livenessProbe:
+            exec:
+              command:
+                - redis-cli
+                - ping
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            exec:
+              command:
+                - redis-cli
+                - ping
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            successThreshold: 1
+        - name: redis-exporter
+          image: oliver006/redis_exporter:v1.55.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 9121
+              name: metrics
+              protocol: TCP
+          resources:
+            requests:
+              memory: "32Mi"
+              cpu: "50m"
+            limits:
+              memory: "64Mi"
+              cpu: "100m"
+          env:
+            - name: REDIS_ADDR
+              value: "redis://localhost:6379"
+      volumes:
+        - name: redis-config
+          configMap:
+            name: redis-caching-config
+---
+# =============================================================================
+# Redis Caching Service
+# =============================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-cache
+  namespace: greenlang
+  labels:
+    app: redis
+    component: cache
+spec:
+  type: ClusterIP
+  ports:
+    - port: 6379
+      targetPort: 6379
+      protocol: TCP
+      name: redis
+    - port: 9121
+      targetPort: 9121
+      protocol: TCP
+      name: metrics
+  selector:
+    app: redis
+    component: cache

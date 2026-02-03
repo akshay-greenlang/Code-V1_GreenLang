@@ -12,7 +12,9 @@ parameters:
   iops: "3000"
   throughput: "125"
   encrypted: "true"
-  kmsKeyId: "arn:aws:kms:us-east-1:ACCOUNT_ID:key/KEY_ID"
+  # Replace with actual AWS KMS key ARN for encryption
+  # Example: arn:aws:kms:us-east-1:123456789012:key/abc12345-1234-1234-1234-abc123456789
+  kmsKeyId: "${AWS_KMS_KEY_ARN}"
 volumeBindingMode: WaitForFirstConsumer
 allowVolumeExpansion: true
 reclaimPolicy: Retain
@@ -168,7 +170,9 @@ metadata:
 provisioner: efs.csi.aws.com
 parameters:
   provisioningMode: efs-ap
-  fileSystemId: fs-XXXXXXXX  # Replace with actual EFS ID
+  # Replace with actual AWS EFS file system ID
+  # Example: fs-0123456789abcdef0
+  fileSystemId: "${AWS_EFS_FILE_SYSTEM_ID}"
   directoryPerms: "700"
   gidRangeStart: "1000"
   gidRangeEnd: "2000"

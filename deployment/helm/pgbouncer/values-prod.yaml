@@ -1,0 +1,586 @@
+# Production values for PgBouncer Helm chart
+# These values override the defaults in values.yaml for production deployment
+# Connection string: postgresql://user:pass@pgbouncer.greenlang-database:5432/greenlang
+
+# =============================================================================
+# Production Namespace
+# =============================================================================
+namespace: greenlang-database
+
+commonLabels:
+  environment: production
+  tier: database
+  app.kubernetes.io/part-of: greenlang
+  app.kubernetes.io/managed-by: helm
+
+commonAnnotations:
+  description: "Production PgBouncer connection pooler for GreenLang"
+
+# =============================================================================
+# Production Image Configuration
+# =============================================================================
+image:
+  repository: bitnami/pgbouncer
+  tag: "1.21.0"
+  pullPolicy: IfNotPresent
+
+# Production image pull secrets (private registry)
+imagePullSecrets:
+  - name: greenlang-registry-credentials
+
+# =============================================================================
+# Production PgBouncer Configuration
+# =============================================================================
+pgbouncer:
+  # Transaction pooling for optimal connection reuse
+  poolMode: transaction
+
+  # Higher connection limits for production workload
+  maxClientConn: 2000
+  defaultPoolSize: 50
+  minPoolSize: 10
+  reservePoolSize: 10
+  reservePoolTimeout: 3
+
+  # Database connection limits
+  maxDbConnections: 200
+  maxUserConnections: 100
+
+  # Timeout configuration for production
+  queryTimeout: 0
+  queryWaitTimeout: 120
+  clientIdleTimeout: 0
+  clientLoginTimeout: 60
+
+  # Server connection settings
+  serverIdleTimeout: 600
+  serverLifetime: 3600
+  serverCheckDelay: 30
+  serverCheckQuery: "SELECT 1"
+  serverResetQuery: "DISCARD ALL"
+
+  # Authentication
+  authType: scram-sha-256
+
+  # Enhanced logging for production
+  applicationNameAddHost: true
+  logConnections: true
+  logDisconnections: true
+  logPoolerErrors: true
+  logStats: true
+  statsPeriod: 60
+  verbose: 0
+
+  # Admin users
+  adminUsers: pgbouncer_admin
+  statsUsers: pgbouncer_stats,prometheus,grafana
+
+  # Performance optimizations
+  ignoreStartupParameters: extra_float_digits
+  tcpKeepalive: true
+  dnsMaxTtl: 15
+  soReuseport: true
+
+  # Production-specific settings
+  extraConfig: |
+    ; Production optimizations
+    tcp_keepcnt = 5
+    tcp_keepidle = 30
+    tcp_keepintvl = 10
+    tcp_defer_accept = 1
+
+# =============================================================================
+# Production PostgreSQL Backend
+# =============================================================================
+postgresql:
+  # Aurora PostgreSQL cluster endpoint
+  host: greenlang-aurora-cluster.cluster-xxxxx.us-east-1.rds.amazonaws.com
+  port: 5432
+  database: greenlang
+
+  # Use external secrets for credentials
+  existingSecret: pgbouncer-secrets
+  secretKeyHost: postgresql-host
+  secretKeyUsername: postgresql-username
+  secretKeyPassword: postgresql-password
+
+# =============================================================================
+# Production Deployment Configuration
+# =============================================================================
+# Higher replica count for production HA
+replicaCount: 5
+
+strategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 1
+    maxUnavailable: 0
+
+minReadySeconds: 10
+revisionHistoryLimit: 10
+
+# =============================================================================
+# Production Pod Configuration
+# =============================================================================
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "9127"
+  prometheus.io/path: "/metrics"
+  cluster-autoscaler.kubernetes.io/safe-to-evict: "false"
+
+podLabels:
+  environment: production
+  criticality: high
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
+  fsGroup: 1000
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL
+
+# =============================================================================
+# Production Resource Configuration
+# =============================================================================
+resources:
+  requests:
+    memory: "256Mi"
+    cpu: "500m"
+  limits:
+    memory: "512Mi"
+    cpu: "1000m"
+
+# =============================================================================
+# Production Probes Configuration
+# =============================================================================
+livenessProbe:
+  enabled: true
+  tcpSocket:
+    port: pgbouncer
+  initialDelaySeconds: 15
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+  successThreshold: 1
+
+readinessProbe:
+  enabled: true
+  tcpSocket:
+    port: pgbouncer
+  initialDelaySeconds: 10
+  periodSeconds: 5
+  timeoutSeconds: 3
+  failureThreshold: 3
+  successThreshold: 1
+
+startupProbe:
+  enabled: true
+  tcpSocket:
+    port: pgbouncer
+  initialDelaySeconds: 10
+  periodSeconds: 5
+  failureThreshold: 30
+
+# =============================================================================
+# Production Service Configuration
+# =============================================================================
+service:
+  type: ClusterIP
+  port: 5432
+  metricsPort: 9127
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-internal: "true"
+  sessionAffinity: None
+  internalTrafficPolicy: Local
+
+headlessService:
+  enabled: true
+
+# =============================================================================
+# Production Autoscaling
+# =============================================================================
+autoscaling:
+  enabled: true
+  minReplicas: 5
+  maxReplicas: 20
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+
+  scaleUp:
+    stabilizationWindowSeconds: 60
+    policies:
+      - type: Pods
+        value: 3
+        periodSeconds: 60
+      - type: Percent
+        value: 50
+        periodSeconds: 60
+    selectPolicy: Max
+
+  scaleDown:
+    stabilizationWindowSeconds: 300
+    policies:
+      - type: Pods
+        value: 1
+        periodSeconds: 120
+      - type: Percent
+        value: 10
+        periodSeconds: 120
+    selectPolicy: Min
+
+# =============================================================================
+# Production Pod Disruption Budget
+# =============================================================================
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 3
+  unhealthyPodEvictionPolicy: IfHealthyBudget
+
+# =============================================================================
+# Production Affinity and Scheduling
+# =============================================================================
+nodeSelector:
+  workload-type: database
+  node.kubernetes.io/instance-type: m5.xlarge
+
+tolerations:
+  - key: "database"
+    operator: "Equal"
+    value: "true"
+    effect: "NoSchedule"
+  - key: "dedicated"
+    operator: "Equal"
+    value: "database"
+    effect: "NoSchedule"
+
+affinity:
+  podAntiAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchExpressions:
+            - key: app.kubernetes.io/name
+              operator: In
+              values:
+                - pgbouncer
+        topologyKey: kubernetes.io/hostname
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+              - key: app.kubernetes.io/name
+                operator: In
+                values:
+                  - pgbouncer
+          topologyKey: topology.kubernetes.io/zone
+  # Prefer nodes close to PostgreSQL
+  podAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 50
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+              - key: app.kubernetes.io/name
+                operator: In
+                values:
+                  - postgresql
+          topologyKey: topology.kubernetes.io/zone
+
+topologySpreadConstraints:
+  - maxSkew: 1
+    topologyKey: topology.kubernetes.io/zone
+    whenUnsatisfiable: DoNotSchedule
+    labelSelector:
+      matchLabels:
+        app.kubernetes.io/name: pgbouncer
+  - maxSkew: 2
+    topologyKey: kubernetes.io/hostname
+    whenUnsatisfiable: ScheduleAnyway
+    labelSelector:
+      matchLabels:
+        app.kubernetes.io/name: pgbouncer
+
+# =============================================================================
+# Production Service Account
+# =============================================================================
+serviceAccount:
+  create: true
+  name: pgbouncer
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::ACCOUNT_ID:role/greenlang-pgbouncer-role
+  automountServiceAccountToken: false
+
+# =============================================================================
+# Production Exporter Configuration
+# =============================================================================
+exporter:
+  enabled: true
+  image:
+    repository: prometheuscommunity/pgbouncer-exporter
+    tag: "v0.7.0"
+    pullPolicy: IfNotPresent
+  resources:
+    requests:
+      memory: "64Mi"
+      cpu: "100m"
+    limits:
+      memory: "128Mi"
+      cpu: "200m"
+  securityContext:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    capabilities:
+      drop:
+        - ALL
+
+# =============================================================================
+# Production Monitoring
+# =============================================================================
+serviceMonitor:
+  enabled: true
+  namespace: monitoring
+  interval: 15s
+  scrapeTimeout: 10s
+  labels:
+    release: prometheus
+    prometheus: greenlang
+    environment: production
+  metricRelabelings:
+    - sourceLabels: [__name__]
+      targetLabel: environment
+      replacement: production
+  relabelings:
+    - sourceLabels: [__meta_kubernetes_pod_name]
+      targetLabel: pod
+    - sourceLabels: [__meta_kubernetes_pod_node_name]
+      targetLabel: node
+    - sourceLabels: [__meta_kubernetes_namespace]
+      targetLabel: namespace
+
+prometheusRule:
+  enabled: true
+  namespace: monitoring
+  labels:
+    prometheus: greenlang
+    role: alert-rules
+    environment: production
+  rules:
+    # High client connections
+    - alert: PgBouncerHighClientConnections
+      expr: (sum(pgbouncer_pools_client_active_connections) / sum(pgbouncer_config_max_client_conn)) * 100 > 80
+      for: 5m
+      labels:
+        severity: warning
+        service: pgbouncer
+        team: platform
+      annotations:
+        summary: "PgBouncer client connections at {{ $value | printf \"%.1f\" }}%"
+        description: "PgBouncer client connections are approaching capacity"
+        runbook_url: "https://runbooks.greenlang.io/pgbouncer/high-connections"
+
+    # Critical client connections
+    - alert: PgBouncerCriticalClientConnections
+      expr: (sum(pgbouncer_pools_client_active_connections) / sum(pgbouncer_config_max_client_conn)) * 100 > 95
+      for: 2m
+      labels:
+        severity: critical
+        service: pgbouncer
+        team: platform
+      annotations:
+        summary: "PgBouncer client connections CRITICAL at {{ $value | printf \"%.1f\" }}%"
+        description: "PgBouncer client connections are at critical capacity - immediate action required"
+        runbook_url: "https://runbooks.greenlang.io/pgbouncer/critical-connections"
+
+    # Clients waiting
+    - alert: PgBouncerClientsWaiting
+      expr: sum(pgbouncer_pools_client_waiting_connections) > 10
+      for: 5m
+      labels:
+        severity: warning
+        service: pgbouncer
+        team: platform
+      annotations:
+        summary: "{{ $value }} clients waiting for PgBouncer connections"
+        description: "Clients are queueing for database connections"
+
+    # Critical clients waiting
+    - alert: PgBouncerCriticalClientsWaiting
+      expr: sum(pgbouncer_pools_client_waiting_connections) > 50
+      for: 2m
+      labels:
+        severity: critical
+        service: pgbouncer
+        team: platform
+      annotations:
+        summary: "{{ $value }} clients critically waiting for connections"
+        description: "Pool exhaustion imminent - scale up PgBouncer"
+
+    # Pod down
+    - alert: PgBouncerPodDown
+      expr: up{job="pgbouncer"} == 0
+      for: 1m
+      labels:
+        severity: critical
+        service: pgbouncer
+        team: platform
+      annotations:
+        summary: "PgBouncer pod {{ $labels.pod }} is down"
+        description: "PgBouncer pod is not responding"
+
+    # Insufficient replicas
+    - alert: PgBouncerInsufficientReplicas
+      expr: kube_deployment_status_replicas_available{deployment="pgbouncer", namespace="greenlang-database"} < 3
+      for: 5m
+      labels:
+        severity: warning
+        service: pgbouncer
+        team: platform
+      annotations:
+        summary: "Only {{ $value }} PgBouncer replicas available"
+        description: "Minimum 3 replicas required for HA"
+
+    # High memory usage
+    - alert: PgBouncerHighMemoryUsage
+      expr: |
+        (container_memory_working_set_bytes{container="pgbouncer", namespace="greenlang-database"}
+        / container_spec_memory_limit_bytes{container="pgbouncer", namespace="greenlang-database"}) * 100 > 85
+      for: 5m
+      labels:
+        severity: warning
+        service: pgbouncer
+        team: platform
+      annotations:
+        summary: "PgBouncer memory usage at {{ $value | printf \"%.1f\" }}%"
+        description: "Consider increasing memory limits"
+
+# =============================================================================
+# Production Network Policy
+# =============================================================================
+networkPolicy:
+  enabled: true
+  ingress:
+    # Allow from GreenLang application namespaces
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              app.kubernetes.io/part-of: greenlang
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/part-of: greenlang
+      ports:
+        - protocol: TCP
+          port: 5432
+
+    # Allow from monitoring namespace
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+      ports:
+        - protocol: TCP
+          port: 9127
+
+    # Allow from admin namespace
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: greenlang-admin
+      ports:
+        - protocol: TCP
+          port: 5432
+
+  egress:
+    # Allow to Aurora PostgreSQL (VPC CIDR)
+    - to:
+        - ipBlock:
+            cidr: 10.0.0.0/16
+      ports:
+        - protocol: TCP
+          port: 5432
+
+    # Allow DNS
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+
+# =============================================================================
+# Production External Secrets
+# =============================================================================
+externalSecrets:
+  enabled: true
+  secretStoreRef:
+    name: greenlang-aws-secrets-store
+    kind: ClusterSecretStore
+  refreshInterval: 1h
+  remoteRefs:
+    postgresqlHost:
+      key: greenlang/production/database/aurora
+      property: cluster_endpoint
+    postgresqlUsername:
+      key: greenlang/production/database/aurora
+      property: master_username
+    postgresqlPassword:
+      key: greenlang/production/database/aurora
+      property: master_password
+    pgbouncerAuthUser:
+      key: greenlang/production/database/pgbouncer
+      property: auth_user
+    pgbouncerStatsUser:
+      key: greenlang/production/database/pgbouncer
+      property: stats_user
+    pgbouncerStatsPassword:
+      key: greenlang/production/database/pgbouncer
+      property: stats_password
+    appUsername:
+      key: greenlang/production/database/application
+      property: username
+    appPassword:
+      key: greenlang/production/database/application
+      property: password
+
+# =============================================================================
+# Production TLS Configuration
+# =============================================================================
+tls:
+  enabled: true
+  existingSecret: pgbouncer-tls
+  certKey: tls.crt
+  keyKey: tls.key
+  caKey: ca.crt
+  clientTlsMode: require
+  serverTlsMode: verify-full
+
+# =============================================================================
+# Production Priority Class
+# =============================================================================
+priorityClassName: high-priority
+
+# =============================================================================
+# Production Termination Grace Period
+# =============================================================================
+terminationGracePeriodSeconds: 60
+
+# =============================================================================
+# Production DNS Configuration
+# =============================================================================
+dnsPolicy: ClusterFirst
+dnsConfig:
+  options:
+    - name: ndots
+      value: "2"
+    - name: timeout
+      value: "5"
+    - name: attempts
+      value: "3"

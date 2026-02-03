@@ -1,0 +1,70 @@
+{{/*
+PgBouncer Service Templates
+Provides ClusterIP and Headless services
+Connection string: postgresql://user:pass@pgbouncer.greenlang-database:5432/greenlang
+*/}}
+
+# ClusterIP Service - Main service for application connections
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "pgbouncer.fullname" . }}
+  namespace: {{ include "pgbouncer.namespace" . }}
+  labels:
+    {{- include "pgbouncer.labels" . | nindent 4 }}
+  {{- with .Values.service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ .Values.service.type }}
+  selector:
+    {{- include "pgbouncer.selectorLabels" . | nindent 4 }}
+  ports:
+    - name: pgbouncer
+      port: {{ .Values.service.port }}
+      targetPort: 5432
+      protocol: TCP
+    {{- if .Values.exporter.enabled }}
+    - name: metrics
+      port: {{ .Values.service.metricsPort }}
+      targetPort: 9127
+      protocol: TCP
+    {{- end }}
+  {{- with .Values.service.sessionAffinity }}
+  sessionAffinity: {{ . }}
+  {{- end }}
+  {{- with .Values.service.internalTrafficPolicy }}
+  internalTrafficPolicy: {{ . }}
+  {{- end }}
+
+{{- if .Values.headlessService.enabled }}
+---
+# Headless Service - For direct pod access
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "pgbouncer.fullname" . }}-headless
+  namespace: {{ include "pgbouncer.namespace" . }}
+  labels:
+    {{- include "pgbouncer.labels" . | nindent 4 }}
+  annotations:
+    service.alpha.kubernetes.io/tolerate-unready-endpoints: "true"
+spec:
+  type: ClusterIP
+  clusterIP: None
+  selector:
+    {{- include "pgbouncer.selectorLabels" . | nindent 4 }}
+  ports:
+    - name: pgbouncer
+      port: {{ .Values.service.port }}
+      targetPort: 5432
+      protocol: TCP
+    {{- if .Values.exporter.enabled }}
+    - name: metrics
+      port: {{ .Values.service.metricsPort }}
+      targetPort: 9127
+      protocol: TCP
+    {{- end }}
+  publishNotReadyAddresses: true
+{{- end }}

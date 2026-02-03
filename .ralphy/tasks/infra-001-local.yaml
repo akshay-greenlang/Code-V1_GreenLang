@@ -1,0 +1,778 @@
+# =============================================================================
+# GreenLang Infrastructure - Local Development Tasks
+# Task ID: INFRA-001-LOCAL
+# Ralphy CLI Version: v4.7.1
+# =============================================================================
+#
+# This configuration provides local development and validation tasks that can
+# run WITHOUT AWS credentials or cloud connectivity. Useful for:
+# - Pre-commit validation
+# - CI pipeline testing
+# - Local development with LocalStack
+# - Terraform validation and linting
+#
+# Usage:
+#   ralphy run .ralphy/tasks/infra-001-local.yaml
+#   ralphy run .ralphy/tasks/infra-001-local.yaml --task terraform-lint
+#   ralphy run .ralphy/tasks/infra-001-local.yaml --task localstack-deploy
+#
+# =============================================================================
+
+version: "4.7.1"
+kind: TaskConfiguration
+metadata:
+  name: greenlang-infrastructure-local
+  description: Local development and validation tasks for GreenLang infrastructure
+  owner: devops-team
+  labels:
+    project: greenlang
+    type: infrastructure
+    scope: local
+  annotations:
+    ralphy.io/task-id: "INFRA-001-LOCAL"
+    ralphy.io/estimated-duration: "15m"
+    ralphy.io/requires-approval: "false"
+    ralphy.io/requires-aws: "false"
+
+# =============================================================================
+# Project Configuration
+# =============================================================================
+project:
+  name: greenlang-local
+  repository: github.com/greenlang/infrastructure
+
+  # Local environment only
+  environments:
+    - name: local
+      auto_approve: true
+      notifications:
+        enabled: false
+
+  # Local variables
+  variables:
+    PROJECT_NAME: greenlang
+    TERRAFORM_VERSION: "1.6.0"
+    LOCALSTACK_ENDPOINT: "http://localhost:4566"
+    LOCAL_KUBECONFIG: "${HOME}/.kube/config"
+    DOCKER_COMPOSE_FILE: "deployment/docker/docker-compose.localstack.yaml"
+
+# =============================================================================
+# Global Settings
+# =============================================================================
+settings:
+  execution:
+    max_parallel_tasks: 3
+    default_timeout: 10m
+    retry_policy:
+      max_retries: 2
+      backoff_multiplier: 1.5
+      initial_delay: 5s
+
+  logging:
+    level: DEBUG
+    format: text
+    include_timestamps: true
+
+  artifacts:
+    storage: local
+    path: ".ralphy/artifacts"
+    retention_days: 7
+
+# =============================================================================
+# Pre-flight Checks (No AWS Required)
+# =============================================================================
+preflight:
+  name: local-preflight-validation
+  description: Validate local development prerequisites
+  fail_fast: true
+
+  checks:
+    - name: terraform-installed
+      description: Verify Terraform is installed
+      command: terraform version
+      expect:
+        exit_code: 0
+
+    - name: docker-installed
+      description: Verify Docker is installed and running
+      command: docker info --format '{{.ServerVersion}}'
+      expect:
+        exit_code: 0
+
+    - name: docker-compose-installed
+      description: Verify Docker Compose is available
+      command: docker compose version || docker-compose version
+      expect:
+        exit_code: 0
+
+    - name: kubectl-installed
+      description: Verify kubectl is installed
+      command: kubectl version --client -o json | jq -r '.clientVersion.gitVersion'
+      expect:
+        exit_code: 0
+
+    - name: helm-installed
+      description: Verify Helm is installed
+      command: helm version --short
+      expect:
+        exit_code: 0
+        output_contains: "v3"
+
+    - name: python-installed
+      description: Verify Python is installed
+      command: python3 --version || python --version
+      expect:
+        exit_code: 0
+
+    - name: tfsec-installed
+      description: Verify tfsec is installed (optional)
+      command: tfsec --version 2>/dev/null || echo "tfsec not installed - will skip security scan"
+      expect:
+        exit_code: 0
+
+    - name: tflint-installed
+      description: Verify tflint is installed (optional)
+      command: tflint --version 2>/dev/null || echo "tflint not installed - will skip linting"
+      expect:
+        exit_code: 0
+
+# =============================================================================
+# Task Definitions
+# =============================================================================
+tasks:
+
+  # ---------------------------------------------------------------------------
+  # Stage 1: Code Quality Checks
+  # ---------------------------------------------------------------------------
+  - id: terraform-fmt
+    name: Terraform Format Check
+    stage: 1
+    description: Check Terraform code formatting
+
+    working_directory: deployment/terraform
+
+    commands:
+      - name: check-format
+        command: |
+          echo "=== Checking Terraform formatting ==="
+          terraform fmt -check -recursive -diff
+        timeout: 2m
+
+      - name: auto-format
+        command: |
+          echo "=== Auto-formatting Terraform files ==="
+          terraform fmt -recursive
+          echo "Formatting complete"
+        timeout: 2m
+        condition: "{{ auto_fix | default(false) }}"
+
+    validation:
+      - name: format-ok
+        command: terraform fmt -check -recursive
+        expect:
+          exit_code: 0
+
+    on_failure:
+      action: continue
+      message: "Terraform formatting issues found. Run 'terraform fmt -recursive' to fix."
+
+    outputs:
+      - name: format_status
+        value: "checked"
+
+  # ---------------------------------------------------------------------------
+  - id: terraform-lint
+    name: Terraform Lint
+    stage: 1
+    parallel_group: static-analysis
+    description: Run TFLint on Terraform code
+
+    working_directory: deployment/terraform
+
+    commands:
+      - name: init-tflint
+        command: |
+          if command -v tflint &> /dev/null; then
+            tflint --init
+          else
+            echo "SKIP: tflint not installed"
+          fi
+        timeout: 2m
+
+      - name: run-tflint
+        command: |
+          if command -v tflint &> /dev/null; then
+            echo "=== Running TFLint ==="
+            tflint --recursive --format compact
+          else
+            echo "SKIP: tflint not installed"
+          fi
+        timeout: 5m
+
+    validation:
+      - name: lint-results
+        command: |
+          if command -v tflint &> /dev/null; then
+            tflint --recursive --format json | jq '.issues | length'
+          else
+            echo "0"
+          fi
+        expect:
+          output_equals: "0"
+        continue_on_error: true
+
+    on_failure:
+      action: continue
+      message: "TFLint found issues. Review and fix before deploying."
+
+  # ---------------------------------------------------------------------------
+  - id: terraform-security-scan
+    name: Terraform Security Scan
+    stage: 1
+    parallel_group: static-analysis
+    description: Run tfsec security scanner
+
+    working_directory: deployment/terraform
+
+    commands:
+      - name: run-tfsec
+        command: |
+          if command -v tfsec &> /dev/null; then
+            echo "=== Running tfsec security scan ==="
+            tfsec . --format json --out tfsec-results.json || true
+            tfsec . --format lovely || true
+          else
+            echo "SKIP: tfsec not installed"
+            echo '{"results": []}' > tfsec-results.json
+          fi
+        timeout: 5m
+
+      - name: analyze-results
+        command: |
+          if [ -f tfsec-results.json ]; then
+            CRITICAL=$(jq '[.results[] | select(.severity == "CRITICAL")] | length' tfsec-results.json 2>/dev/null || echo "0")
+            HIGH=$(jq '[.results[] | select(.severity == "HIGH")] | length' tfsec-results.json 2>/dev/null || echo "0")
+            MEDIUM=$(jq '[.results[] | select(.severity == "MEDIUM")] | length' tfsec-results.json 2>/dev/null || echo "0")
+
+            echo "=== Security Scan Summary ==="
+            echo "Critical: $CRITICAL"
+            echo "High: $HIGH"
+            echo "Medium: $MEDIUM"
+
+            if [ "$CRITICAL" -gt 0 ]; then
+              echo "ERROR: Critical security issues found!"
+              exit 1
+            fi
+          fi
+        timeout: 1m
+
+    artifacts:
+      - name: tfsec-results
+        path: tfsec-results.json
+        retention: 7d
+
+    on_failure:
+      action: abort
+      message: "Critical security issues found in Terraform code"
+
+  # ---------------------------------------------------------------------------
+  # Stage 2: Terraform Validation
+  # ---------------------------------------------------------------------------
+  - id: terraform-validate-modules
+    name: Validate Terraform Modules
+    stage: 2
+    depends_on:
+      - terraform-fmt
+    description: Validate all Terraform modules
+
+    commands:
+      - name: validate-vpc-module
+        command: |
+          cd deployment/terraform/modules/vpc
+          terraform init -backend=false
+          terraform validate
+        timeout: 3m
+        working_directory: "."
+
+      - name: validate-eks-module
+        command: |
+          cd deployment/terraform/modules/eks
+          terraform init -backend=false
+          terraform validate
+        timeout: 3m
+        working_directory: "."
+
+      - name: validate-rds-module
+        command: |
+          cd deployment/terraform/modules/rds
+          terraform init -backend=false
+          terraform validate
+        timeout: 3m
+        working_directory: "."
+
+      - name: validate-elasticache-module
+        command: |
+          cd deployment/terraform/modules/elasticache
+          terraform init -backend=false
+          terraform validate
+        timeout: 3m
+        working_directory: "."
+
+      - name: validate-s3-module
+        command: |
+          cd deployment/terraform/modules/s3
+          terraform init -backend=false
+          terraform validate
+        timeout: 3m
+        working_directory: "."
+
+      - name: validate-iam-module
+        command: |
+          cd deployment/terraform/modules/iam
+          terraform init -backend=false
+          terraform validate
+        timeout: 3m
+        working_directory: "."
+
+    validation:
+      - name: all-modules-valid
+        command: |
+          FAILED=0
+          for module in vpc eks rds elasticache s3 iam; do
+            if [ -d "deployment/terraform/modules/$module" ]; then
+              cd "deployment/terraform/modules/$module"
+              terraform init -backend=false >/dev/null 2>&1
+              if ! terraform validate >/dev/null 2>&1; then
+                echo "FAILED: $module"
+                FAILED=$((FAILED + 1))
+              fi
+              cd - >/dev/null
+            fi
+          done
+          echo "Failed modules: $FAILED"
+          [ "$FAILED" -eq 0 ]
+        expect:
+          exit_code: 0
+        working_directory: "."
+
+    outputs:
+      - name: validation_status
+        value: "passed"
+
+  # ---------------------------------------------------------------------------
+  - id: terraform-validate-environments
+    name: Validate Environment Configurations
+    stage: 2
+    depends_on:
+      - terraform-fmt
+    description: Validate Terraform environment configurations
+
+    commands:
+      - name: validate-dev
+        command: |
+          cd deployment/terraform/environments/dev
+          terraform init -backend=false
+          terraform validate
+        timeout: 3m
+        working_directory: "."
+
+      - name: validate-staging
+        command: |
+          cd deployment/terraform/environments/staging
+          terraform init -backend=false
+          terraform validate
+        timeout: 3m
+        working_directory: "."
+
+      - name: validate-prod
+        command: |
+          cd deployment/terraform/environments/prod
+          terraform init -backend=false
+          terraform validate
+        timeout: 3m
+        working_directory: "."
+
+    validation:
+      - name: all-envs-valid
+        command: |
+          for env in dev staging prod; do
+            cd "deployment/terraform/environments/$env"
+            terraform init -backend=false >/dev/null 2>&1
+            terraform validate
+            cd - >/dev/null
+          done
+        expect:
+          exit_code: 0
+        working_directory: "."
+
+  # ---------------------------------------------------------------------------
+  # Stage 3: Kubernetes Manifest Validation
+  # ---------------------------------------------------------------------------
+  - id: kubernetes-lint
+    name: Kubernetes Manifest Validation
+    stage: 3
+    description: Validate Kubernetes manifests
+
+    commands:
+      - name: validate-base-manifests
+        command: |
+          echo "=== Validating Kubernetes base manifests ==="
+          for f in deployment/infrastructure/kubernetes/greenlang/base/*.yaml; do
+            if [ -f "$f" ]; then
+              echo "Validating: $f"
+              kubectl apply --dry-run=client -f "$f" 2>&1 || true
+            fi
+          done
+        timeout: 3m
+        working_directory: "."
+
+      - name: validate-helm-chart
+        command: |
+          echo "=== Validating Helm chart ==="
+          cd deployment/infrastructure/helm/greenlang
+          helm lint .
+          helm template . --debug > /dev/null
+        timeout: 3m
+        working_directory: "."
+
+      - name: validate-helm-values
+        command: |
+          echo "=== Validating Helm values files ==="
+          cd deployment/infrastructure/helm/greenlang
+          for values in values.yaml values-dev.yaml values-staging.yaml values-prod.yaml; do
+            if [ -f "$values" ]; then
+              echo "Testing with $values"
+              helm template . -f "$values" --debug > /dev/null
+            fi
+          done
+        timeout: 5m
+        working_directory: "."
+
+    validation:
+      - name: helm-lint-pass
+        command: |
+          cd deployment/infrastructure/helm/greenlang
+          helm lint . --strict
+        expect:
+          exit_code: 0
+        working_directory: "."
+
+  # ---------------------------------------------------------------------------
+  # Stage 4: LocalStack Deployment (Optional)
+  # ---------------------------------------------------------------------------
+  - id: localstack-start
+    name: Start LocalStack
+    stage: 4
+    description: Start LocalStack for local AWS emulation
+    condition: "{{ use_localstack | default(false) }}"
+
+    commands:
+      - name: create-localstack-compose
+        command: |
+          mkdir -p deployment/docker
+          cat > deployment/docker/docker-compose.localstack.yaml <<'EOF'
+          version: '3.8'
+          services:
+            localstack:
+              image: localstack/localstack:3.0
+              container_name: greenlang-localstack
+              ports:
+                - "4566:4566"
+                - "4510-4559:4510-4559"
+              environment:
+                - SERVICES=s3,dynamodb,secretsmanager,ec2,iam,rds,elasticache,eks
+                - DEBUG=1
+                - PERSISTENCE=1
+                - DOCKER_HOST=unix:///var/run/docker.sock
+              volumes:
+                - "./localstack-data:/var/lib/localstack"
+                - "/var/run/docker.sock:/var/run/docker.sock"
+              healthcheck:
+                test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
+                interval: 10s
+                timeout: 5s
+                retries: 5
+          EOF
+        timeout: 1m
+        working_directory: "."
+
+      - name: start-localstack
+        command: |
+          cd deployment/docker
+          docker compose -f docker-compose.localstack.yaml up -d
+
+          echo "Waiting for LocalStack to be ready..."
+          for i in {1..30}; do
+            if curl -sf http://localhost:4566/_localstack/health > /dev/null 2>&1; then
+              echo "LocalStack is ready!"
+              break
+            fi
+            echo "Waiting... ($i/30)"
+            sleep 5
+          done
+        timeout: 5m
+        working_directory: "."
+
+    validation:
+      - name: localstack-healthy
+        command: curl -sf http://localhost:4566/_localstack/health | jq '.services'
+        expect:
+          exit_code: 0
+        retries: 6
+        retry_delay: 10s
+
+    outputs:
+      - name: localstack_endpoint
+        value: "http://localhost:4566"
+
+  # ---------------------------------------------------------------------------
+  - id: localstack-terraform-init
+    name: Initialize Terraform with LocalStack
+    stage: 4
+    depends_on:
+      - localstack-start
+    description: Initialize Terraform to use LocalStack
+    condition: "{{ use_localstack | default(false) }}"
+
+    commands:
+      - name: create-localstack-tfvars
+        command: |
+          cat > deployment/terraform/environments/dev/localstack.tfvars <<'EOF'
+          # LocalStack configuration
+          aws_region = "us-east-1"
+          environment = "local"
+
+          # Use LocalStack endpoints
+          s3_endpoint = "http://localhost:4566"
+          dynamodb_endpoint = "http://localhost:4566"
+          secretsmanager_endpoint = "http://localhost:4566"
+
+          # Simplified resources for local testing
+          eks_node_count = 1
+          rds_instance_class = "db.t3.micro"
+          elasticache_node_type = "cache.t3.micro"
+
+          # Disable features not available in LocalStack
+          enable_multi_az = false
+          enable_encryption = false
+          EOF
+        timeout: 1m
+        working_directory: "."
+
+      - name: init-with-localstack
+        command: |
+          cd deployment/terraform/environments/dev
+
+          # Create backend override for local state
+          cat > backend_override.tf <<'EOF'
+          terraform {
+            backend "local" {
+              path = "terraform.tfstate"
+            }
+          }
+          EOF
+
+          terraform init -reconfigure
+        timeout: 5m
+        working_directory: "."
+
+    validation:
+      - name: terraform-initialized
+        command: |
+          cd deployment/terraform/environments/dev
+          terraform workspace list
+        expect:
+          exit_code: 0
+        working_directory: "."
+
+  # ---------------------------------------------------------------------------
+  - id: localstack-terraform-plan
+    name: Plan LocalStack Deployment
+    stage: 4
+    depends_on:
+      - localstack-terraform-init
+    description: Generate Terraform plan for LocalStack
+    condition: "{{ use_localstack | default(false) }}"
+
+    commands:
+      - name: generate-plan
+        command: |
+          cd deployment/terraform/environments/dev
+
+          export AWS_ACCESS_KEY_ID=test
+          export AWS_SECRET_ACCESS_KEY=test
+          export AWS_DEFAULT_REGION=us-east-1
+
+          # Set LocalStack endpoint overrides
+          export TF_VAR_aws_endpoint="http://localhost:4566"
+
+          terraform plan \
+            -var-file="localstack.tfvars" \
+            -out=localstack-plan.binary \
+            -input=false || true
+        timeout: 10m
+        working_directory: "."
+
+    artifacts:
+      - name: localstack-plan
+        path: deployment/terraform/environments/dev/localstack-plan.binary
+        retention: 1d
+
+  # ---------------------------------------------------------------------------
+  - id: localstack-stop
+    name: Stop LocalStack
+    stage: 99
+    description: Clean up LocalStack resources
+    condition: "{{ cleanup_localstack | default(false) }}"
+
+    commands:
+      - name: stop-localstack
+        command: |
+          cd deployment/docker
+          docker compose -f docker-compose.localstack.yaml down -v
+          rm -rf localstack-data
+        timeout: 2m
+        working_directory: "."
+
+  # ---------------------------------------------------------------------------
+  # Stage 5: Documentation Generation
+  # ---------------------------------------------------------------------------
+  - id: generate-docs
+    name: Generate Infrastructure Documentation
+    stage: 5
+    description: Generate documentation from Terraform code
+
+    commands:
+      - name: generate-module-docs
+        command: |
+          if command -v terraform-docs &> /dev/null; then
+            echo "=== Generating module documentation ==="
+            for module in vpc eks rds elasticache s3 iam; do
+              if [ -d "deployment/terraform/modules/$module" ]; then
+                echo "Generating docs for $module"
+                terraform-docs markdown table \
+                  "deployment/terraform/modules/$module" \
+                  > "deployment/terraform/modules/$module/README.md"
+              fi
+            done
+          else
+            echo "SKIP: terraform-docs not installed"
+          fi
+        timeout: 5m
+        working_directory: "."
+
+      - name: generate-dependency-graph
+        command: |
+          cd deployment/terraform/environments/dev
+          terraform init -backend=false >/dev/null 2>&1
+          terraform graph > infrastructure-graph.dot 2>/dev/null || true
+
+          if command -v dot &> /dev/null && [ -f infrastructure-graph.dot ]; then
+            dot -Tpng infrastructure-graph.dot -o infrastructure-graph.png
+            echo "Dependency graph generated: infrastructure-graph.png"
+          else
+            echo "SKIP: graphviz not installed for graph visualization"
+          fi
+        timeout: 3m
+        working_directory: "."
+
+    artifacts:
+      - name: infrastructure-graph
+        path: deployment/terraform/environments/dev/infrastructure-graph.dot
+        retention: 30d
+
+  # ---------------------------------------------------------------------------
+  # Stage 6: Pre-Commit Hooks
+  # ---------------------------------------------------------------------------
+  - id: run-pre-commit
+    name: Run Pre-Commit Hooks
+    stage: 6
+    description: Run all pre-commit hooks for validation
+
+    commands:
+      - name: run-hooks
+        command: |
+          if command -v pre-commit &> /dev/null; then
+            echo "=== Running pre-commit hooks ==="
+            pre-commit run --all-files || true
+          else
+            echo "SKIP: pre-commit not installed"
+            echo "Install with: pip install pre-commit"
+          fi
+        timeout: 10m
+        working_directory: "."
+
+# =============================================================================
+# Quality Gates (Local)
+# =============================================================================
+quality_gates:
+
+  - name: code-quality
+    stage: post-validation
+    description: Code quality checks
+    checks:
+      - name: terraform-formatted
+        description: All Terraform files are formatted
+        command: terraform fmt -check -recursive deployment/terraform
+        expect:
+          exit_code: 0
+
+      - name: no-critical-security-issues
+        description: No critical security issues in Terraform
+        condition: "command -v tfsec &> /dev/null"
+        command: |
+          CRITICAL=$(cat deployment/terraform/tfsec-results.json 2>/dev/null | jq '[.results[] | select(.severity == "CRITICAL")] | length' || echo "0")
+          [ "$CRITICAL" -eq 0 ]
+        expect:
+          exit_code: 0
+
+      - name: all-modules-valid
+        description: All Terraform modules validate successfully
+        command: |
+          for module in vpc eks rds elasticache s3 iam; do
+            cd "deployment/terraform/modules/$module"
+            terraform init -backend=false >/dev/null 2>&1
+            terraform validate >/dev/null 2>&1 || exit 1
+            cd - >/dev/null
+          done
+        expect:
+          exit_code: 0
+
+      - name: helm-chart-valid
+        description: Helm chart passes linting
+        command: helm lint deployment/infrastructure/helm/greenlang --strict
+        expect:
+          exit_code: 0
+
+# =============================================================================
+# Cleanup
+# =============================================================================
+cleanup:
+  on_success:
+    - name: cleanup-temp-files
+      command: |
+        rm -rf deployment/terraform/modules/*/.terraform
+        rm -rf deployment/terraform/environments/*/.terraform
+        rm -f deployment/terraform/environments/*/backend_override.tf
+      continue_on_error: true
+
+  on_failure:
+    - name: collect-logs
+      command: |
+        mkdir -p .ralphy/artifacts/logs
+        for env in dev staging prod; do
+          if [ -f "deployment/terraform/environments/$env/.terraform/terraform.log" ]; then
+            cp "deployment/terraform/environments/$env/.terraform/terraform.log" \
+              ".ralphy/artifacts/logs/terraform-$env.log"
+          fi
+        done
+      continue_on_error: true
+
+# =============================================================================
+# Documentation
+# =============================================================================
+documentation:
+  runbook_url: "https://wiki.greenlang.io/runbooks/local-development"
+  contact:
+    team: devops-team
+    slack: "#greenlang-dev"

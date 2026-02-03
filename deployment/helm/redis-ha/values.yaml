@@ -1,0 +1,278 @@
+# Default values for redis-ha
+# This is a YAML-formatted file.
+
+## Global settings
+nameOverride: ""
+fullnameOverride: ""
+
+## Redis image configuration
+image:
+  repository: redis
+  tag: 7.2-alpine
+  pullPolicy: IfNotPresent
+
+## Image pull secrets for private registries
+imagePullSecrets: []
+
+## Redis configuration
+redis:
+  ## Number of Redis replicas (including master)
+  replicas: 3
+
+  ## Redis port
+  port: 6379
+
+  ## Additional Redis configuration (appended to redis.conf)
+  config:
+    ## Memory management
+    maxmemory: "3gb"
+    maxmemory-policy: "volatile-lru"
+
+    ## Persistence settings
+    appendonly: "yes"
+    appendfsync: "everysec"
+    auto-aof-rewrite-percentage: "100"
+    auto-aof-rewrite-min-size: "64mb"
+
+    ## RDB persistence
+    save: "900 1 300 10 60 10000"
+    rdbcompression: "yes"
+    rdbchecksum: "yes"
+
+    ## Performance tuning
+    tcp-keepalive: "300"
+    timeout: "0"
+    tcp-backlog: "511"
+    databases: "16"
+
+    ## Replication settings
+    min-replicas-to-write: "1"
+    min-replicas-max-lag: "10"
+    replica-serve-stale-data: "yes"
+    replica-read-only: "yes"
+
+    ## Security
+    protected-mode: "yes"
+
+    ## Slow log
+    slowlog-log-slower-than: "10000"
+    slowlog-max-len: "128"
+
+    ## Latency monitoring
+    latency-monitor-threshold: "100"
+
+  ## Resource limits and requests
+  resources:
+    requests:
+      memory: "1Gi"
+      cpu: "250m"
+    limits:
+      memory: "4Gi"
+      cpu: "1000m"
+
+  ## Liveness probe configuration
+  livenessProbe:
+    enabled: true
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    successThreshold: 1
+    failureThreshold: 5
+
+  ## Readiness probe configuration
+  readinessProbe:
+    enabled: true
+    initialDelaySeconds: 10
+    periodSeconds: 5
+    timeoutSeconds: 3
+    successThreshold: 1
+    failureThreshold: 3
+
+## Sentinel configuration
+sentinel:
+  ## Enable Sentinel
+  enabled: true
+
+  ## Number of Sentinel replicas
+  replicas: 3
+
+  ## Sentinel port
+  port: 26379
+
+  ## Quorum - number of Sentinels needed to agree on master failure
+  quorum: 2
+
+  ## How many milliseconds before considering a master down
+  downAfterMilliseconds: 5000
+
+  ## Timeout for failover operation
+  failoverTimeout: 60000
+
+  ## Number of replicas to reconfigure in parallel after failover
+  parallelSyncs: 1
+
+  ## Resolve hostnames (required for Kubernetes)
+  resolveHostnames: "yes"
+  announceHostnames: "yes"
+
+  ## Resource limits and requests
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "256Mi"
+      cpu: "250m"
+
+  ## Liveness probe configuration
+  livenessProbe:
+    enabled: true
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    successThreshold: 1
+    failureThreshold: 5
+
+  ## Readiness probe configuration
+  readinessProbe:
+    enabled: true
+    initialDelaySeconds: 10
+    periodSeconds: 5
+    timeoutSeconds: 3
+    successThreshold: 1
+    failureThreshold: 3
+
+## Redis Exporter (Prometheus metrics)
+exporter:
+  enabled: true
+  image:
+    repository: oliver006/redis_exporter
+    tag: v1.55.0
+    pullPolicy: IfNotPresent
+  port: 9121
+  resources:
+    requests:
+      memory: "64Mi"
+      cpu: "50m"
+    limits:
+      memory: "128Mi"
+      cpu: "100m"
+
+## Authentication
+auth:
+  ## Enable Redis AUTH
+  enabled: true
+  ## Existing secret name containing redis-password key
+  existingSecret: ""
+  ## Password (auto-generated if not provided and existingSecret is empty)
+  password: ""
+
+## Persistence configuration
+persistence:
+  enabled: true
+  ## Storage class (use "fast-ssd" for production)
+  storageClass: "fast-ssd"
+  ## Access mode
+  accessMode: ReadWriteOnce
+  ## Storage size
+  size: 10Gi
+  ## Annotations for PVC
+  annotations: {}
+
+## Security context
+securityContext:
+  enabled: true
+  fsGroup: 999
+  runAsUser: 999
+  runAsNonRoot: true
+  runAsGroup: 999
+
+## Container security context
+containerSecurityContext:
+  enabled: true
+  runAsUser: 999
+  runAsNonRoot: true
+  runAsGroup: 999
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: false
+  capabilities:
+    drop:
+      - ALL
+
+## Pod anti-affinity settings
+affinity:
+  ## Enable pod anti-affinity
+  enabled: true
+  ## Type: soft or hard
+  ## soft - preferredDuringSchedulingIgnoredDuringExecution
+  ## hard - requiredDuringSchedulingIgnoredDuringExecution
+  type: "soft"
+  ## Topology key for anti-affinity
+  topologyKey: "kubernetes.io/hostname"
+  ## Additional zone anti-affinity
+  zoneAntiAffinity:
+    enabled: false
+    topologyKey: "topology.kubernetes.io/zone"
+
+## Node selector
+nodeSelector: {}
+
+## Tolerations
+tolerations: []
+
+## Pod annotations
+podAnnotations: {}
+
+## Pod labels
+podLabels: {}
+
+## Service account
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}
+
+## Pod Disruption Budget
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 2
+
+## Network Policy
+networkPolicy:
+  enabled: true
+  ## Allow traffic from these labels
+  allowedLabels:
+    app.kubernetes.io/name: ""
+  ## Additional ingress rules
+  additionalRules: []
+
+## Service Monitor for Prometheus Operator
+serviceMonitor:
+  enabled: true
+  namespace: ""
+  interval: 30s
+  scrapeTimeout: 10s
+  labels: {}
+  annotations: {}
+
+## Prometheus Rules
+prometheusRule:
+  enabled: true
+  namespace: ""
+  labels: {}
+  annotations: {}
+  ## Alert rules
+  rules: []
+
+## Init container for sysctl tuning (requires privileged)
+sysctlInit:
+  enabled: false
+  image:
+    repository: busybox
+    tag: "1.36"
+  ## Sysctl values to set
+  sysctls:
+    - name: net.core.somaxconn
+      value: "65535"
+    - name: vm.overcommit_memory
+      value: "1"

@@ -1,0 +1,182 @@
+================================================================================
+    GreenLang Platform - Deployment Complete
+================================================================================
+
+{{ if .Release.IsUpgrade }}
+UPGRADE COMPLETE!
+{{ else }}
+INSTALLATION COMPLETE!
+{{ end }}
+
+Release Name: {{ .Release.Name }}
+Namespace: {{ include "greenlang.namespace" . }}
+Chart Version: {{ .Chart.Version }}
+App Version: {{ .Chart.AppVersion }}
+Environment: {{ .Values.global.environment | default "production" }}
+
+================================================================================
+    DEPLOYED COMPONENTS
+================================================================================
+
+1. Executor:
+   {{- if .Values.executor.enabled }}
+   - Status: ENABLED
+   - Replicas: {{ .Values.executor.replicaCount | default 3 }}
+   - Service: {{ include "greenlang.fullname" . }}-executor
+   - Port: {{ .Values.executor.service.port | default 80 }}
+   {{- if .Values.executor.autoscaling.enabled }}
+   - Autoscaling: {{ .Values.executor.autoscaling.minReplicas }}-{{ .Values.executor.autoscaling.maxReplicas }} replicas
+   {{- end }}
+   {{- else }}
+   - Status: DISABLED
+   {{- end }}
+
+2. Worker:
+   {{- if .Values.worker.enabled }}
+   - Status: ENABLED
+   - Replicas: {{ .Values.worker.replicaCount | default 5 }}
+   - Service: {{ include "greenlang.fullname" . }}-worker
+   {{- if .Values.worker.autoscaling.enabled }}
+   - Autoscaling: {{ .Values.worker.autoscaling.minReplicas }}-{{ .Values.worker.autoscaling.maxReplicas }} replicas
+   {{- end }}
+   {{- else }}
+   - Status: DISABLED
+   {{- end }}
+
+3. Dependencies:
+   {{- if .Values.redis.enabled }}
+   - Redis: ENABLED ({{ .Values.redis.architecture | default "replication" }})
+   {{- end }}
+   {{- if .Values.postgresql.enabled }}
+   - PostgreSQL: ENABLED
+   {{- end }}
+   {{- if .Values.prometheus.enabled }}
+   - Prometheus: ENABLED
+   {{- end }}
+   {{- if .Values.grafana.enabled }}
+   - Grafana: ENABLED
+   {{- end }}
+
+================================================================================
+    ACCESS INFORMATION
+================================================================================
+
+{{- if .Values.ingress.enabled }}
+The application is accessible at:
+
+{{- range .Values.ingress.hosts }}
+  - https://{{ .host }}
+{{- end }}
+{{- else }}
+To access the application, run:
+
+  kubectl port-forward svc/{{ include "greenlang.fullname" . }}-executor 8080:{{ .Values.executor.service.port | default 80 }} -n {{ include "greenlang.namespace" . }}
+
+Then access: http://localhost:8080
+{{- end }}
+
+================================================================================
+    HEALTH CHECKS
+================================================================================
+
+Check deployment status:
+
+  kubectl get deployments -n {{ include "greenlang.namespace" . }}
+
+Check pod status:
+
+  kubectl get pods -n {{ include "greenlang.namespace" . }}
+
+Check HPA status:
+
+  kubectl get hpa -n {{ include "greenlang.namespace" . }}
+
+Check PDB status:
+
+  kubectl get pdb -n {{ include "greenlang.namespace" . }}
+
+View executor logs:
+
+  kubectl logs -l app.kubernetes.io/name={{ include "greenlang.name" . }},component=executor -n {{ include "greenlang.namespace" . }} -f
+
+View worker logs:
+
+  kubectl logs -l app.kubernetes.io/name={{ include "greenlang.name" . }},component=worker -n {{ include "greenlang.namespace" . }} -f
+
+================================================================================
+    MONITORING
+================================================================================
+
+{{- if .Values.monitoring.enabled }}
+Monitoring is ENABLED.
+
+{{- if .Values.monitoring.prometheus.serviceMonitor.enabled }}
+ServiceMonitors are configured for Prometheus Operator.
+Scrape interval: {{ .Values.monitoring.prometheus.serviceMonitor.interval | default "30s" }}
+{{- end }}
+
+{{- if .Values.monitoring.grafana.dashboards.enabled }}
+Grafana dashboards are configured.
+{{- end }}
+
+Key metrics:
+  - greenlang_executor_requests_total
+  - greenlang_executor_request_duration_seconds
+  - greenlang_worker_tasks_total
+  - greenlang_worker_task_duration_seconds
+  - greenlang_active_tasks
+{{- else }}
+Monitoring is DISABLED.
+{{- end }}
+
+================================================================================
+    SECURITY
+================================================================================
+
+{{- if .Values.security.networkPolicy.enabled }}
+Network Policies: ENABLED
+{{- else }}
+Network Policies: DISABLED
+{{- end }}
+
+{{- if .Values.security.podSecurityPolicy.enabled }}
+Pod Security Policy: ENABLED
+{{- end }}
+
+================================================================================
+    TROUBLESHOOTING
+================================================================================
+
+If pods are not starting:
+
+  kubectl describe pod -l app.kubernetes.io/name={{ include "greenlang.name" . }} -n {{ include "greenlang.namespace" . }}
+
+Check events:
+
+  kubectl get events -n {{ include "greenlang.namespace" . }} --sort-by='.lastTimestamp'
+
+Check service endpoints:
+
+  kubectl get endpoints -n {{ include "greenlang.namespace" . }}
+
+{{- if .Values.redis.enabled }}
+Check Redis connectivity:
+
+  kubectl exec -n {{ include "greenlang.namespace" . }} deploy/{{ include "greenlang.fullname" . }}-executor -- nc -zv {{ .Release.Name }}-redis-master 6379
+{{- end }}
+
+{{- if .Values.postgresql.enabled }}
+Check PostgreSQL connectivity:
+
+  kubectl exec -n {{ include "greenlang.namespace" . }} deploy/{{ include "greenlang.fullname" . }}-executor -- nc -zv {{ .Release.Name }}-postgresql 5432
+{{- end }}
+
+================================================================================
+    DOCUMENTATION
+================================================================================
+
+For more information:
+  - Documentation: https://docs.greenlang.io
+  - Support: support@greenlang.io
+
+================================================================================

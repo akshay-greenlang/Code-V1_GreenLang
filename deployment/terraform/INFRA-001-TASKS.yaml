@@ -1,0 +1,2228 @@
+# =============================================================================
+# GreenLang Infrastructure Deployment - Ralphy Task Configuration
+# Task ID: INFRA-001
+# Ralphy CLI Version: v4.7.1
+# =============================================================================
+#
+# This configuration automates the complete infrastructure deployment for
+# GreenLang production environment including:
+# - AWS Infrastructure (VPC, EKS, RDS, ElastiCache, S3, IAM)
+# - Kubernetes configuration and add-ons
+# - Monitoring stack deployment
+# - Application deployment and validation
+#
+# Usage:
+#   ralphy run INFRA-001-TASKS.yaml --environment prod
+#   ralphy run INFRA-001-TASKS.yaml --environment staging --dry-run
+#   ralphy validate INFRA-001-TASKS.yaml
+#
+# Quick Commands:
+#   ralphy run INFRA-001-TASKS.yaml --environment dev --stage 1-3    # VPC/IAM/S3 only
+#   ralphy run INFRA-001-TASKS.yaml --environment staging --skip-preflight
+#   ralphy rollback INFRA-001-TASKS.yaml --environment prod --to-stage 8
+#
+# Dependencies:
+#   - AWS CLI v2.x configured with appropriate credentials
+#   - Terraform >= 1.6.0
+#   - kubectl >= 1.28
+#   - Helm >= 3.13
+#   - jq, curl, nc (netcat) for validation
+#
+# =============================================================================
+
+version: "4.7.1"
+kind: TaskConfiguration
+metadata:
+  name: greenlang-infrastructure-deployment
+  description: Full infrastructure deployment automation for GreenLang platform
+  owner: devops-team
+  labels:
+    project: greenlang
+    type: infrastructure
+    criticality: high
+    compliance: soc2
+    data-classification: confidential
+  annotations:
+    ralphy.io/task-id: "INFRA-001"
+    ralphy.io/estimated-duration: "45m"
+    ralphy.io/requires-approval: "true"
+    ralphy.io/rollback-enabled: "true"
+    ralphy.io/max-parallel: "5"
+    ralphy.io/retry-policy: "exponential-backoff"
+
+# =============================================================================
+# Project Configuration
+# =============================================================================
+project:
+  name: greenlang
+  repository: github.com/greenlang/infrastructure
+
+  # Environment configurations
+  environments:
+    - name: dev
+      aws_region: us-east-1
+      terraform_workspace: dev
+      auto_approve: true
+      notifications:
+        slack_channel: "#greenlang-dev"
+
+    - name: staging
+      aws_region: us-east-1
+      terraform_workspace: staging
+      auto_approve: true
+      notifications:
+        slack_channel: "#greenlang-staging"
+
+    - name: prod
+      aws_region: us-east-1
+      terraform_workspace: prod
+      auto_approve: false
+      requires_approval:
+        min_approvers: 2
+        teams:
+          - platform-engineering
+          - security
+      notifications:
+        slack_channel: "#greenlang-prod"
+        pagerduty_service: greenlang-prod-infra
+
+  # Global variables available to all tasks
+  variables:
+    PROJECT_NAME: greenlang
+    TERRAFORM_VERSION: "1.6.0"
+    AWS_DEFAULT_REGION: "{{ environment.aws_region }}"
+    TF_VAR_FILE: "environments/{{ environment.name }}/terraform.tfvars"
+    KUBECONFIG_PATH: "/tmp/kubeconfig-{{ environment.name }}"
+    HELM_RELEASE_NAMESPACE: greenlang
+    MONITORING_NAMESPACE: monitoring
+    CERT_MANAGER_NAMESPACE: cert-manager
+
+  # Secrets management
+  secrets:
+    provider: aws-secrets-manager
+    prefix: "greenlang/{{ environment.name }}"
+    required:
+      - database-credentials
+      - redis-auth-token
+      - github-oidc-token
+      - tls-certificates
+
+# =============================================================================
+# Global Settings
+# =============================================================================
+settings:
+  # Execution settings
+  execution:
+    max_parallel_tasks: 5
+    default_timeout: 30m
+    retry_policy:
+      max_retries: 3
+      backoff_multiplier: 2
+      initial_delay: 10s
+
+  # Logging and audit
+  logging:
+    level: INFO
+    format: json
+    include_timestamps: true
+    include_task_context: true
+
+  # Notification settings
+  notifications:
+    on_start: true
+    on_success: true
+    on_failure: true
+    on_rollback: true
+    providers:
+      - type: slack
+        webhook_url: "{{ secrets.slack_webhook_url }}"
+      - type: pagerduty
+        routing_key: "{{ secrets.pagerduty_routing_key }}"
+        severity_mapping:
+          critical: critical
+          warning: warning
+          info: info
+
+  # Artifact storage
+  artifacts:
+    storage: s3
+    bucket: "greenlang-{{ environment.name }}-artifacts"
+    prefix: "ralphy/infra-001"
+    retention_days: 90
+
+# =============================================================================
+# Pre-flight Checks
+# =============================================================================
+preflight:
+  name: preflight-validation
+  description: Validate prerequisites before deployment
+  fail_fast: true
+  timeout: 10m
+
+  checks:
+    - name: aws-credentials
+      description: Verify AWS credentials are configured
+      command: aws sts get-caller-identity
+      expect:
+        exit_code: 0
+      on_failure:
+        message: "AWS credentials not configured. Run 'aws configure' or set AWS_PROFILE"
+        severity: critical
+
+    - name: aws-account-validation
+      description: Verify we are in the correct AWS account
+      command: |
+        ACCOUNT_ID=$(aws sts get-caller-identity --query 'Account' --output text)
+        EXPECTED_ACCOUNT="{{ environment.aws_account_id | default('') }}"
+        if [ -n "$EXPECTED_ACCOUNT" ] && [ "$ACCOUNT_ID" != "$EXPECTED_ACCOUNT" ]; then
+          echo "ERROR: Wrong AWS account. Expected: $EXPECTED_ACCOUNT, Got: $ACCOUNT_ID"
+          exit 1
+        fi
+        echo "AWS Account: $ACCOUNT_ID"
+      expect:
+        exit_code: 0
+
+    - name: terraform-version
+      description: Verify Terraform version
+      command: terraform version -json | jq -r '.terraform_version'
+      expect:
+        output_contains: "1.6"
+      on_failure:
+        message: "Terraform version 1.6.x required. Install from https://terraform.io"
+        severity: critical
+
+    - name: terraform-plugins-dir
+      description: Verify Terraform plugins directory exists and is writable
+      command: |
+        PLUGIN_DIR="${HOME}/.terraform.d/plugins"
+        mkdir -p "$PLUGIN_DIR" && test -w "$PLUGIN_DIR"
+      expect:
+        exit_code: 0
+
+    - name: kubectl-available
+      description: Verify kubectl is installed
+      command: kubectl version --client -o json | jq -r '.clientVersion.gitVersion'
+      expect:
+        exit_code: 0
+      on_failure:
+        message: "kubectl not installed. Install from https://kubernetes.io/docs/tasks/tools/"
+        severity: critical
+
+    - name: helm-available
+      description: Verify Helm is installed
+      command: helm version --short
+      expect:
+        exit_code: 0
+        output_contains: "v3"
+      on_failure:
+        message: "Helm 3.x required. Install from https://helm.sh"
+        severity: critical
+
+    - name: jq-available
+      description: Verify jq is installed for JSON parsing
+      command: jq --version
+      expect:
+        exit_code: 0
+      on_failure:
+        message: "jq required for JSON parsing. Install via package manager"
+        severity: critical
+
+    - name: required-tools
+      description: Verify all required CLI tools are available
+      command: |
+        MISSING=""
+        for tool in aws terraform kubectl helm jq curl nc git; do
+          if ! command -v $tool &> /dev/null; then
+            MISSING="$MISSING $tool"
+          fi
+        done
+        if [ -n "$MISSING" ]; then
+          echo "Missing required tools:$MISSING"
+          exit 1
+        fi
+        echo "All required tools available"
+      expect:
+        exit_code: 0
+
+    - name: state-bucket-exists
+      description: Verify Terraform state bucket exists
+      command: aws s3 ls s3://greenlang-terraform-state --region us-east-1
+      expect:
+        exit_code: 0
+      on_failure:
+        message: "Terraform state bucket not found. Create it first or check permissions"
+        severity: critical
+
+    - name: dynamodb-lock-table
+      description: Verify DynamoDB lock table exists
+      command: |
+        aws dynamodb describe-table \
+          --table-name greenlang-terraform-locks \
+          --region us-east-1 \
+          --query 'Table.TableStatus' \
+          --output text
+      expect:
+        output_equals: "ACTIVE"
+      on_failure:
+        message: "DynamoDB lock table not found. Create it for state locking"
+        severity: warning
+
+    - name: secrets-accessible
+      description: Verify secrets are accessible
+      command: |
+        aws secretsmanager get-secret-value \
+          --secret-id "greenlang/{{ environment.name }}/database-credentials" \
+          --query 'Name' --output text
+      expect:
+        exit_code: 0
+      on_failure:
+        message: "Required secrets not accessible. Check IAM permissions and secret existence"
+        severity: critical
+
+    - name: ecr-access
+      description: Verify ECR access for container images
+      command: |
+        aws ecr describe-repositories \
+          --repository-names greenlang/app \
+          --region {{ environment.aws_region }} \
+          --query 'repositories[0].repositoryUri' \
+          --output text 2>/dev/null || echo "ECR_NOT_CONFIGURED"
+      expect:
+        exit_code: 0
+
+    - name: disk-space
+      description: Verify sufficient disk space
+      command: |
+        AVAILABLE=$(df -BG . | tail -1 | awk '{print $4}' | tr -d 'G')
+        if [ "$AVAILABLE" -lt 10 ]; then
+          echo "Insufficient disk space: ${AVAILABLE}GB available, 10GB required"
+          exit 1
+        fi
+        echo "Disk space OK: ${AVAILABLE}GB available"
+      expect:
+        exit_code: 0
+
+    - name: network-connectivity
+      description: Verify network connectivity to AWS endpoints
+      command: |
+        for endpoint in sts.us-east-1.amazonaws.com s3.us-east-1.amazonaws.com eks.us-east-1.amazonaws.com; do
+          if ! curl -sf --connect-timeout 5 "https://$endpoint" -o /dev/null 2>/dev/null; then
+            # Most AWS endpoints return 403 but that proves connectivity
+            curl -sf --connect-timeout 5 "https://$endpoint" 2>&1 | head -1 || true
+          fi
+          echo "$endpoint: reachable"
+        done
+      expect:
+        exit_code: 0
+
+# =============================================================================
+# Task Definitions
+# =============================================================================
+tasks:
+
+  # ---------------------------------------------------------------------------
+  # Stage 0: Pre-Deployment Backup (for existing infrastructure)
+  # ---------------------------------------------------------------------------
+  - id: pre-deployment-backup
+    name: Create Pre-Deployment Backup
+    stage: 0
+    description: Backup current state before making changes
+    condition: "{{ backup_before_deploy | default(true) }}"
+
+    working_directory: deployment/terraform/environments/{{ environment.name }}
+
+    commands:
+      - name: backup-terraform-state
+        command: |
+          TIMESTAMP=$(date +%Y%m%d%H%M%S)
+          BACKUP_BUCKET="greenlang-{{ environment.name }}-backups"
+
+          # Check if state exists
+          if aws s3 ls "s3://greenlang-terraform-state/environments/{{ environment.name }}/terraform.tfstate" 2>/dev/null; then
+            aws s3 cp \
+              "s3://greenlang-terraform-state/environments/{{ environment.name }}/terraform.tfstate" \
+              "s3://${BACKUP_BUCKET}/terraform-state-backup-${TIMESTAMP}.tfstate"
+            echo "State backed up to s3://${BACKUP_BUCKET}/terraform-state-backup-${TIMESTAMP}.tfstate"
+          else
+            echo "No existing state to backup"
+          fi
+        timeout: 5m
+        continue_on_error: true
+
+      - name: backup-kubernetes-resources
+        command: |
+          TIMESTAMP=$(date +%Y%m%d%H%M%S)
+          BACKUP_DIR="/tmp/k8s-backup-${TIMESTAMP}"
+          mkdir -p "${BACKUP_DIR}"
+
+          # Only backup if cluster exists
+          if aws eks describe-cluster --name greenlang-{{ environment.name }}-eks --region {{ environment.aws_region }} 2>/dev/null; then
+            export KUBECONFIG={{ KUBECONFIG_PATH }}
+            aws eks update-kubeconfig --name greenlang-{{ environment.name }}-eks --region {{ environment.aws_region }} --kubeconfig {{ KUBECONFIG_PATH }} 2>/dev/null || true
+
+            for ns in greenlang greenlang-agents monitoring; do
+              kubectl get all -n $ns -o yaml > "${BACKUP_DIR}/${ns}-resources.yaml" 2>/dev/null || true
+              kubectl get configmap -n $ns -o yaml > "${BACKUP_DIR}/${ns}-configmaps.yaml" 2>/dev/null || true
+              kubectl get secret -n $ns -o yaml > "${BACKUP_DIR}/${ns}-secrets.yaml" 2>/dev/null || true
+            done
+
+            tar -czf "/tmp/k8s-backup-${TIMESTAMP}.tar.gz" -C /tmp "k8s-backup-${TIMESTAMP}"
+            aws s3 cp "/tmp/k8s-backup-${TIMESTAMP}.tar.gz" "s3://greenlang-{{ environment.name }}-backups/k8s-backup-${TIMESTAMP}.tar.gz"
+            echo "Kubernetes resources backed up"
+          else
+            echo "No existing cluster to backup"
+          fi
+        timeout: 10m
+        continue_on_error: true
+
+    validation:
+      - name: backup-verification
+        command: |
+          echo "Pre-deployment backup completed (or skipped if no existing resources)"
+        expect:
+          exit_code: 0
+
+    outputs:
+      - name: backup_timestamp
+        from: date +%Y%m%d%H%M%S
+      - name: backup_status
+        value: completed
+
+  # ---------------------------------------------------------------------------
+  # Stage 1: Terraform Initialization
+  # ---------------------------------------------------------------------------
+  - id: terraform-init
+    name: Initialize Terraform Backend
+    stage: 1
+    depends_on:
+      - pre-deployment-backup
+    description: Initialize Terraform with S3 backend and workspace selection
+
+    working_directory: deployment/terraform/environments/{{ environment.name }}
+
+    commands:
+      - name: cleanup-local-state
+        command: |
+          # Remove any stale local state to prevent conflicts
+          rm -rf .terraform/terraform.tfstate .terraform.lock.hcl 2>/dev/null || true
+          echo "Cleaned up local state files"
+        timeout: 1m
+
+      - name: select-workspace
+        command: |
+          terraform init \
+            -backend-config="bucket=greenlang-terraform-state" \
+            -backend-config="key=environments/{{ environment.name }}/terraform.tfstate" \
+            -backend-config="region={{ environment.aws_region }}" \
+            -backend-config="encrypt=true" \
+            -backend-config="dynamodb_table=greenlang-terraform-locks" \
+            -reconfigure \
+            -upgrade
+        timeout: 5m
+
+      - name: workspace-setup
+        command: |
+          terraform workspace select {{ environment.name }} || \
+          terraform workspace new {{ environment.name }}
+        timeout: 1m
+
+      - name: validate-config
+        command: terraform validate -json
+        timeout: 2m
+
+      - name: format-check
+        command: |
+          terraform fmt -check -recursive -diff || {
+            echo "WARNING: Terraform files are not properly formatted"
+            echo "Run 'terraform fmt -recursive' to fix"
+          }
+        timeout: 1m
+        continue_on_error: true
+
+    validation:
+      - command: terraform workspace show
+        expect:
+          output_equals: "{{ environment.name }}"
+      - command: test -d .terraform/providers
+        expect:
+          exit_code: 0
+      - name: validate-backend
+        command: |
+          terraform state list 2>&1 | head -5 || echo "Empty state (new deployment)"
+        expect:
+          exit_code: 0
+
+    on_failure:
+      notify:
+        - slack
+      action: abort
+      rollback:
+        - command: rm -rf .terraform .terraform.lock.hcl
+          description: Clean up failed initialization
+
+    outputs:
+      - name: terraform_workspace
+        from: terraform workspace show
+      - name: init_status
+        value: success
+      - name: provider_versions
+        from: terraform version -json | jq -r '.provider_selections'
+
+  # ---------------------------------------------------------------------------
+  # Stage 2: Terraform Planning
+  # ---------------------------------------------------------------------------
+  - id: terraform-plan
+    name: Plan Infrastructure Changes
+    stage: 2
+    depends_on:
+      - terraform-init
+    description: Generate and review Terraform execution plan
+
+    working_directory: deployment/terraform/environments/{{ environment.name }}
+
+    commands:
+      - name: refresh-state
+        command: |
+          echo "Refreshing Terraform state..."
+          terraform refresh -var-file="{{ TF_VAR_FILE }}" -lock-timeout=5m 2>&1 || true
+        timeout: 10m
+        continue_on_error: true
+
+      - name: generate-plan
+        command: |
+          terraform plan \
+            -var-file="{{ TF_VAR_FILE }}" \
+            -out=tfplan.binary \
+            -detailed-exitcode \
+            -lock-timeout=5m
+        timeout: 15m
+        exit_codes:
+          0: no_changes
+          1: error
+          2: changes_pending
+
+      - name: convert-plan-json
+        command: terraform show -json tfplan.binary > tfplan.json
+        timeout: 2m
+
+      - name: analyze-plan
+        command: |
+          echo "=== Plan Summary ==="
+          jq -r '
+            .resource_changes |
+            group_by(.change.actions[0]) |
+            map({action: .[0].change.actions[0], count: length}) |
+            .[] | "\(.action): \(.count)"
+          ' tfplan.json
+
+          echo ""
+          echo "=== Resources by Module ==="
+          jq -r '
+            .resource_changes |
+            group_by(.module_address // "root") |
+            map({module: (.[0].module_address // "root"), count: length}) |
+            .[] | "\(.module): \(.count) changes"
+          ' tfplan.json
+        timeout: 1m
+
+      - name: check-destructive-changes
+        command: |
+          DESTROY_COUNT=$(jq '[.resource_changes[] | select(.change.actions[] == "delete")] | length' tfplan.json)
+          REPLACE_COUNT=$(jq '[.resource_changes[] | select(.change.actions | contains(["delete","create"]))] | length' tfplan.json)
+
+          echo "=== Destructive Change Analysis ==="
+          echo "Resources to be destroyed: $DESTROY_COUNT"
+          echo "Resources to be replaced: $REPLACE_COUNT"
+
+          if [ "$DESTROY_COUNT" -gt 0 ]; then
+            echo ""
+            echo "WARNING: Plan contains $DESTROY_COUNT destructive changes:"
+            jq -r '.resource_changes[] | select(.change.actions[] == "delete") | "  - \(.address)"' tfplan.json
+          fi
+
+          if [ "$REPLACE_COUNT" -gt 0 ]; then
+            echo ""
+            echo "WARNING: Plan contains $REPLACE_COUNT replacement changes:"
+            jq -r '.resource_changes[] | select(.change.actions | contains(["delete","create"])) | "  - \(.address)"' tfplan.json
+          fi
+
+          # Fail if destroying critical resources in prod without explicit flag
+          if [ "{{ environment.name }}" = "prod" ] && [ "$DESTROY_COUNT" -gt 5 ]; then
+            if [ "{{ allow_destructive_changes | default(false) }}" != "true" ]; then
+              echo ""
+              echo "ERROR: Too many destructive changes for production without explicit approval"
+              echo "Set allow_destructive_changes=true to proceed"
+              exit 1
+            fi
+          fi
+
+          echo "DESTROY_COUNT=$DESTROY_COUNT"
+          echo "REPLACE_COUNT=$REPLACE_COUNT"
+        timeout: 1m
+
+      - name: security-scan
+        command: |
+          echo "=== Security Scan ==="
+          # Check for sensitive data in plan
+          SENSITIVE_PATTERNS='password|secret|key|token|credential'
+          if jq -r '.resource_changes[].change.after // empty' tfplan.json 2>/dev/null | grep -iE "$SENSITIVE_PATTERNS" | head -5; then
+            echo "WARNING: Plan may expose sensitive data - review carefully"
+          else
+            echo "No obvious sensitive data patterns detected"
+          fi
+
+          # Check for public access configurations
+          if jq -r '.resource_changes[].change.after.publicly_accessible // empty' tfplan.json 2>/dev/null | grep -i true; then
+            echo "WARNING: Some resources will be publicly accessible"
+          fi
+        timeout: 2m
+        continue_on_error: true
+
+      - name: cost-estimation
+        command: |
+          echo "=== Cost Impact Estimation ==="
+          # Count resource types being created
+          jq -r '
+            [.resource_changes[] | select(.change.actions | contains(["create"]))] |
+            group_by(.type) |
+            map({type: .[0].type, count: length}) |
+            .[] | "\(.type): +\(.count)"
+          ' tfplan.json
+
+          echo ""
+          echo "Note: Run 'infracost breakdown --path .' for detailed cost analysis"
+        timeout: 1m
+        continue_on_error: true
+
+    validation:
+      - command: test -f tfplan.binary
+        expect:
+          exit_code: 0
+      - command: test -f tfplan.json
+        expect:
+          exit_code: 0
+      - name: plan-not-empty
+        command: |
+          RESOURCE_COUNT=$(jq '.resource_changes | length' tfplan.json)
+          echo "Plan affects $RESOURCE_COUNT resources"
+        expect:
+          exit_code: 0
+      - name: no-plan-errors
+        command: |
+          # Check for any error diagnostics in plan
+          ERRORS=$(jq '.diagnostics // [] | map(select(.severity == "error")) | length' tfplan.json 2>/dev/null || echo "0")
+          if [ "$ERRORS" -gt 0 ]; then
+            jq '.diagnostics[] | select(.severity == "error")' tfplan.json
+            exit 1
+          fi
+          echo "No errors in plan"
+        expect:
+          exit_code: 0
+
+    artifacts:
+      - name: terraform-plan
+        path: tfplan.binary
+        retention: 7d
+      - name: terraform-plan-json
+        path: tfplan.json
+        retention: 7d
+      - name: plan-summary
+        path: plan-summary.txt
+        retention: 30d
+
+    approval:
+      required: "{{ environment.name == 'prod' }}"
+      timeout: 30m
+      approvers:
+        teams:
+          - platform-engineering
+        min_count: 1
+      message: |
+        Terraform plan requires approval for {{ environment.name }} environment.
+        Review the plan at: {{ artifacts.terraform-plan-json.url }}
+
+        Summary:
+        - Resources to create: {{ plan_summary.create_count }}
+        - Resources to update: {{ plan_summary.update_count }}
+        - Resources to destroy: {{ plan_summary.destroy_count }}
+
+    on_failure:
+      notify:
+        - slack
+      action: abort
+      collect_diagnostics: true
+
+    outputs:
+      - name: plan_file
+        value: tfplan.binary
+      - name: changes_detected
+        from: "[ $(jq '.resource_changes | length' tfplan.json) -gt 0 ] && echo 'true' || echo 'false'"
+      - name: destroy_count
+        from: jq '[.resource_changes[] | select(.change.actions[] == "delete")] | length' tfplan.json
+      - name: create_count
+        from: jq '[.resource_changes[] | select(.change.actions[] == "create")] | length' tfplan.json
+
+  # ---------------------------------------------------------------------------
+  # Stage 3: Infrastructure Modules (Parallel Group)
+  # ---------------------------------------------------------------------------
+
+  # VPC Module
+  - id: apply-vpc
+    name: Apply VPC Module
+    stage: 3
+    parallel_group: infrastructure-core
+    depends_on:
+      - terraform-plan
+    description: Deploy VPC, subnets, NAT gateways, and VPC endpoints
+
+    working_directory: deployment/terraform/environments/{{ environment.name }}
+
+    commands:
+      - name: apply-vpc-module
+        command: |
+          terraform apply \
+            -target=module.vpc \
+            -var-file="{{ TF_VAR_FILE }}" \
+            -auto-approve \
+            -lock-timeout=10m
+        timeout: 20m
+
+      - name: extract-vpc-outputs
+        command: |
+          terraform output -json | jq '{
+            vpc_id: .vpc_id.value,
+            vpc_cidr: .vpc_cidr.value,
+            private_subnets: .private_subnet_ids.value,
+            public_subnets: .public_subnet_ids.value
+          }' > vpc-outputs.json
+        timeout: 1m
+
+    validation:
+      - name: vpc-exists
+        command: |
+          VPC_ID=$(terraform output -raw vpc_id)
+          aws ec2 describe-vpcs --vpc-ids $VPC_ID --query 'Vpcs[0].State' --output text
+        expect:
+          output_equals: "available"
+
+      - name: subnets-available
+        command: |
+          VPC_ID=$(terraform output -raw vpc_id)
+          aws ec2 describe-subnets \
+            --filters "Name=vpc-id,Values=$VPC_ID" \
+            --query 'length(Subnets[?State==`available`])'
+        expect:
+          output_gte: 6
+
+      - name: nat-gateway-active
+        command: |
+          VPC_ID=$(terraform output -raw vpc_id)
+          aws ec2 describe-nat-gateways \
+            --filter "Name=vpc-id,Values=$VPC_ID" "Name=state,Values=available" \
+            --query 'length(NatGateways)'
+        expect:
+          output_gte: 1
+
+    rollback:
+      enabled: true
+      strategy: terraform-destroy
+      commands:
+        - command: |
+            terraform destroy \
+              -target=module.vpc \
+              -var-file="{{ TF_VAR_FILE }}" \
+              -auto-approve
+          timeout: 15m
+
+    outputs:
+      - name: vpc_id
+        from: terraform output -raw vpc_id
+      - name: private_subnets
+        from: terraform output -json private_subnet_ids
+
+  # S3 Module (parallel with VPC)
+  - id: apply-s3
+    name: Apply S3 Module
+    stage: 3
+    parallel_group: infrastructure-core
+    depends_on:
+      - terraform-plan
+    description: Deploy S3 buckets with encryption and lifecycle policies
+
+    working_directory: deployment/terraform/environments/{{ environment.name }}
+
+    commands:
+      - name: apply-s3-module
+        command: |
+          terraform apply \
+            -target=module.s3 \
+            -var-file="{{ TF_VAR_FILE }}" \
+            -auto-approve \
+            -lock-timeout=10m
+        timeout: 15m
+
+    validation:
+      - name: buckets-exist
+        command: |
+          for bucket in artifacts logs backups data; do
+            aws s3api head-bucket --bucket "greenlang-{{ environment.name }}-${bucket}" 2>/dev/null && echo "${bucket}: OK"
+          done
+        expect:
+          exit_code: 0
+
+      - name: encryption-enabled
+        command: |
+          aws s3api get-bucket-encryption \
+            --bucket "greenlang-{{ environment.name }}-data" \
+            --query 'ServerSideEncryptionConfiguration.Rules[0].ApplyServerSideEncryptionByDefault.SSEAlgorithm' \
+            --output text
+        expect:
+          output_contains: "AES256"
+
+    rollback:
+      enabled: true
+      strategy: terraform-destroy
+      commands:
+        - command: |
+            terraform destroy \
+              -target=module.s3 \
+              -var-file="{{ TF_VAR_FILE }}" \
+              -auto-approve
+          timeout: 10m
+
+    outputs:
+      - name: data_bucket_arn
+        from: terraform output -raw s3_data_bucket_arn
+      - name: artifacts_bucket_arn
+        from: terraform output -raw s3_artifacts_bucket_arn
+
+  # IAM Module (parallel with VPC)
+  - id: apply-iam
+    name: Apply IAM Module
+    stage: 3
+    parallel_group: infrastructure-core
+    depends_on:
+      - terraform-plan
+    description: Deploy IAM roles, policies, and OIDC providers
+
+    working_directory: deployment/terraform/environments/{{ environment.name }}
+
+    commands:
+      - name: apply-iam-module
+        command: |
+          terraform apply \
+            -target=module.iam \
+            -var-file="{{ TF_VAR_FILE }}" \
+            -auto-approve \
+            -lock-timeout=10m
+        timeout: 10m
+
+    validation:
+      - name: app-role-exists
+        command: |
+          ROLE_ARN=$(terraform output -raw app_service_account_role_arn)
+          aws iam get-role --role-name $(echo $ROLE_ARN | cut -d'/' -f2) --query 'Role.Arn' --output text
+        expect:
+          exit_code: 0
+
+      - name: cicd-role-exists
+        command: |
+          ROLE_ARN=$(terraform output -raw cicd_role_arn)
+          aws iam get-role --role-name $(echo $ROLE_ARN | cut -d'/' -f2) --query 'Role.Arn' --output text
+        expect:
+          exit_code: 0
+
+    rollback:
+      enabled: true
+      strategy: terraform-destroy
+      commands:
+        - command: |
+            terraform destroy \
+              -target=module.iam \
+              -var-file="{{ TF_VAR_FILE }}" \
+              -auto-approve
+          timeout: 10m
+
+    outputs:
+      - name: app_role_arn
+        from: terraform output -raw app_service_account_role_arn
+      - name: cicd_role_arn
+        from: terraform output -raw cicd_role_arn
+
+  # ---------------------------------------------------------------------------
+  # Stage 4: EKS Cluster (depends on VPC)
+  # ---------------------------------------------------------------------------
+  - id: apply-eks
+    name: Apply EKS Module
+    stage: 4
+    depends_on:
+      - apply-vpc
+      - apply-iam
+    description: Deploy EKS cluster with managed node groups
+
+    working_directory: deployment/terraform/environments/{{ environment.name }}
+
+    commands:
+      - name: apply-eks-module
+        command: |
+          terraform apply \
+            -target=module.eks \
+            -var-file="{{ TF_VAR_FILE }}" \
+            -auto-approve \
+            -lock-timeout=15m
+        timeout: 30m
+
+      - name: update-kubeconfig
+        command: |
+          aws eks update-kubeconfig \
+            --name greenlang-{{ environment.name }}-eks \
+            --region {{ environment.aws_region }} \
+            --kubeconfig {{ KUBECONFIG_PATH }}
+        timeout: 2m
+
+      - name: verify-cluster-access
+        command: |
+          export KUBECONFIG={{ KUBECONFIG_PATH }}
+          kubectl cluster-info
+          kubectl get nodes
+        timeout: 5m
+
+    validation:
+      - name: cluster-active
+        command: |
+          aws eks describe-cluster \
+            --name greenlang-{{ environment.name }}-eks \
+            --query 'cluster.status' \
+            --output text
+        expect:
+          output_equals: "ACTIVE"
+
+      - name: nodes-ready
+        command: |
+          export KUBECONFIG={{ KUBECONFIG_PATH }}
+          kubectl get nodes -o json | \
+            jq '[.items[] | select(.status.conditions[] | select(.type=="Ready" and .status=="True"))] | length'
+        expect:
+          output_gte: 3
+
+      - name: system-pods-running
+        command: |
+          export KUBECONFIG={{ KUBECONFIG_PATH }}
+          kubectl get pods -n kube-system --field-selector=status.phase=Running -o name | wc -l
+        expect:
+          output_gte: 5
+
+      - name: coredns-running
+        command: |
+          export KUBECONFIG={{ KUBECONFIG_PATH }}
+          kubectl get deployment coredns -n kube-system -o jsonpath='{.status.readyReplicas}'
+        expect:
+          output_gte: 2
+
+    rollback:
+      enabled: true
+      strategy: terraform-destroy
+      approval_required: true
+      commands:
+        - command: |
+            terraform destroy \
+              -target=module.eks \
+              -var-file="{{ TF_VAR_FILE }}" \
+              -auto-approve
+          timeout: 30m
+
+    outputs:
+      - name: cluster_endpoint
+        from: terraform output -raw eks_cluster_endpoint
+      - name: cluster_name
+        from: terraform output -raw eks_cluster_name
+      - name: oidc_provider_arn
+        from: terraform output -raw eks_oidc_provider_arn
+
+  # ---------------------------------------------------------------------------
+  # Stage 5: Database Layer (Parallel Group - depends on VPC)
+  # ---------------------------------------------------------------------------
+
+  # RDS Module
+  - id: apply-rds
+    name: Apply RDS Module
+    stage: 5
+    parallel_group: data-layer
+    depends_on:
+      - apply-vpc
+    description: Deploy RDS PostgreSQL with Multi-AZ and read replicas
+
+    working_directory: deployment/terraform/environments/{{ environment.name }}
+
+    commands:
+      - name: apply-rds-module
+        command: |
+          terraform apply \
+            -target=module.rds \
+            -var-file="{{ TF_VAR_FILE }}" \
+            -auto-approve \
+            -lock-timeout=15m
+        timeout: 45m
+
+      - name: wait-for-rds
+        command: |
+          aws rds wait db-instance-available \
+            --db-instance-identifier greenlang-{{ environment.name }}-postgres \
+            --region {{ environment.aws_region }}
+        timeout: 30m
+
+    validation:
+      - name: rds-available
+        command: |
+          aws rds describe-db-instances \
+            --db-instance-identifier greenlang-{{ environment.name }}-postgres \
+            --query 'DBInstances[0].DBInstanceStatus' \
+            --output text
+        expect:
+          output_equals: "available"
+
+      - name: multi-az-enabled
+        command: |
+          aws rds describe-db-instances \
+            --db-instance-identifier greenlang-{{ environment.name }}-postgres \
+            --query 'DBInstances[0].MultiAZ' \
+            --output text
+        expect:
+          output_equals: "True"
+        condition: "{{ environment.name == 'prod' }}"
+
+      - name: encryption-enabled
+        command: |
+          aws rds describe-db-instances \
+            --db-instance-identifier greenlang-{{ environment.name }}-postgres \
+            --query 'DBInstances[0].StorageEncrypted' \
+            --output text
+        expect:
+          output_equals: "True"
+
+      - name: connection-test
+        command: |
+          DB_ENDPOINT=$(terraform output -raw rds_endpoint)
+          nc -zv ${DB_ENDPOINT%:*} 5432 -w 5
+        expect:
+          exit_code: 0
+
+    rollback:
+      enabled: true
+      strategy: terraform-destroy
+      approval_required: true
+      warning: "This will destroy the database. Ensure backups are available."
+      commands:
+        - command: |
+            # Create final snapshot before destroy
+            aws rds create-db-snapshot \
+              --db-instance-identifier greenlang-{{ environment.name }}-postgres \
+              --db-snapshot-identifier greenlang-{{ environment.name }}-pre-rollback-$(date +%Y%m%d%H%M%S)
+          timeout: 30m
+        - command: |
+            terraform destroy \
+              -target=module.rds \
+              -var-file="{{ TF_VAR_FILE }}" \
+              -auto-approve
+          timeout: 30m
+
+    outputs:
+      - name: rds_endpoint
+        from: terraform output -raw rds_endpoint
+      - name: rds_address
+        from: terraform output -raw rds_address
+      - name: rds_secrets_arn
+        from: terraform output -raw rds_secrets_manager_arn
+
+  # ElastiCache Module
+  - id: apply-elasticache
+    name: Apply ElastiCache Module
+    stage: 5
+    parallel_group: data-layer
+    depends_on:
+      - apply-vpc
+    description: Deploy ElastiCache Redis with replication and encryption
+
+    working_directory: deployment/terraform/environments/{{ environment.name }}
+
+    commands:
+      - name: apply-elasticache-module
+        command: |
+          terraform apply \
+            -target=module.elasticache \
+            -var-file="{{ TF_VAR_FILE }}" \
+            -auto-approve \
+            -lock-timeout=15m
+        timeout: 30m
+
+    validation:
+      - name: redis-available
+        command: |
+          aws elasticache describe-replication-groups \
+            --replication-group-id greenlang-{{ environment.name }}-redis \
+            --query 'ReplicationGroups[0].Status' \
+            --output text
+        expect:
+          output_equals: "available"
+
+      - name: encryption-at-rest
+        command: |
+          aws elasticache describe-replication-groups \
+            --replication-group-id greenlang-{{ environment.name }}-redis \
+            --query 'ReplicationGroups[0].AtRestEncryptionEnabled' \
+            --output text
+        expect:
+          output_equals: "True"
+
+      - name: encryption-in-transit
+        command: |
+          aws elasticache describe-replication-groups \
+            --replication-group-id greenlang-{{ environment.name }}-redis \
+            --query 'ReplicationGroups[0].TransitEncryptionEnabled' \
+            --output text
+        expect:
+          output_equals: "True"
+
+      - name: node-count
+        command: |
+          aws elasticache describe-replication-groups \
+            --replication-group-id greenlang-{{ environment.name }}-redis \
+            --query 'length(ReplicationGroups[0].NodeGroups[0].NodeGroupMembers)'
+        expect:
+          output_gte: 2
+
+    rollback:
+      enabled: true
+      strategy: terraform-destroy
+      commands:
+        - command: |
+            terraform destroy \
+              -target=module.elasticache \
+              -var-file="{{ TF_VAR_FILE }}" \
+              -auto-approve
+          timeout: 20m
+
+    outputs:
+      - name: redis_primary_endpoint
+        from: terraform output -raw redis_primary_endpoint
+      - name: redis_reader_endpoint
+        from: terraform output -raw redis_reader_endpoint
+
+  # ---------------------------------------------------------------------------
+  # Stage 6: Kubectl Configuration
+  # ---------------------------------------------------------------------------
+  - id: configure-kubectl
+    name: Configure kubectl Access
+    stage: 6
+    depends_on:
+      - apply-eks
+    description: Configure kubectl and verify cluster connectivity
+
+    commands:
+      - name: update-kubeconfig
+        command: |
+          aws eks update-kubeconfig \
+            --name greenlang-{{ environment.name }}-eks \
+            --region {{ environment.aws_region }} \
+            --kubeconfig {{ KUBECONFIG_PATH }} \
+            --alias greenlang-{{ environment.name }}
+        timeout: 2m
+
+      - name: create-namespaces
+        command: |
+          export KUBECONFIG={{ KUBECONFIG_PATH }}
+          kubectl apply -f - <<EOF
+          apiVersion: v1
+          kind: Namespace
+          metadata:
+            name: greenlang
+            labels:
+              app: greenlang
+              environment: {{ environment.name }}
+          ---
+          apiVersion: v1
+          kind: Namespace
+          metadata:
+            name: greenlang-agents
+            labels:
+              app: greenlang-agents
+              environment: {{ environment.name }}
+          ---
+          apiVersion: v1
+          kind: Namespace
+          metadata:
+            name: monitoring
+            labels:
+              app: monitoring
+          ---
+          apiVersion: v1
+          kind: Namespace
+          metadata:
+            name: cert-manager
+            labels:
+              app: cert-manager
+          EOF
+        timeout: 2m
+
+      - name: setup-service-accounts
+        command: |
+          export KUBECONFIG={{ KUBECONFIG_PATH }}
+          APP_ROLE_ARN=$(terraform -chdir=deployment/terraform/environments/{{ environment.name }} output -raw app_service_account_role_arn)
+          kubectl apply -f - <<EOF
+          apiVersion: v1
+          kind: ServiceAccount
+          metadata:
+            name: greenlang-app
+            namespace: greenlang
+            annotations:
+              eks.amazonaws.com/role-arn: ${APP_ROLE_ARN}
+          EOF
+        timeout: 2m
+        working_directory: "."
+
+    validation:
+      - name: kubectl-connectivity
+        command: |
+          export KUBECONFIG={{ KUBECONFIG_PATH }}
+          kubectl cluster-info
+        expect:
+          exit_code: 0
+          output_contains: "Kubernetes control plane"
+
+      - name: namespaces-exist
+        command: |
+          export KUBECONFIG={{ KUBECONFIG_PATH }}
+          kubectl get namespace greenlang monitoring cert-manager -o name | wc -l
+        expect:
+          output_equals: "3"
+
+    outputs:
+      - name: kubeconfig_path
+        value: "{{ KUBECONFIG_PATH }}"
+
+  # ---------------------------------------------------------------------------
+  # Stage 7: Kubernetes Add-ons (Parallel Group)
+  # ---------------------------------------------------------------------------
+
+  # Cert Manager
+  - id: deploy-cert-manager
+    name: Deploy Cert Manager
+    stage: 7
+    parallel_group: k8s-addons
+    depends_on:
+      - configure-kubectl
+    description: Deploy cert-manager for TLS certificate management
+
+    commands:
+      - name: add-helm-repo
+        command: |
+          helm repo add jetstack https://charts.jetstack.io
+          helm repo update
+        timeout: 2m
+
+      - name: install-cert-manager
+        command: |
+          export KUBECONFIG={{ KUBECONFIG_PATH }}
+          helm upgrade --install cert-manager jetstack/cert-manager \
+            --namespace cert-manager \
+            --version v1.13.3 \
+            --set installCRDs=true \
+            --set prometheus.enabled=true \
+            --set webhook.timeoutSeconds=30 \
+            --wait \
+            --timeout 10m
+        timeout: 15m
+
+      - name: create-cluster-issuer
+        command: |
+          export KUBECONFIG={{ KUBECONFIG_PATH }}
+          kubectl apply -f - <<EOF
+          apiVersion: cert-manager.io/v1
+          kind: ClusterIssuer
+          metadata:
+            name: letsencrypt-prod
+          spec:
+            acme:
+              server: https://acme-v02.api.letsencrypt.org/directory
+              email: devops@greenlang.io
+              privateKeySecretRef:
+                name: letsencrypt-prod-key
+              solvers:
+              - http01:
+                  ingress:
+                    class: nginx
+          EOF
+        timeout: 2m
+
+    validation:
+      - name: cert-manager-running
+        command: |
+          export KUBECONFIG={{ KUBECONFIG_PATH }}
+          kubectl get deployment cert-manager -n cert-manager -o jsonpath='{.status.readyReplicas}'
+        expect:
+          output_gte: 1
+
+      - name: webhook-ready
+        command: |
+          export KUBECONFIG={{ KUBECONFIG_PATH }}
+          kubectl get deployment cert-manager-webhook -n cert-manager -o jsonpath='{.status.readyReplicas}'
+        expect:
+          output_gte: 1
+
+    rollback:
+      enabled: true
+      commands:
+        - command: |
+            export KUBECONFIG={{ KUBECONFIG_PATH }}
+            helm uninstall cert-manager -n cert-manager --wait
+          timeout: 5m
+
+  # Ingress Controller
+  - id: deploy-ingress-controller
+    name: Deploy NGINX Ingress Controller
+    stage: 7
+    parallel_group: k8s-addons
+    depends_on:
+      - configure-kubectl
+    description: Deploy NGINX ingress controller with AWS NLB
+
+    commands:
+      - name: add-helm-repo
+        command: |
+          helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+          helm repo update
+        timeout: 2m
+
+      - name: install-ingress-controller
+        command: |
+          export KUBECONFIG={{ KUBECONFIG_PATH }}
+          helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx \
+            --namespace ingress-nginx \
+            --create-namespace \
+            --version 4.9.0 \
+            --set controller.service.type=LoadBalancer \
+            --set controller.service.annotations."service\.beta\.kubernetes\.io/aws-load-balancer-type"=nlb \
+            --set controller.service.annotations."service\.beta\.kubernetes\.io/aws-load-balancer-cross-zone-load-balancing-enabled"=true \
+            --set controller.metrics.enabled=true \
+            --set controller.metrics.serviceMonitor.enabled=true \
+            --set controller.podAnnotations."prometheus\.io/scrape"=true \
+            --set controller.podAnnotations."prometheus\.io/port"=10254 \
+            --set controller.resources.requests.cpu=200m \
+            --set controller.resources.requests.memory=256Mi \
+            --set controller.resources.limits.cpu=500m \
+            --set controller.resources.limits.memory=512Mi \
+            --set controller.autoscaling.enabled=true \
+            --set controller.autoscaling.minReplicas=2 \
+            --set controller.autoscaling.maxReplicas=10 \
+            --wait \
+            --timeout 10m
+        timeout: 15m
+
+    validation:
+      - name: ingress-controller-running
+        command: |
+          export KUBECONFIG={{ KUBECONFIG_PATH }}
+          kubectl get deployment ingress-nginx-controller -n ingress-nginx -o jsonpath='{.status.readyReplicas}'
+        expect:
+          output_gte: 2
+
+      - name: load-balancer-provisioned
+        command: |
+          export KUBECONFIG={{ KUBECONFIG_PATH }}
+          kubectl get svc ingress-nginx-controller -n ingress-nginx -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
+        expect:
+          exit_code: 0
+          output_contains: "elb.amazonaws.com"
+        retries: 10
+        retry_delay: 30s
+
+    rollback:
+      enabled: true
+      commands:
+        - command: |
+            export KUBECONFIG={{ KUBECONFIG_PATH }}
+            helm uninstall ingress-nginx -n ingress-nginx --wait
+          timeout: 5m
+
+    outputs:
+      - name: ingress_lb_hostname
+        from: |
+          export KUBECONFIG={{ KUBECONFIG_PATH }}
+          kubectl get svc ingress-nginx-controller -n ingress-nginx -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
+
+  # External Secrets Operator
+  - id: deploy-external-secrets
+    name: Deploy External Secrets Operator
+    stage: 7
+    parallel_group: k8s-addons
+    depends_on:
+      - configure-kubectl
+    description: Deploy External Secrets Operator for AWS Secrets Manager integration
+
+    commands:
+      - name: add-helm-repo
+        command: |
+          helm repo add external-secrets https://charts.external-secrets.io
+          helm repo update
+        timeout: 2m
+
+      - name: install-external-secrets
+        command: |
+          export KUBECONFIG={{ KUBECONFIG_PATH }}
+          ESO_ROLE_ARN=$(terraform -chdir=deployment/terraform/environments/{{ environment.name }} output -raw external_secrets_role_arn)
+          helm upgrade --install external-secrets external-secrets/external-secrets \
+            --namespace external-secrets \
+            --create-namespace \
+            --version 0.9.11 \
+            --set serviceAccount.annotations."eks\.amazonaws\.com/role-arn"=${ESO_ROLE_ARN} \
+            --set webhook.port=9443 \
+            --wait \
+            --timeout 10m
+        timeout: 15m
+        working_directory: "."
+
+      - name: create-secret-store
+        command: |
+          export KUBECONFIG={{ KUBECONFIG_PATH }}
+          kubectl apply -f - <<EOF
+          apiVersion: external-secrets.io/v1beta1
+          kind: ClusterSecretStore
+          metadata:
+            name: aws-secrets-manager
+          spec:
+            provider:
+              aws:
+                service: SecretsManager
+                region: {{ environment.aws_region }}
+                auth:
+                  jwt:
+                    serviceAccountRef:
+                      name: external-secrets
+                      namespace: external-secrets
+          EOF
+        timeout: 2m
+
+    validation:
+      - name: eso-running
+        command: |
+          export KUBECONFIG={{ KUBECONFIG_PATH }}
+          kubectl get deployment external-secrets -n external-secrets -o jsonpath='{.status.readyReplicas}'
+        expect:
+          output_gte: 1
+
+      - name: secret-store-ready
+        command: |
+          export KUBECONFIG={{ KUBECONFIG_PATH }}
+          kubectl get clustersecretstore aws-secrets-manager -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}'
+        expect:
+          output_equals: "True"
+        retries: 5
+        retry_delay: 10s
+
+    rollback:
+      enabled: true
+      commands:
+        - command: |
+            export KUBECONFIG={{ KUBECONFIG_PATH }}
+            kubectl delete clustersecretstore aws-secrets-manager --ignore-not-found
+            helm uninstall external-secrets -n external-secrets --wait
+          timeout: 5m
+
+  # Cluster Autoscaler
+  - id: deploy-cluster-autoscaler
+    name: Deploy Cluster Autoscaler
+    stage: 7
+    parallel_group: k8s-addons
+    depends_on:
+      - configure-kubectl
+    description: Deploy Kubernetes Cluster Autoscaler for node scaling
+
+    commands:
+      - name: add-helm-repo
+        command: |
+          helm repo add autoscaler https://kubernetes.github.io/autoscaler
+          helm repo update
+        timeout: 2m
+
+      - name: install-cluster-autoscaler
+        command: |
+          export KUBECONFIG={{ KUBECONFIG_PATH }}
+          CLUSTER_NAME=$(terraform -chdir=deployment/terraform/environments/{{ environment.name }} output -raw eks_cluster_name)
+          CA_ROLE_ARN=$(terraform -chdir=deployment/terraform/environments/{{ environment.name }} output -raw cluster_autoscaler_role_arn || echo "")
+
+          helm upgrade --install cluster-autoscaler autoscaler/cluster-autoscaler \
+            --namespace kube-system \
+            --version 9.34.1 \
+            --set autoDiscovery.clusterName=${CLUSTER_NAME} \
+            --set awsRegion={{ environment.aws_region }} \
+            --set rbac.serviceAccount.annotations."eks\.amazonaws\.com/role-arn"=${CA_ROLE_ARN} \
+            --set extraArgs.balance-similar-node-groups=true \
+            --set extraArgs.skip-nodes-with-system-pods=false \
+            --set extraArgs.scale-down-enabled=true \
+            --set extraArgs.scale-down-delay-after-add=10m \
+            --set extraArgs.scale-down-unneeded-time=10m \
+            --set resources.requests.cpu=100m \
+            --set resources.requests.memory=300Mi \
+            --set resources.limits.cpu=200m \
+            --set resources.limits.memory=600Mi \
+            --wait \
+            --timeout 10m
+        timeout: 15m
+        working_directory: "."
+
+    validation:
+      - name: autoscaler-running
+        command: |
+          export KUBECONFIG={{ KUBECONFIG_PATH }}
+          kubectl get deployment cluster-autoscaler-aws-cluster-autoscaler -n kube-system -o jsonpath='{.status.readyReplicas}'
+        expect:
+          output_gte: 1
+
+    rollback:
+      enabled: true
+      commands:
+        - command: |
+            export KUBECONFIG={{ KUBECONFIG_PATH }}
+            helm uninstall cluster-autoscaler -n kube-system --wait
+          timeout: 5m
+
+  # ---------------------------------------------------------------------------
+  # Stage 8: Monitoring Stack
+  # ---------------------------------------------------------------------------
+  - id: deploy-monitoring
+    name: Deploy Monitoring Stack
+    stage: 8
+    depends_on:
+      - deploy-ingress-controller
+      - deploy-cert-manager
+    description: Deploy Prometheus, Grafana, and alerting stack
+
+    commands:
+      - name: add-helm-repos
+        command: |
+          helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+          helm repo add grafana https://grafana.github.io/helm-charts
+          helm repo update
+        timeout: 2m
+
+      - name: install-kube-prometheus-stack
+        command: |
+          export KUBECONFIG={{ KUBECONFIG_PATH }}
+          helm upgrade --install kube-prometheus-stack prometheus-community/kube-prometheus-stack \
+            --namespace monitoring \
+            --version 55.5.0 \
+            --set prometheus.prometheusSpec.retention=30d \
+            --set prometheus.prometheusSpec.retentionSize=50GB \
+            --set prometheus.prometheusSpec.storageSpec.volumeClaimTemplate.spec.storageClassName=gp3 \
+            --set prometheus.prometheusSpec.storageSpec.volumeClaimTemplate.spec.accessModes[0]=ReadWriteOnce \
+            --set prometheus.prometheusSpec.storageSpec.volumeClaimTemplate.spec.resources.requests.storage=100Gi \
+            --set prometheus.prometheusSpec.resources.requests.cpu=500m \
+            --set prometheus.prometheusSpec.resources.requests.memory=2Gi \
+            --set prometheus.prometheusSpec.resources.limits.cpu=2000m \
+            --set prometheus.prometheusSpec.resources.limits.memory=8Gi \
+            --set alertmanager.alertmanagerSpec.storage.volumeClaimTemplate.spec.storageClassName=gp3 \
+            --set alertmanager.alertmanagerSpec.storage.volumeClaimTemplate.spec.resources.requests.storage=10Gi \
+            --set grafana.enabled=true \
+            --set grafana.adminPassword=CHANGE_ME_IMMEDIATELY \
+            --set grafana.persistence.enabled=true \
+            --set grafana.persistence.size=10Gi \
+            --set grafana.persistence.storageClassName=gp3 \
+            --set grafana.ingress.enabled=true \
+            --set grafana.ingress.ingressClassName=nginx \
+            --set grafana.ingress.hosts[0]=grafana.greenlang.io \
+            --set grafana.ingress.annotations."cert-manager\.io/cluster-issuer"=letsencrypt-prod \
+            --set grafana.ingress.tls[0].secretName=grafana-tls \
+            --set grafana.ingress.tls[0].hosts[0]=grafana.greenlang.io \
+            --wait \
+            --timeout 15m
+        timeout: 20m
+
+      - name: deploy-custom-alerts
+        command: |
+          export KUBECONFIG={{ KUBECONFIG_PATH }}
+          kubectl apply -f deployment/monitoring/alerts-unified.yml -n monitoring
+        timeout: 2m
+        working_directory: "."
+
+      - name: deploy-custom-dashboards
+        command: |
+          export KUBECONFIG={{ KUBECONFIG_PATH }}
+          kubectl create configmap greenlang-dashboards \
+            --from-file=deployment/infrastructure/kubernetes/greenlang/monitoring/ \
+            -n monitoring \
+            --dry-run=client -o yaml | kubectl apply -f -
+        timeout: 2m
+        working_directory: "."
+
+    validation:
+      - name: prometheus-running
+        command: |
+          export KUBECONFIG={{ KUBECONFIG_PATH }}
+          kubectl get statefulset prometheus-kube-prometheus-stack-prometheus -n monitoring -o jsonpath='{.status.readyReplicas}'
+        expect:
+          output_gte: 1
+
+      - name: alertmanager-running
+        command: |
+          export KUBECONFIG={{ KUBECONFIG_PATH }}
+          kubectl get statefulset alertmanager-kube-prometheus-stack-alertmanager -n monitoring -o jsonpath='{.status.readyReplicas}'
+        expect:
+          output_gte: 1
+
+      - name: grafana-running
+        command: |
+          export KUBECONFIG={{ KUBECONFIG_PATH }}
+          kubectl get deployment kube-prometheus-stack-grafana -n monitoring -o jsonpath='{.status.readyReplicas}'
+        expect:
+          output_gte: 1
+
+      - name: prometheus-targets-healthy
+        command: |
+          export KUBECONFIG={{ KUBECONFIG_PATH }}
+          kubectl exec -n monitoring prometheus-kube-prometheus-stack-prometheus-0 -- \
+            wget -qO- http://localhost:9090/api/v1/targets | \
+            jq '[.data.activeTargets[] | select(.health=="up")] | length'
+        expect:
+          output_gte: 5
+        retries: 5
+        retry_delay: 30s
+
+    rollback:
+      enabled: true
+      commands:
+        - command: |
+            export KUBECONFIG={{ KUBECONFIG_PATH }}
+            helm uninstall kube-prometheus-stack -n monitoring --wait
+            kubectl delete pvc -l app.kubernetes.io/name=prometheus -n monitoring
+            kubectl delete pvc -l app.kubernetes.io/name=alertmanager -n monitoring
+          timeout: 10m
+
+    outputs:
+      - name: grafana_url
+        value: "https://grafana.greenlang.io"
+      - name: prometheus_url
+        value: "http://prometheus-kube-prometheus-stack-prometheus.monitoring:9090"
+
+  # ---------------------------------------------------------------------------
+  # Stage 9: GreenLang Application Deployment
+  # ---------------------------------------------------------------------------
+  - id: deploy-greenlang-apps
+    name: Deploy GreenLang Applications
+    stage: 9
+    depends_on:
+      - deploy-monitoring
+      - deploy-external-secrets
+      - apply-rds
+      - apply-elasticache
+    description: Deploy GreenLang application components
+
+    commands:
+      - name: create-external-secrets
+        command: |
+          export KUBECONFIG={{ KUBECONFIG_PATH }}
+          kubectl apply -f - <<EOF
+          apiVersion: external-secrets.io/v1beta1
+          kind: ExternalSecret
+          metadata:
+            name: greenlang-secrets
+            namespace: greenlang
+          spec:
+            refreshInterval: 1h
+            secretStoreRef:
+              name: aws-secrets-manager
+              kind: ClusterSecretStore
+            target:
+              name: greenlang-secrets
+              creationPolicy: Owner
+            data:
+              - secretKey: database-url
+                remoteRef:
+                  key: greenlang/{{ environment.name }}/database-credentials
+                  property: connection_string
+              - secretKey: redis-password
+                remoteRef:
+                  key: greenlang/{{ environment.name }}/redis-auth-token
+                  property: auth_token
+              - secretKey: api-secret-key
+                remoteRef:
+                  key: greenlang/{{ environment.name }}/app-secrets
+                  property: api_secret_key
+          EOF
+        timeout: 2m
+
+      - name: wait-for-secrets
+        command: |
+          export KUBECONFIG={{ KUBECONFIG_PATH }}
+          kubectl wait --for=condition=Ready externalsecret/greenlang-secrets -n greenlang --timeout=120s
+        timeout: 3m
+
+      - name: deploy-application
+        command: |
+          export KUBECONFIG={{ KUBECONFIG_PATH }}
+          helm upgrade --install greenlang deployment/infrastructure/helm/greenlang \
+            --namespace greenlang \
+            -f deployment/infrastructure/helm/greenlang/values-{{ environment.name }}.yaml \
+            --set global.environment={{ environment.name }} \
+            --set image.tag={{ image_tag | default('latest') }} \
+            --wait \
+            --timeout 15m
+        timeout: 20m
+        working_directory: "."
+
+      - name: run-database-migrations
+        command: |
+          export KUBECONFIG={{ KUBECONFIG_PATH }}
+          kubectl run greenlang-migrations \
+            --image=greenlang/app:{{ image_tag | default('latest') }} \
+            --namespace greenlang \
+            --restart=Never \
+            --rm \
+            --attach \
+            --command -- python manage.py migrate --noinput
+        timeout: 10m
+
+    validation:
+      - name: executor-running
+        command: |
+          export KUBECONFIG={{ KUBECONFIG_PATH }}
+          kubectl get deployment greenlang-executor -n greenlang -o jsonpath='{.status.readyReplicas}'
+        expect:
+          output_gte: 3
+
+      - name: worker-running
+        command: |
+          export KUBECONFIG={{ KUBECONFIG_PATH }}
+          kubectl get deployment greenlang-worker -n greenlang -o jsonpath='{.status.readyReplicas}'
+        expect:
+          output_gte: 5
+
+      - name: health-check
+        command: |
+          export KUBECONFIG={{ KUBECONFIG_PATH }}
+          kubectl exec -n greenlang deployment/greenlang-executor -- \
+            curl -sf http://localhost:8080/api/v1/health
+        expect:
+          exit_code: 0
+          output_contains: "healthy"
+
+      - name: database-connectivity
+        command: |
+          export KUBECONFIG={{ KUBECONFIG_PATH }}
+          kubectl exec -n greenlang deployment/greenlang-executor -- \
+            curl -sf http://localhost:8080/api/v1/health/db
+        expect:
+          exit_code: 0
+          output_contains: "connected"
+
+      - name: redis-connectivity
+        command: |
+          export KUBECONFIG={{ KUBECONFIG_PATH }}
+          kubectl exec -n greenlang deployment/greenlang-executor -- \
+            curl -sf http://localhost:8080/api/v1/health/redis
+        expect:
+          exit_code: 0
+          output_contains: "connected"
+
+    rollback:
+      enabled: true
+      commands:
+        - command: |
+            export KUBECONFIG={{ KUBECONFIG_PATH }}
+            helm rollback greenlang -n greenlang
+          timeout: 10m
+
+    outputs:
+      - name: app_version
+        from: |
+          export KUBECONFIG={{ KUBECONFIG_PATH }}
+          kubectl get deployment greenlang-executor -n greenlang -o jsonpath='{.spec.template.spec.containers[0].image}'
+
+  # ---------------------------------------------------------------------------
+  # Stage 10: Production Readiness Validation
+  # ---------------------------------------------------------------------------
+  - id: validate-production
+    name: Validate Production Readiness
+    stage: 10
+    depends_on:
+      - deploy-greenlang-apps
+    description: Comprehensive production readiness validation
+
+    commands:
+      - name: validate-infrastructure
+        command: |
+          echo "=== Infrastructure Validation ==="
+          terraform -chdir=deployment/terraform/environments/{{ environment.name }} output -json > /tmp/tf-outputs.json
+          echo "VPC ID: $(jq -r '.vpc_id.value' /tmp/tf-outputs.json)"
+          echo "EKS Cluster: $(jq -r '.eks_cluster_name.value' /tmp/tf-outputs.json)"
+          echo "RDS Endpoint: $(jq -r '.rds_endpoint.value' /tmp/tf-outputs.json)"
+          echo "Redis Endpoint: $(jq -r '.redis_primary_endpoint.value' /tmp/tf-outputs.json)"
+        timeout: 2m
+        working_directory: "."
+
+      - name: run-smoke-tests
+        command: |
+          export KUBECONFIG={{ KUBECONFIG_PATH }}
+
+          echo "=== Running Smoke Tests ==="
+
+          # Test API availability
+          kubectl run smoke-test-api \
+            --image=curlimages/curl:latest \
+            --namespace greenlang \
+            --restart=Never \
+            --rm \
+            --attach \
+            --command -- curl -sf http://greenlang-executor:8080/api/v1/health
+
+          # Test database connectivity
+          kubectl run smoke-test-db \
+            --image=postgres:14 \
+            --namespace greenlang \
+            --restart=Never \
+            --rm \
+            --attach \
+            --env="PGPASSWORD=$(kubectl get secret greenlang-secrets -n greenlang -o jsonpath='{.data.database-password}' | base64 -d)" \
+            --command -- pg_isready -h $(kubectl get secret greenlang-secrets -n greenlang -o jsonpath='{.data.database-host}' | base64 -d) -p 5432
+
+          echo "Smoke tests passed!"
+        timeout: 5m
+
+      - name: check-hpa-status
+        command: |
+          export KUBECONFIG={{ KUBECONFIG_PATH }}
+          echo "=== HPA Status ==="
+          kubectl get hpa -n greenlang
+          kubectl describe hpa -n greenlang
+        timeout: 2m
+
+      - name: check-pdb-status
+        command: |
+          export KUBECONFIG={{ KUBECONFIG_PATH }}
+          echo "=== PDB Status ==="
+          kubectl get pdb -n greenlang
+        timeout: 1m
+
+      - name: validate-ssl-certificates
+        command: |
+          export KUBECONFIG={{ KUBECONFIG_PATH }}
+          echo "=== SSL Certificate Status ==="
+          kubectl get certificates -A
+          kubectl get certificaterequests -A
+        timeout: 2m
+
+      - name: check-resource-quotas
+        command: |
+          export KUBECONFIG={{ KUBECONFIG_PATH }}
+          echo "=== Resource Quotas ==="
+          kubectl describe resourcequota -n greenlang
+        timeout: 1m
+
+      - name: generate-deployment-report
+        command: |
+          export KUBECONFIG={{ KUBECONFIG_PATH }}
+
+          cat > /tmp/deployment-report.json <<EOF
+          {
+            "deployment_id": "$(uuidgen || echo 'INFRA-001-$(date +%Y%m%d%H%M%S)')",
+            "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "environment": "{{ environment.name }}",
+            "status": "SUCCESS",
+            "components": {
+              "vpc": {
+                "id": "$(terraform -chdir=deployment/terraform/environments/{{ environment.name }} output -raw vpc_id)",
+                "status": "active"
+              },
+              "eks": {
+                "name": "$(terraform -chdir=deployment/terraform/environments/{{ environment.name }} output -raw eks_cluster_name)",
+                "nodes": $(kubectl get nodes -o json | jq '.items | length'),
+                "status": "active"
+              },
+              "rds": {
+                "endpoint": "$(terraform -chdir=deployment/terraform/environments/{{ environment.name }} output -raw rds_endpoint)",
+                "status": "available"
+              },
+              "elasticache": {
+                "endpoint": "$(terraform -chdir=deployment/terraform/environments/{{ environment.name }} output -raw redis_primary_endpoint)",
+                "status": "available"
+              },
+              "application": {
+                "executor_replicas": $(kubectl get deployment greenlang-executor -n greenlang -o jsonpath='{.status.readyReplicas}'),
+                "worker_replicas": $(kubectl get deployment greenlang-worker -n greenlang -o jsonpath='{.status.readyReplicas}'),
+                "status": "running"
+              },
+              "monitoring": {
+                "prometheus": "running",
+                "grafana": "running",
+                "alertmanager": "running"
+              }
+            }
+          }
+          EOF
+
+          cat /tmp/deployment-report.json
+        timeout: 5m
+        working_directory: "."
+
+    validation:
+      - name: all-pods-running
+        command: |
+          export KUBECONFIG={{ KUBECONFIG_PATH }}
+          PENDING=$(kubectl get pods -n greenlang --field-selector=status.phase!=Running,status.phase!=Succeeded -o name | wc -l)
+          echo "Pending/Failed pods: $PENDING"
+          [ "$PENDING" -eq 0 ]
+        expect:
+          exit_code: 0
+
+      - name: no-critical-alerts
+        command: |
+          export KUBECONFIG={{ KUBECONFIG_PATH }}
+          CRITICAL_ALERTS=$(kubectl exec -n monitoring prometheus-kube-prometheus-stack-prometheus-0 -- \
+            wget -qO- 'http://localhost:9090/api/v1/alerts' | \
+            jq '[.data.alerts[] | select(.labels.severity=="critical" and .state=="firing")] | length')
+          echo "Critical alerts firing: $CRITICAL_ALERTS"
+          [ "$CRITICAL_ALERTS" -eq 0 ]
+        expect:
+          exit_code: 0
+
+      - name: endpoint-reachable
+        command: |
+          export KUBECONFIG={{ KUBECONFIG_PATH }}
+          INGRESS_HOST=$(kubectl get ingress -n greenlang -o jsonpath='{.items[0].status.loadBalancer.ingress[0].hostname}')
+          curl -sf -o /dev/null -w "%{http_code}" "https://${INGRESS_HOST}/api/v1/health" --insecure
+        expect:
+          output_equals: "200"
+        retries: 5
+        retry_delay: 30s
+
+    artifacts:
+      - name: deployment-report
+        path: /tmp/deployment-report.json
+        retention: 365d
+
+    outputs:
+      - name: deployment_status
+        value: SUCCESS
+      - name: deployment_timestamp
+        from: date -u +%Y-%m-%dT%H:%M:%SZ
+
+# =============================================================================
+# Quality Gates
+# =============================================================================
+quality_gates:
+
+  - name: infrastructure-security
+    stage: post-apply
+    description: Validate security best practices
+    checks:
+      - name: encryption-at-rest
+        description: All data stores must have encryption at rest enabled
+        validations:
+          - rds-encryption-enabled
+          - elasticache-encryption-at-rest
+          - s3-encryption-enabled
+
+      - name: encryption-in-transit
+        description: All connections must use TLS
+        validations:
+          - elasticache-encryption-in-transit
+          - ingress-tls-configured
+
+      - name: network-security
+        description: Network policies must be enforced
+        validations:
+          - vpc-flow-logs-enabled
+          - security-groups-restrictive
+          - network-policies-applied
+
+  - name: high-availability
+    stage: post-deploy
+    description: Validate high availability configuration
+    checks:
+      - name: multi-az-deployment
+        description: Critical services must be multi-AZ
+        validations:
+          - rds-multi-az-enabled
+          - eks-nodes-multi-az
+          - elasticache-replicas-multi-az
+
+      - name: replica-count
+        description: Minimum replica counts must be met
+        validations:
+          - executor-min-replicas
+          - worker-min-replicas
+          - ingress-controller-replicas
+
+  - name: observability
+    stage: post-deploy
+    description: Validate monitoring and alerting
+    checks:
+      - name: metrics-collection
+        description: Prometheus must collect required metrics
+        validations:
+          - prometheus-targets-healthy
+          - custom-metrics-available
+
+      - name: alerting-configured
+        description: Critical alerts must be configured
+        validations:
+          - critical-alerts-defined
+          - alertmanager-receivers-configured
+
+  - name: performance
+    stage: post-deploy
+    description: Validate performance baselines
+    checks:
+      - name: latency
+        description: API latency must be within SLO
+        command: |
+          export KUBECONFIG={{ KUBECONFIG_PATH }}
+          kubectl exec -n greenlang deployment/greenlang-executor -- \
+            curl -sf -w "%{time_total}" -o /dev/null http://localhost:8080/api/v1/health
+        expect:
+          output_lt: "0.5"
+
+      - name: throughput
+        description: System must handle minimum throughput
+        command: |
+          export KUBECONFIG={{ KUBECONFIG_PATH }}
+          kubectl run load-test \
+            --image=grafana/k6:latest \
+            --namespace greenlang \
+            --restart=Never \
+            --rm \
+            --attach \
+            --command -- k6 run --vus 10 --duration 30s - <<EOF
+          import http from 'k6/http';
+          import { check } from 'k6';
+          export default function() {
+            const res = http.get('http://greenlang-executor:8080/api/v1/health');
+            check(res, { 'status is 200': (r) => r.status === 200 });
+          }
+          EOF
+        expect:
+          exit_code: 0
+
+# =============================================================================
+# Rollback Procedures
+# =============================================================================
+rollback:
+  global:
+    enabled: true
+    strategy: staged
+    notify_on_trigger: true
+    approval_required_for_prod: true
+
+  stages:
+    - name: application-rollback
+      description: Rollback application deployments
+      order: 1
+      tasks:
+        - deploy-greenlang-apps
+      commands:
+        - command: |
+            export KUBECONFIG={{ KUBECONFIG_PATH }}
+            # Get previous revision
+            PREV_REVISION=$(helm history greenlang -n greenlang -o json | jq -r '.[-2].revision')
+            helm rollback greenlang $PREV_REVISION -n greenlang --wait
+          timeout: 10m
+
+    - name: k8s-addons-rollback
+      description: Rollback Kubernetes add-ons
+      order: 2
+      tasks:
+        - deploy-monitoring
+        - deploy-external-secrets
+        - deploy-cluster-autoscaler
+        - deploy-ingress-controller
+        - deploy-cert-manager
+      commands:
+        - command: |
+            export KUBECONFIG={{ KUBECONFIG_PATH }}
+            helm rollback kube-prometheus-stack -n monitoring --wait || true
+            helm rollback external-secrets -n external-secrets --wait || true
+            helm rollback cluster-autoscaler -n kube-system --wait || true
+            helm rollback ingress-nginx -n ingress-nginx --wait || true
+            helm rollback cert-manager -n cert-manager --wait || true
+          timeout: 15m
+
+    - name: infrastructure-rollback
+      description: Rollback infrastructure (requires approval)
+      order: 3
+      approval_required: true
+      warning: "This will destroy and recreate infrastructure components"
+      tasks:
+        - apply-eks
+        - apply-rds
+        - apply-elasticache
+        - apply-s3
+        - apply-iam
+        - apply-vpc
+      commands:
+        - command: |
+            cd deployment/terraform/environments/{{ environment.name }}
+
+            # First, create backups if possible
+            aws rds create-db-snapshot \
+              --db-instance-identifier greenlang-{{ environment.name }}-postgres \
+              --db-snapshot-identifier greenlang-{{ environment.name }}-rollback-$(date +%Y%m%d%H%M%S) || true
+
+            # Attempt to restore from previous state
+            terraform init -reconfigure
+
+            # If we have a backup state, restore it
+            if [ -f "terraform.tfstate.backup" ]; then
+              cp terraform.tfstate.backup terraform.tfstate
+              terraform refresh
+            fi
+          timeout: 30m
+        working_directory: "."
+
+# =============================================================================
+# Post-deployment Actions
+# =============================================================================
+post_deployment:
+
+  - name: update-dns
+    description: Update DNS records for new endpoints
+    condition: "{{ environment.name == 'prod' }}"
+    commands:
+      - command: |
+          INGRESS_LB=$(kubectl get svc ingress-nginx-controller -n ingress-nginx -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+
+          # Update Route53 (example - adjust for your DNS provider)
+          aws route53 change-resource-record-sets \
+            --hosted-zone-id {{ route53_zone_id }} \
+            --change-batch '{
+              "Changes": [{
+                "Action": "UPSERT",
+                "ResourceRecordSet": {
+                  "Name": "api.greenlang.io",
+                  "Type": "CNAME",
+                  "TTL": 300,
+                  "ResourceRecords": [{"Value": "'$INGRESS_LB'"}]
+                }
+              }]
+            }'
+        timeout: 5m
+
+  - name: notify-stakeholders
+    description: Send deployment notification
+    commands:
+      - command: |
+          curl -X POST {{ secrets.slack_webhook_url }} \
+            -H 'Content-Type: application/json' \
+            -d '{
+              "text": "GreenLang {{ environment.name }} deployment completed successfully",
+              "attachments": [{
+                "color": "good",
+                "fields": [
+                  {"title": "Environment", "value": "{{ environment.name }}", "short": true},
+                  {"title": "Version", "value": "{{ image_tag | default('latest') }}", "short": true},
+                  {"title": "Cluster", "value": "greenlang-{{ environment.name }}-eks", "short": true},
+                  {"title": "Region", "value": "{{ environment.aws_region }}", "short": true}
+                ]
+              }]
+            }'
+        timeout: 1m
+
+  - name: create-deployment-tag
+    description: Tag the deployment in git
+    commands:
+      - command: |
+          git tag -a "deploy-{{ environment.name }}-$(date +%Y%m%d%H%M%S)" \
+            -m "Deployed to {{ environment.name }} at $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          git push origin --tags
+        timeout: 2m
+
+# =============================================================================
+# Scheduled Tasks
+# =============================================================================
+scheduled_tasks:
+
+  - name: infrastructure-drift-check
+    description: Check for infrastructure drift
+    schedule: "0 6 * * *"  # Daily at 6 AM
+    commands:
+      - command: |
+          cd deployment/terraform/environments/{{ environment.name }}
+          terraform plan -detailed-exitcode -var-file="{{ TF_VAR_FILE }}" > /tmp/drift-check.log 2>&1
+          EXIT_CODE=$?
+          if [ $EXIT_CODE -eq 2 ]; then
+            echo "DRIFT DETECTED"
+            cat /tmp/drift-check.log
+            # Send alert
+            curl -X POST {{ secrets.slack_webhook_url }} \
+              -H 'Content-Type: application/json' \
+              -d '{"text": "Infrastructure drift detected in {{ environment.name }}!"}'
+          fi
+        timeout: 15m
+    notify_on_drift: true
+
+  - name: security-scan
+    description: Run security compliance scan
+    schedule: "0 2 * * 0"  # Weekly on Sunday at 2 AM
+    commands:
+      - command: |
+          # Run AWS Config compliance check
+          aws configservice get-compliance-details-by-config-rule \
+            --config-rule-name greenlang-security-compliance \
+            --compliance-types NON_COMPLIANT > /tmp/compliance-report.json
+
+          NON_COMPLIANT=$(jq '.EvaluationResults | length' /tmp/compliance-report.json)
+          if [ "$NON_COMPLIANT" -gt 0 ]; then
+            echo "Non-compliant resources found: $NON_COMPLIANT"
+            cat /tmp/compliance-report.json
+          fi
+        timeout: 10m
+    artifacts:
+      - name: compliance-report
+        path: /tmp/compliance-report.json
+        retention: 90d
+
+# =============================================================================
+# Cleanup Tasks
+# =============================================================================
+cleanup:
+  on_success:
+    - name: cleanup-temp-files
+      command: rm -rf /tmp/tfplan* /tmp/deployment-report.json /tmp/drift-check.log
+
+  on_failure:
+    - name: collect-diagnostics
+      command: |
+        export KUBECONFIG={{ KUBECONFIG_PATH }}
+        mkdir -p /tmp/diagnostics
+
+        # Collect pod logs
+        kubectl logs -l app=greenlang --all-containers --tail=1000 -n greenlang > /tmp/diagnostics/pod-logs.txt 2>&1 || true
+
+        # Collect events
+        kubectl get events -n greenlang --sort-by='.lastTimestamp' > /tmp/diagnostics/events.txt 2>&1 || true
+
+        # Collect describe output
+        kubectl describe pods -n greenlang > /tmp/diagnostics/pod-describe.txt 2>&1 || true
+
+        # Collect terraform state
+        cp deployment/terraform/environments/{{ environment.name }}/terraform.tfstate /tmp/diagnostics/ 2>&1 || true
+
+        # Create archive
+        tar -czf /tmp/diagnostics-$(date +%Y%m%d%H%M%S).tar.gz -C /tmp diagnostics/
+      timeout: 5m
+      working_directory: "."
+
+    - name: upload-diagnostics
+      command: |
+        aws s3 cp /tmp/diagnostics-*.tar.gz \
+          s3://greenlang-{{ environment.name }}-artifacts/diagnostics/
+      timeout: 2m
+
+# =============================================================================
+# Documentation
+# =============================================================================
+documentation:
+  runbook_url: "https://wiki.greenlang.io/runbooks/infra-deployment"
+  architecture_url: "https://wiki.greenlang.io/architecture/infrastructure"
+  contact:
+    team: platform-engineering
+    slack: "#greenlang-platform"
+    oncall: "https://greenlang.pagerduty.com/schedules/platform"

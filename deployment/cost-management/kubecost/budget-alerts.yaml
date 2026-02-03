@@ -1,0 +1,460 @@
+# Cost Budget Alerts Configuration
+# INFRA-001: Cost Management and Optimization
+# Defines budget thresholds and alerting rules
+
+---
+# Kubecost budget configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kubecost-budgets
+  namespace: kubecost
+  labels:
+    app: kubecost
+    component: budgets
+data:
+  budgets.json: |
+    {
+      "budgets": [
+        {
+          "name": "production-total",
+          "description": "Total production cluster budget",
+          "type": "recurring",
+          "interval": "monthly",
+          "amount": 20000,
+          "currency": "USD",
+          "filter": {
+            "namespaces": ["greenlang", "data-pipeline", "ml-workloads"]
+          },
+          "alerts": [
+            {
+              "threshold": 50,
+              "type": "percentage",
+              "channels": ["slack"]
+            },
+            {
+              "threshold": 80,
+              "type": "percentage",
+              "channels": ["slack", "email"]
+            },
+            {
+              "threshold": 100,
+              "type": "percentage",
+              "channels": ["slack", "email", "pagerduty"]
+            },
+            {
+              "threshold": 120,
+              "type": "percentage",
+              "channels": ["slack", "email", "pagerduty"],
+              "severity": "critical"
+            }
+          ]
+        },
+        {
+          "name": "greenlang-production",
+          "description": "GreenLang production namespace budget",
+          "type": "recurring",
+          "interval": "monthly",
+          "amount": 5000,
+          "currency": "USD",
+          "filter": {
+            "namespaces": ["greenlang"]
+          },
+          "alerts": [
+            {
+              "threshold": 70,
+              "type": "percentage",
+              "channels": ["slack"]
+            },
+            {
+              "threshold": 90,
+              "type": "percentage",
+              "channels": ["slack", "email"]
+            },
+            {
+              "threshold": 100,
+              "type": "percentage",
+              "channels": ["slack", "email", "pagerduty"]
+            }
+          ]
+        },
+        {
+          "name": "ml-workloads",
+          "description": "ML workloads namespace budget",
+          "type": "recurring",
+          "interval": "monthly",
+          "amount": 8000,
+          "currency": "USD",
+          "filter": {
+            "namespaces": ["ml-workloads"]
+          },
+          "alerts": [
+            {
+              "threshold": 60,
+              "type": "percentage",
+              "channels": ["slack"]
+            },
+            {
+              "threshold": 85,
+              "type": "percentage",
+              "channels": ["slack", "email"]
+            },
+            {
+              "threshold": 100,
+              "type": "percentage",
+              "channels": ["slack", "email", "pagerduty"]
+            }
+          ]
+        },
+        {
+          "name": "staging-environments",
+          "description": "Combined staging environments budget",
+          "type": "recurring",
+          "interval": "monthly",
+          "amount": 2500,
+          "currency": "USD",
+          "filter": {
+            "namespaces": ["greenlang-staging", "greenlang-dev"]
+          },
+          "alerts": [
+            {
+              "threshold": 80,
+              "type": "percentage",
+              "channels": ["slack"]
+            },
+            {
+              "threshold": 100,
+              "type": "percentage",
+              "channels": ["slack", "email"]
+            }
+          ]
+        },
+        {
+          "name": "daily-anomaly-detection",
+          "description": "Daily cost anomaly detection",
+          "type": "recurring",
+          "interval": "daily",
+          "amount": 800,
+          "currency": "USD",
+          "filter": {
+            "namespaces": ["greenlang", "data-pipeline", "ml-workloads"]
+          },
+          "alerts": [
+            {
+              "threshold": 150,
+              "type": "percentage",
+              "channels": ["slack"],
+              "description": "50% above daily average"
+            },
+            {
+              "threshold": 200,
+              "type": "percentage",
+              "channels": ["slack", "email"],
+              "description": "100% above daily average (anomaly)"
+            }
+          ]
+        }
+      ],
+      "globalSettings": {
+        "defaultCurrency": "USD",
+        "timezone": "America/New_York",
+        "aggregationWindow": "1h",
+        "forecastEnabled": true,
+        "forecastWindow": "7d"
+      }
+    }
+
+---
+# PrometheusRule for cost-based alerts
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: kubecost-alerts
+  namespace: kubecost
+  labels:
+    app: kubecost
+    prometheus: main
+spec:
+  groups:
+    - name: cost-alerts
+      interval: 1h
+      rules:
+        # Daily cost exceeds threshold
+        - alert: DailyCostExceedsThreshold
+          expr: |
+            sum(
+              kubecost_cluster_management_cost{} +
+              kubecost_cluster_memory_cost{} +
+              kubecost_cluster_cpu_cost{} +
+              kubecost_cluster_storage_cost{}
+            ) > 800
+          for: 30m
+          labels:
+            severity: warning
+            team: finops
+          annotations:
+            summary: "Daily cluster cost exceeds $800"
+            description: "Current daily cost is {{ $value | humanize }} USD"
+            runbook_url: "https://wiki.greenlang.io/runbooks/cost-management"
+
+        # Namespace cost spike
+        - alert: NamespaceCostSpike
+          expr: |
+            (
+              sum by (namespace) (
+                kubecost_allocation_cpu_cost{} +
+                kubecost_allocation_memory_cost{} +
+                kubecost_allocation_storage_cost{}
+              )
+              /
+              sum by (namespace) (
+                kubecost_allocation_cpu_cost{} offset 1d +
+                kubecost_allocation_memory_cost{} offset 1d +
+                kubecost_allocation_storage_cost{} offset 1d
+              )
+            ) > 1.5
+          for: 1h
+          labels:
+            severity: warning
+            team: finops
+          annotations:
+            summary: "Namespace {{ $labels.namespace }} cost increased by 50%+"
+            description: "Cost ratio compared to yesterday: {{ $value | printf \"%.2f\" }}x"
+
+        # Monthly budget approaching
+        - alert: MonthlyBudgetApproaching
+          expr: |
+            (
+              sum(kubecost_cluster_management_cost{} + kubecost_cluster_memory_cost{} + kubecost_cluster_cpu_cost{})
+              * 30 / day_of_month()
+            ) > 16000
+          for: 6h
+          labels:
+            severity: warning
+            team: finops
+          annotations:
+            summary: "Projected monthly cost exceeds 80% of budget"
+            description: "Projected cost: {{ $value | humanize }} USD (Budget: $20,000)"
+
+        # Monthly budget exceeded
+        - alert: MonthlyBudgetExceeded
+          expr: |
+            (
+              sum(kubecost_cluster_management_cost{} + kubecost_cluster_memory_cost{} + kubecost_cluster_cpu_cost{})
+              * 30 / day_of_month()
+            ) > 20000
+          for: 1h
+          labels:
+            severity: critical
+            team: finops
+          annotations:
+            summary: "Projected monthly cost exceeds budget"
+            description: "Projected cost: {{ $value | humanize }} USD (Budget: $20,000)"
+            runbook_url: "https://wiki.greenlang.io/runbooks/cost-escalation"
+
+        # Idle resources detected
+        - alert: HighIdleResourceCost
+          expr: |
+            (
+              sum(kubecost_cluster_idle_cost{})
+              /
+              sum(kubecost_cluster_total_cost{})
+            ) > 0.3
+          for: 24h
+          labels:
+            severity: info
+            team: finops
+          annotations:
+            summary: "Idle resources exceed 30% of total cost"
+            description: "Idle cost ratio: {{ $value | printf \"%.1f\" }}%"
+            recommendation: "Consider rightsizing or scaling down underutilized resources"
+
+        # Spot instance fallback
+        - alert: SpotInstanceFallbackToOnDemand
+          expr: |
+            (
+              sum(kube_node_labels{label_node_lifecycle="spot"})
+              /
+              sum(kube_node_labels{})
+            ) < 0.4
+          for: 2h
+          labels:
+            severity: warning
+            team: platform
+          annotations:
+            summary: "Spot instance ratio below target"
+            description: "Current spot ratio: {{ $value | printf \"%.1f\" }}% (Target: 40%+)"
+
+        # Storage cost growth
+        - alert: StorageCostGrowth
+          expr: |
+            (
+              sum(kubecost_pv_cost{})
+              /
+              sum(kubecost_pv_cost{} offset 7d)
+            ) > 1.2
+          for: 24h
+          labels:
+            severity: info
+            team: finops
+          annotations:
+            summary: "Storage cost increased 20%+ week-over-week"
+            description: "Growth ratio: {{ $value | printf \"%.2f\" }}x"
+
+---
+# Alertmanager configuration for cost alerts
+apiVersion: v1
+kind: Secret
+metadata:
+  name: alertmanager-kubecost-config
+  namespace: kubecost
+type: Opaque
+stringData:
+  alertmanager.yaml: |
+    global:
+      resolve_timeout: 5m
+      slack_api_url: 'https://hooks.slack.com/services/XXXXX/XXXXX/XXXXX'
+
+    route:
+      group_by: ['alertname', 'severity', 'namespace']
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 4h
+      receiver: 'default-receiver'
+      routes:
+        - match:
+            severity: critical
+          receiver: 'critical-receiver'
+          continue: true
+        - match:
+            team: finops
+          receiver: 'finops-receiver'
+        - match:
+            team: platform
+          receiver: 'platform-receiver'
+
+    receivers:
+      - name: 'default-receiver'
+        slack_configs:
+          - channel: '#alerts-cost'
+            title: '{{ .GroupLabels.alertname }}'
+            text: '{{ range .Alerts }}{{ .Annotations.summary }}{{ end }}'
+            send_resolved: true
+
+      - name: 'critical-receiver'
+        slack_configs:
+          - channel: '#alerts-critical'
+            title: 'CRITICAL: {{ .GroupLabels.alertname }}'
+            text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+            send_resolved: true
+        pagerduty_configs:
+          - service_key: '<pagerduty-service-key>'
+            severity: critical
+
+      - name: 'finops-receiver'
+        slack_configs:
+          - channel: '#finops-alerts'
+            title: 'FinOps: {{ .GroupLabels.alertname }}'
+            text: '{{ range .Alerts }}{{ .Annotations.summary }}\n{{ .Annotations.description }}{{ end }}'
+        email_configs:
+          - to: 'finops@greenlang.io'
+            send_resolved: true
+
+      - name: 'platform-receiver'
+        slack_configs:
+          - channel: '#platform-alerts'
+            title: '{{ .GroupLabels.alertname }}'
+            text: '{{ range .Alerts }}{{ .Annotations.summary }}{{ end }}'
+
+---
+# Cost anomaly detection job
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: cost-anomaly-detector
+  namespace: kubecost
+spec:
+  schedule: "0 */4 * * *"  # Every 4 hours
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: anomaly-detector
+              image: python:3.11-slim
+              command:
+                - python
+                - -c
+                - |
+                  import json
+                  import urllib.request
+                  import os
+
+                  # Fetch current allocation
+                  url = "http://kubecost-cost-analyzer.kubecost:9090/model/allocation?window=1d&aggregate=namespace"
+                  req = urllib.request.Request(url)
+                  with urllib.request.urlopen(req) as response:
+                      current = json.loads(response.read().decode())
+
+                  # Fetch historical allocation
+                  url_hist = "http://kubecost-cost-analyzer.kubecost:9090/model/allocation?window=7d&aggregate=namespace"
+                  req_hist = urllib.request.Request(url_hist)
+                  with urllib.request.urlopen(req_hist) as response:
+                      historical = json.loads(response.read().decode())
+
+                  # Compare and detect anomalies
+                  anomalies = []
+                  for ns, data in current.get('data', [{}])[0].items():
+                      current_cost = data.get('totalCost', 0)
+                      hist_data = historical.get('data', [{}])[0].get(ns, {})
+                      avg_cost = hist_data.get('totalCost', 0) / 7 if hist_data else 0
+
+                      if avg_cost > 0 and current_cost > avg_cost * 1.5:
+                          anomalies.append({
+                              'namespace': ns,
+                              'current_cost': current_cost,
+                              'avg_cost': avg_cost,
+                              'deviation': (current_cost - avg_cost) / avg_cost * 100
+                          })
+
+                  if anomalies:
+                      # Send alert to Slack
+                      webhook = os.environ.get('SLACK_WEBHOOK_URL', '')
+                      if webhook:
+                          alert_msg = {
+                              "text": "Cost Anomalies Detected",
+                              "attachments": [{
+                                  "color": "warning",
+                                  "fields": [
+                                      {
+                                          "title": a['namespace'],
+                                          "value": f"Current: ${a['current_cost']:.2f}, Avg: ${a['avg_cost']:.2f}, Deviation: {a['deviation']:.1f}%",
+                                          "short": False
+                                      } for a in anomalies
+                                  ]
+                              }]
+                          }
+                          req = urllib.request.Request(
+                              webhook,
+                              data=json.dumps(alert_msg).encode(),
+                              headers={'Content-Type': 'application/json'}
+                          )
+                          urllib.request.urlopen(req)
+              env:
+                - name: SLACK_WEBHOOK_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: kubecost-slack-webhook
+                      key: webhook-url
+          restartPolicy: OnFailure
+
+---
+# Slack webhook secret (placeholder)
+apiVersion: v1
+kind: Secret
+metadata:
+  name: kubecost-slack-webhook
+  namespace: kubecost
+type: Opaque
+stringData:
+  webhook-url: "https://hooks.slack.com/services/XXXXX/XXXXX/XXXXX"

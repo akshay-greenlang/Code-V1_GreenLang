@@ -1,0 +1,248 @@
+# INFRA-001: Resource Quotas for GreenLang
+# Per-namespace resource limits to prevent resource exhaustion
+# Different quotas for production, staging, and dev environments
+---
+# Production Resource Quota - High limits
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: greenlang-resource-quota
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: resource-management
+spec:
+  hard:
+    # Compute resources
+    requests.cpu: "50"
+    requests.memory: "100Gi"
+    limits.cpu: "100"
+    limits.memory: "200Gi"
+
+    # Storage resources
+    requests.storage: "500Gi"
+    persistentvolumeclaims: "20"
+    requests.ephemeral-storage: "100Gi"
+    limits.ephemeral-storage: "200Gi"
+
+    # Object counts
+    pods: "100"
+    services: "50"
+    secrets: "100"
+    configmaps: "100"
+    replicationcontrollers: "20"
+    services.loadbalancers: "5"
+    services.nodeports: "10"
+
+---
+# Production Resource Quota - Compute Priority Classes
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: greenlang-priority-quota
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: resource-management
+spec:
+  hard:
+    # High priority workloads (critical services)
+    pods: "30"
+  scopeSelector:
+    matchExpressions:
+      - operator: In
+        scopeName: PriorityClass
+        values:
+          - high-priority
+
+---
+# Staging Resource Quota - Medium limits
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: greenlang-resource-quota
+  namespace: greenlang-staging
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: resource-management
+spec:
+  hard:
+    # Compute resources (50% of production)
+    requests.cpu: "25"
+    requests.memory: "50Gi"
+    limits.cpu: "50"
+    limits.memory: "100Gi"
+
+    # Storage resources
+    requests.storage: "200Gi"
+    persistentvolumeclaims: "15"
+    requests.ephemeral-storage: "50Gi"
+    limits.ephemeral-storage: "100Gi"
+
+    # Object counts
+    pods: "50"
+    services: "30"
+    secrets: "75"
+    configmaps: "75"
+    replicationcontrollers: "15"
+    services.loadbalancers: "3"
+    services.nodeports: "5"
+
+---
+# Dev Resource Quota - Lower limits
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: greenlang-resource-quota
+  namespace: greenlang-dev
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: resource-management
+spec:
+  hard:
+    # Compute resources (25% of production)
+    requests.cpu: "15"
+    requests.memory: "30Gi"
+    limits.cpu: "30"
+    limits.memory: "60Gi"
+
+    # Storage resources
+    requests.storage: "100Gi"
+    persistentvolumeclaims: "10"
+    requests.ephemeral-storage: "25Gi"
+    limits.ephemeral-storage: "50Gi"
+
+    # Object counts
+    pods: "30"
+    services: "20"
+    secrets: "50"
+    configmaps: "50"
+    replicationcontrollers: "10"
+    services.loadbalancers: "2"
+    services.nodeports: "3"
+
+---
+# Monitoring Resource Quota
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: monitoring-resource-quota
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: resource-management
+spec:
+  hard:
+    # Compute resources
+    requests.cpu: "20"
+    requests.memory: "40Gi"
+    limits.cpu: "40"
+    limits.memory: "80Gi"
+
+    # Storage (Prometheus/Grafana data)
+    requests.storage: "500Gi"
+    persistentvolumeclaims: "10"
+
+    # Object counts
+    pods: "30"
+    services: "20"
+    secrets: "50"
+    configmaps: "50"
+
+---
+# Best Effort Quota - Limit non-guaranteed pods
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: greenlang-besteffort-quota
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: resource-management
+spec:
+  hard:
+    pods: "5"  # Only allow 5 BestEffort pods
+  scopes:
+    - BestEffort
+
+---
+# Not Best Effort Quota - Main workloads
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: greenlang-notbesteffort-quota
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: resource-management
+spec:
+  hard:
+    pods: "95"  # Most pods should have resource requests
+  scopes:
+    - NotBestEffort
+
+---
+# Priority Classes for workload prioritization
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: greenlang-critical
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: scheduling
+value: 1000000
+globalDefault: false
+description: "Critical GreenLang production workloads"
+preemptionPolicy: PreemptLowerPriority
+
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: greenlang-high
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: scheduling
+value: 100000
+globalDefault: false
+description: "High priority GreenLang workloads"
+preemptionPolicy: PreemptLowerPriority
+
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: greenlang-medium
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: scheduling
+value: 10000
+globalDefault: true
+description: "Default priority for GreenLang workloads"
+preemptionPolicy: PreemptLowerPriority
+
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: greenlang-low
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: scheduling
+value: 1000
+globalDefault: false
+description: "Low priority batch and background jobs"
+preemptionPolicy: Never
+
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: greenlang-batch
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: scheduling
+value: 100
+globalDefault: false
+description: "Batch processing jobs - can be preempted"
+preemptionPolicy: Never

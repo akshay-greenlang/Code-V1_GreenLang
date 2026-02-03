@@ -1,0 +1,116 @@
+{{/*
+ServiceMonitor for Prometheus Operator
+Enables automatic scraping of metrics from all TimescaleDB pods
+*/}}
+{{- if and .Values.metrics.enabled .Values.metrics.serviceMonitor.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "timescaledb-ha.fullname" . }}
+  namespace: {{ .Values.metrics.serviceMonitor.namespace | default (include "timescaledb-ha.namespace" .) }}
+  labels:
+    {{- include "timescaledb-ha.labels" . | nindent 4 }}
+    {{- with .Values.metrics.serviceMonitor.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  jobLabel: {{ include "timescaledb-ha.fullname" . }}
+
+  selector:
+    matchLabels:
+      {{- include "timescaledb-ha.selectorLabels" . | nindent 6 }}
+
+  namespaceSelector:
+    matchNames:
+      - {{ include "timescaledb-ha.namespace" . }}
+
+  endpoints:
+    # Metrics endpoint from postgres_exporter sidecar
+    - port: metrics
+      path: /metrics
+      interval: {{ .Values.metrics.serviceMonitor.interval }}
+      scrapeTimeout: {{ .Values.metrics.serviceMonitor.scrapeTimeout }}
+      honorLabels: true
+
+      {{- with .Values.metrics.serviceMonitor.relabelings }}
+      relabelings:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+      {{- with .Values.metrics.serviceMonitor.metricRelabelings }}
+      metricRelabelings:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+    # Patroni REST API endpoint for cluster health metrics
+    - port: patroni
+      path: /metrics
+      interval: {{ .Values.metrics.serviceMonitor.interval }}
+      scrapeTimeout: {{ .Values.metrics.serviceMonitor.scrapeTimeout }}
+      honorLabels: true
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace
+
+  {{- if .Values.metrics.serviceMonitor.relabelings }}
+  targetLabels:
+    - cluster-name
+    - role
+  {{- end }}
+{{- end }}
+
+---
+{{/*
+PodMonitor as alternative to ServiceMonitor (for direct pod monitoring)
+*/}}
+{{- if and .Values.metrics.enabled .Values.metrics.serviceMonitor.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: {{ include "timescaledb-ha.fullname" . }}-pods
+  namespace: {{ .Values.metrics.serviceMonitor.namespace | default (include "timescaledb-ha.namespace" .) }}
+  labels:
+    {{- include "timescaledb-ha.labels" . | nindent 4 }}
+    {{- with .Values.metrics.serviceMonitor.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  jobLabel: {{ include "timescaledb-ha.fullname" . }}
+
+  selector:
+    matchLabels:
+      {{- include "timescaledb-ha.selectorLabels" . | nindent 6 }}
+
+  namespaceSelector:
+    matchNames:
+      - {{ include "timescaledb-ha.namespace" . }}
+
+  podMetricsEndpoints:
+    # PostgreSQL metrics
+    - port: metrics
+      path: /metrics
+      interval: {{ .Values.metrics.serviceMonitor.interval }}
+      scrapeTimeout: {{ .Values.metrics.serviceMonitor.scrapeTimeout }}
+
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod
+        - sourceLabels: [__meta_kubernetes_pod_label_role]
+          targetLabel: role
+        - sourceLabels: [__meta_kubernetes_pod_label_cluster_name]
+          targetLabel: cluster_name
+
+    # Patroni health endpoint
+    - port: patroni
+      path: /patroni
+      interval: 15s
+      scrapeTimeout: 10s
+
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod
+        - sourceLabels: [__meta_kubernetes_pod_label_role]
+          targetLabel: role
+{{- end }}

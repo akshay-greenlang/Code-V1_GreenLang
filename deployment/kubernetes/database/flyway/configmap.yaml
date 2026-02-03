@@ -1,0 +1,191 @@
+# =============================================================================
+# GreenLang Flyway ConfigMap
+# =============================================================================
+# Description: Configuration for Flyway database migrations
+# =============================================================================
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: flyway-config
+  namespace: greenlang
+  labels:
+    app: flyway
+    component: database-migration
+    app.kubernetes.io/name: flyway
+    app.kubernetes.io/component: configuration
+    app.kubernetes.io/part-of: greenlang
+data:
+  # Database connection
+  db_host: "pgbouncer.database.svc.cluster.local"
+  db_port: "6432"
+  db_name: "greenlang"
+  jdbc_url: "jdbc:postgresql://pgbouncer.database.svc.cluster.local:6432/greenlang"
+
+  # Environment
+  environment: "production"
+
+  # TimescaleDB settings
+  retention_days: "90"
+  compression_after_days: "7"
+  chunk_interval: "1 day"
+
+  # AWS region (for S3 migrations)
+  aws_region: "us-east-1"
+
+  # Flyway configuration file
+  flyway.conf: |
+    # =============================================================================
+    # GreenLang Flyway Configuration
+    # =============================================================================
+
+    # Database Connection (values from environment variables)
+    flyway.url=${FLYWAY_URL}
+    flyway.user=${FLYWAY_USER}
+    flyway.password=${FLYWAY_PASSWORD}
+    flyway.connectRetries=10
+    flyway.connectRetriesInterval=5
+
+    # Schema Configuration
+    flyway.schemas=public,metrics,audit
+    flyway.defaultSchema=public
+    flyway.createSchemas=true
+
+    # Migration Locations
+    flyway.locations=filesystem:/flyway/sql
+
+    # Baseline Configuration
+    flyway.baselineOnMigrate=true
+    flyway.baselineVersion=0
+    flyway.baselineDescription=GreenLang initial baseline
+
+    # Validation
+    flyway.validateOnMigrate=true
+    flyway.validateMigrationNaming=true
+    flyway.cleanOnValidationError=false
+
+    # Execution
+    flyway.outOfOrder=false
+    flyway.mixed=true
+    flyway.group=false
+    flyway.lockRetryCount=50
+
+    # Naming Conventions
+    flyway.sqlMigrationPrefix=V
+    flyway.repeatableSqlMigrationPrefix=R
+    flyway.sqlMigrationSeparator=__
+    flyway.sqlMigrationSuffixes=.sql
+
+    # Encoding
+    flyway.encoding=UTF-8
+
+    # Placeholders
+    flyway.placeholderReplacement=true
+    flyway.placeholderPrefix=${
+    flyway.placeholderSuffix=}
+    flyway.placeholders.environment=${ENVIRONMENT}
+    flyway.placeholders.retention_days=${RETENTION_DAYS}
+    flyway.placeholders.compression_after_days=${COMPRESSION_AFTER_DAYS}
+    flyway.placeholders.chunk_interval=${CHUNK_INTERVAL}
+    flyway.placeholders.compression_segmentby=organization_id
+    flyway.placeholders.compression_orderby=timestamp DESC
+
+    # Safety
+    flyway.cleanDisabled=true
+    flyway.failOnMissingLocations=true
+
+    # Output
+    flyway.outputType=json
+
+---
+# =============================================================================
+# SQL Migrations ConfigMap
+# =============================================================================
+# Note: In production, migrations would be baked into the Docker image
+# This ConfigMap is for demonstration/development purposes
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: flyway-sql-migrations
+  namespace: greenlang
+  labels:
+    app: flyway
+    component: database-migration
+data:
+  # Migration files would be included here in a real deployment
+  # For production, these should be baked into the Flyway Docker image
+  # Example placeholder:
+  README.md: |
+    # SQL Migrations
+
+    In production, SQL migration files should be:
+    1. Baked into a custom Flyway Docker image, OR
+    2. Stored in S3 and referenced via flyway.locations
+
+    This ConfigMap is a placeholder for development/testing.
+
+---
+# =============================================================================
+# Environment-Specific ConfigMaps
+# =============================================================================
+
+# Development Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: flyway-config-dev
+  namespace: greenlang-dev
+  labels:
+    app: flyway
+    environment: development
+data:
+  db_host: "postgres-dev.database.svc.cluster.local"
+  db_port: "5432"
+  db_name: "greenlang_dev"
+  jdbc_url: "jdbc:postgresql://postgres-dev.database.svc.cluster.local:5432/greenlang_dev"
+  environment: "development"
+  retention_days: "30"
+  compression_after_days: "3"
+  chunk_interval: "1 day"
+
+---
+# Staging Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: flyway-config-staging
+  namespace: greenlang-staging
+  labels:
+    app: flyway
+    environment: staging
+data:
+  db_host: "pgbouncer-staging.database.svc.cluster.local"
+  db_port: "6432"
+  db_name: "greenlang_staging"
+  jdbc_url: "jdbc:postgresql://pgbouncer-staging.database.svc.cluster.local:6432/greenlang_staging"
+  environment: "staging"
+  retention_days: "60"
+  compression_after_days: "7"
+  chunk_interval: "1 day"
+
+---
+# Production Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: flyway-config-prod
+  namespace: greenlang
+  labels:
+    app: flyway
+    environment: production
+data:
+  db_host: "pgbouncer.database.svc.cluster.local"
+  db_port: "6432"
+  db_name: "greenlang"
+  jdbc_url: "jdbc:postgresql://pgbouncer.database.svc.cluster.local:6432/greenlang"
+  environment: "production"
+  retention_days: "365"
+  compression_after_days: "7"
+  chunk_interval: "1 day"
+  aws_region: "us-east-1"

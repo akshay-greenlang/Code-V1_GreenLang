@@ -1,0 +1,268 @@
+# Cluster Issuers for GreenLang
+# INFRA-001: Let's Encrypt certificate issuers
+#
+# Apply after cert-manager is installed:
+# kubectl apply -f cluster-issuer.yaml
+
+---
+# Let's Encrypt Production Issuer (HTTP-01 challenge)
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+  labels:
+    app.kubernetes.io/name: letsencrypt-prod
+    app.kubernetes.io/component: certificates
+    app.kubernetes.io/part-of: greenlang
+spec:
+  acme:
+    # Production ACME server
+    server: https://acme-v02.api.letsencrypt.org/directory
+
+    # Email for certificate expiry notifications
+    email: devops@greenlang.io
+
+    # Secret to store the ACME account private key
+    privateKeySecretRef:
+      name: letsencrypt-prod-account-key
+
+    # HTTP-01 solver using Istio ingress gateway
+    solvers:
+      - http01:
+          ingress:
+            class: istio
+            serviceType: ClusterIP
+        selector:
+          dnsZones:
+            - greenlang.io
+
+---
+# Let's Encrypt Production Issuer (DNS-01 challenge for wildcards)
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod-dns
+  labels:
+    app.kubernetes.io/name: letsencrypt-prod-dns
+    app.kubernetes.io/component: certificates
+    app.kubernetes.io/part-of: greenlang
+spec:
+  acme:
+    # Production ACME server
+    server: https://acme-v02.api.letsencrypt.org/directory
+
+    # Email for certificate expiry notifications
+    email: devops@greenlang.io
+
+    # Secret to store the ACME account private key
+    privateKeySecretRef:
+      name: letsencrypt-prod-dns-account-key
+
+    # DNS-01 solver using Route53
+    solvers:
+      - dns01:
+          route53:
+            region: us-east-1
+            # Use IRSA (IAM Roles for Service Accounts)
+            # No accessKeyID/secretAccessKeySecretRef needed with IRSA
+        selector:
+          dnsZones:
+            - greenlang.io
+
+---
+# Let's Encrypt Staging Issuer (for testing)
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-staging
+  labels:
+    app.kubernetes.io/name: letsencrypt-staging
+    app.kubernetes.io/component: certificates
+    app.kubernetes.io/part-of: greenlang
+spec:
+  acme:
+    # Staging ACME server (use for testing to avoid rate limits)
+    server: https://acme-staging-v02.api.letsencrypt.org/directory
+
+    # Email for certificate expiry notifications
+    email: devops@greenlang.io
+
+    # Secret to store the ACME account private key
+    privateKeySecretRef:
+      name: letsencrypt-staging-account-key
+
+    # HTTP-01 solver
+    solvers:
+      - http01:
+          ingress:
+            class: istio
+            serviceType: ClusterIP
+        selector:
+          dnsZones:
+            - greenlang.io
+
+---
+# Let's Encrypt Staging DNS Issuer (for testing wildcards)
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-staging-dns
+  labels:
+    app.kubernetes.io/name: letsencrypt-staging-dns
+    app.kubernetes.io/component: certificates
+    app.kubernetes.io/part-of: greenlang
+spec:
+  acme:
+    # Staging ACME server
+    server: https://acme-staging-v02.api.letsencrypt.org/directory
+
+    # Email for certificate expiry notifications
+    email: devops@greenlang.io
+
+    # Secret to store the ACME account private key
+    privateKeySecretRef:
+      name: letsencrypt-staging-dns-account-key
+
+    # DNS-01 solver using Route53
+    solvers:
+      - dns01:
+          route53:
+            region: us-east-1
+
+---
+# Self-signed Issuer (for internal/development use)
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: selfsigned-issuer
+  labels:
+    app.kubernetes.io/name: selfsigned-issuer
+    app.kubernetes.io/component: certificates
+    app.kubernetes.io/part-of: greenlang
+spec:
+  selfSigned: {}
+
+---
+# Internal CA Issuer (for mTLS between services)
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: greenlang-ca-issuer
+  labels:
+    app.kubernetes.io/name: greenlang-ca-issuer
+    app.kubernetes.io/component: certificates
+    app.kubernetes.io/part-of: greenlang
+spec:
+  ca:
+    secretName: greenlang-ca-secret
+
+---
+# Root CA Certificate (create the CA first)
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: greenlang-ca
+  namespace: cert-manager
+  labels:
+    app.kubernetes.io/name: greenlang-ca
+    app.kubernetes.io/component: certificates
+    app.kubernetes.io/part-of: greenlang
+spec:
+  isCA: true
+  commonName: GreenLang Root CA
+  secretName: greenlang-ca-secret
+  duration: 87600h  # 10 years
+  renewBefore: 8760h  # 1 year
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  issuerRef:
+    name: selfsigned-issuer
+    kind: ClusterIssuer
+    group: cert-manager.io
+  subject:
+    organizations:
+      - GreenLang Inc
+    organizationalUnits:
+      - Platform Engineering
+    countries:
+      - US
+    provinces:
+      - California
+    localities:
+      - San Francisco
+
+---
+# Namespace-scoped Issuer for greenlang namespace
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: greenlang-issuer
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: greenlang-issuer
+    app.kubernetes.io/component: certificates
+    app.kubernetes.io/part-of: greenlang
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: devops@greenlang.io
+    privateKeySecretRef:
+      name: greenlang-issuer-account-key
+    solvers:
+      - http01:
+          ingress:
+            class: istio
+        selector:
+          dnsNames:
+            - api.greenlang.io
+            - app.greenlang.io
+            - admin.greenlang.io
+      - dns01:
+          route53:
+            region: us-east-1
+        selector:
+          dnsNames:
+            - "*.greenlang.io"
+            - "*.dev.greenlang.io"
+            - "*.staging.greenlang.io"
+
+---
+# Issuer for istio-system namespace (for gateway certificates)
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: istio-gateway-issuer
+  namespace: istio-system
+  labels:
+    app.kubernetes.io/name: istio-gateway-issuer
+    app.kubernetes.io/component: certificates
+    app.kubernetes.io/part-of: greenlang
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: devops@greenlang.io
+    privateKeySecretRef:
+      name: istio-gateway-issuer-account-key
+    solvers:
+      - dns01:
+          route53:
+            region: us-east-1
+        selector:
+          dnsZones:
+            - greenlang.io
+
+---
+# Issuer for monitoring namespace
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: monitoring-issuer
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: monitoring-issuer
+    app.kubernetes.io/component: certificates
+    app.kubernetes.io/part-of: greenlang
+spec:
+  ca:
+    secretName: greenlang-ca-secret

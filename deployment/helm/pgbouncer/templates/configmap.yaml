@@ -1,0 +1,71 @@
+{{/*
+PgBouncer ConfigMap Template
+Contains pgbouncer.ini and userlist.txt
+*/}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "pgbouncer.fullname" . }}-config
+  namespace: {{ include "pgbouncer.namespace" . }}
+  labels:
+    {{- include "pgbouncer.labels" . | nindent 4 }}
+data:
+  pgbouncer.ini: |
+    {{- include "pgbouncer.ini" . | nindent 4 }}
+
+  userlist.txt: |
+    {{- include "pgbouncer.userlist" . | nindent 4 }}
+
+---
+# Additional ConfigMap for utility scripts
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "pgbouncer.fullname" . }}-scripts
+  namespace: {{ include "pgbouncer.namespace" . }}
+  labels:
+    {{- include "pgbouncer.labels" . | nindent 4 }}
+data:
+  health-check.sh: |
+    #!/bin/bash
+    set -e
+    PGPASSWORD=$PGBOUNCER_PASSWORD psql -h localhost -p 5432 -U pgbouncer_stats pgbouncer -c "SHOW POOLS;" > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+        echo "PgBouncer is healthy"
+        exit 0
+    else
+        echo "PgBouncer health check failed"
+        exit 1
+    fi
+
+  show-stats.sh: |
+    #!/bin/bash
+    set -e
+    echo "=== PgBouncer Statistics ==="
+    echo ""
+    echo "--- Pools ---"
+    PGPASSWORD=$PGBOUNCER_PASSWORD psql -h localhost -p 5432 -U pgbouncer_stats pgbouncer -c "SHOW POOLS;"
+    echo ""
+    echo "--- Databases ---"
+    PGPASSWORD=$PGBOUNCER_PASSWORD psql -h localhost -p 5432 -U pgbouncer_stats pgbouncer -c "SHOW DATABASES;"
+    echo ""
+    echo "--- Stats ---"
+    PGPASSWORD=$PGBOUNCER_PASSWORD psql -h localhost -p 5432 -U pgbouncer_stats pgbouncer -c "SHOW STATS;"
+
+  graceful-shutdown.sh: |
+    #!/bin/bash
+    set -e
+    echo "Initiating graceful shutdown..."
+    PGPASSWORD=$PGBOUNCER_PASSWORD psql -h localhost -p 5432 -U pgbouncer_admin pgbouncer -c "DISABLE {{ .Values.postgresql.database }};"
+    for i in {1..30}; do
+        ACTIVE=$(PGPASSWORD=$PGBOUNCER_PASSWORD psql -h localhost -p 5432 -U pgbouncer_stats pgbouncer -t -c "SHOW POOLS;" | grep -c "cl_active" || true)
+        if [ "$ACTIVE" -eq 0 ]; then
+            echo "All connections drained"
+            break
+        fi
+        echo "Waiting for $ACTIVE active connections..."
+        sleep 1
+    done
+    PGPASSWORD=$PGBOUNCER_PASSWORD psql -h localhost -p 5432 -U pgbouncer_admin pgbouncer -c "KILL {{ .Values.postgresql.database }};"
+    PGPASSWORD=$PGBOUNCER_PASSWORD psql -h localhost -p 5432 -U pgbouncer_admin pgbouncer -c "SHUTDOWN;"
+    echo "Shutdown complete"

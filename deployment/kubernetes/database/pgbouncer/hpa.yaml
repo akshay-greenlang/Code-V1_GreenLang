@@ -1,0 +1,179 @@
+# Horizontal Pod Autoscaler for PgBouncer
+# Scales PgBouncer pods based on CPU and memory utilization
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: pgbouncer-hpa
+  namespace: greenlang-database
+  labels:
+    app: pgbouncer
+    app.kubernetes.io/name: pgbouncer
+    app.kubernetes.io/component: connection-pooler
+    app.kubernetes.io/part-of: greenlang
+  annotations:
+    description: "HPA for PgBouncer connection pooler"
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: pgbouncer
+
+  # Replica limits
+  minReplicas: 3
+  maxReplicas: 10
+
+  # Scaling metrics
+  metrics:
+    # CPU utilization target
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+
+    # Memory utilization target
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+
+    # Custom metrics from PgBouncer exporter (if available)
+    # Requires Prometheus Adapter for custom metrics
+    # - type: Pods
+    #   pods:
+    #     metric:
+    #       name: pgbouncer_pools_client_active_connections
+    #     target:
+    #       type: AverageValue
+    #       averageValue: "100"
+
+    # - type: Pods
+    #   pods:
+    #     metric:
+    #       name: pgbouncer_pools_client_waiting_connections
+    #     target:
+    #       type: AverageValue
+    #       averageValue: "10"
+
+  # Scaling behavior configuration
+  behavior:
+    # Scale up behavior
+    scaleUp:
+      # Stabilization window to prevent flapping
+      stabilizationWindowSeconds: 60
+      policies:
+        # Allow scaling up by 2 pods every 60 seconds
+        - type: Pods
+          value: 2
+          periodSeconds: 60
+        # Allow scaling up by 100% every 60 seconds
+        - type: Percent
+          value: 100
+          periodSeconds: 60
+      # Use the policy that allows the most change
+      selectPolicy: Max
+
+    # Scale down behavior
+    scaleDown:
+      # Longer stabilization window for scale down
+      stabilizationWindowSeconds: 300
+      policies:
+        # Allow scaling down by 1 pod every 120 seconds
+        - type: Pods
+          value: 1
+          periodSeconds: 120
+        # Allow scaling down by 10% every 120 seconds
+        - type: Percent
+          value: 10
+          periodSeconds: 120
+      # Use the policy that allows the least change (conservative)
+      selectPolicy: Min
+
+---
+# Vertical Pod Autoscaler (optional - for resource recommendations)
+# Requires VPA controller to be installed
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: pgbouncer-vpa
+  namespace: greenlang-database
+  labels:
+    app: pgbouncer
+    app.kubernetes.io/name: pgbouncer
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: pgbouncer
+
+  # Update policy - recommend only, don't auto-update
+  updatePolicy:
+    updateMode: "Off"  # Set to "Auto" for automatic updates
+
+  # Resource policy
+  resourcePolicy:
+    containerPolicies:
+      - containerName: pgbouncer
+        # Minimum resources
+        minAllowed:
+          cpu: "100m"
+          memory: "64Mi"
+        # Maximum resources
+        maxAllowed:
+          cpu: "1000m"
+          memory: "512Mi"
+        # Control which resources can be auto-scaled
+        controlledResources:
+          - cpu
+          - memory
+        # Mode: Auto, Off, or Initial
+        mode: Auto
+
+      - containerName: pgbouncer-exporter
+        minAllowed:
+          cpu: "25m"
+          memory: "16Mi"
+        maxAllowed:
+          cpu: "200m"
+          memory: "128Mi"
+        controlledResources:
+          - cpu
+          - memory
+        mode: Auto
+
+---
+# KEDA ScaledObject (optional - for advanced scaling based on PgBouncer metrics)
+# Requires KEDA to be installed
+# apiVersion: keda.sh/v1alpha1
+# kind: ScaledObject
+# metadata:
+#   name: pgbouncer-scaledobject
+#   namespace: greenlang-database
+#   labels:
+#     app: pgbouncer
+# spec:
+#   scaleTargetRef:
+#     name: pgbouncer
+#   pollingInterval: 30
+#   cooldownPeriod: 300
+#   minReplicaCount: 3
+#   maxReplicaCount: 10
+#   triggers:
+#     - type: prometheus
+#       metadata:
+#         serverAddress: http://prometheus.monitoring:9090
+#         metricName: pgbouncer_pools_client_active_connections
+#         threshold: "100"
+#         query: |
+#           sum(pgbouncer_pools_client_active_connections{namespace="greenlang-database"})
+#     - type: prometheus
+#       metadata:
+#         serverAddress: http://prometheus.monitoring:9090
+#         metricName: pgbouncer_pools_client_waiting_connections
+#         threshold: "10"
+#         query: |
+#           sum(pgbouncer_pools_client_waiting_connections{namespace="greenlang-database"})

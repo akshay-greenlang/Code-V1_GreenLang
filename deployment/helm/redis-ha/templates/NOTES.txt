@@ -1,0 +1,185 @@
+--------------------------------------------------------------------------------
+ REDIS HA DEPLOYMENT SUCCESSFUL
+--------------------------------------------------------------------------------
+
+Redis with Sentinel high availability has been deployed to your cluster.
+
+=============================================================================
+RELEASE INFORMATION
+=============================================================================
+
+  Release Name:     {{ .Release.Name }}
+  Namespace:        {{ .Release.Namespace }}
+  Chart Version:    {{ .Chart.Version }}
+  App Version:      {{ .Chart.AppVersion }}
+  Redis Replicas:   {{ .Values.redis.replicas }}
+  Sentinel Enabled: {{ .Values.sentinel.enabled }}
+{{- if .Values.sentinel.enabled }}
+  Sentinel Quorum:  {{ .Values.sentinel.quorum }}
+{{- end }}
+
+=============================================================================
+SERVICES
+=============================================================================
+
+The following services have been created:
+
+1. Headless Service (for StatefulSet DNS):
+   {{ include "redis-ha.headlessServiceName" . }}.{{ .Release.Namespace }}.svc.cluster.local
+
+2. Master Service (for writes):
+   {{ include "redis-ha.masterServiceName" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.redis.port }}
+
+3. Read Service (load-balanced reads):
+   {{ include "redis-ha.readServiceName" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.redis.port }}
+
+{{- if .Values.sentinel.enabled }}
+4. Sentinel Service (for master discovery):
+   {{ include "redis-ha.sentinelServiceName" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.sentinel.port }}
+{{- end }}
+
+=============================================================================
+CONNECTING TO REDIS
+=============================================================================
+
+{{- if .Values.auth.enabled }}
+1. Get the Redis password:
+
+   export REDIS_PASSWORD=$(kubectl get secret {{ include "redis-ha.secretName" . }} \
+     -n {{ .Release.Namespace }} -o jsonpath='{.data.redis-password}' | base64 -d)
+
+2. Connect using redis-cli:
+
+   kubectl run redis-client --rm -it --restart=Never \
+     --image={{ .Values.image.repository }}:{{ .Values.image.tag }} \
+     -n {{ .Release.Namespace }} \
+     -- redis-cli -h {{ include "redis-ha.masterServiceName" . }} -a "$REDIS_PASSWORD"
+
+{{- else }}
+1. Connect using redis-cli:
+
+   kubectl run redis-client --rm -it --restart=Never \
+     --image={{ .Values.image.repository }}:{{ .Values.image.tag }} \
+     -n {{ .Release.Namespace }} \
+     -- redis-cli -h {{ include "redis-ha.masterServiceName" . }}
+
+{{- end }}
+
+=============================================================================
+SENTINEL USAGE (RECOMMENDED FOR HA)
+=============================================================================
+
+{{- if .Values.sentinel.enabled }}
+For true high availability, use Sentinel for master discovery:
+
+1. Python (redis-py with sentinel):
+
+   from redis.sentinel import Sentinel
+
+   sentinel = Sentinel([
+       ('{{ include "redis-ha.sentinelServiceName" . }}.{{ .Release.Namespace }}.svc.cluster.local', {{ .Values.sentinel.port }})
+   ], socket_timeout=0.5)
+
+   master = sentinel.master_for('mymaster', socket_timeout=0.5{{- if .Values.auth.enabled }}, password='YOUR_PASSWORD'{{- end }})
+   slave = sentinel.slave_for('mymaster', socket_timeout=0.5{{- if .Values.auth.enabled }}, password='YOUR_PASSWORD'{{- end }})
+
+   # Write to master
+   master.set('key', 'value')
+
+   # Read from replica
+   slave.get('key')
+
+2. Node.js (ioredis):
+
+   const Redis = require('ioredis');
+
+   const redis = new Redis({
+     sentinels: [
+       { host: '{{ include "redis-ha.sentinelServiceName" . }}.{{ .Release.Namespace }}.svc.cluster.local', port: {{ .Values.sentinel.port }} }
+     ],
+     name: 'mymaster',
+     {{- if .Values.auth.enabled }}
+     password: 'YOUR_PASSWORD',
+     {{- end }}
+   });
+
+3. Java (Jedis):
+
+   Set<String> sentinels = new HashSet<>();
+   sentinels.add("{{ include "redis-ha.sentinelServiceName" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.sentinel.port }}");
+
+   JedisSentinelPool pool = new JedisSentinelPool("mymaster", sentinels{{- if .Values.auth.enabled }}, "YOUR_PASSWORD"{{- end }});
+{{- end }}
+
+=============================================================================
+MONITORING
+=============================================================================
+
+{{- if .Values.exporter.enabled }}
+Redis Exporter is enabled and exposing metrics at port {{ .Values.exporter.port }}.
+
+Metrics endpoint:
+   http://{{ include "redis-ha.readServiceName" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.exporter.port }}/metrics
+
+{{- if .Values.serviceMonitor.enabled }}
+ServiceMonitor is enabled for Prometheus Operator integration.
+{{- end }}
+{{- end }}
+
+=============================================================================
+USEFUL COMMANDS
+=============================================================================
+
+1. Check Redis cluster status:
+
+   kubectl exec -it {{ include "redis-ha.fullname" . }}-0 -n {{ .Release.Namespace }} -c redis -- \
+     redis-cli{{- if .Values.auth.enabled }} -a "$REDIS_PASSWORD"{{- end }} INFO replication
+
+{{- if .Values.sentinel.enabled }}
+2. Check Sentinel status:
+
+   kubectl exec -it {{ include "redis-ha.fullname" . }}-0 -n {{ .Release.Namespace }} -c sentinel -- \
+     redis-cli -p {{ .Values.sentinel.port }} SENTINEL master mymaster
+
+3. Force failover (for testing):
+
+   kubectl exec -it {{ include "redis-ha.fullname" . }}-0 -n {{ .Release.Namespace }} -c sentinel -- \
+     redis-cli -p {{ .Values.sentinel.port }} SENTINEL failover mymaster
+{{- end }}
+
+4. View pod logs:
+
+   kubectl logs {{ include "redis-ha.fullname" . }}-0 -n {{ .Release.Namespace }} -c redis
+   kubectl logs {{ include "redis-ha.fullname" . }}-0 -n {{ .Release.Namespace }} -c sentinel
+
+5. Scale replicas (adjust HPA or StatefulSet):
+
+   kubectl scale statefulset {{ include "redis-ha.fullname" . }} -n {{ .Release.Namespace }} --replicas=5
+
+=============================================================================
+IMPORTANT NOTES
+=============================================================================
+
+1. Pod Disruption Budget is configured with minAvailable: {{ .Values.podDisruptionBudget.minAvailable }}
+   This ensures at least {{ .Values.podDisruptionBudget.minAvailable }} pods are always available during disruptions.
+
+2. Data Persistence:
+{{- if .Values.persistence.enabled }}
+   - Persistence is ENABLED
+   - Storage Class: {{ .Values.persistence.storageClass | default "default" }}
+   - Storage Size: {{ .Values.persistence.size }}
+{{- else }}
+   - Persistence is DISABLED (data will be lost on pod restart!)
+{{- end }}
+
+3. Security:
+{{- if .Values.auth.enabled }}
+   - AUTH is ENABLED (password required for all connections)
+{{- else }}
+   - AUTH is DISABLED (not recommended for production!)
+{{- end }}
+{{- if .Values.networkPolicy.enabled }}
+   - NetworkPolicy is ENABLED (restricting traffic to Redis ports)
+{{- end }}
+
+--------------------------------------------------------------------------------

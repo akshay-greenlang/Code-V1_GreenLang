@@ -1,0 +1,564 @@
+# Spot Instance Configuration for EKS
+# INFRA-001: Cost Management and Optimization
+# Configures Spot instance node groups for cost-optimized workloads
+
+---
+# Karpenter Provisioner for Spot Instances
+apiVersion: karpenter.sh/v1alpha5
+kind: Provisioner
+metadata:
+  name: spot-compute-optimized
+spec:
+  # Requirements for spot instances
+  requirements:
+    - key: karpenter.sh/capacity-type
+      operator: In
+      values: ["spot"]
+    - key: kubernetes.io/arch
+      operator: In
+      values: ["amd64"]
+    - key: kubernetes.io/os
+      operator: In
+      values: ["linux"]
+    - key: node.kubernetes.io/instance-type
+      operator: In
+      values:
+        # Compute optimized instances
+        - c5.large
+        - c5.xlarge
+        - c5.2xlarge
+        - c5a.large
+        - c5a.xlarge
+        - c5a.2xlarge
+        - c5n.large
+        - c5n.xlarge
+        # General purpose instances (fallback)
+        - m5.large
+        - m5.xlarge
+        - m5.2xlarge
+        - m5a.large
+        - m5a.xlarge
+        - m5a.2xlarge
+    - key: topology.kubernetes.io/zone
+      operator: In
+      values:
+        - us-east-1a
+        - us-east-1b
+        - us-east-1c
+
+  # Provider configuration
+  provider:
+    subnetSelector:
+      karpenter.sh/discovery: greenlang-cluster
+    securityGroupSelector:
+      karpenter.sh/discovery: greenlang-cluster
+    instanceProfile: KarpenterNodeInstanceProfile-greenlang-cluster
+    tags:
+      Name: greenlang-spot-node
+      Project: GreenLang
+      Environment: production
+      karpenter.sh/capacity-type: spot
+      CostCenter: CC-1001
+
+  # Resource limits
+  limits:
+    resources:
+      cpu: 100
+      memory: 200Gi
+
+  # Consolidation settings
+  consolidation:
+    enabled: true
+
+  # TTL settings
+  ttlSecondsAfterEmpty: 30
+  ttlSecondsUntilExpired: 604800  # 7 days
+
+  # Labels for spot nodes
+  labels:
+    node-type: spot
+    workload-type: compute
+
+  # Taints for spot nodes (optional)
+  taints:
+    - key: spot-instance
+      value: "true"
+      effect: NoSchedule
+
+---
+# Karpenter Provisioner for Memory-Optimized Spot
+apiVersion: karpenter.sh/v1alpha5
+kind: Provisioner
+metadata:
+  name: spot-memory-optimized
+spec:
+  requirements:
+    - key: karpenter.sh/capacity-type
+      operator: In
+      values: ["spot"]
+    - key: kubernetes.io/arch
+      operator: In
+      values: ["amd64"]
+    - key: node.kubernetes.io/instance-type
+      operator: In
+      values:
+        # Memory optimized instances
+        - r5.large
+        - r5.xlarge
+        - r5.2xlarge
+        - r5a.large
+        - r5a.xlarge
+        - r5a.2xlarge
+        - r5n.large
+        - r5n.xlarge
+    - key: topology.kubernetes.io/zone
+      operator: In
+      values:
+        - us-east-1a
+        - us-east-1b
+        - us-east-1c
+
+  provider:
+    subnetSelector:
+      karpenter.sh/discovery: greenlang-cluster
+    securityGroupSelector:
+      karpenter.sh/discovery: greenlang-cluster
+    instanceProfile: KarpenterNodeInstanceProfile-greenlang-cluster
+    tags:
+      Name: greenlang-spot-memory-node
+      Project: GreenLang
+      Environment: production
+      karpenter.sh/capacity-type: spot
+      CostCenter: CC-1001
+
+  limits:
+    resources:
+      cpu: 50
+      memory: 400Gi
+
+  consolidation:
+    enabled: true
+
+  ttlSecondsAfterEmpty: 30
+  ttlSecondsUntilExpired: 604800
+
+  labels:
+    node-type: spot
+    workload-type: memory
+
+  taints:
+    - key: spot-instance
+      value: "true"
+      effect: NoSchedule
+
+---
+# On-Demand Baseline Provisioner
+apiVersion: karpenter.sh/v1alpha5
+kind: Provisioner
+metadata:
+  name: on-demand-baseline
+spec:
+  requirements:
+    - key: karpenter.sh/capacity-type
+      operator: In
+      values: ["on-demand"]
+    - key: kubernetes.io/arch
+      operator: In
+      values: ["amd64"]
+    - key: node.kubernetes.io/instance-type
+      operator: In
+      values:
+        - m5.large
+        - m5.xlarge
+        - m5.2xlarge
+    - key: topology.kubernetes.io/zone
+      operator: In
+      values:
+        - us-east-1a
+        - us-east-1b
+        - us-east-1c
+
+  provider:
+    subnetSelector:
+      karpenter.sh/discovery: greenlang-cluster
+    securityGroupSelector:
+      karpenter.sh/discovery: greenlang-cluster
+    instanceProfile: KarpenterNodeInstanceProfile-greenlang-cluster
+    tags:
+      Name: greenlang-ondemand-node
+      Project: GreenLang
+      Environment: production
+      karpenter.sh/capacity-type: on-demand
+      CostCenter: CC-1001
+
+  limits:
+    resources:
+      cpu: 20
+      memory: 40Gi
+
+  consolidation:
+    enabled: true
+
+  ttlSecondsAfterEmpty: 300
+
+  labels:
+    node-type: on-demand
+    workload-type: baseline
+
+  # No taints - baseline accepts all workloads
+
+---
+# EKS Managed Node Group - Spot (Alternative to Karpenter)
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+metadata:
+  name: greenlang-cluster
+  region: us-east-1
+
+managedNodeGroups:
+  # Spot instance node group - Primary
+  - name: spot-workers-primary
+    instanceTypes:
+      - m5.large
+      - m5a.large
+      - m5n.large
+      - m4.large
+    capacityType: SPOT
+    desiredCapacity: 4
+    minSize: 2
+    maxSize: 10
+    volumeSize: 100
+    volumeType: gp3
+    volumeEncrypted: true
+
+    labels:
+      node-type: spot
+      workload-type: general
+
+    tags:
+      Project: GreenLang
+      Environment: production
+      CostCenter: CC-1001
+
+    iam:
+      withAddonPolicies:
+        autoScaler: true
+        cloudWatch: true
+        albIngress: true
+
+    privateNetworking: true
+
+  # Spot instance node group - Compute optimized
+  - name: spot-workers-compute
+    instanceTypes:
+      - c5.large
+      - c5a.large
+      - c5n.large
+      - c4.large
+    capacityType: SPOT
+    desiredCapacity: 2
+    minSize: 1
+    maxSize: 8
+    volumeSize: 50
+    volumeType: gp3
+    volumeEncrypted: true
+
+    labels:
+      node-type: spot
+      workload-type: compute
+
+    taints:
+      - key: workload-type
+        value: compute
+        effect: NoSchedule
+
+    tags:
+      Project: GreenLang
+      Environment: production
+      CostCenter: CC-1001
+
+    privateNetworking: true
+
+  # Spot instance node group - Memory optimized
+  - name: spot-workers-memory
+    instanceTypes:
+      - r5.large
+      - r5a.large
+      - r5n.large
+      - r4.large
+    capacityType: SPOT
+    desiredCapacity: 2
+    minSize: 1
+    maxSize: 6
+    volumeSize: 100
+    volumeType: gp3
+    volumeEncrypted: true
+
+    labels:
+      node-type: spot
+      workload-type: memory
+
+    taints:
+      - key: workload-type
+        value: memory
+        effect: NoSchedule
+
+    tags:
+      Project: GreenLang
+      Environment: production
+      CostCenter: CC-1001
+
+    privateNetworking: true
+
+  # On-Demand baseline node group
+  - name: on-demand-baseline
+    instanceTypes:
+      - m5.large
+    capacityType: ON_DEMAND
+    desiredCapacity: 2
+    minSize: 2
+    maxSize: 4
+    volumeSize: 100
+    volumeType: gp3
+    volumeEncrypted: true
+
+    labels:
+      node-type: on-demand
+      workload-type: baseline
+
+    tags:
+      Project: GreenLang
+      Environment: production
+      CostCenter: CC-1001
+
+    privateNetworking: true
+
+---
+# Spot Fleet Configuration (for non-EKS workloads)
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: spot-fleet-config
+  namespace: kube-system
+data:
+  spot-fleet-request.json: |
+    {
+      "SpotFleetRequestConfig": {
+        "IamFleetRole": "arn:aws:iam::ACCOUNT_ID:role/aws-ec2-spot-fleet-role",
+        "AllocationStrategy": "capacityOptimized",
+        "TargetCapacity": 10,
+        "TargetCapacityUnitType": "vcpu",
+        "TerminateInstancesWithExpiration": false,
+        "Type": "maintain",
+        "ReplaceUnhealthyInstances": true,
+        "InstanceInterruptionBehavior": "terminate",
+        "LaunchTemplateConfigs": [
+          {
+            "LaunchTemplateSpecification": {
+              "LaunchTemplateId": "lt-xxxxxxxxxx",
+              "Version": "$Latest"
+            },
+            "Overrides": [
+              {
+                "InstanceType": "m5.large",
+                "SubnetId": "subnet-xxxxxx",
+                "WeightedCapacity": 2
+              },
+              {
+                "InstanceType": "m5.xlarge",
+                "SubnetId": "subnet-xxxxxx",
+                "WeightedCapacity": 4
+              },
+              {
+                "InstanceType": "m5a.large",
+                "SubnetId": "subnet-yyyyyy",
+                "WeightedCapacity": 2
+              },
+              {
+                "InstanceType": "m5a.xlarge",
+                "SubnetId": "subnet-yyyyyy",
+                "WeightedCapacity": 4
+              },
+              {
+                "InstanceType": "c5.large",
+                "SubnetId": "subnet-zzzzzz",
+                "WeightedCapacity": 2
+              },
+              {
+                "InstanceType": "c5.xlarge",
+                "SubnetId": "subnet-zzzzzz",
+                "WeightedCapacity": 4
+              }
+            ]
+          }
+        ],
+        "TagSpecifications": [
+          {
+            "ResourceType": "spot-fleet-request",
+            "Tags": [
+              {"Key": "Name", "Value": "greenlang-spot-fleet"},
+              {"Key": "Project", "Value": "GreenLang"},
+              {"Key": "Environment", "Value": "production"}
+            ]
+          }
+        ]
+      }
+    }
+
+---
+# Cluster Autoscaler Configuration for Spot
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cluster-autoscaler-priority-expander
+  namespace: kube-system
+data:
+  priorities: |
+    50:
+      - spot-workers-primary
+      - spot-workers-compute
+      - spot-workers-memory
+    10:
+      - on-demand-baseline
+
+---
+# Pod Topology Spread for Spot Resilience
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: spot-topology-config
+  namespace: greenlang
+data:
+  topology-spread.yaml: |
+    # Example deployment with spot-aware topology spread
+    spec:
+      topologySpreadConstraints:
+        # Spread across availability zones
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: greenlang-api
+        # Spread across node types (spot vs on-demand)
+        - maxSkew: 2
+          topologyKey: node-type
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: greenlang-api
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            # Prefer spot instances
+            - weight: 80
+              preference:
+                matchExpressions:
+                  - key: node-type
+                    operator: In
+                    values:
+                      - spot
+            # Can fall back to on-demand
+            - weight: 20
+              preference:
+                matchExpressions:
+                  - key: node-type
+                    operator: In
+                    values:
+                      - on-demand
+
+---
+# Priority Class for Spot-Tolerant Workloads
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: spot-tolerant
+value: 100
+globalDefault: false
+description: "Priority class for workloads that can tolerate spot instance interruptions"
+
+---
+# Priority Class for Critical Workloads (On-Demand)
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: critical-on-demand
+value: 1000000
+globalDefault: false
+description: "Priority class for critical workloads that should run on on-demand instances"
+
+---
+# Example Deployment Using Spot Configuration
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: greenlang-worker-spot
+  namespace: greenlang
+  labels:
+    app: greenlang-worker
+    spot-tolerant: "true"
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      app: greenlang-worker
+  template:
+    metadata:
+      labels:
+        app: greenlang-worker
+        spot-tolerant: "true"
+    spec:
+      priorityClassName: spot-tolerant
+      terminationGracePeriodSeconds: 120
+
+      # Node selection for spot instances
+      nodeSelector:
+        node-type: spot
+
+      # Tolerate spot instance taint
+      tolerations:
+        - key: spot-instance
+          operator: Equal
+          value: "true"
+          effect: NoSchedule
+
+      # Spread across zones and nodes
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: greenlang-worker
+
+      containers:
+        - name: worker
+          image: gcr.io/greenlang/worker:latest
+          resources:
+            requests:
+              cpu: 500m
+              memory: 512Mi
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+
+          # Graceful shutdown handling
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - /bin/sh
+                  - -c
+                  - |
+                    echo "Received termination signal"
+                    # Finish current job
+                    /app/graceful-shutdown.sh
+                    sleep 10
+
+          # Readiness probe for graceful shutdown
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 5

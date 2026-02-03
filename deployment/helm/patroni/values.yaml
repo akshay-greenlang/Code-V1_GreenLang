@@ -1,0 +1,531 @@
+# ==============================================================================
+# Patroni Helm Chart Values
+# PostgreSQL/TimescaleDB High Availability Cluster Configuration
+# ==============================================================================
+
+# -- Common configuration
+common:
+  enabled: false
+
+# -- Cluster name and namespace
+clusterName: greenlang-cluster
+namespace: greenlang-db
+
+# -- Number of replicas (recommended: 3 for HA)
+replicaCount: 3
+
+# -- Image configuration
+image:
+  repository: timescale/timescaledb-ha
+  tag: pg15-ts2.13-patroni
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+
+# -- Service account configuration
+serviceAccount:
+  create: true
+  name: patroni
+  annotations: {}
+  automountServiceAccountToken: true
+
+# -- Pod security context
+podSecurityContext:
+  runAsUser: 999
+  runAsGroup: 999
+  fsGroup: 999
+  runAsNonRoot: true
+
+# -- Container security context
+containerSecurityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: false
+  capabilities:
+    drop:
+      - ALL
+
+# ==============================================================================
+# Patroni Configuration
+# ==============================================================================
+patroni:
+  # -- Patroni scope (cluster name)
+  scope: greenlang-cluster
+
+  # -- REST API configuration
+  restapi:
+    port: 8008
+    authentication:
+      enabled: true
+      username: patroni
+
+  # -- DCS (Distributed Configuration Store) settings
+  dcs:
+    # -- TTL for the leader lock
+    ttl: 30
+    # -- Interval between leader health checks
+    loop_wait: 10
+    # -- Timeout for retrying DCS operations
+    retry_timeout: 10
+    # -- Maximum lag (in bytes) for automatic failover
+    maximum_lag_on_failover: 1048576
+    # -- Timeout for starting the master
+    master_start_timeout: 300
+    # -- Enable synchronous replication mode
+    synchronous_mode: false
+    synchronous_mode_strict: false
+
+  # -- Bootstrap configuration
+  bootstrap:
+    # -- Database initialization options
+    initdb:
+      - encoding: UTF8
+      - data-checksums
+      - locale: en_US.UTF-8
+
+    # -- Users created at bootstrap
+    users:
+      admin:
+        options:
+          - createrole
+          - createdb
+      replicator:
+        options:
+          - replication
+      greenlang:
+        options:
+          - createdb
+
+    # -- Post-initialization scripts
+    post_init: /scripts/post-init.sh
+
+# ==============================================================================
+# PostgreSQL Configuration
+# ==============================================================================
+postgresql:
+  # -- PostgreSQL port
+  port: 5432
+
+  # -- Data directory
+  dataDir: /var/lib/postgresql/data/pgdata
+
+  # -- PostgreSQL binary directory
+  binDir: /usr/lib/postgresql/15/bin
+
+  # -- pg_hba.conf entries
+  pg_hba:
+    - local all all trust
+    - host all all 127.0.0.1/32 md5
+    - host all all ::1/128 md5
+    - host replication replicator 0.0.0.0/0 md5
+    - host all all 0.0.0.0/0 md5
+
+  # -- PostgreSQL parameters
+  parameters:
+    # Connection settings
+    max_connections: 200
+    superuser_reserved_connections: 5
+
+    # Memory settings
+    shared_buffers: 4GB
+    effective_cache_size: 12GB
+    work_mem: 64MB
+    maintenance_work_mem: 1GB
+    huge_pages: try
+
+    # WAL settings
+    wal_level: replica
+    wal_buffers: 64MB
+    min_wal_size: 2GB
+    max_wal_size: 8GB
+    wal_compression: "on"
+    wal_log_hints: "on"
+
+    # Replication settings
+    hot_standby: "on"
+    max_wal_senders: 10
+    max_replication_slots: 10
+    hot_standby_feedback: "on"
+    wal_keep_size: 2GB
+
+    # Archiving
+    archive_mode: "on"
+    archive_command: "pgbackrest --stanza=greenlang archive-push %p"
+    archive_timeout: 60
+
+    # Checkpoints
+    checkpoint_timeout: 15min
+    checkpoint_completion_target: 0.9
+
+    # Background writer
+    bgwriter_delay: 20ms
+    bgwriter_lru_maxpages: 1000
+    bgwriter_lru_multiplier: 10.0
+
+    # Logging
+    log_destination: stderr
+    logging_collector: "off"
+    log_min_duration_statement: 1000
+    log_checkpoints: "on"
+    log_connections: "on"
+    log_disconnections: "on"
+    log_lock_waits: "on"
+    log_statement: ddl
+    log_temp_files: 0
+    log_autovacuum_min_duration: 1000
+
+    # Statistics
+    track_activities: "on"
+    track_counts: "on"
+    track_io_timing: "on"
+    track_functions: all
+
+    # Autovacuum
+    autovacuum: "on"
+    autovacuum_max_workers: 4
+    autovacuum_naptime: 30s
+    autovacuum_vacuum_threshold: 50
+    autovacuum_analyze_threshold: 50
+    autovacuum_vacuum_scale_factor: 0.1
+    autovacuum_analyze_scale_factor: 0.05
+    autovacuum_vacuum_cost_delay: 2ms
+    autovacuum_vacuum_cost_limit: 1000
+
+    # TimescaleDB settings
+    shared_preload_libraries: "timescaledb,pg_stat_statements"
+    timescaledb.max_background_workers: 8
+
+    # pg_stat_statements
+    pg_stat_statements.max: 10000
+    pg_stat_statements.track: all
+
+  # -- Replica creation methods
+  create_replica_methods:
+    - pgbackrest
+    - basebackup
+
+# ==============================================================================
+# Credentials Configuration
+# ==============================================================================
+credentials:
+  # -- Use existing secret (if set, other credential values are ignored)
+  existingSecret: ""
+
+  # -- Superuser password (will be auto-generated if empty)
+  superuserPassword: ""
+
+  # -- Replication user password
+  replicationPassword: ""
+
+  # -- REST API password
+  restapiPassword: ""
+
+  # -- Admin user password
+  adminPassword: ""
+
+  # -- Application user password
+  greenlangPassword: ""
+
+# ==============================================================================
+# Persistence Configuration
+# ==============================================================================
+persistence:
+  enabled: true
+  storageClass: fast-ssd
+  accessModes:
+    - ReadWriteOnce
+  size: 500Gi
+  annotations: {}
+
+# ==============================================================================
+# Resource Limits
+# ==============================================================================
+resources:
+  requests:
+    memory: "8Gi"
+    cpu: "2000m"
+  limits:
+    memory: "16Gi"
+    cpu: "4000m"
+
+# ==============================================================================
+# Probes Configuration
+# ==============================================================================
+livenessProbe:
+  enabled: true
+  httpGet:
+    path: /liveness
+    port: 8008
+    scheme: HTTP
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+  successThreshold: 1
+
+readinessProbe:
+  enabled: true
+  httpGet:
+    path: /readiness
+    port: 8008
+    scheme: HTTP
+  initialDelaySeconds: 10
+  periodSeconds: 5
+  timeoutSeconds: 3
+  failureThreshold: 3
+  successThreshold: 1
+
+startupProbe:
+  enabled: true
+  httpGet:
+    path: /liveness
+    port: 8008
+    scheme: HTTP
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 30
+
+# ==============================================================================
+# Pod Scheduling
+# ==============================================================================
+
+# -- Node selector
+nodeSelector: {}
+
+# -- Tolerations
+tolerations: []
+
+# -- Pod anti-affinity (ensure pods are spread across nodes)
+affinity:
+  podAntiAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchLabels:
+            app: patroni
+        topologyKey: kubernetes.io/hostname
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchLabels:
+              app: patroni
+          topologyKey: topology.kubernetes.io/zone
+
+# -- Topology spread constraints
+topologySpreadConstraints:
+  - maxSkew: 1
+    topologyKey: topology.kubernetes.io/zone
+    whenUnsatisfiable: DoNotSchedule
+    labelSelector:
+      matchLabels:
+        app: patroni
+  - maxSkew: 1
+    topologyKey: kubernetes.io/hostname
+    whenUnsatisfiable: DoNotSchedule
+    labelSelector:
+      matchLabels:
+        app: patroni
+
+# ==============================================================================
+# Services Configuration
+# ==============================================================================
+service:
+  # -- Primary (write) service
+  primary:
+    enabled: true
+    type: ClusterIP
+    port: 5432
+    annotations: {}
+
+  # -- Replica (read) service
+  replica:
+    enabled: true
+    type: ClusterIP
+    port: 5432
+    annotations: {}
+
+  # -- Headless service for StatefulSet
+  headless:
+    enabled: true
+    annotations: {}
+
+  # -- External LoadBalancer for primary (optional)
+  primaryExternal:
+    enabled: false
+    type: LoadBalancer
+    port: 5432
+    annotations:
+      service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+      service.beta.kubernetes.io/aws-load-balancer-internal: "true"
+
+  # -- External LoadBalancer for replicas (optional)
+  replicaExternal:
+    enabled: false
+    type: LoadBalancer
+    port: 5432
+    annotations:
+      service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+      service.beta.kubernetes.io/aws-load-balancer-internal: "true"
+
+# ==============================================================================
+# Pod Disruption Budget
+# ==============================================================================
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 2
+
+# ==============================================================================
+# Network Policies
+# ==============================================================================
+networkPolicy:
+  enabled: true
+  # -- Namespaces allowed to access PostgreSQL
+  allowedNamespaces:
+    - greenlang
+    - greenlang-staging
+  # -- Additional ingress rules
+  additionalIngress: []
+  # -- Additional egress rules
+  additionalEgress: []
+
+# ==============================================================================
+# RBAC Configuration
+# ==============================================================================
+rbac:
+  create: true
+
+# ==============================================================================
+# Metrics and Monitoring
+# ==============================================================================
+metrics:
+  enabled: true
+
+  # -- Postgres exporter sidecar
+  postgresExporter:
+    enabled: true
+    image:
+      repository: prometheuscommunity/postgres-exporter
+      tag: v0.15.0
+      pullPolicy: IfNotPresent
+    port: 9187
+    resources:
+      requests:
+        memory: "64Mi"
+        cpu: "50m"
+      limits:
+        memory: "128Mi"
+        cpu: "100m"
+    # -- Custom queries for exporter
+    customQueries:
+      enabled: true
+
+  # -- ServiceMonitor for Prometheus Operator
+  serviceMonitor:
+    enabled: true
+    interval: 30s
+    scrapeTimeout: 10s
+    labels:
+      release: prometheus
+    namespace: ""  # Use chart namespace if empty
+
+  # -- PodMonitor for Prometheus Operator
+  podMonitor:
+    enabled: false
+    interval: 30s
+
+# ==============================================================================
+# pgBackRest Backup Configuration
+# ==============================================================================
+backup:
+  enabled: true
+
+  # -- pgBackRest configuration
+  pgbackrest:
+    # -- Stanza name
+    stanza: greenlang
+
+    # -- Repository type (s3, azure, gcs, posix)
+    repoType: s3
+
+    # -- S3 configuration
+    s3:
+      bucket: greenlang-db-backups
+      endpoint: s3.amazonaws.com
+      region: us-east-1
+
+    # -- Retention policy
+    retention:
+      full: 4
+      diff: 14
+
+    # -- Compression settings
+    compression:
+      type: lz4
+      level: 6
+
+    # -- Encryption settings
+    encryption:
+      enabled: true
+      type: aes-256-cbc
+
+    # -- Process configuration
+    processMax: 4
+
+  # -- S3 credentials (use existing secret if set)
+  existingS3Secret: ""
+
+  # -- Backup schedule (CronJob)
+  schedule:
+    full: "0 2 * * 0"   # Sunday at 2 AM
+    diff: "0 2 * * 1-6"  # Mon-Sat at 2 AM
+
+# ==============================================================================
+# Additional Volumes
+# ==============================================================================
+extraVolumes: []
+extraVolumeMounts: []
+
+# ==============================================================================
+# Init Containers
+# ==============================================================================
+initContainers: []
+
+# ==============================================================================
+# Sidecars
+# ==============================================================================
+sidecars: []
+
+# ==============================================================================
+# Pod Annotations
+# ==============================================================================
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "8008"
+  prometheus.io/path: "/metrics"
+
+# ==============================================================================
+# Pod Labels
+# ==============================================================================
+podLabels: {}
+
+# ==============================================================================
+# Termination Grace Period
+# ==============================================================================
+terminationGracePeriodSeconds: 300
+
+# ==============================================================================
+# Update Strategy
+# ==============================================================================
+updateStrategy:
+  type: RollingUpdate
+
+# ==============================================================================
+# Priority Class
+# ==============================================================================
+priorityClassName: ""
+
+# ==============================================================================
+# DNS Configuration
+# ==============================================================================
+dnsPolicy: ClusterFirst
+dnsConfig: {}

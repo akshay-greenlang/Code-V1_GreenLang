@@ -1,0 +1,31 @@
+# Pod Disruption Budget for PgBouncer
+# Ensures minimum availability during voluntary disruptions
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: pgbouncer-pdb
+  namespace: greenlang-database
+  labels:
+    app: pgbouncer
+    app.kubernetes.io/name: pgbouncer
+    app.kubernetes.io/component: connection-pooler
+    app.kubernetes.io/part-of: greenlang
+  annotations:
+    description: "PDB to maintain PgBouncer availability during disruptions"
+spec:
+  # Minimum number of pods that must remain available
+  # With 3 replicas, this ensures at least 2 are always running
+  minAvailable: 2
+
+  # Alternative: Use maxUnavailable instead
+  # maxUnavailable: 1
+
+  selector:
+    matchLabels:
+      app: pgbouncer
+
+  # Unhealthy pod eviction policy (Kubernetes 1.27+)
+  # AlwaysAllow: Allow eviction of unhealthy pods
+  # IfHealthyBudget: Only evict unhealthy pods if budget allows
+  unhealthyPodEvictionPolicy: IfHealthyBudget

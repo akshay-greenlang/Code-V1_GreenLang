@@ -1,0 +1,285 @@
+# =============================================================================
+# PostgreSQL/TimescaleDB ConfigMap - Development Environment
+# =============================================================================
+# Minimal resource settings for local development
+# Optimized for: 4GB RAM, 2 CPU cores, SSD storage
+# =============================================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgresql-config-dev
+  namespace: greenlang-dev
+  labels:
+    app: postgresql
+    environment: development
+    tier: database
+    managed-by: greenlang-devops
+  annotations:
+    description: "PostgreSQL configuration for development environment"
+    last-updated: "2026-02-03"
+data:
+  # Main PostgreSQL configuration
+  postgresql.conf: |
+    # =============================================================================
+    # PostgreSQL Development Configuration
+    # =============================================================================
+    # Optimized for: 4GB RAM, 2 CPU cores, Development workloads
+    # =============================================================================
+
+    # -----------------------------------------------------------------------------
+    # CONNECTION SETTINGS
+    # -----------------------------------------------------------------------------
+    listen_addresses = '*'
+    port = 5432
+    max_connections = 50
+    superuser_reserved_connections = 3
+
+    # -----------------------------------------------------------------------------
+    # MEMORY CONFIGURATION (4GB RAM)
+    # -----------------------------------------------------------------------------
+    shared_buffers = 1GB
+    effective_cache_size = 3GB
+    work_mem = 64MB
+    maintenance_work_mem = 256MB
+    huge_pages = off
+    temp_buffers = 16MB
+
+    # -----------------------------------------------------------------------------
+    # WAL CONFIGURATION
+    # -----------------------------------------------------------------------------
+    wal_level = replica
+    wal_buffers = 16MB
+    checkpoint_timeout = 10min
+    checkpoint_completion_target = 0.9
+    max_wal_size = 2GB
+    min_wal_size = 512MB
+    wal_compression = on
+    archive_mode = off
+
+    # -----------------------------------------------------------------------------
+    # QUERY PLANNER
+    # -----------------------------------------------------------------------------
+    random_page_cost = 1.1
+    effective_io_concurrency = 200
+    default_statistics_target = 100
+
+    # -----------------------------------------------------------------------------
+    # PARALLEL QUERY
+    # -----------------------------------------------------------------------------
+    max_parallel_workers_per_gather = 1
+    max_parallel_workers = 2
+    max_parallel_maintenance_workers = 1
+    parallel_leader_participation = on
+
+    # -----------------------------------------------------------------------------
+    # AUTOVACUUM
+    # -----------------------------------------------------------------------------
+    autovacuum = on
+    autovacuum_max_workers = 2
+    autovacuum_naptime = 60s
+    autovacuum_vacuum_threshold = 50
+    autovacuum_analyze_threshold = 50
+    autovacuum_vacuum_scale_factor = 0.1
+    autovacuum_analyze_scale_factor = 0.05
+    autovacuum_vacuum_cost_delay = 10ms
+    autovacuum_vacuum_cost_limit = 200
+
+    # -----------------------------------------------------------------------------
+    # LOGGING (Verbose for development)
+    # -----------------------------------------------------------------------------
+    logging_collector = on
+    log_directory = 'log'
+    log_filename = 'postgresql-%Y-%m-%d.log'
+    log_rotation_age = 1d
+    log_rotation_size = 50MB
+    log_min_duration_statement = 100
+    log_checkpoints = on
+    log_connections = on
+    log_disconnections = on
+    log_lock_waits = on
+    log_statement = 'all'
+    log_temp_files = 0
+    log_line_prefix = '%m [%p] %q%u@%d '
+    log_timezone = 'UTC'
+
+    # -----------------------------------------------------------------------------
+    # DEVELOPMENT SPECIFIC
+    # -----------------------------------------------------------------------------
+    # Enable detailed error messages
+    client_min_messages = notice
+    log_error_verbosity = verbose
+
+    # Disable SSL for local development
+    ssl = off
+
+    # Statement timeout (prevent runaway queries)
+    statement_timeout = 60000
+
+    # Idle transaction timeout
+    idle_in_transaction_session_timeout = 300000
+
+  # TimescaleDB configuration
+  timescaledb.conf: |
+    # TimescaleDB Development Configuration
+    shared_preload_libraries = 'timescaledb,pg_stat_statements'
+    timescaledb.max_background_workers = 2
+    timescaledb.telemetry_level = off
+
+    # pg_stat_statements
+    pg_stat_statements.max = 1000
+    pg_stat_statements.track = all
+
+  # pg_hba.conf for development
+  pg_hba.conf: |
+    # TYPE  DATABASE        USER            ADDRESS                 METHOD
+    # Local connections
+    local   all             all                                     trust
+    # IPv4 local connections (development)
+    host    all             all             127.0.0.1/32            trust
+    host    all             all             0.0.0.0/0               md5
+    # IPv6 local connections
+    host    all             all             ::1/128                 trust
+    host    all             all             ::/0                    md5
+    # Replication (if needed)
+    local   replication     all                                     trust
+    host    replication     all             127.0.0.1/32            trust
+
+---
+# Secret for development database credentials
+apiVersion: v1
+kind: Secret
+metadata:
+  name: postgresql-credentials-dev
+  namespace: greenlang-dev
+  labels:
+    app: postgresql
+    environment: development
+type: Opaque
+stringData:
+  POSTGRES_USER: "greenlang_dev"
+  POSTGRES_PASSWORD: "dev_password_change_me"
+  POSTGRES_DB: "greenlang_dev"
+  # Connection string for applications
+  DATABASE_URL: "postgresql://greenlang_dev:dev_password_change_me@postgresql-dev:5432/greenlang_dev"
+
+---
+# PersistentVolumeClaim for development
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgresql-data-dev
+  namespace: greenlang-dev
+  labels:
+    app: postgresql
+    environment: development
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: standard
+
+---
+# PostgreSQL StatefulSet for development
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgresql-dev
+  namespace: greenlang-dev
+  labels:
+    app: postgresql
+    environment: development
+spec:
+  serviceName: postgresql-dev
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgresql
+      environment: development
+  template:
+    metadata:
+      labels:
+        app: postgresql
+        environment: development
+    spec:
+      containers:
+        - name: postgresql
+          image: timescale/timescaledb:latest-pg15
+          ports:
+            - containerPort: 5432
+              name: postgresql
+          envFrom:
+            - secretRef:
+                name: postgresql-credentials-dev
+          volumeMounts:
+            - name: postgresql-data
+              mountPath: /var/lib/postgresql/data
+            - name: postgresql-config
+              mountPath: /etc/postgresql/postgresql.conf
+              subPath: postgresql.conf
+            - name: postgresql-config
+              mountPath: /etc/postgresql/timescaledb.conf
+              subPath: timescaledb.conf
+            - name: postgresql-config
+              mountPath: /etc/postgresql/pg_hba.conf
+              subPath: pg_hba.conf
+          args:
+            - -c
+            - config_file=/etc/postgresql/postgresql.conf
+            - -c
+            - hba_file=/etc/postgresql/pg_hba.conf
+          resources:
+            requests:
+              memory: "1Gi"
+              cpu: "500m"
+            limits:
+              memory: "2Gi"
+              cpu: "1000m"
+          livenessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - greenlang_dev
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 6
+          readinessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - greenlang_dev
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            successThreshold: 1
+      volumes:
+        - name: postgresql-config
+          configMap:
+            name: postgresql-config-dev
+        - name: postgresql-data
+          persistentVolumeClaim:
+            claimName: postgresql-data-dev
+
+---
+# Service for development
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgresql-dev
+  namespace: greenlang-dev
+  labels:
+    app: postgresql
+    environment: development
+spec:
+  type: ClusterIP
+  ports:
+    - port: 5432
+      targetPort: 5432
+      name: postgresql
+  selector:
+    app: postgresql
+    environment: development

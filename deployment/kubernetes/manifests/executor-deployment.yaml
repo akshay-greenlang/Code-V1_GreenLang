@@ -8,6 +8,12 @@ metadata:
     component: executor
 spec:
   replicas: 3
+  revisionHistoryLimit: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
   selector:
     matchLabels:
       app: greenlang
@@ -17,12 +23,35 @@ spec:
       labels:
         app: greenlang
         component: executor
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+        prometheus.io/path: "/metrics"
     spec:
       serviceAccountName: greenlang-executor
+      # Pod security context
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+
       containers:
       - name: executor
         image: greenlang/executor:latest
         imagePullPolicy: Always
+        # Container security context
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 1000
+          runAsGroup: 1000
+          capabilities:
+            drop:
+              - ALL
         ports:
         - containerPort: 8080
           name: http
@@ -58,18 +87,35 @@ spec:
             port: 8080
           initialDelaySeconds: 30
           periodSeconds: 10
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 3
         readinessProbe:
           httpGet:
             path: /ready
             port: 8080
           initialDelaySeconds: 5
           periodSeconds: 5
+          timeoutSeconds: 3
+          successThreshold: 1
+          failureThreshold: 3
+        startupProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 30
         volumeMounts:
         - name: config
           mountPath: /etc/greenlang
           readOnly: true
         - name: cache
           mountPath: /var/cache/greenlang
+        - name: tmp
+          mountPath: /tmp
       volumes:
       - name: config
         configMap:
@@ -77,6 +123,9 @@ spec:
       - name: cache
         emptyDir:
           sizeLimit: 1Gi
+      - name: tmp
+        emptyDir:
+          sizeLimit: 500Mi
 ---
 apiVersion: v1
 kind: Service
@@ -124,3 +173,20 @@ spec:
       target:
         type: Utilization
         averageUtilization: 80
+
+---
+# PodDisruptionBudget for executor
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: greenlang-executor-pdb
+  namespace: greenlang
+  labels:
+    app: greenlang
+    component: executor
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: greenlang
+      component: executor

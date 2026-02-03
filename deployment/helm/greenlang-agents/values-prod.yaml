@@ -326,3 +326,246 @@ eudr-compliance:
     availability: 99.95
     latencyP95: 250ms
     errorRate: 0.005
+
+# API Gateway - Production
+apiGateway:
+  enabled: true
+  replicaCount: 5
+  image:
+    repository: greenlang/api-gateway
+    tag: "1.0.0"
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+    limits:
+      cpu: 2000m
+      memory: 4Gi
+  autoscaling:
+    enabled: true
+    minReplicas: 5
+    maxReplicas: 20
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: 80
+    scaleUpStabilizationWindowSeconds: 30
+    scaleDownStabilizationWindowSeconds: 300
+  podDisruptionBudget:
+    minAvailable: 3
+  nodeSelector:
+    node-type: api-gateway
+  tolerations:
+    - key: dedicated
+      value: api
+      effect: NoSchedule
+
+# Worker - Production
+worker:
+  enabled: true
+  replicaCount: 10
+  image:
+    repository: greenlang/worker
+    tag: "1.0.0"
+  resources:
+    requests:
+      cpu: 1000m
+      memory: 2Gi
+    limits:
+      cpu: 4000m
+      memory: 8Gi
+  autoscaling:
+    enabled: true
+    minReplicas: 10
+    maxReplicas: 50
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: 80
+    customMetrics:
+      - type: Pods
+        pods:
+          metric:
+            name: greenlang_task_queue_depth
+          target:
+            type: AverageValue
+            averageValue: "10"
+  podDisruptionBudget:
+    minAvailable: 5
+  nodeSelector:
+    node-type: worker
+  tolerations:
+    - key: dedicated
+      value: worker
+      effect: NoSchedule
+
+# Scheduler - Production
+scheduler:
+  enabled: true
+  replicaCount: 3
+  image:
+    repository: greenlang/scheduler
+    tag: "1.0.0"
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 2Gi
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: 80
+  podDisruptionBudget:
+    minAvailable: 1
+
+# Agent Runner - Production
+agentRunner:
+  enabled: true
+  replicaCount: 5
+  image:
+    repository: greenlang/agent-runner
+    tag: "1.0.0"
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+    limits:
+      cpu: 2000m
+      memory: 4Gi
+  autoscaling:
+    enabled: true
+    minReplicas: 5
+    maxReplicas: 20
+    targetCPUUtilizationPercentage: 70
+  podDisruptionBudget:
+    minAvailable: 3
+  nodeSelector:
+    node-type: agent-runtime
+
+# Vertical Pod Autoscaler - Production
+vpa:
+  enabled: true
+  updateMode: "Auto"
+  apiGateway:
+    minCpu: "250m"
+    minMemory: "512Mi"
+    maxCpu: "4"
+    maxMemory: "8Gi"
+  agents:
+    minCpu: "250m"
+    minMemory: "512Mi"
+    maxCpu: "4"
+    maxMemory: "8Gi"
+  eudrCompliance:
+    minCpu: "500m"
+    minMemory: "1Gi"
+    maxCpu: "8"
+    maxMemory: "16Gi"
+  worker:
+    minCpu: "500m"
+    minMemory: "1Gi"
+    maxCpu: "8"
+    maxMemory: "16Gi"
+
+# Priority Classes
+priorityClasses:
+  create: true
+  classes:
+    - name: greenlang-critical
+      value: 1000000
+      globalDefault: false
+      description: "Critical GreenLang services (EUDR compliance)"
+    - name: greenlang-high
+      value: 100000
+      globalDefault: false
+      description: "High priority GreenLang services"
+    - name: greenlang-normal
+      value: 10000
+      globalDefault: false
+      description: "Normal priority GreenLang services"
+
+# Resource Quotas - Production
+resourceQuota:
+  enabled: true
+  hard:
+    requests.cpu: "200"
+    requests.memory: "400Gi"
+    limits.cpu: "400"
+    limits.memory: "800Gi"
+    persistentvolumeclaims: "100"
+    pods: "500"
+    services: "50"
+
+# Limit Range - Production
+limitRange:
+  enabled: true
+  limits:
+    - type: Container
+      default:
+        cpu: "2"
+        memory: "4Gi"
+      defaultRequest:
+        cpu: "500m"
+        memory: "1Gi"
+      max:
+        cpu: "8"
+        memory: "16Gi"
+      min:
+        cpu: "50m"
+        memory: "64Mi"
+    - type: Pod
+      max:
+        cpu: "32"
+        memory: "64Gi"
+
+# Additional production alerts
+additionalAlerts:
+  - alert: EUDRComplianceCritical
+    expr: |
+      sum(rate(eudr_compliance_requests_total{status="error"}[5m]))
+      /
+      sum(rate(eudr_compliance_requests_total[5m])) > 0.001
+    for: 1m
+    labels:
+      severity: critical
+      team: compliance
+      pagerduty: "true"
+    annotations:
+      summary: "EUDR Compliance critical error rate"
+      description: "EUDR error rate is {{ $value | humanizePercentage }} (SLO: 0.1%)"
+      runbook_url: "https://docs.greenlang.io/runbooks/eudr-critical"
+
+  - alert: APIGatewayHighLatency
+    expr: |
+      histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket{job=~".*api-gateway.*"}[5m])) by (le)) > 1
+    for: 3m
+    labels:
+      severity: critical
+      team: platform
+    annotations:
+      summary: "API Gateway P99 latency exceeds 1s"
+      description: "API Gateway P99 latency is {{ $value | humanizeDuration }}"
+
+  - alert: WorkerQueueBacklog
+    expr: |
+      sum(greenlang_task_queue_depth) > 1000
+    for: 5m
+    labels:
+      severity: warning
+      team: platform
+    annotations:
+      summary: "Worker task queue backlog is high"
+      description: "Queue depth is {{ $value }} tasks"
+
+# Backup configuration
+backup:
+  enabled: true
+  schedule: "0 */6 * * *"  # Every 6 hours
+  retention:
+    daily: 7
+    weekly: 4
+    monthly: 3
+  s3:
+    bucket: greenlang-prod-backups
+    region: us-east-1
+    prefix: agents/

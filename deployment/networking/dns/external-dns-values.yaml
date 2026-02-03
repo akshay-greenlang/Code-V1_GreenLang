@@ -1,0 +1,214 @@
+# ExternalDNS Helm Values for GreenLang
+# INFRA-001: Automatic DNS management with Route53
+#
+# Install: helm install external-dns external-dns/external-dns \
+#          -n external-dns --create-namespace \
+#          -f external-dns-values.yaml
+
+# Image configuration
+image:
+  repository: registry.k8s.io/external-dns/external-dns
+  tag: v0.14.0
+  pullPolicy: IfNotPresent
+
+# Service account configuration
+serviceAccount:
+  create: true
+  name: external-dns
+  annotations:
+    # IAM role for service accounts (IRSA) - AWS
+    eks.amazonaws.com/role-arn: arn:aws:iam::ACCOUNT_ID:role/greenlang-external-dns-role
+
+# RBAC configuration
+rbac:
+  create: true
+  apiVersion: v1
+
+# DNS provider configuration
+provider: aws
+
+# AWS-specific configuration
+aws:
+  region: us-east-1
+  zoneType: public  # public, private, or "" for both
+  batchChangeSize: 1000
+  batchChangeInterval: 1s
+  evaluateTargetHealth: true
+  assumeRoleArn: ""
+  apiRetries: 3
+
+# Domain filters - only manage these domains
+domainFilters:
+  - greenlang.io
+
+# Exclude specific subdomains from management
+excludeDomains: []
+
+# Zone ID filters (optional - use for specific hosted zones)
+# zoneIdFilters:
+#   - Z1234567890ABC
+
+# Zone name filters
+zoneNameFilters: []
+
+# Registry configuration
+registry: txt
+txtOwnerId: greenlang-k8s-cluster
+txtPrefix: externaldns-
+
+# Source configuration - which resources to watch
+sources:
+  - service
+  - ingress
+  - istio-gateway
+  - istio-virtualservice
+
+# Namespace to watch (empty = all namespaces)
+namespace: ""
+
+# Annotation filter
+annotationFilter: ""
+
+# Label filter
+labelFilter: ""
+
+# Combine FQDN annotation with record name
+combineFQDNAndAnnotation: false
+
+# Policy: sync (create, update, delete), upsert-only, or create-only
+policy: sync
+
+# Interval between DNS record sync
+interval: 1m
+
+# Log level and format
+logLevel: info
+logFormat: text
+
+# Trigger loop on event (reduces API calls)
+triggerLoopOnEvent: true
+
+# Metrics and monitoring
+metrics:
+  enabled: true
+  port: 7979
+
+serviceMonitor:
+  enabled: true
+  additionalLabels:
+    release: prometheus
+  interval: 30s
+  scrapeTimeout: 30s
+
+# Pod configuration
+replicaCount: 1
+
+# Resources
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 100m
+    memory: 128Mi
+
+# Node selector
+nodeSelector:
+  node-type: system
+
+# Tolerations
+tolerations:
+  - key: "node-type"
+    operator: "Equal"
+    value: "system"
+    effect: "NoSchedule"
+
+# Affinity
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+              - key: app.kubernetes.io/name
+                operator: In
+                values:
+                  - external-dns
+          topologyKey: kubernetes.io/hostname
+
+# Pod security context
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 65534
+  fsGroup: 65534
+
+# Container security context
+securityContext:
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 65534
+  capabilities:
+    drop:
+      - ALL
+
+# Priority class
+priorityClassName: system-cluster-critical
+
+# Deployment strategy
+deploymentStrategy:
+  type: Recreate
+
+# Extra arguments
+extraArgs:
+  # AWS-specific settings
+  - --aws-zone-type=public
+  - --aws-prefer-cname
+  # Istio support
+  - --source=istio-gateway
+  - --source=istio-virtualservice
+  # Record management
+  - --txt-prefix=externaldns-
+  - --txt-owner-id=greenlang-k8s-cluster
+  # Logging
+  - --log-level=info
+  - --log-format=text
+  # Sync settings
+  - --policy=sync
+  - --registry=txt
+  - --interval=1m
+
+# Extra environment variables
+extraEnv: []
+
+# Extra volumes
+extraVolumes: []
+
+# Extra volume mounts
+extraVolumeMounts: []
+
+---
+# IAM Policy for ExternalDNS (reference - apply via Terraform)
+# {
+#   "Version": "2012-10-17",
+#   "Statement": [
+#     {
+#       "Effect": "Allow",
+#       "Action": [
+#         "route53:ChangeResourceRecordSets"
+#       ],
+#       "Resource": [
+#         "arn:aws:route53:::hostedzone/*"
+#       ]
+#     },
+#     {
+#       "Effect": "Allow",
+#       "Action": [
+#         "route53:ListHostedZones",
+#         "route53:ListResourceRecordSets",
+#         "route53:ListTagsForResource"
+#       ],
+#       "Resource": ["*"]
+#     }
+#   ]
+# }

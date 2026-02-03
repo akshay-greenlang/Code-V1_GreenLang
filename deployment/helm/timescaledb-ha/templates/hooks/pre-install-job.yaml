@@ -1,0 +1,151 @@
+{{/*
+Pre-install Job: Setup replication user and validate prerequisites
+*/}}
+{{- if .Values.hooks.preInstall.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "timescaledb-ha.fullname" . }}-pre-install
+  namespace: {{ include "timescaledb-ha.namespace" . }}
+  labels:
+    {{- include "timescaledb-ha.labels" . | nindent 4 }}
+    app.kubernetes.io/component: pre-install-hook
+  annotations:
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": hook-succeeded,before-hook-creation
+spec:
+  backoffLimit: {{ .Values.hooks.preInstall.backoffLimit }}
+  ttlSecondsAfterFinished: {{ .Values.hooks.preInstall.ttlSecondsAfterFinished }}
+  template:
+    metadata:
+      labels:
+        {{- include "timescaledb-ha.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: pre-install-hook
+    spec:
+      restartPolicy: OnFailure
+      serviceAccountName: {{ include "timescaledb-ha.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.securityContext.pod | nindent 8 }}
+
+      containers:
+        - name: pre-install
+          image: {{ include "timescaledb-ha.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          securityContext:
+            {{- toYaml .Values.securityContext.container | nindent 12 }}
+
+          command:
+            - /bin/bash
+            - -c
+            - |
+              set -e
+              echo "=========================================="
+              echo "TimescaleDB HA Pre-Install Hook"
+              echo "=========================================="
+              echo ""
+              echo "Running pre-installation checks..."
+              echo ""
+
+              # Validate environment
+              echo "[1/5] Validating environment variables..."
+              if [ -z "$POSTGRES_PASSWORD" ]; then
+                echo "ERROR: POSTGRES_PASSWORD not set"
+                exit 1
+              fi
+              if [ -z "$REPLICATION_PASSWORD" ]; then
+                echo "ERROR: REPLICATION_PASSWORD not set"
+                exit 1
+              fi
+              echo "  - Environment variables OK"
+              echo ""
+
+              # Validate Kubernetes connectivity
+              echo "[2/5] Validating Kubernetes API connectivity..."
+              if ! kubectl auth can-i get endpoints -n {{ include "timescaledb-ha.namespace" . }} 2>/dev/null; then
+                echo "WARNING: Cannot verify Kubernetes API access"
+                echo "  - Service account may need additional permissions"
+              else
+                echo "  - Kubernetes API access OK"
+              fi
+              echo ""
+
+              # Check for existing cluster
+              echo "[3/5] Checking for existing cluster..."
+              EXISTING_ENDPOINTS=$(kubectl get endpoints {{ include "timescaledb-ha.fullname" . }}-config -n {{ include "timescaledb-ha.namespace" . }} 2>/dev/null || echo "")
+              if [ -n "$EXISTING_ENDPOINTS" ]; then
+                echo "WARNING: Existing cluster endpoints found"
+                echo "  - If upgrading, this is expected"
+                echo "  - If fresh install, consider cleaning up"
+              else
+                echo "  - No existing cluster found (fresh install)"
+              fi
+              echo ""
+
+              # Validate storage class exists
+              echo "[4/5] Validating storage class..."
+              {{- if .Values.persistence.storageClass }}
+              STORAGE_CLASS="{{ .Values.persistence.storageClass }}"
+              if kubectl get storageclass $STORAGE_CLASS >/dev/null 2>&1; then
+                echo "  - Storage class '$STORAGE_CLASS' exists"
+              else
+                echo "WARNING: Storage class '$STORAGE_CLASS' not found"
+                echo "  - Ensure storage class exists before proceeding"
+              fi
+              {{- else }}
+              echo "  - Using default storage class"
+              {{- end }}
+              echo ""
+
+              # Check namespace labels for network policies
+              echo "[5/5] Validating namespace configuration..."
+              NS_LABELS=$(kubectl get namespace {{ include "timescaledb-ha.namespace" . }} -o jsonpath='{.metadata.labels}' 2>/dev/null || echo "{}")
+              echo "  - Namespace labels: $NS_LABELS"
+              echo ""
+
+              echo "=========================================="
+              echo "Pre-installation checks completed"
+              echo "=========================================="
+              echo ""
+              echo "Cluster Configuration:"
+              echo "  - Cluster Name: {{ .Values.cluster.name }}"
+              echo "  - Replicas: {{ .Values.cluster.replicas }}"
+              echo "  - Database: {{ .Values.postgresql.database }}"
+              echo "  - Storage Size: {{ .Values.persistence.size }}"
+              {{- if .Values.persistence.wal.enabled }}
+              echo "  - WAL Storage: {{ .Values.persistence.wal.size }}"
+              {{- end }}
+              {{- if .Values.patroni.synchronous.enabled }}
+              echo "  - Synchronous Replication: enabled ({{ .Values.patroni.synchronous.num_replicas }} sync replicas)"
+              {{- else }}
+              echo "  - Synchronous Replication: disabled"
+              {{- end }}
+              {{- if .Values.backup.enabled }}
+              echo "  - Backup: enabled (pgBackRest)"
+              {{- end }}
+              {{- if .Values.pgbouncer.enabled }}
+              echo "  - Connection Pooling: enabled (PgBouncer)"
+              {{- end }}
+              echo ""
+              echo "Ready to proceed with installation."
+
+          env:
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "timescaledb-ha.secretName" . }}
+                  key: postgres-password
+            - name: REPLICATION_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "timescaledb-ha.secretName" . }}
+                  key: replication-password
+
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "200m"
+              memory: "256Mi"
+{{- end }}

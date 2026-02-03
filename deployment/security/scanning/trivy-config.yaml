@@ -1,0 +1,320 @@
+# INFRA-001: Trivy Container Scanning Configuration
+# Comprehensive vulnerability scanning for container images
+# Integrates with CI/CD and Kubernetes admission control
+---
+# Trivy Configuration File
+# Place at .trivy.yaml in repository root
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: trivy-config
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: trivy
+    app.kubernetes.io/component: security-scanning
+data:
+  trivy.yaml: |
+    # Trivy configuration
+    # https://aquasecurity.github.io/trivy/latest/docs/configuration/
+
+    # Scan options
+    scan:
+      # Security checks to perform
+      security-checks:
+        - vuln        # Vulnerability scanning
+        - config      # Misconfiguration scanning
+        - secret      # Secret scanning
+        - license     # License scanning (optional)
+
+    # Vulnerability scanning options
+    vulnerability:
+      # Vulnerability types to scan
+      type:
+        - os          # OS packages (apt, yum, etc.)
+        - library     # Language-specific (npm, pip, etc.)
+
+      # Ignore unfixed vulnerabilities in CI (optional)
+      ignore-unfixed: false
+
+    # Severity levels to fail on
+    severity:
+      - CRITICAL
+      - HIGH
+      - MEDIUM
+
+    # Output format
+    format: table
+
+    # Exit code on vulnerabilities found
+    exit-code: 1
+
+    # Timeout for scanning
+    timeout: 10m
+
+    # Cache settings
+    cache:
+      dir: /tmp/trivy-cache
+      clear: false
+
+    # Database settings
+    db:
+      # Use embedded DB for air-gapped environments
+      no-progress: true
+      skip-update: false
+
+    # Ignore specific vulnerabilities
+    # List CVE IDs to ignore (use with caution)
+    ignore-policy: /etc/trivy/trivy-ignore.rego
+
+  # Trivy ignore policy (Rego)
+  trivy-ignore.rego: |
+    package trivy
+
+    import data.lib.trivy
+
+    # Ignore CVEs that have been risk-accepted
+    # Add CVE IDs here after proper risk assessment
+    default ignore = false
+
+    # Example: ignore specific CVE
+    # ignore {
+    #     input.VulnerabilityID == "CVE-2023-XXXXX"
+    #     input.PkgName == "package-name"
+    # }
+
+    # Ignore vulnerabilities in dev dependencies (npm devDependencies)
+    ignore {
+        input.PkgPath
+        contains(input.PkgPath, "node_modules")
+        input.Metadata.DevDependency == true
+    }
+
+---
+# Trivy Operator Deployment for continuous scanning
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trivy-operator
+  namespace: trivy-system
+  labels:
+    app.kubernetes.io/name: trivy-operator
+    app.kubernetes.io/component: security-scanning
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: trivy-operator
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: trivy-operator
+    spec:
+      serviceAccountName: trivy-operator
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10000
+        fsGroup: 10000
+      containers:
+        - name: trivy-operator
+          image: aquasec/trivy-operator:0.18.0
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          env:
+            - name: OPERATOR_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: OPERATOR_TARGET_NAMESPACES
+              value: "greenlang,greenlang-staging,greenlang-dev"
+            - name: OPERATOR_LOG_DEV_MODE
+              value: "false"
+            - name: OPERATOR_SCAN_JOB_TIMEOUT
+              value: "5m"
+            - name: OPERATOR_CONCURRENT_SCAN_JOBS_LIMIT
+              value: "10"
+            - name: OPERATOR_BATCH_DELETE_LIMIT
+              value: "10"
+            - name: OPERATOR_BATCH_DELETE_DELAY
+              value: "10s"
+            - name: TRIVY_SEVERITY
+              value: "CRITICAL,HIGH,MEDIUM"
+            - name: TRIVY_IGNORE_UNFIXED
+              value: "false"
+            - name: TRIVY_OFFLINE_SCAN
+              value: "false"
+            - name: TRIVY_DB_REPOSITORY
+              value: "ghcr.io/aquasecurity/trivy-db"
+          ports:
+            - name: metrics
+              containerPort: 8080
+            - name: probes
+              containerPort: 9090
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: probes
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: probes
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          volumeMounts:
+            - name: trivy-cache
+              mountPath: /tmp/trivy-cache
+      volumes:
+        - name: trivy-cache
+          emptyDir: {}
+
+---
+# Trivy Operator ServiceAccount
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: trivy-operator
+  namespace: trivy-system
+  labels:
+    app.kubernetes.io/name: trivy-operator
+
+---
+# Trivy Operator ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: trivy-operator
+  labels:
+    app.kubernetes.io/name: trivy-operator
+rules:
+  - apiGroups: [""]
+    resources: ["pods", "pods/log", "configmaps", "secrets", "serviceaccounts"]
+    verbs: ["get", "list", "watch", "create", "update", "delete"]
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["apps"]
+    resources: ["deployments", "daemonsets", "replicasets", "statefulsets"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["batch"]
+    resources: ["jobs", "cronjobs"]
+    verbs: ["get", "list", "watch", "create", "delete"]
+  - apiGroups: ["aquasecurity.github.io"]
+    resources: ["*"]
+    verbs: ["*"]
+
+---
+# Trivy Operator ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: trivy-operator
+  labels:
+    app.kubernetes.io/name: trivy-operator
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: trivy-operator
+subjects:
+  - kind: ServiceAccount
+    name: trivy-operator
+    namespace: trivy-system
+
+---
+# VulnerabilityReport CRD (example, usually installed with operator)
+apiVersion: aquasecurity.github.io/v1alpha1
+kind: ClusterVulnerabilityReport
+metadata:
+  name: greenlang-scan-policy
+  labels:
+    app.kubernetes.io/name: greenlang
+spec:
+  scanner:
+    name: Trivy
+  match:
+    namespaces:
+      - greenlang
+      - greenlang-staging
+      - greenlang-dev
+  compliance:
+    # Fail deployment if critical vulnerabilities found
+    failOnCritical: true
+    # Fail deployment if high vulnerabilities exceed threshold
+    highThreshold: 5
+    # Warn on medium vulnerabilities
+    mediumThreshold: 20
+
+---
+# CI/CD Scan Job Template
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: trivy-scan-ci
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: trivy
+    app.kubernetes.io/component: ci-scan
+spec:
+  ttlSecondsAfterFinished: 3600
+  backoffLimit: 2
+  template:
+    spec:
+      restartPolicy: Never
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10000
+      containers:
+        - name: trivy
+          image: aquasec/trivy:0.48.0
+          args:
+            - image
+            - --severity
+            - CRITICAL,HIGH
+            - --exit-code
+            - "1"
+            - --format
+            - json
+            - --output
+            - /tmp/results/scan-results.json
+            - "$(IMAGE_TO_SCAN)"
+          env:
+            - name: IMAGE_TO_SCAN
+              value: "gcr.io/greenlang/app:latest"
+            - name: TRIVY_NO_PROGRESS
+              value: "true"
+            - name: TRIVY_CACHE_DIR
+              value: "/tmp/trivy-cache"
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+          resources:
+            requests:
+              cpu: 200m
+              memory: 512Mi
+            limits:
+              cpu: 1
+              memory: 2Gi
+          volumeMounts:
+            - name: results
+              mountPath: /tmp/results
+            - name: cache
+              mountPath: /tmp/trivy-cache
+      volumes:
+        - name: results
+          emptyDir: {}
+        - name: cache
+          emptyDir: {}

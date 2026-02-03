@@ -1,0 +1,264 @@
+# Istio Gateway Configuration for GreenLang
+# INFRA-001: Ingress Gateway definitions
+#
+# This file defines the entry points for external traffic into the service mesh
+
+---
+# Main API Gateway
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: greenlang-gateway
+  namespace: istio-system
+  labels:
+    app.kubernetes.io/name: greenlang-gateway
+    app.kubernetes.io/component: networking
+    app.kubernetes.io/part-of: greenlang
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+    # HTTPS server for API traffic
+    - port:
+        number: 443
+        name: https-api
+        protocol: HTTPS
+      hosts:
+        - "api.greenlang.io"
+        - "api-staging.greenlang.io"
+        - "api-dev.greenlang.io"
+      tls:
+        mode: SIMPLE
+        credentialName: greenlang-api-tls
+
+    # HTTPS server for web application
+    - port:
+        number: 443
+        name: https-web
+        protocol: HTTPS
+      hosts:
+        - "app.greenlang.io"
+        - "app-staging.greenlang.io"
+        - "app-dev.greenlang.io"
+      tls:
+        mode: SIMPLE
+        credentialName: greenlang-web-tls
+
+    # HTTPS server for admin portal
+    - port:
+        number: 443
+        name: https-admin
+        protocol: HTTPS
+      hosts:
+        - "admin.greenlang.io"
+      tls:
+        mode: SIMPLE
+        credentialName: greenlang-admin-tls
+
+    # HTTP to HTTPS redirect
+    - port:
+        number: 80
+        name: http
+        protocol: HTTP
+      hosts:
+        - "*.greenlang.io"
+      tls:
+        httpsRedirect: true
+
+---
+# gRPC Gateway for internal services
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: greenlang-grpc-gateway
+  namespace: istio-system
+  labels:
+    app.kubernetes.io/name: greenlang-grpc-gateway
+    app.kubernetes.io/component: networking
+    app.kubernetes.io/part-of: greenlang
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+    # gRPC over TLS
+    - port:
+        number: 15443
+        name: grpc-tls
+        protocol: HTTPS
+      hosts:
+        - "grpc.greenlang.io"
+      tls:
+        mode: SIMPLE
+        credentialName: greenlang-grpc-tls
+
+---
+# Mesh Gateway for internal mesh traffic
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: greenlang-mesh-gateway
+  namespace: istio-system
+  labels:
+    app.kubernetes.io/name: greenlang-mesh-gateway
+    app.kubernetes.io/component: networking
+    app.kubernetes.io/part-of: greenlang
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+    # Internal mesh traffic with mTLS
+    - port:
+        number: 15443
+        name: tls-passthrough
+        protocol: TLS
+      hosts:
+        - "*.greenlang.svc.cluster.local"
+      tls:
+        mode: AUTO_PASSTHROUGH
+
+---
+# Health Check Gateway (no TLS for load balancer health checks)
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: greenlang-health-gateway
+  namespace: istio-system
+  labels:
+    app.kubernetes.io/name: greenlang-health-gateway
+    app.kubernetes.io/component: networking
+    app.kubernetes.io/part-of: greenlang
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+    - port:
+        number: 15021
+        name: status-port
+        protocol: HTTP
+      hosts:
+        - "*"
+
+---
+# Egress Gateway for controlled external access
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: greenlang-egress-gateway
+  namespace: istio-system
+  labels:
+    app.kubernetes.io/name: greenlang-egress-gateway
+    app.kubernetes.io/component: networking
+    app.kubernetes.io/part-of: greenlang
+spec:
+  selector:
+    istio: egressgateway
+  servers:
+    # External HTTPS traffic
+    - port:
+        number: 443
+        name: https
+        protocol: HTTPS
+      hosts:
+        - "*.amazonaws.com"
+        - "*.openai.com"
+        - "*.anthropic.com"
+        - "*.stripe.com"
+        - "*.sendgrid.net"
+      tls:
+        mode: PASSTHROUGH
+
+    # External HTTP traffic (monitored)
+    - port:
+        number: 80
+        name: http
+        protocol: HTTP
+      hosts:
+        - "*.amazonaws.com"
+
+---
+# Wildcard Gateway for development environments
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: greenlang-dev-gateway
+  namespace: istio-system
+  labels:
+    app.kubernetes.io/name: greenlang-dev-gateway
+    app.kubernetes.io/component: networking
+    app.kubernetes.io/part-of: greenlang
+    environment: development
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+    # Development wildcard with TLS
+    - port:
+        number: 443
+        name: https-dev
+        protocol: HTTPS
+      hosts:
+        - "*.dev.greenlang.io"
+      tls:
+        mode: SIMPLE
+        credentialName: greenlang-dev-wildcard-tls
+
+    # Staging wildcard with TLS
+    - port:
+        number: 443
+        name: https-staging
+        protocol: HTTPS
+      hosts:
+        - "*.staging.greenlang.io"
+      tls:
+        mode: SIMPLE
+        credentialName: greenlang-staging-wildcard-tls
+
+---
+# Service Entry for external services (allows mesh to recognize external hosts)
+apiVersion: networking.istio.io/v1beta1
+kind: ServiceEntry
+metadata:
+  name: external-api-services
+  namespace: istio-system
+  labels:
+    app.kubernetes.io/name: external-api-services
+    app.kubernetes.io/component: networking
+    app.kubernetes.io/part-of: greenlang
+spec:
+  hosts:
+    - "api.openai.com"
+    - "api.anthropic.com"
+    - "api.stripe.com"
+    - "api.sendgrid.com"
+  location: MESH_EXTERNAL
+  ports:
+    - number: 443
+      name: https
+      protocol: HTTPS
+  resolution: DNS
+
+---
+# Service Entry for AWS services
+apiVersion: networking.istio.io/v1beta1
+kind: ServiceEntry
+metadata:
+  name: aws-services
+  namespace: istio-system
+  labels:
+    app.kubernetes.io/name: aws-services
+    app.kubernetes.io/component: networking
+    app.kubernetes.io/part-of: greenlang
+spec:
+  hosts:
+    - "*.s3.amazonaws.com"
+    - "*.s3.us-east-1.amazonaws.com"
+    - "secretsmanager.us-east-1.amazonaws.com"
+    - "sqs.us-east-1.amazonaws.com"
+    - "sns.us-east-1.amazonaws.com"
+    - "dynamodb.us-east-1.amazonaws.com"
+  location: MESH_EXTERNAL
+  ports:
+    - number: 443
+      name: https
+      protocol: HTTPS
+  resolution: DNS

@@ -1,0 +1,337 @@
+# Istio Helm Values for GreenLang Service Mesh
+# INFRA-001: Production-grade Istio configuration
+#
+# Install: helm install istio-base istio/base -n istio-system --create-namespace
+#          helm install istiod istio/istiod -n istio-system -f istio-values.yaml
+#          helm install istio-ingress istio/gateway -n istio-ingress --create-namespace -f istio-values.yaml
+
+global:
+  # Mesh identification
+  meshID: greenlang-mesh
+  multiCluster:
+    clusterName: greenlang-primary
+  network: greenlang-network
+
+  # Logging configuration
+  logging:
+    level: "default:info"
+
+  # Proxy settings
+  proxy:
+    # Resource allocation
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+
+    # Logging
+    logLevel: warning
+    componentLogLevel: "misc:error"
+
+    # Tracing
+    tracer: zipkin
+
+    # Lifecycle hooks for graceful shutdown
+    lifecycle:
+      preStop:
+        exec:
+          command:
+            - "/bin/sh"
+            - "-c"
+            - "sleep 5"
+
+    # Hold application until proxy is ready
+    holdApplicationUntilProxyStarts: true
+
+  # Proxy init container settings
+  proxy_init:
+    resources:
+      limits:
+        cpu: 100m
+        memory: 50Mi
+      requests:
+        cpu: 10m
+        memory: 10Mi
+
+  # Default pod disruption budget
+  defaultPodDisruptionBudget:
+    enabled: true
+    minAvailable: 1
+
+# Istiod (Control Plane) configuration
+pilot:
+  # Autoscaling
+  autoscaleEnabled: true
+  autoscaleMin: 2
+  autoscaleMax: 5
+
+  # Resources
+  resources:
+    requests:
+      cpu: 500m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+
+  # Pod disruption budget
+  podDisruptionBudget:
+    minAvailable: 1
+
+  # Node affinity for control plane
+  nodeSelector:
+    node-type: system
+
+  # Tolerations
+  tolerations:
+    - key: "node-type"
+      operator: "Equal"
+      value: "system"
+      effect: "NoSchedule"
+
+  # Environment variables
+  env:
+    # Enable protocol sniffing
+    PILOT_ENABLE_PROTOCOL_SNIFFING_FOR_OUTBOUND: "true"
+    PILOT_ENABLE_PROTOCOL_SNIFFING_FOR_INBOUND: "true"
+    # Trace sampling rate (1%)
+    PILOT_TRACE_SAMPLING: "1.0"
+
+  # Keepalive settings
+  keepaliveMaxServerConnectionAge: 30m
+
+# Mesh configuration
+meshConfig:
+  # Access logging
+  accessLogFile: /dev/stdout
+  accessLogEncoding: JSON
+  accessLogFormat: |
+    {
+      "start_time": "%START_TIME%",
+      "request_method": "%REQ(:METHOD)%",
+      "request_path": "%REQ(X-ENVOY-ORIGINAL-PATH?:PATH)%",
+      "protocol": "%PROTOCOL%",
+      "response_code": "%RESPONSE_CODE%",
+      "response_flags": "%RESPONSE_FLAGS%",
+      "bytes_received": "%BYTES_RECEIVED%",
+      "bytes_sent": "%BYTES_SENT%",
+      "duration": "%DURATION%",
+      "upstream_service_time": "%RESP(X-ENVOY-UPSTREAM-SERVICE-TIME)%",
+      "x_forwarded_for": "%REQ(X-FORWARDED-FOR)%",
+      "user_agent": "%REQ(USER-AGENT)%",
+      "request_id": "%REQ(X-REQUEST-ID)%",
+      "authority": "%REQ(:AUTHORITY)%",
+      "upstream_host": "%UPSTREAM_HOST%",
+      "upstream_cluster": "%UPSTREAM_CLUSTER%",
+      "upstream_local_address": "%UPSTREAM_LOCAL_ADDRESS%",
+      "downstream_local_address": "%DOWNSTREAM_LOCAL_ADDRESS%",
+      "downstream_remote_address": "%DOWNSTREAM_REMOTE_ADDRESS%",
+      "route_name": "%ROUTE_NAME%",
+      "trace_id": "%REQ(X-B3-TRACEID)%"
+    }
+
+  # Enable auto mTLS
+  enableAutoMtls: true
+
+  # Default proxy configuration
+  defaultConfig:
+    # Tracing
+    tracing:
+      sampling: 1.0
+      zipkin:
+        address: zipkin.istio-system:9411
+
+    # Proxy metadata
+    proxyMetadata:
+      ISTIO_META_DNS_CAPTURE: "true"
+      ISTIO_META_DNS_AUTO_ALLOCATE: "true"
+
+    # Concurrency (0 = all available CPUs)
+    concurrency: 2
+
+    # Gateway topology
+    gatewayTopology:
+      numTrustedProxies: 2
+
+  # Outbound traffic policy
+  outboundTrafficPolicy:
+    mode: REGISTRY_ONLY
+
+  # Enable tracing
+  enableTracing: true
+
+  # Default service entry behavior
+  defaultServiceExportTo:
+    - "."
+    - "istio-system"
+
+  # Root namespace for global configurations
+  rootNamespace: istio-system
+
+  # Trust domain
+  trustDomain: cluster.local
+
+  # Extension providers for observability
+  extensionProviders:
+    # Prometheus metrics
+    - name: prometheus
+      prometheus: {}
+
+    # Zipkin tracing
+    - name: zipkin
+      zipkin:
+        service: zipkin.istio-system.svc.cluster.local
+        port: 9411
+
+    # OpenTelemetry
+    - name: otel
+      opentelemetry:
+        service: otel-collector.observability.svc.cluster.local
+        port: 4317
+
+    # Envoy access logging
+    - name: envoy-als
+      envoyFileAccessLog:
+        path: /dev/stdout
+        logFormat:
+          labels:
+            app: "%ENVIRONMENT(APP_NAME)%"
+            version: "%ENVIRONMENT(APP_VERSION)%"
+
+# Sidecar injector configuration
+sidecarInjectorWebhook:
+  # Enable injection
+  enableNamespacesByDefault: false
+
+  # Rewrite app probes
+  rewriteAppHTTPProbe: true
+
+  # Injection policy
+  injectedAnnotations: {}
+
+  # Object selector
+  objectSelector:
+    enabled: true
+    autoInject: true
+
+# Telemetry configuration
+telemetry:
+  enabled: true
+  v2:
+    enabled: true
+    metadataExchange:
+      wasmEnabled: false
+    prometheus:
+      enabled: true
+      wasmEnabled: false
+    stackdriver:
+      enabled: false
+    accessLogPolicy:
+      enabled: true
+      logWindowDuration: "43200s"
+
+# Ingress Gateway configuration
+gateways:
+  istio-ingressgateway:
+    # Autoscaling
+    autoscaleEnabled: true
+    autoscaleMin: 2
+    autoscaleMax: 10
+
+    # Resources
+    resources:
+      requests:
+        cpu: 500m
+        memory: 256Mi
+      limits:
+        cpu: 2000m
+        memory: 1Gi
+
+    # Service type
+    type: LoadBalancer
+
+    # Service annotations for AWS NLB
+    serviceAnnotations:
+      service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+      service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+      service.beta.kubernetes.io/aws-load-balancer-backend-protocol: "tcp"
+      service.beta.kubernetes.io/aws-load-balancer-proxy-protocol: "*"
+      external-dns.alpha.kubernetes.io/hostname: "*.greenlang.io"
+
+    # Ports
+    ports:
+      - name: status-port
+        port: 15021
+        targetPort: 15021
+      - name: http2
+        port: 80
+        targetPort: 8080
+      - name: https
+        port: 443
+        targetPort: 8443
+      - name: grpc
+        port: 15443
+        targetPort: 15443
+
+    # Pod disruption budget
+    podDisruptionBudget:
+      minAvailable: 1
+
+    # Pod anti-affinity for HA
+    podAntiAffinityTermPreferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+              - key: app
+                operator: In
+                values:
+                  - istio-ingressgateway
+          topologyKey: kubernetes.io/hostname
+
+    # Node selector
+    nodeSelector:
+      node-type: ingress
+
+    # Tolerations
+    tolerations:
+      - key: "node-type"
+        operator: "Equal"
+        value: "ingress"
+        effect: "NoSchedule"
+
+  # Egress gateway for outbound traffic control
+  istio-egressgateway:
+    enabled: true
+    autoscaleEnabled: true
+    autoscaleMin: 1
+    autoscaleMax: 5
+
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 500m
+        memory: 256Mi
+
+# Certificate configuration
+certificates: []
+
+# Security settings
+values:
+  global:
+    # mTLS mode
+    mtls:
+      enabled: true
+
+    # Pilot certificate provider
+    pilotCertProvider: istiod
+
+    # SDS (Secret Discovery Service)
+    sds:
+      token:
+        aud: istio-ca

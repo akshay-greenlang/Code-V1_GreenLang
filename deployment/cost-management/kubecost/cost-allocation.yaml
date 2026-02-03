@@ -1,0 +1,381 @@
+# Namespace Cost Allocation Configuration
+# INFRA-001: Cost Management and Optimization
+# Defines cost allocation rules for GreenLang services
+
+---
+# Cost allocation model configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kubecost-cost-allocation
+  namespace: kubecost
+  labels:
+    app: kubecost
+    component: cost-allocation
+data:
+  allocation-config.json: |
+    {
+      "version": "1.0",
+      "defaultAllocation": {
+        "method": "proportional",
+        "shareNamespaces": ["kube-system", "monitoring", "logging", "cert-manager"],
+        "shareLabels": {}
+      },
+      "namespaceAllocation": {
+        "greenlang": {
+          "team": "platform",
+          "costCenter": "CC-1001",
+          "environment": "production",
+          "budget": 5000
+        },
+        "greenlang-staging": {
+          "team": "platform",
+          "costCenter": "CC-1002",
+          "environment": "staging",
+          "budget": 1500
+        },
+        "greenlang-dev": {
+          "team": "platform",
+          "costCenter": "CC-1003",
+          "environment": "development",
+          "budget": 1000
+        },
+        "data-pipeline": {
+          "team": "data",
+          "costCenter": "CC-2001",
+          "environment": "production",
+          "budget": 3000
+        },
+        "ml-workloads": {
+          "team": "ml",
+          "costCenter": "CC-3001",
+          "environment": "production",
+          "budget": 8000
+        },
+        "monitoring": {
+          "team": "sre",
+          "costCenter": "CC-4001",
+          "environment": "shared",
+          "budget": 1000,
+          "isShared": true
+        },
+        "logging": {
+          "team": "sre",
+          "costCenter": "CC-4001",
+          "environment": "shared",
+          "budget": 800,
+          "isShared": true
+        }
+      },
+      "labelAllocation": {
+        "app": {
+          "greenlang-api": {
+            "costCenter": "CC-1001-API",
+            "priority": "high"
+          },
+          "greenlang-worker": {
+            "costCenter": "CC-1001-WORKER",
+            "priority": "medium"
+          },
+          "greenlang-scheduler": {
+            "costCenter": "CC-1001-SCHEDULER",
+            "priority": "medium"
+          }
+        }
+      },
+      "sharedCostAllocation": {
+        "method": "weighted",
+        "weights": {
+          "greenlang": 0.40,
+          "greenlang-staging": 0.10,
+          "greenlang-dev": 0.05,
+          "data-pipeline": 0.20,
+          "ml-workloads": 0.25
+        }
+      }
+    }
+
+---
+# Allocation rules for teams
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kubecost-team-allocation
+  namespace: kubecost
+  labels:
+    app: kubecost
+    component: team-allocation
+data:
+  teams.json: |
+    {
+      "teams": [
+        {
+          "name": "platform",
+          "displayName": "Platform Engineering",
+          "owner": "platform-team@greenlang.io",
+          "budget": {
+            "monthly": 7500,
+            "alertThresholds": [50, 80, 100]
+          },
+          "namespaces": [
+            "greenlang",
+            "greenlang-staging",
+            "greenlang-dev"
+          ],
+          "labels": {
+            "team": "platform"
+          }
+        },
+        {
+          "name": "data",
+          "displayName": "Data Engineering",
+          "owner": "data-team@greenlang.io",
+          "budget": {
+            "monthly": 3000,
+            "alertThresholds": [50, 80, 100]
+          },
+          "namespaces": [
+            "data-pipeline"
+          ],
+          "labels": {
+            "team": "data"
+          }
+        },
+        {
+          "name": "ml",
+          "displayName": "Machine Learning",
+          "owner": "ml-team@greenlang.io",
+          "budget": {
+            "monthly": 8000,
+            "alertThresholds": [50, 80, 100]
+          },
+          "namespaces": [
+            "ml-workloads"
+          ],
+          "labels": {
+            "team": "ml"
+          }
+        },
+        {
+          "name": "sre",
+          "displayName": "Site Reliability Engineering",
+          "owner": "sre-team@greenlang.io",
+          "budget": {
+            "monthly": 2000,
+            "alertThresholds": [50, 80, 100]
+          },
+          "namespaces": [
+            "monitoring",
+            "logging",
+            "kube-system"
+          ],
+          "labels": {
+            "team": "sre"
+          }
+        }
+      ]
+    }
+
+---
+# Cost allocation labels (applied to namespaces)
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: greenlang
+  labels:
+    name: greenlang
+    environment: production
+    team: platform
+    cost-center: CC-1001
+    budget-owner: platform-team@greenlang.io
+  annotations:
+    kubecost.com/monthly-budget: "5000"
+    kubecost.com/cost-center: "CC-1001"
+    kubecost.com/team: "platform"
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: greenlang-staging
+  labels:
+    name: greenlang-staging
+    environment: staging
+    team: platform
+    cost-center: CC-1002
+    budget-owner: platform-team@greenlang.io
+  annotations:
+    kubecost.com/monthly-budget: "1500"
+    kubecost.com/cost-center: "CC-1002"
+    kubecost.com/team: "platform"
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: greenlang-dev
+  labels:
+    name: greenlang-dev
+    environment: development
+    team: platform
+    cost-center: CC-1003
+    budget-owner: platform-team@greenlang.io
+  annotations:
+    kubecost.com/monthly-budget: "1000"
+    kubecost.com/cost-center: "CC-1003"
+    kubecost.com/team: "platform"
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: data-pipeline
+  labels:
+    name: data-pipeline
+    environment: production
+    team: data
+    cost-center: CC-2001
+    budget-owner: data-team@greenlang.io
+  annotations:
+    kubecost.com/monthly-budget: "3000"
+    kubecost.com/cost-center: "CC-2001"
+    kubecost.com/team: "data"
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ml-workloads
+  labels:
+    name: ml-workloads
+    environment: production
+    team: ml
+    cost-center: CC-3001
+    budget-owner: ml-team@greenlang.io
+  annotations:
+    kubecost.com/monthly-budget: "8000"
+    kubecost.com/cost-center: "CC-3001"
+    kubecost.com/team: "ml"
+
+---
+# ResourceQuota for cost control
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: greenlang-resource-quota
+  namespace: greenlang
+spec:
+  hard:
+    requests.cpu: "20"
+    requests.memory: "40Gi"
+    limits.cpu: "40"
+    limits.memory: "80Gi"
+    persistentvolumeclaims: "20"
+    requests.storage: "500Gi"
+    count/pods: "100"
+    count/services: "20"
+    count/configmaps: "50"
+    count/secrets: "50"
+
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: staging-resource-quota
+  namespace: greenlang-staging
+spec:
+  hard:
+    requests.cpu: "10"
+    requests.memory: "20Gi"
+    limits.cpu: "20"
+    limits.memory: "40Gi"
+    persistentvolumeclaims: "10"
+    requests.storage: "200Gi"
+    count/pods: "50"
+
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: dev-resource-quota
+  namespace: greenlang-dev
+spec:
+  hard:
+    requests.cpu: "5"
+    requests.memory: "10Gi"
+    limits.cpu: "10"
+    limits.memory: "20Gi"
+    persistentvolumeclaims: "5"
+    requests.storage: "100Gi"
+    count/pods: "30"
+
+---
+# LimitRange for default resource limits
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: greenlang-limit-range
+  namespace: greenlang
+spec:
+  limits:
+    - type: Container
+      default:
+        cpu: "500m"
+        memory: "512Mi"
+      defaultRequest:
+        cpu: "100m"
+        memory: "128Mi"
+      max:
+        cpu: "4"
+        memory: "8Gi"
+      min:
+        cpu: "50m"
+        memory: "64Mi"
+    - type: PersistentVolumeClaim
+      max:
+        storage: "100Gi"
+      min:
+        storage: "1Gi"
+
+---
+# Cost allocation report schedule
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: cost-allocation-report
+  namespace: kubecost
+spec:
+  schedule: "0 6 * * 1"  # Weekly on Monday at 6 AM
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: report-generator
+              image: curlimages/curl:latest
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  # Generate weekly allocation report
+                  curl -X POST "http://kubecost-cost-analyzer.kubecost:9090/model/allocation" \
+                    -H "Content-Type: application/json" \
+                    -d '{
+                      "window": "lastweek",
+                      "aggregate": "namespace",
+                      "accumulate": true,
+                      "shareIdle": true,
+                      "shareSplit": "weighted"
+                    }' > /tmp/report.json
+
+                  # Send to Slack (webhook URL from secret)
+                  curl -X POST "$SLACK_WEBHOOK_URL" \
+                    -H "Content-Type: application/json" \
+                    -d @/tmp/report.json
+              env:
+                - name: SLACK_WEBHOOK_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: kubecost-slack-webhook
+                      key: webhook-url
+          restartPolicy: OnFailure

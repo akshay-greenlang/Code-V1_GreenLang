@@ -1,0 +1,82 @@
+# Kustomization file for GreenLang Kubernetes manifests
+# Apply with: kubectl apply -k deployment/kubernetes/manifests/
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+metadata:
+  name: greenlang-manifests
+  annotations:
+    config.kubernetes.io/description: |
+      GreenLang Kubernetes manifests for production deployment.
+      Requires External Secrets Operator for secret management.
+
+# Common labels applied to all resources
+commonLabels:
+  app.kubernetes.io/name: greenlang
+  app.kubernetes.io/managed-by: kustomize
+
+# Resources in order of dependency
+resources:
+  # 1. Namespaces and security policies (must be first)
+  - namespace.yaml
+  - podsecuritypolicy.yaml
+
+  # 2. RBAC (ServiceAccounts, Roles, Bindings)
+  - rbac.yaml
+
+  # 3. Storage (StorageClasses, PVCs)
+  - pvc.yaml
+
+  # 4. ConfigMaps
+  - configmap.yaml
+
+  # 5. Secrets
+  - secrets.yaml
+
+  # 6. Network Policies
+  - networkpolicy.yaml
+
+  # 7. Resource Quotas and Limits
+  - resource-quota.yaml
+
+  # 8. Services
+  - api-service.yaml
+
+  # 9. StatefulSets (Redis)
+  - redis-sentinel-statefulset.yaml
+
+  # 10. Deployments
+  - executor-deployment.yaml
+  - runner-deployment.yaml
+  - worker-deployment.yaml
+
+  # 11. Autoscaling
+  - worker-hpa.yaml
+
+  # 12. Ingress
+  - ingress.yaml
+
+  # 13. Monitoring
+  - servicemonitor.yaml
+
+# Images to use (can be overridden)
+images:
+  - name: greenlang/executor
+    newTag: latest
+  - name: greenlang/worker
+    newTag: latest
+  - name: redis
+    newTag: 7.2-alpine
+
+# ConfigMap generator for additional configs
+configMapGenerator: []
+
+# Secret generator (use for non-sensitive placeholders only)
+secretGenerator: []
+
+# Patches for environment-specific overrides
+patches: []
+
+# Replacements for template variables
+# These can be overridden using kustomize overlays
+replacements: []

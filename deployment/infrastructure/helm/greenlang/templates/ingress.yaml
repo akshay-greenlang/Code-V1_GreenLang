@@ -1,0 +1,93 @@
+{{/*
+GreenLang Infrastructure Helm Chart - Ingress Configuration
+*/}}
+
+{{- if .Values.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "greenlang.fullname" . }}
+  namespace: {{ include "greenlang.namespace" . }}
+  labels:
+    {{- include "greenlang.labels" . | nindent 4 }}
+  annotations:
+    {{- with .Values.ingress.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  {{- if .Values.ingress.className }}
+  ingressClassName: {{ .Values.ingress.className }}
+  {{- end }}
+  {{- if .Values.ingress.tls }}
+  tls:
+    {{- range .Values.ingress.tls }}
+    - hosts:
+        {{- range .hosts }}
+        - {{ . | quote }}
+        {{- end }}
+      secretName: {{ .secretName }}
+    {{- end }}
+  {{- end }}
+  rules:
+    {{- range .Values.ingress.hosts }}
+    - host: {{ .host | quote }}
+      http:
+        paths:
+          {{- range .paths }}
+          - path: {{ .path }}
+            pathType: {{ .pathType | default "Prefix" }}
+            backend:
+              service:
+                name: {{ include "greenlang.fullname" $ }}-executor
+                port:
+                  number: {{ $.Values.executor.service.port | default 80 }}
+          {{- end }}
+    {{- end }}
+
+{{- if .Values.executor.ingress.enabled }}
+---
+# Executor-specific ingress
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "greenlang.fullname" . }}-executor
+  namespace: {{ include "greenlang.namespace" . }}
+  labels:
+    {{- include "greenlang.executor.labels" . | nindent 4 }}
+  annotations:
+    {{- with .Values.executor.ingress.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  {{- if .Values.executor.ingress.className }}
+  ingressClassName: {{ .Values.executor.ingress.className }}
+  {{- else if .Values.ingress.className }}
+  ingressClassName: {{ .Values.ingress.className }}
+  {{- end }}
+  {{- if .Values.executor.ingress.tls }}
+  tls:
+    {{- range .Values.executor.ingress.tls }}
+    - hosts:
+        {{- range .hosts }}
+        - {{ . | quote }}
+        {{- end }}
+      secretName: {{ .secretName }}
+    {{- end }}
+  {{- end }}
+  rules:
+    {{- range .Values.executor.ingress.hosts }}
+    - host: {{ .host | quote }}
+      http:
+        paths:
+          {{- range .paths }}
+          - path: {{ .path }}
+            pathType: {{ .pathType | default "Prefix" }}
+            backend:
+              service:
+                name: {{ include "greenlang.fullname" $ }}-executor
+                port:
+                  number: {{ $.Values.executor.service.port | default 80 }}
+          {{- end }}
+    {{- end }}
+{{- end }}
+{{- end }}

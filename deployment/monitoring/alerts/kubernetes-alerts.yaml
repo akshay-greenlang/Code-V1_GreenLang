@@ -1,0 +1,410 @@
+# GreenLang Kubernetes Alerts
+# INFRA-001: Production monitoring alerts for Kubernetes cluster
+# Covers: Pod failures, restarts, OOM kills, deployments, and resource issues
+
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: greenlang-kubernetes-alerts
+  namespace: monitoring
+  labels:
+    app: greenlang
+    component: kubernetes
+    prometheus: main
+    role: alert-rules
+spec:
+  groups:
+    # ===========================================
+    # Pod Health Alerts
+    # ===========================================
+    - name: greenlang.kubernetes.pods
+      interval: 30s
+      rules:
+        # Pod CrashLoopBackOff
+        - alert: PodCrashLoopBackOff
+          expr: |
+            max_over_time(kube_pod_container_status_waiting_reason{reason="CrashLoopBackOff"}[5m]) == 1
+          for: 5m
+          labels:
+            severity: critical
+            team: platform
+            component: pod
+            runbook: pod-crash-loop-runbook
+          annotations:
+            summary: "Pod {{ $labels.namespace }}/{{ $labels.pod }} in CrashLoopBackOff"
+            description: |
+              Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} has been in CrashLoopBackOff
+              for more than 5 minutes. Container {{ $labels.container }} is repeatedly crashing.
+            impact: "Service availability reduced. Requests may fail."
+            action: |
+              1. Check pod logs: kubectl logs {{ $labels.pod }} -n {{ $labels.namespace }} --previous
+              2. Describe pod: kubectl describe pod {{ $labels.pod }} -n {{ $labels.namespace }}
+              3. Check for OOM or configuration issues
+            dashboard: "https://grafana.greenlang.io/d/greenlang-k8s-cluster"
+
+        # Pod OOMKilled
+        - alert: PodOOMKilled
+          expr: |
+            kube_pod_container_status_last_terminated_reason{reason="OOMKilled"} == 1
+          for: 0m
+          labels:
+            severity: warning
+            team: platform
+            component: pod
+            runbook: pod-oom-runbook
+          annotations:
+            summary: "Pod {{ $labels.namespace }}/{{ $labels.pod }} was OOMKilled"
+            description: |
+              Container {{ $labels.container }} in pod {{ $labels.pod }} (namespace: {{ $labels.namespace }})
+              was terminated due to Out of Memory (OOMKilled).
+            impact: "Pod restarted. Possible data loss or request failures during restart."
+            action: |
+              1. Increase memory limits for the container
+              2. Review application memory usage patterns
+              3. Check for memory leaks
+            dashboard: "https://grafana.greenlang.io/d/greenlang-k8s-cluster"
+
+        # High Pod Restart Rate
+        - alert: HighPodRestartRate
+          expr: |
+            increase(kube_pod_container_status_restarts_total[1h]) > 5
+          for: 0m
+          labels:
+            severity: warning
+            team: platform
+            component: pod
+            runbook: pod-crash-loop-runbook
+          annotations:
+            summary: "Pod {{ $labels.namespace }}/{{ $labels.pod }} has high restart count"
+            description: |
+              Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} has restarted
+              {{ $value | printf "%.0f" }} times in the last hour.
+            impact: "Service instability. Intermittent failures possible."
+            action: "Investigate root cause of restarts. Check logs and resource limits."
+            dashboard: "https://grafana.greenlang.io/d/greenlang-k8s-cluster"
+
+        # Pod Not Ready
+        - alert: PodNotReady
+          expr: |
+            min_over_time(kube_pod_status_ready{condition="true"}[5m]) == 0
+          for: 10m
+          labels:
+            severity: warning
+            team: platform
+            component: pod
+          annotations:
+            summary: "Pod {{ $labels.namespace }}/{{ $labels.pod }} not ready"
+            description: |
+              Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} has been not ready
+              for more than 10 minutes.
+            impact: "Pod not serving traffic. Reduced capacity."
+            action: "Check pod events and readiness probe configuration."
+            dashboard: "https://grafana.greenlang.io/d/greenlang-k8s-cluster"
+
+        # Pod Stuck in Pending
+        - alert: PodStuckPending
+          expr: |
+            kube_pod_status_phase{phase="Pending"} == 1
+          for: 15m
+          labels:
+            severity: warning
+            team: platform
+            component: pod
+          annotations:
+            summary: "Pod {{ $labels.namespace }}/{{ $labels.pod }} stuck in Pending"
+            description: |
+              Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} has been in Pending
+              state for more than 15 minutes.
+            impact: "Workload not running. Service capacity reduced."
+            action: |
+              1. Check node resources: kubectl describe nodes
+              2. Check pod events: kubectl describe pod {{ $labels.pod }} -n {{ $labels.namespace }}
+              3. Verify resource requests don't exceed available capacity
+            dashboard: "https://grafana.greenlang.io/d/greenlang-k8s-cluster"
+
+        # Container Waiting
+        - alert: ContainerWaiting
+          expr: |
+            kube_pod_container_status_waiting_reason{reason!~"ContainerCreating|PodInitializing"} == 1
+          for: 10m
+          labels:
+            severity: warning
+            team: platform
+            component: pod
+          annotations:
+            summary: "Container {{ $labels.container }} waiting in {{ $labels.namespace }}/{{ $labels.pod }}"
+            description: |
+              Container {{ $labels.container }} in pod {{ $labels.pod }} (namespace: {{ $labels.namespace }})
+              has been waiting with reason {{ $labels.reason }} for more than 10 minutes.
+            impact: "Container not running. Service unavailable."
+            action: "Check container configuration and image availability."
+            dashboard: "https://grafana.greenlang.io/d/greenlang-k8s-cluster"
+
+    # ===========================================
+    # Deployment Alerts
+    # ===========================================
+    - name: greenlang.kubernetes.deployments
+      interval: 30s
+      rules:
+        # Deployment Replicas Mismatch
+        - alert: DeploymentReplicasMismatch
+          expr: |
+            kube_deployment_spec_replicas != kube_deployment_status_replicas_available
+          for: 15m
+          labels:
+            severity: warning
+            team: platform
+            component: deployment
+          annotations:
+            summary: "Deployment {{ $labels.namespace }}/{{ $labels.deployment }} replica mismatch"
+            description: |
+              Deployment {{ $labels.deployment }} in namespace {{ $labels.namespace }} has
+              {{ with printf "kube_deployment_status_replicas_available{namespace='%s', deployment='%s'}" $labels.namespace $labels.deployment | query }}{{ . | first | value }}{{ end }}
+              available replicas but {{ with printf "kube_deployment_spec_replicas{namespace='%s', deployment='%s'}" $labels.namespace $labels.deployment | query }}{{ . | first | value }}{{ end }} requested.
+            impact: "Reduced capacity. Service may not handle expected load."
+            action: "Check pod failures and resource availability."
+            dashboard: "https://grafana.greenlang.io/d/greenlang-k8s-cluster"
+
+        # Deployment Has No Available Replicas
+        - alert: DeploymentNoAvailableReplicas
+          expr: |
+            kube_deployment_status_replicas_available == 0 and kube_deployment_spec_replicas > 0
+          for: 5m
+          labels:
+            severity: critical
+            team: platform
+            component: deployment
+          annotations:
+            summary: "CRITICAL: Deployment {{ $labels.namespace }}/{{ $labels.deployment }} has no replicas"
+            description: |
+              Deployment {{ $labels.deployment }} in namespace {{ $labels.namespace }} has
+              zero available replicas. Service is completely down.
+            impact: "Complete service outage for this deployment."
+            action: "Immediately investigate. Check pods, events, and recent changes."
+            dashboard: "https://grafana.greenlang.io/d/greenlang-k8s-cluster"
+
+        # Deployment Generation Mismatch
+        - alert: DeploymentGenerationMismatch
+          expr: |
+            kube_deployment_status_observed_generation != kube_deployment_metadata_generation
+          for: 15m
+          labels:
+            severity: warning
+            team: platform
+            component: deployment
+          annotations:
+            summary: "Deployment {{ $labels.namespace }}/{{ $labels.deployment }} generation mismatch"
+            description: |
+              Deployment {{ $labels.deployment }} in namespace {{ $labels.namespace }} has not
+              matched its expected generation for 15 minutes. Rollout may be stuck.
+            impact: "Deployment changes not being applied. Old version still running."
+            action: "Check deployment rollout status and any blocking conditions."
+            dashboard: "https://grafana.greenlang.io/d/greenlang-k8s-cluster"
+
+        # Deployment Rollout Stuck
+        - alert: DeploymentRolloutStuck
+          expr: |
+            kube_deployment_status_condition{condition="Progressing", status="false"} == 1
+          for: 15m
+          labels:
+            severity: warning
+            team: platform
+            component: deployment
+          annotations:
+            summary: "Deployment {{ $labels.namespace }}/{{ $labels.deployment }} rollout stuck"
+            description: |
+              Deployment {{ $labels.deployment }} in namespace {{ $labels.namespace }}
+              has a stuck rollout for more than 15 minutes.
+            impact: "New version not deploying. May be running old code."
+            action: "Check deployment events and pod creation issues."
+            dashboard: "https://grafana.greenlang.io/d/greenlang-k8s-cluster"
+
+    # ===========================================
+    # Resource Utilization Alerts
+    # ===========================================
+    - name: greenlang.kubernetes.resources
+      interval: 30s
+      rules:
+        # Pod High CPU Usage
+        - alert: PodHighCpuUsage
+          expr: |
+            (sum(rate(container_cpu_usage_seconds_total{container!="", container!="POD"}[5m])) by (namespace, pod)
+            / sum(kube_pod_container_resource_limits{resource="cpu", container!=""}) by (namespace, pod)) * 100 > 80
+          for: 10m
+          labels:
+            severity: warning
+            team: platform
+            component: pod
+          annotations:
+            summary: "Pod {{ $labels.namespace }}/{{ $labels.pod }} CPU usage above 80%"
+            description: |
+              Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} is using
+              {{ $value | printf "%.1f" }}% of its CPU limit.
+            impact: "Pod may be throttled. Request latency may increase."
+            action: "Consider increasing CPU limits or optimizing application."
+            dashboard: "https://grafana.greenlang.io/d/greenlang-k8s-cluster"
+
+        # Pod High Memory Usage
+        - alert: PodHighMemoryUsage
+          expr: |
+            (sum(container_memory_working_set_bytes{container!="", container!="POD"}) by (namespace, pod)
+            / sum(kube_pod_container_resource_limits{resource="memory", container!=""}) by (namespace, pod)) * 100 > 80
+          for: 10m
+          labels:
+            severity: warning
+            team: platform
+            component: pod
+          annotations:
+            summary: "Pod {{ $labels.namespace }}/{{ $labels.pod }} memory usage above 80%"
+            description: |
+              Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} is using
+              {{ $value | printf "%.1f" }}% of its memory limit.
+            impact: "Risk of OOM kill if memory continues to grow."
+            action: "Increase memory limits or investigate memory leaks."
+            dashboard: "https://grafana.greenlang.io/d/greenlang-k8s-cluster"
+
+        # Pod Critical Memory Usage
+        - alert: PodCriticalMemoryUsage
+          expr: |
+            (sum(container_memory_working_set_bytes{container!="", container!="POD"}) by (namespace, pod)
+            / sum(kube_pod_container_resource_limits{resource="memory", container!=""}) by (namespace, pod)) * 100 > 90
+          for: 5m
+          labels:
+            severity: critical
+            team: platform
+            component: pod
+            runbook: pod-oom-runbook
+          annotations:
+            summary: "CRITICAL: Pod {{ $labels.namespace }}/{{ $labels.pod }} memory above 90%"
+            description: |
+              Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} is using
+              {{ $value | printf "%.1f" }}% of its memory limit. OOM kill imminent.
+            impact: "Pod will be OOM killed. Service disruption expected."
+            action: "Immediately increase memory limits or scale horizontally."
+            dashboard: "https://grafana.greenlang.io/d/greenlang-k8s-cluster"
+
+        # Namespace Resource Quota Near Limit
+        - alert: NamespaceResourceQuotaNearLimit
+          expr: |
+            (kube_resourcequota{type="used"} / kube_resourcequota{type="hard"}) * 100 > 80
+          for: 15m
+          labels:
+            severity: warning
+            team: platform
+            component: namespace
+          annotations:
+            summary: "Namespace {{ $labels.namespace }} near resource quota limit"
+            description: |
+              Namespace {{ $labels.namespace }} is using {{ $value | printf "%.1f" }}%
+              of its {{ $labels.resource }} quota.
+            impact: "New pods may fail to schedule. Deployment scaling blocked."
+            action: "Review resource usage or request quota increase."
+            dashboard: "https://grafana.greenlang.io/d/greenlang-k8s-cluster"
+
+    # ===========================================
+    # HPA Alerts
+    # ===========================================
+    - name: greenlang.kubernetes.hpa
+      interval: 30s
+      rules:
+        # HPA at Max Replicas
+        - alert: HPAAtMaxReplicas
+          expr: |
+            kube_horizontalpodautoscaler_status_current_replicas == kube_horizontalpodautoscaler_spec_max_replicas
+          for: 30m
+          labels:
+            severity: warning
+            team: platform
+            component: hpa
+          annotations:
+            summary: "HPA {{ $labels.namespace }}/{{ $labels.horizontalpodautoscaler }} at max replicas"
+            description: |
+              HPA {{ $labels.horizontalpodautoscaler }} in namespace {{ $labels.namespace }}
+              has been running at maximum replicas for 30 minutes.
+            impact: "Cannot scale further. May not handle additional load."
+            action: "Consider increasing HPA max replicas or optimizing application."
+            dashboard: "https://grafana.greenlang.io/d/greenlang-k8s-cluster"
+
+        # HPA Unable to Scale
+        - alert: HPAUnableToScale
+          expr: |
+            kube_horizontalpodautoscaler_status_condition{condition="ScalingActive", status="false"} == 1
+          for: 10m
+          labels:
+            severity: warning
+            team: platform
+            component: hpa
+          annotations:
+            summary: "HPA {{ $labels.namespace }}/{{ $labels.horizontalpodautoscaler }} unable to scale"
+            description: |
+              HPA {{ $labels.horizontalpodautoscaler }} in namespace {{ $labels.namespace }}
+              is unable to scale. Scaling is inactive.
+            impact: "Auto-scaling disabled. Manual intervention required for load changes."
+            action: "Check HPA events and metrics server availability."
+            dashboard: "https://grafana.greenlang.io/d/greenlang-k8s-cluster"
+
+    # ===========================================
+    # StatefulSet Alerts
+    # ===========================================
+    - name: greenlang.kubernetes.statefulsets
+      interval: 30s
+      rules:
+        # StatefulSet Replicas Mismatch
+        - alert: StatefulSetReplicasMismatch
+          expr: |
+            kube_statefulset_status_replicas_ready != kube_statefulset_status_replicas
+          for: 15m
+          labels:
+            severity: warning
+            team: platform
+            component: statefulset
+          annotations:
+            summary: "StatefulSet {{ $labels.namespace }}/{{ $labels.statefulset }} replica mismatch"
+            description: |
+              StatefulSet {{ $labels.statefulset }} in namespace {{ $labels.namespace }} has
+              mismatched ready replicas for more than 15 minutes.
+            impact: "Reduced capacity. Data replication may be affected."
+            action: "Check pod status and PVC binding issues."
+            dashboard: "https://grafana.greenlang.io/d/greenlang-k8s-cluster"
+
+    # ===========================================
+    # PVC Alerts
+    # ===========================================
+    - name: greenlang.kubernetes.storage
+      interval: 30s
+      rules:
+        # PVC Pending
+        - alert: PVCPending
+          expr: |
+            kube_persistentvolumeclaim_status_phase{phase="Pending"} == 1
+          for: 15m
+          labels:
+            severity: warning
+            team: platform
+            component: storage
+          annotations:
+            summary: "PVC {{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }} stuck in Pending"
+            description: |
+              PVC {{ $labels.persistentvolumeclaim }} in namespace {{ $labels.namespace }}
+              has been pending for more than 15 minutes.
+            impact: "Pods requiring this PVC will not start."
+            action: "Check storage class and provisioner. Verify PV availability."
+            dashboard: "https://grafana.greenlang.io/d/greenlang-k8s-cluster"
+
+        # PV High Utilization
+        - alert: PersistentVolumeHighUtilization
+          expr: |
+            (kubelet_volume_stats_used_bytes / kubelet_volume_stats_capacity_bytes) * 100 > 80
+          for: 15m
+          labels:
+            severity: warning
+            team: platform
+            component: storage
+          annotations:
+            summary: "PV {{ $labels.persistentvolumeclaim }} usage above 80%"
+            description: |
+              Persistent volume {{ $labels.persistentvolumeclaim }} in namespace {{ $labels.namespace }}
+              is {{ $value | printf "%.1f" }}% full.
+            impact: "Applications may fail to write data when disk is full."
+            action: "Expand PVC or clean up unused data."
+            dashboard: "https://grafana.greenlang.io/d/greenlang-k8s-cluster"

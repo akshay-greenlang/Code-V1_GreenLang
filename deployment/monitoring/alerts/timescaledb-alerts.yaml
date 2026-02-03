@@ -1,0 +1,344 @@
+# TimescaleDB Prometheus Alert Rules
+# GreenLang Production Monitoring
+# These alerts cover TimescaleDB-specific features: hypertables, compression, retention, and continuous aggregates
+
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: timescaledb-alerts
+  namespace: monitoring
+  labels:
+    app: timescaledb
+    prometheus: greenlang
+    role: alert-rules
+spec:
+  groups:
+    - name: timescaledb.compression
+      interval: 60s
+      rules:
+        # Compression job failed
+        - alert: TimescaleDBCompressionFailed
+          expr: |
+            increase(timescaledb_bgw_job_total_failures{proc_name="policy_compression"}[1h]) > 0
+          for: 5m
+          labels:
+            severity: warning
+            service: timescaledb
+            team: database
+          annotations:
+            summary: "TimescaleDB compression job failed"
+            description: "Compression policy job {{ $labels.job_id }} on {{ $labels.instance }} has failed {{ $value }} times in the last hour."
+            runbook_url: "https://runbooks.greenlang.io/timescaledb/compression-failed"
+            dashboard_url: "https://grafana.greenlang.io/d/timescaledb-hypertables"
+
+        # Compression job not running
+        - alert: TimescaleDBCompressionNotRunning
+          expr: |
+            time() - timescaledb_bgw_job_last_run{proc_name="policy_compression"} > 86400
+          for: 1h
+          labels:
+            severity: warning
+            service: timescaledb
+            team: database
+          annotations:
+            summary: "TimescaleDB compression job not running"
+            description: "Compression policy on {{ $labels.instance }} has not run in over 24 hours. Check background worker status."
+            runbook_url: "https://runbooks.greenlang.io/timescaledb/compression-not-running"
+
+        # Low compression ratio
+        - alert: TimescaleDBLowCompressionRatio
+          expr: |
+            (timescaledb_hypertable_compressed_total_bytes / timescaledb_hypertable_before_compression_total_bytes) > 0.7
+            and timescaledb_hypertable_before_compression_total_bytes > 1073741824
+          for: 24h
+          labels:
+            severity: info
+            service: timescaledb
+            team: database
+          annotations:
+            summary: "TimescaleDB compression ratio is low"
+            description: "Hypertable {{ $labels.hypertable_schema }}.{{ $labels.hypertable_name }} on {{ $labels.instance }} has a low compression ratio. Compressed size is {{ printf \"%.1f\" (mulf $value 100) }}% of original."
+
+        # Uncompressed chunks accumulating
+        - alert: TimescaleDBUncompressedChunksHigh
+          expr: |
+            (timescaledb_hypertable_num_chunks - timescaledb_hypertable_num_compressed_chunks) > 50
+            and timescaledb_hypertable_num_compressed_chunks > 0
+          for: 6h
+          labels:
+            severity: warning
+            service: timescaledb
+            team: database
+          annotations:
+            summary: "TimescaleDB has many uncompressed chunks"
+            description: "Hypertable {{ $labels.hypertable_schema }}.{{ $labels.hypertable_name }} on {{ $labels.instance }} has {{ $value }} uncompressed chunks. Compression may be falling behind."
+            runbook_url: "https://runbooks.greenlang.io/timescaledb/uncompressed-chunks"
+
+    - name: timescaledb.retention
+      interval: 60s
+      rules:
+        # Retention job failed
+        - alert: TimescaleDBRetentionFailed
+          expr: |
+            increase(timescaledb_bgw_job_total_failures{proc_name="policy_retention"}[1h]) > 0
+          for: 5m
+          labels:
+            severity: warning
+            service: timescaledb
+            team: database
+          annotations:
+            summary: "TimescaleDB retention job failed"
+            description: "Retention policy job {{ $labels.job_id }} on {{ $labels.instance }} has failed {{ $value }} times in the last hour."
+            runbook_url: "https://runbooks.greenlang.io/timescaledb/retention-failed"
+
+        # Retention job not running
+        - alert: TimescaleDBRetentionNotRunning
+          expr: |
+            time() - timescaledb_bgw_job_last_run{proc_name="policy_retention"} > 86400
+          for: 1h
+          labels:
+            severity: warning
+            service: timescaledb
+            team: database
+          annotations:
+            summary: "TimescaleDB retention job not running"
+            description: "Retention policy on {{ $labels.instance }} has not run in over 24 hours. Old data may be accumulating."
+            runbook_url: "https://runbooks.greenlang.io/timescaledb/retention-not-running"
+
+        # No chunks dropped by retention
+        - alert: TimescaleDBRetentionNotDropping
+          expr: |
+            increase(timescaledb_retention_chunks_dropped[24h]) == 0
+            and timescaledb_retention_policy_info > 0
+          for: 48h
+          labels:
+            severity: info
+            service: timescaledb
+            team: database
+          annotations:
+            summary: "TimescaleDB retention not dropping chunks"
+            description: "Retention policy for {{ $labels.hypertable_schema }}.{{ $labels.hypertable_name }} on {{ $labels.instance }} has not dropped any chunks in 48 hours. This may be expected or indicate a misconfigured policy."
+
+    - name: timescaledb.chunks
+      interval: 60s
+      rules:
+        # Too many chunks
+        - alert: TimescaleDBChunkCountHigh
+          expr: |
+            timescaledb_hypertable_num_chunks > 1000
+          for: 1h
+          labels:
+            severity: warning
+            service: timescaledb
+            team: database
+          annotations:
+            summary: "TimescaleDB hypertable has too many chunks"
+            description: "Hypertable {{ $labels.hypertable_schema }}.{{ $labels.hypertable_name }} on {{ $labels.instance }} has {{ $value }} chunks. Consider increasing chunk_time_interval or enabling retention."
+            runbook_url: "https://runbooks.greenlang.io/timescaledb/chunk-count-high"
+
+        # Critical chunk count
+        - alert: TimescaleDBChunkCountCritical
+          expr: |
+            timescaledb_hypertable_num_chunks > 5000
+          for: 1h
+          labels:
+            severity: critical
+            service: timescaledb
+            team: database
+          annotations:
+            summary: "TimescaleDB hypertable has critically high chunk count"
+            description: "Hypertable {{ $labels.hypertable_schema }}.{{ $labels.hypertable_name }} on {{ $labels.instance }} has {{ $value }} chunks. This may cause performance degradation."
+            runbook_url: "https://runbooks.greenlang.io/timescaledb/chunk-count-critical"
+
+        # Chunk growth rate high
+        - alert: TimescaleDBChunkGrowthHigh
+          expr: |
+            increase(timescaledb_hypertable_num_chunks[24h]) > 100
+          for: 1h
+          labels:
+            severity: warning
+            service: timescaledb
+            team: database
+          annotations:
+            summary: "TimescaleDB chunk creation rate is high"
+            description: "Hypertable {{ $labels.hypertable_schema }}.{{ $labels.hypertable_name }} on {{ $labels.instance }} created {{ $value }} chunks in the last 24 hours."
+
+    - name: timescaledb.continuous_aggregates
+      interval: 60s
+      rules:
+        # Continuous aggregate refresh failed
+        - alert: ContinuousAggregateRefreshFailed
+          expr: |
+            increase(timescaledb_bgw_job_total_failures{proc_name="policy_refresh_continuous_aggregate"}[1h]) > 0
+          for: 5m
+          labels:
+            severity: warning
+            service: timescaledb
+            team: database
+          annotations:
+            summary: "TimescaleDB continuous aggregate refresh failed"
+            description: "Continuous aggregate refresh job {{ $labels.job_id }} on {{ $labels.instance }} has failed {{ $value }} times in the last hour."
+            runbook_url: "https://runbooks.greenlang.io/timescaledb/cagg-refresh-failed"
+
+        # Continuous aggregate refresh not running
+        - alert: ContinuousAggregateRefreshNotRunning
+          expr: |
+            time() - timescaledb_continuous_aggregate_last_refresh > 3600
+          for: 1h
+          labels:
+            severity: warning
+            service: timescaledb
+            team: database
+          annotations:
+            summary: "TimescaleDB continuous aggregate not refreshing"
+            description: "Continuous aggregate {{ $labels.view_schema }}.{{ $labels.view_name }} on {{ $labels.instance }} has not been refreshed in {{ $value | humanizeDuration }}."
+            runbook_url: "https://runbooks.greenlang.io/timescaledb/cagg-not-refreshing"
+
+        # Continuous aggregate data lag
+        - alert: ContinuousAggregateDataLag
+          expr: |
+            time() - timescaledb_continuous_aggregate_watermark > 7200
+          for: 30m
+          labels:
+            severity: warning
+            service: timescaledb
+            team: database
+          annotations:
+            summary: "TimescaleDB continuous aggregate data is lagging"
+            description: "Continuous aggregate {{ $labels.view_schema }}.{{ $labels.view_name }} on {{ $labels.instance }} has a data lag of {{ $value | humanizeDuration }}."
+            runbook_url: "https://runbooks.greenlang.io/timescaledb/cagg-data-lag"
+
+    - name: timescaledb.background_workers
+      interval: 60s
+      rules:
+        # Background worker job disabled
+        - alert: TimescaleDBJobDisabled
+          expr: |
+            timescaledb_bgw_job_scheduled == 0
+          for: 1h
+          labels:
+            severity: info
+            service: timescaledb
+            team: database
+          annotations:
+            summary: "TimescaleDB background job is disabled"
+            description: "Background job {{ $labels.proc_name }} (ID: {{ $labels.job_id }}) on {{ $labels.instance }} is disabled."
+
+        # Background worker not running
+        - alert: TimescaleDBBackgroundWorkerDown
+          expr: |
+            timescaledb_bgw_scheduler_running == 0
+          for: 5m
+          labels:
+            severity: critical
+            service: timescaledb
+            team: database
+          annotations:
+            summary: "TimescaleDB background worker scheduler is not running"
+            description: "The TimescaleDB background worker scheduler on {{ $labels.instance }} is not running. Compression, retention, and continuous aggregate refresh jobs will not execute."
+            runbook_url: "https://runbooks.greenlang.io/timescaledb/bgw-scheduler-down"
+
+        # High job failure rate
+        - alert: TimescaleDBJobFailureRateHigh
+          expr: |
+            rate(timescaledb_bgw_job_total_failures[1h]) / rate(timescaledb_bgw_job_total_runs[1h]) > 0.1
+            and rate(timescaledb_bgw_job_total_runs[1h]) > 0
+          for: 1h
+          labels:
+            severity: warning
+            service: timescaledb
+            team: database
+          annotations:
+            summary: "TimescaleDB job failure rate is high"
+            description: "Job {{ $labels.proc_name }} on {{ $labels.instance }} has a failure rate of {{ printf \"%.1f\" (mulf $value 100) }}%."
+
+    - name: timescaledb.storage
+      interval: 60s
+      rules:
+        # Hypertable size growing rapidly
+        - alert: TimescaleDBHypertableSizeGrowingRapidly
+          expr: |
+            predict_linear(timescaledb_hypertable_total_bytes[6h], 24 * 3600) > timescaledb_hypertable_total_bytes * 2
+            and timescaledb_hypertable_total_bytes > 10737418240
+          for: 1h
+          labels:
+            severity: warning
+            service: timescaledb
+            team: database
+          annotations:
+            summary: "TimescaleDB hypertable size growing rapidly"
+            description: "Hypertable {{ $labels.hypertable_schema }}.{{ $labels.hypertable_name }} on {{ $labels.instance }} is projected to double in size within 24 hours."
+
+        # Large hypertable without compression
+        - alert: TimescaleDBLargeUncompressedHypertable
+          expr: |
+            timescaledb_hypertable_total_bytes > 53687091200
+            and timescaledb_hypertable_num_compressed_chunks == 0
+          for: 24h
+          labels:
+            severity: warning
+            service: timescaledb
+            team: database
+          annotations:
+            summary: "Large TimescaleDB hypertable without compression"
+            description: "Hypertable {{ $labels.hypertable_schema }}.{{ $labels.hypertable_name }} on {{ $labels.instance }} is {{ $value | humanize1024 }}B but has no compressed chunks. Consider enabling compression."
+            runbook_url: "https://runbooks.greenlang.io/timescaledb/enable-compression"
+
+        # Total hypertable storage high
+        - alert: TimescaleDBTotalStorageHigh
+          expr: |
+            sum(timescaledb_hypertable_total_bytes) by (instance) > 536870912000
+          for: 1h
+          labels:
+            severity: warning
+            service: timescaledb
+            team: database
+          annotations:
+            summary: "TimescaleDB total storage is high"
+            description: "Total TimescaleDB hypertable storage on {{ $labels.instance }} is {{ $value | humanize1024 }}B."
+
+    - name: timescaledb.reorder
+      interval: 60s
+      rules:
+        # Reorder job failed
+        - alert: TimescaleDBReorderFailed
+          expr: |
+            increase(timescaledb_bgw_job_total_failures{proc_name="policy_reorder"}[1h]) > 0
+          for: 5m
+          labels:
+            severity: info
+            service: timescaledb
+            team: database
+          annotations:
+            summary: "TimescaleDB reorder job failed"
+            description: "Reorder policy job {{ $labels.job_id }} on {{ $labels.instance }} has failed. This may impact query performance."
+
+    - name: timescaledb.telemetry
+      interval: 300s
+      rules:
+        # TimescaleDB version outdated
+        - alert: TimescaleDBVersionOutdated
+          expr: |
+            timescaledb_version_info{version!~"2\\.(1[3-9]|[2-9][0-9]).*"} == 1
+          for: 24h
+          labels:
+            severity: info
+            service: timescaledb
+            team: database
+          annotations:
+            summary: "TimescaleDB version may be outdated"
+            description: "TimescaleDB on {{ $labels.instance }} is running version {{ $labels.version }}. Consider upgrading to the latest version."
+
+        # License expiring
+        - alert: TimescaleDBLicenseExpiring
+          expr: |
+            timescaledb_license_expiration_time - time() < 2592000
+            and timescaledb_license_expiration_time > 0
+          for: 24h
+          labels:
+            severity: warning
+            service: timescaledb
+            team: database
+          annotations:
+            summary: "TimescaleDB license expiring soon"
+            description: "TimescaleDB license on {{ $labels.instance }} expires in {{ $value | humanizeDuration }}."

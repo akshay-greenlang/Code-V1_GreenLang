@@ -1,0 +1,353 @@
+# CoreDNS Configuration for GreenLang
+# INFRA-001: Custom CoreDNS configuration for internal DNS resolution
+#
+# This ConfigMap customizes CoreDNS behavior for the GreenLang cluster
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: coredns-custom
+  namespace: kube-system
+  labels:
+    app.kubernetes.io/name: coredns-custom
+    app.kubernetes.io/component: dns
+    app.kubernetes.io/part-of: greenlang
+data:
+  # Custom server blocks
+  greenlang.server: |
+    # GreenLang internal DNS zone
+    greenlang.local:53 {
+        errors
+        cache 30
+        forward . /etc/resolv.conf
+        reload
+    }
+
+  # Custom stub domains
+  stub.greenlang.io.server: |
+    # Stub domain for greenlang.io to route to specific DNS servers
+    greenlang.io:53 {
+        errors
+        cache 60
+        forward . 8.8.8.8 8.8.4.4
+        reload
+    }
+
+  # External service resolution
+  external.server: |
+    # External services that need special handling
+    amazonaws.com:53 {
+        errors
+        cache 300
+        forward . 169.254.169.253  # AWS VPC DNS resolver
+        reload
+    }
+
+---
+# Main CoreDNS ConfigMap (replace default)
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: coredns
+  namespace: kube-system
+  labels:
+    app.kubernetes.io/name: coredns
+    app.kubernetes.io/component: dns
+    app.kubernetes.io/part-of: greenlang
+data:
+  Corefile: |
+    .:53 {
+        errors
+        health {
+            lameduck 5s
+        }
+        ready
+
+        # Kubernetes cluster DNS
+        kubernetes cluster.local in-addr.arpa ip6.arpa {
+            pods insecure
+            fallthrough in-addr.arpa ip6.arpa
+            ttl 30
+        }
+
+        # Prometheus metrics
+        prometheus :9153
+
+        # Forward external queries
+        forward . /etc/resolv.conf {
+            max_concurrent 1000
+            prefer_udp
+        }
+
+        # DNS caching
+        cache 30
+
+        # Loop detection
+        loop
+
+        # Reload configuration
+        reload
+
+        # Load balancing
+        loadbalance
+    }
+
+    # GreenLang internal services zone
+    greenlang.svc.cluster.local:53 {
+        errors
+        cache 30
+        kubernetes cluster.local in-addr.arpa ip6.arpa {
+            pods insecure
+            fallthrough in-addr.arpa ip6.arpa
+            ttl 30
+        }
+        prometheus :9153
+        loadbalance
+    }
+
+    # Import custom configurations
+    import /etc/coredns/custom/*.server
+
+---
+# CoreDNS Deployment patch for custom config volume
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: coredns
+  namespace: kube-system
+  labels:
+    app.kubernetes.io/name: coredns
+    app.kubernetes.io/component: dns
+    app.kubernetes.io/part-of: greenlang
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  selector:
+    matchLabels:
+      k8s-app: kube-dns
+  template:
+    metadata:
+      labels:
+        k8s-app: kube-dns
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9153"
+    spec:
+      priorityClassName: system-cluster-critical
+      serviceAccountName: coredns
+      tolerations:
+        - key: "CriticalAddonsOnly"
+          operator: "Exists"
+        - key: "node-role.kubernetes.io/control-plane"
+          effect: NoSchedule
+      nodeSelector:
+        kubernetes.io/os: linux
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: k8s-app
+                    operator: In
+                    values:
+                      - kube-dns
+              topologyKey: kubernetes.io/hostname
+      containers:
+        - name: coredns
+          image: coredns/coredns:1.11.1
+          imagePullPolicy: IfNotPresent
+          resources:
+            requests:
+              cpu: 100m
+              memory: 70Mi
+            limits:
+              cpu: 200m
+              memory: 170Mi
+          args:
+            - -conf
+            - /etc/coredns/Corefile
+          volumeMounts:
+            - name: config-volume
+              mountPath: /etc/coredns
+              readOnly: true
+            - name: custom-config-volume
+              mountPath: /etc/coredns/custom
+              readOnly: true
+          ports:
+            - containerPort: 53
+              name: dns
+              protocol: UDP
+            - containerPort: 53
+              name: dns-tcp
+              protocol: TCP
+            - containerPort: 9153
+              name: metrics
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 5
+            successThreshold: 1
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8181
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+            successThreshold: 1
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              add:
+                - NET_BIND_SERVICE
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+      dnsPolicy: Default
+      volumes:
+        - name: config-volume
+          configMap:
+            name: coredns
+            items:
+              - key: Corefile
+                path: Corefile
+        - name: custom-config-volume
+          configMap:
+            name: coredns-custom
+            optional: true
+
+---
+# CoreDNS Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: kube-dns
+  namespace: kube-system
+  labels:
+    k8s-app: kube-dns
+    kubernetes.io/cluster-service: "true"
+    kubernetes.io/name: "CoreDNS"
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9153"
+spec:
+  selector:
+    k8s-app: kube-dns
+  clusterIP: 10.96.0.10  # Adjust based on your cluster CIDR
+  ports:
+    - name: dns
+      port: 53
+      protocol: UDP
+      targetPort: 53
+    - name: dns-tcp
+      port: 53
+      protocol: TCP
+      targetPort: 53
+    - name: metrics
+      port: 9153
+      protocol: TCP
+      targetPort: 9153
+
+---
+# CoreDNS PodDisruptionBudget
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: coredns-pdb
+  namespace: kube-system
+  labels:
+    app.kubernetes.io/name: coredns-pdb
+    app.kubernetes.io/component: dns
+    app.kubernetes.io/part-of: greenlang
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      k8s-app: kube-dns
+
+---
+# CoreDNS HorizontalPodAutoscaler
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: coredns-hpa
+  namespace: kube-system
+  labels:
+    app.kubernetes.io/name: coredns-hpa
+    app.kubernetes.io/component: dns
+    app.kubernetes.io/part-of: greenlang
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: coredns
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 70
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Percent
+          value: 10
+          periodSeconds: 60
+    scaleUp:
+      stabilizationWindowSeconds: 0
+      policies:
+        - type: Percent
+          value: 100
+          periodSeconds: 15
+        - type: Pods
+          value: 4
+          periodSeconds: 15
+      selectPolicy: Max
+
+---
+# ServiceMonitor for CoreDNS metrics
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: coredns
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: coredns
+    app.kubernetes.io/component: dns
+    app.kubernetes.io/part-of: greenlang
+    release: prometheus
+spec:
+  jobLabel: k8s-app
+  namespaceSelector:
+    matchNames:
+      - kube-system
+  selector:
+    matchLabels:
+      k8s-app: kube-dns
+  endpoints:
+    - port: metrics
+      interval: 15s
+      bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token

@@ -15,7 +15,9 @@ metadata:
     service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
     service.beta.kubernetes.io/aws-load-balancer-backend-protocol: "tcp"
     service.beta.kubernetes.io/aws-load-balancer-connection-idle-timeout: "300"
-    service.beta.kubernetes.io/aws-load-balancer-ssl-cert: "arn:aws:acm:us-east-1:ACCOUNT_ID:certificate/CERT_ID"
+    # Replace with actual AWS ACM certificate ARN
+    # Example: arn:aws:acm:us-east-1:123456789012:certificate/abc12345-1234-1234-1234-abc123456789
+    service.beta.kubernetes.io/aws-load-balancer-ssl-cert: "${AWS_ACM_CERTIFICATE_ARN}"
     service.beta.kubernetes.io/aws-load-balancer-ssl-ports: "443"
     # Health check annotations
     service.beta.kubernetes.io/aws-load-balancer-healthcheck-protocol: "http"

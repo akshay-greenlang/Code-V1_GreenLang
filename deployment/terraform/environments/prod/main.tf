@@ -1,24 +1,22 @@
 # GreenLang Production Environment
 # Terraform configuration for the production environment
+#
+# IMPORTANT: Production environment requires careful review before applying changes.
+#
+# Prerequisites:
+# 1. Create S3 bucket for state: aws s3 mb s3://greenlang-terraform-state-${AWS_ACCOUNT_ID}
+# 2. Create DynamoDB table for locks: aws dynamodb create-table --table-name greenlang-terraform-locks ...
+# 3. Update bucket name below with your AWS account ID
+# 4. Create DR region S3 bucket for replication
+# 5. Create KMS key in DR region
+#
+# Usage:
+#   terraform init
+#   terraform plan -var-file="terraform.tfvars"
+#   terraform apply -var-file="terraform.tfvars"
 
+# Backend configuration - Update bucket name with your AWS account ID
 terraform {
-  required_version = ">= 1.0"
-
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = ">= 5.0"
-    }
-    random = {
-      source  = "hashicorp/random"
-      version = ">= 3.0"
-    }
-    kubernetes = {
-      source  = "hashicorp/kubernetes"
-      version = ">= 2.0"
-    }
-  }
-
   backend "s3" {
     bucket         = "greenlang-terraform-state"
     key            = "environments/prod/terraform.tfstate"
@@ -334,157 +332,4 @@ module "iam" {
   tags = local.common_tags
 }
 
-# -----------------------------------------------------------------------------
-# Outputs
-# -----------------------------------------------------------------------------
-output "vpc_id" {
-  description = "VPC ID"
-  value       = module.vpc.vpc_id
-}
-
-output "vpc_cidr" {
-  description = "VPC CIDR block"
-  value       = module.vpc.vpc_cidr
-}
-
-output "private_subnet_ids" {
-  description = "Private subnet IDs"
-  value       = module.vpc.private_subnet_ids
-}
-
-output "database_subnet_ids" {
-  description = "Database subnet IDs"
-  value       = module.vpc.database_subnet_ids
-}
-
-output "eks_cluster_name" {
-  description = "EKS cluster name"
-  value       = module.eks.cluster_name
-}
-
-output "eks_cluster_endpoint" {
-  description = "EKS cluster endpoint"
-  value       = module.eks.cluster_endpoint
-}
-
-output "eks_cluster_arn" {
-  description = "EKS cluster ARN"
-  value       = module.eks.cluster_arn
-}
-
-output "eks_cluster_certificate_authority_data" {
-  description = "EKS cluster CA data"
-  value       = module.eks.cluster_certificate_authority_data
-  sensitive   = true
-}
-
-output "eks_oidc_provider_arn" {
-  description = "EKS OIDC provider ARN"
-  value       = module.eks.oidc_provider_arn
-}
-
-output "rds_endpoint" {
-  description = "RDS primary endpoint"
-  value       = module.rds.endpoint
-}
-
-output "rds_address" {
-  description = "RDS hostname"
-  value       = module.rds.address
-}
-
-output "rds_replica_endpoints" {
-  description = "RDS replica endpoints"
-  value       = module.rds.replica_endpoints
-}
-
-output "rds_secrets_manager_arn" {
-  description = "RDS Secrets Manager secret ARN"
-  value       = module.rds.secrets_manager_secret_arn
-}
-
-output "redis_primary_endpoint" {
-  description = "Redis primary endpoint"
-  value       = module.elasticache.primary_endpoint_address
-}
-
-output "redis_reader_endpoint" {
-  description = "Redis reader endpoint"
-  value       = module.elasticache.reader_endpoint_address
-}
-
-output "redis_secrets_manager_arn" {
-  description = "Redis Secrets Manager secret ARN"
-  value       = module.elasticache.secrets_manager_secret_arn
-}
-
-output "s3_buckets" {
-  description = "S3 bucket IDs"
-  value       = module.s3.all_bucket_ids
-}
-
-output "s3_artifacts_bucket_arn" {
-  description = "Artifacts bucket ARN"
-  value       = module.s3.artifacts_bucket_arn
-}
-
-output "s3_data_bucket_arn" {
-  description = "Data bucket ARN"
-  value       = module.s3.data_bucket_arn
-}
-
-output "s3_static_assets_bucket_arn" {
-  description = "Static assets bucket ARN"
-  value       = module.s3.static_assets_bucket_arn
-}
-
-output "s3_kms_key_arn" {
-  description = "S3 KMS key ARN"
-  value       = module.s3.kms_key_arn
-}
-
-output "app_service_account_role_arn" {
-  description = "IAM role ARN for application service account"
-  value       = module.iam.app_service_account_role_arn
-}
-
-output "agent_service_account_role_arn" {
-  description = "IAM role ARN for agent service account"
-  value       = module.iam.agent_service_account_role_arn
-}
-
-output "cicd_role_arn" {
-  description = "IAM role ARN for CI/CD"
-  value       = module.iam.cicd_deployment_role_arn
-}
-
-output "external_secrets_role_arn" {
-  description = "IAM role ARN for External Secrets Operator"
-  value       = module.iam.external_secrets_role_arn
-}
-
-output "monitoring_role_arn" {
-  description = "IAM role ARN for monitoring"
-  value       = module.iam.monitoring_role_arn
-}
-
-output "cross_account_role_arn" {
-  description = "IAM role ARN for cross-account access"
-  value       = module.iam.cross_account_role_arn
-}
-
-# Kubernetes service account annotations
-output "app_service_account_annotation" {
-  description = "Kubernetes annotation for app service account"
-  value       = module.iam.app_service_account_annotation
-}
-
-output "agent_service_account_annotation" {
-  description = "Kubernetes annotation for agent service account"
-  value       = module.iam.agent_service_account_annotation
-}
-
-output "external_secrets_service_account_annotation" {
-  description = "Kubernetes annotation for External Secrets service account"
-  value       = module.iam.external_secrets_service_account_annotation
-}
+# Outputs are defined in outputs.tf

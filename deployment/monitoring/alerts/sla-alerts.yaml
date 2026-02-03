@@ -1,0 +1,380 @@
+# GreenLang SLA Alerts
+# INFRA-001: Production monitoring alerts for SLO/SLA compliance
+# Covers: Availability, latency SLOs, error budgets, and performance targets
+
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: greenlang-sla-alerts
+  namespace: monitoring
+  labels:
+    app: greenlang
+    component: sla
+    prometheus: main
+    role: alert-rules
+spec:
+  groups:
+    # ===========================================
+    # Availability SLOs
+    # Target: 99.9% availability (43.2 minutes downtime/month)
+    # ===========================================
+    - name: greenlang.sla.availability
+      interval: 30s
+      rules:
+        # Availability SLO - Warning (below 99.9%)
+        - alert: AvailabilitySLOWarning
+          expr: |
+            (1 - (sum(rate(http_requests_total{status=~"5.."}[1h])) by (namespace, service)
+            / sum(rate(http_requests_total[1h])) by (namespace, service))) * 100 < 99.9
+          for: 5m
+          labels:
+            severity: warning
+            team: sre
+            component: sla
+            slo: availability
+          annotations:
+            summary: "Service {{ $labels.service }} below 99.9% availability SLO"
+            description: |
+              Service {{ $labels.service }} in namespace {{ $labels.namespace }} has
+              {{ $value | printf "%.3f" }}% availability in the last hour, which is below
+              the 99.9% SLO target.
+            impact: "SLO breach. Error budget being consumed rapidly."
+            action: "Investigate error sources. Consider incident escalation."
+            slo_target: "99.9%"
+            current_value: "{{ $value | printf \"%.3f\" }}%"
+            dashboard: "https://grafana.greenlang.io/d/greenlang-api-perf"
+
+        # Availability SLO - Critical (below 99.5%)
+        - alert: AvailabilitySLOCritical
+          expr: |
+            (1 - (sum(rate(http_requests_total{status=~"5.."}[1h])) by (namespace, service)
+            / sum(rate(http_requests_total[1h])) by (namespace, service))) * 100 < 99.5
+          for: 2m
+          labels:
+            severity: critical
+            team: sre
+            component: sla
+            slo: availability
+          annotations:
+            summary: "CRITICAL: Service {{ $labels.service }} below 99.5% availability"
+            description: |
+              Service {{ $labels.service }} in namespace {{ $labels.namespace }} has
+              {{ $value | printf "%.3f" }}% availability in the last hour. This is a
+              critical SLO breach requiring immediate attention.
+            impact: "Major SLO breach. Error budget depleted. Customer impact likely."
+            action: "Declare incident. All hands on deck to restore service."
+            slo_target: "99.9%"
+            current_value: "{{ $value | printf \"%.3f\" }}%"
+            dashboard: "https://grafana.greenlang.io/d/greenlang-api-perf"
+
+        # Monthly Availability Check
+        - alert: MonthlyAvailabilitySLOAtRisk
+          expr: |
+            (1 - (sum(increase(http_requests_total{status=~"5.."}[30d])) by (namespace, service)
+            / sum(increase(http_requests_total[30d])) by (namespace, service))) * 100 < 99.95
+          for: 1h
+          labels:
+            severity: warning
+            team: sre
+            component: sla
+            slo: availability
+          annotations:
+            summary: "Monthly availability SLO at risk for {{ $labels.service }}"
+            description: |
+              Service {{ $labels.service }} has {{ $value | printf "%.4f" }}% availability
+              over the past 30 days. Risk of breaching monthly 99.9% SLO.
+            impact: "May breach monthly SLA commitment. Review with stakeholders."
+            action: "Analyze error patterns. Prioritize reliability improvements."
+            slo_target: "99.9%"
+            current_value: "{{ $value | printf \"%.4f\" }}%"
+            dashboard: "https://grafana.greenlang.io/d/greenlang-api-perf"
+
+    # ===========================================
+    # Latency SLOs
+    # Target: 95% of requests < 500ms, 99% < 2s
+    # ===========================================
+    - name: greenlang.sla.latency
+      interval: 30s
+      rules:
+        # P95 Latency SLO - Warning
+        - alert: LatencyP95SLOWarning
+          expr: |
+            (sum(rate(http_request_duration_seconds_bucket{le="0.5"}[1h])) by (namespace, service)
+            / sum(rate(http_request_duration_seconds_count[1h])) by (namespace, service)) * 100 < 95
+          for: 10m
+          labels:
+            severity: warning
+            team: sre
+            component: sla
+            slo: latency
+          annotations:
+            summary: "Service {{ $labels.service }} below P95 latency SLO"
+            description: |
+              Service {{ $labels.service }} in namespace {{ $labels.namespace }} has only
+              {{ $value | printf "%.1f" }}% of requests completing under 500ms. SLO target is 95%.
+            impact: "Latency SLO breach. User experience degraded."
+            action: "Investigate slow endpoints and database queries."
+            slo_target: "95% < 500ms"
+            current_value: "{{ $value | printf \"%.1f\" }}% < 500ms"
+            dashboard: "https://grafana.greenlang.io/d/greenlang-api-perf"
+
+        # P95 Latency SLO - Critical
+        - alert: LatencyP95SLOCritical
+          expr: |
+            (sum(rate(http_request_duration_seconds_bucket{le="0.5"}[1h])) by (namespace, service)
+            / sum(rate(http_request_duration_seconds_count[1h])) by (namespace, service)) * 100 < 90
+          for: 5m
+          labels:
+            severity: critical
+            team: sre
+            component: sla
+            slo: latency
+          annotations:
+            summary: "CRITICAL: Service {{ $labels.service }} latency SLO severely breached"
+            description: |
+              Service {{ $labels.service }} in namespace {{ $labels.namespace }} has only
+              {{ $value | printf "%.1f" }}% of requests completing under 500ms. This is a
+              severe latency SLO breach.
+            impact: "Critical latency SLO breach. Major user impact."
+            action: "Declare incident. Investigate performance bottleneck immediately."
+            slo_target: "95% < 500ms"
+            current_value: "{{ $value | printf \"%.1f\" }}% < 500ms"
+            dashboard: "https://grafana.greenlang.io/d/greenlang-api-perf"
+
+        # P99 Latency SLO
+        - alert: LatencyP99SLOWarning
+          expr: |
+            (sum(rate(http_request_duration_seconds_bucket{le="2"}[1h])) by (namespace, service)
+            / sum(rate(http_request_duration_seconds_count[1h])) by (namespace, service)) * 100 < 99
+          for: 10m
+          labels:
+            severity: warning
+            team: sre
+            component: sla
+            slo: latency
+          annotations:
+            summary: "Service {{ $labels.service }} below P99 latency SLO"
+            description: |
+              Service {{ $labels.service }} in namespace {{ $labels.namespace }} has only
+              {{ $value | printf "%.1f" }}% of requests completing under 2 seconds. SLO target is 99%.
+            impact: "P99 latency SLO breach. Tail latency affecting some users."
+            action: "Investigate outlier requests and timeout configurations."
+            slo_target: "99% < 2s"
+            current_value: "{{ $value | printf \"%.1f\" }}% < 2s"
+            dashboard: "https://grafana.greenlang.io/d/greenlang-api-perf"
+
+    # ===========================================
+    # Error Budget Alerts
+    # Based on 99.9% availability = 0.1% error budget
+    # ===========================================
+    - name: greenlang.sla.error_budget
+      interval: 60s
+      rules:
+        # Error Budget Burn Rate - Fast
+        - alert: ErrorBudgetFastBurn
+          expr: |
+            (
+              sum(rate(http_requests_total{status=~"5.."}[5m])) by (namespace, service)
+              / sum(rate(http_requests_total[5m])) by (namespace, service)
+            ) > 14 * 0.001
+          for: 2m
+          labels:
+            severity: critical
+            team: sre
+            component: sla
+            slo: error_budget
+          annotations:
+            summary: "CRITICAL: Fast error budget burn for {{ $labels.service }}"
+            description: |
+              Service {{ $labels.service }} is burning error budget 14x faster than sustainable.
+              At this rate, the entire monthly error budget will be consumed in 2 hours.
+            impact: "Error budget will be exhausted. SLA breach imminent."
+            action: "Immediate incident response required. Stop the bleeding."
+            burn_rate: "14x"
+            dashboard: "https://grafana.greenlang.io/d/greenlang-api-perf"
+
+        # Error Budget Burn Rate - Medium
+        - alert: ErrorBudgetMediumBurn
+          expr: |
+            (
+              sum(rate(http_requests_total{status=~"5.."}[30m])) by (namespace, service)
+              / sum(rate(http_requests_total[30m])) by (namespace, service)
+            ) > 6 * 0.001
+          for: 15m
+          labels:
+            severity: warning
+            team: sre
+            component: sla
+            slo: error_budget
+          annotations:
+            summary: "Error budget burn rate elevated for {{ $labels.service }}"
+            description: |
+              Service {{ $labels.service }} is burning error budget 6x faster than sustainable.
+              At this rate, the monthly error budget will be consumed in 5 days.
+            impact: "Error budget consumption accelerated. Investigate soon."
+            action: "Investigate error sources. Plan remediation."
+            burn_rate: "6x"
+            dashboard: "https://grafana.greenlang.io/d/greenlang-api-perf"
+
+        # Error Budget Exhausted
+        - alert: ErrorBudgetExhausted
+          expr: |
+            (
+              1 - (
+                sum(increase(http_requests_total{status=~"5.."}[30d])) by (namespace, service)
+                / sum(increase(http_requests_total[30d])) by (namespace, service)
+              )
+            ) < 0.999
+          for: 1h
+          labels:
+            severity: critical
+            team: sre
+            component: sla
+            slo: error_budget
+          annotations:
+            summary: "CRITICAL: Error budget exhausted for {{ $labels.service }}"
+            description: |
+              Service {{ $labels.service }} has exhausted its monthly error budget.
+              30-day availability is {{ $value | printf "%.4f" }}% (target: 99.9%).
+            impact: "SLA breach. No remaining error budget for the month."
+            action: "Freeze non-critical changes. Focus on reliability."
+            dashboard: "https://grafana.greenlang.io/d/greenlang-api-perf"
+
+        # Error Budget Low
+        - alert: ErrorBudgetLow
+          expr: |
+            (
+              (0.001 - (
+                sum(increase(http_requests_total{status=~"5.."}[30d])) by (namespace, service)
+                / sum(increase(http_requests_total[30d])) by (namespace, service)
+              )) / 0.001
+            ) * 100 < 25
+          for: 1h
+          labels:
+            severity: warning
+            team: sre
+            component: sla
+            slo: error_budget
+          annotations:
+            summary: "Error budget below 25% for {{ $labels.service }}"
+            description: |
+              Service {{ $labels.service }} has less than 25% of monthly error budget remaining.
+            impact: "Limited room for additional errors. Be cautious with changes."
+            action: "Postpone risky deployments. Focus on stability."
+            dashboard: "https://grafana.greenlang.io/d/greenlang-api-perf"
+
+    # ===========================================
+    # Agent SLOs
+    # Target: 99% task success rate, P95 task duration < 120s
+    # ===========================================
+    - name: greenlang.sla.agents
+      interval: 30s
+      rules:
+        # Agent Task Success Rate SLO
+        - alert: AgentTaskSuccessRateSLOWarning
+          expr: |
+            (sum(rate(greenlang_agent_tasks_total{status="success"}[1h])) by (namespace, agent_type)
+            / sum(rate(greenlang_agent_tasks_total[1h])) by (namespace, agent_type)) * 100 < 99
+          for: 10m
+          labels:
+            severity: warning
+            team: application
+            component: sla
+            slo: agent_success
+          annotations:
+            summary: "Agent {{ $labels.agent_type }} below 99% success rate SLO"
+            description: |
+              Agent {{ $labels.agent_type }} in namespace {{ $labels.namespace }} has
+              {{ $value | printf "%.2f" }}% task success rate. SLO target is 99%.
+            impact: "Agent reliability SLO breach. Automated tasks failing."
+            action: "Investigate task failures and agent health."
+            slo_target: "99%"
+            current_value: "{{ $value | printf \"%.2f\" }}%"
+            dashboard: "https://grafana.greenlang.io/d/greenlang-agents"
+
+        # Agent Task Duration SLO
+        - alert: AgentTaskDurationSLOWarning
+          expr: |
+            (sum(rate(greenlang_agent_task_duration_seconds_bucket{le="120"}[1h])) by (namespace, agent_type)
+            / sum(rate(greenlang_agent_task_duration_seconds_count[1h])) by (namespace, agent_type)) * 100 < 95
+          for: 15m
+          labels:
+            severity: warning
+            team: application
+            component: sla
+            slo: agent_latency
+          annotations:
+            summary: "Agent {{ $labels.agent_type }} below task duration SLO"
+            description: |
+              Agent {{ $labels.agent_type }} in namespace {{ $labels.namespace }} has only
+              {{ $value | printf "%.1f" }}% of tasks completing under 120s. SLO target is 95%.
+            impact: "Agent performance SLO breach. Tasks taking too long."
+            action: "Review task complexity and LLM provider performance."
+            slo_target: "95% < 120s"
+            current_value: "{{ $value | printf \"%.1f\" }}% < 120s"
+            dashboard: "https://grafana.greenlang.io/d/greenlang-agents"
+
+    # ===========================================
+    # Composite SLO (Golden Signals)
+    # ===========================================
+    - name: greenlang.sla.composite
+      interval: 30s
+      rules:
+        # Service Health Score
+        - alert: ServiceHealthDegraded
+          expr: |
+            (
+              # Availability component (weight: 40%)
+              ((1 - (sum(rate(http_requests_total{status=~"5.."}[5m])) by (namespace, service)
+              / sum(rate(http_requests_total[5m])) by (namespace, service))) * 0.4)
+              +
+              # Latency component (weight: 30%)
+              ((sum(rate(http_request_duration_seconds_bucket{le="0.5"}[5m])) by (namespace, service)
+              / sum(rate(http_request_duration_seconds_count[5m])) by (namespace, service)) * 0.3)
+              +
+              # Saturation component - inverse (weight: 30%)
+              ((1 - (sum(rate(container_cpu_usage_seconds_total[5m])) by (namespace, service)
+              / sum(kube_pod_container_resource_limits{resource="cpu"}) by (namespace, service))) * 0.3)
+            ) * 100 < 85
+          for: 5m
+          labels:
+            severity: warning
+            team: sre
+            component: sla
+            slo: composite
+          annotations:
+            summary: "Service {{ $labels.service }} health score below 85%"
+            description: |
+              Service {{ $labels.service }} composite health score is {{ $value | printf "%.1f" }}%.
+              This considers availability (40%), latency (30%), and resource saturation (30%).
+            impact: "Overall service health degraded across multiple dimensions."
+            action: "Review all golden signals. Address the weakest area first."
+            dashboard: "https://grafana.greenlang.io/d/greenlang-api-perf"
+
+        # Critical Service Health
+        - alert: ServiceHealthCritical
+          expr: |
+            (
+              ((1 - (sum(rate(http_requests_total{status=~"5.."}[5m])) by (namespace, service)
+              / sum(rate(http_requests_total[5m])) by (namespace, service))) * 0.4)
+              +
+              ((sum(rate(http_request_duration_seconds_bucket{le="0.5"}[5m])) by (namespace, service)
+              / sum(rate(http_request_duration_seconds_count[5m])) by (namespace, service)) * 0.3)
+              +
+              ((1 - (sum(rate(container_cpu_usage_seconds_total[5m])) by (namespace, service)
+              / sum(kube_pod_container_resource_limits{resource="cpu"}) by (namespace, service))) * 0.3)
+            ) * 100 < 70
+          for: 2m
+          labels:
+            severity: critical
+            team: sre
+            component: sla
+            slo: composite
+          annotations:
+            summary: "CRITICAL: Service {{ $labels.service }} health score below 70%"
+            description: |
+              Service {{ $labels.service }} composite health score is critically low
+              at {{ $value | printf "%.1f" }}%. Multiple SLOs are being breached.
+            impact: "Critical service degradation. Multiple failures occurring."
+            action: "Declare incident. Mobilize incident response team."
+            dashboard: "https://grafana.greenlang.io/d/greenlang-api-perf"

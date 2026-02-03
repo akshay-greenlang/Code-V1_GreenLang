@@ -1,0 +1,11 @@
+# GreenLang Artifact Validator Lambda Dependencies
+
+# AWS SDK
+boto3>=1.34.0
+botocore>=1.34.0
+
+# Virus scanning (optional)
+clamd>=1.0.2
+
+# Additional utilities
+python-magic>=0.4.27

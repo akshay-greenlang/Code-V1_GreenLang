@@ -1,0 +1,161 @@
+# Production values for redis-ha
+# Override default values.yaml for production environment
+
+## Redis configuration
+redis:
+  ## Number of Redis replicas (including master)
+  replicas: 3
+
+  ## Memory settings for production
+  config:
+    maxmemory: "7gb"
+    maxmemory-policy: "volatile-lru"
+
+    ## More aggressive persistence for production
+    appendonly: "yes"
+    appendfsync: "everysec"
+    auto-aof-rewrite-percentage: "100"
+    auto-aof-rewrite-min-size: "128mb"
+
+    ## RDB persistence - more frequent saves
+    save: "900 1 300 10 60 1000"
+
+    ## Higher connection limits
+    tcp-backlog: "2048"
+
+    ## Stricter replication
+    min-replicas-to-write: "1"
+    min-replicas-max-lag: "5"
+
+    ## Enable client output buffer limits
+    client-output-buffer-limit: "normal 0 0 0 replica 256mb 64mb 60 pubsub 32mb 8mb 60"
+
+  ## Production resource limits
+  resources:
+    requests:
+      memory: "2Gi"
+      cpu: "500m"
+    limits:
+      memory: "8Gi"
+      cpu: "2000m"
+
+  ## More lenient probes for larger datasets
+  livenessProbe:
+    initialDelaySeconds: 60
+    periodSeconds: 15
+    timeoutSeconds: 10
+    failureThreshold: 6
+
+  readinessProbe:
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 5
+
+## Sentinel configuration
+sentinel:
+  replicas: 3
+  quorum: 2
+
+  ## Slightly longer timeouts for production stability
+  downAfterMilliseconds: 10000
+  failoverTimeout: 90000
+  parallelSyncs: 1
+
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "200m"
+    limits:
+      memory: "512Mi"
+      cpu: "500m"
+
+## Exporter resources for production metrics load
+exporter:
+  enabled: true
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "256Mi"
+      cpu: "200m"
+
+## Persistence - larger storage for production
+persistence:
+  enabled: true
+  storageClass: "fast-ssd"
+  accessMode: ReadWriteOnce
+  size: 20Gi
+
+## Strict pod anti-affinity for production
+affinity:
+  enabled: true
+  ## Hard anti-affinity - pods MUST be on different nodes
+  type: "hard"
+  topologyKey: "kubernetes.io/hostname"
+  ## Zone anti-affinity for multi-AZ resilience
+  zoneAntiAffinity:
+    enabled: true
+    topologyKey: "topology.kubernetes.io/zone"
+
+## Node selector for dedicated Redis nodes (optional)
+nodeSelector:
+  node-type: database
+
+## Tolerations for dedicated nodes
+tolerations:
+  - key: "dedicated"
+    operator: "Equal"
+    value: "redis"
+    effect: "NoSchedule"
+
+## Production pod annotations
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "9121"
+  cluster-autoscaler.kubernetes.io/safe-to-evict: "false"
+
+## Production pod labels
+podLabels:
+  environment: production
+  tier: database
+  criticality: high
+
+## Pod Disruption Budget - stricter for production
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 2
+
+## Network Policy - enabled for security
+networkPolicy:
+  enabled: true
+  allowedLabels:
+    app.kubernetes.io/part-of: greenlang
+
+## Enable sysctl tuning in production (requires privileged init container)
+sysctlInit:
+  enabled: true
+  sysctls:
+    - name: net.core.somaxconn
+      value: "65535"
+    - name: vm.overcommit_memory
+      value: "1"
+    - name: net.ipv4.tcp_max_syn_backlog
+      value: "65535"
+
+## Service Monitor with production labels
+serviceMonitor:
+  enabled: true
+  interval: 15s
+  scrapeTimeout: 10s
+  labels:
+    release: prometheus
+    environment: production
+
+## Prometheus Rules enabled for production alerting
+prometheusRule:
+  enabled: true
+  labels:
+    release: prometheus
+    environment: production

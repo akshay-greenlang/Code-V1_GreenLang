@@ -1,0 +1,247 @@
+###############################################################################
+# GreenLang S3 Access Network Policy
+#
+# This NetworkPolicy restricts S3 access to specific pods and defines
+# egress rules for VPC endpoint communication.
+#
+# Author: GreenLang DevOps Team
+# Version: 1.0.0
+###############################################################################
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-s3-access
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: storage
+    app.kubernetes.io/part-of: greenlang-platform
+    security.greenlang.io/policy: s3-access
+spec:
+  # Apply to pods with s3-access label
+  podSelector:
+    matchLabels:
+      storage.greenlang.io/s3-access: "true"
+
+  policyTypes:
+    - Egress
+    - Ingress
+
+  # Egress rules for S3 access
+  egress:
+    # Allow HTTPS traffic to S3 VPC endpoint (private IP range)
+    - to:
+        # S3 Gateway Endpoint - Allow access to S3 prefix list
+        - ipBlock:
+            # AWS S3 prefix (varies by region - configure based on VPC endpoint)
+            # This CIDR should be replaced with actual VPC endpoint CIDR
+            cidr: 10.0.0.0/8
+            except:
+              - 10.0.0.0/24  # Exclude management subnet
+      ports:
+        - protocol: TCP
+          port: 443
+
+    # Allow DNS resolution
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+
+    # Allow access to AWS metadata service (for IAM credentials via IRSA)
+    - to:
+        - ipBlock:
+            cidr: 169.254.169.254/32
+      ports:
+        - protocol: TCP
+          port: 80
+
+    # Allow access to STS endpoint for IRSA token exchange
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+      ports:
+        - protocol: TCP
+          port: 443
+
+  # Ingress rules - only allow from specific sources
+  ingress:
+    # Allow from API gateway pods
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: api-gateway
+      ports:
+        - protocol: TCP
+          port: 8000
+
+---
+###############################################################################
+# Network Policy for S3 Write Access (more restrictive)
+###############################################################################
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-s3-write-access
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: storage
+    security.greenlang.io/policy: s3-write-access
+spec:
+  podSelector:
+    matchLabels:
+      storage.greenlang.io/s3-write-access: "true"
+
+  policyTypes:
+    - Egress
+
+  egress:
+    # Allow HTTPS to S3 only
+    - to:
+        - ipBlock:
+            cidr: 10.0.0.0/8
+      ports:
+        - protocol: TCP
+          port: 443
+
+    # DNS resolution
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+
+---
+###############################################################################
+# Network Policy for Backup Jobs (access to backup bucket only)
+###############################################################################
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-backup-s3-access
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: backup
+    security.greenlang.io/policy: backup-s3-access
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/component: backup-job
+
+  policyTypes:
+    - Egress
+
+  egress:
+    # Allow HTTPS to S3 VPC endpoint
+    - to:
+        - ipBlock:
+            cidr: 10.0.0.0/8
+      ports:
+        - protocol: TCP
+          port: 443
+
+    # DNS resolution
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+
+    # AWS metadata service
+    - to:
+        - ipBlock:
+            cidr: 169.254.169.254/32
+      ports:
+        - protocol: TCP
+          port: 80
+
+---
+###############################################################################
+# Default Deny Policy for Storage Namespace
+###############################################################################
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+  namespace: greenlang-storage
+  labels:
+    app.kubernetes.io/name: greenlang
+    security.greenlang.io/policy: default-deny
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+
+---
+###############################################################################
+# Network Policy for Audit Log Writers
+###############################################################################
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-audit-log-write
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: audit
+    security.greenlang.io/policy: audit-log-write
+spec:
+  podSelector:
+    matchLabels:
+      storage.greenlang.io/audit-write: "true"
+
+  policyTypes:
+    - Egress
+
+  egress:
+    # Allow HTTPS to S3 for audit log upload
+    - to:
+        - ipBlock:
+            cidr: 10.0.0.0/8
+      ports:
+        - protocol: TCP
+          port: 443
+
+    # DNS
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+
+    # Metadata service
+    - to:
+        - ipBlock:
+            cidr: 169.254.169.254/32
+      ports:
+        - protocol: TCP
+          port: 80
