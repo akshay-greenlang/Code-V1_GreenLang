@@ -180,6 +180,19 @@ resource "aws_security_group_rule" "aurora_ingress_sg" {
   description              = "PostgreSQL access from security group ${var.allowed_security_groups[count.index]}"
 }
 
+# Ingress rule for pgvector embedding service (INFRA-005)
+resource "aws_security_group_rule" "aurora_ingress_embedding" {
+  count = var.pgvector_embedding_service_sg_id != "" ? 1 : 0
+
+  type                     = "ingress"
+  from_port                = local.db_port
+  to_port                  = local.db_port
+  protocol                 = "tcp"
+  source_security_group_id = var.pgvector_embedding_service_sg_id
+  security_group_id        = aws_security_group.aurora.id
+  description              = "PostgreSQL access from embedding service (INFRA-005)"
+}
+
 # Egress rule - allow all outbound (required for Enhanced Monitoring, etc.)
 resource "aws_security_group_rule" "aurora_egress" {
   type              = "egress"

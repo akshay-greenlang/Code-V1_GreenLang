@@ -1,0 +1,180 @@
+---
+# =============================================================================
+# GreenLang Climate OS - PgBouncer Kubernetes Deployment
+# =============================================================================
+# PRD: INFRA-005 Vector Database Infrastructure with pgvector
+# Purpose: Connection pooling sidecar for pgvector workloads
+# =============================================================================
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pgbouncer-config
+  namespace: greenlang
+  labels:
+    app: pgbouncer
+    component: database
+    infra: pgvector
+data:
+  pgbouncer.ini: |
+    [databases]
+    greenlang = host=${AURORA_WRITER_ENDPOINT} port=5432 dbname=greenlang
+    greenlang_reader = host=${AURORA_READER_ENDPOINT} port=5432 dbname=greenlang
+    greenlang_vectors = host=${AURORA_READER_ENDPOINT} port=5432 dbname=greenlang pool_size=30
+
+    [pgbouncer]
+    listen_addr = 0.0.0.0
+    listen_port = 6432
+    auth_type = md5
+    auth_file = /etc/pgbouncer/userlist.txt
+    pool_mode = transaction
+    max_client_conn = 1000
+    default_pool_size = 50
+    reserve_pool_size = 10
+    reserve_pool_timeout = 5
+    server_idle_timeout = 300
+    query_timeout = 30
+    query_wait_timeout = 120
+    server_tls_sslmode = require
+    server_tls_ca_file = /etc/ssl/certs/rds-combined-ca-bundle.pem
+    log_connections = 0
+    log_disconnections = 0
+    log_pooler_errors = 1
+    stats_period = 60
+    admin_users = pgbouncer_admin
+    stats_users = pgbouncer_stats
+    server_reset_query = DISCARD ALL
+    application_name_add_host = 1
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pgbouncer
+  namespace: greenlang
+  labels:
+    app: pgbouncer
+    component: database
+    infra: pgvector
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: pgbouncer
+  template:
+    metadata:
+      labels:
+        app: pgbouncer
+        component: database
+        infra: pgvector
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9127"
+    spec:
+      serviceAccountName: pgbouncer
+      containers:
+        - name: pgbouncer
+          image: edoburu/pgbouncer:1.22.1
+          ports:
+            - containerPort: 6432
+              name: pgbouncer
+              protocol: TCP
+          env:
+            - name: AURORA_WRITER_ENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  name: aurora-endpoints
+                  key: writer-endpoint
+            - name: AURORA_READER_ENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  name: aurora-endpoints
+                  key: reader-endpoint
+          volumeMounts:
+            - name: config
+              mountPath: /etc/pgbouncer/pgbouncer.ini
+              subPath: pgbouncer.ini
+            - name: userlist
+              mountPath: /etc/pgbouncer/userlist.txt
+              subPath: userlist.txt
+            - name: rds-ca
+              mountPath: /etc/ssl/certs/rds-combined-ca-bundle.pem
+              subPath: rds-combined-ca-bundle.pem
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          livenessProbe:
+            tcpSocket:
+              port: 6432
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          readinessProbe:
+            tcpSocket:
+              port: 6432
+            initialDelaySeconds: 5
+            periodSeconds: 5
+
+        - name: pgbouncer-exporter
+          image: prometheuscommunity/pgbouncer-exporter:v0.7.0
+          ports:
+            - containerPort: 9127
+              name: metrics
+          env:
+            - name: PGBOUNCER_EXPORTER_HOST
+              value: "localhost"
+            - name: PGBOUNCER_EXPORTER_PORT
+              value: "6432"
+          resources:
+            requests:
+              cpu: 50m
+              memory: 32Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi
+
+      volumes:
+        - name: config
+          configMap:
+            name: pgbouncer-config
+        - name: userlist
+          secret:
+            secretName: pgbouncer-userlist
+        - name: rds-ca
+          configMap:
+            name: rds-ca-bundle
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pgbouncer
+  namespace: greenlang
+  labels:
+    app: pgbouncer
+    component: database
+spec:
+  type: ClusterIP
+  ports:
+    - port: 6432
+      targetPort: 6432
+      name: pgbouncer
+      protocol: TCP
+    - port: 9127
+      targetPort: 9127
+      name: metrics
+      protocol: TCP
+  selector:
+    app: pgbouncer
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: pgbouncer
+  namespace: greenlang
+  labels:
+    app: pgbouncer

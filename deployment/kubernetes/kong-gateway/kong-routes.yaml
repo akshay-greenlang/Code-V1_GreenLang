@@ -1,0 +1,641 @@
+# =============================================================================
+# GreenLang Climate OS - Kong Ingress Routes
+# =============================================================================
+# PRD: INFRA-006 API Gateway (Kong)
+# Kubernetes Ingress resources with Kong IngressClass and plugin annotations
+# for all GreenLang services.
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# IngressClass definition for Kong
+# -----------------------------------------------------------------------------
+apiVersion: networking.k8s.io/v1
+kind: IngressClass
+metadata:
+  name: kong
+  labels:
+    app.kubernetes.io/name: kong
+    app.kubernetes.io/part-of: greenlang
+  annotations:
+    ingressclass.kubernetes.io/is-default-class: "false"
+spec:
+  controller: ingress-controllers.konghq.com/kong
+
+---
+# =============================================================================
+# Core API Gateway Ingress
+# Routes: /api/v1/health, /api/v1/ready, /api/v1/version
+# Public health and readiness endpoints -- no authentication required.
+# =============================================================================
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: greenlang-health
+  namespace: kong
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: health
+    greenlang.io/route-group: core
+  annotations:
+    konghq.com/plugins: request-size-default, http-log, bot-detection
+    konghq.com/strip-path: "false"
+    konghq.com/preserve-host: "true"
+    konghq.com/protocols: "https"
+spec:
+  ingressClassName: kong
+  tls:
+    - hosts:
+        - api.greenlang.io
+      secretName: greenlang-tls-secret
+  rules:
+    - host: api.greenlang.io
+      http:
+        paths:
+          - path: /api/v1/health
+            pathType: Exact
+            backend:
+              service:
+                name: greenlang-core-api.greenlang.svc.cluster.local
+                port:
+                  number: 8000
+          - path: /api/v1/ready
+            pathType: Exact
+            backend:
+              service:
+                name: greenlang-core-api.greenlang.svc.cluster.local
+                port:
+                  number: 8000
+          - path: /api/v1/version
+            pathType: Exact
+            backend:
+              service:
+                name: greenlang-core-api.greenlang.svc.cluster.local
+                port:
+                  number: 8000
+
+---
+# =============================================================================
+# Authentication Service Ingress
+# Routes: /api/v1/auth/*
+# Handles user login, registration, token refresh, and OAuth callbacks.
+# No JWT plugin here since these are pre-auth endpoints.
+# =============================================================================
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: greenlang-auth
+  namespace: kong
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: auth
+    greenlang.io/route-group: auth
+  annotations:
+    konghq.com/plugins: request-size-default, http-log, bot-detection
+    konghq.com/strip-path: "false"
+    konghq.com/preserve-host: "true"
+    konghq.com/protocols: "https"
+spec:
+  ingressClassName: kong
+  tls:
+    - hosts:
+        - api.greenlang.io
+      secretName: greenlang-tls-secret
+  rules:
+    - host: api.greenlang.io
+      http:
+        paths:
+          - path: /api/v1/auth
+            pathType: Prefix
+            backend:
+              service:
+                name: greenlang-auth-service.greenlang.svc.cluster.local
+                port:
+                  number: 8001
+
+---
+# =============================================================================
+# Carbon Accounting Service Ingress
+# Routes: /api/v1/carbon/*
+# Core emissions tracking, carbon footprint calculations, and reporting.
+# Requires JWT authentication and tenant isolation.
+# =============================================================================
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: greenlang-carbon
+  namespace: kong
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: carbon
+    greenlang.io/route-group: carbon
+  annotations:
+    konghq.com/plugins: jwt-auth, tenant-isolation, request-size-default, http-log, bot-detection
+    konghq.com/strip-path: "false"
+    konghq.com/preserve-host: "true"
+    konghq.com/protocols: "https"
+spec:
+  ingressClassName: kong
+  tls:
+    - hosts:
+        - api.greenlang.io
+      secretName: greenlang-tls-secret
+  rules:
+    - host: api.greenlang.io
+      http:
+        paths:
+          - path: /api/v1/carbon
+            pathType: Prefix
+            backend:
+              service:
+                name: greenlang-carbon-service.greenlang.svc.cluster.local
+                port:
+                  number: 8002
+
+---
+# =============================================================================
+# Energy Management Service Ingress
+# Routes: /api/v1/energy/*
+# Energy consumption monitoring, renewable tracking, grid analytics.
+# Requires JWT authentication and tenant isolation.
+# =============================================================================
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: greenlang-energy
+  namespace: kong
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: energy
+    greenlang.io/route-group: energy
+  annotations:
+    konghq.com/plugins: jwt-auth, tenant-isolation, request-size-default, http-log, bot-detection
+    konghq.com/strip-path: "false"
+    konghq.com/preserve-host: "true"
+    konghq.com/protocols: "https"
+spec:
+  ingressClassName: kong
+  tls:
+    - hosts:
+        - api.greenlang.io
+      secretName: greenlang-tls-secret
+  rules:
+    - host: api.greenlang.io
+      http:
+        paths:
+          - path: /api/v1/energy
+            pathType: Prefix
+            backend:
+              service:
+                name: greenlang-energy-service.greenlang.svc.cluster.local
+                port:
+                  number: 8003
+
+---
+# =============================================================================
+# Supply Chain Service Ingress
+# Routes: /api/v1/supply-chain/*
+# Scope 3 emissions, supplier management, lifecycle assessment.
+# Requires JWT authentication and tenant isolation.
+# =============================================================================
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: greenlang-supply-chain
+  namespace: kong
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: supply-chain
+    greenlang.io/route-group: supply-chain
+  annotations:
+    konghq.com/plugins: jwt-auth, tenant-isolation, request-size-default, http-log, bot-detection
+    konghq.com/strip-path: "false"
+    konghq.com/preserve-host: "true"
+    konghq.com/protocols: "https"
+spec:
+  ingressClassName: kong
+  tls:
+    - hosts:
+        - api.greenlang.io
+      secretName: greenlang-tls-secret
+  rules:
+    - host: api.greenlang.io
+      http:
+        paths:
+          - path: /api/v1/supply-chain
+            pathType: Prefix
+            backend:
+              service:
+                name: greenlang-supply-chain-service.greenlang.svc.cluster.local
+                port:
+                  number: 8004
+
+---
+# =============================================================================
+# Compliance & Reporting Service Ingress
+# Routes: /api/v1/compliance/*
+# Regulatory reporting, ESG frameworks, audit trails.
+# Requires JWT authentication and tenant isolation.
+# =============================================================================
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: greenlang-compliance
+  namespace: kong
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: compliance
+    greenlang.io/route-group: compliance
+  annotations:
+    konghq.com/plugins: jwt-auth, tenant-isolation, request-size-default, http-log, bot-detection
+    konghq.com/strip-path: "false"
+    konghq.com/preserve-host: "true"
+    konghq.com/protocols: "https"
+spec:
+  ingressClassName: kong
+  tls:
+    - hosts:
+        - api.greenlang.io
+      secretName: greenlang-tls-secret
+  rules:
+    - host: api.greenlang.io
+      http:
+        paths:
+          - path: /api/v1/compliance
+            pathType: Prefix
+            backend:
+              service:
+                name: greenlang-compliance-service.greenlang.svc.cluster.local
+                port:
+                  number: 8005
+
+---
+# =============================================================================
+# Agent Orchestration Service Ingress
+# Routes: /api/v1/agents/*
+# AI agent execution, workflow management, task scheduling.
+# Requires JWT authentication and tenant isolation.
+# =============================================================================
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: greenlang-agents
+  namespace: kong
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: agents
+    greenlang.io/route-group: agents
+  annotations:
+    konghq.com/plugins: jwt-auth, tenant-isolation, request-size-default, http-log, bot-detection
+    konghq.com/strip-path: "false"
+    konghq.com/preserve-host: "true"
+    konghq.com/protocols: "https"
+spec:
+  ingressClassName: kong
+  tls:
+    - hosts:
+        - api.greenlang.io
+      secretName: greenlang-tls-secret
+  rules:
+    - host: api.greenlang.io
+      http:
+        paths:
+          - path: /api/v1/agents
+            pathType: Prefix
+            backend:
+              service:
+                name: greenlang-agent-service.greenlang.svc.cluster.local
+                port:
+                  number: 8006
+
+---
+# =============================================================================
+# Data Ingestion / Batch Service Ingress
+# Routes: /api/v1/batch/*, /api/v1/ingest/*
+# Bulk data uploads, CSV/Excel imports, batch processing.
+# Uses elevated request size limits (50MB) and stricter rate limiting.
+# =============================================================================
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: greenlang-batch
+  namespace: kong
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: batch
+    greenlang.io/route-group: batch
+  annotations:
+    konghq.com/plugins: jwt-auth, tenant-isolation, batch-rate-limit, request-size-batch, http-log, bot-detection
+    konghq.com/strip-path: "false"
+    konghq.com/preserve-host: "true"
+    konghq.com/protocols: "https"
+    konghq.com/read-timeout: "300000"
+    konghq.com/write-timeout: "300000"
+    konghq.com/connect-timeout: "30000"
+spec:
+  ingressClassName: kong
+  tls:
+    - hosts:
+        - api.greenlang.io
+      secretName: greenlang-tls-secret
+  rules:
+    - host: api.greenlang.io
+      http:
+        paths:
+          - path: /api/v1/batch
+            pathType: Prefix
+            backend:
+              service:
+                name: greenlang-batch-service.greenlang.svc.cluster.local
+                port:
+                  number: 8007
+          - path: /api/v1/ingest
+            pathType: Prefix
+            backend:
+              service:
+                name: greenlang-batch-service.greenlang.svc.cluster.local
+                port:
+                  number: 8007
+
+---
+# =============================================================================
+# Notifications Service Ingress
+# Routes: /api/v1/notifications/*
+# Alerts, email/SMS triggers, webhook management.
+# Requires JWT authentication and tenant isolation.
+# =============================================================================
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: greenlang-notifications
+  namespace: kong
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: notifications
+    greenlang.io/route-group: notifications
+  annotations:
+    konghq.com/plugins: jwt-auth, tenant-isolation, request-size-default, http-log, bot-detection
+    konghq.com/strip-path: "false"
+    konghq.com/preserve-host: "true"
+    konghq.com/protocols: "https"
+spec:
+  ingressClassName: kong
+  tls:
+    - hosts:
+        - api.greenlang.io
+      secretName: greenlang-tls-secret
+  rules:
+    - host: api.greenlang.io
+      http:
+        paths:
+          - path: /api/v1/notifications
+            pathType: Prefix
+            backend:
+              service:
+                name: greenlang-notification-service.greenlang.svc.cluster.local
+                port:
+                  number: 8008
+
+---
+# =============================================================================
+# Analytics & Dashboards Service Ingress
+# Routes: /api/v1/analytics/*, /api/v1/dashboards/*
+# Time-series queries, aggregated metrics, custom dashboard data.
+# Requires JWT authentication and tenant isolation.
+# =============================================================================
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: greenlang-analytics
+  namespace: kong
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: analytics
+    greenlang.io/route-group: analytics
+  annotations:
+    konghq.com/plugins: jwt-auth, tenant-isolation, request-size-default, http-log, bot-detection
+    konghq.com/strip-path: "false"
+    konghq.com/preserve-host: "true"
+    konghq.com/protocols: "https"
+    konghq.com/read-timeout: "120000"
+spec:
+  ingressClassName: kong
+  tls:
+    - hosts:
+        - api.greenlang.io
+      secretName: greenlang-tls-secret
+  rules:
+    - host: api.greenlang.io
+      http:
+        paths:
+          - path: /api/v1/analytics
+            pathType: Prefix
+            backend:
+              service:
+                name: greenlang-analytics-service.greenlang.svc.cluster.local
+                port:
+                  number: 8009
+          - path: /api/v1/dashboards
+            pathType: Prefix
+            backend:
+              service:
+                name: greenlang-analytics-service.greenlang.svc.cluster.local
+                port:
+                  number: 8009
+
+---
+# =============================================================================
+# Tenant Management Service Ingress
+# Routes: /api/v1/tenants/*
+# Tenant provisioning, configuration, billing integration.
+# Requires JWT authentication and tenant isolation.
+# =============================================================================
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: greenlang-tenants
+  namespace: kong
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: tenants
+    greenlang.io/route-group: tenants
+  annotations:
+    konghq.com/plugins: jwt-auth, tenant-isolation, request-size-default, http-log, bot-detection
+    konghq.com/strip-path: "false"
+    konghq.com/preserve-host: "true"
+    konghq.com/protocols: "https"
+spec:
+  ingressClassName: kong
+  tls:
+    - hosts:
+        - api.greenlang.io
+      secretName: greenlang-tls-secret
+  rules:
+    - host: api.greenlang.io
+      http:
+        paths:
+          - path: /api/v1/tenants
+            pathType: Prefix
+            backend:
+              service:
+                name: greenlang-tenant-service.greenlang.svc.cluster.local
+                port:
+                  number: 8010
+
+---
+# =============================================================================
+# WebSocket Ingress (Real-Time Events)
+# Routes: /ws/*
+# Live data streaming, agent status updates, real-time notifications.
+# Requires JWT authentication. Upgraded to WebSocket protocol.
+# =============================================================================
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: greenlang-websocket
+  namespace: kong
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: websocket
+    greenlang.io/route-group: websocket
+  annotations:
+    konghq.com/plugins: jwt-auth, tenant-isolation, http-log
+    konghq.com/strip-path: "false"
+    konghq.com/preserve-host: "true"
+    konghq.com/protocols: "https,wss"
+    konghq.com/read-timeout: "3600000"
+    konghq.com/write-timeout: "3600000"
+spec:
+  ingressClassName: kong
+  tls:
+    - hosts:
+        - api.greenlang.io
+      secretName: greenlang-tls-secret
+  rules:
+    - host: api.greenlang.io
+      http:
+        paths:
+          - path: /ws
+            pathType: Prefix
+            backend:
+              service:
+                name: greenlang-websocket-service.greenlang.svc.cluster.local
+                port:
+                  number: 8011
+
+---
+# =============================================================================
+# Admin API Ingress (Internal Only)
+# Routes: /admin/*
+# Platform administration, user management, system configuration.
+# Restricted to admin ACL group and internal IP ranges only.
+# =============================================================================
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: greenlang-admin
+  namespace: kong
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: admin
+    greenlang.io/route-group: admin
+  annotations:
+    konghq.com/plugins: jwt-auth, admin-acl, admin-ip-restriction, tenant-isolation, request-size-default, http-log
+    konghq.com/strip-path: "false"
+    konghq.com/preserve-host: "true"
+    konghq.com/protocols: "https"
+spec:
+  ingressClassName: kong
+  tls:
+    - hosts:
+        - admin.greenlang.io
+      secretName: greenlang-admin-tls-secret
+  rules:
+    - host: admin.greenlang.io
+      http:
+        paths:
+          - path: /admin
+            pathType: Prefix
+            backend:
+              service:
+                name: greenlang-admin-service.greenlang.svc.cluster.local
+                port:
+                  number: 8012
+
+---
+# =============================================================================
+# Public Data API Ingress (Read-Only)
+# Routes: /api/v1/public/*
+# Open data endpoints for public consumption (emission factors, benchmarks).
+# No authentication required but rate-limited and bot-protected.
+# =============================================================================
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: greenlang-public
+  namespace: kong
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: public
+    greenlang.io/route-group: public
+  annotations:
+    konghq.com/plugins: request-size-default, http-log, bot-detection
+    konghq.com/strip-path: "false"
+    konghq.com/preserve-host: "true"
+    konghq.com/protocols: "https"
+spec:
+  ingressClassName: kong
+  tls:
+    - hosts:
+        - api.greenlang.io
+      secretName: greenlang-tls-secret
+  rules:
+    - host: api.greenlang.io
+      http:
+        paths:
+          - path: /api/v1/public
+            pathType: Prefix
+            backend:
+              service:
+                name: greenlang-public-api-service.greenlang.svc.cluster.local
+                port:
+                  number: 8013
+
+---
+# =============================================================================
+# Industrial Process Heat Agent Ingress
+# Routes: /api/v1/industrial-heat/*
+# Specialized agent for industrial process heat decarbonization analysis.
+# Requires JWT authentication and tenant isolation.
+# =============================================================================
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: greenlang-industrial-heat
+  namespace: kong
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: industrial-heat
+    greenlang.io/route-group: agents
+  annotations:
+    konghq.com/plugins: jwt-auth, tenant-isolation, request-size-default, http-log, bot-detection
+    konghq.com/strip-path: "false"
+    konghq.com/preserve-host: "true"
+    konghq.com/protocols: "https"
+    konghq.com/read-timeout: "180000"
+spec:
+  ingressClassName: kong
+  tls:
+    - hosts:
+        - api.greenlang.io
+      secretName: greenlang-tls-secret
+  rules:
+    - host: api.greenlang.io
+      http:
+        paths:
+          - path: /api/v1/industrial-heat
+            pathType: Prefix
+            backend:
+              service:
+                name: greenlang-industrial-heat-service.greenlang.svc.cluster.local
+                port:
+                  number: 8014

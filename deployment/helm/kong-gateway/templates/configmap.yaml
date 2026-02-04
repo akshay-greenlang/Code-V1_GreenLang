@@ -1,0 +1,330 @@
+{{/*
+=============================================================================
+Kong API Gateway - ConfigMap (Declarative Configuration)
+GreenLang Climate OS | infra-006
+=============================================================================
+*/}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "kong-gateway.fullname" . }}-declarative-config
+  namespace: {{ include "kong-gateway.namespace" . }}
+  labels:
+    {{- include "kong-gateway.labels" . | nindent 4 }}
+  annotations:
+    {{- include "kong-gateway.annotations" . | nindent 4 }}
+data:
+  kong.yaml: |
+    _format_version: "3.0"
+    _transform: true
+
+    # =========================================================================
+    # Services
+    # =========================================================================
+    services:
+      # -- Climate Data Ingestion API ----------------------------------------
+      - name: climate-data-ingestion
+        url: http://climate-data-ingestion.greenlang.svc.cluster.local:8000
+        connect_timeout: 10000
+        write_timeout: 60000
+        read_timeout: 60000
+        retries: 3
+        routes:
+          - name: climate-data-ingestion-route
+            paths:
+              - /api/v1/climate-data
+            methods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+            strip_path: false
+            preserve_host: true
+        plugins:
+          - name: rate-limiting
+            config:
+              minute: 120
+              policy: redis
+              redis_host: "$(KONG_REDIS_HOST)"
+              redis_port: 6379
+              redis_database: 3
+              fault_tolerant: true
+              hide_client_headers: false
+          - name: jwt
+            config:
+              uri_param_names:
+                - jwt
+              header_names:
+                - Authorization
+              claims_to_verify:
+                - exp
+
+      # -- Carbon Analytics API -----------------------------------------------
+      - name: carbon-analytics
+        url: http://carbon-analytics.greenlang.svc.cluster.local:8000
+        connect_timeout: 10000
+        write_timeout: 60000
+        read_timeout: 60000
+        retries: 3
+        routes:
+          - name: carbon-analytics-route
+            paths:
+              - /api/v1/analytics
+            methods:
+              - GET
+              - POST
+            strip_path: false
+            preserve_host: true
+        plugins:
+          - name: rate-limiting
+            config:
+              minute: 60
+              policy: redis
+              redis_host: "$(KONG_REDIS_HOST)"
+              redis_port: 6379
+              redis_database: 3
+              fault_tolerant: true
+          - name: jwt
+            config:
+              claims_to_verify:
+                - exp
+
+      # -- Compliance Reporting API -------------------------------------------
+      - name: compliance-reporting
+        url: http://compliance-reporting.greenlang.svc.cluster.local:8000
+        connect_timeout: 10000
+        write_timeout: 120000
+        read_timeout: 120000
+        retries: 2
+        routes:
+          - name: compliance-reporting-route
+            paths:
+              - /api/v1/compliance
+            methods:
+              - GET
+              - POST
+            strip_path: false
+            preserve_host: true
+        plugins:
+          - name: rate-limiting
+            config:
+              minute: 30
+              policy: redis
+              redis_host: "$(KONG_REDIS_HOST)"
+              redis_port: 6379
+              redis_database: 3
+              fault_tolerant: true
+          - name: jwt
+            config:
+              claims_to_verify:
+                - exp
+
+      # -- Tenant Management API ----------------------------------------------
+      - name: tenant-management
+        url: http://tenant-management.greenlang.svc.cluster.local:8000
+        connect_timeout: 10000
+        write_timeout: 30000
+        read_timeout: 30000
+        retries: 3
+        routes:
+          - name: tenant-management-route
+            paths:
+              - /api/v1/tenants
+            methods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+            strip_path: false
+            preserve_host: true
+        plugins:
+          - name: rate-limiting
+            config:
+              minute: 60
+              policy: redis
+              redis_host: "$(KONG_REDIS_HOST)"
+              redis_port: 6379
+              redis_database: 3
+              fault_tolerant: true
+          - name: jwt
+            config:
+              claims_to_verify:
+                - exp
+
+    # =========================================================================
+    # Global Plugins
+    # =========================================================================
+    plugins:
+      # -- Request correlation ------------------------------------------------
+      - name: correlation-id
+        config:
+          header_name: X-Request-ID
+          generator: uuid#counter
+          echo_downstream: true
+
+      # -- CORS ---------------------------------------------------------------
+      - name: cors
+        config:
+          origins:
+            - "https://app.greenlang.io"
+            - "https://admin.greenlang.io"
+          methods:
+            - GET
+            - POST
+            - PUT
+            - PATCH
+            - DELETE
+            - OPTIONS
+          headers:
+            - Accept
+            - Authorization
+            - Content-Type
+            - X-Request-ID
+            - X-Tenant-ID
+          exposed_headers:
+            - X-Request-ID
+          credentials: true
+          max_age: 3600
+
+      # -- Response transformer (security headers) ----------------------------
+      - name: response-transformer
+        config:
+          add:
+            headers:
+              - "X-Content-Type-Options: nosniff"
+              - "X-Frame-Options: DENY"
+              - "X-XSS-Protection: 1; mode=block"
+              - "Strict-Transport-Security: max-age=31536000; includeSubDomains; preload"
+              - "Referrer-Policy: strict-origin-when-cross-origin"
+          remove:
+            headers:
+              - Server
+              - X-Kong-Upstream-Latency
+              - X-Kong-Proxy-Latency
+
+      # -- Prometheus metrics --------------------------------------------------
+      - name: prometheus
+        config:
+          per_consumer: true
+          status_code_metrics: true
+          latency_metrics: true
+          bandwidth_metrics: true
+          upstream_health_metrics: true
+
+      # -- Request size limiting -----------------------------------------------
+      - name: request-size-limiting
+        config:
+          allowed_payload_size: 10
+          size_unit: megabytes
+          require_content_length: false
+
+      # -- Bot detection -------------------------------------------------------
+      - name: bot-detection
+        config:
+          deny: []
+          allow: []
+
+      # -- IP restriction (placeholder - configure per-environment) -----------
+      # - name: ip-restriction
+      #   config:
+      #     allow: []
+
+    # =========================================================================
+    # Consumers (service accounts)
+    # =========================================================================
+    consumers:
+      - username: greenlang-internal
+        custom_id: internal-service
+        jwt_secrets:
+          - key: greenlang-internal-key
+            algorithm: RS256
+
+---
+# ---------------------------------------------------------------------------
+# Custom plugins ConfigMap (placeholder for gl-tenant-isolation)
+# ---------------------------------------------------------------------------
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "kong-gateway.fullname" . }}-custom-plugins
+  namespace: {{ include "kong-gateway.namespace" . }}
+  labels:
+    {{- include "kong-gateway.labels" . | nindent 4 }}
+  annotations:
+    {{- include "kong-gateway.annotations" . | nindent 4 }}
+data:
+  handler.lua: |
+    -- =======================================================================
+    -- gl-tenant-isolation plugin
+    -- Ensures requests include a valid X-Tenant-ID header and injects it
+    -- into the upstream request for multi-tenant isolation.
+    -- =======================================================================
+    local plugin = {
+      PRIORITY = 900,
+      VERSION  = "1.0.0",
+    }
+
+    function plugin:access(conf)
+      local tenant_id = kong.request.get_header("X-Tenant-ID")
+
+      if not tenant_id or tenant_id == "" then
+        return kong.response.exit(403, {
+          message = "Missing required X-Tenant-ID header",
+        })
+      end
+
+      -- Validate tenant ID format (UUID v4)
+      local pattern = "^%x%x%x%x%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%x%x%x%x%x%x%x%x$"
+      if not string.match(tenant_id, pattern) then
+        return kong.response.exit(400, {
+          message = "Invalid X-Tenant-ID format; expected UUID v4",
+        })
+      end
+
+      -- Set upstream headers
+      kong.service.request.set_header("X-Tenant-ID", tenant_id)
+      kong.ctx.shared.tenant_id = tenant_id
+    end
+
+    function plugin:header_filter(conf)
+      local tenant_id = kong.ctx.shared.tenant_id
+      if tenant_id then
+        kong.response.set_header("X-Tenant-ID", tenant_id)
+      end
+    end
+
+    return plugin
+
+  schema.lua: |
+    -- =======================================================================
+    -- gl-tenant-isolation plugin schema
+    -- =======================================================================
+    local typedefs = require "kong.db.schema.typedefs"
+
+    return {
+      name = "gl-tenant-isolation",
+      fields = {
+        { protocols = typedefs.protocols_http },
+        { consumer = typedefs.no_consumer },
+        {
+          config = {
+            type = "record",
+            fields = {
+              {
+                allow_missing = {
+                  type    = "boolean",
+                  default = false,
+                },
+              },
+              {
+                allowed_tenants = {
+                  type     = "array",
+                  elements = { type = "string" },
+                  default  = {},
+                },
+              },
+            },
+          },
+        },
+      },
+    }

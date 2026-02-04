@@ -1,0 +1,238 @@
+{
+  "dashboard": {
+    "id": null,
+    "uid": "pgvector-performance",
+    "title": "pgvector Performance - GreenLang INFRA-005",
+    "description": "Vector database performance monitoring for pgvector on Aurora PostgreSQL",
+    "tags": ["pgvector", "vector-db", "greenlang", "infra-005"],
+    "timezone": "browser",
+    "refresh": "30s",
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "templating": {
+      "list": [
+        {
+          "name": "namespace",
+          "type": "query",
+          "query": "label_values(pgvector_embeddings_total, namespace)",
+          "multi": true,
+          "includeAll": true,
+          "current": { "text": "All", "value": "$__all" }
+        }
+      ]
+    },
+    "panels": [
+      {
+        "id": 1,
+        "title": "Vector Search Latency (P50 / P99)",
+        "type": "timeseries",
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "ms",
+            "thresholds": {
+              "steps": [
+                { "color": "green", "value": null },
+                { "color": "yellow", "value": 50 },
+                { "color": "red", "value": 100 }
+              ]
+            }
+          }
+        },
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.99, sum(rate(pgvector_search_latency_ms_bucket{namespace=~\"$namespace\"}[5m])) by (le))",
+            "legendFormat": "P99"
+          },
+          {
+            "expr": "histogram_quantile(0.50, sum(rate(pgvector_search_latency_ms_bucket{namespace=~\"$namespace\"}[5m])) by (le))",
+            "legendFormat": "P50"
+          },
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(pgvector_search_latency_ms_bucket{namespace=~\"$namespace\"}[5m])) by (le))",
+            "legendFormat": "P95"
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "title": "Search Throughput (QPS)",
+        "type": "timeseries",
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+        "fieldConfig": {
+          "defaults": { "unit": "reqps" }
+        },
+        "targets": [
+          {
+            "expr": "sum(rate(pgvector_search_total{namespace=~\"$namespace\"}[5m])) by (search_type)",
+            "legendFormat": "{{ search_type }}"
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "title": "Embeddings Count by Namespace",
+        "type": "stat",
+        "gridPos": { "h": 6, "w": 8, "x": 0, "y": 8 },
+        "fieldConfig": {
+          "defaults": { "unit": "short" }
+        },
+        "targets": [
+          {
+            "expr": "sum(pgvector_embeddings_total{namespace=~\"$namespace\"}) by (namespace)",
+            "legendFormat": "{{ namespace }}"
+          }
+        ]
+      },
+      {
+        "id": 4,
+        "title": "Total Embeddings",
+        "type": "stat",
+        "gridPos": { "h": 6, "w": 4, "x": 8, "y": 8 },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "color": { "mode": "thresholds" },
+            "thresholds": {
+              "steps": [
+                { "color": "blue", "value": null }
+              ]
+            }
+          }
+        },
+        "targets": [
+          {
+            "expr": "sum(pgvector_embeddings_total)",
+            "legendFormat": "Total"
+          }
+        ]
+      },
+      {
+        "id": 5,
+        "title": "Index Memory Usage",
+        "type": "gauge",
+        "gridPos": { "h": 6, "w": 6, "x": 12, "y": 8 },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "bytes",
+            "min": 0,
+            "thresholds": {
+              "steps": [
+                { "color": "green", "value": null },
+                { "color": "yellow", "value": 0.7 },
+                { "color": "red", "value": 0.9 }
+              ]
+            }
+          }
+        },
+        "targets": [
+          {
+            "expr": "sum(pgvector_index_size_bytes)",
+            "legendFormat": "Index Size"
+          }
+        ]
+      },
+      {
+        "id": 6,
+        "title": "Index Sizes by Name",
+        "type": "bargauge",
+        "gridPos": { "h": 6, "w": 6, "x": 18, "y": 8 },
+        "fieldConfig": {
+          "defaults": { "unit": "bytes" }
+        },
+        "targets": [
+          {
+            "expr": "pgvector_index_size_bytes",
+            "legendFormat": "{{ index_name }}"
+          }
+        ]
+      },
+      {
+        "id": 7,
+        "title": "Insert Rate",
+        "type": "timeseries",
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 14 },
+        "fieldConfig": {
+          "defaults": { "unit": "short" }
+        },
+        "targets": [
+          {
+            "expr": "sum(rate(pgvector_insert_total{status=\"success\", namespace=~\"$namespace\"}[5m])) by (namespace)",
+            "legendFormat": "{{ namespace }} (success)"
+          },
+          {
+            "expr": "sum(rate(pgvector_insert_total{status=\"failed\", namespace=~\"$namespace\"}[5m])) by (namespace)",
+            "legendFormat": "{{ namespace }} (failed)"
+          }
+        ]
+      },
+      {
+        "id": 8,
+        "title": "Insert Latency",
+        "type": "timeseries",
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 14 },
+        "fieldConfig": {
+          "defaults": { "unit": "ms" }
+        },
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.99, sum(rate(pgvector_insert_latency_ms_bucket{namespace=~\"$namespace\"}[5m])) by (le))",
+            "legendFormat": "P99"
+          },
+          {
+            "expr": "histogram_quantile(0.50, sum(rate(pgvector_insert_latency_ms_bucket{namespace=~\"$namespace\"}[5m])) by (le))",
+            "legendFormat": "P50"
+          }
+        ]
+      },
+      {
+        "id": 9,
+        "title": "Connection Pool Utilization",
+        "type": "timeseries",
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 22 },
+        "fieldConfig": {
+          "defaults": { "unit": "short" }
+        },
+        "targets": [
+          {
+            "expr": "pgvector_pool_size",
+            "legendFormat": "{{ pool_type }} total"
+          },
+          {
+            "expr": "pgvector_pool_available",
+            "legendFormat": "{{ pool_type }} available"
+          }
+        ]
+      },
+      {
+        "id": 10,
+        "title": "Embedding Jobs",
+        "type": "timeseries",
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 22 },
+        "fieldConfig": {
+          "defaults": { "unit": "short" }
+        },
+        "targets": [
+          {
+            "expr": "sum(rate(pgvector_jobs_total[5m])) by (status)",
+            "legendFormat": "{{ status }}"
+          }
+        ]
+      },
+      {
+        "id": 11,
+        "title": "Search Latency by Type",
+        "type": "heatmap",
+        "gridPos": { "h": 8, "w": 24, "x": 0, "y": 30 },
+        "targets": [
+          {
+            "expr": "sum(rate(pgvector_search_latency_ms_bucket{namespace=~\"$namespace\"}[5m])) by (le, search_type)",
+            "legendFormat": "{{ search_type }} {{ le }}"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,654 @@
+# =============================================================================
+# GreenLang Climate OS - Kong Gateway Declarative Configuration
+# =============================================================================
+# PRD: INFRA-006 API Gateway (Kong)
+# Mode: DB-less (declarative YAML)
+# Version: Kong 3.6.x
+#
+# This configuration defines the complete API gateway routing, authentication,
+# rate limiting, security hardening, and observability for the GreenLang
+# Climate OS platform. All services route through Kong before reaching
+# backend Kubernetes services.
+#
+# Environment variables referenced (injected via Kong env or ConfigMap):
+#   REDIS_HOST - Redis host for distributed rate limiting counters
+#
+# Usage:
+#   kong start --declarative-config /etc/kong/kong.yaml
+#   or mount as ConfigMap in Kubernetes and set KONG_DECLARATIVE_CONFIG
+# =============================================================================
+_format_version: "3.0"
+_transform: true
+
+# =============================================================================
+# Services - Backend upstream services
+# =============================================================================
+# Each service maps to a Kubernetes ClusterIP service in the greenlang
+# namespace. Routes define path-based routing with per-route plugin overrides.
+# =============================================================================
+services:
+
+  # ---------------------------------------------------------------------------
+  # Primary API Service
+  # ---------------------------------------------------------------------------
+  # Handles all REST API endpoints: factors, calculations, agents, stats,
+  # webhooks, health, and documentation.
+  # ---------------------------------------------------------------------------
+  - name: greenlang-api
+    url: http://greenlang-api.greenlang.svc.cluster.local:8080
+    connect_timeout: 10000
+    write_timeout: 60000
+    read_timeout: 60000
+    retries: 3
+    routes:
+
+      # -----------------------------------------------------------------------
+      # Emission Factors Lookup
+      # -----------------------------------------------------------------------
+      # GET /api/v1/factors - Read-only access to emission factor database.
+      # High-traffic endpoint; generous rate limit of 1000 req/min.
+      # -----------------------------------------------------------------------
+      - name: api-factors
+        paths:
+          - "/api/v1/factors"
+        methods:
+          - "GET"
+        strip_path: false
+        preserve_host: true
+        plugins:
+          - name: rate-limiting
+            config:
+              minute: 1000
+              policy: redis
+              redis_host: ${REDIS_HOST}
+              redis_port: 6379
+              redis_database: 3
+              redis_timeout: 2000
+              fault_tolerant: true
+              hide_client_headers: false
+              error_code: 429
+              error_message: "Rate limit exceeded. Please retry after the reset window."
+          - name: jwt
+            config:
+              uri_param_names:
+                - "jwt"
+              header_names:
+                - "Authorization"
+              claims_to_verify:
+                - "exp"
+              run_on_preflight: true
+          - name: acl
+            config:
+              allow:
+                - "admin"
+                - "standard"
+                - "readonly"
+                - "agent-executor"
+              hide_groups_header: false
+
+      # -----------------------------------------------------------------------
+      # Single Calculation Endpoint
+      # -----------------------------------------------------------------------
+      # POST /api/v1/calculate - Synchronous emission calculation.
+      # Moderate rate limit; 10 MB payload cap for single-building requests.
+      # -----------------------------------------------------------------------
+      - name: api-calculate
+        paths:
+          - "/api/v1/calculate"
+        methods:
+          - "POST"
+        strip_path: false
+        preserve_host: true
+        plugins:
+          - name: rate-limiting
+            config:
+              minute: 500
+              policy: redis
+              redis_host: ${REDIS_HOST}
+              redis_port: 6379
+              redis_database: 3
+              fault_tolerant: true
+          - name: jwt
+          - name: acl
+            config:
+              allow:
+                - "admin"
+                - "standard"
+                - "agent-executor"
+              hide_groups_header: false
+          - name: request-size-limiting
+            config:
+              allowed_payload_size: 10
+              size_unit: megabytes
+
+      # -----------------------------------------------------------------------
+      # Batch Calculation Endpoint
+      # -----------------------------------------------------------------------
+      # POST /api/v1/calculate/batch - Asynchronous batch emission calculation.
+      # Strict rate limit (100/min) due to compute cost; 50 MB payload cap
+      # supports multi-building portfolio submissions.
+      # -----------------------------------------------------------------------
+      - name: api-calculate-batch
+        paths:
+          - "/api/v1/calculate/batch"
+        methods:
+          - "POST"
+        strip_path: false
+        preserve_host: true
+        plugins:
+          - name: rate-limiting
+            config:
+              minute: 100
+              policy: redis
+              redis_host: ${REDIS_HOST}
+              redis_port: 6379
+              redis_database: 3
+              fault_tolerant: true
+          - name: jwt
+          - name: acl
+            config:
+              allow:
+                - "admin"
+                - "standard"
+                - "agent-executor"
+              hide_groups_header: false
+          - name: request-size-limiting
+            config:
+              allowed_payload_size: 50
+              size_unit: megabytes
+
+      # -----------------------------------------------------------------------
+      # Agent Management Endpoints
+      # -----------------------------------------------------------------------
+      # /api/v1/agents - CRUD operations for AI agent configurations.
+      # All HTTP methods allowed; JWT required.
+      # -----------------------------------------------------------------------
+      - name: api-agents
+        paths:
+          - "/api/v1/agents"
+        strip_path: false
+        preserve_host: true
+        plugins:
+          - name: rate-limiting
+            config:
+              minute: 500
+              policy: redis
+              redis_host: ${REDIS_HOST}
+              redis_port: 6379
+              redis_database: 3
+              fault_tolerant: true
+          - name: jwt
+          - name: acl
+            config:
+              allow:
+                - "admin"
+                - "agent-executor"
+              hide_groups_header: false
+
+      # -----------------------------------------------------------------------
+      # Statistics / Analytics Endpoint
+      # -----------------------------------------------------------------------
+      # GET /api/v1/stats - Read-only aggregate analytics.
+      # Lower rate limit due to expensive aggregation queries.
+      # -----------------------------------------------------------------------
+      - name: api-stats
+        paths:
+          - "/api/v1/stats"
+        methods:
+          - "GET"
+        strip_path: false
+        preserve_host: true
+        plugins:
+          - name: rate-limiting
+            config:
+              minute: 100
+              policy: redis
+              redis_host: ${REDIS_HOST}
+              redis_port: 6379
+              redis_database: 3
+              fault_tolerant: true
+          - name: jwt
+          - name: acl
+            config:
+              allow:
+                - "admin"
+                - "standard"
+                - "readonly"
+                - "agent-executor"
+              hide_groups_header: false
+
+      # -----------------------------------------------------------------------
+      # Webhook Management Endpoints
+      # -----------------------------------------------------------------------
+      # /api/v1/webhooks - Register, update, delete webhook subscriptions.
+      # Moderate rate limit; JWT required.
+      # -----------------------------------------------------------------------
+      - name: api-webhooks
+        paths:
+          - "/api/v1/webhooks"
+        strip_path: false
+        preserve_host: true
+        plugins:
+          - name: rate-limiting
+            config:
+              minute: 200
+              policy: redis
+              redis_host: ${REDIS_HOST}
+              redis_port: 6379
+              redis_database: 3
+              fault_tolerant: true
+          - name: jwt
+          - name: acl
+            config:
+              allow:
+                - "admin"
+                - "standard"
+                - "agent-executor"
+              hide_groups_header: false
+
+      # -----------------------------------------------------------------------
+      # Health Check Endpoint
+      # -----------------------------------------------------------------------
+      # GET /api/v1/health - Liveness/readiness probe target.
+      # No authentication or rate limiting. Must remain open for Kubernetes
+      # probes and external uptime monitoring.
+      # -----------------------------------------------------------------------
+      - name: api-health
+        paths:
+          - "/api/v1/health"
+        methods:
+          - "GET"
+        strip_path: false
+        preserve_host: true
+        # No auth, no rate limiting for health checks
+
+      # -----------------------------------------------------------------------
+      # API Documentation Endpoints
+      # -----------------------------------------------------------------------
+      # GET /api/docs, /api/redoc, /api/openapi.json
+      # Public documentation; local rate limiting only (no Redis dependency).
+      # -----------------------------------------------------------------------
+      - name: api-docs
+        paths:
+          - "/api/docs"
+          - "/api/redoc"
+          - "/api/openapi.json"
+        methods:
+          - "GET"
+        strip_path: false
+        preserve_host: true
+        plugins:
+          - name: rate-limiting
+            config:
+              minute: 100
+              policy: local
+              fault_tolerant: true
+
+  # ---------------------------------------------------------------------------
+  # Web Application Frontend
+  # ---------------------------------------------------------------------------
+  # Serves the GreenLang SPA dashboard. Local rate limiting since frontend
+  # assets are cacheable and CDN-backed in production.
+  # ---------------------------------------------------------------------------
+  - name: greenlang-web
+    url: http://greenlang-web.greenlang.svc.cluster.local:3000
+    connect_timeout: 5000
+    write_timeout: 30000
+    read_timeout: 30000
+    retries: 2
+    routes:
+      - name: web-app
+        paths:
+          - "/app"
+        strip_path: false
+        preserve_host: true
+        plugins:
+          - name: rate-limiting
+            config:
+              minute: 1000
+              policy: local
+              fault_tolerant: true
+
+  # ---------------------------------------------------------------------------
+  # Admin Portal
+  # ---------------------------------------------------------------------------
+  # Internal administration interface. Restricted to admin ACL group and
+  # internal network CIDRs only (10.0.0.0/8, 172.16.0.0/12).
+  # ---------------------------------------------------------------------------
+  - name: greenlang-admin
+    url: http://greenlang-admin.greenlang.svc.cluster.local:8080
+    connect_timeout: 5000
+    write_timeout: 30000
+    read_timeout: 30000
+    retries: 2
+    routes:
+      - name: admin-portal
+        paths:
+          - "/admin"
+        strip_path: false
+        preserve_host: true
+        plugins:
+          - name: rate-limiting
+            config:
+              minute: 200
+              policy: redis
+              redis_host: ${REDIS_HOST}
+              redis_port: 6379
+              redis_database: 3
+              fault_tolerant: true
+          - name: jwt
+          - name: acl
+            config:
+              allow:
+                - "admin"
+              hide_groups_header: false
+          - name: ip-restriction
+            config:
+              allow:
+                - "10.0.0.0/8"
+                - "172.16.0.0/12"
+
+  # ---------------------------------------------------------------------------
+  # gRPC Service
+  # ---------------------------------------------------------------------------
+  # High-performance gRPC interface for inter-service communication and
+  # streaming calculation pipelines.
+  # ---------------------------------------------------------------------------
+  - name: greenlang-grpc
+    url: grpc://greenlang-grpc.greenlang.svc.cluster.local:50051
+    protocol: grpc
+    routes:
+      - name: grpc-services
+        paths:
+          - "/grpc.+"
+        regex_priority: 100
+        protocols:
+          - "grpc"
+          - "grpcs"
+        strip_path: true
+        plugins:
+          - name: rate-limiting
+            config:
+              minute: 500
+              policy: redis
+              redis_host: ${REDIS_HOST}
+              redis_port: 6379
+              redis_database: 3
+              fault_tolerant: true
+          - name: jwt
+          - name: acl
+            config:
+              allow:
+                - "admin"
+                - "standard"
+                - "agent-executor"
+              hide_groups_header: false
+
+  # ---------------------------------------------------------------------------
+  # WebSocket Service
+  # ---------------------------------------------------------------------------
+  # Real-time event streaming for dashboard updates and long-running
+  # calculation progress notifications. Strict rate limit (50/min) to
+  # prevent connection exhaustion.
+  # ---------------------------------------------------------------------------
+  - name: greenlang-websocket
+    url: http://greenlang-websocket.greenlang.svc.cluster.local:8081
+    routes:
+      - name: websocket
+        paths:
+          - "/ws"
+        protocols:
+          - "http"
+          - "https"
+        strip_path: false
+        preserve_host: true
+        plugins:
+          - name: rate-limiting
+            config:
+              minute: 50
+              policy: redis
+              redis_host: ${REDIS_HOST}
+              redis_port: 6379
+              redis_database: 3
+              fault_tolerant: true
+          - name: jwt
+          - name: acl
+            config:
+              allow:
+                - "admin"
+                - "standard"
+                - "agent-executor"
+              hide_groups_header: false
+
+# =============================================================================
+# Upstreams - Load balancing and health checking
+# =============================================================================
+# Defines upstream load balancing algorithms and active/passive health checks
+# for the primary API service. Kong uses these to route traffic only to
+# healthy backend instances and automatically circuit-break on failures.
+# =============================================================================
+upstreams:
+  - name: greenlang-api.greenlang.svc.cluster.local
+    algorithm: least-connections
+    hash_on: none
+    slots: 10000
+    healthchecks:
+      active:
+        type: http
+        http_path: /api/v1/health
+        healthy:
+          interval: 10
+          successes: 3
+          http_statuses:
+            - 200
+        unhealthy:
+          interval: 5
+          http_failures: 3
+          tcp_failures: 3
+          timeouts: 3
+          http_statuses:
+            - 429
+            - 500
+            - 502
+            - 503
+      passive:
+        type: http
+        healthy:
+          successes: 5
+          http_statuses:
+            - 200
+            - 201
+            - 204
+            - 301
+            - 302
+        unhealthy:
+          http_failures: 5
+          tcp_failures: 3
+          timeouts: 3
+          http_statuses:
+            - 500
+            - 502
+            - 503
+    targets:
+      - target: greenlang-api.greenlang.svc.cluster.local:8080
+        weight: 100
+
+# =============================================================================
+# Global Plugins
+# =============================================================================
+# These plugins apply to ALL routes and services unless overridden at the
+# service or route level. They enforce cross-cutting concerns: CORS, request
+# tracing, security headers, bot protection, metrics, and centralized logging.
+# =============================================================================
+plugins:
+
+  # ---------------------------------------------------------------------------
+  # CORS - Cross-Origin Resource Sharing
+  # ---------------------------------------------------------------------------
+  # Allows the GreenLang SPA, admin portal, and API consumers to make
+  # cross-origin requests. Credentials mode is enabled for cookie-based
+  # session handling on the web frontend.
+  # ---------------------------------------------------------------------------
+  - name: cors
+    config:
+      origins:
+        - "https://app.greenlang.io"
+        - "https://admin.greenlang.io"
+        - "https://api.greenlang.io"
+      methods:
+        - GET
+        - POST
+        - PUT
+        - PATCH
+        - DELETE
+        - OPTIONS
+      headers:
+        - Authorization
+        - Content-Type
+        - X-Request-ID
+        - X-API-Version
+        - Accept
+      exposed_headers:
+        - X-Request-ID
+        - X-Response-Time
+        - X-RateLimit-Limit
+        - X-RateLimit-Remaining
+        - X-RateLimit-Reset
+      max_age: 3600
+      credentials: true
+      preflight_continue: false
+
+  # ---------------------------------------------------------------------------
+  # Request Transformer - Inbound header manipulation
+  # ---------------------------------------------------------------------------
+  # Injects trace/correlation headers and strips information-leaking headers
+  # before the request reaches upstream services.
+  # ---------------------------------------------------------------------------
+  - name: request-transformer
+    config:
+      add:
+        headers:
+          - "X-Request-ID:$(uuid)"
+          - "X-Gateway:kong"
+          - "X-Gateway-Version:3.6"
+      remove:
+        headers:
+          - "X-Powered-By"
+
+  # ---------------------------------------------------------------------------
+  # Response Transformer - Outbound security headers
+  # ---------------------------------------------------------------------------
+  # Adds HTTP security headers (HSTS, CSP directives, XSS protection) and
+  # strips server-identifying headers to reduce attack surface.
+  # ---------------------------------------------------------------------------
+  - name: response-transformer
+    config:
+      add:
+        headers:
+          - "Strict-Transport-Security:max-age=31536000; includeSubDomains; preload"
+          - "X-Content-Type-Options:nosniff"
+          - "X-Frame-Options:SAMEORIGIN"
+          - "X-XSS-Protection:1; mode=block"
+          - "Referrer-Policy:strict-origin-when-cross-origin"
+      remove:
+        headers:
+          - "Server"
+          - "X-Powered-By"
+
+  # ---------------------------------------------------------------------------
+  # Bot Detection
+  # ---------------------------------------------------------------------------
+  # Blocks known scraper and SEO bot user agents. The allow list is empty
+  # (all legitimate bots pass through); deny list targets aggressive crawlers.
+  # ---------------------------------------------------------------------------
+  - name: bot-detection
+    config:
+      allow: []
+      deny:
+        - "Scrapy"
+        - "SemrushBot"
+        - "AhrefsBot"
+        - "MJ12bot"
+
+  # ---------------------------------------------------------------------------
+  # Prometheus Metrics
+  # ---------------------------------------------------------------------------
+  # Exposes Kong metrics on the /metrics endpoint for Prometheus scraping.
+  # Per-consumer metrics enable tenant-level observability. All metric
+  # dimensions are enabled for comprehensive dashboard support.
+  # ---------------------------------------------------------------------------
+  - name: prometheus
+    config:
+      per_consumer: true
+      status_code_metrics: true
+      latency_metrics: true
+      bandwidth_metrics: true
+      upstream_health_metrics: true
+
+  # ---------------------------------------------------------------------------
+  # HTTP Log - Centralized log shipping
+  # ---------------------------------------------------------------------------
+  # Ships structured request/response logs to FluentBit for aggregation into
+  # the ELK/Loki logging stack. Custom Lua fields extract tenant context and
+  # request path for log enrichment.
+  # ---------------------------------------------------------------------------
+  - name: http-log
+    config:
+      http_endpoint: http://fluentbit.monitoring.svc.cluster.local:9880/kong.logs
+      method: POST
+      content_type: application/json
+      timeout: 5000
+      keepalive: 60000
+      retry_count: 3
+      flush_timeout: 2
+      custom_fields_by_lua:
+        tenant_id: "return kong.request.get_header('X-Tenant-ID') or 'unknown'"
+        request_path: "return kong.request.get_path()"
+
+# =============================================================================
+# Consumers - API consumers with credentials
+# =============================================================================
+# Consumers represent authenticated API clients. Each consumer has a JWT
+# secret for token validation and ACL group membership for authorization.
+#
+# JWT secrets reference key IDs only; the actual shared secrets MUST be
+# provisioned via Kubernetes Secrets or Vault and injected at runtime.
+#
+# ACL groups:
+#   admin           - Full platform access including admin portal
+#   agent-executor  - Agent management and execution privileges
+#   standard        - Standard API access (calculate, factors, webhooks)
+#   readonly        - Read-only access (factors, stats)
+# =============================================================================
+consumers:
+  - username: greenlang-internal
+    custom_id: internal-services
+    jwt_secrets:
+      - key: greenlang-internal-key
+        algorithm: HS256
+    acls:
+      - group: admin
+
+  - username: greenlang-agent-executor
+    custom_id: agent-executor
+    jwt_secrets:
+      - key: greenlang-agent-key
+        algorithm: HS256
+    acls:
+      - group: agent-executor
+
+  - username: greenlang-standard
+    custom_id: standard-api
+    jwt_secrets:
+      - key: greenlang-standard-key
+        algorithm: HS256
+    acls:
+      - group: standard
+
+  - username: greenlang-readonly
+    custom_id: readonly-api
+    jwt_secrets:
+      - key: greenlang-readonly-key
+        algorithm: HS256
+    acls:
+      - group: readonly

@@ -1,0 +1,22 @@
+{{/*
+=============================================================================
+Kong API Gateway - Pod Disruption Budget
+GreenLang Climate OS | infra-006
+=============================================================================
+*/}}
+{{- if .Values.kong.podDisruptionBudget.enabled }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "kong-gateway.fullname" . }}
+  namespace: {{ include "kong-gateway.namespace" . }}
+  labels:
+    {{- include "kong-gateway.labels" . | nindent 4 }}
+  annotations:
+    {{- include "kong-gateway.annotations" . | nindent 4 }}
+spec:
+  minAvailable: {{ .Values.kong.podDisruptionBudget.minAvailable }}
+  selector:
+    matchLabels:
+      {{- include "kong-gateway.selectorLabels" . | nindent 6 }}
+{{- end }}

@@ -122,6 +122,44 @@ output "replication_role_arn" {
   value       = var.create_data_bucket && var.enable_replication ? aws_iam_role.replication[0].arn : null
 }
 
+# Reports Bucket
+output "reports_bucket_id" {
+  description = "ID of the reports bucket"
+  value       = var.create_reports_bucket ? aws_s3_bucket.reports[0].id : null
+}
+
+output "reports_bucket_arn" {
+  description = "ARN of the reports bucket"
+  value       = var.create_reports_bucket ? aws_s3_bucket.reports[0].arn : null
+}
+
+output "reports_bucket_domain_name" {
+  description = "Domain name of the reports bucket"
+  value       = var.create_reports_bucket ? aws_s3_bucket.reports[0].bucket_domain_name : null
+}
+
+# Data Lake Raw Bucket
+output "data_lake_raw_bucket_id" {
+  description = "ID of the data lake raw bucket"
+  value       = var.create_data_lake_buckets ? aws_s3_bucket.data_lake_raw[0].id : null
+}
+
+output "data_lake_raw_bucket_arn" {
+  description = "ARN of the data lake raw bucket"
+  value       = var.create_data_lake_buckets ? aws_s3_bucket.data_lake_raw[0].arn : null
+}
+
+# Data Lake Processed Bucket
+output "data_lake_processed_bucket_id" {
+  description = "ID of the data lake processed bucket"
+  value       = var.create_data_lake_buckets ? aws_s3_bucket.data_lake_processed[0].id : null
+}
+
+output "data_lake_processed_bucket_arn" {
+  description = "ARN of the data lake processed bucket"
+  value       = var.create_data_lake_buckets ? aws_s3_bucket.data_lake_processed[0].arn : null
+}
+
 # All Bucket ARNs (for IAM policies)
 output "all_bucket_arns" {
   description = "List of all bucket ARNs"
@@ -130,7 +168,10 @@ output "all_bucket_arns" {
     var.create_logs_bucket ? aws_s3_bucket.logs[0].arn : null,
     var.create_backups_bucket ? aws_s3_bucket.backups[0].arn : null,
     var.create_data_bucket ? aws_s3_bucket.data[0].arn : null,
-    var.create_static_assets_bucket ? aws_s3_bucket.static_assets[0].arn : null
+    var.create_static_assets_bucket ? aws_s3_bucket.static_assets[0].arn : null,
+    var.create_reports_bucket ? aws_s3_bucket.reports[0].arn : null,
+    var.create_data_lake_buckets ? aws_s3_bucket.data_lake_raw[0].arn : null,
+    var.create_data_lake_buckets ? aws_s3_bucket.data_lake_processed[0].arn : null
   ])
 }
 
@@ -138,10 +179,13 @@ output "all_bucket_arns" {
 output "all_bucket_ids" {
   description = "Map of bucket purpose to bucket ID"
   value = {
-    artifacts     = var.create_artifacts_bucket ? aws_s3_bucket.artifacts[0].id : null
-    logs          = var.create_logs_bucket ? aws_s3_bucket.logs[0].id : null
-    backups       = var.create_backups_bucket ? aws_s3_bucket.backups[0].id : null
-    data          = var.create_data_bucket ? aws_s3_bucket.data[0].id : null
-    static_assets = var.create_static_assets_bucket ? aws_s3_bucket.static_assets[0].id : null
+    artifacts            = var.create_artifacts_bucket ? aws_s3_bucket.artifacts[0].id : null
+    logs                 = var.create_logs_bucket ? aws_s3_bucket.logs[0].id : null
+    backups              = var.create_backups_bucket ? aws_s3_bucket.backups[0].id : null
+    data                 = var.create_data_bucket ? aws_s3_bucket.data[0].id : null
+    static_assets        = var.create_static_assets_bucket ? aws_s3_bucket.static_assets[0].id : null
+    reports              = var.create_reports_bucket ? aws_s3_bucket.reports[0].id : null
+    data_lake_raw        = var.create_data_lake_buckets ? aws_s3_bucket.data_lake_raw[0].id : null
+    data_lake_processed  = var.create_data_lake_buckets ? aws_s3_bucket.data_lake_processed[0].id : null
   }
 }

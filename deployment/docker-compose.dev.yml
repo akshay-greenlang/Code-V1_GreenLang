@@ -1,9 +1,9 @@
 version: '3.8'
 
 services:
-  # PostgreSQL Database
+  # PostgreSQL Database with pgvector (INFRA-005)
   postgres:
-    image: postgres:14-alpine
+    image: pgvector/pgvector:pg15
     container_name: greenlang-postgres
     restart: unless-stopped
     environment:
@@ -16,11 +16,19 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./core/greenlang/registry/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./deployment/database/migrations/sql/V006__pgvector_setup.sql:/docker-entrypoint-initdb.d/02-pgvector.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U greenlang"]
       interval: 10s
       timeout: 5s
       retries: 5
+    command: >
+      postgres
+        -c shared_preload_libraries=vector
+        -c work_mem=256MB
+        -c maintenance_work_mem=512MB
+        -c max_parallel_workers_per_gather=4
+        -c random_page_cost=1.1
     networks:
       - greenlang-network
 

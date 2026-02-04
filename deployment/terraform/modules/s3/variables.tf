@@ -200,6 +200,26 @@ variable "enable_access_logging" {
   default     = true
 }
 
+# Reports Bucket Configuration
+variable "create_reports_bucket" {
+  description = "Create reports bucket for CSRD/CBAM/EUDR compliance reports"
+  type        = bool
+  default     = true
+}
+
+variable "reports_retention_days" {
+  description = "Days to retain reports before deletion (7 years for compliance)"
+  type        = number
+  default     = 2555 # ~7 years
+}
+
+# Data Lake Bucket Configuration
+variable "create_data_lake_buckets" {
+  description = "Create data lake raw and processed buckets"
+  type        = bool
+  default     = true
+}
+
 # Tags
 variable "tags" {
   description = "Tags to apply to resources"

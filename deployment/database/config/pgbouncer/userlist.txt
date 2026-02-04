@@ -1,0 +1,12 @@
+; =============================================================================
+; PgBouncer User List - Template
+; =============================================================================
+; Format: "username" "password_hash"
+; Generate MD5 hash: echo -n "password${username}" | md5sum
+; Replace with actual credentials via secrets management
+; =============================================================================
+
+"greenlang_app" "${PGBOUNCER_APP_PASSWORD_HASH}"
+"greenlang_admin" "${PGBOUNCER_ADMIN_PASSWORD_HASH}"
+"pgbouncer_admin" "${PGBOUNCER_MGMT_PASSWORD_HASH}"
+"pgbouncer_stats" "${PGBOUNCER_STATS_PASSWORD_HASH}"

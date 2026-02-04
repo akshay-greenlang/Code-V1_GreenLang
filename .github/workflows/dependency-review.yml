@@ -1,0 +1,81 @@
+# INFRA-007: GreenLang Dependency Review Pipeline
+#
+# Automated dependency review on pull requests:
+# - Scans new and updated dependencies for vulnerabilities
+# - Enforces license compliance (allow/deny lists)
+# - Posts summary comments on PRs
+# - Blocks merging if high-severity vulnerabilities are found
+#
+# Security Compliance: SOC 2 CC6.1, ISO 27001 A.14.2.1
+# Author: GreenLang DevOps Team
+# Version: 1.0.0
+
+name: Dependency Review
+
+on:
+  pull_request:
+    branches: [main, master, develop]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: dependency-review-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ==========================================================================
+  # JOB 1: Dependency review
+  # ==========================================================================
+  review:
+    name: Dependency Review
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Dependency Review
+        uses: actions/dependency-review-action@v4
+        with:
+          # Fail on high and critical severity vulnerabilities
+          fail-on-severity: high
+
+          # Allowed open-source licenses
+          allow-licenses: >-
+            MIT,
+            Apache-2.0,
+            BSD-2-Clause,
+            BSD-3-Clause,
+            ISC,
+            PSF-2.0,
+            Unlicense,
+            0BSD
+
+          # Denied copyleft licenses that conflict with project licensing
+          deny-licenses: >-
+            GPL-2.0-only,
+            GPL-3.0-only,
+            AGPL-3.0-only
+
+          # Always post a summary comment on the PR
+          comment-summary-in-pr: always
+
+          # Additional configuration
+          warn-only: false
+          retry-on-snapshot-warnings: true
+
+      - name: Review summary
+        if: always()
+        run: |
+          echo "## Dependency Review" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status:** ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Fail Threshold:** high severity" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Allowed Licenses" >> $GITHUB_STEP_SUMMARY
+          echo "MIT, Apache-2.0, BSD-2-Clause, BSD-3-Clause, ISC, PSF-2.0, Unlicense, 0BSD" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Denied Licenses" >> $GITHUB_STEP_SUMMARY
+          echo "GPL-2.0-only, GPL-3.0-only, AGPL-3.0-only" >> $GITHUB_STEP_SUMMARY

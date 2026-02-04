@@ -1,0 +1,315 @@
+# =============================================================================
+# GreenLang Climate OS - Kong API Gateway Prometheus Alert Rules
+# =============================================================================
+# PRD: INFRA-006 API Gateway (Kong)
+# Defines alerting rules for Kong proxy health, latency, rate limiting,
+# upstream availability, and certificate expiry.
+# =============================================================================
+
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: kong-alerts
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: kong
+    app.kubernetes.io/part-of: greenlang
+    prometheus: kube-prometheus
+    role: alert-rules
+    greenlang.io/component: infra-006
+spec:
+  groups:
+    # =========================================================================
+    # Group: Kong Proxy Health
+    # =========================================================================
+    - name: kong.proxy.health
+      interval: 30s
+      rules:
+        # ---------------------------------------------------------------------
+        # KongHighErrorRate
+        # Fires when more than 5% of all HTTP responses are 5xx for 5 minutes.
+        # Indicates upstream failures or Kong misconfiguration.
+        # ---------------------------------------------------------------------
+        - alert: KongHighErrorRate
+          expr: |
+            (
+              sum(rate(kong_http_requests_total{code=~"5.."}[5m]))
+              /
+              sum(rate(kong_http_requests_total[5m]))
+            ) * 100 > 5
+          for: 5m
+          labels:
+            severity: critical
+            team: platform
+            component: kong
+            prd: infra-006
+          annotations:
+            summary: "Kong API Gateway high 5xx error rate"
+            description: >-
+              Kong is returning 5xx errors at a rate of
+              {{ $value | printf "%.2f" }}% over the last 5 minutes.
+              This exceeds the 5% threshold and indicates upstream service
+              failures or gateway misconfiguration.
+            runbook_url: "https://runbooks.greenlang.io/kong/high-error-rate"
+            dashboard_url: "https://grafana.greenlang.io/d/kong-gateway"
+
+        # ---------------------------------------------------------------------
+        # KongProxyDown
+        # Fires when Kong reports zero active connections, meaning the proxy
+        # process is not accepting traffic at all.
+        # ---------------------------------------------------------------------
+        - alert: KongProxyDown
+          expr: |
+            kong_nginx_connections_total{state="active"} == 0
+          for: 1m
+          labels:
+            severity: critical
+            team: platform
+            component: kong
+            prd: infra-006
+          annotations:
+            summary: "Kong proxy is down -- zero active connections"
+            description: >-
+              Kong instance {{ $labels.instance }} reports zero active Nginx
+              connections. The proxy is not serving any traffic. Immediate
+              investigation is required.
+            runbook_url: "https://runbooks.greenlang.io/kong/proxy-down"
+            dashboard_url: "https://grafana.greenlang.io/d/kong-gateway"
+
+        # ---------------------------------------------------------------------
+        # KongConfigReloadFailure
+        # Fires when Kong fails to reload its configuration (e.g. after a
+        # KongPlugin or Ingress change). May leave the proxy in a stale state.
+        # ---------------------------------------------------------------------
+        - alert: KongConfigReloadFailure
+          expr: |
+            kong_db_reachable == 0
+            or
+            increase(kong_config_reload_failures_total[5m]) > 0
+          for: 5m
+          labels:
+            severity: critical
+            team: platform
+            component: kong
+            prd: infra-006
+          annotations:
+            summary: "Kong configuration reload failed"
+            description: >-
+              Kong instance {{ $labels.instance }} has failed to reload its
+              configuration in the last 5 minutes. This may be caused by
+              invalid plugin configuration, unreachable database, or CRD
+              validation errors. The proxy may be running with stale config.
+            runbook_url: "https://runbooks.greenlang.io/kong/config-reload-failure"
+            dashboard_url: "https://grafana.greenlang.io/d/kong-gateway"
+
+        # ---------------------------------------------------------------------
+        # KongHighConnectionCount
+        # Fires when active connections exceed 80% of the maximum configured
+        # connections. Warns that the proxy may soon reject new connections.
+        # ---------------------------------------------------------------------
+        - alert: KongHighConnectionCount
+          expr: |
+            (
+              kong_nginx_connections_total{state="active"}
+              /
+              kong_nginx_connections_total{state="accepted"}
+            ) * 100 > 80
+            or
+            kong_nginx_connections_total{state="active"} > 8000
+          for: 5m
+          labels:
+            severity: warning
+            team: platform
+            component: kong
+            prd: infra-006
+          annotations:
+            summary: "Kong connection count approaching capacity"
+            description: >-
+              Kong instance {{ $labels.instance }} has {{ $value }} active
+              connections, exceeding 80% of maximum capacity. Consider scaling
+              Kong replicas or investigating connection leaks.
+            runbook_url: "https://runbooks.greenlang.io/kong/high-connections"
+            dashboard_url: "https://grafana.greenlang.io/d/kong-gateway"
+
+    # =========================================================================
+    # Group: Kong Latency
+    # =========================================================================
+    - name: kong.latency
+      interval: 30s
+      rules:
+        # ---------------------------------------------------------------------
+        # KongHighLatency (Warning)
+        # Fires when P99 request latency exceeds 500ms for 5 minutes.
+        # Early warning for performance degradation.
+        # ---------------------------------------------------------------------
+        - alert: KongHighLatency
+          expr: |
+            histogram_quantile(0.99,
+              sum(rate(kong_request_latency_ms_bucket[5m])) by (le)
+            ) > 500
+          for: 5m
+          labels:
+            severity: warning
+            team: platform
+            component: kong
+            prd: infra-006
+          annotations:
+            summary: "Kong P99 latency exceeds 500ms"
+            description: >-
+              Kong P99 request latency is {{ $value | printf "%.0f" }}ms,
+              exceeding the 500ms warning threshold. Upstream services may
+              be experiencing slowdowns or Kong may need tuning.
+            runbook_url: "https://runbooks.greenlang.io/kong/high-latency"
+            dashboard_url: "https://grafana.greenlang.io/d/kong-gateway"
+
+        # ---------------------------------------------------------------------
+        # KongHighLatencyCritical
+        # Fires when P99 request latency exceeds 2 seconds for 5 minutes.
+        # Indicates serious performance issues requiring immediate action.
+        # ---------------------------------------------------------------------
+        - alert: KongHighLatencyCritical
+          expr: |
+            histogram_quantile(0.99,
+              sum(rate(kong_request_latency_ms_bucket[5m])) by (le)
+            ) > 2000
+          for: 5m
+          labels:
+            severity: critical
+            team: platform
+            component: kong
+            prd: infra-006
+          annotations:
+            summary: "Kong P99 latency exceeds 2 seconds -- critical"
+            description: >-
+              Kong P99 request latency is {{ $value | printf "%.0f" }}ms,
+              exceeding the 2000ms critical threshold. Users are experiencing
+              significant delays. Investigate upstream health and Kong resource
+              utilization immediately.
+            runbook_url: "https://runbooks.greenlang.io/kong/high-latency-critical"
+            dashboard_url: "https://grafana.greenlang.io/d/kong-gateway"
+
+    # =========================================================================
+    # Group: Kong Upstreams
+    # =========================================================================
+    - name: kong.upstreams
+      interval: 30s
+      rules:
+        # ---------------------------------------------------------------------
+        # KongUpstreamUnhealthy
+        # Fires when any upstream target is marked unhealthy by Kong's
+        # active or passive health checker.
+        # ---------------------------------------------------------------------
+        - alert: KongUpstreamUnhealthy
+          expr: |
+            kong_upstream_target_health{state="unhealthy"} > 0
+          for: 2m
+          labels:
+            severity: critical
+            team: platform
+            component: kong
+            prd: infra-006
+          annotations:
+            summary: "Kong upstream target is unhealthy"
+            description: >-
+              Upstream {{ $labels.upstream }} target {{ $labels.target }}
+              has been marked unhealthy by Kong's health checker for more
+              than 2 minutes. Traffic is being routed away from this target.
+              Investigate the backend service health.
+            runbook_url: "https://runbooks.greenlang.io/kong/upstream-unhealthy"
+            dashboard_url: "https://grafana.greenlang.io/d/kong-gateway"
+
+    # =========================================================================
+    # Group: Kong Rate Limiting
+    # =========================================================================
+    - name: kong.rate-limiting
+      interval: 30s
+      rules:
+        # ---------------------------------------------------------------------
+        # KongRateLimitExceeded
+        # Fires when more than 100 rate-limited (429) responses are returned
+        # per minute. May indicate a DDoS attempt or misconfigured client.
+        # ---------------------------------------------------------------------
+        - alert: KongRateLimitExceeded
+          expr: |
+            sum(rate(kong_http_requests_total{code="429"}[1m])) * 60 > 100
+          for: 5m
+          labels:
+            severity: warning
+            team: platform
+            component: kong
+            prd: infra-006
+          annotations:
+            summary: "Kong rate limit hits exceed 100/min"
+            description: >-
+              Kong is returning {{ $value | printf "%.0f" }} rate-limited
+              (HTTP 429) responses per minute. This exceeds the 100/min
+              threshold. Investigate whether this is legitimate traffic,
+              a misconfigured client, or a potential abuse attempt.
+            runbook_url: "https://runbooks.greenlang.io/kong/rate-limit-exceeded"
+            dashboard_url: "https://grafana.greenlang.io/d/kong-gateway"
+
+    # =========================================================================
+    # Group: Kong TLS / Certificates
+    # =========================================================================
+    - name: kong.certificates
+      interval: 1h
+      rules:
+        # ---------------------------------------------------------------------
+        # KongCertificateExpiringSoon
+        # Fires when any TLS certificate served by Kong will expire in less
+        # than 7 days. Requires renewal before expiry to avoid outages.
+        # ---------------------------------------------------------------------
+        - alert: KongCertificateExpiringSoon
+          expr: |
+            (
+              kong_certificate_expiry_timestamp_seconds - time()
+            ) / 86400 < 7
+          for: 1h
+          labels:
+            severity: warning
+            team: platform
+            component: kong
+            prd: infra-006
+          annotations:
+            summary: "Kong TLS certificate expiring within 7 days"
+            description: >-
+              TLS certificate {{ $labels.certificate_id }} served by Kong
+              will expire in {{ $value | printf "%.1f" }} days. Renew the
+              certificate via cert-manager or manual rotation before expiry
+              to prevent service disruption.
+            runbook_url: "https://runbooks.greenlang.io/kong/certificate-expiring"
+            dashboard_url: "https://grafana.greenlang.io/d/kong-gateway"
+
+    # =========================================================================
+    # Group: Kong Consumer Health
+    # =========================================================================
+    - name: kong.consumers
+      interval: 30s
+      rules:
+        # ---------------------------------------------------------------------
+        # KongConsumerHighErrorRate
+        # Fires when any single consumer has more than 10% of their requests
+        # returning errors (4xx or 5xx) over 5 minutes.
+        # ---------------------------------------------------------------------
+        - alert: KongConsumerHighErrorRate
+          expr: |
+            (
+              sum by (consumer) (rate(kong_http_requests_total{code=~"[45].."}[5m]))
+              /
+              sum by (consumer) (rate(kong_http_requests_total[5m]))
+            ) * 100 > 10
+          for: 5m
+          labels:
+            severity: warning
+            team: platform
+            component: kong
+            prd: infra-006
+          annotations:
+            summary: "Kong consumer {{ $labels.consumer }} has high error rate"
+            description: >-
+              Consumer {{ $labels.consumer }} is experiencing an error rate
+              of {{ $value | printf "%.2f" }}% over the last 5 minutes.
+              This exceeds the 10% threshold. The consumer may be sending
+              malformed requests or targeting unhealthy upstream services.
+            runbook_url: "https://runbooks.greenlang.io/kong/consumer-high-errors"
+            dashboard_url: "https://grafana.greenlang.io/d/kong-gateway"

@@ -1,0 +1,177 @@
+# =============================================================================
+# GreenLang Climate OS - pgvector Alerting Rules
+# =============================================================================
+# PRD: INFRA-005 Vector Database Infrastructure with pgvector
+# Purpose: Prometheus alerting rules for vector database monitoring
+# =============================================================================
+
+groups:
+  - name: pgvector-performance
+    rules:
+      # Search latency SLO violation
+      - alert: PgvectorHighSearchLatency
+        expr: histogram_quantile(0.99, rate(pgvector_search_latency_ms_bucket[5m])) > 100
+        for: 5m
+        labels:
+          severity: warning
+          component: pgvector
+          infra: INFRA-005
+        annotations:
+          summary: "pgvector search latency is high"
+          description: "P99 search latency is {{ $value | humanize }}ms (threshold: 100ms) for {{ $labels.namespace }}"
+          runbook_url: "https://docs.greenlang.dev/runbooks/pgvector-high-latency"
+
+      # Critical latency
+      - alert: PgvectorCriticalSearchLatency
+        expr: histogram_quantile(0.99, rate(pgvector_search_latency_ms_bucket[5m])) > 500
+        for: 2m
+        labels:
+          severity: critical
+          component: pgvector
+          infra: INFRA-005
+        annotations:
+          summary: "pgvector search latency is critically high"
+          description: "P99 search latency is {{ $value | humanize }}ms (threshold: 500ms)"
+
+      # Low search recall
+      - alert: PgvectorLowRecall
+        expr: pgvector_search_recall < 0.95
+        for: 15m
+        labels:
+          severity: warning
+          component: pgvector
+          infra: INFRA-005
+        annotations:
+          summary: "pgvector search recall is degraded"
+          description: "Search recall is {{ $value | humanizePercentage }} for {{ $labels.namespace }} (threshold: 0.95)"
+
+  - name: pgvector-capacity
+    rules:
+      # Index memory usage
+      - alert: PgvectorIndexMemoryHigh
+        expr: sum(pgvector_index_size_bytes) / on() pg_settings_shared_buffers_bytes > 0.8
+        for: 10m
+        labels:
+          severity: critical
+          component: pgvector
+          infra: INFRA-005
+        annotations:
+          summary: "pgvector index using too much memory"
+          description: "Index is using {{ $value | humanizePercentage }} of shared_buffers"
+
+      # Embedding count growth rate
+      - alert: PgvectorRapidGrowth
+        expr: rate(sum(pgvector_embeddings_total)[1h]) > 100000
+        for: 30m
+        labels:
+          severity: warning
+          component: pgvector
+          infra: INFRA-005
+        annotations:
+          summary: "Rapid embedding growth detected"
+          description: "Embedding count growing at {{ $value | humanize }}/hour"
+
+  - name: pgvector-availability
+    rules:
+      # Replication lag
+      - alert: PgvectorReplicationLag
+        expr: pg_replication_lag_seconds > 30
+        for: 5m
+        labels:
+          severity: critical
+          component: pgvector
+          infra: INFRA-005
+        annotations:
+          summary: "pgvector replica lag is high"
+          description: "Replication lag is {{ $value | humanize }}s (threshold: 30s)"
+
+      # Connection pool exhaustion
+      - alert: PgvectorPoolExhaustion
+        expr: (1 - pgvector_pool_available / pgvector_pool_size) > 0.8
+        for: 5m
+        labels:
+          severity: warning
+          component: pgvector
+          infra: INFRA-005
+        annotations:
+          summary: "pgvector connection pool nearly exhausted"
+          description: "{{ $labels.pool_type }} pool is {{ $value | humanizePercentage }} utilized"
+
+      # Pool completely exhausted
+      - alert: PgvectorPoolExhausted
+        expr: pgvector_pool_available == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: pgvector
+          infra: INFRA-005
+        annotations:
+          summary: "pgvector connection pool exhausted"
+          description: "No available connections in {{ $labels.pool_type }} pool"
+
+  - name: pgvector-operations
+    rules:
+      # Insert failure rate
+      - alert: PgvectorHighInsertFailureRate
+        expr: |
+          rate(pgvector_insert_total{status="failed"}[5m])
+          / rate(pgvector_insert_total[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+          component: pgvector
+          infra: INFRA-005
+        annotations:
+          summary: "High insert failure rate"
+          description: "Insert failure rate is {{ $value | humanizePercentage }} for {{ $labels.namespace }}"
+
+      # Low insert throughput
+      - alert: PgvectorLowInsertThroughput
+        expr: rate(pgvector_insert_total{status="success"}[5m]) < 100
+        for: 10m
+        labels:
+          severity: info
+          component: pgvector
+          infra: INFRA-005
+        annotations:
+          summary: "Low insert throughput"
+          description: "Insert rate is {{ $value | humanize }}/s (expected: >100/s)"
+
+      # Stale embedding job
+      - alert: PgvectorStaleJob
+        expr: time() - pgvector_jobs_duration_seconds > 3600
+        for: 5m
+        labels:
+          severity: warning
+          component: pgvector
+          infra: INFRA-005
+        annotations:
+          summary: "Embedding job running for over 1 hour"
+          description: "Job has been running for {{ $value | humanizeDuration }}"
+
+  - name: pgvector-database
+    rules:
+      # PostgreSQL lock contention
+      - alert: PgvectorLockContention
+        expr: pg_locks_count{mode="ExclusiveLock"} > 10
+        for: 5m
+        labels:
+          severity: warning
+          component: pgvector
+          infra: INFRA-005
+        annotations:
+          summary: "High lock contention on vector tables"
+          description: "{{ $value }} exclusive locks detected"
+
+      # Autovacuum not running
+      - alert: PgvectorAutovacuumStale
+        expr: |
+          (time() - pg_stat_user_tables_last_autovacuum{relname="vector_embeddings"}) > 86400
+        for: 1h
+        labels:
+          severity: warning
+          component: pgvector
+          infra: INFRA-005
+        annotations:
+          summary: "Autovacuum has not run on vector_embeddings"
+          description: "Last autovacuum was {{ $value | humanizeDuration }} ago"

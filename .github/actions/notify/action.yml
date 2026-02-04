@@ -1,0 +1,177 @@
+# =============================================================================
+# GreenLang Climate OS - Unified Notification Composite Action
+# INFRA-007: Pipeline Notification Gateway
+# =============================================================================
+#
+# Sends formatted notifications to Slack with context-aware emoji and
+# colour coding based on pipeline status.
+#
+# Usage:
+#   - uses: ./.github/actions/notify
+#     with:
+#       status: 'success'
+#       title: 'Production deployment complete'
+#       body: 'Version v1.2.3 deployed to production cluster.'
+#       slack-webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+#       channel: 'deployments'
+# =============================================================================
+
+name: 'Unified Notification'
+description: 'Composite action to send formatted pipeline notifications to Slack'
+
+inputs:
+  status:
+    description: 'Pipeline status: success, failure, or warning'
+    required: true
+  title:
+    description: 'Notification title / headline'
+    required: true
+  body:
+    description: 'Optional notification body with additional detail'
+    required: false
+    default: ''
+  slack-webhook:
+    description: 'Slack incoming webhook URL'
+    required: true
+  channel:
+    description: 'Target Slack channel (without # prefix)'
+    required: false
+    default: 'pipeline'
+
+outputs:
+  sent:
+    description: 'Whether the notification was sent successfully (true/false)'
+    value: ${{ steps.send-notification.outputs.sent }}
+
+runs:
+  using: 'composite'
+  steps:
+    # ------------------------------------------------------------------
+    # Step 1: Format message payload
+    # ------------------------------------------------------------------
+    - name: Format and send Slack notification
+      id: send-notification
+      shell: bash
+      env:
+        SLACK_WEBHOOK: ${{ inputs.slack-webhook }}
+        NOTIFY_STATUS: ${{ inputs.status }}
+        NOTIFY_TITLE: ${{ inputs.title }}
+        NOTIFY_BODY: ${{ inputs.body }}
+        NOTIFY_CHANNEL: ${{ inputs.channel }}
+      run: |
+        # Map status to emoji and colour
+        case "${NOTIFY_STATUS}" in
+          success)
+            EMOJI=":white_check_mark:"
+            COLOR="#36a64f"
+            STATUS_TEXT="Success"
+            ;;
+          failure)
+            EMOJI=":x:"
+            COLOR="#e01e5a"
+            STATUS_TEXT="Failed"
+            ;;
+          warning)
+            EMOJI=":warning:"
+            COLOR="#ecb22e"
+            STATUS_TEXT="Warning"
+            ;;
+          *)
+            EMOJI=":information_source:"
+            COLOR="#1264a3"
+            STATUS_TEXT="Info"
+            ;;
+        esac
+
+        # Build context fields
+        REPO="${{ github.repository }}"
+        RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+        SHA="${{ github.sha }}"
+        SHORT_SHA="${SHA:0:7}"
+        REF="${{ github.ref_name }}"
+        ACTOR="${{ github.actor }}"
+        WORKFLOW="${{ github.workflow }}"
+
+        # Construct the body section (if provided)
+        BODY_BLOCK=""
+        if [ -n "${NOTIFY_BODY}" ]; then
+          # Escape special JSON characters in body
+          ESCAPED_BODY=$(echo "${NOTIFY_BODY}" | python3 -c "import sys,json; print(json.dumps(sys.stdin.read().strip())[1:-1])")
+          BODY_BLOCK=",{\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"${ESCAPED_BODY}\"}}"
+        fi
+
+        # Escape title for JSON safety
+        ESCAPED_TITLE=$(echo "${NOTIFY_TITLE}" | python3 -c "import sys,json; print(json.dumps(sys.stdin.read().strip())[1:-1])")
+
+        # Build the Slack payload using Block Kit
+        PAYLOAD=$(cat <<EOFPAYLOAD
+        {
+          "channel": "#${NOTIFY_CHANNEL}",
+          "username": "GreenLang CI/CD",
+          "icon_emoji": ":seedling:",
+          "attachments": [
+            {
+              "color": "${COLOR}",
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "${EMOJI} ${ESCAPED_TITLE}",
+                    "emoji": true
+                  }
+                }
+                ${BODY_BLOCK},
+                {
+                  "type": "context",
+                  "elements": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Status:* ${STATUS_TEXT} | *Repo:* ${REPO} | *Branch:* ${REF}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Commit:* <${RUN_URL}|${SHORT_SHA}> | *Actor:* ${ACTOR} | *Workflow:* ${WORKFLOW}"
+                    }
+                  ]
+                },
+                {
+                  "type": "actions",
+                  "elements": [
+                    {
+                      "type": "button",
+                      "text": {
+                        "type": "plain_text",
+                        "text": "View Run"
+                      },
+                      "url": "${RUN_URL}",
+                      "style": "primary"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+        EOFPAYLOAD
+        )
+
+        # Send to Slack
+        echo "::group::Sending Slack notification to #${NOTIFY_CHANNEL}"
+
+        HTTP_CODE=$(curl -s -o /tmp/slack-response.txt -w "%{http_code}" \
+          -X POST \
+          -H "Content-Type: application/json" \
+          -d "${PAYLOAD}" \
+          "${SLACK_WEBHOOK}")
+
+        if [ "${HTTP_CODE}" -eq 200 ] || [ "${HTTP_CODE}" -eq 204 ]; then
+          echo "Notification sent successfully (HTTP ${HTTP_CODE})"
+          echo "sent=true" >> "${GITHUB_OUTPUT}"
+        else
+          echo "::warning::Failed to send Slack notification (HTTP ${HTTP_CODE})"
+          echo "Response: $(cat /tmp/slack-response.txt 2>/dev/null)"
+          echo "sent=false" >> "${GITHUB_OUTPUT}"
+        fi
+
+        echo "::endgroup::"

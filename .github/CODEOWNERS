@@ -1,51 +1,83 @@
-# CODEOWNERS for GreenLang
-# This file defines code ownership and automatic review assignment
+# =============================================================================
+# GreenLang Climate OS - Code Owners
+# INFRA-007: Repository Governance & Ownership Mapping
+# =============================================================================
+#
+# This file defines code ownership for automatic review assignment.
+# Requires at least 1 approval from code owner team.
+#
+# Rules are evaluated bottom-to-top; the last matching pattern takes
+# precedence. Global fallback is listed first so that every PR has at
+# least one required reviewer.
+#
+# Reference: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+# =============================================================================
 
-# Global owners (will be requested for review on all changes)
-* @greenlang/maintainers
+# ---------------------------------------------------------------------------
+# Default - Infrastructure Team
+# ---------------------------------------------------------------------------
+# Catch-all: any file not matched by a more specific rule below.
+* @greenlang/infrastructure
 
-# Security team must review security-critical files
-/greenlang/security/ @greenlang/security
-/greenlang/policy/ @greenlang/security
-/greenlang/runtime/guard.py @greenlang/security
-/policy/ @greenlang/security
-/helm/ @greenlang/security @greenlang/platform
-*.rego @greenlang/security
-/greenlang/packs/manifest.py @greenlang/security
-/greenlang/cli/pack.py @greenlang/security
-/.github/workflows/security*.yml @greenlang/security
-/.github/workflows/policy-gate.yml @greenlang/security
+# ---------------------------------------------------------------------------
+# Core GreenLang library
+# ---------------------------------------------------------------------------
+/greenlang/ @greenlang/core-platform
+/greenlang/agents/ @greenlang/agent-team
+/greenlang/data/ @greenlang/data-engineering
+/greenlang/execution/ @greenlang/core-platform
+/greenlang/utilities/cache/ @greenlang/infrastructure
+/greenlang/auth/ @greenlang/security
 
-# Documentation team reviews all docs
-/docs/ @greenlang/docs
-*.md @greenlang/docs
-/examples/ @greenlang/docs
+# ---------------------------------------------------------------------------
+# Applications
+# ---------------------------------------------------------------------------
+/applications/ @greenlang/applications
+/applications/GL-CSRD-APP/ @greenlang/csrd-team
+/applications/GL-CBAM-APP/ @greenlang/cbam-team
+/applications/GL-VCCI-Carbon-APP/ @greenlang/vcci-team
+/applications/GL-Agent-Factory/ @greenlang/agent-team
+/applications/GL\ Agents/ @greenlang/agent-team
 
-# DevOps/Platform team reviews infrastructure
-/.github/workflows/ @greenlang/platform
-/Dockerfile @greenlang/platform
-/docker-compose*.yml @greenlang/platform
-/kubernetes/ @greenlang/platform
-/helm/ @greenlang/platform
-/scripts/ @greenlang/platform
+# ---------------------------------------------------------------------------
+# Deployment & Infrastructure
+# ---------------------------------------------------------------------------
+/deployment/ @greenlang/infrastructure @greenlang/devops
+/deployment/terraform/ @greenlang/infrastructure
+/deployment/helm/ @greenlang/devops
+/deployment/kubernetes/ @greenlang/devops
+/deployment/database/ @greenlang/data-engineering @greenlang/infrastructure
+/deployment/monitoring/ @greenlang/infrastructure @greenlang/sre
+/deployment/security/ @greenlang/security
 
-# Data team reviews connectors and datasets
-/greenlang/connectors/ @greenlang/data
-/greenlang/datasets/ @greenlang/data
+# ---------------------------------------------------------------------------
+# CI/CD
+# ---------------------------------------------------------------------------
+/.github/ @greenlang/devops @greenlang/infrastructure
+/.github/workflows/ @greenlang/devops
+/.github/CODEOWNERS @greenlang/leads
 
-# Core team reviews critical components
-/greenlang/core/ @greenlang/core
-/greenlang/orchestrator/ @greenlang/core
-/greenlang/runtime/ @greenlang/core
+# ---------------------------------------------------------------------------
+# Tests
+# ---------------------------------------------------------------------------
+/tests/ @greenlang/core-platform @greenlang/qa
 
-# Release management
-/CHANGELOG.md @greenlang/release
-/pyproject.toml @greenlang/release
-/setup.py @greenlang/release
-/.github/workflows/release*.yml @greenlang/release
-/.github/workflows/rc-release.yml @greenlang/release
+# ---------------------------------------------------------------------------
+# Scripts
+# ---------------------------------------------------------------------------
+/scripts/ @greenlang/devops
+/scripts/ci/ @greenlang/devops
+/scripts/deploy/ @greenlang/devops
 
-# Test ownership
-/tests/ @greenlang/qa
-/acceptance_test.py @greenlang/qa
-/tests/policy/ @greenlang/security @greenlang/qa
+# ---------------------------------------------------------------------------
+# Documentation
+# ---------------------------------------------------------------------------
+/docs/ @greenlang/documentation
+/GreenLang\ Development/ @greenlang/leads
+
+# ---------------------------------------------------------------------------
+# Configuration files
+# ---------------------------------------------------------------------------
+pyproject.toml @greenlang/core-platform @greenlang/leads
+.pre-commit-config.yaml @greenlang/devops @greenlang/security
+Makefile @greenlang/devops

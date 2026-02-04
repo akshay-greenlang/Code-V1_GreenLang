@@ -1,0 +1,184 @@
+---
+# =============================================================================
+# GreenLang Climate OS - pgvector Backup CronJobs
+# =============================================================================
+# PRD: INFRA-005 Vector Database Infrastructure with pgvector
+# Purpose: Scheduled backup jobs for vector embedding data
+# =============================================================================
+
+# Daily backup at 00:00 UTC
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: pgvector-backup-daily
+  namespace: greenlang
+  labels:
+    app: pgvector-backup
+    component: database
+    infra: INFRA-005
+    schedule: daily
+spec:
+  schedule: "0 0 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 7
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      activeDeadlineSeconds: 3600
+      template:
+        metadata:
+          labels:
+            app: pgvector-backup
+            schedule: daily
+        spec:
+          serviceAccountName: pgvector-backup
+          restartPolicy: OnFailure
+          containers:
+            - name: backup
+              image: greenlang/db-tools:latest
+              command: ["/bin/bash", "/scripts/pgvector_backup.sh", "daily"]
+              env:
+                - name: PGVECTOR_HOST
+                  valueFrom:
+                    secretKeyRef:
+                      name: aurora-endpoints
+                      key: writer-endpoint
+                - name: PGVECTOR_PORT
+                  value: "5432"
+                - name: PGVECTOR_DATABASE
+                  value: "greenlang"
+                - name: PGVECTOR_USER
+                  valueFrom:
+                    secretKeyRef:
+                      name: aurora-credentials
+                      key: admin-username
+                - name: PGPASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: aurora-credentials
+                      key: admin-password
+                - name: BACKUP_S3_BUCKET
+                  value: "greenlang-backups"
+                - name: BACKUP_RETENTION_DAYS
+                  value: "90"
+                - name: AWS_DEFAULT_REGION
+                  value: "us-east-1"
+              volumeMounts:
+                - name: scripts
+                  mountPath: /scripts
+              resources:
+                requests:
+                  cpu: 500m
+                  memory: 512Mi
+                limits:
+                  cpu: 1000m
+                  memory: 1Gi
+          volumes:
+            - name: scripts
+              configMap:
+                name: pgvector-backup-scripts
+                defaultMode: 0755
+
+---
+# Weekly backup on Sunday at 00:00 UTC
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: pgvector-backup-weekly
+  namespace: greenlang
+  labels:
+    app: pgvector-backup
+    component: database
+    infra: INFRA-005
+    schedule: weekly
+spec:
+  schedule: "0 0 * * 0"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 4
+  failedJobsHistoryLimit: 2
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      activeDeadlineSeconds: 7200
+      template:
+        metadata:
+          labels:
+            app: pgvector-backup
+            schedule: weekly
+        spec:
+          serviceAccountName: pgvector-backup
+          restartPolicy: OnFailure
+          containers:
+            - name: backup
+              image: greenlang/db-tools:latest
+              command: ["/bin/bash", "/scripts/pgvector_backup.sh", "weekly"]
+              env:
+                - name: PGVECTOR_HOST
+                  valueFrom:
+                    secretKeyRef:
+                      name: aurora-endpoints
+                      key: writer-endpoint
+                - name: PGVECTOR_PORT
+                  value: "5432"
+                - name: PGVECTOR_DATABASE
+                  value: "greenlang"
+                - name: PGVECTOR_USER
+                  valueFrom:
+                    secretKeyRef:
+                      name: aurora-credentials
+                      key: admin-username
+                - name: PGPASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: aurora-credentials
+                      key: admin-password
+                - name: BACKUP_S3_BUCKET
+                  value: "greenlang-backups"
+                - name: AWS_DEFAULT_REGION
+                  value: "us-east-1"
+              volumeMounts:
+                - name: scripts
+                  mountPath: /scripts
+              resources:
+                requests:
+                  cpu: 500m
+                  memory: 512Mi
+                limits:
+                  cpu: 1000m
+                  memory: 1Gi
+          volumes:
+            - name: scripts
+              configMap:
+                name: pgvector-backup-scripts
+                defaultMode: 0755
+
+---
+# Backup scripts ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pgvector-backup-scripts
+  namespace: greenlang
+  labels:
+    app: pgvector-backup
+    infra: INFRA-005
+data:
+  pgvector_backup.sh: |
+    #!/usr/bin/env bash
+    set -euo pipefail
+    # Embedded backup script - see deployment/database/scripts/pgvector_backup.sh
+    exec /opt/greenlang/pgvector_backup.sh "$@"
+
+---
+# ServiceAccount for backup jobs
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: pgvector-backup
+  namespace: greenlang
+  labels:
+    app: pgvector-backup
+    infra: INFRA-005
+  annotations:
+    eks.amazonaws.com/role-arn: "arn:aws:iam::${AWS_ACCOUNT_ID}:role/greenlang-pgvector-backup"

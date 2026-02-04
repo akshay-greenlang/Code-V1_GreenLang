@@ -1,0 +1,376 @@
+# INFRA-007: GreenLang Terraform Plan PR Comment Pipeline
+#
+# Runs terraform plan for affected environments on PRs and posts
+# the plan output as a collapsible comment on the pull request.
+# Optionally includes Infracost cost estimation.
+#
+# Security Compliance: SOC 2 CC7.1, ISO 27001 A.14.2.5
+# Author: GreenLang DevOps Team
+# Version: 1.0.0
+
+name: Terraform Plan
+
+on:
+  pull_request:
+    branches: [main, master, develop]
+    paths:
+      - 'deployment/terraform/**'
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: terraform-plan-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+env:
+  TF_VERSION: '1.6.6'
+  AWS_REGION: us-east-1
+  TF_STATE_BUCKET: greenlang-terraform-state
+  TF_LOCK_TABLE: greenlang-terraform-locks
+
+jobs:
+  # ==========================================================================
+  # JOB 1: Detect affected environments
+  # ==========================================================================
+  detect-environments:
+    name: Detect Affected Environments
+    runs-on: ubuntu-latest
+    outputs:
+      environments: ${{ steps.detect.outputs.environments }}
+      environments_json: ${{ steps.detect.outputs.environments_json }}
+      has_changes: ${{ steps.detect.outputs.has_changes }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect changed Terraform files
+        id: changed-files
+        uses: tj-actions/changed-files@v44
+        with:
+          files: deployment/terraform/**
+
+      - name: Determine affected environments
+        id: detect
+        run: |
+          CHANGED="${{ steps.changed-files.outputs.all_changed_files }}"
+          ENVS=()
+
+          if [[ -z "$CHANGED" ]]; then
+            echo "No Terraform files changed"
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo 'environments_json=[]' >> $GITHUB_OUTPUT
+            echo "environments=" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          echo "Changed files: $CHANGED"
+
+          # Determine affected environments
+          for file in $CHANGED; do
+            # Check for environment-specific changes
+            if [[ "$file" =~ deployment/terraform/environments/([^/]+)/ ]]; then
+              ENV="${BASH_REMATCH[1]}"
+              if [[ ! " ${ENVS[*]} " =~ " $ENV " ]]; then
+                ENVS+=("$ENV")
+              fi
+            fi
+
+            # Changes to modules or shared configs affect all environments
+            if [[ "$file" =~ deployment/terraform/modules/ ]] || \
+               [[ "$file" =~ deployment/terraform/backend-bootstrap/ ]] || \
+               [[ "$file" =~ deployment/terraform/scripts/ ]]; then
+              for env in dev staging prod; do
+                if [[ ! " ${ENVS[*]} " =~ " $env " ]]; then
+                  ENVS+=("$env")
+                fi
+              done
+              break
+            fi
+          done
+
+          if [[ ${#ENVS[@]} -eq 0 ]]; then
+            echo "No environment-specific changes detected"
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo 'environments_json=[]' >> $GITHUB_OUTPUT
+            echo "environments=" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          echo "has_changes=true" >> $GITHUB_OUTPUT
+
+          # Space-separated list
+          echo "environments=${ENVS[*]}" >> $GITHUB_OUTPUT
+
+          # JSON array for matrix
+          JSON_ARRAY=$(printf '%s\n' "${ENVS[@]}" | jq -R -s -c 'split("\n") | map(select(length > 0))')
+          echo "environments_json=$JSON_ARRAY" >> $GITHUB_OUTPUT
+
+          echo "## Affected Environments" >> $GITHUB_STEP_SUMMARY
+          for env in "${ENVS[@]}"; do
+            echo "- **$env**" >> $GITHUB_STEP_SUMMARY
+          done
+
+  # ==========================================================================
+  # JOB 2: Run Terraform plan for each environment
+  # ==========================================================================
+  plan:
+    name: Plan (${{ matrix.environment }})
+    runs-on: ubuntu-latest
+    needs: [detect-environments]
+    if: needs.detect-environments.outputs.has_changes == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        environment: ${{ fromJson(needs.detect-environments.outputs.environments_json) }}
+    outputs:
+      plan_exit_code: ${{ steps.plan.outputs.exitcode }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::123456789012:role/greenlang-${{ matrix.environment }}-github-actions
+          role-session-name: github-actions-tf-plan-pr
+          aws-region: ${{ env.AWS_REGION }}
+        continue-on-error: true
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+          terraform_wrapper: false
+
+      - name: Terraform Init
+        id: init
+        working-directory: deployment/terraform/environments/${{ matrix.environment }}
+        run: |
+          terraform init \
+            -backend-config="bucket=${{ env.TF_STATE_BUCKET }}" \
+            -backend-config="key=environments/${{ matrix.environment }}/terraform.tfstate" \
+            -backend-config="region=${{ env.AWS_REGION }}" \
+            -backend-config="dynamodb_table=${{ env.TF_LOCK_TABLE }}" \
+            -backend-config="encrypt=true" \
+            2>&1 | tee init_output.txt
+        continue-on-error: true
+
+      - name: Terraform Validate
+        id: validate
+        working-directory: deployment/terraform/environments/${{ matrix.environment }}
+        run: |
+          terraform validate -no-color 2>&1 | tee validate_output.txt
+        continue-on-error: true
+
+      - name: Terraform Plan
+        id: plan
+        working-directory: deployment/terraform/environments/${{ matrix.environment }}
+        run: |
+          set +e
+
+          # Use environment-specific tfvars
+          TFVARS_FILE="${{ matrix.environment }}.tfvars"
+          TFVARS_FLAG=""
+          if [[ -f "$TFVARS_FILE" ]]; then
+            TFVARS_FLAG="-var-file=$TFVARS_FILE"
+          fi
+
+          terraform plan \
+            -detailed-exitcode \
+            -no-color \
+            -input=false \
+            $TFVARS_FLAG \
+            -out=tfplan \
+            2>&1 | tee plan_output.txt
+
+          EXIT_CODE=$?
+          echo "exitcode=$EXIT_CODE" >> $GITHUB_OUTPUT
+
+          if [[ $EXIT_CODE -eq 2 ]]; then
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          fi
+
+          # Exit successfully for codes 0 and 2
+          if [[ $EXIT_CODE -eq 0 || $EXIT_CODE -eq 2 ]]; then
+            exit 0
+          else
+            exit $EXIT_CODE
+          fi
+        continue-on-error: true
+
+      - name: Upload plan output
+        uses: actions/upload-artifact@v4
+        with:
+          name: terraform-plan-${{ matrix.environment }}
+          path: |
+            deployment/terraform/environments/${{ matrix.environment }}/plan_output.txt
+            deployment/terraform/environments/${{ matrix.environment }}/init_output.txt
+            deployment/terraform/environments/${{ matrix.environment }}/validate_output.txt
+          retention-days: 7
+
+  # ==========================================================================
+  # JOB 3: Post PR comment with plan output
+  # ==========================================================================
+  comment:
+    name: Post Plan Comment
+    runs-on: ubuntu-latest
+    needs: [detect-environments, plan]
+    if: always() && needs.detect-environments.outputs.has_changes == 'true'
+
+    steps:
+      - name: Download all plan artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: /tmp/plan-artifacts
+
+      - name: Run Infracost estimation
+        id: infracost
+        if: env.INFRACOST_API_KEY != ''
+        env:
+          INFRACOST_API_KEY: ${{ secrets.INFRACOST_API_KEY }}
+        run: |
+          # Install Infracost
+          curl -fsSL https://raw.githubusercontent.com/infracost/infracost/master/scripts/install.sh | sh
+
+          COST_SUMMARY=""
+
+          for env_dir in /tmp/plan-artifacts/terraform-plan-*/; do
+            ENV_NAME=$(basename "$env_dir" | sed 's/terraform-plan-//')
+
+            if [[ -f "$env_dir/plan_output.txt" ]]; then
+              # Infracost diff from plan output
+              infracost breakdown \
+                --path "deployment/terraform/environments/$ENV_NAME" \
+                --format json \
+                --out-file "/tmp/infracost-$ENV_NAME.json" \
+                2>/dev/null || true
+
+              if [[ -f "/tmp/infracost-$ENV_NAME.json" ]]; then
+                MONTHLY=$(jq -r '.totalMonthlyCost // "N/A"' "/tmp/infracost-$ENV_NAME.json")
+                COST_SUMMARY="$COST_SUMMARY\n| $ENV_NAME | \$$MONTHLY/month |"
+              fi
+            fi
+          done
+
+          echo "cost_summary=$COST_SUMMARY" >> $GITHUB_OUTPUT
+          echo "has_costs=true" >> $GITHUB_OUTPUT
+        continue-on-error: true
+
+      - name: Post plan comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+
+            const environments = JSON.parse('${{ needs.detect-environments.outputs.environments_json }}');
+            const planResult = '${{ needs.plan.result }}';
+            const hasCosts = '${{ steps.infracost.outputs.has_costs }}' === 'true';
+
+            let body = `## Terraform Plan Results\n\n`;
+            body += `**PR:** #${context.issue.number}\n`;
+            body += `**Commit:** \`${context.sha.substring(0, 8)}\`\n`;
+            body += `**Plan Status:** ${planResult === 'success' ? 'PASSED' : 'NEEDS REVIEW'}\n\n`;
+
+            for (const env of environments) {
+              const artifactDir = `/tmp/plan-artifacts/terraform-plan-${env}`;
+              let planOutput = 'Plan output not available';
+              let initOutput = '';
+              let validateOutput = '';
+
+              // Read plan output
+              const planFile = path.join(artifactDir, 'plan_output.txt');
+              if (fs.existsSync(planFile)) {
+                planOutput = fs.readFileSync(planFile, 'utf8');
+              }
+
+              // Read validate output
+              const validateFile = path.join(artifactDir, 'validate_output.txt');
+              if (fs.existsSync(validateFile)) {
+                validateOutput = fs.readFileSync(validateFile, 'utf8');
+              }
+
+              // Truncate plan output if too large
+              const maxPlanLength = 15000;
+              if (planOutput.length > maxPlanLength) {
+                planOutput = planOutput.substring(0, maxPlanLength) + '\n\n... (output truncated, see workflow run for full plan)';
+              }
+
+              body += `### Environment: \`${env}\`\n\n`;
+
+              if (validateOutput) {
+                body += `**Validation:** ${validateOutput.includes('Success') ? 'PASSED' : 'See details'}\n\n`;
+              }
+
+              body += `<details>\n`;
+              body += `<summary>Show Plan Output for <code>${env}</code></summary>\n\n`;
+              body += '```hcl\n';
+              body += planOutput;
+              body += '\n```\n\n';
+              body += `</details>\n\n`;
+            }
+
+            // Add Infracost section if available
+            if (hasCosts) {
+              const costSummary = `${{ steps.infracost.outputs.cost_summary }}`;
+              if (costSummary) {
+                body += `### Cost Estimation (Infracost)\n\n`;
+                body += `| Environment | Estimated Monthly Cost |\n`;
+                body += `|-------------|----------------------|\n`;
+                body += costSummary.replace(/\\n/g, '\n');
+                body += `\n\n`;
+              }
+            }
+
+            body += `---\n`;
+            body += `*Generated by Terraform Plan workflow | `;
+            body += `[View Run](${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID})*\n`;
+
+            // Find existing comment to update
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const botComment = comments.find(comment =>
+              comment.user.type === 'Bot' &&
+              comment.body.includes('## Terraform Plan Results')
+            );
+
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: body
+              });
+              console.log(`Updated existing comment ${botComment.id}`);
+            } else {
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: body
+              });
+              console.log('Created new plan comment');
+            }
+
+      - name: Comment summary
+        run: |
+          echo "## Terraform Plan PR Comment" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Plan results posted to PR #${{ github.event.pull_request.number }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Environments Planned" >> $GITHUB_STEP_SUMMARY
+          for env in ${{ needs.detect-environments.outputs.environments }}; do
+            echo "- **$env**" >> $GITHUB_STEP_SUMMARY
+          done

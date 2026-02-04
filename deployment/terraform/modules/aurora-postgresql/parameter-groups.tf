@@ -16,11 +16,41 @@ resource "aws_rds_cluster_parameter_group" "aurora_timescaledb" {
   # TimescaleDB Configuration
   # ============================================================================
 
-  # Load TimescaleDB extension (CRITICAL for TimescaleDB support)
+  # Load TimescaleDB + pgvector extensions
   parameter {
     name         = "shared_preload_libraries"
-    value        = "pg_stat_statements,timescaledb"
+    value        = "pg_stat_statements,timescaledb,pgaudit"
     apply_method = "pending-reboot"
+  }
+
+  # ============================================================================
+  # pgvector Configuration (INFRA-005)
+  # ============================================================================
+
+  # HNSW ef_search: query-time search width (higher = better recall, slower)
+  parameter {
+    name         = "hnsw.ef_search"
+    value        = var.pgvector_hnsw_ef_search
+    apply_method = "immediate"
+  }
+
+  # pgaudit logging for vector operations
+  parameter {
+    name         = "pgaudit.log"
+    value        = var.pgvector_audit_log_level
+    apply_method = "immediate"
+  }
+
+  parameter {
+    name         = "pgaudit.log_relation"
+    value        = "on"
+    apply_method = "immediate"
+  }
+
+  parameter {
+    name         = "pgaudit.log_statement_once"
+    value        = "on"
+    apply_method = "immediate"
   }
 
   # TimescaleDB max background workers (for continuous aggregates, compression, etc.)
@@ -34,6 +64,17 @@ resource "aws_rds_cluster_parameter_group" "aurora_timescaledb" {
   parameter {
     name         = "timescaledb.telemetry_level"
     value        = var.timescaledb_telemetry_level
+    apply_method = "immediate"
+  }
+
+  # ============================================================================
+  # Replication Configuration (INFRA-002)
+  # ============================================================================
+
+  # Synchronous commit for zero-data-loss replication
+  parameter {
+    name         = "synchronous_commit"
+    value        = var.synchronous_commit
     apply_method = "immediate"
   }
 

@@ -1,0 +1,432 @@
+# INFRA-007: GreenLang Helm Chart CI Pipeline
+#
+# Validates Helm charts on every pull request:
+# - Detects which charts have changed
+# - Lints charts with all environment values files
+# - Renders templates and validates with kubeconform
+# - Runs chart-testing (ct) install tests on a kind cluster
+#
+# Security Compliance: SOC 2 CC7.1
+# Author: GreenLang DevOps Team
+# Version: 1.0.0
+
+name: Helm Chart CI
+
+on:
+  pull_request:
+    branches: [main, master, develop]
+    paths:
+      - 'deployment/helm/**'
+      - 'deployment/infrastructure/helm/**'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: helm-ci-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+env:
+  HELM_VERSION: '3.14.0'
+  KUBECONFORM_VERSION: '0.6.4'
+  KIND_VERSION: '0.22.0'
+  CT_VERSION: '3.10.1'
+  KUBERNETES_VERSION: '1.29.0'
+
+jobs:
+  # ==========================================================================
+  # JOB 1: Detect changed Helm charts
+  # ==========================================================================
+  detect-changed-charts:
+    name: Detect Changed Charts
+    runs-on: ubuntu-latest
+    outputs:
+      changed: ${{ steps.detect.outputs.changed }}
+      charts: ${{ steps.detect.outputs.charts }}
+      charts_json: ${{ steps.detect.outputs.charts_json }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v44
+        with:
+          files: |
+            deployment/helm/**
+            deployment/infrastructure/helm/**
+
+      - name: Identify changed charts
+        id: detect
+        run: |
+          CHARTS=()
+          CHANGED="${{ steps.changed-files.outputs.all_changed_files }}"
+
+          if [[ -z "$CHANGED" ]]; then
+            echo "No Helm chart files changed"
+            echo "changed=false" >> $GITHUB_OUTPUT
+            echo "charts=" >> $GITHUB_OUTPUT
+            echo 'charts_json=[]' >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          echo "Changed files: $CHANGED"
+
+          # Extract unique chart directories
+          for file in $CHANGED; do
+            # Match deployment/helm/<chart-name>/ or deployment/infrastructure/helm/<chart-name>/
+            CHART_DIR=""
+
+            if [[ "$file" =~ ^deployment/infrastructure/helm/([^/]+)/ ]]; then
+              CHART_DIR="deployment/infrastructure/helm/${BASH_REMATCH[1]}"
+            elif [[ "$file" =~ ^deployment/helm/([^/]+)/ ]]; then
+              CHART_DIR="deployment/helm/${BASH_REMATCH[1]}"
+            fi
+
+            if [[ -n "$CHART_DIR" && -f "$CHART_DIR/Chart.yaml" ]]; then
+              # Add to array if not already present
+              if [[ ! " ${CHARTS[*]} " =~ " $CHART_DIR " ]]; then
+                CHARTS+=("$CHART_DIR")
+              fi
+            fi
+          done
+
+          if [[ ${#CHARTS[@]} -eq 0 ]]; then
+            echo "No chart directories found in changed files"
+            echo "changed=false" >> $GITHUB_OUTPUT
+            echo "charts=" >> $GITHUB_OUTPUT
+            echo 'charts_json=[]' >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          echo "changed=true" >> $GITHUB_OUTPUT
+
+          # Space-separated list
+          CHARTS_LIST="${CHARTS[*]}"
+          echo "charts=$CHARTS_LIST" >> $GITHUB_OUTPUT
+
+          # JSON array for matrix strategy
+          JSON_ARRAY=$(printf '%s\n' "${CHARTS[@]}" | jq -R -s -c 'split("\n") | map(select(length > 0))')
+          echo "charts_json=$JSON_ARRAY" >> $GITHUB_OUTPUT
+
+          echo "## Changed Charts" >> $GITHUB_STEP_SUMMARY
+          for chart in "${CHARTS[@]}"; do
+            CHART_NAME=$(grep '^name:' "$chart/Chart.yaml" | awk '{print $2}')
+            CHART_VERSION=$(grep '^version:' "$chart/Chart.yaml" | awk '{print $2}')
+            echo "- **$CHART_NAME** ($CHART_VERSION) at \`$chart\`" >> $GITHUB_STEP_SUMMARY
+          done
+
+  # ==========================================================================
+  # JOB 2: Lint Helm charts
+  # ==========================================================================
+  lint:
+    name: Lint (${{ matrix.chart }})
+    runs-on: ubuntu-latest
+    needs: [detect-changed-charts]
+    if: needs.detect-changed-charts.outputs.changed == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        chart: ${{ fromJson(needs.detect-changed-charts.outputs.charts_json) }}
+        values-env: [dev, staging, prod]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v${{ env.HELM_VERSION }}
+
+      - name: Add Helm repositories
+        run: |
+          helm repo add bitnami https://charts.bitnami.com/bitnami
+          helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+          helm repo add grafana https://grafana.github.io/helm-charts
+          helm repo update
+
+      - name: Update chart dependencies
+        run: |
+          helm dependency update ${{ matrix.chart }} || true
+
+      - name: Lint with default values
+        run: |
+          echo "Linting ${{ matrix.chart }} with default values..."
+          helm lint ${{ matrix.chart }} --strict
+
+      - name: Lint with environment values
+        run: |
+          ENV="${{ matrix.values-env }}"
+          CHART="${{ matrix.chart }}"
+          VALUES_FILE=""
+
+          # Search for environment-specific values file
+          for candidate in \
+            "$CHART/values-$ENV.yaml" \
+            "$CHART/values.$ENV.yaml" \
+            "$CHART/values-${ENV}ironment.yaml"; do
+            if [[ -f "$candidate" ]]; then
+              VALUES_FILE="$candidate"
+              break
+            fi
+          done
+
+          if [[ -n "$VALUES_FILE" ]]; then
+            echo "Linting $CHART with $VALUES_FILE..."
+            helm lint "$CHART" --strict --values "$VALUES_FILE"
+          else
+            echo "No values file found for environment $ENV in $CHART, skipping"
+          fi
+
+      - name: Lint summary
+        if: always()
+        run: |
+          echo "## Lint: ${{ matrix.chart }} (${{ matrix.values-env }})" >> $GITHUB_STEP_SUMMARY
+          echo "Status: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+
+  # ==========================================================================
+  # JOB 3: Template rendering and validation
+  # ==========================================================================
+  template:
+    name: Template & Validate (${{ matrix.chart }})
+    runs-on: ubuntu-latest
+    needs: [detect-changed-charts]
+    if: needs.detect-changed-charts.outputs.changed == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        chart: ${{ fromJson(needs.detect-changed-charts.outputs.charts_json) }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v${{ env.HELM_VERSION }}
+
+      - name: Install kubeconform
+        run: |
+          wget -q "https://github.com/yannh/kubeconform/releases/download/v${{ env.KUBECONFORM_VERSION }}/kubeconform-linux-amd64.tar.gz"
+          tar xzf kubeconform-linux-amd64.tar.gz
+          chmod +x kubeconform
+          sudo mv kubeconform /usr/local/bin/
+
+      - name: Add Helm repositories
+        run: |
+          helm repo add bitnami https://charts.bitnami.com/bitnami
+          helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+          helm repo add grafana https://grafana.github.io/helm-charts
+          helm repo update
+
+      - name: Update chart dependencies
+        run: |
+          helm dependency update ${{ matrix.chart }} || true
+
+      - name: Template with default values
+        run: |
+          CHART="${{ matrix.chart }}"
+
+          echo "Rendering templates for $CHART with default values..."
+          helm template greenlang-test "$CHART" \
+            --namespace greenlang-system \
+            --dry-run \
+            > /tmp/rendered-default.yaml
+
+          echo "Template rendering successful ($(wc -l < /tmp/rendered-default.yaml) lines)"
+
+      - name: Template with each environment values
+        run: |
+          CHART="${{ matrix.chart }}"
+
+          for ENV in dev staging prod; do
+            VALUES_FILE=""
+
+            for candidate in \
+              "$CHART/values-$ENV.yaml" \
+              "$CHART/values.$ENV.yaml"; do
+              if [[ -f "$candidate" ]]; then
+                VALUES_FILE="$candidate"
+                break
+              fi
+            done
+
+            if [[ -n "$VALUES_FILE" ]]; then
+              echo "Rendering templates for $ENV ($VALUES_FILE)..."
+              helm template greenlang-$ENV "$CHART" \
+                --namespace greenlang-system \
+                --values "$VALUES_FILE" \
+                --dry-run \
+                > "/tmp/rendered-$ENV.yaml"
+              echo "  OK ($(wc -l < /tmp/rendered-$ENV.yaml) lines)"
+            fi
+          done
+
+      - name: Validate rendered manifests with kubeconform
+        run: |
+          ERRORS=0
+
+          for rendered in /tmp/rendered-*.yaml; do
+            if [[ ! -f "$rendered" ]]; then
+              continue
+            fi
+
+            ENV_NAME=$(basename "$rendered" .yaml | sed 's/rendered-//')
+            echo "Validating $ENV_NAME manifests..."
+
+            kubeconform \
+              -strict \
+              -summary \
+              -kubernetes-version ${{ env.KUBERNETES_VERSION }} \
+              -schema-location default \
+              -schema-location 'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json' \
+              -ignore-missing-schemas \
+              "$rendered" 2>&1 || {
+                echo "::error::kubeconform validation failed for $ENV_NAME"
+                ERRORS=$((ERRORS + 1))
+              }
+          done
+
+          if [[ $ERRORS -gt 0 ]]; then
+            echo "::error::$ERRORS environment(s) had validation failures"
+            exit 1
+          fi
+
+          echo "All rendered manifests passed kubeconform validation"
+
+      - name: Template validation summary
+        if: always()
+        run: |
+          echo "## Template Validation: ${{ matrix.chart }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Environment | Render | Validate |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------------|--------|----------|" >> $GITHUB_STEP_SUMMARY
+
+          for ENV in default dev staging prod; do
+            if [[ -f "/tmp/rendered-$ENV.yaml" ]]; then
+              LINES=$(wc -l < "/tmp/rendered-$ENV.yaml")
+              echo "| $ENV | OK ($LINES lines) | ${{ job.status }} |" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "| $ENV | Skipped | N/A |" >> $GITHUB_STEP_SUMMARY
+            fi
+          done
+
+  # ==========================================================================
+  # JOB 4: Chart Testing with kind cluster
+  # ==========================================================================
+  test:
+    name: Install Test (${{ matrix.chart }})
+    runs-on: ubuntu-latest
+    needs: [detect-changed-charts, lint, template]
+    if: needs.detect-changed-charts.outputs.changed == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        chart: ${{ fromJson(needs.detect-changed-charts.outputs.charts_json) }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v${{ env.HELM_VERSION }}
+
+      - name: Setup chart-testing (ct)
+        uses: helm/chart-testing-action@v2.6.1
+
+      - name: Create kind cluster
+        uses: helm/kind-action@v1.10.0
+        with:
+          cluster_name: chart-testing
+          node_image: kindest/node:v${{ env.KUBERNETES_VERSION }}
+
+      - name: Add Helm repositories
+        run: |
+          helm repo add bitnami https://charts.bitnami.com/bitnami
+          helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+          helm repo add grafana https://grafana.github.io/helm-charts
+          helm repo update
+
+      - name: Create test namespace
+        run: |
+          kubectl create namespace greenlang-test || true
+
+      - name: Install chart
+        run: |
+          CHART="${{ matrix.chart }}"
+          CHART_NAME=$(basename "$CHART")
+
+          echo "Installing chart $CHART_NAME from $CHART..."
+
+          # Use dev values for test installation (lighter resource requirements)
+          VALUES_FILE=""
+          for candidate in \
+            "$CHART/values-dev.yaml" \
+            "$CHART/values.dev.yaml"; do
+            if [[ -f "$candidate" ]]; then
+              VALUES_FILE="--values $candidate"
+              break
+            fi
+          done
+
+          helm install greenlang-test "$CHART" \
+            --namespace greenlang-test \
+            $VALUES_FILE \
+            --set global.environment=test \
+            --set redis.enabled=false \
+            --set postgresql.enabled=false \
+            --set prometheus.enabled=false \
+            --set grafana.enabled=false \
+            --wait \
+            --timeout 5m \
+            || {
+              echo "::error::Chart installation failed"
+              echo "--- Pod status ---"
+              kubectl get pods -n greenlang-test
+              echo "--- Events ---"
+              kubectl get events -n greenlang-test --sort-by='.lastTimestamp'
+              exit 1
+            }
+
+          echo "Chart installation successful"
+
+      - name: Verify installation
+        run: |
+          echo "Verifying chart installation..."
+
+          kubectl get all -n greenlang-test
+
+          # Check that expected resources exist
+          kubectl get deployments -n greenlang-test -o name | head -5
+          kubectl get services -n greenlang-test -o name | head -5
+          kubectl get configmaps -n greenlang-test -o name | head -5
+
+      - name: Run chart-testing lint
+        run: |
+          ct lint \
+            --charts ${{ matrix.chart }} \
+            --validate-maintainers=false \
+            --check-version-increment=false \
+            || echo "::warning::ct lint reported issues (non-blocking for install test)"
+
+      - name: Cleanup
+        if: always()
+        run: |
+          helm uninstall greenlang-test --namespace greenlang-test 2>/dev/null || true
+          kubectl delete namespace greenlang-test 2>/dev/null || true
+
+      - name: Test summary
+        if: always()
+        run: |
+          echo "## Chart Install Test: ${{ matrix.chart }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status:** ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Cluster:** kind (Kubernetes v${{ env.KUBERNETES_VERSION }})" >> $GITHUB_STEP_SUMMARY

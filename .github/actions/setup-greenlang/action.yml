@@ -1,0 +1,134 @@
+# =============================================================================
+# GreenLang Climate OS - Setup GreenLang Composite Action
+# INFRA-007: Standardized Python + GreenLang Environment Setup
+# =============================================================================
+#
+# Provides a reusable action for setting up the Python runtime and installing
+# the GreenLang package with configurable extras. Caches pip downloads to
+# accelerate subsequent runs.
+#
+# Usage:
+#   - uses: ./.github/actions/setup-greenlang
+#     with:
+#       python-version: '3.11'
+#       install-extras: 'test,dev'
+# =============================================================================
+
+name: 'Setup GreenLang Environment'
+description: 'Composite action to set up Python, install GreenLang with extras, and cache dependencies'
+
+inputs:
+  python-version:
+    description: 'Python version to install (must be 3.10+)'
+    required: false
+    default: '3.11'
+  install-extras:
+    description: 'Comma-separated list of pip extras to install (e.g. test,dev,docs)'
+    required: false
+    default: 'test,dev'
+  cache-key:
+    description: 'Optional additional cache key suffix for pip cache isolation between jobs'
+    required: false
+    default: ''
+
+outputs:
+  python-path:
+    description: 'Absolute path to the Python interpreter'
+    value: ${{ steps.setup-python.outputs.python-path }}
+  greenlang-version:
+    description: 'Installed GreenLang package version'
+    value: ${{ steps.greenlang-version.outputs.version }}
+
+runs:
+  using: 'composite'
+  steps:
+    # ------------------------------------------------------------------
+    # Step 1: Checkout repository
+    # ------------------------------------------------------------------
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 1
+
+    # ------------------------------------------------------------------
+    # Step 2: Set up Python with pip caching
+    # ------------------------------------------------------------------
+    - name: Set up Python ${{ inputs.python-version }}
+      id: setup-python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ inputs.python-version }}
+        cache: 'pip'
+        cache-dependency-path: |
+          **/requirements*.txt
+          **/pyproject.toml
+          **/setup.cfg
+
+    # ------------------------------------------------------------------
+    # Step 3: Upgrade pip and core build tools
+    # ------------------------------------------------------------------
+    - name: Upgrade pip and build tools
+      shell: bash
+      run: |
+        python -m pip install --upgrade pip setuptools wheel
+
+    # ------------------------------------------------------------------
+    # Step 4: Install GreenLang with requested extras
+    # ------------------------------------------------------------------
+    - name: Install GreenLang with extras [${{ inputs.install-extras }}]
+      shell: bash
+      run: |
+        EXTRAS="${{ inputs.install-extras }}"
+
+        if [ -f "pyproject.toml" ]; then
+          if [ -n "${EXTRAS}" ]; then
+            echo "::group::Installing GreenLang with extras: ${EXTRAS}"
+            pip install ".[$EXTRAS]"
+            echo "::endgroup::"
+          else
+            echo "::group::Installing GreenLang (no extras)"
+            pip install "."
+            echo "::endgroup::"
+          fi
+        elif [ -f "requirements.txt" ]; then
+          echo "::group::Installing from requirements.txt"
+          pip install -r requirements.txt
+          echo "::endgroup::"
+        else
+          echo "::error::No pyproject.toml or requirements.txt found"
+          exit 1
+        fi
+
+    # ------------------------------------------------------------------
+    # Step 5: Capture GreenLang version
+    # ------------------------------------------------------------------
+    - name: Capture GreenLang version
+      id: greenlang-version
+      shell: bash
+      run: |
+        VERSION=$(python -c "
+        try:
+            from importlib.metadata import version
+            print(version('greenlang'))
+        except Exception:
+            print('unknown')
+        ")
+        echo "version=${VERSION}" >> "${GITHUB_OUTPUT}"
+        echo "GreenLang version: ${VERSION}"
+
+    # ------------------------------------------------------------------
+    # Step 6: Display environment summary
+    # ------------------------------------------------------------------
+    - name: Display environment summary
+      shell: bash
+      run: |
+        echo "============================================="
+        echo " GreenLang Environment Setup Complete"
+        echo "============================================="
+        echo "Python version : $(python --version 2>&1)"
+        echo "Python path    : $(which python)"
+        echo "Pip version    : $(pip --version)"
+        echo "GreenLang ver  : ${{ steps.greenlang-version.outputs.version }}"
+        echo "Extras         : ${{ inputs.install-extras }}"
+        echo "Cache key      : ${{ inputs.cache-key || '(default)' }}"
+        echo "============================================="

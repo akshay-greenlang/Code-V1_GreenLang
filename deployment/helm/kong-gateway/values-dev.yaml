@@ -1,0 +1,57 @@
+# =============================================================================
+# Kong API Gateway - Development Overrides
+# GreenLang Climate OS | infra-006
+# =============================================================================
+
+kong:
+  replicaCount: 1
+
+  env:
+    log_level: "debug"
+    admin_listen: "0.0.0.0:8001, 0.0.0.0:8444 http2 ssl"
+
+  proxy:
+    type: NodePort
+    annotations: {}
+    tls:
+      enabled: true
+      parameters:
+        - http2
+
+  admin:
+    enabled: true
+    type: NodePort
+    http:
+      enabled: true
+      containerPort: 8001
+      servicePort: 8001
+
+  resources:
+    requests:
+      cpu: "250m"
+      memory: "256Mi"
+    limits:
+      cpu: "500m"
+      memory: "512Mi"
+
+  autoscaling:
+    enabled: false
+
+  podDisruptionBudget:
+    enabled: false
+
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+  serviceMonitor:
+    enabled: false
+
+tls:
+  enabled: true
+  certManager:
+    enabled: false
+  selfSigned: true
+
+global:
+  environment: dev

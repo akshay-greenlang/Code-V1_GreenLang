@@ -322,7 +322,8 @@
       "Bash(aws sts get-caller-identity:*)",
       "Bash(pip:*)",
       "Bash(C:UsersakshaAppDataRoamingnpmralphy.cmd --version)",
-      "Bash(Select-Object -First 10)"
+      "Bash(Select-Object -First 10)",
+      "WebFetch(domain:doc-10-bg-docstext.googleusercontent.com)"
     ],
     "deny": [],
     "ask": []

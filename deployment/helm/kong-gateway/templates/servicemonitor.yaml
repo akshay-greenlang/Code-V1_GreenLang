@@ -1,0 +1,48 @@
+{{/*
+=============================================================================
+Kong API Gateway - Prometheus ServiceMonitor
+GreenLang Climate OS | infra-006
+=============================================================================
+*/}}
+{{- if .Values.kong.serviceMonitor.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "kong-gateway.fullname" . }}
+  namespace: {{ default "monitoring" .Values.kong.serviceMonitor.namespace }}
+  labels:
+    {{- include "kong-gateway.labels" . | nindent 4 }}
+    {{- with .Values.kong.serviceMonitor.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- include "kong-gateway.annotations" . | nindent 4 }}
+spec:
+  namespaceSelector:
+    matchNames:
+      - {{ include "kong-gateway.namespace" . }}
+  selector:
+    matchLabels:
+      {{- include "kong-gateway.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: status
+  endpoints:
+    - port: status
+      path: /metrics
+      interval: {{ default "15s" .Values.kong.serviceMonitor.interval }}
+      scrapeTimeout: 10s
+      honorLabels: true
+      metricRelabelings:
+        # Keep only relevant Kong metrics to reduce cardinality
+        - sourceLabels: [__name__]
+          regex: "kong_(http_requests_total|request_latency_ms_(bucket|sum|count)|bandwidth_bytes|upstream_target_health|nginx_connections_total|datastore_reachable|memory_lua_shared_dict_(bytes|total_bytes))"
+          action: keep
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_pod_label_app_kubernetes_io_instance]
+          targetLabel: instance
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod
+        - targetLabel: cluster
+          replacement: greenlang-production
+{{- end }}

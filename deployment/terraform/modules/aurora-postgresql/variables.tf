@@ -425,6 +425,48 @@ variable "timescaledb_telemetry_level" {
 }
 
 ################################################################################
+# Replication Configuration (INFRA-002)
+################################################################################
+
+variable "synchronous_commit" {
+  description = "Synchronous commit mode: on, remote_apply, remote_write, local, off. Use 'remote_apply' for zero-data-loss replication."
+  type        = string
+  default     = "remote_apply"
+
+  validation {
+    condition     = contains(["on", "off", "local", "remote_write", "remote_apply"], var.synchronous_commit)
+    error_message = "synchronous_commit must be one of: on, off, local, remote_write, remote_apply."
+  }
+}
+
+################################################################################
+# pgvector Configuration (INFRA-005)
+################################################################################
+
+variable "pgvector_hnsw_ef_search" {
+  description = "HNSW ef_search parameter (query-time search width). Higher = better recall, slower. Dev: 40, Staging: 100, Prod: 200"
+  type        = number
+  default     = 100
+
+  validation {
+    condition     = var.pgvector_hnsw_ef_search >= 10 && var.pgvector_hnsw_ef_search <= 1000
+    error_message = "pgvector HNSW ef_search must be between 10 and 1000."
+  }
+}
+
+variable "pgvector_audit_log_level" {
+  description = "pgaudit logging level for vector operations (write, ddl, all)"
+  type        = string
+  default     = "write, ddl"
+}
+
+variable "pgvector_embedding_service_sg_id" {
+  description = "Security group ID for the embedding service (allowed to access pgvector)"
+  type        = string
+  default     = ""
+}
+
+################################################################################
 # Connection Configuration
 ################################################################################
 

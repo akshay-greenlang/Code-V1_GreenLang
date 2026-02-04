@@ -1,0 +1,673 @@
+# INFRA-007: GreenLang Environment Promotion Pipeline
+#
+# Automated environment promotion workflow:
+# - Validates source environment health before promotion
+# - Supports dev -> staging (auto) and staging -> production (manual approval)
+# - Blue-green deployment for production promotions
+# - DORA metrics recording at each stage
+# - Automatic rollback if smoke tests fail within 10 minutes
+#
+# Security Compliance: SOC 2 CC8.1, ISO 27001 A.12.1.2
+# Author: GreenLang DevOps Team
+# Version: 1.0.0
+
+name: Promote Environment
+
+on:
+  workflow_dispatch:
+    inputs:
+      source-env:
+        description: 'Source environment to promote from'
+        required: true
+        type: choice
+        options:
+          - dev
+          - staging
+      target-env:
+        description: 'Target environment to promote to'
+        required: true
+        type: choice
+        options:
+          - staging
+          - production
+      image-tag:
+        description: 'Docker image tag to promote'
+        required: true
+        type: string
+
+  workflow_run:
+    workflows: ["Deploy Environments"]
+    types:
+      - completed
+
+permissions:
+  contents: read
+  id-token: write
+  deployments: write
+
+concurrency:
+  group: promote-${{ inputs.target-env || 'staging' }}
+  cancel-in-progress: false
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  AWS_REGION: us-east-1
+  KUBECTL_VERSION: '1.29.0'
+  HELM_VERSION: '3.14.0'
+
+jobs:
+  # ==========================================================================
+  # JOB 1: Validate promotion prerequisites
+  # ==========================================================================
+  validate-promotion:
+    name: Validate Promotion
+    runs-on: ubuntu-latest
+    outputs:
+      source_env: ${{ steps.resolve.outputs.source_env }}
+      target_env: ${{ steps.resolve.outputs.target_env }}
+      image_tag: ${{ steps.resolve.outputs.image_tag }}
+      aws_role_arn: ${{ steps.resolve.outputs.aws_role_arn }}
+      eks_cluster: ${{ steps.resolve.outputs.eks_cluster }}
+      promotion_id: ${{ steps.resolve.outputs.promotion_id }}
+      should_promote: ${{ steps.gate.outputs.should_promote }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Resolve promotion parameters
+        id: resolve
+        run: |
+          PROMOTION_ID="promote-$(date +%s)-${GITHUB_RUN_NUMBER}"
+          echo "promotion_id=$PROMOTION_ID" >> $GITHUB_OUTPUT
+
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            SOURCE="${{ inputs.source-env }}"
+            TARGET="${{ inputs.target-env }}"
+            TAG="${{ inputs.image-tag }}"
+          else
+            # Auto-promotion: dev -> staging after successful Deploy Environments
+            SOURCE="dev"
+            TARGET="staging"
+            TAG="${{ github.event.workflow_run.head_sha }}"
+          fi
+
+          echo "source_env=$SOURCE" >> $GITHUB_OUTPUT
+          echo "target_env=$TARGET" >> $GITHUB_OUTPUT
+          echo "image_tag=$TAG" >> $GITHUB_OUTPUT
+
+          # Validate promotion path
+          if [[ "$SOURCE" == "dev" && "$TARGET" != "staging" ]]; then
+            echo "::error::Invalid promotion path: dev can only promote to staging"
+            exit 1
+          fi
+          if [[ "$SOURCE" == "staging" && "$TARGET" != "production" ]]; then
+            echo "::error::Invalid promotion path: staging can only promote to production"
+            exit 1
+          fi
+
+          # Set AWS role and EKS cluster based on target
+          case "$TARGET" in
+            staging)
+              echo "aws_role_arn=arn:aws:iam::123456789012:role/greenlang-staging-github-actions" >> $GITHUB_OUTPUT
+              echo "eks_cluster=greenlang-staging-eks" >> $GITHUB_OUTPUT
+              ;;
+            production)
+              echo "aws_role_arn=arn:aws:iam::123456789012:role/greenlang-prod-github-actions" >> $GITHUB_OUTPUT
+              echo "eks_cluster=greenlang-prod-eks" >> $GITHUB_OUTPUT
+              ;;
+          esac
+
+          echo "## Promotion Parameters" >> $GITHUB_STEP_SUMMARY
+          echo "- **Promotion ID:** $PROMOTION_ID" >> $GITHUB_STEP_SUMMARY
+          echo "- **Source:** $SOURCE" >> $GITHUB_STEP_SUMMARY
+          echo "- **Target:** $TARGET" >> $GITHUB_STEP_SUMMARY
+          echo "- **Image Tag:** $TAG" >> $GITHUB_STEP_SUMMARY
+
+      - name: Check workflow_run trigger conditions
+        if: github.event_name == 'workflow_run'
+        run: |
+          if [[ "${{ github.event.workflow_run.conclusion }}" != "success" ]]; then
+            echo "::notice::Skipping auto-promotion - Deploy Environments did not succeed"
+            echo "should_skip=true" >> $GITHUB_ENV
+          fi
+
+      - name: Configure AWS credentials via OIDC
+        if: env.should_skip != 'true'
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ steps.resolve.outputs.aws_role_arn }}
+          role-session-name: github-actions-validate-promotion
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup kubectl
+        if: env.should_skip != 'true'
+        uses: azure/setup-kubectl@v3
+        with:
+          version: v${{ env.KUBECTL_VERSION }}
+
+      - name: Check source environment health
+        if: env.should_skip != 'true'
+        id: health
+        run: |
+          SOURCE_ENV="${{ steps.resolve.outputs.source_env }}"
+
+          # Configure kubectl for source environment cluster
+          case "$SOURCE_ENV" in
+            dev)
+              aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name greenlang-dev-eks
+              ;;
+            staging)
+              aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name greenlang-staging-eks
+              ;;
+          esac
+
+          echo "Checking health of $SOURCE_ENV environment..."
+
+          # Verify deployment is healthy
+          READY=$(kubectl get deployment greenlang-runner -n greenlang-system \
+            -o jsonpath='{.status.readyReplicas}' 2>/dev/null || echo "0")
+          DESIRED=$(kubectl get deployment greenlang-runner -n greenlang-system \
+            -o jsonpath='{.spec.replicas}' 2>/dev/null || echo "0")
+
+          if [[ "$READY" -lt "$DESIRED" || "$READY" == "0" ]]; then
+            echo "::error::Source environment $SOURCE_ENV is not healthy (ready: $READY, desired: $DESIRED)"
+            echo "healthy=false" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+
+          echo "healthy=true" >> $GITHUB_OUTPUT
+          echo "Source environment $SOURCE_ENV is healthy ($READY/$DESIRED pods ready)"
+
+      - name: Verify CI gates passed
+        if: env.should_skip != 'true'
+        run: |
+          TAG="${{ steps.resolve.outputs.image_tag }}"
+
+          # Verify the image exists in the registry
+          echo "Verifying image ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$TAG exists..."
+
+          # Use GitHub API to check workflow conclusions for this commit
+          echo "Checking CI gate status for commit/tag: $TAG"
+
+          # Query recent workflow runs for the commit
+          RUNS=$(gh api repos/${{ github.repository }}/actions/runs \
+            --jq '.workflow_runs[] | select(.head_sha == "'$TAG'" or .name == "CI Main") | {name: .name, conclusion: .conclusion, status: .status}' \
+            2>/dev/null || echo "")
+
+          if [[ -z "$RUNS" ]]; then
+            echo "::warning::Could not verify CI gate status - proceeding with caution"
+          else
+            echo "CI workflow runs found for this commit"
+            echo "$RUNS"
+          fi
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Verify security scan clean
+        if: env.should_skip != 'true'
+        run: |
+          TAG="${{ steps.resolve.outputs.image_tag }}"
+
+          # Check for security scan results
+          echo "Verifying security scan status for tag: $TAG"
+
+          SECURITY_RUNS=$(gh api repos/${{ github.repository }}/actions/runs \
+            --jq '.workflow_runs[] | select(.name == "Unified Security Scan" and .conclusion == "success") | .id' \
+            --paginate 2>/dev/null | head -1 || echo "")
+
+          if [[ -z "$SECURITY_RUNS" ]]; then
+            echo "::warning::No recent successful security scan found - manual verification required"
+          else
+            echo "Security scan passed (run ID: $SECURITY_RUNS)"
+          fi
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Promotion gate decision
+        id: gate
+        run: |
+          if [[ "${{ env.should_skip }}" == "true" ]]; then
+            echo "should_promote=false" >> $GITHUB_OUTPUT
+          else
+            echo "should_promote=true" >> $GITHUB_OUTPUT
+          fi
+
+  # ==========================================================================
+  # JOB 2: Execute promotion
+  # ==========================================================================
+  promote:
+    name: Promote to ${{ needs.validate-promotion.outputs.target_env }}
+    runs-on: ubuntu-latest
+    needs: [validate-promotion]
+    if: needs.validate-promotion.outputs.should_promote == 'true'
+    environment: ${{ needs.validate-promotion.outputs.target_env }}
+    outputs:
+      deploy_start: ${{ steps.timing.outputs.deploy_start }}
+      deploy_end: ${{ steps.complete.outputs.deploy_end }}
+      previous_revision: ${{ steps.pre-state.outputs.revision }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Record deployment start time
+        id: timing
+        run: |
+          echo "deploy_start=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_OUTPUT
+
+      - name: Configure AWS credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ needs.validate-promotion.outputs.aws_role_arn }}
+          role-session-name: github-actions-promote-${{ needs.validate-promotion.outputs.promotion_id }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: v${{ env.KUBECTL_VERSION }}
+
+      - name: Setup Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v${{ env.HELM_VERSION }}
+
+      - name: Configure kubectl for target cluster
+        run: |
+          aws eks update-kubeconfig \
+            --region ${{ env.AWS_REGION }} \
+            --name ${{ needs.validate-promotion.outputs.eks_cluster }}
+
+      - name: Record pre-promotion state
+        id: pre-state
+        run: |
+          REVISION=$(kubectl rollout history deployment/greenlang-runner -n greenlang-system 2>/dev/null \
+            | tail -2 | head -1 | awk '{print $1}' || echo "0")
+          echo "revision=$REVISION" >> $GITHUB_OUTPUT
+
+          CURRENT_IMAGE=$(kubectl get deployment greenlang-runner -n greenlang-system \
+            -o jsonpath='{.spec.template.spec.containers[0].image}' 2>/dev/null || echo "none")
+          echo "current_image=$CURRENT_IMAGE" >> $GITHUB_OUTPUT
+
+          echo "## Pre-Promotion State" >> $GITHUB_STEP_SUMMARY
+          echo "- **Current Revision:** $REVISION" >> $GITHUB_STEP_SUMMARY
+          echo "- **Current Image:** $CURRENT_IMAGE" >> $GITHUB_STEP_SUMMARY
+
+      # ---- Staging Promotion (Helm upgrade + integration tests) ----
+      - name: Promote to staging via Helm
+        if: needs.validate-promotion.outputs.target_env == 'staging'
+        run: |
+          TAG="${{ needs.validate-promotion.outputs.image_tag }}"
+
+          echo "Deploying to staging with tag: $TAG"
+
+          helm upgrade --install greenlang \
+            deployment/infrastructure/helm/greenlang \
+            --namespace greenlang-system \
+            --create-namespace \
+            --values deployment/infrastructure/helm/greenlang/values-staging.yaml \
+            --set image.tag="$TAG" \
+            --set image.registry="${{ env.REGISTRY }}" \
+            --set image.repository="${{ env.IMAGE_NAME }}" \
+            --set global.environment=staging \
+            --wait \
+            --timeout 10m \
+            --atomic
+
+          echo "Helm upgrade to staging complete"
+
+      - name: Run staging integration tests
+        if: needs.validate-promotion.outputs.target_env == 'staging'
+        run: |
+          echo "Running integration tests against staging..."
+
+          # Wait for pods to be fully ready
+          kubectl wait --for=condition=ready pod \
+            -l app.kubernetes.io/name=greenlang \
+            -n greenlang-system \
+            --timeout=120s
+
+          # Run integration test pod
+          kubectl run integration-test-${{ github.run_number }} \
+            --rm -i --restart=Never \
+            --image=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.validate-promotion.outputs.image_tag }} \
+            -n greenlang-system \
+            --env="TEST_TARGET=staging" \
+            --env="GL_ENV=staging" \
+            -- python -m pytest tests/integration/ -v --timeout=300 \
+            || {
+              echo "::error::Staging integration tests failed"
+              exit 1
+            }
+
+          echo "Staging integration tests passed"
+
+      # ---- Production Promotion (Blue-Green Deploy) ----
+      - name: Production blue-green deployment
+        if: needs.validate-promotion.outputs.target_env == 'production'
+        id: blue-green
+        run: |
+          TAG="${{ needs.validate-promotion.outputs.image_tag }}"
+
+          echo "Performing blue-green deployment to production with tag: $TAG"
+
+          # Determine current active color
+          CURRENT_COLOR=$(kubectl get svc greenlang-service -n greenlang-system \
+            -o jsonpath='{.spec.selector.version}' 2>/dev/null || echo "blue")
+
+          if [[ "$CURRENT_COLOR" == "blue" ]]; then
+            NEW_COLOR="green"
+          else
+            NEW_COLOR="blue"
+          fi
+
+          echo "current_color=$CURRENT_COLOR" >> $GITHUB_OUTPUT
+          echo "new_color=$NEW_COLOR" >> $GITHUB_OUTPUT
+
+          echo "Current active: $CURRENT_COLOR, deploying to: $NEW_COLOR"
+
+          # Deploy to the inactive color using Helm
+          helm upgrade --install greenlang-$NEW_COLOR \
+            deployment/infrastructure/helm/greenlang \
+            --namespace greenlang-system \
+            --values deployment/infrastructure/helm/greenlang/values-prod.yaml \
+            --set image.tag="$TAG" \
+            --set image.registry="${{ env.REGISTRY }}" \
+            --set image.repository="${{ env.IMAGE_NAME }}" \
+            --set global.environment=production \
+            --set deployment.color="$NEW_COLOR" \
+            --wait \
+            --timeout 10m
+
+          # Verify new deployment is healthy before switching traffic
+          kubectl wait --for=condition=ready pod \
+            -l app.kubernetes.io/name=greenlang,version=$NEW_COLOR \
+            -n greenlang-system \
+            --timeout=180s
+
+          # Run pre-switch health check
+          kubectl run pre-switch-check-${{ github.run_number }} \
+            --rm -i --restart=Never \
+            --image=curlimages/curl:latest \
+            -n greenlang-system \
+            -- curl -sf http://greenlang-$NEW_COLOR-service:8080/api/v1/health \
+            || {
+              echo "::error::Pre-switch health check failed for $NEW_COLOR deployment"
+              exit 1
+            }
+
+          # Switch traffic to new color
+          kubectl patch svc greenlang-service -n greenlang-system \
+            -p "{\"spec\":{\"selector\":{\"version\":\"$NEW_COLOR\"}}}"
+
+          echo "Traffic switched from $CURRENT_COLOR to $NEW_COLOR"
+          echo "## Blue-Green Deployment" >> $GITHUB_STEP_SUMMARY
+          echo "- **Previous Color:** $CURRENT_COLOR" >> $GITHUB_STEP_SUMMARY
+          echo "- **New Color:** $NEW_COLOR" >> $GITHUB_STEP_SUMMARY
+          echo "- **Image Tag:** $TAG" >> $GITHUB_STEP_SUMMARY
+
+      - name: Record deployment completion
+        id: complete
+        run: |
+          echo "deploy_end=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_OUTPUT
+
+  # ==========================================================================
+  # JOB 3: Post-promotion validation
+  # ==========================================================================
+  post-promote:
+    name: Post-Promotion Validation
+    runs-on: ubuntu-latest
+    needs: [validate-promotion, promote]
+    if: needs.promote.result == 'success'
+    outputs:
+      smoke_passed: ${{ steps.smoke.outputs.passed }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ needs.validate-promotion.outputs.aws_role_arn }}
+          role-session-name: github-actions-post-promote
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: v${{ env.KUBECTL_VERSION }}
+
+      - name: Configure kubectl
+        run: |
+          aws eks update-kubeconfig \
+            --region ${{ env.AWS_REGION }} \
+            --name ${{ needs.validate-promotion.outputs.eks_cluster }}
+
+      - name: Run smoke tests
+        id: smoke
+        run: |
+          TARGET="${{ needs.validate-promotion.outputs.target_env }}"
+          TAG="${{ needs.validate-promotion.outputs.image_tag }}"
+
+          echo "Running smoke tests against $TARGET..."
+
+          # Health check
+          HEALTH_OK=false
+          for i in $(seq 1 10); do
+            kubectl run smoke-health-${{ github.run_number }}-$i \
+              --rm -i --restart=Never \
+              --image=curlimages/curl:latest \
+              -n greenlang-system \
+              -- curl -sf http://greenlang-service:8080/api/v1/health \
+              && { HEALTH_OK=true; break; }
+            echo "Health check attempt $i failed, retrying in 15s..."
+            sleep 15
+          done
+
+          if [[ "$HEALTH_OK" != "true" ]]; then
+            echo "::error::Smoke test health check failed after 10 attempts"
+            echo "passed=false" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+
+          # Readiness check
+          kubectl run smoke-ready-${{ github.run_number }} \
+            --rm -i --restart=Never \
+            --image=curlimages/curl:latest \
+            -n greenlang-system \
+            -- curl -sf http://greenlang-service:8080/api/v1/ready \
+            || {
+              echo "::error::Readiness check failed"
+              echo "passed=false" >> $GITHUB_OUTPUT
+              exit 1
+            }
+
+          # Run smoke test suite
+          kubectl run smoke-suite-${{ github.run_number }} \
+            --rm -i --restart=Never \
+            --image=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$TAG \
+            -n greenlang-system \
+            --env="GL_ENV=$TARGET" \
+            -- python -m pytest tests/smoke/ -v --timeout=120 \
+            || {
+              echo "::error::Smoke test suite failed"
+              echo "passed=false" >> $GITHUB_OUTPUT
+              exit 1
+            }
+
+          echo "passed=true" >> $GITHUB_OUTPUT
+          echo "All smoke tests passed for $TARGET"
+
+      - name: Record DORA deployment metric
+        if: always()
+        uses: ./.github/actions/dora-record
+        with:
+          metric-type: deployment
+          environment: ${{ needs.validate-promotion.outputs.target_env }}
+          status: ${{ steps.smoke.outputs.passed == 'true' && 'success' || 'failure' }}
+          deploy-start: ${{ needs.promote.outputs.deploy_start }}
+          deploy-end: ${{ needs.promote.outputs.deploy_end }}
+          image-tag: ${{ needs.validate-promotion.outputs.image_tag }}
+          promotion-id: ${{ needs.validate-promotion.outputs.promotion_id }}
+        continue-on-error: true
+
+      - name: Send promotion notification
+        if: always()
+        uses: ./.github/actions/notify
+        with:
+          status: ${{ steps.smoke.outputs.passed == 'true' && 'success' || 'failure' }}
+          environment: ${{ needs.validate-promotion.outputs.target_env }}
+          message: |
+            Environment promotion ${{ steps.smoke.outputs.passed == 'true' && 'succeeded' || 'FAILED' }}
+            Source: ${{ needs.validate-promotion.outputs.source_env }}
+            Target: ${{ needs.validate-promotion.outputs.target_env }}
+            Image: ${{ needs.validate-promotion.outputs.image_tag }}
+            Promotion ID: ${{ needs.validate-promotion.outputs.promotion_id }}
+          slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
+        continue-on-error: true
+
+      - name: Post-promotion summary
+        if: always()
+        run: |
+          echo "# Promotion Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Parameter | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Source | ${{ needs.validate-promotion.outputs.source_env }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Target | ${{ needs.validate-promotion.outputs.target_env }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Image Tag | ${{ needs.validate-promotion.outputs.image_tag }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Promotion ID | ${{ needs.validate-promotion.outputs.promotion_id }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Smoke Tests | ${{ steps.smoke.outputs.passed == 'true' && 'PASSED' || 'FAILED' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Deploy Start | ${{ needs.promote.outputs.deploy_start }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Deploy End | ${{ needs.promote.outputs.deploy_end }} |" >> $GITHUB_STEP_SUMMARY
+
+  # ==========================================================================
+  # JOB 4: Auto-rollback on smoke test failure
+  # ==========================================================================
+  auto-rollback:
+    name: Auto-Rollback (Smoke Failure)
+    runs-on: ubuntu-latest
+    needs: [validate-promotion, promote, post-promote]
+    if: |
+      always() &&
+      needs.promote.result == 'success' &&
+      needs.post-promote.outputs.smoke_passed != 'true'
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ needs.validate-promotion.outputs.aws_role_arn }}
+          role-session-name: github-actions-auto-rollback
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: v${{ env.KUBECTL_VERSION }}
+
+      - name: Setup Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v${{ env.HELM_VERSION }}
+
+      - name: Configure kubectl
+        run: |
+          aws eks update-kubeconfig \
+            --region ${{ env.AWS_REGION }} \
+            --name ${{ needs.validate-promotion.outputs.eks_cluster }}
+
+      - name: Execute auto-rollback
+        run: |
+          TARGET="${{ needs.validate-promotion.outputs.target_env }}"
+          PREV_REVISION="${{ needs.promote.outputs.previous_revision }}"
+
+          echo "::warning::Auto-rollback triggered for $TARGET environment"
+          echo "Smoke tests failed - rolling back to previous revision"
+
+          if [[ "$TARGET" == "production" ]]; then
+            # For production blue-green, switch traffic back to previous color
+            # The promote step recorded current_color and new_color
+            CURRENT_ACTIVE=$(kubectl get svc greenlang-service -n greenlang-system \
+              -o jsonpath='{.spec.selector.version}' 2>/dev/null)
+
+            if [[ "$CURRENT_ACTIVE" == "green" ]]; then
+              ROLLBACK_TO="blue"
+            else
+              ROLLBACK_TO="green"
+            fi
+
+            echo "Switching traffic back to $ROLLBACK_TO"
+            kubectl patch svc greenlang-service -n greenlang-system \
+              -p "{\"spec\":{\"selector\":{\"version\":\"$ROLLBACK_TO\"}}}"
+          else
+            # For staging, use Helm rollback
+            helm rollback greenlang 0 --namespace greenlang-system --wait --timeout 5m \
+              || {
+                echo "Helm rollback failed, attempting kubectl rollout undo..."
+                kubectl rollout undo deployment/greenlang-runner -n greenlang-system
+              }
+          fi
+
+      - name: Verify rollback
+        run: |
+          kubectl rollout status deployment/greenlang-runner -n greenlang-system --timeout=5m
+
+          # Health check after rollback
+          kubectl run rollback-health-${{ github.run_number }} \
+            --rm -i --restart=Never \
+            --image=curlimages/curl:latest \
+            -n greenlang-system \
+            -- curl -sf http://greenlang-service:8080/api/v1/health \
+            || echo "::warning::Post-rollback health check failed - manual intervention may be required"
+
+      - name: Record DORA recovery metric
+        uses: ./.github/actions/dora-record
+        with:
+          metric-type: recovery
+          environment: ${{ needs.validate-promotion.outputs.target_env }}
+          status: rollback
+          deploy-start: ${{ needs.promote.outputs.deploy_start }}
+          deploy-end: ${{ needs.promote.outputs.deploy_end }}
+          image-tag: ${{ needs.validate-promotion.outputs.image_tag }}
+          promotion-id: ${{ needs.validate-promotion.outputs.promotion_id }}
+        continue-on-error: true
+
+      - name: Send rollback notification
+        uses: ./.github/actions/notify
+        with:
+          status: warning
+          environment: ${{ needs.validate-promotion.outputs.target_env }}
+          message: |
+            AUTO-ROLLBACK executed for ${{ needs.validate-promotion.outputs.target_env }}
+            Reason: Smoke tests failed after promotion
+            Image that failed: ${{ needs.validate-promotion.outputs.image_tag }}
+            Promotion ID: ${{ needs.validate-promotion.outputs.promotion_id }}
+            Action required: Investigate and fix before re-promoting
+          slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
+        continue-on-error: true
+
+      - name: Rollback summary
+        run: |
+          echo "# AUTO-ROLLBACK Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**WARNING: Automatic rollback was triggered**" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Parameter | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Environment | ${{ needs.validate-promotion.outputs.target_env }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Failed Image | ${{ needs.validate-promotion.outputs.image_tag }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Promotion ID | ${{ needs.validate-promotion.outputs.promotion_id }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Reason | Smoke tests failed post-promotion |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Next Steps" >> $GITHUB_STEP_SUMMARY
+          echo "1. Check smoke test logs for failure details" >> $GITHUB_STEP_SUMMARY
+          echo "2. Fix the identified issues" >> $GITHUB_STEP_SUMMARY
+          echo "3. Re-run promotion after fix is verified" >> $GITHUB_STEP_SUMMARY

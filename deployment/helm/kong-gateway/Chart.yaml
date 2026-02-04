@@ -1,0 +1,17 @@
+apiVersion: v2
+name: kong-gateway
+description: Kong API Gateway for GreenLang Climate OS
+type: application
+version: 1.0.0
+appVersion: "3.6.0"
+keywords:
+  - kong
+  - api-gateway
+  - greenlang
+  - infra-006
+maintainers:
+  - name: GreenLang Infrastructure Team
+    email: infra@greenlang.io
+# Note: This chart uses custom templates for full control over the Kong deployment.
+# The upstream Kong Helm chart (charts.konghq.com) is NOT used as a subchart dependency.
+# Values under the `kong:` key are consumed directly by our custom templates.

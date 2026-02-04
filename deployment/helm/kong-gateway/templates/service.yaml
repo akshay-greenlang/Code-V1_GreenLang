@@ -1,0 +1,91 @@
+{{/*
+=============================================================================
+Kong API Gateway - Services
+GreenLang Climate OS | infra-006
+=============================================================================
+*/}}
+
+# ---------------------------------------------------------------------------
+# Proxy service (external traffic)
+# ---------------------------------------------------------------------------
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "kong-gateway.fullname" . }}-proxy
+  namespace: {{ include "kong-gateway.namespace" . }}
+  labels:
+    {{- include "kong-gateway.labels" . | nindent 4 }}
+    app.kubernetes.io/component: proxy
+  annotations:
+    {{- include "kong-gateway.annotations" . | nindent 4 }}
+    {{- with .Values.kong.proxy.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  type: {{ .Values.kong.proxy.type }}
+  externalTrafficPolicy: {{ default "Local" .Values.kong.proxy.externalTrafficPolicy }}
+  selector:
+    {{- include "kong-gateway.selectorLabels" . | nindent 4 }}
+  ports:
+    {{- if .Values.kong.proxy.http.enabled }}
+    - name: proxy-http
+      port: {{ .Values.kong.proxy.http.servicePort }}
+      targetPort: {{ .Values.kong.proxy.http.containerPort }}
+      protocol: TCP
+    {{- end }}
+    {{- if .Values.kong.proxy.tls.enabled }}
+    - name: proxy-tls
+      port: {{ .Values.kong.proxy.tls.servicePort }}
+      targetPort: {{ .Values.kong.proxy.tls.containerPort }}
+      protocol: TCP
+    {{- end }}
+
+---
+# ---------------------------------------------------------------------------
+# Admin API service (cluster-internal only)
+# ---------------------------------------------------------------------------
+{{- if .Values.kong.admin.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "kong-gateway.fullname" . }}-admin
+  namespace: {{ include "kong-gateway.namespace" . }}
+  labels:
+    {{- include "kong-gateway.labels" . | nindent 4 }}
+    app.kubernetes.io/component: admin
+  annotations:
+    {{- include "kong-gateway.annotations" . | nindent 4 }}
+spec:
+  type: {{ .Values.kong.admin.type }}
+  selector:
+    {{- include "kong-gateway.selectorLabels" . | nindent 4 }}
+  ports:
+    - name: admin-http
+      port: {{ .Values.kong.admin.http.servicePort }}
+      targetPort: {{ .Values.kong.admin.http.containerPort }}
+      protocol: TCP
+{{- end }}
+
+---
+# ---------------------------------------------------------------------------
+# Status / metrics service (cluster-internal only)
+# ---------------------------------------------------------------------------
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "kong-gateway.fullname" . }}-status
+  namespace: {{ include "kong-gateway.namespace" . }}
+  labels:
+    {{- include "kong-gateway.labels" . | nindent 4 }}
+    app.kubernetes.io/component: status
+  annotations:
+    {{- include "kong-gateway.annotations" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  selector:
+    {{- include "kong-gateway.selectorLabels" . | nindent 4 }}
+  ports:
+    - name: status
+      port: {{ .Values.kong.status.http.containerPort }}
+      targetPort: {{ .Values.kong.status.http.containerPort }}
+      protocol: TCP

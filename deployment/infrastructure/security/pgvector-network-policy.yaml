@@ -1,0 +1,167 @@
+---
+# =============================================================================
+# GreenLang Climate OS - pgvector Network Policies
+# =============================================================================
+# PRD: INFRA-005 Vector Database Infrastructure with pgvector
+# Purpose: Kubernetes NetworkPolicy for pgvector access control
+# =============================================================================
+
+# Allow embedding service to connect to pgvector (via PgBouncer)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: pgvector-embedding-service-access
+  namespace: greenlang
+  labels:
+    component: pgvector
+    infra: INFRA-005
+spec:
+  podSelector:
+    matchLabels:
+      app: pgbouncer
+  policyTypes:
+    - Ingress
+  ingress:
+    # Allow from embedding service
+    - from:
+        - podSelector:
+            matchLabels:
+              app: embedding-service
+      ports:
+        - protocol: TCP
+          port: 6432
+    # Allow from vector search API
+    - from:
+        - podSelector:
+            matchLabels:
+              app: vector-search-api
+      ports:
+        - protocol: TCP
+          port: 6432
+    # Allow from RAG engine
+    - from:
+        - podSelector:
+            matchLabels:
+              app: rag-engine
+      ports:
+        - protocol: TCP
+          port: 6432
+    # Allow Prometheus scraping
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+          podSelector:
+            matchLabels:
+              app: prometheus
+      ports:
+        - protocol: TCP
+          port: 9127
+
+---
+# Deny all other ingress to PgBouncer
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: pgvector-default-deny
+  namespace: greenlang
+  labels:
+    component: pgvector
+    infra: INFRA-005
+spec:
+  podSelector:
+    matchLabels:
+      app: pgbouncer
+  policyTypes:
+    - Ingress
+  ingress: []
+
+---
+# Allow vector services to communicate with embedding model endpoint
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: pgvector-embedding-model-egress
+  namespace: greenlang
+  labels:
+    component: pgvector
+    infra: INFRA-005
+spec:
+  podSelector:
+    matchLabels:
+      app: embedding-service
+  policyTypes:
+    - Egress
+  egress:
+    # Allow to PgBouncer
+    - to:
+        - podSelector:
+            matchLabels:
+              app: pgbouncer
+      ports:
+        - protocol: TCP
+          port: 6432
+    # Allow DNS
+    - to:
+        - namespaceSelector: {}
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+    # Allow Redis (for embedding cache)
+    - to:
+        - podSelector:
+            matchLabels:
+              app: redis
+      ports:
+        - protocol: TCP
+          port: 6379
+
+---
+# Allow vector search API egress
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: pgvector-search-api-egress
+  namespace: greenlang
+  labels:
+    component: pgvector
+    infra: INFRA-005
+spec:
+  podSelector:
+    matchLabels:
+      app: vector-search-api
+  policyTypes:
+    - Egress
+  egress:
+    # Allow to PgBouncer
+    - to:
+        - podSelector:
+            matchLabels:
+              app: pgbouncer
+      ports:
+        - protocol: TCP
+          port: 6432
+    # Allow to embedding service
+    - to:
+        - podSelector:
+            matchLabels:
+              app: embedding-service
+      ports:
+        - protocol: TCP
+          port: 8080
+    # Allow DNS
+    - to:
+        - namespaceSelector: {}
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53

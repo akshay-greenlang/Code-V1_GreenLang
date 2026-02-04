@@ -1,0 +1,542 @@
+# INFRA-007: GreenLang Rollback Pipeline
+#
+# Automated rollback workflow with multiple strategies:
+# - last-good: Roll back to the previous known-good revision
+# - specific-revision: Roll back to a specific Kubernetes revision number
+# - specific-tag: Deploy a specific container image tag
+#
+# All rollbacks are audited with reason tracking, DORA metrics,
+# and automatic incident issue creation for post-mortem analysis.
+#
+# Security Compliance: SOC 2 CC8.1, ISO 27001 A.12.1.2
+# Author: GreenLang DevOps Team
+# Version: 1.0.0
+
+name: Rollback Deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment to rollback'
+        required: true
+        type: choice
+        options:
+          - dev
+          - staging
+          - production
+      strategy:
+        description: 'Rollback strategy'
+        required: true
+        type: choice
+        options:
+          - last-good
+          - specific-revision
+          - specific-tag
+        default: 'last-good'
+      revision:
+        description: 'Kubernetes revision number (for specific-revision strategy)'
+        required: false
+        type: string
+      image-tag:
+        description: 'Docker image tag (for specific-tag strategy)'
+        required: false
+        type: string
+      reason:
+        description: 'Reason for rollback (for audit trail)'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+  issues: write
+
+concurrency:
+  group: rollback-${{ inputs.environment }}
+  cancel-in-progress: false
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  AWS_REGION: us-east-1
+  KUBECTL_VERSION: '1.29.0'
+  HELM_VERSION: '3.14.0'
+
+jobs:
+  # ==========================================================================
+  # JOB 1: Pre-rollback preparation
+  # ==========================================================================
+  pre-rollback:
+    name: Pre-Rollback (${{ inputs.environment }})
+    runs-on: ubuntu-latest
+    outputs:
+      aws_role_arn: ${{ steps.params.outputs.aws_role_arn }}
+      eks_cluster: ${{ steps.params.outputs.eks_cluster }}
+      rollback_id: ${{ steps.params.outputs.rollback_id }}
+      current_image: ${{ steps.state.outputs.current_image }}
+      current_revision: ${{ steps.state.outputs.current_revision }}
+      rollback_start: ${{ steps.state.outputs.rollback_start }}
+      helm_release_exists: ${{ steps.state.outputs.helm_release_exists }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Resolve parameters
+        id: params
+        run: |
+          ROLLBACK_ID="rollback-$(date +%s)-${GITHUB_RUN_NUMBER}"
+          echo "rollback_id=$ROLLBACK_ID" >> $GITHUB_OUTPUT
+
+          # Validate inputs
+          if [[ "${{ inputs.strategy }}" == "specific-revision" && -z "${{ inputs.revision }}" ]]; then
+            echo "::error::Revision number is required for specific-revision strategy"
+            exit 1
+          fi
+
+          if [[ "${{ inputs.strategy }}" == "specific-tag" && -z "${{ inputs.image-tag }}" ]]; then
+            echo "::error::Image tag is required for specific-tag strategy"
+            exit 1
+          fi
+
+          # Set AWS role ARN and EKS cluster based on environment
+          case "${{ inputs.environment }}" in
+            dev)
+              echo "aws_role_arn=arn:aws:iam::123456789012:role/greenlang-dev-github-actions" >> $GITHUB_OUTPUT
+              echo "eks_cluster=greenlang-dev-eks" >> $GITHUB_OUTPUT
+              ;;
+            staging)
+              echo "aws_role_arn=arn:aws:iam::123456789012:role/greenlang-staging-github-actions" >> $GITHUB_OUTPUT
+              echo "eks_cluster=greenlang-staging-eks" >> $GITHUB_OUTPUT
+              ;;
+            production)
+              echo "aws_role_arn=arn:aws:iam::123456789012:role/greenlang-prod-github-actions" >> $GITHUB_OUTPUT
+              echo "eks_cluster=greenlang-prod-eks" >> $GITHUB_OUTPUT
+              ;;
+          esac
+
+          echo "## Rollback Parameters" >> $GITHUB_STEP_SUMMARY
+          echo "- **Rollback ID:** $ROLLBACK_ID" >> $GITHUB_STEP_SUMMARY
+          echo "- **Environment:** ${{ inputs.environment }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Strategy:** ${{ inputs.strategy }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Reason:** ${{ inputs.reason }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Triggered by:** ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+
+      - name: Configure AWS credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ steps.params.outputs.aws_role_arn }}
+          role-session-name: github-actions-pre-rollback
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: v${{ env.KUBECTL_VERSION }}
+
+      - name: Setup Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v${{ env.HELM_VERSION }}
+
+      - name: Configure kubectl
+        run: |
+          aws eks update-kubeconfig \
+            --region ${{ env.AWS_REGION }} \
+            --name ${{ steps.params.outputs.eks_cluster }}
+
+      - name: Record current state
+        id: state
+        run: |
+          echo "rollback_start=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_OUTPUT
+
+          # Current image
+          CURRENT_IMAGE=$(kubectl get deployment greenlang-runner -n greenlang-system \
+            -o jsonpath='{.spec.template.spec.containers[0].image}' 2>/dev/null || echo "unknown")
+          echo "current_image=$CURRENT_IMAGE" >> $GITHUB_OUTPUT
+
+          # Current revision
+          CURRENT_REVISION=$(kubectl rollout history deployment/greenlang-runner -n greenlang-system 2>/dev/null \
+            | tail -2 | head -1 | awk '{print $1}' || echo "0")
+          echo "current_revision=$CURRENT_REVISION" >> $GITHUB_OUTPUT
+
+          # Check if Helm release exists
+          HELM_EXISTS=$(helm list -n greenlang-system --filter greenlang -q 2>/dev/null || echo "")
+          if [[ -n "$HELM_EXISTS" ]]; then
+            echo "helm_release_exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "helm_release_exists=false" >> $GITHUB_OUTPUT
+          fi
+
+          # Snapshot current pod status
+          echo "## Current State Before Rollback" >> $GITHUB_STEP_SUMMARY
+          echo "- **Current Image:** $CURRENT_IMAGE" >> $GITHUB_STEP_SUMMARY
+          echo "- **Current Revision:** $CURRENT_REVISION" >> $GITHUB_STEP_SUMMARY
+          echo "- **Helm Release:** ${HELM_EXISTS:-none}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          kubectl get pods -n greenlang-system -o wide 2>/dev/null >> $GITHUB_STEP_SUMMARY || true
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
+          # Record rollout history
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Rollout History" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          kubectl rollout history deployment/greenlang-runner -n greenlang-system 2>/dev/null >> $GITHUB_STEP_SUMMARY || true
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
+      - name: Create DORA incident record
+        uses: ./.github/actions/dora-record
+        with:
+          metric-type: incident
+          environment: ${{ inputs.environment }}
+          status: started
+          image-tag: ${{ steps.state.outputs.current_image }}
+          promotion-id: ${{ steps.params.outputs.rollback_id }}
+        continue-on-error: true
+
+  # ==========================================================================
+  # JOB 2: Execute rollback
+  # ==========================================================================
+  rollback:
+    name: Rollback ${{ inputs.environment }} (${{ inputs.strategy }})
+    runs-on: ubuntu-latest
+    needs: [pre-rollback]
+    environment: ${{ inputs.environment }}
+    outputs:
+      rollback_end: ${{ steps.complete.outputs.rollback_end }}
+      rollback_success: ${{ steps.execute.outputs.success }}
+      new_image: ${{ steps.verify-rollout.outputs.new_image }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ needs.pre-rollback.outputs.aws_role_arn }}
+          role-session-name: github-actions-rollback-${{ needs.pre-rollback.outputs.rollback_id }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: v${{ env.KUBECTL_VERSION }}
+
+      - name: Setup Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v${{ env.HELM_VERSION }}
+
+      - name: Configure kubectl
+        run: |
+          aws eks update-kubeconfig \
+            --region ${{ env.AWS_REGION }} \
+            --name ${{ needs.pre-rollback.outputs.eks_cluster }}
+
+      - name: Execute rollback
+        id: execute
+        run: |
+          STRATEGY="${{ inputs.strategy }}"
+          ENV="${{ inputs.environment }}"
+          HELM_EXISTS="${{ needs.pre-rollback.outputs.helm_release_exists }}"
+
+          echo "Executing rollback with strategy: $STRATEGY"
+
+          case "$STRATEGY" in
+            last-good)
+              echo "Rolling back to last known-good revision..."
+
+              if [[ "$HELM_EXISTS" == "true" ]]; then
+                # Helm rollback to previous release
+                helm rollback greenlang 0 \
+                  --namespace greenlang-system \
+                  --wait \
+                  --timeout 5m
+                echo "Helm rollback complete"
+              else
+                # kubectl rollback to previous revision
+                kubectl rollout undo deployment/greenlang-runner \
+                  -n greenlang-system
+                echo "kubectl rollout undo complete"
+              fi
+              ;;
+
+            specific-revision)
+              REVISION="${{ inputs.revision }}"
+              echo "Rolling back to revision: $REVISION"
+
+              if [[ "$HELM_EXISTS" == "true" ]]; then
+                helm rollback greenlang "$REVISION" \
+                  --namespace greenlang-system \
+                  --wait \
+                  --timeout 5m
+                echo "Helm rollback to revision $REVISION complete"
+              else
+                kubectl rollout undo deployment/greenlang-runner \
+                  -n greenlang-system \
+                  --to-revision="$REVISION"
+                echo "kubectl rollback to revision $REVISION complete"
+              fi
+              ;;
+
+            specific-tag)
+              TAG="${{ inputs.image-tag }}"
+              echo "Setting image to specific tag: $TAG"
+
+              kubectl set image deployment/greenlang-runner \
+                greenlang-runner=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$TAG \
+                -n greenlang-system
+
+              echo "Image updated to tag $TAG"
+              ;;
+          esac
+
+          echo "success=true" >> $GITHUB_OUTPUT
+
+      - name: Wait for rollout to complete
+        timeout-minutes: 5
+        run: |
+          echo "Waiting for rollout to complete..."
+
+          kubectl rollout status deployment/greenlang-runner \
+            -n greenlang-system \
+            --timeout=300s
+
+          echo "Rollout complete"
+
+      - name: Verify rollout state
+        id: verify-rollout
+        run: |
+          NEW_IMAGE=$(kubectl get deployment greenlang-runner -n greenlang-system \
+            -o jsonpath='{.spec.template.spec.containers[0].image}' 2>/dev/null || echo "unknown")
+          echo "new_image=$NEW_IMAGE" >> $GITHUB_OUTPUT
+
+          READY=$(kubectl get deployment greenlang-runner -n greenlang-system \
+            -o jsonpath='{.status.readyReplicas}' 2>/dev/null || echo "0")
+          DESIRED=$(kubectl get deployment greenlang-runner -n greenlang-system \
+            -o jsonpath='{.spec.replicas}' 2>/dev/null || echo "0")
+
+          echo "## Rollback Result" >> $GITHUB_STEP_SUMMARY
+          echo "- **New Image:** $NEW_IMAGE" >> $GITHUB_STEP_SUMMARY
+          echo "- **Ready Pods:** $READY / $DESIRED" >> $GITHUB_STEP_SUMMARY
+
+          if [[ "$READY" -lt "$DESIRED" || "$READY" == "0" ]]; then
+            echo "::warning::Not all pods are ready after rollback ($READY/$DESIRED)"
+          fi
+
+      - name: Record completion time
+        id: complete
+        run: |
+          echo "rollback_end=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_OUTPUT
+
+  # ==========================================================================
+  # JOB 3: Verify rollback
+  # ==========================================================================
+  verify:
+    name: Verify Rollback
+    runs-on: ubuntu-latest
+    needs: [pre-rollback, rollback]
+    if: needs.rollback.outputs.rollback_success == 'true'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ needs.pre-rollback.outputs.aws_role_arn }}
+          role-session-name: github-actions-verify-rollback
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: v${{ env.KUBECTL_VERSION }}
+
+      - name: Configure kubectl
+        run: |
+          aws eks update-kubeconfig \
+            --region ${{ env.AWS_REGION }} \
+            --name ${{ needs.pre-rollback.outputs.eks_cluster }}
+
+      - name: Health checks
+        id: health
+        run: |
+          echo "Running post-rollback health checks..."
+
+          HEALTH_OK=false
+          for i in $(seq 1 6); do
+            kubectl run rollback-health-${{ github.run_number }}-$i \
+              --rm -i --restart=Never \
+              --image=curlimages/curl:latest \
+              -n greenlang-system \
+              -- curl -sf http://greenlang-service:8080/api/v1/health \
+              && { HEALTH_OK=true; break; }
+            echo "Attempt $i failed, retrying in 10s..."
+            sleep 10
+          done
+
+          if [[ "$HEALTH_OK" != "true" ]]; then
+            echo "::error::Health check failed after rollback"
+            echo "health_ok=false" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+
+          echo "health_ok=true" >> $GITHUB_OUTPUT
+          echo "Health check passed after rollback"
+
+      - name: Smoke tests
+        id: smoke
+        run: |
+          echo "Running post-rollback smoke tests..."
+
+          # Readiness probe
+          kubectl run rollback-ready-${{ github.run_number }} \
+            --rm -i --restart=Never \
+            --image=curlimages/curl:latest \
+            -n greenlang-system \
+            -- curl -sf http://greenlang-service:8080/api/v1/ready \
+            || {
+              echo "::warning::Readiness check failed after rollback"
+              echo "smoke_ok=false" >> $GITHUB_OUTPUT
+              exit 1
+            }
+
+          # Basic API test
+          kubectl run rollback-api-${{ github.run_number }} \
+            --rm -i --restart=Never \
+            --image=curlimages/curl:latest \
+            -n greenlang-system \
+            -- curl -sf http://greenlang-service:8080/api/v1/version \
+            || echo "::warning::Version endpoint not available"
+
+          echo "smoke_ok=true" >> $GITHUB_OUTPUT
+          echo "Post-rollback smoke tests passed"
+
+      - name: Verification summary
+        run: |
+          echo "## Post-Rollback Verification" >> $GITHUB_STEP_SUMMARY
+          echo "- **Health Check:** ${{ steps.health.outputs.health_ok == 'true' && 'PASSED' || 'FAILED' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Smoke Tests:** ${{ steps.smoke.outputs.smoke_ok == 'true' && 'PASSED' || 'FAILED' }}" >> $GITHUB_STEP_SUMMARY
+
+  # ==========================================================================
+  # JOB 4: Post-rollback actions
+  # ==========================================================================
+  post-rollback:
+    name: Post-Rollback Actions
+    runs-on: ubuntu-latest
+    needs: [pre-rollback, rollback, verify]
+    if: always() && needs.rollback.result == 'success'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Record DORA recovery metric
+        uses: ./.github/actions/dora-record
+        with:
+          metric-type: recovery
+          environment: ${{ inputs.environment }}
+          status: ${{ needs.verify.result == 'success' && 'recovered' || 'degraded' }}
+          deploy-start: ${{ needs.pre-rollback.outputs.rollback_start }}
+          deploy-end: ${{ needs.rollback.outputs.rollback_end }}
+          image-tag: ${{ needs.rollback.outputs.new_image }}
+          promotion-id: ${{ needs.pre-rollback.outputs.rollback_id }}
+        continue-on-error: true
+
+      - name: Send rollback notification
+        uses: ./.github/actions/notify
+        with:
+          status: ${{ needs.verify.result == 'success' && 'warning' || 'failure' }}
+          environment: ${{ inputs.environment }}
+          message: |
+            ROLLBACK executed for ${{ inputs.environment }}
+            Strategy: ${{ inputs.strategy }}
+            Reason: ${{ inputs.reason }}
+            Previous Image: ${{ needs.pre-rollback.outputs.current_image }}
+            Current Image: ${{ needs.rollback.outputs.new_image }}
+            Verification: ${{ needs.verify.result == 'success' && 'PASSED' || 'FAILED' }}
+            Triggered by: ${{ github.actor }}
+            Rollback ID: ${{ needs.pre-rollback.outputs.rollback_id }}
+          slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
+        continue-on-error: true
+
+      - name: Create incident tracking issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const env = '${{ inputs.environment }}';
+            const strategy = '${{ inputs.strategy }}';
+            const reason = `${{ inputs.reason }}`;
+            const prevImage = '${{ needs.pre-rollback.outputs.current_image }}';
+            const newImage = '${{ needs.rollback.outputs.new_image }}';
+            const rollbackId = '${{ needs.pre-rollback.outputs.rollback_id }}';
+            const actor = '${{ github.actor }}';
+            const runUrl = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`;
+            const verifyResult = '${{ needs.verify.result }}';
+
+            const body = `## Rollback Incident Report
+
+            **Rollback ID:** \`${rollbackId}\`
+            **Environment:** ${env}
+            **Strategy:** ${strategy}
+            **Triggered by:** @${actor}
+            **Workflow Run:** [View Details](${runUrl})
+
+            ### Reason
+            ${reason}
+
+            ### Details
+            | Parameter | Value |
+            |-----------|-------|
+            | Previous Image | \`${prevImage}\` |
+            | Rolled Back To | \`${newImage}\` |
+            | Verification | ${verifyResult === 'success' ? 'PASSED' : 'NEEDS ATTENTION'} |
+            | Rollback Start | ${{ needs.pre-rollback.outputs.rollback_start }} |
+            | Rollback End | ${{ needs.rollback.outputs.rollback_end }} |
+
+            ### Post-Mortem Checklist
+            - [ ] Root cause identified
+            - [ ] Fix implemented and tested
+            - [ ] Monitoring/alerting improved
+            - [ ] Runbook updated if needed
+            - [ ] Stakeholders notified
+            - [ ] Incident review scheduled
+
+            ---
+            *This issue was automatically created by the rollback pipeline.*
+            `;
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `[Incident] Rollback: ${env} - ${reason.substring(0, 60)}`,
+              body: body,
+              labels: ['incident', 'rollback', `env:${env}`],
+              assignees: [actor]
+            });
+
+      - name: Final summary
+        run: |
+          echo "# Rollback Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Overview" >> $GITHUB_STEP_SUMMARY
+          echo "| Parameter | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Rollback ID | ${{ needs.pre-rollback.outputs.rollback_id }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Environment | ${{ inputs.environment }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Strategy | ${{ inputs.strategy }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Reason | ${{ inputs.reason }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Previous Image | ${{ needs.pre-rollback.outputs.current_image }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| New Image | ${{ needs.rollback.outputs.new_image }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Verification | ${{ needs.verify.result == 'success' && 'PASSED' || 'NEEDS ATTENTION' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Timeline" >> $GITHUB_STEP_SUMMARY
+          echo "- **Start:** ${{ needs.pre-rollback.outputs.rollback_start }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **End:** ${{ needs.rollback.outputs.rollback_end }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "An incident tracking issue has been created automatically." >> $GITHUB_STEP_SUMMARY

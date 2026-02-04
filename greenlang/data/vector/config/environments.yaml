@@ -1,0 +1,159 @@
+# =============================================================================
+# GreenLang Climate OS - pgvector Environment Configurations
+# =============================================================================
+# PRD: INFRA-005 Vector Database Infrastructure with pgvector
+# =============================================================================
+
+development:
+  embedding:
+    model_name: "all-MiniLM-L6-v2"
+    dimensions: 384
+    batch_size: 100
+    normalize: true
+    cache_enabled: false
+    device: "cpu"
+
+  search:
+    default_top_k: 10
+    default_threshold: 0.5
+    ef_search: 40
+    enable_hybrid: true
+    rrf_k: 60
+    log_queries: true
+
+  index:
+    hnsw_m: 8
+    hnsw_ef_construction: 100
+    ivfflat_lists: 100
+    maintenance_work_mem: "512MB"
+
+  database:
+    host: "localhost"
+    port: 5432
+    database: "greenlang_dev"
+    user: "greenlang_app"
+    ssl_mode: "prefer"
+    min_pool_size: 2
+    max_pool_size: 10
+    query_timeout: 30
+
+  instance:
+    type: "db.r6g.large"
+    vcpu: 2
+    memory_gb: 16
+    storage_gb: 100
+
+staging:
+  embedding:
+    model_name: "all-MiniLM-L6-v2"
+    dimensions: 384
+    batch_size: 500
+    normalize: true
+    cache_enabled: true
+    cache_ttl: 1800
+    device: "cpu"
+
+  search:
+    default_top_k: 10
+    default_threshold: 0.7
+    ef_search: 100
+    enable_hybrid: true
+    rrf_k: 60
+    log_queries: true
+
+  index:
+    hnsw_m: 16
+    hnsw_ef_construction: 200
+    ivfflat_lists: 500
+    maintenance_work_mem: "1GB"
+
+  database:
+    host: "${AURORA_WRITER_ENDPOINT}"
+    port: 5432
+    database: "greenlang"
+    user: "greenlang_app"
+    ssl_mode: "require"
+    min_pool_size: 5
+    max_pool_size: 30
+    reader_host: "${AURORA_READER_ENDPOINT}"
+    reader_port: 5432
+    query_timeout: 30
+
+  instance:
+    type: "db.r6g.xlarge"
+    vcpu: 4
+    memory_gb: 32
+    storage_gb: 500
+
+production:
+  embedding:
+    model_name: "all-MiniLM-L6-v2"
+    dimensions: 384
+    batch_size: 1000
+    normalize: true
+    cache_enabled: true
+    cache_ttl: 3600
+    device: "cpu"
+    max_retries: 5
+    retry_delay: 2.0
+
+  search:
+    default_top_k: 10
+    default_threshold: 0.7
+    max_top_k: 1000
+    ef_search: 200
+    enable_hybrid: true
+    rrf_k: 60
+    log_queries: true
+
+  index:
+    hnsw_m: 24
+    hnsw_ef_construction: 400
+    ivfflat_lists: 1000
+    maintenance_work_mem: "2GB"
+
+  database:
+    host: "${AURORA_WRITER_ENDPOINT}"
+    port: 5432
+    database: "greenlang"
+    user: "greenlang_app"
+    ssl_mode: "require"
+    min_pool_size: 10
+    max_pool_size: 50
+    reader_host: "${AURORA_READER_ENDPOINT}"
+    reader_port: 5432
+    use_reader_for_search: true
+    query_timeout: 30
+    connection_timeout: 15
+    statement_cache_size: 200
+
+  instance:
+    type: "db.r6g.2xlarge"
+    vcpu: 8
+    memory_gb: 64
+    storage_gb: 2048
+
+  # PostgreSQL tuning
+  postgresql:
+    shared_buffers: "16GB"
+    effective_cache_size: "48GB"
+    maintenance_work_mem: "2GB"
+    work_mem: "256MB"
+    max_parallel_workers_per_gather: 4
+    random_page_cost: 1.1
+    hnsw.ef_search: 200
+
+  # Capacity planning
+  capacity:
+    max_vectors: 100000000  # 100M
+    estimated_storage_gb: 200
+    estimated_hnsw_memory_gb: 300
+    recommended_instance: "db.r6g.4xlarge"
+
+  # SLO targets
+  slos:
+    search_p50_ms: 20
+    search_p99_ms: 100
+    insert_throughput_per_sec: 10000
+    availability_pct: 99.9
+    recall_at_10: 0.95

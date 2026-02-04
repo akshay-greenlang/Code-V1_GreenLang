@@ -1,0 +1,325 @@
+# =============================================================================
+# GreenLang Climate OS - Kong Namespace NetworkPolicies
+# =============================================================================
+# PRD: INFRA-006 API Gateway (Kong)
+# Controls all ingress/egress traffic to and from the Kong namespace.
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Default Deny All
+# Baseline policy that blocks all traffic unless explicitly allowed by
+# subsequent policies. This ensures zero-trust networking within the namespace.
+# -----------------------------------------------------------------------------
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+  namespace: kong
+  labels:
+    app.kubernetes.io/name: kong
+    app.kubernetes.io/part-of: greenlang
+    greenlang.io/policy-type: baseline
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+
+---
+# -----------------------------------------------------------------------------
+# Allow Ingress from NLB / Internet on Proxy Ports
+# Permits external traffic from the AWS Network Load Balancer to reach
+# Kong proxy pods on port 8000 (HTTP) and port 8443 (HTTPS).
+# The NLB forwards traffic from the internet to these ports.
+# -----------------------------------------------------------------------------
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-ingress-nlb-proxy
+  namespace: kong
+  labels:
+    app.kubernetes.io/name: kong
+    app.kubernetes.io/part-of: greenlang
+    greenlang.io/policy-type: ingress
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: kong
+      app.kubernetes.io/component: proxy
+  policyTypes:
+    - Ingress
+  ingress:
+    # Allow from any source on proxy ports (NLB does not preserve source IP
+    # by default with instance target type; use ipBlock 0.0.0.0/0 or
+    # configure NLB with IP target mode and restrict to VPC CIDR).
+    - ports:
+        - protocol: TCP
+          port: 8000
+        - protocol: TCP
+          port: 8443
+      from: []
+
+---
+# -----------------------------------------------------------------------------
+# Allow Ingress from Monitoring Namespace on Metrics Port
+# Permits Prometheus to scrape Kong metrics from the status API on port 8100.
+# Restricted to pods in the monitoring namespace only.
+# -----------------------------------------------------------------------------
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-ingress-monitoring-metrics
+  namespace: kong
+  labels:
+    app.kubernetes.io/name: kong
+    app.kubernetes.io/part-of: greenlang
+    greenlang.io/policy-type: ingress
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: kong
+  policyTypes:
+    - Ingress
+  ingress:
+    - ports:
+        - protocol: TCP
+          port: 8100
+      from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+
+---
+# -----------------------------------------------------------------------------
+# Allow Ingress from Kong Ingress Controller
+# Permits the Kong Ingress Controller (running in the same namespace) to
+# communicate with the Kong admin API on port 8444 for configuration sync.
+# -----------------------------------------------------------------------------
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-ingress-kong-controller
+  namespace: kong
+  labels:
+    app.kubernetes.io/name: kong
+    app.kubernetes.io/part-of: greenlang
+    greenlang.io/policy-type: ingress
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: kong
+      app.kubernetes.io/component: proxy
+  policyTypes:
+    - Ingress
+  ingress:
+    - ports:
+        - protocol: TCP
+          port: 8444
+      from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: kong
+              app.kubernetes.io/component: ingress-controller
+
+---
+# -----------------------------------------------------------------------------
+# Allow Egress to GreenLang Namespace Services
+# Permits Kong proxy pods to forward requests to all backend services
+# running in the greenlang namespace. Covers the full service port range.
+# -----------------------------------------------------------------------------
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-egress-greenlang-services
+  namespace: kong
+  labels:
+    app.kubernetes.io/name: kong
+    app.kubernetes.io/part-of: greenlang
+    greenlang.io/policy-type: egress
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: kong
+      app.kubernetes.io/component: proxy
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: greenlang
+      ports:
+        # Core API
+        - protocol: TCP
+          port: 8000
+        # Auth service
+        - protocol: TCP
+          port: 8001
+        # Carbon service
+        - protocol: TCP
+          port: 8002
+        # Energy service
+        - protocol: TCP
+          port: 8003
+        # Supply chain service
+        - protocol: TCP
+          port: 8004
+        # Compliance service
+        - protocol: TCP
+          port: 8005
+        # Agent service
+        - protocol: TCP
+          port: 8006
+        # Batch service
+        - protocol: TCP
+          port: 8007
+        # Notification service
+        - protocol: TCP
+          port: 8008
+        # Analytics service
+        - protocol: TCP
+          port: 8009
+        # Tenant service
+        - protocol: TCP
+          port: 8010
+        # WebSocket service
+        - protocol: TCP
+          port: 8011
+        # Admin service
+        - protocol: TCP
+          port: 8012
+        # Public API service
+        - protocol: TCP
+          port: 8013
+        # Industrial heat service
+        - protocol: TCP
+          port: 8014
+
+---
+# -----------------------------------------------------------------------------
+# Allow Egress to Redis
+# Permits Kong proxy pods to connect to Redis for rate-limiting state,
+# session storage, and plugin data. Redis runs in the greenlang namespace.
+# -----------------------------------------------------------------------------
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-egress-redis
+  namespace: kong
+  labels:
+    app.kubernetes.io/name: kong
+    app.kubernetes.io/part-of: greenlang
+    greenlang.io/policy-type: egress
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: kong
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: greenlang
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: redis
+      ports:
+        - protocol: TCP
+          port: 6379
+        # Redis Sentinel port
+        - protocol: TCP
+          port: 26379
+
+---
+# -----------------------------------------------------------------------------
+# Allow Egress to DNS (kube-dns / CoreDNS)
+# Permits all pods in the kong namespace to resolve DNS names.
+# Required for service discovery and upstream resolution.
+# -----------------------------------------------------------------------------
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-egress-dns
+  namespace: kong
+  labels:
+    app.kubernetes.io/name: kong
+    app.kubernetes.io/part-of: greenlang
+    greenlang.io/policy-type: egress
+spec:
+  podSelector: {}
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+
+---
+# -----------------------------------------------------------------------------
+# Allow Egress to Monitoring (Fluent Bit HTTP Log)
+# Permits Kong proxy pods to send access logs to Fluent Bit running in
+# the monitoring namespace via the http-log plugin.
+# -----------------------------------------------------------------------------
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-egress-monitoring-logs
+  namespace: kong
+  labels:
+    app.kubernetes.io/name: kong
+    app.kubernetes.io/part-of: greenlang
+    greenlang.io/policy-type: egress
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: kong
+      app.kubernetes.io/component: proxy
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: fluent-bit
+      ports:
+        - protocol: TCP
+          port: 9880
+
+---
+# -----------------------------------------------------------------------------
+# Allow Egress to Kubernetes API Server
+# Permits the Kong Ingress Controller to communicate with the Kubernetes API
+# for watching Ingress, Service, and KongPlugin resources.
+# -----------------------------------------------------------------------------
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-egress-kube-api
+  namespace: kong
+  labels:
+    app.kubernetes.io/name: kong
+    app.kubernetes.io/part-of: greenlang
+    greenlang.io/policy-type: egress
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: kong
+      app.kubernetes.io/component: ingress-controller
+  policyTypes:
+    - Egress
+  egress:
+    - ports:
+        - protocol: TCP
+          port: 443
+        - protocol: TCP
+          port: 6443

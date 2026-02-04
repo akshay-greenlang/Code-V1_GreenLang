@@ -26,11 +26,19 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 -- Enables similarity searches and fuzzy matching
 CREATE EXTENSION IF NOT EXISTS pg_trgm;
 
+-- pgvector: Vector similarity search (INFRA-005)
+-- Enables vector embedding storage, HNSW/IVFFlat indexes, and similarity search
+CREATE EXTENSION IF NOT EXISTS vector;
+
+-- pgaudit: Audit logging for vector operations (INFRA-005)
+-- Tracks write and DDL operations for compliance
+CREATE EXTENSION IF NOT EXISTS pgaudit;
+
 -- Verify extensions are installed
 DO $$
 DECLARE
     ext_name TEXT;
-    required_extensions TEXT[] := ARRAY['timescaledb', 'pg_stat_statements', 'pgcrypto', 'uuid-ossp', 'pg_trgm'];
+    required_extensions TEXT[] := ARRAY['timescaledb', 'pg_stat_statements', 'pgcrypto', 'uuid-ossp', 'pg_trgm', 'vector'];
 BEGIN
     FOREACH ext_name IN ARRAY required_extensions
     LOOP
@@ -45,5 +53,5 @@ END $$;
 -- Log extension versions for audit purposes
 SELECT extname, extversion
 FROM pg_extension
-WHERE extname IN ('timescaledb', 'pg_stat_statements', 'pgcrypto', 'uuid-ossp', 'pg_trgm')
+WHERE extname IN ('timescaledb', 'pg_stat_statements', 'pgcrypto', 'uuid-ossp', 'pg_trgm', 'vector')
 ORDER BY extname;

@@ -1,0 +1,280 @@
+# =============================================================================
+# GreenLang Climate OS - Kong Consumer Resources
+# =============================================================================
+# PRD: INFRA-006 API Gateway (Kong)
+# Defines KongConsumer identities for service authentication and ACL
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Internal Admin Consumer
+# Full administrative access to all GreenLang services and admin endpoints.
+# Assigned to the "admin" ACL group for privileged operations.
+# -----------------------------------------------------------------------------
+apiVersion: configuration.konghq.com/v1
+kind: KongConsumer
+metadata:
+  name: greenlang-internal
+  namespace: kong
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: consumer
+    greenlang.io/consumer-tier: internal
+  annotations:
+    kubernetes.io/ingress.class: kong
+    greenlang.io/description: "Internal admin consumer with full cluster access"
+username: greenlang-internal
+custom_id: gl-internal-001
+credentials:
+  - greenlang-internal-jwt
+  - greenlang-internal-key-auth
+
+---
+# KongConsumer ACL group assignment for internal admin
+apiVersion: configuration.konghq.com/v1
+kind: KongPlugin
+metadata:
+  name: greenlang-internal-acl
+  namespace: kong
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: consumer-acl
+plugin: acl
+config:
+  allow:
+    - admin
+
+---
+# JWT credential for internal consumer
+apiVersion: v1
+kind: Secret
+metadata:
+  name: greenlang-internal-jwt
+  namespace: kong
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: consumer-credential
+    konghq.com/credential: jwt
+stringData:
+  kongCredType: jwt
+  algorithm: RS256
+  key: greenlang-internal-iss
+  # rsa_public_key is provisioned via Sealed Secrets or external secrets operator
+  # Placeholder reference -- replaced at deploy time
+  rsa_public_key: "PLACEHOLDER_REPLACED_BY_SEALED_SECRET"
+
+---
+# Key-auth credential for internal consumer (service-to-service fallback)
+apiVersion: v1
+kind: Secret
+metadata:
+  name: greenlang-internal-key-auth
+  namespace: kong
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: consumer-credential
+    konghq.com/credential: key-auth
+stringData:
+  kongCredType: key-auth
+  # key value is provisioned via Sealed Secrets or external secrets operator
+  key: "PLACEHOLDER_REPLACED_BY_SEALED_SECRET"
+
+---
+# -----------------------------------------------------------------------------
+# Agent Executor Consumer
+# Used by the GreenLang agent orchestration system to invoke backend services
+# on behalf of running agent workflows. Elevated rate limits, no admin access.
+# -----------------------------------------------------------------------------
+apiVersion: configuration.konghq.com/v1
+kind: KongConsumer
+metadata:
+  name: greenlang-agent-executor
+  namespace: kong
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: consumer
+    greenlang.io/consumer-tier: agent
+  annotations:
+    kubernetes.io/ingress.class: kong
+    greenlang.io/description: "Agent executor consumer for workflow orchestration"
+username: greenlang-agent-executor
+custom_id: gl-agent-exec-001
+credentials:
+  - greenlang-agent-executor-jwt
+
+---
+# JWT credential for agent executor consumer
+apiVersion: v1
+kind: Secret
+metadata:
+  name: greenlang-agent-executor-jwt
+  namespace: kong
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: consumer-credential
+    konghq.com/credential: jwt
+stringData:
+  kongCredType: jwt
+  algorithm: RS256
+  key: greenlang-agent-executor-iss
+  rsa_public_key: "PLACEHOLDER_REPLACED_BY_SEALED_SECRET"
+
+---
+# Elevated rate limit for agent executor (agents generate burst traffic)
+apiVersion: configuration.konghq.com/v1
+kind: KongPlugin
+metadata:
+  name: agent-executor-rate-limit
+  namespace: kong
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: consumer-rate-limit
+plugin: rate-limiting
+config:
+  minute: 5000
+  hour: 200000
+  policy: redis
+  redis_host: redis-master.greenlang.svc.cluster.local
+  redis_port: 6379
+  redis_database: 3
+  fault_tolerant: true
+  error_code: 429
+  error_message: "Agent executor rate limit exceeded"
+
+---
+# -----------------------------------------------------------------------------
+# Standard Consumer
+# Default consumer for authenticated API clients (web app, mobile, third-party
+# integrations). Subject to standard rate limits and ACL restrictions.
+# -----------------------------------------------------------------------------
+apiVersion: configuration.konghq.com/v1
+kind: KongConsumer
+metadata:
+  name: greenlang-standard
+  namespace: kong
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: consumer
+    greenlang.io/consumer-tier: standard
+  annotations:
+    kubernetes.io/ingress.class: kong
+    greenlang.io/description: "Standard authenticated API consumer"
+username: greenlang-standard
+custom_id: gl-standard-001
+credentials:
+  - greenlang-standard-jwt
+
+---
+# JWT credential for standard consumer
+apiVersion: v1
+kind: Secret
+metadata:
+  name: greenlang-standard-jwt
+  namespace: kong
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: consumer-credential
+    konghq.com/credential: jwt
+stringData:
+  kongCredType: jwt
+  algorithm: RS256
+  key: greenlang-standard-iss
+  rsa_public_key: "PLACEHOLDER_REPLACED_BY_SEALED_SECRET"
+
+---
+# Standard rate limit (per-consumer override)
+apiVersion: configuration.konghq.com/v1
+kind: KongPlugin
+metadata:
+  name: standard-consumer-rate-limit
+  namespace: kong
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: consumer-rate-limit
+plugin: rate-limiting
+config:
+  minute: 500
+  hour: 20000
+  policy: redis
+  redis_host: redis-master.greenlang.svc.cluster.local
+  redis_port: 6379
+  redis_database: 3
+  fault_tolerant: true
+  error_code: 429
+  error_message: "Standard consumer rate limit exceeded"
+
+---
+# -----------------------------------------------------------------------------
+# Read-Only Consumer
+# Restricted consumer with read-only access to public and reporting endpoints.
+# Used for dashboards, monitoring integrations, and public data feeds.
+# -----------------------------------------------------------------------------
+apiVersion: configuration.konghq.com/v1
+kind: KongConsumer
+metadata:
+  name: greenlang-readonly
+  namespace: kong
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: consumer
+    greenlang.io/consumer-tier: readonly
+  annotations:
+    kubernetes.io/ingress.class: kong
+    greenlang.io/description: "Read-only consumer for dashboards and public data"
+username: greenlang-readonly
+custom_id: gl-readonly-001
+credentials:
+  - greenlang-readonly-jwt
+
+---
+# JWT credential for readonly consumer
+apiVersion: v1
+kind: Secret
+metadata:
+  name: greenlang-readonly-jwt
+  namespace: kong
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: consumer-credential
+    konghq.com/credential: jwt
+stringData:
+  kongCredType: jwt
+  algorithm: RS256
+  key: greenlang-readonly-iss
+  rsa_public_key: "PLACEHOLDER_REPLACED_BY_SEALED_SECRET"
+
+---
+# Restrictive rate limit for readonly consumer
+apiVersion: configuration.konghq.com/v1
+kind: KongPlugin
+metadata:
+  name: readonly-consumer-rate-limit
+  namespace: kong
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: consumer-rate-limit
+plugin: rate-limiting
+config:
+  minute: 200
+  hour: 10000
+  policy: redis
+  redis_host: redis-master.greenlang.svc.cluster.local
+  redis_port: 6379
+  redis_database: 3
+  fault_tolerant: true
+  error_code: 429
+  error_message: "Read-only consumer rate limit exceeded"
+
+---
+# Request termination plugin to block write methods for readonly consumer
+apiVersion: configuration.konghq.com/v1
+kind: KongPlugin
+metadata:
+  name: readonly-method-restriction
+  namespace: kong
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: consumer-restriction
+plugin: request-termination
+config:
+  status_code: 403
+  message: "Write operations are not permitted for read-only consumers"

@@ -1,0 +1,54 @@
+# =============================================================================
+# Kong API Gateway - Staging Overrides
+# GreenLang Climate OS | infra-006
+# =============================================================================
+
+kong:
+  replicaCount: 2
+
+  env:
+    log_level: "info"
+
+  proxy:
+    annotations:
+      service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+      service.beta.kubernetes.io/aws-load-balancer-scheme: "internal"
+      service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "512Mi"
+    limits:
+      cpu: "1000m"
+      memory: "1Gi"
+
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 5
+    metrics:
+      - type: Resource
+        resource:
+          name: cpu
+          target:
+            type: Utilization
+            averageUtilization: 70
+
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 1
+
+  serviceMonitor:
+    enabled: true
+
+tls:
+  enabled: true
+  certManager:
+    enabled: true
+    issuerRef:
+      name: letsencrypt-staging
+      kind: ClusterIssuer
+
+global:
+  environment: staging

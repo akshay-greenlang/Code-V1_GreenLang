@@ -1,0 +1,290 @@
+# GreenLang CI/CD Pipeline Alerts
+# INFRA-007: Production monitoring alerts for CI/CD pipelines, DORA metrics, and security scanning
+# Covers: Pipeline health, deployment health, DORA thresholds, security scanning
+
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: cicd-pipeline-alerts
+  namespace: monitoring
+  labels:
+    release: prometheus
+    app: greenlang
+    component: cicd
+    infra: "007"
+spec:
+  groups:
+    # ===========================================
+    # CI/CD Pipeline Health Alerts
+    # ===========================================
+    - name: cicd.pipeline.health
+      interval: 30s
+      rules:
+        # Pipeline High Failure Rate - Critical
+        - alert: PipelineHighFailureRate
+          expr: |
+            sum(rate(github_workflow_runs{status="failure"}[1h])) / sum(rate(github_workflow_runs[1h])) > 0.2
+          for: 15m
+          labels:
+            severity: critical
+            team: devops
+            component: cicd
+            runbook: pipeline-high-failure-rate-runbook
+          annotations:
+            summary: "CI/CD pipeline failure rate exceeds 20%"
+            description: |
+              The overall GitHub Actions workflow failure rate is {{ $value | humanizePercentage }}
+              which has exceeded the 20% threshold for more than 15 minutes.
+              This indicates a systemic issue with the CI/CD pipeline that requires immediate investigation.
+            runbook_url: "https://runbooks.greenlang.io/cicd/pipeline-high-failure-rate"
+            impact: "Deployments are blocked. Developer productivity is severely impacted."
+            action: "Check recent commits for breaking changes. Review GitHub Actions runner health. Inspect workflow logs for common failure patterns."
+            dashboard: "https://grafana.greenlang.io/d/cicd-pipeline-health"
+
+        # Workflow Duration Anomaly - Warning
+        - alert: WorkflowDurationAnomaly
+          expr: |
+            histogram_quantile(0.95, github_workflow_duration_seconds_bucket) > 1800
+          for: 30m
+          labels:
+            severity: warning
+            team: devops
+            component: cicd
+            runbook: workflow-duration-anomaly-runbook
+          annotations:
+            summary: "Workflow P95 duration exceeds 30 minutes"
+            description: |
+              The 95th percentile workflow duration is {{ $value | humanizeDuration }}
+              which has been above the 30-minute threshold for more than 30 minutes.
+              This may indicate resource contention, flaky tests, or infrastructure degradation.
+            runbook_url: "https://runbooks.greenlang.io/cicd/workflow-duration-anomaly"
+            impact: "Slower feedback loops for developers. Deployment velocity reduced."
+            action: "Review workflow step durations. Check for long-running tests or builds. Inspect runner resource utilization."
+            dashboard: "https://grafana.greenlang.io/d/cicd-pipeline-health"
+
+        # Active Runs Exceeded - Warning
+        - alert: ActiveRunsExceeded
+          expr: |
+            sum(github_workflow_runs{status="in_progress"}) > 20
+          for: 10m
+          labels:
+            severity: warning
+            team: devops
+            component: cicd
+            runbook: active-runs-exceeded-runbook
+          annotations:
+            summary: "More than 20 concurrent workflow runs active"
+            description: |
+              There are currently {{ $value }} active workflow runs, exceeding the threshold of 20.
+              This has been sustained for more than 10 minutes and may indicate runner saturation or queuing issues.
+            runbook_url: "https://runbooks.greenlang.io/cicd/active-runs-exceeded"
+            impact: "Workflow queuing may increase wait times. Risk of runner resource exhaustion."
+            action: "Check for runaway workflows. Review concurrency limits. Consider scaling runner pool."
+            dashboard: "https://grafana.greenlang.io/d/cicd-pipeline-health"
+
+    # ===========================================
+    # Deployment Health Alerts
+    # ===========================================
+    - name: cicd.deployment.health
+      interval: 30s
+      rules:
+        # Deployment Stuck - Warning
+        - alert: DeploymentStuck
+          expr: |
+            cicd_deployment_duration_seconds > 900
+          for: 5m
+          labels:
+            severity: warning
+            team: devops
+            component: cicd
+            runbook: deployment-stuck-runbook
+          annotations:
+            summary: "Deployment has been running for more than 15 minutes"
+            description: |
+              A deployment has been in progress for {{ $value | humanizeDuration }}
+              which exceeds the 15-minute threshold. The deployment may be stuck or experiencing issues
+              with image pulls, health checks, or resource provisioning.
+            runbook_url: "https://runbooks.greenlang.io/cicd/deployment-stuck"
+            impact: "New version is not being deployed. Old version continues serving traffic."
+            action: "Check Kubernetes rollout status. Inspect pod events for errors. Verify image availability and health check endpoints."
+            dashboard: "https://grafana.greenlang.io/d/cicd-pipeline-health"
+
+        # Deployment Failed - Critical
+        - alert: DeploymentFailed
+          expr: |
+            increase(cicd_deploy_failures_total[1h]) > 2
+          for: 5m
+          labels:
+            severity: critical
+            team: devops
+            component: cicd
+            runbook: deployment-failed-runbook
+          annotations:
+            summary: "Multiple deployment failures detected in the last hour"
+            description: |
+              There have been {{ $value }} deployment failures in the last hour,
+              exceeding the threshold of 2. This suggests a persistent issue preventing
+              successful deployments that requires immediate attention.
+            runbook_url: "https://runbooks.greenlang.io/cicd/deployment-failed"
+            impact: "New releases cannot be deployed. Risk of extended outage if rollback is needed."
+            action: "Review deployment logs. Check for failing health checks. Verify configuration and secrets. Consider rolling back to last known good version."
+            dashboard: "https://grafana.greenlang.io/d/cicd-pipeline-health"
+
+        # Rollback Triggered - Warning (Informational)
+        - alert: RollbackTriggered
+          expr: |
+            increase(cicd_rollbacks_total[1h]) > 0
+          for: 0m
+          labels:
+            severity: warning
+            team: devops
+            component: cicd
+            runbook: rollback-triggered-runbook
+          annotations:
+            summary: "Deployment rollback was triggered"
+            description: |
+              A deployment rollback has been triggered. {{ $value }} rollback(s) occurred in the last hour.
+              This is an informational alert to ensure the team is aware of the rollback event
+              and can investigate the root cause of the failed deployment.
+            runbook_url: "https://runbooks.greenlang.io/cicd/rollback-triggered"
+            impact: "Previous version has been restored. New features or fixes from the failed release are not live."
+            action: "Investigate why the deployment failed. Review application logs and metrics from the failed deployment window. Create a post-incident report."
+            dashboard: "https://grafana.greenlang.io/d/cicd-pipeline-health"
+
+    # ===========================================
+    # DORA Metrics Threshold Alerts
+    # ===========================================
+    - name: cicd.dora.thresholds
+      interval: 60s
+      rules:
+        # DORA Lead Time High - Warning
+        - alert: DORALeadTimeHigh
+          expr: |
+            avg_over_time(cicd_lead_time_seconds[7d]) > 86400
+          for: 1h
+          labels:
+            severity: warning
+            team: devops
+            component: cicd
+            runbook: dora-lead-time-high-runbook
+          annotations:
+            summary: "DORA: Lead time for changes exceeds 1 day"
+            description: |
+              The 7-day average lead time for changes is {{ $value | humanizeDuration }}
+              which exceeds the 1-day (86400s) threshold for elite/high-performing teams.
+              This metric measures the time from code commit to running in production.
+            runbook_url: "https://runbooks.greenlang.io/cicd/dora-lead-time-high"
+            impact: "Slower delivery of features and fixes to production. Reduced team velocity."
+            action: "Review pipeline bottlenecks. Check for long approval queues. Optimize build and test stages. Consider implementing trunk-based development."
+            dashboard: "https://grafana.greenlang.io/d/cicd-pipeline-health"
+
+        # DORA Change Failure Rate High - Warning
+        - alert: DORAChangeFailureRateHigh
+          expr: |
+            sum(cicd_deploy_failures_total) / sum(cicd_deployments_total) > 0.15
+          for: 24h
+          labels:
+            severity: warning
+            team: devops
+            component: cicd
+            runbook: dora-change-failure-rate-high-runbook
+          annotations:
+            summary: "DORA: Change failure rate exceeds 15%"
+            description: |
+              The change failure rate is {{ $value | humanizePercentage }}
+              which has exceeded the 15% threshold for more than 24 hours.
+              Elite teams maintain a change failure rate below 15%.
+            runbook_url: "https://runbooks.greenlang.io/cicd/dora-change-failure-rate-high"
+            impact: "High rate of failed deployments indicating quality issues in the release process."
+            action: "Improve test coverage. Add integration and E2E tests. Review code review practices. Implement feature flags for safer rollouts."
+            dashboard: "https://grafana.greenlang.io/d/cicd-pipeline-health"
+
+        # DORA MTTR High - Warning
+        - alert: DORAMTTRHigh
+          expr: |
+            avg_over_time(cicd_mttr_seconds[7d]) > 3600
+          for: 1h
+          labels:
+            severity: warning
+            team: devops
+            component: cicd
+            runbook: dora-mttr-high-runbook
+          annotations:
+            summary: "DORA: Mean time to recovery exceeds 1 hour"
+            description: |
+              The 7-day average mean time to recovery (MTTR) is {{ $value | humanizeDuration }}
+              which exceeds the 1-hour (3600s) threshold for elite-performing teams.
+              This metric measures how quickly the team can restore service after an incident.
+            runbook_url: "https://runbooks.greenlang.io/cicd/dora-mttr-high"
+            impact: "Slow incident recovery increases downtime and user impact."
+            action: "Improve monitoring and alerting. Streamline rollback procedures. Practice incident response. Ensure runbooks are up to date."
+            dashboard: "https://grafana.greenlang.io/d/cicd-pipeline-health"
+
+    # ===========================================
+    # Security Scanning Alerts
+    # ===========================================
+    - name: cicd.security
+      interval: 60s
+      rules:
+        # Critical CVE Detected - Critical
+        - alert: CriticalCVEDetected
+          expr: |
+            cicd_cves_open{severity="critical"} > 0
+          for: 0m
+          labels:
+            severity: critical
+            team: devops
+            component: cicd
+            runbook: critical-cve-detected-runbook
+          annotations:
+            summary: "Critical CVE detected in container images or dependencies"
+            description: |
+              {{ $value }} critical CVE(s) have been detected by security scanning.
+              Critical vulnerabilities require immediate remediation as they may be
+              actively exploited and pose a significant risk to the platform.
+            runbook_url: "https://runbooks.greenlang.io/cicd/critical-cve-detected"
+            impact: "Critical security vulnerability present. Potential for exploitation and data breach."
+            action: "Identify affected packages using SBOM. Apply patches or upgrade dependencies immediately. If no patch is available, implement compensating controls."
+            dashboard: "https://grafana.greenlang.io/d/cicd-pipeline-health"
+
+        # Security Scan Failing - Critical
+        - alert: SecurityScanFailing
+          expr: |
+            cicd_security_scans{result="failure"} > 0
+          for: 30m
+          labels:
+            severity: critical
+            team: devops
+            component: cicd
+            runbook: security-scan-failing-runbook
+          annotations:
+            summary: "Security scans are failing for more than 30 minutes"
+            description: |
+              Security scan results show {{ $value }} failing scan(s) that have persisted
+              for more than 30 minutes. This may indicate new vulnerabilities introduced
+              by recent changes or scanner infrastructure issues.
+            runbook_url: "https://runbooks.greenlang.io/cicd/security-scan-failing"
+            impact: "Vulnerable code may be deployed to production. Compliance requirements may be violated."
+            action: "Review scan results for specific failures. Check if scanner tooling is functioning. Block deployments until scans pass."
+            dashboard: "https://grafana.greenlang.io/d/cicd-pipeline-health"
+
+        # Test Coverage Dropped - Warning
+        - alert: CoverageDropped
+          expr: |
+            cicd_test_coverage_percent < 85
+          for: 1h
+          labels:
+            severity: warning
+            team: devops
+            component: cicd
+            runbook: coverage-dropped-runbook
+          annotations:
+            summary: "Test coverage has dropped below 85%"
+            description: |
+              Test coverage is currently at {{ $value | printf "%.1f" }}%
+              which is below the 85% minimum threshold. Coverage has been below
+              this threshold for more than 1 hour, indicating untested code is being merged.
+            runbook_url: "https://runbooks.greenlang.io/cicd/coverage-dropped"
+            impact: "Reduced test coverage increases risk of undetected bugs reaching production."
+            action: "Review recent PRs for missing tests. Enforce coverage gates in CI pipeline. Identify untested code paths and prioritize test creation."
+            dashboard: "https://grafana.greenlang.io/d/cicd-pipeline-health"

@@ -1,0 +1,217 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "description": "S3 Storage Monitoring Dashboard - INFRA-004",
+  "editable": true,
+  "gnetId": null,
+  "graphTooltip": 1,
+  "panels": [
+    {
+      "title": "S3 Storage Overview",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 }
+    },
+    {
+      "title": "Total Storage Size",
+      "type": "stat",
+      "datasource": "CloudWatch",
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 1 },
+      "targets": [
+        {
+          "dimensions": { "BucketName": ["greenlang-*"], "StorageType": ["StandardStorage"] },
+          "metricName": "BucketSizeBytes",
+          "namespace": "AWS/S3",
+          "period": "86400",
+          "statistics": ["Average"]
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "bytes" }
+      }
+    },
+    {
+      "title": "Total Objects",
+      "type": "stat",
+      "datasource": "CloudWatch",
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 1 },
+      "targets": [
+        {
+          "dimensions": { "BucketName": ["greenlang-*"], "StorageType": ["AllStorageTypes"] },
+          "metricName": "NumberOfObjects",
+          "namespace": "AWS/S3",
+          "period": "86400",
+          "statistics": ["Average"]
+        }
+      ]
+    },
+    {
+      "title": "4xx Errors (Last 1h)",
+      "type": "stat",
+      "datasource": "CloudWatch",
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 1 },
+      "targets": [
+        {
+          "dimensions": { "BucketName": ["greenlang-*"] },
+          "metricName": "4xxErrors",
+          "namespace": "AWS/S3",
+          "period": "3600",
+          "statistics": ["Sum"]
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 10 },
+              { "color": "red", "value": 100 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "title": "5xx Errors (Last 1h)",
+      "type": "stat",
+      "datasource": "CloudWatch",
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 1 },
+      "targets": [
+        {
+          "dimensions": { "BucketName": ["greenlang-*"] },
+          "metricName": "5xxErrors",
+          "namespace": "AWS/S3",
+          "period": "3600",
+          "statistics": ["Sum"]
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "red", "value": 1 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "title": "Bucket Sizes",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 }
+    },
+    {
+      "title": "Storage by Bucket",
+      "type": "barchart",
+      "datasource": "CloudWatch",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 6 },
+      "targets": [
+        {
+          "dimensions": { "BucketName": ["greenlang-*"], "StorageType": ["StandardStorage"] },
+          "metricName": "BucketSizeBytes",
+          "namespace": "AWS/S3",
+          "period": "86400",
+          "statistics": ["Average"]
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "bytes" }
+      }
+    },
+    {
+      "title": "Objects by Bucket",
+      "type": "barchart",
+      "datasource": "CloudWatch",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 6 },
+      "targets": [
+        {
+          "dimensions": { "BucketName": ["greenlang-*"], "StorageType": ["AllStorageTypes"] },
+          "metricName": "NumberOfObjects",
+          "namespace": "AWS/S3",
+          "period": "86400",
+          "statistics": ["Average"]
+        }
+      ]
+    },
+    {
+      "title": "Request Metrics",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 14 }
+    },
+    {
+      "title": "Request Latency (P50 / P99)",
+      "type": "timeseries",
+      "datasource": "CloudWatch",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 15 },
+      "targets": [
+        {
+          "dimensions": { "BucketName": ["greenlang-*"] },
+          "metricName": "FirstByteLatency",
+          "namespace": "AWS/S3",
+          "period": "300",
+          "statistics": ["p50"]
+        },
+        {
+          "dimensions": { "BucketName": ["greenlang-*"] },
+          "metricName": "FirstByteLatency",
+          "namespace": "AWS/S3",
+          "period": "300",
+          "statistics": ["p99"]
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "ms" }
+      }
+    },
+    {
+      "title": "Request Count by Type",
+      "type": "timeseries",
+      "datasource": "CloudWatch",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 15 },
+      "targets": [
+        {
+          "dimensions": { "BucketName": ["greenlang-*"] },
+          "metricName": "GetRequests",
+          "namespace": "AWS/S3",
+          "period": "300",
+          "statistics": ["Sum"]
+        },
+        {
+          "dimensions": { "BucketName": ["greenlang-*"] },
+          "metricName": "PutRequests",
+          "namespace": "AWS/S3",
+          "period": "300",
+          "statistics": ["Sum"]
+        },
+        {
+          "dimensions": { "BucketName": ["greenlang-*"] },
+          "metricName": "DeleteRequests",
+          "namespace": "AWS/S3",
+          "period": "300",
+          "statistics": ["Sum"]
+        }
+      ]
+    }
+  ],
+  "refresh": "5m",
+  "schemaVersion": 36,
+  "style": "dark",
+  "tags": ["s3", "infra-004", "greenlang"],
+  "time": { "from": "now-24h", "to": "now" },
+  "timepicker": {},
+  "timezone": "utc",
+  "title": "S3 Storage - GreenLang INFRA-004",
+  "uid": "s3-storage",
+  "version": 1
+}

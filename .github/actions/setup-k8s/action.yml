@@ -1,0 +1,148 @@
+# =============================================================================
+# GreenLang Climate OS - Setup Kubernetes Tooling Composite Action
+# INFRA-007: Standardized Kubernetes CLI Environment
+# =============================================================================
+#
+# Installs kubectl and optionally Helm, then writes a kubeconfig from a
+# GitHub Actions secret so that subsequent steps can interact with the
+# target cluster.
+#
+# Usage:
+#   - uses: ./.github/actions/setup-k8s
+#     with:
+#       cluster-env: 'staging'
+#     env:
+#       KUBECONFIG_DATA: ${{ secrets.KUBECONFIG_STAGING }}
+# =============================================================================
+
+name: 'Setup Kubernetes Tooling'
+description: 'Composite action to install kubectl, Helm, and configure kubeconfig for a target cluster environment'
+
+inputs:
+  cluster-env:
+    description: 'Target cluster environment name (e.g. dev, staging, production). Used for labelling and kubeconfig selection.'
+    required: true
+  install-helm:
+    description: 'Whether to install Helm CLI'
+    required: false
+    default: 'true'
+  helm-version:
+    description: 'Helm version to install'
+    required: false
+    default: '3.14.0'
+  kubectl-version:
+    description: 'kubectl version to install'
+    required: false
+    default: 'v1.29.0'
+
+outputs:
+  kubeconfig-path:
+    description: 'Absolute path to the generated kubeconfig file'
+    value: ${{ steps.configure-kubeconfig.outputs.kubeconfig-path }}
+
+runs:
+  using: 'composite'
+  steps:
+    # ------------------------------------------------------------------
+    # Step 1: Install kubectl
+    # ------------------------------------------------------------------
+    - name: Install kubectl ${{ inputs.kubectl-version }}
+      shell: bash
+      run: |
+        echo "::group::Installing kubectl ${{ inputs.kubectl-version }}"
+
+        KUBECTL_VERSION="${{ inputs.kubectl-version }}"
+
+        curl -fsSL "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl" \
+          -o /usr/local/bin/kubectl
+
+        chmod +x /usr/local/bin/kubectl
+
+        # Verify installation
+        kubectl version --client --output=json
+        echo "kubectl ${KUBECTL_VERSION} installed successfully"
+        echo "::endgroup::"
+
+    # ------------------------------------------------------------------
+    # Step 2: Install Helm (conditional)
+    # ------------------------------------------------------------------
+    - name: Install Helm ${{ inputs.helm-version }}
+      if: inputs.install-helm == 'true'
+      shell: bash
+      run: |
+        echo "::group::Installing Helm ${{ inputs.helm-version }}"
+
+        HELM_VERSION="${{ inputs.helm-version }}"
+
+        curl -fsSL "https://get.helm.sh/helm-v${HELM_VERSION}-linux-amd64.tar.gz" \
+          -o helm.tar.gz
+
+        tar -xzf helm.tar.gz
+        mv linux-amd64/helm /usr/local/bin/helm
+        chmod +x /usr/local/bin/helm
+        rm -rf helm.tar.gz linux-amd64/
+
+        # Verify installation
+        helm version --short
+        echo "Helm v${HELM_VERSION} installed successfully"
+        echo "::endgroup::"
+
+    # ------------------------------------------------------------------
+    # Step 3: Configure kubeconfig from secret
+    # ------------------------------------------------------------------
+    - name: Configure kubeconfig for ${{ inputs.cluster-env }}
+      id: configure-kubeconfig
+      shell: bash
+      env:
+        KUBECONFIG_DATA: ${{ env.KUBECONFIG_DATA }}
+        CLUSTER_ENV: ${{ inputs.cluster-env }}
+      run: |
+        echo "::group::Configuring kubeconfig for ${CLUSTER_ENV}"
+
+        KUBECONFIG_DIR="${HOME}/.kube"
+        KUBECONFIG_FILE="${KUBECONFIG_DIR}/config"
+
+        mkdir -p "${KUBECONFIG_DIR}"
+        chmod 700 "${KUBECONFIG_DIR}"
+
+        if [ -z "${KUBECONFIG_DATA}" ]; then
+          echo "::error::KUBECONFIG_DATA environment variable is not set. Pass the kubeconfig secret via the env key."
+          exit 1
+        fi
+
+        # Decode and write kubeconfig
+        echo "${KUBECONFIG_DATA}" | base64 -d > "${KUBECONFIG_FILE}"
+        chmod 600 "${KUBECONFIG_FILE}"
+
+        # Export for subsequent steps
+        echo "KUBECONFIG=${KUBECONFIG_FILE}" >> "${GITHUB_ENV}"
+        echo "kubeconfig-path=${KUBECONFIG_FILE}" >> "${GITHUB_OUTPUT}"
+
+        # Validate connectivity
+        echo "Validating cluster connectivity for environment: ${CLUSTER_ENV}"
+        if kubectl cluster-info --request-timeout=10s 2>/dev/null; then
+          echo "Cluster connection verified"
+        else
+          echo "::warning::Could not verify cluster connectivity. Kubeconfig was written but cluster may be unreachable."
+        fi
+
+        echo "::endgroup::"
+
+    # ------------------------------------------------------------------
+    # Step 4: Display tooling summary
+    # ------------------------------------------------------------------
+    - name: Display Kubernetes tooling summary
+      shell: bash
+      run: |
+        echo "============================================="
+        echo " Kubernetes Tooling Setup Complete"
+        echo "============================================="
+        echo "Cluster env    : ${{ inputs.cluster-env }}"
+        echo "kubectl version: $(kubectl version --client --short 2>/dev/null || echo 'installed')"
+        if [ "${{ inputs.install-helm }}" = "true" ]; then
+          echo "Helm version   : $(helm version --short 2>/dev/null || echo 'installed')"
+        else
+          echo "Helm           : not installed (disabled)"
+        fi
+        echo "KUBECONFIG     : ${KUBECONFIG:-not set}"
+        echo "============================================="

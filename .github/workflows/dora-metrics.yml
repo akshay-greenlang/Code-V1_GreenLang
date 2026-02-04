@@ -1,0 +1,410 @@
+# INFRA-007: GreenLang DORA Metrics Aggregation Pipeline
+#
+# Weekly aggregation of DORA (DevOps Research and Assessment) metrics:
+# - Deployment Frequency: How often deployments occur
+# - Lead Time for Changes: Time from commit to production
+# - Mean Time to Recovery (MTTR): Time to restore service after incident
+# - Change Failure Rate: Percentage of deployments causing failures
+#
+# Collects data from dora-record artifacts uploaded by other workflows,
+# generates reports, and optionally pushes to Prometheus Pushgateway.
+#
+# Schedule: Every Monday at 06:00 UTC
+# Author: GreenLang DevOps Team
+# Version: 1.0.0
+
+name: DORA Metrics Aggregation
+
+on:
+  schedule:
+    # Every Monday at 06:00 UTC
+    - cron: '0 6 * * 1'
+
+  workflow_dispatch:
+    inputs:
+      lookback-days:
+        description: 'Number of days to look back for metrics'
+        required: false
+        type: number
+        default: 7
+      push-to-prometheus:
+        description: 'Push metrics to Prometheus Pushgateway'
+        required: false
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+  actions: read
+
+env:
+  LOOKBACK_DAYS: ${{ inputs.lookback-days || 7 }}
+
+jobs:
+  # ==========================================================================
+  # JOB 1: Aggregate DORA metrics
+  # ==========================================================================
+  aggregate:
+    name: Aggregate DORA Metrics
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Collect deployment artifacts
+        id: collect
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p /tmp/dora-artifacts
+          SINCE=$(date -d "-${{ env.LOOKBACK_DAYS }} days" -u +%Y-%m-%dT%H:%M:%SZ 2>/dev/null \
+            || date -v-${{ env.LOOKBACK_DAYS }}d -u +%Y-%m-%dT%H:%M:%SZ)
+
+          echo "Collecting DORA artifacts since: $SINCE"
+          echo "since=$SINCE" >> $GITHUB_OUTPUT
+
+          # List recent workflow runs and download dora-record artifacts
+          ARTIFACT_COUNT=0
+
+          # Get workflow runs from the last N days
+          RUNS=$(gh api repos/${{ github.repository }}/actions/runs \
+            --jq ".workflow_runs[] | select(.created_at >= \"$SINCE\") | .id" \
+            --paginate 2>/dev/null || echo "")
+
+          for RUN_ID in $RUNS; do
+            # Check if this run has dora-record artifacts
+            ARTIFACTS=$(gh api repos/${{ github.repository }}/actions/runs/$RUN_ID/artifacts \
+              --jq '.artifacts[] | select(.name | startswith("dora-record")) | .id' \
+              2>/dev/null || echo "")
+
+            for ARTIFACT_ID in $ARTIFACTS; do
+              gh api repos/${{ github.repository }}/actions/artifacts/$ARTIFACT_ID/zip \
+                > "/tmp/dora-artifacts/artifact-$ARTIFACT_ID.zip" 2>/dev/null || true
+
+              if [[ -f "/tmp/dora-artifacts/artifact-$ARTIFACT_ID.zip" ]]; then
+                unzip -o -q "/tmp/dora-artifacts/artifact-$ARTIFACT_ID.zip" \
+                  -d "/tmp/dora-artifacts/data-$ARTIFACT_ID" 2>/dev/null || true
+                ARTIFACT_COUNT=$((ARTIFACT_COUNT + 1))
+              fi
+            done
+          done
+
+          echo "artifact_count=$ARTIFACT_COUNT" >> $GITHUB_OUTPUT
+          echo "Collected $ARTIFACT_COUNT DORA artifacts"
+
+      - name: Calculate DORA metrics
+        id: metrics
+        run: |
+          DATA_DIR="/tmp/dora-artifacts"
+          REPORT_DIR="/tmp/dora-report"
+          mkdir -p "$REPORT_DIR"
+
+          # Initialize counters
+          TOTAL_DEPLOYMENTS=0
+          SUCCESSFUL_DEPLOYMENTS=0
+          FAILED_DEPLOYMENTS=0
+          TOTAL_LEAD_TIME_SECONDS=0
+          TOTAL_RECOVERY_TIME_SECONDS=0
+          RECOVERY_COUNT=0
+          DEPLOY_TIMESTAMPS=()
+
+          # Process all collected JSON data files
+          for data_dir in "$DATA_DIR"/data-*; do
+            if [[ ! -d "$data_dir" ]]; then
+              continue
+            fi
+
+            for json_file in "$data_dir"/*.json; do
+              if [[ ! -f "$json_file" ]]; then
+                continue
+              fi
+
+              METRIC_TYPE=$(jq -r '.metric_type // "unknown"' "$json_file" 2>/dev/null || echo "unknown")
+              STATUS=$(jq -r '.status // "unknown"' "$json_file" 2>/dev/null || echo "unknown")
+              ENVIRONMENT=$(jq -r '.environment // "unknown"' "$json_file" 2>/dev/null || echo "unknown")
+              DEPLOY_START=$(jq -r '.deploy_start // ""' "$json_file" 2>/dev/null || echo "")
+              DEPLOY_END=$(jq -r '.deploy_end // ""' "$json_file" 2>/dev/null || echo "")
+
+              case "$METRIC_TYPE" in
+                deployment)
+                  TOTAL_DEPLOYMENTS=$((TOTAL_DEPLOYMENTS + 1))
+                  if [[ "$STATUS" == "success" ]]; then
+                    SUCCESSFUL_DEPLOYMENTS=$((SUCCESSFUL_DEPLOYMENTS + 1))
+                  else
+                    FAILED_DEPLOYMENTS=$((FAILED_DEPLOYMENTS + 1))
+                  fi
+
+                  # Calculate lead time if timestamps are available
+                  if [[ -n "$DEPLOY_START" && -n "$DEPLOY_END" ]]; then
+                    START_EPOCH=$(date -d "$DEPLOY_START" +%s 2>/dev/null || echo "0")
+                    END_EPOCH=$(date -d "$DEPLOY_END" +%s 2>/dev/null || echo "0")
+                    if [[ "$START_EPOCH" -gt 0 && "$END_EPOCH" -gt 0 ]]; then
+                      LEAD_TIME=$((END_EPOCH - START_EPOCH))
+                      TOTAL_LEAD_TIME_SECONDS=$((TOTAL_LEAD_TIME_SECONDS + LEAD_TIME))
+                    fi
+                  fi
+
+                  DEPLOY_TIMESTAMPS+=("$DEPLOY_END")
+                  ;;
+
+                recovery)
+                  RECOVERY_COUNT=$((RECOVERY_COUNT + 1))
+
+                  if [[ -n "$DEPLOY_START" && -n "$DEPLOY_END" ]]; then
+                    START_EPOCH=$(date -d "$DEPLOY_START" +%s 2>/dev/null || echo "0")
+                    END_EPOCH=$(date -d "$DEPLOY_END" +%s 2>/dev/null || echo "0")
+                    if [[ "$START_EPOCH" -gt 0 && "$END_EPOCH" -gt 0 ]]; then
+                      RECOVERY_TIME=$((END_EPOCH - START_EPOCH))
+                      TOTAL_RECOVERY_TIME_SECONDS=$((TOTAL_RECOVERY_TIME_SECONDS + RECOVERY_TIME))
+                    fi
+                  fi
+                  ;;
+              esac
+            done
+          done
+
+          # Calculate DORA metrics
+          LOOKBACK="${{ env.LOOKBACK_DAYS }}"
+
+          # 1. Deployment Frequency (deployments per day)
+          if [[ "$LOOKBACK" -gt 0 ]]; then
+            DEPLOY_FREQUENCY=$(echo "scale=2; $TOTAL_DEPLOYMENTS / $LOOKBACK" | bc 2>/dev/null || echo "0")
+          else
+            DEPLOY_FREQUENCY="0"
+          fi
+
+          # 2. Lead Time for Changes (average seconds)
+          if [[ "$SUCCESSFUL_DEPLOYMENTS" -gt 0 ]]; then
+            AVG_LEAD_TIME=$(echo "scale=0; $TOTAL_LEAD_TIME_SECONDS / $SUCCESSFUL_DEPLOYMENTS" | bc 2>/dev/null || echo "0")
+            AVG_LEAD_TIME_MIN=$(echo "scale=1; $AVG_LEAD_TIME / 60" | bc 2>/dev/null || echo "0")
+          else
+            AVG_LEAD_TIME="0"
+            AVG_LEAD_TIME_MIN="0"
+          fi
+
+          # 3. Mean Time to Recovery (average seconds)
+          if [[ "$RECOVERY_COUNT" -gt 0 ]]; then
+            MTTR=$(echo "scale=0; $TOTAL_RECOVERY_TIME_SECONDS / $RECOVERY_COUNT" | bc 2>/dev/null || echo "0")
+            MTTR_MIN=$(echo "scale=1; $MTTR / 60" | bc 2>/dev/null || echo "0")
+          else
+            MTTR="0"
+            MTTR_MIN="0"
+          fi
+
+          # 4. Change Failure Rate (percentage)
+          if [[ "$TOTAL_DEPLOYMENTS" -gt 0 ]]; then
+            CHANGE_FAILURE_RATE=$(echo "scale=1; ($FAILED_DEPLOYMENTS * 100) / $TOTAL_DEPLOYMENTS" | bc 2>/dev/null || echo "0")
+          else
+            CHANGE_FAILURE_RATE="0"
+          fi
+
+          # Determine DORA performance level
+          # Elite: Deploy multiple times/day, lead time <1hr, MTTR <1hr, CFR <5%
+          # High: Deploy weekly-daily, lead time <1day, MTTR <1day, CFR <10%
+          # Medium: Deploy weekly-monthly, lead time <1week, MTTR <1week, CFR <15%
+          # Low: Otherwise
+          if (( $(echo "$DEPLOY_FREQUENCY >= 1" | bc -l 2>/dev/null || echo "0") )) && \
+             [[ "$AVG_LEAD_TIME" -lt 3600 ]] && \
+             [[ "$MTTR" -lt 3600 ]] && \
+             (( $(echo "$CHANGE_FAILURE_RATE < 5" | bc -l 2>/dev/null || echo "0") )); then
+            PERFORMANCE_LEVEL="Elite"
+          elif (( $(echo "$DEPLOY_FREQUENCY >= 0.14" | bc -l 2>/dev/null || echo "0") )) && \
+               [[ "$AVG_LEAD_TIME" -lt 86400 ]] && \
+               [[ "$MTTR" -lt 86400 ]] && \
+               (( $(echo "$CHANGE_FAILURE_RATE < 10" | bc -l 2>/dev/null || echo "0") )); then
+            PERFORMANCE_LEVEL="High"
+          elif (( $(echo "$DEPLOY_FREQUENCY >= 0.033" | bc -l 2>/dev/null || echo "0") )) && \
+               [[ "$AVG_LEAD_TIME" -lt 604800 ]] && \
+               [[ "$MTTR" -lt 604800 ]] && \
+               (( $(echo "$CHANGE_FAILURE_RATE < 15" | bc -l 2>/dev/null || echo "0") )); then
+            PERFORMANCE_LEVEL="Medium"
+          else
+            PERFORMANCE_LEVEL="Low"
+          fi
+
+          # Export metrics as outputs
+          echo "total_deployments=$TOTAL_DEPLOYMENTS" >> $GITHUB_OUTPUT
+          echo "successful_deployments=$SUCCESSFUL_DEPLOYMENTS" >> $GITHUB_OUTPUT
+          echo "failed_deployments=$FAILED_DEPLOYMENTS" >> $GITHUB_OUTPUT
+          echo "deploy_frequency=$DEPLOY_FREQUENCY" >> $GITHUB_OUTPUT
+          echo "avg_lead_time=$AVG_LEAD_TIME" >> $GITHUB_OUTPUT
+          echo "avg_lead_time_min=$AVG_LEAD_TIME_MIN" >> $GITHUB_OUTPUT
+          echo "mttr=$MTTR" >> $GITHUB_OUTPUT
+          echo "mttr_min=$MTTR_MIN" >> $GITHUB_OUTPUT
+          echo "change_failure_rate=$CHANGE_FAILURE_RATE" >> $GITHUB_OUTPUT
+          echo "recovery_count=$RECOVERY_COUNT" >> $GITHUB_OUTPUT
+          echo "performance_level=$PERFORMANCE_LEVEL" >> $GITHUB_OUTPUT
+          echo "lookback_days=$LOOKBACK" >> $GITHUB_OUTPUT
+
+      - name: Generate JSON report
+        id: report
+        run: |
+          REPORT_DIR="/tmp/dora-report"
+          REPORT_DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+
+          cat > "$REPORT_DIR/dora-metrics.json" << JSONEOF
+          {
+            "report_date": "$REPORT_DATE",
+            "lookback_days": ${{ steps.metrics.outputs.lookback_days }},
+            "period_start": "${{ steps.collect.outputs.since }}",
+            "period_end": "$REPORT_DATE",
+            "repository": "${{ github.repository }}",
+            "metrics": {
+              "deployment_frequency": {
+                "value": ${{ steps.metrics.outputs.deploy_frequency }},
+                "unit": "deployments_per_day",
+                "total_deployments": ${{ steps.metrics.outputs.total_deployments }},
+                "successful": ${{ steps.metrics.outputs.successful_deployments }},
+                "failed": ${{ steps.metrics.outputs.failed_deployments }}
+              },
+              "lead_time_for_changes": {
+                "value": ${{ steps.metrics.outputs.avg_lead_time }},
+                "unit": "seconds",
+                "human_readable": "${{ steps.metrics.outputs.avg_lead_time_min }} minutes"
+              },
+              "mean_time_to_recovery": {
+                "value": ${{ steps.metrics.outputs.mttr }},
+                "unit": "seconds",
+                "human_readable": "${{ steps.metrics.outputs.mttr_min }} minutes",
+                "incident_count": ${{ steps.metrics.outputs.recovery_count }}
+              },
+              "change_failure_rate": {
+                "value": ${{ steps.metrics.outputs.change_failure_rate }},
+                "unit": "percentage"
+              }
+            },
+            "performance_level": "${{ steps.metrics.outputs.performance_level }}",
+            "artifacts_processed": ${{ steps.collect.outputs.artifact_count }}
+          }
+          JSONEOF
+
+          echo "report_path=$REPORT_DIR/dora-metrics.json" >> $GITHUB_OUTPUT
+
+      - name: Generate markdown summary
+        run: |
+          REPORT_DIR="/tmp/dora-report"
+          PERF_LEVEL="${{ steps.metrics.outputs.performance_level }}"
+
+          cat > "$REPORT_DIR/dora-summary.md" << 'MDEOF'
+          # DORA Metrics Report - GreenLang Climate OS
+
+          **Report Period:** ${{ steps.collect.outputs.since }} to $(date -u +%Y-%m-%dT%H:%M:%SZ)
+          **Lookback:** ${{ steps.metrics.outputs.lookback_days }} days
+          **Artifacts Processed:** ${{ steps.collect.outputs.artifact_count }}
+
+          ## Key Metrics
+
+          | Metric | Value | Target |
+          |--------|-------|--------|
+          | Deployment Frequency | ${{ steps.metrics.outputs.deploy_frequency }} deploys/day | >= 1/day (Elite) |
+          | Lead Time for Changes | ${{ steps.metrics.outputs.avg_lead_time_min }} minutes | < 60 min (Elite) |
+          | Mean Time to Recovery | ${{ steps.metrics.outputs.mttr_min }} minutes | < 60 min (Elite) |
+          | Change Failure Rate | ${{ steps.metrics.outputs.change_failure_rate }}% | < 5% (Elite) |
+
+          ## Deployment Summary
+
+          | Metric | Count |
+          |--------|-------|
+          | Total Deployments | ${{ steps.metrics.outputs.total_deployments }} |
+          | Successful | ${{ steps.metrics.outputs.successful_deployments }} |
+          | Failed | ${{ steps.metrics.outputs.failed_deployments }} |
+          | Recoveries | ${{ steps.metrics.outputs.recovery_count }} |
+
+          ## Performance Level: **${{ steps.metrics.outputs.performance_level }}**
+
+          DORA performance levels:
+          - **Elite:** Deploy on demand, lead time < 1 hour, MTTR < 1 hour, CFR < 5%
+          - **High:** Deploy daily-weekly, lead time < 1 day, MTTR < 1 day, CFR < 10%
+          - **Medium:** Deploy weekly-monthly, lead time < 1 week, MTTR < 1 week, CFR < 15%
+          - **Low:** Deploy monthly or less frequently
+          MDEOF
+
+      - name: Push to Prometheus Pushgateway
+        if: |
+          (inputs.push-to-prometheus == true || inputs.push-to-prometheus == '') &&
+          env.PROMETHEUS_PUSHGATEWAY_URL != ''
+        env:
+          PROMETHEUS_PUSHGATEWAY_URL: ${{ secrets.PROMETHEUS_PUSHGATEWAY_URL }}
+        run: |
+          echo "Pushing DORA metrics to Prometheus Pushgateway..."
+
+          PUSHGATEWAY_URL="${PROMETHEUS_PUSHGATEWAY_URL}/metrics/job/dora_metrics/repository/${{ github.repository }}"
+
+          cat <<PROMEOF | curl --data-binary @- "$PUSHGATEWAY_URL"
+          # HELP greenlang_dora_deployment_frequency Deployments per day
+          # TYPE greenlang_dora_deployment_frequency gauge
+          greenlang_dora_deployment_frequency ${{ steps.metrics.outputs.deploy_frequency }}
+          # HELP greenlang_dora_lead_time_seconds Average lead time for changes in seconds
+          # TYPE greenlang_dora_lead_time_seconds gauge
+          greenlang_dora_lead_time_seconds ${{ steps.metrics.outputs.avg_lead_time }}
+          # HELP greenlang_dora_mttr_seconds Mean time to recovery in seconds
+          # TYPE greenlang_dora_mttr_seconds gauge
+          greenlang_dora_mttr_seconds ${{ steps.metrics.outputs.mttr }}
+          # HELP greenlang_dora_change_failure_rate Change failure rate percentage
+          # TYPE greenlang_dora_change_failure_rate gauge
+          greenlang_dora_change_failure_rate ${{ steps.metrics.outputs.change_failure_rate }}
+          # HELP greenlang_dora_total_deployments Total deployments in period
+          # TYPE greenlang_dora_total_deployments gauge
+          greenlang_dora_total_deployments ${{ steps.metrics.outputs.total_deployments }}
+          # HELP greenlang_dora_failed_deployments Failed deployments in period
+          # TYPE greenlang_dora_failed_deployments gauge
+          greenlang_dora_failed_deployments ${{ steps.metrics.outputs.failed_deployments }}
+          # HELP greenlang_dora_recovery_count Incident recoveries in period
+          # TYPE greenlang_dora_recovery_count gauge
+          greenlang_dora_recovery_count ${{ steps.metrics.outputs.recovery_count }}
+          PROMEOF
+
+          echo "Metrics pushed successfully"
+
+      - name: Upload aggregated report
+        uses: actions/upload-artifact@v4
+        with:
+          name: dora-metrics-report-${{ github.run_number }}
+          path: /tmp/dora-report/
+          retention-days: 90
+
+      - name: Post summary to GitHub Step Summary
+        run: |
+          PERF_LEVEL="${{ steps.metrics.outputs.performance_level }}"
+
+          echo "# DORA Metrics Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Report Period:** ${{ steps.collect.outputs.since }} to $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_STEP_SUMMARY
+          echo "**Artifacts Processed:** ${{ steps.collect.outputs.artifact_count }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Key Metrics" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Metric | Value | DORA Level |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-------|------------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Deployment Frequency | **${{ steps.metrics.outputs.deploy_frequency }}** deploys/day | >= 1/day (Elite) |" >> $GITHUB_STEP_SUMMARY
+          echo "| Lead Time for Changes | **${{ steps.metrics.outputs.avg_lead_time_min }}** minutes | < 60 min (Elite) |" >> $GITHUB_STEP_SUMMARY
+          echo "| Mean Time to Recovery | **${{ steps.metrics.outputs.mttr_min }}** minutes | < 60 min (Elite) |" >> $GITHUB_STEP_SUMMARY
+          echo "| Change Failure Rate | **${{ steps.metrics.outputs.change_failure_rate }}%** | < 5% (Elite) |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Deployment Breakdown" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Status | Count |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Total Deployments | ${{ steps.metrics.outputs.total_deployments }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Successful | ${{ steps.metrics.outputs.successful_deployments }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Failed | ${{ steps.metrics.outputs.failed_deployments }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Incident Recoveries | ${{ steps.metrics.outputs.recovery_count }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Overall Performance: **$PERF_LEVEL**" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          case "$PERF_LEVEL" in
+            Elite)
+              echo "> Performing at the elite DORA level. Maintain current practices and continue optimizing." >> $GITHUB_STEP_SUMMARY
+              ;;
+            High)
+              echo "> Performing at a high level. Focus on reducing lead time and MTTR to reach elite performance." >> $GITHUB_STEP_SUMMARY
+              ;;
+            Medium)
+              echo "> Performing at a medium level. Consider increasing deployment frequency and investing in automated testing." >> $GITHUB_STEP_SUMMARY
+              ;;
+            Low)
+              echo "> Below target performance. Priority improvements: CI/CD automation, testing coverage, and monitoring." >> $GITHUB_STEP_SUMMARY
+              ;;
+          esac

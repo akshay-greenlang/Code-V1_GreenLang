@@ -1,0 +1,214 @@
+# =============================================================================
+# GreenLang Climate OS - Redis Backup CronJobs
+# =============================================================================
+# PRD: INFRA-003 Redis Caching Cluster
+# Purpose: Scheduled RDB snapshots with S3 upload
+# =============================================================================
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: redis-backup-scripts
+  namespace: greenlang
+  labels:
+    app: redis-backup
+    component: scripts
+data:
+  backup.sh: |
+    #!/bin/bash
+    set -euo pipefail
+
+    TIMESTAMP=$(date -u +"%Y%m%dT%H%M%SZ")
+    BACKUP_TYPE="${BACKUP_TYPE:-daily}"
+    S3_BUCKET="${REDIS_BACKUP_S3_BUCKET:-greenlang-prod-redis-backups}"
+    S3_PREFIX="redis/rdb/${BACKUP_TYPE}"
+
+    echo "[${TIMESTAMP}] Starting Redis ${BACKUP_TYPE} backup..."
+
+    # Trigger BGSAVE
+    redis-cli -h "${REDIS_HOST}" -p "${REDIS_PORT}" ${REDIS_AUTH:+-a "${REDIS_AUTH}" --no-auth-warning} BGSAVE
+
+    # Wait for completion
+    echo "Waiting for BGSAVE to complete..."
+    while true; do
+      BG_STATUS=$(redis-cli -h "${REDIS_HOST}" -p "${REDIS_PORT}" ${REDIS_AUTH:+-a "${REDIS_AUTH}" --no-auth-warning} INFO persistence | grep rdb_bgsave_in_progress | tr -d '\r')
+      if echo "${BG_STATUS}" | grep -q "rdb_bgsave_in_progress:0"; then
+        break
+      fi
+      sleep 2
+    done
+
+    # Save RDB to local temp
+    DUMP_PATH="/tmp/dump-${TIMESTAMP}.rdb"
+    redis-cli -h "${REDIS_HOST}" -p "${REDIS_PORT}" ${REDIS_AUTH:+-a "${REDIS_AUTH}" --no-auth-warning} --rdb "${DUMP_PATH}"
+
+    # Generate checksum
+    sha256sum "${DUMP_PATH}" > "${DUMP_PATH}.sha256"
+
+    # Upload to S3
+    aws s3 cp "${DUMP_PATH}" "s3://${S3_BUCKET}/${S3_PREFIX}/${TIMESTAMP}/dump.rdb" \
+      --sse aws:kms --region "${AWS_DEFAULT_REGION:-us-east-1}"
+    aws s3 cp "${DUMP_PATH}.sha256" "s3://${S3_BUCKET}/${S3_PREFIX}/${TIMESTAMP}/dump.rdb.sha256" \
+      --sse aws:kms --region "${AWS_DEFAULT_REGION:-us-east-1}"
+
+    # Cleanup old backups
+    RETENTION_DAYS="${RETENTION_DAYS:-7}"
+    CUTOFF=$(date -u -d "${RETENTION_DAYS} days ago" +"%Y%m%dT" 2>/dev/null || date -u -v-${RETENTION_DAYS}d +"%Y%m%dT")
+    aws s3 ls "s3://${S3_BUCKET}/${S3_PREFIX}/" --region "${AWS_DEFAULT_REGION:-us-east-1}" | \
+      awk '{print $2}' | tr -d '/' | while read -r dir; do
+        if [[ "${dir}" < "${CUTOFF}" ]]; then
+          aws s3 rm "s3://${S3_BUCKET}/${S3_PREFIX}/${dir}/" --recursive --region "${AWS_DEFAULT_REGION:-us-east-1}"
+        fi
+      done
+
+    rm -f "${DUMP_PATH}" "${DUMP_PATH}.sha256"
+    echo "[$(date -u +"%Y%m%dT%H%M%SZ")] Redis ${BACKUP_TYPE} backup completed"
+
+---
+# Daily Redis Backup - 01:00 UTC
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: redis-backup-daily
+  namespace: greenlang
+  labels:
+    app: redis-backup
+    schedule: daily
+spec:
+  schedule: "0 1 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 7
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      activeDeadlineSeconds: 1800
+      template:
+        metadata:
+          labels:
+            app: redis-backup
+            schedule: daily
+        spec:
+          serviceAccountName: redis-backup
+          restartPolicy: OnFailure
+          containers:
+            - name: redis-backup
+              image: greenlang/db-tools:latest
+              command: ["/bin/bash", "/scripts/backup.sh"]
+              env:
+                - name: BACKUP_TYPE
+                  value: "daily"
+                - name: RETENTION_DAYS
+                  value: "7"
+                - name: REDIS_HOST
+                  valueFrom:
+                    secretKeyRef:
+                      name: redis-credentials
+                      key: host
+                - name: REDIS_PORT
+                  value: "6379"
+                - name: REDIS_AUTH
+                  valueFrom:
+                    secretKeyRef:
+                      name: redis-credentials
+                      key: auth_token
+                - name: REDIS_BACKUP_S3_BUCKET
+                  value: "greenlang-prod-redis-backups"
+                - name: AWS_DEFAULT_REGION
+                  value: "us-east-1"
+              resources:
+                requests:
+                  cpu: 250m
+                  memory: 256Mi
+                limits:
+                  cpu: 500m
+                  memory: 512Mi
+              volumeMounts:
+                - name: scripts
+                  mountPath: /scripts
+                  readOnly: true
+          volumes:
+            - name: scripts
+              configMap:
+                name: redis-backup-scripts
+                defaultMode: 0755
+
+---
+# Weekly Redis Backup - Sunday 02:00 UTC
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: redis-backup-weekly
+  namespace: greenlang
+  labels:
+    app: redis-backup
+    schedule: weekly
+spec:
+  schedule: "0 2 * * 0"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 4
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      activeDeadlineSeconds: 3600
+      template:
+        metadata:
+          labels:
+            app: redis-backup
+            schedule: weekly
+        spec:
+          serviceAccountName: redis-backup
+          restartPolicy: OnFailure
+          containers:
+            - name: redis-backup
+              image: greenlang/db-tools:latest
+              command: ["/bin/bash", "/scripts/backup.sh"]
+              env:
+                - name: BACKUP_TYPE
+                  value: "weekly"
+                - name: RETENTION_DAYS
+                  value: "30"
+                - name: REDIS_HOST
+                  valueFrom:
+                    secretKeyRef:
+                      name: redis-credentials
+                      key: host
+                - name: REDIS_PORT
+                  value: "6379"
+                - name: REDIS_AUTH
+                  valueFrom:
+                    secretKeyRef:
+                      name: redis-credentials
+                      key: auth_token
+                - name: REDIS_BACKUP_S3_BUCKET
+                  value: "greenlang-prod-redis-backups"
+                - name: AWS_DEFAULT_REGION
+                  value: "us-east-1"
+              resources:
+                requests:
+                  cpu: 250m
+                  memory: 256Mi
+                limits:
+                  cpu: 500m
+                  memory: 512Mi
+              volumeMounts:
+                - name: scripts
+                  mountPath: /scripts
+                  readOnly: true
+          volumes:
+            - name: scripts
+              configMap:
+                name: redis-backup-scripts
+                defaultMode: 0755
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: redis-backup
+  namespace: greenlang
+  labels:
+    app: redis-backup
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::ACCOUNT_ID:role/greenlang-redis-backup-role

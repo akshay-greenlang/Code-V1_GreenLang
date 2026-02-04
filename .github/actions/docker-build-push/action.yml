@@ -1,0 +1,231 @@
+# =============================================================================
+# GreenLang Climate OS - Docker Build, Push & Sign Composite Action
+# INFRA-007: Secure Container Image Pipeline
+# =============================================================================
+#
+# Builds a multi-platform Docker image, pushes it to a container registry,
+# optionally signs it with Cosign, and attaches a Software Bill of Materials
+# (SBOM) for supply-chain security.
+#
+# Usage:
+#   - uses: ./.github/actions/docker-build-push
+#     with:
+#       image-name: 'greenlang/climate-api'
+#       tags: 'v1.2.3,latest'
+#     env:
+#       REGISTRY_USERNAME: ${{ secrets.REGISTRY_USERNAME }}
+#       REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
+#       COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
+#       COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+# =============================================================================
+
+name: 'Docker Build, Push & Sign'
+description: 'Composite action to build multi-platform Docker images, push to registry, sign with Cosign, and attach SBOM'
+
+inputs:
+  context:
+    description: 'Docker build context path'
+    required: false
+    default: '.'
+  dockerfile:
+    description: 'Path to Dockerfile relative to the context'
+    required: false
+    default: 'Dockerfile'
+  image-name:
+    description: 'Image name without registry prefix (e.g. greenlang/climate-api)'
+    required: true
+  tags:
+    description: 'Comma-separated list of image tags (e.g. v1.2.3,latest)'
+    required: true
+  platforms:
+    description: 'Comma-separated target platforms for multi-arch build'
+    required: false
+    default: 'linux/amd64,linux/arm64'
+  registry:
+    description: 'Container registry hostname'
+    required: false
+    default: 'ghcr.io'
+  sign:
+    description: 'Whether to sign the image with Cosign (true/false)'
+    required: false
+    default: 'true'
+
+outputs:
+  image-digest:
+    description: 'SHA256 digest of the pushed image'
+    value: ${{ steps.build-push.outputs.digest }}
+  image-uri:
+    description: 'Full image URI including registry and primary tag'
+    value: ${{ steps.meta.outputs.primary-uri }}
+
+runs:
+  using: 'composite'
+  steps:
+    # ------------------------------------------------------------------
+    # Step 1: Set up Docker Buildx
+    # ------------------------------------------------------------------
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+      with:
+        driver-opts: |
+          image=moby/buildkit:v0.13.0
+          network=host
+
+    # ------------------------------------------------------------------
+    # Step 2: Set up QEMU for multi-platform builds
+    # ------------------------------------------------------------------
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v3
+      with:
+        platforms: ${{ inputs.platforms }}
+
+    # ------------------------------------------------------------------
+    # Step 3: Log in to container registry
+    # ------------------------------------------------------------------
+    - name: Log in to ${{ inputs.registry }}
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ inputs.registry }}
+        username: ${{ env.REGISTRY_USERNAME }}
+        password: ${{ env.REGISTRY_PASSWORD }}
+
+    # ------------------------------------------------------------------
+    # Step 4: Compute image metadata and tag list
+    # ------------------------------------------------------------------
+    - name: Compute image metadata
+      id: meta
+      shell: bash
+      run: |
+        REGISTRY="${{ inputs.registry }}"
+        IMAGE="${{ inputs.image-name }}"
+        INPUT_TAGS="${{ inputs.tags }}"
+
+        # Build fully qualified tag list
+        TAG_LIST=""
+        PRIMARY_TAG=""
+        IFS=',' read -ra TAGS <<< "${INPUT_TAGS}"
+        for TAG in "${TAGS[@]}"; do
+          TAG=$(echo "${TAG}" | xargs)  # trim whitespace
+          FULL="${REGISTRY}/${IMAGE}:${TAG}"
+          if [ -z "${TAG_LIST}" ]; then
+            TAG_LIST="${FULL}"
+            PRIMARY_TAG="${FULL}"
+          else
+            TAG_LIST="${TAG_LIST},${FULL}"
+          fi
+        done
+
+        echo "tags=${TAG_LIST}" >> "${GITHUB_OUTPUT}"
+        echo "primary-uri=${PRIMARY_TAG}" >> "${GITHUB_OUTPUT}"
+        echo "Image tags: ${TAG_LIST}"
+
+    # ------------------------------------------------------------------
+    # Step 5: Build and push Docker image
+    # ------------------------------------------------------------------
+    - name: Build and push Docker image
+      id: build-push
+      uses: docker/build-push-action@v5
+      with:
+        context: ${{ inputs.context }}
+        file: ${{ inputs.context }}/${{ inputs.dockerfile }}
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        platforms: ${{ inputs.platforms }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+        provenance: true
+        sbom: true
+        labels: |
+          org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+          org.opencontainers.image.revision=${{ github.sha }}
+          org.opencontainers.image.created=${{ github.event.head_commit.timestamp }}
+          org.opencontainers.image.title=${{ inputs.image-name }}
+          org.opencontainers.image.vendor=GreenLang
+
+    # ------------------------------------------------------------------
+    # Step 6: Install Cosign
+    # ------------------------------------------------------------------
+    - name: Install Cosign
+      if: inputs.sign == 'true'
+      uses: sigstore/cosign-installer@v3
+      with:
+        cosign-release: 'v2.2.3'
+
+    # ------------------------------------------------------------------
+    # Step 7: Sign the container image with Cosign
+    # ------------------------------------------------------------------
+    - name: Sign container image with Cosign
+      if: inputs.sign == 'true'
+      shell: bash
+      env:
+        COSIGN_PRIVATE_KEY: ${{ env.COSIGN_PRIVATE_KEY }}
+        COSIGN_PASSWORD: ${{ env.COSIGN_PASSWORD }}
+        DIGEST: ${{ steps.build-push.outputs.digest }}
+      run: |
+        echo "::group::Signing image with Cosign"
+
+        IMAGE_REF="${{ inputs.registry }}/${{ inputs.image-name }}@${DIGEST}"
+
+        cosign sign \
+          --key env://COSIGN_PRIVATE_KEY \
+          --yes \
+          -a "repo=${{ github.repository }}" \
+          -a "sha=${{ github.sha }}" \
+          -a "ref=${{ github.ref }}" \
+          -a "workflow=${{ github.workflow }}" \
+          -a "run_id=${{ github.run_id }}" \
+          "${IMAGE_REF}"
+
+        echo "Image signed: ${IMAGE_REF}"
+        echo "::endgroup::"
+
+    # ------------------------------------------------------------------
+    # Step 8: Generate and attach SBOM
+    # ------------------------------------------------------------------
+    - name: Generate and attach SBOM
+      shell: bash
+      env:
+        DIGEST: ${{ steps.build-push.outputs.digest }}
+      run: |
+        echo "::group::Generating SBOM"
+
+        # Install syft for SBOM generation
+        SYFT_VERSION="0.105.0"
+        curl -fsSL "https://raw.githubusercontent.com/anchore/syft/main/install.sh" | sh -s -- -b /usr/local/bin "v${SYFT_VERSION}"
+
+        IMAGE_REF="${{ inputs.registry }}/${{ inputs.image-name }}@${DIGEST}"
+
+        # Generate SPDX SBOM
+        syft "${IMAGE_REF}" \
+          -o spdx-json \
+          --file "${RUNNER_TEMP}/sbom-spdx.json" || true
+
+        # Attach SBOM to image via Cosign (if signing is enabled and key is present)
+        if [ "${{ inputs.sign }}" = "true" ] && [ -n "${COSIGN_PRIVATE_KEY:-}" ]; then
+          cosign attach sbom \
+            --sbom "${RUNNER_TEMP}/sbom-spdx.json" \
+            "${IMAGE_REF}" || true
+          echo "SBOM attached to image"
+        else
+          echo "SBOM generated but not attached (signing disabled)"
+        fi
+
+        echo "::endgroup::"
+
+    # ------------------------------------------------------------------
+    # Step 9: Print build summary
+    # ------------------------------------------------------------------
+    - name: Print build summary
+      shell: bash
+      run: |
+        echo "============================================="
+        echo " Docker Build & Push Summary"
+        echo "============================================="
+        echo " Registry       : ${{ inputs.registry }}"
+        echo " Image          : ${{ inputs.image-name }}"
+        echo " Tags           : ${{ inputs.tags }}"
+        echo " Platforms      : ${{ inputs.platforms }}"
+        echo " Digest         : ${{ steps.build-push.outputs.digest }}"
+        echo " Signed         : ${{ inputs.sign }}"
+        echo " Primary URI    : ${{ steps.meta.outputs.primary-uri }}"
+        echo "============================================="

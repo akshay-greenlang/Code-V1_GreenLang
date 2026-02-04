@@ -1,0 +1,214 @@
+# =============================================================================
+# GreenLang Climate OS - DORA Metrics Recording Composite Action
+# INFRA-007: DevOps Research & Assessment Metrics Pipeline
+# =============================================================================
+#
+# Records deployment, release, incident, and recovery events to enable
+# tracking of the four key DORA metrics:
+#
+#   1. Deployment Frequency      - How often code reaches production
+#   2. Lead Time for Changes     - Time from commit to production
+#   3. Change Failure Rate       - Percentage of deployments causing failure
+#   4. Mean Time to Recovery     - Time from incident to resolution
+#
+# Events are persisted as JSON artifacts that can be aggregated by a
+# downstream analytics job or dashboard.
+#
+# Usage:
+#   - uses: ./.github/actions/dora-record
+#     with:
+#       event-type: 'deploy'
+#       environment: 'production'
+#       version: 'v1.2.3'
+#       start-time: '2024-01-15T10:00:00Z'
+# =============================================================================
+
+name: 'DORA Metrics Recorder'
+description: 'Composite action to record deployment events and calculate DORA metrics for engineering performance tracking'
+
+inputs:
+  event-type:
+    description: 'Event type: deploy, release, incident, or recovery'
+    required: true
+  environment:
+    description: 'Target environment name (e.g. dev, staging, production)'
+    required: true
+  version:
+    description: 'Application version or release tag'
+    required: false
+    default: ''
+  start-time:
+    description: 'ISO 8601 timestamp marking the start of the change (used for lead time calculation). Leave empty to skip lead time.'
+    required: false
+    default: ''
+
+outputs:
+  event-id:
+    description: 'Unique identifier for the recorded event'
+    value: ${{ steps.record-event.outputs.event-id }}
+  metric-value:
+    description: 'Calculated metric value (e.g. lead time in seconds, deployment count)'
+    value: ${{ steps.record-event.outputs.metric-value }}
+
+runs:
+  using: 'composite'
+  steps:
+    # ------------------------------------------------------------------
+    # Step 1: Record DORA event with timestamp and metrics
+    # ------------------------------------------------------------------
+    - name: Record DORA event
+      id: record-event
+      shell: bash
+      run: |
+        echo "::group::Recording DORA event"
+
+        EVENT_TYPE="${{ inputs.event-type }}"
+        ENVIRONMENT="${{ inputs.environment }}"
+        VERSION="${{ inputs.version }}"
+        START_TIME="${{ inputs.start-time }}"
+
+        # Validate event type
+        case "${EVENT_TYPE}" in
+          deploy|release|incident|recovery)
+            echo "Event type: ${EVENT_TYPE}"
+            ;;
+          *)
+            echo "::error::Invalid event-type '${EVENT_TYPE}'. Must be one of: deploy, release, incident, recovery"
+            exit 1
+            ;;
+        esac
+
+        # Generate event ID and timestamp
+        EVENT_ID=$(python3 -c "import uuid; print(str(uuid.uuid4())[:12])")
+        EVENT_TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+        # Prepare output directory
+        DORA_DIR="${RUNNER_TEMP}/dora-metrics"
+        mkdir -p "${DORA_DIR}"
+
+        # Calculate metric value based on event type
+        METRIC_VALUE=$(python3 << 'PYEOF'
+        import datetime
+        import json
+        import sys
+
+        event_type = "${EVENT_TYPE}"
+        start_time_str = "${START_TIME}"
+        now = datetime.datetime.utcnow()
+
+        metric = {}
+
+        if event_type == "deploy":
+            metric["metric_name"] = "deployment_frequency"
+            metric["metric_unit"] = "count"
+            metric["metric_value"] = 1
+            # If start_time is provided, calculate lead time
+            if start_time_str:
+                try:
+                    # Handle both 'Z' suffix and '+00:00' format
+                    clean = start_time_str.replace("Z", "+00:00")
+                    start = datetime.datetime.fromisoformat(clean).replace(tzinfo=None)
+                    delta = (now - start).total_seconds()
+                    metric["lead_time_seconds"] = round(delta, 2)
+                    metric["lead_time_human"] = str(datetime.timedelta(seconds=int(delta)))
+                    # Override metric value with lead time for deploy events with start_time
+                    metric["metric_name"] = "lead_time_for_changes"
+                    metric["metric_unit"] = "seconds"
+                    metric["metric_value"] = round(delta, 2)
+                except Exception as e:
+                    metric["lead_time_error"] = str(e)
+
+        elif event_type == "release":
+            metric["metric_name"] = "deployment_frequency"
+            metric["metric_unit"] = "count"
+            metric["metric_value"] = 1
+
+        elif event_type == "incident":
+            metric["metric_name"] = "change_failure_rate"
+            metric["metric_unit"] = "count"
+            metric["metric_value"] = 1
+
+        elif event_type == "recovery":
+            metric["metric_name"] = "mean_time_to_recovery"
+            metric["metric_unit"] = "seconds"
+            if start_time_str:
+                try:
+                    clean = start_time_str.replace("Z", "+00:00")
+                    start = datetime.datetime.fromisoformat(clean).replace(tzinfo=None)
+                    delta = (now - start).total_seconds()
+                    metric["metric_value"] = round(delta, 2)
+                    metric["recovery_time_human"] = str(datetime.timedelta(seconds=int(delta)))
+                except Exception as e:
+                    metric["metric_value"] = 0
+                    metric["recovery_time_error"] = str(e)
+            else:
+                metric["metric_value"] = 0
+
+        print(json.dumps(metric))
+        PYEOF
+        )
+
+        # Parse the metric value for output
+        METRIC_OUTPUT=$(echo "${METRIC_VALUE}" | python3 -c "import sys,json; print(json.loads(sys.stdin.read())['metric_value'])")
+
+        # Build the full event record
+        EVENT_FILE="${DORA_DIR}/dora-event-${EVENT_ID}.json"
+
+        python3 << PYEOF
+        import json
+
+        metric_data = json.loads('''${METRIC_VALUE}''')
+
+        event = {
+            "event_id": "${EVENT_ID}",
+            "event_type": "${EVENT_TYPE}",
+            "environment": "${ENVIRONMENT}",
+            "version": "${VERSION}" or None,
+            "timestamp": "${EVENT_TIMESTAMP}",
+            "start_time": "${START_TIME}" or None,
+            "repository": "${{ github.repository }}",
+            "commit_sha": "${{ github.sha }}",
+            "ref": "${{ github.ref_name }}",
+            "actor": "${{ github.actor }}",
+            "workflow": "${{ github.workflow }}",
+            "run_id": "${{ github.run_id }}",
+            "run_number": ${{ github.run_number }},
+            "metrics": metric_data
+        }
+
+        with open("${EVENT_FILE}", "w") as f:
+            json.dump(event, f, indent=2)
+
+        print(json.dumps(event, indent=2))
+        PYEOF
+
+        # Set outputs
+        echo "event-id=${EVENT_ID}" >> "${GITHUB_OUTPUT}"
+        echo "metric-value=${METRIC_OUTPUT}" >> "${GITHUB_OUTPUT}"
+
+        echo ""
+        echo "============================================="
+        echo " DORA Event Recorded"
+        echo "============================================="
+        echo " Event ID       : ${EVENT_ID}"
+        echo " Event type     : ${EVENT_TYPE}"
+        echo " Environment    : ${ENVIRONMENT}"
+        echo " Version        : ${VERSION:-'(not specified)'}"
+        echo " Timestamp      : ${EVENT_TIMESTAMP}"
+        echo " Metric name    : $(echo "${METRIC_VALUE}" | python3 -c "import sys,json; print(json.loads(sys.stdin.read()).get('metric_name',''))")"
+        echo " Metric value   : ${METRIC_OUTPUT}"
+        echo "============================================="
+
+        echo "::endgroup::"
+
+    # ------------------------------------------------------------------
+    # Step 2: Upload DORA event as artifact
+    # ------------------------------------------------------------------
+    - name: Upload DORA metrics artifact
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: dora-event-${{ steps.record-event.outputs.event-id }}
+        path: ${{ runner.temp }}/dora-metrics/
+        retention-days: 90
+        if-no-files-found: warn

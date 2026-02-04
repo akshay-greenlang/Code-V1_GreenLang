@@ -1,0 +1,301 @@
+# =============================================================================
+# GreenLang Climate OS - Security Gate Composite Action
+# INFRA-007: Unified Security Scanning Pipeline
+# =============================================================================
+#
+# Runs a configurable set of security scanners and produces a single
+# pass/fail gate decision based on the highest severity finding.
+#
+# Quick mode  : Trivy filesystem scan + pip-audit
+# Full mode   : Quick mode + Bandit SAST + Gitleaks secrets scan
+#
+# Usage:
+#   - uses: ./.github/actions/security-gate
+#     with:
+#       scan-type: 'full'
+#       fail-on-severity: 'high'
+# =============================================================================
+
+name: 'Security Gate'
+description: 'Composite action for unified security scanning with Trivy, pip-audit, Bandit, and Gitleaks'
+
+inputs:
+  scan-type:
+    description: 'Scan scope: "quick" (Trivy + pip-audit) or "full" (adds Bandit + Gitleaks)'
+    required: false
+    default: 'quick'
+  fail-on-severity:
+    description: 'Minimum severity that causes the gate to fail: critical, high, or medium'
+    required: false
+    default: 'critical'
+  scan-path:
+    description: 'Root path to scan'
+    required: false
+    default: '.'
+
+outputs:
+  vulnerabilities-found:
+    description: 'Total number of vulnerabilities found across all scanners'
+    value: ${{ steps.aggregate.outputs.total-vulnerabilities }}
+  gate-passed:
+    description: 'Whether the security gate passed (true/false)'
+    value: ${{ steps.aggregate.outputs.gate-passed }}
+  report-path:
+    description: 'Path to the aggregated security report JSON'
+    value: ${{ steps.aggregate.outputs.report-path }}
+
+runs:
+  using: 'composite'
+  steps:
+    # ------------------------------------------------------------------
+    # Step 1: Create report directory
+    # ------------------------------------------------------------------
+    - name: Prepare report directory
+      shell: bash
+      run: |
+        REPORT_DIR="${RUNNER_TEMP}/security-reports"
+        mkdir -p "${REPORT_DIR}"
+        echo "SECURITY_REPORT_DIR=${REPORT_DIR}" >> "${GITHUB_ENV}"
+
+    # ------------------------------------------------------------------
+    # Step 2: Trivy filesystem scan
+    # ------------------------------------------------------------------
+    - name: Run Trivy filesystem scan
+      shell: bash
+      run: |
+        echo "::group::Trivy Filesystem Scan"
+
+        # Install Trivy
+        TRIVY_VERSION="0.50.1"
+        curl -fsSL "https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz" \
+          -o trivy.tar.gz
+        tar -xzf trivy.tar.gz trivy
+        chmod +x trivy
+        mv trivy /usr/local/bin/trivy
+        rm -f trivy.tar.gz
+
+        # Map severity input to Trivy severity filter
+        SEVERITY_MAP_critical="CRITICAL"
+        SEVERITY_MAP_high="CRITICAL,HIGH"
+        SEVERITY_MAP_medium="CRITICAL,HIGH,MEDIUM"
+        SEVERITY_KEY="SEVERITY_MAP_${{ inputs.fail-on-severity }}"
+        TRIVY_SEVERITY="${!SEVERITY_KEY}"
+
+        # Run scan and produce JSON report
+        trivy fs \
+          --severity "${TRIVY_SEVERITY}" \
+          --format json \
+          --output "${SECURITY_REPORT_DIR}/trivy-results.json" \
+          "${{ inputs.scan-path }}" || true
+
+        # Count findings
+        TRIVY_COUNT=$(python3 -c "
+        import json, sys
+        try:
+            data = json.load(open('${SECURITY_REPORT_DIR}/trivy-results.json'))
+            results = data.get('Results', [])
+            total = sum(len(r.get('Vulnerabilities', [])) for r in results)
+            print(total)
+        except Exception:
+            print(0)
+        ")
+        echo "TRIVY_VULN_COUNT=${TRIVY_COUNT}" >> "${GITHUB_ENV}"
+        echo "Trivy found ${TRIVY_COUNT} vulnerabilities"
+
+        echo "::endgroup::"
+
+    # ------------------------------------------------------------------
+    # Step 3: pip-audit dependency scan
+    # ------------------------------------------------------------------
+    - name: Run pip-audit
+      shell: bash
+      run: |
+        echo "::group::pip-audit Dependency Scan"
+
+        pip install pip-audit --quiet
+
+        pip-audit \
+          --format json \
+          --output "${SECURITY_REPORT_DIR}/pip-audit-results.json" \
+          --desc || true
+
+        # Count findings
+        PIPAUDIT_COUNT=$(python3 -c "
+        import json
+        try:
+            data = json.load(open('${SECURITY_REPORT_DIR}/pip-audit-results.json'))
+            if isinstance(data, list):
+                print(len(data))
+            else:
+                deps = data.get('dependencies', [])
+                total = sum(len(d.get('vulns', [])) for d in deps)
+                print(total)
+        except Exception:
+            print(0)
+        ")
+        echo "PIPAUDIT_VULN_COUNT=${PIPAUDIT_COUNT}" >> "${GITHUB_ENV}"
+        echo "pip-audit found ${PIPAUDIT_COUNT} vulnerabilities"
+
+        echo "::endgroup::"
+
+    # ------------------------------------------------------------------
+    # Step 4: Bandit SAST (full scan only)
+    # ------------------------------------------------------------------
+    - name: Run Bandit SAST scan
+      if: inputs.scan-type == 'full'
+      shell: bash
+      run: |
+        echo "::group::Bandit SAST Scan"
+
+        pip install bandit[toml] --quiet
+
+        # Map severity to Bandit confidence/severity levels
+        case "${{ inputs.fail-on-severity }}" in
+          critical) BANDIT_SEV="-lll" ;;
+          high)     BANDIT_SEV="-ll"  ;;
+          medium)   BANDIT_SEV="-l"   ;;
+          *)        BANDIT_SEV="-ll"  ;;
+        esac
+
+        bandit \
+          -r "${{ inputs.scan-path }}" \
+          ${BANDIT_SEV} \
+          -f json \
+          -o "${SECURITY_REPORT_DIR}/bandit-results.json" \
+          --exclude "./.venv,./venv,./.tox,./node_modules,./.git" \
+          || true
+
+        BANDIT_COUNT=$(python3 -c "
+        import json
+        try:
+            data = json.load(open('${SECURITY_REPORT_DIR}/bandit-results.json'))
+            results = data.get('results', [])
+            print(len(results))
+        except Exception:
+            print(0)
+        ")
+        echo "BANDIT_VULN_COUNT=${BANDIT_COUNT}" >> "${GITHUB_ENV}"
+        echo "Bandit found ${BANDIT_COUNT} issues"
+
+        echo "::endgroup::"
+
+    # ------------------------------------------------------------------
+    # Step 5: Gitleaks secrets scan (full scan only)
+    # ------------------------------------------------------------------
+    - name: Run Gitleaks secrets scan
+      if: inputs.scan-type == 'full'
+      shell: bash
+      run: |
+        echo "::group::Gitleaks Secrets Scan"
+
+        GITLEAKS_VERSION="8.18.2"
+        curl -fsSL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" \
+          -o gitleaks.tar.gz
+        tar -xzf gitleaks.tar.gz gitleaks
+        chmod +x gitleaks
+        mv gitleaks /usr/local/bin/gitleaks
+        rm -f gitleaks.tar.gz
+
+        gitleaks detect \
+          --source "${{ inputs.scan-path }}" \
+          --report-format json \
+          --report-path "${SECURITY_REPORT_DIR}/gitleaks-results.json" \
+          --no-git \
+          || true
+
+        GITLEAKS_COUNT=$(python3 -c "
+        import json
+        try:
+            data = json.load(open('${SECURITY_REPORT_DIR}/gitleaks-results.json'))
+            print(len(data) if isinstance(data, list) else 0)
+        except Exception:
+            print(0)
+        ")
+        echo "GITLEAKS_VULN_COUNT=${GITLEAKS_COUNT}" >> "${GITHUB_ENV}"
+        echo "Gitleaks found ${GITLEAKS_COUNT} secrets"
+
+        echo "::endgroup::"
+
+    # ------------------------------------------------------------------
+    # Step 6: Aggregate results and gate decision
+    # ------------------------------------------------------------------
+    - name: Aggregate security results
+      id: aggregate
+      shell: bash
+      run: |
+        echo "::group::Security Gate Aggregation"
+
+        TRIVY_COUNT="${TRIVY_VULN_COUNT:-0}"
+        PIPAUDIT_COUNT="${PIPAUDIT_VULN_COUNT:-0}"
+        BANDIT_COUNT="${BANDIT_VULN_COUNT:-0}"
+        GITLEAKS_COUNT="${GITLEAKS_VULN_COUNT:-0}"
+
+        TOTAL=$((TRIVY_COUNT + PIPAUDIT_COUNT + BANDIT_COUNT + GITLEAKS_COUNT))
+
+        REPORT_FILE="${SECURITY_REPORT_DIR}/security-gate-summary.json"
+
+        python3 -c "
+        import json, datetime
+        summary = {
+            'timestamp': datetime.datetime.utcnow().isoformat() + 'Z',
+            'scan_type': '${{ inputs.scan-type }}',
+            'fail_on_severity': '${{ inputs.fail-on-severity }}',
+            'scan_path': '${{ inputs.scan-path }}',
+            'results': {
+                'trivy': {'vulnerabilities': ${TRIVY_COUNT}},
+                'pip_audit': {'vulnerabilities': ${PIPAUDIT_COUNT}},
+                'bandit': {'issues': ${BANDIT_COUNT}},
+                'gitleaks': {'secrets': ${GITLEAKS_COUNT}}
+            },
+            'total_findings': ${TOTAL},
+            'gate_passed': ${TOTAL} == 0
+        }
+        with open('${REPORT_FILE}', 'w') as f:
+            json.dump(summary, f, indent=2)
+        "
+
+        # Determine gate outcome
+        if [ "${TOTAL}" -eq 0 ]; then
+          GATE_PASSED="true"
+          echo "Security gate PASSED - no findings at or above '${{ inputs.fail-on-severity }}' severity"
+        else
+          GATE_PASSED="false"
+          echo "::warning::Security gate FAILED - ${TOTAL} finding(s) at or above '${{ inputs.fail-on-severity }}' severity"
+        fi
+
+        echo "total-vulnerabilities=${TOTAL}" >> "${GITHUB_OUTPUT}"
+        echo "gate-passed=${GATE_PASSED}" >> "${GITHUB_OUTPUT}"
+        echo "report-path=${REPORT_FILE}" >> "${GITHUB_OUTPUT}"
+
+        # Print summary table
+        echo ""
+        echo "============================================="
+        echo " Security Gate Summary"
+        echo "============================================="
+        echo " Scan type      : ${{ inputs.scan-type }}"
+        echo " Fail threshold : ${{ inputs.fail-on-severity }}"
+        echo " -----------------------------------------"
+        echo " Trivy (fs)     : ${TRIVY_COUNT} vulnerabilities"
+        echo " pip-audit      : ${PIPAUDIT_COUNT} vulnerabilities"
+        if [ "${{ inputs.scan-type }}" = "full" ]; then
+          echo " Bandit (SAST)  : ${BANDIT_COUNT} issues"
+          echo " Gitleaks       : ${GITLEAKS_COUNT} secrets"
+        fi
+        echo " -----------------------------------------"
+        echo " TOTAL          : ${TOTAL}"
+        echo " GATE           : $([ "${GATE_PASSED}" = 'true' ] && echo 'PASSED' || echo 'FAILED')"
+        echo "============================================="
+
+        echo "::endgroup::"
+
+    # ------------------------------------------------------------------
+    # Step 7: Upload security reports as artifact
+    # ------------------------------------------------------------------
+    - name: Upload security reports
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: security-gate-reports
+        path: ${{ env.SECURITY_REPORT_DIR }}/
+        retention-days: 30
+        if-no-files-found: warn
