@@ -192,7 +192,7 @@ module "elasticache" {
   vpc_id            = module.vpc.vpc_id
   subnet_group_name = module.vpc.elasticache_subnet_group_name
 
-  engine_version = "7.1"
+  engine_version = "7.2"
   node_type      = "cache.r6g.xlarge"
 
   num_cache_clusters   = 3  # Primary + 2 replicas for production
@@ -201,9 +201,9 @@ module "elasticache" {
   at_rest_encryption_enabled = true
   transit_encryption_enabled = true
 
-  # Performance tuning
-  maxmemory_policy       = "volatile-lru"
-  enable_aof             = false  # Disable AOF for better performance
+  # Performance tuning (PRD-INFRA-003 compliant)
+  maxmemory_policy       = "allkeys-lru"
+  enable_aof             = true  # AOF persistence per PRD-INFRA-003 requirement
   notify_keyspace_events = "AKE"  # Enable keyspace notifications
 
   snapshot_retention_limit = 14

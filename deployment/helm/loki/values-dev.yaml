@@ -1,0 +1,98 @@
+# =============================================================================
+# GreenLang Loki - Development Overlay
+# GreenLang Climate OS | INFRA-009
+# =============================================================================
+# SingleBinary mode for local and dev clusters. Uses filesystem storage
+# instead of S3, disables multi-tenancy, and reduces resource footprint.
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# Deployment mode
+# ---------------------------------------------------------------------------
+# SingleBinary runs all components in one process. Suitable for development
+# and testing where high availability is not required.
+deploymentMode: SingleBinary
+
+# ---------------------------------------------------------------------------
+# Loki configuration overrides
+# ---------------------------------------------------------------------------
+loki:
+  # Disable multi-tenancy in dev for simpler querying
+  auth_enabled: false
+
+  commonConfig:
+    replication_factor: 1
+    ring:
+      kvstore:
+        store: memberlist
+
+  # Use local filesystem storage instead of S3
+  storage:
+    type: filesystem
+
+  # Shorter retention for dev environments
+  limits_config:
+    retention_period: 72h  # 3 days
+    ingestion_rate_mb: 5
+    ingestion_burst_size_mb: 10
+    max_global_streams_per_user: 2000
+
+  # Compactor retention still enabled for cleanup
+  compactor:
+    retention_enabled: true
+
+# ---------------------------------------------------------------------------
+# Single binary
+# ---------------------------------------------------------------------------
+singleBinary:
+  replicas: 1
+  persistence:
+    size: 10Gi
+  resources:
+    requests:
+      cpu: "200m"
+      memory: "256Mi"
+    limits:
+      cpu: "1"
+      memory: "2Gi"
+
+# ---------------------------------------------------------------------------
+# Disable scalable components
+# ---------------------------------------------------------------------------
+write:
+  replicas: 0
+
+read:
+  replicas: 0
+
+backend:
+  replicas: 0
+
+# ---------------------------------------------------------------------------
+# Gateway
+# ---------------------------------------------------------------------------
+gateway:
+  replicas: 1
+  resources:
+    requests:
+      cpu: "50m"
+      memory: "64Mi"
+    limits:
+      cpu: "200m"
+      memory: "256Mi"
+
+# ---------------------------------------------------------------------------
+# Service account (no IRSA needed for filesystem storage)
+# ---------------------------------------------------------------------------
+serviceAccount:
+  create: true
+  annotations: {}
+
+# ---------------------------------------------------------------------------
+# Monitoring (minimal in dev)
+# ---------------------------------------------------------------------------
+monitoring:
+  serviceMonitor:
+    enabled: false
+  selfMonitoring:
+    enabled: false

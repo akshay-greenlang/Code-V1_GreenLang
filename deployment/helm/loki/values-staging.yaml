@@ -1,0 +1,99 @@
+# =============================================================================
+# GreenLang Loki - Staging Overlay
+# GreenLang Climate OS | INFRA-009
+# =============================================================================
+# Staging environment uses SimpleScalable mode with reduced replica counts
+# and staging-specific S3 buckets. Multi-tenancy is enabled to mirror
+# production behaviour for integration testing.
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# Loki configuration overrides
+# ---------------------------------------------------------------------------
+loki:
+  auth_enabled: true
+
+  storage:
+    type: s3
+    bucketNames:
+      chunks: gl-loki-chunks-staging
+      ruler: gl-loki-ruler-staging
+
+  limits_config:
+    retention_period: 168h  # 7 days
+    ingestion_rate_mb: 10
+    ingestion_burst_size_mb: 20
+    max_global_streams_per_user: 5000
+
+# ---------------------------------------------------------------------------
+# Write path (reduced replicas)
+# ---------------------------------------------------------------------------
+write:
+  replicas: 2
+  resources:
+    requests:
+      cpu: "250m"
+      memory: "512Mi"
+    limits:
+      cpu: "1"
+      memory: "2Gi"
+
+# ---------------------------------------------------------------------------
+# Read path (reduced replicas, no autoscaling)
+# ---------------------------------------------------------------------------
+read:
+  replicas: 2
+  autoscaling:
+    enabled: false
+  resources:
+    requests:
+      cpu: "250m"
+      memory: "512Mi"
+    limits:
+      cpu: "1"
+      memory: "2Gi"
+
+# ---------------------------------------------------------------------------
+# Backend
+# ---------------------------------------------------------------------------
+backend:
+  replicas: 1
+  resources:
+    requests:
+      cpu: "200m"
+      memory: "256Mi"
+    limits:
+      cpu: "500m"
+      memory: "1Gi"
+
+# ---------------------------------------------------------------------------
+# Gateway
+# ---------------------------------------------------------------------------
+gateway:
+  replicas: 1
+  resources:
+    requests:
+      cpu: "50m"
+      memory: "64Mi"
+    limits:
+      cpu: "250m"
+      memory: "256Mi"
+
+# ---------------------------------------------------------------------------
+# Service account
+# ---------------------------------------------------------------------------
+serviceAccount:
+  create: true
+  annotations:
+    eks.amazonaws.com/role-arn: "arn:aws:iam::ACCOUNT_ID:role/gl-loki-irsa-staging"
+
+# ---------------------------------------------------------------------------
+# Monitoring
+# ---------------------------------------------------------------------------
+monitoring:
+  serviceMonitor:
+    enabled: true
+    labels:
+      release: prometheus
+  selfMonitoring:
+    enabled: false

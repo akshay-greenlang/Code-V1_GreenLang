@@ -1,0 +1,73 @@
+# =============================================================================
+# GreenLang Loki - Namespace Update
+# GreenLang Climate OS | INFRA-009
+# =============================================================================
+# Updates the existing monitoring namespace with Loki-specific labels and
+# creates a LimitRange to constrain resource usage for Loki pods.
+#
+# NOTE: The monitoring namespace is expected to already exist (created by the
+# Prometheus/Grafana stack in INFRA-001). This manifest adds labels and a
+# LimitRange -- it does not recreate the namespace.
+#
+# Apply with:
+#   kubectl apply -f namespace-update.yaml
+# =============================================================================
+
+---
+# Update the monitoring namespace with Loki labels
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: monitoring
+  labels:
+    app.kubernetes.io/part-of: loki
+    greenlang.io/component: log-aggregation
+    greenlang.io/infra: "009"
+    # Pod security standards - baseline allows Loki's requirements
+    pod-security.kubernetes.io/enforce: baseline
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/warn: restricted
+
+---
+# ResourceQuota update comment:
+# The monitoring namespace ResourceQuota should be reviewed to ensure it
+# accommodates the additional Loki pods (write x3, read x3, backend x2,
+# gateway x2, alloy daemonset). Recommended additions:
+#   - requests.cpu:    +4000m  (write 1500m + read 1500m + backend 500m + gateway 200m + alloy per-node)
+#   - requests.memory: +4Gi    (write 3Gi + read 3Gi + backend 1Gi + gateway 256Mi + alloy per-node)
+#   - limits.cpu:      +8000m
+#   - limits.memory:   +14Gi
+
+---
+# LimitRange for Loki pods - prevents any single container from consuming
+# excessive resources and affecting other monitoring components.
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: loki-limit-range
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/part-of: loki
+    app.kubernetes.io/managed-by: kubectl
+spec:
+  limits:
+    # Default limits applied to containers that do not specify their own
+    - type: Container
+      default:
+        cpu: "2"
+        memory: "4Gi"
+      defaultRequest:
+        cpu: "100m"
+        memory: "128Mi"
+      max:
+        cpu: "4"
+        memory: "8Gi"
+      min:
+        cpu: "50m"
+        memory: "64Mi"
+
+    # Pod-level aggregate limits
+    - type: Pod
+      max:
+        cpu: "8"
+        memory: "16Gi"

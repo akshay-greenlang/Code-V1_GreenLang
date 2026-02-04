@@ -1,0 +1,162 @@
+# =============================================================================
+# GreenLang Climate OS - Loki Ruler Recording Rules (Native Format)
+# =============================================================================
+# PRD: INFRA-009 Centralized Logging & Log-Based Alerting
+# Native Loki Ruler YAML format for recording rules. These rules pre-compute
+# metrics from log streams and export them to Prometheus via remote_write.
+#
+# Placement: /etc/loki/rules/greenlang/greenlang-recording.yaml
+# (or mounted via ConfigMap into Loki ruler pod)
+# =============================================================================
+
+groups:
+  # ===========================================================================
+  # Group: Log Recording Rules (1-minute interval)
+  # Pre-computed log metrics for dashboards and alerting.
+  # ===========================================================================
+  - name: greenlang-log-recording-rules
+    interval: 1m
+    rules:
+      # -----------------------------------------------------------------------
+      # Error rate per service (5-minute sliding window)
+      # -----------------------------------------------------------------------
+      - record: greenlang:log_error_rate:5m
+        expr: |
+          sum by (app) (
+            rate(
+              {namespace="greenlang"} | json | level="error" [5m]
+            )
+          )
+
+      # -----------------------------------------------------------------------
+      # Warning rate per service (5-minute sliding window)
+      # -----------------------------------------------------------------------
+      - record: greenlang:log_warning_rate:5m
+        expr: |
+          sum by (app) (
+            rate(
+              {namespace="greenlang"} | json | level="warning" [5m]
+            )
+          )
+
+      # -----------------------------------------------------------------------
+      # Log volume in bytes per service (1-minute window)
+      # -----------------------------------------------------------------------
+      - record: greenlang:log_volume_bytes:1m
+        expr: |
+          sum by (app) (
+            bytes_rate(
+              {namespace="greenlang"} [1m]
+            )
+          )
+
+      # -----------------------------------------------------------------------
+      # Total log lines per service (1-minute window)
+      # -----------------------------------------------------------------------
+      - record: greenlang:log_lines_total:1m
+        expr: |
+          sum by (app) (
+            rate(
+              {namespace="greenlang"} [1m]
+            )
+          )
+
+      # -----------------------------------------------------------------------
+      # Error ratio (errors / total) per service
+      # -----------------------------------------------------------------------
+      - record: greenlang:log_error_ratio:5m
+        expr: |
+          (
+            sum by (app) (
+              rate(
+                {namespace="greenlang"} | json | level="error" [5m]
+              )
+            )
+          )
+          /
+          (
+            sum by (app) (
+              rate(
+                {namespace="greenlang"} [5m]
+              )
+            )
+          )
+
+      # -----------------------------------------------------------------------
+      # API request duration p99 from access logs
+      # -----------------------------------------------------------------------
+      - record: greenlang:api_request_duration_p99:5m
+        expr: |
+          quantile_over_time(0.99,
+            {namespace="greenlang", app=~".*api.*"}
+              | json
+              | unwrap duration_ms [5m]
+          ) by (app)
+
+      # -----------------------------------------------------------------------
+      # API request duration p95 from access logs
+      # -----------------------------------------------------------------------
+      - record: greenlang:api_request_duration_p95:5m
+        expr: |
+          quantile_over_time(0.95,
+            {namespace="greenlang", app=~".*api.*"}
+              | json
+              | unwrap duration_ms [5m]
+          ) by (app)
+
+      # -----------------------------------------------------------------------
+      # API 5xx error rate from access logs
+      # -----------------------------------------------------------------------
+      - record: greenlang:api_5xx_rate:5m
+        expr: |
+          sum by (app) (
+            rate(
+              {namespace="greenlang", app=~".*api.*"}
+                | json
+                | status_code >= 500 [5m]
+            )
+          )
+
+  # ===========================================================================
+  # Group: Compliance Recording Rules (5-minute interval)
+  # ===========================================================================
+  - name: greenlang-compliance-recording-rules
+    interval: 5m
+    rules:
+      # -----------------------------------------------------------------------
+      # Compliance processing success rate per service (15-minute window)
+      # -----------------------------------------------------------------------
+      - record: greenlang:compliance_processing_success_rate:15m
+        expr: |
+          (
+            sum by (app) (
+              count_over_time(
+                {namespace="greenlang", app=~"csrd-agent|cbam-agent|eudr-agent|sb253-agent"} | json [15m]
+              )
+            )
+            -
+            sum by (app) (
+              count_over_time(
+                {namespace="greenlang", app=~"csrd-agent|cbam-agent|eudr-agent|sb253-agent"} | json | level="error" [15m]
+              )
+            )
+          )
+          /
+          sum by (app) (
+            count_over_time(
+              {namespace="greenlang", app=~"csrd-agent|cbam-agent|eudr-agent|sb253-agent"} | json [15m]
+            )
+          )
+
+      # -----------------------------------------------------------------------
+      # Audit events per tenant per hour
+      # -----------------------------------------------------------------------
+      - record: greenlang:audit_events_total:1h
+        expr: |
+          sum by (app, tenant_id) (
+            count_over_time(
+              {namespace="greenlang", app=~"csrd-agent|cbam-agent|eudr-agent|sb253-agent"}
+                |= "audit"
+                | json [1h]
+            )
+          )

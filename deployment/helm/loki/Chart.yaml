@@ -1,0 +1,32 @@
+# =============================================================================
+# GreenLang Loki - Helm Chart
+# GreenLang Climate OS | INFRA-009
+# =============================================================================
+# Wrapper chart for the official Grafana Loki Helm chart.
+# Provides production-grade log aggregation for GreenLang services with
+# multi-tenant isolation, compliance-aware retention, and S3-backed storage.
+# =============================================================================
+
+apiVersion: v2
+name: greenlang-loki
+description: Loki log aggregation for GreenLang Climate OS
+type: application
+version: 1.0.0
+appVersion: "3.4.0"
+
+keywords:
+  - loki
+  - logging
+  - log-aggregation
+  - observability
+  - greenlang
+  - infra-009
+
+maintainers:
+  - name: GreenLang Infrastructure Team
+    email: infra@greenlang.io
+
+dependencies:
+  - name: loki
+    version: "~6.x"
+    repository: "https://grafana.github.io/helm-charts"

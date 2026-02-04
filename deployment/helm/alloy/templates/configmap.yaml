@@ -1,0 +1,420 @@
+# =============================================================================
+# GreenLang Alloy - Configuration ConfigMap
+# GreenLang Climate OS | INFRA-009
+# =============================================================================
+# Alloy River-syntax configuration for log collection, enrichment, redaction,
+# and forwarding to Loki. Includes OTLP receiver endpoints for direct
+# structured log ingestion from application services.
+# =============================================================================
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: alloy-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: alloy
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/part-of: greenlang-logging
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+data:
+  config.alloy: |
+    // =========================================================================
+    // GreenLang Alloy Configuration
+    // INFRA-009 - Log Collection Pipeline
+    // =========================================================================
+
+    // -------------------------------------------------------------------------
+    // Kubernetes pod discovery
+    // -------------------------------------------------------------------------
+    // Discover pods across greenlang namespaces for log collection.
+    discovery.kubernetes "pods" {
+      role = "pod"
+
+      namespaces {
+        names = ["greenlang", "greenlang-staging", "greenlang-dev", "monitoring", "ingress-nginx"]
+      }
+    }
+
+    // Relabel discovered targets to extract useful metadata labels
+    discovery.relabel "pod_logs" {
+      targets = discovery.kubernetes.pods.targets
+
+      // Keep only pods with a container name
+      rule {
+        source_labels = ["__meta_kubernetes_pod_container_name"]
+        action        = "keep"
+        regex         = ".+"
+      }
+
+      // Set namespace label
+      rule {
+        source_labels = ["__meta_kubernetes_namespace"]
+        target_label  = "namespace"
+      }
+
+      // Set pod name label
+      rule {
+        source_labels = ["__meta_kubernetes_pod_name"]
+        target_label  = "pod"
+      }
+
+      // Set container name label
+      rule {
+        source_labels = ["__meta_kubernetes_pod_container_name"]
+        target_label  = "container"
+      }
+
+      // Set node name label
+      rule {
+        source_labels = ["__meta_kubernetes_pod_node_name"]
+        target_label  = "node"
+      }
+
+      // Set app label from pod label
+      rule {
+        source_labels = ["__meta_kubernetes_pod_label_app"]
+        target_label  = "app"
+      }
+
+      // Set service label from pod label
+      rule {
+        source_labels = ["__meta_kubernetes_pod_label_app_kubernetes_io_name"]
+        target_label  = "service"
+      }
+
+      // Set component label
+      rule {
+        source_labels = ["__meta_kubernetes_pod_label_app_kubernetes_io_component"]
+        target_label  = "component"
+      }
+
+      // Drop internal kube-system logs by default
+      rule {
+        source_labels = ["__meta_kubernetes_namespace"]
+        action        = "drop"
+        regex         = "kube-system"
+      }
+
+      // Set log file path
+      rule {
+        source_labels = ["__meta_kubernetes_pod_uid", "__meta_kubernetes_pod_container_name"]
+        separator     = "/"
+        target_label  = "__path__"
+        replacement   = "/var/log/pods/*$1/$2/*.log"
+      }
+    }
+
+    // -------------------------------------------------------------------------
+    // Log source - Kubernetes pod logs
+    // -------------------------------------------------------------------------
+    loki.source.kubernetes "pod_logs" {
+      targets    = discovery.relabel.pod_logs.output
+      forward_to = [loki.process.greenlang_pipeline.receiver]
+    }
+
+    // -------------------------------------------------------------------------
+    // Log processing pipeline
+    // -------------------------------------------------------------------------
+    loki.process "greenlang_pipeline" {
+      // Parse CRI container log format
+      stage.cri {}
+
+      // Parse JSON-structured log lines emitted by GreenLang services
+      stage.json {
+        expressions = {
+          level      = "level",
+          msg        = "msg",
+          service    = "service",
+          tenant_id  = "tenant_id",
+          request_id = "request_id",
+          trace_id   = "trace_id",
+          span_id    = "span_id",
+        }
+      }
+
+      // Promote extracted fields to labels for efficient querying
+      stage.labels {
+        values = {
+          level     = "",
+          service   = "",
+          tenant_id = "",
+        }
+      }
+
+      // Add static labels for cluster identification
+      stage.static_labels {
+        values = {
+          cluster     = "{{ .Values.global.cluster | default "greenlang-prod" }}",
+          environment = "{{ .Values.global.environment | default "production" }}",
+        }
+      }
+
+      // -----------------------------------------------------------------------
+      // Sensitive data redaction
+      // -----------------------------------------------------------------------
+      // Redact email addresses
+      stage.replace {
+        expression = "([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,})"
+        replace    = "[EMAIL_REDACTED]"
+      }
+
+      // Redact API keys (common patterns: sk-, ak-, key-, token_)
+      stage.replace {
+        expression = "((?:sk|ak|key|token)[_-][a-zA-Z0-9]{20,})"
+        replace    = "[API_KEY_REDACTED]"
+      }
+
+      // Redact credit card numbers (basic pattern: 4 groups of 4 digits)
+      stage.replace {
+        expression = "(\\b(?:\\d{4}[- ]?){3}\\d{4}\\b)"
+        replace    = "[CREDIT_CARD_REDACTED]"
+      }
+
+      // Redact AWS secret access keys (40 char base64-ish strings)
+      stage.replace {
+        expression = "((?:AWS|aws)[_-]?[sS]ecret[_-]?[aA]ccess[_-]?[kK]ey[\"':\\s=]+[A-Za-z0-9/+=]{40})"
+        replace    = "[AWS_SECRET_REDACTED]"
+      }
+
+      // -----------------------------------------------------------------------
+      // Timestamp parsing
+      // -----------------------------------------------------------------------
+      stage.timestamp {
+        source = "timestamp"
+        format = "RFC3339"
+      }
+
+      // -----------------------------------------------------------------------
+      // Output - use msg field as the log line
+      // -----------------------------------------------------------------------
+      stage.output {
+        source = "msg"
+      }
+
+      forward_to = [loki.write.default.receiver]
+    }
+
+    // -------------------------------------------------------------------------
+    // Audit log pipeline (separate for compliance tagging)
+    // -------------------------------------------------------------------------
+    discovery.relabel "audit_logs" {
+      targets = discovery.kubernetes.pods.targets
+
+      // Keep only pods with the greenlang audit annotation
+      rule {
+        source_labels = ["__meta_kubernetes_pod_annotation_greenlang_io_audit"]
+        action        = "keep"
+        regex         = "true"
+      }
+
+      rule {
+        source_labels = ["__meta_kubernetes_namespace"]
+        target_label  = "namespace"
+      }
+
+      rule {
+        source_labels = ["__meta_kubernetes_pod_name"]
+        target_label  = "pod"
+      }
+
+      rule {
+        source_labels = ["__meta_kubernetes_pod_container_name"]
+        target_label  = "container"
+      }
+
+      rule {
+        source_labels = ["__meta_kubernetes_pod_uid", "__meta_kubernetes_pod_container_name"]
+        separator     = "/"
+        target_label  = "__path__"
+        replacement   = "/var/log/pods/*$1/$2/*.log"
+      }
+    }
+
+    loki.source.kubernetes "audit_logs" {
+      targets    = discovery.relabel.audit_logs.output
+      forward_to = [loki.process.audit_pipeline.receiver]
+    }
+
+    loki.process "audit_pipeline" {
+      stage.cri {}
+
+      stage.json {
+        expressions = {
+          level      = "level",
+          msg        = "msg",
+          service    = "service",
+          action     = "action",
+          actor      = "actor",
+          resource   = "resource",
+          tenant_id  = "tenant_id",
+          request_id = "request_id",
+        }
+      }
+
+      stage.labels {
+        values = {
+          level     = "",
+          service   = "",
+          tenant_id = "",
+        }
+      }
+
+      // Tag all audit logs with audit=true for retention matching
+      stage.static_labels {
+        values = {
+          audit       = "true",
+          cluster     = "{{ .Values.global.cluster | default "greenlang-prod" }}",
+          environment = "{{ .Values.global.environment | default "production" }}",
+        }
+      }
+
+      stage.timestamp {
+        source = "timestamp"
+        format = "RFC3339"
+      }
+
+      stage.output {
+        source = "msg"
+      }
+
+      forward_to = [loki.write.default.receiver]
+    }
+
+    // -------------------------------------------------------------------------
+    // API gateway access log pipeline (with metrics extraction)
+    // -------------------------------------------------------------------------
+    discovery.relabel "api_gateway_logs" {
+      targets = discovery.kubernetes.pods.targets
+
+      // Keep only Kong / API gateway pods
+      rule {
+        source_labels = ["__meta_kubernetes_pod_label_app_kubernetes_io_name"]
+        action        = "keep"
+        regex         = "kong-gateway"
+      }
+
+      rule {
+        source_labels = ["__meta_kubernetes_namespace"]
+        target_label  = "namespace"
+      }
+
+      rule {
+        source_labels = ["__meta_kubernetes_pod_name"]
+        target_label  = "pod"
+      }
+
+      rule {
+        source_labels = ["__meta_kubernetes_pod_container_name"]
+        target_label  = "container"
+      }
+
+      rule {
+        source_labels = ["__meta_kubernetes_pod_uid", "__meta_kubernetes_pod_container_name"]
+        separator     = "/"
+        target_label  = "__path__"
+        replacement   = "/var/log/pods/*$1/$2/*.log"
+      }
+    }
+
+    loki.source.kubernetes "api_gateway_logs" {
+      targets    = discovery.relabel.api_gateway_logs.output
+      forward_to = [loki.process.api_gateway_pipeline.receiver]
+    }
+
+    loki.process "api_gateway_pipeline" {
+      stage.cri {}
+
+      // Parse Kong JSON access log format
+      stage.json {
+        expressions = {
+          method       = "request.method",
+          path         = "request.uri",
+          status       = "response.status",
+          latency      = "latencies.request",
+          upstream_latency = "latencies.proxy",
+          client_ip    = "client_ip",
+          service_name = "service.name",
+          route_name   = "route.name",
+          consumer     = "authenticated_entity.id",
+        }
+      }
+
+      stage.labels {
+        values = {
+          method  = "",
+          status  = "",
+          service = "service_name",
+        }
+      }
+
+      stage.static_labels {
+        values = {
+          component   = "api-gateway",
+          cluster     = "{{ .Values.global.cluster | default "greenlang-prod" }}",
+          environment = "{{ .Values.global.environment | default "production" }}",
+        }
+      }
+
+      // Extract request duration as a metric for Prometheus
+      stage.metrics {
+        metric.histogram {
+          name        = "gl_api_gateway_request_duration_seconds"
+          description = "API gateway request duration in seconds"
+          source      = "latency"
+          buckets     = [0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0, 10.0]
+        }
+        metric.counter {
+          name        = "gl_api_gateway_requests_total"
+          description = "Total number of API gateway requests"
+          action      = "inc"
+          match_all   = true
+        }
+      }
+
+      stage.timestamp {
+        source = "timestamp"
+        format = "RFC3339"
+      }
+
+      forward_to = [loki.write.default.receiver]
+    }
+
+    // -------------------------------------------------------------------------
+    // OTLP receiver (for direct log ingestion from applications)
+    // -------------------------------------------------------------------------
+    otelcol.receiver.otlp "default" {
+      grpc {
+        endpoint = "0.0.0.0:4317"
+      }
+      http {
+        endpoint = "0.0.0.0:4318"
+      }
+
+      output {
+        logs = [otelcol.exporter.loki.default.input]
+      }
+    }
+
+    // Convert OTLP logs to Loki format and forward
+    otelcol.exporter.loki "default" {
+      forward_to = [loki.write.default.receiver]
+    }
+
+    // -------------------------------------------------------------------------
+    // Loki write endpoint
+    // -------------------------------------------------------------------------
+    loki.write "default" {
+      endpoint {
+        url = "http://loki-gateway.monitoring.svc.cluster.local:3100/loki/api/v1/push"
+
+        // Tenant ID is derived from the tenant_id label if present,
+        // otherwise falls back to "greenlang-prod".
+        tenant_id = "{{ .Values.global.lokiTenantId | default "greenlang-prod" }}"
+      }
+
+      external_labels = {
+        cluster     = "{{ .Values.global.cluster | default "greenlang-prod" }}",
+        environment = "{{ .Values.global.environment | default "production" }}",
+      }
+    }

@@ -1,0 +1,192 @@
+# =============================================================================
+# GreenLang Loki - NetworkPolicy
+# GreenLang Climate OS | INFRA-009
+# =============================================================================
+# Restricts network traffic to and from Loki components:
+#
+# INGRESS allowed:
+#   - Alloy pods         -> Loki (3100 HTTP push, 9096 gRPC)
+#   - Grafana            -> Loki (3100 query API)
+#   - Alertmanager       -> Loki (3100 ruler API)
+#
+# EGRESS allowed:
+#   - Loki -> S3         (443 HTTPS for chunk/ruler storage)
+#   - Loki -> Alertmanager (9093 for ruler alerts)
+#   - Loki -> Loki       (7946 memberlist, 9096 gRPC inter-component)
+#
+# All other traffic is denied by default.
+# =============================================================================
+
+---
+# ---------------------------------------------------------------------------
+# Loki components - ingress rules
+# ---------------------------------------------------------------------------
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: loki-ingress
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/part-of: loki
+    app.kubernetes.io/managed-by: kubectl
+    greenlang.io/infra: "009"
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: loki
+  policyTypes:
+    - Ingress
+  ingress:
+    # Allow Alloy log collection agents to push logs (HTTP API and gRPC)
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: alloy
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+      ports:
+        - protocol: TCP
+          port: 3100  # HTTP push API (/loki/api/v1/push)
+        - protocol: TCP
+          port: 9096  # gRPC (internal ring communication)
+
+    # Allow Grafana to query logs (read path)
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: grafana
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+      ports:
+        - protocol: TCP
+          port: 3100  # HTTP query API
+
+    # Allow Alertmanager to receive ruler notifications
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: alertmanager
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+      ports:
+        - protocol: TCP
+          port: 3100  # Ruler API
+
+    # Allow internal communication between Loki components
+    # (memberlist gossip ring and gRPC)
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: loki
+      ports:
+        - protocol: TCP
+          port: 7946  # Memberlist gossip
+        - protocol: UDP
+          port: 7946  # Memberlist gossip (UDP)
+        - protocol: TCP
+          port: 9096  # gRPC inter-component
+
+---
+# ---------------------------------------------------------------------------
+# Loki components - egress rules
+# ---------------------------------------------------------------------------
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: loki-egress
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/part-of: loki
+    app.kubernetes.io/managed-by: kubectl
+    greenlang.io/infra: "009"
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: loki
+  policyTypes:
+    - Egress
+  egress:
+    # Allow egress to S3 (HTTPS) for chunk and ruler storage
+    - ports:
+        - protocol: TCP
+          port: 443
+
+    # Allow egress to Alertmanager for ruler alert delivery
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: alertmanager
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+      ports:
+        - protocol: TCP
+          port: 9093
+
+    # Allow internal communication between Loki components
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: loki
+      ports:
+        - protocol: TCP
+          port: 7946  # Memberlist gossip
+        - protocol: UDP
+          port: 7946  # Memberlist gossip (UDP)
+        - protocol: TCP
+          port: 9096  # gRPC inter-component
+        - protocol: TCP
+          port: 3100  # HTTP (gateway -> read/write)
+
+    # Allow DNS resolution
+    - ports:
+        - protocol: TCP
+          port: 53
+        - protocol: UDP
+          port: 53
+
+---
+# ---------------------------------------------------------------------------
+# Alloy DaemonSet - egress to Loki only
+# ---------------------------------------------------------------------------
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: alloy-egress
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/part-of: loki
+    app.kubernetes.io/managed-by: kubectl
+    greenlang.io/infra: "009"
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: alloy
+  policyTypes:
+    - Egress
+  egress:
+    # Allow Alloy to push logs to Loki gateway
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: loki
+      ports:
+        - protocol: TCP
+          port: 3100
+
+    # Allow Kubernetes API access for service discovery
+    - ports:
+        - protocol: TCP
+          port: 443
+        - protocol: TCP
+          port: 6443
+
+    # Allow DNS resolution
+    - ports:
+        - protocol: TCP
+          port: 53
+        - protocol: UDP
+          port: 53

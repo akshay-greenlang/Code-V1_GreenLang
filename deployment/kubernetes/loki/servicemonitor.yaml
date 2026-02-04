@@ -1,0 +1,136 @@
+# =============================================================================
+# GreenLang Loki - ServiceMonitor
+# GreenLang Climate OS | INFRA-009
+# =============================================================================
+# Prometheus ServiceMonitor resources for scraping metrics from all Loki
+# components (gateway, write, read, backend). Metrics are exposed on
+# port 3100 at /metrics.
+#
+# Key metrics exposed:
+#   - loki_ingester_chunks_created_total
+#   - loki_ingester_chunks_flushed_total
+#   - loki_distributor_bytes_received_total
+#   - loki_request_duration_seconds_bucket
+#   - loki_compactor_apply_retention_sweeps_total
+#   - loki_querier_tail_connected_clients
+# =============================================================================
+
+---
+# ---------------------------------------------------------------------------
+# ServiceMonitor for Loki Gateway
+# ---------------------------------------------------------------------------
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: loki-gateway
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: loki
+    app.kubernetes.io/component: gateway
+    app.kubernetes.io/part-of: greenlang-logging
+    release: prometheus
+    greenlang.io/infra: "009"
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: loki
+      app.kubernetes.io/component: gateway
+  namespaceSelector:
+    matchNames:
+      - monitoring
+  endpoints:
+    - port: http-metrics
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s
+      honorLabels: true
+
+---
+# ---------------------------------------------------------------------------
+# ServiceMonitor for Loki Write Path (ingesters)
+# ---------------------------------------------------------------------------
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: loki-write
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: loki
+    app.kubernetes.io/component: write
+    app.kubernetes.io/part-of: greenlang-logging
+    release: prometheus
+    greenlang.io/infra: "009"
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: loki
+      app.kubernetes.io/component: write
+  namespaceSelector:
+    matchNames:
+      - monitoring
+  endpoints:
+    - port: http-metrics
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s
+      honorLabels: true
+
+---
+# ---------------------------------------------------------------------------
+# ServiceMonitor for Loki Read Path (queriers + query-frontend)
+# ---------------------------------------------------------------------------
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: loki-read
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: loki
+    app.kubernetes.io/component: read
+    app.kubernetes.io/part-of: greenlang-logging
+    release: prometheus
+    greenlang.io/infra: "009"
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: loki
+      app.kubernetes.io/component: read
+  namespaceSelector:
+    matchNames:
+      - monitoring
+  endpoints:
+    - port: http-metrics
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s
+      honorLabels: true
+
+---
+# ---------------------------------------------------------------------------
+# ServiceMonitor for Loki Backend (compactor + ruler + index-gateway)
+# ---------------------------------------------------------------------------
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: loki-backend
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: loki
+    app.kubernetes.io/component: backend
+    app.kubernetes.io/part-of: greenlang-logging
+    release: prometheus
+    greenlang.io/infra: "009"
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: loki
+      app.kubernetes.io/component: backend
+  namespaceSelector:
+    matchNames:
+      - monitoring
+  endpoints:
+    - port: http-metrics
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s
+      honorLabels: true

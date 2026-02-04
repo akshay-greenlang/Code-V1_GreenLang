@@ -1,0 +1,190 @@
+# =============================================================================
+# GreenLang Climate OS - Feature Flags ConfigMap
+# =============================================================================
+# PRD: INFRA-008 Feature Flags System
+#
+# Infrastructure-level feature flags that control system behavior at the
+# platform layer. These flags are consumed by:
+#   1. Kong gl-feature-gate plugin (route-level gating)
+#   2. Agent pipeline orchestrator (agent execution toggles)
+#   3. Application bootstrap (capability enablement)
+#
+# For dynamic, tenant-specific, or percentage-rollout flags, use the full
+# feature flags evaluation engine (greenlang.feature_flags.engine). This
+# ConfigMap is for static infrastructure flags that change infrequently and
+# do not require real-time Redis-based evaluation.
+#
+# Change process:
+#   1. Update this ConfigMap via PR with INFRA-008 label
+#   2. CI validates YAML syntax and flag key format
+#   3. After merge, ArgoCD syncs the ConfigMap to the cluster
+#   4. Pods pick up changes on next restart or via configmap-reload sidecar
+#
+# Naming convention: enable_{feature_name} for boolean flags,
+#                    {feature_name}_{setting} for numeric/string flags.
+# =============================================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: feature-flags-config
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: feature-flags
+    app.kubernetes.io/part-of: greenlang-climate-os
+    app.kubernetes.io/managed-by: argocd
+    infra: "008"
+  annotations:
+    description: "Infrastructure-level feature flags for GreenLang Climate OS"
+    prd: "INFRA-008"
+data:
+  # ---------------------------------------------------------------------------
+  # flags.yaml - Global default flag values
+  # ---------------------------------------------------------------------------
+  # These defaults apply when no environment-specific override exists.
+  # Boolean flags: true = enabled, false = disabled.
+  # Numeric flags: integer values with documented units.
+  # ---------------------------------------------------------------------------
+  flags.yaml: |
+    # =========================================================================
+    # GreenLang Feature Flags - Global Defaults
+    # =========================================================================
+    # Last updated: 2026-02-04
+    # Maintainer: platform-team@greenlang.io
+    # =========================================================================
+
+    # -------------------------------------------------------------------------
+    # Calculation Engine
+    # -------------------------------------------------------------------------
+    # New calculation engine with improved accuracy for Scope 1/2 emissions.
+    # Requires V007 database migration. Keep disabled until migration is
+    # verified in all environments.
+    enable_new_calculation_engine: false
+
+    # -------------------------------------------------------------------------
+    # Agent Execution
+    # -------------------------------------------------------------------------
+    # Async agent execution mode using Celery task queues instead of
+    # synchronous in-process execution. Reduces API latency for complex
+    # multi-agent pipelines.
+    enable_async_agent_execution: true
+
+    # -------------------------------------------------------------------------
+    # Scope 3 Extended Categories
+    # -------------------------------------------------------------------------
+    # Scope 3 Categories 8-15 (downstream emissions). These categories
+    # require additional supplier data ingestion pipelines that are still
+    # in validation. Enable only after data quality checks pass.
+    enable_scope3_categories_8_15: false
+
+    # -------------------------------------------------------------------------
+    # Uncertainty Quantification
+    # -------------------------------------------------------------------------
+    # Monte Carlo simulation for emissions uncertainty quantification.
+    # CPU-intensive; ensure worker nodes have sufficient compute capacity
+    # before enabling.
+    enable_monte_carlo_uncertainty: true
+
+    # -------------------------------------------------------------------------
+    # IoT Connectors
+    # -------------------------------------------------------------------------
+    # MQTT connector for real-time IoT sensor data ingestion (energy meters,
+    # building management systems). Requires MQTT broker deployment.
+    enable_mqtt_connector: false
+
+    # -------------------------------------------------------------------------
+    # Unit Conversion
+    # -------------------------------------------------------------------------
+    # QUDT (Quantities, Units, Dimensions, and Types) ontology-based unit
+    # conversion engine. Replaces the hardcoded conversion table with a
+    # standards-compliant approach.
+    enable_qudt_unit_conversion: false
+
+    # -------------------------------------------------------------------------
+    # Energy Management
+    # -------------------------------------------------------------------------
+    # ISO 50001 Energy Management System (EnMS) compliance module.
+    # Requires energy baseline calculation and EnPI configuration.
+    enable_iso_50001_enms: false
+
+    # -------------------------------------------------------------------------
+    # Beta Features
+    # -------------------------------------------------------------------------
+    # Master switch for all beta/experimental features. When disabled, all
+    # beta features are hidden regardless of their individual flag state.
+    # Enable only in dev/staging for internal testing.
+    enable_beta_features: false
+
+    # -------------------------------------------------------------------------
+    # Performance
+    # -------------------------------------------------------------------------
+    # Advanced multi-layer caching (L1 in-process + L2 Redis + L3 PostgreSQL).
+    # When disabled, falls back to single-layer Redis cache.
+    enable_advanced_caching: true
+
+    # Distributed tracing with OpenTelemetry. Adds trace context headers
+    # to all inter-service calls for end-to-end request correlation.
+    enable_distributed_tracing: true
+
+    # -------------------------------------------------------------------------
+    # Resource Limits
+    # -------------------------------------------------------------------------
+    # Maximum number of concurrent agent executions per pipeline run.
+    # Prevents resource exhaustion on worker nodes.
+    max_agent_concurrency: 10
+
+    # Default timeout in seconds for calculation agent execution. Applies
+    # to individual agent steps, not the entire pipeline.
+    default_calculation_timeout_seconds: 300
+
+  # ---------------------------------------------------------------------------
+  # environments.yaml - Per-environment overrides
+  # ---------------------------------------------------------------------------
+  # Values here override the corresponding key in flags.yaml for the
+  # specified environment. Only include keys that differ from the global
+  # default to keep overrides minimal and auditable.
+  # ---------------------------------------------------------------------------
+  environments.yaml: |
+    # =========================================================================
+    # GreenLang Feature Flags - Environment Overrides
+    # =========================================================================
+    # Last updated: 2026-02-04
+    # Maintainer: platform-team@greenlang.io
+    #
+    # Override precedence (highest to lowest):
+    #   1. Redis dynamic flag (real-time, managed via API)
+    #   2. Environment override (this file)
+    #   3. Global default (flags.yaml)
+    # =========================================================================
+
+    # -------------------------------------------------------------------------
+    # Development Environment
+    # -------------------------------------------------------------------------
+    # Dev enables experimental features and IoT connectors for integration
+    # testing. Lower concurrency to match dev cluster resource limits.
+    # -------------------------------------------------------------------------
+    dev:
+      enable_mqtt_connector: true
+      enable_beta_features: true
+      max_agent_concurrency: 2
+
+    # -------------------------------------------------------------------------
+    # Staging Environment
+    # -------------------------------------------------------------------------
+    # Staging enables IoT connectors for pre-production validation with
+    # moderate concurrency. Beta features remain disabled to test the
+    # production-like configuration.
+    # -------------------------------------------------------------------------
+    staging:
+      enable_mqtt_connector: true
+      max_agent_concurrency: 5
+
+    # -------------------------------------------------------------------------
+    # Production Environment
+    # -------------------------------------------------------------------------
+    # Production uses conservative defaults. Distributed tracing is enabled
+    # for observability. Full concurrency for production workloads.
+    # -------------------------------------------------------------------------
+    prod:
+      enable_distributed_tracing: true
+      max_agent_concurrency: 10

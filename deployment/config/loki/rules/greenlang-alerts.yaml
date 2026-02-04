@@ -1,0 +1,438 @@
+# =============================================================================
+# GreenLang Climate OS - Loki Ruler Alert Rules (Native Format)
+# =============================================================================
+# PRD: INFRA-009 Centralized Logging & Log-Based Alerting
+# Native Loki Ruler YAML format. These rules are loaded directly by Loki
+# Ruler component and evaluate LogQL expressions to fire alerts via the
+# Loki alertmanager integration.
+#
+# Placement: /etc/loki/rules/greenlang/greenlang-alerts.yaml
+# (or mounted via ConfigMap into Loki ruler pod)
+# =============================================================================
+
+groups:
+  # ===========================================================================
+  # Group 1: Log Error Alerts
+  # ===========================================================================
+  - name: greenlang-log-errors
+    interval: 30s
+    rules:
+      - alert: HighErrorRate
+        expr: |
+          sum by (app) (
+            rate(
+              {namespace="greenlang"} | json | level="error" [5m]
+            )
+          ) > 0.5
+        for: 5m
+        labels:
+          severity: critical
+          team: platform
+          component: logging
+          prd: infra-009
+        annotations:
+          summary: "High error log rate for service {{ $labels.app }}"
+          description: >-
+            Service {{ $labels.app }} is emitting error logs at a rate of
+            {{ $value | printf "%.2f" }} lines/s over the last 5 minutes,
+            exceeding the 0.5/s threshold. This indicates persistent failures
+            that require immediate investigation.
+          impact: "Service stability degraded. Potential data loss or user-facing errors."
+          action: "Check application logs for root cause. Review recent deployments and config changes."
+          runbook_url: "https://runbooks.greenlang.io/logs/high-error-rate"
+          dashboard_url: "https://grafana.greenlang.io/d/greenlang-log-exploration"
+
+      - alert: HighWarningRate
+        expr: |
+          sum by (app) (
+            rate(
+              {namespace="greenlang"} | json | level="warning" [5m]
+            )
+          ) > 5
+        for: 10m
+        labels:
+          severity: warning
+          team: platform
+          component: logging
+          prd: infra-009
+        annotations:
+          summary: "High warning log rate for service {{ $labels.app }}"
+          description: >-
+            Service {{ $labels.app }} is emitting warning logs at a rate of
+            {{ $value | printf "%.2f" }} lines/s over the last 10 minutes,
+            exceeding the 5/s threshold.
+          impact: "Potential service degradation. May escalate to errors."
+          action: "Investigate warning messages. Check downstream dependencies and resource utilization."
+          runbook_url: "https://runbooks.greenlang.io/logs/high-warning-rate"
+          dashboard_url: "https://grafana.greenlang.io/d/greenlang-log-exploration"
+
+      - alert: CriticalLogDetected
+        expr: |
+          count_over_time(
+            {namespace="greenlang"} | json | level="critical" [1m]
+          ) > 0
+        for: 0m
+        labels:
+          severity: critical
+          team: platform
+          component: logging
+          prd: infra-009
+        annotations:
+          summary: "CRITICAL log detected in {{ $labels.app }}"
+          description: >-
+            A CRITICAL-level log entry was detected in service {{ $labels.app }}
+            within the greenlang namespace. Immediate human intervention is required.
+          impact: "Potential data loss, security breach, or total service failure."
+          action: "Page on-call engineer immediately. Investigate root cause and consider rollback."
+          runbook_url: "https://runbooks.greenlang.io/logs/critical-log-detected"
+          dashboard_url: "https://grafana.greenlang.io/d/greenlang-log-exploration"
+
+      - alert: ErrorBurstDetected
+        expr: |
+          sum by (app) (
+            count_over_time(
+              {namespace="greenlang"} | json | level="error" [5m]
+            )
+          ) > 50
+        for: 0m
+        labels:
+          severity: warning
+          team: platform
+          component: logging
+          prd: infra-009
+        annotations:
+          summary: "Error burst detected in service {{ $labels.app }}"
+          description: >-
+            Service {{ $labels.app }} has emitted {{ $value }} error log lines
+            in the last 5 minutes, exceeding the 50-line threshold.
+          impact: "Service may be experiencing intermittent failures."
+          action: "Check for transient errors, retry storms, or downstream dependency issues."
+          runbook_url: "https://runbooks.greenlang.io/logs/error-burst"
+          dashboard_url: "https://grafana.greenlang.io/d/greenlang-log-exploration"
+
+  # ===========================================================================
+  # Group 2: Compliance Alerts
+  # ===========================================================================
+  - name: greenlang-compliance-alerts
+    interval: 30s
+    rules:
+      - alert: CSRDProcessingFailure
+        expr: |
+          count_over_time(
+            {namespace="greenlang", app="csrd-agent"} |= "processing_failed" | json | level="error" [15m]
+          ) > 3
+        for: 0m
+        labels:
+          severity: critical
+          team: compliance
+          component: csrd-agent
+          compliance: csrd
+          prd: infra-009
+        annotations:
+          summary: "CSRD processing failures exceed threshold"
+          description: >-
+            The csrd-agent has logged {{ $value }} processing_failed errors
+            in the last 15 minutes, exceeding the threshold of 3.
+          impact: "CSRD regulatory reports may be delayed or incorrect. Potential compliance violation."
+          action: "Check CSRD agent logs. Verify data source connectivity and report template integrity."
+          runbook_url: "https://runbooks.greenlang.io/compliance/csrd-processing-failure"
+          dashboard_url: "https://grafana.greenlang.io/d/greenlang-log-exploration?var-app=csrd-agent"
+
+      - alert: CBAMCalculationError
+        expr: |
+          count_over_time(
+            {namespace="greenlang", app="cbam-agent"} |= "calculation_error" | json | level="error" [15m]
+          ) > 3
+        for: 0m
+        labels:
+          severity: critical
+          team: compliance
+          component: cbam-agent
+          compliance: cbam
+          prd: infra-009
+        annotations:
+          summary: "CBAM calculation errors exceed threshold"
+          description: >-
+            The cbam-agent has logged {{ $value }} calculation_error events
+            in the last 15 minutes, exceeding the threshold of 3.
+          impact: "CBAM duty calculations may be incorrect. Financial and compliance risk."
+          action: "Review CBAM agent logs. Validate emission factor data and calculation pipeline."
+          runbook_url: "https://runbooks.greenlang.io/compliance/cbam-calculation-error"
+          dashboard_url: "https://grafana.greenlang.io/d/greenlang-log-exploration?var-app=cbam-agent"
+
+      - alert: EUDRComplianceFailure
+        expr: |
+          count_over_time(
+            {namespace="greenlang", app="eudr-agent"} |= "compliance_check_failed" | json | level="error" [10m]
+          ) > 1
+        for: 0m
+        labels:
+          severity: critical
+          team: compliance
+          component: eudr-agent
+          compliance: eudr
+          prd: infra-009
+        annotations:
+          summary: "EUDR compliance check failures detected"
+          description: >-
+            The eudr-agent has logged {{ $value }} compliance_check_failed
+            events in the last 10 minutes.
+          impact: "Supply chain operations may be blocked. EUDR regulatory violation risk."
+          action: "Investigate EUDR agent logs. Check geospatial data sources and verification pipeline."
+          runbook_url: "https://runbooks.greenlang.io/compliance/eudr-compliance-failure"
+          dashboard_url: "https://grafana.greenlang.io/d/greenlang-log-exploration?var-app=eudr-agent"
+
+      - alert: SB253DisclosureError
+        expr: |
+          count_over_time(
+            {namespace="greenlang", app="sb253-agent"} |= "disclosure_error" | json | level="error" [15m]
+          ) > 3
+        for: 0m
+        labels:
+          severity: critical
+          team: compliance
+          component: sb253-agent
+          compliance: sb253
+          prd: infra-009
+        annotations:
+          summary: "SB253 disclosure errors exceed threshold"
+          description: >-
+            The sb253-agent has logged {{ $value }} disclosure_error events
+            in the last 15 minutes, exceeding the threshold of 3.
+          impact: "SB253 emissions disclosures may be delayed or inaccurate. Regulatory risk."
+          action: "Check SB253 agent logs. Verify emissions data pipeline and disclosure templates."
+          runbook_url: "https://runbooks.greenlang.io/compliance/sb253-disclosure-error"
+          dashboard_url: "https://grafana.greenlang.io/d/greenlang-log-exploration?var-app=sb253-agent"
+
+      - alert: ComplianceAuditGap
+        expr: |
+          (
+            count_over_time(
+              {namespace="greenlang", app=~"csrd-agent|cbam-agent|eudr-agent|sb253-agent"} |= "audit" | json [15m]
+            )
+          ) == 0
+        for: 15m
+        labels:
+          severity: warning
+          team: compliance
+          component: audit
+          prd: infra-009
+        annotations:
+          summary: "No compliance audit logs received for 15 minutes"
+          description: >-
+            No audit log entries have been received from compliance services
+            for the last 15 minutes. Audit trail continuity is required.
+          impact: "Audit trail gap. May violate regulatory record-keeping requirements."
+          action: "Verify compliance services are running. Check log pipeline ingestion."
+          runbook_url: "https://runbooks.greenlang.io/compliance/audit-gap"
+          dashboard_url: "https://grafana.greenlang.io/d/greenlang-log-exploration"
+
+  # ===========================================================================
+  # Group 3: Security Alerts
+  # ===========================================================================
+  - name: greenlang-security-alerts
+    interval: 15s
+    rules:
+      - alert: AuthenticationFailureBurst
+        expr: |
+          sum by (app) (
+            count_over_time(
+              {namespace="greenlang"} |~ "authentication_failed|auth_failure" | json [5m]
+            )
+          ) > 10
+        for: 0m
+        labels:
+          severity: critical
+          team: security
+          component: authentication
+          prd: infra-009
+        annotations:
+          summary: "Authentication failure burst detected in {{ $labels.app }}"
+          description: >-
+            Service {{ $labels.app }} has logged {{ $value }} authentication
+            failure events in the last 5 minutes.
+          impact: "Potential security breach attempt. Legitimate users may be locked out."
+          action: "Check source IPs. Review WAF logs. Consider temporary IP blocks."
+          runbook_url: "https://runbooks.greenlang.io/security/auth-failure-burst"
+          dashboard_url: "https://grafana.greenlang.io/d/greenlang-log-exploration"
+
+      - alert: AuthorizationDenied
+        expr: |
+          sum by (app) (
+            count_over_time(
+              {namespace="greenlang"} |~ "authorization_denied|access_denied" | json [10m]
+            )
+          ) > 20
+        for: 0m
+        labels:
+          severity: warning
+          team: security
+          component: authorization
+          prd: infra-009
+        annotations:
+          summary: "Elevated authorization denials in {{ $labels.app }}"
+          description: >-
+            Service {{ $labels.app }} has logged {{ $value }} authorization
+            denied events in the last 10 minutes.
+          impact: "Potential unauthorized access attempts. RBAC policies may need review."
+          action: "Audit denied requests for patterns. Check RBAC role bindings."
+          runbook_url: "https://runbooks.greenlang.io/security/authorization-denied"
+          dashboard_url: "https://grafana.greenlang.io/d/greenlang-log-exploration"
+
+      - alert: SensitiveDataLeak
+        expr: |
+          count_over_time(
+            {namespace="greenlang"}
+              |~ "([a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z]{2,})"
+              |~ "(\\b[0-9]{4}[- ]?[0-9]{4}[- ]?[0-9]{4}[- ]?[0-9]{4}\\b)"
+              |~ "(sk_live_|pk_live_|AKIA[A-Z0-9]{16}|ghp_[a-zA-Z0-9]{36})"
+            [5m]
+          ) > 0
+        for: 0m
+        labels:
+          severity: critical
+          team: security
+          component: data-protection
+          prd: infra-009
+        annotations:
+          summary: "Potential sensitive data leak detected in logs"
+          description: >-
+            Log entries contain patterns matching email addresses, credit card
+            numbers, or API keys that were not properly redacted.
+          impact: "PII or credentials may be exposed in log storage."
+          action: "Identify the source service. Patch log redaction filters. Purge affected entries."
+          runbook_url: "https://runbooks.greenlang.io/security/sensitive-data-leak"
+          dashboard_url: "https://grafana.greenlang.io/d/greenlang-log-exploration"
+
+      - alert: SuspiciousActivity
+        expr: |
+          sum by (tenant_id) (
+            rate(
+              {namespace="greenlang"} | json | status_code >= 400 [5m]
+            )
+          ) > 10
+        for: 5m
+        labels:
+          severity: warning
+          team: security
+          component: abuse-detection
+          prd: infra-009
+        annotations:
+          summary: "Suspicious activity from tenant {{ $labels.tenant_id }}"
+          description: >-
+            Tenant {{ $labels.tenant_id }} is generating error status codes at
+            {{ $value | printf "%.2f" }}/s over the last 5 minutes.
+          impact: "Potential abuse or security incident."
+          action: "Review tenant activity logs. Consider rate limiting or temporary suspension."
+          runbook_url: "https://runbooks.greenlang.io/security/suspicious-activity"
+          dashboard_url: "https://grafana.greenlang.io/d/greenlang-log-exploration"
+
+  # ===========================================================================
+  # Group 4: Infrastructure Alerts (Loki Health)
+  # Note: These use PromQL (Prometheus metrics from Loki) rather than LogQL.
+  # They are included here for co-location but may alternatively be placed
+  # in a Prometheus rules file if Loki Ruler does not support PromQL.
+  # ===========================================================================
+  - name: greenlang-infrastructure-alerts
+    interval: 30s
+    rules:
+      - alert: LogIngestionFailure
+        expr: |
+          rate(loki_distributor_bytes_received_total{namespace="monitoring"}[5m]) == 0
+        for: 5m
+        labels:
+          severity: critical
+          team: platform
+          component: loki
+          prd: infra-009
+        annotations:
+          summary: "Loki log ingestion has stopped"
+          description: >-
+            Loki distributor has received zero bytes in the last 5 minutes.
+            Log ingestion has completely stopped.
+          impact: "Complete loss of log visibility. All log-based alerts are non-functional."
+          action: "Check Loki distributor pods. Verify Promtail/Alloy agents."
+          runbook_url: "https://runbooks.greenlang.io/loki/ingestion-failure"
+          dashboard_url: "https://grafana.greenlang.io/d/loki-operations"
+
+      - alert: LogIngestionRateLimited
+        expr: |
+          sum by (tenant) (
+            rate(loki_discarded_samples_total{namespace="monitoring"}[5m])
+          ) > 0
+        for: 5m
+        labels:
+          severity: warning
+          team: platform
+          component: loki
+          prd: infra-009
+        annotations:
+          summary: "Loki is discarding log samples for tenant {{ $labels.tenant }}"
+          description: >-
+            Loki is discarding log samples at {{ $value | printf "%.2f" }}/s.
+          impact: "Log data is being lost. Log-based alerts may miss events."
+          action: "Review tenant ingestion limits. Check for log volume spikes."
+          runbook_url: "https://runbooks.greenlang.io/loki/rate-limited"
+          dashboard_url: "https://grafana.greenlang.io/d/loki-operations"
+
+      - alert: LokiQuerySlowdown
+        expr: |
+          histogram_quantile(0.99,
+            sum by (le, route) (
+              rate(loki_request_duration_seconds_bucket{namespace="monitoring", method="GET"}[10m])
+            )
+          ) > 10
+        for: 10m
+        labels:
+          severity: warning
+          team: platform
+          component: loki
+          prd: infra-009
+        annotations:
+          summary: "Loki query latency p99 exceeds 10s on route {{ $labels.route }}"
+          description: >-
+            Loki query latency p99 is {{ $value | printf "%.1f" }}s.
+          impact: "Dashboards and alert evaluations may be slow or failing."
+          action: "Check Loki querier resource usage. Review query patterns."
+          runbook_url: "https://runbooks.greenlang.io/loki/query-slowdown"
+          dashboard_url: "https://grafana.greenlang.io/d/loki-operations"
+
+      - alert: LokiCompactorBehind
+        expr: |
+          loki_compactor_running_compactions{namespace="monitoring"} > 0
+        for: 30m
+        labels:
+          severity: warning
+          team: platform
+          component: loki
+          prd: infra-009
+        annotations:
+          summary: "Loki compactor has compactions stuck for 30 minutes"
+          description: >-
+            The Loki compactor has had running compactions for over 30 minutes.
+          impact: "Increased storage usage. Slower queries over older data."
+          action: "Check compactor pod resources. Review object storage latency."
+          runbook_url: "https://runbooks.greenlang.io/loki/compactor-behind"
+          dashboard_url: "https://grafana.greenlang.io/d/loki-operations"
+
+      - alert: DiskUsageHigh
+        expr: |
+          (
+            kubelet_volume_stats_used_bytes{namespace="monitoring", persistentvolumeclaim=~".*loki.*"}
+            /
+            kubelet_volume_stats_capacity_bytes{namespace="monitoring", persistentvolumeclaim=~".*loki.*"}
+          ) * 100 > 85
+        for: 10m
+        labels:
+          severity: warning
+          team: platform
+          component: loki
+          prd: infra-009
+        annotations:
+          summary: "Loki PVC {{ $labels.persistentvolumeclaim }} usage above 85%"
+          description: >-
+            Loki PVC is at {{ $value | printf "%.1f" }}% capacity.
+          impact: "Imminent risk of log ingestion failure if disk fills up."
+          action: "Expand PVC size. Review retention policies."
+          runbook_url: "https://runbooks.greenlang.io/loki/disk-usage-high"
+          dashboard_url: "https://grafana.greenlang.io/d/loki-operations"

@@ -19,7 +19,7 @@ variable "subnet_group_name" {
 variable "engine_version" {
   description = "Redis engine version"
   type        = string
-  default     = "7.1"
+  default     = "7.2"
 }
 
 variable "node_type" {
@@ -95,7 +95,7 @@ variable "auth_token" {
 variable "maxmemory_policy" {
   description = "Eviction policy when maxmemory is reached"
   type        = string
-  default     = "volatile-lru"
+  default     = "allkeys-lru"
 }
 
 variable "enable_aof" {

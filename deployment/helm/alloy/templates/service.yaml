@@ -1,0 +1,43 @@
+# =============================================================================
+# GreenLang Alloy - Service
+# GreenLang Climate OS | INFRA-009
+# =============================================================================
+# Exposes OTLP receiver endpoints (gRPC 4317, HTTP 4318) for direct log
+# ingestion from application services. Also exposes the Alloy UI on 12345
+# for debugging and configuration inspection.
+# =============================================================================
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-alloy
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: alloy
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/part-of: greenlang-logging
+    app.kubernetes.io/component: log-collector
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: alloy
+    app.kubernetes.io/instance: {{ .Release.Name }}
+  ports:
+    # OpenTelemetry gRPC receiver
+    - name: otlp-grpc
+      port: 4317
+      targetPort: 4317
+      protocol: TCP
+
+    # OpenTelemetry HTTP receiver
+    - name: otlp-http
+      port: 4318
+      targetPort: 4318
+      protocol: TCP
+
+    # Alloy UI and health check endpoint
+    - name: alloy-ui
+      port: 12345
+      targetPort: 12345
+      protocol: TCP

@@ -1,0 +1,69 @@
+# =============================================================================
+# GreenLang Alloy - ClusterRole and ClusterRoleBinding
+# GreenLang Climate OS | INFRA-009
+# =============================================================================
+# Alloy requires read access to Kubernetes resources for service discovery
+# (pods, nodes, namespaces, endpoints). This ClusterRole follows the
+# principle of least privilege -- read-only access to discovery resources.
+# =============================================================================
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ .Release.Name }}-alloy
+  labels:
+    app.kubernetes.io/name: alloy
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/part-of: greenlang-logging
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+rules:
+  # Pod discovery for log collection
+  - apiGroups: [""]
+    resources:
+      - pods
+      - pods/log
+    verbs: ["get", "list", "watch"]
+
+  # Node discovery for node-level metadata
+  - apiGroups: [""]
+    resources:
+      - nodes
+    verbs: ["get", "list", "watch"]
+
+  # Namespace discovery for filtering
+  - apiGroups: [""]
+    resources:
+      - namespaces
+    verbs: ["get", "list", "watch"]
+
+  # Endpoint discovery for service correlation
+  - apiGroups: [""]
+    resources:
+      - endpoints
+      - services
+    verbs: ["get", "list", "watch"]
+
+  # Events for enriching log context
+  - apiGroups: [""]
+    resources:
+      - events
+    verbs: ["get", "list", "watch"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ .Release.Name }}-alloy
+  labels:
+    app.kubernetes.io/name: alloy
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/part-of: greenlang-logging
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ .Release.Name }}-alloy
+subjects:
+  - kind: ServiceAccount
+    name: {{ .Release.Name }}-alloy
+    namespace: {{ .Release.Namespace }}

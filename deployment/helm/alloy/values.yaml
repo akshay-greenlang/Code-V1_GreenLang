@@ -1,0 +1,60 @@
+# =============================================================================
+# GreenLang Alloy - Production Values
+# GreenLang Climate OS | INFRA-009
+# =============================================================================
+# DaemonSet-based log collection agent. Collects container logs from every
+# node, enriches them with Kubernetes metadata, redacts sensitive data,
+# and ships to Loki. Also exposes OTLP endpoints for direct log ingestion.
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# Alloy upstream chart configuration
+# ---------------------------------------------------------------------------
+alloy:
+  # We provide our own ConfigMap (see templates/configmap.yaml)
+  configMap:
+    create: false
+    name: alloy-config
+    key: config.alloy
+
+  mounts:
+    varlog: true
+    dockercontainers: true
+
+# ---------------------------------------------------------------------------
+# Controller (DaemonSet mode)
+# ---------------------------------------------------------------------------
+controller:
+  type: daemonset
+
+# ---------------------------------------------------------------------------
+# Tolerations
+# ---------------------------------------------------------------------------
+# Allow Alloy to run on master/control-plane nodes so their logs are
+# also collected (e.g. kube-apiserver, etcd, kube-scheduler).
+tolerations:
+  - key: "node-role.kubernetes.io/master"
+    operator: "Exists"
+    effect: "NoSchedule"
+  - key: "node-role.kubernetes.io/control-plane"
+    operator: "Exists"
+    effect: "NoSchedule"
+
+# ---------------------------------------------------------------------------
+# Resources
+# ---------------------------------------------------------------------------
+resources:
+  requests:
+    cpu: "100m"
+    memory: "128Mi"
+  limits:
+    cpu: "500m"
+    memory: "512Mi"
+
+# ---------------------------------------------------------------------------
+# Service account (IRSA for S3 access if needed)
+# ---------------------------------------------------------------------------
+serviceAccount:
+  create: true
+  annotations:
+    eks.amazonaws.com/role-arn: "arn:aws:iam::ACCOUNT_ID:role/gl-alloy-irsa-prod"

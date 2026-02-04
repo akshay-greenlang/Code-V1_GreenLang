@@ -1,0 +1,41 @@
+# =============================================================================
+# GreenLang Loki - Production Overlay
+# GreenLang Climate OS | INFRA-009
+# =============================================================================
+# Production values are defined in the base values.yaml. This file exists
+# to explicitly confirm production bucket names and enable monitoring
+# dashboards. It is applied on top of the base values during deployment:
+#
+#   helm upgrade --install loki ./loki \
+#     -f values.yaml \
+#     -f values-prod.yaml \
+#     -n monitoring
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# Storage (confirm production bucket names)
+# ---------------------------------------------------------------------------
+loki:
+  storage:
+    bucketNames:
+      chunks: gl-loki-chunks-prod
+      ruler: gl-loki-ruler-prod
+
+# ---------------------------------------------------------------------------
+# Service account (confirm production IRSA role)
+# ---------------------------------------------------------------------------
+serviceAccount:
+  annotations:
+    eks.amazonaws.com/role-arn: "arn:aws:iam::ACCOUNT_ID:role/gl-loki-irsa-prod"
+
+# ---------------------------------------------------------------------------
+# Monitoring dashboards
+# ---------------------------------------------------------------------------
+monitoring:
+  serviceMonitor:
+    enabled: true
+    labels:
+      release: prometheus
+  dashboardsEnabled: true
+  selfMonitoring:
+    enabled: false

@@ -1,0 +1,24 @@
+# =============================================================================
+# GreenLang Alloy - Production Overlay
+# GreenLang Climate OS | INFRA-009
+# =============================================================================
+# Production values are defined in the base values.yaml. This file exists
+# to explicitly confirm production IRSA role and resource allocations.
+#
+#   helm upgrade --install alloy ./alloy \
+#     -f values.yaml \
+#     -f values-prod.yaml \
+#     -n monitoring
+# =============================================================================
+
+resources:
+  requests:
+    cpu: "100m"
+    memory: "128Mi"
+  limits:
+    cpu: "500m"
+    memory: "512Mi"
+
+serviceAccount:
+  annotations:
+    eks.amazonaws.com/role-arn: "arn:aws:iam::ACCOUNT_ID:role/gl-alloy-irsa-prod"

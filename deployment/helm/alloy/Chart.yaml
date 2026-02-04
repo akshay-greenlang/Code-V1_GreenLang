@@ -1,0 +1,33 @@
+# =============================================================================
+# GreenLang Alloy - Helm Chart
+# GreenLang Climate OS | INFRA-009
+# =============================================================================
+# Wrapper chart for the official Grafana Alloy Helm chart.
+# Alloy replaces Promtail as the log collection agent, providing a unified
+# collector for logs, metrics, and traces via OpenTelemetry and Loki protocols.
+# Deployed as a DaemonSet to collect logs from every node in the cluster.
+# =============================================================================
+
+apiVersion: v2
+name: greenlang-alloy
+description: Grafana Alloy log collection agent for GreenLang Climate OS
+type: application
+version: 1.0.0
+appVersion: "1.5.0"
+
+keywords:
+  - alloy
+  - log-collection
+  - opentelemetry
+  - observability
+  - greenlang
+  - infra-009
+
+maintainers:
+  - name: GreenLang Infrastructure Team
+    email: infra@greenlang.io
+
+dependencies:
+  - name: alloy
+    version: "~0.x"
+    repository: "https://grafana.github.io/helm-charts"

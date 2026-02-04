@@ -1,0 +1,376 @@
+# =============================================================================
+# GreenLang Climate OS - Feature Flags Prometheus Alert Rules
+# =============================================================================
+# PRD: INFRA-008 Feature Flags System
+# Defines alerting rules for feature flag evaluation health, storage health,
+# flag lifecycle management, and audit trail integrity.
+# =============================================================================
+
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: feature-flags-alerts
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: feature-flags
+    app.kubernetes.io/part-of: greenlang
+    prometheus: kube-prometheus
+    role: alert-rules
+    greenlang.io/component: infra-008
+spec:
+  groups:
+    # =========================================================================
+    # Group 1: Feature Flag Evaluation Health
+    # =========================================================================
+    - name: ff.evaluation.health
+      interval: 30s
+      rules:
+        # ---------------------------------------------------------------------
+        # FeatureFlagEvaluationErrorRate
+        # Fires when more than 1% of evaluations result in errors for 5 min.
+        # Indicates evaluation engine failures, corrupted flag data, or
+        # storage read errors affecting flag resolution.
+        # ---------------------------------------------------------------------
+        - alert: FeatureFlagEvaluationErrorRate
+          expr: |
+            (
+              sum(rate(ff_evaluation_total{result="error"}[5m]))
+              /
+              sum(rate(ff_evaluation_total[5m]))
+            ) * 100 > 1
+          for: 5m
+          labels:
+            severity: critical
+            team: infrastructure
+            component: feature-flags
+            prd: INFRA-008
+          annotations:
+            summary: "Feature flag evaluation error rate exceeds 1%"
+            description: >-
+              Feature flag evaluation error rate is
+              {{ $value | printf "%.2f" }}% over the last 5 minutes.
+              This exceeds the 1% threshold and indicates evaluation engine
+              failures or storage read errors. Flags may be returning default
+              values instead of correctly evaluated results.
+            runbook_url: "https://runbooks.greenlang.io/feature-flags/evaluation-error-rate"
+            dashboard_url: "https://grafana.greenlang.io/d/feature-flags"
+
+        # ---------------------------------------------------------------------
+        # FeatureFlagHighLatency
+        # Fires when P99 evaluation latency exceeds 5ms for 10 minutes.
+        # Feature flag evaluations are in the hot path and must be fast.
+        # Indicates cache misses, storage slowness, or complex rule trees.
+        # ---------------------------------------------------------------------
+        - alert: FeatureFlagHighLatency
+          expr: |
+            histogram_quantile(0.99,
+              sum(rate(ff_evaluation_duration_seconds_bucket[5m])) by (le)
+            ) * 1000 > 5
+          for: 10m
+          labels:
+            severity: warning
+            team: infrastructure
+            component: feature-flags
+            prd: INFRA-008
+          annotations:
+            summary: "Feature flag P99 evaluation latency exceeds 5ms"
+            description: >-
+              Feature flag evaluation P99 latency is
+              {{ $value | printf "%.1f" }}ms, exceeding the 5ms warning
+              threshold for 10 minutes. This may indicate cache misses,
+              storage slowness, or overly complex targeting rules.
+            runbook_url: "https://runbooks.greenlang.io/feature-flags/high-latency"
+            dashboard_url: "https://grafana.greenlang.io/d/feature-flags"
+
+        # ---------------------------------------------------------------------
+        # FeatureFlagHighLatencyCritical
+        # Fires when P99 evaluation latency exceeds 20ms for 5 minutes.
+        # At this latency, flag evaluations are materially impacting request
+        # response times and may cause downstream timeouts.
+        # ---------------------------------------------------------------------
+        - alert: FeatureFlagHighLatencyCritical
+          expr: |
+            histogram_quantile(0.99,
+              sum(rate(ff_evaluation_duration_seconds_bucket[5m])) by (le)
+            ) * 1000 > 20
+          for: 5m
+          labels:
+            severity: critical
+            team: infrastructure
+            component: feature-flags
+            prd: INFRA-008
+          annotations:
+            summary: "Feature flag P99 evaluation latency exceeds 20ms -- critical"
+            description: >-
+              Feature flag evaluation P99 latency is
+              {{ $value | printf "%.1f" }}ms, exceeding the 20ms critical
+              threshold. Flag evaluations are significantly impacting request
+              response times. Investigate storage backends, cache health, and
+              consider enabling kill switches for non-essential flags.
+            runbook_url: "https://runbooks.greenlang.io/feature-flags/high-latency-critical"
+            dashboard_url: "https://grafana.greenlang.io/d/feature-flags"
+
+        # ---------------------------------------------------------------------
+        # FeatureFlagHighEvaluationRate
+        # Fires when total evaluation rate exceeds 100k/min for 5 minutes.
+        # This may indicate evaluation loops, missing caching, or an
+        # unexpected traffic spike that could overwhelm storage backends.
+        # ---------------------------------------------------------------------
+        - alert: FeatureFlagHighEvaluationRate
+          expr: |
+            sum(rate(ff_evaluation_total[5m])) * 60 > 100000
+          for: 5m
+          labels:
+            severity: warning
+            team: infrastructure
+            component: feature-flags
+            prd: INFRA-008
+          annotations:
+            summary: "Feature flag evaluation rate exceeds 100k/min"
+            description: >-
+              Feature flag evaluations are running at
+              {{ $value | printf "%.0f" }} per minute, exceeding the
+              100,000/min threshold. This may indicate evaluation loops,
+              missing caching layers, or an unexpected traffic spike.
+              Verify cache health and consider rate limiting evaluations.
+            runbook_url: "https://runbooks.greenlang.io/feature-flags/high-evaluation-rate"
+            dashboard_url: "https://grafana.greenlang.io/d/feature-flags"
+
+    # =========================================================================
+    # Group 2: Feature Flag Storage Health
+    # =========================================================================
+    - name: ff.storage.health
+      interval: 30s
+      rules:
+        # ---------------------------------------------------------------------
+        # FeatureFlagRedisDown
+        # Fires when Redis storage errors are detected for 1 minute.
+        # Redis is the L1 cache for flag evaluations; its failure causes
+        # all evaluations to fall through to PostgreSQL, dramatically
+        # increasing latency and database load.
+        # ---------------------------------------------------------------------
+        - alert: FeatureFlagRedisDown
+          expr: |
+            sum(rate(ff_storage_errors_total{backend="redis"}[1m])) > 0
+          for: 1m
+          labels:
+            severity: critical
+            team: infrastructure
+            component: feature-flags
+            prd: INFRA-008
+          annotations:
+            summary: "Feature flag Redis storage errors detected"
+            description: >-
+              Feature flag Redis backend is reporting storage errors at
+              {{ $value | printf "%.2f" }}/sec. Redis is the primary cache
+              layer for flag evaluations. All evaluations are falling through
+              to PostgreSQL, causing increased latency and database load.
+              Investigate Redis cluster health immediately.
+            runbook_url: "https://runbooks.greenlang.io/feature-flags/redis-down"
+            dashboard_url: "https://grafana.greenlang.io/d/feature-flags"
+
+        # ---------------------------------------------------------------------
+        # FeatureFlagPostgresDown
+        # Fires when PostgreSQL storage errors are detected for 2 minutes.
+        # PostgreSQL is the source of truth for flag definitions. Its
+        # failure means flags cannot be loaded or refreshed from storage.
+        # ---------------------------------------------------------------------
+        - alert: FeatureFlagPostgresDown
+          expr: |
+            sum(rate(ff_storage_errors_total{backend="postgres"}[2m])) > 0
+          for: 2m
+          labels:
+            severity: critical
+            team: infrastructure
+            component: feature-flags
+            prd: INFRA-008
+          annotations:
+            summary: "Feature flag PostgreSQL storage errors detected"
+            description: >-
+              Feature flag PostgreSQL backend is reporting storage errors at
+              {{ $value | printf "%.2f" }}/sec for over 2 minutes. PostgreSQL
+              is the source of truth for flag definitions. Flags cannot be
+              loaded or refreshed. Cached values will be served until TTL
+              expiry, after which evaluations will return defaults.
+            runbook_url: "https://runbooks.greenlang.io/feature-flags/postgres-down"
+            dashboard_url: "https://grafana.greenlang.io/d/feature-flags"
+
+        # ---------------------------------------------------------------------
+        # FeatureFlagCacheHitRateLow
+        # Fires when cache hit rate drops below 80% for 10 minutes.
+        # Low cache hit rate means most evaluations are hitting the
+        # database, which increases latency and database load.
+        # ---------------------------------------------------------------------
+        - alert: FeatureFlagCacheHitRateLow
+          expr: |
+            (
+              sum(rate(ff_cache_hit_total[5m]))
+              /
+              (sum(rate(ff_cache_hit_total[5m])) + sum(rate(ff_cache_miss_total[5m])))
+            ) * 100 < 80
+          for: 10m
+          labels:
+            severity: warning
+            team: infrastructure
+            component: feature-flags
+            prd: INFRA-008
+          annotations:
+            summary: "Feature flag cache hit rate below 80%"
+            description: >-
+              Feature flag cache hit rate is {{ $value | printf "%.1f" }}%,
+              below the 80% threshold for 10 minutes. Most evaluations are
+              hitting the database backend directly. This increases evaluation
+              latency and database load. Investigate cache TTL configuration,
+              Redis connectivity, and flag count growth.
+            runbook_url: "https://runbooks.greenlang.io/feature-flags/cache-hit-rate-low"
+            dashboard_url: "https://grafana.greenlang.io/d/feature-flags"
+
+        # ---------------------------------------------------------------------
+        # FeatureFlagStorageDesync
+        # Fires when cache miss rate exceeds 50% for 5 minutes.
+        # A sustained high miss rate indicates the cache is not being
+        # populated correctly, possibly due to a desync between storage
+        # layers or cache invalidation issues.
+        # ---------------------------------------------------------------------
+        - alert: FeatureFlagStorageDesync
+          expr: |
+            (
+              sum(rate(ff_cache_miss_total[5m]))
+              /
+              (sum(rate(ff_cache_hit_total[5m])) + sum(rate(ff_cache_miss_total[5m])))
+            ) * 100 > 50
+          for: 5m
+          labels:
+            severity: warning
+            team: infrastructure
+            component: feature-flags
+            prd: INFRA-008
+          annotations:
+            summary: "Feature flag storage layers may be out of sync"
+            description: >-
+              Feature flag cache miss rate is {{ $value | printf "%.1f" }}%,
+              exceeding 50% for 5 minutes. This indicates a potential desync
+              between cache and storage layers. Cache may not be populated
+              correctly after a restart or invalidation event. Verify cache
+              warm-up and synchronization processes.
+            runbook_url: "https://runbooks.greenlang.io/feature-flags/storage-desync"
+            dashboard_url: "https://grafana.greenlang.io/d/feature-flags"
+
+    # =========================================================================
+    # Group 3: Feature Flag Lifecycle
+    # =========================================================================
+    - name: ff.lifecycle
+      interval: 1m
+      rules:
+        # ---------------------------------------------------------------------
+        # FeatureFlagKillSwitchActive
+        # Fires immediately when any kill switch is activated.
+        # Kill switches are emergency measures that disable features.
+        # This is an informational alert to ensure visibility.
+        # ---------------------------------------------------------------------
+        - alert: FeatureFlagKillSwitchActive
+          expr: |
+            sum(ff_kill_switch_active) > 0
+          for: 0m
+          labels:
+            severity: info
+            team: infrastructure
+            component: feature-flags
+            prd: INFRA-008
+          annotations:
+            summary: "Feature flag kill switch is active"
+            description: >-
+              {{ $value | printf "%.0f" }} feature flag kill switch(es)
+              are currently active. Kill switches are emergency overrides
+              that force-disable features. Verify this is intentional and
+              track resolution in the incident management system.
+            runbook_url: "https://runbooks.greenlang.io/feature-flags/kill-switch-active"
+            dashboard_url: "https://grafana.greenlang.io/d/feature-flags"
+
+        # ---------------------------------------------------------------------
+        # FeatureFlagStaleFlagsHigh
+        # Fires when more than 10 flags are considered stale.
+        # Stale flags are active flags that haven't been evaluated in a
+        # long period, indicating dead code or forgotten experiments.
+        # ---------------------------------------------------------------------
+        - alert: FeatureFlagStaleFlagsHigh
+          expr: |
+            sum(ff_stale_flags_total) > 10
+          for: 1h
+          labels:
+            severity: warning
+            team: infrastructure
+            component: feature-flags
+            prd: INFRA-008
+          annotations:
+            summary: "More than 10 stale feature flags detected"
+            description: >-
+              {{ $value | printf "%.0f" }} feature flags are considered
+              stale (active but not evaluated recently). Stale flags indicate
+              dead code paths or forgotten experiments. Review and clean up
+              stale flags to reduce technical debt and evaluation overhead.
+            runbook_url: "https://runbooks.greenlang.io/feature-flags/stale-flags"
+            dashboard_url: "https://grafana.greenlang.io/d/feature-flags"
+
+        # ---------------------------------------------------------------------
+        # FeatureFlagRolloutStuck
+        # Fires when a flag has been at a partial rollout (between 1-99%)
+        # for more than 14 days. Indicates a forgotten gradual rollout
+        # that should be completed or reverted.
+        # ---------------------------------------------------------------------
+        - alert: FeatureFlagRolloutStuck
+          expr: |
+            (
+              ff_flag_state{status="active", rollout_percentage!="0", rollout_percentage!="100"}
+              and
+              (time() - ff_flag_state{status="active"}) > 14 * 24 * 3600
+            ) > 0
+          for: 1h
+          labels:
+            severity: info
+            team: infrastructure
+            component: feature-flags
+            prd: INFRA-008
+          annotations:
+            summary: "Feature flag rollout stuck at partial percentage for over 14 days"
+            description: >-
+              Feature flag {{ $labels.flag_key }} has been at a partial
+              rollout percentage for more than 14 days. This may indicate a
+              forgotten gradual rollout. Review the flag and either complete
+              the rollout to 100% or revert to 0%.
+            runbook_url: "https://runbooks.greenlang.io/feature-flags/rollout-stuck"
+            dashboard_url: "https://grafana.greenlang.io/d/feature-flags"
+
+    # =========================================================================
+    # Group 4: Feature Flag Audit
+    # =========================================================================
+    - name: ff.audit
+      interval: 30s
+      rules:
+        # ---------------------------------------------------------------------
+        # FeatureFlagAuditLogFailure
+        # Fires when audit log write errors are detected for 5 minutes.
+        # The audit log is critical for compliance and change tracking.
+        # Failure to write audit events means flag changes are not being
+        # recorded, which violates regulatory requirements.
+        # ---------------------------------------------------------------------
+        - alert: FeatureFlagAuditLogFailure
+          expr: |
+            sum(rate(ff_storage_errors_total{operation="audit_write"}[5m])) > 0
+          for: 5m
+          labels:
+            severity: critical
+            team: infrastructure
+            component: feature-flags
+            prd: INFRA-008
+          annotations:
+            summary: "Feature flag audit log write failures detected"
+            description: >-
+              Feature flag audit log writes are failing at
+              {{ $value | printf "%.2f" }}/sec for over 5 minutes. The
+              audit trail is critical for regulatory compliance and change
+              tracking. Flag changes are not being recorded. Investigate
+              PostgreSQL connectivity and the audit_log table health
+              immediately.
+            runbook_url: "https://runbooks.greenlang.io/feature-flags/audit-log-failure"
+            dashboard_url: "https://grafana.greenlang.io/d/feature-flags"

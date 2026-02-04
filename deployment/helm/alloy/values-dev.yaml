@@ -1,0 +1,19 @@
+# =============================================================================
+# GreenLang Alloy - Development Overlay
+# GreenLang Climate OS | INFRA-009
+# =============================================================================
+# Reduced resource footprint for dev/local clusters.
+# =============================================================================
+
+resources:
+  requests:
+    cpu: "50m"
+    memory: "64Mi"
+  limits:
+    cpu: "200m"
+    memory: "256Mi"
+
+# No IRSA in dev
+serviceAccount:
+  create: true
+  annotations: {}
