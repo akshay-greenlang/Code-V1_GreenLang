@@ -96,7 +96,7 @@ pydantic[email]==2.5.3
 # HTTP client
 httpx==0.28.1
 requests==2.31.0
-aiohttp==3.9.3
+aiohttp==3.13.3
 yarl==1.9.4
 multidict==6.0.5
 
