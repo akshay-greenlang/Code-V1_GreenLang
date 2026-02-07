@@ -1,0 +1,333 @@
+# =============================================================================
+# GreenLang Normalizer Service - Alert Rules
+# =============================================================================
+# Component: AGENT-FOUND-003 Unit & Reference Normalizer
+# Purpose: PrometheusRule alert definitions for conversion errors, entity
+#          resolution quality, GWP version consistency, cache performance,
+#          vocabulary freshness, latency, resource pressure, and service health.
+# =============================================================================
+
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: greenlang-normalizer-service-alerts
+  namespace: monitoring
+  labels:
+    app: greenlang
+    component: normalizer
+    prometheus: kube-prometheus
+    role: alert-rules
+    release: gl-kube-prometheus
+    greenlang.io/component: agent-found-003
+  annotations:
+    description: "Alert rules for GreenLang Unit & Reference Normalizer Service"
+    prd: AGENT-FOUND-003
+spec:
+  groups:
+    # =========================================================================
+    # Normalizer Service Health Alerts
+    # =========================================================================
+    - name: greenlang.normalizer.service_health
+      interval: 30s
+      rules:
+        # -------------------------------------------------------------------
+        # NormalizerServiceDown (critical): No healthy pods for 1m
+        # -------------------------------------------------------------------
+        - alert: NormalizerServiceDown
+          expr: |
+            up{job="normalizer-service"} == 0
+          for: 1m
+          labels:
+            severity: critical
+            team: platform-data
+            component: normalizer
+            prd: AGENT-FOUND-003
+          annotations:
+            summary: "CRITICAL: Normalizer service is down"
+            description: |
+              The GreenLang Unit & Reference Normalizer Service is not responding to health checks.
+              All unit conversion, GHG/GWP conversion, entity resolution, and dimensional analysis
+              operations are disrupted. Downstream data pipelines depending on normalized values
+              will be affected.
+            runbook_url: "https://docs.greenlang.ai/runbooks/normalizer/service-down"
+            dashboard_url: "https://grafana.greenlang.io/d/normalizer-service"
+
+        # -------------------------------------------------------------------
+        # NormalizerHighMemory (warning): memory > 80% for 5m
+        # -------------------------------------------------------------------
+        - alert: NormalizerHighMemory
+          expr: |
+            (
+              container_memory_working_set_bytes{container="normalizer-service"}
+              / container_spec_memory_limit_bytes{container="normalizer-service"}
+            ) > 0.80
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-data
+            component: normalizer
+            prd: AGENT-FOUND-003
+          annotations:
+            summary: "Normalizer service memory usage above 80%"
+            description: |
+              Normalizer service container memory usage is at {{ $value | humanizePercentage }}
+              of its limit. High memory usage may be caused by large vocabulary datasets,
+              conversion cache size, or batch conversion payload accumulation.
+              Consider increasing memory limits or reducing cache max size.
+            runbook_url: "https://docs.greenlang.ai/runbooks/normalizer/high-memory"
+            dashboard_url: "https://grafana.greenlang.io/d/normalizer-service"
+
+        # -------------------------------------------------------------------
+        # NormalizerHighCPU (warning): CPU > 80% for 5m
+        # -------------------------------------------------------------------
+        - alert: NormalizerHighCPU
+          expr: |
+            (
+              rate(container_cpu_usage_seconds_total{container="normalizer-service"}[5m])
+              / container_spec_cpu_quota{container="normalizer-service"}
+              * container_spec_cpu_period{container="normalizer-service"}
+            ) > 0.80
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-data
+            component: normalizer
+            prd: AGENT-FOUND-003
+          annotations:
+            summary: "Normalizer service CPU usage above 80%"
+            description: |
+              Normalizer service container CPU usage is at {{ $value | humanizePercentage }}
+              of its limit. High CPU may be caused by fuzzy matching computations,
+              large batch conversion processing, or vocabulary reload operations.
+              Consider scaling replicas or increasing CPU limits.
+            runbook_url: "https://docs.greenlang.ai/runbooks/normalizer/high-cpu"
+            dashboard_url: "https://grafana.greenlang.io/d/normalizer-service"
+
+    # =========================================================================
+    # Conversion Alerts
+    # =========================================================================
+    - name: greenlang.normalizer.conversion
+      interval: 30s
+      rules:
+        # -------------------------------------------------------------------
+        # NormalizerHighConversionErrorRate (warning): > 5% errors in 5m
+        # -------------------------------------------------------------------
+        - alert: NormalizerHighConversionErrorRate
+          expr: |
+            (
+              sum(rate(gl_normalizer_conversions_total{status="error"}[5m]))
+              / sum(rate(gl_normalizer_conversions_total[5m]))
+            ) > 0.05
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-data
+            component: normalizer
+            prd: AGENT-FOUND-003
+          annotations:
+            summary: "Normalizer conversion error rate above 5%"
+            description: |
+              Unit conversion error rate is {{ $value | humanizePercentage }} over the last 5 minutes.
+              Threshold: 5%. This may indicate unsupported unit pairs, dimension mismatches,
+              invalid input values, or missing conversion factors in the canonical units registry.
+              Check the conversion audit log for common error patterns.
+            runbook_url: "https://docs.greenlang.ai/runbooks/normalizer/high-conversion-error-rate"
+            dashboard_url: "https://grafana.greenlang.io/d/normalizer-service"
+
+        # -------------------------------------------------------------------
+        # NormalizerHighLatency (warning): p99 > 100ms for 5m
+        # -------------------------------------------------------------------
+        - alert: NormalizerHighLatency
+          expr: |
+            histogram_quantile(0.99,
+              sum(rate(gl_normalizer_conversion_duration_seconds_bucket[5m])) by (le)
+            ) > 0.1
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-data
+            component: normalizer
+            prd: AGENT-FOUND-003
+          annotations:
+            summary: "Normalizer conversion p99 latency above 100ms"
+            description: |
+              The p99 unit conversion latency is {{ $value | printf "%.3f" }}s, exceeding the
+              100ms threshold. Investigate cache miss rates, database query performance,
+              vocabulary cache staleness, and fuzzy matching overhead.
+              Unit conversions are expected to be sub-millisecond for cached paths.
+            runbook_url: "https://docs.greenlang.ai/runbooks/normalizer/high-latency"
+            dashboard_url: "https://grafana.greenlang.io/d/normalizer-service"
+
+        # -------------------------------------------------------------------
+        # NormalizerDimensionMismatch (warning): dimension errors spike
+        # -------------------------------------------------------------------
+        - alert: NormalizerDimensionMismatch
+          expr: |
+            sum(rate(gl_normalizer_dimension_errors_total[5m])) > 1
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-data
+            component: normalizer
+            prd: AGENT-FOUND-003
+          annotations:
+            summary: "Normalizer dimension mismatch errors detected"
+            description: |
+              Dimension mismatch error rate is {{ $value | printf "%.2f" }} errors/s over the
+              last 5 minutes. This indicates upstream data pipelines are attempting to convert
+              between incompatible physical dimensions (e.g., mass to energy without an
+              emission factor). Review incoming conversion requests for systematic issues.
+            runbook_url: "https://docs.greenlang.ai/runbooks/normalizer/dimension-mismatch"
+            dashboard_url: "https://grafana.greenlang.io/d/normalizer-service"
+
+    # =========================================================================
+    # Entity Resolution Alerts
+    # =========================================================================
+    - name: greenlang.normalizer.resolution
+      interval: 30s
+      rules:
+        # -------------------------------------------------------------------
+        # NormalizerLowEntityConfidence (warning): avg confidence < 0.8
+        # -------------------------------------------------------------------
+        - alert: NormalizerLowEntityConfidence
+          expr: |
+            avg(gl_normalizer_resolution_confidence) < 0.8
+          for: 10m
+          labels:
+            severity: warning
+            team: platform-data
+            component: normalizer
+            prd: AGENT-FOUND-003
+          annotations:
+            summary: "Normalizer average entity resolution confidence below 0.8"
+            description: |
+              The average entity resolution confidence score is {{ $value | printf "%.3f" }},
+              below the 0.8 threshold. Low confidence indicates that incoming entity names
+              are not matching well against the canonical vocabulary. This may be caused by
+              new data sources with non-standard naming, stale vocabularies, or changes in
+              upstream data formatting.
+            runbook_url: "https://docs.greenlang.ai/runbooks/normalizer/low-entity-confidence"
+            dashboard_url: "https://grafana.greenlang.io/d/normalizer-service"
+
+        # -------------------------------------------------------------------
+        # NormalizerHighUnresolvedRate (warning): > 10% unresolved
+        # -------------------------------------------------------------------
+        - alert: NormalizerHighUnresolvedRate
+          expr: |
+            (
+              sum(rate(gl_normalizer_resolutions_total{resolved="false"}[5m]))
+              / sum(rate(gl_normalizer_resolutions_total[5m]))
+            ) > 0.10
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-data
+            component: normalizer
+            prd: AGENT-FOUND-003
+          annotations:
+            summary: "Normalizer entity resolution unresolved rate above 10%"
+            description: |
+              Entity resolution unresolved rate is {{ $value | humanizePercentage }} over the
+              last 5 minutes. Threshold: 10%. More than 10% of incoming entity names could not
+              be matched to canonical entries. Review the entity resolution log for common
+              unresolved inputs and consider expanding the vocabulary or adding aliases.
+            runbook_url: "https://docs.greenlang.ai/runbooks/normalizer/high-unresolved-rate"
+            dashboard_url: "https://grafana.greenlang.io/d/normalizer-service"
+
+    # =========================================================================
+    # GWP & Cache Alerts
+    # =========================================================================
+    - name: greenlang.normalizer.gwp_cache
+      interval: 30s
+      rules:
+        # -------------------------------------------------------------------
+        # NormalizerGWPVersionMismatch (critical): mixed GWP versions in use
+        # -------------------------------------------------------------------
+        - alert: NormalizerGWPVersionMismatch
+          expr: |
+            count(count(gl_normalizer_gwp_conversions_total) by (gwp_version)) > 1
+          for: 5m
+          labels:
+            severity: critical
+            team: platform-data
+            component: normalizer
+            prd: AGENT-FOUND-003
+          annotations:
+            summary: "CRITICAL: Mixed GWP versions detected in normalizer conversions"
+            description: |
+              Multiple GWP Assessment Report versions are being used simultaneously for
+              GHG conversions. This creates inconsistency in CO2-equivalent calculations
+              across the platform. All conversions within a reporting period should use
+              a single GWP version (AR5 or AR6). Review the GL_NORMALIZER_DEFAULT_GWP_VERSION
+              configuration and check for clients explicitly requesting non-default versions.
+            runbook_url: "https://docs.greenlang.ai/runbooks/normalizer/gwp-version-mismatch"
+            dashboard_url: "https://grafana.greenlang.io/d/normalizer-service"
+
+        # -------------------------------------------------------------------
+        # NormalizerCacheHitRateLow (warning): cache hit rate < 80% for 10m
+        # -------------------------------------------------------------------
+        - alert: NormalizerCacheHitRateLow
+          expr: |
+            (
+              sum(rate(gl_normalizer_cache_hits_total[5m]))
+              / (sum(rate(gl_normalizer_cache_hits_total[5m])) + sum(rate(gl_normalizer_cache_misses_total[5m])))
+            ) < 0.80
+          for: 10m
+          labels:
+            severity: warning
+            team: platform-data
+            component: normalizer
+            prd: AGENT-FOUND-003
+          annotations:
+            summary: "Normalizer cache hit rate below 80%"
+            description: |
+              Normalizer conversion cache hit rate is {{ $value | humanizePercentage }} over the
+              last 5 minutes. Low cache hit rates increase conversion latency and database load.
+              Check cache TTL settings, max cache size, vocabulary reload frequency,
+              and cache warmup configuration.
+            runbook_url: "https://docs.greenlang.ai/runbooks/normalizer/cache-hit-rate-low"
+            dashboard_url: "https://grafana.greenlang.io/d/normalizer-service"
+
+        # -------------------------------------------------------------------
+        # NormalizerVocabularyStale (warning): no updates in 30 days
+        # -------------------------------------------------------------------
+        - alert: NormalizerVocabularyStale
+          expr: |
+            (time() - gl_normalizer_vocabulary_last_update_timestamp) > 2592000
+          for: 1h
+          labels:
+            severity: warning
+            team: platform-data
+            component: normalizer
+            prd: AGENT-FOUND-003
+          annotations:
+            summary: "Normalizer vocabulary has not been updated in 30 days"
+            description: |
+              The normalizer vocabulary datasets have not received any updates for more than
+              30 days. Stale vocabularies may be missing new fuels, materials, processes,
+              or updated emission factors. Verify that vocabulary update pipelines are running
+              and that the latest IPCC/EPA/IEA data has been incorporated.
+            runbook_url: "https://docs.greenlang.ai/runbooks/normalizer/vocabulary-stale"
+            dashboard_url: "https://grafana.greenlang.io/d/normalizer-service"
+
+        # -------------------------------------------------------------------
+        # NormalizerAuditLogLag (warning): audit log write lag > 5s
+        # -------------------------------------------------------------------
+        - alert: NormalizerAuditLogLag
+          expr: |
+            gl_normalizer_audit_log_write_lag_seconds > 5
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-data
+            component: normalizer
+            prd: AGENT-FOUND-003
+          annotations:
+            summary: "Normalizer audit log write lag above 5 seconds"
+            description: |
+              The conversion audit log write lag is {{ $value | printf "%.1f" }}s, exceeding the
+              5-second threshold. Audit log delays may indicate database write contention,
+              connection pool exhaustion, or disk I/O pressure on TimescaleDB.
+              Compliance auditing requires timely audit log writes.
+            runbook_url: "https://docs.greenlang.ai/runbooks/normalizer/audit-log-lag"
+            dashboard_url: "https://grafana.greenlang.io/d/normalizer-service"

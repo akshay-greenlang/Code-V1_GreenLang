@@ -1,0 +1,109 @@
+# =============================================================================
+# GreenLang Schema Service - ConfigMap
+# =============================================================================
+# Configuration for schema validation, compilation, caching, batch processing,
+# rate limiting, registry, and metrics.
+# PRD: AGENT-FOUND-002
+# =============================================================================
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: schema-service-config
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: schema-service
+    app.kubernetes.io/component: configuration
+    app.kubernetes.io/part-of: greenlang
+  annotations:
+    description: "Schema Service configuration - validation, compilation, caching, batch"
+    prd: AGENT-FOUND-002
+data:
+  # Environment
+  ENVIRONMENT: "production"
+
+  # Logging
+  GL_SCHEMA_LOG_LEVEL: "INFO"
+  LOG_FORMAT: "json"
+
+  # Database (connection string via secret, schema config here)
+  GL_SCHEMA_DB_SCHEMA: "schema_service"
+  GL_SCHEMA_DB_POOL_MIN: "2"
+  GL_SCHEMA_DB_POOL_MAX: "10"
+
+  # Redis
+  GL_SCHEMA_REDIS_PREFIX: "gl:schema:"
+  GL_SCHEMA_REDIS_TTL: "3600"
+
+  # Cache Configuration
+  GL_SCHEMA_CACHE_TTL_SECONDS: "3600"
+  GL_SCHEMA_CACHE_MAX_SIZE: "500"
+  GL_SCHEMA_CACHE_WARMUP_ENABLED: "true"
+
+  # Validation Configuration
+  GL_SCHEMA_MAX_PAYLOAD_BYTES: "1048576"
+  GL_SCHEMA_MAX_BATCH_ITEMS: "1000"
+  GL_SCHEMA_DEFAULT_PROFILE: "standard"
+  GL_SCHEMA_ENABLE_AUTOFIX: "true"
+
+  # Rate Limiting
+  GL_SCHEMA_RATE_LIMIT_VALIDATE: "100"
+  GL_SCHEMA_RATE_LIMIT_BATCH: "10"
+  GL_SCHEMA_RATE_LIMIT_COMPILE: "50"
+  GL_SCHEMA_RATE_LIMIT_WINDOW_SECONDS: "60"
+
+  # Metrics
+  GL_SCHEMA_ENABLE_METRICS: "true"
+  METRICS_PORT: "8080"
+  METRICS_PATH: "/metrics"
+
+  # Tracing
+  TRACING_ENABLED: "true"
+  TRACING_SAMPLE_RATE: "0.1"
+  OTEL_ENDPOINT: "http://otel-collector.monitoring.svc.cluster.local:4317"
+  OTEL_SERVICE_NAME: "schema-service"
+
+  # Schema service configuration file
+  schema-config.yaml: |
+    schema_service:
+      version: "1.0.0"
+      environment: production
+
+      validation:
+        max_payload_bytes: 1048576
+        max_batch_items: 1000
+        default_profile: standard
+        enable_autofix: true
+        enable_lint: true
+        enable_redos_detection: true
+        redos_timeout_ms: 100
+
+      compilation:
+        cache_ttl_seconds: 3600
+        cache_max_size: 500
+        warmup_on_startup: true
+        warmup_schemas:
+          - gl-emissions-input
+          - gl-activity-data
+          - gl-calculation-result
+
+      registry:
+        enabled: true
+        schema: schema_service
+        auto_discover: true
+
+      rate_limiting:
+        validate_per_minute: 100
+        batch_per_minute: 10
+        compile_per_minute: 50
+
+      metrics:
+        enabled: true
+        prefix: gl_schema
+        histogram_buckets: [0.001, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10]
+
+      integration:
+        auth_enabled: true
+        audit_enabled: true
+        alerting_enabled: true
+        feature_flags_enabled: true

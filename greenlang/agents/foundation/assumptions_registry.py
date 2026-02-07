@@ -45,6 +45,16 @@ from greenlang.utilities.determinism.clock import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
+# ---------------------------------------------------------------------------
+# SDK delegation
+# ---------------------------------------------------------------------------
+ASSUMPTIONS_SDK_AVAILABLE = False
+try:
+    from greenlang.assumptions.registry import AssumptionRegistry as _SDKRegistry
+    ASSUMPTIONS_SDK_AVAILABLE = True
+except ImportError:
+    pass
+
 
 # =============================================================================
 # Enumerations
@@ -434,12 +444,25 @@ class AssumptionsRegistryAgent(BaseAgent):
         """
         Execute an assumptions registry operation.
 
+        If the Assumptions SDK is available, delegates to the SDK first
+        with graceful fallback to the built-in implementation.
+
         Args:
             input_data: Operation parameters
 
         Returns:
             AgentResult with operation result
         """
+        # Try SDK delegation first if available
+        if ASSUMPTIONS_SDK_AVAILABLE:
+            try:
+                return self._execute_via_sdk(input_data)
+            except Exception as sdk_err:
+                self.logger.warning(
+                    "SDK delegation failed, falling back to built-in: %s",
+                    str(sdk_err),
+                )
+
         start_time = DeterministicClock.now()
 
         try:
@@ -499,6 +522,49 @@ class AssumptionsRegistryAgent(BaseAgent):
                 error=str(e),
                 data={"operation": input_data.get("operation", "unknown")}
             )
+
+    def _execute_via_sdk(self, input_data: Dict[str, Any]) -> AgentResult:
+        """Delegate execution to the Assumptions SDK.
+
+        Args:
+            input_data: Operation parameters.
+
+        Returns:
+            AgentResult from SDK execution.
+
+        Raises:
+            Exception: If SDK delegation fails.
+        """
+        sdk_registry = _SDKRegistry()
+        operation = input_data.get("operation", "")
+
+        if operation == "create_assumption" and input_data.get("assumption_data"):
+            ad = input_data["assumption_data"]
+            assumption = sdk_registry.create(
+                assumption_id=ad["assumption_id"],
+                name=ad["name"],
+                description=ad.get("description", ""),
+                category=ad.get("category", "custom"),
+                data_type=ad.get("data_type", "float"),
+                value=ad["current_value"],
+                user_id=input_data.get("user_id", "system"),
+                change_reason=input_data.get("change_reason", "Initial creation"),
+                metadata_source=ad.get("metadata", {}).get("source", "user_defined"),
+            )
+            return AgentResult(
+                success=True,
+                data={"assumption_id": assumption.assumption_id, "version": 1},
+            )
+
+        if operation == "get_value" and input_data.get("assumption_id"):
+            value = sdk_registry.get_value(input_data["assumption_id"])
+            return AgentResult(
+                success=True,
+                data={"value": value, "assumption_id": input_data["assumption_id"]},
+            )
+
+        # For operations not yet mapped, raise to trigger fallback
+        raise NotImplementedError(f"SDK delegation not implemented for {operation}")
 
     # =========================================================================
     # Assumption Operations

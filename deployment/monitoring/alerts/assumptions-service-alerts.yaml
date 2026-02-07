@@ -1,0 +1,388 @@
+# =============================================================================
+# GreenLang Assumptions Registry Service - Alert Rules
+# =============================================================================
+# Component: AGENT-FOUND-004 Assumptions Registry
+# Purpose: PrometheusRule alert definitions for service health, operation
+#          errors, validation failures, version overflow, change log growth,
+#          scenario drift, dependency cycles, memory, cache, pod restarts,
+#          audit gaps, and latency.
+# =============================================================================
+
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: greenlang-assumptions-service-alerts
+  namespace: monitoring
+  labels:
+    app: greenlang
+    component: assumptions
+    prometheus: kube-prometheus
+    role: alert-rules
+    release: gl-kube-prometheus
+    greenlang.io/component: agent-found-004
+  annotations:
+    description: "Alert rules for GreenLang Assumptions Registry Service"
+    prd: AGENT-FOUND-004
+spec:
+  groups:
+    # =========================================================================
+    # Assumptions Service Health Alerts
+    # =========================================================================
+    - name: greenlang.assumptions.service_health
+      interval: 30s
+      rules:
+        # -------------------------------------------------------------------
+        # AssumptionsServiceDown (critical): No healthy pods for 1m
+        # -------------------------------------------------------------------
+        - alert: AssumptionsServiceDown
+          expr: |
+            up{job="assumptions-service"} == 0
+          for: 1m
+          labels:
+            severity: critical
+            team: platform-data
+            component: assumptions
+            prd: AGENT-FOUND-004
+          annotations:
+            summary: "CRITICAL: Assumptions Registry service is down"
+            description: |
+              The GreenLang Assumptions Registry Service is not responding to health checks.
+              All assumption lookups, scenario analysis, validation, and dependency resolution
+              operations are disrupted. Downstream calculation pipelines depending on assumption
+              values will fall back to cached or default values, which may produce stale results.
+            runbook_url: "https://docs.greenlang.ai/runbooks/assumptions/service-down"
+            dashboard_url: "https://grafana.greenlang.io/d/assumptions-service"
+
+        # -------------------------------------------------------------------
+        # AssumptionsHighErrorRate (warning): > 5% errors in 5m
+        # -------------------------------------------------------------------
+        - alert: AssumptionsHighErrorRate
+          expr: |
+            (
+              sum(rate(gl_assumptions_operations_total{status="error"}[5m]))
+              / sum(rate(gl_assumptions_operations_total[5m]))
+            ) > 0.05
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-data
+            component: assumptions
+            prd: AGENT-FOUND-004
+          annotations:
+            summary: "Assumptions service error rate above 5%"
+            description: |
+              Assumption operation error rate is {{ $value | humanizePercentage }} over the last
+              5 minutes. Threshold: 5%. This may indicate database connectivity issues, validation
+              rule failures, invalid input payloads, or permission errors. Check the assumption
+              change log and application logs for common error patterns.
+            runbook_url: "https://docs.greenlang.ai/runbooks/assumptions/high-error-rate"
+            dashboard_url: "https://grafana.greenlang.io/d/assumptions-service"
+
+        # -------------------------------------------------------------------
+        # AssumptionsHighErrorRateCritical (critical): > 10% errors in 5m
+        # -------------------------------------------------------------------
+        - alert: AssumptionsHighErrorRateCritical
+          expr: |
+            (
+              sum(rate(gl_assumptions_operations_total{status="error"}[5m]))
+              / sum(rate(gl_assumptions_operations_total[5m]))
+            ) > 0.10
+          for: 5m
+          labels:
+            severity: critical
+            team: platform-data
+            component: assumptions
+            prd: AGENT-FOUND-004
+          annotations:
+            summary: "CRITICAL: Assumptions service error rate above 10%"
+            description: |
+              Assumption operation error rate is {{ $value | humanizePercentage }} over the last
+              5 minutes, exceeding the critical 10% threshold. This indicates a systemic failure
+              in assumption operations. Immediate investigation required. Check database health,
+              Redis connectivity, and recent deployment changes.
+            runbook_url: "https://docs.greenlang.ai/runbooks/assumptions/high-error-rate-critical"
+            dashboard_url: "https://grafana.greenlang.io/d/assumptions-service"
+
+    # =========================================================================
+    # Assumptions Latency Alerts
+    # =========================================================================
+    - name: greenlang.assumptions.latency
+      interval: 30s
+      rules:
+        # -------------------------------------------------------------------
+        # AssumptionsHighLatency (warning): p99 > 500ms for 5m
+        # -------------------------------------------------------------------
+        - alert: AssumptionsHighLatency
+          expr: |
+            histogram_quantile(0.99,
+              sum(rate(gl_assumptions_operation_duration_seconds_bucket[5m])) by (le)
+            ) > 0.5
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-data
+            component: assumptions
+            prd: AGENT-FOUND-004
+          annotations:
+            summary: "Assumptions service p99 latency above 500ms"
+            description: |
+              The p99 assumption operation latency is {{ $value | printf "%.3f" }}s, exceeding
+              the 500ms warning threshold. Investigate cache miss rates, database query
+              performance, dependency graph traversal depth, and scenario resolution overhead.
+            runbook_url: "https://docs.greenlang.ai/runbooks/assumptions/high-latency"
+            dashboard_url: "https://grafana.greenlang.io/d/assumptions-service"
+
+        # -------------------------------------------------------------------
+        # AssumptionsHighLatencyCritical (critical): p99 > 2s for 5m
+        # -------------------------------------------------------------------
+        - alert: AssumptionsHighLatencyCritical
+          expr: |
+            histogram_quantile(0.99,
+              sum(rate(gl_assumptions_operation_duration_seconds_bucket[5m])) by (le)
+            ) > 2.0
+          for: 5m
+          labels:
+            severity: critical
+            team: platform-data
+            component: assumptions
+            prd: AGENT-FOUND-004
+          annotations:
+            summary: "CRITICAL: Assumptions service p99 latency above 2 seconds"
+            description: |
+              The p99 assumption operation latency is {{ $value | printf "%.3f" }}s, exceeding
+              the critical 2-second threshold. This will cause downstream calculation timeouts.
+              Immediate investigation required. Check database locks, connection pool exhaustion,
+              and potential dependency graph cycles.
+            runbook_url: "https://docs.greenlang.ai/runbooks/assumptions/high-latency-critical"
+            dashboard_url: "https://grafana.greenlang.io/d/assumptions-service"
+
+    # =========================================================================
+    # Validation & Version Alerts
+    # =========================================================================
+    - name: greenlang.assumptions.validation
+      interval: 30s
+      rules:
+        # -------------------------------------------------------------------
+        # AssumptionsValidationFailureSpike (warning): validation failures > 20%
+        # -------------------------------------------------------------------
+        - alert: AssumptionsValidationFailureSpike
+          expr: |
+            (
+              sum(rate(gl_assumptions_validations_total{result="fail"}[5m]))
+              / sum(rate(gl_assumptions_validations_total[5m]))
+            ) > 0.20
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-data
+            component: assumptions
+            prd: AGENT-FOUND-004
+          annotations:
+            summary: "Assumptions validation failure rate above 20%"
+            description: |
+              Assumption validation failure rate is {{ $value | humanizePercentage }} over the
+              last 5 minutes. High failure rates indicate that incoming assumption values are
+              frequently violating validation rules (range checks, type constraints, format
+              requirements). Review the validation rule configuration and recent data submissions.
+            runbook_url: "https://docs.greenlang.ai/runbooks/assumptions/validation-failure-spike"
+            dashboard_url: "https://grafana.greenlang.io/d/assumptions-service"
+
+        # -------------------------------------------------------------------
+        # AssumptionsVersionOverflow (warning): assumption nearing max versions
+        # -------------------------------------------------------------------
+        - alert: AssumptionsVersionOverflow
+          expr: |
+            max(gl_assumptions_version_count) > 800
+          for: 1h
+          labels:
+            severity: warning
+            team: platform-data
+            component: assumptions
+            prd: AGENT-FOUND-004
+          annotations:
+            summary: "Assumption approaching maximum version limit (800/1000)"
+            description: |
+              An assumption has {{ $value | printf "%.0f" }} versions, approaching the
+              configured maximum of 1000. Consider archiving old versions or increasing
+              the limit. Excessive versioning may indicate automated update loops or
+              misconfigured integration pipelines.
+            runbook_url: "https://docs.greenlang.ai/runbooks/assumptions/version-overflow"
+            dashboard_url: "https://grafana.greenlang.io/d/assumptions-service"
+
+        # -------------------------------------------------------------------
+        # AssumptionsChangeLogGrowing (warning): change log growth rate high
+        # -------------------------------------------------------------------
+        - alert: AssumptionsChangeLogGrowing
+          expr: |
+            sum(rate(gl_assumptions_changelog_writes_total[1h])) > 100
+          for: 1h
+          labels:
+            severity: warning
+            team: platform-data
+            component: assumptions
+            prd: AGENT-FOUND-004
+          annotations:
+            summary: "Assumptions change log growing rapidly (>100 writes/hour)"
+            description: |
+              The assumption change log is receiving {{ $value | printf "%.0f" }} writes per
+              hour, which is higher than normal. Rapid change log growth may indicate automated
+              bulk updates, import jobs, or a feedback loop. Verify that the 90-day retention
+              policy is active and check for unusual write patterns.
+            runbook_url: "https://docs.greenlang.ai/runbooks/assumptions/changelog-growing"
+            dashboard_url: "https://grafana.greenlang.io/d/assumptions-service"
+
+    # =========================================================================
+    # Scenario & Dependency Alerts
+    # =========================================================================
+    - name: greenlang.assumptions.scenario_dependency
+      interval: 30s
+      rules:
+        # -------------------------------------------------------------------
+        # AssumptionsScenarioDrift (warning): scenario overrides diverging
+        # -------------------------------------------------------------------
+        - alert: AssumptionsScenarioDrift
+          expr: |
+            (
+              max(gl_assumptions_scenario_overrides_total) -
+              min(gl_assumptions_scenario_overrides_total)
+            ) > 50
+          for: 30m
+          labels:
+            severity: warning
+            team: platform-data
+            component: assumptions
+            prd: AGENT-FOUND-004
+          annotations:
+            summary: "Scenario override divergence detected (>50 difference)"
+            description: |
+              The number of assumption overrides varies significantly across scenarios
+              (difference > 50). This may indicate that scenarios are drifting apart
+              in coverage, making cross-scenario comparisons less meaningful. Review
+              scenario override alignment and consider synchronizing assumption coverage.
+            runbook_url: "https://docs.greenlang.ai/runbooks/assumptions/scenario-drift"
+            dashboard_url: "https://grafana.greenlang.io/d/assumptions-service"
+
+        # -------------------------------------------------------------------
+        # AssumptionsDependencyCycle (critical): cycle detected in dep graph
+        # -------------------------------------------------------------------
+        - alert: AssumptionsDependencyCycle
+          expr: |
+            gl_assumptions_dependency_cycles_detected > 0
+          for: 1m
+          labels:
+            severity: critical
+            team: platform-data
+            component: assumptions
+            prd: AGENT-FOUND-004
+          annotations:
+            summary: "CRITICAL: Dependency cycle detected in assumption graph"
+            description: |
+              A circular dependency has been detected in the assumption dependency graph.
+              This can cause infinite loops during impact analysis, cascade updates, and
+              scenario resolution. Immediate investigation required to identify and break
+              the cycle. Check the dependency graph for recently added edges.
+            runbook_url: "https://docs.greenlang.ai/runbooks/assumptions/dependency-cycle"
+            dashboard_url: "https://grafana.greenlang.io/d/assumptions-service"
+
+    # =========================================================================
+    # Infrastructure Alerts
+    # =========================================================================
+    - name: greenlang.assumptions.infrastructure
+      interval: 30s
+      rules:
+        # -------------------------------------------------------------------
+        # AssumptionsHighMemoryUsage (warning): memory > 80% for 5m
+        # -------------------------------------------------------------------
+        - alert: AssumptionsHighMemoryUsage
+          expr: |
+            (
+              container_memory_working_set_bytes{container="assumptions-service"}
+              / container_spec_memory_limit_bytes{container="assumptions-service"}
+            ) > 0.80
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-data
+            component: assumptions
+            prd: AGENT-FOUND-004
+          annotations:
+            summary: "Assumptions service memory usage above 80%"
+            description: |
+              Assumptions service container memory usage is at {{ $value | humanizePercentage }}
+              of its limit. High memory usage may be caused by large assumption caches,
+              scenario resolution with many overrides, or dependency graph traversal buffers.
+              Consider increasing memory limits or reducing cache max size.
+            runbook_url: "https://docs.greenlang.ai/runbooks/assumptions/high-memory"
+            dashboard_url: "https://grafana.greenlang.io/d/assumptions-service"
+
+        # -------------------------------------------------------------------
+        # AssumptionsCacheHitRateLow (warning): cache hit rate < 50% for 10m
+        # -------------------------------------------------------------------
+        - alert: AssumptionsCacheHitRateLow
+          expr: |
+            (
+              sum(rate(gl_assumptions_cache_hits_total[5m]))
+              / (sum(rate(gl_assumptions_cache_hits_total[5m])) + sum(rate(gl_assumptions_cache_misses_total[5m])))
+            ) < 0.50
+          for: 10m
+          labels:
+            severity: warning
+            team: platform-data
+            component: assumptions
+            prd: AGENT-FOUND-004
+          annotations:
+            summary: "Assumptions cache hit rate below 50%"
+            description: |
+              Assumptions cache hit rate is {{ $value | humanizePercentage }} over the
+              last 5 minutes. Low cache hit rates increase assumption lookup latency and
+              database load. Check cache TTL settings, Redis connectivity, cache warmup
+              configuration, and whether assumption access patterns have changed.
+            runbook_url: "https://docs.greenlang.ai/runbooks/assumptions/cache-hit-rate-low"
+            dashboard_url: "https://grafana.greenlang.io/d/assumptions-service"
+
+        # -------------------------------------------------------------------
+        # AssumptionsPodRestarting (warning): pod restarts > 3 in 15m
+        # -------------------------------------------------------------------
+        - alert: AssumptionsPodRestarting
+          expr: |
+            increase(kube_pod_container_status_restarts_total{container="assumptions-service"}[15m]) > 3
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-data
+            component: assumptions
+            prd: AGENT-FOUND-004
+          annotations:
+            summary: "Assumptions service pod restarting frequently (>3 restarts in 15m)"
+            description: |
+              Assumptions service pod has restarted {{ $value | printf "%.0f" }} times in the
+              last 15 minutes. Frequent restarts indicate OOMKills, liveness probe failures,
+              or application crashes. Check pod events, container logs, and resource utilization.
+            runbook_url: "https://docs.greenlang.ai/runbooks/assumptions/pod-restarting"
+            dashboard_url: "https://grafana.greenlang.io/d/assumptions-service"
+
+        # -------------------------------------------------------------------
+        # AssumptionsAuditGap (critical): missing audit entries for changes
+        # -------------------------------------------------------------------
+        - alert: AssumptionsAuditGap
+          expr: |
+            (
+              sum(rate(gl_assumptions_operations_total{operation=~"create|update|delete"}[5m]))
+              - sum(rate(gl_assumptions_changelog_writes_total[5m]))
+            ) > 1
+          for: 5m
+          labels:
+            severity: critical
+            team: platform-data
+            component: assumptions
+            prd: AGENT-FOUND-004
+          annotations:
+            summary: "CRITICAL: Audit gap detected - assumption changes without audit entries"
+            description: |
+              The rate of assumption change operations exceeds the rate of audit log writes
+              by {{ $value | printf "%.2f" }} operations/second. This indicates that assumption
+              changes are occurring without corresponding audit trail entries, which violates
+              compliance requirements. Investigate audit log write failures, database
+              connectivity, and the audit middleware pipeline.
+            runbook_url: "https://docs.greenlang.ai/runbooks/assumptions/audit-gap"
+            dashboard_url: "https://grafana.greenlang.io/d/assumptions-service"

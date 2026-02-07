@@ -1,0 +1,470 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": { "type": "grafana", "uid": "-- Grafana --" },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      },
+      {
+        "datasource": { "type": "prometheus", "uid": "${datasource}" },
+        "enable": true,
+        "hide": false,
+        "iconColor": "rgba(255, 96, 96, 1)",
+        "name": "Budget Alert Events",
+        "expr": "ALERTS{alertname=~\"SLOErrorBudget.*\", alertstate=\"firing\"}",
+        "titleFormat": "{{alertname}}",
+        "tagKeys": "severity,slo_name"
+      }
+    ]
+  },
+  "description": "GreenLang Error Budget Deep Dive - Budget tracking, consumption analysis, burn rate details, and forecasting",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [
+    {
+      "asDropdown": false,
+      "icon": "dashboard",
+      "includeVars": true,
+      "keepTime": true,
+      "title": "SLO Overview",
+      "url": "/d/slo-overview",
+      "type": "link"
+    }
+  ],
+  "liveNow": false,
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "id": 100,
+      "panels": [],
+      "title": "Budget Status",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "description": "Current error budget remaining for each SLO as a percentage gauge",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "orange", "value": 0.2 },
+              { "color": "yellow", "value": 0.5 },
+              { "color": "green", "value": 0.8 }
+            ]
+          },
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 7, "w": 24, "x": 0, "y": 1 },
+      "id": 1,
+      "options": {
+        "orientation": "horizontal",
+        "showThresholdLabels": true,
+        "showThresholdMarkers": true,
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }
+      },
+      "targets": [
+        { "expr": "greenlang:slo:api_gateway_error_budget:remaining", "legendFormat": "API Gateway (99.95%)", "refId": "A" },
+        { "expr": "greenlang:slo:api_gateway_latency_error_budget:remaining", "legendFormat": "API Latency (99%)", "refId": "B" },
+        { "expr": "greenlang:slo:eudr_agent_error_budget:remaining", "legendFormat": "EUDR Agent (99.9%)", "refId": "C" },
+        { "expr": "greenlang:slo:eudr_agent_latency_error_budget:remaining", "legendFormat": "EUDR Latency (99%)", "refId": "D" },
+        { "expr": "greenlang:slo:cbam_agent_error_budget:remaining", "legendFormat": "CBAM Agent (99.9%)", "refId": "E" },
+        { "expr": "greenlang:slo:cbam_agent_accuracy_error_budget:remaining", "legendFormat": "CBAM Accuracy (99.99%)", "refId": "F" },
+        { "expr": "greenlang:slo:cbam_agent_latency_error_budget:remaining", "legendFormat": "CBAM Latency (95%)", "refId": "G" },
+        { "expr": "greenlang:slo:sb253_agent_error_budget:remaining", "legendFormat": "SB253 Agent (99.9%)", "refId": "H" },
+        { "expr": "greenlang:slo:emission_calculator_error_budget:remaining", "legendFormat": "Calculator (99.9%)", "refId": "I" },
+        { "expr": "greenlang:slo:emission_calculator_throughput_error_budget:remaining", "legendFormat": "Calculator Throughput (99%)", "refId": "J" },
+        { "expr": "greenlang:slo:postgresql_error_budget:remaining", "legendFormat": "PostgreSQL (99.99%)", "refId": "K" },
+        { "expr": "greenlang:slo:postgresql_latency_error_budget:remaining", "legendFormat": "PG Latency (95%)", "refId": "L" },
+        { "expr": "greenlang:slo:redis_error_budget:remaining", "legendFormat": "Redis (99.9%)", "refId": "M" },
+        { "expr": "greenlang:slo:redis_hit_ratio_error_budget:remaining", "legendFormat": "Redis Hit Ratio (90%)", "refId": "N" }
+      ],
+      "title": "Budget Remaining per SLO",
+      "type": "gauge"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "description": "Error budget consumption (1 - remaining) over time for all tracked SLOs",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "drawStyle": "line", "lineInterpolation": "smooth", "fillOpacity": 10, "showPoints": "never", "lineWidth": 2 },
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "id": 2,
+      "options": { "legend": { "displayMode": "table", "placement": "right", "calcs": ["lastNotNull", "max"] }, "tooltip": { "mode": "multi" } },
+      "targets": [
+        { "expr": "1 - greenlang:slo:api_gateway_error_budget:remaining", "legendFormat": "API Gateway", "refId": "A" },
+        { "expr": "1 - greenlang:slo:eudr_agent_error_budget:remaining", "legendFormat": "EUDR Agent", "refId": "B" },
+        { "expr": "1 - greenlang:slo:cbam_agent_error_budget:remaining", "legendFormat": "CBAM Agent", "refId": "C" },
+        { "expr": "1 - greenlang:slo:sb253_agent_error_budget:remaining", "legendFormat": "SB253 Agent", "refId": "D" },
+        { "expr": "1 - greenlang:slo:emission_calculator_error_budget:remaining", "legendFormat": "Calculator", "refId": "E" },
+        { "expr": "1 - greenlang:slo:postgresql_error_budget:remaining", "legendFormat": "PostgreSQL", "refId": "F" },
+        { "expr": "1 - greenlang:slo:redis_error_budget:remaining", "legendFormat": "Redis", "refId": "G" }
+      ],
+      "title": "Budget Consumption Timeline",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "description": "Burn rates across all three windows for the selected service",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "drawStyle": "line", "lineInterpolation": "smooth", "fillOpacity": 5, "showPoints": "never", "lineWidth": 2 },
+          "unit": "short"
+        },
+        "overrides": [
+          { "matcher": { "id": "byRegexp", "options": ".*1h.*" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byRegexp", "options": ".*6h.*" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] },
+          { "matcher": { "id": "byRegexp", "options": ".*3d.*" }, "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }] }
+        ]
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "id": 3,
+      "options": { "legend": { "displayMode": "table", "placement": "right", "calcs": ["lastNotNull", "max"] }, "tooltip": { "mode": "multi" } },
+      "targets": [
+        { "expr": "greenlang:slo:api_gateway_burn_rate_1h:ratio", "legendFormat": "API GW - 1h (fast)", "refId": "A" },
+        { "expr": "greenlang:slo:api_gateway_burn_rate_6h:ratio", "legendFormat": "API GW - 6h (medium)", "refId": "B" },
+        { "expr": "greenlang:slo:api_gateway_burn_rate_3d:ratio", "legendFormat": "API GW - 3d (slow)", "refId": "C" },
+        { "expr": "greenlang:slo:eudr_agent_burn_rate_1h:ratio", "legendFormat": "EUDR - 1h (fast)", "refId": "D" },
+        { "expr": "greenlang:slo:eudr_agent_burn_rate_6h:ratio", "legendFormat": "EUDR - 6h (medium)", "refId": "E" },
+        { "expr": "greenlang:slo:eudr_agent_burn_rate_3d:ratio", "legendFormat": "EUDR - 3d (slow)", "refId": "F" }
+      ],
+      "title": "Budget Burn Rate by Window",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 16 },
+      "id": 101,
+      "panels": [],
+      "title": "Budget Analysis",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "description": "Estimated hours until budget exhaustion at current burn rate",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "unit": "h",
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "orange", "value": 24 }, { "color": "yellow", "value": 168 }, { "color": "green", "value": 720 }] },
+          "custom": { "align": "center", "cellOptions": { "type": "color-background" } }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 7, "w": 12, "x": 0, "y": 17 },
+      "id": 4,
+      "options": { "showHeader": true, "cellHeight": "md", "sortBy": [{ "desc": false, "displayName": "Value" }] },
+      "targets": [
+        { "expr": "(greenlang:slo:api_gateway_error_budget:remaining / clamp_min(greenlang:slo:api_gateway_burn_rate_1h:ratio, 0.001)) * 720", "legendFormat": "API Gateway", "refId": "A", "format": "table", "instant": true },
+        { "expr": "(greenlang:slo:eudr_agent_error_budget:remaining / clamp_min(greenlang:slo:eudr_agent_burn_rate_1h:ratio, 0.001)) * 720", "legendFormat": "EUDR Agent", "refId": "B", "format": "table", "instant": true },
+        { "expr": "(greenlang:slo:cbam_agent_error_budget:remaining / clamp_min(greenlang:slo:cbam_agent_burn_rate_1h:ratio, 0.001)) * 720", "legendFormat": "CBAM Agent", "refId": "C", "format": "table", "instant": true },
+        { "expr": "(greenlang:slo:sb253_agent_error_budget:remaining / clamp_min(greenlang:slo:sb253_agent_burn_rate_1h:ratio, 0.001)) * 720", "legendFormat": "SB253 Agent", "refId": "D", "format": "table", "instant": true },
+        { "expr": "(greenlang:slo:emission_calculator_error_budget:remaining / clamp_min(greenlang:slo:emission_calculator_burn_rate_1h:ratio, 0.001)) * 720", "legendFormat": "Calculator", "refId": "E", "format": "table", "instant": true },
+        { "expr": "(greenlang:slo:postgresql_error_budget:remaining / clamp_min(greenlang:slo:postgresql_burn_rate_1h:ratio, 0.001)) * 720", "legendFormat": "PostgreSQL", "refId": "F", "format": "table", "instant": true },
+        { "expr": "(greenlang:slo:redis_error_budget:remaining / clamp_min(greenlang:slo:redis_burn_rate_1h:ratio, 0.001)) * 720", "legendFormat": "Redis", "refId": "G", "format": "table", "instant": true }
+      ],
+      "title": "Budget Exhaustion Forecast",
+      "type": "table"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "description": "Current error budget policy status based on remaining budget percentage",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "mappings": [
+            { "options": { "from": 0.5, "to": 1, "result": { "color": "green", "text": "HEALTHY" } }, "type": "range" },
+            { "options": { "from": 0.2, "to": 0.5, "result": { "color": "yellow", "text": "WARNING" } }, "type": "range" },
+            { "options": { "from": 0, "to": 0.2, "result": { "color": "orange", "text": "CRITICAL" } }, "type": "range" },
+            { "options": { "from": -1, "to": 0, "result": { "color": "red", "text": "EXHAUSTED" } }, "type": "range" }
+          ],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "orange", "value": 0 }, { "color": "yellow", "value": 0.2 }, { "color": "green", "value": 0.5 }] },
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 7, "w": 12, "x": 12, "y": 17 },
+      "id": 5,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "horizontal",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "textMode": "value_and_name"
+      },
+      "targets": [
+        { "expr": "greenlang:slo:api_gateway_error_budget:remaining", "legendFormat": "API Gateway", "refId": "A" },
+        { "expr": "greenlang:slo:eudr_agent_error_budget:remaining", "legendFormat": "EUDR Agent", "refId": "B" },
+        { "expr": "greenlang:slo:cbam_agent_error_budget:remaining", "legendFormat": "CBAM Agent", "refId": "C" },
+        { "expr": "greenlang:slo:postgresql_error_budget:remaining", "legendFormat": "PostgreSQL", "refId": "D" },
+        { "expr": "greenlang:slo:redis_error_budget:remaining", "legendFormat": "Redis", "refId": "E" }
+      ],
+      "title": "Budget Policy Status",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "description": "Historical budget consumption over the past 30 days showing overall trend",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "drawStyle": "line", "lineInterpolation": "smooth", "fillOpacity": 15, "showPoints": "never", "lineWidth": 2 },
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 7, "w": 12, "x": 0, "y": 24 },
+      "id": 6,
+      "options": { "legend": { "displayMode": "table", "placement": "right", "calcs": ["lastNotNull", "min", "max"] }, "tooltip": { "mode": "multi" } },
+      "targets": [
+        { "expr": "greenlang:slo:api_gateway_error_budget:remaining", "legendFormat": "API Gateway", "refId": "A" },
+        { "expr": "greenlang:slo:eudr_agent_error_budget:remaining", "legendFormat": "EUDR Agent", "refId": "B" },
+        { "expr": "greenlang:slo:cbam_agent_error_budget:remaining", "legendFormat": "CBAM Agent", "refId": "C" },
+        { "expr": "greenlang:slo:postgresql_error_budget:remaining", "legendFormat": "PostgreSQL", "refId": "D" },
+        { "expr": "greenlang:slo:redis_error_budget:remaining", "legendFormat": "Redis", "refId": "E" }
+      ],
+      "title": "Historical Budget Consumption",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "description": "Comparison of actual SLI vs target for each SLO",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "unit": "percentunit"
+        },
+        "overrides": [
+          { "matcher": { "id": "byRegexp", "options": "Target.*" }, "properties": [{ "id": "custom.drawStyle", "value": "line" }, { "id": "custom.lineStyle", "value": { "dash": [10, 10], "fill": "dash" } }, { "id": "custom.fillOpacity", "value": 0 }] }
+        ]
+      },
+      "gridPos": { "h": 7, "w": 12, "x": 12, "y": 24 },
+      "id": 7,
+      "options": { "barWidth": 0.6, "orientation": "vertical", "showValue": "always", "groupWidth": 0.7 },
+      "targets": [
+        { "expr": "greenlang:slo:api_gateway_availability:ratio_rate5m", "legendFormat": "API GW Actual", "refId": "A" },
+        { "expr": "0.9995", "legendFormat": "Target 99.95%", "refId": "B" },
+        { "expr": "greenlang:slo:eudr_agent_availability:ratio_rate5m", "legendFormat": "EUDR Actual", "refId": "C" },
+        { "expr": "0.999", "legendFormat": "Target 99.9%", "refId": "D" },
+        { "expr": "greenlang:slo:postgresql_availability:ratio_rate5m", "legendFormat": "PG Actual", "refId": "E" },
+        { "expr": "0.9999", "legendFormat": "Target 99.99%", "refId": "F" }
+      ],
+      "title": "Budget vs Target Comparison",
+      "type": "barchart"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 31 },
+      "id": 102,
+      "panels": [],
+      "title": "Budget Consumers & Trends",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "description": "SLOs ranked by budget consumption - highest consumers first",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "unit": "percentunit",
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 0.3 }, { "color": "orange", "value": 0.6 }, { "color": "red", "value": 0.8 }] },
+          "custom": { "align": "center", "cellOptions": { "type": "color-background" } }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 32 },
+      "id": 8,
+      "options": { "showHeader": true, "cellHeight": "md", "sortBy": [{ "desc": true, "displayName": "Value" }] },
+      "targets": [
+        { "expr": "1 - greenlang:slo:api_gateway_error_budget:remaining", "legendFormat": "API Gateway Avail", "refId": "A", "format": "table", "instant": true },
+        { "expr": "1 - greenlang:slo:api_gateway_latency_error_budget:remaining", "legendFormat": "API Gateway Latency", "refId": "B", "format": "table", "instant": true },
+        { "expr": "1 - greenlang:slo:eudr_agent_error_budget:remaining", "legendFormat": "EUDR Avail", "refId": "C", "format": "table", "instant": true },
+        { "expr": "1 - greenlang:slo:eudr_agent_latency_error_budget:remaining", "legendFormat": "EUDR Latency", "refId": "D", "format": "table", "instant": true },
+        { "expr": "1 - greenlang:slo:cbam_agent_error_budget:remaining", "legendFormat": "CBAM Avail", "refId": "E", "format": "table", "instant": true },
+        { "expr": "1 - greenlang:slo:cbam_agent_latency_error_budget:remaining", "legendFormat": "CBAM Latency", "refId": "F", "format": "table", "instant": true },
+        { "expr": "1 - greenlang:slo:postgresql_error_budget:remaining", "legendFormat": "PostgreSQL", "refId": "G", "format": "table", "instant": true },
+        { "expr": "1 - greenlang:slo:redis_error_budget:remaining", "legendFormat": "Redis", "refId": "H", "format": "table", "instant": true }
+      ],
+      "title": "Top Budget Consumers",
+      "type": "table"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "description": "Budget alerts timeline - when budget threshold alerts have fired",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "drawStyle": "points", "pointSize": 8, "fillOpacity": 0, "showPoints": "always" },
+          "unit": "short"
+        },
+        "overrides": [
+          { "matcher": { "id": "byRegexp", "options": ".*critical.*" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byRegexp", "options": ".*warning.*" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] }
+        ]
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 32 },
+      "id": 9,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "multi" } },
+      "targets": [
+        { "expr": "ALERTS{alertname=~\"SLOErrorBudget.*\", alertstate=\"firing\"}", "legendFormat": "{{alertname}} ({{severity}})", "refId": "A" }
+      ],
+      "title": "Budget Alerts Timeline",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "description": "Budget consumption aggregated by team ownership",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 7, "w": 12, "x": 0, "y": 40 },
+      "id": 10,
+      "options": { "barWidth": 0.7, "orientation": "horizontal", "showValue": "always", "groupWidth": 0.7 },
+      "targets": [
+        { "expr": "avg(1 - greenlang:slo:api_gateway_error_budget:remaining or 1 - greenlang:slo:postgresql_error_budget:remaining or 1 - greenlang:slo:redis_error_budget:remaining)", "legendFormat": "platform-infrastructure", "refId": "A" },
+        { "expr": "avg(1 - greenlang:slo:eudr_agent_error_budget:remaining or 1 - greenlang:slo:cbam_agent_error_budget:remaining or 1 - greenlang:slo:sb253_agent_error_budget:remaining or 1 - greenlang:slo:emission_calculator_error_budget:remaining)", "legendFormat": "platform-data", "refId": "B" }
+      ],
+      "title": "Budget Consumption by Team",
+      "type": "barchart"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "description": "Budget remaining trend over the past 30 days showing direction of change",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "drawStyle": "line", "lineInterpolation": "smooth", "fillOpacity": 10, "showPoints": "never", "lineWidth": 2 },
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 7, "w": 12, "x": 12, "y": 40 },
+      "id": 11,
+      "options": { "legend": { "displayMode": "table", "placement": "right", "calcs": ["lastNotNull", "mean", "min"] }, "tooltip": { "mode": "multi" } },
+      "targets": [
+        { "expr": "avg_over_time(greenlang:slo:api_gateway_error_budget:remaining[1h])", "legendFormat": "API Gateway (1h avg)", "refId": "A" },
+        { "expr": "avg_over_time(greenlang:slo:eudr_agent_error_budget:remaining[1h])", "legendFormat": "EUDR Agent (1h avg)", "refId": "B" },
+        { "expr": "avg_over_time(greenlang:slo:cbam_agent_error_budget:remaining[1h])", "legendFormat": "CBAM Agent (1h avg)", "refId": "C" },
+        { "expr": "avg_over_time(greenlang:slo:postgresql_error_budget:remaining[1h])", "legendFormat": "PostgreSQL (1h avg)", "refId": "D" }
+      ],
+      "title": "Budget Trend Analysis",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "description": "Overall budget health summary - how many budgets are in each status category",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] },
+          "unit": "short"
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Healthy" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Warning" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Critical" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Exhausted" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] }
+        ]
+      },
+      "gridPos": { "h": 5, "w": 24, "x": 0, "y": 47 },
+      "id": 12,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "horizontal",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "textMode": "value_and_name"
+      },
+      "targets": [
+        { "expr": "count(greenlang:slo:api_gateway_error_budget:remaining >= 0.5 or greenlang:slo:eudr_agent_error_budget:remaining >= 0.5 or greenlang:slo:cbam_agent_error_budget:remaining >= 0.5 or greenlang:slo:postgresql_error_budget:remaining >= 0.5 or greenlang:slo:redis_error_budget:remaining >= 0.5)", "legendFormat": "Healthy", "refId": "A" },
+        { "expr": "count((greenlang:slo:api_gateway_error_budget:remaining >= 0.2 and greenlang:slo:api_gateway_error_budget:remaining < 0.5) or (greenlang:slo:eudr_agent_error_budget:remaining >= 0.2 and greenlang:slo:eudr_agent_error_budget:remaining < 0.5))", "legendFormat": "Warning", "refId": "B" },
+        { "expr": "count((greenlang:slo:api_gateway_error_budget:remaining > 0 and greenlang:slo:api_gateway_error_budget:remaining < 0.2) or (greenlang:slo:eudr_agent_error_budget:remaining > 0 and greenlang:slo:eudr_agent_error_budget:remaining < 0.2))", "legendFormat": "Critical", "refId": "C" },
+        { "expr": "count(greenlang:slo:api_gateway_error_budget:remaining <= 0 or greenlang:slo:eudr_agent_error_budget:remaining <= 0 or greenlang:slo:postgresql_error_budget:remaining <= 0)", "legendFormat": "Exhausted", "refId": "D" }
+      ],
+      "title": "Budget Health Summary",
+      "type": "stat"
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "tags": ["greenlang", "slo", "obs-005", "error-budget"],
+  "templating": {
+    "list": [
+      {
+        "current": { "selected": false, "text": "Thanos", "value": "thanos" },
+        "hide": 0,
+        "includeAll": false,
+        "label": "Data Source",
+        "multi": false,
+        "name": "datasource",
+        "options": [],
+        "query": "prometheus",
+        "refresh": 1,
+        "regex": "",
+        "type": "datasource"
+      },
+      {
+        "current": { "selected": true, "text": "All", "value": "$__all" },
+        "datasource": { "type": "prometheus", "uid": "${datasource}" },
+        "definition": "label_values(slo_definition_info, service)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Service",
+        "multi": true,
+        "name": "service",
+        "query": "label_values(slo_definition_info, service)",
+        "refresh": 2,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": { "selected": true, "text": "All", "value": "$__all" },
+        "datasource": { "type": "prometheus", "uid": "${datasource}" },
+        "definition": "label_values(slo_definition_info, owner_team)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Team",
+        "multi": true,
+        "name": "team",
+        "query": "label_values(slo_definition_info, owner_team)",
+        "refresh": 2,
+        "sort": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": { "from": "now-30d", "to": "now" },
+  "timepicker": {},
+  "timezone": "utc",
+  "title": "GreenLang Error Budget Deep Dive",
+  "uid": "slo-error-budget",
+  "version": 1
+}

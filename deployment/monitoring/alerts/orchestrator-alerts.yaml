@@ -1,0 +1,350 @@
+# =============================================================================
+# GreenLang Orchestrator Service - Alert Rules
+# =============================================================================
+# Component: AGENT-FOUND-001 GreenLang Orchestrator (DAG Execution Engine)
+# Purpose: PrometheusRule alert definitions for DAG execution failures,
+#          timeouts, retries, checkpoint errors, provenance chain integrity,
+#          validation errors, resource pressure, and service health.
+# =============================================================================
+
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: greenlang-orchestrator-alerts
+  namespace: monitoring
+  labels:
+    app: greenlang
+    component: orchestrator
+    prometheus: kube-prometheus
+    role: alert-rules
+    release: gl-kube-prometheus
+    greenlang.io/component: agent-found-001
+  annotations:
+    description: "Alert rules for GreenLang Orchestrator DAG Execution Engine"
+    prd: AGENT-FOUND-001
+spec:
+  groups:
+    # =========================================================================
+    # Orchestrator Execution Alerts
+    # =========================================================================
+    - name: greenlang.orchestrator.execution
+      interval: 30s
+      rules:
+        # -------------------------------------------------------------------
+        # OrchestratorHighFailureRate (warning): > 10% failure rate for 5m
+        # -------------------------------------------------------------------
+        - alert: OrchestratorHighFailureRate
+          expr: |
+            (
+              sum(rate(gl_orchestrator_dag_executions_total{status="failed"}[5m]))
+              / sum(rate(gl_orchestrator_dag_executions_total[5m]))
+            ) > 0.10
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-data
+            component: orchestrator
+            prd: AGENT-FOUND-001
+          annotations:
+            summary: "Orchestrator DAG execution failure rate above 10%"
+            description: |
+              DAG execution failure rate is {{ $value | humanizePercentage }} over the last 5 minutes.
+              Threshold: 10%. Investigate failing DAGs and node errors.
+              Check node retry exhaustion and timeout configurations.
+            runbook_url: "https://docs.greenlang.ai/runbooks/orchestrator/high-failure-rate"
+            dashboard_url: "https://grafana.greenlang.io/d/orchestrator-service"
+
+        # -------------------------------------------------------------------
+        # OrchestratorHighFailureRateCritical: > 25% failure rate for 5m
+        # -------------------------------------------------------------------
+        - alert: OrchestratorHighFailureRateCritical
+          expr: |
+            (
+              sum(rate(gl_orchestrator_dag_executions_total{status="failed"}[5m]))
+              / sum(rate(gl_orchestrator_dag_executions_total[5m]))
+            ) > 0.25
+          for: 5m
+          labels:
+            severity: critical
+            team: platform-data
+            component: orchestrator
+            prd: AGENT-FOUND-001
+          annotations:
+            summary: "CRITICAL: Orchestrator DAG execution failure rate above 25%"
+            description: |
+              DAG execution failure rate is {{ $value | humanizePercentage }} over the last 5 minutes.
+              Threshold: 25%. This indicates a systemic issue with the orchestration engine.
+              Immediate investigation required - check database connectivity, agent availability,
+              and resource limits.
+            runbook_url: "https://docs.greenlang.ai/runbooks/orchestrator/high-failure-rate"
+            dashboard_url: "https://grafana.greenlang.io/d/orchestrator-service"
+
+        # -------------------------------------------------------------------
+        # OrchestratorExecutionTimeout: execution duration > 300s
+        # -------------------------------------------------------------------
+        - alert: OrchestratorExecutionTimeout
+          expr: |
+            histogram_quantile(0.95,
+              sum(rate(gl_orchestrator_dag_execution_duration_seconds_bucket[5m])) by (le)
+            ) > 300
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-data
+            component: orchestrator
+            prd: AGENT-FOUND-001
+          annotations:
+            summary: "Orchestrator DAG execution p95 duration exceeds 300 seconds"
+            description: |
+              The p95 DAG execution duration is {{ $value | printf "%.1f" }}s, exceeding the
+              300-second threshold. Long-running DAGs may indicate stuck nodes, slow agents,
+              or misconfigured timeout policies.
+            runbook_url: "https://docs.greenlang.ai/runbooks/orchestrator/execution-timeout"
+            dashboard_url: "https://grafana.greenlang.io/d/orchestrator-service"
+
+        # -------------------------------------------------------------------
+        # OrchestratorHighRetryRate: > 20% retry rate
+        # -------------------------------------------------------------------
+        - alert: OrchestratorHighRetryRate
+          expr: |
+            (
+              sum(rate(gl_orchestrator_node_retries_total[5m]))
+              / sum(rate(gl_orchestrator_node_executions_total[5m]))
+            ) > 0.20
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-data
+            component: orchestrator
+            prd: AGENT-FOUND-001
+          annotations:
+            summary: "Orchestrator node retry rate above 20%"
+            description: |
+              Node retry rate is {{ $value | humanizePercentage }} over the last 5 minutes.
+              High retry rates indicate transient failures in agent execution.
+              Check agent health, database connectivity, and external service dependencies.
+            runbook_url: "https://docs.greenlang.ai/runbooks/orchestrator/high-retry-rate"
+            dashboard_url: "https://grafana.greenlang.io/d/orchestrator-service"
+
+        # -------------------------------------------------------------------
+        # OrchestratorNoActiveExecutions: 0 for 1h during business hours
+        # -------------------------------------------------------------------
+        - alert: OrchestratorNoActiveExecutions
+          expr: |
+            gl_orchestrator_active_executions == 0
+            and ON() hour() >= 8 and ON() hour() <= 20
+          for: 1h
+          labels:
+            severity: info
+            team: platform-data
+            component: orchestrator
+            prd: AGENT-FOUND-001
+          annotations:
+            summary: "No active orchestrator executions for 1 hour during business hours"
+            description: |
+              There have been zero DAG executions for the past hour during business hours
+              (08:00-20:00 UTC). This may indicate a processing pipeline stall or
+              upstream data availability issue.
+            runbook_url: "https://docs.greenlang.ai/runbooks/orchestrator/no-active-executions"
+            dashboard_url: "https://grafana.greenlang.io/d/orchestrator-service"
+
+    # =========================================================================
+    # Orchestrator Node Performance Alerts
+    # =========================================================================
+    - name: greenlang.orchestrator.node_performance
+      interval: 30s
+      rules:
+        # -------------------------------------------------------------------
+        # OrchestratorHighLatency: p99 node execution > 10s
+        # -------------------------------------------------------------------
+        - alert: OrchestratorHighLatency
+          expr: |
+            histogram_quantile(0.99,
+              sum(rate(gl_orchestrator_node_execution_duration_seconds_bucket[5m])) by (le)
+            ) > 10
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-data
+            component: orchestrator
+            prd: AGENT-FOUND-001
+          annotations:
+            summary: "Orchestrator p99 node execution latency above 10 seconds"
+            description: |
+              The p99 node execution latency is {{ $value | printf "%.1f" }}s, exceeding the
+              10-second threshold. Investigate slow agents, database query performance,
+              and resource contention.
+            runbook_url: "https://docs.greenlang.ai/runbooks/orchestrator/high-latency"
+            dashboard_url: "https://grafana.greenlang.io/d/orchestrator-service"
+
+        # -------------------------------------------------------------------
+        # OrchestratorConcurrencyExhausted: near max for 5m
+        # -------------------------------------------------------------------
+        - alert: OrchestratorConcurrencyExhausted
+          expr: |
+            gl_orchestrator_active_executions > 45
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-data
+            component: orchestrator
+            prd: AGENT-FOUND-001
+          annotations:
+            summary: "Orchestrator active executions approaching maximum concurrency"
+            description: |
+              Active DAG executions ({{ $value }}) are approaching the maximum concurrent
+              execution limit of 50. New execution requests may be queued or rejected.
+              Consider scaling the orchestrator service or reviewing execution throughput.
+            runbook_url: "https://docs.greenlang.ai/runbooks/orchestrator/concurrency-exhausted"
+            dashboard_url: "https://grafana.greenlang.io/d/orchestrator-service"
+
+    # =========================================================================
+    # Orchestrator Checkpoint & Provenance Alerts
+    # =========================================================================
+    - name: greenlang.orchestrator.checkpoint_provenance
+      interval: 30s
+      rules:
+        # -------------------------------------------------------------------
+        # OrchestratorCheckpointFailure: errors > 0 for 5m
+        # -------------------------------------------------------------------
+        - alert: OrchestratorCheckpointFailure
+          expr: |
+            sum(rate(gl_orchestrator_checkpoint_operations_total{operation="error"}[5m])) > 0
+          for: 5m
+          labels:
+            severity: critical
+            team: platform-data
+            component: orchestrator
+            prd: AGENT-FOUND-001
+          annotations:
+            summary: "CRITICAL: Orchestrator checkpoint operations are failing"
+            description: |
+              Checkpoint error rate is {{ $value | printf "%.2f" }} errors/s over the last 5 minutes.
+              Failed checkpoints mean DAG executions cannot be resumed after failure.
+              Check database connectivity and storage capacity.
+            runbook_url: "https://docs.greenlang.ai/runbooks/orchestrator/checkpoint-failure"
+            dashboard_url: "https://grafana.greenlang.io/d/orchestrator-service"
+
+        # -------------------------------------------------------------------
+        # OrchestratorCheckpointSizeHigh: p95 > 10MB
+        # -------------------------------------------------------------------
+        - alert: OrchestratorCheckpointSizeHigh
+          expr: |
+            histogram_quantile(0.95,
+              sum(rate(gl_orchestrator_checkpoint_size_bytes_bucket[5m])) by (le)
+            ) > 10485760
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-data
+            component: orchestrator
+            prd: AGENT-FOUND-001
+          annotations:
+            summary: "Orchestrator p95 checkpoint size exceeds 10MB"
+            description: |
+              The p95 checkpoint size is {{ $value | humanize1024 }}B, exceeding the 10MB threshold.
+              Large checkpoints increase storage costs and resume latency. Review node output
+              sizes and consider filtering large intermediate results.
+            runbook_url: "https://docs.greenlang.ai/runbooks/orchestrator/checkpoint-size-high"
+            dashboard_url: "https://grafana.greenlang.io/d/orchestrator-service"
+
+        # -------------------------------------------------------------------
+        # OrchestratorProvenanceChainBroken: verification failures > 0
+        # -------------------------------------------------------------------
+        - alert: OrchestratorProvenanceChainBroken
+          expr: |
+            sum(rate(gl_orchestrator_checkpoint_operations_total{operation="verify_failed"}[5m])) > 0
+          for: 1m
+          labels:
+            severity: critical
+            team: platform-data
+            component: orchestrator
+            prd: AGENT-FOUND-001
+          annotations:
+            summary: "CRITICAL: Orchestrator provenance chain verification failure detected"
+            description: |
+              Provenance chain verification failures detected at {{ $value | printf "%.2f" }}/s.
+              This indicates potential data tampering or hash chain corruption.
+              All affected execution traces must be investigated for regulatory audit compliance.
+              This is a zero-tolerance condition for GreenLang climate compliance workflows.
+            runbook_url: "https://docs.greenlang.ai/runbooks/orchestrator/provenance-chain-broken"
+            dashboard_url: "https://grafana.greenlang.io/d/orchestrator-service"
+
+    # =========================================================================
+    # Orchestrator Validation Alerts
+    # =========================================================================
+    - name: greenlang.orchestrator.validation
+      interval: 30s
+      rules:
+        # -------------------------------------------------------------------
+        # OrchestratorDAGValidationErrors: validation errors > 0
+        # -------------------------------------------------------------------
+        - alert: OrchestratorDAGValidationErrors
+          expr: |
+            sum(rate(gl_orchestrator_dag_validation_errors_total[5m])) > 0
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-data
+            component: orchestrator
+            prd: AGENT-FOUND-001
+          annotations:
+            summary: "DAG validation errors detected in orchestrator"
+            description: |
+              DAG validation error rate is {{ $value | printf "%.2f" }} errors/s.
+              Validation errors include cycle detection, unreachable nodes, missing dependencies,
+              and duplicate node IDs. Review recently submitted DAG definitions.
+            runbook_url: "https://docs.greenlang.ai/runbooks/orchestrator/dag-validation-errors"
+            dashboard_url: "https://grafana.greenlang.io/d/orchestrator-service"
+
+    # =========================================================================
+    # Orchestrator Service Health Alerts
+    # =========================================================================
+    - name: greenlang.orchestrator.service_health
+      interval: 30s
+      rules:
+        # -------------------------------------------------------------------
+        # OrchestratorServiceDown: up == 0 for 1m
+        # -------------------------------------------------------------------
+        - alert: OrchestratorServiceDown
+          expr: |
+            up{job="orchestrator-service"} == 0
+          for: 1m
+          labels:
+            severity: critical
+            team: platform-data
+            component: orchestrator
+            prd: AGENT-FOUND-001
+          annotations:
+            summary: "CRITICAL: Orchestrator service is down"
+            description: |
+              The GreenLang Orchestrator Service is not responding to health checks.
+              All DAG executions, checkpoint operations, and provenance tracking are disrupted.
+              This is a P0 foundation service - all GreenLang compliance applications depend on it.
+            runbook_url: "https://docs.greenlang.ai/runbooks/orchestrator/service-down"
+            dashboard_url: "https://grafana.greenlang.io/d/orchestrator-service"
+
+        # -------------------------------------------------------------------
+        # OrchestratorHighMemory: memory > 80% for 5m
+        # -------------------------------------------------------------------
+        - alert: OrchestratorHighMemory
+          expr: |
+            (
+              container_memory_working_set_bytes{container="orchestrator-service"}
+              / container_spec_memory_limit_bytes{container="orchestrator-service"}
+            ) > 0.80
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-data
+            component: orchestrator
+            prd: AGENT-FOUND-001
+          annotations:
+            summary: "Orchestrator service memory usage above 80%"
+            description: |
+              Orchestrator container memory usage is at {{ $value | humanizePercentage }}
+              of its limit. High memory usage may be caused by large DAG definitions,
+              concurrent executions accumulating node results, or checkpoint caching.
+              Consider increasing memory limits or reducing max_parallel_nodes.
+            runbook_url: "https://docs.greenlang.ai/runbooks/orchestrator/high-memory"
+            dashboard_url: "https://grafana.greenlang.io/d/orchestrator-service"

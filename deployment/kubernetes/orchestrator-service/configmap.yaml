@@ -1,0 +1,112 @@
+# =============================================================================
+# GreenLang Orchestrator Service - ConfigMap
+# =============================================================================
+# Configuration for DAG execution engine, parallel scheduling, retry/timeout
+# policies, checkpoint strategy, provenance tracking, and metrics.
+# PRD: AGENT-FOUND-001
+# =============================================================================
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: orchestrator-service-config
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: orchestrator-service
+    app.kubernetes.io/component: configuration
+    app.kubernetes.io/part-of: greenlang
+  annotations:
+    description: "Orchestrator Service configuration - DAG execution, scheduling, checkpoints"
+    prd: AGENT-FOUND-001
+data:
+  # Environment
+  ENVIRONMENT: "production"
+
+  # Logging
+  GL_ORCHESTRATOR_LOG_LEVEL: "INFO"
+  LOG_FORMAT: "json"
+
+  # DAG Execution Engine
+  GL_ORCHESTRATOR_MAX_PARALLEL_NODES: "10"
+  GL_ORCHESTRATOR_DEFAULT_RETRY_MAX: "3"
+  GL_ORCHESTRATOR_DEFAULT_RETRY_DELAY: "1.0"
+  GL_ORCHESTRATOR_DEFAULT_TIMEOUT: "60"
+
+  # Checkpoint Configuration
+  GL_ORCHESTRATOR_CHECKPOINT_STRATEGY: "database"
+  GL_ORCHESTRATOR_CHECKPOINT_RETENTION_DAYS: "30"
+
+  # Provenance & Determinism
+  GL_ORCHESTRATOR_ENABLE_PROVENANCE: "true"
+  GL_ORCHESTRATOR_ENABLE_DETERMINISM: "true"
+
+  # Metrics
+  GL_ORCHESTRATOR_ENABLE_METRICS: "true"
+  METRICS_PORT: "8080"
+  METRICS_PATH: "/metrics"
+
+  # Tracing
+  TRACING_ENABLED: "true"
+  TRACING_SAMPLE_RATE: "0.1"
+  OTEL_ENDPOINT: "http://otel-collector.monitoring.svc.cluster.local:4317"
+  OTEL_SERVICE_NAME: "orchestrator-service"
+
+  # Database (connection string via secret, schema config here)
+  GL_ORCHESTRATOR_DB_SCHEMA: "orchestrator"
+  GL_ORCHESTRATOR_DB_POOL_MIN: "2"
+  GL_ORCHESTRATOR_DB_POOL_MAX: "10"
+
+  # Redis
+  GL_ORCHESTRATOR_REDIS_PREFIX: "gl:orchestrator:"
+  GL_ORCHESTRATOR_REDIS_TTL: "3600"
+
+  # Orchestrator service configuration file
+  orchestrator-config.yaml: |
+    orchestrator:
+      version: "1.0.0"
+      environment: production
+
+      execution:
+        max_parallel_nodes: 10
+        default_retry:
+          max_retries: 3
+          strategy: exponential
+          base_delay: 1.0
+          max_delay: 60.0
+          jitter: true
+        default_timeout:
+          timeout_seconds: 60
+          on_timeout: fail
+        on_failure: fail_fast
+        max_concurrent_executions: 50
+        max_dag_size: 500
+
+      checkpoint:
+        strategy: database
+        retention_days: 30
+        verify_on_resume: true
+        cleanup_interval_hours: 24
+
+      provenance:
+        enabled: true
+        hash_algorithm: sha256
+        chain_verification: true
+        export_format: json
+
+      determinism:
+        enabled: true
+        sorted_scheduling: true
+        deterministic_clock: true
+        seed_based_randomness: true
+
+      metrics:
+        enabled: true
+        prefix: gl_orchestrator
+        histogram_buckets: [0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10, 30, 60, 120, 300]
+
+      integration:
+        auth_enabled: true
+        audit_enabled: true
+        alerting_enabled: true
+        feature_flags_enabled: true
+        agent_factory_enabled: true

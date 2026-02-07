@@ -1,0 +1,332 @@
+# =============================================================================
+# GreenLang Schema Service - Alert Rules
+# =============================================================================
+# Component: AGENT-FOUND-002 GreenLang Schema Compiler & Validator
+# Purpose: PrometheusRule alert definitions for schema validation failures,
+#          compilation errors, cache performance, latency, batch operations,
+#          ReDoS detection, resource pressure, and service health.
+# =============================================================================
+
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: greenlang-schema-service-alerts
+  namespace: monitoring
+  labels:
+    app: greenlang
+    component: schema
+    prometheus: kube-prometheus
+    role: alert-rules
+    release: gl-kube-prometheus
+    greenlang.io/component: agent-found-002
+  annotations:
+    description: "Alert rules for GreenLang Schema Compiler & Validator Service"
+    prd: AGENT-FOUND-002
+spec:
+  groups:
+    # =========================================================================
+    # Schema Service Health Alerts
+    # =========================================================================
+    - name: greenlang.schema.service_health
+      interval: 30s
+      rules:
+        # -------------------------------------------------------------------
+        # SchemaServiceDown (critical): No healthy pods for 1m
+        # -------------------------------------------------------------------
+        - alert: SchemaServiceDown
+          expr: |
+            up{job="schema-service"} == 0
+          for: 1m
+          labels:
+            severity: critical
+            team: platform-data
+            component: schema
+            prd: AGENT-FOUND-002
+          annotations:
+            summary: "CRITICAL: Schema service is down"
+            description: |
+              The GreenLang Schema Compiler & Validator Service is not responding to health checks.
+              All schema validation, compilation, and registry operations are disrupted.
+              Downstream services depending on schema validation will be affected.
+            runbook_url: "https://docs.greenlang.ai/runbooks/schema/service-down"
+            dashboard_url: "https://grafana.greenlang.io/d/schema-service"
+
+        # -------------------------------------------------------------------
+        # SchemaServiceHighMemory (warning): memory > 80% for 5m
+        # -------------------------------------------------------------------
+        - alert: SchemaServiceHighMemory
+          expr: |
+            (
+              container_memory_working_set_bytes{container="schema-service"}
+              / container_spec_memory_limit_bytes{container="schema-service"}
+            ) > 0.80
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-data
+            component: schema
+            prd: AGENT-FOUND-002
+          annotations:
+            summary: "Schema service memory usage above 80%"
+            description: |
+              Schema service container memory usage is at {{ $value | humanizePercentage }}
+              of its limit. High memory usage may be caused by large schema definitions,
+              IR cache size, or batch validation payload accumulation.
+              Consider increasing memory limits or reducing cache max size.
+            runbook_url: "https://docs.greenlang.ai/runbooks/schema/high-memory"
+            dashboard_url: "https://grafana.greenlang.io/d/schema-service"
+
+        # -------------------------------------------------------------------
+        # SchemaServiceHighCPU (warning): CPU > 80% for 5m
+        # -------------------------------------------------------------------
+        - alert: SchemaServiceHighCPU
+          expr: |
+            (
+              rate(container_cpu_usage_seconds_total{container="schema-service"}[5m])
+              / container_spec_cpu_quota{container="schema-service"}
+              * container_spec_cpu_period{container="schema-service"}
+            ) > 0.80
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-data
+            component: schema
+            prd: AGENT-FOUND-002
+          annotations:
+            summary: "Schema service CPU usage above 80%"
+            description: |
+              Schema service container CPU usage is at {{ $value | humanizePercentage }}
+              of its limit. High CPU may be caused by regex-heavy validation rules,
+              large batch processing, or schema compilation bursts.
+              Consider scaling replicas or increasing CPU limits.
+            runbook_url: "https://docs.greenlang.ai/runbooks/schema/high-cpu"
+            dashboard_url: "https://grafana.greenlang.io/d/schema-service"
+
+    # =========================================================================
+    # Schema Validation Alerts
+    # =========================================================================
+    - name: greenlang.schema.validation
+      interval: 30s
+      rules:
+        # -------------------------------------------------------------------
+        # SchemaHighValidationErrorRate (warning): > 25% invalid in 5m
+        # -------------------------------------------------------------------
+        - alert: SchemaHighValidationErrorRate
+          expr: |
+            (
+              sum(rate(gl_schema_validations_total{valid="false"}[5m]))
+              / sum(rate(gl_schema_validations_total[5m]))
+            ) > 0.25
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-data
+            component: schema
+            prd: AGENT-FOUND-002
+          annotations:
+            summary: "Schema validation error rate above 25%"
+            description: |
+              Schema validation error rate is {{ $value | humanizePercentage }} over the last 5 minutes.
+              Threshold: 25%. This may indicate upstream data quality issues, schema version
+              mismatches, or incorrect payload formatting from data ingestion pipelines.
+              Check validation audit log for common error patterns.
+            runbook_url: "https://docs.greenlang.ai/runbooks/schema/high-validation-error-rate"
+            dashboard_url: "https://grafana.greenlang.io/d/schema-service"
+
+        # -------------------------------------------------------------------
+        # SchemaHighLatency (warning): p99 > 500ms for 5m
+        # -------------------------------------------------------------------
+        - alert: SchemaHighLatency
+          expr: |
+            histogram_quantile(0.99,
+              sum(rate(gl_schema_validation_duration_seconds_bucket[5m])) by (le)
+            ) > 0.5
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-data
+            component: schema
+            prd: AGENT-FOUND-002
+          annotations:
+            summary: "Schema validation p99 latency above 500ms"
+            description: |
+              The p99 schema validation latency is {{ $value | printf "%.3f" }}s, exceeding the
+              500ms threshold. Investigate schema complexity, cache miss rates, payload sizes,
+              and database query performance. Large payloads or complex rule evaluation
+              may be contributing to slow validations.
+            runbook_url: "https://docs.greenlang.ai/runbooks/schema/high-latency"
+            dashboard_url: "https://grafana.greenlang.io/d/schema-service"
+
+        # -------------------------------------------------------------------
+        # SchemaHighPayloadSize (info): average payload > 100KB
+        # -------------------------------------------------------------------
+        - alert: SchemaHighPayloadSize
+          expr: |
+            histogram_quantile(0.95,
+              sum(rate(gl_schema_payload_size_bytes_bucket[5m])) by (le)
+            ) > 102400
+          for: 10m
+          labels:
+            severity: info
+            team: platform-data
+            component: schema
+            prd: AGENT-FOUND-002
+          annotations:
+            summary: "Schema validation p95 payload size exceeds 100KB"
+            description: |
+              The p95 validation payload size is {{ $value | humanize1024 }}B, exceeding 100KB.
+              Large payloads increase validation latency, memory usage, and network overhead.
+              Consider advising upstream data producers to reduce payload sizes or use
+              batch endpoints for bulk processing.
+            runbook_url: "https://docs.greenlang.ai/runbooks/schema/high-payload-size"
+            dashboard_url: "https://grafana.greenlang.io/d/schema-service"
+
+    # =========================================================================
+    # Schema Compilation & Cache Alerts
+    # =========================================================================
+    - name: greenlang.schema.compilation_cache
+      interval: 30s
+      rules:
+        # -------------------------------------------------------------------
+        # SchemaCompilationFailure (critical): compilation errors > 0 for 5m
+        # -------------------------------------------------------------------
+        - alert: SchemaCompilationFailure
+          expr: |
+            sum(rate(gl_schema_compilations_total{status="error"}[5m])) > 0
+          for: 5m
+          labels:
+            severity: critical
+            team: platform-data
+            component: schema
+            prd: AGENT-FOUND-002
+          annotations:
+            summary: "CRITICAL: Schema compilation errors detected"
+            description: |
+              Schema compilation error rate is {{ $value | printf "%.2f" }} errors/s over the last 5 minutes.
+              Compilation failures prevent schema validation from proceeding.
+              Check for malformed schema definitions, invalid rule syntax, or
+              unsupported constraint types in recently registered schemas.
+            runbook_url: "https://docs.greenlang.ai/runbooks/schema/compilation-failure"
+            dashboard_url: "https://grafana.greenlang.io/d/schema-service"
+
+        # -------------------------------------------------------------------
+        # SchemaCacheHitRateLow (warning): cache hit rate < 80% for 10m
+        # -------------------------------------------------------------------
+        - alert: SchemaCacheHitRateLow
+          expr: |
+            (
+              sum(rate(gl_schema_cache_hits_total[5m]))
+              / (sum(rate(gl_schema_cache_hits_total[5m])) + sum(rate(gl_schema_cache_misses_total[5m])))
+            ) < 0.80
+          for: 10m
+          labels:
+            severity: warning
+            team: platform-data
+            component: schema
+            prd: AGENT-FOUND-002
+          annotations:
+            summary: "Schema cache hit rate below 80%"
+            description: |
+              Schema IR cache hit rate is {{ $value | humanizePercentage }} over the last 5 minutes.
+              Low cache hit rates increase compilation overhead and validation latency.
+              Check cache TTL settings, max cache size, schema version churn rate,
+              and cache warmup configuration.
+            runbook_url: "https://docs.greenlang.ai/runbooks/schema/cache-hit-rate-low"
+            dashboard_url: "https://grafana.greenlang.io/d/schema-service"
+
+        # -------------------------------------------------------------------
+        # SchemaRegistryStale (warning): no schema updates in 7 days
+        # -------------------------------------------------------------------
+        - alert: SchemaRegistryStale
+          expr: |
+            (time() - gl_schema_registry_last_update_timestamp) > 604800
+          for: 1h
+          labels:
+            severity: warning
+            team: platform-data
+            component: schema
+            prd: AGENT-FOUND-002
+          annotations:
+            summary: "Schema registry has not been updated in 7 days"
+            description: |
+              The schema registry has not received any schema updates for more than 7 days.
+              This may indicate a deployment pipeline issue, stale schema definitions,
+              or a disconnected CI/CD process. Verify that schema updates are flowing
+              through the expected channels.
+            runbook_url: "https://docs.greenlang.ai/runbooks/schema/registry-stale"
+            dashboard_url: "https://grafana.greenlang.io/d/schema-service"
+
+    # =========================================================================
+    # Schema Batch & Security Alerts
+    # =========================================================================
+    - name: greenlang.schema.batch_security
+      interval: 30s
+      rules:
+        # -------------------------------------------------------------------
+        # SchemaBatchSizeExceeded (warning): batch size > 80% of max
+        # -------------------------------------------------------------------
+        - alert: SchemaBatchSizeExceeded
+          expr: |
+            histogram_quantile(0.95,
+              sum(rate(gl_schema_batch_size_bucket[5m])) by (le)
+            ) > 800
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-data
+            component: schema
+            prd: AGENT-FOUND-002
+          annotations:
+            summary: "Schema batch size p95 exceeds 80% of maximum (800/1000)"
+            description: |
+              The p95 batch validation size is {{ $value | printf "%.0f" }} items, exceeding 80%
+              of the maximum batch size (1000). Large batches increase processing time,
+              memory usage, and may lead to 413 errors if the limit is hit.
+              Consider advising clients to use smaller batches or increase the max limit.
+            runbook_url: "https://docs.greenlang.ai/runbooks/schema/batch-size-exceeded"
+            dashboard_url: "https://grafana.greenlang.io/d/schema-service"
+
+        # -------------------------------------------------------------------
+        # SchemaReDoSDetected (critical): ReDoS pattern detected
+        # -------------------------------------------------------------------
+        - alert: SchemaReDoSDetected
+          expr: |
+            sum(rate(gl_schema_redos_detections_total[5m])) > 0
+          for: 1m
+          labels:
+            severity: critical
+            team: platform-data
+            component: schema
+            prd: AGENT-FOUND-002
+          annotations:
+            summary: "CRITICAL: ReDoS pattern detected in schema validation"
+            description: |
+              Regular expression Denial of Service (ReDoS) pattern detected at
+              {{ $value | printf "%.2f" }} detections/s. This indicates a schema or payload
+              contains a regex pattern that could cause catastrophic backtracking.
+              The affected validation was terminated. Review recently registered schemas
+              for vulnerable regex patterns and update them immediately.
+            runbook_url: "https://docs.greenlang.ai/runbooks/schema/redos-detected"
+            dashboard_url: "https://grafana.greenlang.io/d/schema-service"
+
+        # -------------------------------------------------------------------
+        # SchemaValidationAuditLogLag (warning): audit log write lag > 5s
+        # -------------------------------------------------------------------
+        - alert: SchemaValidationAuditLogLag
+          expr: |
+            gl_schema_audit_log_write_lag_seconds > 5
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-data
+            component: schema
+            prd: AGENT-FOUND-002
+          annotations:
+            summary: "Schema validation audit log write lag above 5 seconds"
+            description: |
+              The validation audit log write lag is {{ $value | printf "%.1f" }}s, exceeding the
+              5-second threshold. Audit log delays may indicate database write contention,
+              connection pool exhaustion, or disk I/O pressure on TimescaleDB.
+              Compliance auditing requires timely audit log writes.
+            runbook_url: "https://docs.greenlang.ai/runbooks/schema/audit-log-lag"
+            dashboard_url: "https://grafana.greenlang.io/d/schema-service"

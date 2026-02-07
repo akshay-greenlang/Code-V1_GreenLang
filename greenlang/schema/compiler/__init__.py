@@ -128,16 +128,18 @@ from greenlang.schema.compiler.schema_validator import (
     compare_semver,
 )
 
-# TODO: Import components when implemented
-# from greenlang.schema.compiler.ir import (
-#     SchemaIR,
-#     PropertyIR,
-#     CompiledPattern,
-# )
-# from greenlang.schema.compiler.compiler import (
-#     SchemaCompiler,
-#     CompilationResult,
-# )
+# IR components (Task 1.4 - Complete)
+from greenlang.schema.compiler.ir import (
+    SchemaIR,
+    PropertyIR,
+    CompiledPattern,
+)
+
+# Compiler components (Task 1.4 - Complete)
+from greenlang.schema.compiler.compiler import (
+    SchemaCompiler,
+    CompilationResult,
+)
 
 __all__ = [
     # Constants
@@ -219,10 +221,11 @@ __all__ = [
     "validate_schema",
     "is_valid_semver",
     "compare_semver",
-    # TODO: Exports (uncomment when implemented)
-    # "SchemaIR",
-    # "PropertyIR",
-    # "CompiledPattern",
-    # "SchemaCompiler",
-    # "CompilationResult",
+    # IR exports (Task 1.4)
+    "SchemaIR",
+    "PropertyIR",
+    "CompiledPattern",
+    # Compiler exports (Task 1.4)
+    "SchemaCompiler",
+    "CompilationResult",
 ]

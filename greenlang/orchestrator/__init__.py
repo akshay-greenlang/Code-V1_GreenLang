@@ -297,6 +297,190 @@ __all__ = [
     "load_template_yaml",
     "load_template_file",
     "create_template_registry",
+    # ================================================================
+    # AGENT-FOUND-001: DAG Orchestrator (added February 2026)
+    # ================================================================
+    # DAG Configuration
+    "OrchestratorConfig",
+    "get_orchestrator_config",
+    "set_orchestrator_config",
+    "reset_orchestrator_config",
+    # DAG Models - Enums
+    "DAGExecutionStatus",
+    "DAGNodeStatus",
+    "DAGOnFailureStrategy",
+    "DAGNodeOnFailure",
+    "DAGRetryStrategyType",
+    "DAGOnTimeout",
+    # DAG Models - Policy dataclasses
+    "DAGRetryPolicy",
+    "DAGTimeoutPolicy",
+    # DAG Models - Core definitions
+    "DAGNode",
+    "DAGWorkflow",
+    # DAG Models - Execution results
+    "NodeExecutionResult",
+    "NodeProvenance",
+    "DAGExecutionTrace",
+    "DAGCheckpoint",
+    # DAG Builder
+    "DAGBuilder",
+    # DAG Validator
+    "DAGValidationError",
+    "validate_dag_workflow",
+    "detect_dag_cycles",
+    "find_dag_unreachable_nodes",
+    # Topological Sort
+    "dag_topological_sort",
+    "dag_level_grouping",
+    "get_dag_roots",
+    "get_dag_sinks",
+    # DAG Executor
+    "DAGExecutor",
+    "DAGExecutionContext",
+    "DAGExecutionOptions",
+    # Node Runner
+    "DAGNodeRunner",
+    # Checkpoint Store
+    "DAGCheckpointStore",
+    "MemoryDAGCheckpointStore",
+    "FileDAGCheckpointStore",
+    "create_dag_checkpoint_store",
+    # Provenance
+    "DAGProvenanceTracker",
+    # Determinism
+    "DeterministicScheduler",
+    # Metrics
+    "DAG_PROMETHEUS_AVAILABLE",
+    "record_dag_execution",
+    "record_dag_node_execution",
+    "record_dag_node_retry",
+    "record_dag_node_timeout",
+    # Setup
+    "DAGOrchestrator",
+    "configure_dag_orchestrator",
+    "get_dag_orchestrator",
+    # DAG Availability flag
+    "DAG_ORCHESTRATOR_AVAILABLE",
 ]
 
-__version__ = "2.1.0"
+__version__ = "2.2.0"
+
+
+# =========================================================================
+# AGENT-FOUND-001: DAG Orchestrator Imports (new module, February 2026)
+# =========================================================================
+
+try:
+    # Configuration
+    from greenlang.orchestrator.config import (
+        OrchestratorConfig,
+        get_config as get_orchestrator_config,
+        set_config as set_orchestrator_config,
+        reset_config as reset_orchestrator_config,
+    )
+
+    # Models - Enums (aliased to avoid name collisions with GLIP enums)
+    from greenlang.orchestrator.models import (
+        ExecutionStatus as DAGExecutionStatus,
+        NodeStatus as DAGNodeStatus,
+        DAGOnFailure as DAGOnFailureStrategy,
+        OnFailure as DAGNodeOnFailure,
+        RetryStrategyType as DAGRetryStrategyType,
+        OnTimeout as DAGOnTimeout,
+    )
+
+    # Models - Policy dataclasses
+    from greenlang.orchestrator.models import (
+        RetryPolicy as DAGRetryPolicy,
+        TimeoutPolicy as DAGTimeoutPolicy,
+    )
+
+    # Models - Core definitions
+    from greenlang.orchestrator.models import (
+        DAGNode,
+        DAGWorkflow,
+    )
+
+    # Models - Execution results
+    from greenlang.orchestrator.models import (
+        NodeExecutionResult,
+        NodeProvenance,
+        ExecutionTrace as DAGExecutionTrace,
+        DAGCheckpoint,
+    )
+
+    # Builder
+    from greenlang.orchestrator.dag_builder import DAGBuilder
+
+    # Validator
+    from greenlang.orchestrator.dag_validator import (
+        ValidationError as DAGValidationError,
+        validate_dag as validate_dag_workflow,
+        detect_cycles as detect_dag_cycles,
+        find_unreachable_nodes as find_dag_unreachable_nodes,
+    )
+
+    # Topological Sort
+    from greenlang.orchestrator.topological_sort import (
+        topological_sort as dag_topological_sort,
+        level_grouping as dag_level_grouping,
+        get_roots as get_dag_roots,
+        get_sinks as get_dag_sinks,
+    )
+
+    # Executor
+    from greenlang.orchestrator.dag_executor import (
+        DAGExecutor,
+        ExecutionContext as DAGExecutionContext,
+        ExecutionOptions as DAGExecutionOptions,
+    )
+
+    # Node Runner
+    from greenlang.orchestrator.node_runner import (
+        NodeRunner as DAGNodeRunner,
+    )
+
+    # Checkpoint Store
+    from greenlang.orchestrator.checkpoint_store import (
+        DAGCheckpointStore,
+        MemoryDAGCheckpointStore,
+        FileDAGCheckpointStore,
+        create_checkpoint_store as create_dag_checkpoint_store,
+    )
+
+    # Provenance
+    from greenlang.orchestrator.provenance import (
+        ProvenanceTracker as DAGProvenanceTracker,
+    )
+
+    # Determinism
+    from greenlang.orchestrator.determinism import (
+        DeterministicScheduler,
+    )
+
+    # Metrics
+    from greenlang.orchestrator.metrics import (
+        PROMETHEUS_AVAILABLE as DAG_PROMETHEUS_AVAILABLE,
+        record_dag_execution,
+        record_node_execution as record_dag_node_execution,
+        record_node_retry as record_dag_node_retry,
+        record_node_timeout as record_dag_node_timeout,
+    )
+
+    # Setup
+    from greenlang.orchestrator.dag_setup import (
+        DAGOrchestrator,
+        configure_dag_orchestrator,
+        get_dag_orchestrator,
+    )
+
+    DAG_ORCHESTRATOR_AVAILABLE = True
+
+except ImportError as _dag_err:
+    import logging as _log
+    _log.getLogger(__name__).debug(
+        "DAG Orchestrator (AGENT-FOUND-001) not fully available: %s",
+        _dag_err,
+    )
+    DAG_ORCHESTRATOR_AVAILABLE = False

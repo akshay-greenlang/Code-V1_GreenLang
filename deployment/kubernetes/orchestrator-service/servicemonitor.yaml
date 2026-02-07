@@ -1,0 +1,50 @@
+# =============================================================================
+# GreenLang Orchestrator Service - Prometheus ServiceMonitor
+# =============================================================================
+# Configures Prometheus to scrape metrics from the orchestrator service.
+# Scrape interval: 30s, port 8080, path /metrics.
+# PRD: AGENT-FOUND-001
+# =============================================================================
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: orchestrator-service
+  namespace: monitoring
+  labels:
+    app: orchestrator-service
+    app.kubernetes.io/name: orchestrator-service
+    app.kubernetes.io/component: orchestrator
+    app.kubernetes.io/part-of: greenlang
+    prometheus: kube-prometheus
+    release: gl-kube-prometheus
+    greenlang.io/component: agent-found-001
+  annotations:
+    description: "ServiceMonitor for GreenLang Orchestrator Service"
+    prd: AGENT-FOUND-001
+spec:
+  jobLabel: orchestrator-service
+  namespaceSelector:
+    matchNames:
+      - greenlang
+  selector:
+    matchLabels:
+      app: orchestrator-service
+      app.kubernetes.io/component: orchestrator
+  endpoints:
+    - port: http
+      interval: 30s
+      scrapeTimeout: 10s
+      path: /metrics
+      scheme: http
+      metricRelabelings:
+        # Drop high-cardinality internal Go metrics
+        - sourceLabels: [__name__]
+          regex: "go_gc_.*"
+          action: drop
+        # Add service label
+        - targetLabel: service
+          replacement: orchestrator-service
+        # Add component label
+        - targetLabel: component
+          replacement: agent-found-001

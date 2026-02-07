@@ -1,0 +1,139 @@
+# =============================================================================
+# GreenLang Assumptions Registry Service - ConfigMap
+# =============================================================================
+# Configuration for assumption management, scenario analysis, validation
+# engine, dependency graph, caching, rate limiting, and metrics.
+# PRD: AGENT-FOUND-004
+# =============================================================================
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: assumptions-service-config
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: assumptions-service
+    app.kubernetes.io/component: configuration
+    app.kubernetes.io/part-of: greenlang
+  annotations:
+    description: "Assumptions Registry Service configuration - registry, scenarios, validation, dependencies, caching"
+    prd: AGENT-FOUND-004
+data:
+  # Environment
+  ENVIRONMENT: "production"
+
+  # Logging
+  GL_ASSUMPTIONS_LOG_LEVEL: "INFO"
+  LOG_FORMAT: "json"
+
+  # Database (connection string via secret, schema config here)
+  GL_ASSUMPTIONS_DB_SCHEMA: "assumptions_service"
+  GL_ASSUMPTIONS_DB_POOL_MIN: "2"
+  GL_ASSUMPTIONS_DB_POOL_MAX: "10"
+
+  # Redis
+  GL_ASSUMPTIONS_REDIS_PREFIX: "gl:assumptions:"
+  GL_ASSUMPTIONS_REDIS_TTL: "3600"
+
+  # Cache Configuration
+  GL_ASSUMPTIONS_CACHE_TTL_SECONDS: "3600"
+  GL_ASSUMPTIONS_CACHE_MAX_SIZE: "500"
+  GL_ASSUMPTIONS_SCENARIO_CACHE_TTL: "1800"
+
+  # Registry Configuration
+  GL_ASSUMPTIONS_MAX_VERSIONS_PER_ASSUMPTION: "1000"
+  GL_ASSUMPTIONS_DEFAULT_SCENARIO: "scenario-baseline"
+  GL_ASSUMPTIONS_PROVENANCE_HASH_ALGORITHM: "sha256"
+
+  # Validation Configuration
+  GL_ASSUMPTIONS_VALIDATION_ENABLED: "true"
+  GL_ASSUMPTIONS_VALIDATION_STRICT_MODE: "true"
+  GL_ASSUMPTIONS_MAX_VALIDATION_RULES: "50"
+
+  # Dependency Graph Configuration
+  GL_ASSUMPTIONS_MAX_DEPENDENCY_DEPTH: "10"
+  GL_ASSUMPTIONS_CYCLE_DETECTION_ENABLED: "true"
+
+  # Scenario Configuration
+  GL_ASSUMPTIONS_MAX_SCENARIOS: "100"
+  GL_ASSUMPTIONS_MAX_OVERRIDES_PER_SCENARIO: "500"
+
+  # Rate Limiting
+  GL_ASSUMPTIONS_RATE_LIMIT_READ: "200"
+  GL_ASSUMPTIONS_RATE_LIMIT_WRITE: "50"
+  GL_ASSUMPTIONS_RATE_LIMIT_BATCH: "10"
+  GL_ASSUMPTIONS_RATE_LIMIT_WINDOW_SECONDS: "60"
+
+  # Metrics
+  GL_ASSUMPTIONS_ENABLE_METRICS: "true"
+  METRICS_PORT: "8080"
+  METRICS_PATH: "/metrics"
+
+  # Tracing
+  TRACING_ENABLED: "true"
+  TRACING_SAMPLE_RATE: "0.1"
+  OTEL_ENDPOINT: "http://otel-collector.monitoring.svc.cluster.local:4317"
+  OTEL_SERVICE_NAME: "assumptions-service"
+
+  # Assumptions service configuration file
+  assumptions-config.yaml: |
+    assumptions_service:
+      version: "1.0.0"
+      environment: production
+
+      registry:
+        max_versions_per_assumption: 1000
+        default_scenario: scenario-baseline
+        provenance_hash_algorithm: sha256
+        enable_provenance_validation: true
+        enable_dependency_tracking: true
+
+      validation:
+        enabled: true
+        strict_mode: true
+        max_rules_per_assumption: 50
+        supported_rules:
+          - range
+          - enum
+          - regex
+          - type
+          - required
+          - custom
+
+      scenarios:
+        max_scenarios: 100
+        max_overrides_per_scenario: 500
+        default_scenarios:
+          - scenario-baseline
+          - scenario-optimistic
+          - scenario-conservative
+
+      dependencies:
+        max_depth: 10
+        cycle_detection_enabled: true
+        impact_analysis_enabled: true
+
+      cache:
+        ttl_seconds: 3600
+        max_size: 500
+        scenario_cache_ttl: 1800
+        warmup_on_startup: true
+        warmup_scenarios:
+          - scenario-baseline
+
+      rate_limiting:
+        read_per_minute: 200
+        write_per_minute: 50
+        batch_per_minute: 10
+
+      metrics:
+        enabled: true
+        prefix: gl_assumptions
+        histogram_buckets: [0.001, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10]
+
+      integration:
+        auth_enabled: true
+        audit_enabled: true
+        alerting_enabled: true
+        feature_flags_enabled: true
+        normalizer_enabled: true

@@ -1,0 +1,236 @@
+# =============================================================================
+# GreenLang SLO Service - Compliance Report CronJobs
+# =============================================================================
+# Periodic compliance report generation for SLO tracking.
+# Weekly reports every Monday at 09:00 UTC.
+# Monthly reports on the 1st of each month at 09:00 UTC.
+# PRD: OBS-005
+# =============================================================================
+
+---
+# =============================================================================
+# Weekly SLO Compliance Report
+# =============================================================================
+
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: slo-weekly-report
+  namespace: greenlang-slo
+  labels:
+    app: slo-service
+    app.kubernetes.io/name: slo-service
+    app.kubernetes.io/component: reporting
+    app.kubernetes.io/part-of: greenlang
+  annotations:
+    description: "Weekly SLO compliance report generation"
+    prd: OBS-005
+spec:
+  schedule: "0 9 * * 1"
+  timeZone: "UTC"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 4
+  failedJobsHistoryLimit: 3
+  startingDeadlineSeconds: 600
+  jobTemplate:
+    metadata:
+      labels:
+        app: slo-service
+        app.kubernetes.io/component: reporting
+        report-type: weekly
+    spec:
+      backoffLimit: 3
+      activeDeadlineSeconds: 600
+      template:
+        metadata:
+          labels:
+            app: slo-service
+            app.kubernetes.io/component: reporting
+            report-type: weekly
+        spec:
+          restartPolicy: OnFailure
+          serviceAccountName: slo-service-sa
+          automountServiceAccountToken: false
+
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            fsGroup: 1000
+            seccompProfile:
+              type: RuntimeDefault
+
+          containers:
+            - name: report-generator
+              image: greenlang/slo-service:latest
+              command:
+                - python
+                - -m
+                - greenlang.infrastructure.slo_service.reports
+                - --type=weekly
+                - --period=last-7d
+              env:
+                - name: DATABASE_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: slo-service-secrets
+                      key: DATABASE_URL
+                - name: REDIS_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: slo-service-secrets
+                      key: REDIS_URL
+                - name: PROMETHEUS_URL
+                  valueFrom:
+                    configMapKeyRef:
+                      name: slo-service-config
+                      key: PROMETHEUS_URL
+                - name: ENVIRONMENT
+                  valueFrom:
+                    configMapKeyRef:
+                      name: slo-service-config
+                      key: ENVIRONMENT
+                - name: LOG_LEVEL
+                  value: "info"
+                - name: REPORT_TYPE
+                  value: "weekly"
+
+              resources:
+                requests:
+                  cpu: "100m"
+                  memory: "256Mi"
+                limits:
+                  cpu: "500m"
+                  memory: "512Mi"
+
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                runAsNonRoot: true
+                runAsUser: 1000
+                capabilities:
+                  drop:
+                    - ALL
+
+              volumeMounts:
+                - name: tmp
+                  mountPath: /tmp
+
+          volumes:
+            - name: tmp
+              emptyDir:
+                sizeLimit: 50Mi
+
+---
+# =============================================================================
+# Monthly SLO Compliance Report
+# =============================================================================
+
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: slo-monthly-report
+  namespace: greenlang-slo
+  labels:
+    app: slo-service
+    app.kubernetes.io/name: slo-service
+    app.kubernetes.io/component: reporting
+    app.kubernetes.io/part-of: greenlang
+  annotations:
+    description: "Monthly SLO compliance report generation"
+    prd: OBS-005
+spec:
+  schedule: "0 9 1 * *"
+  timeZone: "UTC"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 12
+  failedJobsHistoryLimit: 3
+  startingDeadlineSeconds: 600
+  jobTemplate:
+    metadata:
+      labels:
+        app: slo-service
+        app.kubernetes.io/component: reporting
+        report-type: monthly
+    spec:
+      backoffLimit: 3
+      activeDeadlineSeconds: 900
+      template:
+        metadata:
+          labels:
+            app: slo-service
+            app.kubernetes.io/component: reporting
+            report-type: monthly
+        spec:
+          restartPolicy: OnFailure
+          serviceAccountName: slo-service-sa
+          automountServiceAccountToken: false
+
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            fsGroup: 1000
+            seccompProfile:
+              type: RuntimeDefault
+
+          containers:
+            - name: report-generator
+              image: greenlang/slo-service:latest
+              command:
+                - python
+                - -m
+                - greenlang.infrastructure.slo_service.reports
+                - --type=monthly
+                - --period=last-30d
+              env:
+                - name: DATABASE_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: slo-service-secrets
+                      key: DATABASE_URL
+                - name: REDIS_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: slo-service-secrets
+                      key: REDIS_URL
+                - name: PROMETHEUS_URL
+                  valueFrom:
+                    configMapKeyRef:
+                      name: slo-service-config
+                      key: PROMETHEUS_URL
+                - name: ENVIRONMENT
+                  valueFrom:
+                    configMapKeyRef:
+                      name: slo-service-config
+                      key: ENVIRONMENT
+                - name: LOG_LEVEL
+                  value: "info"
+                - name: REPORT_TYPE
+                  value: "monthly"
+
+              resources:
+                requests:
+                  cpu: "200m"
+                  memory: "512Mi"
+                limits:
+                  cpu: "1"
+                  memory: "1Gi"
+
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                runAsNonRoot: true
+                runAsUser: 1000
+                capabilities:
+                  drop:
+                    - ALL
+
+              volumeMounts:
+                - name: tmp
+                  mountPath: /tmp
+
+          volumes:
+            - name: tmp
+              emptyDir:
+                sizeLimit: 100Mi

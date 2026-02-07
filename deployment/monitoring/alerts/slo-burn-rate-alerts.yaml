@@ -1,0 +1,1063 @@
+# =============================================================================
+# GreenLang SLO Burn Rate & Error Budget Alerts
+# =============================================================================
+# Component: OBS-005 SLO/SLI Definitions & Error Budget Management
+# Purpose: Multi-window multi-burn-rate alerts for all 16 SLOs, error budget
+#          threshold alerts, and SLO service self-monitoring alerts.
+# Reference: Google SRE Workbook Ch. 5 - Alerting on SLOs
+# =============================================================================
+
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: greenlang-slo-burn-rate-alerts
+  namespace: monitoring
+  labels:
+    app: greenlang
+    component: slo
+    prometheus: kube-prometheus
+    role: alert-rules
+    release: gl-kube-prometheus
+    greenlang.io/component: obs-005
+  annotations:
+    description: "Multi-window burn rate alerts for all GreenLang SLOs"
+    prd: OBS-005
+spec:
+  groups:
+    # =========================================================================
+    # API Gateway Availability (99.95%) - Burn Rate Alerts
+    # =========================================================================
+    - name: greenlang.slo.burn.api_gateway_availability
+      interval: 30s
+      rules:
+        - alert: SLOBurnRateFast_ApiGatewayAvailability
+          expr: |
+            greenlang:slo:api_gateway_burn_rate_1h:ratio > 14.4
+            and
+            greenlang:slo:api_gateway_burn_rate_5m:ratio > 14.4
+          for: 2m
+          labels:
+            severity: critical
+            team: platform-infrastructure
+            component: slo
+            prd: OBS-005
+            slo_name: api-availability
+            slo_service: greenlang-api-gateway
+            burn_window: fast
+          annotations:
+            summary: "CRITICAL: API Gateway availability SLO burning budget 14x too fast"
+            description: |
+              API Gateway availability SLO (99.95%) is burning error budget at {{ $value | printf "%.1f" }}x
+              the sustainable rate. At this rate the entire 30-day budget will be exhausted in ~2 hours.
+              1h burn rate and 5m burn rate both exceed 14.4x threshold.
+            runbook_url: "https://docs.greenlang.ai/runbooks/slo/api-gateway-availability"
+            dashboard_url: "https://grafana.greenlang.io/d/slo-overview"
+
+        - alert: SLOBurnRateMedium_ApiGatewayAvailability
+          expr: |
+            greenlang:slo:api_gateway_burn_rate_6h:ratio > 6
+            and
+            greenlang:slo:api_gateway_burn_rate_30m:ratio > 6
+          for: 15m
+          labels:
+            severity: warning
+            team: platform-infrastructure
+            component: slo
+            prd: OBS-005
+            slo_name: api-availability
+            slo_service: greenlang-api-gateway
+            burn_window: medium
+          annotations:
+            summary: "API Gateway availability SLO burning budget 6x too fast"
+            description: |
+              API Gateway availability SLO (99.95%) is burning error budget at {{ $value | printf "%.1f" }}x
+              the sustainable rate. At this rate the 30-day budget will be exhausted in ~5 days.
+              6h and 30m burn rates both exceed 6x threshold.
+            runbook_url: "https://docs.greenlang.ai/runbooks/slo/api-gateway-availability"
+            dashboard_url: "https://grafana.greenlang.io/d/slo-overview"
+
+        - alert: SLOBurnRateSlow_ApiGatewayAvailability
+          expr: |
+            greenlang:slo:api_gateway_burn_rate_3d:ratio > 1
+          for: 1h
+          labels:
+            severity: info
+            team: platform-infrastructure
+            component: slo
+            prd: OBS-005
+            slo_name: api-availability
+            slo_service: greenlang-api-gateway
+            burn_window: slow
+          annotations:
+            summary: "API Gateway availability SLO budget consumption elevated"
+            description: |
+              API Gateway availability SLO (99.95%) 3-day burn rate is {{ $value | printf "%.2f" }}x,
+              indicating sustained budget consumption above the sustainable rate.
+            runbook_url: "https://docs.greenlang.ai/runbooks/slo/api-gateway-availability"
+            dashboard_url: "https://grafana.greenlang.io/d/slo-overview"
+
+    # =========================================================================
+    # API Gateway Latency (99.0%) - Burn Rate Alerts
+    # =========================================================================
+    - name: greenlang.slo.burn.api_gateway_latency
+      interval: 30s
+      rules:
+        - alert: SLOBurnRateFast_ApiGatewayLatency
+          expr: |
+            greenlang:slo:api_gateway_latency_burn_rate_1h:ratio > 14.4
+            and
+            greenlang:slo:api_gateway_latency_burn_rate_5m:ratio > 14.4
+          for: 2m
+          labels:
+            severity: critical
+            team: platform-infrastructure
+            component: slo
+            prd: OBS-005
+            slo_name: api-latency
+            slo_service: greenlang-api-gateway
+            burn_window: fast
+          annotations:
+            summary: "CRITICAL: API Gateway latency SLO burning budget 14x too fast"
+            description: |
+              API Gateway latency SLO (99% < 100ms) is burning error budget at {{ $value | printf "%.1f" }}x
+              the sustainable rate. Requests exceeding 100ms latency are consuming budget rapidly.
+            runbook_url: "https://docs.greenlang.ai/runbooks/slo/api-gateway-latency"
+            dashboard_url: "https://grafana.greenlang.io/d/slo-overview"
+
+        - alert: SLOBurnRateMedium_ApiGatewayLatency
+          expr: |
+            greenlang:slo:api_gateway_latency_burn_rate_6h:ratio > 6
+            and
+            greenlang:slo:api_gateway_latency_burn_rate_30m:ratio > 6
+          for: 15m
+          labels:
+            severity: warning
+            team: platform-infrastructure
+            component: slo
+            prd: OBS-005
+            slo_name: api-latency
+            slo_service: greenlang-api-gateway
+            burn_window: medium
+          annotations:
+            summary: "API Gateway latency SLO burning budget 6x too fast"
+            description: |
+              API Gateway latency SLO (99% < 100ms) 6h burn rate at {{ $value | printf "%.1f" }}x.
+              Investigate slow endpoints and database query performance.
+            runbook_url: "https://docs.greenlang.ai/runbooks/slo/api-gateway-latency"
+            dashboard_url: "https://grafana.greenlang.io/d/slo-overview"
+
+        - alert: SLOBurnRateSlow_ApiGatewayLatency
+          expr: |
+            greenlang:slo:api_gateway_latency_burn_rate_3d:ratio > 1
+          for: 1h
+          labels:
+            severity: info
+            team: platform-infrastructure
+            component: slo
+            prd: OBS-005
+            slo_name: api-latency
+            slo_service: greenlang-api-gateway
+            burn_window: slow
+          annotations:
+            summary: "API Gateway latency SLO budget consumption elevated"
+            description: |
+              API Gateway latency SLO 3-day burn rate is {{ $value | printf "%.2f" }}x.
+              Sustained latency degradation detected.
+            runbook_url: "https://docs.greenlang.ai/runbooks/slo/api-gateway-latency"
+            dashboard_url: "https://grafana.greenlang.io/d/slo-overview"
+
+    # =========================================================================
+    # EUDR Agent Availability (99.9%) - Burn Rate Alerts
+    # =========================================================================
+    - name: greenlang.slo.burn.eudr_agent_availability
+      interval: 30s
+      rules:
+        - alert: SLOBurnRateFast_EudrAvailability
+          expr: |
+            greenlang:slo:eudr_agent_burn_rate_1h:ratio > 14.4
+            and
+            greenlang:slo:eudr_agent_burn_rate_5m:ratio > 14.4
+          for: 2m
+          labels:
+            severity: critical
+            team: platform-data
+            component: slo
+            prd: OBS-005
+            slo_name: eudr-availability
+            slo_service: eudr-agent
+            burn_window: fast
+          annotations:
+            summary: "CRITICAL: EUDR Agent availability SLO burning budget 14x too fast"
+            description: |
+              EUDR compliance agent availability SLO (99.9%) is burning error budget at
+              {{ $value | printf "%.1f" }}x. Regulatory compliance service at risk.
+            runbook_url: "https://docs.greenlang.ai/runbooks/slo/eudr-availability"
+            dashboard_url: "https://grafana.greenlang.io/d/slo-overview"
+
+        - alert: SLOBurnRateMedium_EudrAvailability
+          expr: |
+            greenlang:slo:eudr_agent_burn_rate_6h:ratio > 6
+            and
+            greenlang:slo:eudr_agent_burn_rate_30m:ratio > 6
+          for: 15m
+          labels:
+            severity: critical
+            team: platform-data
+            component: slo
+            prd: OBS-005
+            slo_name: eudr-availability
+            slo_service: eudr-agent
+            burn_window: medium
+          annotations:
+            summary: "EUDR Agent availability SLO medium burn rate exceeded"
+            description: |
+              EUDR compliance agent availability SLO (99.9%) 6h burn rate at {{ $value | printf "%.1f" }}x.
+              Critical severity because this is a compliance service.
+            runbook_url: "https://docs.greenlang.ai/runbooks/slo/eudr-availability"
+            dashboard_url: "https://grafana.greenlang.io/d/slo-overview"
+
+        - alert: SLOBurnRateSlow_EudrAvailability
+          expr: |
+            greenlang:slo:eudr_agent_burn_rate_3d:ratio > 1
+          for: 1h
+          labels:
+            severity: warning
+            team: platform-data
+            component: slo
+            prd: OBS-005
+            slo_name: eudr-availability
+            slo_service: eudr-agent
+            burn_window: slow
+          annotations:
+            summary: "EUDR Agent availability SLO sustained budget consumption"
+            description: |
+              EUDR compliance agent availability SLO 3-day burn rate at {{ $value | printf "%.2f" }}x.
+            runbook_url: "https://docs.greenlang.ai/runbooks/slo/eudr-availability"
+            dashboard_url: "https://grafana.greenlang.io/d/slo-overview"
+
+    # =========================================================================
+    # EUDR Agent Latency (99.0%) - Burn Rate Alerts
+    # =========================================================================
+    - name: greenlang.slo.burn.eudr_agent_latency
+      interval: 30s
+      rules:
+        - alert: SLOBurnRateFast_EudrLatency
+          expr: |
+            greenlang:slo:eudr_agent_latency_burn_rate_1h:ratio > 14.4
+            and
+            greenlang:slo:eudr_agent_latency_burn_rate_5m:ratio > 14.4
+          for: 2m
+          labels:
+            severity: critical
+            team: platform-data
+            component: slo
+            prd: OBS-005
+            slo_name: eudr-latency
+            slo_service: eudr-agent
+            burn_window: fast
+          annotations:
+            summary: "CRITICAL: EUDR Agent latency SLO burning budget 14x too fast"
+            description: |
+              EUDR agent latency SLO (99% < 500ms) is burning error budget at
+              {{ $value | printf "%.1f" }}x the sustainable rate.
+            runbook_url: "https://docs.greenlang.ai/runbooks/slo/eudr-latency"
+            dashboard_url: "https://grafana.greenlang.io/d/slo-overview"
+
+        - alert: SLOBurnRateMedium_EudrLatency
+          expr: |
+            greenlang:slo:eudr_agent_latency_burn_rate_6h:ratio > 6
+            and
+            greenlang:slo:eudr_agent_latency_burn_rate_30m:ratio > 6
+          for: 15m
+          labels:
+            severity: warning
+            team: platform-data
+            component: slo
+            prd: OBS-005
+            slo_name: eudr-latency
+            slo_service: eudr-agent
+            burn_window: medium
+          annotations:
+            summary: "EUDR Agent latency SLO medium burn rate exceeded"
+            description: |
+              EUDR agent latency SLO (99% < 500ms) 6h burn rate at {{ $value | printf "%.1f" }}x.
+            runbook_url: "https://docs.greenlang.ai/runbooks/slo/eudr-latency"
+            dashboard_url: "https://grafana.greenlang.io/d/slo-overview"
+
+        - alert: SLOBurnRateSlow_EudrLatency
+          expr: |
+            greenlang:slo:eudr_agent_latency_burn_rate_3d:ratio > 1
+          for: 1h
+          labels:
+            severity: info
+            team: platform-data
+            component: slo
+            prd: OBS-005
+            slo_name: eudr-latency
+            slo_service: eudr-agent
+            burn_window: slow
+          annotations:
+            summary: "EUDR Agent latency SLO budget consumption elevated"
+            description: |
+              EUDR agent latency SLO 3-day burn rate at {{ $value | printf "%.2f" }}x.
+            runbook_url: "https://docs.greenlang.ai/runbooks/slo/eudr-latency"
+            dashboard_url: "https://grafana.greenlang.io/d/slo-overview"
+
+    # =========================================================================
+    # EUDR Agent Accuracy (100%) - Immediate Alert
+    # =========================================================================
+    - name: greenlang.slo.burn.eudr_agent_accuracy
+      interval: 15s
+      rules:
+        - alert: SLOBurnRateFast_EudrAccuracy
+          expr: |
+            greenlang:slo:eudr_agent_accuracy:ratio_rate5m < 1
+          for: 1m
+          labels:
+            severity: critical
+            team: platform-data
+            component: slo
+            prd: OBS-005
+            slo_name: eudr-compliance-accuracy
+            slo_service: eudr-agent
+            burn_window: fast
+          annotations:
+            summary: "CRITICAL: EUDR compliance accuracy below 100% - regulatory risk"
+            description: |
+              EUDR compliance accuracy SLO (100%) is at {{ $value | printf "%.4f" }}.
+              Any compliance accuracy error requires immediate investigation. Zero tolerance.
+            runbook_url: "https://docs.greenlang.ai/runbooks/slo/eudr-accuracy"
+            dashboard_url: "https://grafana.greenlang.io/d/slo-overview"
+
+    # =========================================================================
+    # CBAM Agent Availability (99.9%) - Burn Rate Alerts
+    # =========================================================================
+    - name: greenlang.slo.burn.cbam_agent_availability
+      interval: 30s
+      rules:
+        - alert: SLOBurnRateFast_CbamAvailability
+          expr: |
+            greenlang:slo:cbam_agent_burn_rate_1h:ratio > 14.4
+            and
+            greenlang:slo:cbam_agent_burn_rate_5m:ratio > 14.4
+          for: 2m
+          labels:
+            severity: critical
+            team: platform-data
+            component: slo
+            prd: OBS-005
+            slo_name: cbam-availability
+            slo_service: cbam-agent
+            burn_window: fast
+          annotations:
+            summary: "CRITICAL: CBAM Agent availability SLO burning budget 14x too fast"
+            description: |
+              CBAM agent availability SLO (99.9%) is burning error budget at
+              {{ $value | printf "%.1f" }}x. Carbon border adjustment reporting at risk.
+            runbook_url: "https://docs.greenlang.ai/runbooks/slo/cbam-availability"
+            dashboard_url: "https://grafana.greenlang.io/d/slo-overview"
+
+        - alert: SLOBurnRateMedium_CbamAvailability
+          expr: |
+            greenlang:slo:cbam_agent_burn_rate_6h:ratio > 6
+            and
+            greenlang:slo:cbam_agent_burn_rate_30m:ratio > 6
+          for: 15m
+          labels:
+            severity: warning
+            team: platform-data
+            component: slo
+            prd: OBS-005
+            slo_name: cbam-availability
+            slo_service: cbam-agent
+            burn_window: medium
+          annotations:
+            summary: "CBAM Agent availability SLO medium burn rate exceeded"
+            description: |
+              CBAM agent availability SLO (99.9%) 6h burn rate at {{ $value | printf "%.1f" }}x.
+            runbook_url: "https://docs.greenlang.ai/runbooks/slo/cbam-availability"
+            dashboard_url: "https://grafana.greenlang.io/d/slo-overview"
+
+        - alert: SLOBurnRateSlow_CbamAvailability
+          expr: |
+            greenlang:slo:cbam_agent_burn_rate_3d:ratio > 1
+          for: 1h
+          labels:
+            severity: info
+            team: platform-data
+            component: slo
+            prd: OBS-005
+            slo_name: cbam-availability
+            slo_service: cbam-agent
+            burn_window: slow
+          annotations:
+            summary: "CBAM Agent availability SLO budget consumption elevated"
+            description: |
+              CBAM agent availability SLO 3-day burn rate at {{ $value | printf "%.2f" }}x.
+            runbook_url: "https://docs.greenlang.ai/runbooks/slo/cbam-availability"
+            dashboard_url: "https://grafana.greenlang.io/d/slo-overview"
+
+    # =========================================================================
+    # CBAM Agent Accuracy (99.99%) - Burn Rate Alerts
+    # =========================================================================
+    - name: greenlang.slo.burn.cbam_agent_accuracy
+      interval: 30s
+      rules:
+        - alert: SLOBurnRateFast_CbamAccuracy
+          expr: |
+            greenlang:slo:cbam_agent_accuracy_burn_rate_1h:ratio > 14.4
+          for: 2m
+          labels:
+            severity: critical
+            team: platform-data
+            component: slo
+            prd: OBS-005
+            slo_name: cbam-calculation-accuracy
+            slo_service: cbam-agent
+            burn_window: fast
+          annotations:
+            summary: "CRITICAL: CBAM calculation accuracy SLO burning budget fast"
+            description: |
+              CBAM calculation accuracy SLO (99.99%) burn rate at {{ $value | printf "%.1f" }}x.
+              Financial reporting accuracy at risk.
+            runbook_url: "https://docs.greenlang.ai/runbooks/slo/cbam-accuracy"
+            dashboard_url: "https://grafana.greenlang.io/d/slo-overview"
+
+        - alert: SLOBurnRateMedium_CbamAccuracy
+          expr: |
+            greenlang:slo:cbam_agent_accuracy_burn_rate_6h:ratio > 6
+          for: 15m
+          labels:
+            severity: warning
+            team: platform-data
+            component: slo
+            prd: OBS-005
+            slo_name: cbam-calculation-accuracy
+            slo_service: cbam-agent
+            burn_window: medium
+          annotations:
+            summary: "CBAM calculation accuracy SLO medium burn rate exceeded"
+            description: |
+              CBAM calculation accuracy SLO (99.99%) 6h burn rate at {{ $value | printf "%.1f" }}x.
+            runbook_url: "https://docs.greenlang.ai/runbooks/slo/cbam-accuracy"
+            dashboard_url: "https://grafana.greenlang.io/d/slo-overview"
+
+    # =========================================================================
+    # CBAM Agent Latency (95.0%) - Burn Rate Alerts
+    # =========================================================================
+    - name: greenlang.slo.burn.cbam_agent_latency
+      interval: 30s
+      rules:
+        - alert: SLOBurnRateFast_CbamLatency
+          expr: |
+            greenlang:slo:cbam_agent_latency_burn_rate_1h:ratio > 14.4
+            and
+            greenlang:slo:cbam_agent_latency_burn_rate_5m:ratio > 14.4
+          for: 2m
+          labels:
+            severity: critical
+            team: platform-data
+            component: slo
+            prd: OBS-005
+            slo_name: cbam-report-generation
+            slo_service: cbam-agent
+            burn_window: fast
+          annotations:
+            summary: "CRITICAL: CBAM report generation latency SLO burning budget fast"
+            description: |
+              CBAM report generation latency SLO (95% < 30s) burn rate at {{ $value | printf "%.1f" }}x.
+            runbook_url: "https://docs.greenlang.ai/runbooks/slo/cbam-latency"
+            dashboard_url: "https://grafana.greenlang.io/d/slo-overview"
+
+        - alert: SLOBurnRateMedium_CbamLatency
+          expr: |
+            greenlang:slo:cbam_agent_latency_burn_rate_6h:ratio > 6
+            and
+            greenlang:slo:cbam_agent_latency_burn_rate_30m:ratio > 6
+          for: 15m
+          labels:
+            severity: warning
+            team: platform-data
+            component: slo
+            prd: OBS-005
+            slo_name: cbam-report-generation
+            slo_service: cbam-agent
+            burn_window: medium
+          annotations:
+            summary: "CBAM report generation latency SLO medium burn rate exceeded"
+            description: |
+              CBAM report generation latency SLO (95% < 30s) 6h burn rate at {{ $value | printf "%.1f" }}x.
+            runbook_url: "https://docs.greenlang.ai/runbooks/slo/cbam-latency"
+            dashboard_url: "https://grafana.greenlang.io/d/slo-overview"
+
+        - alert: SLOBurnRateSlow_CbamLatency
+          expr: |
+            greenlang:slo:cbam_agent_latency_burn_rate_3d:ratio > 1
+          for: 1h
+          labels:
+            severity: info
+            team: platform-data
+            component: slo
+            prd: OBS-005
+            slo_name: cbam-report-generation
+            slo_service: cbam-agent
+            burn_window: slow
+          annotations:
+            summary: "CBAM report generation latency SLO budget consumption elevated"
+            description: |
+              CBAM report generation latency SLO 3-day burn rate at {{ $value | printf "%.2f" }}x.
+            runbook_url: "https://docs.greenlang.ai/runbooks/slo/cbam-latency"
+            dashboard_url: "https://grafana.greenlang.io/d/slo-overview"
+
+    # =========================================================================
+    # SB253 Agent Availability (99.9%) - Burn Rate Alerts
+    # =========================================================================
+    - name: greenlang.slo.burn.sb253_agent_availability
+      interval: 30s
+      rules:
+        - alert: SLOBurnRateFast_Sb253Availability
+          expr: |
+            greenlang:slo:sb253_agent_burn_rate_1h:ratio > 14.4
+            and
+            greenlang:slo:sb253_agent_burn_rate_5m:ratio > 14.4
+          for: 2m
+          labels:
+            severity: critical
+            team: platform-data
+            component: slo
+            prd: OBS-005
+            slo_name: sb253-availability
+            slo_service: sb253-agent
+            burn_window: fast
+          annotations:
+            summary: "CRITICAL: SB253 Agent availability SLO burning budget 14x too fast"
+            description: |
+              SB253 California Climate agent availability SLO (99.9%) burn rate at
+              {{ $value | printf "%.1f" }}x. Regulatory compliance service at risk.
+            runbook_url: "https://docs.greenlang.ai/runbooks/slo/sb253-availability"
+            dashboard_url: "https://grafana.greenlang.io/d/slo-overview"
+
+        - alert: SLOBurnRateMedium_Sb253Availability
+          expr: |
+            greenlang:slo:sb253_agent_burn_rate_6h:ratio > 6
+            and
+            greenlang:slo:sb253_agent_burn_rate_30m:ratio > 6
+          for: 15m
+          labels:
+            severity: warning
+            team: platform-data
+            component: slo
+            prd: OBS-005
+            slo_name: sb253-availability
+            slo_service: sb253-agent
+            burn_window: medium
+          annotations:
+            summary: "SB253 Agent availability SLO medium burn rate exceeded"
+            description: |
+              SB253 agent availability SLO (99.9%) 6h burn rate at {{ $value | printf "%.1f" }}x.
+            runbook_url: "https://docs.greenlang.ai/runbooks/slo/sb253-availability"
+            dashboard_url: "https://grafana.greenlang.io/d/slo-overview"
+
+        - alert: SLOBurnRateSlow_Sb253Availability
+          expr: |
+            greenlang:slo:sb253_agent_burn_rate_3d:ratio > 1
+          for: 1h
+          labels:
+            severity: info
+            team: platform-data
+            component: slo
+            prd: OBS-005
+            slo_name: sb253-availability
+            slo_service: sb253-agent
+            burn_window: slow
+          annotations:
+            summary: "SB253 Agent availability SLO budget consumption elevated"
+            description: |
+              SB253 agent availability SLO 3-day burn rate at {{ $value | printf "%.2f" }}x.
+            runbook_url: "https://docs.greenlang.ai/runbooks/slo/sb253-availability"
+            dashboard_url: "https://grafana.greenlang.io/d/slo-overview"
+
+    # =========================================================================
+    # SB253 Agent Accuracy (100%) - Immediate Alert
+    # =========================================================================
+    - name: greenlang.slo.burn.sb253_agent_accuracy
+      interval: 15s
+      rules:
+        - alert: SLOBurnRateFast_Sb253Accuracy
+          expr: |
+            greenlang:slo:sb253_agent_accuracy:ratio_rate5m < 1
+          for: 1m
+          labels:
+            severity: critical
+            team: platform-data
+            component: slo
+            prd: OBS-005
+            slo_name: sb253-scope-calculation-accuracy
+            slo_service: sb253-agent
+            burn_window: fast
+          annotations:
+            summary: "CRITICAL: SB253 scope calculation accuracy below 100%"
+            description: |
+              SB253 scope calculation accuracy SLO (100%) is at {{ $value | printf "%.4f" }}.
+              Zero tolerance for scope 1/2/3 calculation errors.
+            runbook_url: "https://docs.greenlang.ai/runbooks/slo/sb253-accuracy"
+            dashboard_url: "https://grafana.greenlang.io/d/slo-overview"
+
+    # =========================================================================
+    # Emission Calculator Availability (99.9%) - Burn Rate Alerts
+    # =========================================================================
+    - name: greenlang.slo.burn.emission_calculator_availability
+      interval: 30s
+      rules:
+        - alert: SLOBurnRateFast_CalculatorAvailability
+          expr: |
+            greenlang:slo:emission_calculator_burn_rate_1h:ratio > 14.4
+            and
+            greenlang:slo:emission_calculator_burn_rate_5m:ratio > 14.4
+          for: 2m
+          labels:
+            severity: critical
+            team: platform-data
+            component: slo
+            prd: OBS-005
+            slo_name: calculator-availability
+            slo_service: emission-calculator
+            burn_window: fast
+          annotations:
+            summary: "CRITICAL: Emission Calculator availability SLO burning budget fast"
+            description: |
+              Emission Calculator availability SLO (99.9%) burn rate at {{ $value | printf "%.1f" }}x.
+            runbook_url: "https://docs.greenlang.ai/runbooks/slo/calculator-availability"
+            dashboard_url: "https://grafana.greenlang.io/d/slo-overview"
+
+        - alert: SLOBurnRateMedium_CalculatorAvailability
+          expr: |
+            greenlang:slo:emission_calculator_burn_rate_6h:ratio > 6
+            and
+            greenlang:slo:emission_calculator_burn_rate_30m:ratio > 6
+          for: 15m
+          labels:
+            severity: warning
+            team: platform-data
+            component: slo
+            prd: OBS-005
+            slo_name: calculator-availability
+            slo_service: emission-calculator
+            burn_window: medium
+          annotations:
+            summary: "Emission Calculator availability SLO medium burn rate exceeded"
+            description: |
+              Emission Calculator availability SLO (99.9%) 6h burn rate at {{ $value | printf "%.1f" }}x.
+            runbook_url: "https://docs.greenlang.ai/runbooks/slo/calculator-availability"
+            dashboard_url: "https://grafana.greenlang.io/d/slo-overview"
+
+        - alert: SLOBurnRateSlow_CalculatorAvailability
+          expr: |
+            greenlang:slo:emission_calculator_burn_rate_3d:ratio > 1
+          for: 1h
+          labels:
+            severity: info
+            team: platform-data
+            component: slo
+            prd: OBS-005
+            slo_name: calculator-availability
+            slo_service: emission-calculator
+            burn_window: slow
+          annotations:
+            summary: "Emission Calculator availability SLO budget consumption elevated"
+            description: |
+              Emission Calculator availability SLO 3-day burn rate at {{ $value | printf "%.2f" }}x.
+            runbook_url: "https://docs.greenlang.ai/runbooks/slo/calculator-availability"
+            dashboard_url: "https://grafana.greenlang.io/d/slo-overview"
+
+    # =========================================================================
+    # Emission Calculator Accuracy (100%) - Immediate Alert
+    # =========================================================================
+    - name: greenlang.slo.burn.emission_calculator_accuracy
+      interval: 15s
+      rules:
+        - alert: SLOBurnRateFast_CalculatorAccuracy
+          expr: |
+            greenlang:slo:emission_calculator_accuracy:ratio_rate5m < 1
+          for: 1m
+          labels:
+            severity: critical
+            team: platform-data
+            component: slo
+            prd: OBS-005
+            slo_name: calculator-accuracy
+            slo_service: emission-calculator
+            burn_window: fast
+          annotations:
+            summary: "CRITICAL: Emission Calculator accuracy below 100%"
+            description: |
+              Emission Calculator accuracy SLO (100%) is at {{ $value | printf "%.4f" }}.
+              Zero tolerance for emission calculation errors.
+            runbook_url: "https://docs.greenlang.ai/runbooks/slo/calculator-accuracy"
+            dashboard_url: "https://grafana.greenlang.io/d/slo-overview"
+
+    # =========================================================================
+    # PostgreSQL Availability (99.99%) - Burn Rate Alerts
+    # =========================================================================
+    - name: greenlang.slo.burn.postgresql_availability
+      interval: 30s
+      rules:
+        - alert: SLOBurnRateFast_PostgresqlAvailability
+          expr: |
+            greenlang:slo:postgresql_burn_rate_1h:ratio > 14.4
+            and
+            greenlang:slo:postgresql_burn_rate_5m:ratio > 14.4
+          for: 2m
+          labels:
+            severity: critical
+            team: platform-infrastructure
+            component: slo
+            prd: OBS-005
+            slo_name: database-availability
+            slo_service: postgresql
+            burn_window: fast
+          annotations:
+            summary: "CRITICAL: PostgreSQL availability SLO burning budget 14x too fast"
+            description: |
+              PostgreSQL availability SLO (99.99%) burn rate at {{ $value | printf "%.1f" }}x.
+              Database downtime has severe platform-wide impact.
+            runbook_url: "https://docs.greenlang.ai/runbooks/slo/postgresql-availability"
+            dashboard_url: "https://grafana.greenlang.io/d/slo-overview"
+
+        - alert: SLOBurnRateMedium_PostgresqlAvailability
+          expr: |
+            greenlang:slo:postgresql_burn_rate_6h:ratio > 6
+            and
+            greenlang:slo:postgresql_burn_rate_30m:ratio > 6
+          for: 15m
+          labels:
+            severity: critical
+            team: platform-infrastructure
+            component: slo
+            prd: OBS-005
+            slo_name: database-availability
+            slo_service: postgresql
+            burn_window: medium
+          annotations:
+            summary: "PostgreSQL availability SLO medium burn rate exceeded"
+            description: |
+              PostgreSQL availability SLO (99.99%) 6h burn rate at {{ $value | printf "%.1f" }}x.
+              Critical severity for database tier-1 service.
+            runbook_url: "https://docs.greenlang.ai/runbooks/slo/postgresql-availability"
+            dashboard_url: "https://grafana.greenlang.io/d/slo-overview"
+
+        - alert: SLOBurnRateSlow_PostgresqlAvailability
+          expr: |
+            greenlang:slo:postgresql_burn_rate_3d:ratio > 1
+          for: 1h
+          labels:
+            severity: warning
+            team: platform-infrastructure
+            component: slo
+            prd: OBS-005
+            slo_name: database-availability
+            slo_service: postgresql
+            burn_window: slow
+          annotations:
+            summary: "PostgreSQL availability SLO budget consumption elevated"
+            description: |
+              PostgreSQL availability SLO 3-day burn rate at {{ $value | printf "%.2f" }}x.
+            runbook_url: "https://docs.greenlang.ai/runbooks/slo/postgresql-availability"
+            dashboard_url: "https://grafana.greenlang.io/d/slo-overview"
+
+    # =========================================================================
+    # Redis Availability (99.9%) - Burn Rate Alerts
+    # =========================================================================
+    - name: greenlang.slo.burn.redis_availability
+      interval: 30s
+      rules:
+        - alert: SLOBurnRateFast_RedisAvailability
+          expr: |
+            greenlang:slo:redis_burn_rate_1h:ratio > 14.4
+            and
+            greenlang:slo:redis_burn_rate_5m:ratio > 14.4
+          for: 2m
+          labels:
+            severity: critical
+            team: platform-infrastructure
+            component: slo
+            prd: OBS-005
+            slo_name: cache-availability
+            slo_service: redis
+            burn_window: fast
+          annotations:
+            summary: "CRITICAL: Redis availability SLO burning budget 14x too fast"
+            description: |
+              Redis cache availability SLO (99.9%) burn rate at {{ $value | printf "%.1f" }}x.
+            runbook_url: "https://docs.greenlang.ai/runbooks/slo/redis-availability"
+            dashboard_url: "https://grafana.greenlang.io/d/slo-overview"
+
+        - alert: SLOBurnRateMedium_RedisAvailability
+          expr: |
+            greenlang:slo:redis_burn_rate_6h:ratio > 6
+            and
+            greenlang:slo:redis_burn_rate_30m:ratio > 6
+          for: 15m
+          labels:
+            severity: warning
+            team: platform-infrastructure
+            component: slo
+            prd: OBS-005
+            slo_name: cache-availability
+            slo_service: redis
+            burn_window: medium
+          annotations:
+            summary: "Redis availability SLO medium burn rate exceeded"
+            description: |
+              Redis cache availability SLO (99.9%) 6h burn rate at {{ $value | printf "%.1f" }}x.
+            runbook_url: "https://docs.greenlang.ai/runbooks/slo/redis-availability"
+            dashboard_url: "https://grafana.greenlang.io/d/slo-overview"
+
+        - alert: SLOBurnRateSlow_RedisAvailability
+          expr: |
+            greenlang:slo:redis_burn_rate_3d:ratio > 1
+          for: 1h
+          labels:
+            severity: info
+            team: platform-infrastructure
+            component: slo
+            prd: OBS-005
+            slo_name: cache-availability
+            slo_service: redis
+            burn_window: slow
+          annotations:
+            summary: "Redis availability SLO budget consumption elevated"
+            description: |
+              Redis cache availability SLO 3-day burn rate at {{ $value | printf "%.2f" }}x.
+            runbook_url: "https://docs.greenlang.ai/runbooks/slo/redis-availability"
+            dashboard_url: "https://grafana.greenlang.io/d/slo-overview"
+
+    # =========================================================================
+    # Redis Hit Ratio (90.0%) - Burn Rate Alerts
+    # =========================================================================
+    - name: greenlang.slo.burn.redis_hit_ratio
+      interval: 30s
+      rules:
+        - alert: SLOBurnRateFast_RedisHitRatio
+          expr: |
+            greenlang:slo:redis_hit_ratio_burn_rate_1h:ratio > 14.4
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-infrastructure
+            component: slo
+            prd: OBS-005
+            slo_name: cache-hit-ratio
+            slo_service: redis
+            burn_window: fast
+          annotations:
+            summary: "Redis hit ratio SLO burning budget fast"
+            description: |
+              Redis cache hit ratio SLO (90%) 1h burn rate at {{ $value | printf "%.1f" }}x.
+              Cache efficiency degraded - review eviction policies and key patterns.
+            runbook_url: "https://docs.greenlang.ai/runbooks/slo/redis-hit-ratio"
+            dashboard_url: "https://grafana.greenlang.io/d/slo-overview"
+
+        - alert: SLOBurnRateMedium_RedisHitRatio
+          expr: |
+            greenlang:slo:redis_hit_ratio_burn_rate_6h:ratio > 6
+          for: 30m
+          labels:
+            severity: info
+            team: platform-infrastructure
+            component: slo
+            prd: OBS-005
+            slo_name: cache-hit-ratio
+            slo_service: redis
+            burn_window: medium
+          annotations:
+            summary: "Redis hit ratio SLO medium burn rate exceeded"
+            description: |
+              Redis cache hit ratio SLO (90%) 6h burn rate at {{ $value | printf "%.1f" }}x.
+            runbook_url: "https://docs.greenlang.ai/runbooks/slo/redis-hit-ratio"
+            dashboard_url: "https://grafana.greenlang.io/d/slo-overview"
+
+    # =========================================================================
+    # Compliance Reports Timeliness (100%) - Immediate Alert
+    # =========================================================================
+    - name: greenlang.slo.burn.compliance_reports_timeliness
+      interval: 15s
+      rules:
+        - alert: SLOBurnRateFast_ComplianceTimeliness
+          expr: |
+            greenlang:slo:compliance_reports_timeliness:ratio_rate5m < 1
+          for: 1m
+          labels:
+            severity: critical
+            team: platform-data
+            component: slo
+            prd: OBS-005
+            slo_name: compliance-report-delivery
+            slo_service: compliance-reports
+            burn_window: fast
+          annotations:
+            summary: "CRITICAL: Compliance report delivery timeliness below 100%"
+            description: |
+              Compliance report delivery timeliness SLO (100%) is at {{ $value | printf "%.4f" }}.
+              Late regulatory reports have legal and financial consequences.
+            runbook_url: "https://docs.greenlang.ai/runbooks/slo/compliance-timeliness"
+            dashboard_url: "https://grafana.greenlang.io/d/slo-overview"
+
+    # =========================================================================
+    # Error Budget Threshold Alerts (cross-cutting)
+    # =========================================================================
+    - name: greenlang.slo.error_budget_thresholds
+      interval: 60s
+      rules:
+        - alert: SLOErrorBudgetExhausted
+          expr: |
+            greenlang:slo:api_gateway_error_budget:remaining < 0
+            or greenlang:slo:eudr_agent_error_budget:remaining < 0
+            or greenlang:slo:cbam_agent_error_budget:remaining < 0
+            or greenlang:slo:sb253_agent_error_budget:remaining < 0
+            or greenlang:slo:emission_calculator_error_budget:remaining < 0
+            or greenlang:slo:postgresql_error_budget:remaining < 0
+            or greenlang:slo:redis_error_budget:remaining < 0
+          for: 5m
+          labels:
+            severity: critical
+            team: platform-infrastructure
+            component: slo
+            prd: OBS-005
+          annotations:
+            summary: "CRITICAL: SLO error budget exhausted - freeze deployments"
+            description: |
+              Error budget for an SLO is fully exhausted ({{ $value | printf "%.2f" }}% remaining).
+              Per error budget policy: freeze non-critical deployments, focus on reliability,
+              incident postmortems required, CTO approval needed for any changes.
+            runbook_url: "https://docs.greenlang.ai/runbooks/slo/error-budget-exhausted"
+            dashboard_url: "https://grafana.greenlang.io/d/slo-error-budget"
+
+        - alert: SLOErrorBudgetCritical
+          expr: |
+            (
+              greenlang:slo:api_gateway_error_budget:remaining > 0
+              and greenlang:slo:api_gateway_error_budget:remaining < 0.20
+            ) or (
+              greenlang:slo:eudr_agent_error_budget:remaining > 0
+              and greenlang:slo:eudr_agent_error_budget:remaining < 0.20
+            ) or (
+              greenlang:slo:cbam_agent_error_budget:remaining > 0
+              and greenlang:slo:cbam_agent_error_budget:remaining < 0.20
+            ) or (
+              greenlang:slo:sb253_agent_error_budget:remaining > 0
+              and greenlang:slo:sb253_agent_error_budget:remaining < 0.20
+            ) or (
+              greenlang:slo:emission_calculator_error_budget:remaining > 0
+              and greenlang:slo:emission_calculator_error_budget:remaining < 0.20
+            ) or (
+              greenlang:slo:postgresql_error_budget:remaining > 0
+              and greenlang:slo:postgresql_error_budget:remaining < 0.20
+            ) or (
+              greenlang:slo:redis_error_budget:remaining > 0
+              and greenlang:slo:redis_error_budget:remaining < 0.20
+            )
+          for: 15m
+          labels:
+            severity: warning
+            team: platform-infrastructure
+            component: slo
+            prd: OBS-005
+          annotations:
+            summary: "SLO error budget critical - less than 20% remaining"
+            description: |
+              Error budget is below 20% ({{ $value | printf "%.1f" }}% remaining).
+              Per policy: defer non-critical deploys, increase monitoring, review recent changes.
+            runbook_url: "https://docs.greenlang.ai/runbooks/slo/error-budget-critical"
+            dashboard_url: "https://grafana.greenlang.io/d/slo-error-budget"
+
+        - alert: SLOErrorBudgetWarning
+          expr: |
+            (
+              greenlang:slo:api_gateway_error_budget:remaining >= 0.20
+              and greenlang:slo:api_gateway_error_budget:remaining < 0.50
+            ) or (
+              greenlang:slo:eudr_agent_error_budget:remaining >= 0.20
+              and greenlang:slo:eudr_agent_error_budget:remaining < 0.50
+            ) or (
+              greenlang:slo:cbam_agent_error_budget:remaining >= 0.20
+              and greenlang:slo:cbam_agent_error_budget:remaining < 0.50
+            ) or (
+              greenlang:slo:postgresql_error_budget:remaining >= 0.20
+              and greenlang:slo:postgresql_error_budget:remaining < 0.50
+            ) or (
+              greenlang:slo:redis_error_budget:remaining >= 0.20
+              and greenlang:slo:redis_error_budget:remaining < 0.50
+            )
+          for: 30m
+          labels:
+            severity: info
+            team: platform-infrastructure
+            component: slo
+            prd: OBS-005
+          annotations:
+            summary: "SLO error budget warning - between 20-50% remaining"
+            description: |
+              Error budget is between 20-50% ({{ $value | printf "%.1f" }}% remaining).
+              Increase monitoring and review recent changes.
+            runbook_url: "https://docs.greenlang.ai/runbooks/slo/error-budget-warning"
+            dashboard_url: "https://grafana.greenlang.io/d/slo-error-budget"
+
+    # =========================================================================
+    # SLO Service Self-Monitoring
+    # =========================================================================
+    - name: greenlang.slo.service_health
+      interval: 30s
+      rules:
+        - alert: SLOServiceDown
+          expr: |
+            up{job="slo-service"} == 0
+          for: 2m
+          labels:
+            severity: critical
+            team: platform-observability
+            component: slo
+            prd: OBS-005
+          annotations:
+            summary: "CRITICAL: SLO service is down"
+            description: |
+              The SLO/SLI & Error Budget Management Service is not responding.
+              SLO evaluations, budget snapshots, and compliance reporting are disrupted.
+            runbook_url: "https://docs.greenlang.ai/runbooks/slo/service-down"
+            dashboard_url: "https://grafana.greenlang.io/d/slo-overview"
+
+        - alert: SLOEvaluationFailing
+          expr: |
+            rate(slo_evaluation_errors_total[5m]) > 0
+            or
+            rate(slo_evaluations_total[5m]) == 0
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-observability
+            component: slo
+            prd: OBS-005
+          annotations:
+            summary: "SLO evaluation pipeline is failing or stalled"
+            description: |
+              SLO evaluations are either producing errors or have stopped completely.
+              Error rate: {{ $value | printf "%.2f" }} errors/sec. This affects budget tracking accuracy.
+            runbook_url: "https://docs.greenlang.ai/runbooks/slo/evaluation-failing"
+            dashboard_url: "https://grafana.greenlang.io/d/slo-overview"
+
+        - alert: BudgetSnapshotStale
+          expr: |
+            time() - slo_last_budget_snapshot_timestamp_seconds > 600
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-observability
+            component: slo
+            prd: OBS-005
+          annotations:
+            summary: "Error budget snapshots are stale (>10 minutes old)"
+            description: |
+              The last error budget snapshot was taken {{ $value | printf "%.0f" }} seconds ago.
+              Budget snapshots should occur every 5 minutes. Dashboard data may be outdated.
+            runbook_url: "https://docs.greenlang.ai/runbooks/slo/snapshot-stale"
+            dashboard_url: "https://grafana.greenlang.io/d/slo-overview"

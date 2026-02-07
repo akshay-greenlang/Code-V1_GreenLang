@@ -1,0 +1,179 @@
+# =============================================================================
+# GreenLang Schema Service - Network Policies
+# =============================================================================
+# Enforces network isolation for the schema service within the
+# greenlang namespace. Default deny all, then allow specific ingress/egress.
+# PRD: AGENT-FOUND-002
+# =============================================================================
+
+---
+# =============================================================================
+# Default Deny All - Baseline policy for schema pods
+# =============================================================================
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: schema-default-deny-all
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: schema-service
+    app.kubernetes.io/component: network-policy
+    app.kubernetes.io/part-of: greenlang
+  annotations:
+    description: "Default deny all ingress and egress traffic for schema pods"
+    prd: AGENT-FOUND-002
+spec:
+  podSelector:
+    matchLabels:
+      app: schema-service
+      app.kubernetes.io/component: schema
+  policyTypes:
+    - Ingress
+    - Egress
+
+---
+# =============================================================================
+# Schema Service Ingress Policy
+# =============================================================================
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: schema-service-ingress
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: schema-service
+    app.kubernetes.io/component: network-policy
+    app.kubernetes.io/part-of: greenlang
+  annotations:
+    description: "Allow ingress from Kong API Gateway, Prometheus, and Grafana"
+    prd: AGENT-FOUND-002
+spec:
+  podSelector:
+    matchLabels:
+      app: schema-service
+      app.kubernetes.io/component: schema
+  policyTypes:
+    - Ingress
+
+  ingress:
+    # Allow traffic from Kong API Gateway namespace
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              app.kubernetes.io/name: kong-gateway
+      ports:
+        - protocol: TCP
+          port: 8080
+
+    # Allow traffic from monitoring namespace (Prometheus scraping)
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+      ports:
+        - protocol: TCP
+          port: 8080
+
+    # Allow traffic from greenlang namespace (internal services)
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              app.kubernetes.io/part-of: greenlang
+      ports:
+        - protocol: TCP
+          port: 8080
+
+    # Allow traffic within the greenlang namespace (inter-service)
+    - from:
+        - podSelector: {}
+      ports:
+        - protocol: TCP
+          port: 8080
+
+---
+# =============================================================================
+# Schema Service Egress Policy
+# =============================================================================
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: schema-service-egress
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: schema-service
+    app.kubernetes.io/component: network-policy
+    app.kubernetes.io/part-of: greenlang
+  annotations:
+    description: "Allow egress to PostgreSQL, Redis, OTEL collector, and DNS"
+    prd: AGENT-FOUND-002
+spec:
+  podSelector:
+    matchLabels:
+      app: schema-service
+      app.kubernetes.io/component: schema
+  policyTypes:
+    - Egress
+
+  egress:
+    # Allow DNS resolution
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+
+    # Allow egress to PostgreSQL (within cluster)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: database
+      ports:
+        - protocol: TCP
+          port: 5432
+
+    # Allow egress to PostgreSQL via AWS RDS (VPC CIDR)
+    - to:
+        - ipBlock:
+            cidr: 10.0.0.0/8
+      ports:
+        - protocol: TCP
+          port: 5432
+
+    # Allow egress to Redis (within cluster)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: redis
+      ports:
+        - protocol: TCP
+          port: 6379
+
+    # Allow egress to Redis via AWS ElastiCache (VPC CIDR)
+    - to:
+        - ipBlock:
+            cidr: 10.0.0.0/8
+      ports:
+        - protocol: TCP
+          port: 6379
+
+    # Allow egress to OTEL collector (monitoring namespace)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+      ports:
+        - protocol: TCP
+          port: 4317
+        - protocol: TCP
+          port: 4318
+
+    # Allow traffic within the greenlang namespace (other services)
+    - to:
+        - podSelector: {}

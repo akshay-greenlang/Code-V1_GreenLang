@@ -1,0 +1,49 @@
+# =============================================================================
+# GreenLang Schema Service - Kustomization
+# =============================================================================
+# Use: kubectl apply -k deployment/kubernetes/schema-service/
+# PRD: AGENT-FOUND-002
+# =============================================================================
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+metadata:
+  name: schema-service
+  annotations:
+    description: "GreenLang Schema Compiler & Validator Deployment"
+    prd: AGENT-FOUND-002
+
+# Namespace for all resources
+namespace: greenlang
+
+# Common labels applied to all resources
+commonLabels:
+  app.kubernetes.io/managed-by: kustomize
+  app.kubernetes.io/part-of: greenlang
+  app.kubernetes.io/version: "1.0.0"
+
+# Common annotations
+commonAnnotations:
+  prd: AGENT-FOUND-002
+
+# Resources to include (order matters: config first, then services, deployments)
+resources:
+  - configmap.yaml
+  - networkpolicy.yaml
+  - service.yaml
+  - deployment.yaml
+  - hpa.yaml
+  - servicemonitor.yaml
+
+# Image transformations (update tags easily)
+images:
+  - name: greenlang/schema-service
+    newTag: latest
+
+# Config transformations
+configMapGenerator:
+  - name: schema-service-deployment-info
+    literals:
+      - DEPLOYMENT_VERSION=1.0.0
+      - DEPLOYMENT_DATE=2026-02-07

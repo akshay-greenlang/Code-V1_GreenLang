@@ -1,0 +1,50 @@
+# =============================================================================
+# GreenLang Schema Service - Prometheus ServiceMonitor
+# =============================================================================
+# Configures Prometheus to scrape metrics from the schema service.
+# Scrape interval: 15s, port 8080, path /metrics.
+# PRD: AGENT-FOUND-002
+# =============================================================================
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: schema-service
+  namespace: monitoring
+  labels:
+    app: schema-service
+    app.kubernetes.io/name: schema-service
+    app.kubernetes.io/component: schema
+    app.kubernetes.io/part-of: greenlang
+    prometheus: kube-prometheus
+    release: gl-kube-prometheus
+    greenlang.io/component: agent-found-002
+  annotations:
+    description: "ServiceMonitor for GreenLang Schema Compiler & Validator Service"
+    prd: AGENT-FOUND-002
+spec:
+  jobLabel: schema-service
+  namespaceSelector:
+    matchNames:
+      - greenlang
+  selector:
+    matchLabels:
+      app: schema-service
+      app.kubernetes.io/component: schema
+  endpoints:
+    - port: http
+      interval: 15s
+      scrapeTimeout: 10s
+      path: /metrics
+      scheme: http
+      metricRelabelings:
+        # Drop high-cardinality internal Go metrics
+        - sourceLabels: [__name__]
+          regex: "go_gc_.*"
+          action: drop
+        # Add service label
+        - targetLabel: service
+          replacement: schema-service
+        # Add component label
+        - targetLabel: component
+          replacement: agent-found-002

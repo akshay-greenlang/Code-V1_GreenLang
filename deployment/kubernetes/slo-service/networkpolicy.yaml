@@ -1,0 +1,201 @@
+# =============================================================================
+# GreenLang SLO Service - Network Policies
+# =============================================================================
+# Enforces network isolation for the greenlang-slo namespace.
+# Default deny all, then allow specific ingress/egress paths.
+# PRD: OBS-005
+# =============================================================================
+
+---
+# =============================================================================
+# Default Deny All - Baseline policy
+# =============================================================================
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+  namespace: greenlang-slo
+  labels:
+    app.kubernetes.io/name: slo-service
+    app.kubernetes.io/component: network-policy
+    app.kubernetes.io/part-of: greenlang
+  annotations:
+    description: "Default deny all ingress and egress traffic"
+    prd: OBS-005
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+
+---
+# =============================================================================
+# SLO Service Ingress Policy
+# =============================================================================
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: slo-service-ingress
+  namespace: greenlang-slo
+  labels:
+    app.kubernetes.io/name: slo-service
+    app.kubernetes.io/component: network-policy
+    app.kubernetes.io/part-of: greenlang
+  annotations:
+    description: "Allow ingress from Grafana, Prometheus, and GreenLang API"
+    prd: OBS-005
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: greenlang
+  policyTypes:
+    - Ingress
+
+  ingress:
+    # Allow traffic from monitoring namespace (Prometheus scraping + Grafana queries)
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+      ports:
+        - protocol: TCP
+          port: 8080
+
+    # Allow traffic from greenlang namespace (API gateway, internal services)
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              app.kubernetes.io/part-of: greenlang
+      ports:
+        - protocol: TCP
+          port: 8080
+
+    # Allow traffic from Kong API Gateway namespace
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              app.kubernetes.io/name: kong-gateway
+      ports:
+        - protocol: TCP
+          port: 8080
+
+    # Allow traffic within the SLO namespace (inter-service)
+    - from:
+        - podSelector: {}
+      ports:
+        - protocol: TCP
+          port: 8080
+
+---
+# =============================================================================
+# SLO Service Egress Policy
+# =============================================================================
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: slo-service-egress
+  namespace: greenlang-slo
+  labels:
+    app.kubernetes.io/name: slo-service
+    app.kubernetes.io/component: network-policy
+    app.kubernetes.io/part-of: greenlang
+  annotations:
+    description: "Allow egress to Prometheus, PostgreSQL, Redis, OTEL collector, DNS"
+    prd: OBS-005
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: greenlang
+  policyTypes:
+    - Egress
+
+  egress:
+    # Allow DNS resolution
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+
+    # Allow egress to Prometheus (monitoring namespace - query API)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+      ports:
+        - protocol: TCP
+          port: 9090
+
+    # Allow egress to Alertmanager (monitoring namespace - silence/status API)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+      ports:
+        - protocol: TCP
+          port: 9093
+
+    # Allow egress to PostgreSQL (within cluster)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: database
+      ports:
+        - protocol: TCP
+          port: 5432
+
+    # Allow egress to PostgreSQL via AWS RDS (VPC CIDR)
+    - to:
+        - ipBlock:
+            cidr: 10.0.0.0/8
+      ports:
+        - protocol: TCP
+          port: 5432
+
+    # Allow egress to Redis (within cluster)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: redis
+      ports:
+        - protocol: TCP
+          port: 6379
+
+    # Allow egress to Redis via AWS ElastiCache (VPC CIDR)
+    - to:
+        - ipBlock:
+            cidr: 10.0.0.0/8
+      ports:
+        - protocol: TCP
+          port: 6379
+
+    # Allow egress to OTEL collector (monitoring namespace)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+      ports:
+        - protocol: TCP
+          port: 4317
+        - protocol: TCP
+          port: 4318
+
+    # Allow egress to Grafana (monitoring namespace - annotation API)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+      ports:
+        - protocol: TCP
+          port: 3000
+
+    # Allow traffic within the SLO namespace
+    - to:
+        - podSelector: {}

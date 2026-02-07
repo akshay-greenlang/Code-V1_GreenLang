@@ -1,0 +1,923 @@
+# =============================================================================
+# GreenLang SLO Recording Rules
+# =============================================================================
+# Component: OBS-005 SLO/SLI Definitions & Error Budget Management
+# Purpose: Pre-compute SLI ratios, error budget remaining, and burn rates
+#          for all 16 SLOs defined in slo_definitions.yaml. These recording
+#          rules reduce query load on Prometheus and enable efficient
+#          dashboard rendering and alert evaluation.
+# =============================================================================
+
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: greenlang-slo-recording-rules
+  namespace: monitoring
+  labels:
+    app: greenlang
+    component: slo
+    prometheus: kube-prometheus
+    role: recording-rules
+    release: gl-kube-prometheus
+    greenlang.io/component: obs-005
+  annotations:
+    description: "SLO recording rules for all 16 GreenLang SLOs"
+    prd: OBS-005
+spec:
+  groups:
+    # =========================================================================
+    # API Gateway - Availability SLO (target: 99.95%)
+    # =========================================================================
+    - name: greenlang.slo.api_gateway_availability
+      interval: 30s
+      rules:
+        # SLI ratio: successful requests / total requests over 5m
+        - record: greenlang:slo:api_gateway_availability:ratio_rate5m
+          expr: |
+            sum(rate(http_requests_total{job="greenlang-api-gateway",status!~"5.."}[5m]))
+            /
+            sum(rate(http_requests_total{job="greenlang-api-gateway"}[5m]))
+
+        # Error budget remaining (percentage of budget left in 30d window)
+        - record: greenlang:slo:api_gateway_error_budget:remaining
+          expr: |
+            1 - (
+              (1 - greenlang:slo:api_gateway_availability:ratio_rate5m)
+              /
+              (1 - 0.9995)
+            )
+
+        # Burn rate - 1h window (fast)
+        - record: greenlang:slo:api_gateway_burn_rate_1h:ratio
+          expr: |
+            (
+              1 - (
+                sum(rate(http_requests_total{job="greenlang-api-gateway",status!~"5.."}[1h]))
+                /
+                sum(rate(http_requests_total{job="greenlang-api-gateway"}[1h]))
+              )
+            ) / (1 - 0.9995)
+
+        # Burn rate - 5m window (fast short)
+        - record: greenlang:slo:api_gateway_burn_rate_5m:ratio
+          expr: |
+            (
+              1 - (
+                sum(rate(http_requests_total{job="greenlang-api-gateway",status!~"5.."}[5m]))
+                /
+                sum(rate(http_requests_total{job="greenlang-api-gateway"}[5m]))
+              )
+            ) / (1 - 0.9995)
+
+        # Burn rate - 6h window (medium)
+        - record: greenlang:slo:api_gateway_burn_rate_6h:ratio
+          expr: |
+            (
+              1 - (
+                sum(rate(http_requests_total{job="greenlang-api-gateway",status!~"5.."}[6h]))
+                /
+                sum(rate(http_requests_total{job="greenlang-api-gateway"}[6h]))
+              )
+            ) / (1 - 0.9995)
+
+        # Burn rate - 30m window (medium short)
+        - record: greenlang:slo:api_gateway_burn_rate_30m:ratio
+          expr: |
+            (
+              1 - (
+                sum(rate(http_requests_total{job="greenlang-api-gateway",status!~"5.."}[30m]))
+                /
+                sum(rate(http_requests_total{job="greenlang-api-gateway"}[30m]))
+              )
+            ) / (1 - 0.9995)
+
+        # Burn rate - 3d window (slow)
+        - record: greenlang:slo:api_gateway_burn_rate_3d:ratio
+          expr: |
+            (
+              1 - (
+                sum(rate(http_requests_total{job="greenlang-api-gateway",status!~"5.."}[3d]))
+                /
+                sum(rate(http_requests_total{job="greenlang-api-gateway"}[3d]))
+              )
+            ) / (1 - 0.9995)
+
+    # =========================================================================
+    # API Gateway - Latency SLO (target: 99.0%, threshold: 100ms)
+    # =========================================================================
+    - name: greenlang.slo.api_gateway_latency
+      interval: 30s
+      rules:
+        - record: greenlang:slo:api_gateway_latency:ratio_rate5m
+          expr: |
+            sum(rate(http_request_duration_seconds_bucket{job="greenlang-api-gateway",le="0.1"}[5m]))
+            /
+            sum(rate(http_request_duration_seconds_count{job="greenlang-api-gateway"}[5m]))
+
+        - record: greenlang:slo:api_gateway_latency_error_budget:remaining
+          expr: |
+            1 - (
+              (1 - greenlang:slo:api_gateway_latency:ratio_rate5m)
+              /
+              (1 - 0.99)
+            )
+
+        - record: greenlang:slo:api_gateway_latency_burn_rate_1h:ratio
+          expr: |
+            (
+              1 - (
+                sum(rate(http_request_duration_seconds_bucket{job="greenlang-api-gateway",le="0.1"}[1h]))
+                /
+                sum(rate(http_request_duration_seconds_count{job="greenlang-api-gateway"}[1h]))
+              )
+            ) / (1 - 0.99)
+
+        - record: greenlang:slo:api_gateway_latency_burn_rate_5m:ratio
+          expr: |
+            (
+              1 - (
+                sum(rate(http_request_duration_seconds_bucket{job="greenlang-api-gateway",le="0.1"}[5m]))
+                /
+                sum(rate(http_request_duration_seconds_count{job="greenlang-api-gateway"}[5m]))
+              )
+            ) / (1 - 0.99)
+
+        - record: greenlang:slo:api_gateway_latency_burn_rate_6h:ratio
+          expr: |
+            (
+              1 - (
+                sum(rate(http_request_duration_seconds_bucket{job="greenlang-api-gateway",le="0.1"}[6h]))
+                /
+                sum(rate(http_request_duration_seconds_count{job="greenlang-api-gateway"}[6h]))
+              )
+            ) / (1 - 0.99)
+
+        - record: greenlang:slo:api_gateway_latency_burn_rate_30m:ratio
+          expr: |
+            (
+              1 - (
+                sum(rate(http_request_duration_seconds_bucket{job="greenlang-api-gateway",le="0.1"}[30m]))
+                /
+                sum(rate(http_request_duration_seconds_count{job="greenlang-api-gateway"}[30m]))
+              )
+            ) / (1 - 0.99)
+
+        - record: greenlang:slo:api_gateway_latency_burn_rate_3d:ratio
+          expr: |
+            (
+              1 - (
+                sum(rate(http_request_duration_seconds_bucket{job="greenlang-api-gateway",le="0.1"}[3d]))
+                /
+                sum(rate(http_request_duration_seconds_count{job="greenlang-api-gateway"}[3d]))
+              )
+            ) / (1 - 0.99)
+
+    # =========================================================================
+    # EUDR Agent - Availability SLO (target: 99.9%)
+    # =========================================================================
+    - name: greenlang.slo.eudr_agent_availability
+      interval: 30s
+      rules:
+        - record: greenlang:slo:eudr_agent_availability:ratio_rate5m
+          expr: |
+            sum(rate(eudr_requests_total{status!~"5.."}[5m]))
+            /
+            sum(rate(eudr_requests_total[5m]))
+
+        - record: greenlang:slo:eudr_agent_error_budget:remaining
+          expr: |
+            1 - (
+              (1 - greenlang:slo:eudr_agent_availability:ratio_rate5m)
+              /
+              (1 - 0.999)
+            )
+
+        - record: greenlang:slo:eudr_agent_burn_rate_1h:ratio
+          expr: |
+            (
+              1 - (
+                sum(rate(eudr_requests_total{status!~"5.."}[1h]))
+                /
+                sum(rate(eudr_requests_total[1h]))
+              )
+            ) / (1 - 0.999)
+
+        - record: greenlang:slo:eudr_agent_burn_rate_5m:ratio
+          expr: |
+            (
+              1 - (
+                sum(rate(eudr_requests_total{status!~"5.."}[5m]))
+                /
+                sum(rate(eudr_requests_total[5m]))
+              )
+            ) / (1 - 0.999)
+
+        - record: greenlang:slo:eudr_agent_burn_rate_6h:ratio
+          expr: |
+            (
+              1 - (
+                sum(rate(eudr_requests_total{status!~"5.."}[6h]))
+                /
+                sum(rate(eudr_requests_total[6h]))
+              )
+            ) / (1 - 0.999)
+
+        - record: greenlang:slo:eudr_agent_burn_rate_30m:ratio
+          expr: |
+            (
+              1 - (
+                sum(rate(eudr_requests_total{status!~"5.."}[30m]))
+                /
+                sum(rate(eudr_requests_total[30m]))
+              )
+            ) / (1 - 0.999)
+
+        - record: greenlang:slo:eudr_agent_burn_rate_3d:ratio
+          expr: |
+            (
+              1 - (
+                sum(rate(eudr_requests_total{status!~"5.."}[3d]))
+                /
+                sum(rate(eudr_requests_total[3d]))
+              )
+            ) / (1 - 0.999)
+
+    # =========================================================================
+    # EUDR Agent - Latency SLO (target: 99.0%, threshold: 500ms)
+    # =========================================================================
+    - name: greenlang.slo.eudr_agent_latency
+      interval: 30s
+      rules:
+        - record: greenlang:slo:eudr_agent_latency:ratio_rate5m
+          expr: |
+            sum(rate(eudr_request_duration_seconds_bucket{le="0.5"}[5m]))
+            /
+            sum(rate(eudr_request_duration_seconds_count[5m]))
+
+        - record: greenlang:slo:eudr_agent_latency_error_budget:remaining
+          expr: |
+            1 - (
+              (1 - greenlang:slo:eudr_agent_latency:ratio_rate5m)
+              /
+              (1 - 0.99)
+            )
+
+        - record: greenlang:slo:eudr_agent_latency_burn_rate_1h:ratio
+          expr: |
+            (
+              1 - (
+                sum(rate(eudr_request_duration_seconds_bucket{le="0.5"}[1h]))
+                /
+                sum(rate(eudr_request_duration_seconds_count[1h]))
+              )
+            ) / (1 - 0.99)
+
+        - record: greenlang:slo:eudr_agent_latency_burn_rate_5m:ratio
+          expr: |
+            (
+              1 - (
+                sum(rate(eudr_request_duration_seconds_bucket{le="0.5"}[5m]))
+                /
+                sum(rate(eudr_request_duration_seconds_count[5m]))
+              )
+            ) / (1 - 0.99)
+
+        - record: greenlang:slo:eudr_agent_latency_burn_rate_6h:ratio
+          expr: |
+            (
+              1 - (
+                sum(rate(eudr_request_duration_seconds_bucket{le="0.5"}[6h]))
+                /
+                sum(rate(eudr_request_duration_seconds_count[6h]))
+              )
+            ) / (1 - 0.99)
+
+        - record: greenlang:slo:eudr_agent_latency_burn_rate_30m:ratio
+          expr: |
+            (
+              1 - (
+                sum(rate(eudr_request_duration_seconds_bucket{le="0.5"}[30m]))
+                /
+                sum(rate(eudr_request_duration_seconds_count[30m]))
+              )
+            ) / (1 - 0.99)
+
+        - record: greenlang:slo:eudr_agent_latency_burn_rate_3d:ratio
+          expr: |
+            (
+              1 - (
+                sum(rate(eudr_request_duration_seconds_bucket{le="0.5"}[3d]))
+                /
+                sum(rate(eudr_request_duration_seconds_count[3d]))
+              )
+            ) / (1 - 0.99)
+
+    # =========================================================================
+    # EUDR Agent - Accuracy SLO (target: 100%)
+    # =========================================================================
+    - name: greenlang.slo.eudr_agent_accuracy
+      interval: 30s
+      rules:
+        - record: greenlang:slo:eudr_agent_accuracy:ratio_rate5m
+          expr: |
+            sum(rate(eudr_compliance_checks_validated_total[5m]))
+            /
+            sum(rate(eudr_compliance_checks_total[5m]))
+
+        - record: greenlang:slo:eudr_agent_accuracy_error_budget:remaining
+          expr: |
+            clamp_min(
+              1 - (
+                (1 - greenlang:slo:eudr_agent_accuracy:ratio_rate5m)
+                /
+                (1 - 1.0)
+              ),
+              0
+            )
+
+    # =========================================================================
+    # CBAM Agent - Availability SLO (target: 99.9%)
+    # =========================================================================
+    - name: greenlang.slo.cbam_agent_availability
+      interval: 30s
+      rules:
+        - record: greenlang:slo:cbam_agent_availability:ratio_rate5m
+          expr: |
+            sum(rate(cbam_requests_total{status!~"5.."}[5m]))
+            /
+            sum(rate(cbam_requests_total[5m]))
+
+        - record: greenlang:slo:cbam_agent_error_budget:remaining
+          expr: |
+            1 - (
+              (1 - greenlang:slo:cbam_agent_availability:ratio_rate5m)
+              /
+              (1 - 0.999)
+            )
+
+        - record: greenlang:slo:cbam_agent_burn_rate_1h:ratio
+          expr: |
+            (
+              1 - (
+                sum(rate(cbam_requests_total{status!~"5.."}[1h]))
+                /
+                sum(rate(cbam_requests_total[1h]))
+              )
+            ) / (1 - 0.999)
+
+        - record: greenlang:slo:cbam_agent_burn_rate_5m:ratio
+          expr: |
+            (
+              1 - (
+                sum(rate(cbam_requests_total{status!~"5.."}[5m]))
+                /
+                sum(rate(cbam_requests_total[5m]))
+              )
+            ) / (1 - 0.999)
+
+        - record: greenlang:slo:cbam_agent_burn_rate_6h:ratio
+          expr: |
+            (
+              1 - (
+                sum(rate(cbam_requests_total{status!~"5.."}[6h]))
+                /
+                sum(rate(cbam_requests_total[6h]))
+              )
+            ) / (1 - 0.999)
+
+        - record: greenlang:slo:cbam_agent_burn_rate_30m:ratio
+          expr: |
+            (
+              1 - (
+                sum(rate(cbam_requests_total{status!~"5.."}[30m]))
+                /
+                sum(rate(cbam_requests_total[30m]))
+              )
+            ) / (1 - 0.999)
+
+        - record: greenlang:slo:cbam_agent_burn_rate_3d:ratio
+          expr: |
+            (
+              1 - (
+                sum(rate(cbam_requests_total{status!~"5.."}[3d]))
+                /
+                sum(rate(cbam_requests_total[3d]))
+              )
+            ) / (1 - 0.999)
+
+    # =========================================================================
+    # CBAM Agent - Accuracy SLO (target: 99.99%)
+    # =========================================================================
+    - name: greenlang.slo.cbam_agent_accuracy
+      interval: 30s
+      rules:
+        - record: greenlang:slo:cbam_agent_accuracy:ratio_rate5m
+          expr: |
+            sum(rate(cbam_calculations_validated_total[5m]))
+            /
+            sum(rate(cbam_calculations_total[5m]))
+
+        - record: greenlang:slo:cbam_agent_accuracy_error_budget:remaining
+          expr: |
+            1 - (
+              (1 - greenlang:slo:cbam_agent_accuracy:ratio_rate5m)
+              /
+              (1 - 0.9999)
+            )
+
+        - record: greenlang:slo:cbam_agent_accuracy_burn_rate_1h:ratio
+          expr: |
+            (
+              1 - (
+                sum(rate(cbam_calculations_validated_total[1h]))
+                /
+                sum(rate(cbam_calculations_total[1h]))
+              )
+            ) / (1 - 0.9999)
+
+        - record: greenlang:slo:cbam_agent_accuracy_burn_rate_6h:ratio
+          expr: |
+            (
+              1 - (
+                sum(rate(cbam_calculations_validated_total[6h]))
+                /
+                sum(rate(cbam_calculations_total[6h]))
+              )
+            ) / (1 - 0.9999)
+
+    # =========================================================================
+    # CBAM Agent - Latency SLO (target: 95.0%, threshold: 30s)
+    # =========================================================================
+    - name: greenlang.slo.cbam_agent_latency
+      interval: 30s
+      rules:
+        - record: greenlang:slo:cbam_agent_latency:ratio_rate5m
+          expr: |
+            sum(rate(cbam_report_generation_duration_seconds_bucket{le="30"}[5m]))
+            /
+            sum(rate(cbam_report_generation_duration_seconds_count[5m]))
+
+        - record: greenlang:slo:cbam_agent_latency_error_budget:remaining
+          expr: |
+            1 - (
+              (1 - greenlang:slo:cbam_agent_latency:ratio_rate5m)
+              /
+              (1 - 0.95)
+            )
+
+        - record: greenlang:slo:cbam_agent_latency_burn_rate_1h:ratio
+          expr: |
+            (
+              1 - (
+                sum(rate(cbam_report_generation_duration_seconds_bucket{le="30"}[1h]))
+                /
+                sum(rate(cbam_report_generation_duration_seconds_count[1h]))
+              )
+            ) / (1 - 0.95)
+
+        - record: greenlang:slo:cbam_agent_latency_burn_rate_5m:ratio
+          expr: |
+            (
+              1 - (
+                sum(rate(cbam_report_generation_duration_seconds_bucket{le="30"}[5m]))
+                /
+                sum(rate(cbam_report_generation_duration_seconds_count[5m]))
+              )
+            ) / (1 - 0.95)
+
+        - record: greenlang:slo:cbam_agent_latency_burn_rate_6h:ratio
+          expr: |
+            (
+              1 - (
+                sum(rate(cbam_report_generation_duration_seconds_bucket{le="30"}[6h]))
+                /
+                sum(rate(cbam_report_generation_duration_seconds_count[6h]))
+              )
+            ) / (1 - 0.95)
+
+        - record: greenlang:slo:cbam_agent_latency_burn_rate_30m:ratio
+          expr: |
+            (
+              1 - (
+                sum(rate(cbam_report_generation_duration_seconds_bucket{le="30"}[30m]))
+                /
+                sum(rate(cbam_report_generation_duration_seconds_count[30m]))
+              )
+            ) / (1 - 0.95)
+
+        - record: greenlang:slo:cbam_agent_latency_burn_rate_3d:ratio
+          expr: |
+            (
+              1 - (
+                sum(rate(cbam_report_generation_duration_seconds_bucket{le="30"}[3d]))
+                /
+                sum(rate(cbam_report_generation_duration_seconds_count[3d]))
+              )
+            ) / (1 - 0.95)
+
+    # =========================================================================
+    # SB253 Agent - Availability SLO (target: 99.9%)
+    # =========================================================================
+    - name: greenlang.slo.sb253_agent_availability
+      interval: 30s
+      rules:
+        - record: greenlang:slo:sb253_agent_availability:ratio_rate5m
+          expr: |
+            sum(rate(sb253_requests_total{status!~"5.."}[5m]))
+            /
+            sum(rate(sb253_requests_total[5m]))
+
+        - record: greenlang:slo:sb253_agent_error_budget:remaining
+          expr: |
+            1 - (
+              (1 - greenlang:slo:sb253_agent_availability:ratio_rate5m)
+              /
+              (1 - 0.999)
+            )
+
+        - record: greenlang:slo:sb253_agent_burn_rate_1h:ratio
+          expr: |
+            (
+              1 - (
+                sum(rate(sb253_requests_total{status!~"5.."}[1h]))
+                /
+                sum(rate(sb253_requests_total[1h]))
+              )
+            ) / (1 - 0.999)
+
+        - record: greenlang:slo:sb253_agent_burn_rate_5m:ratio
+          expr: |
+            (
+              1 - (
+                sum(rate(sb253_requests_total{status!~"5.."}[5m]))
+                /
+                sum(rate(sb253_requests_total[5m]))
+              )
+            ) / (1 - 0.999)
+
+        - record: greenlang:slo:sb253_agent_burn_rate_6h:ratio
+          expr: |
+            (
+              1 - (
+                sum(rate(sb253_requests_total{status!~"5.."}[6h]))
+                /
+                sum(rate(sb253_requests_total[6h]))
+              )
+            ) / (1 - 0.999)
+
+        - record: greenlang:slo:sb253_agent_burn_rate_30m:ratio
+          expr: |
+            (
+              1 - (
+                sum(rate(sb253_requests_total{status!~"5.."}[30m]))
+                /
+                sum(rate(sb253_requests_total[30m]))
+              )
+            ) / (1 - 0.999)
+
+        - record: greenlang:slo:sb253_agent_burn_rate_3d:ratio
+          expr: |
+            (
+              1 - (
+                sum(rate(sb253_requests_total{status!~"5.."}[3d]))
+                /
+                sum(rate(sb253_requests_total[3d]))
+              )
+            ) / (1 - 0.999)
+
+    # =========================================================================
+    # SB253 Agent - Accuracy SLO (target: 100%)
+    # =========================================================================
+    - name: greenlang.slo.sb253_agent_accuracy
+      interval: 30s
+      rules:
+        - record: greenlang:slo:sb253_agent_accuracy:ratio_rate5m
+          expr: |
+            sum(rate(sb253_scope_calculations_validated_total[5m]))
+            /
+            sum(rate(sb253_scope_calculations_total[5m]))
+
+        - record: greenlang:slo:sb253_agent_accuracy_error_budget:remaining
+          expr: |
+            clamp_min(
+              1 - (
+                (1 - greenlang:slo:sb253_agent_accuracy:ratio_rate5m)
+                /
+                (1 - 1.0)
+              ),
+              0
+            )
+
+    # =========================================================================
+    # Emission Calculator - Availability SLO (target: 99.9%)
+    # =========================================================================
+    - name: greenlang.slo.emission_calculator_availability
+      interval: 30s
+      rules:
+        - record: greenlang:slo:emission_calculator_availability:ratio_rate5m
+          expr: |
+            sum(rate(emission_calculation_requests_total{status!~"5.."}[5m]))
+            /
+            sum(rate(emission_calculation_requests_total[5m]))
+
+        - record: greenlang:slo:emission_calculator_error_budget:remaining
+          expr: |
+            1 - (
+              (1 - greenlang:slo:emission_calculator_availability:ratio_rate5m)
+              /
+              (1 - 0.999)
+            )
+
+        - record: greenlang:slo:emission_calculator_burn_rate_1h:ratio
+          expr: |
+            (
+              1 - (
+                sum(rate(emission_calculation_requests_total{status!~"5.."}[1h]))
+                /
+                sum(rate(emission_calculation_requests_total[1h]))
+              )
+            ) / (1 - 0.999)
+
+        - record: greenlang:slo:emission_calculator_burn_rate_5m:ratio
+          expr: |
+            (
+              1 - (
+                sum(rate(emission_calculation_requests_total{status!~"5.."}[5m]))
+                /
+                sum(rate(emission_calculation_requests_total[5m]))
+              )
+            ) / (1 - 0.999)
+
+        - record: greenlang:slo:emission_calculator_burn_rate_6h:ratio
+          expr: |
+            (
+              1 - (
+                sum(rate(emission_calculation_requests_total{status!~"5.."}[6h]))
+                /
+                sum(rate(emission_calculation_requests_total[6h]))
+              )
+            ) / (1 - 0.999)
+
+        - record: greenlang:slo:emission_calculator_burn_rate_30m:ratio
+          expr: |
+            (
+              1 - (
+                sum(rate(emission_calculation_requests_total{status!~"5.."}[30m]))
+                /
+                sum(rate(emission_calculation_requests_total[30m]))
+              )
+            ) / (1 - 0.999)
+
+        - record: greenlang:slo:emission_calculator_burn_rate_3d:ratio
+          expr: |
+            (
+              1 - (
+                sum(rate(emission_calculation_requests_total{status!~"5.."}[3d]))
+                /
+                sum(rate(emission_calculation_requests_total[3d]))
+              )
+            ) / (1 - 0.999)
+
+    # =========================================================================
+    # Emission Calculator - Accuracy SLO (target: 100%)
+    # =========================================================================
+    - name: greenlang.slo.emission_calculator_accuracy
+      interval: 30s
+      rules:
+        - record: greenlang:slo:emission_calculator_accuracy:ratio_rate5m
+          expr: |
+            sum(rate(emission_calculations_validated_total[5m]))
+            /
+            sum(rate(emission_calculations_total[5m]))
+
+        - record: greenlang:slo:emission_calculator_accuracy_error_budget:remaining
+          expr: |
+            clamp_min(
+              1 - (
+                (1 - greenlang:slo:emission_calculator_accuracy:ratio_rate5m)
+                /
+                (1 - 1.0)
+              ),
+              0
+            )
+
+    # =========================================================================
+    # Emission Calculator - Throughput SLO (target: 99.0%, threshold: 1000/min)
+    # =========================================================================
+    - name: greenlang.slo.emission_calculator_throughput
+      interval: 30s
+      rules:
+        - record: greenlang:slo:emission_calculator_throughput:ratio_rate5m
+          expr: |
+            clamp_max(
+              (sum(rate(emission_calculations_total[1m])) * 60) / 1000,
+              1
+            )
+
+        - record: greenlang:slo:emission_calculator_throughput_error_budget:remaining
+          expr: |
+            1 - (
+              (1 - greenlang:slo:emission_calculator_throughput:ratio_rate5m)
+              /
+              (1 - 0.99)
+            )
+
+    # =========================================================================
+    # PostgreSQL - Availability SLO (target: 99.99%)
+    # =========================================================================
+    - name: greenlang.slo.postgresql_availability
+      interval: 30s
+      rules:
+        - record: greenlang:slo:postgresql_availability:ratio_rate5m
+          expr: |
+            avg(pg_up)
+
+        - record: greenlang:slo:postgresql_error_budget:remaining
+          expr: |
+            1 - (
+              (1 - greenlang:slo:postgresql_availability:ratio_rate5m)
+              /
+              (1 - 0.9999)
+            )
+
+        - record: greenlang:slo:postgresql_burn_rate_1h:ratio
+          expr: |
+            (1 - avg_over_time(pg_up[1h])) / (1 - 0.9999)
+
+        - record: greenlang:slo:postgresql_burn_rate_5m:ratio
+          expr: |
+            (1 - avg_over_time(pg_up[5m])) / (1 - 0.9999)
+
+        - record: greenlang:slo:postgresql_burn_rate_6h:ratio
+          expr: |
+            (1 - avg_over_time(pg_up[6h])) / (1 - 0.9999)
+
+        - record: greenlang:slo:postgresql_burn_rate_30m:ratio
+          expr: |
+            (1 - avg_over_time(pg_up[30m])) / (1 - 0.9999)
+
+        - record: greenlang:slo:postgresql_burn_rate_3d:ratio
+          expr: |
+            (1 - avg_over_time(pg_up[3d])) / (1 - 0.9999)
+
+    # =========================================================================
+    # PostgreSQL - Latency SLO (target: 95.0%, threshold: 100ms)
+    # =========================================================================
+    - name: greenlang.slo.postgresql_latency
+      interval: 30s
+      rules:
+        - record: greenlang:slo:postgresql_latency:ratio_rate5m
+          expr: |
+            clamp_max(
+              1 - clamp_min(
+                (rate(pg_stat_statements_seconds_total[5m]) / rate(pg_stat_statements_calls_total[5m]) * 1000 - 100) / 100,
+                0
+              ),
+              1
+            )
+
+        - record: greenlang:slo:postgresql_latency_error_budget:remaining
+          expr: |
+            1 - (
+              (1 - greenlang:slo:postgresql_latency:ratio_rate5m)
+              /
+              (1 - 0.95)
+            )
+
+        - record: greenlang:slo:postgresql_latency_burn_rate_1h:ratio
+          expr: |
+            (1 - greenlang:slo:postgresql_latency:ratio_rate5m) / (1 - 0.95)
+
+    # =========================================================================
+    # Redis - Availability SLO (target: 99.9%)
+    # =========================================================================
+    - name: greenlang.slo.redis_availability
+      interval: 30s
+      rules:
+        - record: greenlang:slo:redis_availability:ratio_rate5m
+          expr: |
+            avg(redis_up)
+
+        - record: greenlang:slo:redis_error_budget:remaining
+          expr: |
+            1 - (
+              (1 - greenlang:slo:redis_availability:ratio_rate5m)
+              /
+              (1 - 0.999)
+            )
+
+        - record: greenlang:slo:redis_burn_rate_1h:ratio
+          expr: |
+            (1 - avg_over_time(redis_up[1h])) / (1 - 0.999)
+
+        - record: greenlang:slo:redis_burn_rate_5m:ratio
+          expr: |
+            (1 - avg_over_time(redis_up[5m])) / (1 - 0.999)
+
+        - record: greenlang:slo:redis_burn_rate_6h:ratio
+          expr: |
+            (1 - avg_over_time(redis_up[6h])) / (1 - 0.999)
+
+        - record: greenlang:slo:redis_burn_rate_30m:ratio
+          expr: |
+            (1 - avg_over_time(redis_up[30m])) / (1 - 0.999)
+
+        - record: greenlang:slo:redis_burn_rate_3d:ratio
+          expr: |
+            (1 - avg_over_time(redis_up[3d])) / (1 - 0.999)
+
+    # =========================================================================
+    # Redis - Hit Ratio SLO (target: 90.0%)
+    # =========================================================================
+    - name: greenlang.slo.redis_hit_ratio
+      interval: 30s
+      rules:
+        - record: greenlang:slo:redis_hit_ratio:ratio_rate5m
+          expr: |
+            rate(redis_keyspace_hits_total[5m])
+            /
+            (rate(redis_keyspace_hits_total[5m]) + rate(redis_keyspace_misses_total[5m]))
+
+        - record: greenlang:slo:redis_hit_ratio_error_budget:remaining
+          expr: |
+            1 - (
+              (1 - greenlang:slo:redis_hit_ratio:ratio_rate5m)
+              /
+              (1 - 0.90)
+            )
+
+        - record: greenlang:slo:redis_hit_ratio_burn_rate_1h:ratio
+          expr: |
+            (
+              1 - (
+                rate(redis_keyspace_hits_total[1h])
+                /
+                (rate(redis_keyspace_hits_total[1h]) + rate(redis_keyspace_misses_total[1h]))
+              )
+            ) / (1 - 0.90)
+
+        - record: greenlang:slo:redis_hit_ratio_burn_rate_6h:ratio
+          expr: |
+            (
+              1 - (
+                rate(redis_keyspace_hits_total[6h])
+                /
+                (rate(redis_keyspace_hits_total[6h]) + rate(redis_keyspace_misses_total[6h]))
+              )
+            ) / (1 - 0.90)
+
+    # =========================================================================
+    # Compliance Reports - Timeliness SLO (target: 100%)
+    # =========================================================================
+    - name: greenlang.slo.compliance_reports_timeliness
+      interval: 30s
+      rules:
+        - record: greenlang:slo:compliance_reports_timeliness:ratio_rate5m
+          expr: |
+            sum(rate(compliance_reports_delivered_on_time_total[5m]))
+            /
+            sum(rate(compliance_reports_due_total[5m]))
+
+        - record: greenlang:slo:compliance_reports_timeliness_error_budget:remaining
+          expr: |
+            clamp_min(
+              1 - (
+                (1 - greenlang:slo:compliance_reports_timeliness:ratio_rate5m)
+                /
+                (1 - 1.0)
+              ),
+              0
+            )
+
+    # =========================================================================
+    # Aggregate SLO Metrics
+    # =========================================================================
+    - name: greenlang.slo.aggregates
+      interval: 60s
+      rules:
+        # Total active SLOs meeting target
+        - record: greenlang:slo:total_meeting_target
+          expr: |
+            count(
+              greenlang:slo:api_gateway_availability:ratio_rate5m >= 0.9995
+              or greenlang:slo:api_gateway_latency:ratio_rate5m >= 0.99
+              or greenlang:slo:eudr_agent_availability:ratio_rate5m >= 0.999
+              or greenlang:slo:eudr_agent_latency:ratio_rate5m >= 0.99
+              or greenlang:slo:eudr_agent_accuracy:ratio_rate5m >= 1.0
+              or greenlang:slo:cbam_agent_availability:ratio_rate5m >= 0.999
+              or greenlang:slo:cbam_agent_accuracy:ratio_rate5m >= 0.9999
+              or greenlang:slo:cbam_agent_latency:ratio_rate5m >= 0.95
+              or greenlang:slo:sb253_agent_availability:ratio_rate5m >= 0.999
+              or greenlang:slo:sb253_agent_accuracy:ratio_rate5m >= 1.0
+              or greenlang:slo:emission_calculator_availability:ratio_rate5m >= 0.999
+              or greenlang:slo:emission_calculator_accuracy:ratio_rate5m >= 1.0
+              or greenlang:slo:emission_calculator_throughput:ratio_rate5m >= 0.99
+              or greenlang:slo:postgresql_availability:ratio_rate5m >= 0.9999
+              or greenlang:slo:redis_availability:ratio_rate5m >= 0.999
+              or greenlang:slo:redis_hit_ratio:ratio_rate5m >= 0.90
+            )
+
+        # Overall platform compliance percentage
+        - record: greenlang:slo:overall_compliance_percent
+          expr: |
+            (greenlang:slo:total_meeting_target / 16) * 100

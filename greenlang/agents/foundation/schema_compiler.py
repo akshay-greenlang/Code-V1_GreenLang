@@ -47,6 +47,21 @@ from greenlang.utilities.determinism.clock import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
+# ---------------------------------------------------------------------------
+# Optional Layer 2 SDK import for delegation
+# ---------------------------------------------------------------------------
+
+try:
+    from greenlang.schema.sdk import validate as _sdk_validate
+    from greenlang.schema.models.finding import Severity as _SdkSeverity
+    from greenlang.schema.models.report import ValidationReport as _SdkValidationReport
+    SCHEMA_SDK_AVAILABLE = True
+except ImportError:
+    SCHEMA_SDK_AVAILABLE = False
+    logger.info(
+        "greenlang.schema.sdk not available; using built-in jsonschema validation"
+    )
+
 
 # =============================================================================
 # Constants and Type Definitions
@@ -1364,6 +1379,10 @@ class SchemaCompilerAgent(BaseAgent):
         """
         Validate payload against JSON schema.
 
+        Attempts to delegate to the Layer 2 SDK (greenlang.schema.sdk)
+        for richer validation. Falls back to jsonschema Draft-07 or
+        basic validation if the SDK is unavailable.
+
         Args:
             payload: Data to validate
             schema: JSON Schema
@@ -1371,6 +1390,22 @@ class SchemaCompilerAgent(BaseAgent):
         Returns:
             ValidationResult
         """
+        # Attempt Layer 2 SDK delegation first
+        if SCHEMA_SDK_AVAILABLE:
+            try:
+                sdk_report = _sdk_validate(
+                    payload=payload,
+                    schema=schema,
+                    normalize=False,
+                    emit_patches=False,
+                )
+                return self._convert_sdk_result(sdk_report)
+            except Exception as exc:
+                logger.debug(
+                    "Layer 2 SDK validation failed, falling back: %s", exc
+                )
+
+        # Fallback: built-in validation
         result = ValidationResult(valid=True)
 
         if not self._jsonschema_available:
@@ -1403,6 +1438,56 @@ class SchemaCompilerAgent(BaseAgent):
                 severity=ValidationSeverity.ERROR,
                 validator="json_schema_draft07",
             ))
+
+        return result
+
+    def _convert_sdk_result(
+        self,
+        sdk_report: "_SdkValidationReport",
+    ) -> ValidationResult:
+        """
+        Convert a Layer 2 SDK ValidationReport to Layer 1 ValidationResult.
+
+        Maps the SDK Finding objects (with Severity enum and code/path/message)
+        to the governance-layer ValidationError objects used by the foundation
+        agent.
+
+        Args:
+            sdk_report: ValidationReport from greenlang.schema.sdk.validate().
+
+        Returns:
+            ValidationResult compatible with the foundation agent pipeline.
+        """
+        result = ValidationResult(valid=sdk_report.valid)
+
+        # Map SDK severity to governance severity
+        severity_map = {
+            _SdkSeverity.ERROR: ValidationSeverity.ERROR,
+            _SdkSeverity.WARNING: ValidationSeverity.WARNING,
+            _SdkSeverity.INFO: ValidationSeverity.INFO,
+        }
+
+        for finding in sdk_report.findings:
+            gov_severity = severity_map.get(
+                finding.severity, ValidationSeverity.ERROR
+            )
+            # Convert JSON Pointer path (e.g., "/energy") to dot-path
+            field_path = finding.path.lstrip("/").replace("/", ".") or "root"
+
+            validation_error = ValidationError(
+                field=field_path,
+                message=finding.message,
+                severity=gov_severity,
+                validator="schema_sdk_layer2",
+                value=getattr(finding, "actual", None),
+                expected=getattr(finding, "expected", None),
+                location=finding.path if finding.path else None,
+            )
+            result.add_error(validation_error)
+
+        # Carry schema hash in metadata for provenance
+        result.metadata["schema_hash"] = sdk_report.schema_hash
+        result.metadata["validator_layer"] = "layer2_sdk"
 
         return result
 

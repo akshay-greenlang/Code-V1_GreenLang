@@ -1,0 +1,87 @@
+# =============================================================================
+# GreenLang Orchestrator Service - Horizontal Pod Autoscaler
+# =============================================================================
+# HPA for orchestrator service: scales based on CPU and memory utilization.
+# Scales from 2 to 6 replicas. Conservative scale-down to prevent
+# execution disruption during transient load spikes from parallel DAG
+# node execution.
+# PRD: AGENT-FOUND-001
+# =============================================================================
+
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: orchestrator-service-hpa
+  namespace: greenlang
+  labels:
+    app: orchestrator-service
+    app.kubernetes.io/name: orchestrator-service
+    app.kubernetes.io/component: autoscaling
+    app.kubernetes.io/part-of: greenlang
+  annotations:
+    description: "HPA for Orchestrator Service based on CPU and memory utilization"
+    prd: AGENT-FOUND-001
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: orchestrator-service
+  minReplicas: 2
+  maxReplicas: 6
+  metrics:
+    # CPU-based scaling
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    # Memory-based scaling
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+  behavior:
+    # Scale up: moderate for handling DAG execution bursts
+    scaleUp:
+      stabilizationWindowSeconds: 120
+      policies:
+        - type: Pods
+          value: 1
+          periodSeconds: 60
+        - type: Percent
+          value: 50
+          periodSeconds: 60
+      selectPolicy: Max
+    # Scale down: conservative to maintain execution continuity
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Pods
+          value: 1
+          periodSeconds: 120
+      selectPolicy: Min
+
+---
+# =============================================================================
+# Pod Disruption Budget - Orchestrator Service
+# =============================================================================
+
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: orchestrator-service-pdb
+  namespace: greenlang
+  labels:
+    app: orchestrator-service
+    app.kubernetes.io/name: orchestrator-service
+    app.kubernetes.io/component: orchestrator
+    app.kubernetes.io/part-of: greenlang
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: orchestrator-service
+      app.kubernetes.io/component: orchestrator

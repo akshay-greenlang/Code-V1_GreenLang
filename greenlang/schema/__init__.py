@@ -94,6 +94,29 @@ from greenlang.schema.sdk import (
     schema_ref,
 )
 
+# Prometheus metrics
+from greenlang.schema.metrics import (
+    PROMETHEUS_AVAILABLE,
+    record_validation,
+    record_compilation,
+    record_error,
+    record_warning,
+    record_fix_applied,
+    record_cache_hit,
+    record_cache_miss,
+    record_batch,
+    record_payload_bytes,
+    update_active_validations,
+    update_registered_schemas,
+)
+
+# Service setup facade
+from greenlang.schema.setup import (
+    SchemaService,
+    configure_schema_service,
+    get_schema_service,
+)
+
 __all__ = [
     # Version info
     "__version__",
@@ -145,4 +168,21 @@ __all__ = [
     "findings_by_code",
     "parse_schema_ref",
     "schema_ref",
+    # Prometheus metrics
+    "PROMETHEUS_AVAILABLE",
+    "record_validation",
+    "record_compilation",
+    "record_error",
+    "record_warning",
+    "record_fix_applied",
+    "record_cache_hit",
+    "record_cache_miss",
+    "record_batch",
+    "record_payload_bytes",
+    "update_active_validations",
+    "update_registered_schemas",
+    # Service setup facade
+    "SchemaService",
+    "configure_schema_service",
+    "get_schema_service",
 ]

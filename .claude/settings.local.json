@@ -332,7 +332,8 @@
       "Bash(else echo \"not exists\")",
       "Bash(fi:*)",
       "Bash(echo.)",
-      "Bash(timeout:*)"
+      "Bash(timeout:*)",
+      "Bash(pip3 install:*)"
     ],
     "deny": [],
     "ask": []

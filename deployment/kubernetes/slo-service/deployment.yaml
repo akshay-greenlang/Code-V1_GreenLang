@@ -1,0 +1,233 @@
+# =============================================================================
+# GreenLang SLO Service - Deployment
+# =============================================================================
+# Component: SLO/SLI Definitions & Error Budget Management Service
+# Purpose: SLO evaluation engine, error budget tracking, burn rate calculation,
+#          compliance reporting, and SLO lifecycle management.
+# PRD: OBS-005
+# =============================================================================
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: slo-service
+  namespace: greenlang-slo
+  labels:
+    app: slo-service
+    app.kubernetes.io/name: slo-service
+    app.kubernetes.io/component: slo
+    app.kubernetes.io/part-of: greenlang
+    app.kubernetes.io/version: "1.0.0"
+  annotations:
+    deployment.kubernetes.io/revision: "1"
+    description: "SLO/SLI & Error Budget Management Service"
+    prd: OBS-005
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: slo-service
+      app.kubernetes.io/component: slo
+  template:
+    metadata:
+      labels:
+        app: slo-service
+        app.kubernetes.io/name: slo-service
+        app.kubernetes.io/component: slo
+        app.kubernetes.io/part-of: greenlang
+        app.kubernetes.io/version: "1.0.0"
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: slo-service-sa
+      automountServiceAccountToken: false
+
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+
+      terminationGracePeriodSeconds: 30
+
+      initContainers:
+        - name: wait-for-postgres
+          image: busybox:1.36
+          command: ['sh', '-c', 'until nc -z greenlang-postgresql.database.svc.cluster.local 5432; do echo waiting for postgres; sleep 2; done']
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1000
+            capabilities:
+              drop:
+                - ALL
+
+        - name: wait-for-redis
+          image: busybox:1.36
+          command: ['sh', '-c', 'until nc -z greenlang-redis.redis.svc.cluster.local 6379; do echo waiting for redis; sleep 2; done']
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1000
+            capabilities:
+              drop:
+                - ALL
+
+        - name: wait-for-prometheus
+          image: busybox:1.36
+          command: ['sh', '-c', 'until nc -z gl-prometheus-server.monitoring.svc.cluster.local 9090; do echo waiting for prometheus; sleep 2; done']
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1000
+            capabilities:
+              drop:
+                - ALL
+
+      containers:
+        - name: slo-service
+          image: greenlang/slo-service:latest
+          imagePullPolicy: Always
+
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: ENVIRONMENT
+              valueFrom:
+                configMapKeyRef:
+                  name: slo-service-config
+                  key: ENVIRONMENT
+            - name: LOG_LEVEL
+              valueFrom:
+                configMapKeyRef:
+                  name: slo-service-config
+                  key: LOG_LEVEL
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: slo-service-secrets
+                  key: DATABASE_URL
+                  optional: false
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: slo-service-secrets
+                  key: REDIS_URL
+                  optional: false
+            - name: PROMETHEUS_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: slo-service-config
+                  key: PROMETHEUS_URL
+
+          envFrom:
+            - configMapRef:
+                name: slo-service-config
+
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+            successThreshold: 1
+
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+            successThreshold: 1
+
+          startupProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 30
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1000
+            capabilities:
+              drop:
+                - ALL
+
+          volumeMounts:
+            - name: config
+              mountPath: /app/config
+              readOnly: true
+            - name: tmp
+              mountPath: /tmp
+
+      volumes:
+        - name: config
+          configMap:
+            name: slo-service-config
+        - name: tmp
+          emptyDir:
+            sizeLimit: 100Mi
+
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: slo-service
+              app.kubernetes.io/component: slo
+
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: slo-service
+                    app.kubernetes.io/component: slo
+                topologyKey: kubernetes.io/hostname

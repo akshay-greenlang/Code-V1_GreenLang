@@ -48,6 +48,30 @@ logger = logging.getLogger(__name__)
 
 
 # =============================================================================
+# NORMALIZER SDK DELEGATION
+# =============================================================================
+# When the greenlang.normalizer SDK package is installed, delegate
+# conversion operations to UnitConverter for consistent behaviour
+# across the codebase. Falls back gracefully to the built-in tables.
+
+NORMALIZER_SDK_AVAILABLE = False
+_sdk_converter = None
+
+try:
+    from greenlang.normalizer.converter import UnitConverter as _SDKUnitConverter
+    NORMALIZER_SDK_AVAILABLE = True
+    _sdk_converter = _SDKUnitConverter()
+    logger.info(
+        "Normalizer SDK available - delegating conversions to "
+        "greenlang.normalizer.converter.UnitConverter"
+    )
+except ImportError:
+    logger.info(
+        "Normalizer SDK not available - using built-in conversion tables"
+    )
+
+
+# =============================================================================
 # ENUMS AND CONSTANTS
 # =============================================================================
 
@@ -888,6 +912,10 @@ class UnitNormalizerAgent(BaseAgent):
         """
         Direct conversion method for programmatic use.
 
+        When the Normalizer SDK is available and no tenant-specific
+        overrides are needed, delegates to UnitConverter for
+        consistent behaviour across the codebase.
+
         Args:
             value: Value to convert
             from_unit: Source unit
@@ -903,6 +931,19 @@ class UnitNormalizerAgent(BaseAgent):
             >>> agent.convert(1000, "kg", "tonnes")
             1.0
         """
+        # Delegate to SDK when available and no tenant overrides
+        if NORMALIZER_SDK_AVAILABLE and _sdk_converter is not None and tenant_id is None:
+            try:
+                sdk_result = _sdk_converter.convert(
+                    value, from_unit, to_unit, precision,
+                )
+                return float(sdk_result.converted_value)
+            except Exception:
+                logger.debug(
+                    "SDK delegation failed, falling back to built-in",
+                    exc_info=True,
+                )
+
         result = self._handle_unit_conversion({
             "value": value,
             "from_unit": from_unit,

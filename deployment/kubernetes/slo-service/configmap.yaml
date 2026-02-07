@@ -1,0 +1,171 @@
+# =============================================================================
+# GreenLang SLO Service - ConfigMap
+# =============================================================================
+# Configuration for SLO evaluation engine, error budget calculation,
+# compliance reporting, burn rate thresholds, and Prometheus integration.
+# PRD: OBS-005
+# =============================================================================
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: slo-service-config
+  namespace: greenlang-slo
+  labels:
+    app.kubernetes.io/name: slo-service
+    app.kubernetes.io/component: configuration
+    app.kubernetes.io/part-of: greenlang
+  annotations:
+    description: "SLO Service configuration - evaluation, budgets, reporting"
+    prd: OBS-005
+data:
+  # Environment
+  ENVIRONMENT: "production"
+
+  # Logging
+  LOG_LEVEL: "info"
+  LOG_FORMAT: "json"
+
+  # Metrics
+  METRICS_PORT: "8080"
+  METRICS_PATH: "/metrics"
+
+  # Tracing
+  TRACING_ENABLED: "true"
+  TRACING_SAMPLE_RATE: "0.1"
+  OTEL_ENDPOINT: "http://otel-collector.monitoring.svc.cluster.local:4317"
+  OTEL_SERVICE_NAME: "slo-service"
+
+  # Prometheus
+  PROMETHEUS_URL: "http://gl-prometheus-server.monitoring.svc.cluster.local:9090"
+  PROMETHEUS_QUERY_TIMEOUT_SECONDS: "30"
+  PROMETHEUS_QUERY_MAX_SAMPLES: "50000"
+
+  # SLO Evaluation
+  EVALUATION_INTERVAL_SECONDS: "60"
+  EVALUATION_CONCURRENCY: "4"
+  EVALUATION_TIMEOUT_SECONDS: "30"
+
+  # Error Budget
+  BUDGET_SNAPSHOT_INTERVAL_SECONDS: "300"
+  BUDGET_SNAPSHOT_RETENTION_DAYS: "365"
+  BUDGET_WARNING_THRESHOLD_PERCENT: "50"
+  BUDGET_CRITICAL_THRESHOLD_PERCENT: "20"
+  BUDGET_EXHAUSTED_THRESHOLD_PERCENT: "0"
+
+  # Compliance Reporting
+  WEEKLY_REPORT_DAY: "Monday"
+  WEEKLY_REPORT_TIME: "09:00"
+  MONTHLY_REPORT_DAY: "1"
+  MONTHLY_REPORT_TIME: "09:00"
+
+  # Alertmanager integration
+  ALERTMANAGER_ENDPOINT: "http://gl-prometheus-alertmanager.monitoring.svc.cluster.local:9093"
+
+  # Burn rate thresholds (Google SRE Workbook reference)
+  BURN_RATE_FAST_MULTIPLIER: "14.4"
+  BURN_RATE_MEDIUM_MULTIPLIER: "6"
+  BURN_RATE_SLOW_MULTIPLIER: "1"
+
+  # SLO service configuration file
+  slo-config.yaml: |
+    slo_service:
+      version: "1.0.0"
+      environment: production
+
+      evaluation:
+        interval_seconds: 60
+        concurrency: 4
+        timeout_seconds: 30
+        retry_count: 3
+        retry_backoff_seconds: 5
+
+      error_budget:
+        snapshot_interval_seconds: 300
+        retention_days: 365
+        thresholds:
+          healthy: 50
+          warning: 50
+          critical: 20
+          exhausted: 0
+        policy:
+          healthy:
+            description: "Normal operations, deploy when ready"
+            deploy_allowed: true
+          warning:
+            description: "Increase monitoring, defer non-critical deploys"
+            deploy_allowed: true
+            require_approval: false
+          critical:
+            description: "Freeze feature deploys, focus on reliability"
+            deploy_allowed: false
+            require_approval: true
+            approvers: ["cto", "vp-engineering"]
+          exhausted:
+            description: "All non-critical changes frozen, incident postmortems required"
+            deploy_allowed: false
+            require_approval: true
+            approvers: ["cto"]
+
+      burn_rate:
+        windows:
+          fast:
+            long_window: "1h"
+            short_window: "5m"
+            multiplier: 14.4
+            description: "Will exhaust budget in ~2 hours"
+          medium:
+            long_window: "6h"
+            short_window: "30m"
+            multiplier: 6
+            description: "Will exhaust budget in ~5 days"
+          slow:
+            long_window: "3d"
+            short_window: "6h"
+            multiplier: 1
+            description: "Sustained consumption above sustainable rate"
+
+      compliance:
+        weekly_report:
+          enabled: true
+          recipients:
+            - ops-team@greenlang.io
+            - engineering-leads@greenlang.io
+          day: Monday
+          time: "09:00"
+        monthly_report:
+          enabled: true
+          recipients:
+            - ops-team@greenlang.io
+            - engineering-leads@greenlang.io
+            - leadership@greenlang.io
+          day: 1
+          time: "09:00"
+        quarterly_review:
+          enabled: true
+          recipients:
+            - all-engineering@greenlang.io
+            - product@greenlang.io
+          include_recommendations: true
+
+      tiers:
+        tier-1:
+          description: "Critical services - highest reliability requirements"
+          default_target: 99.99
+          max_burn_rate_fast_severity: critical
+          max_burn_rate_medium_severity: critical
+        tier-2:
+          description: "Important services - high reliability"
+          default_target: 99.9
+          max_burn_rate_fast_severity: critical
+          max_burn_rate_medium_severity: warning
+        tier-3:
+          description: "Standard services - standard reliability"
+          default_target: 99.5
+          max_burn_rate_fast_severity: warning
+          max_burn_rate_medium_severity: info
+
+      notification:
+        slack_channel: "#greenlang-slo-alerts"
+        email_from: "slo-service@greenlang.io"
+        pagerduty_integration: true

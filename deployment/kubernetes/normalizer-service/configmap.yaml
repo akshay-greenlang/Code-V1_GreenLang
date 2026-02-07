@@ -1,0 +1,125 @@
+# =============================================================================
+# GreenLang Normalizer Service - ConfigMap
+# =============================================================================
+# Configuration for unit conversion, GHG/GWP conversion, entity resolution,
+# vocabulary management, caching, rate limiting, and metrics.
+# PRD: AGENT-FOUND-003
+# =============================================================================
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: normalizer-service-config
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: normalizer-service
+    app.kubernetes.io/component: configuration
+    app.kubernetes.io/part-of: greenlang
+  annotations:
+    description: "Normalizer Service configuration - conversion, resolution, vocabulary, caching"
+    prd: AGENT-FOUND-003
+data:
+  # Environment
+  ENVIRONMENT: "production"
+
+  # Logging
+  GL_NORMALIZER_LOG_LEVEL: "INFO"
+  LOG_FORMAT: "json"
+
+  # Database (connection string via secret, schema config here)
+  GL_NORMALIZER_DB_SCHEMA: "normalizer_service"
+  GL_NORMALIZER_DB_POOL_MIN: "2"
+  GL_NORMALIZER_DB_POOL_MAX: "10"
+
+  # Redis
+  GL_NORMALIZER_REDIS_PREFIX: "gl:normalizer:"
+  GL_NORMALIZER_REDIS_TTL: "3600"
+
+  # Cache Configuration
+  GL_NORMALIZER_CACHE_TTL_SECONDS: "3600"
+  GL_NORMALIZER_CACHE_MAX_SIZE: "1000"
+  GL_NORMALIZER_VOCABULARY_CACHE_TTL: "86400"
+
+  # Conversion Configuration
+  GL_NORMALIZER_DEFAULT_GWP_VERSION: "AR6"
+  GL_NORMALIZER_MAX_BATCH_SIZE: "500"
+  GL_NORMALIZER_PRECISION_DIGITS: "10"
+
+  # Entity Resolution Configuration
+  GL_NORMALIZER_FUZZY_THRESHOLD: "0.75"
+  GL_NORMALIZER_EXACT_MATCH_FIRST: "true"
+  GL_NORMALIZER_ALIAS_MATCH_ENABLED: "true"
+  GL_NORMALIZER_FUZZY_MATCH_ENABLED: "true"
+
+  # Rate Limiting
+  GL_NORMALIZER_RATE_LIMIT_CONVERT: "200"
+  GL_NORMALIZER_RATE_LIMIT_BATCH: "20"
+  GL_NORMALIZER_RATE_LIMIT_RESOLVE: "200"
+  GL_NORMALIZER_RATE_LIMIT_WINDOW_SECONDS: "60"
+
+  # Metrics
+  GL_NORMALIZER_ENABLE_METRICS: "true"
+  METRICS_PORT: "8080"
+  METRICS_PATH: "/metrics"
+
+  # Tracing
+  TRACING_ENABLED: "true"
+  TRACING_SAMPLE_RATE: "0.1"
+  OTEL_ENDPOINT: "http://otel-collector.monitoring.svc.cluster.local:4317"
+  OTEL_SERVICE_NAME: "normalizer-service"
+
+  # Normalizer service configuration file
+  normalizer-config.yaml: |
+    normalizer_service:
+      version: "1.0.0"
+      environment: production
+
+      conversion:
+        default_gwp_version: AR6
+        max_batch_size: 500
+        precision_digits: 10
+        enable_custom_factors: true
+        enable_gwp_conversion: true
+        enable_dimensional_analysis: true
+
+      entity_resolution:
+        fuzzy_threshold: 0.75
+        exact_match_first: true
+        alias_match_enabled: true
+        fuzzy_match_enabled: true
+        embedding_match_enabled: false
+        max_candidates: 5
+
+      vocabulary:
+        cache_ttl_seconds: 86400
+        auto_reload: true
+        reload_interval_seconds: 3600
+        vocabularies:
+          - canonical_units
+          - fuels
+          - materials
+          - processes
+          - gwp_ar5
+          - gwp_ar6
+          - gases
+
+      cache:
+        ttl_seconds: 3600
+        max_size: 1000
+        warmup_on_startup: true
+
+      rate_limiting:
+        convert_per_minute: 200
+        batch_per_minute: 20
+        resolve_per_minute: 200
+
+      metrics:
+        enabled: true
+        prefix: gl_normalizer
+        histogram_buckets: [0.001, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10]
+
+      integration:
+        auth_enabled: true
+        audit_enabled: true
+        alerting_enabled: true
+        feature_flags_enabled: true
