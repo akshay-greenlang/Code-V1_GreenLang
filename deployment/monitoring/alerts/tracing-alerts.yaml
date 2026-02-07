@@ -1,0 +1,445 @@
+# ============================================================================
+# Distributed Tracing Alert Rules
+# ============================================================================
+# PrometheusRules for OpenTelemetry distributed tracing pipeline health.
+# Monitors Grafana Tempo internals, OTel Collector pipeline, and trace
+# ingestion end-to-end health.
+#
+# Created: 2026-02-07
+# Team: Monitoring & Observability
+# PRD: OBS-003 - OpenTelemetry Distributed Tracing
+#
+# Alert Groups:
+#   - tracing.tempo: Grafana Tempo component health
+#   - tracing.otel-collector: OTel Collector pipeline health
+#   - tracing.pipeline: End-to-end trace pipeline health
+# ============================================================================
+
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: tracing-alerts
+  namespace: monitoring
+  labels:
+    app: tracing
+    component: alerting
+    prometheus: main
+    role: alert-rules
+    app.kubernetes.io/name: tracing
+    app.kubernetes.io/component: alerts
+    app.kubernetes.io/part-of: greenlang
+    release: prometheus
+  annotations:
+    description: "Distributed tracing pipeline health and performance alert rules"
+    runbook_base_url: "https://runbooks.greenlang.ai/tracing"
+spec:
+  groups:
+    # =========================================================================
+    # GRAFANA TEMPO ALERTS
+    # =========================================================================
+    - name: tracing.tempo
+      interval: 30s
+      rules:
+        # ---------------------------------------------------------------------
+        # TempoDistributorHighLatency - Distributor P99 above 500ms
+        # ---------------------------------------------------------------------
+        - alert: TempoDistributorHighLatency
+          expr: |
+            histogram_quantile(0.99,
+              sum(rate(tempo_distributor_push_duration_seconds_bucket[5m])) by (le)
+            ) > 0.5
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-observability
+            component: tempo-distributor
+            category: performance
+          annotations:
+            summary: "Tempo Distributor push latency P99 above 500ms"
+            description: |
+              Tempo Distributor push latency P99 is {{ $value | printf "%.2f" }}s,
+              which exceeds the 500ms threshold for 5 minutes.
+
+              This indicates the distributor is struggling to forward spans to
+              ingesters. Possible causes:
+              - Ingester backpressure from slow flushes
+              - Network congestion between distributor and ingesters
+              - Insufficient distributor replicas for current load
+
+              Impact: Increased span ingestion latency. Clients may experience
+              timeouts and drop spans if backpressure propagates.
+            runbook_url: "https://runbooks.greenlang.ai/tracing/tempo-distributor-high-latency"
+            dashboard_url: "https://grafana.greenlang.ai/d/tempo-operations"
+
+        # ---------------------------------------------------------------------
+        # TempoIngesterFlushFailing - Ingester flush failures
+        # ---------------------------------------------------------------------
+        - alert: TempoIngesterFlushFailing
+          expr: |
+            sum(rate(tempo_ingester_failed_flushes_total[5m])) > 0
+          for: 10m
+          labels:
+            severity: critical
+            team: platform-observability
+            component: tempo-ingester
+            category: data-loss
+          annotations:
+            summary: "Tempo Ingester flush failures detected"
+            description: |
+              Tempo Ingester has been experiencing flush failures for more than
+              10 minutes. Failed flushes rate: {{ $value | printf "%.2f" }}/sec.
+
+              When the ingester cannot flush blocks to S3, data accumulates in
+              the Write-Ahead Log (WAL). Prolonged failures will cause:
+              - WAL disk exhaustion leading to OOMKill or CrashLoop
+              - Data loss if WAL is truncated before successful flush
+              - Increased memory pressure from in-memory trace accumulation
+
+              This is a critical alert requiring immediate investigation.
+            runbook_url: "https://runbooks.greenlang.ai/tracing/tempo-ingester-failures"
+            dashboard_url: "https://grafana.greenlang.ai/d/tempo-operations"
+
+        # ---------------------------------------------------------------------
+        # TempoCompactorHalted - Compactor not running
+        # ---------------------------------------------------------------------
+        - alert: TempoCompactorHalted
+          expr: |
+            sum(rate(tempo_compactor_blocks_total[30m])) == 0
+            and
+            sum(tempo_compactor_total_blocks_total) > 100
+          for: 30m
+          labels:
+            severity: critical
+            team: platform-observability
+            component: tempo-compactor
+            category: availability
+          annotations:
+            summary: "Tempo Compactor has halted - no blocks compacted in 30 minutes"
+            description: |
+              The Tempo Compactor has not compacted any blocks in the last 30
+              minutes despite having {{ $value | printf "%.0f" }} total blocks
+              in storage.
+
+              The compactor is responsible for:
+              1. Merging small blocks into larger, more efficient blocks
+              2. Deduplicating overlapping blocks
+              3. Enforcing retention policies
+              4. Building bloom filters and search indexes
+
+              Without compaction:
+              - S3 storage costs increase (many small blocks)
+              - Query performance degrades significantly
+              - Retention is not enforced, leading to unbounded growth
+              - Bloom filters become stale, slowing trace lookups
+
+              Check compactor logs for crash or S3 permission errors.
+            runbook_url: "https://runbooks.greenlang.ai/tracing/tempo-compactor-halted"
+            dashboard_url: "https://grafana.greenlang.ai/d/tempo-operations"
+
+        # ---------------------------------------------------------------------
+        # TempoStorageErrors - S3 backend write errors
+        # ---------------------------------------------------------------------
+        - alert: TempoStorageErrors
+          expr: |
+            sum(rate(tempo_tempodb_backend_request_duration_seconds_count{status_code=~"5.."}[5m])) > 0
+          for: 5m
+          labels:
+            severity: critical
+            team: platform-observability
+            component: tempo-storage
+            category: data-loss
+          annotations:
+            summary: "Tempo S3 storage backend returning errors"
+            description: |
+              Tempo is receiving 5xx errors from the S3 storage backend at a
+              rate of {{ $value | printf "%.2f" }} requests/sec for more than
+              5 minutes.
+
+              S3 errors impact all Tempo components:
+              - Ingesters cannot flush blocks (data loss risk)
+              - Queriers cannot read blocks (query failures)
+              - Compactor cannot process blocks (performance degradation)
+
+              Possible causes:
+              - AWS S3 service degradation (check AWS status page)
+              - IRSA/IAM permission issues after rotation
+              - S3 bucket policy changes or VPC endpoint issues
+              - Rate limiting from excessive LIST operations
+            runbook_url: "https://runbooks.greenlang.ai/tracing/tempo-storage-errors"
+            dashboard_url: "https://grafana.greenlang.ai/d/tempo-operations"
+
+        # ---------------------------------------------------------------------
+        # TempoTenantRateLimited - Tenant being rate limited
+        # ---------------------------------------------------------------------
+        - alert: TempoTenantRateLimited
+          expr: |
+            sum(rate(tempo_discarded_spans_total{reason="rate_limited"}[5m])) by (tenant) > 0
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-observability
+            component: tempo-distributor
+            category: throttling
+          annotations:
+            summary: "Tempo tenant {{ $labels.tenant }} is being rate limited"
+            description: |
+              Tenant {{ $labels.tenant }} is having spans rate-limited at
+              {{ $value | printf "%.0f" }} spans/sec. This means trace data
+              is being dropped for this tenant.
+
+              Rate limiting occurs when a tenant exceeds their configured
+              ingestion rate (spans/sec or bytes/sec). This may indicate:
+              - Runaway instrumentation producing excessive spans
+              - Misconfigured sampling in the OTel Collector
+              - Legitimate traffic growth requiring limit increase
+
+              Review tenant's trace volume and adjust limits if appropriate.
+            runbook_url: "https://runbooks.greenlang.ai/tracing/tempo-rate-limited"
+            dashboard_url: "https://grafana.greenlang.ai/d/tracing-overview"
+
+    # =========================================================================
+    # OTEL COLLECTOR ALERTS
+    # =========================================================================
+    - name: tracing.otel-collector
+      interval: 30s
+      rules:
+        # ---------------------------------------------------------------------
+        # OTelCollectorDroppedSpans - Excessive span drops
+        # ---------------------------------------------------------------------
+        - alert: OTelCollectorDroppedSpans
+          expr: |
+            sum(rate(otelcol_processor_dropped_spans[5m])) * 60 > 100
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-observability
+            component: otel-collector
+            category: data-loss
+          annotations:
+            summary: "OTel Collector dropping more than 100 spans/min"
+            description: |
+              The OpenTelemetry Collector is dropping {{ $value | printf "%.0f" }}
+              spans per minute across all processors. Some dropping is expected
+              with tail-based sampling, but rates above 100/min may indicate:
+
+              - Memory pressure causing emergency span shedding
+              - Misconfigured sampling policies dropping too aggressively
+              - Processor pipeline errors causing span rejection
+              - Queue overflow from slow export targets
+
+              Check the collector logs and the OTel Collector Pipeline dashboard
+              to identify which processor is dropping spans and why.
+            runbook_url: "https://runbooks.greenlang.ai/tracing/otel-collector-dropped-spans"
+            dashboard_url: "https://grafana.greenlang.ai/d/otel-collector"
+
+        # ---------------------------------------------------------------------
+        # OTelCollectorQueueFull - Export queue at capacity
+        # ---------------------------------------------------------------------
+        - alert: OTelCollectorQueueFull
+          expr: |
+            (
+              sum(otelcol_exporter_queue_size)
+              / sum(otelcol_exporter_queue_capacity)
+            ) * 100 > 90
+          for: 5m
+          labels:
+            severity: critical
+            team: platform-observability
+            component: otel-collector
+            category: data-loss
+          annotations:
+            summary: "OTel Collector exporter queue is above 90% capacity"
+            description: |
+              The OTel Collector exporter queue is at {{ $value | printf "%.1f" }}%
+              capacity. When the queue reaches 100%, new spans are dropped.
+
+              This indicates the export target (Tempo) cannot keep up with the
+              incoming span volume. Immediate actions needed:
+              1. Scale the OTel Collector deployment horizontally
+              2. Increase queue capacity (sending_queue.queue_size)
+              3. Enable more aggressive head sampling to reduce volume
+              4. Check Tempo distributor for backpressure or errors
+
+              Queue at capacity means active data loss is imminent or occurring.
+            runbook_url: "https://runbooks.greenlang.ai/tracing/otel-collector-dropped-spans"
+            dashboard_url: "https://grafana.greenlang.ai/d/otel-collector"
+
+        # ---------------------------------------------------------------------
+        # OTelCollectorHighMemory - Memory usage above 80%
+        # ---------------------------------------------------------------------
+        - alert: OTelCollectorHighMemory
+          expr: |
+            (
+              otelcol_process_memory_rss
+              / on(pod) group_left()
+              kube_pod_container_resource_limits{resource="memory", container="otel-collector"}
+            ) * 100 > 80
+          for: 10m
+          labels:
+            severity: warning
+            team: platform-observability
+            component: otel-collector
+            category: resources
+          annotations:
+            summary: "OTel Collector memory usage above 80% of limit"
+            description: |
+              OTel Collector pod {{ $labels.pod }} is using {{ $value | printf "%.1f" }}%
+              of its memory limit for more than 10 minutes.
+
+              High memory usage in the collector is typically caused by:
+              - Tail sampling holding too many traces in decision cache
+              - Large batch sizes accumulating before export
+              - Memory leak in a processor or extension
+              - Insufficient memory limits for current throughput
+
+              At 100% usage, the pod will be OOMKilled by Kubernetes, causing
+              all in-flight spans to be lost.
+
+              Consider:
+              - Increasing memory limits
+              - Reducing tail sampling decision_wait
+              - Decreasing batch timeout/send_batch_size
+              - Enabling the memory_limiter processor
+            runbook_url: "https://runbooks.greenlang.ai/tracing/otel-collector-dropped-spans"
+            dashboard_url: "https://grafana.greenlang.ai/d/otel-collector"
+
+        # ---------------------------------------------------------------------
+        # OTelCollectorDown - No collector instances running
+        # ---------------------------------------------------------------------
+        - alert: OTelCollectorDown
+          expr: |
+            absent(up{job=~".*otel-collector.*"} == 1)
+          for: 5m
+          labels:
+            severity: critical
+            team: platform-observability
+            component: otel-collector
+            category: availability
+          annotations:
+            summary: "No OTel Collector instances are running"
+            description: |
+              No OpenTelemetry Collector instances have been scrape-able for
+              5 minutes. This means the entire trace ingestion pipeline is down.
+
+              All application traces are being silently dropped by the SDKs
+              (OTLP exporters return errors, SDKs buffer briefly then discard).
+
+              Immediate actions:
+              1. Check the otel-collector Deployment/DaemonSet status
+              2. Look for CrashLoopBackOff or ImagePullBackOff
+              3. Check node resources (CPU/memory) for scheduling failures
+              4. Verify the collector ConfigMap is valid YAML
+
+              This is a total observability outage for distributed tracing.
+            runbook_url: "https://runbooks.greenlang.ai/tracing/otel-collector-down"
+            dashboard_url: "https://grafana.greenlang.ai/d/otel-collector"
+
+    # =========================================================================
+    # END-TO-END PIPELINE ALERTS
+    # =========================================================================
+    - name: tracing.pipeline
+      interval: 30s
+      rules:
+        # ---------------------------------------------------------------------
+        # TracePipelineEndToEndLatency - Ingestion latency above 30s
+        # ---------------------------------------------------------------------
+        - alert: TracePipelineEndToEndLatency
+          expr: |
+            histogram_quantile(0.99,
+              sum(rate(tempo_distributor_push_duration_seconds_bucket[5m])) by (le)
+            )
+            +
+            histogram_quantile(0.99,
+              sum(rate(tempo_ingester_flush_duration_seconds_bucket[5m])) by (le)
+            ) > 30
+          for: 10m
+          labels:
+            severity: warning
+            team: platform-observability
+            component: trace-pipeline
+            category: performance
+          annotations:
+            summary: "End-to-end trace ingestion latency exceeds 30 seconds"
+            description: |
+              The combined distributor push + ingester flush latency at P99 is
+              {{ $value | printf "%.1f" }}s, exceeding the 30-second threshold.
+
+              High end-to-end latency means traces take too long to become
+              searchable in Tempo. This affects:
+              - Real-time trace debugging workflows
+              - Alert rules based on trace-derived metrics
+              - Correlation between logs, metrics, and traces
+
+              Investigate:
+              - Distributor push duration (network/ingester issues)
+              - Ingester flush duration (S3 write speed, WAL size)
+              - Compactor lag (block merging backlog)
+            runbook_url: "https://runbooks.greenlang.ai/tracing/trace-pipeline-latency"
+            dashboard_url: "https://grafana.greenlang.ai/d/tempo-operations"
+
+        # ---------------------------------------------------------------------
+        # TraceSearchLatencyHigh - TraceQL search P99 above 10s
+        # ---------------------------------------------------------------------
+        - alert: TraceSearchLatencyHigh
+          expr: |
+            histogram_quantile(0.99,
+              sum(rate(tempo_querier_search_duration_seconds_bucket[5m])) by (le)
+            ) > 10
+          for: 10m
+          labels:
+            severity: warning
+            team: platform-observability
+            component: tempo-querier
+            category: performance
+          annotations:
+            summary: "TraceQL search latency P99 above 10 seconds"
+            description: |
+              Tempo TraceQL search latency at P99 is {{ $value | printf "%.1f" }}s,
+              exceeding the 10-second threshold for 10 minutes.
+
+              Slow trace search impacts:
+              - Developer debugging workflows in Grafana Explore
+              - Dashboard panels using Tempo datasource
+              - Automated alerting based on trace queries
+
+              Common causes:
+              - Compactor lag (many small uncompacted blocks)
+              - Large time range queries scanning too many blocks
+              - Stale bloom filters from paused compaction
+              - Insufficient querier memory/CPU for concurrent queries
+              - Complex TraceQL queries with many attribute filters
+            runbook_url: "https://runbooks.greenlang.ai/tracing/trace-search-slow"
+            dashboard_url: "https://grafana.greenlang.ai/d/trace-analytics"
+
+        # ---------------------------------------------------------------------
+        # NoTracesReceived - Zero spans ingested for 15 minutes
+        # ---------------------------------------------------------------------
+        - alert: NoTracesReceived
+          expr: |
+            sum(rate(tempo_distributor_spans_received_total[15m])) == 0
+            and
+            sum(up{job=~".*tempo-distributor.*"}) > 0
+          for: 15m
+          labels:
+            severity: critical
+            team: platform-observability
+            component: trace-pipeline
+            category: availability
+          annotations:
+            summary: "No traces received by Tempo for 15 minutes"
+            description: |
+              Tempo distributors are up and running but have not received any
+              spans in the last 15 minutes. This indicates a complete break
+              in the trace ingestion pipeline.
+
+              The Tempo distributors are healthy (scrape targets are up), so
+              the issue is upstream. Check in order:
+              1. OTel Collector - is it running and exporting to Tempo?
+              2. Application SDKs - are they configured with correct endpoints?
+              3. Network policies - can collectors reach Tempo distributors?
+              4. Service mesh - is mTLS blocking gRPC connections?
+
+              This is a total tracing outage. All application-level trace data
+              is being lost.
+            runbook_url: "https://runbooks.greenlang.ai/tracing/no-traces-received"
+            dashboard_url: "https://grafana.greenlang.ai/d/tracing-overview"

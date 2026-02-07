@@ -1,0 +1,281 @@
+{{/*
+# =============================================================================
+# GreenLang Tempo - Network Policy
+# GreenLang Climate OS | OBS-003
+# =============================================================================
+# Zero-trust network policies for Tempo components:
+# - Ingress: Allow from otel-collector, grafana, and monitoring namespaces
+# - Egress: Allow to S3 (HTTPS), memberlist gossip between pods, DNS
+# =============================================================================
+*/}}
+{{- if .Values.networkPolicy.enabled }}
+
+---
+# Default deny all ingress and egress for Tempo pods
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "tempo.fullname" . }}-default-deny
+  namespace: {{ include "tempo.namespace" . }}
+  labels:
+    {{- include "tempo.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "tempo.selectorLabels" . | nindent 6 }}
+  policyTypes:
+    - Ingress
+    - Egress
+
+---
+# Distributor ingress: accept spans from OTel collectors and Jaeger clients
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "tempo.fullname" . }}-distributor
+  namespace: {{ include "tempo.namespace" . }}
+  labels:
+    {{- include "tempo.distributorLabels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "tempo.distributorSelectorLabels" . | nindent 6 }}
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Allow from OTel Collector namespace
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: greenlang
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: gl-agents
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: gl-fuel
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: gl-cbam
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: gl-building
+      ports:
+        - port: 4317
+          protocol: TCP
+        - port: 4318
+          protocol: TCP
+        - port: 14250
+          protocol: TCP
+    # Allow from monitoring namespace (Prometheus scraping, Grafana)
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+      ports:
+        - port: {{ .Values.tempo.server.http_listen_port | default 3200 }}
+          protocol: TCP
+    # Allow internal ring communication from other Tempo components
+    - from:
+        - podSelector:
+            matchLabels:
+              {{- include "tempo.selectorLabels" . | nindent 14 }}
+      ports:
+        - port: {{ .Values.tempo.server.grpc_listen_port | default 9095 }}
+          protocol: TCP
+        - port: {{ .Values.tempo.server.http_listen_port | default 3200 }}
+          protocol: TCP
+        - port: {{ .Values.tempo.memberlist.port | default 7946 }}
+          protocol: TCP
+  egress:
+    # Allow DNS
+    - to:
+        - namespaceSelector: {}
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - port: 53
+          protocol: UDP
+        - port: 53
+          protocol: TCP
+    # Allow memberlist gossip between all Tempo pods
+    - to:
+        - podSelector:
+            matchLabels:
+              {{- include "tempo.selectorLabels" . | nindent 14 }}
+      ports:
+        - port: {{ .Values.tempo.memberlist.port | default 7946 }}
+          protocol: TCP
+        - port: {{ .Values.tempo.server.grpc_listen_port | default 9095 }}
+          protocol: TCP
+    # Allow S3 access (HTTPS)
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 10.0.0.0/8
+              - 172.16.0.0/12
+              - 192.168.0.0/16
+      ports:
+        - port: 443
+          protocol: TCP
+
+---
+# Ingester network policy
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "tempo.fullname" . }}-ingester
+  namespace: {{ include "tempo.namespace" . }}
+  labels:
+    {{- include "tempo.ingesterLabels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "tempo.ingesterSelectorLabels" . | nindent 6 }}
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Allow from distributor and querier
+    - from:
+        - podSelector:
+            matchLabels:
+              {{- include "tempo.selectorLabels" . | nindent 14 }}
+      ports:
+        - port: {{ .Values.tempo.server.grpc_listen_port | default 9095 }}
+          protocol: TCP
+        - port: {{ .Values.tempo.server.http_listen_port | default 3200 }}
+          protocol: TCP
+        - port: {{ .Values.tempo.memberlist.port | default 7946 }}
+          protocol: TCP
+    # Allow Prometheus scraping
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+      ports:
+        - port: {{ .Values.tempo.server.http_listen_port | default 3200 }}
+          protocol: TCP
+  egress:
+    # Allow DNS
+    - to:
+        - namespaceSelector: {}
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - port: 53
+          protocol: UDP
+        - port: 53
+          protocol: TCP
+    # Allow memberlist gossip
+    - to:
+        - podSelector:
+            matchLabels:
+              {{- include "tempo.selectorLabels" . | nindent 14 }}
+      ports:
+        - port: {{ .Values.tempo.memberlist.port | default 7946 }}
+          protocol: TCP
+        - port: {{ .Values.tempo.server.grpc_listen_port | default 9095 }}
+          protocol: TCP
+    # Allow S3 access (HTTPS)
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 10.0.0.0/8
+              - 172.16.0.0/12
+              - 192.168.0.0/16
+      ports:
+        - port: 443
+          protocol: TCP
+
+---
+# Querier / Query Frontend / Compactor / Metrics Generator - shared policy
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "tempo.fullname" . }}-internal
+  namespace: {{ include "tempo.namespace" . }}
+  labels:
+    {{- include "tempo.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "tempo.selectorLabels" . | nindent 6 }}
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Allow Grafana (from monitoring namespace) to reach query-frontend
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+      ports:
+        - port: {{ .Values.tempo.server.http_listen_port | default 3200 }}
+          protocol: TCP
+        - port: {{ .Values.tempo.server.grpc_listen_port | default 9095 }}
+          protocol: TCP
+        - port: 16686
+          protocol: TCP
+    # Allow inter-component communication
+    - from:
+        - podSelector:
+            matchLabels:
+              {{- include "tempo.selectorLabels" . | nindent 14 }}
+      ports:
+        - port: {{ .Values.tempo.server.grpc_listen_port | default 9095 }}
+          protocol: TCP
+        - port: {{ .Values.tempo.server.http_listen_port | default 3200 }}
+          protocol: TCP
+        - port: {{ .Values.tempo.memberlist.port | default 7946 }}
+          protocol: TCP
+  egress:
+    # Allow DNS
+    - to:
+        - namespaceSelector: {}
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - port: 53
+          protocol: UDP
+        - port: 53
+          protocol: TCP
+    # Allow inter-component communication
+    - to:
+        - podSelector:
+            matchLabels:
+              {{- include "tempo.selectorLabels" . | nindent 14 }}
+      ports:
+        - port: {{ .Values.tempo.memberlist.port | default 7946 }}
+          protocol: TCP
+        - port: {{ .Values.tempo.server.grpc_listen_port | default 9095 }}
+          protocol: TCP
+        - port: {{ .Values.tempo.server.http_listen_port | default 3200 }}
+          protocol: TCP
+    # Allow S3 access (HTTPS)
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 10.0.0.0/8
+              - 172.16.0.0/12
+              - 192.168.0.0/16
+      ports:
+        - port: 443
+          protocol: TCP
+    # Allow Prometheus remote write from metrics-generator
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+      ports:
+        - port: 9090
+          protocol: TCP
+
+{{- end }}

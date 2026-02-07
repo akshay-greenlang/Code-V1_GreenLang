@@ -1,0 +1,73 @@
+{{/*
+# =============================================================================
+# GreenLang Tempo - Pod Disruption Budgets
+# GreenLang Climate OS | OBS-003
+# =============================================================================
+# PDBs protect ingester and distributor availability during node drain,
+# cluster upgrades, and voluntary disruptions.
+# =============================================================================
+*/}}
+
+{{- if and (eq .Values.tempo.mode "distributed") .Values.podDisruptionBudget.ingester.enabled }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "tempo.fullname" . }}-ingester
+  namespace: {{ include "tempo.namespace" . }}
+  labels:
+    {{- include "tempo.ingesterLabels" . | nindent 4 }}
+spec:
+  minAvailable: {{ .Values.podDisruptionBudget.ingester.minAvailable | default 2 }}
+  selector:
+    matchLabels:
+      {{- include "tempo.ingesterSelectorLabels" . | nindent 6 }}
+{{- end }}
+
+{{- if and (eq .Values.tempo.mode "distributed") .Values.podDisruptionBudget.distributor.enabled }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "tempo.fullname" . }}-distributor
+  namespace: {{ include "tempo.namespace" . }}
+  labels:
+    {{- include "tempo.distributorLabels" . | nindent 4 }}
+spec:
+  minAvailable: {{ .Values.podDisruptionBudget.distributor.minAvailable | default 2 }}
+  selector:
+    matchLabels:
+      {{- include "tempo.distributorSelectorLabels" . | nindent 6 }}
+{{- end }}
+
+{{- if and (eq .Values.tempo.mode "distributed") .Values.podDisruptionBudget.querier.enabled }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "tempo.fullname" . }}-querier
+  namespace: {{ include "tempo.namespace" . }}
+  labels:
+    {{- include "tempo.querierLabels" . | nindent 4 }}
+spec:
+  minAvailable: {{ .Values.podDisruptionBudget.querier.minAvailable | default 1 }}
+  selector:
+    matchLabels:
+      {{- include "tempo.querierSelectorLabels" . | nindent 6 }}
+{{- end }}
+
+{{- if and (eq .Values.tempo.mode "distributed") .Values.podDisruptionBudget.queryFrontend.enabled }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "tempo.fullname" . }}-query-frontend
+  namespace: {{ include "tempo.namespace" . }}
+  labels:
+    {{- include "tempo.queryFrontendLabels" . | nindent 4 }}
+spec:
+  minAvailable: {{ .Values.podDisruptionBudget.queryFrontend.minAvailable | default 1 }}
+  selector:
+    matchLabels:
+      {{- include "tempo.queryFrontendSelectorLabels" . | nindent 6 }}
+{{- end }}

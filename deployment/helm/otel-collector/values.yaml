@@ -1,0 +1,433 @@
+# =============================================================================
+# GreenLang OpenTelemetry Collector - Base Values
+# GreenLang Climate OS | OBS-003
+# =============================================================================
+# Production-grade OTel Collector configuration with:
+#   - Gateway mode (centralized collection point)
+#   - OTLP + Jaeger receivers for traces, metrics, and logs
+#   - Tail sampling (errors, slow, compliance agents, auth failures)
+#   - PII/credential redaction in attributes
+#   - Export to Tempo (traces), Prometheus (metrics), Loki (logs)
+#   - HA with HPA, PDB, anti-affinity, and network policies
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# Global Configuration
+# ---------------------------------------------------------------------------
+global:
+  # Environment-specific values (override in values-{env}.yaml)
+  environment: prod
+  clusterName: greenlang-prod
+  awsRegion: eu-west-1
+  # Additional labels applied to every resource
+  labels: {}
+
+# ---------------------------------------------------------------------------
+# OpenTelemetry Collector
+# ---------------------------------------------------------------------------
+otelCollector:
+  # Gateway mode: centralized deployment receiving telemetry from all services
+  mode: deployment
+  replicas: 3
+
+  image:
+    repository: otel/opentelemetry-collector-contrib
+    tag: "0.96.0"
+    pullPolicy: IfNotPresent
+
+  # Resource requests and limits
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+    limits:
+      cpu: "2"
+      memory: 2Gi
+
+  # -------------------------------------------------------------------------
+  # OTel Collector Pipeline Configuration
+  # -------------------------------------------------------------------------
+  config:
+    # ---------------------------------------------------------------------
+    # Receivers
+    # ---------------------------------------------------------------------
+    receivers:
+      # OTLP receiver (primary) - gRPC and HTTP
+      otlp:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:4317
+            max_recv_msg_size_mib: 4
+            keepalive:
+              server_parameters:
+                max_connection_age: 300s
+                max_connection_age_grace: 60s
+          http:
+            endpoint: 0.0.0.0:4318
+            cors:
+              allowed_origins:
+                - "https://*.greenlang.io"
+              allowed_headers:
+                - "*"
+              max_age: 3600
+
+      # Jaeger receiver (legacy compatibility)
+      jaeger:
+        protocols:
+          grpc:
+            endpoint: "0.0.0.0:14250"
+          thrift_http:
+            endpoint: "0.0.0.0:14268"
+
+    # ---------------------------------------------------------------------
+    # Processors
+    # ---------------------------------------------------------------------
+    processors:
+      # Memory limiter - prevents OOM by applying back-pressure
+      memory_limiter:
+        check_interval: 1s
+        limit_mib: 1536
+        spike_limit_mib: 512
+
+      # Resource attributes - inject platform metadata
+      resource:
+        attributes:
+          - key: service.environment
+            value: "${ENVIRONMENT}"
+            action: upsert
+          - key: service.cluster
+            value: "greenlang-${ENVIRONMENT}"
+            action: upsert
+          - key: service.platform
+            value: greenlang-climate-os
+            action: insert
+          - key: deployment.environment
+            value: "${ENVIRONMENT}"
+            action: insert
+
+      # PII and credential redaction
+      attributes/redact:
+        actions:
+          # Remove authentication headers
+          - key: http.request.header.authorization
+            action: delete
+          - key: http.request.header.cookie
+            action: delete
+          - key: http.request.header.set_cookie
+            action: delete
+          - key: http.request.header.x_api_key
+            action: delete
+          # Hash sensitive database statements
+          - key: db.statement
+            action: hash
+          # Remove request/response bodies (may contain PII)
+          - key: http.request.body
+            action: delete
+          - key: http.response.body
+            action: delete
+          # Remove user credentials from URLs
+          - key: http.url
+            action: hash
+          # Redact messaging payloads
+          - key: messaging.message.payload
+            action: delete
+
+      # Filter out noisy health/readiness checks
+      filter/health:
+        error_mode: ignore
+        traces:
+          span:
+            - 'attributes["http.target"] == "/health"'
+            - 'attributes["http.target"] == "/ready"'
+            - 'attributes["http.target"] == "/ping"'
+            - 'attributes["http.target"] == "/metrics"'
+            - 'attributes["http.target"] == "/livez"'
+            - 'attributes["http.target"] == "/readyz"'
+            - 'attributes["http.route"] == "/health"'
+            - 'attributes["http.route"] == "/ready"'
+
+      # Tail-based sampling - intelligent trace retention
+      tail_sampling:
+        decision_wait: 10s
+        num_traces: 50000
+        expected_new_traces_per_sec: 500
+        policies:
+          # Always retain error traces
+          - name: errors
+            type: status_code
+            status_code:
+              status_codes: [ERROR]
+          # Always retain slow traces (>2s)
+          - name: slow-traces
+            type: latency
+            latency:
+              threshold_ms: 2000
+          # Always retain compliance agent traces (regulatory requirement)
+          - name: compliance-agents
+            type: string_attribute
+            string_attribute:
+              key: service.name
+              values:
+                - eudr-agent
+                - cbam-agent
+                - sb253-agent
+                - csrd-agent
+                - vcci-agent
+                - taxonomy-agent
+          # Always retain auth failures (security requirement)
+          - name: auth-failures
+            type: string_attribute
+            string_attribute:
+              key: gl.auth.result
+              values:
+                - denied
+                - failed
+                - revoked
+          # Sample 50% of API gateway traffic
+          - name: api-services
+            type: probabilistic
+            probabilistic:
+              sampling_percentage: 50
+          # Sample 10% of everything else
+          - name: default
+            type: probabilistic
+            probabilistic:
+              sampling_percentage: 10
+
+      # Batch processor - improves export efficiency
+      batch:
+        timeout: 2s
+        send_batch_size: 1024
+        send_batch_max_size: 2048
+
+      # Batch processor for metrics pipeline (separate tuning)
+      batch/metrics:
+        timeout: 5s
+        send_batch_size: 512
+        send_batch_max_size: 1024
+
+      # Batch processor for logs pipeline (separate tuning)
+      batch/logs:
+        timeout: 3s
+        send_batch_size: 512
+        send_batch_max_size: 1024
+
+    # ---------------------------------------------------------------------
+    # Exporters
+    # ---------------------------------------------------------------------
+    exporters:
+      # Grafana Tempo - distributed tracing backend
+      otlp/tempo:
+        endpoint: tempo-distributor.monitoring.svc.cluster.local:4317
+        tls:
+          insecure: true
+        retry_on_failure:
+          enabled: true
+          initial_interval: 5s
+          max_interval: 30s
+          max_elapsed_time: 300s
+        sending_queue:
+          enabled: true
+          num_consumers: 10
+          queue_size: 5000
+        timeout: 30s
+
+      # Prometheus exporter - expose metrics for Prometheus scraping
+      prometheus:
+        endpoint: 0.0.0.0:8889
+        namespace: gl_otel
+        resource_to_telemetry_conversion:
+          enabled: true
+        enable_open_metrics: true
+
+      # Loki exporter - centralized log aggregation
+      loki:
+        endpoint: http://loki-gateway.monitoring.svc.cluster.local:3100/loki/api/v1/push
+        labels:
+          attributes:
+            service.name: service
+            service.namespace: namespace
+            severity: level
+          resource:
+            service.environment: environment
+        retry_on_failure:
+          enabled: true
+          initial_interval: 5s
+          max_interval: 30s
+          max_elapsed_time: 300s
+
+    # ---------------------------------------------------------------------
+    # Extensions
+    # ---------------------------------------------------------------------
+    extensions:
+      # Health check endpoint
+      health_check:
+        endpoint: "0.0.0.0:13133"
+        path: /health
+        check_collector_pipeline:
+          enabled: true
+          interval: 5m
+          exporter_failure_threshold: 5
+
+      # Performance profiling
+      pprof:
+        endpoint: "0.0.0.0:1777"
+
+      # zPages for in-process debugging
+      zpages:
+        endpoint: "0.0.0.0:55679"
+
+    # ---------------------------------------------------------------------
+    # Service - Pipeline Wiring
+    # ---------------------------------------------------------------------
+    service:
+      extensions: [health_check, pprof, zpages]
+
+      pipelines:
+        # Traces pipeline: receive -> limit -> enrich -> redact -> filter -> sample -> batch -> export
+        traces:
+          receivers: [otlp, jaeger]
+          processors: [memory_limiter, resource, attributes/redact, filter/health, tail_sampling, batch]
+          exporters: [otlp/tempo]
+
+        # Metrics pipeline: receive -> limit -> enrich -> batch -> export
+        metrics:
+          receivers: [otlp]
+          processors: [memory_limiter, resource, batch/metrics]
+          exporters: [prometheus]
+
+        # Logs pipeline: receive -> limit -> enrich -> batch -> export
+        logs:
+          receivers: [otlp]
+          processors: [memory_limiter, resource, batch/logs]
+          exporters: [loki]
+
+      # Collector self-observability
+      telemetry:
+        logs:
+          level: info
+          encoding: json
+        metrics:
+          level: detailed
+          address: 0.0.0.0:8888
+
+# ---------------------------------------------------------------------------
+# Service Account
+# ---------------------------------------------------------------------------
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}
+
+# ---------------------------------------------------------------------------
+# Pod Security
+# ---------------------------------------------------------------------------
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 65534
+  runAsGroup: 65534
+  fsGroup: 65534
+  seccompProfile:
+    type: RuntimeDefault
+
+containerSecurityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL
+
+# ---------------------------------------------------------------------------
+# Horizontal Pod Autoscaler
+# ---------------------------------------------------------------------------
+hpa:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 6
+  targetCPUUtilization: 70
+  targetMemoryUtilization: 80
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+        - type: Percent
+          value: 50
+          periodSeconds: 30
+        - type: Pods
+          value: 2
+          periodSeconds: 30
+      selectPolicy: Max
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Percent
+          value: 10
+          periodSeconds: 60
+      selectPolicy: Min
+
+# ---------------------------------------------------------------------------
+# Pod Disruption Budget
+# ---------------------------------------------------------------------------
+pdb:
+  enabled: true
+  minAvailable: 1
+
+# ---------------------------------------------------------------------------
+# Network Policy
+# ---------------------------------------------------------------------------
+networkPolicy:
+  enabled: true
+
+# ---------------------------------------------------------------------------
+# Service Monitor (Prometheus Operator)
+# ---------------------------------------------------------------------------
+serviceMonitor:
+  enabled: true
+  interval: 30s
+  scrapeTimeout: 10s
+  labels:
+    release: gl-prometheus
+
+# ---------------------------------------------------------------------------
+# Pod Anti-Affinity
+# ---------------------------------------------------------------------------
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+              - key: app.kubernetes.io/name
+                operator: In
+                values:
+                  - greenlang-otel-collector
+          topologyKey: kubernetes.io/hostname
+
+# ---------------------------------------------------------------------------
+# Topology Spread Constraints
+# ---------------------------------------------------------------------------
+topologySpreadConstraints:
+  - maxSkew: 1
+    topologyKey: topology.kubernetes.io/zone
+    whenUnsatisfiable: ScheduleAnyway
+    labelSelector:
+      matchLabels:
+        app.kubernetes.io/name: greenlang-otel-collector
+
+# ---------------------------------------------------------------------------
+# Tolerations and Node Selector
+# ---------------------------------------------------------------------------
+tolerations: []
+nodeSelector: {}
+
+# ---------------------------------------------------------------------------
+# Additional Pod Annotations
+# ---------------------------------------------------------------------------
+podAnnotations: {}
+
+# ---------------------------------------------------------------------------
+# Name Overrides
+# ---------------------------------------------------------------------------
+nameOverride: ""
+fullnameOverride: ""

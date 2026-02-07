@@ -1,0 +1,363 @@
+# ZAP Automation Framework Configuration
+#
+# OWASP ZAP Automation Framework configuration for GreenLang security scanning.
+# Defines scan profiles for baseline, full, and API scanning modes.
+#
+# Usage:
+#   zap.sh -cmd -autorun /path/to/zap-automation.yaml
+#
+# Documentation: https://www.zaproxy.org/docs/automate/automation-framework/
+#
+# Author: GreenLang Security Team
+# Version: 1.0.0
+# Compliance: SOC 2 CC7.1, ISO 27001 A.14.2.5
+
+---
+# Environment configuration
+env:
+  # Context configuration
+  contexts:
+    - name: "GreenLang API Context"
+      # URLs to include in scope
+      urls:
+        - "https://api.greenlang.io/*"
+        - "https://staging.greenlang.io/*"
+      # URLs to exclude from scanning
+      excludePaths:
+        - ".*\\.css$"
+        - ".*\\.js$"
+        - ".*\\.png$"
+        - ".*\\.jpg$"
+        - ".*\\.gif$"
+        - ".*\\.svg$"
+        - ".*\\.ico$"
+        - ".*\\.woff2?$"
+        - ".*/static/.*"
+        - ".*/assets/.*"
+        - ".*/health$"
+        - ".*/healthz$"
+        - ".*/ready$"
+        - ".*/readyz$"
+        - ".*/metrics$"
+      # Include subdomains
+      includeSubs: false
+
+      # Session management
+      sessionManagement:
+        method: "cookie"
+        parameters: {}
+
+      # Authentication configuration
+      authentication:
+        method: "json"
+        parameters:
+          loginPageUrl: "https://api.greenlang.io/auth/login"
+          loginRequestUrl: "https://api.greenlang.io/auth/login"
+          loginRequestBody: '{"username":"{%username%}","password":"{%password%}"}'
+
+      # Users for authenticated scanning
+      users:
+        - name: "test-user"
+          credentials:
+            username: "${ZAP_AUTH_USERNAME}"
+            password: "${ZAP_AUTH_PASSWORD}"
+
+  # Global parameters
+  parameters:
+    # Fail if findings exceed threshold
+    failOnError: true
+    failOnWarning: false
+    # Progress updates
+    progressToStdout: true
+
+---
+# Baseline Scan Profile
+# Fast passive scanning for CI/CD integration (<5 minutes)
+jobs:
+  # Spider the application
+  - type: spider
+    parameters:
+      context: "GreenLang API Context"
+      maxDuration: 2  # minutes
+      maxDepth: 5
+      maxChildren: 10
+      acceptCookies: true
+      handleODataParametersVisited: true
+      handleParameters: "USE_ALL"
+      parseComments: true
+      parseRobotsTxt: true
+      parseSitemapXml: true
+
+  # AJAX Spider for SPAs (optional)
+  - type: spiderAjax
+    parameters:
+      context: "GreenLang API Context"
+      maxDuration: 2  # minutes
+      maxCrawlDepth: 5
+      numberOfBrowsers: 2
+      browserId: "firefox-headless"
+      clickDefaultElems: true
+      clickElemsOnce: true
+      eventWait: 1000
+      reloadWait: 1000
+    rules: []
+
+  # Passive scanning (always enabled)
+  - type: passiveScan-config
+    parameters:
+      maxAlertsPerRule: 10
+      scanOnlyInScope: true
+      maxBodySizeInBytesToScan: 10000
+    rules:
+      # Enable all info disclosure rules
+      - id: 10027  # Information Disclosure - Suspicious Comments
+        threshold: "LOW"
+      - id: 10036  # Server Leaks Version Information
+        threshold: "LOW"
+      - id: 10037  # Server Leaks Information
+        threshold: "LOW"
+      # Security headers
+      - id: 10020  # X-Frame-Options Header
+        threshold: "MEDIUM"
+      - id: 10021  # X-Content-Type-Options Header Missing
+        threshold: "MEDIUM"
+      - id: 10035  # Strict-Transport-Security Header
+        threshold: "MEDIUM"
+      - id: 10038  # Content Security Policy Header Not Set
+        threshold: "MEDIUM"
+      # Cookies
+      - id: 10012  # Cookie Without Secure Flag
+        threshold: "MEDIUM"
+      - id: 10054  # Cookie without SameSite Attribute
+        threshold: "LOW"
+
+  # Wait for passive scan to complete
+  - type: passiveScan-wait
+    parameters:
+      maxDuration: 5  # minutes
+
+  # Generate reports
+  - type: report
+    parameters:
+      template: "sarif-json"
+      reportDir: "/zap/wrk"
+      reportFile: "zap-baseline-report"
+      reportTitle: "GreenLang Baseline Security Scan"
+      reportDescription: "Automated baseline security scan for CI/CD"
+    risks:
+      - high
+      - medium
+      - low
+      - info
+
+---
+# Full Scan Profile
+# Comprehensive active scanning for nightly/weekly runs (30+ minutes)
+jobs:
+  # Spider thoroughly
+  - type: spider
+    parameters:
+      context: "GreenLang API Context"
+      maxDuration: 10  # minutes
+      maxDepth: 10
+      maxChildren: 20
+      acceptCookies: true
+      handleODataParametersVisited: true
+      handleParameters: "USE_ALL"
+      parseComments: true
+      parseRobotsTxt: true
+      parseSitemapXml: true
+
+  # AJAX Spider for SPAs
+  - type: spiderAjax
+    parameters:
+      context: "GreenLang API Context"
+      maxDuration: 5  # minutes
+      maxCrawlDepth: 10
+      numberOfBrowsers: 4
+      browserId: "firefox-headless"
+      clickDefaultElems: true
+      clickElemsOnce: true
+      eventWait: 1000
+      reloadWait: 1000
+    rules: []
+
+  # Passive scanning
+  - type: passiveScan-config
+    parameters:
+      maxAlertsPerRule: 20
+      scanOnlyInScope: true
+      maxBodySizeInBytesToScan: 100000
+    rules: []
+
+  # Active scanning
+  - type: activeScan
+    parameters:
+      context: "GreenLang API Context"
+      maxRuleDurationInMins: 5
+      maxScanDurationInMins: 60
+      addQueryParam: true
+      delayInMs: 100
+      handleAntiCSRFTokens: true
+      injectPluginIdInHeader: false
+      scanHeadersAllRequests: false
+      threadPerHost: 5
+    policyDefinition:
+      # Injection attacks
+      rules:
+        - id: 40018  # SQL Injection
+          strength: "HIGH"
+          threshold: "MEDIUM"
+        - id: 40019  # SQL Injection - MySQL
+          strength: "HIGH"
+          threshold: "MEDIUM"
+        - id: 40020  # SQL Injection - Oracle
+          strength: "HIGH"
+          threshold: "MEDIUM"
+        - id: 40021  # SQL Injection - PostgreSQL
+          strength: "HIGH"
+          threshold: "MEDIUM"
+        - id: 40012  # Cross Site Scripting (Reflected)
+          strength: "HIGH"
+          threshold: "MEDIUM"
+        - id: 40014  # Cross Site Scripting (Persistent)
+          strength: "HIGH"
+          threshold: "MEDIUM"
+        - id: 40034  # Cross Site Scripting (DOM)
+          strength: "HIGH"
+          threshold: "MEDIUM"
+        - id: 40026  # OS Command Injection
+          strength: "HIGH"
+          threshold: "MEDIUM"
+        - id: 40023  # XXE
+          strength: "HIGH"
+          threshold: "MEDIUM"
+        - id: 90019  # Server Side Code Injection
+          strength: "HIGH"
+          threshold: "MEDIUM"
+        # Path traversal
+        - id: 6  # Path Traversal
+          strength: "MEDIUM"
+          threshold: "MEDIUM"
+        # Authentication
+        - id: 10202  # Absence of Anti-CSRF Tokens
+          strength: "MEDIUM"
+          threshold: "MEDIUM"
+
+  # Wait for passive scan completion
+  - type: passiveScan-wait
+    parameters:
+      maxDuration: 10  # minutes
+
+  # Generate comprehensive reports
+  - type: report
+    parameters:
+      template: "sarif-json"
+      reportDir: "/zap/wrk"
+      reportFile: "zap-full-report"
+      reportTitle: "GreenLang Full Security Scan"
+      reportDescription: "Comprehensive security scan including active attacks"
+    risks:
+      - high
+      - medium
+      - low
+      - info
+
+  - type: report
+    parameters:
+      template: "traditional-html"
+      reportDir: "/zap/wrk"
+      reportFile: "zap-full-report.html"
+      reportTitle: "GreenLang Full Security Scan"
+      reportDescription: "Comprehensive security scan report"
+    risks:
+      - high
+      - medium
+      - low
+
+---
+# API Scan Profile
+# OpenAPI/GraphQL endpoint scanning
+jobs:
+  # Import OpenAPI definition
+  - type: openapi
+    parameters:
+      apiUrl: "${ZAP_API_DEFINITION_URL}"
+      apiFile: "/zap/wrk/openapi.yaml"
+      targetUrl: "${ZAP_TARGET_URL}"
+      context: "GreenLang API Context"
+
+  # Passive scanning
+  - type: passiveScan-config
+    parameters:
+      maxAlertsPerRule: 10
+      scanOnlyInScope: true
+      maxBodySizeInBytesToScan: 50000
+    rules:
+      # API-specific checks
+      - id: 10095  # Backup File Disclosure
+        threshold: "MEDIUM"
+      - id: 10096  # Timestamp Disclosure
+        threshold: "LOW"
+      - id: 10097  # Hash Disclosure
+        threshold: "MEDIUM"
+
+  # Active scanning focused on APIs
+  - type: activeScan
+    parameters:
+      context: "GreenLang API Context"
+      maxRuleDurationInMins: 3
+      maxScanDurationInMins: 30
+      addQueryParam: true
+      delayInMs: 50
+      handleAntiCSRFTokens: true
+      injectPluginIdInHeader: false
+      scanHeadersAllRequests: true
+      threadPerHost: 3
+    policyDefinition:
+      rules:
+        # SQL Injection - high priority for APIs
+        - id: 40018
+          strength: "HIGH"
+          threshold: "LOW"
+        - id: 40019
+          strength: "HIGH"
+          threshold: "LOW"
+        - id: 40021
+          strength: "HIGH"
+          threshold: "LOW"
+        # NoSQL Injection
+        - id: 90018
+          strength: "HIGH"
+          threshold: "LOW"
+        # XXE (common in APIs)
+        - id: 40023
+          strength: "HIGH"
+          threshold: "LOW"
+        # SSRF
+        - id: 40046
+          strength: "HIGH"
+          threshold: "MEDIUM"
+        # Broken Object Level Authorization
+        - id: 40048
+          strength: "HIGH"
+          threshold: "MEDIUM"
+
+  # Wait for passive scan
+  - type: passiveScan-wait
+    parameters:
+      maxDuration: 5  # minutes
+
+  # API-specific reports
+  - type: report
+    parameters:
+      template: "sarif-json"
+      reportDir: "/zap/wrk"
+      reportFile: "zap-api-report"
+      reportTitle: "GreenLang API Security Scan"
+      reportDescription: "OpenAPI endpoint security scan"
+    risks:
+      - high
+      - medium
+      - low
+      - info

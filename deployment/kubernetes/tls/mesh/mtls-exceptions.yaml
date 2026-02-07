@@ -1,0 +1,64 @@
+# =============================================================================
+# mTLS Exceptions for Special Cases
+# SEC-004: Service Mesh mTLS Configuration
+# =============================================================================
+
+# AuthorizationPolicy to allow health check traffic
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-health-checks
+  namespace: greenlang
+  labels:
+    greenlang.io/component: sec-004
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/part-of: greenlang
+  action: ALLOW
+  rules:
+    # Allow kubelet health probes
+    - from:
+        - source:
+            ipBlocks: ["10.0.0.0/8"]
+      to:
+        - operation:
+            paths: ["/health", "/healthz", "/ready", "/readyz", "/live", "/livez"]
+            methods: ["GET"]
+---
+# ServiceEntry for external APIs (bypass mTLS)
+apiVersion: networking.istio.io/v1beta1
+kind: ServiceEntry
+metadata:
+  name: external-apis
+  namespace: greenlang
+  labels:
+    greenlang.io/component: sec-004
+spec:
+  hosts:
+    - "api.openai.com"
+    - "api.anthropic.com"
+    - "*.s3.amazonaws.com"
+    - "*.rds.amazonaws.com"
+    - "*.elasticache.amazonaws.com"
+  ports:
+    - number: 443
+      name: https
+      protocol: HTTPS
+  resolution: DNS
+  location: MESH_EXTERNAL
+---
+# DestinationRule for external services
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: external-apis-tls
+  namespace: greenlang
+  labels:
+    greenlang.io/component: sec-004
+spec:
+  host: "*.amazonaws.com"
+  trafficPolicy:
+    tls:
+      mode: SIMPLE
+      sni: "*.amazonaws.com"

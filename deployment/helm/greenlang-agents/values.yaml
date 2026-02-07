@@ -287,3 +287,223 @@ eudr-compliance:
     availability: 99.95
     latencyP95: 250ms
     errorRate: 0.005
+
+# =============================================================================
+# Vault Agent Injector Configuration
+# SEC-006: Phase 4 - Vault Agent Injector Integration
+# =============================================================================
+
+vault:
+  # Enable Vault Agent injection
+  enabled: true
+
+  # Vault server address
+  address: "https://vault.vault.svc.cluster.local:8200"
+
+  # TLS configuration
+  tls:
+    enabled: true
+    secretName: vault-tls
+    caKey: ca.crt
+    skipVerify: false
+
+  # Agent injector settings
+  injector:
+    # Enable agent injection
+    enabled: true
+
+    # Default agent image
+    image:
+      repository: hashicorp/vault
+      tag: "1.15.4"
+
+    # Agent resource defaults
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 100m
+        memory: 128Mi
+
+    # Revoke tokens on pod shutdown
+    revokeOnShutdown: true
+
+    # Security context for agent
+    securityContext:
+      runAsUser: 100
+      runAsGroup: 1000
+
+  # Service-specific Vault configurations
+  services:
+    # GreenLang API configuration
+    greenlang-api:
+      role: "greenlang-api"
+      prePopulateOnly: false
+      secrets:
+        - path: "secret/data/greenlang/database/postgresql"
+          key: "db-creds"
+          template: |
+            {{- with secret "secret/data/greenlang/database/postgresql" -}}
+            {
+              "username": "{{ .Data.data.username }}",
+              "password": "{{ .Data.data.password }}",
+              "host": "{{ .Data.data.host }}",
+              "port": {{ .Data.data.port }},
+              "database": "{{ .Data.data.database }}"
+            }
+            {{- end -}}
+        - path: "secret/data/greenlang/database/redis"
+          key: "redis-creds"
+          template: |
+            {{- with secret "secret/data/greenlang/database/redis" -}}
+            {
+              "host": "{{ .Data.data.host }}",
+              "port": {{ .Data.data.port }},
+              "password": "{{ .Data.data.password }}"
+            }
+            {{- end -}}
+        - path: "secret/data/greenlang/auth/jwt-signing"
+          key: "jwt-keys"
+
+    # Agent Factory configuration
+    agent-factory:
+      role: "greenlang-agents"
+      prePopulateOnly: false
+      secrets:
+        - path: "secret/data/greenlang/agents/database"
+          key: "db-creds"
+        - path: "secret/data/greenlang/agents/s3"
+          key: "s3-creds"
+        - path: "secret/data/greenlang/agents/signing"
+          key: "signing-keys"
+        - path: "secret/data/greenlang/agents/llm"
+          key: "llm-keys"
+
+    # Audit Service configuration
+    audit-service:
+      role: "greenlang-audit"
+      prePopulateOnly: false
+      secrets:
+        - path: "secret/data/greenlang/audit/database"
+          key: "db-creds"
+        - path: "secret/data/greenlang/audit/s3"
+          key: "s3-creds"
+        - path: "secret/data/greenlang/audit/pii-encryption"
+          key: "pii-key"
+
+    # Auth Service configuration
+    auth-service:
+      role: "greenlang-auth"
+      prePopulateOnly: false
+      secrets:
+        - path: "secret/data/greenlang/auth/jwt-signing"
+          key: "jwt-keys"
+        - path: "secret/data/greenlang/auth/refresh-token"
+          key: "refresh-token-key"
+        - path: "secret/data/greenlang/auth/password-pepper"
+          key: "password-pepper"
+        - path: "secret/data/greenlang/auth/session"
+          key: "session-key"
+
+    # Jobs Service configuration
+    greenlang-jobs:
+      role: "greenlang-jobs"
+      prePopulateOnly: true  # Init container mode
+      secrets:
+        - path: "secret/data/greenlang/database/postgresql"
+          key: "db-creds"
+        - path: "secret/data/greenlang/database/redis"
+          key: "redis-creds"
+        - path: "secret/data/greenlang/storage/s3"
+          key: "s3-creds"
+
+    # Worker Service configuration
+    greenlang-worker:
+      role: "greenlang-worker"
+      prePopulateOnly: false  # Sidecar mode for long-running workers
+      secrets:
+        - path: "secret/data/greenlang/database/postgresql"
+          key: "db-creds"
+        - path: "secret/data/greenlang/database/redis"
+          key: "redis-creds"
+        - path: "secret/data/greenlang/storage/s3"
+          key: "s3-creds"
+
+# =============================================================================
+# External Secrets Operator (ESO) Configuration
+# SEC-006: Phase 3 - ESO Integration
+# =============================================================================
+
+eso:
+  # Enable ESO integration
+  enabled: true
+
+  # ClusterSecretStore reference
+  clusterSecretStore:
+    name: vault-backend
+    kind: ClusterSecretStore
+
+  # Default refresh interval
+  refreshInterval: 30s
+
+  # Secret deletion policy
+  deletionPolicy: Retain
+
+  # Creation policy
+  creationPolicy: Owner
+
+  # Templates for secret data transformation
+  templates:
+    enabled: true
+
+  # Service-specific ExternalSecrets
+  secrets:
+    # API Service secrets
+    api:
+      enabled: true
+      namespace: greenlang
+      secretName: greenlang-api-secrets
+      data:
+        - secretKey: DATABASE_URL
+          remoteRef:
+            key: secret/data/greenlang/database/postgresql
+            property: connection_string
+        - secretKey: REDIS_URL
+          remoteRef:
+            key: secret/data/greenlang/database/redis
+            property: connection_string
+
+    # Agent Factory secrets
+    agents:
+      enabled: true
+      namespace: greenlang-agents
+      secretName: agent-factory-secrets
+      data:
+        - secretKey: DATABASE_URL
+          remoteRef:
+            key: secret/data/greenlang/agents/database
+            property: connection_string
+        - secretKey: OPENAI_API_KEY
+          remoteRef:
+            key: secret/data/greenlang/agents/llm
+            property: openai_api_key
+        - secretKey: ANTHROPIC_API_KEY
+          remoteRef:
+            key: secret/data/greenlang/agents/llm
+            property: anthropic_api_key
+
+    # Audit Service secrets
+    audit:
+      enabled: true
+      namespace: greenlang
+      secretName: audit-service-secrets
+      data:
+        - secretKey: DATABASE_URL
+          remoteRef:
+            key: secret/data/greenlang/audit/database
+            property: connection_string
+        - secretKey: PII_ENCRYPTION_KEY
+          remoteRef:
+            key: secret/data/greenlang/audit/pii-encryption
+            property: encryption_key

@@ -1,0 +1,233 @@
+{{- /*
+GreenLang Grafana - Main Deployment
+GreenLang Climate OS | OBS-002
+*/ -}}
+{{- if .Values.grafana.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "grafana.fullname" . }}
+  namespace: {{ include "grafana.namespace" . }}
+  labels:
+    {{- include "grafana.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.hpa.enabled }}
+  replicas: {{ .Values.grafana.replicas }}
+  {{- end }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      {{- include "grafana.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "grafana.labels" . | nindent 8 }}
+      annotations:
+        checksum/grafana-ini: {{ include (print $.Template.BasePath "/configmap-grafana-ini.yaml") . | sha256sum }}
+        checksum/datasources: {{ include (print $.Template.BasePath "/configmap-datasources.yaml") . | sha256sum }}
+        checksum/dashboard-providers: {{ include (print $.Template.BasePath "/configmap-dashboard-providers.yaml") . | sha256sum }}
+    spec:
+      serviceAccountName: {{ include "grafana.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.grafana.podSecurityContext | nindent 8 }}
+      {{- if .Values.grafana.affinity }}
+      affinity:
+        {{- toYaml .Values.grafana.affinity | nindent 8 }}
+      {{- end }}
+      {{- if .Values.grafana.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- toYaml .Values.grafana.topologySpreadConstraints | nindent 8 }}
+      {{- end }}
+      {{- if .Values.grafana.tolerations }}
+      tolerations:
+        {{- toYaml .Values.grafana.tolerations | nindent 8 }}
+      {{- end }}
+      {{- if .Values.grafana.nodeSelector }}
+      nodeSelector:
+        {{- toYaml .Values.grafana.nodeSelector | nindent 8 }}
+      {{- end }}
+      initContainers:
+      - name: init-chown-data
+        image: busybox:1.36
+        imagePullPolicy: IfNotPresent
+        command:
+          - sh
+          - -c
+          - |
+            mkdir -p /var/lib/grafana/dashboards
+            mkdir -p /var/lib/grafana/plugins
+            mkdir -p /tmp/grafana
+        volumeMounts:
+        - name: grafana-storage
+          mountPath: /var/lib/grafana
+        - name: tmp
+          mountPath: /tmp/grafana
+        securityContext:
+          runAsUser: 472
+          runAsGroup: 472
+      containers:
+      # --- Grafana main container ---
+      - name: grafana
+        image: "{{ .Values.grafana.image.repository }}:{{ .Values.grafana.image.tag }}"
+        imagePullPolicy: {{ .Values.grafana.image.pullPolicy }}
+        ports:
+        - name: http
+          containerPort: 3000
+          protocol: TCP
+        {{- if .Values.grafana.unifiedAlerting.ha.enabled }}
+        - name: gossip-tcp
+          containerPort: {{ .Values.grafana.unifiedAlerting.ha.listenPort }}
+          protocol: TCP
+        - name: gossip-udp
+          containerPort: {{ .Values.grafana.unifiedAlerting.ha.listenPort }}
+          protocol: UDP
+        {{- end }}
+        env:
+        - name: GF_PATHS_CONFIG
+          value: /etc/grafana/grafana.ini
+        - name: GF_PATHS_DATA
+          value: /var/lib/grafana
+        - name: GF_PATHS_PROVISIONING
+          value: /etc/grafana/provisioning
+        - name: GF_PATHS_PLUGINS
+          value: /var/lib/grafana/plugins
+        - name: GF_SECURITY_ADMIN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.grafana.security.adminPasswordSecretName }}
+              key: {{ .Values.grafana.security.adminPasswordSecretKey }}
+        - name: GF_SECURITY_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.grafana.security.secretKeySecretName }}
+              key: {{ .Values.grafana.security.secretKeySecretKey }}
+        {{- if eq .Values.grafana.database.type "postgres" }}
+        - name: GF_DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.grafana.database.passwordSecretName }}
+              key: {{ .Values.grafana.database.passwordSecretKey }}
+        {{- end }}
+        {{- if .Values.grafana.oauth.enabled }}
+        - name: GF_AUTH_GENERIC_OAUTH_CLIENT_ID
+          value: {{ .Values.grafana.oauth.clientId | quote }}
+        - name: GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "grafana.fullname" . }}-oauth
+              key: client-secret
+        {{- end }}
+        {{- if .Values.grafana.smtp.enabled }}
+        - name: GF_SMTP_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.grafana.smtp.passwordSecretName }}
+              key: {{ .Values.grafana.smtp.passwordSecretKey }}
+        {{- end }}
+        {{- if .Values.grafana.unifiedAlerting.ha.enabled }}
+        - name: GF_UNIFIED_ALERTING_HA_ADVERTISE_ADDRESS
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        - name: GF_UNIFIED_ALERTING_HA_PEERS
+          value: "{{ include "grafana.fullname" . }}-headless:{{ .Values.grafana.unifiedAlerting.ha.peerPort }}"
+        {{- end }}
+        {{- range .Values.grafana.extraEnvVars }}
+        - name: {{ .name }}
+          value: {{ .value | quote }}
+        {{- end }}
+        resources:
+          {{- toYaml .Values.grafana.resources | nindent 10 }}
+        securityContext:
+          {{- toYaml .Values.grafana.containerSecurityContext | nindent 10 }}
+        livenessProbe:
+          {{- toYaml .Values.grafana.livenessProbe | nindent 10 }}
+        readinessProbe:
+          {{- toYaml .Values.grafana.readinessProbe | nindent 10 }}
+        volumeMounts:
+        - name: grafana-ini
+          mountPath: /etc/grafana/grafana.ini
+          subPath: grafana.ini
+          readOnly: true
+        - name: grafana-storage
+          mountPath: /var/lib/grafana
+        - name: datasources
+          mountPath: /etc/grafana/provisioning/datasources
+          readOnly: true
+        - name: dashboard-providers
+          mountPath: /etc/grafana/provisioning/dashboards
+          readOnly: true
+        {{- if .Values.grafana.notifiers.enabled }}
+        - name: notifiers
+          mountPath: /etc/grafana/provisioning/alerting
+          readOnly: true
+        {{- end }}
+        - name: tmp
+          mountPath: /tmp
+        {{- range .Values.grafana.extraVolumeMounts }}
+        - {{- toYaml . | nindent 10 }}
+        {{- end }}
+      {{- if .Values.grafana.sidecar.enabled }}
+      # --- Sidecar for dashboard auto-reload ---
+      - name: sidecar
+        image: "{{ .Values.grafana.sidecar.image.repository }}:{{ .Values.grafana.sidecar.image.tag }}"
+        imagePullPolicy: {{ .Values.grafana.sidecar.image.pullPolicy }}
+        env:
+        {{- if .Values.grafana.sidecar.dashboards.enabled }}
+        - name: LABEL
+          value: {{ .Values.grafana.sidecar.dashboards.label | quote }}
+        - name: LABEL_VALUE
+          value: {{ .Values.grafana.sidecar.dashboards.labelValue | quote }}
+        - name: FOLDER
+          value: /var/lib/grafana/dashboards
+        - name: FOLDER_ANNOTATION
+          value: {{ .Values.grafana.sidecar.dashboards.folderAnnotation | quote }}
+        - name: NAMESPACE
+          value: {{ .Values.grafana.sidecar.dashboards.searchNamespace | quote }}
+        - name: RESOURCE
+          value: configmap
+        {{- end }}
+        resources:
+          {{- toYaml .Values.grafana.sidecar.resources | nindent 10 }}
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+              - ALL
+        volumeMounts:
+        - name: grafana-storage
+          mountPath: /var/lib/grafana
+      {{- end }}
+      volumes:
+      - name: grafana-ini
+        configMap:
+          name: {{ include "grafana.fullname" . }}-grafana-ini
+      - name: datasources
+        configMap:
+          name: {{ include "grafana.fullname" . }}-datasources
+      - name: dashboard-providers
+        configMap:
+          name: {{ include "grafana.fullname" . }}-dashboard-providers
+      {{- if .Values.grafana.notifiers.enabled }}
+      - name: notifiers
+        configMap:
+          name: {{ include "grafana.fullname" . }}-notifiers
+      {{- end }}
+      - name: grafana-storage
+        {{- if .Values.grafana.persistence.enabled }}
+        persistentVolumeClaim:
+          claimName: {{ include "grafana.fullname" . }}
+        {{- else }}
+        emptyDir: {}
+        {{- end }}
+      - name: tmp
+        emptyDir: {}
+      {{- range .Values.grafana.extraVolumes }}
+      - {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

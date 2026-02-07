@@ -1,0 +1,97 @@
+# =============================================================================
+# GreenLang Auth Service - Horizontal Pod Autoscaler
+# =============================================================================
+# HPA for auth service: scales based on CPU, memory utilization, and custom
+# login latency metric. Scales from 2 to 10 replicas.
+# PRD: SEC-001
+# =============================================================================
+
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: auth-service-hpa
+  namespace: greenlang-auth
+  labels:
+    app: auth-service
+    app.kubernetes.io/name: auth-service
+    app.kubernetes.io/component: autoscaling
+    app.kubernetes.io/part-of: greenlang
+  annotations:
+    description: "HPA for Auth Service based on CPU, memory, and login latency"
+    prd: SEC-001
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: auth-service
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+    # CPU-based scaling
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    # Memory-based scaling
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+    # Custom metric: login latency P95
+    # Scale when P95 login duration exceeds 200ms (0.2s)
+    - type: Pods
+      pods:
+        metric:
+          name: gl_auth_login_duration_seconds_p95
+        target:
+          type: AverageValue
+          averageValue: "200m"
+  behavior:
+    # Scale up: moderately aggressive for handling auth traffic spikes
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+        - type: Pods
+          value: 2
+          periodSeconds: 60
+        - type: Percent
+          value: 100
+          periodSeconds: 60
+      selectPolicy: Max
+    # Scale down: conservative to avoid flapping during intermittent load
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Pods
+          value: 1
+          periodSeconds: 120
+        - type: Percent
+          value: 25
+          periodSeconds: 120
+      selectPolicy: Min
+
+---
+# =============================================================================
+# Pod Disruption Budget - Auth Service
+# =============================================================================
+
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: auth-service-pdb
+  namespace: greenlang-auth
+  labels:
+    app: auth-service
+    app.kubernetes.io/name: auth-service
+    app.kubernetes.io/component: authentication
+    app.kubernetes.io/part-of: greenlang
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: auth-service
+      app.kubernetes.io/component: authentication

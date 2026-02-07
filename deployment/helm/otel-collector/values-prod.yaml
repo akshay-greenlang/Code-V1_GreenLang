@@ -1,0 +1,327 @@
+# =============================================================================
+# GreenLang OpenTelemetry Collector - Production Values
+# GreenLang Climate OS | OBS-003
+# =============================================================================
+# Production configuration with full HA and security:
+#   - 3 replicas with strict anti-affinity
+#   - Production resources (1Gi / 500m CPU, limits 2Gi / 2 CPU)
+#   - Full tail sampling with production thresholds
+#   - HPA enabled (3-6 replicas)
+#   - PDB minAvailable: 2
+#   - Strict network policies
+#   - Topology spread across AZs
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# Global Configuration
+# ---------------------------------------------------------------------------
+global:
+  environment: prod
+  clusterName: greenlang-prod
+  awsRegion: eu-west-1
+
+# ---------------------------------------------------------------------------
+# OpenTelemetry Collector
+# ---------------------------------------------------------------------------
+otelCollector:
+  replicas: 3
+
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+    limits:
+      cpu: "2"
+      memory: 2Gi
+
+  config:
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:4317
+            max_recv_msg_size_mib: 4
+            keepalive:
+              server_parameters:
+                max_connection_age: 300s
+                max_connection_age_grace: 60s
+          http:
+            endpoint: 0.0.0.0:4318
+            cors:
+              allowed_origins:
+                - "https://*.greenlang.io"
+              allowed_headers:
+                - "*"
+              max_age: 3600
+
+      jaeger:
+        protocols:
+          grpc:
+            endpoint: "0.0.0.0:14250"
+          thrift_http:
+            endpoint: "0.0.0.0:14268"
+
+    processors:
+      memory_limiter:
+        check_interval: 1s
+        limit_mib: 1536
+        spike_limit_mib: 512
+
+      resource:
+        attributes:
+          - key: service.environment
+            value: "${ENVIRONMENT}"
+            action: upsert
+          - key: service.cluster
+            value: "greenlang-${ENVIRONMENT}"
+            action: upsert
+          - key: service.platform
+            value: greenlang-climate-os
+            action: insert
+          - key: deployment.environment
+            value: "${ENVIRONMENT}"
+            action: insert
+
+      attributes/redact:
+        actions:
+          - key: http.request.header.authorization
+            action: delete
+          - key: http.request.header.cookie
+            action: delete
+          - key: http.request.header.set_cookie
+            action: delete
+          - key: http.request.header.x_api_key
+            action: delete
+          - key: db.statement
+            action: hash
+          - key: http.request.body
+            action: delete
+          - key: http.response.body
+            action: delete
+          - key: http.url
+            action: hash
+          - key: messaging.message.payload
+            action: delete
+
+      filter/health:
+        error_mode: ignore
+        traces:
+          span:
+            - 'attributes["http.target"] == "/health"'
+            - 'attributes["http.target"] == "/ready"'
+            - 'attributes["http.target"] == "/ping"'
+            - 'attributes["http.target"] == "/metrics"'
+            - 'attributes["http.target"] == "/livez"'
+            - 'attributes["http.target"] == "/readyz"'
+            - 'attributes["http.route"] == "/health"'
+            - 'attributes["http.route"] == "/ready"'
+
+      tail_sampling:
+        decision_wait: 10s
+        num_traces: 50000
+        expected_new_traces_per_sec: 500
+        policies:
+          - name: errors
+            type: status_code
+            status_code:
+              status_codes: [ERROR]
+          - name: slow-traces
+            type: latency
+            latency:
+              threshold_ms: 2000
+          - name: compliance-agents
+            type: string_attribute
+            string_attribute:
+              key: service.name
+              values:
+                - eudr-agent
+                - cbam-agent
+                - sb253-agent
+                - csrd-agent
+                - vcci-agent
+                - taxonomy-agent
+          - name: auth-failures
+            type: string_attribute
+            string_attribute:
+              key: gl.auth.result
+              values:
+                - denied
+                - failed
+                - revoked
+          - name: api-services
+            type: probabilistic
+            probabilistic:
+              sampling_percentage: 50
+          - name: default
+            type: probabilistic
+            probabilistic:
+              sampling_percentage: 10
+
+      batch:
+        timeout: 2s
+        send_batch_size: 1024
+        send_batch_max_size: 2048
+
+      batch/metrics:
+        timeout: 5s
+        send_batch_size: 512
+        send_batch_max_size: 1024
+
+      batch/logs:
+        timeout: 3s
+        send_batch_size: 512
+        send_batch_max_size: 1024
+
+    exporters:
+      otlp/tempo:
+        endpoint: tempo-distributor.monitoring.svc.cluster.local:4317
+        tls:
+          insecure: true
+        retry_on_failure:
+          enabled: true
+          initial_interval: 5s
+          max_interval: 30s
+          max_elapsed_time: 300s
+        sending_queue:
+          enabled: true
+          num_consumers: 10
+          queue_size: 5000
+        timeout: 30s
+
+      prometheus:
+        endpoint: 0.0.0.0:8889
+        namespace: gl_otel
+        resource_to_telemetry_conversion:
+          enabled: true
+        enable_open_metrics: true
+
+      loki:
+        endpoint: http://loki-gateway.monitoring.svc.cluster.local:3100/loki/api/v1/push
+        labels:
+          attributes:
+            service.name: service
+            service.namespace: namespace
+            severity: level
+          resource:
+            service.environment: environment
+        retry_on_failure:
+          enabled: true
+          initial_interval: 5s
+          max_interval: 30s
+          max_elapsed_time: 300s
+
+    extensions:
+      health_check:
+        endpoint: "0.0.0.0:13133"
+        path: /health
+        check_collector_pipeline:
+          enabled: true
+          interval: 5m
+          exporter_failure_threshold: 5
+      pprof:
+        endpoint: "0.0.0.0:1777"
+      zpages:
+        endpoint: "0.0.0.0:55679"
+
+    service:
+      extensions: [health_check, pprof, zpages]
+
+      pipelines:
+        traces:
+          receivers: [otlp, jaeger]
+          processors: [memory_limiter, resource, attributes/redact, filter/health, tail_sampling, batch]
+          exporters: [otlp/tempo]
+
+        metrics:
+          receivers: [otlp]
+          processors: [memory_limiter, resource, batch/metrics]
+          exporters: [prometheus]
+
+        logs:
+          receivers: [otlp]
+          processors: [memory_limiter, resource, batch/logs]
+          exporters: [loki]
+
+      telemetry:
+        logs:
+          level: info
+          encoding: json
+        metrics:
+          level: detailed
+          address: 0.0.0.0:8888
+
+# ---------------------------------------------------------------------------
+# HPA - Production scale
+# ---------------------------------------------------------------------------
+hpa:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 6
+  targetCPUUtilization: 70
+  targetMemoryUtilization: 80
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+        - type: Percent
+          value: 50
+          periodSeconds: 30
+        - type: Pods
+          value: 2
+          periodSeconds: 30
+      selectPolicy: Max
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Percent
+          value: 10
+          periodSeconds: 60
+      selectPolicy: Min
+
+# ---------------------------------------------------------------------------
+# PDB - Higher availability for production
+# ---------------------------------------------------------------------------
+pdb:
+  enabled: true
+  minAvailable: 2
+
+# ---------------------------------------------------------------------------
+# Network Policy
+# ---------------------------------------------------------------------------
+networkPolicy:
+  enabled: true
+
+# ---------------------------------------------------------------------------
+# Service Monitor
+# ---------------------------------------------------------------------------
+serviceMonitor:
+  enabled: true
+  interval: 30s
+  scrapeTimeout: 10s
+  labels:
+    release: gl-prometheus
+
+# ---------------------------------------------------------------------------
+# Affinity - Strict anti-affinity for production HA
+# ---------------------------------------------------------------------------
+affinity:
+  podAntiAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchExpressions:
+            - key: app.kubernetes.io/name
+              operator: In
+              values:
+                - greenlang-otel-collector
+        topologyKey: kubernetes.io/hostname
+
+# ---------------------------------------------------------------------------
+# Topology Spread - Ensure AZ distribution
+# ---------------------------------------------------------------------------
+topologySpreadConstraints:
+  - maxSkew: 1
+    topologyKey: topology.kubernetes.io/zone
+    whenUnsatisfiable: DoNotSchedule
+    labelSelector:
+      matchLabels:
+        app.kubernetes.io/name: greenlang-otel-collector

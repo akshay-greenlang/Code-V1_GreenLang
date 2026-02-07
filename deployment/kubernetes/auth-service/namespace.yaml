@@ -1,0 +1,97 @@
+# =============================================================================
+# GreenLang Auth Service - Kubernetes Namespace
+# =============================================================================
+# Namespace: greenlang-auth
+# Purpose: JWT Authentication Service - token issuance, validation, revocation
+# PRD: SEC-001
+# =============================================================================
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: greenlang-auth
+  labels:
+    app.kubernetes.io/name: auth-service
+    app.kubernetes.io/component: authentication
+    app.kubernetes.io/part-of: greenlang
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/version: "1.0.0"
+    environment: production
+    # Pod Security Standards - Restrict privileges
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/enforce-version: latest
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/warn: restricted
+  annotations:
+    team: platform-security
+    owner: greenlang
+    prd: SEC-001
+    description: "GreenLang JWT Authentication Service - login, token lifecycle, RBAC"
+    documentation: "https://docs.greenlang.ai/k8s/auth-service"
+
+---
+# =============================================================================
+# Resource Quota - Limit namespace resources
+# =============================================================================
+
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: auth-service-quota
+  namespace: greenlang-auth
+  labels:
+    app.kubernetes.io/name: auth-service
+    app.kubernetes.io/component: resource-management
+    app.kubernetes.io/part-of: greenlang
+spec:
+  hard:
+    # CPU limits
+    requests.cpu: "4"
+    limits.cpu: "8"
+    # Memory limits
+    requests.memory: "4Gi"
+    limits.memory: "8Gi"
+    # Pod count
+    pods: "10"
+    # Service count
+    services: "5"
+    # ConfigMap count
+    configmaps: "10"
+    # Secret count
+    secrets: "10"
+    # PVC count
+    persistentvolumeclaims: "2"
+
+---
+# =============================================================================
+# Limit Range - Default container limits
+# =============================================================================
+
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: auth-service-limits
+  namespace: greenlang-auth
+  labels:
+    app.kubernetes.io/name: auth-service
+    app.kubernetes.io/component: resource-management
+    app.kubernetes.io/part-of: greenlang
+spec:
+  limits:
+    - type: Container
+      default:
+        cpu: "500m"
+        memory: "512Mi"
+      defaultRequest:
+        cpu: "100m"
+        memory: "128Mi"
+      max:
+        cpu: "2"
+        memory: "2Gi"
+      min:
+        cpu: "50m"
+        memory: "64Mi"
+    - type: Pod
+      max:
+        cpu: "4"
+        memory: "4Gi"

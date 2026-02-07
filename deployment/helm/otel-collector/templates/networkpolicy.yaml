@@ -1,0 +1,235 @@
+{{/*
+# =============================================================================
+# GreenLang OpenTelemetry Collector - Network Policy
+# GreenLang Climate OS | OBS-003
+# =============================================================================
+# Zero-trust network policies controlling ingress (telemetry from
+# GreenLang namespaces, monitoring scraping) and egress (Tempo,
+# Prometheus, Loki, DNS) traffic.
+# =============================================================================
+*/}}
+{{- if .Values.networkPolicy.enabled }}
+---
+# Default deny all traffic to OTel Collector pods
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "otel-collector.fullname" . }}-default-deny
+  namespace: {{ include "otel-collector.namespace" . }}
+  labels:
+    {{- include "otel-collector.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "otel-collector.selectorLabels" . | nindent 6 }}
+  policyTypes:
+    - Ingress
+    - Egress
+
+---
+# Allow ingress from GreenLang application namespaces and monitoring
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "otel-collector.fullname" . }}-ingress
+  namespace: {{ include "otel-collector.namespace" . }}
+  labels:
+    {{- include "otel-collector.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "otel-collector.selectorLabels" . | nindent 6 }}
+  policyTypes:
+    - Ingress
+  ingress:
+    # Allow OTLP and Jaeger from greenlang namespace
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: greenlang
+      ports:
+        - port: 4317
+          protocol: TCP
+        - port: 4318
+          protocol: TCP
+        - port: 14250
+          protocol: TCP
+        - port: 14268
+          protocol: TCP
+
+    # Allow OTLP and Jaeger from greenlang-agents namespace
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: greenlang-agents
+      ports:
+        - port: 4317
+          protocol: TCP
+        - port: 4318
+          protocol: TCP
+        - port: 14250
+          protocol: TCP
+        - port: 14268
+          protocol: TCP
+
+    # Allow OTLP and Jaeger from greenlang-jobs namespace
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: greenlang-jobs
+      ports:
+        - port: 4317
+          protocol: TCP
+        - port: 4318
+          protocol: TCP
+        - port: 14250
+          protocol: TCP
+        - port: 14268
+          protocol: TCP
+
+    # Allow OTLP from gl-agents namespace (agent factory)
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: gl-agents
+      ports:
+        - port: 4317
+          protocol: TCP
+        - port: 4318
+          protocol: TCP
+
+    # Allow OTLP from gl-fuel namespace (fuel agents)
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: gl-fuel
+      ports:
+        - port: 4317
+          protocol: TCP
+        - port: 4318
+          protocol: TCP
+
+    # Allow OTLP from gl-cbam namespace (CBAM compliance)
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: gl-cbam
+      ports:
+        - port: 4317
+          protocol: TCP
+        - port: 4318
+          protocol: TCP
+
+    # Allow OTLP from gl-building namespace (building agents)
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: gl-building
+      ports:
+        - port: 4317
+          protocol: TCP
+        - port: 4318
+          protocol: TCP
+
+    # Allow metrics scraping from monitoring namespace (Prometheus)
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+      ports:
+        - port: 8888
+          protocol: TCP
+        - port: 8889
+          protocol: TCP
+        - port: 13133
+          protocol: TCP
+
+    # Allow internal communication (collector-to-collector for HA)
+    - from:
+        - podSelector:
+            matchLabels:
+              {{- include "otel-collector.selectorLabels" . | nindent 14 }}
+      ports:
+        - port: 4317
+          protocol: TCP
+
+---
+# Allow egress to Tempo, Prometheus, Loki, and DNS
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "otel-collector.fullname" . }}-egress
+  namespace: {{ include "otel-collector.namespace" . }}
+  labels:
+    {{- include "otel-collector.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "otel-collector.selectorLabels" . | nindent 6 }}
+  policyTypes:
+    - Egress
+  egress:
+    # Allow DNS resolution
+    - to:
+        - namespaceSelector: {}
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - port: 53
+          protocol: UDP
+        - port: 53
+          protocol: TCP
+
+    # Allow egress to Tempo (trace backend) in monitoring namespace
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: tempo
+      ports:
+        - port: 4317
+          protocol: TCP
+        - port: 3200
+          protocol: TCP
+
+    # Allow egress to Loki (log backend) in monitoring namespace
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: loki
+      ports:
+        - port: 3100
+          protocol: TCP
+        - port: 80
+          protocol: TCP
+
+    # Allow egress to Prometheus (metric backend) in monitoring namespace
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: prometheus
+      ports:
+        - port: 9090
+          protocol: TCP
+
+    # Allow egress to Kubernetes API server (service discovery)
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 10.0.0.0/8
+              - 172.16.0.0/12
+              - 192.168.0.0/16
+      ports:
+        - port: 443
+          protocol: TCP
+{{- end }}

@@ -880,6 +880,15 @@ if FASTAPI_AVAILABLE:
         stats = await service.get_statistics()
         return StatisticsResponse(**stats)
 
+    # SEC-001: Apply authentication and permission protection
+    try:
+        from greenlang.infrastructure.auth_service.route_protector import (
+            protect_router,
+        )
+        protect_router(flags_router)
+    except ImportError:
+        pass  # auth_service not available
+
 else:
     flags_router = None  # type: ignore[assignment]
     logger.warning("FastAPI not available - flags_router is None")

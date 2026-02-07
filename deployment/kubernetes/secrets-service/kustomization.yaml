@@ -1,0 +1,75 @@
+##############################################
+# GreenLang Secrets Service Kustomization
+# SEC-006: Phase 3 - ESO Integration
+##############################################
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+metadata:
+  name: greenlang-secrets-service
+  annotations:
+    description: "External Secrets Operator integration for GreenLang"
+
+# Common labels applied to all resources
+commonLabels:
+  app.kubernetes.io/part-of: greenlang
+  app.kubernetes.io/managed-by: kustomize
+  security.greenlang.io/component: secrets-management
+
+# Common annotations
+commonAnnotations:
+  security.greenlang.io/compliance: "SOC2,GDPR"
+
+# Namespace configuration
+namespace: secrets-service
+
+# Resources to include
+resources:
+  # Namespace and base configuration
+  - namespace.yaml
+
+  # ClusterSecretStores (Vault backends)
+  - clustersecretstore-vault.yaml
+
+  # ExternalSecrets for services
+  - externalsecrets-api.yaml
+  - externalsecrets-agents.yaml
+  - externalsecrets-audit.yaml
+  - externalsecrets-auth.yaml
+
+  # PushSecrets for application-generated secrets
+  - pushsecrets.yaml
+
+  # Namespace-scoped SecretStores
+  - secretstores-per-ns.yaml
+
+# Patches for environment-specific configuration
+patches: []
+
+# ConfigMap generators (if needed)
+configMapGenerator: []
+
+# Secret generators (if needed)
+secretGenerator: []
+
+# Images to override (if needed)
+images: []
+
+# Replacements for variable substitution
+replacements: []
+
+# Components to include
+components: []
+
+# Generators
+generators: []
+
+# Validators
+validators: []
+
+# Configurations
+configurations: []
+
+# OpenAPI definitions
+openapi: {}

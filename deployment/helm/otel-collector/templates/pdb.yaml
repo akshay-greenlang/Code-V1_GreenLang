@@ -1,0 +1,23 @@
+{{/*
+# =============================================================================
+# GreenLang OpenTelemetry Collector - PodDisruptionBudget
+# GreenLang Climate OS | OBS-003
+# =============================================================================
+# Ensures minimum availability during node maintenance, cluster upgrades,
+# and voluntary disruptions.
+# =============================================================================
+*/}}
+{{- if .Values.pdb.enabled }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "otel-collector.fullname" . }}
+  namespace: {{ include "otel-collector.namespace" . }}
+  labels:
+    {{- include "otel-collector.labels" . | nindent 4 }}
+spec:
+  minAvailable: {{ .Values.pdb.minAvailable | default 1 }}
+  selector:
+    matchLabels:
+      {{- include "otel-collector.selectorLabels" . | nindent 6 }}
+{{- end }}

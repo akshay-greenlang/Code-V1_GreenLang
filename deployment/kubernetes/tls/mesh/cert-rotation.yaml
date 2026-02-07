@@ -1,0 +1,66 @@
+# =============================================================================
+# Certificate Rotation Configuration
+# SEC-004: Service Mesh mTLS Configuration
+# =============================================================================
+
+# Istio mesh configuration for certificate rotation
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+metadata:
+  name: istio-mtls-config
+  namespace: istio-system
+  labels:
+    greenlang.io/component: sec-004
+spec:
+  meshConfig:
+    # Enable mTLS by default
+    enableAutoMtls: true
+
+    # Certificate rotation settings
+    certificates:
+      # Workload certificate TTL (24 hours)
+      - secretName: dns.greenlang-workload-certs
+        dnsNames:
+          - "*.greenlang.svc.cluster.local"
+
+    defaultConfig:
+      # Proxy-level TLS settings
+      proxyMetadata:
+        # Minimum TLS version
+        ISTIO_META_TLS_MIN_PROTOCOL_VERSION: "TLSv1_3"
+
+    # Trust domain for SPIFFE IDs
+    trustDomain: cluster.local
+
+  values:
+    global:
+      # Pilot certificate settings
+      pilotCertProvider: istiod
+
+    pilot:
+      # Root CA rotation (10 years)
+      env:
+        CITADEL_SELF_SIGNED_CA_CERT_TTL: "87600h"  # 10 years
+        # Intermediate CA (1 year)
+        MAX_WORKLOAD_CERT_TTL: "8760h"  # 1 year
+        # Workload certificates (24 hours)
+        DEFAULT_WORKLOAD_CERT_TTL: "24h"
+        # Grace period before expiry to start rotation
+        WORKLOAD_CERT_GRACE_PERIOD_RATIO: "0.5"
+
+---
+# ProxyConfig for certificate rotation monitoring
+apiVersion: networking.istio.io/v1beta1
+kind: ProxyConfig
+metadata:
+  name: cert-rotation-config
+  namespace: greenlang
+  labels:
+    greenlang.io/component: sec-004
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/part-of: greenlang
+  environmentVariables:
+    # Enable certificate rotation metrics
+    ISTIO_META_CERT_SIGNER: "istio-system/istiod"

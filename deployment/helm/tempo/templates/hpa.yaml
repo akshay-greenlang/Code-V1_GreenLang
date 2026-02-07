@@ -1,0 +1,107 @@
+{{/*
+# =============================================================================
+# GreenLang Tempo - Horizontal Pod Autoscaler
+# GreenLang Climate OS | OBS-003
+# =============================================================================
+# HPA for distributor and querier components. Scales based on CPU and memory
+# utilization with stabilization windows to prevent flapping.
+# =============================================================================
+*/}}
+
+{{- if and (eq .Values.tempo.mode "distributed") .Values.autoscaling.distributor.enabled }}
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ include "tempo.fullname" . }}-distributor
+  namespace: {{ include "tempo.namespace" . }}
+  labels:
+    {{- include "tempo.distributorLabels" . | nindent 4 }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "tempo.fullname" . }}-distributor
+  minReplicas: {{ .Values.autoscaling.distributor.minReplicas | default 3 }}
+  maxReplicas: {{ .Values.autoscaling.distributor.maxReplicas | default 10 }}
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.autoscaling.distributor.targetCPUUtilizationPercentage | default 70 }}
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.autoscaling.distributor.targetMemoryUtilizationPercentage | default 80 }}
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+        - type: Percent
+          value: 50
+          periodSeconds: 30
+        - type: Pods
+          value: 2
+          periodSeconds: 30
+      selectPolicy: Max
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Percent
+          value: 10
+          periodSeconds: 60
+      selectPolicy: Min
+{{- end }}
+
+{{- if and (eq .Values.tempo.mode "distributed") .Values.autoscaling.querier.enabled }}
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ include "tempo.fullname" . }}-querier
+  namespace: {{ include "tempo.namespace" . }}
+  labels:
+    {{- include "tempo.querierLabels" . | nindent 4 }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "tempo.fullname" . }}-querier
+  minReplicas: {{ .Values.autoscaling.querier.minReplicas | default 2 }}
+  maxReplicas: {{ .Values.autoscaling.querier.maxReplicas | default 8 }}
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.autoscaling.querier.targetCPUUtilizationPercentage | default 70 }}
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.autoscaling.querier.targetMemoryUtilizationPercentage | default 80 }}
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+        - type: Percent
+          value: 50
+          periodSeconds: 30
+        - type: Pods
+          value: 2
+          periodSeconds: 30
+      selectPolicy: Max
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Percent
+          value: 10
+          periodSeconds: 60
+      selectPolicy: Min
+{{- end }}

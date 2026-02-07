@@ -1,0 +1,412 @@
+# =============================================================================
+# GreenLang Prometheus Stack - Production Values
+# GreenLang Climate OS | OBS-001
+# =============================================================================
+# Production configuration with full HA and enterprise features:
+#   - HA enabled (2 replicas with anti-affinity)
+#   - Thanos enabled with 2-year S3 retention
+#   - Full storage (50Gi)
+#   - Full alerting (Slack + PagerDuty)
+#   - Enterprise resource limits
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# Global Configuration
+# ---------------------------------------------------------------------------
+global:
+  environment: prod
+  clusterName: greenlang-prod
+  awsRegion: eu-west-1
+
+# ---------------------------------------------------------------------------
+# kube-prometheus-stack Overrides
+# ---------------------------------------------------------------------------
+kube-prometheus-stack:
+  # -------------------------------------------------------------------------
+  # Prometheus - Full HA with Thanos
+  # -------------------------------------------------------------------------
+  prometheus:
+    prometheusSpec:
+      replicas: 2
+
+      # Thanos Sidecar with full resources
+      thanos:
+        image: quay.io/thanos/thanos:v0.34.1
+        objectStorageConfig:
+          existingSecret:
+            name: thanos-objstore-secret
+            key: objstore.yml
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: 500m
+            memory: 1Gi
+
+      # External labels
+      externalLabels:
+        cluster: greenlang-prod
+        region: eu-west-1
+
+      # Production retention
+      retention: 7d
+      retentionSize: 50GB
+
+      # Production storage
+      storageSpec:
+        volumeClaimTemplate:
+          spec:
+            storageClassName: gp3
+            accessModes:
+              - ReadWriteOnce
+            resources:
+              requests:
+                storage: 50Gi
+
+      # Production resources
+      resources:
+        requests:
+          cpu: 500m
+          memory: 2Gi
+        limits:
+          cpu: 2000m
+          memory: 8Gi
+
+      # Strict anti-affinity for HA
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  app.kubernetes.io/name: prometheus
+              topologyKey: kubernetes.io/hostname
+
+      # Query limits for production
+      queryLogFile: /prometheus/query.log
+
+      # Additional security
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        fsGroup: 65534
+
+    # ServiceAccount with IRSA
+    serviceAccount:
+      create: true
+      annotations:
+        eks.amazonaws.com/role-arn: "" # Set via Terraform
+
+  # -------------------------------------------------------------------------
+  # Alertmanager - Full HA with PagerDuty
+  # -------------------------------------------------------------------------
+  alertmanager:
+    alertmanagerSpec:
+      replicas: 2
+
+      storage:
+        volumeClaimTemplate:
+          spec:
+            storageClassName: gp3
+            resources:
+              requests:
+                storage: 10Gi
+
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          cpu: 500m
+          memory: 512Mi
+
+      # Anti-affinity for HA
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/name: alertmanager
+                topologyKey: kubernetes.io/hostname
+
+    # Production routing with PagerDuty
+    config:
+      global:
+        resolve_timeout: 5m
+        slack_api_url_file: /etc/alertmanager/secrets/slack-webhook
+        pagerduty_url: 'https://events.pagerduty.com/v2/enqueue'
+
+      inhibit_rules:
+        # Critical suppresses warning for same alert
+        - source_matchers:
+            - severity = critical
+          target_matchers:
+            - severity = warning
+          equal:
+            - alertname
+            - cluster
+            - namespace
+
+        # Cluster down suppresses all other alerts
+        - source_matchers:
+            - alertname = KubeClusterDown
+          target_matchers:
+            - severity =~ "warning|critical"
+          equal:
+            - cluster
+
+        # Node down suppresses pod alerts on that node
+        - source_matchers:
+            - alertname = NodeDown
+          target_matchers:
+            - alertname =~ "KubePod.*"
+          equal:
+            - node
+
+      route:
+        group_by:
+          - alertname
+          - cluster
+          - service
+          - namespace
+        group_wait: 30s
+        group_interval: 5m
+        repeat_interval: 4h
+        receiver: 'default'
+        routes:
+          # Critical alerts -> PagerDuty + Slack
+          - match:
+              severity: critical
+            receiver: 'pagerduty-critical'
+            continue: true
+          - match:
+              severity: critical
+            receiver: 'slack-critical'
+
+          # Warning alerts -> Slack warning channel
+          - match:
+              severity: warning
+            receiver: 'slack-warnings'
+
+          # Info alerts -> Default Slack
+          - match:
+              severity: info
+            receiver: 'default'
+
+          # Watchdog -> Null (silent)
+          - match:
+              alertname: Watchdog
+            receiver: 'null'
+
+          # DeadMansSwitch -> External monitoring
+          - match:
+              alertname: DeadMansSwitch
+            receiver: 'deadmans-switch'
+
+      receivers:
+        - name: 'default'
+          slack_configs:
+            - channel: '#greenlang-alerts'
+              send_resolved: true
+              title: '[{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}] {{ .GroupLabels.SortedPairs.Values | join " " }}'
+              text: |-
+                {{ range .Alerts -}}
+                *Alert:* {{ .Annotations.summary }}
+                *Description:* {{ .Annotations.description }}
+                *Severity:* {{ .Labels.severity }}
+                *Cluster:* {{ .Labels.cluster }}
+                *Namespace:* {{ .Labels.namespace }}
+                *Source:* {{ .GeneratorURL }}
+                {{ end }}
+              actions:
+                - type: button
+                  text: "Runbook"
+                  url: "{{ (index .Alerts 0).Annotations.runbook_url }}"
+                - type: button
+                  text: "Source"
+                  url: "{{ (index .Alerts 0).GeneratorURL }}"
+                - type: button
+                  text: "Silence"
+                  url: '{{ template "__alertmanagerURL" . }}/#/silences/new'
+
+        - name: 'slack-critical'
+          slack_configs:
+            - channel: '#greenlang-alerts'
+              send_resolved: true
+              color: '{{ if eq .Status "firing" }}danger{{ else }}good{{ end }}'
+              title: ':rotating_light: [CRITICAL] {{ .GroupLabels.SortedPairs.Values | join " " }}'
+              text: |-
+                {{ range .Alerts -}}
+                *Alert:* {{ .Annotations.summary }}
+                *Description:* {{ .Annotations.description }}
+                *Cluster:* {{ .Labels.cluster }}
+                *Namespace:* {{ .Labels.namespace }}
+                *Started:* {{ .StartsAt }}
+                {{ end }}
+
+        - name: 'slack-warnings'
+          slack_configs:
+            - channel: '#greenlang-alerts-warning'
+              send_resolved: true
+              color: '{{ if eq .Status "firing" }}warning{{ else }}good{{ end }}'
+              title: ':warning: [WARNING] {{ .GroupLabels.SortedPairs.Values | join " " }}'
+
+        - name: 'pagerduty-critical'
+          pagerduty_configs:
+            - service_key_file: /etc/alertmanager/secrets/pagerduty-key
+              severity: critical
+              description: '{{ .GroupLabels.alertname }}: {{ .Annotations.summary }}'
+              details:
+                firing: '{{ .Alerts.Firing | len }}'
+                resolved: '{{ .Alerts.Resolved | len }}'
+                cluster: '{{ .CommonLabels.cluster }}'
+                namespace: '{{ .CommonLabels.namespace }}'
+
+        - name: 'deadmans-switch'
+          webhook_configs:
+            - url: 'http://deadmans-switch-receiver.monitoring.svc:9095/webhook'
+              send_resolved: false
+
+        - name: 'null'
+
+  # -------------------------------------------------------------------------
+  # Grafana - Production
+  # -------------------------------------------------------------------------
+  grafana:
+    replicas: 2
+
+    persistence:
+      enabled: true
+      size: 10Gi
+      storageClassName: gp3
+
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+
+    # Production datasources
+    additionalDataSources:
+      - name: Prometheus
+        type: prometheus
+        url: http://gl-prometheus-prometheus.monitoring.svc:9090
+        isDefault: true
+        access: proxy
+        jsonData:
+          timeInterval: "15s"
+
+      - name: Thanos
+        type: prometheus
+        url: http://thanos-query.monitoring.svc:9090
+        access: proxy
+        jsonData:
+          timeInterval: "15s"
+
+      - name: Alertmanager
+        type: alertmanager
+        url: http://gl-prometheus-alertmanager.monitoring.svc:9093
+        access: proxy
+        jsonData:
+          implementation: prometheus
+
+      - name: Loki
+        type: loki
+        url: http://loki-gateway.monitoring.svc:80
+        access: proxy
+
+    # Ingress for Grafana
+    ingress:
+      enabled: true
+      ingressClassName: kong
+      annotations:
+        cert-manager.io/cluster-issuer: letsencrypt-prod
+        konghq.com/protocols: https
+      hosts:
+        - grafana.prod.greenlang.io
+      tls:
+        - secretName: grafana-tls
+          hosts:
+            - grafana.prod.greenlang.io
+
+  # -------------------------------------------------------------------------
+  # Prometheus Operator
+  # -------------------------------------------------------------------------
+  prometheusOperator:
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 200m
+        memory: 256Mi
+
+  # -------------------------------------------------------------------------
+  # Full Default Rules
+  # -------------------------------------------------------------------------
+  defaultRules:
+    create: true
+    rules:
+      alertmanager: true
+      etcd: true
+      configReloaders: true
+      general: true
+      k8s: true
+      kubeApiserverAvailability: true
+      kubeApiserverBurnrate: true
+      kubeApiserverHistogram: true
+      kubeApiserverSlos: true
+      kubeControllerManager: true
+      kubelet: true
+      kubeProxy: true
+      kubePrometheusGeneral: true
+      kubePrometheusNodeRecording: true
+      kubernetesApps: true
+      kubernetesResources: true
+      kubernetesStorage: true
+      kubernetesSystem: true
+      kubeSchedulerAlerting: true
+      kubeSchedulerRecording: true
+      kubeStateMetrics: true
+      network: true
+      node: true
+      nodeExporterAlerting: true
+      nodeExporterRecording: true
+      prometheus: true
+      prometheusOperator: true
+
+# ---------------------------------------------------------------------------
+# PushGateway - Full HA
+# ---------------------------------------------------------------------------
+pushgateway:
+  enabled: true
+  replicaCount: 2
+
+  persistentVolume:
+    enabled: true
+    size: 2Gi
+    storageClass: gp3
+
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+  affinity:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        - labelSelector:
+            matchLabels:
+              app: prometheus-pushgateway
+          topologyKey: kubernetes.io/hostname
+
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 1

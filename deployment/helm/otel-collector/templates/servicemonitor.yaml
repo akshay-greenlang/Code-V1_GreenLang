@@ -1,0 +1,98 @@
+{{/*
+# =============================================================================
+# GreenLang OpenTelemetry Collector - ServiceMonitor
+# GreenLang Climate OS | OBS-003
+# =============================================================================
+# Prometheus Operator ServiceMonitor for scraping OTel Collector metrics:
+#   - Port 8888: Collector internal metrics (process, gRPC, pipeline health)
+#   - Port 8889: Pipeline-exported metrics (application metrics via OTLP)
+# =============================================================================
+*/}}
+{{- if .Values.serviceMonitor.enabled }}
+---
+# Internal collector metrics (self-observability)
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "otel-collector.fullname" . }}-internal
+  namespace: {{ include "otel-collector.namespace" . }}
+  labels:
+    {{- include "otel-collector.labels" . | nindent 4 }}
+    {{- with .Values.serviceMonitor.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  namespaceSelector:
+    matchNames:
+      - {{ include "otel-collector.namespace" . }}
+  selector:
+    matchLabels:
+      {{- include "otel-collector.selectorLabels" . | nindent 6 }}
+  endpoints:
+    - port: metrics
+      interval: {{ .Values.serviceMonitor.interval | default "30s" }}
+      scrapeTimeout: {{ .Values.serviceMonitor.scrapeTimeout | default "10s" }}
+      path: /metrics
+      scheme: http
+      honorLabels: true
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace
+        - sourceLabels: [__meta_kubernetes_service_name]
+          targetLabel: service
+        - action: replace
+          replacement: otel-collector
+          targetLabel: component
+        - action: replace
+          replacement: internal
+          targetLabel: metrics_type
+      metricRelabelings:
+        # Drop high-cardinality Go runtime metrics
+        - sourceLabels: [__name__]
+          regex: 'go_memstats_.*'
+          action: drop
+        # Keep important collector metrics
+        - sourceLabels: [__name__]
+          regex: 'otelcol_.*|process_.*'
+          action: keep
+
+---
+# Pipeline-exported metrics (application metrics from OTLP pipeline)
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "otel-collector.fullname" . }}-exported
+  namespace: {{ include "otel-collector.namespace" . }}
+  labels:
+    {{- include "otel-collector.labels" . | nindent 4 }}
+    {{- with .Values.serviceMonitor.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  namespaceSelector:
+    matchNames:
+      - {{ include "otel-collector.namespace" . }}
+  selector:
+    matchLabels:
+      {{- include "otel-collector.selectorLabels" . | nindent 6 }}
+  endpoints:
+    - port: prom-export
+      interval: {{ .Values.serviceMonitor.interval | default "30s" }}
+      scrapeTimeout: {{ .Values.serviceMonitor.scrapeTimeout | default "10s" }}
+      path: /metrics
+      scheme: http
+      honorLabels: true
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace
+        - action: replace
+          replacement: otel-collector
+          targetLabel: component
+        - action: replace
+          replacement: exported
+          targetLabel: metrics_type
+{{- end }}

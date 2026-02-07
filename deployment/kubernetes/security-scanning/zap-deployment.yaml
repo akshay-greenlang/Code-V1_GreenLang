@@ -1,0 +1,503 @@
+# OWASP ZAP Kubernetes Deployment
+#
+# Deploys OWASP ZAP as a persistent service for continuous DAST scanning.
+# Includes ServiceMonitor for Prometheus metrics and NetworkPolicy.
+#
+# Usage:
+#   kubectl apply -f zap-deployment.yaml
+#
+# Author: GreenLang Security Team
+# Version: 1.0.0
+# Compliance: SOC 2 CC7.1, ISO 27001 A.14.2.5
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: security-scanning
+  labels:
+    app.kubernetes.io/name: security-scanning
+    app.kubernetes.io/part-of: greenlang
+    security.greenlang.io/pii-scanning: "false"
+    security.greenlang.io/audit-level: "admin"
+
+---
+# ConfigMap with ZAP configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: zap-config
+  namespace: security-scanning
+  labels:
+    app.kubernetes.io/name: zap
+    app.kubernetes.io/component: config
+data:
+  zap.properties: |
+    # ZAP Configuration
+    zap.api.enabled=true
+    zap.api.secure=true
+    zap.api.disablekey=false
+    zap.proxy.host=0.0.0.0
+    zap.proxy.port=8080
+    zap.api.port=8090
+    # Passive scan configuration
+    pscans.maxAlertsPerRule=10
+    pscans.scanOnlyInScope=true
+    # Spider configuration
+    spider.maxDepth=10
+    spider.maxChildren=10
+    spider.thread=5
+    # Active scan configuration
+    ascan.threadPerHost=5
+    ascan.delayInMs=100
+    ascan.maxScanDuration=60
+
+  automation.yaml: |
+    # Default automation configuration
+    env:
+      contexts:
+        - name: "GreenLang Staging"
+          urls:
+            - "https://staging.greenlang.io/*"
+          excludePaths:
+            - ".*\\.css$"
+            - ".*\\.js$"
+            - ".*\\.png$"
+            - ".*/static/.*"
+            - ".*/health$"
+            - ".*/metrics$"
+
+---
+# Secret for ZAP API key
+apiVersion: v1
+kind: Secret
+metadata:
+  name: zap-api-key
+  namespace: security-scanning
+  labels:
+    app.kubernetes.io/name: zap
+    app.kubernetes.io/component: auth
+type: Opaque
+stringData:
+  api-key: "${ZAP_API_KEY}"  # Replace with actual key or use external secrets
+
+---
+# PersistentVolumeClaim for ZAP data
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: zap-data
+  namespace: security-scanning
+  labels:
+    app.kubernetes.io/name: zap
+    app.kubernetes.io/component: storage
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: gp3
+
+---
+# ZAP Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zap
+  namespace: security-scanning
+  labels:
+    app.kubernetes.io/name: zap
+    app.kubernetes.io/instance: zap-prod
+    app.kubernetes.io/version: "2.14.0"
+    app.kubernetes.io/component: scanner
+    app.kubernetes.io/part-of: security-scanning
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate  # Single instance for consistency
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: zap
+      app.kubernetes.io/instance: zap-prod
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: zap
+        app.kubernetes.io/instance: zap-prod
+        app.kubernetes.io/version: "2.14.0"
+        app.kubernetes.io/component: scanner
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8090"
+        prometheus.io/path: "/JSON/stats/view/allSitesStats"
+    spec:
+      serviceAccountName: zap-scanner
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+
+      initContainers:
+        # Initialize ZAP home directory
+        - name: init-zap
+          image: busybox:1.36
+          command: ['sh', '-c', 'mkdir -p /zap/.ZAP && chown -R 1000:1000 /zap']
+          volumeMounts:
+            - name: zap-data
+              mountPath: /zap
+          securityContext:
+            runAsUser: 0  # Needs root for chown
+            allowPrivilegeEscalation: false
+
+      containers:
+        - name: zap
+          image: ghcr.io/zaproxy/zaproxy:2.14.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: proxy
+              containerPort: 8080
+              protocol: TCP
+            - name: api
+              containerPort: 8090
+              protocol: TCP
+          command:
+            - zap.sh
+            - -daemon
+            - -host
+            - "0.0.0.0"
+            - -port
+            - "8080"
+            - -config
+            - "api.addrs.addr.name=.*"
+            - -config
+            - "api.addrs.addr.regex=true"
+            - -config
+            - "api.key=$(ZAP_API_KEY)"
+          env:
+            - name: ZAP_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: zap-api-key
+                  key: api-key
+            - name: JAVA_OPTS
+              value: "-Xmx2g -XX:+UseG1GC"
+          resources:
+            requests:
+              cpu: 500m
+              memory: 2Gi
+            limits:
+              cpu: 2000m
+              memory: 4Gi
+          volumeMounts:
+            - name: zap-data
+              mountPath: /zap/.ZAP
+            - name: zap-config
+              mountPath: /zap/config
+              readOnly: true
+            - name: zap-tmp
+              mountPath: /tmp
+          livenessProbe:
+            httpGet:
+              path: /JSON/core/view/version
+              port: api
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /JSON/core/view/version
+              port: api
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false  # ZAP needs to write to home
+            capabilities:
+              drop:
+                - ALL
+
+      volumes:
+        - name: zap-data
+          persistentVolumeClaim:
+            claimName: zap-data
+        - name: zap-config
+          configMap:
+            name: zap-config
+        - name: zap-tmp
+          emptyDir:
+            sizeLimit: 1Gi
+
+      nodeSelector:
+        kubernetes.io/os: linux
+
+      tolerations:
+        - key: "security-scanning"
+          operator: "Equal"
+          value: "true"
+          effect: "NoSchedule"
+
+---
+# ZAP Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: zap
+  namespace: security-scanning
+  labels:
+    app.kubernetes.io/name: zap
+    app.kubernetes.io/component: scanner
+spec:
+  type: ClusterIP
+  ports:
+    - name: proxy
+      port: 8080
+      targetPort: proxy
+      protocol: TCP
+    - name: api
+      port: 8090
+      targetPort: api
+      protocol: TCP
+  selector:
+    app.kubernetes.io/name: zap
+    app.kubernetes.io/instance: zap-prod
+
+---
+# Service Account for ZAP
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: zap-scanner
+  namespace: security-scanning
+  labels:
+    app.kubernetes.io/name: zap
+    app.kubernetes.io/component: rbac
+
+---
+# Role for ZAP (minimal permissions)
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: zap-scanner
+  namespace: security-scanning
+  labels:
+    app.kubernetes.io/name: zap
+    app.kubernetes.io/component: rbac
+rules:
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["get", "list"]
+  - apiGroups: [""]
+    resources: ["secrets"]
+    resourceNames: ["zap-api-key"]
+    verbs: ["get"]
+
+---
+# RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: zap-scanner
+  namespace: security-scanning
+  labels:
+    app.kubernetes.io/name: zap
+    app.kubernetes.io/component: rbac
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: zap-scanner
+subjects:
+  - kind: ServiceAccount
+    name: zap-scanner
+    namespace: security-scanning
+
+---
+# NetworkPolicy - Restrict ZAP egress to allowed targets only
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: zap-network-policy
+  namespace: security-scanning
+  labels:
+    app.kubernetes.io/name: zap
+    app.kubernetes.io/component: network
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: zap
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Allow Prometheus scraping
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: prometheus
+      ports:
+        - protocol: TCP
+          port: 8090
+    # Allow internal API access
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: security-scanning
+      ports:
+        - protocol: TCP
+          port: 8090
+  egress:
+    # Allow DNS
+    - to:
+        - namespaceSelector: {}
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+    # Allow scanning internal services
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: staging
+      ports:
+        - protocol: TCP
+          port: 80
+        - protocol: TCP
+          port: 443
+        - protocol: TCP
+          port: 8080
+    # Allow scanning external staging
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 10.0.0.0/8
+              - 172.16.0.0/12
+              - 192.168.0.0/16
+      ports:
+        - protocol: TCP
+          port: 443
+
+---
+# ServiceMonitor for Prometheus
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: zap
+  namespace: security-scanning
+  labels:
+    app.kubernetes.io/name: zap
+    app.kubernetes.io/component: monitoring
+    release: prometheus  # Match Prometheus operator selector
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: zap
+  namespaceSelector:
+    matchNames:
+      - security-scanning
+  endpoints:
+    - port: api
+      path: /JSON/stats/view/allSitesStats
+      interval: 60s
+      scrapeTimeout: 30s
+      honorLabels: true
+      metricRelabelings:
+        # Add ZAP prefix to metrics
+        - sourceLabels: [__name__]
+          regex: '(.*)'
+          targetLabel: __name__
+          replacement: 'zap_${1}'
+
+---
+# PodDisruptionBudget
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: zap
+  namespace: security-scanning
+  labels:
+    app.kubernetes.io/name: zap
+    app.kubernetes.io/component: availability
+spec:
+  minAvailable: 0  # Allow full disruption since single replica
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: zap
+      app.kubernetes.io/instance: zap-prod
+
+---
+# CronJob for scheduled full scans
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: zap-full-scan
+  namespace: security-scanning
+  labels:
+    app.kubernetes.io/name: zap
+    app.kubernetes.io/component: scheduler
+spec:
+  schedule: "0 3 * * *"  # 3 AM UTC daily
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      activeDeadlineSeconds: 7200  # 2 hours max
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: zap-scan-job
+            app.kubernetes.io/component: scanner
+        spec:
+          serviceAccountName: zap-scanner
+          restartPolicy: Never
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            fsGroup: 1000
+          containers:
+            - name: zap-scan
+              image: ghcr.io/zaproxy/zaproxy:2.14.0
+              command:
+                - zap-full-scan.py
+                - -t
+                - "https://staging.greenlang.io"
+                - -J
+                - "/zap/wrk/report.json"
+                - -r
+                - "/zap/wrk/report.html"
+                - -m
+                - "60"
+              resources:
+                requests:
+                  cpu: 1000m
+                  memory: 4Gi
+                limits:
+                  cpu: 2000m
+                  memory: 8Gi
+              volumeMounts:
+                - name: zap-reports
+                  mountPath: /zap/wrk
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: false
+                capabilities:
+                  drop:
+                    - ALL
+          volumes:
+            - name: zap-reports
+              emptyDir:
+                sizeLimit: 1Gi

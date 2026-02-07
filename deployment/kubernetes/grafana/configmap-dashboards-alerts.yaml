@@ -1,0 +1,30 @@
+# ============================================================================
+# GreenLang Grafana - Alerts Dashboard ConfigMap
+# ============================================================================
+# ConfigMap for alert summary Grafana dashboards. The grafana_dashboard: "1"
+# label enables automatic sidecar detection and loading.
+#
+# Dashboards:
+#   - active-alerts.json (NEW - alert summary)
+#
+# Created: 2026-02-07
+# Team: Monitoring & Observability
+# PRD: OBS-002 - Grafana Dashboards
+# ============================================================================
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboards-alerts
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: grafana
+    app.kubernetes.io/component: dashboards
+    app.kubernetes.io/part-of: greenlang
+    grafana_dashboard: "1"
+  annotations:
+    grafana_folder: "06-Alerts"
+    description: "Alert summary and management dashboards"
+data:
+  active-alerts.json: |-
+    {{- .Files.Get "dashboards/active-alerts.json" | nindent 4 }}

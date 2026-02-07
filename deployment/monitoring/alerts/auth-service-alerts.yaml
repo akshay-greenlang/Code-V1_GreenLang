@@ -1,0 +1,359 @@
+# =============================================================================
+# GreenLang Climate OS - Auth Service Prometheus Alert Rules
+# =============================================================================
+# PRD: SEC-001 JWT Authentication Service
+# Defines alerting rules for authentication security, token lifecycle,
+# brute-force detection, and auth service health.
+# =============================================================================
+
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: auth-service-alerts
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: auth-service
+    app.kubernetes.io/part-of: greenlang
+    prometheus: kube-prometheus
+    role: alert-rules
+    greenlang.io/component: sec-001
+spec:
+  groups:
+    # =========================================================================
+    # Group 1: Security Alerts
+    # =========================================================================
+    - name: auth_service.security
+      interval: 30s
+      rules:
+        # ---------------------------------------------------------------------
+        # HighLoginFailureRate
+        # Fires when the login failure rate exceeds 30% over 5 minutes.
+        # May indicate credential stuffing, brute force, or a service issue
+        # affecting legitimate users.
+        # ---------------------------------------------------------------------
+        - alert: HighLoginFailureRate
+          expr: |
+            (
+              rate(gl_auth_login_total{result="failure"}[5m])
+              /
+              rate(gl_auth_login_total[5m])
+            ) > 0.3
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-security
+            component: auth-service
+            prd: SEC-001
+          annotations:
+            summary: "High login failure rate (>30%)"
+            description: >-
+              Login failure rate is {{ $value | humanizePercentage }} over the
+              last 5 minutes, exceeding the 30% warning threshold. This may
+              indicate credential stuffing attacks, brute force attempts, or a
+              service misconfiguration affecting legitimate users. Check the
+              failed login attempts by IP panel for concentrated sources.
+            runbook_url: "https://runbooks.greenlang.io/auth-service/high-login-failure-rate"
+            dashboard_url: "https://grafana.greenlang.io/d/auth-service"
+
+        # ---------------------------------------------------------------------
+        # AccountLockoutSpike
+        # Fires when the account lockout rate exceeds 5 per 5 minutes.
+        # Unusual lockout volume may indicate a coordinated attack.
+        # ---------------------------------------------------------------------
+        - alert: AccountLockoutSpike
+          expr: |
+            rate(gl_auth_lockout_total[5m]) > 5
+          for: 2m
+          labels:
+            severity: warning
+            team: platform-security
+            component: auth-service
+            prd: SEC-001
+          annotations:
+            summary: "Unusual account lockout rate (>5/5m)"
+            description: >-
+              Account lockout rate is {{ $value | printf "%.1f" }}/5min,
+              exceeding the normal threshold. Multiple accounts are being
+              locked out simultaneously, which may indicate a coordinated
+              brute-force attack across multiple accounts. Review the source
+              IPs and consider temporary IP-level blocking.
+            runbook_url: "https://runbooks.greenlang.io/auth-service/account-lockout-spike"
+            dashboard_url: "https://grafana.greenlang.io/d/auth-service"
+
+        # ---------------------------------------------------------------------
+        # TokenTheftDetected
+        # Fires when token theft is detected via refresh token family
+        # revocation. This is a critical security event.
+        # ---------------------------------------------------------------------
+        - alert: TokenTheftDetected
+          expr: |
+            rate(gl_auth_token_revoked_total{reason="token_theft"}[5m]) > 0
+          for: 1m
+          labels:
+            severity: critical
+            team: platform-security
+            component: auth-service
+            prd: SEC-001
+          annotations:
+            summary: "Token theft detected - family revocation triggered"
+            description: >-
+              Token theft has been detected: a previously-used refresh token
+              was replayed, triggering revocation of the entire token family.
+              This indicates an attacker has obtained a valid refresh token
+              and attempted to use it. The affected user's session has been
+              terminated. Investigate the source immediately and consider
+              forced password reset for the affected account.
+            runbook_url: "https://runbooks.greenlang.io/auth-service/token-theft-detected"
+            dashboard_url: "https://grafana.greenlang.io/d/auth-service"
+
+        # ---------------------------------------------------------------------
+        # BruteForceDetected
+        # Fires when a single IP exceeds 20 failed login attempts in 5 min.
+        # Indicates a targeted brute-force attack from a specific source.
+        # ---------------------------------------------------------------------
+        - alert: BruteForceDetected
+          expr: |
+            sum by (source_ip) (
+              rate(gl_auth_login_total{result="failure"}[5m])
+            ) * 300 > 20
+          for: 2m
+          labels:
+            severity: critical
+            team: platform-security
+            component: auth-service
+            prd: SEC-001
+          annotations:
+            summary: "Brute force attack detected from {{ $labels.source_ip }}"
+            description: >-
+              IP address {{ $labels.source_ip }} has generated
+              {{ $value | printf "%.0f" }} failed login attempts in the last
+              5 minutes, exceeding the brute-force detection threshold of 20.
+              The IP should be automatically blocked by the rate limiter. If
+              this is a distributed attack, consider enabling WAF-level
+              blocking and review other IPs with elevated failure rates.
+            runbook_url: "https://runbooks.greenlang.io/auth-service/brute-force-detected"
+            dashboard_url: "https://grafana.greenlang.io/d/auth-service"
+
+        # ---------------------------------------------------------------------
+        # MFAFailureSpike
+        # Fires when MFA verification failure rate exceeds 50% for 5 min.
+        # May indicate MFA bypass attempts or clock-skew issues.
+        # ---------------------------------------------------------------------
+        - alert: MFAFailureSpike
+          expr: |
+            (
+              rate(gl_auth_mfa_verify_total{result="failure"}[5m])
+              /
+              rate(gl_auth_mfa_verify_total[5m])
+            ) > 0.5
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-security
+            component: auth-service
+            prd: SEC-001
+          annotations:
+            summary: "MFA verification failure rate exceeds 50%"
+            description: >-
+              MFA verification failure rate is {{ $value | humanizePercentage }}
+              over the last 5 minutes. This may indicate MFA bypass attempts,
+              TOTP clock synchronization issues, or a service problem affecting
+              legitimate MFA verifications. Check for patterns in failure
+              reasons (expired codes, invalid codes, replay attempts).
+            runbook_url: "https://runbooks.greenlang.io/auth-service/mfa-failure-spike"
+            dashboard_url: "https://grafana.greenlang.io/d/auth-service"
+
+        # ---------------------------------------------------------------------
+        # PermissionDenialSpike
+        # Fires when permission denials exceed normal baseline. May indicate
+        # misconfigured RBAC or privilege escalation attempts.
+        # ---------------------------------------------------------------------
+        - alert: PermissionDenialSpike
+          expr: |
+            sum(rate(gl_auth_permission_denied_total[5m])) > 10
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-security
+            component: auth-service
+            prd: SEC-001
+          annotations:
+            summary: "Elevated permission denial rate (>10/sec)"
+            description: >-
+              Permission denial rate is {{ $value | printf "%.1f" }}/sec over
+              the last 5 minutes. An elevated rate of authorization failures
+              may indicate misconfigured RBAC policies after a deployment,
+              or potential privilege escalation attempts. Review the denied
+              endpoints and user roles.
+            runbook_url: "https://runbooks.greenlang.io/auth-service/permission-denial-spike"
+            dashboard_url: "https://grafana.greenlang.io/d/auth-service"
+
+    # =========================================================================
+    # Group 2: Token Lifecycle Alerts
+    # =========================================================================
+    - name: auth_service.token_lifecycle
+      interval: 30s
+      rules:
+        # ---------------------------------------------------------------------
+        # TokenBlacklistNearCapacity
+        # Fires when the JTI blacklist approaches the configured max size.
+        # The cleanup CronJob should be keeping this in check.
+        # ---------------------------------------------------------------------
+        - alert: TokenBlacklistNearCapacity
+          expr: |
+            gl_auth_blacklist_size / gl_auth_blacklist_max_size > 0.8
+          for: 10m
+          labels:
+            severity: warning
+            team: platform-security
+            component: auth-service
+            prd: SEC-001
+          annotations:
+            summary: "Token blacklist at {{ $value | humanizePercentage }} capacity"
+            description: >-
+              The JTI token blacklist is at {{ $value | humanizePercentage }}
+              of its maximum capacity ({{ $labels.max_size }} entries). If it
+              reaches 100%, new revocations may fail. Verify the token cleanup
+              CronJob (runs every 6h) is executing successfully, and consider
+              increasing the max blacklist size or reducing token TTLs.
+            runbook_url: "https://runbooks.greenlang.io/auth-service/blacklist-near-capacity"
+            dashboard_url: "https://grafana.greenlang.io/d/auth-service"
+
+        # ---------------------------------------------------------------------
+        # RefreshTokenAnomalous
+        # Fires when refresh token rotation rate is abnormally high, which
+        # may indicate token replay attacks or client-side bugs.
+        # ---------------------------------------------------------------------
+        - alert: RefreshTokenAnomalous
+          expr: |
+            (
+              rate(gl_auth_token_refresh_total[5m])
+              /
+              rate(gl_auth_login_total{result="success"}[1h])
+            ) > 50
+          for: 10m
+          labels:
+            severity: warning
+            team: platform-security
+            component: auth-service
+            prd: SEC-001
+          annotations:
+            summary: "Anomalous refresh token rotation rate"
+            description: >-
+              The refresh token rotation rate is {{ $value | printf "%.0f" }}x
+              higher than the login rate. Each login should produce a bounded
+              number of refreshes. An extreme ratio may indicate token replay
+              attacks, client-side retry storms, or a misconfigured client
+              that is refreshing tokens in a tight loop.
+            runbook_url: "https://runbooks.greenlang.io/auth-service/refresh-token-anomalous"
+            dashboard_url: "https://grafana.greenlang.io/d/auth-service"
+
+        # ---------------------------------------------------------------------
+        # PasswordExpiryWave
+        # Fires when a large number of passwords are expiring within the
+        # next 7 days. Proactive alert for user communication.
+        # ---------------------------------------------------------------------
+        - alert: PasswordExpiryWave
+          expr: |
+            gl_auth_passwords_expiring_7d > 100
+          for: 1h
+          labels:
+            severity: info
+            team: platform-security
+            component: auth-service
+            prd: SEC-001
+          annotations:
+            summary: "{{ $value | printf \"%.0f\" }} passwords expiring within 7 days"
+            description: >-
+              {{ $value | printf "%.0f" }} user passwords will expire within
+              the next 7 days. A large wave of password expirations may cause
+              elevated support requests and login failures. Consider sending
+              proactive password reset reminders to affected users.
+            runbook_url: "https://runbooks.greenlang.io/auth-service/password-expiry-wave"
+            dashboard_url: "https://grafana.greenlang.io/d/auth-service"
+
+    # =========================================================================
+    # Group 3: Service Health Alerts
+    # =========================================================================
+    - name: auth_service.health
+      interval: 30s
+      rules:
+        # ---------------------------------------------------------------------
+        # AuthServiceDown
+        # Fires when no auth service instances are running for 2 minutes.
+        # The auth service is critical infrastructure -- all API calls
+        # require token validation.
+        # ---------------------------------------------------------------------
+        - alert: AuthServiceDown
+          expr: |
+            absent(up{job="auth-service"} == 1)
+            or
+            sum(up{job="auth-service"}) == 0
+          for: 2m
+          labels:
+            severity: critical
+            team: platform-security
+            component: auth-service
+            prd: SEC-001
+          annotations:
+            summary: "Auth Service is DOWN - all authentication is unavailable"
+            description: >-
+              No Auth Service instances are running. ALL API authentication
+              and authorization is unavailable. Users cannot log in, tokens
+              cannot be validated, and all protected API endpoints will return
+              401/403 errors. This is a P0 incident. Investigate pod status
+              in the greenlang-auth namespace immediately.
+            runbook_url: "https://runbooks.greenlang.io/auth-service/service-down"
+            dashboard_url: "https://grafana.greenlang.io/d/auth-service"
+
+        # ---------------------------------------------------------------------
+        # AuthServiceHighLatency
+        # Fires when the P99 login latency exceeds 2 seconds for 5 min.
+        # Severely degraded authentication performance.
+        # ---------------------------------------------------------------------
+        - alert: AuthServiceHighLatency
+          expr: |
+            histogram_quantile(0.99,
+              rate(gl_auth_login_duration_seconds_bucket[5m])
+            ) > 2
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-security
+            component: auth-service
+            prd: SEC-001
+          annotations:
+            summary: "Auth Service P99 login latency exceeds 2 seconds"
+            description: >-
+              Auth Service P99 login latency is
+              {{ $value | printf "%.2f" }}s over the last 5 minutes, exceeding
+              the 2-second threshold. Users are experiencing slow login times.
+              Check PostgreSQL query performance (bcrypt hashing load), Redis
+              connectivity, and auth service CPU utilization.
+            runbook_url: "https://runbooks.greenlang.io/auth-service/high-latency"
+            dashboard_url: "https://grafana.greenlang.io/d/auth-service"
+
+        # ---------------------------------------------------------------------
+        # AuthServiceRateLimitRejections
+        # Fires when the rate limit is rejecting more than 100 requests/min.
+        # Either legitimate traffic is being throttled or an attack is active.
+        # ---------------------------------------------------------------------
+        - alert: AuthServiceRateLimitRejections
+          expr: |
+            sum(rate(gl_auth_rate_limit_rejected_total[5m])) * 60 > 100
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-security
+            component: auth-service
+            prd: SEC-001
+          annotations:
+            summary: "Auth Service rate limit rejecting >100 requests/min"
+            description: >-
+              The auth service rate limiter is rejecting
+              {{ $value | printf "%.0f" }} requests per minute. If legitimate
+              traffic is being throttled, consider increasing the rate limit
+              thresholds. If this is attack traffic, verify the brute-force
+              detection and IP blocking mechanisms are working correctly.
+            runbook_url: "https://runbooks.greenlang.io/auth-service/rate-limit-rejections"
+            dashboard_url: "https://grafana.greenlang.io/d/auth-service"

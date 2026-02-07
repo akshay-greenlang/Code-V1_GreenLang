@@ -1,0 +1,41 @@
+# ============================================================================
+# GreenLang Grafana - Kustomization
+# ============================================================================
+# Kustomize configuration that references all Grafana Kubernetes resources
+# including namespace, dashboard ConfigMaps, network policy, ServiceMonitor,
+# and PodDisruptionBudget.
+#
+# Usage:
+#   kubectl apply -k deployment/kubernetes/grafana/
+#   kustomize build deployment/kubernetes/grafana/ | kubectl apply -f -
+#
+# Created: 2026-02-07
+# Team: Monitoring & Observability
+# PRD: OBS-002 - Grafana Dashboards
+# ============================================================================
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: monitoring
+
+resources:
+  - namespace.yaml
+  - configmap-dashboards-executive.yaml
+  - configmap-dashboards-infrastructure.yaml
+  - configmap-dashboards-datastores.yaml
+  - configmap-dashboards-observability.yaml
+  - configmap-dashboards-security.yaml
+  - configmap-dashboards-applications.yaml
+  - configmap-dashboards-alerts.yaml
+  - networkpolicy.yaml
+  - servicemonitor.yaml
+  - poddisruptionbudget.yaml
+
+commonLabels:
+  app.kubernetes.io/managed-by: kustomize
+  app.kubernetes.io/part-of: greenlang-monitoring
+
+commonAnnotations:
+  greenlang.io/prd: "OBS-002"
+  greenlang.io/team: "platform-engineering"

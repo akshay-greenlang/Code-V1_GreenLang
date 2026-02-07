@@ -1,0 +1,334 @@
+##############################################
+# GreenLang Jobs Service Vault Agent Patches
+# SEC-006: Phase 4 - Vault Agent Injector Configuration
+# Strategic merge patches for greenlang-jobs deployment
+##############################################
+
+---
+# Strategic Merge Patch for greenlang-jobs Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: greenlang-jobs
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: greenlang-jobs
+    app.kubernetes.io/component: jobs
+    app.kubernetes.io/part-of: greenlang
+spec:
+  template:
+    metadata:
+      annotations:
+        # Enable Vault Agent injection
+        vault.hashicorp.com/agent-inject: "true"
+
+        # Vault role for authentication
+        vault.hashicorp.com/role: "greenlang-jobs"
+
+        # Init container mode (secrets populated before app starts)
+        vault.hashicorp.com/agent-pre-populate-only: "true"
+        vault.hashicorp.com/agent-init-first: "true"
+
+        # TLS configuration
+        vault.hashicorp.com/tls-skip-verify: "false"
+        vault.hashicorp.com/ca-cert: "/vault/tls/ca.crt"
+
+        # Resource limits for agent init container
+        vault.hashicorp.com/agent-limits-cpu: "100m"
+        vault.hashicorp.com/agent-limits-mem: "128Mi"
+        vault.hashicorp.com/agent-requests-cpu: "50m"
+        vault.hashicorp.com/agent-requests-mem: "64Mi"
+
+        # Security settings
+        vault.hashicorp.com/agent-revoke-on-shutdown: "true"
+        vault.hashicorp.com/agent-run-as-user: "100"
+        vault.hashicorp.com/agent-run-as-group: "1000"
+
+        # PostgreSQL Credentials
+        vault.hashicorp.com/agent-inject-secret-database.json: "secret/data/greenlang/database/postgresql"
+        vault.hashicorp.com/agent-inject-template-database.json: |
+          {{- with secret "secret/data/greenlang/database/postgresql" -}}
+          {
+            "username": "{{ .Data.data.username }}",
+            "password": "{{ .Data.data.password }}",
+            "host": "{{ .Data.data.host }}",
+            "port": {{ .Data.data.port }},
+            "database": "{{ .Data.data.database }}",
+            "sslmode": "{{ .Data.data.sslmode | default "require" }}"
+          }
+          {{- end -}}
+        vault.hashicorp.com/agent-inject-perms-database.json: "0400"
+
+        # Database URL
+        vault.hashicorp.com/agent-inject-secret-database-url: "secret/data/greenlang/database/postgresql"
+        vault.hashicorp.com/agent-inject-template-database-url: |
+          {{- with secret "secret/data/greenlang/database/postgresql" -}}
+          postgresql://{{ .Data.data.username }}:{{ .Data.data.password }}@{{ .Data.data.host }}:{{ .Data.data.port }}/{{ .Data.data.database }}?sslmode={{ .Data.data.sslmode | default "require" }}
+          {{- end -}}
+        vault.hashicorp.com/agent-inject-perms-database-url: "0400"
+
+        # Redis Credentials (for Celery)
+        vault.hashicorp.com/agent-inject-secret-redis.json: "secret/data/greenlang/database/redis"
+        vault.hashicorp.com/agent-inject-template-redis.json: |
+          {{- with secret "secret/data/greenlang/database/redis" -}}
+          {
+            "host": "{{ .Data.data.host }}",
+            "port": {{ .Data.data.port }},
+            "password": "{{ .Data.data.password }}",
+            "broker_db": 1,
+            "result_db": 2,
+            "ssl": {{ .Data.data.ssl | default true }}
+          }
+          {{- end -}}
+        vault.hashicorp.com/agent-inject-perms-redis.json: "0400"
+
+        # Celery Configuration
+        vault.hashicorp.com/agent-inject-secret-celery-config: "secret/data/greenlang/database/redis"
+        vault.hashicorp.com/agent-inject-template-celery-config: |
+          {{- with secret "secret/data/greenlang/database/redis" -}}
+          CELERY_BROKER_URL=rediss://:{{ .Data.data.password }}@{{ .Data.data.host }}:{{ .Data.data.port }}/1
+          CELERY_RESULT_BACKEND=rediss://:{{ .Data.data.password }}@{{ .Data.data.host }}:{{ .Data.data.port }}/2
+          {{- end -}}
+        vault.hashicorp.com/agent-inject-perms-celery-config: "0400"
+
+        # S3 Credentials (for job artifacts)
+        vault.hashicorp.com/agent-inject-secret-aws-credentials: "secret/data/greenlang/storage/s3"
+        vault.hashicorp.com/agent-inject-template-aws-credentials: |
+          {{- with secret "secret/data/greenlang/storage/s3" -}}
+          [default]
+          aws_access_key_id = {{ .Data.data.access_key }}
+          aws_secret_access_key = {{ .Data.data.secret_key }}
+          region = {{ .Data.data.region | default "us-east-1" }}
+          {{- end -}}
+        vault.hashicorp.com/agent-inject-perms-aws-credentials: "0400"
+
+        # Internal API Key (for callback URLs)
+        vault.hashicorp.com/agent-inject-secret-api-keys.json: "secret/data/greenlang/api-keys/internal"
+        vault.hashicorp.com/agent-inject-template-api-keys.json: |
+          {{- with secret "secret/data/greenlang/api-keys/internal" -}}
+          {
+            "internal_api_key": "{{ .Data.data.internal_api_key }}",
+            "webhook_secret": "{{ .Data.data.webhook_secret }}"
+          }
+          {{- end -}}
+        vault.hashicorp.com/agent-inject-perms-api-keys.json: "0400"
+
+    spec:
+      serviceAccountName: greenlang-jobs
+
+      volumes:
+        - name: vault-tls
+          secret:
+            secretName: vault-tls
+
+      containers:
+        - name: jobs
+          env:
+            - name: VAULT_SECRETS_PATH
+              value: "/vault/secrets"
+            - name: DATABASE_CREDENTIALS_FILE
+              value: "/vault/secrets/database.json"
+            - name: DATABASE_URL_FILE
+              value: "/vault/secrets/database-url"
+            - name: REDIS_CREDENTIALS_FILE
+              value: "/vault/secrets/redis.json"
+            - name: AWS_SHARED_CREDENTIALS_FILE
+              value: "/vault/secrets/aws-credentials"
+            - name: API_KEYS_FILE
+              value: "/vault/secrets/api-keys.json"
+          volumeMounts:
+            - name: vault-tls
+              mountPath: /vault/tls
+              readOnly: true
+
+---
+# Service Account for greenlang-jobs
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: greenlang-jobs
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: greenlang-jobs
+    app.kubernetes.io/component: jobs
+    app.kubernetes.io/part-of: greenlang
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::ACCOUNT_ID:role/greenlang-jobs-role
+
+---
+# Strategic Merge Patch for greenlang-worker Deployment (Celery workers)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: greenlang-worker
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: greenlang-worker
+    app.kubernetes.io/component: worker
+    app.kubernetes.io/part-of: greenlang
+spec:
+  template:
+    metadata:
+      annotations:
+        # Enable Vault Agent injection
+        vault.hashicorp.com/agent-inject: "true"
+        vault.hashicorp.com/role: "greenlang-worker"
+
+        # Sidecar mode for long-running workers (need credential refresh)
+        vault.hashicorp.com/agent-pre-populate-only: "false"
+        vault.hashicorp.com/agent-init-first: "true"
+        vault.hashicorp.com/agent-cache-enable: "true"
+
+        # TLS configuration
+        vault.hashicorp.com/tls-skip-verify: "false"
+        vault.hashicorp.com/ca-cert: "/vault/tls/ca.crt"
+
+        # Resource limits
+        vault.hashicorp.com/agent-limits-cpu: "100m"
+        vault.hashicorp.com/agent-limits-mem: "128Mi"
+        vault.hashicorp.com/agent-requests-cpu: "50m"
+        vault.hashicorp.com/agent-requests-mem: "64Mi"
+
+        # Security settings
+        vault.hashicorp.com/agent-revoke-on-shutdown: "true"
+
+        # Database credentials
+        vault.hashicorp.com/agent-inject-secret-database.json: "secret/data/greenlang/database/postgresql"
+        vault.hashicorp.com/agent-inject-template-database.json: |
+          {{- with secret "secret/data/greenlang/database/postgresql" -}}
+          {
+            "username": "{{ .Data.data.username }}",
+            "password": "{{ .Data.data.password }}",
+            "host": "{{ .Data.data.host }}",
+            "port": {{ .Data.data.port }},
+            "database": "{{ .Data.data.database }}",
+            "sslmode": "require"
+          }
+          {{- end -}}
+        vault.hashicorp.com/agent-inject-perms-database.json: "0400"
+
+        # Redis/Celery configuration
+        vault.hashicorp.com/agent-inject-secret-celery-env: "secret/data/greenlang/database/redis"
+        vault.hashicorp.com/agent-inject-template-celery-env: |
+          {{- with secret "secret/data/greenlang/database/redis" -}}
+          CELERY_BROKER_URL=rediss://:{{ .Data.data.password }}@{{ .Data.data.host }}:{{ .Data.data.port }}/1
+          CELERY_RESULT_BACKEND=rediss://:{{ .Data.data.password }}@{{ .Data.data.host }}:{{ .Data.data.port }}/2
+          {{- end -}}
+        vault.hashicorp.com/agent-inject-perms-celery-env: "0400"
+
+        # S3 credentials
+        vault.hashicorp.com/agent-inject-secret-aws-credentials: "secret/data/greenlang/storage/s3"
+        vault.hashicorp.com/agent-inject-template-aws-credentials: |
+          {{- with secret "secret/data/greenlang/storage/s3" -}}
+          [default]
+          aws_access_key_id = {{ .Data.data.access_key }}
+          aws_secret_access_key = {{ .Data.data.secret_key }}
+          region = {{ .Data.data.region | default "us-east-1" }}
+          {{- end -}}
+        vault.hashicorp.com/agent-inject-perms-aws-credentials: "0400"
+
+    spec:
+      serviceAccountName: greenlang-worker
+
+      volumes:
+        - name: vault-tls
+          secret:
+            secretName: vault-tls
+
+      containers:
+        - name: worker
+          env:
+            - name: VAULT_SECRETS_PATH
+              value: "/vault/secrets"
+            - name: DATABASE_CREDENTIALS_FILE
+              value: "/vault/secrets/database.json"
+            - name: AWS_SHARED_CREDENTIALS_FILE
+              value: "/vault/secrets/aws-credentials"
+          volumeMounts:
+            - name: vault-tls
+              mountPath: /vault/tls
+              readOnly: true
+
+---
+# Service Account for greenlang-worker
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: greenlang-worker
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: greenlang-worker
+    app.kubernetes.io/component: worker
+    app.kubernetes.io/part-of: greenlang
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::ACCOUNT_ID:role/greenlang-worker-role
+
+---
+# Strategic Merge Patch for greenlang-beat (Celery beat scheduler)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: greenlang-beat
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: greenlang-beat
+    app.kubernetes.io/component: beat
+    app.kubernetes.io/part-of: greenlang
+spec:
+  replicas: 1  # Beat should only have one replica
+  template:
+    metadata:
+      annotations:
+        vault.hashicorp.com/agent-inject: "true"
+        vault.hashicorp.com/role: "greenlang-beat"
+        vault.hashicorp.com/agent-pre-populate-only: "false"
+        vault.hashicorp.com/agent-init-first: "true"
+        vault.hashicorp.com/tls-skip-verify: "false"
+        vault.hashicorp.com/ca-cert: "/vault/tls/ca.crt"
+
+        # Resource limits
+        vault.hashicorp.com/agent-limits-cpu: "50m"
+        vault.hashicorp.com/agent-limits-mem: "64Mi"
+        vault.hashicorp.com/agent-requests-cpu: "25m"
+        vault.hashicorp.com/agent-requests-mem: "32Mi"
+
+        vault.hashicorp.com/agent-revoke-on-shutdown: "true"
+
+        # Redis for Celery beat
+        vault.hashicorp.com/agent-inject-secret-celery-env: "secret/data/greenlang/database/redis"
+        vault.hashicorp.com/agent-inject-template-celery-env: |
+          {{- with secret "secret/data/greenlang/database/redis" -}}
+          CELERY_BROKER_URL=rediss://:{{ .Data.data.password }}@{{ .Data.data.host }}:{{ .Data.data.port }}/1
+          CELERY_RESULT_BACKEND=rediss://:{{ .Data.data.password }}@{{ .Data.data.host }}:{{ .Data.data.port }}/2
+          {{- end -}}
+        vault.hashicorp.com/agent-inject-perms-celery-env: "0400"
+
+    spec:
+      serviceAccountName: greenlang-beat
+
+      volumes:
+        - name: vault-tls
+          secret:
+            secretName: vault-tls
+
+      containers:
+        - name: beat
+          env:
+            - name: VAULT_SECRETS_PATH
+              value: "/vault/secrets"
+          volumeMounts:
+            - name: vault-tls
+              mountPath: /vault/tls
+              readOnly: true
+
+---
+# Service Account for greenlang-beat
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: greenlang-beat
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: greenlang-beat
+    app.kubernetes.io/component: beat
+    app.kubernetes.io/part-of: greenlang

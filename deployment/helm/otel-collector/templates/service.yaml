@@ -1,0 +1,68 @@
+{{/*
+# =============================================================================
+# GreenLang OpenTelemetry Collector - Service
+# GreenLang Climate OS | OBS-003
+# =============================================================================
+# ClusterIP service exposing all receiver ports (OTLP, Jaeger),
+# metrics endpoints, and health check for internal cluster access.
+# =============================================================================
+*/}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "otel-collector.fullname" . }}
+  namespace: {{ include "otel-collector.namespace" . }}
+  labels:
+    {{- include "otel-collector.labels" . | nindent 4 }}
+  annotations:
+    description: "OTel Collector gateway service for GreenLang telemetry"
+spec:
+  type: ClusterIP
+  selector:
+    {{- include "otel-collector.selectorLabels" . | nindent 4 }}
+  ports:
+    # OTLP gRPC receiver - primary ingestion endpoint
+    - name: otlp-grpc
+      port: 4317
+      targetPort: otlp-grpc
+      protocol: TCP
+      appProtocol: grpc
+
+    # OTLP HTTP receiver - HTTP/protobuf ingestion endpoint
+    - name: otlp-http
+      port: 4318
+      targetPort: otlp-http
+      protocol: TCP
+      appProtocol: http
+
+    # Jaeger gRPC receiver - legacy Jaeger agent compatibility
+    - name: jaeger-grpc
+      port: 14250
+      targetPort: jaeger-grpc
+      protocol: TCP
+      appProtocol: grpc
+
+    # Jaeger Thrift HTTP receiver - legacy Jaeger HTTP compatibility
+    - name: jaeger-http
+      port: 14268
+      targetPort: jaeger-http
+      protocol: TCP
+      appProtocol: http
+
+    # Collector internal metrics (self-observability)
+    - name: metrics
+      port: 8888
+      targetPort: metrics
+      protocol: TCP
+
+    # Prometheus exporter (pipeline-exported metrics)
+    - name: prom-export
+      port: 8889
+      targetPort: prom-export
+      protocol: TCP
+
+    # Health check
+    - name: health
+      port: 13133
+      targetPort: health
+      protocol: TCP

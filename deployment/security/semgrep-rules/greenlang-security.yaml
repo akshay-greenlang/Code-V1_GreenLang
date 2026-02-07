@@ -1,0 +1,430 @@
+# GreenLang Security Semgrep Rules
+#
+# Custom Semgrep rules for GreenLang-specific security patterns
+# Covers: injection attacks, auth bypass, data exposure, LLM hallucination prevention
+#
+# Author: GreenLang Security Team
+# Version: 1.0.0
+# Compliance: SOC 2 CC7.1, ISO 27001 A.14.2.5
+
+rules:
+  # ==========================================================================
+  # INJECTION VULNERABILITIES
+  # ==========================================================================
+
+  - id: greenlang-sql-injection-raw-query
+    patterns:
+      - pattern-either:
+          - pattern: |
+              $DB.execute($QUERY.format(...))
+          - pattern: |
+              $DB.execute(f"...")
+          - pattern: |
+              $DB.execute($QUERY % ...)
+          - pattern: |
+              $DB.raw($QUERY.format(...))
+          - pattern: |
+              await $DB.execute($QUERY.format(...))
+    message: |
+      Potential SQL injection vulnerability. Use parameterized queries instead of string formatting.
+      GreenLang requires all database queries to use parameterized statements for provenance tracking.
+    languages: [python]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: "CWE-89"
+      owasp: "A03:2021"
+      confidence: HIGH
+      impact: HIGH
+      likelihood: HIGH
+      compliance: ["SOC2-CC7.1", "ISO27001-A.14.2.5"]
+      remediation: |
+        Use parameterized queries:
+        - await db.execute("SELECT * FROM table WHERE id = $1", [user_input])
+        - cursor.execute("SELECT * FROM table WHERE id = %s", (user_input,))
+
+  - id: greenlang-command-injection
+    patterns:
+      - pattern-either:
+          - pattern: os.system($CMD.format(...))
+          - pattern: os.system(f"...")
+          - pattern: subprocess.run($CMD.format(...), shell=True, ...)
+          - pattern: subprocess.run(f"...", shell=True, ...)
+          - pattern: subprocess.Popen($CMD.format(...), shell=True, ...)
+          - pattern: subprocess.call($CMD.format(...), shell=True, ...)
+    message: |
+      Potential command injection vulnerability. Avoid shell=True with user-controlled input.
+      Use subprocess with list arguments and avoid string interpolation in commands.
+    languages: [python]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: "CWE-78"
+      owasp: "A03:2021"
+      confidence: HIGH
+      impact: CRITICAL
+      likelihood: MEDIUM
+
+  - id: greenlang-ldap-injection
+    patterns:
+      - pattern-either:
+          - pattern: ldap.search_s($BASE, $SCOPE, $FILTER.format(...))
+          - pattern: ldap.search_s($BASE, $SCOPE, f"...")
+    message: |
+      Potential LDAP injection vulnerability. Use ldap.filter.escape_filter_chars()
+      to sanitize user input before including in LDAP filters.
+    languages: [python]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: "CWE-90"
+      owasp: "A03:2021"
+      confidence: HIGH
+
+  # ==========================================================================
+  # AUTHENTICATION BYPASS
+  # ==========================================================================
+
+  - id: greenlang-hardcoded-jwt-secret
+    patterns:
+      - pattern-either:
+          - pattern: jwt.encode($PAYLOAD, "...", ...)
+          - pattern: jwt.decode($TOKEN, "...", ...)
+          - pattern: SECRET_KEY = "..."
+          - pattern: JWT_SECRET = "..."
+    message: |
+      Hardcoded JWT secret detected. JWT secrets must be loaded from environment variables
+      or secure secrets management (AWS Secrets Manager, HashiCorp Vault).
+    languages: [python]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: "CWE-798"
+      owasp: "A07:2021"
+      confidence: HIGH
+      impact: CRITICAL
+
+  - id: greenlang-disabled-auth-decorator
+    patterns:
+      - pattern-either:
+          - pattern: |
+              # @require_auth
+              ...
+          - pattern: |
+              # @authenticate
+              ...
+          - pattern: |
+              # @login_required
+              ...
+    message: |
+      Commented-out authentication decorator detected. Ensure all API endpoints
+      require proper authentication in production.
+    languages: [python]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe: "CWE-306"
+      owasp: "A01:2021"
+      confidence: MEDIUM
+
+  - id: greenlang-weak-password-validation
+    patterns:
+      - pattern-either:
+          - pattern: len($PASSWORD) >= 4
+          - pattern: len($PASSWORD) >= 5
+          - pattern: len($PASSWORD) >= 6
+          - pattern: len($PASSWORD) > 3
+          - pattern: len($PASSWORD) > 4
+          - pattern: len($PASSWORD) > 5
+    message: |
+      Weak password length requirement. GreenLang security policy requires
+      minimum password length of 12 characters.
+    languages: [python]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe: "CWE-521"
+      owasp: "A07:2021"
+      confidence: MEDIUM
+
+  - id: greenlang-insecure-session-config
+    patterns:
+      - pattern-either:
+          - pattern: SESSION_COOKIE_SECURE = False
+          - pattern: SESSION_COOKIE_HTTPONLY = False
+          - pattern: SESSION_COOKIE_SAMESITE = "None"
+          - pattern: |
+              session_config = {..., "secure": False, ...}
+    message: |
+      Insecure session configuration. Ensure SESSION_COOKIE_SECURE=True,
+      SESSION_COOKIE_HTTPONLY=True, and SESSION_COOKIE_SAMESITE="Strict".
+    languages: [python]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: "CWE-614"
+      owasp: "A05:2021"
+
+  # ==========================================================================
+  # DATA EXPOSURE
+  # ==========================================================================
+
+  - id: greenlang-sensitive-data-logging
+    patterns:
+      - pattern-either:
+          - pattern: logger.info(..., $PASSWORD, ...)
+          - pattern: logger.debug(..., $SECRET, ...)
+          - pattern: logger.info(..., password=..., ...)
+          - pattern: logger.debug(..., api_key=..., ...)
+          - pattern: logging.info(..., $TOKEN, ...)
+          - pattern: print(..., $PASSWORD, ...)
+          - pattern: print(..., password=..., ...)
+    message: |
+      Potential sensitive data exposure in logs. Never log passwords, tokens,
+      API keys, or other secrets. Use PII redaction from greenlang.infrastructure.logging.
+    languages: [python]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: "CWE-532"
+      owasp: "A09:2021"
+      confidence: MEDIUM
+
+  - id: greenlang-exposed-stack-trace
+    patterns:
+      - pattern-either:
+          - pattern: |
+              except $E:
+                  return {"error": str($E), "traceback": traceback.format_exc()}
+          - pattern: |
+              except $E:
+                  return traceback.format_exc()
+          - pattern: |
+              except $E as e:
+                  return str(e)
+    message: |
+      Stack traces exposed to client. Use structured error responses that
+      hide internal implementation details in production.
+    languages: [python]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe: "CWE-209"
+      owasp: "A05:2021"
+
+  - id: greenlang-pii-in-response
+    patterns:
+      - pattern-either:
+          - pattern: return {..., "ssn": ..., ...}
+          - pattern: return {..., "social_security_number": ..., ...}
+          - pattern: return {..., "credit_card": ..., ...}
+          - pattern: return {..., "bank_account": ..., ...}
+    message: |
+      PII detected in API response. Ensure sensitive data is masked or excluded
+      from responses. Use greenlang.infrastructure.security_scanning.pii_scanner for detection.
+    languages: [python]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: "CWE-359"
+      owasp: "A01:2021"
+      compliance: ["GDPR-Art.32", "SOC2-CC6.1"]
+
+  # ==========================================================================
+  # GREENLANG-SPECIFIC: ZERO HALLUCINATION COMPLIANCE
+  # ==========================================================================
+
+  - id: greenlang-llm-in-calculation-path
+    patterns:
+      - pattern-either:
+          - pattern: |
+              def calculate_emissions(...):
+                  ...
+                  $LLM.generate(...)
+                  ...
+          - pattern: |
+              def compute_carbon(...):
+                  ...
+                  await $LLM.complete(...)
+                  ...
+          - pattern: |
+              def calculate_scope_$X(...):
+                  ...
+                  openai.ChatCompletion.create(...)
+                  ...
+          - pattern: |
+              emissions = $LLM.predict(...)
+    message: |
+      LLM usage detected in calculation path. GreenLang's zero-hallucination policy
+      prohibits LLM calls for numeric calculations. Use deterministic formulas,
+      database lookups, or validated calculation engines.
+    languages: [python]
+    severity: ERROR
+    metadata:
+      category: business-logic
+      confidence: HIGH
+      impact: CRITICAL
+      compliance: ["GreenLang-Zero-Hallucination"]
+      remediation: |
+        Use deterministic calculation patterns:
+        - Database emission factor lookups
+        - Python arithmetic operations
+        - YAML/JSON formula evaluation
+        - Validated calculation engines
+
+  - id: greenlang-missing-provenance-hash
+    patterns:
+      - pattern: |
+          class $AGENT(...):
+              ...
+              def process(self, ...):
+                  ...
+                  return $RESULT
+      - pattern-not: |
+          class $AGENT(...):
+              ...
+              def process(self, ...):
+                  ...
+                  provenance_hash = ...
+                  ...
+    message: |
+      Agent process method missing provenance hash calculation. All GreenLang agents
+      must include SHA-256 provenance tracking for audit compliance.
+    languages: [python]
+    severity: WARNING
+    metadata:
+      category: business-logic
+      compliance: ["GreenLang-Provenance"]
+
+  # ==========================================================================
+  # CRYPTOGRAPHY
+  # ==========================================================================
+
+  - id: greenlang-weak-hash-algorithm
+    patterns:
+      - pattern-either:
+          - pattern: hashlib.md5(...)
+          - pattern: hashlib.sha1(...)
+    message: |
+      Weak hash algorithm (MD5/SHA1) detected. Use SHA-256 or stronger for
+      security-sensitive operations. MD5 is only acceptable for non-security
+      checksums (e.g., cache keys).
+    languages: [python]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe: "CWE-328"
+      owasp: "A02:2021"
+
+  - id: greenlang-insecure-random
+    patterns:
+      - pattern-either:
+          - pattern: random.randint(...)
+          - pattern: random.random()
+          - pattern: random.choice(...)
+    message: |
+      Insecure random number generator used. For security-sensitive operations
+      (tokens, keys, nonces), use secrets module instead.
+    languages: [python]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe: "CWE-330"
+      owasp: "A02:2021"
+
+  # ==========================================================================
+  # DESERIALIZATION
+  # ==========================================================================
+
+  - id: greenlang-unsafe-pickle
+    patterns:
+      - pattern-either:
+          - pattern: pickle.loads(...)
+          - pattern: pickle.load(...)
+          - pattern: cPickle.loads(...)
+    message: |
+      Unsafe deserialization with pickle detected. Pickle can execute arbitrary
+      code. Use JSON or other safe serialization formats for untrusted data.
+    languages: [python]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: "CWE-502"
+      owasp: "A08:2021"
+      confidence: HIGH
+
+  - id: greenlang-unsafe-yaml-load
+    patterns:
+      - pattern-either:
+          - pattern: yaml.load($DATA)
+          - pattern: yaml.load($DATA, Loader=yaml.Loader)
+          - pattern: yaml.load($DATA, Loader=yaml.FullLoader)
+    message: |
+      Unsafe YAML loading detected. Use yaml.safe_load() to prevent
+      arbitrary code execution from malicious YAML.
+    languages: [python]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: "CWE-502"
+      owasp: "A08:2021"
+
+  # ==========================================================================
+  # NETWORK SECURITY
+  # ==========================================================================
+
+  - id: greenlang-disabled-ssl-verification
+    patterns:
+      - pattern-either:
+          - pattern: requests.get(..., verify=False, ...)
+          - pattern: requests.post(..., verify=False, ...)
+          - pattern: httpx.get(..., verify=False, ...)
+          - pattern: aiohttp.ClientSession(..., connector=..., ssl=False, ...)
+    message: |
+      SSL/TLS verification disabled. This exposes connections to MITM attacks.
+      Always verify certificates in production.
+    languages: [python]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: "CWE-295"
+      owasp: "A07:2021"
+
+  - id: greenlang-hardcoded-ip-address
+    patterns:
+      - pattern-regex: '(\d{1,3}\.){3}\d{1,3}'
+      - pattern-not-regex: '127\.0\.0\.1|0\.0\.0\.0|192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+|172\.(1[6-9]|2[0-9]|3[0-1])\.\d+\.\d+'
+    message: |
+      Hardcoded IP address detected. Use environment variables or configuration
+      files for network addresses.
+    languages: [python]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe: "CWE-798"
+
+  # ==========================================================================
+  # TENANT ISOLATION
+  # ==========================================================================
+
+  - id: greenlang-missing-tenant-filter
+    patterns:
+      - pattern: |
+          async def get_$ENTITY(...):
+              ...
+              $DB.query("SELECT ... FROM $TABLE WHERE id = ...")
+              ...
+      - pattern-not: |
+          async def get_$ENTITY(...):
+              ...
+              $DB.query("SELECT ... FROM $TABLE WHERE ... tenant_id = ...")
+              ...
+    message: |
+      Query may be missing tenant isolation. All multi-tenant queries must
+      include tenant_id filter to prevent cross-tenant data access.
+    languages: [python]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe: "CWE-639"
+      compliance: ["GreenLang-Multi-Tenant"]

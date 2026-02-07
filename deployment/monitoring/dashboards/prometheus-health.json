@@ -1,0 +1,1128 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      },
+      {
+        "datasource": "${datasource}",
+        "enable": true,
+        "expr": "ALERTS{alertname=~\"Prometheus.*\", alertstate=\"firing\"}",
+        "iconColor": "#FF4444",
+        "name": "Prometheus Alerts",
+        "step": "60s",
+        "tagKeys": "alertname,severity",
+        "titleFormat": "{{ alertname }}",
+        "type": "tags"
+      }
+    ]
+  },
+  "description": "GreenLang Climate OS - Prometheus Server Health monitoring dashboard. Monitors Prometheus performance, storage, targets, and resource utilization. See runbook: docs/runbooks/prometheus-health.md",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [
+    {
+      "asDropdown": true,
+      "icon": "external link",
+      "includeVars": true,
+      "keepTime": true,
+      "tags": ["observability", "greenlang"],
+      "targetBlank": true,
+      "title": "Observability Dashboards",
+      "type": "dashboards"
+    },
+    {
+      "asDropdown": false,
+      "icon": "doc",
+      "targetBlank": true,
+      "title": "Prometheus Runbook",
+      "tooltip": "Open Prometheus operational runbook",
+      "type": "link",
+      "url": "https://docs.greenlang.io/runbooks/prometheus-health"
+    }
+  ],
+  "liveNow": false,
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "id": 1,
+      "title": "Overview",
+      "type": "row"
+    },
+    {
+      "datasource": "${datasource}",
+      "description": "Prometheus server uptime status. Green=UP, Red=DOWN. See runbook for troubleshooting steps.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "mappings": [
+            { "options": { "0": { "color": "red", "index": 0, "text": "DOWN" } }, "type": "value" },
+            { "options": { "1": { "color": "green", "index": 1, "text": "UP" } }, "type": "value" }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "green", "value": 1 }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 1 },
+      "id": 2,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "textMode": "auto"
+      },
+      "title": "Prometheus Uptime",
+      "type": "stat",
+      "targets": [
+        {
+          "datasource": "${datasource}",
+          "expr": "avg(up{job=\"prometheus\", cluster=~\"$cluster\"})",
+          "legendFormat": "Status",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": "${datasource}",
+      "description": "Total number of active scrape targets. Decrease indicates targets going down.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "yellow", "value": 10 },
+              { "color": "green", "value": 50 }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 1 },
+      "id": 3,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "textMode": "auto"
+      },
+      "title": "Active Targets",
+      "type": "stat",
+      "targets": [
+        {
+          "datasource": "${datasource}",
+          "expr": "count(up{cluster=~\"$cluster\"})",
+          "legendFormat": "Targets",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": "${datasource}",
+      "description": "Percentage of successful scrapes. Below 95% indicates significant target issues.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "yellow", "value": 90 },
+              { "color": "green", "value": 99 }
+            ]
+          },
+          "unit": "percent",
+          "decimals": 1
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 1 },
+      "id": 4,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "textMode": "auto"
+      },
+      "title": "Scrape Success Rate",
+      "type": "stat",
+      "targets": [
+        {
+          "datasource": "${datasource}",
+          "expr": "avg(up{cluster=~\"$cluster\"}) * 100",
+          "legendFormat": "Success %",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": "${datasource}",
+      "description": "Configuration reload status. Red indicates config reload failed - check Prometheus logs.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "mappings": [
+            { "options": { "0": { "color": "red", "index": 0, "text": "FAILED" } }, "type": "value" },
+            { "options": { "1": { "color": "green", "index": 1, "text": "SUCCESS" } }, "type": "value" }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "green", "value": 1 }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 1 },
+      "id": 5,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "textMode": "auto"
+      },
+      "title": "Config Reload Status",
+      "type": "stat",
+      "targets": [
+        {
+          "datasource": "${datasource}",
+          "expr": "prometheus_config_last_reload_successful{cluster=~\"$cluster\"}",
+          "legendFormat": "Status",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 },
+      "id": 10,
+      "title": "Performance",
+      "type": "row"
+    },
+    {
+      "datasource": "${datasource}",
+      "description": "Scrape duration percentiles. High values indicate slow targets or network issues. Target: <5s P99.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisLabel": "Duration",
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 15,
+            "gradientMode": "scheme",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "showPoints": "auto",
+            "stacking": { "group": "A", "mode": "none" },
+            "thresholdsStyle": { "mode": "line" }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 3 },
+              { "color": "red", "value": 5 }
+            ]
+          },
+          "unit": "s"
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "P99" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "P95" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "P50" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }]
+          }
+        ]
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 0, "y": 6 },
+      "id": 11,
+      "options": {
+        "legend": { "calcs": ["mean", "max", "lastNotNull"], "displayMode": "table", "placement": "bottom" },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "title": "Scrape Duration (P50/P95/P99)",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": "${datasource}",
+          "expr": "histogram_quantile(0.50, sum(rate(prometheus_target_interval_length_seconds_bucket{cluster=~\"$cluster\"}[5m])) by (le))",
+          "legendFormat": "P50",
+          "refId": "A"
+        },
+        {
+          "datasource": "${datasource}",
+          "expr": "histogram_quantile(0.95, sum(rate(prometheus_target_interval_length_seconds_bucket{cluster=~\"$cluster\"}[5m])) by (le))",
+          "legendFormat": "P95",
+          "refId": "B"
+        },
+        {
+          "datasource": "${datasource}",
+          "expr": "histogram_quantile(0.99, sum(rate(prometheus_target_interval_length_seconds_bucket{cluster=~\"$cluster\"}[5m])) by (le))",
+          "legendFormat": "P99",
+          "refId": "C"
+        }
+      ]
+    },
+    {
+      "datasource": "${datasource}",
+      "description": "Time to evaluate alerting and recording rules. High values can delay alerts. Target: <100ms P99.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisLabel": "Duration",
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 15,
+            "gradientMode": "scheme",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "showPoints": "auto",
+            "stacking": { "group": "A", "mode": "none" },
+            "thresholdsStyle": { "mode": "line" }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 0.05 },
+              { "color": "red", "value": 0.1 }
+            ]
+          },
+          "unit": "s"
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "P99" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "P95" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "P50" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }]
+          }
+        ]
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 6, "y": 6 },
+      "id": 12,
+      "options": {
+        "legend": { "calcs": ["mean", "max", "lastNotNull"], "displayMode": "table", "placement": "bottom" },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "title": "Rule Evaluation Duration (P50/P95/P99)",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": "${datasource}",
+          "expr": "histogram_quantile(0.50, sum(rate(prometheus_rule_evaluation_duration_seconds_bucket{cluster=~\"$cluster\"}[5m])) by (le))",
+          "legendFormat": "P50",
+          "refId": "A"
+        },
+        {
+          "datasource": "${datasource}",
+          "expr": "histogram_quantile(0.95, sum(rate(prometheus_rule_evaluation_duration_seconds_bucket{cluster=~\"$cluster\"}[5m])) by (le))",
+          "legendFormat": "P95",
+          "refId": "B"
+        },
+        {
+          "datasource": "${datasource}",
+          "expr": "histogram_quantile(0.99, sum(rate(prometheus_rule_evaluation_duration_seconds_bucket{cluster=~\"$cluster\"}[5m])) by (le))",
+          "legendFormat": "P99",
+          "refId": "C"
+        }
+      ]
+    },
+    {
+      "datasource": "${datasource}",
+      "description": "PromQL query execution time. High values indicate complex queries or high cardinality. Target: <30s P99.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisLabel": "Duration",
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 15,
+            "gradientMode": "scheme",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "showPoints": "auto",
+            "stacking": { "group": "A", "mode": "none" },
+            "thresholdsStyle": { "mode": "line" }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 10 },
+              { "color": "red", "value": 30 }
+            ]
+          },
+          "unit": "s"
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "P99" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "P95" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "P50" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }]
+          }
+        ]
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 12, "y": 6 },
+      "id": 13,
+      "options": {
+        "legend": { "calcs": ["mean", "max", "lastNotNull"], "displayMode": "table", "placement": "bottom" },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "title": "Query Duration (P50/P95/P99)",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": "${datasource}",
+          "expr": "histogram_quantile(0.50, sum(rate(prometheus_engine_query_duration_seconds_bucket{cluster=~\"$cluster\"}[5m])) by (le))",
+          "legendFormat": "P50",
+          "refId": "A"
+        },
+        {
+          "datasource": "${datasource}",
+          "expr": "histogram_quantile(0.95, sum(rate(prometheus_engine_query_duration_seconds_bucket{cluster=~\"$cluster\"}[5m])) by (le))",
+          "legendFormat": "P95",
+          "refId": "B"
+        },
+        {
+          "datasource": "${datasource}",
+          "expr": "histogram_quantile(0.99, sum(rate(prometheus_engine_query_duration_seconds_bucket{cluster=~\"$cluster\"}[5m])) by (le))",
+          "legendFormat": "P99",
+          "refId": "C"
+        }
+      ]
+    },
+    {
+      "datasource": "${datasource}",
+      "description": "Rate of rule evaluation failures. Non-zero values indicate rule syntax errors or resource issues.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisLabel": "Failures/sec",
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 20,
+            "gradientMode": "scheme",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "showPoints": "auto",
+            "stacking": { "group": "A", "mode": "none" },
+            "thresholdsStyle": { "mode": "area" }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 0.01 },
+              { "color": "red", "value": 0.1 }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Failures" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }]
+          }
+        ]
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 18, "y": 6 },
+      "id": 14,
+      "options": {
+        "legend": { "calcs": ["mean", "max", "sum"], "displayMode": "table", "placement": "bottom" },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "title": "Rule Evaluation Failures",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": "${datasource}",
+          "expr": "sum(rate(prometheus_rule_evaluation_failures_total{cluster=~\"$cluster\"}[5m]))",
+          "legendFormat": "Failures",
+          "refId": "A"
+        },
+        {
+          "datasource": "${datasource}",
+          "expr": "sum(rate(prometheus_rule_group_iterations_missed_total{cluster=~\"$cluster\"}[5m]))",
+          "legendFormat": "Missed Iterations",
+          "refId": "B"
+        }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 14 },
+      "id": 20,
+      "title": "Storage",
+      "type": "row"
+    },
+    {
+      "datasource": "${datasource}",
+      "description": "Rate of samples being ingested. Sudden changes indicate scrape target changes. Target: >100K samples/s capacity.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisLabel": "Samples/sec",
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 15,
+            "gradientMode": "scheme",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "showPoints": "auto",
+            "stacking": { "group": "A", "mode": "none" }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 0, "y": 15 },
+      "id": 21,
+      "options": {
+        "legend": { "calcs": ["mean", "max", "lastNotNull"], "displayMode": "table", "placement": "bottom" },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "title": "Samples Ingested Rate",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": "${datasource}",
+          "expr": "sum(rate(prometheus_tsdb_head_samples_appended_total{cluster=~\"$cluster\"}[5m]))",
+          "legendFormat": "Samples/sec",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": "${datasource}",
+      "description": "Total TSDB storage size on disk. Monitor for capacity planning. Alert at 80% of PVC size.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisLabel": "Size",
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 15,
+            "gradientMode": "scheme",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "showPoints": "auto",
+            "stacking": { "group": "A", "mode": "none" },
+            "thresholdsStyle": { "mode": "line" }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 40000000000 },
+              { "color": "red", "value": 48000000000 }
+            ]
+          },
+          "unit": "bytes"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 6, "y": 15 },
+      "id": 22,
+      "options": {
+        "legend": { "calcs": ["mean", "max", "lastNotNull"], "displayMode": "table", "placement": "bottom" },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "title": "TSDB Storage Size",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": "${datasource}",
+          "expr": "sum(prometheus_tsdb_storage_blocks_bytes{cluster=~\"$cluster\"})",
+          "legendFormat": "Blocks",
+          "refId": "A"
+        },
+        {
+          "datasource": "${datasource}",
+          "expr": "sum(prometheus_tsdb_wal_storage_size_bytes{cluster=~\"$cluster\"})",
+          "legendFormat": "WAL",
+          "refId": "B"
+        }
+      ]
+    },
+    {
+      "datasource": "${datasource}",
+      "description": "Number of active time series in TSDB head. High cardinality can cause memory issues. Target: <5M series.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisLabel": "Series",
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 15,
+            "gradientMode": "scheme",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "showPoints": "auto",
+            "stacking": { "group": "A", "mode": "none" },
+            "thresholdsStyle": { "mode": "line" }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 3000000 },
+              { "color": "red", "value": 5000000 }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 12, "y": 15 },
+      "id": 23,
+      "options": {
+        "legend": { "calcs": ["mean", "max", "lastNotNull"], "displayMode": "table", "placement": "bottom" },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "title": "Head Series Count",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": "${datasource}",
+          "expr": "sum(prometheus_tsdb_head_series{cluster=~\"$cluster\"})",
+          "legendFormat": "Active Series",
+          "refId": "A"
+        },
+        {
+          "datasource": "${datasource}",
+          "expr": "sum(prometheus_tsdb_head_chunks{cluster=~\"$cluster\"})",
+          "legendFormat": "Head Chunks",
+          "refId": "B"
+        }
+      ]
+    },
+    {
+      "datasource": "${datasource}",
+      "description": "TSDB compaction operations. Failures indicate storage issues that need investigation.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisLabel": "Operations",
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 15,
+            "gradientMode": "scheme",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "showPoints": "auto",
+            "stacking": { "group": "A", "mode": "none" }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Failed" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }]
+          }
+        ]
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 18, "y": 15 },
+      "id": 24,
+      "options": {
+        "legend": { "calcs": ["mean", "max", "lastNotNull"], "displayMode": "table", "placement": "bottom" },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "title": "Compaction Status",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": "${datasource}",
+          "expr": "sum(increase(prometheus_tsdb_compactions_total{cluster=~\"$cluster\"}[1h]))",
+          "legendFormat": "Total",
+          "refId": "A"
+        },
+        {
+          "datasource": "${datasource}",
+          "expr": "sum(increase(prometheus_tsdb_compactions_failed_total{cluster=~\"$cluster\"}[1h]))",
+          "legendFormat": "Failed",
+          "refId": "B"
+        },
+        {
+          "datasource": "${datasource}",
+          "expr": "sum(increase(prometheus_tsdb_compactions_triggered_total{cluster=~\"$cluster\"}[1h]))",
+          "legendFormat": "Triggered",
+          "refId": "C"
+        }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 23 },
+      "id": 30,
+      "title": "Targets",
+      "type": "row"
+    },
+    {
+      "datasource": "${datasource}",
+      "description": "Status of all scrape targets. Click row to filter by job. Red=DOWN, Green=UP.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "custom": {
+            "align": "auto",
+            "displayMode": "color-background-solid",
+            "inspect": false,
+            "cellOptions": { "type": "color-background" }
+          },
+          "mappings": [
+            { "options": { "0": { "color": "red", "index": 0, "text": "DOWN" } }, "type": "value" },
+            { "options": { "1": { "color": "green", "index": 1, "text": "UP" } }, "type": "value" }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "green", "value": 1 }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "job" },
+            "properties": [{ "id": "custom.width", "value": 200 }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "instance" },
+            "properties": [{ "id": "custom.width", "value": 250 }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "cluster" },
+            "properties": [{ "id": "custom.width", "value": 150 }]
+          }
+        ]
+      },
+      "gridPos": { "h": 10, "w": 16, "x": 0, "y": 24 },
+      "id": 31,
+      "options": {
+        "showHeader": true,
+        "sortBy": [{ "desc": false, "displayName": "Value" }],
+        "footer": { "enablePagination": true, "show": true }
+      },
+      "title": "Target Status Table",
+      "type": "table",
+      "targets": [
+        {
+          "datasource": "${datasource}",
+          "expr": "up{cluster=~\"$cluster\"}",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": { "Time": true, "__name__": true },
+            "indexByName": {},
+            "renameByName": {}
+          }
+        }
+      ]
+    },
+    {
+      "datasource": "${datasource}",
+      "description": "Scrape errors by job including sample limit exceeded, body size exceeded, and timeout errors.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisLabel": "Errors/sec",
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 20,
+            "gradientMode": "scheme",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "showPoints": "auto",
+            "stacking": { "group": "A", "mode": "normal" }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 0.1 },
+              { "color": "red", "value": 1 }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 10, "w": 8, "x": 16, "y": 24 },
+      "id": 32,
+      "options": {
+        "legend": { "calcs": ["mean", "max", "sum"], "displayMode": "table", "placement": "bottom" },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "title": "Scrape Errors by Job",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": "${datasource}",
+          "expr": "sum by (job) (rate(prometheus_target_scrapes_exceeded_sample_limit_total{cluster=~\"$cluster\"}[5m]))",
+          "legendFormat": "{{ job }} - Sample Limit",
+          "refId": "A"
+        },
+        {
+          "datasource": "${datasource}",
+          "expr": "sum by (job) (rate(prometheus_target_scrapes_exceeded_body_size_limit_total{cluster=~\"$cluster\"}[5m]))",
+          "legendFormat": "{{ job }} - Body Size",
+          "refId": "B"
+        },
+        {
+          "datasource": "${datasource}",
+          "expr": "sum by (job) (rate(prometheus_target_scrape_pool_exceeded_target_limit_total{cluster=~\"$cluster\"}[5m]))",
+          "legendFormat": "{{ job }} - Target Limit",
+          "refId": "C"
+        }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 34 },
+      "id": 40,
+      "title": "Resources",
+      "type": "row"
+    },
+    {
+      "datasource": "${datasource}",
+      "description": "Prometheus process CPU usage. High sustained usage indicates need for scaling or query optimization.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisLabel": "CPU Cores",
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 15,
+            "gradientMode": "scheme",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "showPoints": "auto",
+            "stacking": { "group": "A", "mode": "none" },
+            "thresholdsStyle": { "mode": "line" }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 1.5 },
+              { "color": "red", "value": 1.8 }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 0, "y": 35 },
+      "id": 41,
+      "options": {
+        "legend": { "calcs": ["mean", "max", "lastNotNull"], "displayMode": "table", "placement": "bottom" },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "title": "CPU Usage",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": "${datasource}",
+          "expr": "rate(process_cpu_seconds_total{job=\"prometheus\", cluster=~\"$cluster\"}[5m])",
+          "legendFormat": "{{ instance }}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": "${datasource}",
+      "description": "Prometheus process memory usage. Monitor for memory leaks. Alert at 80% of container limit.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisLabel": "Memory",
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 15,
+            "gradientMode": "scheme",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "showPoints": "auto",
+            "stacking": { "group": "A", "mode": "none" },
+            "thresholdsStyle": { "mode": "line" }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 6442450944 },
+              { "color": "red", "value": 7516192768 }
+            ]
+          },
+          "unit": "bytes"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 6, "y": 35 },
+      "id": 42,
+      "options": {
+        "legend": { "calcs": ["mean", "max", "lastNotNull"], "displayMode": "table", "placement": "bottom" },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "title": "Memory Usage",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": "${datasource}",
+          "expr": "process_resident_memory_bytes{job=\"prometheus\", cluster=~\"$cluster\"}",
+          "legendFormat": "Resident {{ instance }}",
+          "refId": "A"
+        },
+        {
+          "datasource": "${datasource}",
+          "expr": "go_memstats_heap_inuse_bytes{job=\"prometheus\", cluster=~\"$cluster\"}",
+          "legendFormat": "Heap {{ instance }}",
+          "refId": "B"
+        }
+      ]
+    },
+    {
+      "datasource": "${datasource}",
+      "description": "Open file descriptors. High values may indicate resource leak. Alert near ulimit.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisLabel": "FDs",
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 15,
+            "gradientMode": "scheme",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "showPoints": "auto",
+            "stacking": { "group": "A", "mode": "none" },
+            "thresholdsStyle": { "mode": "line" }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 50000 },
+              { "color": "red", "value": 60000 }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 12, "y": 35 },
+      "id": 43,
+      "options": {
+        "legend": { "calcs": ["mean", "max", "lastNotNull"], "displayMode": "table", "placement": "bottom" },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "title": "Open File Descriptors",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": "${datasource}",
+          "expr": "process_open_fds{job=\"prometheus\", cluster=~\"$cluster\"}",
+          "legendFormat": "Open {{ instance }}",
+          "refId": "A"
+        },
+        {
+          "datasource": "${datasource}",
+          "expr": "process_max_fds{job=\"prometheus\", cluster=~\"$cluster\"}",
+          "legendFormat": "Max {{ instance }}",
+          "refId": "B"
+        }
+      ]
+    },
+    {
+      "datasource": "${datasource}",
+      "description": "Number of Go routines. Unusual spikes may indicate goroutine leaks.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisLabel": "Goroutines",
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 15,
+            "gradientMode": "scheme",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "showPoints": "auto",
+            "stacking": { "group": "A", "mode": "none" }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 1000 },
+              { "color": "red", "value": 5000 }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 18, "y": 35 },
+      "id": 44,
+      "options": {
+        "legend": { "calcs": ["mean", "max", "lastNotNull"], "displayMode": "table", "placement": "bottom" },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "title": "Go Routines",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": "${datasource}",
+          "expr": "go_goroutines{job=\"prometheus\", cluster=~\"$cluster\"}",
+          "legendFormat": "{{ instance }}",
+          "refId": "A"
+        }
+      ]
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "style": "dark",
+  "tags": ["prometheus", "observability", "obs-001", "greenlang"],
+  "templating": {
+    "list": [
+      {
+        "current": { "selected": false, "text": "Prometheus", "value": "Prometheus" },
+        "hide": 0,
+        "includeAll": false,
+        "label": "Datasource",
+        "multi": false,
+        "name": "datasource",
+        "options": [],
+        "query": "prometheus",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
+      },
+      {
+        "allValue": ".*",
+        "current": { "selected": true, "text": "All", "value": "$__all" },
+        "datasource": "${datasource}",
+        "definition": "label_values(up, cluster)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Cluster",
+        "multi": true,
+        "name": "cluster",
+        "options": [],
+        "query": "label_values(up, cluster)",
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": { "from": "now-3h", "to": "now" },
+  "timepicker": {
+    "refresh_intervals": ["5s", "10s", "30s", "1m", "5m", "15m", "30m", "1h"],
+    "time_options": ["5m", "15m", "1h", "3h", "6h", "12h", "24h", "2d", "7d"]
+  },
+  "timezone": "utc",
+  "title": "Prometheus Health",
+  "uid": "prometheus-health",
+  "version": 1
+}

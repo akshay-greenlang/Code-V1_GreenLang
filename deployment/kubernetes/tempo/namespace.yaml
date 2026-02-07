@@ -1,0 +1,27 @@
+# =============================================================================
+# GreenLang Tempo - Namespace Reference
+# GreenLang Climate OS | OBS-003
+# =============================================================================
+# Grafana Tempo is deployed into the shared "monitoring" namespace alongside
+# Prometheus, Grafana, Loki, and the OTel Collector. This file exists as a
+# reference; the namespace itself is created by
+# deployment/kubernetes/monitoring/namespace.yaml.
+#
+# DO NOT apply this file directly if the monitoring namespace already exists.
+# =============================================================================
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: monitoring
+  labels:
+    name: monitoring
+    purpose: observability
+    team: platform
+    app.kubernetes.io/name: monitoring
+    app.kubernetes.io/part-of: greenlang-observability
+    greenlang.io/obs: "003"
+  annotations:
+    description: "GreenLang Observability Stack - shared namespace for Prometheus, Grafana, Loki, Tempo, OTel Collector"
+    maintainer: "DevOps/SRE Team"

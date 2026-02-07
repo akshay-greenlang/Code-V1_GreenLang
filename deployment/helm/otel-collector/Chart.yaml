@@ -1,0 +1,38 @@
+# =============================================================================
+# GreenLang OpenTelemetry Collector - Helm Chart
+# GreenLang Climate OS | OBS-003
+# =============================================================================
+# Production-grade OpenTelemetry Collector deployed as a gateway for unified
+# telemetry collection (traces, metrics, logs). Receives OTLP + Jaeger
+# protocols, applies tail sampling, PII redaction, and exports to
+# Grafana Tempo, Prometheus, and Loki.
+# =============================================================================
+
+apiVersion: v2
+name: greenlang-otel-collector
+description: OpenTelemetry Collector gateway for GreenLang Climate OS
+type: application
+version: 1.0.0
+appVersion: "0.96.0"
+
+keywords:
+  - opentelemetry
+  - otel
+  - tracing
+  - observability
+  - tempo
+  - collector
+  - greenlang
+  - obs-003
+
+maintainers:
+  - name: GreenLang Infrastructure Team
+    email: infra@greenlang.io
+
+home: https://docs.greenlang.io/observability/otel-collector
+sources:
+  - https://github.com/greenlang/greenlang
+
+annotations:
+  category: Observability
+  licenses: Apache-2.0

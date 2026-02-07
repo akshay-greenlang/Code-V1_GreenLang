@@ -1,0 +1,245 @@
+# =============================================================================
+# GreenLang Thanos - Production Values
+# GreenLang Climate OS | OBS-001
+# =============================================================================
+# Production-grade Thanos configuration with full HA, 2-year retention,
+# and enterprise resource limits.
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# Global Configuration
+# ---------------------------------------------------------------------------
+global:
+  environment: prod
+  clusterName: greenlang-prod
+  awsRegion: eu-west-1
+
+# ---------------------------------------------------------------------------
+# Thanos Production Overrides
+# ---------------------------------------------------------------------------
+thanos:
+  # -------------------------------------------------------------------------
+  # Thanos Query - Production HA
+  # -------------------------------------------------------------------------
+  query:
+    replicaCount: 2
+
+    # Production resources
+    resources:
+      requests:
+        cpu: 500m
+        memory: 1Gi
+      limits:
+        cpu: 2000m
+        memory: 4Gi
+
+    # Strict anti-affinity
+    affinity:
+      podAntiAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchLabels:
+                app.kubernetes.io/component: query
+            topologyKey: kubernetes.io/hostname
+
+    # Pod disruption budget
+    pdb:
+      create: true
+      minAvailable: 1
+
+    # Query timeout for long-running queries
+    extraFlags:
+      - --query.timeout=5m
+      - --query.max-concurrent=20
+      - --query.replica-label=replica
+
+  # -------------------------------------------------------------------------
+  # Thanos Query Frontend - Production
+  # -------------------------------------------------------------------------
+  queryFrontend:
+    replicaCount: 2
+
+    # Production caching
+    config: |-
+      type: IN-MEMORY
+      config:
+        max_size: 1GB
+        max_size_items: 2000
+        validity: 10m
+
+    # Production resources
+    resources:
+      requests:
+        cpu: 200m
+        memory: 512Mi
+      limits:
+        cpu: 1000m
+        memory: 2Gi
+
+    # Strict anti-affinity
+    affinity:
+      podAntiAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchLabels:
+                app.kubernetes.io/component: query-frontend
+            topologyKey: kubernetes.io/hostname
+
+    pdb:
+      create: true
+      minAvailable: 1
+
+    # Query frontend settings
+    extraFlags:
+      - --query-frontend.compress-responses
+      - --query-frontend.log-queries-longer-than=30s
+
+  # -------------------------------------------------------------------------
+  # Thanos Store Gateway - Production
+  # -------------------------------------------------------------------------
+  storegateway:
+    replicaCount: 2
+
+    # Production storage
+    persistence:
+      size: 100Gi
+
+    # Production resources
+    resources:
+      requests:
+        cpu: 500m
+        memory: 2Gi
+      limits:
+        cpu: 2000m
+        memory: 8Gi
+
+    # Strict anti-affinity
+    affinity:
+      podAntiAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchLabels:
+                app.kubernetes.io/component: storegateway
+            topologyKey: kubernetes.io/hostname
+
+    pdb:
+      create: true
+      minAvailable: 1
+
+    # Store gateway settings
+    extraFlags:
+      - --store.grpc.series-max-concurrency=20
+      - --block-sync-concurrency=20
+      - --store.caching-bucket.config={"type":"IN-MEMORY","config":{"max_size":"500MB"}}
+
+  # -------------------------------------------------------------------------
+  # Thanos Compactor - Production
+  # -------------------------------------------------------------------------
+  compactor:
+    # Still only 1 replica (required)
+    replicaCount: 1
+
+    # Production retention
+    retentionResolutionRaw: 30d
+    retentionResolution5m: 120d
+    retentionResolution1h: 730d  # 2 years
+
+    # Production storage
+    persistence:
+      size: 200Gi
+
+    # Production resources
+    resources:
+      requests:
+        cpu: 500m
+        memory: 2Gi
+      limits:
+        cpu: 2000m
+        memory: 8Gi
+
+    # Compactor settings
+    extraFlags:
+      - --compact.concurrency=1
+      - --compact.cleanup-interval=15m
+      - --retention.resolution-raw=30d
+      - --retention.resolution-5m=120d
+      - --retention.resolution-1h=730d
+      - --delete-delay=12h
+
+  # -------------------------------------------------------------------------
+  # Thanos Ruler - Production HA
+  # -------------------------------------------------------------------------
+  ruler:
+    replicaCount: 2
+
+    # Production resources
+    resources:
+      requests:
+        cpu: 200m
+        memory: 512Mi
+      limits:
+        cpu: 1000m
+        memory: 2Gi
+
+    # Strict anti-affinity
+    affinity:
+      podAntiAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchLabels:
+                app.kubernetes.io/component: ruler
+            topologyKey: kubernetes.io/hostname
+
+    pdb:
+      create: true
+      minAvailable: 1
+
+    # Ruler settings
+    extraFlags:
+      - --rule.resend-delay=15s
+      - --alert.query-url=http://thanos-query.monitoring.svc:9090
+
+  # -------------------------------------------------------------------------
+  # Thanos Bucket Web (enabled for debugging)
+  # -------------------------------------------------------------------------
+  bucketweb:
+    enabled: true
+    replicaCount: 1
+
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 200m
+        memory: 256Mi
+
+  # -------------------------------------------------------------------------
+  # Production Metrics Configuration
+  # -------------------------------------------------------------------------
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+      interval: 15s
+      scrapeTimeout: 10s
+
+  # -------------------------------------------------------------------------
+  # Production Network Policies
+  # -------------------------------------------------------------------------
+  networkPolicy:
+    enabled: true
+    allowExternal: false
+
+  # -------------------------------------------------------------------------
+  # Ingress for Thanos Query (internal access via Kong)
+  # -------------------------------------------------------------------------
+  query:
+    ingress:
+      enabled: true
+      ingressClassName: kong-internal
+      annotations:
+        konghq.com/protocols: https
+        konghq.com/strip-path: "false"
+      hostname: thanos.internal.greenlang.io
+      tls: true

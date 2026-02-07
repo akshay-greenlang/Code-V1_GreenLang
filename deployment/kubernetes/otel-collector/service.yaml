@@ -1,0 +1,66 @@
+# =============================================================================
+# GreenLang OTel Collector - Service
+# GreenLang Climate OS | OBS-003
+# =============================================================================
+# ClusterIP service exposing all OTel Collector receiver and metric ports.
+# Application pods send telemetry to this service; Prometheus scrapes the
+# metrics endpoints.
+#
+# Ports:
+#   4317  - OTLP gRPC receiver (primary ingest)
+#   4318  - OTLP HTTP receiver (browser/SDK ingest)
+#   14250 - Jaeger gRPC receiver (legacy instrumentation)
+#   14268 - Jaeger thrift HTTP (legacy instrumentation)
+#   8888  - Collector internal metrics
+#   8889  - Prometheus exporter (pipeline metrics)
+#   13133 - Health check
+# =============================================================================
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: otel-collector
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: otel-collector
+    app.kubernetes.io/component: gateway
+    app.kubernetes.io/part-of: greenlang-observability
+    app.kubernetes.io/managed-by: kubectl
+    greenlang.io/obs: "003"
+  annotations:
+    description: "OpenTelemetry Collector gateway service for GreenLang telemetry ingest"
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: otel-collector
+    app.kubernetes.io/component: gateway
+  ports:
+    - name: otlp-grpc
+      port: 4317
+      targetPort: 4317
+      protocol: TCP
+    - name: otlp-http
+      port: 4318
+      targetPort: 4318
+      protocol: TCP
+    - name: jaeger-grpc
+      port: 14250
+      targetPort: 14250
+      protocol: TCP
+    - name: jaeger-http
+      port: 14268
+      targetPort: 14268
+      protocol: TCP
+    - name: metrics
+      port: 8888
+      targetPort: 8888
+      protocol: TCP
+    - name: prom-export
+      port: 8889
+      targetPort: 8889
+      protocol: TCP
+    - name: health
+      port: 13133
+      targetPort: 13133
+      protocol: TCP

@@ -1,0 +1,39 @@
+# GreenLang CodeQL Query Suite
+#
+# Custom query suite for GreenLang-specific security patterns
+# Includes injection, auth bypass, and data exposure queries
+#
+# Author: GreenLang Security Team
+# Version: 1.0.0
+# Usage: codeql database analyze --format=sarif-latest --output=results.sarif -- greenlang-queries.qls
+
+- description: GreenLang Security Query Suite
+- queries: '.'
+- include:
+    kind: problem
+- include:
+    kind: path-problem
+- include:
+    tags contain:
+      - security
+      - greenlang
+- exclude:
+    precision: low
+
+# Include standard Python security queries
+- import: codeql-suites/python-security-extended.qls
+  from: codeql/python-queries
+
+# Include custom GreenLang queries
+- include:
+    id:
+      - greenlang/sql-injection
+      - greenlang/command-injection
+      - greenlang/ldap-injection
+      - greenlang/auth-bypass
+      - greenlang/hardcoded-credentials
+      - greenlang/sensitive-data-exposure
+      - greenlang/insecure-deserialization
+      - greenlang/path-traversal
+      - greenlang/ssrf
+      - greenlang/xxe

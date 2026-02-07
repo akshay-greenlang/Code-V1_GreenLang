@@ -1,0 +1,735 @@
+# =============================================================================
+# GreenLang Tracing Infrastructure CI
+# GreenLang Climate OS | OBS-003
+# =============================================================================
+# Validates OTel Collector config, Tempo/OTel Helm charts, Terraform modules,
+# tracing SDK tests, and Grafana dashboard JSON for distributed tracing.
+# =============================================================================
+
+name: Tracing Infrastructure CI
+
+on:
+  pull_request:
+    paths:
+      - 'deployment/helm/tempo/**'
+      - 'deployment/helm/otel-collector/**'
+      - 'deployment/monitoring/dashboards/tracing-*'
+      - 'deployment/monitoring/dashboards/tempo-*'
+      - 'deployment/monitoring/dashboards/otel-*'
+      - 'deployment/monitoring/dashboards/trace-*'
+      - 'deployment/monitoring/alerts/tracing-*'
+      - 'deployment/terraform/modules/tempo-storage/**'
+      - 'greenlang/infrastructure/tracing_service/**'
+      - 'tests/unit/tracing_service/**'
+      - 'tests/integration/tracing_service/**'
+  push:
+    branches: [master]
+    paths:
+      - 'deployment/helm/tempo/**'
+      - 'deployment/helm/otel-collector/**'
+      - 'greenlang/infrastructure/tracing_service/**'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHON_VERSION: "3.11"
+  DASHBOARDS_DIR: deployment/monitoring/dashboards
+  ALERTS_DIR: deployment/monitoring/alerts
+  TEMPO_CHART_DIR: deployment/helm/tempo
+  OTEL_CHART_DIR: deployment/helm/otel-collector
+  TERRAFORM_MODULE_DIR: deployment/terraform/modules/tempo-storage
+
+jobs:
+  # -------------------------------------------------------------------------
+  # Job 1: Lint Dashboard JSON and Alert YAML
+  # -------------------------------------------------------------------------
+  lint-configs:
+    name: Lint Dashboards & Alerts
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install PyYAML
+        run: pip install --quiet pyyaml
+
+      - name: Validate tracing dashboard JSON syntax
+        run: |
+          echo "Validating JSON syntax for tracing dashboard files..."
+          ERRORS=0
+          CHECKED=0
+          for pattern in tracing- tempo- otel- trace-; do
+            for f in ${{ env.DASHBOARDS_DIR }}/${pattern}*.json; do
+              # Skip if glob did not match any files
+              [ -e "$f" ] || continue
+              CHECKED=$((CHECKED + 1))
+              if ! python -m json.tool "$f" > /dev/null 2>&1; then
+                echo "ERROR: Invalid JSON in $f"
+                ERRORS=$((ERRORS + 1))
+              fi
+            done
+          done
+          if [ $CHECKED -eq 0 ]; then
+            echo "WARNING: No tracing dashboard JSON files found"
+          fi
+          if [ $ERRORS -gt 0 ]; then
+            echo "Found $ERRORS files with invalid JSON"
+            exit 1
+          fi
+          echo "All $CHECKED tracing dashboard JSON files are valid"
+
+      - name: Check required dashboard fields
+        run: |
+          python3 << 'PYEOF'
+          import json
+          import glob
+          import sys
+
+          REQUIRED_FIELDS = ["uid", "title", "panels"]
+          DASHBOARD_PATTERNS = [
+              "${{ env.DASHBOARDS_DIR }}/tracing-*.json",
+              "${{ env.DASHBOARDS_DIR }}/tempo-*.json",
+              "${{ env.DASHBOARDS_DIR }}/otel-*.json",
+              "${{ env.DASHBOARDS_DIR }}/trace-*.json",
+          ]
+
+          errors = []
+          checked = 0
+
+          for pattern in DASHBOARD_PATTERNS:
+              for path in sorted(glob.glob(pattern)):
+                  checked += 1
+                  with open(path) as f:
+                      try:
+                          data = json.load(f)
+                      except json.JSONDecodeError:
+                          errors.append(f"{path}: Invalid JSON")
+                          continue
+
+                      for field in REQUIRED_FIELDS:
+                          if field not in data:
+                              errors.append(f"{path}: Missing required field '{field}'")
+
+                      # Validate UID format (should be kebab-case, no spaces)
+                      uid = data.get("uid", "")
+                      if uid and (" " in uid or uid != uid.lower()):
+                          errors.append(f"{path}: UID '{uid}' should be lowercase kebab-case")
+
+          if errors:
+              print("Dashboard validation errors:")
+              for e in errors:
+                  print(f"  - {e}")
+              sys.exit(1)
+
+          if checked == 0:
+              print("WARNING: No tracing dashboard files found to validate")
+          else:
+              print(f"All {checked} tracing dashboards have required fields")
+          PYEOF
+
+      - name: Check UID uniqueness across ALL dashboards
+        run: |
+          python3 << 'PYEOF'
+          import json
+          import glob
+          import sys
+
+          uid_map = {}
+          errors = []
+
+          # Check ALL dashboards for UID conflicts, not just tracing ones
+          for path in sorted(glob.glob("${{ env.DASHBOARDS_DIR }}/*.json")):
+              with open(path) as f:
+                  try:
+                      data = json.load(f)
+                  except json.JSONDecodeError:
+                      continue
+
+                  uid = data.get("uid", "")
+                  if not uid:
+                      continue
+
+                  if uid in uid_map:
+                      errors.append(f"Duplicate UID '{uid}': {uid_map[uid]} and {path}")
+                  else:
+                      uid_map[uid] = path
+
+          if errors:
+              print("UID conflict errors:")
+              for e in errors:
+                  print(f"  - {e}")
+              sys.exit(1)
+
+          print(f"All {len(uid_map)} dashboard UIDs are unique")
+          PYEOF
+
+      - name: Validate alert YAML syntax
+        run: |
+          python3 << 'PYEOF'
+          import yaml
+          import glob
+          import sys
+
+          errors = []
+          checked = 0
+
+          for path in sorted(glob.glob("${{ env.ALERTS_DIR }}/tracing-*.yaml")):
+              checked += 1
+              with open(path) as f:
+                  try:
+                      docs = list(yaml.safe_load_all(f))
+                  except yaml.YAMLError as e:
+                      errors.append(f"{path}: Invalid YAML - {e}")
+                      continue
+
+              # Validate Prometheus alert rule structure
+              for doc in docs:
+                  if doc is None:
+                      continue
+                  if "groups" in doc:
+                      for group in doc["groups"]:
+                          if "name" not in group:
+                              errors.append(f"{path}: Alert group missing 'name'")
+                          if "rules" not in group:
+                              errors.append(f"{path}: Alert group '{group.get('name', '?')}' missing 'rules'")
+                          else:
+                              for rule in group["rules"]:
+                                  if "alert" in rule and "expr" not in rule:
+                                      errors.append(f"{path}: Alert '{rule['alert']}' missing 'expr'")
+                  # Also support K8s PrometheusRule CRD format
+                  elif "spec" in doc and "groups" in doc.get("spec", {}):
+                      for group in doc["spec"]["groups"]:
+                          if "name" not in group:
+                              errors.append(f"{path}: Alert group missing 'name'")
+                          if "rules" not in group:
+                              errors.append(f"{path}: Alert group '{group.get('name', '?')}' missing 'rules'")
+
+          if errors:
+              print("Alert YAML validation errors:")
+              for e in errors:
+                  print(f"  - {e}")
+              sys.exit(1)
+
+          if checked == 0:
+              print("WARNING: No tracing alert YAML files found to validate")
+          else:
+              print(f"All {checked} alert YAML files are valid")
+          PYEOF
+
+      - name: Check dashboard file sizes
+        run: |
+          MAX_SIZE=512000  # 500KB
+          ERRORS=0
+          CHECKED=0
+          for pattern in tracing- tempo- otel- trace-; do
+            for f in ${{ env.DASHBOARDS_DIR }}/${pattern}*.json; do
+              [ -e "$f" ] || continue
+              CHECKED=$((CHECKED + 1))
+              SIZE=$(stat --format=%s "$f")
+              if [ "$SIZE" -gt "$MAX_SIZE" ]; then
+                echo "ERROR: $f exceeds 500KB ($SIZE bytes)"
+                ERRORS=$((ERRORS + 1))
+              fi
+            done
+          done
+          if [ $ERRORS -gt 0 ]; then
+            exit 1
+          fi
+          echo "All $CHECKED dashboard files are within size limits"
+
+  # -------------------------------------------------------------------------
+  # Job 2: Validate OTel Collector Configuration
+  # -------------------------------------------------------------------------
+  validate-otel-config:
+    name: Validate OTel Collector Config
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install PyYAML
+        run: pip install --quiet pyyaml
+
+      - name: Validate collector config structure
+        run: |
+          python3 << 'PYEOF'
+          import yaml
+          import sys
+          import os
+
+          # Validate the OTel Collector config from Helm values
+          values_path = "${{ env.OTEL_CHART_DIR }}/values.yaml"
+
+          if not os.path.exists(values_path):
+              print(f"ERROR: {values_path} not found")
+              sys.exit(1)
+
+          with open(values_path) as f:
+              values = yaml.safe_load(f)
+
+          config = values.get("otelCollector", {}).get("config", {})
+          errors = []
+
+          # Required top-level sections
+          REQUIRED_SECTIONS = ["receivers", "processors", "exporters", "service"]
+          for section in REQUIRED_SECTIONS:
+              if section not in config:
+                  errors.append(f"Missing required section: '{section}'")
+
+          # Validate service.pipelines references
+          service = config.get("service", {})
+          pipelines = service.get("pipelines", {})
+
+          if not pipelines:
+              errors.append("No pipelines defined in service section")
+          else:
+              receivers = set(config.get("receivers", {}).keys())
+              processors = set(config.get("processors", {}).keys())
+              exporters = set(config.get("exporters", {}).keys())
+
+              for pipeline_name, pipeline_cfg in pipelines.items():
+                  if not isinstance(pipeline_cfg, dict):
+                      continue
+
+                  # Check receivers exist
+                  for recv in pipeline_cfg.get("receivers", []):
+                      base_name = recv.split("/")[0]
+                      if recv not in receivers and base_name not in receivers:
+                          errors.append(
+                              f"Pipeline '{pipeline_name}' references undefined "
+                              f"receiver: '{recv}'"
+                          )
+
+                  # Check processors exist
+                  for proc in pipeline_cfg.get("processors", []):
+                      if proc not in processors:
+                          errors.append(
+                              f"Pipeline '{pipeline_name}' references undefined "
+                              f"processor: '{proc}'"
+                          )
+
+                  # Check exporters exist
+                  for exp in pipeline_cfg.get("exporters", []):
+                      base_name = exp.split("/")[0]
+                      if exp not in exporters and base_name not in exporters:
+                          errors.append(
+                              f"Pipeline '{pipeline_name}' references undefined "
+                              f"exporter: '{exp}'"
+                          )
+
+          # Validate extensions references
+          extensions_defined = set(config.get("extensions", {}).keys())
+          extensions_used = service.get("extensions", [])
+          for ext in extensions_used:
+              if ext not in extensions_defined:
+                  errors.append(f"Service references undefined extension: '{ext}'")
+
+          # Validate traces pipeline exists (mandatory for OBS-003)
+          if "traces" not in pipelines:
+              errors.append("Traces pipeline is required for OBS-003")
+
+          # Validate Tempo exporter is configured
+          tempo_found = False
+          for exp_name in config.get("exporters", {}).keys():
+              if "tempo" in exp_name.lower() or (
+                  exp_name.startswith("otlp") and "tempo" in exp_name
+              ):
+                  tempo_found = True
+                  break
+          if not tempo_found:
+              errors.append("No Tempo exporter found (expected otlp/tempo)")
+
+          if errors:
+              print("OTel Collector config validation errors:")
+              for e in errors:
+                  print(f"  - {e}")
+              sys.exit(1)
+
+          print("OTel Collector config validation passed")
+          print(f"  Receivers:  {sorted(receivers)}")
+          print(f"  Processors: {sorted(processors)}")
+          print(f"  Exporters:  {sorted(exporters)}")
+          print(f"  Pipelines:  {sorted(pipelines.keys())}")
+          PYEOF
+
+      - name: Validate environment overlay consistency
+        run: |
+          python3 << 'PYEOF'
+          import yaml
+          import sys
+          import os
+
+          base_path = "${{ env.OTEL_CHART_DIR }}/values.yaml"
+          envs = ["dev", "staging", "prod"]
+          errors = []
+
+          with open(base_path) as f:
+              base = yaml.safe_load(f)
+
+          for env_name in envs:
+              overlay_path = f"${{ env.OTEL_CHART_DIR }}/values-{env_name}.yaml"
+              if not os.path.exists(overlay_path):
+                  errors.append(f"Missing environment overlay: {overlay_path}")
+                  continue
+
+              with open(overlay_path) as f:
+                  try:
+                      overlay = yaml.safe_load(f)
+                  except yaml.YAMLError as e:
+                      errors.append(f"{overlay_path}: Invalid YAML - {e}")
+                      continue
+
+              if overlay is None:
+                  errors.append(f"{overlay_path}: Empty file")
+                  continue
+
+              # Verify environment label is set correctly
+              global_env = overlay.get("global", {}).get("environment", "")
+              if global_env and global_env != env_name:
+                  errors.append(
+                      f"{overlay_path}: global.environment is '{global_env}', "
+                      f"expected '{env_name}'"
+                  )
+
+          if errors:
+              print("Environment overlay errors:")
+              for e in errors:
+                  print(f"  - {e}")
+              sys.exit(1)
+
+          print(f"All {len(envs)} environment overlays are valid")
+          PYEOF
+
+  # -------------------------------------------------------------------------
+  # Job 3: Helm Lint (Tempo + OTel Collector Charts)
+  # -------------------------------------------------------------------------
+  helm-lint:
+    name: Helm Lint & Template
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.14.0
+
+      # -- Tempo Chart --
+      - name: Lint Tempo chart
+        run: helm lint ${{ env.TEMPO_CHART_DIR }}
+
+      - name: Template Tempo (dev)
+        run: |
+          helm template tempo-dev ${{ env.TEMPO_CHART_DIR }} \
+            -f ${{ env.TEMPO_CHART_DIR }}/values-dev.yaml \
+            --namespace monitoring > /dev/null
+          echo "Tempo dev template rendered successfully"
+
+      - name: Template Tempo (staging)
+        run: |
+          helm template tempo-staging ${{ env.TEMPO_CHART_DIR }} \
+            -f ${{ env.TEMPO_CHART_DIR }}/values-staging.yaml \
+            --namespace monitoring > /dev/null
+          echo "Tempo staging template rendered successfully"
+
+      - name: Template Tempo (prod)
+        run: |
+          helm template tempo-prod ${{ env.TEMPO_CHART_DIR }} \
+            -f ${{ env.TEMPO_CHART_DIR }}/values-prod.yaml \
+            --namespace monitoring > /dev/null
+          echo "Tempo production template rendered successfully"
+
+      # -- OTel Collector Chart --
+      - name: Lint OTel Collector chart
+        run: helm lint ${{ env.OTEL_CHART_DIR }}
+
+      - name: Template OTel Collector (dev)
+        run: |
+          helm template otel-dev ${{ env.OTEL_CHART_DIR }} \
+            -f ${{ env.OTEL_CHART_DIR }}/values-dev.yaml \
+            --namespace monitoring > /dev/null
+          echo "OTel Collector dev template rendered successfully"
+
+      - name: Template OTel Collector (staging)
+        run: |
+          helm template otel-staging ${{ env.OTEL_CHART_DIR }} \
+            -f ${{ env.OTEL_CHART_DIR }}/values-staging.yaml \
+            --namespace monitoring > /dev/null
+          echo "OTel Collector staging template rendered successfully"
+
+      - name: Template OTel Collector (prod)
+        run: |
+          helm template otel-prod ${{ env.OTEL_CHART_DIR }} \
+            -f ${{ env.OTEL_CHART_DIR }}/values-prod.yaml \
+            --namespace monitoring > /dev/null
+          echo "OTel Collector production template rendered successfully"
+
+  # -------------------------------------------------------------------------
+  # Job 4: Terraform Validate (tempo-storage module)
+  # -------------------------------------------------------------------------
+  terraform-validate:
+    name: Terraform Validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.7.0"
+
+      - name: Terraform init
+        working-directory: ${{ env.TERRAFORM_MODULE_DIR }}
+        run: terraform init -backend=false
+
+      - name: Terraform validate
+        working-directory: ${{ env.TERRAFORM_MODULE_DIR }}
+        run: terraform validate
+
+      - name: Terraform format check
+        working-directory: ${{ env.TERRAFORM_MODULE_DIR }}
+        run: terraform fmt -check -recursive -diff
+
+  # -------------------------------------------------------------------------
+  # Job 5: Python SDK Tests (tracing_service)
+  # -------------------------------------------------------------------------
+  test-sdk:
+    name: Test Tracing SDK
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install -e ".[dev]" 2>/dev/null || pip install \
+            pytest \
+            pytest-asyncio \
+            pydantic \
+            structlog \
+            opentelemetry-api \
+            opentelemetry-sdk \
+            opentelemetry-exporter-otlp-proto-grpc \
+            opentelemetry-instrumentation-fastapi \
+            opentelemetry-instrumentation-httpx \
+            opentelemetry-instrumentation-psycopg \
+            opentelemetry-instrumentation-redis \
+            prometheus-client
+
+      - name: Run unit tests
+        run: |
+          if [ -d "tests/unit/tracing_service" ] && [ "$(ls -A tests/unit/tracing_service/)" ]; then
+            pytest tests/unit/tracing_service/ -v --tb=short -q
+          else
+            echo "WARNING: No unit tests found in tests/unit/tracing_service/"
+          fi
+
+      - name: Run integration tests
+        run: |
+          if [ -d "tests/integration/tracing_service" ] && [ "$(ls -A tests/integration/tracing_service/)" ]; then
+            pytest tests/integration/tracing_service/ -v --tb=short -q -m "integration or not integration"
+          else
+            echo "WARNING: No integration tests found in tests/integration/tracing_service/"
+          fi
+
+  # -------------------------------------------------------------------------
+  # Job 6: Dashboard Schema Validation
+  # -------------------------------------------------------------------------
+  schema-validate:
+    name: Schema Validation
+    runs-on: ubuntu-latest
+    needs: [lint-configs]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Validate panel types and datasource UIDs
+        run: |
+          python3 << 'PYEOF'
+          import json
+          import glob
+          import sys
+
+          VALID_PANEL_TYPES = {
+              "timeseries", "stat", "gauge", "bargauge", "table", "text",
+              "heatmap", "piechart", "barchart", "logs", "nodeGraph",
+              "traces", "flamegraph", "candlestick", "histogram", "row",
+              "state-timeline", "status-history", "news", "dashlist",
+              "alertlist", "annolist", "geomap", "canvas", "trend",
+              "datagrid", "xy", "debug",
+          }
+
+          KNOWN_DATASOURCE_UIDS = {
+              "thanos", "prometheus", "loki", "jaeger", "tempo",
+              "alertmanager", "postgresql", "cloudwatch",
+              "-- Grafana --", "-- Mixed --", "-- Dashboard --",
+          }
+
+          DASHBOARD_PATTERNS = [
+              "${{ env.DASHBOARDS_DIR }}/tracing-*.json",
+              "${{ env.DASHBOARDS_DIR }}/tempo-*.json",
+              "${{ env.DASHBOARDS_DIR }}/otel-*.json",
+              "${{ env.DASHBOARDS_DIR }}/trace-*.json",
+          ]
+
+          errors = []
+          warnings = []
+          checked = 0
+
+          for pattern in DASHBOARD_PATTERNS:
+              for path in sorted(glob.glob(pattern)):
+                  checked += 1
+                  with open(path) as f:
+                      try:
+                          data = json.load(f)
+                      except json.JSONDecodeError:
+                          errors.append(f"{path}: Invalid JSON")
+                          continue
+
+                  def validate_panels(panels, file_path):
+                      """Recursively validate panels including nested row panels."""
+                      for panel in panels:
+                          ptype = panel.get("type", "")
+                          if ptype and ptype not in VALID_PANEL_TYPES:
+                              warnings.append(
+                                  f"{file_path}: Unknown panel type '{ptype}'"
+                              )
+
+                          ds = panel.get("datasource", {})
+                          if isinstance(ds, dict):
+                              ds_uid = ds.get("uid", "")
+                              # Allow template variables
+                              if ds_uid and ds_uid.startswith("$"):
+                                  pass
+                              elif ds_uid and ds_uid not in KNOWN_DATASOURCE_UIDS:
+                                  warnings.append(
+                                      f"{file_path}: Unknown datasource UID "
+                                      f"'{ds_uid}' in panel '{panel.get('title', '?')}'"
+                                  )
+
+                          # Recurse into row panels
+                          if ptype == "row" and "panels" in panel:
+                              validate_panels(panel["panels"], file_path)
+
+                  validate_panels(data.get("panels", []), path)
+
+          if warnings:
+              print("Schema warnings:")
+              for w in warnings:
+                  print(f"  - {w}")
+
+          if errors:
+              print("Schema errors:")
+              for e in errors:
+                  print(f"  - {e}")
+              sys.exit(1)
+
+          if checked == 0:
+              print("WARNING: No tracing dashboard files found for schema validation")
+          else:
+              print(f"Schema validation passed for {checked} tracing dashboards")
+          PYEOF
+
+      - name: Validate PromQL expressions in dashboards
+        run: |
+          python3 << 'PYEOF'
+          import json
+          import glob
+          import re
+          import sys
+
+          DASHBOARD_PATTERNS = [
+              "${{ env.DASHBOARDS_DIR }}/tracing-*.json",
+              "${{ env.DASHBOARDS_DIR }}/tempo-*.json",
+              "${{ env.DASHBOARDS_DIR }}/otel-*.json",
+              "${{ env.DASHBOARDS_DIR }}/trace-*.json",
+          ]
+
+          warnings = []
+          checked = 0
+
+          def extract_expressions(obj, expressions=None):
+              """Recursively extract PromQL/TraceQL expressions from JSON."""
+              if expressions is None:
+                  expressions = []
+              if isinstance(obj, dict):
+                  if "expr" in obj and isinstance(obj["expr"], str) and obj["expr"].strip():
+                      expr = obj["expr"].strip()
+                      expressions.append(expr)
+                  for v in obj.values():
+                      extract_expressions(v, expressions)
+              elif isinstance(obj, list):
+                  for item in obj:
+                      extract_expressions(item, expressions)
+              return expressions
+
+          for pattern in DASHBOARD_PATTERNS:
+              for path in sorted(glob.glob(pattern)):
+                  with open(path) as f:
+                      try:
+                          data = json.load(f)
+                      except json.JSONDecodeError:
+                          continue
+
+                  exprs = extract_expressions(data)
+                  for expr in exprs:
+                      checked += 1
+                      # Skip TraceQL queries (Tempo-specific, start with { )
+                      if expr.startswith("{"):
+                          continue
+                      # Basic syntax checks for PromQL
+                      # Check for unmatched parentheses
+                      if expr.count("(") != expr.count(")"):
+                          warnings.append(
+                              f"{path}: Unmatched parentheses in expr: "
+                              f"{expr[:80]}..."
+                          )
+                      # Check for unmatched brackets
+                      if expr.count("[") != expr.count("]"):
+                          warnings.append(
+                              f"{path}: Unmatched brackets in expr: "
+                              f"{expr[:80]}..."
+                          )
+                      # Check for unmatched braces (ignoring template variables)
+                      clean = re.sub(r'\$\{[^}]*\}', '', expr)
+                      clean = re.sub(r'\$__\w+', '', clean)
+                      if clean.count("{") != clean.count("}"):
+                          warnings.append(
+                              f"{path}: Unmatched braces in expr: "
+                              f"{expr[:80]}..."
+                          )
+
+          if warnings:
+              print("PromQL/TraceQL expression warnings:")
+              for w in warnings:
+                  print(f"  - {w}")
+              # Do not fail on expression warnings - static analysis is imprecise
+              # for template-variable-heavy PromQL
+
+          print(f"Checked {checked} expressions in tracing dashboards")
+          PYEOF

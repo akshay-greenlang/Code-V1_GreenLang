@@ -1,0 +1,189 @@
+# =============================================================================
+# GreenLang Tempo - Staging Values Override
+# GreenLang Climate OS | OBS-003
+# =============================================================================
+# Distributed deployment for staging environment with moderate resources.
+# 2 replicas per component, S3 storage, 14-day retention.
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# Global Configuration
+# ---------------------------------------------------------------------------
+global:
+  environment: staging
+  clusterName: greenlang-staging
+  awsRegion: eu-west-1
+
+# ---------------------------------------------------------------------------
+# Tempo Core Configuration
+# ---------------------------------------------------------------------------
+tempo:
+  mode: distributed
+
+  # -------------------------------------------------------------------------
+  # Storage - S3 staging bucket
+  # -------------------------------------------------------------------------
+  storage:
+    trace:
+      backend: s3
+      s3:
+        bucket: gl-staging-tempo-traces
+        region: eu-west-1
+
+  # -------------------------------------------------------------------------
+  # Distributor
+  # -------------------------------------------------------------------------
+  distributor:
+    replicas: 2
+    resources:
+      requests:
+        cpu: 250m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+
+  # -------------------------------------------------------------------------
+  # Ingester
+  # -------------------------------------------------------------------------
+  ingester:
+    replicas: 2
+    resources:
+      requests:
+        cpu: 500m
+        memory: 1Gi
+      limits:
+        cpu: "1"
+        memory: 2Gi
+    persistence:
+      enabled: true
+      size: 5Gi
+      storageClassName: gp3
+    lifecycler:
+      ring:
+        replication_factor: 2
+
+  # -------------------------------------------------------------------------
+  # Querier
+  # -------------------------------------------------------------------------
+  querier:
+    replicas: 2
+    resources:
+      requests:
+        cpu: 250m
+        memory: 512Mi
+      limits:
+        cpu: 500m
+        memory: 1Gi
+    max_concurrent_queries: 10
+
+  # -------------------------------------------------------------------------
+  # Query Frontend
+  # -------------------------------------------------------------------------
+  queryFrontend:
+    replicas: 1
+    resources:
+      requests:
+        cpu: 200m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+
+  # -------------------------------------------------------------------------
+  # Compactor
+  # -------------------------------------------------------------------------
+  compactor:
+    replicas: 1
+    resources:
+      requests:
+        cpu: 500m
+        memory: 1Gi
+      limits:
+        cpu: "1"
+        memory: 2Gi
+    compaction:
+      block_retention: 336h           # 14 days
+      compacted_block_retention: 1h
+      compaction_window: 1h
+      max_block_bytes: 53687091200    # 50 GiB
+
+  # -------------------------------------------------------------------------
+  # Metrics Generator
+  # -------------------------------------------------------------------------
+  metricsGenerator:
+    enabled: true
+    replicas: 1
+    resources:
+      requests:
+        cpu: 250m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+
+  # -------------------------------------------------------------------------
+  # Overrides / Limits
+  # -------------------------------------------------------------------------
+  overrides:
+    defaults:
+      ingestion:
+        rate_limit_bytes: 10000000     # 10 MB/s
+        burst_size_bytes: 15000000     # 15 MB burst
+      search:
+        max_duration: 72h             # 3 days
+
+# ---------------------------------------------------------------------------
+# Service Account
+# ---------------------------------------------------------------------------
+serviceAccount:
+  create: true
+  annotations:
+    eks.amazonaws.com/role-arn: ""    # Set via Terraform for staging
+
+# ---------------------------------------------------------------------------
+# Network Policy
+# ---------------------------------------------------------------------------
+networkPolicy:
+  enabled: true
+
+# ---------------------------------------------------------------------------
+# Service Monitor
+# ---------------------------------------------------------------------------
+serviceMonitor:
+  enabled: true
+  interval: 30s
+  labels:
+    release: gl-prometheus
+
+# ---------------------------------------------------------------------------
+# Pod Disruption Budgets - Minimal for staging
+# ---------------------------------------------------------------------------
+podDisruptionBudget:
+  ingester:
+    enabled: true
+    minAvailable: 1
+  distributor:
+    enabled: true
+    minAvailable: 1
+  querier:
+    enabled: false
+  queryFrontend:
+    enabled: false
+
+# ---------------------------------------------------------------------------
+# Autoscaling - Conservative for staging
+# ---------------------------------------------------------------------------
+autoscaling:
+  distributor:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 75
+    targetMemoryUtilizationPercentage: 85
+  querier:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 4
+    targetCPUUtilizationPercentage: 75
+    targetMemoryUtilizationPercentage: 85

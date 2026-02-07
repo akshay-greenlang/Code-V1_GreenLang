@@ -1,0 +1,298 @@
+# =============================================================================
+# TLS Security Prometheus Alert Rules
+# SEC-004: TLS 1.3 Configuration
+# =============================================================================
+# Defines alerting rules for TLS certificate expiry, protocol security,
+# handshake performance, error rates, and mTLS enforcement.
+#
+# Alert Categories:
+# 1. Certificate Expiry - 4 alerts (warning/critical/expired/renewal)
+# 2. Protocol Security - 2 alerts (downgrade/weak cipher)
+# 3. Performance - 1 alert (handshake latency)
+# 4. Error Rates - 1 alert (high error rate)
+# 5. mTLS - 1 alert (enforcement disabled)
+#
+# Total: 9 alert rules across 5 groups
+# =============================================================================
+
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: tls-security-alerts
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: tls-security
+    app.kubernetes.io/part-of: greenlang
+    prometheus: kube-prometheus
+    role: alert-rules
+    greenlang.io/component: sec-004
+spec:
+  groups:
+    # =========================================================================
+    # Group 1: Certificate Expiry Alerts
+    # =========================================================================
+    - name: tls_security.certificates
+      interval: 30s
+      rules:
+        # ---------------------------------------------------------------------
+        # CertificateExpiringWarning
+        # Fires when certificate expires within 14 days but more than 7 days.
+        # Early warning to ensure automated renewal processes are working.
+        # ---------------------------------------------------------------------
+        - alert: CertificateExpiringWarning
+          expr: |
+            gl_tls_certificate_expiry_seconds < (14 * 24 * 3600)
+            and gl_tls_certificate_expiry_seconds > (7 * 24 * 3600)
+          for: 1h
+          labels:
+            severity: warning
+            team: platform-security
+            component: tls-security
+            prd: SEC-004
+          annotations:
+            summary: "Certificate expiring within 14 days: {{ $labels.domain }}"
+            description: >-
+              The TLS certificate for {{ $labels.domain }}:{{ $labels.port }} will expire in
+              {{ $value | humanizeDuration }}. Automated renewal should trigger
+              soon. If cert-manager is functioning correctly, no action needed.
+              Monitor for successful renewal.
+            runbook_url: "https://runbooks.greenlang.io/tls/certificate-expiring"
+            dashboard_url: "https://grafana.greenlang.io/d/greenlang-tls-security"
+
+        # ---------------------------------------------------------------------
+        # CertificateExpiringCritical
+        # Fires when certificate expires within 7 days.
+        # Requires immediate attention - renewal may have failed.
+        # ---------------------------------------------------------------------
+        - alert: CertificateExpiringCritical
+          expr: |
+            gl_tls_certificate_expiry_seconds < (7 * 24 * 3600)
+            and gl_tls_certificate_expiry_seconds > 0
+          for: 30m
+          labels:
+            severity: critical
+            team: platform-security
+            component: tls-security
+            prd: SEC-004
+          annotations:
+            summary: "Certificate expiring within 7 days: {{ $labels.domain }}"
+            description: >-
+              CRITICAL: The TLS certificate for {{ $labels.domain }}:{{ $labels.port }} will expire
+              in {{ $value | humanizeDuration }}. If cert-manager has not
+              renewed this certificate, manual intervention is required.
+              Check cert-manager logs and ACME challenge status.
+            runbook_url: "https://runbooks.greenlang.io/tls/certificate-expiring-critical"
+            dashboard_url: "https://grafana.greenlang.io/d/greenlang-tls-security"
+
+        # ---------------------------------------------------------------------
+        # CertificateExpired
+        # Fires when certificate has expired.
+        # EMERGENCY - users will see certificate errors.
+        # ---------------------------------------------------------------------
+        - alert: CertificateExpired
+          expr: gl_tls_certificate_expiry_seconds <= 0
+          for: 5m
+          labels:
+            severity: critical
+            team: platform-security
+            component: tls-security
+            prd: SEC-004
+            pagerduty: trigger
+          annotations:
+            summary: "Certificate EXPIRED: {{ $labels.domain }}"
+            description: >-
+              EMERGENCY: The TLS certificate for {{ $labels.domain }}:{{ $labels.port }} has EXPIRED.
+              Users will see certificate errors and may be unable to connect.
+              Immediate manual renewal required. Check cert-manager status,
+              ACME account, and DNS configuration.
+            runbook_url: "https://runbooks.greenlang.io/tls/certificate-expired"
+            dashboard_url: "https://grafana.greenlang.io/d/greenlang-tls-security"
+
+        # ---------------------------------------------------------------------
+        # CertificateRenewalFailed
+        # Fires when renewal hasn't occurred and expiry is approaching.
+        # Indicates cert-manager or ACME issues.
+        # ---------------------------------------------------------------------
+        - alert: CertificateRenewalFailed
+          expr: |
+            (
+              increase(certmanager_certificate_renewal_timestamp_seconds[1h]) == 0
+              and gl_tls_certificate_expiry_seconds < (30 * 24 * 3600)
+            )
+            or
+            (
+              certmanager_certificate_ready_status == 0
+              and gl_tls_certificate_expiry_seconds < (30 * 24 * 3600)
+            )
+          for: 2h
+          labels:
+            severity: warning
+            team: platform-security
+            component: tls-security
+            prd: SEC-004
+          annotations:
+            summary: "Certificate renewal appears stuck: {{ $labels.name }}"
+            description: >-
+              cert-manager has not renewed certificate {{ $labels.name }} in the
+              last hour, and the certificate expires in less than 30 days.
+              Check cert-manager logs, ACME challenges, and DNS propagation.
+              Common issues: rate limiting, DNS propagation delays, invalid credentials.
+            runbook_url: "https://runbooks.greenlang.io/tls/renewal-failed"
+            dashboard_url: "https://grafana.greenlang.io/d/greenlang-tls-security"
+
+    # =========================================================================
+    # Group 2: Protocol Security Alerts
+    # =========================================================================
+    - name: tls_security.protocols
+      interval: 30s
+      rules:
+        # ---------------------------------------------------------------------
+        # TLS10or11ConnectionAttempt
+        # Fires when insecure TLS 1.0/1.1 connections are attempted.
+        # These protocols are blocked but attempts indicate legacy clients
+        # or potential downgrade attacks.
+        # ---------------------------------------------------------------------
+        - alert: TLS10or11ConnectionAttempt
+          expr: |
+            sum(increase(gl_tls_protocol_downgrades_total[5m])) > 0
+          for: 1m
+          labels:
+            severity: warning
+            team: platform-security
+            component: tls-security
+            prd: SEC-004
+          annotations:
+            summary: "Insecure TLS 1.0/1.1 connection attempts detected"
+            description: >-
+              {{ $value }} connection attempts using TLS 1.0 or 1.1 were blocked
+              in the last 5 minutes. These protocols are deprecated and insecure.
+              This may indicate legacy clients requiring upgrade, misconfigured
+              systems, or potential downgrade attacks. Review source IPs in logs.
+            runbook_url: "https://runbooks.greenlang.io/tls/protocol-downgrade"
+            dashboard_url: "https://grafana.greenlang.io/d/greenlang-tls-security"
+
+        # ---------------------------------------------------------------------
+        # WeakCipherUsed
+        # Fires when weak cipher suites are negotiated.
+        # Should never happen with proper configuration.
+        # ---------------------------------------------------------------------
+        - alert: WeakCipherUsed
+          expr: |
+            sum by (cipher) (
+              rate(gl_tls_connections_total{cipher=~".*RC4.*|.*DES.*|.*MD5.*|.*NULL.*|.*EXPORT.*|.*anon.*"}[5m])
+            ) > 0
+          for: 5m
+          labels:
+            severity: critical
+            team: platform-security
+            component: tls-security
+            prd: SEC-004
+          annotations:
+            summary: "Weak cipher suite in use: {{ $labels.cipher }}"
+            description: >-
+              Connections are using weak cipher {{ $labels.cipher }} which is
+              considered insecure. This indicates a misconfiguration as weak
+              ciphers should be disabled. Review server TLS configuration
+              immediately and ensure only modern AEAD ciphers are enabled.
+            runbook_url: "https://runbooks.greenlang.io/tls/weak-cipher"
+            dashboard_url: "https://grafana.greenlang.io/d/greenlang-tls-security"
+
+    # =========================================================================
+    # Group 3: Performance Alerts
+    # =========================================================================
+    - name: tls_security.performance
+      interval: 30s
+      rules:
+        # ---------------------------------------------------------------------
+        # HighTLSHandshakeLatency
+        # Fires when TLS handshake P99 latency exceeds 100ms.
+        # May indicate OCSP issues, network problems, or missing session cache.
+        # ---------------------------------------------------------------------
+        - alert: HighTLSHandshakeLatency
+          expr: |
+            histogram_quantile(0.99, sum(rate(gl_tls_handshake_duration_seconds_bucket[5m])) by (le)) > 0.1
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-security
+            component: tls-security
+            prd: SEC-004
+          annotations:
+            summary: "TLS handshake latency P99 exceeds 100ms"
+            description: >-
+              TLS handshake P99 latency is {{ $value | humanizeDuration }},
+              exceeding the 100ms threshold. This may cause slow initial
+              connections and impact user experience. Check:
+              1. OCSP stapling configuration
+              2. TLS session resumption/tickets
+              3. Network latency to clients
+              4. Certificate chain size
+            runbook_url: "https://runbooks.greenlang.io/tls/high-handshake-latency"
+            dashboard_url: "https://grafana.greenlang.io/d/greenlang-tls-security"
+
+    # =========================================================================
+    # Group 4: Error Rate Alerts
+    # =========================================================================
+    - name: tls_security.errors
+      interval: 30s
+      rules:
+        # ---------------------------------------------------------------------
+        # HighTLSErrorRate
+        # Fires when TLS error rate exceeds 1% of connections.
+        # May indicate certificate issues, cipher mismatches, or client problems.
+        # ---------------------------------------------------------------------
+        - alert: HighTLSErrorRate
+          expr: |
+            (
+              sum(rate(gl_tls_errors_total[5m]))
+              /
+              (sum(rate(gl_tls_connections_total[5m])) + 0.001)
+            ) > 0.01
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-security
+            component: tls-security
+            prd: SEC-004
+          annotations:
+            summary: "TLS error rate exceeds 1%"
+            description: >-
+              TLS error rate is {{ $value | humanizePercentage }} over the last
+              5 minutes. Common causes:
+              - Certificate validation failures (expiry, chain issues)
+              - Cipher suite mismatches with clients
+              - Client certificate problems (mTLS)
+              - Network interruptions during handshake
+              Review error type breakdown in the dashboard.
+            runbook_url: "https://runbooks.greenlang.io/tls/high-error-rate"
+            dashboard_url: "https://grafana.greenlang.io/d/greenlang-tls-security"
+
+    # =========================================================================
+    # Group 5: mTLS Enforcement Alerts
+    # =========================================================================
+    - name: tls_security.mtls
+      interval: 30s
+      rules:
+        # ---------------------------------------------------------------------
+        # mTLSEnforcementDisabled
+        # Fires when mTLS enforcement is disabled in production.
+        # Service-to-service traffic may not be authenticated.
+        # ---------------------------------------------------------------------
+        - alert: mTLSEnforcementDisabled
+          expr: gl_mtls_enforcement_enabled == 0
+          for: 5m
+          labels:
+            severity: critical
+            team: platform-security
+            component: tls-security
+            prd: SEC-004
+          annotations:
+            summary: "mTLS enforcement is disabled in {{ $labels.namespace }}"
+            description: >-
+              Mutual TLS enforcement is disabled in namespace {{ $labels.namespace }}.
+              Service-to-service traffic may not be encrypted or authenticated.
+              This is a security policy violation in production environments.
+              Check Istio PeerAuthentication resources and mesh configuration.
+              Verify no policy overrides are bypassing mTLS requirements.
+            runbook_url: "https://runbooks.greenlang.io/tls/mtls-disabled"
+            dashboard_url: "https://grafana.greenlang.io/d/greenlang-tls-security"

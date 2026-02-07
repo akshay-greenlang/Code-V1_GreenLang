@@ -1,0 +1,193 @@
+# =============================================================================
+# GreenLang Prometheus Stack - Development Values
+# GreenLang Climate OS | OBS-001
+# =============================================================================
+# Lightweight development configuration:
+#   - Single replica (no HA)
+#   - Short retention (2 days)
+#   - Minimal storage (10Gi)
+#   - Thanos disabled (saves cost)
+#   - Reduced resource limits
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# Global Configuration
+# ---------------------------------------------------------------------------
+global:
+  environment: dev
+  clusterName: greenlang-dev
+  awsRegion: eu-west-1
+
+# ---------------------------------------------------------------------------
+# kube-prometheus-stack Overrides
+# ---------------------------------------------------------------------------
+kube-prometheus-stack:
+  # -------------------------------------------------------------------------
+  # Prometheus - Single Replica
+  # -------------------------------------------------------------------------
+  prometheus:
+    prometheusSpec:
+      replicas: 1
+
+      # Thanos disabled for dev
+      thanos: {}
+
+      # External labels
+      externalLabels:
+        cluster: greenlang-dev
+        region: eu-west-1
+
+      # Short retention for dev
+      retention: 2d
+      retentionSize: 10GB
+
+      # Smaller storage
+      storageSpec:
+        volumeClaimTemplate:
+          spec:
+            storageClassName: gp3
+            resources:
+              requests:
+                storage: 10Gi
+
+      # Reduced resources for dev
+      resources:
+        requests:
+          cpu: 250m
+          memory: 1Gi
+        limits:
+          cpu: 1000m
+          memory: 4Gi
+
+      # No anti-affinity for single replica
+      affinity: {}
+
+  # -------------------------------------------------------------------------
+  # Alertmanager - Single Replica
+  # -------------------------------------------------------------------------
+  alertmanager:
+    alertmanagerSpec:
+      replicas: 1
+
+      storage:
+        volumeClaimTemplate:
+          spec:
+            resources:
+              requests:
+                storage: 2Gi
+
+      resources:
+        requests:
+          cpu: 50m
+          memory: 128Mi
+        limits:
+          cpu: 200m
+          memory: 256Mi
+
+    # Simplified routing for dev (Slack only)
+    config:
+      route:
+        receiver: 'slack-dev'
+        routes:
+          - match:
+              severity: critical
+            receiver: 'slack-dev'
+          - match:
+              alertname: Watchdog
+            receiver: 'null'
+
+      receivers:
+        - name: 'slack-dev'
+          slack_configs:
+            - channel: '#greenlang-alerts-dev'
+              send_resolved: true
+
+        - name: 'null'
+
+  # -------------------------------------------------------------------------
+  # Grafana - Minimal
+  # -------------------------------------------------------------------------
+  grafana:
+    persistence:
+      size: 5Gi
+
+    resources:
+      requests:
+        cpu: 50m
+        memory: 128Mi
+      limits:
+        cpu: 200m
+        memory: 256Mi
+
+    # Dev datasources (no Thanos)
+    additionalDataSources:
+      - name: Prometheus
+        type: prometheus
+        url: http://gl-prometheus-prometheus.monitoring.svc:9090
+        isDefault: true
+        access: proxy
+
+      - name: Alertmanager
+        type: alertmanager
+        url: http://gl-prometheus-alertmanager.monitoring.svc:9093
+        access: proxy
+
+      - name: Loki
+        type: loki
+        url: http://loki-gateway.monitoring.svc:80
+        access: proxy
+
+  # -------------------------------------------------------------------------
+  # kube-state-metrics
+  # -------------------------------------------------------------------------
+  kubeStateMetrics:
+    enabled: true
+
+  # -------------------------------------------------------------------------
+  # node-exporter
+  # -------------------------------------------------------------------------
+  nodeExporter:
+    enabled: true
+
+  # -------------------------------------------------------------------------
+  # Prometheus Operator
+  # -------------------------------------------------------------------------
+  prometheusOperator:
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 100m
+        memory: 128Mi
+
+  # -------------------------------------------------------------------------
+  # Reduced Default Rules for Dev
+  # -------------------------------------------------------------------------
+  defaultRules:
+    rules:
+      etcd: false  # No etcd in dev
+      kubeControllerManager: false
+      kubeSchedulerAlerting: false
+      kubeSchedulerRecording: false
+
+# ---------------------------------------------------------------------------
+# PushGateway - Single Replica
+# ---------------------------------------------------------------------------
+pushgateway:
+  enabled: true
+  replicaCount: 1
+
+  persistentVolume:
+    size: 1Gi
+
+  resources:
+    requests:
+      cpu: 25m
+      memory: 32Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi
+
+  podDisruptionBudget:
+    enabled: false

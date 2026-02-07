@@ -1,0 +1,437 @@
+# =============================================================================
+# GreenLang Climate OS - Security Scanning Prometheus Alert Rules
+# =============================================================================
+# PRD: SEC-007 Security Scanning Pipeline
+# Defines alerting rules for vulnerability detection, scanner health,
+# SLA compliance, container security, and PII detection.
+# =============================================================================
+
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: security-scanning-alerts
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: security-scanning
+    app.kubernetes.io/part-of: greenlang
+    prometheus: kube-prometheus
+    role: alert-rules
+    greenlang.io/component: sec-007
+spec:
+  groups:
+    # =========================================================================
+    # Group 1: Critical Vulnerability Alerts
+    # =========================================================================
+    - name: security_scanning.vulnerabilities
+      interval: 30s
+      rules:
+        # ---------------------------------------------------------------------
+        # CriticalVulnerabilityDetected
+        # Fires immediately when any critical vulnerability is discovered.
+        # Critical vulnerabilities have a 24-hour SLA.
+        # ---------------------------------------------------------------------
+        - alert: CriticalVulnerabilityDetected
+          expr: |
+            increase(gl_security_vulnerabilities_total{severity="critical", status="open"}[5m]) > 0
+          for: 1m
+          labels:
+            severity: critical
+            team: platform-security
+            component: security-scanning
+            prd: SEC-007
+          annotations:
+            summary: "Critical vulnerability detected"
+            description: >-
+              A new critical vulnerability has been discovered in the last 5 minutes.
+              Critical vulnerabilities have a 24-hour remediation SLA. Immediate
+              investigation and remediation planning is required. Check the security
+              scanning dashboard for details and affected components.
+            runbook_url: "https://runbooks.greenlang.io/security/critical-vulnerability"
+            dashboard_url: "https://grafana.greenlang.io/d/security-scanning"
+
+        # ---------------------------------------------------------------------
+        # HighVulnerabilitySLABreach
+        # Fires when high severity vulnerabilities exceed their 7-day SLA.
+        # ---------------------------------------------------------------------
+        - alert: HighVulnerabilitySLABreach
+          expr: |
+            gl_security_sla_breach_total{severity="high"} > 0
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-security
+            component: security-scanning
+            prd: SEC-007
+          annotations:
+            summary: "High severity vulnerability SLA breach (>7 days)"
+            description: >-
+              {{ $value }} high severity vulnerabilities have exceeded their
+              7-day remediation SLA. These vulnerabilities require immediate
+              escalation and remediation. If remediation is not feasible,
+              initiate the risk acceptance workflow with appropriate approvals.
+            runbook_url: "https://runbooks.greenlang.io/security/sla-breach"
+            dashboard_url: "https://grafana.greenlang.io/d/security-scanning"
+
+        # ---------------------------------------------------------------------
+        # VulnerabilityRegressionDetected
+        # Fires when a previously resolved vulnerability returns.
+        # ---------------------------------------------------------------------
+        - alert: VulnerabilityRegressionDetected
+          expr: |
+            increase(gl_security_vulnerabilities_total{status="open"}[1h])
+            > increase(gl_security_vulnerabilities_total{status="resolved"}[1h]) * 2
+          for: 15m
+          labels:
+            severity: warning
+            team: platform-security
+            component: security-scanning
+            prd: SEC-007
+          annotations:
+            summary: "Vulnerability regression detected"
+            description: >-
+              The rate of new open vulnerabilities is significantly higher than
+              resolved vulnerabilities in the past hour. This may indicate
+              regression of previously fixed vulnerabilities or introduction
+              of vulnerable dependencies. Review recent deployments and
+              dependency changes.
+            runbook_url: "https://runbooks.greenlang.io/security/vulnerability-regression"
+            dashboard_url: "https://grafana.greenlang.io/d/security-scanning"
+
+        # ---------------------------------------------------------------------
+        # KEVVulnerabilityDetected
+        # Fires when a CISA Known Exploited Vulnerability is found.
+        # KEV vulnerabilities are actively exploited in the wild.
+        # ---------------------------------------------------------------------
+        - alert: KEVVulnerabilityDetected
+          expr: |
+            increase(gl_security_vulnerabilities_total{is_kev="true", status="open"}[5m]) > 0
+          for: 1m
+          labels:
+            severity: critical
+            team: platform-security
+            component: security-scanning
+            prd: SEC-007
+          annotations:
+            summary: "CISA KEV vulnerability detected - actively exploited"
+            description: >-
+              A vulnerability from the CISA Known Exploited Vulnerabilities
+              catalog has been detected. This vulnerability is confirmed to be
+              actively exploited in the wild. Immediate remediation is required
+              per federal BOD 22-01 and organizational security policy.
+            runbook_url: "https://runbooks.greenlang.io/security/kev-vulnerability"
+            dashboard_url: "https://grafana.greenlang.io/d/security-scanning"
+
+    # =========================================================================
+    # Group 2: Scanner Health Alerts
+    # =========================================================================
+    - name: security_scanning.scanners
+      interval: 30s
+      rules:
+        # ---------------------------------------------------------------------
+        # ScannerFailed
+        # Fires when any security scanner fails.
+        # ---------------------------------------------------------------------
+        - alert: ScannerFailed
+          expr: |
+            increase(gl_security_scans_total{status="failed"}[15m]) > 0
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-security
+            component: security-scanning
+            prd: SEC-007
+          annotations:
+            summary: "Security scanner {{ $labels.scanner }} failed"
+            description: >-
+              Scanner {{ $labels.scanner }} has failed {{ $value }} times in the
+              last 15 minutes. Failed scans create gaps in security coverage.
+              Check scanner logs and configuration. Verify the scanner service
+              is running and has appropriate permissions.
+            runbook_url: "https://runbooks.greenlang.io/security/scanner-failed"
+            dashboard_url: "https://grafana.greenlang.io/d/security-scanning"
+
+        # ---------------------------------------------------------------------
+        # ScannerUnhealthy
+        # Fires when a scanner's health check fails.
+        # ---------------------------------------------------------------------
+        - alert: ScannerUnhealthy
+          expr: |
+            gl_security_scanner_health == 0
+          for: 10m
+          labels:
+            severity: warning
+            team: platform-security
+            component: security-scanning
+            prd: SEC-007
+          annotations:
+            summary: "Security scanner {{ $labels.scanner }} is unhealthy"
+            description: >-
+              Scanner {{ $labels.scanner }} has been marked unhealthy for 10
+              minutes. This may indicate resource constraints, network issues,
+              or service failures. Security scan coverage is impacted.
+            runbook_url: "https://runbooks.greenlang.io/security/scanner-unhealthy"
+            dashboard_url: "https://grafana.greenlang.io/d/security-scanning"
+
+        # ---------------------------------------------------------------------
+        # ScanCoverageDecreased
+        # Fires when overall scan coverage drops below threshold.
+        # ---------------------------------------------------------------------
+        - alert: ScanCoverageDecreased
+          expr: |
+            gl_security_coverage_score < 70
+          for: 30m
+          labels:
+            severity: warning
+            team: platform-security
+            component: security-scanning
+            prd: SEC-007
+          annotations:
+            summary: "Security scan coverage below 70%"
+            description: >-
+              Overall security scan coverage has dropped to {{ $value }}%,
+              below the 70% threshold. This may indicate scanner failures,
+              misconfigurations, or infrastructure issues. Full scan coverage
+              is required for compliance and security posture.
+            runbook_url: "https://runbooks.greenlang.io/security/coverage-decreased"
+            dashboard_url: "https://grafana.greenlang.io/d/security-scanning"
+
+        # ---------------------------------------------------------------------
+        # ScanDurationAnomaly
+        # Fires when scan duration is abnormally long.
+        # ---------------------------------------------------------------------
+        - alert: ScanDurationAnomaly
+          expr: |
+            histogram_quantile(0.99, rate(gl_security_scan_duration_seconds_bucket[15m])) > 1800
+          for: 15m
+          labels:
+            severity: warning
+            team: platform-security
+            component: security-scanning
+            prd: SEC-007
+          annotations:
+            summary: "Security scan duration exceeds 30 minutes (P99)"
+            description: >-
+              Scanner {{ $labels.scanner }} P99 scan duration is
+              {{ $value | humanizeDuration }}, exceeding the 30-minute threshold.
+              Long scan times may indicate resource issues or misconfiguration.
+              Consider scan optimization or resource scaling.
+            runbook_url: "https://runbooks.greenlang.io/security/scan-duration-anomaly"
+            dashboard_url: "https://grafana.greenlang.io/d/security-scanning"
+
+    # =========================================================================
+    # Group 3: Container Security Alerts
+    # =========================================================================
+    - name: security_scanning.container
+      interval: 30s
+      rules:
+        # ---------------------------------------------------------------------
+        # UnsignedImageDeployed
+        # Fires when an unsigned container image is deployed to staging/prod.
+        # ---------------------------------------------------------------------
+        - alert: UnsignedImageDeployed
+          expr: |
+            (sum(gl_security_images_total) - sum(gl_security_images_signed_total))
+            / sum(gl_security_images_total) * 100 > 5
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-security
+            component: security-scanning
+            prd: SEC-007
+          annotations:
+            summary: "Unsigned container images detected (>5%)"
+            description: >-
+              {{ $value | printf "%.1f" }}% of container images are not signed.
+              All production images must be signed with Cosign/Sigstore for
+              supply chain security. Verify the image signing pipeline is
+              working and check for any bypass conditions.
+            runbook_url: "https://runbooks.greenlang.io/security/unsigned-image"
+            dashboard_url: "https://grafana.greenlang.io/d/security-scanning"
+
+        # ---------------------------------------------------------------------
+        # SBOMGenerationFailed
+        # Fires when SBOM generation fails for container images.
+        # ---------------------------------------------------------------------
+        - alert: SBOMGenerationFailed
+          expr: |
+            increase(gl_security_scan_errors_total{scanner=~"syft|cyclonedx", error_type="sbom_generation"}[30m]) > 0
+          for: 10m
+          labels:
+            severity: warning
+            team: platform-security
+            component: security-scanning
+            prd: SEC-007
+          annotations:
+            summary: "SBOM generation failed for container images"
+            description: >-
+              SBOM generation has failed for one or more container images in
+              the last 30 minutes. SBOMs are required for supply chain
+              compliance and vulnerability tracking. Investigate the SBOM
+              generator service and image build pipeline.
+            runbook_url: "https://runbooks.greenlang.io/security/sbom-failed"
+            dashboard_url: "https://grafana.greenlang.io/d/security-scanning"
+
+    # =========================================================================
+    # Group 4: Secret Detection Alerts
+    # =========================================================================
+    - name: security_scanning.secrets
+      interval: 30s
+      rules:
+        # ---------------------------------------------------------------------
+        # SecretDetected
+        # Fires immediately when any secret is detected in code.
+        # ---------------------------------------------------------------------
+        - alert: SecretDetected
+          expr: |
+            increase(gl_security_findings_total{finding_type="secret"}[5m]) > 0
+          for: 1m
+          labels:
+            severity: critical
+            team: platform-security
+            component: security-scanning
+            prd: SEC-007
+          annotations:
+            summary: "Secret detected in code/configuration"
+            description: >-
+              A secret (API key, password, token, etc.) has been detected in
+              the codebase. This is a critical security issue requiring
+              immediate remediation. The secret must be rotated immediately,
+              removed from the repository, and the commit history cleaned.
+            runbook_url: "https://runbooks.greenlang.io/security/secret-detected"
+            dashboard_url: "https://grafana.greenlang.io/d/security-scanning"
+
+    # =========================================================================
+    # Group 5: DAST Alerts
+    # =========================================================================
+    - name: security_scanning.dast
+      interval: 60s
+      rules:
+        # ---------------------------------------------------------------------
+        # DASTHighFinding
+        # Fires when DAST discovers HIGH or CRITICAL findings.
+        # ---------------------------------------------------------------------
+        - alert: DASTHighFinding
+          expr: |
+            increase(gl_security_findings_total{finding_type="dast", severity=~"critical|high"}[1h]) > 0
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-security
+            component: security-scanning
+            prd: SEC-007
+          annotations:
+            summary: "DAST discovered HIGH/CRITICAL finding in live application"
+            description: >-
+              Dynamic application security testing (OWASP ZAP) has discovered
+              {{ $value }} high or critical severity findings in the running
+              application. These findings represent exploitable vulnerabilities
+              in the deployed API or web interface. Review the DAST report and
+              prioritize remediation.
+            runbook_url: "https://runbooks.greenlang.io/security/dast-high-finding"
+            dashboard_url: "https://grafana.greenlang.io/d/security-scanning"
+
+    # =========================================================================
+    # Group 6: Compliance Alerts
+    # =========================================================================
+    - name: security_scanning.compliance
+      interval: 60s
+      rules:
+        # ---------------------------------------------------------------------
+        # ComplianceScoreDrop
+        # Fires when compliance score drops by more than 10%.
+        # ---------------------------------------------------------------------
+        - alert: ComplianceScoreDrop
+          expr: |
+            (gl_security_coverage_score - gl_security_coverage_score offset 1h) / gl_security_coverage_score offset 1h * 100 < -10
+          for: 15m
+          labels:
+            severity: warning
+            team: platform-security
+            component: security-scanning
+            prd: SEC-007
+          annotations:
+            summary: "Security compliance score dropped >10%"
+            description: >-
+              Security compliance score has dropped by more than 10% in the
+              past hour. This may indicate new vulnerabilities, failed scans,
+              or configuration changes. Review recent changes and scan results
+              to identify the cause.
+            runbook_url: "https://runbooks.greenlang.io/security/compliance-drop"
+            dashboard_url: "https://grafana.greenlang.io/d/security-scanning"
+
+        # ---------------------------------------------------------------------
+        # SLAComplianceBelow90
+        # Fires when overall SLA compliance falls below 90%.
+        # ---------------------------------------------------------------------
+        - alert: SLAComplianceBelow90
+          expr: |
+            (1 - (sum(gl_security_sla_breach_total) / sum(gl_security_vulnerabilities_total{status="open"}))) * 100 < 90
+          for: 30m
+          labels:
+            severity: warning
+            team: platform-security
+            component: security-scanning
+            prd: SEC-007
+          annotations:
+            summary: "Vulnerability SLA compliance below 90%"
+            description: >-
+              Overall vulnerability remediation SLA compliance is at
+              {{ $value | printf "%.1f" }}%, below the 90% target. Multiple
+              vulnerabilities have exceeded their remediation timeframes.
+              Review the SLA breach report and prioritize remediation or
+              risk acceptance workflows.
+            runbook_url: "https://runbooks.greenlang.io/security/sla-compliance-low"
+            dashboard_url: "https://grafana.greenlang.io/d/security-scanning"
+
+    # =========================================================================
+    # Group 7: PII Detection Alerts
+    # =========================================================================
+    - name: security_scanning.pii
+      interval: 60s
+      rules:
+        # ---------------------------------------------------------------------
+        # PIIDetectedInCode
+        # Fires when PII is detected in source code or configurations.
+        # ---------------------------------------------------------------------
+        - alert: PIIDetectedInCode
+          expr: |
+            increase(gl_security_pii_findings_total{classification=~"pii|phi|pci"}[15m]) > 0
+          for: 5m
+          labels:
+            severity: warning
+            team: data-stewards
+            component: security-scanning
+            prd: SEC-007
+          annotations:
+            summary: "PII/PHI/PCI data detected in code"
+            description: >-
+              Sensitive data ({{ $labels.classification }}) has been detected
+              in source code or configuration files. This may violate data
+              protection regulations (GDPR, HIPAA, PCI-DSS). Data stewards
+              have been notified. Immediate review and remediation is required.
+            runbook_url: "https://runbooks.greenlang.io/security/pii-detected"
+            dashboard_url: "https://grafana.greenlang.io/d/security-scanning"
+
+        # ---------------------------------------------------------------------
+        # PHIDataExposure
+        # Fires specifically for PHI (Protected Health Information) detection.
+        # Requires immediate HIPAA compliance response.
+        # ---------------------------------------------------------------------
+        - alert: PHIDataExposure
+          expr: |
+            increase(gl_security_pii_findings_total{classification="phi"}[15m]) > 0
+          for: 1m
+          labels:
+            severity: critical
+            team: compliance
+            component: security-scanning
+            prd: SEC-007
+          annotations:
+            summary: "PHI (Protected Health Information) detected - HIPAA alert"
+            description: >-
+              Protected Health Information (PHI) has been detected in the
+              codebase. This is a potential HIPAA violation requiring immediate
+              investigation and remediation. The compliance team has been
+              notified. Document all actions for the incident response record.
+            runbook_url: "https://runbooks.greenlang.io/security/phi-exposure"
+            dashboard_url: "https://grafana.greenlang.io/d/security-scanning"

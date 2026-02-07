@@ -1,0 +1,114 @@
+# =============================================================================
+# GreenLang Auth Service - Token Cleanup CronJob
+# =============================================================================
+# Runs every 6 hours to cleanup expired token blacklist entries and expired
+# refresh tokens from PostgreSQL. Calls database cleanup functions.
+# PRD: SEC-001
+# =============================================================================
+
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: auth-token-cleanup
+  namespace: greenlang-auth
+  labels:
+    app: auth-service
+    app.kubernetes.io/name: auth-service
+    app.kubernetes.io/component: token-cleanup
+    app.kubernetes.io/part-of: greenlang
+  annotations:
+    description: "Cleanup expired blacklist entries and refresh tokens every 6 hours"
+    prd: SEC-001
+spec:
+  schedule: "0 */6 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  startingDeadlineSeconds: 300
+  jobTemplate:
+    metadata:
+      labels:
+        app: auth-service
+        app.kubernetes.io/name: auth-service
+        app.kubernetes.io/component: token-cleanup
+        app.kubernetes.io/part-of: greenlang
+    spec:
+      backoffLimit: 3
+      activeDeadlineSeconds: 600
+      template:
+        metadata:
+          labels:
+            app: auth-service
+            app.kubernetes.io/name: auth-service
+            app.kubernetes.io/component: token-cleanup
+            app.kubernetes.io/part-of: greenlang
+          annotations:
+            prometheus.io/scrape: "false"
+        spec:
+          restartPolicy: OnFailure
+
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            fsGroup: 1000
+            seccompProfile:
+              type: RuntimeDefault
+
+          containers:
+            - name: token-cleanup
+              image: bitnami/postgresql:14
+              imagePullPolicy: IfNotPresent
+
+              command:
+                - /bin/bash
+                - -c
+                - |
+                  set -euo pipefail
+                  echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] Starting token cleanup job"
+
+                  # Cleanup expired blacklist entries
+                  echo "Cleaning up expired blacklist entries..."
+                  BLACKLIST_COUNT=$(psql "${DATABASE_URL}" -t -c "SELECT security.cleanup_expired_blacklist();")
+                  echo "Removed ${BLACKLIST_COUNT} expired blacklist entries"
+
+                  # Cleanup expired refresh tokens
+                  echo "Cleaning up expired refresh tokens..."
+                  REFRESH_COUNT=$(psql "${DATABASE_URL}" -t -c "SELECT security.cleanup_expired_refresh_tokens();")
+                  echo "Removed ${REFRESH_COUNT} expired refresh tokens"
+
+                  echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] Token cleanup complete: blacklist=${BLACKLIST_COUNT}, refresh_tokens=${REFRESH_COUNT}"
+
+              env:
+                - name: DATABASE_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: auth-service-secrets
+                      key: DATABASE_URL
+                      optional: false
+
+              resources:
+                requests:
+                  cpu: "100m"
+                  memory: "128Mi"
+                limits:
+                  cpu: "250m"
+                  memory: "256Mi"
+
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                runAsNonRoot: true
+                runAsUser: 1000
+                capabilities:
+                  drop:
+                    - ALL
+
+              volumeMounts:
+                - name: tmp
+                  mountPath: /tmp
+
+          volumes:
+            - name: tmp
+              emptyDir:
+                sizeLimit: 50Mi

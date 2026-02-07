@@ -1,0 +1,419 @@
+# =============================================================================
+# GreenLang Climate OS - Encryption Service Prometheus Alert Rules
+# =============================================================================
+# PRD: SEC-003 Encryption at Rest
+# Defines alerting rules for encryption operations, KMS connectivity,
+# key management, security anomalies, and audit trail integrity.
+# =============================================================================
+
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: encryption-service-alerts
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: encryption-service
+    app.kubernetes.io/part-of: greenlang
+    prometheus: kube-prometheus
+    role: alert-rules
+    greenlang.io/component: sec-003
+spec:
+  groups:
+    # =========================================================================
+    # Group 1: Encryption Operations Alerts
+    # =========================================================================
+    - name: encryption_service.operations
+      interval: 30s
+      rules:
+        # ---------------------------------------------------------------------
+        # HighEncryptionFailureRate
+        # Fires when encryption failure rate exceeds 1% over 5 minutes.
+        # May indicate misconfiguration, key issues, or service degradation.
+        # ---------------------------------------------------------------------
+        - alert: HighEncryptionFailureRate
+          expr: |
+            (
+              rate(gl_encryption_failures_total[5m])
+              /
+              rate(gl_encryption_operations_total[5m])
+            ) > 0.01
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-security
+            component: encryption-service
+            prd: SEC-003
+          annotations:
+            summary: "High encryption failure rate (>1%)"
+            description: >-
+              Encryption failure rate is {{ $value | humanizePercentage }} over
+              the last 5 minutes, exceeding the 1% warning threshold. This may
+              indicate key management issues, KMS connectivity problems, or
+              application-level errors. Check KMS status and recent changes.
+            runbook_url: "https://runbooks.greenlang.io/encryption/high-failure-rate"
+            dashboard_url: "https://grafana.greenlang.io/d/greenlang-encryption-service"
+
+        # ---------------------------------------------------------------------
+        # EncryptionServiceErrors
+        # Fires when encryption errors exceed 1 per second sustained.
+        # Indicates active service degradation requiring investigation.
+        # ---------------------------------------------------------------------
+        - alert: EncryptionServiceErrors
+          expr: |
+            rate(gl_encryption_failures_total[5m]) > 1
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-security
+            component: encryption-service
+            prd: SEC-003
+          annotations:
+            summary: "Encryption service experiencing sustained errors"
+            description: >-
+              Encryption service is experiencing more than 1 error per second
+              for the last 5 minutes. Current rate: {{ $value | printf "%.2f" }}/s.
+              Investigate error logs for root cause. Check KMS connectivity,
+              key validity, and application code paths.
+            runbook_url: "https://runbooks.greenlang.io/encryption/service-errors"
+            dashboard_url: "https://grafana.greenlang.io/d/greenlang-encryption-service"
+
+        # ---------------------------------------------------------------------
+        # EncryptionLatencyHigh
+        # Fires when P99 encryption latency exceeds 10ms.
+        # May indicate KMS throttling or cache misses.
+        # ---------------------------------------------------------------------
+        - alert: EncryptionLatencyHigh
+          expr: |
+            histogram_quantile(0.99, rate(gl_encryption_latency_seconds_bucket[5m])) > 0.01
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-security
+            component: encryption-service
+            prd: SEC-003
+          annotations:
+            summary: "Encryption P99 latency exceeds 10ms"
+            description: >-
+              Encryption service P99 latency is {{ $value | humanizeDuration }},
+              exceeding the 10ms threshold. This may indicate cache misses,
+              KMS throttling, or increased load. Check DEK cache hit rate and
+              KMS call latency panels on the dashboard.
+            runbook_url: "https://runbooks.greenlang.io/encryption/high-latency"
+            dashboard_url: "https://grafana.greenlang.io/d/greenlang-encryption-service"
+
+    # =========================================================================
+    # Group 2: KMS Connectivity Alerts
+    # =========================================================================
+    - name: encryption_service.kms
+      interval: 30s
+      rules:
+        # ---------------------------------------------------------------------
+        # KMSUnreachable
+        # Fires when all KMS calls are failing.
+        # Critical alert - encryption/decryption completely unavailable.
+        # ---------------------------------------------------------------------
+        - alert: KMSUnreachable
+          expr: |
+            rate(gl_kms_calls_total{status="error"}[5m]) > 0
+            and
+            rate(gl_kms_calls_total{status="success"}[5m]) == 0
+          for: 2m
+          labels:
+            severity: critical
+            team: platform-security
+            component: encryption-service
+            prd: SEC-003
+          annotations:
+            summary: "KMS unreachable - all calls failing"
+            description: >-
+              AWS KMS is unreachable - all API calls are failing. This is a
+              CRITICAL issue as new encryption operations cannot complete and
+              cache-miss decryptions will fail. Check AWS service health,
+              IAM permissions, VPC endpoints, and network connectivity.
+            runbook_url: "https://runbooks.greenlang.io/encryption/kms-unreachable"
+            dashboard_url: "https://grafana.greenlang.io/d/greenlang-encryption-service"
+
+        # ---------------------------------------------------------------------
+        # KMSLatencyHigh
+        # Fires when KMS P99 latency exceeds 100ms.
+        # May indicate AWS throttling or regional issues.
+        # ---------------------------------------------------------------------
+        - alert: KMSLatencyHigh
+          expr: |
+            histogram_quantile(0.99, rate(gl_kms_latency_seconds_bucket[5m])) > 0.1
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-security
+            component: encryption-service
+            prd: SEC-003
+          annotations:
+            summary: "KMS P99 latency exceeds 100ms"
+            description: >-
+              AWS KMS P99 latency is {{ $value | humanizeDuration }}, exceeding
+              the 100ms threshold. This may indicate KMS throttling, AWS
+              regional issues, or network latency. Check AWS service health
+              and consider increasing DEK cache TTL to reduce KMS calls.
+            runbook_url: "https://runbooks.greenlang.io/encryption/kms-latency"
+            dashboard_url: "https://grafana.greenlang.io/d/greenlang-encryption-service"
+
+        # ---------------------------------------------------------------------
+        # KMSErrorRate
+        # Fires when KMS error rate exceeds 5%.
+        # May indicate throttling, permissions issues, or key problems.
+        # ---------------------------------------------------------------------
+        - alert: KMSErrorRate
+          expr: |
+            (
+              rate(gl_kms_calls_total{status="error"}[5m])
+              /
+              rate(gl_kms_calls_total[5m])
+            ) > 0.05
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-security
+            component: encryption-service
+            prd: SEC-003
+          annotations:
+            summary: "KMS error rate exceeds 5%"
+            description: >-
+              KMS API error rate is {{ $value | humanizePercentage }}, exceeding
+              the 5% threshold. Check CloudWatch for KMS-specific errors such as
+              ThrottlingException, InvalidKeyUsageException, or KeyUnavailableException.
+            runbook_url: "https://runbooks.greenlang.io/encryption/kms-errors"
+            dashboard_url: "https://grafana.greenlang.io/d/greenlang-encryption-service"
+
+    # =========================================================================
+    # Group 3: Key Management Alerts
+    # =========================================================================
+    - name: encryption_service.keys
+      interval: 60s
+      rules:
+        # ---------------------------------------------------------------------
+        # DEKCacheHitRateLow
+        # Fires when DEK cache hit rate drops below 90%.
+        # Low hit rate increases KMS calls and latency.
+        # ---------------------------------------------------------------------
+        - alert: DEKCacheHitRateLow
+          expr: |
+            (
+              rate(gl_encryption_key_cache_hits_total[15m])
+              /
+              (rate(gl_encryption_key_cache_hits_total[15m]) + rate(gl_encryption_key_cache_misses_total[15m]))
+            ) < 0.9
+          for: 10m
+          labels:
+            severity: warning
+            team: platform-security
+            component: encryption-service
+            prd: SEC-003
+          annotations:
+            summary: "DEK cache hit rate below 90%"
+            description: >-
+              DEK cache hit rate is {{ $value | humanizePercentage }}, below the
+              90% target. Low cache hit rate increases KMS API calls and latency.
+              Consider increasing cache size, TTL, or investigating access patterns
+              for high-cardinality contexts that prevent effective caching.
+            runbook_url: "https://runbooks.greenlang.io/encryption/cache-hit-rate"
+            dashboard_url: "https://grafana.greenlang.io/d/greenlang-encryption-service"
+
+        # ---------------------------------------------------------------------
+        # KeyRotationFailed
+        # Fires when key rotation attempts are failing.
+        # Key rotation failures may leave old keys active longer than expected.
+        # ---------------------------------------------------------------------
+        - alert: KeyRotationFailed
+          expr: |
+            rate(gl_encryption_key_rotation_failures_total[30m]) > 0
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-security
+            component: encryption-service
+            prd: SEC-003
+          annotations:
+            summary: "Key rotation failures detected"
+            description: >-
+              Key rotation failures have been detected in the last 30 minutes.
+              This may prevent automatic key rotation from completing, leaving
+              older keys active longer than the rotation policy allows. Check
+              KMS permissions and key state.
+            runbook_url: "https://runbooks.greenlang.io/encryption/key-rotation-failed"
+            dashboard_url: "https://grafana.greenlang.io/d/greenlang-encryption-service"
+
+        # ---------------------------------------------------------------------
+        # ExcessiveActiveKeys
+        # Fires when active key count exceeds threshold.
+        # May indicate key lifecycle management issues.
+        # ---------------------------------------------------------------------
+        - alert: ExcessiveActiveKeys
+          expr: |
+            sum(gl_encryption_active_keys) > 1000
+          for: 10m
+          labels:
+            severity: warning
+            team: platform-security
+            component: encryption-service
+            prd: SEC-003
+          annotations:
+            summary: "Excessive number of active encryption keys"
+            description: >-
+              There are {{ $value }} active encryption keys, exceeding the
+              expected threshold of 1000. This may indicate a key lifecycle
+              management issue where old keys are not being retired properly.
+              Review key generation patterns and ensure proper key retirement.
+            runbook_url: "https://runbooks.greenlang.io/encryption/excessive-keys"
+            dashboard_url: "https://grafana.greenlang.io/d/greenlang-encryption-service"
+
+    # =========================================================================
+    # Group 4: Security Anomaly Alerts
+    # =========================================================================
+    - name: encryption_service.security
+      interval: 30s
+      rules:
+        # ---------------------------------------------------------------------
+        # UnusualDecryptionVolume
+        # Fires when decryption rate is 2x above hourly average.
+        # May indicate data exfiltration attempt.
+        # ---------------------------------------------------------------------
+        - alert: UnusualDecryptionVolume
+          expr: |
+            rate(gl_encryption_operations_total{operation="decrypt"}[5m])
+            >
+            2 * avg_over_time(rate(gl_encryption_operations_total{operation="decrypt"}[5m])[1h:5m])
+          for: 10m
+          labels:
+            severity: warning
+            team: platform-security
+            component: encryption-service
+            prd: SEC-003
+          annotations:
+            summary: "Unusual decryption volume detected"
+            description: >-
+              Decryption rate is {{ $value | printf "%.2f" }}/s, more than 2x
+              the hourly average. This anomaly may indicate bulk data export,
+              legitimate batch processing, or potential data exfiltration.
+              Verify the source of decryption requests and ensure they are
+              authorized business operations.
+            runbook_url: "https://runbooks.greenlang.io/encryption/unusual-decryption"
+            dashboard_url: "https://grafana.greenlang.io/d/greenlang-encryption-service"
+
+        # ---------------------------------------------------------------------
+        # DecryptionFromNewSource
+        # Fires when decryption requests come from previously unseen sources.
+        # May indicate compromised credentials or lateral movement.
+        # ---------------------------------------------------------------------
+        - alert: DecryptionFromNewSource
+          expr: |
+            count(
+              count by (source_ip) (
+                rate(gl_encryption_operations_total{operation="decrypt"}[5m]) > 0
+              )
+            )
+            -
+            count(
+              count by (source_ip) (
+                rate(gl_encryption_operations_total{operation="decrypt"}[1h]) offset 1h > 0
+              )
+            ) > 5
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-security
+            component: encryption-service
+            prd: SEC-003
+          annotations:
+            summary: "Decryption from multiple new sources"
+            description: >-
+              Decryption requests are coming from more than 5 new source IPs
+              that were not seen in the previous hour. This may indicate
+              credential compromise or unauthorized access. Review the new
+              sources and verify they are legitimate.
+            runbook_url: "https://runbooks.greenlang.io/encryption/new-decryption-source"
+            dashboard_url: "https://grafana.greenlang.io/d/greenlang-encryption-service"
+
+    # =========================================================================
+    # Group 5: Audit Trail Alerts
+    # =========================================================================
+    - name: encryption_service.audit
+      interval: 30s
+      rules:
+        # ---------------------------------------------------------------------
+        # EncryptionAuditWriteFailure
+        # Fires when audit log writes are failing.
+        # Critical - audit trail integrity compromised.
+        # ---------------------------------------------------------------------
+        - alert: EncryptionAuditWriteFailure
+          expr: |
+            rate(gl_encryption_audit_write_failures_total[5m]) > 0
+          for: 2m
+          labels:
+            severity: critical
+            team: platform-security
+            component: encryption-service
+            prd: SEC-003
+          annotations:
+            summary: "Encryption audit log write failures"
+            description: >-
+              Failed to write encryption audit events to the database. This is
+              a CRITICAL compliance issue as audit trail integrity is required
+              for SOC 2 and regulatory compliance. Check database connectivity,
+              disk space, and audit table health. Encryption operations should
+              be paused until audit logging is restored.
+            runbook_url: "https://runbooks.greenlang.io/encryption/audit-write-failure"
+            dashboard_url: "https://grafana.greenlang.io/d/greenlang-encryption-service"
+
+        # ---------------------------------------------------------------------
+        # AuditLogGap
+        # Fires when no audit events are recorded for extended period.
+        # May indicate logging pipeline failure.
+        # ---------------------------------------------------------------------
+        - alert: AuditLogGap
+          expr: |
+            time() - max(gl_encryption_audit_last_write_timestamp) > 300
+            and
+            rate(gl_encryption_operations_total[5m]) > 0
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-security
+            component: encryption-service
+            prd: SEC-003
+          annotations:
+            summary: "Gap in encryption audit log"
+            description: >-
+              No encryption audit events have been recorded for more than 5
+              minutes, despite ongoing encryption operations. This indicates a
+              potential audit logging pipeline failure. Check the audit
+              collector service, database connectivity, and log shipping.
+            runbook_url: "https://runbooks.greenlang.io/encryption/audit-gap"
+            dashboard_url: "https://grafana.greenlang.io/d/greenlang-encryption-service"
+
+        # ---------------------------------------------------------------------
+        # SensitiveOperationWithoutJustification
+        # Fires when decrypt operations lack business justification.
+        # Compliance requirement for auditable access.
+        # ---------------------------------------------------------------------
+        - alert: SensitiveOperationWithoutJustification
+          expr: |
+            (
+              sum(rate(gl_encryption_operations_total{operation="decrypt", has_justification="false"}[5m]))
+              /
+              sum(rate(gl_encryption_operations_total{operation="decrypt"}[5m]))
+            ) > 0.1
+          for: 10m
+          labels:
+            severity: warning
+            team: platform-security
+            component: encryption-service
+            prd: SEC-003
+          annotations:
+            summary: "Decryption operations without business justification"
+            description: >-
+              More than 10% of decryption operations lack business justification
+              metadata. This may indicate applications bypassing proper access
+              request workflows. Review calling applications and ensure they
+              provide required justification for audit compliance.
+            runbook_url: "https://runbooks.greenlang.io/encryption/missing-justification"
+            dashboard_url: "https://grafana.greenlang.io/d/greenlang-encryption-service"

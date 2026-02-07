@@ -1,0 +1,157 @@
+================================================================================
+    GreenLang OpenTelemetry Collector - Deployment Complete
+    GreenLang Climate OS | OBS-003
+================================================================================
+
+{{ if .Release.IsUpgrade }}
+UPGRADE COMPLETE!
+{{ else }}
+INSTALLATION COMPLETE!
+{{ end }}
+
+Release Name: {{ .Release.Name }}
+Namespace: {{ include "otel-collector.namespace" . }}
+Chart Version: {{ .Chart.Version }}
+App Version: {{ .Chart.AppVersion }}
+Environment: {{ .Values.global.environment | default "production" }}
+
+================================================================================
+    COLLECTOR CONFIGURATION
+================================================================================
+
+Mode: Gateway (centralized collection point)
+Replicas: {{ .Values.otelCollector.replicas | default 3 }}
+
+Receivers:
+  - OTLP gRPC:     {{ include "otel-collector.fullname" . }}:4317
+  - OTLP HTTP:     {{ include "otel-collector.fullname" . }}:4318
+  - Jaeger gRPC:   {{ include "otel-collector.fullname" . }}:14250
+  - Jaeger HTTP:   {{ include "otel-collector.fullname" . }}:14268
+
+Exporters:
+  - Traces  -> Grafana Tempo (tempo-distributor:4317)
+  - Metrics -> Prometheus exporter (:8889)
+  - Logs    -> Grafana Loki (loki-gateway:3100)
+
+================================================================================
+    SERVICE ENDPOINTS
+================================================================================
+
+To send traces via OTLP gRPC from within the cluster:
+
+  OTEL_EXPORTER_OTLP_ENDPOINT=http://{{ include "otel-collector.fullname" . }}.{{ include "otel-collector.namespace" . }}.svc.cluster.local:4317
+
+To send traces via OTLP HTTP from within the cluster:
+
+  OTEL_EXPORTER_OTLP_ENDPOINT=http://{{ include "otel-collector.fullname" . }}.{{ include "otel-collector.namespace" . }}.svc.cluster.local:4318
+
+To send traces via Jaeger from within the cluster:
+
+  JAEGER_ENDPOINT=http://{{ include "otel-collector.fullname" . }}.{{ include "otel-collector.namespace" . }}.svc.cluster.local:14268/api/traces
+
+================================================================================
+    HEALTH CHECKS
+================================================================================
+
+Check deployment status:
+
+  kubectl get deployments -n {{ include "otel-collector.namespace" . }} -l app.kubernetes.io/name={{ include "otel-collector.name" . }}
+
+Check pod status:
+
+  kubectl get pods -n {{ include "otel-collector.namespace" . }} -l app.kubernetes.io/name={{ include "otel-collector.name" . }}
+
+Check collector health:
+
+  kubectl port-forward svc/{{ include "otel-collector.fullname" . }} 13133:13133 -n {{ include "otel-collector.namespace" . }}
+  curl http://localhost:13133/health
+
+{{- if .Values.hpa.enabled }}
+
+Check HPA status:
+
+  kubectl get hpa {{ include "otel-collector.fullname" . }} -n {{ include "otel-collector.namespace" . }}
+{{- end }}
+
+{{- if .Values.pdb.enabled }}
+
+Check PDB status:
+
+  kubectl get pdb {{ include "otel-collector.fullname" . }} -n {{ include "otel-collector.namespace" . }}
+{{- end }}
+
+================================================================================
+    MONITORING
+================================================================================
+
+{{- if .Values.serviceMonitor.enabled }}
+ServiceMonitors are configured for Prometheus Operator:
+  - Internal metrics (port 8888): collector pipeline health
+  - Exported metrics (port 8889): application metrics from OTLP
+
+Key metrics to monitor:
+  - otelcol_receiver_accepted_spans          (counter)
+  - otelcol_receiver_refused_spans           (counter)
+  - otelcol_exporter_sent_spans              (counter)
+  - otelcol_exporter_send_failed_spans       (counter)
+  - otelcol_processor_batch_batch_send_size  (histogram)
+  - otelcol_process_memory_rss              (gauge)
+{{- else }}
+ServiceMonitors are DISABLED. Enable with serviceMonitor.enabled=true
+{{- end }}
+
+Access zPages debugging interface:
+
+  kubectl port-forward svc/{{ include "otel-collector.fullname" . }} 55679:55679 -n {{ include "otel-collector.namespace" . }}
+  # Then visit: http://localhost:55679/debug/tracez
+
+Access pprof profiling:
+
+  kubectl port-forward svc/{{ include "otel-collector.fullname" . }} 1777:1777 -n {{ include "otel-collector.namespace" . }}
+
+================================================================================
+    SECURITY
+================================================================================
+
+{{- if .Values.networkPolicy.enabled }}
+Network Policies: ENABLED (zero-trust model)
+  - Ingress allowed from: greenlang, greenlang-agents, greenlang-jobs,
+    gl-agents, gl-fuel, gl-cbam, gl-building, monitoring namespaces
+  - Egress allowed to: Tempo, Loki, Prometheus, DNS
+{{- else }}
+Network Policies: DISABLED (consider enabling for production)
+{{- end }}
+
+Pod Security:
+  - runAsNonRoot: true
+  - readOnlyRootFilesystem: true
+  - capabilities: drop ALL
+
+================================================================================
+    TROUBLESHOOTING
+================================================================================
+
+View collector logs:
+
+  kubectl logs -l app.kubernetes.io/name={{ include "otel-collector.name" . }} -n {{ include "otel-collector.namespace" . }} -f
+
+Check configuration:
+
+  kubectl get configmap {{ include "otel-collector.configMapName" . }} -n {{ include "otel-collector.namespace" . }} -o yaml
+
+Inspect pipeline status via zPages:
+
+  kubectl port-forward svc/{{ include "otel-collector.fullname" . }} 55679:55679 -n {{ include "otel-collector.namespace" . }}
+  # Pipeline status: http://localhost:55679/debug/pipelinez
+  # Extension status: http://localhost:55679/debug/extensionz
+
+================================================================================
+    DOCUMENTATION
+================================================================================
+
+For more information, visit:
+  - OTel Collector Docs: https://docs.greenlang.io/observability/otel-collector
+  - Runbooks: https://docs.greenlang.io/runbooks/otel-collector
+  - Support: support@greenlang.io
+
+================================================================================

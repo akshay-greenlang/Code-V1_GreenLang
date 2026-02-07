@@ -1,0 +1,497 @@
+# =============================================================================
+# GreenLang Climate OS - Agent Factory v1.0 Prometheus Alert Rules
+# =============================================================================
+# PRD: INFRA-010 Agent Factory v1.0
+# Defines alerting rules for agent lifecycle health, task queue operations,
+# resilience patterns (circuit breakers, fallbacks), and cost management.
+# =============================================================================
+
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: agent-factory-alerts
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: agent-factory
+    app.kubernetes.io/part-of: greenlang
+    prometheus: kube-prometheus
+    role: alert-rules
+    greenlang.io/component: infra-010
+spec:
+  groups:
+    # =========================================================================
+    # Group 1: Lifecycle Alerts
+    # =========================================================================
+    - name: agent_factory.lifecycle
+      interval: 30s
+      rules:
+        # ---------------------------------------------------------------------
+        # AgentFactoryLifecycleManagerDown
+        # Fires when no lifecycle manager instances are running for 2 minutes.
+        # The lifecycle manager is the central coordinator for all agent state
+        # transitions. Without it, agents cannot be deployed, health-checked,
+        # or gracefully shut down.
+        # ---------------------------------------------------------------------
+        - alert: AgentFactoryLifecycleManagerDown
+          expr: |
+            absent(up{job="agent-factory-lifecycle"} == 1)
+            or
+            sum(up{job="agent-factory-lifecycle"}) == 0
+          for: 2m
+          labels:
+            severity: critical
+            team: platform-engineering
+            component: agent-factory
+            prd: INFRA-010
+          annotations:
+            summary: "Agent Factory Lifecycle Manager is down"
+            description: >-
+              No Agent Factory Lifecycle Manager instances are running. The
+              lifecycle manager is the central coordinator for all agent state
+              transitions, health checks, warm-up, and graceful shutdown. No
+              new agents can be deployed and existing agents cannot be managed.
+              Investigate pod status in the greenlang-agent-factory namespace
+              immediately.
+            runbook_url: "https://runbooks.greenlang.io/agent-factory/lifecycle-manager-down"
+            dashboard_url: "https://grafana.greenlang.io/d/agent-factory-v1"
+
+        # ---------------------------------------------------------------------
+        # AgentHealthCheckFailing
+        # Fires when an agent's health check has been failing for more than
+        # 5 minutes. Indicates the agent is unhealthy and may need restart
+        # or investigation.
+        # ---------------------------------------------------------------------
+        - alert: AgentHealthCheckFailing
+          expr: |
+            (
+              sum by (agent_key) (
+                rate(agent_factory_health_check_failures_total[5m])
+              )
+              /
+              sum by (agent_key) (
+                rate(agent_factory_health_check_total[5m])
+              )
+            ) > 0.5
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-engineering
+            component: agent-factory
+            prd: INFRA-010
+          annotations:
+            summary: "Agent health check failing for {{ $labels.agent_key }}"
+            description: >-
+              Agent {{ $labels.agent_key }} health check failure rate is
+              {{ $value | printf "%.1f" }} (>50%) for the last 5 minutes. The
+              agent may be degraded or unresponsive. The lifecycle manager will
+              attempt automatic restart if the failure persists. Check agent
+              logs and resource utilization.
+            runbook_url: "https://runbooks.greenlang.io/agent-factory/health-check-failing"
+            dashboard_url: "https://grafana.greenlang.io/d/agent-factory-v1"
+
+        # ---------------------------------------------------------------------
+        # AgentStartupTimeout
+        # Fires when an agent has been stuck in WARMING_UP state for more
+        # than 5 minutes. Indicates the warm-up strategy is failing, possibly
+        # due to external dependency unavailability or resource constraints.
+        # ---------------------------------------------------------------------
+        - alert: AgentStartupTimeout
+          expr: |
+            (
+              agent_factory_agent_state{state="warming_up"}
+              and
+              (time() - agent_factory_agent_state_entered_timestamp{state="warming_up"}) > 300
+            )
+          for: 1m
+          labels:
+            severity: warning
+            team: platform-engineering
+            component: agent-factory
+            prd: INFRA-010
+          annotations:
+            summary: "Agent {{ $labels.agent_key }} stuck in WARMING_UP for >5 minutes"
+            description: >-
+              Agent {{ $labels.agent_key }} has been in the WARMING_UP state
+              for more than 5 minutes. The warm-up timeout threshold
+              (production: 120s) has been exceeded. This may indicate external
+              dependency failures (Redis, PostgreSQL, model loading) or
+              insufficient resources. Check agent logs and dependency health.
+            runbook_url: "https://runbooks.greenlang.io/agent-factory/startup-timeout"
+            dashboard_url: "https://grafana.greenlang.io/d/agent-factory-v1"
+
+        # ---------------------------------------------------------------------
+        # AgentCrashLooping
+        # Fires when an agent has been restarted more than 3 times in the
+        # last 15 minutes. Indicates a persistent failure that automatic
+        # restart cannot resolve.
+        # ---------------------------------------------------------------------
+        - alert: AgentCrashLooping
+          expr: |
+            sum by (agent_key) (
+              increase(agent_factory_agent_restarts_total[15m])
+            ) > 3
+          for: 1m
+          labels:
+            severity: critical
+            team: platform-engineering
+            component: agent-factory
+            prd: INFRA-010
+          annotations:
+            summary: "Agent {{ $labels.agent_key }} is crash-looping (>3 restarts in 15m)"
+            description: >-
+              Agent {{ $labels.agent_key }} has restarted
+              {{ $value | printf "%.0f" }} times in the last 15 minutes. The
+              agent is in a crash loop that automatic restart cannot resolve.
+              The max restart attempts (5) may be reached soon, after which the
+              agent will be moved to FAILED state. Investigate root cause in
+              agent logs and audit trail immediately.
+            runbook_url: "https://runbooks.greenlang.io/agent-factory/crash-looping"
+            dashboard_url: "https://grafana.greenlang.io/d/agent-factory-v1"
+
+    # =========================================================================
+    # Group 2: Queue Alerts
+    # =========================================================================
+    - name: agent_factory.queue
+      interval: 30s
+      rules:
+        # ---------------------------------------------------------------------
+        # AgentQueueBacklogHigh
+        # Fires when the task queue depth exceeds 1000 for more than
+        # 5 minutes. Workers may be unable to keep up with incoming tasks.
+        # ---------------------------------------------------------------------
+        - alert: AgentQueueBacklogHigh
+          expr: |
+            sum(agent_factory_queue_depth) > 1000
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-engineering
+            component: agent-factory
+            prd: INFRA-010
+          annotations:
+            summary: "Agent Factory task queue backlog exceeds 1000 tasks"
+            description: >-
+              Agent Factory task queue depth is {{ $value | printf "%.0f" }}
+              tasks, exceeding the 1000-task warning threshold for 5 minutes.
+              Workers may be unable to keep up with incoming task volume. The
+              HPA should be scaling up workers. Verify worker pod count, CPU
+              utilization, and task processing rate.
+            runbook_url: "https://runbooks.greenlang.io/agent-factory/queue-backlog-high"
+            dashboard_url: "https://grafana.greenlang.io/d/agent-factory-v1"
+
+        # ---------------------------------------------------------------------
+        # AgentQueueBacklogCritical
+        # Fires when the task queue depth exceeds 5000 for more than
+        # 5 minutes. The system is severely overloaded.
+        # ---------------------------------------------------------------------
+        - alert: AgentQueueBacklogCritical
+          expr: |
+            sum(agent_factory_queue_depth) > 5000
+          for: 5m
+          labels:
+            severity: critical
+            team: platform-engineering
+            component: agent-factory
+            prd: INFRA-010
+          annotations:
+            summary: "Agent Factory task queue backlog CRITICAL - exceeds 5000 tasks"
+            description: >-
+              Agent Factory task queue depth is {{ $value | printf "%.0f" }}
+              tasks, exceeding the 5000-task critical threshold. The system is
+              severely overloaded. Tasks may start expiring (TTL: 1h default).
+              Verify HPA has scaled workers to maximum (20), check for
+              downstream failures, and consider rate limiting incoming requests.
+            runbook_url: "https://runbooks.greenlang.io/agent-factory/queue-backlog-critical"
+            dashboard_url: "https://grafana.greenlang.io/d/agent-factory-v1"
+
+        # ---------------------------------------------------------------------
+        # AgentDLQGrowing
+        # Fires when the dead-letter queue size is increasing over 30
+        # minutes. Indicates persistent task processing failures.
+        # ---------------------------------------------------------------------
+        - alert: AgentDLQGrowing
+          expr: |
+            (
+              sum(agent_factory_dlq_size) > 0
+              and
+              delta(agent_factory_dlq_size[30m]) > 10
+            )
+          for: 30m
+          labels:
+            severity: warning
+            team: platform-engineering
+            component: agent-factory
+            prd: INFRA-010
+          annotations:
+            summary: "Agent Factory dead-letter queue is growing"
+            description: >-
+              Agent Factory DLQ has {{ $value | printf "%.0f" }} messages and
+              has been growing for the last 30 minutes. Tasks are failing
+              after exhausting all retries (max: 3). This indicates persistent
+              processing failures. Inspect DLQ messages, check for agent errors,
+              and verify downstream dependency health.
+            runbook_url: "https://runbooks.greenlang.io/agent-factory/dlq-growing"
+            dashboard_url: "https://grafana.greenlang.io/d/agent-factory-v1"
+
+        # ---------------------------------------------------------------------
+        # AgentWorkerPoolExhausted
+        # Fires when all workers are busy for more than 5 minutes and the
+        # HPA is at maximum replicas.
+        # ---------------------------------------------------------------------
+        - alert: AgentWorkerPoolExhausted
+          expr: |
+            (
+              sum(agent_factory_workers_busy)
+              /
+              sum(agent_factory_workers_total)
+            ) > 0.95
+            and
+            kube_horizontalpodautoscaler_status_current_replicas{horizontalpodautoscaler="agent-factory-worker-hpa"}
+            ==
+            kube_horizontalpodautoscaler_spec_max_replicas{horizontalpodautoscaler="agent-factory-worker-hpa"}
+          for: 5m
+          labels:
+            severity: critical
+            team: platform-engineering
+            component: agent-factory
+            prd: INFRA-010
+          annotations:
+            summary: "Agent Factory worker pool exhausted - all workers busy at max replicas"
+            description: >-
+              All Agent Factory workers are busy (>95% utilization) and the
+              HPA has already scaled to maximum replicas. New tasks are being
+              queued without available workers. Consider increasing HPA max
+              replicas, optimizing task processing time, or scaling the
+              underlying node group.
+            runbook_url: "https://runbooks.greenlang.io/agent-factory/worker-pool-exhausted"
+            dashboard_url: "https://grafana.greenlang.io/d/agent-factory-v1"
+
+    # =========================================================================
+    # Group 3: Resilience Alerts
+    # =========================================================================
+    - name: agent_factory.resilience
+      interval: 30s
+      rules:
+        # ---------------------------------------------------------------------
+        # AgentCircuitBreakerOpen
+        # Fires when any agent's circuit breaker transitions to OPEN state.
+        # The agent is being protected from cascading failures.
+        # ---------------------------------------------------------------------
+        - alert: AgentCircuitBreakerOpen
+          expr: |
+            agent_factory_circuit_breaker_state{state="open"} == 1
+          for: 1m
+          labels:
+            severity: warning
+            team: platform-engineering
+            component: agent-factory
+            prd: INFRA-010
+          annotations:
+            summary: "Circuit breaker OPEN for agent {{ $labels.agent_key }}"
+            description: >-
+              Circuit breaker for agent {{ $labels.agent_key }} has transitioned
+              to OPEN state. The agent exceeded the failure rate threshold
+              (50%) or slow call threshold (P99 > 5x target). All requests to
+              this agent are being routed to the fallback chain. The breaker
+              will test recovery after 60 seconds (half-open). Investigate
+              the root cause of failures.
+            runbook_url: "https://runbooks.greenlang.io/agent-factory/circuit-breaker-open"
+            dashboard_url: "https://grafana.greenlang.io/d/agent-factory-v1"
+
+        # ---------------------------------------------------------------------
+        # AgentHighErrorRate
+        # Fires when an agent's error rate exceeds 10% for 5 minutes.
+        # This is a serious degradation that may warrant rollback.
+        # ---------------------------------------------------------------------
+        - alert: AgentHighErrorRate
+          expr: |
+            (
+              sum by (agent_key) (
+                rate(agent_factory_execution_errors_total[5m])
+              )
+              /
+              sum by (agent_key) (
+                rate(agent_factory_executions_total[5m])
+              )
+            ) > 0.10
+          for: 5m
+          labels:
+            severity: critical
+            team: platform-engineering
+            component: agent-factory
+            prd: INFRA-010
+          annotations:
+            summary: "Agent {{ $labels.agent_key }} error rate exceeds 10%"
+            description: >-
+              Agent {{ $labels.agent_key }} error rate is
+              {{ $value | humanizePercentage }} over the last 5 minutes,
+              exceeding the 10% critical threshold. If this is a canary
+              deployment, automatic rollback should trigger at 5%. Check
+              agent logs, recent deployments, and downstream dependencies.
+            runbook_url: "https://runbooks.greenlang.io/agent-factory/high-error-rate"
+            dashboard_url: "https://grafana.greenlang.io/d/agent-factory-v1"
+
+        # ---------------------------------------------------------------------
+        # AgentHighLatency
+        # Fires when an agent's P99 latency exceeds 5x baseline for 5 min.
+        # Indicates severe performance degradation.
+        # ---------------------------------------------------------------------
+        - alert: AgentHighLatency
+          expr: |
+            (
+              histogram_quantile(0.99,
+                sum by (agent_key, le) (
+                  rate(agent_factory_execution_duration_seconds_bucket[5m])
+                )
+              )
+              /
+              agent_factory_execution_duration_baseline_seconds{quantile="0.99"}
+            ) > 5
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-engineering
+            component: agent-factory
+            prd: INFRA-010
+          annotations:
+            summary: "Agent {{ $labels.agent_key }} P99 latency exceeds 5x baseline"
+            description: >-
+              Agent {{ $labels.agent_key }} P99 latency is {{ $value | printf "%.1f" }}x
+              the baseline for the last 5 minutes. This severe performance
+              degradation may indicate resource contention, downstream
+              dependency slowness, or data volume spikes. If this is a canary
+              deployment (prod threshold: 2x), rollback may be triggered.
+            runbook_url: "https://runbooks.greenlang.io/agent-factory/high-latency"
+            dashboard_url: "https://grafana.greenlang.io/d/agent-factory-v1"
+
+        # ---------------------------------------------------------------------
+        # AgentFallbackActive
+        # Fires when a fallback handler has been active for more than
+        # 10 minutes. The primary agent is still degraded.
+        # ---------------------------------------------------------------------
+        - alert: AgentFallbackActive
+          expr: |
+            (
+              sum by (agent_key) (
+                rate(agent_factory_fallback_invocations_total[10m])
+              ) > 0
+              and
+              agent_factory_circuit_breaker_state{state="open"} == 1
+            )
+          for: 10m
+          labels:
+            severity: warning
+            team: platform-engineering
+            component: agent-factory
+            prd: INFRA-010
+          annotations:
+            summary: "Fallback handler active for agent {{ $labels.agent_key }} for >10 minutes"
+            description: >-
+              The fallback handler for agent {{ $labels.agent_key }} has been
+              actively serving requests for more than 10 minutes. The primary
+              agent's circuit breaker remains in OPEN state. The fallback may
+              provide degraded functionality. Investigate and resolve the
+              primary agent's failure or consider a permanent routing change.
+            runbook_url: "https://runbooks.greenlang.io/agent-factory/fallback-active"
+            dashboard_url: "https://grafana.greenlang.io/d/agent-factory-v1"
+
+    # =========================================================================
+    # Group 4: Cost Alerts
+    # =========================================================================
+    - name: agent_factory.cost
+      interval: 1m
+      rules:
+        # ---------------------------------------------------------------------
+        # AgentBudgetWarning
+        # Fires when an agent's cost exceeds 80% of its allocated budget.
+        # Warning to allow proactive budget management.
+        # ---------------------------------------------------------------------
+        - alert: AgentBudgetWarning
+          expr: |
+            (
+              agent_factory_budget_spent_usd
+              /
+              agent_factory_budget_allocated_usd
+            ) * 100 > 80
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-engineering
+            component: agent-factory
+            prd: INFRA-010
+          annotations:
+            summary: "Agent {{ $labels.agent_key }} budget >80% consumed"
+            description: >-
+              Agent {{ $labels.agent_key }} has consumed
+              {{ $value | printf "%.1f" }}% of its allocated budget
+              (${{ $labels.budget_amount }} {{ $labels.budget_period }}).
+              Spent: ${{ $labels.spent_amount }}. At the current burn rate,
+              the budget will be exhausted before the period ends. Review
+              agent usage patterns and consider increasing the budget or
+              optimizing resource consumption.
+            runbook_url: "https://runbooks.greenlang.io/agent-factory/budget-warning"
+            dashboard_url: "https://grafana.greenlang.io/d/agent-factory-v1"
+
+        # ---------------------------------------------------------------------
+        # AgentBudgetExceeded
+        # Fires when an agent's cost exceeds 100% of its allocated budget.
+        # If hard limits are enabled, the agent will be blocked.
+        # ---------------------------------------------------------------------
+        - alert: AgentBudgetExceeded
+          expr: |
+            (
+              agent_factory_budget_spent_usd
+              /
+              agent_factory_budget_allocated_usd
+            ) * 100 > 100
+          for: 1m
+          labels:
+            severity: critical
+            team: platform-engineering
+            component: agent-factory
+            prd: INFRA-010
+          annotations:
+            summary: "Agent {{ $labels.agent_key }} budget EXCEEDED (>100%)"
+            description: >-
+              Agent {{ $labels.agent_key }} has exceeded its allocated budget
+              at {{ $value | printf "%.1f" }}%. If hard limits are enabled,
+              new executions will be blocked. Immediately review agent usage,
+              check for runaway tasks or misconfigured resource limits, and
+              either increase the budget or shut down non-essential workloads.
+            runbook_url: "https://runbooks.greenlang.io/agent-factory/budget-exceeded"
+            dashboard_url: "https://grafana.greenlang.io/d/agent-factory-v1"
+
+        # ---------------------------------------------------------------------
+        # AgentCostAnomaly
+        # Fires when an agent's daily cost exceeds 3x the 30-day average.
+        # Detects unexpected cost spikes from runaway tasks or misconfig.
+        # ---------------------------------------------------------------------
+        - alert: AgentCostAnomaly
+          expr: |
+            (
+              sum by (agent_key) (
+                increase(agent_factory_cost_total_usd[1d])
+              )
+              /
+              (
+                sum by (agent_key) (
+                  increase(agent_factory_cost_total_usd[30d])
+                ) / 30
+              )
+            ) > 3
+          for: 30m
+          labels:
+            severity: warning
+            team: platform-engineering
+            component: agent-factory
+            prd: INFRA-010
+          annotations:
+            summary: "Agent {{ $labels.agent_key }} cost anomaly detected (>3x daily average)"
+            description: >-
+              Agent {{ $labels.agent_key }} daily cost is {{ $value | printf "%.1f" }}x
+              the 30-day daily average. This anomalous cost increase may
+              indicate runaway tasks, increased traffic without corresponding
+              optimization, or misconfigured resource limits. Review recent
+              changes to agent configuration, task volume, and resource usage.
+            runbook_url: "https://runbooks.greenlang.io/agent-factory/cost-anomaly"
+            dashboard_url: "https://grafana.greenlang.io/d/agent-factory-v1"

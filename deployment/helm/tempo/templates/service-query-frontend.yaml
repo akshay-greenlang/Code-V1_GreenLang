@@ -1,0 +1,32 @@
+{{/*
+# =============================================================================
+# GreenLang Tempo - Query Frontend Service
+# GreenLang Climate OS | OBS-003
+# =============================================================================
+# ClusterIP service for the query-frontend component. Exposes HTTP and gRPC.
+# Grafana connects to query-frontend for all trace lookups and searches.
+# Only deployed when mode=distributed.
+# =============================================================================
+*/}}
+{{- if eq .Values.tempo.mode "distributed" }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "tempo.fullname" . }}-query-frontend
+  namespace: {{ include "tempo.namespace" . }}
+  labels:
+    {{- include "tempo.queryFrontendLabels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  selector:
+    {{- include "tempo.queryFrontendSelectorLabels" . | nindent 4 }}
+  ports:
+    - name: http-metrics
+      port: {{ .Values.tempo.server.http_listen_port | default 3200 }}
+      targetPort: http-metrics
+      protocol: TCP
+    - name: grpc
+      port: {{ .Values.tempo.server.grpc_listen_port | default 9095 }}
+      targetPort: grpc
+      protocol: TCP
+{{- end }}

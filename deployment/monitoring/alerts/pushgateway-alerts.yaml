@@ -1,0 +1,454 @@
+# ============================================================================
+# PushGateway Health Alert Rules
+# ============================================================================
+# PrometheusRules for PushGateway and batch job monitoring.
+# Monitors PushGateway availability, metric staleness, and batch job health.
+#
+# Created: 2026-02-06
+# Team: Monitoring & Observability
+# PRD: OBS-001 - Prometheus Metrics Collection
+#
+# Alert Groups:
+#   - pushgateway.health: PushGateway availability and performance
+#   - pushgateway.metrics: Metric staleness and quality
+#   - batchjobs.health: Batch job execution health
+#   - batchjobs.sla: Batch job SLA monitoring
+# ============================================================================
+
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: pushgateway-alerts
+  namespace: monitoring
+  labels:
+    app: pushgateway
+    component: alerting
+    prometheus: main
+    role: alert-rules
+    app.kubernetes.io/name: pushgateway
+    app.kubernetes.io/component: alerts
+    app.kubernetes.io/part-of: greenlang
+    release: prometheus
+  annotations:
+    description: "PushGateway and batch job monitoring alert rules"
+    runbook_base_url: "https://runbooks.greenlang.ai/pushgateway"
+spec:
+  groups:
+    # =========================================================================
+    # PUSHGATEWAY HEALTH ALERTS
+    # =========================================================================
+    - name: pushgateway.health
+      interval: 30s
+      rules:
+        # ---------------------------------------------------------------------
+        # PushGatewayDown - PushGateway unavailable
+        # ---------------------------------------------------------------------
+        - alert: PushGatewayDown
+          expr: up{job="pushgateway"} == 0
+          for: 5m
+          labels:
+            severity: warning
+            team: platform
+            component: pushgateway
+            category: availability
+          annotations:
+            summary: "PushGateway is down"
+            description: |
+              PushGateway instance {{ $labels.instance }} has been down for more than 5 minutes.
+
+              Impact: Batch jobs cannot push metrics. Job execution visibility is lost.
+              Batch job monitoring and alerting will not function.
+            runbook_url: "https://runbooks.greenlang.ai/pushgateway/down"
+            dashboard_url: "https://grafana.greenlang.ai/d/pushgateway-overview"
+
+        # ---------------------------------------------------------------------
+        # PushGatewayAllDown - All PushGateway instances down
+        # ---------------------------------------------------------------------
+        - alert: PushGatewayAllDown
+          expr: |
+            absent(up{job="pushgateway"} == 1)
+          for: 5m
+          labels:
+            severity: critical
+            team: platform
+            component: pushgateway
+            category: availability
+          annotations:
+            summary: "All PushGateway instances are down"
+            description: |
+              No PushGateway instances are healthy.
+
+              Impact: CRITICAL - All batch job metrics collection is unavailable.
+              No visibility into batch job health or performance.
+            runbook_url: "https://runbooks.greenlang.ai/pushgateway/all-down"
+
+        # ---------------------------------------------------------------------
+        # PushGatewayHighMemory - Memory usage high
+        # ---------------------------------------------------------------------
+        - alert: PushGatewayHighMemory
+          expr: |
+            process_resident_memory_bytes{job="pushgateway"} > 1073741824
+          for: 15m
+          labels:
+            severity: warning
+            team: platform
+            component: pushgateway
+            category: performance
+          annotations:
+            summary: "PushGateway memory usage is high (>1GB)"
+            description: |
+              PushGateway {{ $labels.instance }} is using {{ $value | humanize1024 }}B of memory.
+
+              This may indicate:
+              - Too many unique metric groups being pushed
+              - Metrics not being cleaned up after job completion
+              - High-cardinality labels in pushed metrics
+            runbook_url: "https://runbooks.greenlang.ai/pushgateway/high-memory"
+
+        # ---------------------------------------------------------------------
+        # PushGatewayHighHTTPErrors - HTTP error rate
+        # ---------------------------------------------------------------------
+        - alert: PushGatewayHighHTTPErrors
+          expr: |
+            sum(rate(http_requests_total{job="pushgateway",code=~"5.."}[5m]))
+            / sum(rate(http_requests_total{job="pushgateway"}[5m])) > 0.05
+          for: 5m
+          labels:
+            severity: warning
+            team: platform
+            component: pushgateway
+            category: errors
+          annotations:
+            summary: "PushGateway HTTP error rate is high (>5%)"
+            description: |
+              PushGateway HTTP 5xx error rate is {{ $value | printf "%.2f" | mul 100 }}%.
+
+              Check PushGateway logs for error details.
+            runbook_url: "https://runbooks.greenlang.ai/pushgateway/http-errors"
+
+    # =========================================================================
+    # METRIC STALENESS ALERTS
+    # =========================================================================
+    - name: pushgateway.metrics
+      interval: 60s
+      rules:
+        # ---------------------------------------------------------------------
+        # PushGatewayHighMetricAge - Stale metrics detected
+        # ---------------------------------------------------------------------
+        - alert: PushGatewayHighMetricAge
+          expr: |
+            (time() - push_time_seconds) > 3600
+          for: 5m
+          labels:
+            severity: warning
+            team: platform
+            component: pushgateway
+            category: staleness
+          annotations:
+            summary: "PushGateway metrics stale for job {{ $labels.job }}"
+            description: |
+              Metrics for job {{ $labels.job }} have not been updated for more than 1 hour.
+              Last push: {{ $value | printf "%.0f" }} seconds ago
+              Instance: {{ $labels.instance }}
+
+              Impact: Metrics may be outdated. Consider if the job is still running
+              or if it failed to push final metrics.
+            runbook_url: "https://runbooks.greenlang.ai/pushgateway/stale-metrics"
+            dashboard_url: "https://grafana.greenlang.ai/d/pushgateway-overview"
+
+        # ---------------------------------------------------------------------
+        # PushGatewayMetricsMissing - Expected metrics not present
+        # ---------------------------------------------------------------------
+        - alert: PushGatewayMetricsMissing
+          expr: |
+            absent(gl_batch_job_duration_seconds)
+          for: 1h
+          labels:
+            severity: info
+            team: platform
+            component: pushgateway
+            category: monitoring
+          annotations:
+            summary: "No batch job metrics in PushGateway for 1 hour"
+            description: |
+              No batch job metrics have been pushed to PushGateway in the last hour.
+
+              This could indicate:
+              - No batch jobs have run
+              - Jobs are not configured to push metrics
+              - Jobs are failing before pushing metrics
+            runbook_url: "https://runbooks.greenlang.ai/pushgateway/no-metrics"
+
+        # ---------------------------------------------------------------------
+        # PushGatewayTooManyGroups - Too many metric groups
+        # ---------------------------------------------------------------------
+        - alert: PushGatewayTooManyGroups
+          expr: |
+            count(count by (job, instance) (push_time_seconds)) > 100
+          for: 15m
+          labels:
+            severity: warning
+            team: platform
+            component: pushgateway
+            category: capacity
+          annotations:
+            summary: "PushGateway has too many metric groups (>100)"
+            description: |
+              PushGateway has {{ $value | printf "%.0f" }} unique metric groups.
+
+              This may indicate:
+              - Jobs not cleaning up after completion
+              - Unique instance labels per job run
+              - Metrics accumulating over time
+
+              Review and clean up stale metric groups.
+            runbook_url: "https://runbooks.greenlang.ai/pushgateway/too-many-groups"
+
+    # =========================================================================
+    # BATCH JOB HEALTH ALERTS
+    # =========================================================================
+    - name: batchjobs.health
+      interval: 60s
+      rules:
+        # ---------------------------------------------------------------------
+        # BatchJobFailed - Batch job execution failed
+        # ---------------------------------------------------------------------
+        - alert: BatchJobFailed
+          expr: gl_batch_job_status == 3
+          for: 5m
+          labels:
+            severity: warning
+            team: platform
+            component: batch-jobs
+            category: execution
+          annotations:
+            summary: "Batch job {{ $labels.job_name }} failed"
+            description: |
+              Batch job {{ $labels.job_name }} has reported a failed status.
+              Instance: {{ $labels.instance }}
+              Job ID: {{ $labels.job_id }}
+
+              Check job logs for error details and root cause.
+            runbook_url: "https://runbooks.greenlang.ai/batch-jobs/failed"
+            dashboard_url: "https://grafana.greenlang.ai/d/batch-jobs-overview"
+
+        # ---------------------------------------------------------------------
+        # BatchJobStale - Job hasn't succeeded recently
+        # ---------------------------------------------------------------------
+        - alert: BatchJobStale
+          expr: |
+            (time() - gl_batch_job_last_success_timestamp) > 86400
+          for: 5m
+          labels:
+            severity: warning
+            team: platform
+            component: batch-jobs
+            category: staleness
+          annotations:
+            summary: "Batch job {{ $labels.job_name }} hasn't succeeded in 24h"
+            description: |
+              Batch job {{ $labels.job_name }} has not completed successfully
+              in the last 24 hours.
+              Last success: {{ $value | printf "%.0f" }} seconds ago
+
+              Investigate if the job is:
+              - Not scheduled to run
+              - Failing consistently
+              - Hung or stuck
+            runbook_url: "https://runbooks.greenlang.ai/batch-jobs/stale"
+            dashboard_url: "https://grafana.greenlang.ai/d/batch-jobs-overview"
+
+        # ---------------------------------------------------------------------
+        # BatchJobRunningTooLong - Job execution taking too long
+        # ---------------------------------------------------------------------
+        - alert: BatchJobRunningTooLong
+          expr: |
+            gl_batch_job_status == 1
+            and
+            (time() - gl_batch_job_start_timestamp) > 7200
+          for: 5m
+          labels:
+            severity: warning
+            team: platform
+            component: batch-jobs
+            category: performance
+          annotations:
+            summary: "Batch job {{ $labels.job_name }} running for >2 hours"
+            description: |
+              Batch job {{ $labels.job_name }} has been running for more than 2 hours.
+              Start time: {{ with printf "gl_batch_job_start_timestamp{job_name='%s'}" $labels.job_name | query }}{{ . | first | value | printf "%.0f" }}{{ end }}
+
+              The job may be:
+              - Processing more data than expected
+              - Stuck waiting on a resource
+              - In a deadlock or infinite loop
+            runbook_url: "https://runbooks.greenlang.ai/batch-jobs/running-too-long"
+
+        # ---------------------------------------------------------------------
+        # BatchJobHighErrorRate - High error count during execution
+        # ---------------------------------------------------------------------
+        - alert: BatchJobHighErrorRate
+          expr: |
+            gl_batch_job_errors_total > 100
+          for: 5m
+          labels:
+            severity: warning
+            team: platform
+            component: batch-jobs
+            category: errors
+          annotations:
+            summary: "Batch job {{ $labels.job_name }} has high error count (>100)"
+            description: |
+              Batch job {{ $labels.job_name }} has {{ $value | printf "%.0f" }} errors.
+              Error type: {{ $labels.error_type }}
+
+              While the job may still be running, a high error count indicates
+              data quality issues or integration problems.
+            runbook_url: "https://runbooks.greenlang.ai/batch-jobs/high-errors"
+
+        # ---------------------------------------------------------------------
+        # BatchJobLowRecordThroughput - Low processing rate
+        # ---------------------------------------------------------------------
+        - alert: BatchJobLowRecordThroughput
+          expr: |
+            rate(gl_batch_job_records_processed_total[10m]) < 10
+            and
+            gl_batch_job_status == 1
+          for: 10m
+          labels:
+            severity: warning
+            team: platform
+            component: batch-jobs
+            category: performance
+          annotations:
+            summary: "Batch job {{ $labels.job_name }} has low throughput (<10 records/sec)"
+            description: |
+              Batch job {{ $labels.job_name }} is processing only {{ $value | printf "%.2f" }}
+              records per second.
+
+              This may indicate:
+              - Resource constraints (CPU, memory, I/O)
+              - Slow database queries
+              - API rate limiting
+              - Network issues
+            runbook_url: "https://runbooks.greenlang.ai/batch-jobs/low-throughput"
+
+    # =========================================================================
+    # BATCH JOB SLA ALERTS
+    # =========================================================================
+    - name: batchjobs.sla
+      interval: 60s
+      rules:
+        # ---------------------------------------------------------------------
+        # BatchJobSLAMissed - Job missed its SLA window
+        # ---------------------------------------------------------------------
+        - alert: BatchJobSLAMissed
+          expr: |
+            (time() - gl_batch_job_expected_start_timestamp) > 3600
+            and
+            gl_batch_job_last_success_timestamp < gl_batch_job_expected_start_timestamp
+          for: 5m
+          labels:
+            severity: critical
+            team: platform
+            component: batch-jobs
+            category: sla
+          annotations:
+            summary: "Batch job {{ $labels.job_name }} missed SLA window"
+            description: |
+              Batch job {{ $labels.job_name }} was expected to run but hasn't
+              completed successfully within the SLA window.
+
+              Impact: Dependent systems may not have updated data.
+              Business processes may be affected.
+            runbook_url: "https://runbooks.greenlang.ai/batch-jobs/sla-missed"
+            dashboard_url: "https://grafana.greenlang.ai/d/batch-jobs-sla"
+
+        # ---------------------------------------------------------------------
+        # CriticalBatchJobFailed - Critical job failed
+        # ---------------------------------------------------------------------
+        - alert: CriticalBatchJobFailed
+          expr: |
+            gl_batch_job_status{priority="critical"} == 3
+          for: 1m
+          labels:
+            severity: critical
+            team: platform
+            component: batch-jobs
+            category: execution
+          annotations:
+            summary: "CRITICAL batch job {{ $labels.job_name }} failed"
+            description: |
+              Critical batch job {{ $labels.job_name }} has failed.
+
+              Impact: CRITICAL - This job is marked as business-critical.
+              Immediate investigation and remediation required.
+            runbook_url: "https://runbooks.greenlang.ai/batch-jobs/critical-failed"
+
+        # ---------------------------------------------------------------------
+        # EmissionCalculationJobFailed - Emission calculation failed
+        # ---------------------------------------------------------------------
+        - alert: EmissionCalculationJobFailed
+          expr: |
+            gl_batch_job_status{job_type="emission_calculation"} == 3
+          for: 5m
+          labels:
+            severity: critical
+            team: greenlang
+            component: batch-jobs
+            category: execution
+          annotations:
+            summary: "Emission calculation batch job failed"
+            description: |
+              Emission calculation job {{ $labels.job_name }} has failed.
+              Scope: {{ $labels.scope }}
+              Tenant: {{ $labels.tenant_id }}
+
+              Impact: Emission calculations are not being processed.
+              Customer reports may be delayed or incomplete.
+            runbook_url: "https://runbooks.greenlang.ai/batch-jobs/emission-calculation-failed"
+
+        # ---------------------------------------------------------------------
+        # DataIngestionJobStale - Data ingestion hasn't run
+        # ---------------------------------------------------------------------
+        - alert: DataIngestionJobStale
+          expr: |
+            (time() - gl_batch_job_last_success_timestamp{job_type="data_ingestion"}) > 43200
+          for: 5m
+          labels:
+            severity: warning
+            team: greenlang
+            component: batch-jobs
+            category: staleness
+          annotations:
+            summary: "Data ingestion job {{ $labels.job_name }} hasn't run in 12h"
+            description: |
+              Data ingestion job {{ $labels.job_name }} has not completed
+              successfully in the last 12 hours.
+              Source: {{ $labels.data_source }}
+
+              Impact: Data may be stale. Downstream calculations and reports
+              may not reflect the latest information.
+            runbook_url: "https://runbooks.greenlang.ai/batch-jobs/data-ingestion-stale"
+
+        # ---------------------------------------------------------------------
+        # ReportGenerationJobFailed - Report generation failed
+        # ---------------------------------------------------------------------
+        - alert: ReportGenerationJobFailed
+          expr: |
+            gl_batch_job_status{job_type="report_generation"} == 3
+          for: 5m
+          labels:
+            severity: warning
+            team: greenlang
+            component: batch-jobs
+            category: execution
+          annotations:
+            summary: "Report generation job {{ $labels.job_name }} failed"
+            description: |
+              Report generation job {{ $labels.job_name }} has failed.
+              Report type: {{ $labels.report_type }}
+              Tenant: {{ $labels.tenant_id }}
+
+              Impact: Customer reports may not be delivered on schedule.
+            runbook_url: "https://runbooks.greenlang.ai/batch-jobs/report-generation-failed"

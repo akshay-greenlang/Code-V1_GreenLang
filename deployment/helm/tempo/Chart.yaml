@@ -1,0 +1,37 @@
+# =============================================================================
+# GreenLang Tempo - Helm Chart
+# GreenLang Climate OS | OBS-003
+# =============================================================================
+# Standalone Helm chart for Grafana Tempo 2.7.x providing distributed tracing
+# with S3 backend storage, vParquet4 format, and OpenTelemetry-native ingestion.
+# Supports monolithic (dev) and distributed (staging/prod) deployment modes.
+# =============================================================================
+
+apiVersion: v2
+name: greenlang-tempo
+description: Grafana Tempo distributed tracing backend for GreenLang Climate OS
+type: application
+version: 1.0.0
+appVersion: "2.7.0"
+
+keywords:
+  - tempo
+  - tracing
+  - opentelemetry
+  - distributed-tracing
+  - observability
+  - jaeger
+  - greenlang
+  - obs-003
+
+maintainers:
+  - name: GreenLang Infrastructure Team
+    email: infra@greenlang.io
+
+# No subchart dependencies - standalone chart
+dependencies: []
+
+# Annotations for chart metadata
+annotations:
+  category: Observability
+  licenses: Apache-2.0

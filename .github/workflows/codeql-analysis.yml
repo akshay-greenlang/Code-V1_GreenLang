@@ -1,0 +1,261 @@
+# GreenLang CodeQL Analysis Workflow
+#
+# Deep semantic code analysis for Python security vulnerabilities
+# Runs weekly for comprehensive analysis and on PR for critical queries
+#
+# Author: GreenLang Security Team
+# Version: 1.0.0
+# Compliance: SOC 2 CC7.1, ISO 27001 A.14.2.5
+
+name: CodeQL Analysis
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - '**.py'
+      - '**.js'
+      - '**.ts'
+
+  pull_request:
+    branches: [main, master, develop]
+    paths:
+      - '**.py'
+      - '**.js'
+      - '**.ts'
+
+  schedule:
+    # Weekly deep scan: Sunday at 2 AM UTC
+    - cron: '0 2 * * 0'
+
+  workflow_dispatch:
+    inputs:
+      query_suite:
+        description: 'Query suite to run'
+        required: false
+        default: 'security-extended'
+        type: choice
+        options:
+          - security-extended
+          - security-and-quality
+          - code-scanning
+
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
+env:
+  CODEQL_EXTRACTOR_PYTHON_ANALYSIS_VERSION: '3.11'
+
+jobs:
+  # ============================================================================
+  # JOB 1: Python CodeQL Analysis
+  # ============================================================================
+  analyze-python:
+    name: CodeQL Python Analysis
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies for analysis
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt || true
+          fi
+          if [ -f pyproject.toml ]; then
+            pip install -e .[dev,test] || true
+          fi
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: python
+          queries: >-
+            security-extended,
+            security-and-quality
+          config-file: .github/codeql/codeql-config.yml
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:python"
+          output: codeql-results
+          upload: true
+
+      - name: Upload CodeQL SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: codeql-results/python.sarif
+          category: 'codeql-python'
+
+      - name: Upload CodeQL artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: codeql-python-results
+          path: codeql-results/
+          retention-days: 30
+
+  # ============================================================================
+  # JOB 2: Custom GreenLang Queries (Weekly)
+  # ============================================================================
+  analyze-custom:
+    name: CodeQL Custom Queries
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt || true
+          fi
+          if [ -f pyproject.toml ]; then
+            pip install -e .[dev,test] || true
+          fi
+
+      - name: Initialize CodeQL with custom queries
+        uses: github/codeql-action/init@v3
+        with:
+          languages: python
+          queries: >-
+            security-extended,
+            deployment/security/codeql-queries/greenlang-queries.qls
+          config-file: .github/codeql/codeql-config.yml
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:python/custom"
+          output: codeql-custom-results
+          upload: true
+
+      - name: Upload custom query results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: codeql-custom-results
+          path: codeql-custom-results/
+          retention-days: 30
+
+      - name: Generate summary
+        if: always()
+        run: |
+          echo "## CodeQL Custom Analysis Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Custom GreenLang security queries executed:" >> $GITHUB_STEP_SUMMARY
+          echo "- Injection vulnerabilities (SQL, command, LDAP)" >> $GITHUB_STEP_SUMMARY
+          echo "- Authentication bypass patterns" >> $GITHUB_STEP_SUMMARY
+          echo "- Sensitive data exposure" >> $GITHUB_STEP_SUMMARY
+          echo "- Zero-hallucination compliance" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ -f codeql-custom-results/python.sarif ]; then
+            FINDING_COUNT=$(jq '[.runs[].results[]] | length' codeql-custom-results/python.sarif 2>/dev/null || echo "0")
+            echo "**Total findings: $FINDING_COUNT**" >> $GITHUB_STEP_SUMMARY
+          fi
+
+  # ============================================================================
+  # JOB 3: Security Advisory Correlation
+  # ============================================================================
+  security-advisories:
+    name: Security Advisory Check
+    runs-on: ubuntu-latest
+    needs: [analyze-python]
+    if: always() && needs.analyze-python.result == 'success'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download CodeQL results
+        uses: actions/download-artifact@v4
+        with:
+          name: codeql-python-results
+          path: codeql-results
+
+      - name: Check against GitHub Security Advisories
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+
+            // Read SARIF results
+            let findings = [];
+            const sarifPath = 'codeql-results/python.sarif';
+
+            if (fs.existsSync(sarifPath)) {
+              const sarif = JSON.parse(fs.readFileSync(sarifPath, 'utf8'));
+
+              for (const run of sarif.runs || []) {
+                for (const result of run.results || []) {
+                  findings.push({
+                    ruleId: result.ruleId,
+                    severity: result.level,
+                    message: result.message.text,
+                    location: result.locations?.[0]?.physicalLocation?.artifactLocation?.uri
+                  });
+                }
+              }
+            }
+
+            // Generate summary
+            let summary = '## CodeQL Security Advisory Correlation\n\n';
+            summary += `**Total Findings:** ${findings.length}\n\n`;
+
+            if (findings.length > 0) {
+              summary += '| Rule | Severity | Location |\n';
+              summary += '|------|----------|----------|\n';
+
+              for (const f of findings.slice(0, 20)) {
+                summary += `| ${f.ruleId} | ${f.severity} | ${f.location || 'N/A'} |\n`;
+              }
+
+              if (findings.length > 20) {
+                summary += `\n*...and ${findings.length - 20} more findings*\n`;
+              }
+            } else {
+              summary += 'No security findings detected.\n';
+            }
+
+            // Write summary
+            const summaryPath = process.env.GITHUB_STEP_SUMMARY;
+            fs.appendFileSync(summaryPath, summary);
+
+            // Fail if critical findings
+            const criticalFindings = findings.filter(f => f.severity === 'error');
+            if (criticalFindings.length > 0) {
+              core.setFailed(`${criticalFindings.length} critical security findings detected`);
+            }

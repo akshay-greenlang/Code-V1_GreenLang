@@ -1,0 +1,86 @@
+# =============================================================================
+# GreenLang Tempo - PodDisruptionBudgets
+# GreenLang Climate OS | OBS-003
+# =============================================================================
+# PodDisruptionBudgets (PDBs) for Tempo components to ensure availability
+# during voluntary disruptions (node drains, cluster upgrades, etc.).
+#
+# Ingester PDB:
+#   minAvailable: 2 - ensures at least 2 ingesters remain running during
+#   disruptions to prevent trace data loss. Ingesters hold in-memory WAL
+#   data that has not yet been flushed to S3.
+#
+# Distributor PDB:
+#   minAvailable: 1 - ensures at least 1 distributor remains to accept
+#   incoming trace data during disruptions.
+#
+# Query Frontend PDB:
+#   minAvailable: 1 - ensures at least 1 query-frontend remains to serve
+#   Grafana trace queries during disruptions.
+# =============================================================================
+
+---
+# ---------------------------------------------------------------------------
+# PDB for Tempo Ingesters (most critical - holds in-memory WAL)
+# ---------------------------------------------------------------------------
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: tempo-ingester
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: tempo
+    app.kubernetes.io/component: ingester
+    app.kubernetes.io/part-of: greenlang-observability
+    app.kubernetes.io/managed-by: kubectl
+    greenlang.io/obs: "003"
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: tempo
+      app.kubernetes.io/component: ingester
+
+---
+# ---------------------------------------------------------------------------
+# PDB for Tempo Distributors (trace ingest path)
+# ---------------------------------------------------------------------------
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: tempo-distributor
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: tempo
+    app.kubernetes.io/component: distributor
+    app.kubernetes.io/part-of: greenlang-observability
+    app.kubernetes.io/managed-by: kubectl
+    greenlang.io/obs: "003"
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: tempo
+      app.kubernetes.io/component: distributor
+
+---
+# ---------------------------------------------------------------------------
+# PDB for Tempo Query Frontend (query path)
+# ---------------------------------------------------------------------------
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: tempo-query-frontend
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: tempo
+    app.kubernetes.io/component: query-frontend
+    app.kubernetes.io/part-of: greenlang-observability
+    app.kubernetes.io/managed-by: kubectl
+    greenlang.io/obs: "003"
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: tempo
+      app.kubernetes.io/component: query-frontend

@@ -1,0 +1,140 @@
+{{- /*
+GreenLang Grafana - grafana.ini ConfigMap
+GreenLang Climate OS | OBS-002
+*/ -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "grafana.fullname" . }}-grafana-ini
+  namespace: {{ include "grafana.namespace" . }}
+  labels:
+    {{- include "grafana.labels" . | nindent 4 }}
+data:
+  grafana.ini: |
+    [server]
+    protocol = http
+    http_port = 3000
+    domain = {{ .Values.global.domain }}
+    root_url = https://{{ .Values.global.domain }}/
+    serve_from_sub_path = false
+    enable_gzip = true
+
+    [database]
+    type = {{ .Values.grafana.database.type }}
+    {{- if eq .Values.grafana.database.type "postgres" }}
+    host = {{ .Values.grafana.database.host }}:{{ .Values.grafana.database.port }}
+    name = {{ .Values.grafana.database.name }}
+    user = {{ .Values.grafana.database.user }}
+    ssl_mode = {{ .Values.grafana.database.sslMode }}
+    ca_cert_path = {{ .Values.grafana.database.caCertPath }}
+    max_open_conn = {{ .Values.grafana.database.maxOpenConn }}
+    max_idle_conn = {{ .Values.grafana.database.maxIdleConn }}
+    conn_max_lifetime = {{ .Values.grafana.database.connMaxLifetime }}
+    {{- end }}
+
+    {{- if .Values.grafana.redis.enabled }}
+    [remote_cache]
+    type = redis
+    connstr = addr={{ .Values.grafana.redis.host }}:{{ .Values.grafana.redis.port }},pool_size={{ .Values.grafana.redis.poolSize }},db={{ .Values.grafana.redis.db }}{{- if .Values.grafana.redis.ssl }},ssl=true{{- end }}
+    {{- end }}
+
+    [security]
+    admin_user = {{ .Values.grafana.security.adminUser }}
+    disable_gravatar = {{ .Values.grafana.security.disableGravatar }}
+    cookie_secure = {{ .Values.grafana.security.cookieSecure }}
+    cookie_samesite = {{ .Values.grafana.security.cookieSamesite }}
+    allow_embedding = {{ .Values.grafana.security.allowEmbedding }}
+    strict_transport_security = {{ .Values.grafana.security.strictTransportSecurity }}
+    strict_transport_security_max_age_seconds = {{ .Values.grafana.security.strictTransportSecurityMaxAge }}
+    strict_transport_security_preload = {{ .Values.grafana.security.strictTransportSecurityPreload }}
+    strict_transport_security_subdomains = {{ .Values.grafana.security.strictTransportSecuritySubdomains }}
+    x_content_type_options = {{ .Values.grafana.security.xContentTypeOptions }}
+    x_xss_protection = {{ .Values.grafana.security.xXssProtection }}
+    content_security_policy = {{ .Values.grafana.security.contentSecurityPolicy }}
+    angular_support_enabled = {{ .Values.grafana.security.angularSupportEnabled }}
+
+    {{- if .Values.grafana.oauth.enabled }}
+    [auth.generic_oauth]
+    enabled = true
+    name = {{ .Values.grafana.oauth.name }}
+    allow_sign_up = {{ .Values.grafana.oauth.allowSignUp }}
+    auto_login = {{ .Values.grafana.oauth.autoLogin }}
+    scopes = {{ .Values.grafana.oauth.scopes }}
+    auth_url = {{ .Values.grafana.oauth.authUrl }}
+    token_url = {{ .Values.grafana.oauth.tokenUrl }}
+    api_url = {{ .Values.grafana.oauth.apiUrl }}
+    role_attribute_path = {{ .Values.grafana.oauth.roleAttributePath }}
+    groups_attribute_path = {{ .Values.grafana.oauth.groupsAttributePath }}
+    allowed_groups = {{ .Values.grafana.oauth.allowedGroups }}
+    use_pkce = {{ .Values.grafana.oauth.usePkce }}
+    use_refresh_token = {{ .Values.grafana.oauth.useRefreshToken }}
+    {{- end }}
+
+    [unified_alerting]
+    enabled = {{ .Values.grafana.unifiedAlerting.enabled }}
+    execute_alerts = {{ .Values.grafana.unifiedAlerting.executeAlerts }}
+    evaluation_timeout = {{ .Values.grafana.unifiedAlerting.evaluationTimeout }}
+    max_attempts = {{ .Values.grafana.unifiedAlerting.maxAttempts }}
+    min_interval = {{ .Values.grafana.unifiedAlerting.minInterval }}
+    {{- if .Values.grafana.unifiedAlerting.ha.enabled }}
+    [unified_alerting.ha]
+    listen_address = :{{ .Values.grafana.unifiedAlerting.ha.listenPort }}
+    peer_timeout = {{ .Values.grafana.unifiedAlerting.ha.peerTimeout }}
+    gossip_interval = {{ .Values.grafana.unifiedAlerting.ha.gossipInterval }}
+    {{- end }}
+
+    [alerting]
+    enabled = false
+
+    {{- if .Values.grafana.metrics.enabled }}
+    [metrics]
+    enabled = true
+    interval_seconds = {{ .Values.grafana.metrics.intervalSeconds }}
+    {{- if .Values.grafana.metrics.basicAuth.enabled }}
+    basic_auth_username = $__file{{'{'}}'/etc/grafana/secrets/metrics-username'{{'}'}}
+    basic_auth_password = $__file{{'{'}}'/etc/grafana/secrets/metrics-password'{{'}'}}
+    {{- end }}
+    {{- end }}
+
+    {{- if .Values.grafana.rendering.enabled }}
+    [rendering]
+    server_url = {{ .Values.grafana.rendering.serverUrl }}
+    callback_url = {{ .Values.grafana.rendering.callbackUrl }}
+    concurrent_render_request_limit = {{ .Values.grafana.rendering.concurrentLimit }}
+    {{- end }}
+
+    {{- if .Values.grafana.smtp.enabled }}
+    [smtp]
+    enabled = true
+    host = {{ .Values.grafana.smtp.host }}:{{ .Values.grafana.smtp.port }}
+    user = {{ .Values.grafana.smtp.user }}
+    from_address = {{ .Values.grafana.smtp.fromAddress }}
+    from_name = {{ .Values.grafana.smtp.fromName }}
+    startTLS_policy = {{ .Values.grafana.smtp.startTlsPolicy }}
+    {{- end }}
+
+    [feature_toggles]
+    {{- if .Values.grafana.featureToggles }}
+    enable = {{ join " " .Values.grafana.featureToggles }}
+    {{- end }}
+
+    [log]
+    mode = console
+    level = info
+
+    [log.console]
+    format = json
+
+    [analytics]
+    reporting_enabled = false
+    check_for_updates = false
+    check_for_plugin_updates = false
+
+    [users]
+    default_theme = dark
+    allow_org_create = false
+
+    [auth]
+    login_maximum_inactive_lifetime_duration = 30m
+    login_maximum_lifetime_duration = 4h
+    token_rotation_interval_minutes = 10

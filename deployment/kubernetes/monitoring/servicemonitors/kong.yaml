@@ -1,0 +1,289 @@
+# ============================================================================
+# Kong API Gateway ServiceMonitor
+# ============================================================================
+# Prometheus ServiceMonitor for Kong API Gateway.
+# Monitors request rates, latencies, route-level metrics, and plugin performance.
+#
+# Target Service: kong
+# Scrape Path: /metrics (Prometheus plugin)
+# Scrape Interval: 15 seconds
+#
+# Created: 2026-02-06
+# Team: Monitoring & Observability
+# PRD: OBS-001 - Prometheus Metrics Collection
+# Related: INFRA-006 - Kong API Gateway
+# ============================================================================
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: kong
+  namespace: monitoring
+  labels:
+    app: kong
+    app.kubernetes.io/name: kong
+    app.kubernetes.io/component: api-gateway
+    app.kubernetes.io/part-of: greenlang
+    release: prometheus
+    team: platform
+    tier: infrastructure
+  annotations:
+    description: "ServiceMonitor for Kong API Gateway via Prometheus plugin"
+    prometheus.io/docs: "https://docs.greenlang.ai/observability/kong-metrics"
+spec:
+  # Job label for Prometheus
+  jobLabel: kong
+
+  # Selector for Kong service
+  selector:
+    matchLabels:
+      app: kong
+    matchExpressions:
+      - key: monitoring
+        operator: NotIn
+        values: ["disabled"]
+
+  # Target namespaces
+  namespaceSelector:
+    matchNames:
+      - kong
+      - kong-gateway
+      - greenlang
+      - ingress-nginx
+
+  # Endpoint configuration
+  endpoints:
+    # Main Prometheus plugin metrics endpoint
+    - port: metrics
+      interval: 15s
+      scrapeTimeout: 10s
+      path: /metrics
+      scheme: http
+      honorLabels: true
+
+      # Relabelings for target labels
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_service_name]
+          targetLabel: service
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod
+        - sourceLabels: [__meta_kubernetes_pod_node_name]
+          targetLabel: node
+        - sourceLabels: [__meta_kubernetes_pod_label_app_kubernetes_io_instance]
+          targetLabel: instance_name
+        - sourceLabels: []
+          targetLabel: application
+          replacement: "kong"
+        - sourceLabels: []
+          targetLabel: component
+          replacement: "api-gateway"
+
+      # Metric relabelings
+      metricRelabelings:
+        # Keep Kong core metrics
+        - sourceLabels: [__name__]
+          regex: 'kong_.*'
+          action: keep
+
+        # Keep HTTP request metrics
+        - sourceLabels: [__name__]
+          regex: 'kong_http_requests_total'
+          action: keep
+
+        # Keep latency metrics
+        - sourceLabels: [__name__]
+          regex: 'kong_(request_latency_ms|upstream_latency_ms|kong_latency_ms).*'
+          action: keep
+
+        # Keep bandwidth metrics
+        - sourceLabels: [__name__]
+          regex: 'kong_bandwidth_bytes'
+          action: keep
+
+        # Keep connection metrics
+        - sourceLabels: [__name__]
+          regex: 'kong_(nginx_connections_.*|nginx_requests_total)'
+          action: keep
+
+        # Keep upstream health metrics
+        - sourceLabels: [__name__]
+          regex: 'kong_upstream_target_health'
+          action: keep
+
+        # Keep data plane status
+        - sourceLabels: [__name__]
+          regex: 'kong_dataplane_.*'
+          action: keep
+
+        # Keep database metrics
+        - sourceLabels: [__name__]
+          regex: 'kong_db_.*'
+          action: keep
+
+        # Keep memory metrics
+        - sourceLabels: [__name__]
+          regex: 'kong_(memory_.*|shared_dict_.*)'
+          action: keep
+
+        # Add route labels for better grouping
+        - sourceLabels: [route]
+          regex: '(.+)'
+          targetLabel: api_route
+          replacement: '${1}'
+
+        # Add service labels
+        - sourceLabels: [service]
+          regex: '(.+)'
+          targetLabel: upstream_service
+          replacement: '${1}'
+
+    # Admin API metrics (if exposed)
+    - port: admin
+      interval: 30s
+      scrapeTimeout: 10s
+      path: /metrics
+      scheme: http
+      honorLabels: true
+
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_service_name]
+          targetLabel: service
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace
+        - sourceLabels: []
+          targetLabel: endpoint
+          replacement: "admin"
+
+---
+# ============================================================================
+# Kong Rate Limiting Metrics
+# ============================================================================
+# Additional ServiceMonitor for rate limiting specific metrics.
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: kong-rate-limiting
+  namespace: monitoring
+  labels:
+    app: kong-rate-limiting
+    app.kubernetes.io/name: kong
+    app.kubernetes.io/component: rate-limiting
+    app.kubernetes.io/part-of: greenlang
+    release: prometheus
+    team: platform
+  annotations:
+    description: "ServiceMonitor for Kong rate limiting metrics"
+spec:
+  jobLabel: kong-rate-limiting
+
+  selector:
+    matchLabels:
+      app: kong
+      component: rate-limiter
+
+  namespaceSelector:
+    matchNames:
+      - kong
+      - kong-gateway
+      - greenlang
+
+  endpoints:
+    - port: metrics
+      interval: 15s
+      scrapeTimeout: 10s
+      path: /metrics
+      scheme: http
+      honorLabels: true
+
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_service_name]
+          targetLabel: service
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace
+        - sourceLabels: []
+          targetLabel: component
+          replacement: "rate-limiting"
+
+      metricRelabelings:
+        # Keep rate limiting metrics
+        - sourceLabels: [__name__]
+          regex: 'kong_rate_limiting_.*'
+          action: keep
+
+        # Keep counter metrics
+        - sourceLabels: [__name__]
+          regex: 'kong_.*_rate_limit_.*'
+          action: keep
+
+---
+# ============================================================================
+# Kong Ingress Controller ServiceMonitor
+# ============================================================================
+# Monitoring for Kong Ingress Controller (KIC).
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: kong-ingress-controller
+  namespace: monitoring
+  labels:
+    app: kong-ingress-controller
+    app.kubernetes.io/name: kong-ingress-controller
+    app.kubernetes.io/component: ingress-controller
+    app.kubernetes.io/part-of: greenlang
+    release: prometheus
+    team: platform
+  annotations:
+    description: "ServiceMonitor for Kong Ingress Controller"
+spec:
+  jobLabel: kong-ingress-controller
+
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: kong-ingress-controller
+
+  namespaceSelector:
+    matchNames:
+      - kong
+      - kong-gateway
+
+  endpoints:
+    - port: metrics
+      interval: 15s
+      scrapeTimeout: 10s
+      path: /metrics
+      scheme: http
+      honorLabels: true
+
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_service_name]
+          targetLabel: service
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace
+        - sourceLabels: []
+          targetLabel: component
+          replacement: "ingress-controller"
+
+      metricRelabelings:
+        # Keep KIC metrics
+        - sourceLabels: [__name__]
+          regex: 'ingress_controller_.*'
+          action: keep
+
+        # Keep configuration sync metrics
+        - sourceLabels: [__name__]
+          regex: 'controller_runtime_.*'
+          action: keep
+
+        # Keep workqueue metrics
+        - sourceLabels: [__name__]
+          regex: 'workqueue_.*'
+          action: keep
+
+        # Keep reconcile metrics
+        - sourceLabels: [__name__]
+          regex: 'controller_.*_reconcile_.*'
+          action: keep

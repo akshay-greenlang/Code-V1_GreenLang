@@ -1,0 +1,242 @@
+{{/*
+# =============================================================================
+# GreenLang Tempo - ServiceMonitor
+# GreenLang Climate OS | OBS-003
+# =============================================================================
+# Prometheus Operator ServiceMonitors for all Tempo components.
+# Scrapes /metrics endpoint on HTTP port 3200.
+# =============================================================================
+*/}}
+{{- if .Values.serviceMonitor.enabled }}
+
+{{- if eq .Values.tempo.mode "distributed" }}
+---
+# Distributor ServiceMonitor
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "tempo.fullname" . }}-distributor
+  namespace: {{ include "tempo.namespace" . }}
+  labels:
+    {{- include "tempo.distributorLabels" . | nindent 4 }}
+    {{- with .Values.serviceMonitor.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- with .Values.serviceMonitor.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  namespaceSelector:
+    matchNames:
+      - {{ include "tempo.namespace" . }}
+  selector:
+    matchLabels:
+      {{- include "tempo.distributorSelectorLabels" . | nindent 6 }}
+  endpoints:
+    - port: http-metrics
+      interval: {{ .Values.serviceMonitor.interval | default "30s" }}
+      scrapeTimeout: {{ .Values.serviceMonitor.scrapeTimeout | default "10s" }}
+      path: /metrics
+      scheme: http
+      honorLabels: true
+      relabelings:
+        - action: replace
+          replacement: distributor
+          targetLabel: component
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace
+
+---
+# Ingester ServiceMonitor
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "tempo.fullname" . }}-ingester
+  namespace: {{ include "tempo.namespace" . }}
+  labels:
+    {{- include "tempo.ingesterLabels" . | nindent 4 }}
+    {{- with .Values.serviceMonitor.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  namespaceSelector:
+    matchNames:
+      - {{ include "tempo.namespace" . }}
+  selector:
+    matchLabels:
+      {{- include "tempo.ingesterSelectorLabels" . | nindent 6 }}
+  endpoints:
+    - port: http-metrics
+      interval: {{ .Values.serviceMonitor.interval | default "30s" }}
+      scrapeTimeout: {{ .Values.serviceMonitor.scrapeTimeout | default "10s" }}
+      path: /metrics
+      scheme: http
+      honorLabels: true
+      relabelings:
+        - action: replace
+          replacement: ingester
+          targetLabel: component
+
+---
+# Querier ServiceMonitor
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "tempo.fullname" . }}-querier
+  namespace: {{ include "tempo.namespace" . }}
+  labels:
+    {{- include "tempo.querierLabels" . | nindent 4 }}
+    {{- with .Values.serviceMonitor.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  namespaceSelector:
+    matchNames:
+      - {{ include "tempo.namespace" . }}
+  selector:
+    matchLabels:
+      {{- include "tempo.querierSelectorLabels" . | nindent 6 }}
+  endpoints:
+    - port: http-metrics
+      interval: {{ .Values.serviceMonitor.interval | default "30s" }}
+      scrapeTimeout: {{ .Values.serviceMonitor.scrapeTimeout | default "10s" }}
+      path: /metrics
+      scheme: http
+      honorLabels: true
+      relabelings:
+        - action: replace
+          replacement: querier
+          targetLabel: component
+
+---
+# Query Frontend ServiceMonitor
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "tempo.fullname" . }}-query-frontend
+  namespace: {{ include "tempo.namespace" . }}
+  labels:
+    {{- include "tempo.queryFrontendLabels" . | nindent 4 }}
+    {{- with .Values.serviceMonitor.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  namespaceSelector:
+    matchNames:
+      - {{ include "tempo.namespace" . }}
+  selector:
+    matchLabels:
+      {{- include "tempo.queryFrontendSelectorLabels" . | nindent 6 }}
+  endpoints:
+    - port: http-metrics
+      interval: {{ .Values.serviceMonitor.interval | default "30s" }}
+      scrapeTimeout: {{ .Values.serviceMonitor.scrapeTimeout | default "10s" }}
+      path: /metrics
+      scheme: http
+      honorLabels: true
+      relabelings:
+        - action: replace
+          replacement: query-frontend
+          targetLabel: component
+
+---
+# Compactor ServiceMonitor
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "tempo.fullname" . }}-compactor
+  namespace: {{ include "tempo.namespace" . }}
+  labels:
+    {{- include "tempo.compactorLabels" . | nindent 4 }}
+    {{- with .Values.serviceMonitor.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  namespaceSelector:
+    matchNames:
+      - {{ include "tempo.namespace" . }}
+  selector:
+    matchLabels:
+      {{- include "tempo.compactorSelectorLabels" . | nindent 6 }}
+  endpoints:
+    - port: http-metrics
+      interval: {{ .Values.serviceMonitor.interval | default "30s" }}
+      scrapeTimeout: {{ .Values.serviceMonitor.scrapeTimeout | default "10s" }}
+      path: /metrics
+      scheme: http
+      honorLabels: true
+      relabelings:
+        - action: replace
+          replacement: compactor
+          targetLabel: component
+
+{{- if .Values.tempo.metricsGenerator.enabled }}
+---
+# Metrics Generator ServiceMonitor
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "tempo.fullname" . }}-metrics-generator
+  namespace: {{ include "tempo.namespace" . }}
+  labels:
+    {{- include "tempo.metricsGeneratorLabels" . | nindent 4 }}
+    {{- with .Values.serviceMonitor.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  namespaceSelector:
+    matchNames:
+      - {{ include "tempo.namespace" . }}
+  selector:
+    matchLabels:
+      {{- include "tempo.metricsGeneratorSelectorLabels" . | nindent 6 }}
+  endpoints:
+    - port: http-metrics
+      interval: {{ .Values.serviceMonitor.interval | default "30s" }}
+      scrapeTimeout: {{ .Values.serviceMonitor.scrapeTimeout | default "10s" }}
+      path: /metrics
+      scheme: http
+      honorLabels: true
+      relabelings:
+        - action: replace
+          replacement: metrics-generator
+          targetLabel: component
+{{- end }}
+
+{{- else }}
+---
+# Monolithic ServiceMonitor
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "tempo.fullname" . }}
+  namespace: {{ include "tempo.namespace" . }}
+  labels:
+    {{- include "tempo.monolithicLabels" . | nindent 4 }}
+    {{- with .Values.serviceMonitor.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  namespaceSelector:
+    matchNames:
+      - {{ include "tempo.namespace" . }}
+  selector:
+    matchLabels:
+      {{- include "tempo.monolithicSelectorLabels" . | nindent 6 }}
+  endpoints:
+    - port: http-metrics
+      interval: {{ .Values.serviceMonitor.interval | default "30s" }}
+      scrapeTimeout: {{ .Values.serviceMonitor.scrapeTimeout | default "10s" }}
+      path: /metrics
+      scheme: http
+      honorLabels: true
+      relabelings:
+        - action: replace
+          replacement: monolithic
+          targetLabel: component
+{{- end }}
+
+{{- end }}

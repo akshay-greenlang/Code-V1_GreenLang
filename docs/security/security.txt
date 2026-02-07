@@ -1,0 +1,38 @@
+# GreenLang Security Contact Information
+# RFC 9116 - A File Format to Aid in Security Vulnerability Disclosure
+# https://www.rfc-editor.org/rfc/rfc9116
+
+Contact: mailto:security@greenlang.io
+Contact: https://greenlang.io/security/report
+Encryption: https://greenlang.io/.well-known/pgp-key.txt
+Acknowledgments: https://greenlang.io/security/hall-of-fame
+Policy: https://greenlang.io/security/disclosure-policy
+Hiring: https://greenlang.io/careers/security
+Preferred-Languages: en
+Canonical: https://greenlang.io/.well-known/security.txt
+Expires: 2027-02-06T00:00:00.000Z
+
+# GreenLang Climate OS - Security Response
+#
+# We take security seriously. If you believe you have found a security
+# vulnerability in GreenLang, please report it to us through our
+# Vulnerability Disclosure Program (VDP).
+#
+# What to expect:
+# - Acknowledgment within 24 hours
+# - Initial assessment within 5 business days
+# - Regular updates on remediation progress
+# - Bounty awards for valid findings
+#
+# Scope:
+# - GreenLang Cloud Platform (app.greenlang.io)
+# - GreenLang API (api.greenlang.io)
+# - GreenLang Open Source Projects (github.com/greenlang)
+#
+# Out of Scope:
+# - Social engineering attacks
+# - Physical security issues
+# - Denial of service attacks
+# - Spam or social media hijacking
+#
+# Thank you for helping keep GreenLang and our users secure.

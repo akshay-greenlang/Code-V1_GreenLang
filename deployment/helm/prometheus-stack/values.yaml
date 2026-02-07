@@ -1,0 +1,438 @@
+# =============================================================================
+# GreenLang Prometheus Stack - Base Values
+# GreenLang Climate OS | OBS-001
+# =============================================================================
+# Production-grade Prometheus configuration with HA, Thanos sidecar,
+# Alertmanager routing, and Grafana datasources.
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# Global Configuration
+# ---------------------------------------------------------------------------
+global:
+  # Environment-specific values (override in values-{env}.yaml)
+  environment: prod
+  clusterName: greenlang-prod
+  awsRegion: eu-west-1
+
+# ---------------------------------------------------------------------------
+# Prometheus Enabled Flag
+# ---------------------------------------------------------------------------
+prometheus:
+  enabled: true
+
+# ---------------------------------------------------------------------------
+# PushGateway Enabled Flag
+# ---------------------------------------------------------------------------
+pushgateway:
+  enabled: true
+
+# ---------------------------------------------------------------------------
+# kube-prometheus-stack Configuration
+# ---------------------------------------------------------------------------
+kube-prometheus-stack:
+  # -------------------------------------------------------------------------
+  # Full Name Override
+  # -------------------------------------------------------------------------
+  fullnameOverride: gl-prometheus
+
+  # -------------------------------------------------------------------------
+  # Prometheus Server
+  # -------------------------------------------------------------------------
+  prometheus:
+    enabled: true
+
+    prometheusSpec:
+      # HA Configuration
+      replicas: 2
+
+      # Thanos Sidecar
+      thanos:
+        image: quay.io/thanos/thanos:v0.34.1
+        objectStorageConfig:
+          existingSecret:
+            name: thanos-objstore-secret
+            key: objstore.yml
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: 500m
+            memory: 1Gi
+
+      # External labels for multi-cluster identification
+      externalLabels:
+        cluster: greenlang-prod
+        region: eu-west-1
+
+      # Retention settings (local storage)
+      retention: 7d
+      retentionSize: 50GB
+
+      # Storage
+      storageSpec:
+        volumeClaimTemplate:
+          spec:
+            storageClassName: gp3
+            accessModes:
+              - ReadWriteOnce
+            resources:
+              requests:
+                storage: 50Gi
+
+      # Resources
+      resources:
+        requests:
+          cpu: 500m
+          memory: 2Gi
+        limits:
+          cpu: 2000m
+          memory: 8Gi
+
+      # Pod anti-affinity for HA
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  app.kubernetes.io/name: prometheus
+              topologyKey: kubernetes.io/hostname
+
+      # Service discovery - use all ServiceMonitors/PodMonitors
+      serviceMonitorSelectorNilUsesHelmValues: false
+      podMonitorSelectorNilUsesHelmValues: false
+      ruleSelectorNilUsesHelmValues: false
+
+      # Additional scrape configs for GreenLang agents
+      additionalScrapeConfigs:
+        - job_name: 'greenlang-agents'
+          kubernetes_sd_configs:
+            - role: pod
+              namespaces:
+                names:
+                  - greenlang
+                  - gl-agents
+                  - gl-fuel
+                  - gl-cbam
+                  - gl-building
+          relabel_configs:
+            - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+              action: keep
+              regex: "true"
+            - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+              action: replace
+              target_label: __metrics_path__
+              regex: (.+)
+            - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+              action: replace
+              regex: ([^:]+)(?::\d+)?;(\d+)
+              replacement: $1:$2
+              target_label: __address__
+            - source_labels: [__meta_kubernetes_namespace]
+              action: replace
+              target_label: namespace
+            - source_labels: [__meta_kubernetes_pod_name]
+              action: replace
+              target_label: pod
+            - source_labels: [__meta_kubernetes_pod_label_app]
+              action: replace
+              target_label: app
+
+    # ServiceAccount with IRSA annotation
+    serviceAccount:
+      create: true
+      annotations:
+        eks.amazonaws.com/role-arn: "" # Set via Terraform
+
+  # -------------------------------------------------------------------------
+  # Alertmanager
+  # -------------------------------------------------------------------------
+  alertmanager:
+    enabled: true
+
+    alertmanagerSpec:
+      replicas: 2
+
+      storage:
+        volumeClaimTemplate:
+          spec:
+            storageClassName: gp3
+            resources:
+              requests:
+                storage: 10Gi
+
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          cpu: 500m
+          memory: 512Mi
+
+    config:
+      global:
+        resolve_timeout: 5m
+        slack_api_url_file: /etc/alertmanager/secrets/slack-webhook
+
+      inhibit_rules:
+        - source_matchers:
+            - severity = critical
+          target_matchers:
+            - severity = warning
+          equal:
+            - alertname
+            - cluster
+            - namespace
+
+      route:
+        group_by:
+          - alertname
+          - cluster
+          - service
+          - namespace
+        group_wait: 30s
+        group_interval: 5m
+        repeat_interval: 4h
+        receiver: 'default'
+        routes:
+          - match:
+              severity: critical
+            receiver: 'pagerduty-critical'
+            continue: true
+          - match:
+              severity: critical
+            receiver: 'slack-critical'
+          - match:
+              severity: warning
+            receiver: 'slack-warnings'
+          - match:
+              alertname: Watchdog
+            receiver: 'null'
+
+      receivers:
+        - name: 'default'
+          slack_configs:
+            - channel: '#greenlang-alerts'
+              send_resolved: true
+              title: '[{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}] {{ .GroupLabels.SortedPairs.Values | join " " }}'
+              text: |-
+                {{ range .Alerts -}}
+                *Alert:* {{ .Annotations.summary }}
+                *Description:* {{ .Annotations.description }}
+                *Severity:* {{ .Labels.severity }}
+                *Cluster:* {{ .Labels.cluster }}
+                {{ end }}
+
+        - name: 'slack-critical'
+          slack_configs:
+            - channel: '#greenlang-alerts'
+              send_resolved: true
+              color: '{{ if eq .Status "firing" }}danger{{ else }}good{{ end }}'
+              title: ':rotating_light: [CRITICAL] {{ .GroupLabels.SortedPairs.Values | join " " }}'
+
+        - name: 'slack-warnings'
+          slack_configs:
+            - channel: '#greenlang-alerts-warning'
+              send_resolved: true
+              color: '{{ if eq .Status "firing" }}warning{{ else }}good{{ end }}'
+
+        - name: 'pagerduty-critical'
+          pagerduty_configs:
+            - service_key_file: /etc/alertmanager/secrets/pagerduty-key
+              severity: critical
+
+        - name: 'null'
+
+  # -------------------------------------------------------------------------
+  # Grafana
+  # -------------------------------------------------------------------------
+  grafana:
+    enabled: true
+
+    adminPassword: "" # Set via secret
+
+    persistence:
+      enabled: true
+      size: 10Gi
+      storageClassName: gp3
+
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+
+    # Datasources
+    additionalDataSources:
+      - name: Prometheus
+        type: prometheus
+        url: http://gl-prometheus-prometheus.monitoring.svc:9090
+        isDefault: true
+        access: proxy
+
+      - name: Thanos
+        type: prometheus
+        url: http://thanos-query.monitoring.svc:9090
+        access: proxy
+        jsonData:
+          timeInterval: "15s"
+
+      - name: Alertmanager
+        type: alertmanager
+        url: http://gl-prometheus-alertmanager.monitoring.svc:9093
+        access: proxy
+        jsonData:
+          implementation: prometheus
+
+      - name: Loki
+        type: loki
+        url: http://loki-gateway.monitoring.svc:80
+        access: proxy
+
+    # Dashboard providers
+    dashboardProviders:
+      dashboardproviders.yaml:
+        apiVersion: 1
+        providers:
+          - name: 'greenlang'
+            orgId: 1
+            folder: 'GreenLang'
+            type: file
+            disableDeletion: false
+            editable: true
+            options:
+              path: /var/lib/grafana/dashboards/greenlang
+
+    # Sidecar for dashboard loading
+    sidecar:
+      dashboards:
+        enabled: true
+        label: grafana_dashboard
+        labelValue: "1"
+        searchNamespace: ALL
+      datasources:
+        enabled: true
+        label: grafana_datasource
+
+  # -------------------------------------------------------------------------
+  # kube-state-metrics
+  # -------------------------------------------------------------------------
+  kubeStateMetrics:
+    enabled: true
+
+  # -------------------------------------------------------------------------
+  # node-exporter
+  # -------------------------------------------------------------------------
+  nodeExporter:
+    enabled: true
+
+  # -------------------------------------------------------------------------
+  # Prometheus Operator
+  # -------------------------------------------------------------------------
+  prometheusOperator:
+    enabled: true
+
+    admissionWebhooks:
+      enabled: true
+      patch:
+        enabled: true
+
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 200m
+        memory: 256Mi
+
+  # -------------------------------------------------------------------------
+  # Default PrometheusRules
+  # -------------------------------------------------------------------------
+  defaultRules:
+    create: true
+    rules:
+      alertmanager: true
+      etcd: true
+      configReloaders: true
+      general: true
+      k8s: true
+      kubeApiserverAvailability: true
+      kubeApiserverBurnrate: true
+      kubeApiserverHistogram: true
+      kubeApiserverSlos: true
+      kubeControllerManager: true
+      kubelet: true
+      kubeProxy: true
+      kubePrometheusGeneral: true
+      kubePrometheusNodeRecording: true
+      kubernetesApps: true
+      kubernetesResources: true
+      kubernetesStorage: true
+      kubernetesSystem: true
+      kubeSchedulerAlerting: true
+      kubeSchedulerRecording: true
+      kubeStateMetrics: true
+      network: true
+      node: true
+      nodeExporterAlerting: true
+      nodeExporterRecording: true
+      prometheus: true
+      prometheusOperator: true
+
+# ---------------------------------------------------------------------------
+# PushGateway Configuration (via alias)
+# ---------------------------------------------------------------------------
+pushgateway:
+  enabled: true
+  replicaCount: 2
+
+  persistentVolume:
+    enabled: true
+    size: 2Gi
+    storageClass: gp3
+
+  service:
+    type: ClusterIP
+    port: 9091
+
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+  podSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 65534
+    fsGroup: 65534
+
+  securityContext:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            labelSelector:
+              matchLabels:
+                app: prometheus-pushgateway
+            topologyKey: kubernetes.io/hostname
+
+  serviceMonitor:
+    enabled: true
+    namespace: monitoring
+    interval: 15s
+    additionalLabels:
+      release: gl-prometheus
+    honorLabels: true
+
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 1

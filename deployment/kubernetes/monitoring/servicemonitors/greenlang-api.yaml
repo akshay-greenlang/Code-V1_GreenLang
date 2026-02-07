@@ -1,0 +1,180 @@
+# ============================================================================
+# GreenLang API ServiceMonitor
+# ============================================================================
+# Prometheus ServiceMonitor for the main GreenLang API service.
+# Provides core application metrics for request handling, latency, and errors.
+#
+# Target Service: greenlang-api
+# Scrape Path: /metrics
+# Scrape Interval: 15 seconds
+#
+# Created: 2026-02-06
+# Team: Monitoring & Observability
+# PRD: OBS-001 - Prometheus Metrics Collection
+# ============================================================================
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: greenlang-api
+  namespace: monitoring
+  labels:
+    app: greenlang-api
+    app.kubernetes.io/name: greenlang-api
+    app.kubernetes.io/component: api
+    app.kubernetes.io/part-of: greenlang
+    release: prometheus
+    team: greenlang
+    tier: application
+  annotations:
+    description: "ServiceMonitor for GreenLang main API service"
+    prometheus.io/docs: "https://docs.greenlang.ai/observability/servicemonitors"
+spec:
+  # Job label for Prometheus
+  jobLabel: greenlang-api
+
+  # Selector for target services
+  selector:
+    matchLabels:
+      app: greenlang-api
+    matchExpressions:
+      - key: monitoring
+        operator: NotIn
+        values: ["disabled"]
+
+  # Target namespaces
+  namespaceSelector:
+    matchNames:
+      - greenlang
+      - greenlang-prod
+      - greenlang-staging
+      - greenlang-dev
+
+  # Endpoint configuration
+  endpoints:
+    - port: metrics
+      interval: 15s
+      scrapeTimeout: 10s
+      path: /metrics
+      scheme: http
+      honorLabels: true
+
+      # Relabelings for target labels
+      relabelings:
+        # Service name label
+        - sourceLabels: [__meta_kubernetes_service_name]
+          targetLabel: service
+        # Namespace label
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace
+        # Pod name label
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod
+        # Pod IP label
+        - sourceLabels: [__meta_kubernetes_pod_ip]
+          targetLabel: pod_ip
+        # Node label
+        - sourceLabels: [__meta_kubernetes_pod_node_name]
+          targetLabel: node
+        # Version label from pod annotation
+        - sourceLabels: [__meta_kubernetes_pod_annotation_app_version]
+          targetLabel: version
+        # Static application label
+        - sourceLabels: []
+          targetLabel: application
+          replacement: "greenlang-api"
+        # Component label
+        - sourceLabels: []
+          targetLabel: component
+          replacement: "api"
+
+      # Metric relabelings for better organization
+      metricRelabelings:
+        # Normalize Python metrics with greenlang prefix
+        - sourceLabels: [__name__]
+          regex: 'python_(.+)'
+          targetLabel: __name__
+          replacement: 'greenlang_python_${1}'
+
+        # Add environment label based on namespace
+        - sourceLabels: [namespace]
+          regex: '.*-prod'
+          targetLabel: environment
+          replacement: 'production'
+        - sourceLabels: [namespace]
+          regex: '.*-staging'
+          targetLabel: environment
+          replacement: 'staging'
+        - sourceLabels: [namespace]
+          regex: '.*-dev'
+          targetLabel: environment
+          replacement: 'development'
+        - sourceLabels: [namespace]
+          regex: 'greenlang$'
+          targetLabel: environment
+          replacement: 'production'
+
+        # Keep essential HTTP metrics
+        - sourceLabels: [__name__]
+          regex: '(http_request_duration_seconds|http_requests_total|http_request_size_bytes|http_response_size_bytes).*'
+          action: keep
+
+        # Keep GreenLang specific metrics
+        - sourceLabels: [__name__]
+          regex: '(gl_|greenlang_).*'
+          action: keep
+
+        # Keep standard process metrics
+        - sourceLabels: [__name__]
+          regex: '(process_|python_gc_).*'
+          action: keep
+
+        # Drop high-cardinality debug metrics
+        - sourceLabels: [__name__]
+          regex: '.*_debug_.*'
+          action: drop
+
+    # Secondary endpoint for health metrics (optional)
+    - port: http
+      interval: 30s
+      scrapeTimeout: 10s
+      path: /api/v1/health/metrics
+      scheme: http
+      honorLabels: true
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_service_name]
+          targetLabel: service
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace
+
+---
+# ============================================================================
+# GreenLang API Service (for reference)
+# ============================================================================
+# This Service ensures the API is discoverable by the ServiceMonitor.
+# Only deploy if a metrics service doesn't already exist.
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: greenlang-api-metrics
+  namespace: greenlang
+  labels:
+    app: greenlang-api
+    component: metrics
+    monitoring: enabled
+    app.kubernetes.io/name: greenlang-api
+    app.kubernetes.io/component: metrics
+spec:
+  type: ClusterIP
+  selector:
+    app: greenlang-api
+  ports:
+    - name: metrics
+      port: 9090
+      targetPort: 9090
+      protocol: TCP
+    - name: http
+      port: 8000
+      targetPort: 8000
+      protocol: TCP

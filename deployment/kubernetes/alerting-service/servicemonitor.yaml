@@ -1,0 +1,50 @@
+# =============================================================================
+# GreenLang Alerting Service - Prometheus ServiceMonitor
+# =============================================================================
+# Configures Prometheus to scrape metrics from the alerting service.
+# Scrape interval: 15s, port 8080, path /metrics.
+# PRD: OBS-004
+# =============================================================================
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: alerting-service
+  namespace: monitoring
+  labels:
+    app: alerting-service
+    app.kubernetes.io/name: alerting-service
+    app.kubernetes.io/component: alerting
+    app.kubernetes.io/part-of: greenlang
+    prometheus: kube-prometheus
+    release: gl-kube-prometheus
+    greenlang.io/component: obs-004
+  annotations:
+    description: "ServiceMonitor for GreenLang Alerting Service"
+    prd: OBS-004
+spec:
+  jobLabel: alerting-service
+  namespaceSelector:
+    matchNames:
+      - greenlang-alerting
+  selector:
+    matchLabels:
+      app: alerting-service
+      app.kubernetes.io/component: alerting
+  endpoints:
+    - port: http
+      interval: 15s
+      scrapeTimeout: 10s
+      path: /metrics
+      scheme: http
+      metricRelabelings:
+        # Drop high-cardinality internal Go metrics
+        - sourceLabels: [__name__]
+          regex: "go_gc_.*"
+          action: drop
+        # Add service label
+        - targetLabel: service
+          replacement: alerting-service
+        # Add component label
+        - targetLabel: component
+          replacement: obs-004

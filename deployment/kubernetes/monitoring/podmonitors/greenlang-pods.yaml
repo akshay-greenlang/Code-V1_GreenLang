@@ -1,0 +1,355 @@
+# ============================================================================
+# GreenLang PodMonitor
+# ============================================================================
+# Prometheus PodMonitor for all pods with prometheus.io/scrape annotation.
+# Provides automatic discovery of pods across GreenLang namespaces.
+#
+# This PodMonitor catches pods that may not have a dedicated Service,
+# such as batch jobs, cron jobs, and dynamically created agent pods.
+#
+# Created: 2026-02-06
+# Team: Monitoring & Observability
+# PRD: OBS-001 - Prometheus Metrics Collection
+# ============================================================================
+
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: greenlang-pods
+  namespace: monitoring
+  labels:
+    app: greenlang-pods
+    app.kubernetes.io/name: greenlang-pods
+    app.kubernetes.io/component: pod-discovery
+    app.kubernetes.io/part-of: greenlang
+    release: prometheus
+    team: greenlang
+  annotations:
+    description: "PodMonitor for all GreenLang pods with prometheus.io/scrape annotation"
+    prometheus.io/docs: "https://docs.greenlang.ai/observability/pod-monitoring"
+spec:
+  # Job label
+  jobLabel: greenlang-pods
+
+  # Selector for pods with prometheus annotation
+  selector:
+    matchExpressions:
+      - key: prometheus.io/scrape
+        operator: In
+        values: ["true"]
+
+  # Target namespaces
+  namespaceSelector:
+    matchNames:
+      - greenlang
+      - gl-agents
+      - gl-fuel
+      - gl-cbam
+      - gl-building
+      - gl-eudr
+      - greenlang-prod
+      - greenlang-staging
+      - greenlang-dev
+
+  # Pod metrics endpoints
+  podMetricsEndpoints:
+    - port: metrics
+      interval: 15s
+      scrapeTimeout: 10s
+      path: /metrics
+      scheme: http
+      honorLabels: true
+
+      # Relabelings for pod labels
+      relabelings:
+        # Pod name
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod
+        # Namespace
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace
+        # Node
+        - sourceLabels: [__meta_kubernetes_pod_node_name]
+          targetLabel: node
+        # Pod IP
+        - sourceLabels: [__meta_kubernetes_pod_ip]
+          targetLabel: pod_ip
+        # Application name from pod label
+        - sourceLabels: [__meta_kubernetes_pod_label_app]
+          targetLabel: app
+        # Component from pod label
+        - sourceLabels: [__meta_kubernetes_pod_label_component]
+          targetLabel: component
+        # Version from pod annotation
+        - sourceLabels: [__meta_kubernetes_pod_annotation_app_version]
+          targetLabel: version
+        # Agent ID (if applicable)
+        - sourceLabels: [__meta_kubernetes_pod_label_agent_id]
+          targetLabel: agent_id
+        # Agent type (if applicable)
+        - sourceLabels: [__meta_kubernetes_pod_label_agent_type]
+          targetLabel: agent_type
+        # Controller kind (Deployment, StatefulSet, Job, etc.)
+        - sourceLabels: [__meta_kubernetes_pod_controller_kind]
+          targetLabel: controller_kind
+        # Controller name
+        - sourceLabels: [__meta_kubernetes_pod_controller_name]
+          targetLabel: controller_name
+
+      # Metric relabelings
+      metricRelabelings:
+        # Add environment label based on namespace
+        - sourceLabels: [namespace]
+          regex: '.*-prod'
+          targetLabel: environment
+          replacement: 'production'
+        - sourceLabels: [namespace]
+          regex: '.*-staging'
+          targetLabel: environment
+          replacement: 'staging'
+        - sourceLabels: [namespace]
+          regex: '.*-dev'
+          targetLabel: environment
+          replacement: 'development'
+        - sourceLabels: [namespace]
+          regex: 'greenlang$'
+          targetLabel: environment
+          replacement: 'production'
+        - sourceLabels: [namespace]
+          regex: 'gl-.*'
+          targetLabel: environment
+          replacement: 'production'
+
+        # Drop high-cardinality debug metrics
+        - sourceLabels: [__name__]
+          regex: '.*_debug_.*'
+          action: drop
+
+        # Drop internal test metrics
+        - sourceLabels: [__name__]
+          regex: '.*_test_.*'
+          action: drop
+
+---
+# ============================================================================
+# GreenLang Jobs PodMonitor
+# ============================================================================
+# PodMonitor specifically for Job and CronJob pods.
+
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: greenlang-jobs
+  namespace: monitoring
+  labels:
+    app: greenlang-jobs
+    app.kubernetes.io/name: greenlang-jobs
+    app.kubernetes.io/component: job-monitoring
+    app.kubernetes.io/part-of: greenlang
+    release: prometheus
+    team: greenlang
+  annotations:
+    description: "PodMonitor for GreenLang batch job pods"
+spec:
+  jobLabel: greenlang-jobs
+
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: batch-job
+
+  namespaceSelector:
+    matchNames:
+      - greenlang
+      - gl-jobs
+      - greenlang-prod
+      - greenlang-staging
+
+  podMetricsEndpoints:
+    - port: metrics
+      interval: 15s
+      scrapeTimeout: 10s
+      path: /metrics
+      scheme: http
+      honorLabels: true
+
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace
+        - sourceLabels: [__meta_kubernetes_pod_label_job_name]
+          targetLabel: job_name
+        - sourceLabels: [__meta_kubernetes_pod_label_batch_kubernetes_io_job_name]
+          targetLabel: k8s_job_name
+        - sourceLabels: []
+          targetLabel: component
+          replacement: "batch-job"
+
+      metricRelabelings:
+        # Keep batch job metrics
+        - sourceLabels: [__name__]
+          regex: 'gl_batch_job_.*'
+          action: keep
+
+        # Keep job progress metrics
+        - sourceLabels: [__name__]
+          regex: 'gl_job_(progress|records_processed|errors).*'
+          action: keep
+
+---
+# ============================================================================
+# GreenLang Sidecars PodMonitor
+# ============================================================================
+# PodMonitor for sidecar containers (e.g., envoy, istio-proxy).
+
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: greenlang-sidecars
+  namespace: monitoring
+  labels:
+    app: greenlang-sidecars
+    app.kubernetes.io/name: greenlang-sidecars
+    app.kubernetes.io/component: sidecar-monitoring
+    app.kubernetes.io/part-of: greenlang
+    release: prometheus
+    team: platform
+  annotations:
+    description: "PodMonitor for GreenLang sidecar containers"
+spec:
+  jobLabel: greenlang-sidecars
+
+  selector:
+    matchExpressions:
+      - key: sidecar.istio.io/inject
+        operator: In
+        values: ["true"]
+
+  namespaceSelector:
+    matchNames:
+      - greenlang
+      - gl-agents
+      - greenlang-prod
+
+  podMetricsEndpoints:
+    # Envoy/Istio sidecar metrics
+    - port: http-envoy-prom
+      interval: 15s
+      scrapeTimeout: 10s
+      path: /stats/prometheus
+      scheme: http
+      honorLabels: true
+
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace
+        - sourceLabels: [__meta_kubernetes_pod_container_name]
+          targetLabel: container
+        - sourceLabels: []
+          targetLabel: component
+          replacement: "sidecar"
+
+      metricRelabelings:
+        # Keep Envoy metrics
+        - sourceLabels: [__name__]
+          regex: 'envoy_.*'
+          action: keep
+
+        # Keep Istio metrics
+        - sourceLabels: [__name__]
+          regex: 'istio_.*'
+          action: keep
+
+        # Drop high-cardinality internal metrics
+        - sourceLabels: [__name__]
+          regex: 'envoy_cluster_.*_membership_.*'
+          action: drop
+
+---
+# ============================================================================
+# Agent Pods PodMonitor
+# ============================================================================
+# Dedicated PodMonitor for dynamic agent pods.
+
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: agent-pods
+  namespace: monitoring
+  labels:
+    app: agent-pods
+    app.kubernetes.io/name: agent-pods
+    app.kubernetes.io/component: agent-monitoring
+    app.kubernetes.io/part-of: greenlang
+    release: prometheus
+    team: greenlang
+  annotations:
+    description: "PodMonitor for dynamically created agent pods"
+spec:
+  jobLabel: agent-pods
+
+  selector:
+    matchLabels:
+      app.kubernetes.io/managed-by: agent-factory
+
+  namespaceSelector:
+    matchNames:
+      - greenlang
+      - gl-agents
+      - gl-fuel
+      - gl-cbam
+      - gl-building
+      - gl-eudr
+
+  podMetricsEndpoints:
+    - port: metrics
+      interval: 15s
+      scrapeTimeout: 10s
+      path: /metrics
+      scheme: http
+      honorLabels: true
+
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace
+        - sourceLabels: [__meta_kubernetes_pod_label_agent_id]
+          targetLabel: agent_id
+        - sourceLabels: [__meta_kubernetes_pod_label_agent_type]
+          targetLabel: agent_type
+        - sourceLabels: [__meta_kubernetes_pod_label_agent_version]
+          targetLabel: agent_version
+        - sourceLabels: [__meta_kubernetes_pod_label_workflow_id]
+          targetLabel: workflow_id
+        - sourceLabels: []
+          targetLabel: component
+          replacement: "agent"
+
+      metricRelabelings:
+        # Keep agent execution metrics
+        - sourceLabels: [__name__]
+          regex: 'gl_agent_.*'
+          action: keep
+
+        # Keep task metrics
+        - sourceLabels: [__name__]
+          regex: 'gl_task_.*'
+          action: keep
+
+        # Keep workflow metrics
+        - sourceLabels: [__name__]
+          regex: 'gl_workflow_.*'
+          action: keep
+
+        # Keep emission calculation metrics
+        - sourceLabels: [__name__]
+          regex: 'gl_emission_.*'
+          action: keep
+
+        # Keep process metrics for resource tracking
+        - sourceLabels: [__name__]
+          regex: 'process_(cpu|resident_memory|virtual_memory|open_fds).*'
+          action: keep

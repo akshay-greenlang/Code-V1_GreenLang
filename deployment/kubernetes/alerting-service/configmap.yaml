@@ -1,0 +1,192 @@
+# =============================================================================
+# GreenLang Alerting Service - ConfigMap
+# =============================================================================
+# Configuration for alert routing, escalation policies, notification channels,
+# deduplication, rate limiting, and MTTA/MTTR analytics.
+# PRD: OBS-004
+# =============================================================================
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: alerting-service-config
+  namespace: greenlang-alerting
+  labels:
+    app.kubernetes.io/name: alerting-service
+    app.kubernetes.io/component: configuration
+    app.kubernetes.io/part-of: greenlang
+  annotations:
+    description: "Alerting Service configuration - routing, escalation, channels"
+    prd: OBS-004
+data:
+  # Environment
+  ENVIRONMENT: "production"
+
+  # Logging
+  LOG_LEVEL: "info"
+  LOG_FORMAT: "json"
+
+  # Metrics
+  METRICS_PORT: "8080"
+  METRICS_PATH: "/metrics"
+
+  # Tracing
+  TRACING_ENABLED: "true"
+  TRACING_SAMPLE_RATE: "0.1"
+  OTEL_ENDPOINT: "http://otel-collector.monitoring.svc.cluster.local:4317"
+  OTEL_SERVICE_NAME: "alerting-service"
+
+  # Alertmanager receiver
+  ALERTMANAGER_WEBHOOK_PATH: "/api/v1/alerts/webhook"
+  ALERTMANAGER_ENDPOINT: "http://gl-prometheus-alertmanager.monitoring.svc.cluster.local:9093"
+
+  # Deduplication
+  DEDUP_ENABLED: "true"
+  DEDUP_WINDOW_SECONDS: "300"
+  DEDUP_FINGERPRINT_LABELS: "alertname,namespace,service,severity"
+
+  # Rate limiting
+  RATE_LIMIT_PAGERDUTY: "120"
+  RATE_LIMIT_PAGERDUTY_WINDOW: "60"
+  RATE_LIMIT_OPSGENIE: "120"
+  RATE_LIMIT_OPSGENIE_WINDOW: "60"
+  RATE_LIMIT_SLACK: "60"
+  RATE_LIMIT_SLACK_WINDOW: "60"
+  RATE_LIMIT_EMAIL: "30"
+  RATE_LIMIT_EMAIL_WINDOW: "60"
+
+  # On-call cache
+  ONCALL_CACHE_TTL_SECONDS: "300"
+  ONCALL_CACHE_REFRESH_SECONDS: "240"
+
+  # Alert fatigue detection
+  FATIGUE_DETECTION_ENABLED: "true"
+  FATIGUE_WINDOW_HOURS: "24"
+  FATIGUE_THRESHOLD_SCORE: "80"
+
+  # Notification retry
+  NOTIFICATION_MAX_RETRIES: "3"
+  NOTIFICATION_RETRY_BACKOFF_SECONDS: "5"
+  NOTIFICATION_TIMEOUT_SECONDS: "10"
+
+  # PagerDuty configuration
+  PAGERDUTY_API_URL: "https://events.pagerduty.com/v2/enqueue"
+  PAGERDUTY_SEVERITY_MAP: '{"critical": "critical", "warning": "warning", "info": "info", "page": "critical"}'
+
+  # Opsgenie configuration
+  OPSGENIE_API_URL: "https://api.opsgenie.com/v2/alerts"
+  OPSGENIE_PRIORITY_MAP: '{"critical": "P1", "warning": "P3", "info": "P5", "page": "P1"}'
+
+  # Email configuration
+  SES_REGION: "us-east-1"
+  SES_FROM_ADDRESS: "alerts@greenlang.io"
+  SES_REPLY_TO: "platform-team@greenlang.io"
+
+  # Alerting service configuration file
+  alerting-config.yaml: |
+    alerting:
+      version: "1.0.0"
+      environment: production
+
+      routing:
+        default_channel: slack
+        group_wait_seconds: 30
+        group_interval_seconds: 300
+        repeat_interval_seconds: 3600
+
+        severity_routing:
+          critical:
+            channels: ["pagerduty", "slack"]
+            escalation_policy: default-critical
+            repeat_interval_seconds: 600
+          warning:
+            channels: ["slack"]
+            escalation_policy: default-warning
+            repeat_interval_seconds: 3600
+          info:
+            channels: ["slack"]
+            escalation_policy: default-info
+            repeat_interval_seconds: 14400
+
+        team_routing:
+          platform-security:
+            slack_channel: "#greenlang-security-alerts"
+          platform-observability:
+            slack_channel: "#greenlang-obs-alerts"
+          platform-data:
+            slack_channel: "#greenlang-data-alerts"
+          platform-infrastructure:
+            slack_channel: "#greenlang-infra-alerts"
+
+      escalation:
+        default_policy: default-critical
+        max_escalation_level: 3
+        auto_escalate_unacked_minutes: 15
+        auto_resolve_after_hours: 24
+
+      deduplication:
+        enabled: true
+        window_seconds: 300
+        fingerprint_labels:
+          - alertname
+          - namespace
+          - service
+          - severity
+        merge_annotations: true
+
+      notification:
+        max_retries: 3
+        retry_backoff_seconds: 5
+        timeout_seconds: 10
+        batch_size: 50
+        batch_interval_seconds: 5
+
+      channels:
+        pagerduty:
+          enabled: true
+          api_version: "v2"
+          dedup_key_prefix: "greenlang"
+          auto_resolve: true
+        opsgenie:
+          enabled: true
+          auto_close: true
+          responders:
+            - type: team
+              name: greenlang-platform
+        slack:
+          enabled: true
+          use_blocks: true
+          include_runbook_link: true
+          include_dashboard_link: true
+          icon_emoji: ":rotating_light:"
+          username: "GreenLang Alerting"
+        email:
+          enabled: true
+          html_template: "alert-notification.html"
+          text_template: "alert-notification.txt"
+
+      oncall:
+        providers:
+          - type: pagerduty
+            enabled: true
+            schedule_ids: []
+          - type: opsgenie
+            enabled: true
+            schedule_ids: []
+        cache_ttl_seconds: 300
+        fallback_email: "platform-team@greenlang.io"
+
+      analytics:
+        mtta_target_minutes:
+          critical: 5
+          warning: 15
+          info: 60
+        mttr_target_minutes:
+          critical: 30
+          warning: 120
+          info: 480
+        fatigue_detection:
+          enabled: true
+          window_hours: 24
+          threshold_score: 80
+          noise_threshold_per_hour: 10

@@ -1,0 +1,201 @@
+# ============================================================================
+# GreenLang Auth Service ServiceMonitor
+# ============================================================================
+# Prometheus ServiceMonitor for the Authentication and Authorization service.
+# Monitors authentication flows, token operations, and security events.
+#
+# Target Service: auth-service
+# Scrape Path: /metrics
+# Scrape Interval: 15 seconds
+#
+# Created: 2026-02-06
+# Team: Monitoring & Observability
+# PRD: OBS-001 - Prometheus Metrics Collection
+# ============================================================================
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: auth-service
+  namespace: monitoring
+  labels:
+    app: auth-service
+    app.kubernetes.io/name: auth-service
+    app.kubernetes.io/component: authentication
+    app.kubernetes.io/part-of: greenlang
+    release: prometheus
+    team: greenlang
+    tier: security
+  annotations:
+    description: "ServiceMonitor for GreenLang Authentication Service"
+    prometheus.io/docs: "https://docs.greenlang.ai/observability/auth-metrics"
+    security.greenlang.io/classification: "internal"
+spec:
+  # Job label for Prometheus
+  jobLabel: auth-service
+
+  # Selector for target services
+  selector:
+    matchLabels:
+      app: auth-service
+    matchExpressions:
+      - key: monitoring
+        operator: NotIn
+        values: ["disabled"]
+
+  # Target namespaces
+  namespaceSelector:
+    matchNames:
+      - greenlang
+      - greenlang-security
+      - greenlang-prod
+      - greenlang-staging
+      - greenlang-dev
+
+  # Endpoint configuration
+  endpoints:
+    - port: metrics
+      interval: 15s
+      scrapeTimeout: 10s
+      path: /metrics
+      scheme: http
+      honorLabels: true
+
+      # Relabelings for target labels
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_service_name]
+          targetLabel: service
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod
+        - sourceLabels: [__meta_kubernetes_pod_node_name]
+          targetLabel: node
+        - sourceLabels: []
+          targetLabel: application
+          replacement: "auth-service"
+        - sourceLabels: []
+          targetLabel: component
+          replacement: "authentication"
+        - sourceLabels: []
+          targetLabel: tier
+          replacement: "security"
+
+      # Metric relabelings
+      metricRelabelings:
+        # Keep authentication metrics
+        - sourceLabels: [__name__]
+          regex: '(gl_auth_|gl_token_|gl_session_|gl_login_|gl_mfa_).*'
+          action: keep
+
+        # Keep authorization metrics
+        - sourceLabels: [__name__]
+          regex: '(gl_rbac_|gl_permission_|gl_role_).*'
+          action: keep
+
+        # Keep security event metrics
+        - sourceLabels: [__name__]
+          regex: '(gl_security_|gl_audit_).*'
+          action: keep
+
+        # Keep OAuth/OIDC metrics
+        - sourceLabels: [__name__]
+          regex: '(gl_oauth_|gl_oidc_|gl_jwt_).*'
+          action: keep
+
+        # Keep HTTP metrics for auth endpoints
+        - sourceLabels: [__name__]
+          regex: 'http_request_(duration_seconds|total).*'
+          action: keep
+
+        # Keep process metrics
+        - sourceLabels: [__name__]
+          regex: 'process_.*'
+          action: keep
+
+        # Add environment label
+        - sourceLabels: [namespace]
+          regex: '.*-prod'
+          targetLabel: environment
+          replacement: 'production'
+        - sourceLabels: [namespace]
+          regex: '.*-staging'
+          targetLabel: environment
+          replacement: 'staging'
+        - sourceLabels: [namespace]
+          regex: '.*-dev'
+          targetLabel: environment
+          replacement: 'development'
+
+        # SECURITY: Drop any metrics that might contain sensitive data
+        - sourceLabels: [__name__]
+          regex: '.*_(password|secret|token_value|credential).*'
+          action: drop
+
+---
+# ============================================================================
+# RBAC Service ServiceMonitor
+# ============================================================================
+# Monitors Role-Based Access Control service metrics.
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: rbac-service
+  namespace: monitoring
+  labels:
+    app: rbac-service
+    app.kubernetes.io/name: rbac-service
+    app.kubernetes.io/component: authorization
+    app.kubernetes.io/part-of: greenlang
+    release: prometheus
+    team: greenlang
+    tier: security
+  annotations:
+    description: "ServiceMonitor for GreenLang RBAC Service"
+spec:
+  jobLabel: rbac-service
+
+  selector:
+    matchLabels:
+      app: rbac-service
+
+  namespaceSelector:
+    matchNames:
+      - greenlang
+      - greenlang-security
+
+  endpoints:
+    - port: metrics
+      interval: 15s
+      scrapeTimeout: 10s
+      path: /metrics
+      scheme: http
+      honorLabels: true
+
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_service_name]
+          targetLabel: service
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod
+        - sourceLabels: []
+          targetLabel: component
+          replacement: "authorization"
+
+      metricRelabelings:
+        # Keep RBAC specific metrics
+        - sourceLabels: [__name__]
+          regex: '(gl_rbac_|gl_permission_|gl_role_|gl_policy_).*'
+          action: keep
+
+        # Keep authorization decision metrics
+        - sourceLabels: [__name__]
+          regex: '(gl_authz_|gl_access_).*'
+          action: keep
+
+        # Keep cache metrics for RBAC
+        - sourceLabels: [__name__]
+          regex: 'gl_rbac_cache_.*'
+          action: keep

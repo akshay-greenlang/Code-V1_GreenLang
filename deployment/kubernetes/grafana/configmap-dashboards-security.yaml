@@ -1,0 +1,60 @@
+# ============================================================================
+# GreenLang Grafana - Security Dashboard ConfigMap
+# ============================================================================
+# ConfigMap for security Grafana dashboards. The grafana_dashboard: "1"
+# label enables automatic sidecar detection and loading.
+#
+# Dashboards:
+#   - auth-service.json
+#   - rbac-service.json
+#   - encryption-service.json
+#   - tls-security.json
+#   - audit-service.json
+#   - secrets-service.json
+#   - security-scanning.json
+#   - security-operations.json
+#   - soc2-compliance.json
+#   - pii-service.json
+#   - security-posture.json (NEW - unified security view)
+#
+# Created: 2026-02-07
+# Team: Monitoring & Observability
+# PRD: OBS-002 - Grafana Dashboards
+# ============================================================================
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboards-security
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: grafana
+    app.kubernetes.io/component: dashboards
+    app.kubernetes.io/part-of: greenlang
+    grafana_dashboard: "1"
+  annotations:
+    grafana_folder: "04-Security"
+    description: "Security monitoring dashboards (Auth, RBAC, Encryption, TLS, Audit, Secrets, Scanning, SOC2, PII)"
+data:
+  auth-service.json: |-
+    {{- .Files.Get "dashboards/auth-service.json" | nindent 4 }}
+  rbac-service.json: |-
+    {{- .Files.Get "dashboards/rbac-service.json" | nindent 4 }}
+  encryption-service.json: |-
+    {{- .Files.Get "dashboards/encryption-service.json" | nindent 4 }}
+  tls-security.json: |-
+    {{- .Files.Get "dashboards/tls-security.json" | nindent 4 }}
+  audit-service.json: |-
+    {{- .Files.Get "dashboards/audit-service.json" | nindent 4 }}
+  secrets-service.json: |-
+    {{- .Files.Get "dashboards/secrets-service.json" | nindent 4 }}
+  security-scanning.json: |-
+    {{- .Files.Get "dashboards/security-scanning.json" | nindent 4 }}
+  security-operations.json: |-
+    {{- .Files.Get "dashboards/security-operations.json" | nindent 4 }}
+  soc2-compliance.json: |-
+    {{- .Files.Get "dashboards/soc2-compliance.json" | nindent 4 }}
+  pii-service.json: |-
+    {{- .Files.Get "dashboards/pii-service.json" | nindent 4 }}
+  security-posture.json: |-
+    {{- .Files.Get "dashboards/security-posture.json" | nindent 4 }}

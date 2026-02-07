@@ -1,0 +1,22 @@
+{{- /*
+GreenLang Grafana - Image Renderer Service
+GreenLang Climate OS | OBS-002
+*/ -}}
+{{- if .Values.renderer.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "grafana.fullname" . }}-renderer
+  namespace: {{ include "grafana.namespace" . }}
+  labels:
+    {{- include "grafana.rendererLabels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  selector:
+    {{- include "grafana.rendererSelectorLabels" . | nindent 4 }}
+  ports:
+  - name: http
+    port: {{ .Values.renderer.service.port }}
+    targetPort: http
+    protocol: TCP
+{{- end }}

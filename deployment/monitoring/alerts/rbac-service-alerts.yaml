@@ -1,0 +1,358 @@
+# =============================================================================
+# GreenLang Climate OS - RBAC Service Prometheus Alert Rules
+# =============================================================================
+# PRD: SEC-002 RBAC Authorization Layer
+# Defines alerting rules for authorization decisions, cache performance,
+# role management anomalies, audit integrity, and RBAC service health.
+# =============================================================================
+
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: rbac-service-alerts
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: rbac-service
+    app.kubernetes.io/part-of: greenlang
+    prometheus: kube-prometheus
+    role: alert-rules
+    greenlang.io/component: sec-002
+spec:
+  groups:
+    # =========================================================================
+    # Group 1: Authorization Decision Alerts
+    # =========================================================================
+    - name: rbac_service.authorization
+      interval: 30s
+      rules:
+        # ---------------------------------------------------------------------
+        # HighAuthorizationDenialRate
+        # Fires when more than 10% of authorization decisions are denied
+        # over a 5-minute window. May indicate misconfigured roles,
+        # missing permissions after a deployment, or privilege escalation
+        # probing.
+        # ---------------------------------------------------------------------
+        - alert: HighAuthorizationDenialRate
+          expr: |
+            (
+              sum(rate(gl_rbac_authorization_total{result="denied"}[5m]))
+              /
+              sum(rate(gl_rbac_authorization_total[5m]))
+            ) > 0.1
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-security
+            component: rbac-service
+            prd: SEC-002
+          annotations:
+            summary: "High RBAC authorization denial rate (>10%)"
+            description: >-
+              RBAC authorization denial rate is
+              {{ $value | humanizePercentage }} over the last 5 minutes,
+              exceeding the 10% warning threshold. This may indicate
+              misconfigured role permissions after a recent deployment,
+              users accessing resources outside their role scope, or a
+              potential privilege escalation probe. Review the Top Denied
+              Permissions panel for concentrated resource:action pairs.
+            runbook_url: "https://runbooks.greenlang.io/rbac-service/high-denial-rate"
+            dashboard_url: "https://grafana.greenlang.io/d/greenlang-rbac-service"
+
+        # ---------------------------------------------------------------------
+        # UnauthorizedRBACAccess
+        # Fires when repeated authorization denials target RBAC management
+        # endpoints themselves. Indicates an attacker probing RBAC admin
+        # capabilities.
+        # ---------------------------------------------------------------------
+        - alert: UnauthorizedRBACAccess
+          expr: |
+            sum(rate(gl_rbac_authorization_total{result="denied", resource=~"rbac:.*"}[5m])) * 300 > 10
+          for: 3m
+          labels:
+            severity: critical
+            team: platform-security
+            component: rbac-service
+            prd: SEC-002
+          annotations:
+            summary: "Repeated unauthorized access to RBAC management endpoints"
+            description: >-
+              More than {{ $value | printf "%.0f" }} unauthorized attempts
+              to access RBAC management endpoints in the last 5 minutes.
+              This may indicate an attacker probing for privilege
+              escalation via direct RBAC API manipulation. Review the
+              source user IDs and IP addresses. Consider temporarily
+              restricting RBAC admin API access.
+            runbook_url: "https://runbooks.greenlang.io/rbac-service/unauthorized-rbac-access"
+            dashboard_url: "https://grafana.greenlang.io/d/greenlang-rbac-service"
+
+        # ---------------------------------------------------------------------
+        # SystemRoleModificationAttempt
+        # Fires when any modification (update or delete) is attempted on
+        # system-defined roles. System roles are immutable and changes
+        # should only occur through migrations.
+        # ---------------------------------------------------------------------
+        - alert: SystemRoleModificationAttempt
+          expr: |
+            sum(increase(gl_rbac_role_changes_total{role_type="system", action=~"updated|deleted"}[5m])) > 0
+          for: 1m
+          labels:
+            severity: critical
+            team: platform-security
+            component: rbac-service
+            prd: SEC-002
+          annotations:
+            summary: "Attempt to modify system-defined RBAC role detected"
+            description: >-
+              A modification attempt was detected against a system-defined
+              role in the last 5 minutes. System roles (super_admin,
+              org_admin, auditor, etc.) are immutable and should never be
+              changed outside of database migrations. This may indicate a
+              privilege escalation attack or a misconfigured admin
+              interface. Investigate the audit log for the actor and
+              target role immediately.
+            runbook_url: "https://runbooks.greenlang.io/rbac-service/system-role-modification"
+            dashboard_url: "https://grafana.greenlang.io/d/greenlang-rbac-service"
+
+    # =========================================================================
+    # Group 2: Cache & Performance Alerts
+    # =========================================================================
+    - name: rbac_service.performance
+      interval: 30s
+      rules:
+        # ---------------------------------------------------------------------
+        # LowCacheHitRate
+        # Fires when the RBAC cache hit rate drops below 80%. Low hit
+        # rates increase database load and degrade authorization latency.
+        # ---------------------------------------------------------------------
+        - alert: LowCacheHitRate
+          expr: |
+            (
+              sum(rate(gl_rbac_cache_hits_total[5m]))
+              /
+              (sum(rate(gl_rbac_cache_hits_total[5m])) + sum(rate(gl_rbac_cache_misses_total[5m])))
+            ) < 0.8
+          for: 10m
+          labels:
+            severity: warning
+            team: platform-security
+            component: rbac-service
+            prd: SEC-002
+          annotations:
+            summary: "RBAC cache hit rate below 80%"
+            description: >-
+              RBAC cache hit rate is {{ $value | humanizePercentage }}
+              over the last 10 minutes, below the 80% threshold. This
+              increases PostgreSQL query load for permission lookups and
+              degrades authorization latency. Check Redis connectivity,
+              cache TTL configuration, and whether a recent bulk role
+              change triggered mass cache invalidation.
+            runbook_url: "https://runbooks.greenlang.io/rbac-service/low-cache-hit-rate"
+            dashboard_url: "https://grafana.greenlang.io/d/greenlang-rbac-service"
+
+        # ---------------------------------------------------------------------
+        # HighPermissionEvaluationLatency
+        # Fires when the P99 authorization evaluation latency exceeds
+        # 10ms. RBAC checks should complete in <1ms from cache.
+        # ---------------------------------------------------------------------
+        - alert: HighPermissionEvaluationLatency
+          expr: |
+            histogram_quantile(0.99,
+              sum(rate(gl_rbac_authorization_duration_seconds_bucket[5m])) by (le)
+            ) > 0.01
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-security
+            component: rbac-service
+            prd: SEC-002
+          annotations:
+            summary: "RBAC permission evaluation P99 latency exceeds 10ms"
+            description: >-
+              RBAC authorization P99 latency is
+              {{ $value | printf "%.3f" }}s over the last 5 minutes,
+              exceeding the 10ms threshold. The target is <1ms P99 from
+              cache. High latency may be caused by cache misses forcing
+              database lookups, slow Redis responses, or complex
+              permission evaluation chains. Check the cache hit rate and
+              PostgreSQL query performance.
+            runbook_url: "https://runbooks.greenlang.io/rbac-service/high-evaluation-latency"
+            dashboard_url: "https://grafana.greenlang.io/d/greenlang-rbac-service"
+
+        # ---------------------------------------------------------------------
+        # CacheInvalidationFailure
+        # Fires when cache invalidation events are failing, which means
+        # stale permissions may be served to users.
+        # ---------------------------------------------------------------------
+        - alert: CacheInvalidationFailure
+          expr: |
+            sum(rate(gl_rbac_cache_invalidation_failures_total[5m])) > 0
+          for: 3m
+          labels:
+            severity: critical
+            team: platform-security
+            component: rbac-service
+            prd: SEC-002
+          annotations:
+            summary: "RBAC cache invalidation failures detected"
+            description: >-
+              Cache invalidation is failing at
+              {{ $value | printf "%.2f" }}/sec. This means role or
+              permission changes are not being propagated to the cache,
+              and users may retain revoked permissions or miss newly
+              granted ones. This is a security-critical issue. Check
+              Redis pub/sub connectivity and the cache invalidation
+              worker logs. Manual cache flush may be required.
+            runbook_url: "https://runbooks.greenlang.io/rbac-service/cache-invalidation-failure"
+            dashboard_url: "https://grafana.greenlang.io/d/greenlang-rbac-service"
+
+    # =========================================================================
+    # Group 3: Role Management Alerts
+    # =========================================================================
+    - name: rbac_service.role_management
+      interval: 30s
+      rules:
+        # ---------------------------------------------------------------------
+        # RoleChangeSpike
+        # Fires when an unusual number of role changes occur in a short
+        # period. May indicate bulk automation errors or unauthorized
+        # mass role modifications.
+        # ---------------------------------------------------------------------
+        - alert: RoleChangeSpike
+          expr: |
+            sum(increase(gl_rbac_role_changes_total[5m])) > 20
+          for: 2m
+          labels:
+            severity: warning
+            team: platform-security
+            component: rbac-service
+            prd: SEC-002
+          annotations:
+            summary: "Unusual spike in RBAC role changes (>20 in 5m)"
+            description: >-
+              {{ $value | printf "%.0f" }} role changes detected in the
+              last 5 minutes, exceeding the normal threshold of 20.
+              Rapid role modifications may indicate a misconfigured
+              automation script, an admin error during bulk operations,
+              or an attacker manipulating role definitions. Review the
+              RBAC audit log for the actor and specific changes.
+            runbook_url: "https://runbooks.greenlang.io/rbac-service/role-change-spike"
+            dashboard_url: "https://grafana.greenlang.io/d/greenlang-rbac-service"
+
+        # ---------------------------------------------------------------------
+        # ExpiredAssignmentCleanupDelayed
+        # Fires when expired role assignments are not being cleaned up.
+        # The cleanup CronJob should remove expired assignments regularly.
+        # ---------------------------------------------------------------------
+        - alert: ExpiredAssignmentCleanupDelayed
+          expr: |
+            gl_rbac_expired_assignments_pending > 100
+          for: 30m
+          labels:
+            severity: warning
+            team: platform-security
+            component: rbac-service
+            prd: SEC-002
+          annotations:
+            summary: "{{ $value | printf \"%.0f\" }} expired RBAC assignments pending cleanup"
+            description: >-
+              {{ $value | printf "%.0f" }} expired role assignments have
+              not been cleaned up. The RBAC cleanup CronJob should remove
+              expired assignments periodically. A large backlog may
+              indicate the CronJob is failing or disabled. Expired
+              assignments with active cache entries could allow users to
+              retain permissions beyond their intended duration.
+            runbook_url: "https://runbooks.greenlang.io/rbac-service/expired-assignment-cleanup"
+            dashboard_url: "https://grafana.greenlang.io/d/greenlang-rbac-service"
+
+    # =========================================================================
+    # Group 4: Service Health & Audit Alerts
+    # =========================================================================
+    - name: rbac_service.health
+      interval: 30s
+      rules:
+        # ---------------------------------------------------------------------
+        # RBACServiceErrors
+        # Fires when the RBAC service is generating errors at an
+        # elevated rate. Covers both HTTP 5xx and internal exceptions.
+        # ---------------------------------------------------------------------
+        - alert: RBACServiceErrors
+          expr: |
+            sum(rate(gl_rbac_errors_total[5m])) > 1
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-security
+            component: rbac-service
+            prd: SEC-002
+          annotations:
+            summary: "RBAC service error rate exceeds 1/sec"
+            description: >-
+              The RBAC service is generating errors at
+              {{ $value | printf "%.2f" }}/sec over the last 5 minutes.
+              This may affect authorization decisions for all API
+              requests. Check application logs for exception details,
+              database connectivity, and Redis availability. If
+              authorization is failing open, this is a security incident.
+            runbook_url: "https://runbooks.greenlang.io/rbac-service/service-errors"
+            dashboard_url: "https://grafana.greenlang.io/d/greenlang-rbac-service"
+
+        # ---------------------------------------------------------------------
+        # RBACAuditLogWriteFailure
+        # Fires when RBAC audit log writes are failing. Audit logs are
+        # required for SOC 2 and ISO 27001 compliance. Missing audit
+        # entries create compliance gaps.
+        # ---------------------------------------------------------------------
+        - alert: RBACAuditLogWriteFailure
+          expr: |
+            sum(rate(gl_rbac_audit_events_total{result="failure"}[5m])) > 0
+          for: 2m
+          labels:
+            severity: critical
+            team: platform-security
+            component: rbac-service
+            prd: SEC-002
+          annotations:
+            summary: "RBAC audit log write failures detected"
+            description: >-
+              RBAC audit log writes are failing at
+              {{ $value | printf "%.2f" }}/sec. This creates compliance
+              gaps as all role assignments, permission changes, and
+              authorization decisions must be audited per SOC 2 CC6.1
+              and ISO 27001 A.9.4 requirements. Check the audit log
+              database table (rbac_audit_log), PostgreSQL connectivity,
+              and disk space. Audit failures may require a compliance
+              incident report.
+            runbook_url: "https://runbooks.greenlang.io/rbac-service/audit-log-failure"
+            dashboard_url: "https://grafana.greenlang.io/d/greenlang-rbac-service"
+
+        # ---------------------------------------------------------------------
+        # RBACEnrichmentFailureRate
+        # Fires when RBAC enrichment (loading permissions into
+        # AuthContext) is failing for a significant portion of requests.
+        # Users may be operating with empty permission sets.
+        # ---------------------------------------------------------------------
+        - alert: RBACEnrichmentFailureRate
+          expr: |
+            (
+              sum(rate(gl_rbac_enrichment_failures_total[5m]))
+              /
+              sum(rate(gl_rbac_enrichment_attempts_total[5m]))
+            ) > 0.05
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-security
+            component: rbac-service
+            prd: SEC-002
+          annotations:
+            summary: "RBAC enrichment failure rate exceeds 5%"
+            description: >-
+              RBAC context enrichment is failing for
+              {{ $value | humanizePercentage }} of requests over the last
+              5 minutes. When enrichment fails, users operate with only
+              JWT-embedded permissions (which may be empty or stale).
+              This effectively degrades authorization to a permissive or
+              fully-denied state depending on configuration. Check the
+              RBACCache and AssignmentService connectivity.
+            runbook_url: "https://runbooks.greenlang.io/rbac-service/enrichment-failure"
+            dashboard_url: "https://grafana.greenlang.io/d/greenlang-rbac-service"

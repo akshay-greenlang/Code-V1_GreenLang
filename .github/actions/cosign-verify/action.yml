@@ -1,0 +1,270 @@
+# Cosign Verification Composite Action
+#
+# Verifies container image signatures, SBOM attestations, and SLSA provenance
+# before allowing deployment. Fails if verification fails.
+#
+# Author: GreenLang Security Team
+# Version: 1.0.0
+# Compliance: SLSA Level 2, Supply Chain Security
+
+name: 'Cosign Verify'
+description: 'Verify container image signature, SBOM, and provenance attestations using Cosign'
+
+inputs:
+  image:
+    description: 'Full image reference including tag or digest (e.g., ghcr.io/org/repo:tag or ghcr.io/org/repo@sha256:...)'
+    required: true
+
+  registry:
+    description: 'Container registry (for login)'
+    required: false
+    default: 'ghcr.io'
+
+  registry-username:
+    description: 'Registry username'
+    required: false
+    default: ''
+
+  registry-password:
+    description: 'Registry password/token'
+    required: false
+    default: ''
+
+  certificate-identity-regexp:
+    description: 'Regular expression for certificate identity verification'
+    required: false
+    default: ''
+
+  certificate-oidc-issuer:
+    description: 'OIDC issuer for certificate verification'
+    required: false
+    default: 'https://token.actions.githubusercontent.com'
+
+  verify-sbom:
+    description: 'Verify SBOM attestation exists'
+    required: false
+    default: 'true'
+
+  verify-provenance:
+    description: 'Verify SLSA provenance attestation'
+    required: false
+    default: 'false'
+
+  fail-on-missing-signature:
+    description: 'Fail if signature is missing'
+    required: false
+    default: 'true'
+
+  fail-on-missing-sbom:
+    description: 'Fail if SBOM attestation is missing'
+    required: false
+    default: 'false'
+
+  fail-on-missing-provenance:
+    description: 'Fail if provenance attestation is missing'
+    required: false
+    default: 'false'
+
+  output-sbom-path:
+    description: 'Path to save extracted SBOM (optional)'
+    required: false
+    default: ''
+
+  cosign-version:
+    description: 'Cosign version to install'
+    required: false
+    default: 'v2.2.3'
+
+outputs:
+  signature-verified:
+    description: 'Whether signature verification passed'
+    value: ${{ steps.verify-signature.outputs.verified }}
+
+  sbom-verified:
+    description: 'Whether SBOM attestation verification passed'
+    value: ${{ steps.verify-sbom.outputs.verified }}
+
+  provenance-verified:
+    description: 'Whether provenance attestation verification passed'
+    value: ${{ steps.verify-provenance.outputs.verified }}
+
+  image-digest:
+    description: 'Verified image digest'
+    value: ${{ steps.resolve-digest.outputs.digest }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Install Cosign
+      uses: sigstore/cosign-installer@v3.4.0
+      with:
+        cosign-release: ${{ inputs.cosign-version }}
+
+    - name: Log in to Container Registry
+      if: inputs.registry-username != '' && inputs.registry-password != ''
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ inputs.registry }}
+        username: ${{ inputs.registry-username }}
+        password: ${{ inputs.registry-password }}
+
+    - name: Resolve image digest
+      id: resolve-digest
+      shell: bash
+      run: |
+        IMAGE="${{ inputs.image }}"
+
+        # Check if image already has digest
+        if [[ "$IMAGE" == *"@sha256:"* ]]; then
+          DIGEST="${IMAGE#*@}"
+          echo "digest=$DIGEST" >> $GITHUB_OUTPUT
+          echo "Image already has digest: $DIGEST"
+        else
+          # Resolve tag to digest
+          DIGEST=$(docker manifest inspect "$IMAGE" 2>/dev/null | jq -r '.config.digest // .manifests[0].digest' || echo "")
+
+          if [ -z "$DIGEST" ]; then
+            echo "::warning::Could not resolve digest for $IMAGE"
+            DIGEST="unknown"
+          fi
+
+          echo "digest=$DIGEST" >> $GITHUB_OUTPUT
+          echo "Resolved digest: $DIGEST"
+        fi
+
+    - name: Verify image signature
+      id: verify-signature
+      shell: bash
+      env:
+        COSIGN_EXPERIMENTAL: "true"
+      run: |
+        echo "Verifying signature for ${{ inputs.image }}..."
+
+        VERIFY_ARGS=""
+
+        # Add certificate identity if provided
+        if [ -n "${{ inputs.certificate-identity-regexp }}" ]; then
+          VERIFY_ARGS="$VERIFY_ARGS --certificate-identity-regexp '${{ inputs.certificate-identity-regexp }}'"
+        fi
+
+        # Add OIDC issuer
+        VERIFY_ARGS="$VERIFY_ARGS --certificate-oidc-issuer '${{ inputs.certificate-oidc-issuer }}'"
+
+        # Run verification
+        if eval "cosign verify $VERIFY_ARGS '${{ inputs.image }}'" 2>&1; then
+          echo "verified=true" >> $GITHUB_OUTPUT
+          echo "## Signature Verification: PASSED" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "verified=false" >> $GITHUB_OUTPUT
+
+          if [ "${{ inputs.fail-on-missing-signature }}" = "true" ]; then
+            echo "::error::Signature verification failed for ${{ inputs.image }}"
+            echo "## Signature Verification: FAILED" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          else
+            echo "::warning::Signature verification failed for ${{ inputs.image }}"
+            echo "## Signature Verification: SKIPPED (not required)" >> $GITHUB_STEP_SUMMARY
+          fi
+        fi
+
+    - name: Verify SBOM attestation
+      id: verify-sbom
+      if: inputs.verify-sbom == 'true'
+      shell: bash
+      env:
+        COSIGN_EXPERIMENTAL: "true"
+      run: |
+        echo "Verifying SBOM attestation for ${{ inputs.image }}..."
+
+        VERIFY_ARGS="--type cyclonedx"
+
+        if [ -n "${{ inputs.certificate-identity-regexp }}" ]; then
+          VERIFY_ARGS="$VERIFY_ARGS --certificate-identity-regexp '${{ inputs.certificate-identity-regexp }}'"
+        fi
+
+        VERIFY_ARGS="$VERIFY_ARGS --certificate-oidc-issuer '${{ inputs.certificate-oidc-issuer }}'"
+
+        if eval "cosign verify-attestation $VERIFY_ARGS '${{ inputs.image }}'" 2>&1; then
+          echo "verified=true" >> $GITHUB_OUTPUT
+          echo "## SBOM Attestation: VERIFIED" >> $GITHUB_STEP_SUMMARY
+
+          # Extract SBOM if output path provided
+          if [ -n "${{ inputs.output-sbom-path }}" ]; then
+            eval "cosign verify-attestation $VERIFY_ARGS '${{ inputs.image }}'" 2>/dev/null | \
+              jq -r '.payload' | base64 -d | jq -r '.predicate' > "${{ inputs.output-sbom-path }}"
+            echo "SBOM extracted to ${{ inputs.output-sbom-path }}"
+          fi
+        else
+          echo "verified=false" >> $GITHUB_OUTPUT
+
+          if [ "${{ inputs.fail-on-missing-sbom }}" = "true" ]; then
+            echo "::error::SBOM attestation verification failed for ${{ inputs.image }}"
+            echo "## SBOM Attestation: FAILED" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          else
+            echo "::warning::SBOM attestation not found for ${{ inputs.image }}"
+            echo "## SBOM Attestation: NOT FOUND (not required)" >> $GITHUB_STEP_SUMMARY
+          fi
+        fi
+
+    - name: Verify SLSA provenance
+      id: verify-provenance
+      if: inputs.verify-provenance == 'true'
+      shell: bash
+      env:
+        COSIGN_EXPERIMENTAL: "true"
+      run: |
+        echo "Verifying SLSA provenance for ${{ inputs.image }}..."
+
+        VERIFY_ARGS="--type slsaprovenance"
+
+        if [ -n "${{ inputs.certificate-identity-regexp }}" ]; then
+          VERIFY_ARGS="$VERIFY_ARGS --certificate-identity-regexp '${{ inputs.certificate-identity-regexp }}'"
+        fi
+
+        VERIFY_ARGS="$VERIFY_ARGS --certificate-oidc-issuer '${{ inputs.certificate-oidc-issuer }}'"
+
+        if eval "cosign verify-attestation $VERIFY_ARGS '${{ inputs.image }}'" 2>&1; then
+          echo "verified=true" >> $GITHUB_OUTPUT
+          echo "## SLSA Provenance: VERIFIED" >> $GITHUB_STEP_SUMMARY
+
+          # Extract provenance details
+          PROVENANCE=$(eval "cosign verify-attestation $VERIFY_ARGS '${{ inputs.image }}'" 2>/dev/null | \
+            jq -r '.payload' | base64 -d | jq -r '.predicate')
+
+          BUILDER=$(echo "$PROVENANCE" | jq -r '.builder.id // "unknown"')
+          BUILD_TYPE=$(echo "$PROVENANCE" | jq -r '.buildType // "unknown"')
+
+          echo "- Builder: $BUILDER" >> $GITHUB_STEP_SUMMARY
+          echo "- Build Type: $BUILD_TYPE" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "verified=false" >> $GITHUB_OUTPUT
+
+          if [ "${{ inputs.fail-on-missing-provenance }}" = "true" ]; then
+            echo "::error::SLSA provenance verification failed for ${{ inputs.image }}"
+            echo "## SLSA Provenance: FAILED" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          else
+            echo "::warning::SLSA provenance not found for ${{ inputs.image }}"
+            echo "## SLSA Provenance: NOT FOUND (not required)" >> $GITHUB_STEP_SUMMARY
+          fi
+        fi
+
+    - name: Generate verification summary
+      shell: bash
+      run: |
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## Verification Summary" >> $GITHUB_STEP_SUMMARY
+        echo "| Check | Status |" >> $GITHUB_STEP_SUMMARY
+        echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
+        echo "| Image | \`${{ inputs.image }}\` |" >> $GITHUB_STEP_SUMMARY
+        echo "| Digest | \`${{ steps.resolve-digest.outputs.digest }}\` |" >> $GITHUB_STEP_SUMMARY
+        echo "| Signature | ${{ steps.verify-signature.outputs.verified == 'true' && 'VERIFIED' || 'NOT VERIFIED' }} |" >> $GITHUB_STEP_SUMMARY
+
+        if [ "${{ inputs.verify-sbom }}" = "true" ]; then
+          echo "| SBOM | ${{ steps.verify-sbom.outputs.verified == 'true' && 'VERIFIED' || 'NOT VERIFIED' }} |" >> $GITHUB_STEP_SUMMARY
+        fi
+
+        if [ "${{ inputs.verify-provenance }}" = "true" ]; then
+          echo "| Provenance | ${{ steps.verify-provenance.outputs.verified == 'true' && 'VERIFIED' || 'NOT VERIFIED' }} |" >> $GITHUB_STEP_SUMMARY
+        fi

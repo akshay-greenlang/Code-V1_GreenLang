@@ -1,0 +1,45 @@
+##############################################
+# GreenLang Vault Agent Kustomization
+# SEC-006: Phase 4 - Vault Agent Injector Configuration
+##############################################
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+metadata:
+  name: greenlang-vault-agent
+  annotations:
+    description: "Vault Agent Injector configuration for GreenLang services"
+
+# Common labels applied to all resources
+commonLabels:
+  app.kubernetes.io/part-of: greenlang
+  app.kubernetes.io/managed-by: kustomize
+  security.greenlang.io/component: vault-agent
+
+# Common annotations
+commonAnnotations:
+  security.greenlang.io/vault-integration: "enabled"
+
+# Resources to include
+resources:
+  # Vault Agent templates ConfigMap
+  - configmap-templates.yaml
+
+  # Service-specific patches
+  - api-service-patches.yaml
+  - agent-factory-patches.yaml
+  - jobs-service-patches.yaml
+
+# Strategic merge patches for deployments
+# These are applied to existing deployments
+patchesStrategicMerge: []
+
+# JSON patches for more specific modifications
+patchesJson6902: []
+
+# Configurations
+configurations: []
+
+# Components
+components: []

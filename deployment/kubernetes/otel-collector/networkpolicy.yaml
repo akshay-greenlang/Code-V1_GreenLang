@@ -1,0 +1,155 @@
+# =============================================================================
+# GreenLang OTel Collector - NetworkPolicy
+# GreenLang Climate OS | OBS-003
+# =============================================================================
+# Restricts network traffic to and from the OTel Collector gateway pods.
+#
+# INGRESS allowed:
+#   - Pods in "greenlang" namespace        -> OTel Collector (OTLP, Jaeger)
+#   - Pods in "greenlang-agents" namespace  -> OTel Collector (OTLP, Jaeger)
+#   - Pods in "greenlang-jobs" namespace    -> OTel Collector (OTLP, Jaeger)
+#   - Prometheus pods (monitoring)          -> OTel Collector (8888, 8889 metrics)
+#
+# EGRESS allowed:
+#   - OTel Collector -> Tempo distributor (4317 gRPC, monitoring namespace)
+#   - OTel Collector -> Prometheus (remote write is via scrape, not egress)
+#   - OTel Collector -> Loki gateway (3100 HTTP, monitoring namespace)
+#   - OTel Collector -> kube-dns (53 TCP/UDP)
+#
+# All other traffic is denied by default.
+# =============================================================================
+
+---
+# ---------------------------------------------------------------------------
+# Ingress: allow application namespaces to send telemetry
+# ---------------------------------------------------------------------------
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: otel-collector-ingress
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: otel-collector
+    app.kubernetes.io/component: gateway
+    app.kubernetes.io/part-of: greenlang-observability
+    app.kubernetes.io/managed-by: kubectl
+    greenlang.io/obs: "003"
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: otel-collector
+  policyTypes:
+    - Ingress
+  ingress:
+    # Allow telemetry from greenlang application namespace
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: greenlang
+      ports:
+        - protocol: TCP
+          port: 4317   # OTLP gRPC
+        - protocol: TCP
+          port: 4318   # OTLP HTTP
+        - protocol: TCP
+          port: 14250  # Jaeger gRPC
+        - protocol: TCP
+          port: 14268  # Jaeger thrift HTTP
+
+    # Allow telemetry from greenlang-agents namespace
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: greenlang-agents
+      ports:
+        - protocol: TCP
+          port: 4317
+        - protocol: TCP
+          port: 4318
+        - protocol: TCP
+          port: 14250
+        - protocol: TCP
+          port: 14268
+
+    # Allow telemetry from greenlang-jobs namespace
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: greenlang-jobs
+      ports:
+        - protocol: TCP
+          port: 4317
+        - protocol: TCP
+          port: 4318
+        - protocol: TCP
+          port: 14250
+        - protocol: TCP
+          port: 14268
+
+    # Allow Prometheus to scrape metrics
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: prometheus
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+      ports:
+        - protocol: TCP
+          port: 8888   # Collector internal metrics
+        - protocol: TCP
+          port: 8889   # Prometheus exporter metrics
+
+---
+# ---------------------------------------------------------------------------
+# Egress: allow OTel Collector to reach backends and DNS
+# ---------------------------------------------------------------------------
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: otel-collector-egress
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: otel-collector
+    app.kubernetes.io/component: gateway
+    app.kubernetes.io/part-of: greenlang-observability
+    app.kubernetes.io/managed-by: kubectl
+    greenlang.io/obs: "003"
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: otel-collector
+  policyTypes:
+    - Egress
+  egress:
+    # Allow egress to Tempo distributor (OTLP gRPC)
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: tempo
+              app.kubernetes.io/component: distributor
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+      ports:
+        - protocol: TCP
+          port: 4317   # OTLP gRPC
+
+    # Allow egress to Loki gateway (HTTP push)
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: loki
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+      ports:
+        - protocol: TCP
+          port: 3100   # Loki HTTP API
+
+    # Allow DNS resolution (kube-dns / CoreDNS)
+    - ports:
+        - protocol: TCP
+          port: 53
+        - protocol: UDP
+          port: 53

@@ -1,0 +1,83 @@
+# =============================================================================
+# Standard TLS Annotations for Ingress Resources
+# SEC-004: Common TLS configuration template
+# =============================================================================
+# This file serves as a reference for TLS annotations to apply to all ingresses
+
+# Copy these annotations to your Ingress resources:
+#
+# annotations:
+#   # cert-manager integration
+#   cert-manager.io/cluster-issuer: "letsencrypt-prod"
+#   cert-manager.io/acme-challenge-type: "http01"
+#
+#   # SSL/TLS configuration
+#   nginx.ingress.kubernetes.io/ssl-redirect: "true"
+#   nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+#   nginx.ingress.kubernetes.io/ssl-protocols: "TLSv1.2 TLSv1.3"
+#   nginx.ingress.kubernetes.io/ssl-ciphers: "TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256:TLS_AES_128_GCM_SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384"
+#
+#   # HSTS
+#   nginx.ingress.kubernetes.io/configuration-snippet: |
+#     more_set_headers "Strict-Transport-Security: max-age=31536000; includeSubDomains; preload";
+#
+#   # Backend SSL
+#   nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+#   nginx.ingress.kubernetes.io/proxy-ssl-verify: "on"
+
+---
+# Example Ingress with full TLS configuration
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: greenlang-api-tls-example
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: greenlang-api
+    greenlang.io/component: sec-004
+  annotations:
+    # Ingress class
+    kubernetes.io/ingress.class: nginx
+
+    # cert-manager
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    cert-manager.io/acme-challenge-type: "http01"
+
+    # TLS enforcement
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/ssl-protocols: "TLSv1.2 TLSv1.3"
+    nginx.ingress.kubernetes.io/ssl-ciphers: "TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256:TLS_AES_128_GCM_SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256"
+
+    # Security headers
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      more_set_headers "Strict-Transport-Security: max-age=31536000; includeSubDomains; preload";
+      more_set_headers "X-Frame-Options: DENY";
+      more_set_headers "X-Content-Type-Options: nosniff";
+      more_set_headers "X-XSS-Protection: 1; mode=block";
+      more_set_headers "Referrer-Policy: strict-origin-when-cross-origin";
+
+    # Rate limiting
+    nginx.ingress.kubernetes.io/limit-rps: "100"
+    nginx.ingress.kubernetes.io/limit-connections: "10"
+
+    # Timeouts
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+spec:
+  tls:
+    - hosts:
+        - api.greenlang.io
+      secretName: greenlang-api-tls
+  rules:
+    - host: api.greenlang.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: greenlang-api
+                port:
+                  number: 8080

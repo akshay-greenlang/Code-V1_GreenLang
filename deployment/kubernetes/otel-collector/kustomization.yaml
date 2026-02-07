@@ -1,0 +1,26 @@
+# =============================================================================
+# GreenLang OTel Collector - Kustomization
+# GreenLang Climate OS | OBS-003
+# =============================================================================
+# Kustomize resource list for the OpenTelemetry Collector gateway deployment.
+# Apply with: kubectl apply -k deployment/kubernetes/otel-collector/
+# =============================================================================
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: monitoring
+
+labels:
+  - pairs:
+      greenlang.io/obs: "003"
+      app.kubernetes.io/part-of: greenlang-observability
+
+resources:
+  - namespace.yaml
+  - serviceaccount.yaml
+  - configmap.yaml
+  - deployment.yaml
+  - service.yaml
+  - servicemonitor.yaml
+  - networkpolicy.yaml

@@ -1,0 +1,109 @@
+# =============================================================================
+# Certificate Templates
+# SEC-004: Certificate Management
+# =============================================================================
+
+# Wildcard certificate for external endpoints
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: greenlang-wildcard-cert
+  namespace: greenlang
+  labels:
+    greenlang.io/component: sec-004
+spec:
+  secretName: greenlang-wildcard-tls
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  dnsNames:
+    - greenlang.io
+    - "*.greenlang.io"
+  duration: 2160h  # 90 days
+  renewBefore: 720h  # 30 days before expiry
+  privateKey:
+    algorithm: RSA
+    size: 4096
+    rotationPolicy: Always
+  usages:
+    - server auth
+    - client auth
+
+---
+# API-specific certificate
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: greenlang-api-cert
+  namespace: greenlang
+  labels:
+    greenlang.io/component: sec-004
+spec:
+  secretName: greenlang-api-tls
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  dnsNames:
+    - api.greenlang.io
+  duration: 2160h
+  renewBefore: 720h
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  usages:
+    - server auth
+
+---
+# Internal service certificate (mTLS)
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: internal-service-cert-template
+  namespace: greenlang
+  labels:
+    greenlang.io/component: sec-004
+spec:
+  secretName: internal-service-tls
+  issuerRef:
+    name: greenlang-internal-ca
+    kind: ClusterIssuer
+  commonName: service.greenlang.svc.cluster.local
+  dnsNames:
+    - service
+    - service.greenlang
+    - service.greenlang.svc
+    - service.greenlang.svc.cluster.local
+  duration: 24h  # Short-lived for mTLS
+  renewBefore: 8h
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+    rotationPolicy: Always
+  usages:
+    - server auth
+    - client auth
+
+---
+# Root CA certificate for internal PKI
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: greenlang-internal-ca-cert
+  namespace: cert-manager
+  labels:
+    greenlang.io/component: sec-004
+spec:
+  isCA: true
+  secretName: greenlang-internal-ca-key-pair
+  issuerRef:
+    name: selfsigned-issuer
+    kind: ClusterIssuer
+  commonName: GreenLang Internal CA
+  duration: 87600h  # 10 years
+  renewBefore: 8760h  # 1 year before expiry
+  privateKey:
+    algorithm: RSA
+    size: 4096
+  usages:
+    - cert sign
+    - crl sign

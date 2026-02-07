@@ -1,0 +1,483 @@
+# GreenLang Docker Build and Sign Pipeline
+#
+# Builds, scans, signs, and pushes Docker images with full supply chain security:
+# - Multi-platform builds (amd64, arm64)
+# - Trivy vulnerability scanning
+# - Cosign keyless signing via Sigstore/Fulcio
+# - SBOM generation and attestation
+# - Rekor transparency logging
+#
+# Author: GreenLang Security Team
+# Version: 1.0.0
+# Compliance: SOC 2 CC7.1, SLSA Level 2
+
+name: Docker Build and Sign
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - 'Dockerfile*'
+      - 'docker/**'
+      - 'greenlang/**'
+      - 'requirements*.txt'
+      - 'pyproject.toml'
+    tags:
+      - 'v*'
+
+  pull_request:
+    branches: [main, master]
+    paths:
+      - 'Dockerfile*'
+      - 'docker/**'
+      - 'greenlang/**'
+      - 'requirements*.txt'
+      - 'pyproject.toml'
+
+  workflow_dispatch:
+    inputs:
+      push_image:
+        description: 'Push image to registry'
+        required: false
+        default: false
+        type: boolean
+      platforms:
+        description: 'Target platforms'
+        required: false
+        default: 'linux/amd64,linux/arm64'
+        type: string
+
+permissions:
+  contents: read
+  packages: write
+  id-token: write
+  security-events: write
+  attestations: write
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  # Cosign verification settings
+  COSIGN_EXPERIMENTAL: "true"
+
+jobs:
+  # ============================================================================
+  # JOB 1: Build Docker Image
+  # ============================================================================
+  build:
+    name: Build Docker Image
+    runs-on: ubuntu-latest
+    outputs:
+      image_digest: ${{ steps.build.outputs.digest }}
+      image_tags: ${{ steps.meta.outputs.tags }}
+      image_version: ${{ steps.meta.outputs.version }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          driver-opts: |
+            image=moby/buildkit:v0.12.0
+            network=host
+
+      - name: Log in to Container Registry
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,prefix=sha-
+            type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', 'main') }}
+          labels: |
+            org.opencontainers.image.title=GreenLang Climate OS
+            org.opencontainers.image.description=Enterprise Carbon Intelligence Platform
+            org.opencontainers.image.vendor=GreenLang
+            org.opencontainers.image.licenses=Proprietary
+            org.opencontainers.image.documentation=https://docs.greenlang.io
+
+      - name: Build and push Docker image
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: ${{ github.event.inputs.platforms || 'linux/amd64,linux/arm64' }}
+          push: ${{ github.event_name != 'pull_request' || github.event.inputs.push_image == 'true' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          provenance: true
+          sbom: true
+          build-args: |
+            BUILD_DATE=${{ github.event.repository.updated_at }}
+            VCS_REF=${{ github.sha }}
+            VERSION=${{ steps.meta.outputs.version }}
+
+      - name: Export image for scanning
+        if: github.event_name == 'pull_request'
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/amd64
+          push: false
+          load: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:scan
+          cache-from: type=gha
+
+  # ============================================================================
+  # JOB 2: Scan Docker Image
+  # ============================================================================
+  scan:
+    name: Scan Docker Image
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.event_name != 'pull_request'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ needs.build.outputs.image_digest }}
+          format: 'sarif'
+          output: 'trivy-image-results.sarif'
+          severity: 'CRITICAL,HIGH,MEDIUM'
+          vuln-type: 'os,library'
+
+      - name: Upload Trivy SARIF to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-image-results.sarif'
+          category: 'trivy-container'
+
+      - name: Run Trivy for JSON output
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ needs.build.outputs.image_digest }}
+          format: 'json'
+          output: 'trivy-image-results.json'
+          severity: 'CRITICAL,HIGH,MEDIUM'
+
+      - name: Check for critical vulnerabilities
+        id: vuln-check
+        run: |
+          CRITICAL_COUNT=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity=="CRITICAL")] | length' trivy-image-results.json 2>/dev/null || echo "0")
+          HIGH_COUNT=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity=="HIGH")] | length' trivy-image-results.json 2>/dev/null || echo "0")
+
+          echo "critical_count=$CRITICAL_COUNT" >> $GITHUB_OUTPUT
+          echo "high_count=$HIGH_COUNT" >> $GITHUB_OUTPUT
+
+          echo "## Container Scan Results" >> $GITHUB_STEP_SUMMARY
+          echo "- Critical: $CRITICAL_COUNT" >> $GITHUB_STEP_SUMMARY
+          echo "- High: $HIGH_COUNT" >> $GITHUB_STEP_SUMMARY
+
+          if [ "$CRITICAL_COUNT" -gt "0" ]; then
+            echo "::error::BLOCKER: $CRITICAL_COUNT critical vulnerabilities found in container image"
+            exit 1
+          fi
+
+      - name: Upload scan artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: container-scan-results
+          path: |
+            trivy-image-results.sarif
+            trivy-image-results.json
+          retention-days: 30
+
+  # ============================================================================
+  # JOB 3: Sign Docker Image with Cosign
+  # ============================================================================
+  sign:
+    name: Sign Docker Image
+    runs-on: ubuntu-latest
+    needs: [build, scan]
+    if: github.event_name != 'pull_request' && needs.scan.result == 'success'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@v3.4.0
+        with:
+          cosign-release: 'v2.2.3'
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Sign container image (keyless)
+        env:
+          COSIGN_EXPERIMENTAL: "true"
+        run: |
+          # Sign the image digest with keyless signing
+          cosign sign --yes \
+            --oidc-issuer https://token.actions.githubusercontent.com \
+            --annotations "repo=${{ github.repository }}" \
+            --annotations "workflow=${{ github.workflow }}" \
+            --annotations "run_id=${{ github.run_id }}" \
+            --annotations "sha=${{ github.sha }}" \
+            --annotations "ref=${{ github.ref }}" \
+            --annotations "actor=${{ github.actor }}" \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ needs.build.outputs.image_digest }}
+
+          echo "## Image Signed Successfully" >> $GITHUB_STEP_SUMMARY
+          echo "- Image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Digest: ${{ needs.build.outputs.image_digest }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Signing method: Keyless (Sigstore/Fulcio)" >> $GITHUB_STEP_SUMMARY
+          echo "- Transparency log: Rekor" >> $GITHUB_STEP_SUMMARY
+
+      - name: Verify signature
+        run: |
+          cosign verify \
+            --certificate-identity-regexp "https://github.com/${{ github.repository }}.*" \
+            --certificate-oidc-issuer https://token.actions.githubusercontent.com \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ needs.build.outputs.image_digest }}
+
+          echo "## Signature Verification Passed" >> $GITHUB_STEP_SUMMARY
+
+  # ============================================================================
+  # JOB 4: Generate and Attach SBOM
+  # ============================================================================
+  sbom:
+    name: Generate SBOM Attestation
+    runs-on: ubuntu-latest
+    needs: [build, sign]
+    if: github.event_name != 'pull_request'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@v3.4.0
+
+      - name: Install Syft
+        uses: anchore/sbom-action/download-syft@v0
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate SBOM
+        run: |
+          syft ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ needs.build.outputs.image_digest }} \
+            -o cyclonedx-json=sbom.cyclonedx.json \
+            -o spdx-json=sbom.spdx.json
+
+          echo "## SBOM Generated" >> $GITHUB_STEP_SUMMARY
+          echo "- Format: CycloneDX, SPDX" >> $GITHUB_STEP_SUMMARY
+          COMPONENT_COUNT=$(jq '.components | length' sbom.cyclonedx.json 2>/dev/null || echo "0")
+          echo "- Components: $COMPONENT_COUNT" >> $GITHUB_STEP_SUMMARY
+
+      - name: Attest SBOM to image
+        env:
+          COSIGN_EXPERIMENTAL: "true"
+        run: |
+          cosign attest --yes \
+            --predicate sbom.cyclonedx.json \
+            --type cyclonedx \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ needs.build.outputs.image_digest }}
+
+          echo "## SBOM Attestation Attached" >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload SBOM artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: container-sbom
+          path: |
+            sbom.cyclonedx.json
+            sbom.spdx.json
+          retention-days: 90
+
+  # ============================================================================
+  # JOB 5: Generate SLSA Provenance
+  # ============================================================================
+  provenance:
+    name: Generate SLSA Provenance
+    runs-on: ubuntu-latest
+    needs: [build, sign]
+    if: github.event_name != 'pull_request' && startsWith(github.ref, 'refs/tags/v')
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@v3.4.0
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate SLSA provenance
+        run: |
+          # Create SLSA provenance predicate
+          cat > provenance.json << EOF
+          {
+            "_type": "https://in-toto.io/Statement/v0.1",
+            "predicateType": "https://slsa.dev/provenance/v0.2",
+            "subject": [
+              {
+                "name": "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}",
+                "digest": {
+                  "sha256": "${DIGEST#sha256:}"
+                }
+              }
+            ],
+            "predicate": {
+              "builder": {
+                "id": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+              },
+              "buildType": "https://github.com/slsa-framework/slsa-github-generator/container@v1",
+              "invocation": {
+                "configSource": {
+                  "uri": "git+https://github.com/${{ github.repository }}@${{ github.ref }}",
+                  "digest": {
+                    "sha1": "${{ github.sha }}"
+                  },
+                  "entryPoint": ".github/workflows/docker-build.yml"
+                },
+                "parameters": {},
+                "environment": {
+                  "github_actor": "${{ github.actor }}",
+                  "github_event_name": "${{ github.event_name }}",
+                  "github_ref": "${{ github.ref }}",
+                  "github_repository": "${{ github.repository }}",
+                  "github_run_id": "${{ github.run_id }}",
+                  "github_sha": "${{ github.sha }}",
+                  "runner_os": "${{ runner.os }}"
+                }
+              },
+              "metadata": {
+                "buildInvocationId": "${{ github.run_id }}-${{ github.run_attempt }}",
+                "buildStartedOn": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+                "completeness": {
+                  "parameters": true,
+                  "environment": true,
+                  "materials": true
+                },
+                "reproducible": false
+              },
+              "materials": [
+                {
+                  "uri": "git+https://github.com/${{ github.repository }}",
+                  "digest": {
+                    "sha1": "${{ github.sha }}"
+                  }
+                }
+              ]
+            }
+          }
+          EOF
+
+          DIGEST="${{ needs.build.outputs.image_digest }}"
+          sed -i "s/\${DIGEST#sha256:}/${DIGEST#sha256:}/g" provenance.json
+
+          echo "## SLSA Provenance Generated" >> $GITHUB_STEP_SUMMARY
+          echo "- Level: SLSA Level 2" >> $GITHUB_STEP_SUMMARY
+          echo "- Builder: GitHub Actions" >> $GITHUB_STEP_SUMMARY
+
+      - name: Attest provenance to image
+        env:
+          COSIGN_EXPERIMENTAL: "true"
+        run: |
+          cosign attest --yes \
+            --predicate provenance.json \
+            --type slsaprovenance \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ needs.build.outputs.image_digest }}
+
+          echo "## Provenance Attestation Attached" >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload provenance artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: slsa-provenance
+          path: provenance.json
+          retention-days: 90
+
+  # ============================================================================
+  # JOB 6: Summary
+  # ============================================================================
+  summary:
+    name: Build Summary
+    runs-on: ubuntu-latest
+    needs: [build, scan, sign, sbom]
+    if: always() && github.event_name != 'pull_request'
+
+    steps:
+      - name: Generate summary
+        run: |
+          echo "# Docker Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Build Information" >> $GITHUB_STEP_SUMMARY
+          echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Image | \`${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Digest | \`${{ needs.build.outputs.image_digest }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Version | \`${{ needs.build.outputs.image_version }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Pipeline Status" >> $GITHUB_STEP_SUMMARY
+          echo "| Stage | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Build | ${{ needs.build.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Scan | ${{ needs.scan.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Sign | ${{ needs.sign.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| SBOM | ${{ needs.sbom.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Verification Commands" >> $GITHUB_STEP_SUMMARY
+          echo '```bash' >> $GITHUB_STEP_SUMMARY
+          echo "# Verify signature" >> $GITHUB_STEP_SUMMARY
+          echo "cosign verify \\" >> $GITHUB_STEP_SUMMARY
+          echo "  --certificate-identity-regexp 'https://github.com/${{ github.repository }}.*' \\" >> $GITHUB_STEP_SUMMARY
+          echo "  --certificate-oidc-issuer https://token.actions.githubusercontent.com \\" >> $GITHUB_STEP_SUMMARY
+          echo "  ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ needs.build.outputs.image_digest }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "# Verify SBOM attestation" >> $GITHUB_STEP_SUMMARY
+          echo "cosign verify-attestation \\" >> $GITHUB_STEP_SUMMARY
+          echo "  --type cyclonedx \\" >> $GITHUB_STEP_SUMMARY
+          echo "  --certificate-identity-regexp 'https://github.com/${{ github.repository }}.*' \\" >> $GITHUB_STEP_SUMMARY
+          echo "  --certificate-oidc-issuer https://token.actions.githubusercontent.com \\" >> $GITHUB_STEP_SUMMARY
+          echo "  ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ needs.build.outputs.image_digest }}" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY

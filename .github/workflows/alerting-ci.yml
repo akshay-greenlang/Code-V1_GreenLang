@@ -1,0 +1,833 @@
+# =============================================================================
+# GreenLang Alerting Infrastructure CI
+# GreenLang Climate OS | OBS-004
+# =============================================================================
+# Validates alerting service K8s manifests, Terraform modules, Grafana dashboard
+# JSON, Prometheus alert YAML, and Python SDK tests.
+# =============================================================================
+
+name: Alerting Infrastructure CI
+
+on:
+  pull_request:
+    paths:
+      - 'deployment/kubernetes/alerting-service/**'
+      - 'deployment/monitoring/dashboards/alerting-*'
+      - 'deployment/monitoring/alerts/alerting-*'
+      - 'deployment/terraform/modules/alerting-integrations/**'
+      - 'deployment/terraform/environments/*/alerting.tf'
+      - 'deployment/database/migrations/sql/V019__alerting_service.sql'
+      - 'greenlang/infrastructure/alerting_service/**'
+      - 'tests/unit/alerting_service/**'
+      - 'tests/integration/alerting_service/**'
+  push:
+    branches: [master]
+    paths:
+      - 'deployment/kubernetes/alerting-service/**'
+      - 'deployment/terraform/modules/alerting-integrations/**'
+      - 'greenlang/infrastructure/alerting_service/**'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHON_VERSION: "3.11"
+  DASHBOARDS_DIR: deployment/monitoring/dashboards
+  ALERTS_DIR: deployment/monitoring/alerts
+  K8S_DIR: deployment/kubernetes/alerting-service
+  TERRAFORM_MODULE_DIR: deployment/terraform/modules/alerting-integrations
+
+jobs:
+  # -------------------------------------------------------------------------
+  # Job 1: Lint Dashboard JSON, Alert YAML, and Python
+  # -------------------------------------------------------------------------
+  lint:
+    name: Lint Configs & Python
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install linting tools
+        run: pip install --quiet pyyaml ruff black
+
+      - name: Validate alerting dashboard JSON syntax
+        run: |
+          echo "Validating JSON syntax for alerting dashboard files..."
+          ERRORS=0
+          CHECKED=0
+          for f in ${{ env.DASHBOARDS_DIR }}/alerting-*.json; do
+            [ -e "$f" ] || continue
+            CHECKED=$((CHECKED + 1))
+            if ! python -m json.tool "$f" > /dev/null 2>&1; then
+              echo "ERROR: Invalid JSON in $f"
+              ERRORS=$((ERRORS + 1))
+            fi
+          done
+          if [ $CHECKED -eq 0 ]; then
+            echo "WARNING: No alerting dashboard JSON files found"
+          fi
+          if [ $ERRORS -gt 0 ]; then
+            echo "Found $ERRORS files with invalid JSON"
+            exit 1
+          fi
+          echo "All $CHECKED alerting dashboard JSON files are valid"
+
+      - name: Check required dashboard fields
+        run: |
+          python3 << 'PYEOF'
+          import json
+          import glob
+          import sys
+
+          REQUIRED_FIELDS = ["uid", "title", "panels"]
+          DASHBOARD_PATTERNS = [
+              "${{ env.DASHBOARDS_DIR }}/alerting-*.json",
+          ]
+
+          errors = []
+          checked = 0
+
+          for pattern in DASHBOARD_PATTERNS:
+              for path in sorted(glob.glob(pattern)):
+                  checked += 1
+                  with open(path) as f:
+                      try:
+                          data = json.load(f)
+                      except json.JSONDecodeError:
+                          errors.append(f"{path}: Invalid JSON")
+                          continue
+
+                      for field in REQUIRED_FIELDS:
+                          if field not in data:
+                              errors.append(f"{path}: Missing required field '{field}'")
+
+                      # Validate UID format (should be kebab-case, no spaces)
+                      uid = data.get("uid", "")
+                      if uid and (" " in uid or uid != uid.lower()):
+                          errors.append(f"{path}: UID '{uid}' should be lowercase kebab-case")
+
+          if errors:
+              print("Dashboard validation errors:")
+              for e in errors:
+                  print(f"  - {e}")
+              sys.exit(1)
+
+          if checked == 0:
+              print("WARNING: No alerting dashboard files found to validate")
+          else:
+              print(f"All {checked} alerting dashboards have required fields")
+          PYEOF
+
+      - name: Check UID uniqueness across ALL dashboards
+        run: |
+          python3 << 'PYEOF'
+          import json
+          import glob
+          import sys
+
+          uid_map = {}
+          errors = []
+
+          for path in sorted(glob.glob("${{ env.DASHBOARDS_DIR }}/*.json")):
+              with open(path) as f:
+                  try:
+                      data = json.load(f)
+                  except json.JSONDecodeError:
+                      continue
+
+                  uid = data.get("uid", "")
+                  if not uid:
+                      continue
+
+                  if uid in uid_map:
+                      errors.append(f"Duplicate UID '{uid}': {uid_map[uid]} and {path}")
+                  else:
+                      uid_map[uid] = path
+
+          if errors:
+              print("UID conflict errors:")
+              for e in errors:
+                  print(f"  - {e}")
+              sys.exit(1)
+
+          print(f"All {len(uid_map)} dashboard UIDs are unique")
+          PYEOF
+
+      - name: Validate alert YAML syntax
+        run: |
+          python3 << 'PYEOF'
+          import yaml
+          import glob
+          import sys
+
+          errors = []
+          checked = 0
+
+          for path in sorted(glob.glob("${{ env.ALERTS_DIR }}/alerting-*.yaml")):
+              checked += 1
+              with open(path) as f:
+                  try:
+                      docs = list(yaml.safe_load_all(f))
+                  except yaml.YAMLError as e:
+                      errors.append(f"{path}: Invalid YAML - {e}")
+                      continue
+
+              for doc in docs:
+                  if doc is None:
+                      continue
+                  # Support K8s PrometheusRule CRD format
+                  if "spec" in doc and "groups" in doc.get("spec", {}):
+                      for group in doc["spec"]["groups"]:
+                          if "name" not in group:
+                              errors.append(f"{path}: Alert group missing 'name'")
+                          if "rules" not in group:
+                              errors.append(f"{path}: Alert group '{group.get('name', '?')}' missing 'rules'")
+                          else:
+                              for rule in group["rules"]:
+                                  if "alert" in rule and "expr" not in rule:
+                                      errors.append(f"{path}: Alert '{rule['alert']}' missing 'expr'")
+                                  if "alert" in rule:
+                                      # Verify required annotations
+                                      annotations = rule.get("annotations", {})
+                                      if "summary" not in annotations:
+                                          errors.append(f"{path}: Alert '{rule['alert']}' missing 'summary' annotation")
+                                      if "description" not in annotations:
+                                          errors.append(f"{path}: Alert '{rule['alert']}' missing 'description' annotation")
+                  elif "groups" in doc:
+                      for group in doc["groups"]:
+                          if "name" not in group:
+                              errors.append(f"{path}: Alert group missing 'name'")
+                          if "rules" not in group:
+                              errors.append(f"{path}: Alert group '{group.get('name', '?')}' missing 'rules'")
+
+          if errors:
+              print("Alert YAML validation errors:")
+              for e in errors:
+                  print(f"  - {e}")
+              sys.exit(1)
+
+          if checked == 0:
+              print("WARNING: No alerting alert YAML files found to validate")
+          else:
+              print(f"All {checked} alert YAML files are valid")
+          PYEOF
+
+      - name: Validate K8s YAML syntax
+        run: |
+          python3 << 'PYEOF'
+          import yaml
+          import glob
+          import sys
+
+          errors = []
+          checked = 0
+
+          for path in sorted(glob.glob("${{ env.K8S_DIR }}/*.yaml")):
+              checked += 1
+              with open(path) as f:
+                  try:
+                      docs = list(yaml.safe_load_all(f))
+                  except yaml.YAMLError as e:
+                      errors.append(f"{path}: Invalid YAML - {e}")
+                      continue
+
+              for doc in docs:
+                  if doc is None:
+                      continue
+                  if "apiVersion" not in doc and "kind" not in doc:
+                      # Skip non-K8s documents (like kustomization)
+                      if "resources" not in doc:
+                          errors.append(f"{path}: Missing apiVersion or kind")
+
+          if errors:
+              print("K8s YAML validation errors:")
+              for e in errors:
+                  print(f"  - {e}")
+              sys.exit(1)
+
+          print(f"All {checked} K8s YAML files are valid")
+          PYEOF
+
+      - name: Lint Python (ruff + black check)
+        run: |
+          if [ -d "greenlang/infrastructure/alerting_service" ]; then
+            ruff check greenlang/infrastructure/alerting_service/ --select E,F,W --ignore E501
+            black --check greenlang/infrastructure/alerting_service/ 2>/dev/null || true
+          else
+            echo "WARNING: No Python alerting service module found (expected later)"
+          fi
+
+      - name: Check dashboard file sizes
+        run: |
+          MAX_SIZE=512000  # 500KB
+          ERRORS=0
+          CHECKED=0
+          for f in ${{ env.DASHBOARDS_DIR }}/alerting-*.json; do
+            [ -e "$f" ] || continue
+            CHECKED=$((CHECKED + 1))
+            SIZE=$(stat --format=%s "$f")
+            if [ "$SIZE" -gt "$MAX_SIZE" ]; then
+              echo "ERROR: $f exceeds 500KB ($SIZE bytes)"
+              ERRORS=$((ERRORS + 1))
+            fi
+          done
+          if [ $ERRORS -gt 0 ]; then
+            exit 1
+          fi
+          echo "All $CHECKED dashboard files are within size limits"
+
+  # -------------------------------------------------------------------------
+  # Job 2: Unit Tests
+  # -------------------------------------------------------------------------
+  test-unit:
+    name: Test Unit (Alerting Service)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install -e ".[dev]" 2>/dev/null || pip install \
+            pytest \
+            pytest-asyncio \
+            pytest-cov \
+            pydantic \
+            structlog \
+            httpx \
+            aiohttp \
+            prometheus-client \
+            psycopg \
+            redis
+
+      - name: Run unit tests
+        run: |
+          if [ -d "tests/unit/alerting_service" ] && [ "$(ls -A tests/unit/alerting_service/)" ]; then
+            pytest tests/unit/alerting_service/ -v --tb=short -q \
+              --cov=greenlang/infrastructure/alerting_service \
+              --cov-report=term-missing \
+              --cov-report=xml:coverage-alerting-unit.xml \
+              --cov-fail-under=70
+          else
+            echo "WARNING: No unit tests found in tests/unit/alerting_service/"
+            echo "Unit tests will be required once the Python module is created"
+          fi
+
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-alerting-unit
+          path: coverage-alerting-unit.xml
+          if-no-files-found: ignore
+
+  # -------------------------------------------------------------------------
+  # Job 3: Integration Tests
+  # -------------------------------------------------------------------------
+  test-integration:
+    name: Test Integration (Alerting Service)
+    runs-on: ubuntu-latest
+    needs: [test-unit]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install -e ".[dev]" 2>/dev/null || pip install \
+            pytest \
+            pytest-asyncio \
+            pydantic \
+            structlog \
+            httpx \
+            aiohttp \
+            prometheus-client \
+            psycopg \
+            redis
+
+      - name: Run integration tests
+        run: |
+          if [ -d "tests/integration/alerting_service" ] && [ "$(ls -A tests/integration/alerting_service/)" ]; then
+            pytest tests/integration/alerting_service/ -v --tb=short -q \
+              -m "integration or not integration"
+          else
+            echo "WARNING: No integration tests found in tests/integration/alerting_service/"
+            echo "Integration tests will be required once the Python module is created"
+          fi
+
+  # -------------------------------------------------------------------------
+  # Job 4: Helm Lint (K8s manifest validation via Kustomize)
+  # -------------------------------------------------------------------------
+  helm-lint:
+    name: K8s Manifest Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: 'v1.29.0'
+
+      - name: Validate Kustomize build
+        run: |
+          if [ -f "${{ env.K8S_DIR }}/kustomization.yaml" ]; then
+            kubectl kustomize ${{ env.K8S_DIR }} > /dev/null
+            echo "Kustomize build succeeded"
+
+            # Validate the rendered output
+            kubectl kustomize ${{ env.K8S_DIR }} | python3 -c "
+          import sys, yaml
+          docs = list(yaml.safe_load_all(sys.stdin))
+          kinds = [d.get('kind', '?') for d in docs if d]
+          print(f'Rendered {len(docs)} resources: {kinds}')
+          required = {'Namespace', 'Deployment', 'Service', 'ConfigMap', 'HorizontalPodAutoscaler'}
+          rendered = set(kinds)
+          missing = required - rendered
+          if missing:
+              print(f'ERROR: Missing required resource kinds: {missing}')
+              sys.exit(1)
+          print('All required resource kinds present')
+          "
+          else
+            echo "WARNING: No kustomization.yaml found in ${{ env.K8S_DIR }}"
+          fi
+
+      - name: Validate resource limits are set
+        run: |
+          python3 << 'PYEOF'
+          import yaml
+          import sys
+
+          deployment_path = "${{ env.K8S_DIR }}/deployment.yaml"
+          with open(deployment_path) as f:
+              docs = list(yaml.safe_load_all(f))
+
+          errors = []
+          for doc in docs:
+              if doc is None or doc.get("kind") != "Deployment":
+                  continue
+
+              containers = doc.get("spec", {}).get("template", {}).get("spec", {}).get("containers", [])
+              for container in containers:
+                  name = container.get("name", "unknown")
+                  resources = container.get("resources", {})
+                  if not resources.get("requests"):
+                      errors.append(f"Container '{name}': missing resource requests")
+                  if not resources.get("limits"):
+                      errors.append(f"Container '{name}': missing resource limits")
+
+                  # Check probes
+                  if not container.get("livenessProbe"):
+                      errors.append(f"Container '{name}': missing livenessProbe")
+                  if not container.get("readinessProbe"):
+                      errors.append(f"Container '{name}': missing readinessProbe")
+
+                  # Check security context
+                  sc = container.get("securityContext", {})
+                  if sc.get("allowPrivilegeEscalation") is not False:
+                      errors.append(f"Container '{name}': allowPrivilegeEscalation not set to false")
+                  if not sc.get("readOnlyRootFilesystem"):
+                      errors.append(f"Container '{name}': readOnlyRootFilesystem not enabled")
+
+          if errors:
+              print("Deployment validation errors:")
+              for e in errors:
+                  print(f"  - {e}")
+              sys.exit(1)
+
+          print("Deployment validation passed")
+          PYEOF
+
+      - name: Validate NetworkPolicy completeness
+        run: |
+          python3 << 'PYEOF'
+          import yaml
+          import glob
+          import sys
+
+          netpol_path = "${{ env.K8S_DIR }}/networkpolicy.yaml"
+          with open(netpol_path) as f:
+              docs = [d for d in yaml.safe_load_all(f) if d is not None]
+
+          errors = []
+          has_default_deny = False
+          has_ingress = False
+          has_egress = False
+
+          for doc in docs:
+              if doc.get("kind") != "NetworkPolicy":
+                  continue
+              name = doc.get("metadata", {}).get("name", "")
+              spec = doc.get("spec", {})
+              policy_types = spec.get("policyTypes", [])
+
+              if name == "default-deny-all":
+                  has_default_deny = True
+              if "Ingress" in policy_types and spec.get("ingress"):
+                  has_ingress = True
+              if "Egress" in policy_types and spec.get("egress"):
+                  has_egress = True
+
+          if not has_default_deny:
+              errors.append("Missing default-deny-all NetworkPolicy")
+          if not has_ingress:
+              errors.append("No ingress rules defined")
+          if not has_egress:
+              errors.append("No egress rules defined")
+
+          if errors:
+              print("NetworkPolicy validation errors:")
+              for e in errors:
+                  print(f"  - {e}")
+              sys.exit(1)
+
+          print("NetworkPolicy validation passed (default-deny + ingress + egress)")
+          PYEOF
+
+  # -------------------------------------------------------------------------
+  # Job 5: Terraform Validate
+  # -------------------------------------------------------------------------
+  terraform-validate:
+    name: Terraform Validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.7.0"
+
+      - name: Terraform init
+        working-directory: ${{ env.TERRAFORM_MODULE_DIR }}
+        run: terraform init -backend=false
+
+      - name: Terraform validate
+        working-directory: ${{ env.TERRAFORM_MODULE_DIR }}
+        run: terraform validate
+
+      - name: Terraform format check
+        working-directory: ${{ env.TERRAFORM_MODULE_DIR }}
+        run: terraform fmt -check -recursive -diff
+
+      - name: Validate environment configs reference module correctly
+        run: |
+          python3 << 'PYEOF'
+          import re
+          import sys
+
+          envs = ["dev", "staging", "prod"]
+          errors = []
+
+          for env in envs:
+              path = f"deployment/terraform/environments/{env}/alerting.tf"
+              try:
+                  with open(path) as f:
+                      content = f.read()
+              except FileNotFoundError:
+                  errors.append(f"{path}: File not found")
+                  continue
+
+              # Check module source reference
+              if "../../modules/alerting-integrations" not in content:
+                  errors.append(f"{path}: Module source does not reference ../../modules/alerting-integrations")
+
+              # Check environment is set correctly
+              if f'environment = "{env}"' not in content and f"environment  = \"{env}\"" not in content:
+                  errors.append(f"{path}: Environment not set to '{env}'")
+
+          if errors:
+              print("Environment config errors:")
+              for e in errors:
+                  print(f"  - {e}")
+              sys.exit(1)
+
+          print(f"All {len(envs)} environment configs are valid")
+          PYEOF
+
+  # -------------------------------------------------------------------------
+  # Job 6: Schema Validation (Dashboard + Alert deep checks)
+  # -------------------------------------------------------------------------
+  schema-validate:
+    name: Schema Validation
+    runs-on: ubuntu-latest
+    needs: [lint]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Validate panel types and datasource UIDs
+        run: |
+          python3 << 'PYEOF'
+          import json
+          import glob
+          import sys
+
+          VALID_PANEL_TYPES = {
+              "timeseries", "stat", "gauge", "bargauge", "table", "text",
+              "heatmap", "piechart", "barchart", "logs", "nodeGraph",
+              "traces", "flamegraph", "candlestick", "histogram", "row",
+              "state-timeline", "status-history", "news", "dashlist",
+              "alertlist", "annolist", "geomap", "canvas", "trend",
+              "datagrid", "xy", "debug",
+          }
+
+          KNOWN_DATASOURCE_UIDS = {
+              "thanos", "prometheus", "loki", "jaeger", "tempo",
+              "alertmanager", "postgresql", "cloudwatch",
+              "-- Grafana --", "-- Mixed --", "-- Dashboard --",
+          }
+
+          DASHBOARD_PATTERNS = [
+              "${{ env.DASHBOARDS_DIR }}/alerting-*.json",
+          ]
+
+          errors = []
+          warnings = []
+          checked = 0
+
+          for pattern in DASHBOARD_PATTERNS:
+              for path in sorted(glob.glob(pattern)):
+                  checked += 1
+                  with open(path) as f:
+                      try:
+                          data = json.load(f)
+                      except json.JSONDecodeError:
+                          errors.append(f"{path}: Invalid JSON")
+                          continue
+
+                  def validate_panels(panels, file_path):
+                      for panel in panels:
+                          ptype = panel.get("type", "")
+                          if ptype and ptype not in VALID_PANEL_TYPES:
+                              warnings.append(f"{file_path}: Unknown panel type '{ptype}'")
+
+                          ds = panel.get("datasource", {})
+                          if isinstance(ds, dict):
+                              ds_uid = ds.get("uid", "")
+                              if ds_uid and ds_uid.startswith("$"):
+                                  pass
+                              elif ds_uid and ds_uid not in KNOWN_DATASOURCE_UIDS:
+                                  warnings.append(
+                                      f"{file_path}: Unknown datasource UID "
+                                      f"'{ds_uid}' in panel '{panel.get('title', '?')}'"
+                                  )
+
+                          if ptype == "row" and "panels" in panel:
+                              validate_panels(panel["panels"], file_path)
+
+                  validate_panels(data.get("panels", []), path)
+
+          if warnings:
+              print("Schema warnings:")
+              for w in warnings:
+                  print(f"  - {w}")
+
+          if errors:
+              print("Schema errors:")
+              for e in errors:
+                  print(f"  - {e}")
+              sys.exit(1)
+
+          if checked == 0:
+              print("WARNING: No alerting dashboard files found for schema validation")
+          else:
+              print(f"Schema validation passed for {checked} alerting dashboards")
+          PYEOF
+
+      - name: Validate PromQL expressions in dashboards
+        run: |
+          python3 << 'PYEOF'
+          import json
+          import glob
+          import re
+          import sys
+
+          DASHBOARD_PATTERNS = [
+              "${{ env.DASHBOARDS_DIR }}/alerting-*.json",
+          ]
+
+          warnings = []
+          checked = 0
+
+          def extract_expressions(obj, expressions=None):
+              if expressions is None:
+                  expressions = []
+              if isinstance(obj, dict):
+                  if "expr" in obj and isinstance(obj["expr"], str) and obj["expr"].strip():
+                      expr = obj["expr"].strip()
+                      expressions.append(expr)
+                  for v in obj.values():
+                      extract_expressions(v, expressions)
+              elif isinstance(obj, list):
+                  for item in obj:
+                      extract_expressions(item, expressions)
+              return expressions
+
+          for pattern in DASHBOARD_PATTERNS:
+              for path in sorted(glob.glob(pattern)):
+                  with open(path) as f:
+                      try:
+                          data = json.load(f)
+                      except json.JSONDecodeError:
+                          continue
+
+                  exprs = extract_expressions(data)
+                  for expr in exprs:
+                      checked += 1
+                      if expr.startswith("{"):
+                          continue
+                      if expr.count("(") != expr.count(")"):
+                          warnings.append(
+                              f"{path}: Unmatched parentheses in expr: {expr[:80]}..."
+                          )
+                      if expr.count("[") != expr.count("]"):
+                          warnings.append(
+                              f"{path}: Unmatched brackets in expr: {expr[:80]}..."
+                          )
+                      clean = re.sub(r'\$\{[^}]*\}', '', expr)
+                      clean = re.sub(r'\$__\w+', '', clean)
+                      if clean.count("{") != clean.count("}"):
+                          warnings.append(
+                              f"{path}: Unmatched braces in expr: {expr[:80]}..."
+                          )
+
+          if warnings:
+              print("PromQL expression warnings:")
+              for w in warnings:
+                  print(f"  - {w}")
+
+          print(f"Checked {checked} expressions in alerting dashboards")
+          PYEOF
+
+      - name: Validate alert rules have required labels
+        run: |
+          python3 << 'PYEOF'
+          import yaml
+          import glob
+          import sys
+
+          REQUIRED_LABELS = ["severity", "team", "component", "prd"]
+          REQUIRED_ANNOTATIONS = ["summary", "description", "runbook_url", "dashboard_url"]
+
+          errors = []
+          checked = 0
+
+          for path in sorted(glob.glob("${{ env.ALERTS_DIR }}/alerting-*.yaml")):
+              with open(path) as f:
+                  try:
+                      docs = list(yaml.safe_load_all(f))
+                  except yaml.YAMLError:
+                      continue
+
+              for doc in docs:
+                  if doc is None:
+                      continue
+                  groups = doc.get("spec", {}).get("groups", doc.get("groups", []))
+                  for group in groups:
+                      for rule in group.get("rules", []):
+                          if "alert" not in rule:
+                              continue
+                          checked += 1
+                          alert_name = rule["alert"]
+                          labels = rule.get("labels", {})
+                          annotations = rule.get("annotations", {})
+
+                          for label in REQUIRED_LABELS:
+                              if label not in labels:
+                                  errors.append(f"{path}: Alert '{alert_name}' missing label '{label}'")
+
+                          for ann in REQUIRED_ANNOTATIONS:
+                              if ann not in annotations:
+                                  errors.append(f"{path}: Alert '{alert_name}' missing annotation '{ann}'")
+
+          if errors:
+              print("Alert rule validation errors:")
+              for e in errors:
+                  print(f"  - {e}")
+              sys.exit(1)
+
+          print(f"All {checked} alert rules have required labels and annotations")
+          PYEOF
+
+      - name: Validate SQL migration syntax
+        run: |
+          python3 << 'PYEOF'
+          import sys
+
+          migration_path = "deployment/database/migrations/sql/V019__alerting_service.sql"
+          try:
+              with open(migration_path) as f:
+                  content = f.read()
+          except FileNotFoundError:
+              print(f"ERROR: {migration_path} not found")
+              sys.exit(1)
+
+          errors = []
+
+          # Check required schema creation
+          if "CREATE SCHEMA" not in content:
+              errors.append("Missing CREATE SCHEMA statement")
+
+          # Check required tables
+          required_tables = [
+              "alerting.alerts",
+              "alerting.notification_log",
+              "alerting.escalation_log",
+              "alerting.oncall_cache",
+          ]
+          for table in required_tables:
+              if f"CREATE TABLE {table}" not in content:
+                  errors.append(f"Missing CREATE TABLE {table}")
+
+          # Check hypertable creation
+          if "create_hypertable" not in content:
+              errors.append("Missing create_hypertable call")
+
+          # Check continuous aggregate
+          if "MATERIALIZED VIEW" not in content:
+              errors.append("Missing continuous aggregate (MATERIALIZED VIEW)")
+
+          # Check RLS
+          if "ROW LEVEL SECURITY" not in content:
+              errors.append("Missing Row Level Security")
+
+          # Check permissions
+          if "security.permissions" not in content:
+              errors.append("Missing security.permissions INSERT")
+
+          if errors:
+              print("SQL migration validation errors:")
+              for e in errors:
+                  print(f"  - {e}")
+              sys.exit(1)
+
+          print(f"SQL migration validation passed ({len(content)} bytes)")
+          PYEOF

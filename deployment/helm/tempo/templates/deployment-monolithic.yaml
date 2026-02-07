@@ -1,0 +1,130 @@
+{{/*
+# =============================================================================
+# GreenLang Tempo - Monolithic Deployment
+# GreenLang Climate OS | OBS-003
+# =============================================================================
+# Single-binary deployment running all Tempo components in one process.
+# Used for dev/local environments where resource efficiency is preferred
+# over high availability. Only deployed when mode=monolithic.
+# =============================================================================
+*/}}
+{{- if eq .Values.tempo.mode "monolithic" }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "tempo.fullname" . }}
+  namespace: {{ include "tempo.namespace" . }}
+  labels:
+    {{- include "tempo.monolithicLabels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.tempo.monolithic.replicas | default 1 }}
+  revisionHistoryLimit: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      {{- include "tempo.monolithicSelectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "tempo.monolithicLabels" . | nindent 8 }}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3200"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: {{ include "tempo.serviceAccountName" . }}
+      {{- with .Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      terminationGracePeriodSeconds: 60
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: tempo
+          image: {{ include "tempo.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy | default "IfNotPresent" }}
+          args:
+            - -config.file=/conf/tempo.yaml
+          ports:
+            - name: http-metrics
+              containerPort: {{ .Values.tempo.server.http_listen_port | default 3200 }}
+              protocol: TCP
+            - name: grpc
+              containerPort: {{ .Values.tempo.server.grpc_listen_port | default 9095 }}
+              protocol: TCP
+            - name: otlp-grpc
+              containerPort: 4317
+              protocol: TCP
+            - name: otlp-http
+              containerPort: 4318
+              protocol: TCP
+            - name: jaeger-grpc
+              containerPort: 14250
+              protocol: TCP
+          {{- with .Values.containerSecurityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.tempo.monolithic.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: http-metrics
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /ready
+              port: http-metrics
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+          env:
+            - name: GOMAXPROCS
+              valueFrom:
+                resourceFieldRef:
+                  resource: limits.cpu
+                  divisor: "1"
+          volumeMounts:
+            - name: config
+              mountPath: /conf
+              readOnly: true
+            - name: tempo-data
+              mountPath: /var/tempo
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "tempo.fullname" . }}-config
+        {{- if and .Values.tempo.monolithic.persistence .Values.tempo.monolithic.persistence.enabled }}
+        - name: tempo-data
+          persistentVolumeClaim:
+            claimName: {{ include "tempo.fullname" . }}-monolithic-data
+        {{- else }}
+        - name: tempo-data
+          emptyDir: {}
+        {{- end }}
+        - name: tmp
+          emptyDir:
+            sizeLimit: 100Mi
+{{- end }}

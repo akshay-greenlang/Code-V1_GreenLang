@@ -1,0 +1,772 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      },
+      {
+        "datasource": "${datasource}",
+        "enable": true,
+        "expr": "ALERTS{alertname=~\"Trace.*\", alertstate=\"firing\"}",
+        "iconColor": "#FF4444",
+        "name": "Trace Alerts",
+        "step": "60s",
+        "tagKeys": "alertname,severity",
+        "titleFormat": "{{ alertname }}",
+        "type": "tags"
+      }
+    ]
+  },
+  "description": "GreenLang Climate OS - Trace Analytics. Deep-dive into trace data with TraceQL search, operation analysis, duration distributions, and GreenLang-specific agent pipeline tracing. See runbook: docs/runbooks/trace-search-slow.md",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [
+    {
+      "asDropdown": true,
+      "icon": "external link",
+      "includeVars": true,
+      "keepTime": true,
+      "tags": ["observability", "greenlang"],
+      "targetBlank": true,
+      "title": "Observability Dashboards",
+      "type": "dashboards"
+    },
+    {
+      "asDropdown": false,
+      "icon": "doc",
+      "targetBlank": true,
+      "title": "Tracing Overview",
+      "tooltip": "Open Distributed Tracing Overview dashboard",
+      "type": "link",
+      "url": "/d/tracing-overview"
+    },
+    {
+      "asDropdown": false,
+      "icon": "doc",
+      "targetBlank": true,
+      "title": "Trace Search Runbook",
+      "tooltip": "Open Trace Search Slow runbook",
+      "type": "link",
+      "url": "https://docs.greenlang.io/runbooks/trace-search-slow"
+    }
+  ],
+  "liveNow": false,
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "id": 1,
+      "title": "Trace Search",
+      "type": "row"
+    },
+    {
+      "datasource": "${tempo_datasource}",
+      "description": "Search traces using TraceQL. Examples: { resource.service.name = \"api-service\" }, { span.http.status_code >= 500 }, { duration > 1s }",
+      "fieldConfig": {
+        "defaults": {}
+      },
+      "gridPos": { "h": 10, "w": 12, "x": 0, "y": 1 },
+      "id": 2,
+      "options": {
+        "enableLogDetails": true
+      },
+      "title": "TraceQL Search",
+      "type": "traces",
+      "targets": [
+        {
+          "datasource": "${tempo_datasource}",
+          "queryType": "traceqlSearch",
+          "query": "{ resource.service.name =~ \"$service\" && resource.deployment.environment =~ \"$environment\" }",
+          "limit": 20,
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": "${tempo_datasource}",
+      "description": "Tabular view of recent traces with service, operation, duration, status, and trace ID for quick navigation.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "custom": {
+            "align": "auto",
+            "cellOptions": { "type": "auto" },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Duration" },
+            "properties": [
+              { "id": "unit", "value": "ms" },
+              { "id": "custom.cellOptions", "value": { "mode": "gradient", "type": "gauge" } },
+              { "id": "color", "value": { "mode": "continuous-GrYlRd" } },
+              { "id": "custom.width", "value": 200 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "traceID" },
+            "properties": [
+              { "id": "links", "value": [{ "title": "View Trace", "url": "/explore?left=%7B%22datasource%22:%22${tempo_datasource}%22,%22queries%22:%5B%7B%22queryType%22:%22traceql%22,%22query%22:%22${__value.text}%22%7D%5D%7D", "targetBlank": true }] }
+            ]
+          }
+        ]
+      },
+      "gridPos": { "h": 10, "w": 12, "x": 12, "y": 1 },
+      "id": 3,
+      "options": {
+        "cellHeight": "sm",
+        "footer": { "countRows": false, "fields": "", "reducer": ["sum"], "show": false },
+        "showHeader": true,
+        "sortBy": [{ "desc": true, "displayName": "Duration" }]
+      },
+      "title": "Recent Traces",
+      "type": "table",
+      "targets": [
+        {
+          "datasource": "${tempo_datasource}",
+          "queryType": "traceqlSearch",
+          "query": "{ resource.service.name =~ \"$service\" && resource.deployment.environment =~ \"$environment\" } | select(status, resource.service.name, name)",
+          "limit": 50,
+          "tableType": "traces",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 11 },
+      "id": 4,
+      "title": "Operation Analysis",
+      "type": "row"
+    },
+    {
+      "datasource": "${datasource}",
+      "description": "Top 20 operations ranked by P95 latency. Identifies the slowest endpoints and functions across all services.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "custom": {
+            "align": "auto",
+            "cellOptions": { "type": "auto" },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 200 },
+              { "color": "red", "value": 1000 }
+            ]
+          },
+          "unit": "ms"
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Value" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "mode": "gradient", "type": "gauge" } },
+              { "id": "custom.width", "value": 250 }
+            ]
+          }
+        ]
+      },
+      "gridPos": { "h": 10, "w": 12, "x": 0, "y": 12 },
+      "id": 5,
+      "options": {
+        "cellHeight": "sm",
+        "footer": { "countRows": false, "fields": "", "reducer": ["sum"], "show": false },
+        "showHeader": true,
+        "sortBy": [{ "desc": true, "displayName": "Value" }]
+      },
+      "title": "Top Operations by Latency (P95)",
+      "type": "table",
+      "targets": [
+        {
+          "datasource": "${datasource}",
+          "expr": "topk(20, histogram_quantile(0.95, sum(rate(traces_spanmetrics_duration_seconds_bucket{environment=~\"$environment\", service_name=~\"$service\"}[5m])) by (le, operation)) * 1000)",
+          "legendFormat": "{{ operation }}",
+          "format": "table",
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": { "Time": true },
+            "renameByName": {
+              "operation": "Operation",
+              "Value": "P95 Latency (ms)"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "datasource": "${datasource}",
+      "description": "Top 20 operations ranked by call volume. Identifies the most frequently called endpoints for optimization focus.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "custom": {
+            "align": "auto",
+            "cellOptions": { "type": "auto" },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 10 },
+              { "color": "red", "value": 100 }
+            ]
+          },
+          "unit": "ops"
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Value" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "mode": "gradient", "type": "gauge" } },
+              { "id": "custom.width", "value": 250 }
+            ]
+          }
+        ]
+      },
+      "gridPos": { "h": 10, "w": 12, "x": 12, "y": 12 },
+      "id": 6,
+      "options": {
+        "cellHeight": "sm",
+        "footer": { "countRows": false, "fields": "", "reducer": ["sum"], "show": false },
+        "showHeader": true,
+        "sortBy": [{ "desc": true, "displayName": "Value" }]
+      },
+      "title": "Top Operations by Volume",
+      "type": "table",
+      "targets": [
+        {
+          "datasource": "${datasource}",
+          "expr": "topk(20, sum(rate(traces_spanmetrics_calls_total{environment=~\"$environment\", service_name=~\"$service\"}[5m])) by (operation))",
+          "legendFormat": "{{ operation }}",
+          "format": "table",
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": { "Time": true },
+            "renameByName": {
+              "operation": "Operation",
+              "Value": "Calls/sec"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "datasource": "${datasource}",
+      "description": "P95 latency per service as a horizontal bar gauge. Instantly identifies the slowest services in the platform.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "continuous-GrYlRd" },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 200 },
+              { "color": "red", "value": 1000 }
+            ]
+          },
+          "unit": "ms",
+          "min": 0
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 22 },
+      "id": 7,
+      "options": {
+        "displayMode": "gradient",
+        "minVizHeight": 10,
+        "minVizWidth": 0,
+        "orientation": "horizontal",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "showUnfilled": true,
+        "valueMode": "color"
+      },
+      "title": "Slowest Services (P95)",
+      "type": "bargauge",
+      "targets": [
+        {
+          "datasource": "${datasource}",
+          "expr": "histogram_quantile(0.95, sum(rate(traces_spanmetrics_duration_seconds_bucket{environment=~\"$environment\", service_name=~\"$service\"}[5m])) by (le, service_name)) * 1000",
+          "legendFormat": "{{ service_name }}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": "${datasource}",
+      "description": "Request throughput per service as a horizontal bar gauge. Shows relative traffic distribution across services.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "continuous-blues" },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "blue", "value": null }
+            ]
+          },
+          "unit": "ops",
+          "min": 0
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 22 },
+      "id": 8,
+      "options": {
+        "displayMode": "gradient",
+        "minVizHeight": 10,
+        "minVizWidth": 0,
+        "orientation": "horizontal",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "showUnfilled": true,
+        "valueMode": "color"
+      },
+      "title": "Most Active Services",
+      "type": "bargauge",
+      "targets": [
+        {
+          "datasource": "${datasource}",
+          "expr": "sum(rate(traces_spanmetrics_calls_total{environment=~\"$environment\", service_name=~\"$service\"}[5m])) by (service_name)",
+          "legendFormat": "{{ service_name }}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 30 },
+      "id": 9,
+      "title": "Duration Distribution",
+      "type": "row"
+    },
+    {
+      "datasource": "${datasource}",
+      "description": "Heatmap showing the distribution of span durations over time. Reveals latency patterns, bimodal distributions, and anomalies.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "scheme", "schemeId": "Oranges" },
+          "custom": {
+            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
+            "scaleDistribution": { "type": "log", "log": 2 }
+          },
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 31 },
+      "id": 10,
+      "options": {
+        "calculate": false,
+        "cellGap": 1,
+        "color": { "exponent": 0.5, "fill": "dark-orange", "mode": "scheme", "reverse": false, "scale": "exponential", "scheme": "Oranges", "steps": 64 },
+        "exemplars": { "color": "rgba(255,0,255,0.7)" },
+        "filterValues": { "le": 1e-9 },
+        "legend": { "show": true },
+        "rowsFrame": { "layout": "auto" },
+        "tooltip": { "show": true, "yHistogram": true },
+        "yAxis": { "axisPlacement": "left", "reverse": false, "unit": "s" }
+      },
+      "title": "Span Duration Distribution",
+      "type": "heatmap",
+      "targets": [
+        {
+          "datasource": "${datasource}",
+          "expr": "sum(increase(traces_spanmetrics_duration_seconds_bucket{environment=~\"$environment\", service_name=~\"$service\"}[$__rate_interval])) by (le)",
+          "legendFormat": "{{ le }}",
+          "format": "heatmap",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": "${datasource}",
+      "description": "Operations with P95 duration exceeding 5 seconds. These long-running traces may indicate timeouts, retry storms, or unoptimized queries.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "custom": {
+            "align": "auto",
+            "cellOptions": { "type": "auto" },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "yellow", "value": null },
+              { "color": "orange", "value": 10000 },
+              { "color": "red", "value": 30000 }
+            ]
+          },
+          "unit": "ms"
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Value" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "mode": "gradient", "type": "gauge" } },
+              { "id": "custom.width", "value": 250 }
+            ]
+          }
+        ]
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 31 },
+      "id": 11,
+      "options": {
+        "cellHeight": "sm",
+        "footer": { "countRows": false, "fields": "", "reducer": ["sum"], "show": false },
+        "showHeader": true,
+        "sortBy": [{ "desc": true, "displayName": "Value" }]
+      },
+      "title": "Long-Running Traces (P95 > 5s)",
+      "type": "table",
+      "targets": [
+        {
+          "datasource": "${datasource}",
+          "expr": "histogram_quantile(0.95, sum(rate(traces_spanmetrics_duration_seconds_bucket{environment=~\"$environment\", service_name=~\"$service\"}[5m])) by (le, service_name, operation)) * 1000 > 5000",
+          "legendFormat": "{{ service_name }} / {{ operation }}",
+          "format": "table",
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": { "Time": true },
+            "renameByName": {
+              "service_name": "Service",
+              "operation": "Operation",
+              "Value": "P95 Duration (ms)"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 39 },
+      "id": 12,
+      "title": "GreenLang Analysis",
+      "type": "row"
+    },
+    {
+      "datasource": "${datasource}",
+      "description": "Throughput of traces from agent pipeline operations. Monitors agent lifecycle stages: init, execute, validate, report.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "traces/sec",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 15,
+            "gradientMode": "opacity",
+            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": { "type": "linear" },
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": { "group": "A", "mode": "none" },
+            "thresholdsStyle": { "mode": "off" }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null }
+            ]
+          },
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 0, "y": 40 },
+      "id": 13,
+      "options": {
+        "legend": { "calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom", "showLegend": true },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "title": "Agent Pipeline Traces",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": "${datasource}",
+          "expr": "sum(rate(traces_spanmetrics_calls_total{operation=~\"agent\\..*\", environment=~\"$environment\"}[5m])) by (operation)",
+          "legendFormat": "{{ operation }}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": "${datasource}",
+      "description": "P95 latency of emission calculation spans by calculation type (scope1, scope2, scope3, lca). Critical for SLA tracking.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "latency (ms)",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "opacity",
+            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": { "type": "linear" },
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": { "group": "A", "mode": "none" },
+            "thresholdsStyle": { "mode": "line" }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 2000 },
+              { "color": "red", "value": 5000 }
+            ]
+          },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 6, "y": 40 },
+      "id": 14,
+      "options": {
+        "legend": { "calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom", "showLegend": true },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "title": "Emission Calculation Duration",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": "${datasource}",
+          "expr": "histogram_quantile(0.95, sum(rate(traces_spanmetrics_duration_seconds_bucket{gl_calculation_type!=\"\", environment=~\"$environment\"}[5m])) by (le, gl_calculation_type)) * 1000",
+          "legendFormat": "{{ gl_calculation_type }}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": "${datasource}",
+      "description": "P95 latency of external data source calls by source (ecoinvent, gabi, defra, epa, custom). Tracks third-party API performance.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "latency (ms)",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "opacity",
+            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": { "type": "linear" },
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": { "group": "A", "mode": "none" },
+            "thresholdsStyle": { "mode": "line" }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 1000 },
+              { "color": "red", "value": 3000 }
+            ]
+          },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 12, "y": 40 },
+      "id": 15,
+      "options": {
+        "legend": { "calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom", "showLegend": true },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "title": "Data Source Latency",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": "${datasource}",
+          "expr": "histogram_quantile(0.95, sum(rate(traces_spanmetrics_duration_seconds_bucket{gl_data_source!=\"\", environment=~\"$environment\"}[5m])) by (le, gl_data_source)) * 1000",
+          "legendFormat": "{{ gl_data_source }}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": "${datasource}",
+      "description": "Service-to-service call graph showing request rates. Visualizes the flow of requests through the GreenLang platform for dependency analysis.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 18, "y": 40 },
+      "id": 16,
+      "options": {
+        "nodes": {
+          "mainStatUnit": "ops"
+        },
+        "edges": {
+          "mainStatUnit": "ms"
+        }
+      },
+      "title": "Cross-Service Correlation",
+      "type": "nodeGraph",
+      "targets": [
+        {
+          "datasource": "${datasource}",
+          "expr": "sum(rate(traces_service_graph_request_total{environment=~\"$environment\"}[5m])) by (client, server)",
+          "refId": "edges",
+          "format": "table",
+          "instant": true
+        },
+        {
+          "datasource": "${datasource}",
+          "expr": "sum(rate(traces_spanmetrics_calls_total{environment=~\"$environment\"}[5m])) by (service_name)",
+          "refId": "nodes",
+          "format": "table",
+          "instant": true
+        }
+      ]
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "style": "dark",
+  "tags": ["tracing", "analytics", "observability", "obs-003", "greenlang", "tempo"],
+  "templating": {
+    "list": [
+      {
+        "current": { "selected": false, "text": "Thanos", "value": "Thanos" },
+        "hide": 0,
+        "includeAll": false,
+        "label": "Datasource",
+        "multi": false,
+        "name": "datasource",
+        "options": [],
+        "query": "prometheus",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
+      },
+      {
+        "current": { "selected": false, "text": "Tempo", "value": "Tempo" },
+        "hide": 0,
+        "includeAll": false,
+        "label": "Tempo Datasource",
+        "multi": false,
+        "name": "tempo_datasource",
+        "options": [],
+        "query": "tempo",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
+      },
+      {
+        "allValue": ".*",
+        "current": { "selected": true, "text": "All", "value": "$__all" },
+        "datasource": "${datasource}",
+        "definition": "label_values(traces_spanmetrics_calls_total, environment)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Environment",
+        "multi": false,
+        "name": "environment",
+        "options": [],
+        "query": "label_values(traces_spanmetrics_calls_total, environment)",
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "allValue": ".*",
+        "current": { "selected": true, "text": "All", "value": "$__all" },
+        "datasource": "${datasource}",
+        "definition": "label_values(traces_spanmetrics_calls_total{environment=~\"$environment\"}, service_name)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Service",
+        "multi": true,
+        "name": "service",
+        "options": [],
+        "query": "label_values(traces_spanmetrics_calls_total{environment=~\"$environment\"}, service_name)",
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": { "from": "now-1h", "to": "now" },
+  "timepicker": {
+    "refresh_intervals": ["5s", "10s", "30s", "1m", "5m", "15m", "30m", "1h"],
+    "time_options": ["5m", "15m", "1h", "3h", "6h", "12h", "24h", "2d", "7d"]
+  },
+  "timezone": "utc",
+  "title": "Trace Analytics",
+  "uid": "trace-analytics",
+  "version": 1
+}

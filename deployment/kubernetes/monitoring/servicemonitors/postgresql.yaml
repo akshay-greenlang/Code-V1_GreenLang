@@ -1,0 +1,277 @@
+# ============================================================================
+# PostgreSQL ServiceMonitor
+# ============================================================================
+# Prometheus ServiceMonitor for PostgreSQL using postgres_exporter.
+# Monitors database health, replication, connections, and query performance.
+#
+# Exporter: postgres_exporter
+# Scrape Path: /metrics
+# Scrape Interval: 15 seconds
+#
+# Created: 2026-02-06
+# Team: Monitoring & Observability
+# PRD: OBS-001 - Prometheus Metrics Collection
+# Related: INFRA-002 - PostgreSQL + TimescaleDB
+# ============================================================================
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: postgresql
+  namespace: monitoring
+  labels:
+    app: postgresql
+    app.kubernetes.io/name: postgresql
+    app.kubernetes.io/component: database
+    app.kubernetes.io/part-of: greenlang
+    release: prometheus
+    team: platform
+    tier: infrastructure
+  annotations:
+    description: "ServiceMonitor for PostgreSQL via postgres_exporter"
+    prometheus.io/docs: "https://docs.greenlang.ai/observability/postgresql-metrics"
+spec:
+  # Job label for Prometheus
+  jobLabel: postgresql
+
+  # Selector for postgres_exporter service
+  selector:
+    matchLabels:
+      app: postgres-exporter
+    matchExpressions:
+      - key: monitoring
+        operator: NotIn
+        values: ["disabled"]
+
+  # Target namespaces
+  namespaceSelector:
+    matchNames:
+      - greenlang
+      - greenlang-db
+      - monitoring
+      - default
+
+  # Endpoint configuration
+  endpoints:
+    - port: metrics
+      interval: 15s
+      scrapeTimeout: 10s
+      path: /metrics
+      scheme: http
+      honorLabels: true
+
+      # Relabelings for target labels
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_service_name]
+          targetLabel: service
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod
+        - sourceLabels: [__meta_kubernetes_pod_label_database]
+          targetLabel: database
+        - sourceLabels: [__meta_kubernetes_pod_label_cluster]
+          targetLabel: cluster
+        - sourceLabels: []
+          targetLabel: application
+          replacement: "postgresql"
+        - sourceLabels: []
+          targetLabel: component
+          replacement: "database"
+
+      # Metric relabelings
+      metricRelabelings:
+        # Keep PostgreSQL core metrics
+        - sourceLabels: [__name__]
+          regex: 'pg_.*'
+          action: keep
+
+        # Keep database size metrics
+        - sourceLabels: [__name__]
+          regex: 'pg_database_size_bytes'
+          action: keep
+
+        # Keep replication metrics
+        - sourceLabels: [__name__]
+          regex: 'pg_replication_.*'
+          action: keep
+
+        # Keep connection metrics
+        - sourceLabels: [__name__]
+          regex: 'pg_(stat_activity|connections).*'
+          action: keep
+
+        # Keep query statistics
+        - sourceLabels: [__name__]
+          regex: 'pg_stat_(user_tables|user_indexes|statements).*'
+          action: keep
+
+        # Keep lock metrics
+        - sourceLabels: [__name__]
+          regex: 'pg_locks.*'
+          action: keep
+
+        # Keep WAL metrics
+        - sourceLabels: [__name__]
+          regex: 'pg_wal_.*'
+          action: keep
+
+        # Keep exporter health metrics
+        - sourceLabels: [__name__]
+          regex: 'pg_exporter_.*'
+          action: keep
+
+        # Keep up metric
+        - sourceLabels: [__name__]
+          regex: 'pg_up'
+          action: keep
+
+        # Add role label (primary/replica)
+        - sourceLabels: [__meta_kubernetes_pod_label_role]
+          targetLabel: role
+
+---
+# ============================================================================
+# TimescaleDB ServiceMonitor Extension
+# ============================================================================
+# Additional monitoring for TimescaleDB-specific metrics.
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: timescaledb
+  namespace: monitoring
+  labels:
+    app: timescaledb
+    app.kubernetes.io/name: timescaledb
+    app.kubernetes.io/component: database
+    app.kubernetes.io/part-of: greenlang
+    release: prometheus
+    team: platform
+  annotations:
+    description: "ServiceMonitor for TimescaleDB-specific metrics"
+spec:
+  jobLabel: timescaledb
+
+  selector:
+    matchLabels:
+      app: timescaledb-exporter
+
+  namespaceSelector:
+    matchNames:
+      - greenlang
+      - greenlang-db
+      - monitoring
+
+  endpoints:
+    - port: metrics
+      interval: 30s
+      scrapeTimeout: 15s
+      path: /metrics
+      scheme: http
+      honorLabels: true
+
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_service_name]
+          targetLabel: service
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace
+        - sourceLabels: []
+          targetLabel: component
+          replacement: "timescaledb"
+
+      metricRelabelings:
+        # Keep TimescaleDB specific metrics
+        - sourceLabels: [__name__]
+          regex: 'timescaledb_.*'
+          action: keep
+
+        # Keep hypertable metrics
+        - sourceLabels: [__name__]
+          regex: 'pg_timescale_hypertable_.*'
+          action: keep
+
+        # Keep chunk metrics
+        - sourceLabels: [__name__]
+          regex: 'pg_timescale_chunk_.*'
+          action: keep
+
+        # Keep continuous aggregate metrics
+        - sourceLabels: [__name__]
+          regex: 'pg_timescale_continuous_agg_.*'
+          action: keep
+
+        # Keep compression metrics
+        - sourceLabels: [__name__]
+          regex: 'pg_timescale_compression_.*'
+          action: keep
+
+---
+# ============================================================================
+# PgBouncer ServiceMonitor
+# ============================================================================
+# Monitoring for PgBouncer connection pooler.
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: pgbouncer
+  namespace: monitoring
+  labels:
+    app: pgbouncer
+    app.kubernetes.io/name: pgbouncer
+    app.kubernetes.io/component: connection-pooler
+    app.kubernetes.io/part-of: greenlang
+    release: prometheus
+    team: platform
+  annotations:
+    description: "ServiceMonitor for PgBouncer connection pooler"
+spec:
+  jobLabel: pgbouncer
+
+  selector:
+    matchLabels:
+      app: pgbouncer
+
+  namespaceSelector:
+    matchNames:
+      - greenlang
+      - greenlang-db
+
+  endpoints:
+    - port: metrics
+      interval: 15s
+      scrapeTimeout: 10s
+      path: /metrics
+      scheme: http
+      honorLabels: true
+
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_service_name]
+          targetLabel: service
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace
+        - sourceLabels: []
+          targetLabel: component
+          replacement: "pgbouncer"
+
+      metricRelabelings:
+        # Keep PgBouncer metrics
+        - sourceLabels: [__name__]
+          regex: 'pgbouncer_.*'
+          action: keep
+
+        # Keep pool metrics
+        - sourceLabels: [__name__]
+          regex: 'pgbouncer_pools_.*'
+          action: keep
+
+        # Keep database metrics
+        - sourceLabels: [__name__]
+          regex: 'pgbouncer_databases_.*'
+          action: keep
+
+        # Keep stats metrics
+        - sourceLabels: [__name__]
+          regex: 'pgbouncer_stats_.*'
+          action: keep

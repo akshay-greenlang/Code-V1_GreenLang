@@ -1,0 +1,166 @@
+{{/*
+# =============================================================================
+# GreenLang Tempo - Ingester StatefulSet
+# GreenLang Climate OS | OBS-003
+# =============================================================================
+# Ingester receives spans from the distributor, builds trace blocks in the WAL,
+# and flushes completed blocks to S3 storage. StatefulSet provides stable
+# storage identity for WAL persistence and graceful shutdown.
+# Only deployed when mode=distributed.
+# =============================================================================
+*/}}
+{{- if eq .Values.tempo.mode "distributed" }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "tempo.fullname" . }}-ingester
+  namespace: {{ include "tempo.namespace" . }}
+  labels:
+    {{- include "tempo.ingesterLabels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.tempo.ingester.replicas | default 3 }}
+  revisionHistoryLimit: 5
+  serviceName: {{ include "tempo.fullname" . }}-ingester-headless
+  podManagementPolicy: Parallel
+  updateStrategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      {{- include "tempo.ingesterSelectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "tempo.ingesterLabels" . | nindent 8 }}
+        tempo-gossip-member: "true"
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3200"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: {{ include "tempo.serviceAccountName" . }}
+      {{- with .Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      affinity:
+        {{- include "tempo.podAntiAffinity" (dict "component" "ingester" "root" .) | nindent 8 }}
+      # Ingester needs a long grace period to flush WAL on shutdown
+      terminationGracePeriodSeconds: 300
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: ingester
+          image: {{ include "tempo.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy | default "IfNotPresent" }}
+          args:
+            - -target=ingester
+            - -config.file=/conf/tempo.yaml
+            - -mem-ballast-size-mbs=1024
+          ports:
+            - name: http-metrics
+              containerPort: {{ .Values.tempo.server.http_listen_port | default 3200 }}
+              protocol: TCP
+            - name: grpc
+              containerPort: {{ .Values.tempo.server.grpc_listen_port | default 9095 }}
+              protocol: TCP
+            - name: memberlist
+              containerPort: {{ .Values.tempo.memberlist.port | default 7946 }}
+              protocol: TCP
+          {{- with .Values.containerSecurityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.tempo.ingester.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: http-metrics
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /ready
+              port: http-metrics
+            initialDelaySeconds: 45
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 5
+          env:
+            - name: GOMAXPROCS
+              valueFrom:
+                resourceFieldRef:
+                  resource: limits.cpu
+                  divisor: "1"
+          volumeMounts:
+            - name: config
+              mountPath: /conf
+              readOnly: true
+            - name: tempo-wal
+              mountPath: /var/tempo/wal
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "tempo.fullname" . }}-config
+        - name: tmp
+          emptyDir:
+            sizeLimit: 100Mi
+        {{- if not .Values.tempo.ingester.persistence.enabled }}
+        - name: tempo-wal
+          emptyDir: {}
+        {{- end }}
+  {{- if .Values.tempo.ingester.persistence.enabled }}
+  volumeClaimTemplates:
+    - metadata:
+        name: tempo-wal
+        labels:
+          {{- include "tempo.ingesterSelectorLabels" . | nindent 10 }}
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        {{- if .Values.tempo.ingester.persistence.storageClassName }}
+        storageClassName: {{ .Values.tempo.ingester.persistence.storageClassName }}
+        {{- end }}
+        resources:
+          requests:
+            storage: {{ .Values.tempo.ingester.persistence.size | default "10Gi" }}
+  {{- end }}
+---
+# Headless service for StatefulSet DNS resolution
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "tempo.fullname" . }}-ingester-headless
+  namespace: {{ include "tempo.namespace" . }}
+  labels:
+    {{- include "tempo.ingesterLabels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  clusterIP: None
+  publishNotReadyAddresses: true
+  selector:
+    {{- include "tempo.ingesterSelectorLabels" . | nindent 4 }}
+  ports:
+    - name: http-metrics
+      port: {{ .Values.tempo.server.http_listen_port | default 3200 }}
+      targetPort: http-metrics
+      protocol: TCP
+    - name: grpc
+      port: {{ .Values.tempo.server.grpc_listen_port | default 9095 }}
+      targetPort: grpc
+      protocol: TCP
+{{- end }}

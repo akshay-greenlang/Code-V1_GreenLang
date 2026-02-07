@@ -1,0 +1,598 @@
+# =============================================================================
+# GreenLang Climate OS - Audit Service Retention CronJobs
+# =============================================================================
+# PRD: SEC-005 Centralized Audit Logging Service
+# Defines Kubernetes CronJobs for audit data lifecycle management:
+#   - Daily partition rotation (move hot -> warm)
+#   - Weekly compression (compress warm partitions)
+#   - Monthly archival (move warm -> cold S3)
+#   - Yearly Glacier migration (move cold -> Glacier Deep Archive)
+# =============================================================================
+
+---
+# =============================================================================
+# Daily Partition Rotation - 2am UTC
+# =============================================================================
+# Moves audit data from hot tier (uncompressed) to warm tier (compressed).
+# Runs daily at 2am UTC to minimize impact on production traffic.
+# Operates on partitions older than 30 days.
+# =============================================================================
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: audit-daily-partition-rotation
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: audit-service
+    app.kubernetes.io/component: retention
+    app.kubernetes.io/part-of: greenlang
+    greenlang.io/prd: SEC-005
+spec:
+  schedule: "0 2 * * *"  # Daily at 2am UTC
+  timeZone: "UTC"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 7
+  failedJobsHistoryLimit: 3
+  startingDeadlineSeconds: 300
+  jobTemplate:
+    metadata:
+      labels:
+        app.kubernetes.io/name: audit-service
+        app.kubernetes.io/component: retention-rotation
+    spec:
+      activeDeadlineSeconds: 3600  # 1 hour timeout
+      backoffLimit: 2
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: audit-service
+            app.kubernetes.io/component: retention-rotation
+          annotations:
+            prometheus.io/scrape: "true"
+            prometheus.io/port: "8080"
+        spec:
+          serviceAccountName: audit-service
+          restartPolicy: Never
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            fsGroup: 1000
+          containers:
+            - name: partition-rotation
+              image: greenlang/audit-service:latest
+              imagePullPolicy: IfNotPresent
+              command:
+                - python
+                - -m
+                - greenlang.infrastructure.audit_service.cli
+                - retention
+                - rotate-partitions
+                - --age-days=30
+                - --target-tier=warm
+                - --batch-size=10000
+                - --dry-run=false
+              env:
+                - name: DATABASE_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: audit-service-secrets
+                      key: database-url
+                - name: LOG_LEVEL
+                  value: "INFO"
+                - name: METRICS_PORT
+                  value: "8080"
+              resources:
+                requests:
+                  cpu: 100m
+                  memory: 256Mi
+                limits:
+                  cpu: 500m
+                  memory: 1Gi
+              volumeMounts:
+                - name: tmp
+                  mountPath: /tmp
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop:
+                    - ALL
+          volumes:
+            - name: tmp
+              emptyDir:
+                sizeLimit: 100Mi
+          nodeSelector:
+            kubernetes.io/os: linux
+          tolerations:
+            - key: "dedicated"
+              operator: "Equal"
+              value: "batch"
+              effect: "NoSchedule"
+
+---
+# =============================================================================
+# Weekly Compression - Sunday 3am UTC
+# =============================================================================
+# Compresses warm tier partitions using TimescaleDB compression.
+# Runs weekly on Sunday at 3am UTC.
+# Compresses partitions older than 60 days that haven't been compressed.
+# =============================================================================
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: audit-weekly-compression
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: audit-service
+    app.kubernetes.io/component: retention
+    app.kubernetes.io/part-of: greenlang
+    greenlang.io/prd: SEC-005
+spec:
+  schedule: "0 3 * * 0"  # Sunday at 3am UTC
+  timeZone: "UTC"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 4
+  failedJobsHistoryLimit: 3
+  startingDeadlineSeconds: 600
+  jobTemplate:
+    metadata:
+      labels:
+        app.kubernetes.io/name: audit-service
+        app.kubernetes.io/component: retention-compression
+    spec:
+      activeDeadlineSeconds: 7200  # 2 hour timeout
+      backoffLimit: 2
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: audit-service
+            app.kubernetes.io/component: retention-compression
+          annotations:
+            prometheus.io/scrape: "true"
+            prometheus.io/port: "8080"
+        spec:
+          serviceAccountName: audit-service
+          restartPolicy: Never
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            fsGroup: 1000
+          containers:
+            - name: compression
+              image: greenlang/audit-service:latest
+              imagePullPolicy: IfNotPresent
+              command:
+                - python
+                - -m
+                - greenlang.infrastructure.audit_service.cli
+                - retention
+                - compress-partitions
+                - --min-age-days=60
+                - --compression-method=lz4
+                - --parallel-jobs=4
+              env:
+                - name: DATABASE_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: audit-service-secrets
+                      key: database-url
+                - name: LOG_LEVEL
+                  value: "INFO"
+                - name: METRICS_PORT
+                  value: "8080"
+              resources:
+                requests:
+                  cpu: 500m
+                  memory: 512Mi
+                limits:
+                  cpu: 2000m
+                  memory: 2Gi
+              volumeMounts:
+                - name: tmp
+                  mountPath: /tmp
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop:
+                    - ALL
+          volumes:
+            - name: tmp
+              emptyDir:
+                sizeLimit: 500Mi
+          nodeSelector:
+            kubernetes.io/os: linux
+          tolerations:
+            - key: "dedicated"
+              operator: "Equal"
+              value: "batch"
+              effect: "NoSchedule"
+
+---
+# =============================================================================
+# Monthly Archival - 1st of month 4am UTC
+# =============================================================================
+# Archives warm tier data to S3 as Parquet files.
+# Runs on the 1st of each month at 4am UTC.
+# Archives partitions older than 90 days to cold storage (S3 Standard).
+# =============================================================================
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: audit-monthly-archival
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: audit-service
+    app.kubernetes.io/component: retention
+    app.kubernetes.io/part-of: greenlang
+    greenlang.io/prd: SEC-005
+spec:
+  schedule: "0 4 1 * *"  # 1st of month at 4am UTC
+  timeZone: "UTC"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 12
+  failedJobsHistoryLimit: 3
+  startingDeadlineSeconds: 1800
+  jobTemplate:
+    metadata:
+      labels:
+        app.kubernetes.io/name: audit-service
+        app.kubernetes.io/component: retention-archival
+    spec:
+      activeDeadlineSeconds: 14400  # 4 hour timeout
+      backoffLimit: 3
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: audit-service
+            app.kubernetes.io/component: retention-archival
+          annotations:
+            prometheus.io/scrape: "true"
+            prometheus.io/port: "8080"
+        spec:
+          serviceAccountName: audit-service-archival
+          restartPolicy: Never
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            fsGroup: 1000
+          containers:
+            - name: archival
+              image: greenlang/audit-service:latest
+              imagePullPolicy: IfNotPresent
+              command:
+                - python
+                - -m
+                - greenlang.infrastructure.audit_service.cli
+                - retention
+                - archive-to-s3
+                - --min-age-days=90
+                - --max-age-days=120
+                - --batch-size=100000
+                - --parquet-compression=snappy
+                - --s3-bucket=$(S3_ARCHIVE_BUCKET)
+                - --delete-after-archive=true
+              env:
+                - name: DATABASE_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: audit-service-secrets
+                      key: database-url
+                - name: S3_ARCHIVE_BUCKET
+                  valueFrom:
+                    configMapKeyRef:
+                      name: audit-service-config
+                      key: s3-archive-bucket
+                - name: AWS_REGION
+                  value: "us-east-1"
+                - name: LOG_LEVEL
+                  value: "INFO"
+                - name: METRICS_PORT
+                  value: "8080"
+              resources:
+                requests:
+                  cpu: 500m
+                  memory: 1Gi
+                limits:
+                  cpu: 2000m
+                  memory: 4Gi
+              volumeMounts:
+                - name: tmp
+                  mountPath: /tmp
+                - name: archive-staging
+                  mountPath: /data/staging
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop:
+                    - ALL
+          volumes:
+            - name: tmp
+              emptyDir:
+                sizeLimit: 100Mi
+            - name: archive-staging
+              emptyDir:
+                sizeLimit: 10Gi
+          nodeSelector:
+            kubernetes.io/os: linux
+          tolerations:
+            - key: "dedicated"
+              operator: "Equal"
+              value: "batch"
+              effect: "NoSchedule"
+
+---
+# =============================================================================
+# Yearly Glacier Migration - January 1st 5am UTC
+# =============================================================================
+# Migrates cold tier data to S3 Glacier Deep Archive.
+# Runs annually on January 1st at 5am UTC.
+# Migrates partitions older than 365 days from S3 Standard to Glacier.
+# Data remains in Glacier for 7 years per compliance requirements.
+# =============================================================================
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: audit-yearly-glacier-migration
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: audit-service
+    app.kubernetes.io/component: retention
+    app.kubernetes.io/part-of: greenlang
+    greenlang.io/prd: SEC-005
+spec:
+  schedule: "0 5 1 1 *"  # January 1st at 5am UTC
+  timeZone: "UTC"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 7
+  failedJobsHistoryLimit: 3
+  startingDeadlineSeconds: 3600
+  jobTemplate:
+    metadata:
+      labels:
+        app.kubernetes.io/name: audit-service
+        app.kubernetes.io/component: retention-glacier
+    spec:
+      activeDeadlineSeconds: 28800  # 8 hour timeout
+      backoffLimit: 3
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: audit-service
+            app.kubernetes.io/component: retention-glacier
+          annotations:
+            prometheus.io/scrape: "true"
+            prometheus.io/port: "8080"
+        spec:
+          serviceAccountName: audit-service-archival
+          restartPolicy: Never
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            fsGroup: 1000
+          containers:
+            - name: glacier-migration
+              image: greenlang/audit-service:latest
+              imagePullPolicy: IfNotPresent
+              command:
+                - python
+                - -m
+                - greenlang.infrastructure.audit_service.cli
+                - retention
+                - migrate-to-glacier
+                - --min-age-days=365
+                - --storage-class=DEEP_ARCHIVE
+                - --s3-bucket=$(S3_ARCHIVE_BUCKET)
+                - --verify-checksums=true
+              env:
+                - name: DATABASE_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: audit-service-secrets
+                      key: database-url
+                - name: S3_ARCHIVE_BUCKET
+                  valueFrom:
+                    configMapKeyRef:
+                      name: audit-service-config
+                      key: s3-archive-bucket
+                - name: AWS_REGION
+                  value: "us-east-1"
+                - name: LOG_LEVEL
+                  value: "INFO"
+                - name: METRICS_PORT
+                  value: "8080"
+              resources:
+                requests:
+                  cpu: 250m
+                  memory: 512Mi
+                limits:
+                  cpu: 1000m
+                  memory: 2Gi
+              volumeMounts:
+                - name: tmp
+                  mountPath: /tmp
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop:
+                    - ALL
+          volumes:
+            - name: tmp
+              emptyDir:
+                sizeLimit: 100Mi
+          nodeSelector:
+            kubernetes.io/os: linux
+          tolerations:
+            - key: "dedicated"
+              operator: "Equal"
+              value: "batch"
+              effect: "NoSchedule"
+
+---
+# =============================================================================
+# Restore Table Cleanup - Daily 1am UTC
+# =============================================================================
+# Cleans up expired temporary restore tables.
+# Runs daily at 1am UTC.
+# Drops tables that have exceeded their expiration date.
+# =============================================================================
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: audit-restore-table-cleanup
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: audit-service
+    app.kubernetes.io/component: retention
+    app.kubernetes.io/part-of: greenlang
+    greenlang.io/prd: SEC-005
+spec:
+  schedule: "0 1 * * *"  # Daily at 1am UTC
+  timeZone: "UTC"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 7
+  failedJobsHistoryLimit: 3
+  startingDeadlineSeconds: 300
+  jobTemplate:
+    metadata:
+      labels:
+        app.kubernetes.io/name: audit-service
+        app.kubernetes.io/component: retention-cleanup
+    spec:
+      activeDeadlineSeconds: 1800  # 30 minute timeout
+      backoffLimit: 2
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: audit-service
+            app.kubernetes.io/component: retention-cleanup
+        spec:
+          serviceAccountName: audit-service
+          restartPolicy: Never
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            fsGroup: 1000
+          containers:
+            - name: cleanup
+              image: greenlang/audit-service:latest
+              imagePullPolicy: IfNotPresent
+              command:
+                - python
+                - -m
+                - greenlang.infrastructure.audit_service.cli
+                - retention
+                - cleanup-restore-tables
+              env:
+                - name: DATABASE_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: audit-service-secrets
+                      key: database-url
+                - name: LOG_LEVEL
+                  value: "INFO"
+              resources:
+                requests:
+                  cpu: 50m
+                  memory: 128Mi
+                limits:
+                  cpu: 200m
+                  memory: 256Mi
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop:
+                    - ALL
+          nodeSelector:
+            kubernetes.io/os: linux
+
+---
+# =============================================================================
+# Legal Hold Check - Daily 6am UTC
+# =============================================================================
+# Checks for expired legal holds and releases them.
+# Runs daily at 6am UTC.
+# Also generates compliance reports for active holds.
+# =============================================================================
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: audit-legal-hold-check
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: audit-service
+    app.kubernetes.io/component: retention
+    app.kubernetes.io/part-of: greenlang
+    greenlang.io/prd: SEC-005
+spec:
+  schedule: "0 6 * * *"  # Daily at 6am UTC
+  timeZone: "UTC"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 7
+  failedJobsHistoryLimit: 3
+  startingDeadlineSeconds: 300
+  jobTemplate:
+    metadata:
+      labels:
+        app.kubernetes.io/name: audit-service
+        app.kubernetes.io/component: retention-legal-hold
+    spec:
+      activeDeadlineSeconds: 1800  # 30 minute timeout
+      backoffLimit: 2
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: audit-service
+            app.kubernetes.io/component: retention-legal-hold
+        spec:
+          serviceAccountName: audit-service
+          restartPolicy: Never
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            fsGroup: 1000
+          containers:
+            - name: legal-hold-check
+              image: greenlang/audit-service:latest
+              imagePullPolicy: IfNotPresent
+              command:
+                - python
+                - -m
+                - greenlang.infrastructure.audit_service.cli
+                - retention
+                - check-legal-holds
+                - --release-expired=true
+                - --generate-report=true
+                - --notify-expiring-days=30
+              env:
+                - name: DATABASE_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: audit-service-secrets
+                      key: database-url
+                - name: NOTIFICATION_WEBHOOK
+                  valueFrom:
+                    secretKeyRef:
+                      name: audit-service-secrets
+                      key: notification-webhook
+                      optional: true
+                - name: LOG_LEVEL
+                  value: "INFO"
+              resources:
+                requests:
+                  cpu: 50m
+                  memory: 128Mi
+                limits:
+                  cpu: 200m
+                  memory: 256Mi
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop:
+                    - ALL
+          nodeSelector:
+            kubernetes.io/os: linux

@@ -1,0 +1,86 @@
+# =============================================================================
+# GreenLang Grafana - Development Environment Overrides
+# GreenLang Climate OS | OBS-002
+# =============================================================================
+
+global:
+  environment: dev
+  clusterName: greenlang-dev
+  domain: grafana.dev.greenlang.io
+
+grafana:
+  replicas: 1
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  persistence:
+    size: 5Gi
+  database:
+    type: sqlite3
+    host: ""
+    sslMode: disable
+    maxOpenConn: 10
+    maxIdleConn: 5
+  redis:
+    enabled: false
+  oauth:
+    enabled: false
+  sidecar:
+    resources:
+      requests:
+        cpu: 25m
+        memory: 32Mi
+      limits:
+        cpu: 100m
+        memory: 128Mi
+  unifiedAlerting:
+    ha:
+      enabled: false
+  notifiers:
+    enabled: false
+  smtp:
+    enabled: false
+  security:
+    adminUser: admin
+    adminPasswordSecretName: grafana-admin
+    adminPasswordSecretKey: password
+  metrics:
+    basicAuth:
+      enabled: false
+  rendering:
+    enabled: false
+
+renderer:
+  enabled: false
+
+ingress:
+  enabled: true
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-staging
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+  hosts:
+    - host: grafana.dev.greenlang.io
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: grafana-dev-tls
+      hosts:
+        - grafana.dev.greenlang.io
+
+hpa:
+  enabled: false
+
+pdb:
+  enabled: false
+
+networkPolicy:
+  enabled: false
+
+serviceMonitor:
+  enabled: true
+  interval: 30s

@@ -1,0 +1,25 @@
+# ============================================================================
+# GreenLang Grafana - Monitoring Namespace
+# ============================================================================
+# Re-uses the existing monitoring namespace for Grafana deployment.
+# The namespace is already defined in deployment/kubernetes/monitoring/namespace.yaml.
+# This file exists for Kustomize reference completeness.
+#
+# Created: 2026-02-07
+# Team: Monitoring & Observability
+# PRD: OBS-002 - Grafana Dashboards
+# ============================================================================
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: monitoring
+  labels:
+    name: monitoring
+    purpose: observability
+    team: platform
+    app.kubernetes.io/name: monitoring
+    app.kubernetes.io/part-of: greenlang
+  annotations:
+    description: "GreenLang Climate OS Monitoring Stack (Prometheus, Grafana, Alertmanager, Loki, Thanos)"
+    maintainer: "Platform Engineering / SRE Team"

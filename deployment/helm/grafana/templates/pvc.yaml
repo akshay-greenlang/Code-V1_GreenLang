@@ -1,0 +1,20 @@
+{{- /*
+GreenLang Grafana - Persistent Volume Claim
+GreenLang Climate OS | OBS-002
+*/ -}}
+{{- if .Values.grafana.persistence.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "grafana.fullname" . }}
+  namespace: {{ include "grafana.namespace" . }}
+  labels:
+    {{- include "grafana.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    {{- toYaml .Values.grafana.persistence.accessModes | nindent 4 }}
+  storageClassName: {{ .Values.grafana.persistence.storageClassName }}
+  resources:
+    requests:
+      storage: {{ .Values.grafana.persistence.size }}
+{{- end }}

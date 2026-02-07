@@ -1,0 +1,108 @@
+# =============================================================================
+# GreenLang Agent Factory v1.0 - Kubernetes Services
+# =============================================================================
+# Services for lifecycle manager, queue workers, and hub registry.
+# PRD: INFRA-010
+# =============================================================================
+
+---
+# =============================================================================
+# Lifecycle Manager Service - ClusterIP
+# =============================================================================
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: agent-factory-lifecycle
+  namespace: greenlang-agent-factory
+  labels:
+    app: agent-factory-lifecycle
+    app.kubernetes.io/name: agent-factory
+    app.kubernetes.io/component: lifecycle-manager
+    app.kubernetes.io/part-of: greenlang
+  annotations:
+    description: "Agent Lifecycle Manager - central coordinator service"
+    prd: INFRA-010
+spec:
+  type: ClusterIP
+  selector:
+    app: agent-factory-lifecycle
+    app.kubernetes.io/component: lifecycle-manager
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+      protocol: TCP
+    - name: metrics
+      port: 9090
+      targetPort: 9090
+      protocol: TCP
+  sessionAffinity: None
+
+---
+# =============================================================================
+# Queue Worker Service - Headless for internal peer discovery
+# =============================================================================
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: agent-factory-worker
+  namespace: greenlang-agent-factory
+  labels:
+    app: agent-factory-worker
+    app.kubernetes.io/name: agent-factory
+    app.kubernetes.io/component: queue-worker
+    app.kubernetes.io/part-of: greenlang
+  annotations:
+    description: "Agent Factory Task Queue Workers - headless service for peer discovery"
+    prd: INFRA-010
+spec:
+  type: ClusterIP
+  clusterIP: None
+  selector:
+    app: agent-factory-worker
+    app.kubernetes.io/component: queue-worker
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000
+      protocol: TCP
+    - name: metrics
+      port: 9090
+      targetPort: 9090
+      protocol: TCP
+
+---
+# =============================================================================
+# Hub Registry Service - ClusterIP
+# =============================================================================
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: agent-factory-hub
+  namespace: greenlang-agent-factory
+  labels:
+    app: agent-factory-hub
+    app.kubernetes.io/name: agent-factory
+    app.kubernetes.io/component: hub-registry
+    app.kubernetes.io/part-of: greenlang
+  annotations:
+    description: "Agent Hub Registry - package publishing, search, and download"
+    prd: INFRA-010
+spec:
+  type: ClusterIP
+  selector:
+    app: agent-factory-hub
+    app.kubernetes.io/component: hub-registry
+  ports:
+    - name: http
+      port: 8081
+      targetPort: 8081
+      protocol: TCP
+    - name: metrics
+      port: 9090
+      targetPort: 9090
+      protocol: TCP
+  sessionAffinity: None

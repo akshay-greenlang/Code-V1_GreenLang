@@ -1,0 +1,284 @@
+##############################################
+# GreenLang Agent Factory Vault Agent Patches
+# SEC-006: Phase 4 - Vault Agent Injector Configuration
+# Strategic merge patches for agent-factory deployment
+##############################################
+
+---
+# Strategic Merge Patch for agent-factory Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agent-factory
+  namespace: greenlang-agents
+  labels:
+    app.kubernetes.io/name: agent-factory
+    app.kubernetes.io/component: factory
+    app.kubernetes.io/part-of: greenlang
+spec:
+  template:
+    metadata:
+      annotations:
+        # Enable Vault Agent injection
+        vault.hashicorp.com/agent-inject: "true"
+
+        # Vault role for authentication
+        vault.hashicorp.com/role: "greenlang-agents"
+
+        # Sidecar mode for continuous rotation (not init-only)
+        vault.hashicorp.com/agent-pre-populate-only: "false"
+        vault.hashicorp.com/agent-init-first: "true"
+
+        # Enable caching for performance
+        vault.hashicorp.com/agent-cache-enable: "true"
+        vault.hashicorp.com/agent-cache-use-auto-auth-token: "true"
+
+        # TLS configuration
+        vault.hashicorp.com/tls-skip-verify: "false"
+        vault.hashicorp.com/ca-cert: "/vault/tls/ca.crt"
+
+        # Resource limits for agent sidecar
+        vault.hashicorp.com/agent-limits-cpu: "150m"
+        vault.hashicorp.com/agent-limits-mem: "192Mi"
+        vault.hashicorp.com/agent-requests-cpu: "75m"
+        vault.hashicorp.com/agent-requests-mem: "96Mi"
+
+        # Security settings
+        vault.hashicorp.com/agent-revoke-on-shutdown: "true"
+        vault.hashicorp.com/agent-run-as-user: "100"
+        vault.hashicorp.com/agent-run-as-group: "1000"
+
+        # PostgreSQL Credentials
+        vault.hashicorp.com/agent-inject-secret-database.json: "secret/data/greenlang/agents/database"
+        vault.hashicorp.com/agent-inject-template-database.json: |
+          {{- with secret "secret/data/greenlang/agents/database" -}}
+          {
+            "username": "{{ .Data.data.username }}",
+            "password": "{{ .Data.data.password }}",
+            "host": "{{ .Data.data.host }}",
+            "port": {{ .Data.data.port }},
+            "database": "{{ .Data.data.database }}",
+            "sslmode": "require",
+            "connection_string": "postgresql://{{ .Data.data.username }}:{{ .Data.data.password }}@{{ .Data.data.host }}:{{ .Data.data.port }}/{{ .Data.data.database }}?sslmode=require"
+          }
+          {{- end -}}
+        vault.hashicorp.com/agent-inject-perms-database.json: "0400"
+
+        # S3 Credentials (AWS credentials file format for boto3)
+        vault.hashicorp.com/agent-inject-secret-aws-credentials: "secret/data/greenlang/agents/s3"
+        vault.hashicorp.com/agent-inject-template-aws-credentials: |
+          {{- with secret "secret/data/greenlang/agents/s3" -}}
+          [default]
+          aws_access_key_id = {{ .Data.data.access_key }}
+          aws_secret_access_key = {{ .Data.data.secret_key }}
+          region = {{ .Data.data.region | default "us-east-1" }}
+          {{- end -}}
+        vault.hashicorp.com/agent-inject-perms-aws-credentials: "0400"
+
+        # S3 Configuration (JSON format)
+        vault.hashicorp.com/agent-inject-secret-s3-config.json: "secret/data/greenlang/agents/s3"
+        vault.hashicorp.com/agent-inject-template-s3-config.json: |
+          {{- with secret "secret/data/greenlang/agents/s3" -}}
+          {
+            "access_key": "{{ .Data.data.access_key }}",
+            "secret_key": "{{ .Data.data.secret_key }}",
+            "region": "{{ .Data.data.region | default "us-east-1" }}",
+            "artifacts_bucket": "{{ .Data.data.artifacts_bucket }}",
+            "models_bucket": "{{ .Data.data.models_bucket }}",
+            "logs_bucket": "{{ .Data.data.logs_bucket }}"
+          }
+          {{- end -}}
+        vault.hashicorp.com/agent-inject-perms-s3-config.json: "0400"
+
+        # Pack Signing Keys
+        vault.hashicorp.com/agent-inject-secret-signing-keys.json: "secret/data/greenlang/agents/signing"
+        vault.hashicorp.com/agent-inject-template-signing-keys.json: |
+          {{- with secret "secret/data/greenlang/agents/signing" -}}
+          {
+            "private_key": {{ .Data.data.private_key | toJSON }},
+            "public_key": {{ .Data.data.public_key | toJSON }},
+            "key_id": "{{ .Data.data.key_id }}",
+            "previous_keys": {{ .Data.data.previous_keys | default "[]" }}
+          }
+          {{- end -}}
+        vault.hashicorp.com/agent-inject-perms-signing-keys.json: "0400"
+
+        # LLM API Keys
+        vault.hashicorp.com/agent-inject-secret-llm-keys.json: "secret/data/greenlang/agents/llm"
+        vault.hashicorp.com/agent-inject-template-llm-keys.json: |
+          {{- with secret "secret/data/greenlang/agents/llm" -}}
+          {
+            "openai": {
+              "api_key": "{{ .Data.data.openai_api_key }}",
+              "org_id": "{{ .Data.data.openai_org_id }}"
+            },
+            "anthropic": {
+              "api_key": "{{ .Data.data.anthropic_api_key }}"
+            },
+            "azure_openai": {
+              "api_key": "{{ .Data.data.azure_openai_api_key }}",
+              "endpoint": "{{ .Data.data.azure_openai_endpoint }}",
+              "api_version": "{{ .Data.data.azure_openai_api_version | default "2024-02-01" }}"
+            },
+            "cohere": {
+              "api_key": "{{ .Data.data.cohere_api_key }}"
+            }
+          }
+          {{- end -}}
+        vault.hashicorp.com/agent-inject-perms-llm-keys.json: "0400"
+
+        # Transit Key Configuration
+        vault.hashicorp.com/agent-inject-secret-transit-config.json: "secret/data/greenlang/agents/transit"
+        vault.hashicorp.com/agent-inject-template-transit-config.json: |
+          {
+            "vault_addr": "https://vault.vault.svc.cluster.local:8200",
+            "transit_key": "agent-encryption",
+            "transit_mount": "transit"
+          }
+        vault.hashicorp.com/agent-inject-perms-transit-config.json: "0444"
+
+    spec:
+      serviceAccountName: agent-factory
+
+      volumes:
+        - name: vault-tls
+          secret:
+            secretName: vault-tls
+
+      containers:
+        - name: factory
+          env:
+            # Vault secrets paths
+            - name: VAULT_SECRETS_PATH
+              value: "/vault/secrets"
+            - name: DATABASE_CREDENTIALS_FILE
+              value: "/vault/secrets/database.json"
+            - name: AWS_SHARED_CREDENTIALS_FILE
+              value: "/vault/secrets/aws-credentials"
+            - name: S3_CONFIG_FILE
+              value: "/vault/secrets/s3-config.json"
+            - name: SIGNING_KEYS_FILE
+              value: "/vault/secrets/signing-keys.json"
+            - name: LLM_KEYS_FILE
+              value: "/vault/secrets/llm-keys.json"
+            - name: TRANSIT_CONFIG_FILE
+              value: "/vault/secrets/transit-config.json"
+            # Vault configuration for transit operations
+            - name: VAULT_ADDR
+              value: "https://vault.vault.svc.cluster.local:8200"
+            - name: VAULT_CACERT
+              value: "/vault/tls/ca.crt"
+          volumeMounts:
+            - name: vault-tls
+              mountPath: /vault/tls
+              readOnly: true
+
+---
+# Service Account for agent-factory (with Vault auth)
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: agent-factory
+  namespace: greenlang-agents
+  labels:
+    app.kubernetes.io/name: agent-factory
+    app.kubernetes.io/component: factory
+    app.kubernetes.io/part-of: greenlang
+  annotations:
+    # IRSA annotation (backup for AWS auth)
+    eks.amazonaws.com/role-arn: arn:aws:iam::ACCOUNT_ID:role/greenlang-agent-factory-role
+
+---
+# Strategic Merge Patch for agent-scheduler Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agent-scheduler
+  namespace: greenlang-agents
+  labels:
+    app.kubernetes.io/name: agent-scheduler
+    app.kubernetes.io/component: scheduler
+    app.kubernetes.io/part-of: greenlang
+spec:
+  template:
+    metadata:
+      annotations:
+        # Enable Vault Agent injection
+        vault.hashicorp.com/agent-inject: "true"
+        vault.hashicorp.com/role: "greenlang-agents"
+        vault.hashicorp.com/agent-pre-populate-only: "false"
+        vault.hashicorp.com/agent-init-first: "true"
+        vault.hashicorp.com/agent-cache-enable: "true"
+        vault.hashicorp.com/tls-skip-verify: "false"
+        vault.hashicorp.com/ca-cert: "/vault/tls/ca.crt"
+
+        # Resource limits
+        vault.hashicorp.com/agent-limits-cpu: "100m"
+        vault.hashicorp.com/agent-limits-mem: "128Mi"
+        vault.hashicorp.com/agent-requests-cpu: "50m"
+        vault.hashicorp.com/agent-requests-mem: "64Mi"
+
+        # Security settings
+        vault.hashicorp.com/agent-revoke-on-shutdown: "true"
+
+        # Database credentials
+        vault.hashicorp.com/agent-inject-secret-database.json: "secret/data/greenlang/agents/database"
+        vault.hashicorp.com/agent-inject-template-database.json: |
+          {{- with secret "secret/data/greenlang/agents/database" -}}
+          {
+            "username": "{{ .Data.data.username }}",
+            "password": "{{ .Data.data.password }}",
+            "host": "{{ .Data.data.host }}",
+            "port": {{ .Data.data.port }},
+            "database": "{{ .Data.data.database }}",
+            "sslmode": "require"
+          }
+          {{- end -}}
+        vault.hashicorp.com/agent-inject-perms-database.json: "0400"
+
+        # Redis credentials for job queue
+        vault.hashicorp.com/agent-inject-secret-redis.json: "secret/data/greenlang/database/redis"
+        vault.hashicorp.com/agent-inject-template-redis.json: |
+          {{- with secret "secret/data/greenlang/database/redis" -}}
+          {
+            "host": "{{ .Data.data.host }}",
+            "port": {{ .Data.data.port }},
+            "password": "{{ .Data.data.password }}",
+            "database": 3
+          }
+          {{- end -}}
+        vault.hashicorp.com/agent-inject-perms-redis.json: "0400"
+
+    spec:
+      serviceAccountName: agent-scheduler
+
+      volumes:
+        - name: vault-tls
+          secret:
+            secretName: vault-tls
+
+      containers:
+        - name: scheduler
+          env:
+            - name: VAULT_SECRETS_PATH
+              value: "/vault/secrets"
+            - name: DATABASE_CREDENTIALS_FILE
+              value: "/vault/secrets/database.json"
+            - name: REDIS_CREDENTIALS_FILE
+              value: "/vault/secrets/redis.json"
+          volumeMounts:
+            - name: vault-tls
+              mountPath: /vault/tls
+              readOnly: true
+
+---
+# Service Account for agent-scheduler
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: agent-scheduler
+  namespace: greenlang-agents
+  labels:
+    app.kubernetes.io/name: agent-scheduler
+    app.kubernetes.io/component: scheduler
+    app.kubernetes.io/part-of: greenlang

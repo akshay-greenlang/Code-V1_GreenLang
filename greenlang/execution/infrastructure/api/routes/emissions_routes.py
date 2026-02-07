@@ -687,6 +687,15 @@ if FASTAPI_AVAILABLE:
 
         return calculation
 
+    # SEC-001: Apply authentication and permission protection
+    try:
+        from greenlang.infrastructure.auth_service.route_protector import (
+            protect_router,
+        )
+        protect_router(emissions_router)
+    except ImportError:
+        pass  # auth_service not available
+
 else:
     # Provide stub router when FastAPI is not available
     emissions_router = None

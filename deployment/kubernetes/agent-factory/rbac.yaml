@@ -1,0 +1,173 @@
+# =============================================================================
+# GreenLang Agent Factory v1.0 - RBAC Configuration
+# =============================================================================
+# ServiceAccount, Role, RoleBinding, ClusterRole, and ClusterRoleBinding
+# for the Agent Factory services.
+# PRD: INFRA-010
+# =============================================================================
+
+---
+# =============================================================================
+# Service Account for Agent Factory
+# =============================================================================
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: agent-factory-sa
+  namespace: greenlang-agent-factory
+  labels:
+    app.kubernetes.io/name: agent-factory
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/part-of: greenlang
+  annotations:
+    description: "Service account for Agent Factory services"
+    prd: INFRA-010
+    # AWS IRSA annotation - set in environment-specific overlays
+    # eks.amazonaws.com/role-arn: arn:aws:iam::ACCOUNT_ID:role/greenlang-agent-factory-role
+
+---
+# =============================================================================
+# Role - Namespace-scoped permissions for Agent Factory
+# =============================================================================
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: agent-factory-role
+  namespace: greenlang-agent-factory
+  labels:
+    app.kubernetes.io/name: agent-factory
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/part-of: greenlang
+rules:
+  # Read and update ConfigMaps for hot-reload
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["get", "list", "watch", "update", "patch"]
+
+  # Read Secrets for credentials
+  - apiGroups: [""]
+    resources: ["secrets"]
+    resourceNames: ["agent-factory-secrets"]
+    verbs: ["get"]
+
+  # Read Pod information for self-discovery and health monitoring
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch"]
+
+  # Read Pod logs for agent log aggregation
+  - apiGroups: [""]
+    resources: ["pods/log"]
+    verbs: ["get", "list"]
+
+  # Read Service information for discovery
+  - apiGroups: [""]
+    resources: ["services"]
+    verbs: ["get", "list"]
+
+  # Read Endpoints for service discovery
+  - apiGroups: [""]
+    resources: ["endpoints"]
+    verbs: ["get", "list"]
+
+  # Leader election via ConfigMap or Lease
+  - apiGroups: ["coordination.k8s.io"]
+    resources: ["leases"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+  # Events for lifecycle state change reporting
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["create", "patch"]
+
+---
+# =============================================================================
+# RoleBinding - Bind Role to Service Account
+# =============================================================================
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: agent-factory-rolebinding
+  namespace: greenlang-agent-factory
+  labels:
+    app.kubernetes.io/name: agent-factory
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/part-of: greenlang
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: agent-factory-role
+subjects:
+  - kind: ServiceAccount
+    name: agent-factory-sa
+    namespace: greenlang-agent-factory
+
+---
+# =============================================================================
+# ClusterRole - Cross-namespace read access for health checks
+# =============================================================================
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: agent-factory-cluster-role
+  labels:
+    app.kubernetes.io/name: agent-factory
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/part-of: greenlang
+  annotations:
+    description: "Cross-namespace read access for agent health monitoring"
+    prd: INFRA-010
+rules:
+  # Read pods across namespaces for agent health checks
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch"]
+
+  # Read services across namespaces for agent discovery
+  - apiGroups: [""]
+    resources: ["services"]
+    verbs: ["get", "list", "watch"]
+
+  # Read endpoints across namespaces for agent connectivity
+  - apiGroups: [""]
+    resources: ["endpoints"]
+    verbs: ["get", "list"]
+
+  # Read deployments across namespaces for agent status
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    verbs: ["get", "list", "watch"]
+
+  # Read namespaces for multi-namespace agent discovery
+  - apiGroups: [""]
+    resources: ["namespaces"]
+    verbs: ["get", "list"]
+
+---
+# =============================================================================
+# ClusterRoleBinding - Bind ClusterRole to Service Account
+# =============================================================================
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: agent-factory-cluster-rolebinding
+  labels:
+    app.kubernetes.io/name: agent-factory
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/part-of: greenlang
+  annotations:
+    description: "Bind agent-factory-cluster-role to agent-factory-sa"
+    prd: INFRA-010
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: agent-factory-cluster-role
+subjects:
+  - kind: ServiceAccount
+    name: agent-factory-sa
+    namespace: greenlang-agent-factory

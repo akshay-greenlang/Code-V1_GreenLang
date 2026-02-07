@@ -1,0 +1,223 @@
+{{/*
+Agent Factory - Lifecycle Manager Deployment
+Central coordinator for agent state transitions, health checks, warm-up, and shutdown.
+PRD: INFRA-010 / TR-001
+*/}}
+{{- if .Values.agentFactory.lifecycleManager.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "greenlang-agents.fullname" . }}-lifecycle-mgr
+  namespace: {{ include "greenlang-agents.namespace" . }}
+  labels:
+    {{- include "greenlang-agents.labels" . | nindent 4 }}
+    app.kubernetes.io/component: lifecycle-manager
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9090"
+    prd: INFRA-010
+spec:
+  replicas: {{ .Values.agentFactory.lifecycleManager.replicaCount | default 2 }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      {{- include "greenlang-agents.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: lifecycle-manager
+  template:
+    metadata:
+      labels:
+        {{- include "greenlang-agents.labels" . | nindent 8 }}
+        app.kubernetes.io/component: lifecycle-manager
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+        prometheus.io/path: "/metrics"
+        checksum/config: {{ include (print $.Template.BasePath "/configmap-app.yaml") . | sha256sum }}
+    spec:
+      serviceAccountName: {{ include "greenlang-agents.serviceAccountName" . }}
+      {{- with .Values.common.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- range .Values.global.imagePullSecrets }}
+        - name: {{ . }}
+        {{- end }}
+      {{- end }}
+
+      terminationGracePeriodSeconds: {{ .Values.agentFactory.lifecycleManager.terminationGracePeriodSeconds | default 60 }}
+
+      initContainers:
+        - name: wait-for-redis
+          image: busybox:1.36
+          command: ['sh', '-c', 'until nc -z {{ .Values.agentFactory.redis.host | default (printf "%s-redis" .Release.Name) }} {{ .Values.agentFactory.redis.port | default 6379 }}; do echo waiting for redis; sleep 2; done']
+          securityContext:
+            {{- toYaml .Values.common.containerSecurityContext | nindent 12 }}
+
+      containers:
+        - name: lifecycle-manager
+          image: "{{ .Values.global.imageRegistry }}/{{ .Values.agentFactory.lifecycleManager.image.repository | default "greenlang/agent-factory-lifecycle" }}:{{ .Values.agentFactory.lifecycleManager.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.common.image.pullPolicy | default "IfNotPresent" }}
+
+          {{- with .Values.common.containerSecurityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+
+          ports:
+            - name: http
+              containerPort: {{ .Values.agentFactory.lifecycleManager.port | default 8080 }}
+              protocol: TCP
+            - name: metrics
+              containerPort: 9090
+              protocol: TCP
+
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: ENVIRONMENT
+              value: {{ .Values.global.environment | quote }}
+            - name: LOG_LEVEL
+              value: {{ .Values.agentFactory.logLevel | default .Values.config.LOG_LEVEL | default "info" | quote }}
+            - name: OTEL_ENDPOINT
+              value: {{ .Values.agentFactory.otelEndpoint | default "http://otel-collector.monitoring:4317" | quote }}
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "greenlang-agents.fullname" . }}-secrets
+                  key: REDIS_URL
+                  optional: true
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "greenlang-agents.fullname" . }}-secrets
+                  key: DATABASE_URL
+                  optional: true
+            - name: LEADER_ELECTION_ENABLED
+              value: {{ .Values.agentFactory.lifecycleManager.leaderElection.enabled | default true | quote }}
+            - name: LEADER_ELECTION_LOCK_TTL
+              value: {{ .Values.agentFactory.lifecycleManager.leaderElection.lockTTL | default 15 | quote }}
+            - name: HEALTH_CHECK_INTERVAL
+              value: {{ .Values.agentFactory.lifecycleManager.healthCheckInterval | default 10 | quote }}
+            - name: DRAIN_TIMEOUT
+              value: {{ .Values.agentFactory.lifecycleManager.drainTimeout | default 60 | quote }}
+            - name: MAX_RESTART_ATTEMPTS
+              value: {{ .Values.agentFactory.lifecycleManager.maxRestartAttempts | default 5 | quote }}
+            - name: WARMUP_TIMEOUT
+              value: {{ .Values.agentFactory.lifecycleManager.warmupTimeout | default 120 | quote }}
+
+          envFrom:
+            - configMapRef:
+                name: {{ include "greenlang-agents.fullname" . }}-config
+
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: {{ .Values.agentFactory.lifecycleManager.livenessProbe.initialDelaySeconds | default 15 }}
+            periodSeconds: {{ .Values.agentFactory.lifecycleManager.livenessProbe.periodSeconds | default 15 }}
+            timeoutSeconds: {{ .Values.agentFactory.lifecycleManager.livenessProbe.timeoutSeconds | default 5 }}
+            failureThreshold: {{ .Values.agentFactory.lifecycleManager.livenessProbe.failureThreshold | default 3 }}
+
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: http
+            initialDelaySeconds: {{ .Values.agentFactory.lifecycleManager.readinessProbe.initialDelaySeconds | default 10 }}
+            periodSeconds: {{ .Values.agentFactory.lifecycleManager.readinessProbe.periodSeconds | default 10 }}
+            timeoutSeconds: {{ .Values.agentFactory.lifecycleManager.readinessProbe.timeoutSeconds | default 3 }}
+            failureThreshold: {{ .Values.agentFactory.lifecycleManager.readinessProbe.failureThreshold | default 3 }}
+
+          startupProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            failureThreshold: 30
+
+          resources:
+            {{- toYaml (.Values.agentFactory.lifecycleManager.resources | default .Values.common.resources) | nindent 12 }}
+
+          volumeMounts:
+            - name: config
+              mountPath: /app/config
+              readOnly: true
+            - name: tmp
+              mountPath: /tmp
+            - name: cache
+              mountPath: /app/.cache
+
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - /bin/sh
+                  - -c
+                  - |
+                    echo "Lifecycle manager shutting down - releasing leader lock"
+                    sleep 5
+
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "greenlang-agents.fullname" . }}-config
+        - name: tmp
+          emptyDir:
+            sizeLimit: 100Mi
+        - name: cache
+          emptyDir:
+            sizeLimit: 200Mi
+
+      {{- with .Values.agentFactory.lifecycleManager.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+      {{- with .Values.agentFactory.lifecycleManager.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- else }}
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  {{- include "greenlang-agents.selectorLabels" . | nindent 18 }}
+                  app.kubernetes.io/component: lifecycle-manager
+              topologyKey: kubernetes.io/hostname
+      {{- end }}
+
+      {{- with .Values.agentFactory.lifecycleManager.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: DoNotSchedule
+          labelSelector:
+            matchLabels:
+              {{- include "greenlang-agents.selectorLabels" . | nindent 14 }}
+              app.kubernetes.io/component: lifecycle-manager
+{{- end }}

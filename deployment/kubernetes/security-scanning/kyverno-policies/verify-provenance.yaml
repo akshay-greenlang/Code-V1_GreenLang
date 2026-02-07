@@ -1,0 +1,179 @@
+# Kyverno Policy: Verify SLSA Provenance
+#
+# Ensures container images have valid SLSA provenance attestation
+# to verify the build pipeline integrity.
+#
+# Author: GreenLang Security Team
+# Version: 1.0.0
+# Compliance: SLSA Level 2
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: verify-slsa-provenance
+  annotations:
+    policies.kyverno.io/title: Verify SLSA Provenance
+    policies.kyverno.io/category: Supply Chain Security
+    policies.kyverno.io/severity: high
+    policies.kyverno.io/subject: Pod
+    policies.kyverno.io/minversion: 1.9.0
+    policies.kyverno.io/description: |
+      Verifies that container images have valid SLSA provenance attestation
+      at Level 2 or higher. This ensures images were built by trusted
+      builders (GitHub Actions) from the correct source repository.
+    greenlang.io/compliance: "SLSA-L2,SOC2-CC7.1"
+    greenlang.io/slsa-level: "2"
+spec:
+  validationFailureAction: Audit  # Start with Audit, switch to Enforce for releases
+  background: true
+  webhookTimeoutSeconds: 60
+  failurePolicy: Fail
+  rules:
+    # Rule 1: Verify SLSA provenance for production images
+    - name: verify-slsa-provenance-prod
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+              namespaces:
+                - production
+                - prod
+                - greenlang-prod
+      verifyImages:
+        - imageReferences:
+            - "ghcr.io/greenlang-io/*"
+            - "ghcr.io/greenlang/*"
+          attestations:
+            - type: https://slsa.dev/provenance/v0.2
+              predicateType: https://slsa.dev/provenance/v0.2
+              attestors:
+                - count: 1
+                  entries:
+                    - keyless:
+                        subject: "https://github.com/greenlang-io/*"
+                        issuer: "https://token.actions.githubusercontent.com"
+                        rekor:
+                          url: https://rekor.sigstore.dev
+              conditions:
+                - all:
+                    # Verify builder is GitHub Actions
+                    - key: "{{ builder.id }}"
+                      operator: AnyIn
+                      value:
+                        - "https://github.com/greenlang-io/greenlang/actions/*"
+                        - "https://github.com/slsa-framework/slsa-github-generator/*"
+                      message: "Image must be built by GitHub Actions"
+
+                    # Verify source repository
+                    - key: "{{ invocation.configSource.uri }}"
+                      operator: AnyIn
+                      value:
+                        - "git+https://github.com/greenlang-io/greenlang@*"
+                        - "git+https://github.com/greenlang-io/*@*"
+                      message: "Image must be built from greenlang-io repository"
+
+    # Rule 2: Verify SLSA provenance for tagged releases only
+    - name: verify-slsa-provenance-releases
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+              namespaces:
+                - production
+      preconditions:
+        all:
+          - key: "{{ request.object.spec.containers[].image }}"
+            operator: AnyIn
+            value:
+              - "*:v*"
+              - "*@sha256:*"
+      verifyImages:
+        - imageReferences:
+            - "ghcr.io/greenlang-io/*:v*"
+          attestations:
+            - type: https://slsa.dev/provenance/v0.2
+              predicateType: https://slsa.dev/provenance/v0.2
+              attestors:
+                - count: 1
+                  entries:
+                    - keyless:
+                        subject: "https://github.com/greenlang-io/*"
+                        issuer: "https://token.actions.githubusercontent.com"
+              conditions:
+                - all:
+                    # Verify build invocation has completeness indicators
+                    - key: "{{ metadata.completeness.parameters }}"
+                      operator: Equals
+                      value: true
+                      message: "Build must have complete parameters"
+                    - key: "{{ metadata.completeness.environment }}"
+                      operator: Equals
+                      value: true
+                      message: "Build must have complete environment"
+                    - key: "{{ metadata.completeness.materials }}"
+                      operator: Equals
+                      value: true
+                      message: "Build must have complete materials"
+
+---
+# Policy Exception for third-party images
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: allow-trusted-third-party-images
+  annotations:
+    policies.kyverno.io/title: Allow Trusted Third-Party Images
+    policies.kyverno.io/category: Supply Chain Security
+    policies.kyverno.io/severity: medium
+    policies.kyverno.io/description: |
+      Allows specific trusted third-party images that may not have
+      SLSA provenance but are from verified publishers.
+spec:
+  validationFailureAction: Audit
+  background: true
+  rules:
+    - name: allow-official-images
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+      exclude:
+        any:
+          - resources:
+              namespaces:
+                - production
+                - prod
+      validate:
+        message: "Third-party images allowed in non-production namespaces"
+        pattern:
+          spec:
+            containers:
+              - image: "*"  # Allow all in non-prod
+
+    - name: allow-verified-publishers-prod
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+              namespaces:
+                - production
+                - prod
+      validate:
+        message: |
+          Only images from verified publishers are allowed.
+          Contact security team to add new publishers.
+        pattern:
+          spec:
+            containers:
+              - image: >-
+                  docker.io/library/* |
+                  docker.io/bitnami/* |
+                  gcr.io/distroless/* |
+                  quay.io/prometheus/* |
+                  grafana/grafana* |
+                  registry.k8s.io/* |
+                  ghcr.io/greenlang-io/*

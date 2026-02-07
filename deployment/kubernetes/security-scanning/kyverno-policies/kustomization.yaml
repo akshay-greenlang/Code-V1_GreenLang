@@ -1,0 +1,75 @@
+# Kustomization for Kyverno Security Policies
+#
+# Deploys all supply chain security policies for GreenLang Kubernetes clusters.
+# Includes image signature verification, SBOM attestation, and SLSA provenance.
+#
+# Author: GreenLang Security Team
+# Version: 1.0.0
+# Usage: kubectl apply -k deployment/kubernetes/security-scanning/kyverno-policies/
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+metadata:
+  name: greenlang-kyverno-policies
+  annotations:
+    greenlang.io/component: security-scanning
+    greenlang.io/compliance: "SLSA-L2,SOC2-CC7.1"
+
+# Namespace for policy resources
+namespace: kyverno
+
+# Common labels applied to all resources
+commonLabels:
+  app.kubernetes.io/name: greenlang-security-policies
+  app.kubernetes.io/component: supply-chain-security
+  app.kubernetes.io/part-of: greenlang
+  app.kubernetes.io/managed-by: kustomize
+
+# Common annotations
+commonAnnotations:
+  greenlang.io/policy-version: "1.0.0"
+  greenlang.io/last-updated: "2026-02-06"
+
+# Policy resources to deploy
+resources:
+  - require-image-signature.yaml
+  - verify-sbom-attestation.yaml
+  - verify-provenance.yaml
+
+# ConfigMap for policy configuration
+configMapGenerator:
+  - name: kyverno-policy-config
+    literals:
+      - TRUSTED_REGISTRIES=ghcr.io/greenlang-io,gcr.io/greenlang,docker.io/greenlang
+      - OIDC_ISSUER=https://token.actions.githubusercontent.com
+      - REKOR_URL=https://rekor.sigstore.dev
+      - SLSA_LEVEL=2
+      - ENFORCEMENT_MODE=audit
+
+# Patches for environment-specific configurations
+patches:
+  # Patch for production enforcement
+  - patch: |-
+      - op: replace
+        path: /spec/validationFailureAction
+        value: Enforce
+    target:
+      kind: ClusterPolicy
+      name: require-image-signature
+      annotationSelector: "greenlang.io/env=production"
+
+# Images configuration (for any image references in policies)
+images: []
+
+# Replicas configuration (not applicable for policies)
+replicas: []
+
+# Generators for additional resources
+generatorOptions:
+  disableNameSuffixHash: true
+  labels:
+    generated-by: kustomize
+
+# Validation to ensure policies are well-formed
+# Note: Kyverno validates policies on apply

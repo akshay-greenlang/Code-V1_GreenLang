@@ -1,0 +1,33 @@
+{{/*
+# =============================================================================
+# GreenLang OpenTelemetry Collector - ConfigMap
+# GreenLang Climate OS | OBS-003
+# =============================================================================
+# Renders the OTel Collector YAML configuration from Helm values.
+# Environment variable substitution (${ENVIRONMENT}) is resolved at runtime
+# by the collector process via its built-in env variable expansion.
+# =============================================================================
+*/}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "otel-collector.configMapName" . }}
+  namespace: {{ include "otel-collector.namespace" . }}
+  labels:
+    {{- include "otel-collector.labels" . | nindent 4 }}
+data:
+  otel-collector-config.yaml: |
+    receivers:
+      {{- toYaml .Values.otelCollector.config.receivers | nindent 6 }}
+
+    processors:
+      {{- toYaml .Values.otelCollector.config.processors | nindent 6 }}
+
+    exporters:
+      {{- toYaml .Values.otelCollector.config.exporters | nindent 6 }}
+
+    extensions:
+      {{- toYaml .Values.otelCollector.config.extensions | nindent 6 }}
+
+    service:
+      {{- toYaml .Values.otelCollector.config.service | nindent 6 }}

@@ -1,0 +1,257 @@
+{{/*
+Agent Factory - Task Queue Worker Deployment
+Distributed workers consuming from Redis Streams with priority-based scheduling.
+PRD: INFRA-010 / TR-002
+*/}}
+{{- if .Values.agentFactory.queueWorker.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "greenlang-agents.fullname" . }}-queue-worker
+  namespace: {{ include "greenlang-agents.namespace" . }}
+  labels:
+    {{- include "greenlang-agents.labels" . | nindent 4 }}
+    app.kubernetes.io/component: queue-worker
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9090"
+    prd: INFRA-010
+spec:
+  {{- if not .Values.agentFactory.queueWorker.autoscaling.enabled }}
+  replicas: {{ .Values.agentFactory.queueWorker.replicaCount | default 3 }}
+  {{- end }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 2
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      {{- include "greenlang-agents.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: queue-worker
+  template:
+    metadata:
+      labels:
+        {{- include "greenlang-agents.labels" . | nindent 8 }}
+        app.kubernetes.io/component: queue-worker
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+        prometheus.io/path: "/metrics"
+        checksum/config: {{ include (print $.Template.BasePath "/configmap-app.yaml") . | sha256sum }}
+    spec:
+      serviceAccountName: {{ include "greenlang-agents.serviceAccountName" . }}
+      {{- with .Values.common.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- range .Values.global.imagePullSecrets }}
+        - name: {{ . }}
+        {{- end }}
+      {{- end }}
+
+      # Long grace period for in-flight task completion
+      terminationGracePeriodSeconds: {{ .Values.agentFactory.queueWorker.terminationGracePeriodSeconds | default 300 }}
+
+      initContainers:
+        - name: wait-for-redis
+          image: busybox:1.36
+          command: ['sh', '-c', 'until nc -z {{ .Values.agentFactory.redis.host | default (printf "%s-redis" .Release.Name) }} {{ .Values.agentFactory.redis.port | default 6379 }}; do echo waiting for redis; sleep 2; done']
+          securityContext:
+            {{- toYaml .Values.common.containerSecurityContext | nindent 12 }}
+        - name: wait-for-lifecycle
+          image: busybox:1.36
+          command: ['sh', '-c', 'until nc -z {{ include "greenlang-agents.fullname" . }}-lifecycle-mgr {{ .Values.agentFactory.lifecycleManager.port | default 8080 }}; do echo waiting for lifecycle manager; sleep 2; done']
+          securityContext:
+            {{- toYaml .Values.common.containerSecurityContext | nindent 12 }}
+
+      containers:
+        - name: queue-worker
+          image: "{{ .Values.global.imageRegistry }}/{{ .Values.agentFactory.queueWorker.image.repository | default "greenlang/agent-factory-worker" }}:{{ .Values.agentFactory.queueWorker.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.common.image.pullPolicy | default "IfNotPresent" }}
+
+          {{- with .Values.common.containerSecurityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+            - name: metrics
+              containerPort: 9090
+              protocol: TCP
+
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: ENVIRONMENT
+              value: {{ .Values.global.environment | quote }}
+            - name: LOG_LEVEL
+              value: {{ .Values.agentFactory.logLevel | default .Values.config.LOG_LEVEL | default "info" | quote }}
+            - name: OTEL_ENDPOINT
+              value: {{ .Values.agentFactory.otelEndpoint | default "http://otel-collector.monitoring:4317" | quote }}
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "greenlang-agents.fullname" . }}-secrets
+                  key: REDIS_URL
+                  optional: true
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "greenlang-agents.fullname" . }}-secrets
+                  key: DATABASE_URL
+                  optional: true
+            - name: WORKER_CONCURRENCY
+              value: {{ .Values.agentFactory.queueWorker.concurrency | default 10 | quote }}
+            - name: WORKER_PREFETCH_COUNT
+              value: {{ .Values.agentFactory.queueWorker.prefetchCount | default 4 | quote }}
+            - name: TASK_TIMEOUT
+              value: {{ .Values.agentFactory.queueWorker.taskTimeout | default 3600 | quote }}
+            - name: HEARTBEAT_INTERVAL
+              value: {{ .Values.agentFactory.queueWorker.heartbeatInterval | default 30 | quote }}
+            - name: MAX_RETRIES
+              value: {{ .Values.agentFactory.queueWorker.maxRetries | default 3 | quote }}
+            - name: VISIBILITY_TIMEOUT
+              value: {{ .Values.agentFactory.queueWorker.visibilityTimeout | default 300 | quote }}
+            - name: LIFECYCLE_URL
+              value: "http://{{ include "greenlang-agents.fullname" . }}-lifecycle-mgr:{{ .Values.agentFactory.lifecycleManager.port | default 8080 }}"
+
+          envFrom:
+            - configMapRef:
+                name: {{ include "greenlang-agents.fullname" . }}-config
+
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: {{ .Values.agentFactory.queueWorker.livenessProbe.initialDelaySeconds | default 15 }}
+            periodSeconds: {{ .Values.agentFactory.queueWorker.livenessProbe.periodSeconds | default 15 }}
+            timeoutSeconds: {{ .Values.agentFactory.queueWorker.livenessProbe.timeoutSeconds | default 5 }}
+            failureThreshold: {{ .Values.agentFactory.queueWorker.livenessProbe.failureThreshold | default 3 }}
+
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: http
+            initialDelaySeconds: {{ .Values.agentFactory.queueWorker.readinessProbe.initialDelaySeconds | default 10 }}
+            periodSeconds: {{ .Values.agentFactory.queueWorker.readinessProbe.periodSeconds | default 10 }}
+            timeoutSeconds: {{ .Values.agentFactory.queueWorker.readinessProbe.timeoutSeconds | default 3 }}
+            failureThreshold: {{ .Values.agentFactory.queueWorker.readinessProbe.failureThreshold | default 3 }}
+
+          startupProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 30
+
+          resources:
+            {{- toYaml (.Values.agentFactory.queueWorker.resources | default .Values.common.resources) | nindent 12 }}
+
+          volumeMounts:
+            - name: config
+              mountPath: /app/config
+              readOnly: true
+            - name: tmp
+              mountPath: /tmp
+            - name: worker-data
+              mountPath: /app/data
+            - name: task-results
+              mountPath: /app/results
+
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - /bin/sh
+                  - -c
+                  - |
+                    echo "Worker shutting down - completing current tasks"
+                    touch /tmp/shutdown
+                    for i in $(seq 1 60); do
+                      if [ -f /tmp/tasks_complete ]; then
+                        echo "All tasks completed"
+                        break
+                      fi
+                      sleep 5
+                    done
+
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "greenlang-agents.fullname" . }}-config
+        - name: tmp
+          emptyDir:
+            sizeLimit: 200Mi
+        - name: worker-data
+          emptyDir:
+            sizeLimit: 2Gi
+        - name: task-results
+          emptyDir:
+            sizeLimit: 1Gi
+
+      {{- with .Values.agentFactory.queueWorker.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+      {{- with .Values.agentFactory.queueWorker.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- else }}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    {{- include "greenlang-agents.selectorLabels" . | nindent 20 }}
+                    app.kubernetes.io/component: queue-worker
+                topologyKey: kubernetes.io/hostname
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 80
+              preference:
+                matchExpressions:
+                  - key: node-type
+                    operator: In
+                    values:
+                      - worker
+                      - compute
+      {{- end }}
+
+      {{- with .Values.agentFactory.queueWorker.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+      topologySpreadConstraints:
+        - maxSkew: 2
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              {{- include "greenlang-agents.selectorLabels" . | nindent 14 }}
+              app.kubernetes.io/component: queue-worker
+{{- end }}

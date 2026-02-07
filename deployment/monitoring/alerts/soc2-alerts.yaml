@@ -1,0 +1,409 @@
+# =============================================================================
+# GreenLang Climate OS - SOC 2 Compliance Prometheus Alert Rules
+# =============================================================================
+# PRD: SEC-009 SOC 2 Type II Preparation
+# Defines alerting rules for SOC 2 readiness, auditor requests, findings,
+# attestations, control testing, and project milestones.
+# =============================================================================
+
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: soc2-compliance-alerts
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: soc2-compliance
+    app.kubernetes.io/part-of: greenlang
+    prometheus: kube-prometheus
+    role: alert-rules
+    greenlang.io/component: sec-009
+spec:
+  groups:
+    # =========================================================================
+    # Group 1: Readiness Score Alerts
+    # =========================================================================
+    - name: soc2.readiness
+      interval: 60s
+      rules:
+        # ---------------------------------------------------------------------
+        # SOC2ReadinessScoreLow - Warning
+        # Fires when overall readiness score drops below 90%.
+        # ---------------------------------------------------------------------
+        - alert: SOC2ReadinessScoreLow
+          expr: |
+            soc2_readiness_percentage{category="overall"} < 90
+          for: 15m
+          labels:
+            severity: warning
+            team: compliance
+            component: soc2-preparation
+            prd: SEC-009
+          annotations:
+            summary: "SOC 2 readiness score below 90%"
+            description: >-
+              SOC 2 overall readiness score is
+              {{ $value | printf "%.1f" }}%, below the 90% target. Review
+              category readiness scores to identify gaps. Categories with
+              lowest scores should be prioritized for remediation.
+            runbook_url: "https://runbooks.greenlang.io/soc2/readiness-low"
+            dashboard_url: "https://grafana.greenlang.io/d/soc2-compliance"
+
+        # ---------------------------------------------------------------------
+        # SOC2ReadinessScoreCritical - Critical
+        # Fires when overall readiness score drops below 80%.
+        # ---------------------------------------------------------------------
+        - alert: SOC2ReadinessScoreCritical
+          expr: |
+            soc2_readiness_percentage{category="overall"} < 80
+          for: 10m
+          labels:
+            severity: critical
+            team: compliance
+            component: soc2-preparation
+            prd: SEC-009
+          annotations:
+            summary: "SOC 2 readiness score critical (<80%)"
+            description: >-
+              SOC 2 overall readiness score is
+              {{ $value | printf "%.1f" }}%, critically below the 80%
+              threshold. Immediate action required. The audit may need to be
+              postponed if readiness does not improve. Escalate to compliance
+              leadership.
+            runbook_url: "https://runbooks.greenlang.io/soc2/readiness-critical"
+            dashboard_url: "https://grafana.greenlang.io/d/soc2-compliance"
+
+        # ---------------------------------------------------------------------
+        # SOC2ReadinessScoreDropped
+        # Fires when readiness score drops more than 5% in 24 hours.
+        # ---------------------------------------------------------------------
+        - alert: SOC2ReadinessScoreDropped
+          expr: |
+            (
+              soc2_readiness_percentage{category="overall"} offset 24h
+              - soc2_readiness_percentage{category="overall"}
+            ) > 5
+          for: 30m
+          labels:
+            severity: warning
+            team: compliance
+            component: soc2-preparation
+            prd: SEC-009
+          annotations:
+            summary: "SOC 2 readiness score dropped >5% in 24h"
+            description: >-
+              SOC 2 readiness score has dropped more than 5 percentage points
+              in the last 24 hours. Current score is
+              {{ $value | printf "%.1f" }}%. Investigate recent changes that
+              may have negatively impacted compliance posture.
+            runbook_url: "https://runbooks.greenlang.io/soc2/readiness-dropped"
+            dashboard_url: "https://grafana.greenlang.io/d/soc2-compliance"
+
+    # =========================================================================
+    # Group 2: Auditor Request Alerts
+    # =========================================================================
+    - name: soc2.requests
+      interval: 30s
+      rules:
+        # ---------------------------------------------------------------------
+        # SOC2AuditorRequestOverdue
+        # Fires when critical/high priority request exceeds SLA.
+        # ---------------------------------------------------------------------
+        - alert: SOC2AuditorRequestOverdue
+          expr: |
+            soc2_requests_overdue{priority=~"critical|high"} > 0
+          for: 5m
+          labels:
+            severity: critical
+            team: compliance
+            component: soc2-preparation
+            prd: SEC-009
+          annotations:
+            summary: "Critical/High priority auditor request overdue"
+            description: >-
+              {{ $value | printf "%.0f" }} {{ $labels.priority }}-priority
+              auditor request(s) have exceeded SLA. Critical requests have a
+              4-hour SLA, high-priority requests have 24-hour SLA. Respond
+              immediately to maintain auditor relationship.
+            runbook_url: "https://runbooks.greenlang.io/soc2/request-overdue"
+            dashboard_url: "https://grafana.greenlang.io/d/soc2-compliance"
+
+        # ---------------------------------------------------------------------
+        # SOC2SLABreachImminent
+        # Fires when a request is within 4 hours of SLA breach.
+        # ---------------------------------------------------------------------
+        - alert: SOC2SLABreachImminent
+          expr: |
+            (
+              sum(soc2_requests_total{status="open"})
+              - sum(soc2_requests_overdue)
+            ) > 0
+            and
+            (
+              histogram_quantile(0.9, rate(soc2_request_sla_seconds_bucket[1h]))
+              / 3600
+            ) > 20
+          for: 15m
+          labels:
+            severity: warning
+            team: compliance
+            component: soc2-preparation
+            prd: SEC-009
+          annotations:
+            summary: "Auditor request approaching SLA deadline"
+            description: >-
+              Open auditor requests are approaching their SLA deadlines.
+              P90 response time is {{ $value | printf "%.1f" }} hours.
+              Prioritize completing pending requests to avoid SLA breach.
+            runbook_url: "https://runbooks.greenlang.io/soc2/sla-imminent"
+            dashboard_url: "https://grafana.greenlang.io/d/soc2-compliance"
+
+    # =========================================================================
+    # Group 3: Finding Alerts
+    # =========================================================================
+    - name: soc2.findings
+      interval: 60s
+      rules:
+        # ---------------------------------------------------------------------
+        # SOC2MaterialFindingUnaddressed
+        # Fires when critical/high finding is open more than 24 hours.
+        # ---------------------------------------------------------------------
+        - alert: SOC2MaterialFindingUnaddressed
+          expr: |
+            soc2_gaps_total{risk_level=~"critical|high"} > 0
+          for: 24h
+          labels:
+            severity: critical
+            team: compliance
+            component: soc2-preparation
+            prd: SEC-009
+          annotations:
+            summary: "Critical/High finding unaddressed for >24h"
+            description: >-
+              {{ $value | printf "%.0f" }} {{ $labels.risk_level }}-severity
+              finding(s) have been open for more than 24 hours. Material
+              findings must be addressed promptly to maintain audit readiness.
+              Create remediation plan and assign owner immediately.
+            runbook_url: "https://runbooks.greenlang.io/soc2/material-finding"
+            dashboard_url: "https://grafana.greenlang.io/d/soc2-compliance"
+
+        # ---------------------------------------------------------------------
+        # SOC2RemediationOverdue
+        # Fires when remediation is past its target deadline.
+        # ---------------------------------------------------------------------
+        - alert: SOC2RemediationOverdue
+          expr: |
+            sum(soc2_gaps_total{risk_level=~"critical|high"}) > 0
+            and
+            soc2_gap_remediation_hours{risk_level="critical"} > 40
+          for: 1h
+          labels:
+            severity: warning
+            team: compliance
+            component: soc2-preparation
+            prd: SEC-009
+          annotations:
+            summary: "Remediation effort overdue"
+            description: >-
+              Critical remediation effort exceeds 40 hours
+              ({{ $value | printf "%.0f" }}h estimated). Review remediation
+              plans and consider adding resources or escalating blockers.
+            runbook_url: "https://runbooks.greenlang.io/soc2/remediation-overdue"
+            dashboard_url: "https://grafana.greenlang.io/d/soc2-compliance"
+
+    # =========================================================================
+    # Group 4: Attestation Alerts
+    # =========================================================================
+    - name: soc2.attestations
+      interval: 60s
+      rules:
+        # ---------------------------------------------------------------------
+        # SOC2AttestationPendingSignature
+        # Fires when attestation awaits signature for more than 72 hours.
+        # ---------------------------------------------------------------------
+        - alert: SOC2AttestationPendingSignature
+          expr: |
+            soc2_attestations_pending > 0
+          for: 72h
+          labels:
+            severity: warning
+            team: compliance
+            component: soc2-preparation
+            prd: SEC-009
+          annotations:
+            summary: "Attestation pending signature >72h"
+            description: >-
+              {{ $value | printf "%.0f" }} attestation(s) have been pending
+              signature for more than 72 hours. Follow up with signers to
+              complete signature collection. Attestations are required for
+              SOC 2 audit completion.
+            runbook_url: "https://runbooks.greenlang.io/soc2/attestation-pending"
+            dashboard_url: "https://grafana.greenlang.io/d/soc2-compliance"
+
+    # =========================================================================
+    # Group 5: Control Testing Alerts
+    # =========================================================================
+    - name: soc2.testing
+      interval: 60s
+      rules:
+        # ---------------------------------------------------------------------
+        # SOC2ControlTestFailed
+        # Fires when a control test fails.
+        # ---------------------------------------------------------------------
+        - alert: SOC2ControlTestFailed
+          expr: |
+            increase(soc2_criteria_assessed_total{score_level="non_compliant"}[1h]) > 0
+          for: 5m
+          labels:
+            severity: warning
+            team: compliance
+            component: soc2-preparation
+            prd: SEC-009
+          annotations:
+            summary: "Control test failed"
+            description: >-
+              {{ $value | printf "%.0f" }} control test(s) in category
+              {{ $labels.category }} resulted in non-compliant status in the
+              last hour. Review test results and create remediation tasks
+              for failed controls.
+            runbook_url: "https://runbooks.greenlang.io/soc2/test-failed"
+            dashboard_url: "https://grafana.greenlang.io/d/soc2-compliance"
+
+        # ---------------------------------------------------------------------
+        # SOC2EvidenceCollectionFailed
+        # Fires when evidence collection jobs are failing.
+        # ---------------------------------------------------------------------
+        - alert: SOC2EvidenceCollectionFailed
+          expr: |
+            increase(soc2_evidence_uploaded_total{collection_method="automated"}[1h]) == 0
+            and
+            hour() >= 8 and hour() <= 18
+          for: 2h
+          labels:
+            severity: warning
+            team: compliance
+            component: soc2-preparation
+            prd: SEC-009
+          annotations:
+            summary: "Automated evidence collection may be failing"
+            description: >-
+              No automated evidence has been collected in the last 2 hours
+              during business hours. Check evidence collection jobs and
+              integrations for errors.
+            runbook_url: "https://runbooks.greenlang.io/soc2/evidence-collection"
+            dashboard_url: "https://grafana.greenlang.io/d/soc2-compliance"
+
+    # =========================================================================
+    # Group 6: Assessment Alerts
+    # =========================================================================
+    - name: soc2.assessments
+      interval: 60s
+      rules:
+        # ---------------------------------------------------------------------
+        # SOC2AssessmentOverdue
+        # Fires when scheduled assessment has not been run.
+        # ---------------------------------------------------------------------
+        - alert: SOC2AssessmentOverdue
+          expr: |
+            time() - soc2_assessment_duration_seconds > 604800
+          for: 1h
+          labels:
+            severity: warning
+            team: compliance
+            component: soc2-preparation
+            prd: SEC-009
+          annotations:
+            summary: "SOC 2 self-assessment overdue"
+            description: >-
+              No SOC 2 self-assessment has been run in the past 7 days.
+              Regular assessments are recommended to track readiness and
+              identify new gaps early. Run assessment manually or check
+              scheduled job status.
+            runbook_url: "https://runbooks.greenlang.io/soc2/assessment-overdue"
+            dashboard_url: "https://grafana.greenlang.io/d/soc2-compliance"
+
+    # =========================================================================
+    # Group 7: Project & Milestone Alerts
+    # =========================================================================
+    - name: soc2.project
+      interval: 60s
+      rules:
+        # ---------------------------------------------------------------------
+        # SOC2ProjectMilestoneDelayed
+        # Fires when a milestone is past its target date.
+        # ---------------------------------------------------------------------
+        - alert: SOC2ProjectMilestoneDelayed
+          expr: |
+            soc2_project_milestone_status == 0
+          for: 24h
+          labels:
+            severity: warning
+            team: compliance
+            component: soc2-preparation
+            prd: SEC-009
+          annotations:
+            summary: "Audit project milestone delayed"
+            description: >-
+              Milestone '{{ $labels.milestone }}' in project
+              {{ $labels.project_id }} is pending for more than 24 hours past
+              its target date. Review milestone dependencies and update
+              timeline if needed.
+            runbook_url: "https://runbooks.greenlang.io/soc2/milestone-delayed"
+            dashboard_url: "https://grafana.greenlang.io/d/soc2-compliance"
+
+        # ---------------------------------------------------------------------
+        # SOC2ProjectCompletionStalled
+        # Fires when project completion percentage has not increased.
+        # ---------------------------------------------------------------------
+        - alert: SOC2ProjectCompletionStalled
+          expr: |
+            deriv(soc2_project_completion_percentage[7d]) <= 0
+            and
+            soc2_project_completion_percentage < 100
+          for: 1h
+          labels:
+            severity: warning
+            team: compliance
+            component: soc2-preparation
+            prd: SEC-009
+          annotations:
+            summary: "Audit project progress stalled"
+            description: >-
+              Audit project {{ $labels.project_id }} completion has not
+              progressed in the past 7 days. Current completion is
+              {{ $value | printf "%.1f" }}%. Review blockers and ensure
+              assigned tasks are being worked.
+            runbook_url: "https://runbooks.greenlang.io/soc2/project-stalled"
+            dashboard_url: "https://grafana.greenlang.io/d/soc2-compliance"
+
+    # =========================================================================
+    # Group 8: Portal & Security Alerts
+    # =========================================================================
+    - name: soc2.portal
+      interval: 30s
+      rules:
+        # ---------------------------------------------------------------------
+        # SOC2PortalAccessAnomaly
+        # Fires when unusual portal access patterns are detected.
+        # ---------------------------------------------------------------------
+        - alert: SOC2PortalAccessAnomaly
+          expr: |
+            (
+              sum(rate(soc2_requests_total[5m]))
+              /
+              sum(rate(soc2_requests_total[1h] offset 1d))
+            ) > 3
+          for: 10m
+          labels:
+            severity: warning
+            team: platform-security
+            component: soc2-preparation
+            prd: SEC-009
+          annotations:
+            summary: "Unusual auditor portal access pattern"
+            description: >-
+              Auditor portal request rate is {{ $value | printf "%.1f" }}x
+              higher than the 24-hour baseline. This may indicate legitimate
+              increased auditor activity or potential unauthorized access.
+              Review portal access logs.
+            runbook_url: "https://runbooks.greenlang.io/soc2/portal-anomaly"
+            dashboard_url: "https://grafana.greenlang.io/d/soc2-compliance"

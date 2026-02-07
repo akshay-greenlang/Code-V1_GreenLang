@@ -1,0 +1,26 @@
+# ============================================================================
+# GreenLang Grafana - PodDisruptionBudget
+# ============================================================================
+# Ensures at least 1 Grafana pod remains available during voluntary
+# disruptions such as node drains, cluster upgrades, or rolling updates.
+# This guarantees continuous dashboard access for on-call engineers.
+#
+# Created: 2026-02-07
+# Team: Monitoring & Observability
+# PRD: OBS-002 - Grafana Dashboards
+# ============================================================================
+
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: grafana-pdb
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: grafana
+    app.kubernetes.io/component: availability
+    app.kubernetes.io/part-of: greenlang
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: grafana

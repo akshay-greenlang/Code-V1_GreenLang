@@ -1,0 +1,28 @@
+{{- /*
+GreenLang Grafana - Headless Service for Unified Alerting HA Gossip
+GreenLang Climate OS | OBS-002
+*/ -}}
+{{- if and .Values.grafana.enabled .Values.grafana.unifiedAlerting.ha.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "grafana.fullname" . }}-headless
+  namespace: {{ include "grafana.namespace" . }}
+  labels:
+    {{- include "grafana.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  clusterIP: None
+  publishNotReadyAddresses: true
+  selector:
+    {{- include "grafana.selectorLabels" . | nindent 4 }}
+  ports:
+  - name: gossip-tcp
+    port: {{ .Values.grafana.unifiedAlerting.ha.peerPort }}
+    targetPort: gossip-tcp
+    protocol: TCP
+  - name: gossip-udp
+    port: {{ .Values.grafana.unifiedAlerting.ha.peerPort }}
+    targetPort: gossip-udp
+    protocol: UDP
+{{- end }}

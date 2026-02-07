@@ -1,0 +1,331 @@
+# =============================================================================
+# GreenLang Climate OS - Audit Service Prometheus Alert Rules
+# =============================================================================
+# PRD: SEC-005 Centralized Audit Logging Service
+# Defines alerting rules for audit event processing, compliance monitoring,
+# security anomaly detection, and audit infrastructure health.
+# =============================================================================
+
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: audit-service-alerts
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: audit-service
+    app.kubernetes.io/part-of: greenlang
+    prometheus: kube-prometheus
+    role: alert-rules
+    greenlang.io/component: sec-005
+spec:
+  groups:
+    # =========================================================================
+    # Group 1: Event Volume & Rate Alerts
+    # =========================================================================
+    - name: audit_service.events
+      interval: 30s
+      rules:
+        # ---------------------------------------------------------------------
+        # HighAuditEventRate
+        # Fires when audit event ingestion rate exceeds 1000 events/sec.
+        # May indicate a DDoS attack, runaway automation, or data exfiltration
+        # attempt.
+        # ---------------------------------------------------------------------
+        - alert: HighAuditEventRate
+          expr: |
+            sum(rate(gl_audit_events_total[5m])) > 1000
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-security
+            component: audit-service
+            prd: SEC-005
+          annotations:
+            summary: "High audit event rate (>1000 events/sec)"
+            description: >-
+              Audit event ingestion rate is
+              {{ $value | printf "%.0f" }} events/sec over the last 5 minutes,
+              exceeding the 1000/sec threshold. This may indicate a DDoS attack,
+              runaway automation script, or data exfiltration attempt. Review
+              the top users and resources in the Audit Service dashboard. If
+              this is legitimate traffic, consider scaling the audit service.
+            runbook_url: "https://runbooks.greenlang.io/audit-service/high-event-rate"
+            dashboard_url: "https://grafana.greenlang.io/d/greenlang-audit-service"
+
+        # ---------------------------------------------------------------------
+        # AuditWriteFailures
+        # Fires when database write failures are occurring. Missing audit logs
+        # create compliance gaps.
+        # ---------------------------------------------------------------------
+        - alert: AuditWriteFailures
+          expr: |
+            sum(rate(gl_audit_db_write_failures_total[5m])) > 0
+          for: 2m
+          labels:
+            severity: critical
+            team: platform-security
+            component: audit-service
+            prd: SEC-005
+          annotations:
+            summary: "Audit database write failures detected"
+            description: >-
+              Audit log database writes are failing at
+              {{ $value | printf "%.2f" }}/sec. This creates compliance gaps
+              as all security and operational events must be logged per SOC 2
+              CC7.2 and ISO 27001 A.12.4 requirements. Check PostgreSQL
+              connectivity, disk space, and the audit_log table health.
+              Error types: {{ $labels.error_type }}
+            runbook_url: "https://runbooks.greenlang.io/audit-service/write-failures"
+            dashboard_url: "https://grafana.greenlang.io/d/greenlang-audit-service"
+
+        # ---------------------------------------------------------------------
+        # AuditEventBacklog
+        # Fires when the async write queue exceeds 1000 pending events.
+        # Indicates the audit service cannot keep up with ingestion rate.
+        # ---------------------------------------------------------------------
+        - alert: AuditEventBacklog
+          expr: |
+            gl_audit_events_queued > 1000
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-security
+            component: audit-service
+            prd: SEC-005
+          annotations:
+            summary: "Audit event queue backlog exceeds 1000 events"
+            description: >-
+              {{ $value | printf "%.0f" }} audit events are queued for
+              processing. The audit service is not keeping up with the
+              ingestion rate. This may cause increased latency for audit
+              queries and potential memory pressure. Consider scaling the
+              audit service or investigating slow database writes.
+            runbook_url: "https://runbooks.greenlang.io/audit-service/event-backlog"
+            dashboard_url: "https://grafana.greenlang.io/d/greenlang-audit-service"
+
+    # =========================================================================
+    # Group 2: Compliance & Coverage Alerts
+    # =========================================================================
+    - name: audit_service.compliance
+      interval: 60s
+      rules:
+        # ---------------------------------------------------------------------
+        # MissingAuditEvents
+        # Fires when expected audit events are not being generated. Critical
+        # for SOC 2 continuous monitoring requirements.
+        # ---------------------------------------------------------------------
+        - alert: MissingAuditEvents
+          expr: |
+            absent(increase(gl_audit_events_total{event_type="auth.login_success"}[1h]))
+            or
+            increase(gl_audit_events_total{event_type="auth.login_success"}[1h]) == 0
+          for: 1h
+          labels:
+            severity: critical
+            team: platform-security
+            component: audit-service
+            prd: SEC-005
+          annotations:
+            summary: "No login audit events in the last hour"
+            description: >-
+              No successful login audit events have been recorded in the last
+              hour. This indicates either a complete authentication outage or
+              a failure in the audit pipeline. Per SOC 2 CC7.2, all
+              authentication events must be logged. Investigate the
+              authentication service and audit middleware immediately.
+            runbook_url: "https://runbooks.greenlang.io/audit-service/missing-events"
+            dashboard_url: "https://grafana.greenlang.io/d/greenlang-audit-service"
+
+        # ---------------------------------------------------------------------
+        # ComplianceGapDetected
+        # Fires when audit write success rate drops below 99.9%, creating
+        # gaps in the compliance audit trail.
+        # ---------------------------------------------------------------------
+        - alert: ComplianceGapDetected
+          expr: |
+            (
+              sum(rate(gl_audit_events_total{result="success"}[1h]))
+              /
+              sum(rate(gl_audit_events_total[1h]))
+            ) < 0.999
+          for: 15m
+          labels:
+            severity: critical
+            team: platform-security
+            component: audit-service
+            prd: SEC-005
+          annotations:
+            summary: "Audit compliance gap detected (<99.9% success rate)"
+            description: >-
+              Audit event success rate is
+              {{ $value | humanizePercentage }} over the last hour, below
+              the 99.9% compliance threshold. This creates gaps in the audit
+              trail that may require a compliance incident report. Review
+              failed events in the audit log and determine root cause. This
+              may affect SOC 2, ISO 27001, and PCI DSS compliance.
+            runbook_url: "https://runbooks.greenlang.io/audit-service/compliance-gap"
+            dashboard_url: "https://grafana.greenlang.io/d/greenlang-audit-service"
+
+    # =========================================================================
+    # Group 3: Security Anomaly Alerts
+    # =========================================================================
+    - name: audit_service.security
+      interval: 30s
+      rules:
+        # ---------------------------------------------------------------------
+        # SuspiciousActivityDetected
+        # Fires when authorization denial rate exceeds threshold, indicating
+        # potential privilege escalation probing.
+        # ---------------------------------------------------------------------
+        - alert: SuspiciousActivityDetected
+          expr: |
+            sum(rate(gl_audit_events_total{result="denied"}[5m])) > 10
+          for: 3m
+          labels:
+            severity: warning
+            team: platform-security
+            component: audit-service
+            prd: SEC-005
+          annotations:
+            summary: "High rate of denied operations detected"
+            description: >-
+              {{ $value | printf "%.0f" }} authorization denials per second
+              detected over the last 5 minutes. This may indicate a privilege
+              escalation probe, brute force attack, or misconfigured
+              application. Review the Authorization Denials Heatmap to
+              identify the source user(s) and targeted resources.
+            runbook_url: "https://runbooks.greenlang.io/audit-service/suspicious-activity"
+            dashboard_url: "https://grafana.greenlang.io/d/greenlang-audit-service"
+
+        # ---------------------------------------------------------------------
+        # SensitiveDataAccessSpike
+        # Fires when access to sensitive data categories spikes unexpectedly.
+        # May indicate data exfiltration attempt.
+        # ---------------------------------------------------------------------
+        - alert: SensitiveDataAccessSpike
+          expr: |
+            (
+              sum(rate(gl_audit_events_total{severity="sensitive"}[5m]))
+              /
+              sum(rate(gl_audit_events_total{severity="sensitive"}[1h] offset 1d))
+            ) > 3
+          for: 10m
+          labels:
+            severity: warning
+            team: platform-security
+            component: audit-service
+            prd: SEC-005
+          annotations:
+            summary: "Sensitive data access rate 3x higher than baseline"
+            description: >-
+              Access to sensitive data is
+              {{ $value | printf "%.1f" }}x higher than the 24-hour baseline.
+              This may indicate a data exfiltration attempt, unauthorized
+              bulk export, or legitimate business activity. Review the
+              Sensitive Data Access panel and identify the users and
+              resources involved.
+            runbook_url: "https://runbooks.greenlang.io/audit-service/sensitive-access-spike"
+            dashboard_url: "https://grafana.greenlang.io/d/greenlang-audit-service"
+
+        # ---------------------------------------------------------------------
+        # AdminActivityAnomaly
+        # Fires when critical/admin operations spike unexpectedly.
+        # ---------------------------------------------------------------------
+        - alert: AdminActivityAnomaly
+          expr: |
+            sum(increase(gl_audit_events_total{severity="critical"}[15m])) > 50
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-security
+            component: audit-service
+            prd: SEC-005
+          annotations:
+            summary: "Unusual spike in critical/admin operations"
+            description: >-
+              {{ $value | printf "%.0f" }} critical operations in the last
+              15 minutes, exceeding the threshold of 50. Critical operations
+              include admin actions, role changes, and encryption key rotations.
+              Verify this is authorized activity. If unexpected, this may
+              indicate a compromised admin account.
+            runbook_url: "https://runbooks.greenlang.io/audit-service/admin-anomaly"
+            dashboard_url: "https://grafana.greenlang.io/d/greenlang-audit-service"
+
+    # =========================================================================
+    # Group 4: Infrastructure Health Alerts
+    # =========================================================================
+    - name: audit_service.health
+      interval: 30s
+      rules:
+        # ---------------------------------------------------------------------
+        # AuditStreamDisconnected
+        # Fires when all WebSocket streaming connections are lost.
+        # Real-time audit monitoring is unavailable.
+        # ---------------------------------------------------------------------
+        - alert: AuditStreamDisconnected
+          expr: |
+            gl_audit_stream_connections == 0
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-security
+            component: audit-service
+            prd: SEC-005
+          annotations:
+            summary: "No active audit streaming connections"
+            description: >-
+              All WebSocket connections for real-time audit streaming have
+              been disconnected for 5 minutes. Security operations may not
+              have real-time visibility into audit events. Check the SIEM
+              integration and audit stream consumer health.
+            runbook_url: "https://runbooks.greenlang.io/audit-service/stream-disconnected"
+            dashboard_url: "https://grafana.greenlang.io/d/greenlang-audit-service"
+
+        # ---------------------------------------------------------------------
+        # AuditLatencyHigh
+        # Fires when P99 audit write latency exceeds 2ms target.
+        # ---------------------------------------------------------------------
+        - alert: AuditLatencyHigh
+          expr: |
+            histogram_quantile(0.99,
+              sum(rate(gl_audit_event_latency_seconds_bucket{stage="write"}[5m])) by (le)
+            ) > 0.002
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-security
+            component: audit-service
+            prd: SEC-005
+          annotations:
+            summary: "Audit write latency P99 exceeds 2ms"
+            description: >-
+              Audit event write latency P99 is
+              {{ $value | printf "%.4f" }}s, exceeding the 2ms target.
+              High latency may impact API response times if audit logging
+              is on the critical path. Check database performance, connection
+              pool health, and queue depth.
+            runbook_url: "https://runbooks.greenlang.io/audit-service/high-latency"
+            dashboard_url: "https://grafana.greenlang.io/d/greenlang-audit-service"
+
+        # ---------------------------------------------------------------------
+        # AuditExportFailures
+        # Fires when export jobs are failing.
+        # ---------------------------------------------------------------------
+        - alert: AuditExportFailures
+          expr: |
+            sum(rate(gl_audit_export_jobs_total{status="failure"}[1h])) > 0
+          for: 10m
+          labels:
+            severity: warning
+            team: platform-security
+            component: audit-service
+            prd: SEC-005
+          annotations:
+            summary: "Audit export job failures detected"
+            description: >-
+              Audit export jobs are failing at
+              {{ $value | printf "%.2f" }}/hour. Compliance reports may be
+              delayed or incomplete. Check the export job logs, S3 bucket
+              permissions, and available disk space.
+            runbook_url: "https://runbooks.greenlang.io/audit-service/export-failures"
+            dashboard_url: "https://grafana.greenlang.io/d/greenlang-audit-service"

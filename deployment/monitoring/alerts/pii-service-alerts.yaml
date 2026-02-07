@@ -1,0 +1,454 @@
+# =============================================================================
+# GreenLang Climate OS - PII Service Prometheus Alert Rules
+# =============================================================================
+# PRD: SEC-011 PII Detection/Redaction Enhancements
+# Defines alerting rules for PII detection, enforcement, token vault,
+# streaming, remediation, and quarantine operations.
+# =============================================================================
+
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: pii-service-alerts
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: pii-service
+    app.kubernetes.io/part-of: greenlang
+    prometheus: kube-prometheus
+    role: alert-rules
+    greenlang.io/component: sec-011
+spec:
+  groups:
+    # =========================================================================
+    # Group 1: Enforcement Alerts
+    # =========================================================================
+    - name: pii_service.enforcement
+      interval: 30s
+      rules:
+        # ---------------------------------------------------------------------
+        # PIIHighBlockRate
+        # Fires when request block rate is unusually high, indicating
+        # potential attack or misconfiguration.
+        # ---------------------------------------------------------------------
+        - alert: PIIHighBlockRate
+          expr: |
+            rate(gl_pii_blocked_requests_total[5m]) > 10
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-security
+            component: pii-service
+            prd: SEC-011
+          annotations:
+            summary: "High PII block rate ({{ $value | printf \"%.2f\" }} req/s)"
+            description: >-
+              Many requests are being blocked due to PII detection
+              ({{ $value | printf "%.2f" }} per second over 5 minutes).
+              This may indicate an attack attempting to exfiltrate data,
+              a misconfigured application sending sensitive data, or
+              overly aggressive detection rules. Review blocked requests
+              in the audit log and adjust policies if needed.
+            runbook_url: "https://runbooks.greenlang.io/security/pii-high-block-rate"
+            dashboard_url: "https://grafana.greenlang.io/d/pii-service"
+
+        # ---------------------------------------------------------------------
+        # PIIHighSensitiveDataDetected
+        # Fires when high-sensitivity PII (SSN, credit card) is detected.
+        # ---------------------------------------------------------------------
+        - alert: PIIHighSensitiveDataDetected
+          expr: |
+            increase(gl_pii_detections_total{pii_type=~"ssn|credit_card|password|bank_account", confidence_level="high"}[5m]) > 0
+          for: 1m
+          labels:
+            severity: warning
+            team: platform-security
+            component: pii-service
+            prd: SEC-011
+          annotations:
+            summary: "High-sensitivity PII detected: {{ $labels.pii_type }}"
+            description: >-
+              High-sensitivity PII ({{ $labels.pii_type }}) has been detected
+              with high confidence. This type of data should never be present
+              in API requests or logs. Immediate investigation is required to
+              identify the source and prevent data exposure.
+            runbook_url: "https://runbooks.greenlang.io/security/pii-high-sensitivity"
+            dashboard_url: "https://grafana.greenlang.io/d/pii-service"
+
+    # =========================================================================
+    # Group 2: Quarantine Alerts
+    # =========================================================================
+    - name: pii_service.quarantine
+      interval: 60s
+      rules:
+        # ---------------------------------------------------------------------
+        # PIIQuarantineBacklog
+        # Fires when quarantine backlog exceeds threshold.
+        # ---------------------------------------------------------------------
+        - alert: PIIQuarantineBacklog
+          expr: |
+            sum(gl_pii_quarantine_items) > 100
+          for: 15m
+          labels:
+            severity: warning
+            team: data-stewards
+            component: pii-service
+            prd: SEC-011
+          annotations:
+            summary: "Quarantine backlog exceeds 100 items ({{ $value }} items)"
+            description: >-
+              The PII quarantine queue has {{ $value }} items pending review,
+              exceeding the 100 item threshold for 15 minutes. Quarantined
+              items require manual review within 72 hours per compliance
+              policy. Assign resources to process the backlog.
+            runbook_url: "https://runbooks.greenlang.io/security/pii-quarantine-backlog"
+            dashboard_url: "https://grafana.greenlang.io/d/pii-service"
+
+        # ---------------------------------------------------------------------
+        # PIIQuarantineExpiringSoon
+        # Fires when quarantine items are approaching expiration.
+        # This uses a heuristic: if items are old, they may be expiring.
+        # ---------------------------------------------------------------------
+        - alert: PIIQuarantineCriticalBacklog
+          expr: |
+            sum(gl_pii_quarantine_items) > 200
+          for: 5m
+          labels:
+            severity: critical
+            team: data-stewards
+            component: pii-service
+            prd: SEC-011
+          annotations:
+            summary: "Critical quarantine backlog: {{ $value }} items"
+            description: >-
+              The PII quarantine queue has reached critical levels with
+              {{ $value }} items. Items not reviewed within 72 hours are
+              automatically deleted, potentially losing important audit
+              evidence. Immediate action required to process the backlog.
+            runbook_url: "https://runbooks.greenlang.io/security/pii-quarantine-critical"
+            dashboard_url: "https://grafana.greenlang.io/d/pii-service"
+
+    # =========================================================================
+    # Group 3: Token Vault Alerts
+    # =========================================================================
+    - name: pii_service.token_vault
+      interval: 60s
+      rules:
+        # ---------------------------------------------------------------------
+        # PIITokenVaultNearCapacity
+        # Fires when token vault is approaching capacity limit.
+        # ---------------------------------------------------------------------
+        - alert: PIITokenVaultNearCapacity
+          expr: |
+            sum by (tenant_id) (gl_pii_tokens_total) > 900000
+          for: 5m
+          labels:
+            severity: critical
+            team: platform-security
+            component: pii-service
+            prd: SEC-011
+          annotations:
+            summary: "Token vault approaching capacity for tenant {{ $labels.tenant_id }}"
+            description: >-
+              Tenant {{ $labels.tenant_id }} has {{ $value }} tokens in the
+              vault, approaching the 1,000,000 token limit. When capacity is
+              reached, new tokenization requests will fail. Consider archiving
+              expired tokens or increasing the tenant's token limit.
+            runbook_url: "https://runbooks.greenlang.io/security/pii-vault-capacity"
+            dashboard_url: "https://grafana.greenlang.io/d/pii-service"
+
+        # ---------------------------------------------------------------------
+        # PIIDetokenizationErrors
+        # Fires when detokenization error rate is high.
+        # ---------------------------------------------------------------------
+        - alert: PIIDetokenizationErrors
+          expr: |
+            (
+              rate(gl_pii_detokenization_total{status="failed"}[5m])
+              / rate(gl_pii_detokenization_total[5m])
+            ) > 0.05
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-security
+            component: pii-service
+            prd: SEC-011
+          annotations:
+            summary: "High detokenization error rate (>5%)"
+            description: >-
+              Detokenization operations are failing at a rate above 5%.
+              This may indicate encryption key rotation issues, database
+              connectivity problems, or unauthorized access attempts.
+              Check the token vault service logs and encryption key status.
+            runbook_url: "https://runbooks.greenlang.io/security/pii-detokenization-errors"
+            dashboard_url: "https://grafana.greenlang.io/d/pii-service"
+
+        # ---------------------------------------------------------------------
+        # PIIDetokenizationDenied
+        # Fires when there are many unauthorized detokenization attempts.
+        # ---------------------------------------------------------------------
+        - alert: PIIDetokenizationDenied
+          expr: |
+            rate(gl_pii_detokenization_total{status="denied"}[5m]) > 1
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-security
+            component: pii-service
+            prd: SEC-011
+          annotations:
+            summary: "Unauthorized detokenization attempts detected"
+            description: >-
+              Multiple unauthorized detokenization attempts have been detected
+              ({{ $value | printf "%.2f" }}/s). This may indicate an attacker
+              attempting to access encrypted PII or a misconfigured application.
+              Review the audit logs for source identification.
+            runbook_url: "https://runbooks.greenlang.io/security/pii-unauthorized-access"
+            dashboard_url: "https://grafana.greenlang.io/d/pii-service"
+
+    # =========================================================================
+    # Group 4: Streaming Alerts
+    # =========================================================================
+    - name: pii_service.streaming
+      interval: 30s
+      rules:
+        # ---------------------------------------------------------------------
+        # PIIStreamProcessingLag
+        # Fires when stream processing throughput drops significantly.
+        # ---------------------------------------------------------------------
+        - alert: PIIStreamProcessingLag
+          expr: |
+            rate(gl_pii_stream_processed_total[1m]) < 100
+              and rate(gl_pii_stream_processed_total[5m]) > 0
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-security
+            component: pii-service
+            prd: SEC-011
+          annotations:
+            summary: "PII stream processing throughput degraded"
+            description: >-
+              PII stream processing throughput has dropped below 100 msg/min
+              while previously active. This may indicate consumer lag, resource
+              constraints, or scanner performance issues. Messages may be
+              queueing in Kafka/Kinesis without PII scanning.
+            runbook_url: "https://runbooks.greenlang.io/security/pii-stream-lag"
+            dashboard_url: "https://grafana.greenlang.io/d/pii-service"
+
+        # ---------------------------------------------------------------------
+        # PIIStreamErrors
+        # Fires when stream processing errors are occurring.
+        # ---------------------------------------------------------------------
+        - alert: PIIStreamErrors
+          expr: |
+            rate(gl_pii_stream_errors_total[5m]) > 1
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-security
+            component: pii-service
+            prd: SEC-011
+          annotations:
+            summary: "PII stream processing errors detected"
+            description: >-
+              PII stream processing is experiencing errors at a rate of
+              {{ $value | printf "%.2f" }} per second. This may cause messages
+              to be dropped or sent to the dead letter queue without proper
+              PII scanning. Investigate scanner logs and Kafka/Kinesis health.
+            runbook_url: "https://runbooks.greenlang.io/security/pii-stream-errors"
+            dashboard_url: "https://grafana.greenlang.io/d/pii-service"
+
+        # ---------------------------------------------------------------------
+        # PIIStreamHighBlockRate
+        # Fires when stream blocking rate is unusually high.
+        # ---------------------------------------------------------------------
+        - alert: PIIStreamHighBlockRate
+          expr: |
+            (
+              sum(rate(gl_pii_stream_blocked_total[5m]))
+              / sum(rate(gl_pii_stream_processed_total[5m]))
+            ) > 0.1
+          for: 10m
+          labels:
+            severity: warning
+            team: platform-security
+            component: pii-service
+            prd: SEC-011
+          annotations:
+            summary: "High PII stream block rate (>10%)"
+            description: >-
+              More than 10% of stream messages are being blocked due to PII
+              detection. This may indicate a data source sending sensitive
+              data or overly aggressive detection rules. Review blocked
+              messages in the dead letter queue.
+            runbook_url: "https://runbooks.greenlang.io/security/pii-stream-block-rate"
+            dashboard_url: "https://grafana.greenlang.io/d/pii-service"
+
+    # =========================================================================
+    # Group 5: Remediation Alerts
+    # =========================================================================
+    - name: pii_service.remediation
+      interval: 60s
+      rules:
+        # ---------------------------------------------------------------------
+        # PIIRemediationFailed
+        # Fires when remediation operations are failing.
+        # ---------------------------------------------------------------------
+        - alert: PIIRemediationFailed
+          expr: |
+            (
+              increase(gl_pii_remediation_total{action!="notify_only"}[1h]) > 0
+              and (
+                increase(gl_pii_remediation_total{status="failed"}[1h])
+                / increase(gl_pii_remediation_total[1h])
+              ) > 0.1
+            )
+          for: 5m
+          labels:
+            severity: warning
+            team: data-stewards
+            component: pii-service
+            prd: SEC-011
+          annotations:
+            summary: "High PII remediation failure rate (>10%)"
+            description: >-
+              More than 10% of PII remediation operations have failed in the
+              past hour. Failed remediations may leave PII in systems after
+              deletion requests (GDPR/CCPA compliance risk). Investigate
+              remediation logs and check target system connectivity.
+            runbook_url: "https://runbooks.greenlang.io/security/pii-remediation-failed"
+            dashboard_url: "https://grafana.greenlang.io/d/pii-service"
+
+        # ---------------------------------------------------------------------
+        # PIIRemediationPendingHigh
+        # Fires when there are many pending remediation items.
+        # ---------------------------------------------------------------------
+        - alert: PIIRemediationPendingHigh
+          expr: |
+            sum(gl_pii_remediation_pending) > 50
+          for: 30m
+          labels:
+            severity: warning
+            team: data-stewards
+            component: pii-service
+            prd: SEC-011
+          annotations:
+            summary: "High pending PII remediation items ({{ $value }})"
+            description: >-
+              There are {{ $value }} PII items pending remediation for more
+              than 30 minutes. These items are waiting for the grace period
+              to expire or approval. Ensure the remediation scheduler is
+              running and approvals are being processed.
+            runbook_url: "https://runbooks.greenlang.io/security/pii-remediation-pending"
+            dashboard_url: "https://grafana.greenlang.io/d/pii-service"
+
+    # =========================================================================
+    # Group 6: Detection Performance Alerts
+    # =========================================================================
+    - name: pii_service.detection
+      interval: 30s
+      rules:
+        # ---------------------------------------------------------------------
+        # PIIDetectionLatencyHigh
+        # Fires when detection latency exceeds SLA.
+        # ---------------------------------------------------------------------
+        - alert: PIIDetectionLatencyHigh
+          expr: |
+            histogram_quantile(0.99, rate(gl_pii_detection_latency_seconds_bucket[5m])) > 0.1
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-security
+            component: pii-service
+            prd: SEC-011
+          annotations:
+            summary: "PII detection P99 latency > 100ms"
+            description: >-
+              PII detection P99 latency is {{ $value | printf "%.3f" }} seconds,
+              exceeding the 100ms SLA target. High latency impacts API response
+              times and may cause timeout issues. Check scanner resource usage,
+              ML model performance, and consider scaling the service.
+            runbook_url: "https://runbooks.greenlang.io/security/pii-detection-latency"
+            dashboard_url: "https://grafana.greenlang.io/d/pii-service"
+
+        # ---------------------------------------------------------------------
+        # PIIDetectionLatencyCritical
+        # Fires when detection latency is critically high.
+        # ---------------------------------------------------------------------
+        - alert: PIIDetectionLatencyCritical
+          expr: |
+            histogram_quantile(0.99, rate(gl_pii_detection_latency_seconds_bucket[5m])) > 0.5
+          for: 5m
+          labels:
+            severity: critical
+            team: platform-security
+            component: pii-service
+            prd: SEC-011
+          annotations:
+            summary: "PII detection P99 latency critically high (>500ms)"
+            description: >-
+              PII detection P99 latency has reached {{ $value | printf "%.3f" }}
+              seconds, causing severe performance degradation. This will impact
+              all API requests that undergo PII scanning. Immediate investigation
+              and remediation required. Consider disabling ML scanner temporarily.
+            runbook_url: "https://runbooks.greenlang.io/security/pii-detection-latency-critical"
+            dashboard_url: "https://grafana.greenlang.io/d/pii-service"
+
+        # ---------------------------------------------------------------------
+        # PIIDetectionSpikeAnomaly
+        # Fires when detection rate suddenly spikes.
+        # ---------------------------------------------------------------------
+        - alert: PIIDetectionSpikeAnomaly
+          expr: |
+            (
+              sum(rate(gl_pii_detections_total[5m]))
+              / sum(rate(gl_pii_detections_total[1h] offset 5m))
+            ) > 5
+          for: 10m
+          labels:
+            severity: warning
+            team: platform-security
+            component: pii-service
+            prd: SEC-011
+          annotations:
+            summary: "PII detection rate spike (5x increase)"
+            description: >-
+              PII detection rate has spiked to 5x the previous hour's rate.
+              This may indicate a data breach, misconfigured application
+              sending PII, or a change in detection rules. Investigate the
+              source of the increased detections immediately.
+            runbook_url: "https://runbooks.greenlang.io/security/pii-detection-spike"
+            dashboard_url: "https://grafana.greenlang.io/d/pii-service"
+
+    # =========================================================================
+    # Group 7: Allowlist Alerts
+    # =========================================================================
+    - name: pii_service.allowlist
+      interval: 60s
+      rules:
+        # ---------------------------------------------------------------------
+        # PIIAllowlistHighMatchRate
+        # Fires when allowlist match rate is very high (may indicate
+        # overly broad allowlist patterns).
+        # ---------------------------------------------------------------------
+        - alert: PIIAllowlistHighMatchRate
+          expr: |
+            (
+              sum(rate(gl_pii_allowlist_matches_total[1h]))
+              / sum(rate(gl_pii_detections_total[1h]))
+            ) > 0.5
+          for: 30m
+          labels:
+            severity: warning
+            team: platform-security
+            component: pii-service
+            prd: SEC-011
+          annotations:
+            summary: "High PII allowlist match rate (>50%)"
+            description: >-
+              More than 50% of PII detections are being allowlisted. This may
+              indicate overly broad allowlist patterns that could mask real
+              PII. Review allowlist entries for patterns that are too permissive
+              and consider tightening the rules.
+            runbook_url: "https://runbooks.greenlang.io/security/pii-allowlist-review"
+            dashboard_url: "https://grafana.greenlang.io/d/pii-service"

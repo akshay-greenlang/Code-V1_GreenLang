@@ -1,0 +1,429 @@
+# GreenLang DAST Security Scan Workflow
+#
+# Dynamic Application Security Testing using OWASP ZAP.
+# Triggered on staging deployments and nightly for full scans.
+#
+# Security Compliance: SOC 2 CC7.1, ISO 27001 A.18.2.3, GDPR Art. 32
+#
+# Author: GreenLang Security Team
+# Version: 1.0.0
+
+name: DAST Security Scan
+
+on:
+  # Trigger after staging deployment
+  workflow_run:
+    workflows: ["Deploy to Staging"]
+    types:
+      - completed
+
+  # Trigger on PR to allow baseline scan
+  pull_request:
+    branches: [main, master, develop]
+    types: [opened, synchronize, reopened]
+
+  # Nightly full scan
+  schedule:
+    - cron: '0 3 * * *'  # 3 AM UTC daily
+
+  # Manual trigger
+  workflow_dispatch:
+    inputs:
+      scan_type:
+        description: 'Type of DAST scan'
+        required: true
+        default: 'baseline'
+        type: choice
+        options:
+          - baseline
+          - full
+          - api
+      target_url:
+        description: 'Target URL to scan'
+        required: false
+        default: 'https://staging.greenlang.io'
+        type: string
+      api_definition:
+        description: 'Path to OpenAPI definition (for API scan)'
+        required: false
+        default: ''
+        type: string
+
+permissions:
+  contents: read
+  security-events: write
+  pull-requests: write
+  actions: read
+
+env:
+  TARGET_URL: ${{ github.event.inputs.target_url || 'https://staging.greenlang.io' }}
+  ZAP_RULES_FILE: 'deployment/security/dast/zap-automation.yaml'
+
+jobs:
+  # ===========================================================================
+  # Pre-flight Checks
+  # ===========================================================================
+  preflight:
+    name: Pre-flight Checks
+    runs-on: ubuntu-latest
+    outputs:
+      should_run: ${{ steps.check.outputs.should_run }}
+      scan_type: ${{ steps.check.outputs.scan_type }}
+
+    steps:
+      - name: Determine scan parameters
+        id: check
+        run: |
+          # Determine if we should run
+          SHOULD_RUN="true"
+
+          # Check if triggered by workflow_run and if it was successful
+          if [ "${{ github.event_name }}" = "workflow_run" ]; then
+            if [ "${{ github.event.workflow_run.conclusion }}" != "success" ]; then
+              echo "Upstream workflow did not succeed, skipping DAST scan"
+              SHOULD_RUN="false"
+            fi
+          fi
+
+          # Determine scan type
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            SCAN_TYPE="${{ github.event.inputs.scan_type }}"
+          elif [ "${{ github.event_name }}" = "schedule" ]; then
+            SCAN_TYPE="full"
+          else
+            SCAN_TYPE="baseline"
+          fi
+
+          echo "should_run=$SHOULD_RUN" >> $GITHUB_OUTPUT
+          echo "scan_type=$SCAN_TYPE" >> $GITHUB_OUTPUT
+
+          echo "## DAST Scan Configuration" >> $GITHUB_STEP_SUMMARY
+          echo "- **Should Run:** $SHOULD_RUN" >> $GITHUB_STEP_SUMMARY
+          echo "- **Scan Type:** $SCAN_TYPE" >> $GITHUB_STEP_SUMMARY
+          echo "- **Target URL:** $TARGET_URL" >> $GITHUB_STEP_SUMMARY
+
+  # ===========================================================================
+  # Baseline Scan (Fast, for PRs and deployments)
+  # ===========================================================================
+  baseline-scan:
+    name: ZAP Baseline Scan
+    runs-on: ubuntu-latest
+    needs: preflight
+    if: needs.preflight.outputs.should_run == 'true' && needs.preflight.outputs.scan_type == 'baseline'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Wait for staging to be ready
+        run: |
+          echo "Waiting for staging environment to be ready..."
+          max_attempts=30
+          attempt=1
+          while [ $attempt -le $max_attempts ]; do
+            if curl -s -o /dev/null -w "%{http_code}" "$TARGET_URL/health" | grep -q "200"; then
+              echo "Staging is ready!"
+              break
+            fi
+            echo "Attempt $attempt/$max_attempts - Staging not ready, waiting..."
+            sleep 10
+            attempt=$((attempt + 1))
+          done
+          if [ $attempt -gt $max_attempts ]; then
+            echo "Staging did not become ready in time"
+            exit 1
+          fi
+
+      - name: ZAP Baseline Scan
+        uses: zaproxy/action-baseline@v0.10.0
+        with:
+          target: ${{ env.TARGET_URL }}
+          rules_file_name: ${{ env.ZAP_RULES_FILE }}
+          allow_issue_writing: true
+          fail_action: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+          cmd_options: '-a -j -m 5'
+
+      - name: Convert ZAP report to SARIF
+        if: always()
+        run: |
+          if [ -f report_json.json ]; then
+            python3 << 'EOF'
+import json
+import sys
+
+# Read ZAP JSON report
+with open('report_json.json', 'r') as f:
+    zap_report = json.load(f)
+
+# Convert to SARIF
+sarif = {
+    "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+    "version": "2.1.0",
+    "runs": [{
+        "tool": {
+            "driver": {
+                "name": "OWASP ZAP",
+                "version": "2.14.0",
+                "informationUri": "https://www.zaproxy.org/",
+                "rules": []
+            }
+        },
+        "results": []
+    }]
+}
+
+severity_map = {"High": "error", "Medium": "warning", "Low": "note", "Informational": "none"}
+rules_seen = set()
+
+for site in zap_report.get('site', []):
+    for alert in site.get('alerts', []):
+        rule_id = str(alert.get('pluginid', alert.get('alertRef', '')))
+
+        if rule_id not in rules_seen:
+            sarif["runs"][0]["tool"]["driver"]["rules"].append({
+                "id": rule_id,
+                "name": alert.get('name', 'Unknown'),
+                "shortDescription": {"text": alert.get('name', 'Unknown')},
+                "fullDescription": {"text": alert.get('desc', '')[:1000]},
+                "helpUri": "https://www.zaproxy.org/docs/alerts/",
+                "properties": {"security-severity": "7.0" if alert.get('riskcode', 0) >= 2 else "4.0"}
+            })
+            rules_seen.add(rule_id)
+
+        for instance in alert.get('instances', [{}]):
+            sarif["runs"][0]["results"].append({
+                "ruleId": rule_id,
+                "level": severity_map.get(alert.get('riskdesc', 'Medium').split()[0], 'warning'),
+                "message": {"text": f"{alert.get('name')}: {alert.get('desc', '')[:500]}"},
+                "locations": [{
+                    "physicalLocation": {
+                        "artifactLocation": {"uri": instance.get('uri', '/')},
+                        "region": {"startLine": 1}
+                    }
+                }]
+            })
+
+with open('zap-results.sarif', 'w') as f:
+    json.dump(sarif, f, indent=2)
+
+print(f"Converted {len(sarif['runs'][0]['results'])} findings to SARIF")
+EOF
+          fi
+
+      - name: Upload ZAP SARIF to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: zap-results.sarif
+          category: 'zap-baseline'
+
+      - name: Upload ZAP artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: zap-baseline-results
+          path: |
+            report_*.json
+            report_*.html
+            zap-results.sarif
+
+      - name: Check for blocking findings
+        id: check-findings
+        run: |
+          if [ -f report_json.json ]; then
+            HIGH_COUNT=$(jq '[.site[].alerts[] | select(.riskcode >= 3)] | length' report_json.json 2>/dev/null || echo "0")
+            CRITICAL_COUNT=$(jq '[.site[].alerts[] | select(.riskcode >= 4)] | length' report_json.json 2>/dev/null || echo "0")
+
+            echo "## ZAP Baseline Scan Results" >> $GITHUB_STEP_SUMMARY
+            echo "- Critical: $CRITICAL_COUNT" >> $GITHUB_STEP_SUMMARY
+            echo "- High: $HIGH_COUNT" >> $GITHUB_STEP_SUMMARY
+
+            if [ "$CRITICAL_COUNT" -gt "0" ] || [ "$HIGH_COUNT" -gt "0" ]; then
+              echo "::error::BLOCKER: Found $HIGH_COUNT high and $CRITICAL_COUNT critical DAST findings"
+              exit 1
+            fi
+          fi
+
+  # ===========================================================================
+  # Full Scan (Comprehensive, nightly)
+  # ===========================================================================
+  full-scan:
+    name: ZAP Full Scan
+    runs-on: ubuntu-latest
+    needs: preflight
+    if: needs.preflight.outputs.should_run == 'true' && needs.preflight.outputs.scan_type == 'full'
+    timeout-minutes: 120
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: ZAP Full Scan
+        uses: zaproxy/action-full-scan@v0.8.0
+        with:
+          target: ${{ env.TARGET_URL }}
+          rules_file_name: ${{ env.ZAP_RULES_FILE }}
+          allow_issue_writing: true
+          fail_action: false  # Don't fail nightly, just report
+          token: ${{ secrets.GITHUB_TOKEN }}
+          cmd_options: '-a -j'
+
+      - name: Upload ZAP SARIF to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: report_sarif.json
+          category: 'zap-full'
+        continue-on-error: true
+
+      - name: Upload ZAP artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: zap-full-results
+          path: |
+            report_*.json
+            report_*.html
+            report_*.xml
+
+      - name: Generate scan summary
+        if: always()
+        run: |
+          echo "## ZAP Full Scan Results" >> $GITHUB_STEP_SUMMARY
+
+          if [ -f report_json.json ]; then
+            TOTAL=$(jq '[.site[].alerts[]] | length' report_json.json 2>/dev/null || echo "0")
+            HIGH=$(jq '[.site[].alerts[] | select(.riskcode >= 3)] | length' report_json.json 2>/dev/null || echo "0")
+            MEDIUM=$(jq '[.site[].alerts[] | select(.riskcode == 2)] | length' report_json.json 2>/dev/null || echo "0")
+            LOW=$(jq '[.site[].alerts[] | select(.riskcode == 1)] | length' report_json.json 2>/dev/null || echo "0")
+
+            echo "- **Total Findings:** $TOTAL" >> $GITHUB_STEP_SUMMARY
+            echo "- **High/Critical:** $HIGH" >> $GITHUB_STEP_SUMMARY
+            echo "- **Medium:** $MEDIUM" >> $GITHUB_STEP_SUMMARY
+            echo "- **Low:** $LOW" >> $GITHUB_STEP_SUMMARY
+          fi
+
+  # ===========================================================================
+  # API Scan (OpenAPI/GraphQL)
+  # ===========================================================================
+  api-scan:
+    name: ZAP API Scan
+    runs-on: ubuntu-latest
+    needs: preflight
+    if: needs.preflight.outputs.should_run == 'true' && needs.preflight.outputs.scan_type == 'api'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get OpenAPI definition
+        run: |
+          # Try to fetch OpenAPI spec from target
+          API_DEF="${{ github.event.inputs.api_definition }}"
+          if [ -z "$API_DEF" ]; then
+            API_DEF="${TARGET_URL}/openapi.json"
+          fi
+
+          curl -s -o openapi.json "$API_DEF" || echo '{"openapi": "3.0.0"}' > openapi.json
+          echo "Downloaded OpenAPI definition from $API_DEF"
+
+      - name: ZAP API Scan
+        uses: zaproxy/action-api-scan@v0.5.0
+        with:
+          target: ${{ env.TARGET_URL }}/openapi.json
+          rules_file_name: ${{ env.ZAP_RULES_FILE }}
+          allow_issue_writing: true
+          fail_action: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+          format: openapi
+
+      - name: Upload ZAP SARIF to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: report_sarif.json
+          category: 'zap-api'
+        continue-on-error: true
+
+      - name: Upload ZAP artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: zap-api-results
+          path: |
+            report_*.json
+            report_*.html
+
+  # ===========================================================================
+  # Post-scan Notification
+  # ===========================================================================
+  notify:
+    name: Notify Results
+    runs-on: ubuntu-latest
+    needs: [preflight, baseline-scan, full-scan, api-scan]
+    if: always() && needs.preflight.outputs.should_run == 'true'
+
+    steps:
+      - name: Notify on failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const scanType = '${{ needs.preflight.outputs.scan_type }}';
+            const targetUrl = '${{ env.TARGET_URL }}';
+
+            // Create issue for critical findings
+            if (context.eventName !== 'pull_request') {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: `[SECURITY] DAST ${scanType} scan found vulnerabilities`,
+                body: `## DAST Security Scan Alert
+
+**Scan Type:** ${scanType}
+**Target:** ${targetUrl}
+**Workflow Run:** ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}
+
+Critical or high severity vulnerabilities were detected during the DAST scan.
+Please review the findings and remediate as appropriate.
+
+### Next Steps
+1. Review the scan artifacts in the workflow run
+2. Check the GitHub Security tab for SARIF results
+3. Prioritize and fix findings based on severity
+
+/cc @greenlang/security-team`,
+                labels: ['security', 'dast', 'vulnerability']
+              });
+            }
+
+      - name: Comment on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const scanType = '${{ needs.preflight.outputs.scan_type }}';
+            const baselineResult = '${{ needs.baseline-scan.result }}';
+
+            const status = baselineResult === 'success' ? 'PASSED' : 'FAILED';
+            const emoji = baselineResult === 'success' ? ':white_check_mark:' : ':x:';
+
+            const body = `## ${emoji} DAST Security Scan ${status}
+
+| Scan | Status |
+|------|--------|
+| ZAP ${scanType} | ${status} |
+
+${baselineResult === 'failure' ?
+'> **Action Required:** Security vulnerabilities were detected. Please review the findings before merging.' :
+'No critical or high severity vulnerabilities detected.'}
+
+[View detailed results](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });

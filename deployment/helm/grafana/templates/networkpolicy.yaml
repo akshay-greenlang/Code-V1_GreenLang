@@ -1,0 +1,82 @@
+{{- /*
+GreenLang Grafana - Network Policy
+GreenLang Climate OS | OBS-002
+*/ -}}
+{{- if .Values.networkPolicy.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "grafana.fullname" . }}
+  namespace: {{ include "grafana.namespace" . }}
+  labels:
+    {{- include "grafana.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "grafana.selectorLabels" . | nindent 6 }}
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    {{- toYaml .Values.networkPolicy.ingress | nindent 4 }}
+  egress:
+    # Allow DNS resolution
+    - to: []
+      ports:
+        - port: 53
+          protocol: UDP
+        - port: 53
+          protocol: TCP
+    # Allow connections to datasources (Prometheus, Thanos, Loki, Jaeger)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+      ports:
+        - port: 9090
+          protocol: TCP
+        - port: 9093
+          protocol: TCP
+        - port: 3100
+          protocol: TCP
+        - port: 16686
+          protocol: TCP
+    # Allow connections to PostgreSQL
+    - to: []
+      ports:
+        - port: 5432
+          protocol: TCP
+    # Allow connections to Redis
+    - to: []
+      ports:
+        - port: 6379
+          protocol: TCP
+    # Allow connections to SMTP
+    - to: []
+      ports:
+        - port: 587
+          protocol: TCP
+    # Allow connections to image renderer
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/component: renderer
+      ports:
+        - port: 8081
+          protocol: TCP
+    # Allow HA gossip between Grafana pods
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: {{ include "grafana.name" . }}
+      ports:
+        - port: 9094
+          protocol: TCP
+        - port: 9094
+          protocol: UDP
+    # Allow HTTPS outbound (OAuth, Gravatar, plugin downloads)
+    - to: []
+      ports:
+        - port: 443
+          protocol: TCP
+{{- end }}

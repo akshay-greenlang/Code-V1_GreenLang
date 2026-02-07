@@ -1,0 +1,584 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+GreenLang API Security Scan Policy
+
+Custom OWASP ZAP scan policy optimized for GreenLang API security testing.
+Focuses on OWASP Top 10 2021 and API-specific vulnerabilities.
+
+Usage:
+    1. Import in ZAP: Analyze -> Scan Policy Manager -> Import
+    2. Select policy when starting Active Scan
+
+Author: GreenLang Security Team
+Version: 1.0.0
+Compliance: SOC 2 CC7.1, ISO 27001 A.14.2.5, OWASP API Top 10
+-->
+<configuration>
+    <policy>GreenLang API Security Policy</policy>
+    <scanner>
+        <level>MEDIUM</level>
+        <strength>MEDIUM</strength>
+    </scanner>
+
+    <!-- ================================================================= -->
+    <!-- INJECTION ATTACKS (OWASP A03:2021) -->
+    <!-- High priority: SQL, NoSQL, Command, LDAP, XPath injection -->
+    <!-- ================================================================= -->
+
+    <!-- SQL Injection - Generic -->
+    <plugin>
+        <id>40018</id>
+        <name>SQL Injection</name>
+        <enabled>true</enabled>
+        <alertThreshold>MEDIUM</alertThreshold>
+        <attackStrength>HIGH</attackStrength>
+    </plugin>
+
+    <!-- SQL Injection - MySQL -->
+    <plugin>
+        <id>40019</id>
+        <name>SQL Injection - MySQL</name>
+        <enabled>true</enabled>
+        <alertThreshold>MEDIUM</alertThreshold>
+        <attackStrength>HIGH</attackStrength>
+    </plugin>
+
+    <!-- SQL Injection - Oracle -->
+    <plugin>
+        <id>40020</id>
+        <name>SQL Injection - Oracle</name>
+        <enabled>true</enabled>
+        <alertThreshold>MEDIUM</alertThreshold>
+        <attackStrength>HIGH</attackStrength>
+    </plugin>
+
+    <!-- SQL Injection - PostgreSQL -->
+    <plugin>
+        <id>40021</id>
+        <name>SQL Injection - PostgreSQL</name>
+        <enabled>true</enabled>
+        <alertThreshold>LOW</alertThreshold>
+        <attackStrength>HIGH</attackStrength>
+    </plugin>
+
+    <!-- SQL Injection - SQLite -->
+    <plugin>
+        <id>40024</id>
+        <name>SQL Injection - SQLite</name>
+        <enabled>true</enabled>
+        <alertThreshold>MEDIUM</alertThreshold>
+        <attackStrength>MEDIUM</attackStrength>
+    </plugin>
+
+    <!-- NoSQL Injection (MongoDB) - Critical for APIs -->
+    <plugin>
+        <id>90018</id>
+        <name>NoSQL Injection</name>
+        <enabled>true</enabled>
+        <alertThreshold>LOW</alertThreshold>
+        <attackStrength>HIGH</attackStrength>
+    </plugin>
+
+    <!-- OS Command Injection -->
+    <plugin>
+        <id>40026</id>
+        <name>Remote OS Command Injection</name>
+        <enabled>true</enabled>
+        <alertThreshold>MEDIUM</alertThreshold>
+        <attackStrength>HIGH</attackStrength>
+    </plugin>
+
+    <!-- LDAP Injection -->
+    <plugin>
+        <id>40015</id>
+        <name>LDAP Injection</name>
+        <enabled>true</enabled>
+        <alertThreshold>MEDIUM</alertThreshold>
+        <attackStrength>MEDIUM</attackStrength>
+    </plugin>
+
+    <!-- XPath Injection -->
+    <plugin>
+        <id>90021</id>
+        <name>XPath Injection</name>
+        <enabled>true</enabled>
+        <alertThreshold>MEDIUM</alertThreshold>
+        <attackStrength>MEDIUM</attackStrength>
+    </plugin>
+
+    <!-- Expression Language Injection -->
+    <plugin>
+        <id>90025</id>
+        <name>Expression Language Injection</name>
+        <enabled>true</enabled>
+        <alertThreshold>MEDIUM</alertThreshold>
+        <attackStrength>MEDIUM</attackStrength>
+    </plugin>
+
+    <!-- Server-Side Code Injection -->
+    <plugin>
+        <id>90019</id>
+        <name>Server Side Code Injection</name>
+        <enabled>true</enabled>
+        <alertThreshold>MEDIUM</alertThreshold>
+        <attackStrength>HIGH</attackStrength>
+    </plugin>
+
+    <!-- ================================================================= -->
+    <!-- CROSS-SITE SCRIPTING (OWASP A03:2021) -->
+    <!-- Important for API responses rendered in browsers -->
+    <!-- ================================================================= -->
+
+    <!-- Reflected XSS -->
+    <plugin>
+        <id>40012</id>
+        <name>Cross Site Scripting (Reflected)</name>
+        <enabled>true</enabled>
+        <alertThreshold>MEDIUM</alertThreshold>
+        <attackStrength>HIGH</attackStrength>
+    </plugin>
+
+    <!-- Persistent XSS -->
+    <plugin>
+        <id>40014</id>
+        <name>Cross Site Scripting (Persistent)</name>
+        <enabled>true</enabled>
+        <alertThreshold>MEDIUM</alertThreshold>
+        <attackStrength>HIGH</attackStrength>
+    </plugin>
+
+    <!-- DOM-based XSS -->
+    <plugin>
+        <id>40034</id>
+        <name>Cross Site Scripting (DOM Based)</name>
+        <enabled>true</enabled>
+        <alertThreshold>MEDIUM</alertThreshold>
+        <attackStrength>MEDIUM</attackStrength>
+    </plugin>
+
+    <!-- ================================================================= -->
+    <!-- BROKEN ACCESS CONTROL (OWASP A01:2021) -->
+    <!-- Critical for API security -->
+    <!-- ================================================================= -->
+
+    <!-- Path Traversal -->
+    <plugin>
+        <id>6</id>
+        <name>Path Traversal</name>
+        <enabled>true</enabled>
+        <alertThreshold>MEDIUM</alertThreshold>
+        <attackStrength>HIGH</attackStrength>
+    </plugin>
+
+    <!-- Source Code Disclosure -->
+    <plugin>
+        <id>42</id>
+        <name>Source Code Disclosure</name>
+        <enabled>true</enabled>
+        <alertThreshold>MEDIUM</alertThreshold>
+        <attackStrength>MEDIUM</attackStrength>
+    </plugin>
+
+    <!-- Remote File Inclusion -->
+    <plugin>
+        <id>7</id>
+        <name>Remote File Inclusion</name>
+        <enabled>true</enabled>
+        <alertThreshold>MEDIUM</alertThreshold>
+        <attackStrength>MEDIUM</attackStrength>
+    </plugin>
+
+    <!-- Local File Inclusion -->
+    <plugin>
+        <id>43</id>
+        <name>Local File Inclusion</name>
+        <enabled>true</enabled>
+        <alertThreshold>MEDIUM</alertThreshold>
+        <attackStrength>MEDIUM</attackStrength>
+    </plugin>
+
+    <!-- IDOR - Broken Object Level Authorization (API1:2023) -->
+    <plugin>
+        <id>40048</id>
+        <name>Broken Object Level Authorization</name>
+        <enabled>true</enabled>
+        <alertThreshold>LOW</alertThreshold>
+        <attackStrength>HIGH</attackStrength>
+    </plugin>
+
+    <!-- ================================================================= -->
+    <!-- SECURITY MISCONFIGURATION (OWASP A05:2021) -->
+    <!-- ================================================================= -->
+
+    <!-- CSRF -->
+    <plugin>
+        <id>10202</id>
+        <name>Absence of Anti-CSRF Tokens</name>
+        <enabled>true</enabled>
+        <alertThreshold>MEDIUM</alertThreshold>
+        <attackStrength>MEDIUM</attackStrength>
+    </plugin>
+
+    <!-- Backup File Disclosure -->
+    <plugin>
+        <id>10095</id>
+        <name>Backup File Disclosure</name>
+        <enabled>true</enabled>
+        <alertThreshold>MEDIUM</alertThreshold>
+        <attackStrength>MEDIUM</attackStrength>
+    </plugin>
+
+    <!-- HTTP Parameter Pollution -->
+    <plugin>
+        <id>90024</id>
+        <name>HTTP Parameter Pollution</name>
+        <enabled>true</enabled>
+        <alertThreshold>MEDIUM</alertThreshold>
+        <attackStrength>MEDIUM</attackStrength>
+    </plugin>
+
+    <!-- CORS Misconfiguration -->
+    <plugin>
+        <id>40040</id>
+        <name>CORS Misconfiguration</name>
+        <enabled>true</enabled>
+        <alertThreshold>LOW</alertThreshold>
+        <attackStrength>MEDIUM</attackStrength>
+    </plugin>
+
+    <!-- ================================================================= -->
+    <!-- XML/XXE ATTACKS (OWASP A05:2021) -->
+    <!-- Critical for APIs accepting XML -->
+    <!-- ================================================================= -->
+
+    <!-- XML External Entity Attack -->
+    <plugin>
+        <id>40023</id>
+        <name>XML External Entity Attack</name>
+        <enabled>true</enabled>
+        <alertThreshold>LOW</alertThreshold>
+        <attackStrength>HIGH</attackStrength>
+    </plugin>
+
+    <!-- XML Injection -->
+    <plugin>
+        <id>90017</id>
+        <name>XML Injection</name>
+        <enabled>true</enabled>
+        <alertThreshold>MEDIUM</alertThreshold>
+        <attackStrength>MEDIUM</attackStrength>
+    </plugin>
+
+    <!-- ================================================================= -->
+    <!-- SERVER-SIDE REQUEST FORGERY (OWASP A10:2021) -->
+    <!-- Critical for cloud-native APIs -->
+    <!-- ================================================================= -->
+
+    <!-- SSRF -->
+    <plugin>
+        <id>40046</id>
+        <name>Server Side Request Forgery</name>
+        <enabled>true</enabled>
+        <alertThreshold>LOW</alertThreshold>
+        <attackStrength>HIGH</attackStrength>
+    </plugin>
+
+    <!-- Out of Band SSRF -->
+    <plugin>
+        <id>40045</id>
+        <name>Out of Band SSRF</name>
+        <enabled>true</enabled>
+        <alertThreshold>MEDIUM</alertThreshold>
+        <attackStrength>MEDIUM</attackStrength>
+    </plugin>
+
+    <!-- ================================================================= -->
+    <!-- AUTHENTICATION & SESSION (OWASP A07:2021) -->
+    <!-- ================================================================= -->
+
+    <!-- Session Fixation -->
+    <plugin>
+        <id>40013</id>
+        <name>Session Fixation</name>
+        <enabled>true</enabled>
+        <alertThreshold>MEDIUM</alertThreshold>
+        <attackStrength>MEDIUM</attackStrength>
+    </plugin>
+
+    <!-- Weak Authentication -->
+    <plugin>
+        <id>10023</id>
+        <name>Weak Authentication Method</name>
+        <enabled>true</enabled>
+        <alertThreshold>MEDIUM</alertThreshold>
+        <attackStrength>MEDIUM</attackStrength>
+    </plugin>
+
+    <!-- ================================================================= -->
+    <!-- INSECURE DESERIALIZATION (OWASP A08:2021) -->
+    <!-- ================================================================= -->
+
+    <!-- Java Deserialization -->
+    <plugin>
+        <id>90029</id>
+        <name>Java Serialization Object</name>
+        <enabled>true</enabled>
+        <alertThreshold>MEDIUM</alertThreshold>
+        <attackStrength>MEDIUM</attackStrength>
+    </plugin>
+
+    <!-- ================================================================= -->
+    <!-- CRYPTOGRAPHIC FAILURES (OWASP A02:2021) -->
+    <!-- ================================================================= -->
+
+    <!-- Heartbleed -->
+    <plugin>
+        <id>20015</id>
+        <name>Heartbleed OpenSSL Vulnerability</name>
+        <enabled>true</enabled>
+        <alertThreshold>MEDIUM</alertThreshold>
+        <attackStrength>LOW</attackStrength>
+    </plugin>
+
+    <!-- Padding Oracle -->
+    <plugin>
+        <id>90034</id>
+        <name>Padding Oracle</name>
+        <enabled>true</enabled>
+        <alertThreshold>MEDIUM</alertThreshold>
+        <attackStrength>MEDIUM</attackStrength>
+    </plugin>
+
+    <!-- ================================================================= -->
+    <!-- INFORMATION DISCLOSURE -->
+    <!-- ================================================================= -->
+
+    <!-- Application Error Disclosure -->
+    <plugin>
+        <id>90022</id>
+        <name>Application Error Disclosure</name>
+        <enabled>true</enabled>
+        <alertThreshold>LOW</alertThreshold>
+        <attackStrength>MEDIUM</attackStrength>
+    </plugin>
+
+    <!-- Directory Browsing -->
+    <plugin>
+        <id>0</id>
+        <name>Directory Browsing</name>
+        <enabled>true</enabled>
+        <alertThreshold>MEDIUM</alertThreshold>
+        <attackStrength>MEDIUM</attackStrength>
+    </plugin>
+
+    <!-- Hidden File Finder -->
+    <plugin>
+        <id>40035</id>
+        <name>Hidden File Finder</name>
+        <enabled>true</enabled>
+        <alertThreshold>MEDIUM</alertThreshold>
+        <attackStrength>LOW</attackStrength>
+    </plugin>
+
+    <!-- Hash Disclosure -->
+    <plugin>
+        <id>10097</id>
+        <name>Hash Disclosure</name>
+        <enabled>true</enabled>
+        <alertThreshold>LOW</alertThreshold>
+        <attackStrength>MEDIUM</attackStrength>
+    </plugin>
+
+    <!-- ================================================================= -->
+    <!-- API-SPECIFIC CHECKS (OWASP API Top 10) -->
+    <!-- ================================================================= -->
+
+    <!-- Mass Assignment / Excessive Data Exposure (API3:2023) -->
+    <plugin>
+        <id>40049</id>
+        <name>Mass Assignment</name>
+        <enabled>true</enabled>
+        <alertThreshold>MEDIUM</alertThreshold>
+        <attackStrength>MEDIUM</attackStrength>
+    </plugin>
+
+    <!-- Unrestricted Resource Consumption (API4:2023) -->
+    <plugin>
+        <id>40050</id>
+        <name>Resource Consumption</name>
+        <enabled>true</enabled>
+        <alertThreshold>MEDIUM</alertThreshold>
+        <attackStrength>LOW</attackStrength>
+    </plugin>
+
+    <!-- GraphQL Introspection -->
+    <plugin>
+        <id>50001</id>
+        <name>GraphQL Introspection</name>
+        <enabled>true</enabled>
+        <alertThreshold>LOW</alertThreshold>
+        <attackStrength>MEDIUM</attackStrength>
+    </plugin>
+
+    <!-- ================================================================= -->
+    <!-- DISABLED PLUGINS -->
+    <!-- Low-value or noisy plugins disabled for API scanning -->
+    <!-- ================================================================= -->
+
+    <!-- Buffer Overflow - Not applicable to Python/Node APIs -->
+    <plugin>
+        <id>30001</id>
+        <name>Buffer Overflow</name>
+        <enabled>false</enabled>
+    </plugin>
+
+    <!-- Format String - Not applicable to Python/Node APIs -->
+    <plugin>
+        <id>30002</id>
+        <name>Format String Error</name>
+        <enabled>false</enabled>
+    </plugin>
+
+    <!-- CRLF Injection - Low priority for JSON APIs -->
+    <plugin>
+        <id>40003</id>
+        <name>CRLF Injection</name>
+        <enabled>false</enabled>
+    </plugin>
+
+    <!-- External Redirect - Low priority -->
+    <plugin>
+        <id>20019</id>
+        <name>External Redirect</name>
+        <enabled>false</enabled>
+    </plugin>
+
+    <!-- ELMAH Information Leak - .NET specific -->
+    <plugin>
+        <id>40028</id>
+        <name>ELMAH Information Leak</name>
+        <enabled>false</enabled>
+    </plugin>
+
+    <!-- .htaccess Information Leak - Apache specific -->
+    <plugin>
+        <id>40032</id>
+        <name>.htaccess Information Leak</name>
+        <enabled>false</enabled>
+    </plugin>
+
+    <!-- Trace.axd Information Leak - .NET specific -->
+    <plugin>
+        <id>40029</id>
+        <name>Trace.axd Information Leak</name>
+        <enabled>false</enabled>
+    </plugin>
+
+    <!-- ================================================================= -->
+    <!-- PASSIVE SCAN RULES -->
+    <!-- Always enabled for API scanning -->
+    <!-- ================================================================= -->
+
+    <!-- Security Headers -->
+    <passivePlugin>
+        <id>10020</id>
+        <name>X-Frame-Options Header</name>
+        <enabled>true</enabled>
+        <alertThreshold>MEDIUM</alertThreshold>
+    </passivePlugin>
+
+    <passivePlugin>
+        <id>10021</id>
+        <name>X-Content-Type-Options Header Missing</name>
+        <enabled>true</enabled>
+        <alertThreshold>MEDIUM</alertThreshold>
+    </passivePlugin>
+
+    <passivePlugin>
+        <id>10035</id>
+        <name>Strict-Transport-Security Header</name>
+        <enabled>true</enabled>
+        <alertThreshold>MEDIUM</alertThreshold>
+    </passivePlugin>
+
+    <passivePlugin>
+        <id>10038</id>
+        <name>Content Security Policy Header Not Set</name>
+        <enabled>true</enabled>
+        <alertThreshold>LOW</alertThreshold>
+    </passivePlugin>
+
+    <passivePlugin>
+        <id>10096</id>
+        <name>Timestamp Disclosure</name>
+        <enabled>true</enabled>
+        <alertThreshold>LOW</alertThreshold>
+    </passivePlugin>
+
+    <!-- Cookie Security -->
+    <passivePlugin>
+        <id>10010</id>
+        <name>Cookie No HttpOnly Flag</name>
+        <enabled>true</enabled>
+        <alertThreshold>MEDIUM</alertThreshold>
+    </passivePlugin>
+
+    <passivePlugin>
+        <id>10011</id>
+        <name>Cookie Without Secure Flag</name>
+        <enabled>true</enabled>
+        <alertThreshold>MEDIUM</alertThreshold>
+    </passivePlugin>
+
+    <passivePlugin>
+        <id>10054</id>
+        <name>Cookie without SameSite Attribute</name>
+        <enabled>true</enabled>
+        <alertThreshold>LOW</alertThreshold>
+    </passivePlugin>
+
+    <!-- Information Disclosure -->
+    <passivePlugin>
+        <id>10027</id>
+        <name>Information Disclosure - Suspicious Comments</name>
+        <enabled>true</enabled>
+        <alertThreshold>LOW</alertThreshold>
+    </passivePlugin>
+
+    <passivePlugin>
+        <id>10036</id>
+        <name>Server Leaks Version Information</name>
+        <enabled>true</enabled>
+        <alertThreshold>MEDIUM</alertThreshold>
+    </passivePlugin>
+
+    <passivePlugin>
+        <id>10037</id>
+        <name>Server Leaks Information via X-Powered-By</name>
+        <enabled>true</enabled>
+        <alertThreshold>MEDIUM</alertThreshold>
+    </passivePlugin>
+
+    <!-- API-Specific Passive Checks -->
+    <passivePlugin>
+        <id>10055</id>
+        <name>CSP Scanner</name>
+        <enabled>true</enabled>
+        <alertThreshold>MEDIUM</alertThreshold>
+    </passivePlugin>
+
+    <passivePlugin>
+        <id>10062</id>
+        <name>PII Disclosure</name>
+        <enabled>true</enabled>
+        <alertThreshold>MEDIUM</alertThreshold>
+    </passivePlugin>
+
+    <passivePlugin>
+        <id>10098</id>
+        <name>Cross-Domain Misconfiguration</name>
+        <enabled>true</enabled>
+        <alertThreshold>MEDIUM</alertThreshold>
+    </passivePlugin>
+
+</configuration>

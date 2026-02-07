@@ -131,6 +131,8 @@ jobs:
     needs: prepare-release
     if: github.event.inputs.publish_docker != 'false'
     runs-on: ubuntu-latest
+    outputs:
+      image_digest: ${{ steps.build.outputs.digest }}
 
     steps:
       - uses: actions/checkout@v4
@@ -146,6 +148,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push Docker images
+        id: build
         uses: docker/build-push-action@v5
         with:
           context: .
@@ -154,9 +157,209 @@ jobs:
           tags: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.prepare-release.outputs.version }}
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          provenance: true
+          sbom: true
+
+  # ============================================================================
+  # Sign Docker Images with Cosign
+  # ============================================================================
+  sign-docker:
+    needs: [prepare-release, build-docker]
+    if: github.event.inputs.publish_docker != 'false'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@v3.4.0
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Sign container image
+        env:
+          COSIGN_EXPERIMENTAL: "true"
+        run: |
+          cosign sign --yes \
+            --oidc-issuer https://token.actions.githubusercontent.com \
+            --annotations "version=${{ needs.prepare-release.outputs.version }}" \
+            --annotations "repo=${{ github.repository }}" \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ needs.build-docker.outputs.image_digest }}
+
+      - name: Verify signature
+        run: |
+          cosign verify \
+            --certificate-identity-regexp "https://github.com/${{ github.repository }}.*" \
+            --certificate-oidc-issuer https://token.actions.githubusercontent.com \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ needs.build-docker.outputs.image_digest }}
+
+  # ============================================================================
+  # Generate SLSA Provenance
+  # ============================================================================
+  slsa-provenance:
+    needs: [prepare-release, build-docker, sign-docker]
+    if: github.event.inputs.publish_docker != 'false'
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+      packages: write
+      attestations: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@v3.4.0
+
+      - name: Install Syft
+        uses: anchore/sbom-action/download-syft@v0
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate SBOM
+        run: |
+          syft ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ needs.build-docker.outputs.image_digest }} \
+            -o cyclonedx-json=sbom.cyclonedx.json
+
+      - name: Attest SBOM
+        env:
+          COSIGN_EXPERIMENTAL: "true"
+        run: |
+          cosign attest --yes \
+            --predicate sbom.cyclonedx.json \
+            --type cyclonedx \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ needs.build-docker.outputs.image_digest }}
+
+      - name: Generate SLSA provenance
+        run: |
+          DIGEST="${{ needs.build-docker.outputs.image_digest }}"
+          cat > provenance.json << EOF
+          {
+            "_type": "https://in-toto.io/Statement/v0.1",
+            "predicateType": "https://slsa.dev/provenance/v0.2",
+            "subject": [
+              {
+                "name": "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}",
+                "digest": {
+                  "sha256": "${DIGEST#sha256:}"
+                }
+              }
+            ],
+            "predicate": {
+              "builder": {
+                "id": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+              },
+              "buildType": "https://github.com/slsa-framework/slsa-github-generator/container@v1",
+              "invocation": {
+                "configSource": {
+                  "uri": "git+https://github.com/${{ github.repository }}@refs/tags/v${{ needs.prepare-release.outputs.version }}",
+                  "digest": {
+                    "sha1": "${{ github.sha }}"
+                  },
+                  "entryPoint": ".github/workflows/release-orchestration.yml"
+                },
+                "parameters": {
+                  "version": "${{ needs.prepare-release.outputs.version }}",
+                  "is_prerelease": "${{ needs.prepare-release.outputs.is-prerelease }}"
+                },
+                "environment": {
+                  "github_actor": "${{ github.actor }}",
+                  "github_event_name": "${{ github.event_name }}",
+                  "github_ref": "${{ github.ref }}",
+                  "github_repository": "${{ github.repository }}",
+                  "github_run_id": "${{ github.run_id }}",
+                  "github_sha": "${{ github.sha }}",
+                  "runner_os": "${{ runner.os }}"
+                }
+              },
+              "metadata": {
+                "buildInvocationId": "${{ github.run_id }}-${{ github.run_attempt }}",
+                "buildStartedOn": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+                "completeness": {
+                  "parameters": true,
+                  "environment": true,
+                  "materials": true
+                },
+                "reproducible": false
+              },
+              "materials": [
+                {
+                  "uri": "git+https://github.com/${{ github.repository }}",
+                  "digest": {
+                    "sha1": "${{ github.sha }}"
+                  }
+                }
+              ]
+            }
+          }
+          EOF
+
+      - name: Attest SLSA provenance
+        env:
+          COSIGN_EXPERIMENTAL: "true"
+        run: |
+          cosign attest --yes \
+            --predicate provenance.json \
+            --type slsaprovenance \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ needs.build-docker.outputs.image_digest }}
+
+      - name: Upload provenance artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: slsa-provenance
+          path: |
+            provenance.json
+            sbom.cyclonedx.json
+          retention-days: 90
+
+      - name: Generate supply chain summary
+        run: |
+          echo "## Supply Chain Security Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Container Image" >> $GITHUB_STEP_SUMMARY
+          echo "- **Image:** \`${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Version:** \`${{ needs.prepare-release.outputs.version }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Digest:** \`${{ needs.build-docker.outputs.image_digest }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Attestations" >> $GITHUB_STEP_SUMMARY
+          echo "| Type | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Cosign Signature | Attached |" >> $GITHUB_STEP_SUMMARY
+          echo "| SBOM (CycloneDX) | Attached |" >> $GITHUB_STEP_SUMMARY
+          echo "| SLSA Provenance (L2) | Attached |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Verification Commands" >> $GITHUB_STEP_SUMMARY
+          echo '```bash' >> $GITHUB_STEP_SUMMARY
+          echo "# Verify signature" >> $GITHUB_STEP_SUMMARY
+          echo "cosign verify \\" >> $GITHUB_STEP_SUMMARY
+          echo "  --certificate-identity-regexp 'https://github.com/${{ github.repository }}.*' \\" >> $GITHUB_STEP_SUMMARY
+          echo "  --certificate-oidc-issuer https://token.actions.githubusercontent.com \\" >> $GITHUB_STEP_SUMMARY
+          echo "  ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ needs.build-docker.outputs.image_digest }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "# Verify SBOM" >> $GITHUB_STEP_SUMMARY
+          echo "cosign verify-attestation --type cyclonedx \\" >> $GITHUB_STEP_SUMMARY
+          echo "  --certificate-identity-regexp 'https://github.com/${{ github.repository }}.*' \\" >> $GITHUB_STEP_SUMMARY
+          echo "  --certificate-oidc-issuer https://token.actions.githubusercontent.com \\" >> $GITHUB_STEP_SUMMARY
+          echo "  ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ needs.build-docker.outputs.image_digest }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "# Verify provenance" >> $GITHUB_STEP_SUMMARY
+          echo "cosign verify-attestation --type slsaprovenance \\" >> $GITHUB_STEP_SUMMARY
+          echo "  --certificate-identity-regexp 'https://github.com/${{ github.repository }}.*' \\" >> $GITHUB_STEP_SUMMARY
+          echo "  --certificate-oidc-issuer https://token.actions.githubusercontent.com \\" >> $GITHUB_STEP_SUMMARY
+          echo "  ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ needs.build-docker.outputs.image_digest }}" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
 
   create-release:
-    needs: [prepare-release, build-python, build-docker]
+    needs: [prepare-release, build-python, build-docker, sign-docker, slsa-provenance]
     if: always() && needs.prepare-release.result == 'success' && needs.build-python.result == 'success'
     runs-on: ubuntu-latest
 

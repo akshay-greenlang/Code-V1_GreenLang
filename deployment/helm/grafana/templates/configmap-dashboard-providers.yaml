@@ -1,0 +1,28 @@
+{{- /*
+GreenLang Grafana - Dashboard Providers ConfigMap
+GreenLang Climate OS | OBS-002
+*/ -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "grafana.fullname" . }}-dashboard-providers
+  namespace: {{ include "grafana.namespace" . }}
+  labels:
+    {{- include "grafana.labels" . | nindent 4 }}
+data:
+  dashboardproviders.yaml: |
+    apiVersion: 1
+    providers:
+    {{- range .Values.grafana.dashboardProviders }}
+    - name: {{ .name }}
+      orgId: 1
+      folder: {{ .folder | quote }}
+      type: file
+      disableDeletion: true
+      editable: false
+      updateIntervalSeconds: 30
+      allowUiUpdates: false
+      options:
+        path: {{ .path }}
+        foldersFromFilesStructure: false
+    {{- end }}

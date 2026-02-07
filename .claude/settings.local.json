@@ -323,7 +323,16 @@
       "Bash(pip:*)",
       "Bash(C:UsersakshaAppDataRoamingnpmralphy.cmd --version)",
       "Bash(Select-Object -First 10)",
-      "WebFetch(domain:doc-10-bg-docstext.googleusercontent.com)"
+      "WebFetch(domain:doc-10-bg-docstext.googleusercontent.com)",
+      "Bash(find.exe:*)",
+      "Bash(terraform fmt:*)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\aksha\\\\Code-V1_GreenLang\\\\greenlang\\\\infrastructure\\\\security_scanning\" -Recurse -Name)",
+      "Bash(if [ -f \"C:\\\\Users\\\\aksha\\\\Code-V1_GreenLang\\\\greenlang\\\\infrastructure\\\\security_scanning\\\\__init__.py\" ])",
+      "Bash(then echo \"exists\")",
+      "Bash(else echo \"not exists\")",
+      "Bash(fi:*)",
+      "Bash(echo.)",
+      "Bash(timeout:*)"
     ],
     "deny": [],
     "ask": []

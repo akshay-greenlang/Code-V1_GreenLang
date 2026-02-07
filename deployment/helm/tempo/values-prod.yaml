@@ -1,0 +1,190 @@
+# =============================================================================
+# GreenLang Tempo - Production Values Override
+# GreenLang Climate OS | OBS-003
+# =============================================================================
+# Full HA distributed deployment for production. 3 distributor, 3 ingester,
+# 2 querier, 2 query-frontend, 1 compactor, 2 metrics-generator.
+# S3 storage, 30-day retention, PDB enabled, aggressive autoscaling.
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# Global Configuration
+# ---------------------------------------------------------------------------
+global:
+  environment: prod
+  clusterName: greenlang-prod
+  awsRegion: eu-west-1
+
+# ---------------------------------------------------------------------------
+# Tempo Core Configuration
+# ---------------------------------------------------------------------------
+tempo:
+  mode: distributed
+
+  # -------------------------------------------------------------------------
+  # Storage - S3 production bucket
+  # -------------------------------------------------------------------------
+  storage:
+    trace:
+      backend: s3
+      s3:
+        bucket: gl-prod-tempo-traces
+        region: eu-west-1
+
+  # -------------------------------------------------------------------------
+  # Distributor
+  # -------------------------------------------------------------------------
+  distributor:
+    replicas: 3
+    resources:
+      requests:
+        cpu: 500m
+        memory: 512Mi
+      limits:
+        cpu: "1"
+        memory: 1Gi
+
+  # -------------------------------------------------------------------------
+  # Ingester
+  # -------------------------------------------------------------------------
+  ingester:
+    replicas: 3
+    resources:
+      requests:
+        cpu: "1"
+        memory: 2Gi
+      limits:
+        cpu: "2"
+        memory: 4Gi
+    persistence:
+      enabled: true
+      size: 10Gi
+      storageClassName: gp3
+    lifecycler:
+      ring:
+        replication_factor: 3
+
+  # -------------------------------------------------------------------------
+  # Querier
+  # -------------------------------------------------------------------------
+  querier:
+    replicas: 2
+    resources:
+      requests:
+        cpu: 500m
+        memory: 1Gi
+      limits:
+        cpu: "1"
+        memory: 2Gi
+    max_concurrent_queries: 20
+
+  # -------------------------------------------------------------------------
+  # Query Frontend
+  # -------------------------------------------------------------------------
+  queryFrontend:
+    replicas: 2
+    resources:
+      requests:
+        cpu: 300m
+        memory: 512Mi
+      limits:
+        cpu: "1"
+        memory: 1Gi
+
+  # -------------------------------------------------------------------------
+  # Compactor
+  # -------------------------------------------------------------------------
+  compactor:
+    replicas: 1
+    resources:
+      requests:
+        cpu: "1"
+        memory: 2Gi
+      limits:
+        cpu: "2"
+        memory: 4Gi
+    compaction:
+      block_retention: 720h           # 30 days
+      compacted_block_retention: 1h
+      compaction_window: 1h
+      max_block_bytes: 107374182400   # 100 GiB
+
+  # -------------------------------------------------------------------------
+  # Metrics Generator
+  # -------------------------------------------------------------------------
+  metricsGenerator:
+    enabled: true
+    replicas: 2
+    resources:
+      requests:
+        cpu: 500m
+        memory: 512Mi
+      limits:
+        cpu: "1"
+        memory: 1Gi
+
+  # -------------------------------------------------------------------------
+  # Overrides / Limits
+  # -------------------------------------------------------------------------
+  overrides:
+    defaults:
+      ingestion:
+        rate_limit_bytes: 15000000     # 15 MB/s
+        burst_size_bytes: 20000000     # 20 MB burst
+      search:
+        max_duration: 168h            # 7 days
+
+# ---------------------------------------------------------------------------
+# Service Account
+# ---------------------------------------------------------------------------
+serviceAccount:
+  create: true
+  annotations:
+    eks.amazonaws.com/role-arn: ""    # Set via Terraform for prod
+
+# ---------------------------------------------------------------------------
+# Network Policy
+# ---------------------------------------------------------------------------
+networkPolicy:
+  enabled: true
+
+# ---------------------------------------------------------------------------
+# Service Monitor
+# ---------------------------------------------------------------------------
+serviceMonitor:
+  enabled: true
+  interval: 30s
+  labels:
+    release: gl-prometheus
+
+# ---------------------------------------------------------------------------
+# Pod Disruption Budgets - Full HA
+# ---------------------------------------------------------------------------
+podDisruptionBudget:
+  ingester:
+    enabled: true
+    minAvailable: 2
+  distributor:
+    enabled: true
+    minAvailable: 2
+  querier:
+    enabled: false
+  queryFrontend:
+    enabled: false
+
+# ---------------------------------------------------------------------------
+# Autoscaling - Production
+# ---------------------------------------------------------------------------
+autoscaling:
+  distributor:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: 80
+  querier:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 8
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: 80

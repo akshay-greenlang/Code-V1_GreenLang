@@ -1,0 +1,61 @@
+{{/*
+# =============================================================================
+# GreenLang OpenTelemetry Collector - Horizontal Pod Autoscaler
+# GreenLang Climate OS | OBS-003
+# =============================================================================
+# Autoscales based on CPU and memory utilization with stabilization
+# windows to prevent flapping under variable telemetry load.
+# =============================================================================
+*/}}
+{{- if .Values.hpa.enabled }}
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ include "otel-collector.fullname" . }}
+  namespace: {{ include "otel-collector.namespace" . }}
+  labels:
+    {{- include "otel-collector.labels" . | nindent 4 }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "otel-collector.fullname" . }}
+  minReplicas: {{ .Values.hpa.minReplicas | default 2 }}
+  maxReplicas: {{ .Values.hpa.maxReplicas | default 6 }}
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.hpa.targetCPUUtilization | default 70 }}
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.hpa.targetMemoryUtilization | default 80 }}
+  {{- if .Values.hpa.behavior }}
+  behavior:
+    {{- toYaml .Values.hpa.behavior | nindent 4 }}
+  {{- else }}
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+        - type: Percent
+          value: 50
+          periodSeconds: 30
+        - type: Pods
+          value: 2
+          periodSeconds: 30
+      selectPolicy: Max
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Percent
+          value: 10
+          periodSeconds: 60
+      selectPolicy: Min
+  {{- end }}
+{{- end }}

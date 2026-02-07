@@ -1,0 +1,467 @@
+# Python Security Semgrep Rules
+#
+# Enhanced Python security rules for GreenLang codebase
+# Covers: async patterns, FastAPI security, Pydantic validation, database security
+#
+# Author: GreenLang Security Team
+# Version: 1.0.0
+# Compliance: SOC 2 CC7.1, ISO 27001 A.14.2.5
+
+rules:
+  # ==========================================================================
+  # FASTAPI SECURITY
+  # ==========================================================================
+
+  - id: python-fastapi-missing-rate-limit
+    patterns:
+      - pattern: |
+          @$APP.$METHOD($PATH)
+          async def $FUNC(...):
+              ...
+      - pattern-not: |
+          @$APP.$METHOD($PATH, dependencies=[..., Depends($RATE_LIMIT), ...])
+          async def $FUNC(...):
+              ...
+      - pattern-not: |
+          @limiter.limit(...)
+          @$APP.$METHOD($PATH)
+          async def $FUNC(...):
+              ...
+    message: |
+      FastAPI endpoint missing rate limiting. Add rate limiter dependency to prevent
+      DoS attacks. Use slowapi or custom rate limiter from greenlang.infrastructure.
+    languages: [python]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe: "CWE-770"
+      owasp: "A05:2021"
+
+  - id: python-fastapi-response-model-missing
+    patterns:
+      - pattern: |
+          @$APP.$METHOD($PATH)
+          async def $FUNC(...) -> dict:
+              ...
+      - pattern-not: |
+          @$APP.$METHOD($PATH, response_model=...)
+          async def $FUNC(...):
+              ...
+    message: |
+      FastAPI endpoint returning dict without response_model. Use Pydantic models
+      with response_model to ensure consistent response schemas and prevent data leaks.
+    languages: [python]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe: "CWE-200"
+
+  - id: python-fastapi-cors-wildcard
+    patterns:
+      - pattern-either:
+          - pattern: |
+              CORSMiddleware(..., allow_origins=["*"], ...)
+          - pattern: |
+              add_middleware(CORSMiddleware, allow_origins=["*"], ...)
+    message: |
+      CORS wildcard origin detected. Restrict allow_origins to specific trusted domains
+      in production to prevent unauthorized cross-origin requests.
+    languages: [python]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: "CWE-942"
+      owasp: "A05:2021"
+
+  - id: python-fastapi-insecure-redirect
+    patterns:
+      - pattern-either:
+          - pattern: RedirectResponse(url=$USER_INPUT, ...)
+          - pattern: RedirectResponse($USER_INPUT)
+    message: |
+      Potential open redirect vulnerability. Validate redirect URLs against
+      allowed domains before redirecting.
+    languages: [python]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe: "CWE-601"
+      owasp: "A01:2021"
+
+  # ==========================================================================
+  # PYDANTIC SECURITY
+  # ==========================================================================
+
+  - id: python-pydantic-arbitrary-types
+    patterns:
+      - pattern: |
+          class $MODEL(BaseModel):
+              class Config:
+                  arbitrary_types_allowed = True
+    message: |
+      Pydantic model allows arbitrary types. This may bypass validation.
+      Use proper Pydantic types or custom validators for complex types.
+    languages: [python]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe: "CWE-20"
+
+  - id: python-pydantic-missing-validation
+    patterns:
+      - pattern: |
+          class $MODEL(BaseModel):
+              $FIELD: str
+      - pattern-not: |
+          class $MODEL(BaseModel):
+              $FIELD: str = Field(..., min_length=..., ...)
+    message: |
+      Pydantic field missing validation constraints. Add Field() with appropriate
+      validators (min_length, max_length, regex) for string fields.
+    languages: [python]
+    severity: INFO
+    metadata:
+      category: security
+      cwe: "CWE-20"
+
+  # ==========================================================================
+  # ASYNC SECURITY
+  # ==========================================================================
+
+  - id: python-async-race-condition
+    patterns:
+      - pattern: |
+          async def $FUNC(...):
+              ...
+              $VAR = await $CALL1(...)
+              ...
+              await $CALL2($VAR)
+              ...
+              $GLOBAL_VAR = $VAR
+              ...
+    message: |
+      Potential race condition in async code. Use asyncio.Lock or
+      transactional operations when modifying shared state.
+    languages: [python]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe: "CWE-362"
+
+  - id: python-async-blocking-call
+    patterns:
+      - pattern-either:
+          - pattern: |
+              async def $FUNC(...):
+                  ...
+                  time.sleep(...)
+                  ...
+          - pattern: |
+              async def $FUNC(...):
+                  ...
+                  requests.get(...)
+                  ...
+          - pattern: |
+              async def $FUNC(...):
+                  ...
+                  requests.post(...)
+                  ...
+    message: |
+      Blocking call in async function. Use asyncio.sleep() for delays and
+      httpx/aiohttp for HTTP requests to prevent blocking the event loop.
+    languages: [python]
+    severity: WARNING
+    metadata:
+      category: performance
+
+  # ==========================================================================
+  # DATABASE SECURITY
+  # ==========================================================================
+
+  - id: python-psycopg-format-string
+    patterns:
+      - pattern-either:
+          - pattern: cursor.execute(f"... {$VAR} ...")
+          - pattern: cursor.execute("..." + $VAR + "...")
+          - pattern: cursor.execute($QUERY.format(...))
+          - pattern: await conn.execute(f"... {$VAR} ...")
+    message: |
+      SQL injection risk in psycopg/asyncpg. Use parameterized queries:
+      cursor.execute("SELECT * FROM table WHERE id = %s", (id,))
+    languages: [python]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: "CWE-89"
+      owasp: "A03:2021"
+
+  - id: python-sqlalchemy-text-injection
+    patterns:
+      - pattern-either:
+          - pattern: text(f"... {$VAR} ...")
+          - pattern: text("..." + $VAR + "...")
+          - pattern: text($QUERY.format(...))
+    message: |
+      SQL injection risk in SQLAlchemy text(). Use bound parameters:
+      text("SELECT * FROM table WHERE id = :id").bindparams(id=value)
+    languages: [python]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: "CWE-89"
+      owasp: "A03:2021"
+
+  - id: python-redis-eval-injection
+    patterns:
+      - pattern-either:
+          - pattern: redis.eval(f"... {$VAR} ...", ...)
+          - pattern: redis.eval($SCRIPT.format(...), ...)
+    message: |
+      Lua injection risk in Redis eval. Use parameterized scripts with KEYS
+      and ARGV arrays instead of string interpolation.
+    languages: [python]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: "CWE-94"
+
+  # ==========================================================================
+  # FILE OPERATIONS
+  # ==========================================================================
+
+  - id: python-path-traversal
+    patterns:
+      - pattern-either:
+          - pattern: open(os.path.join($BASE, $USER_INPUT), ...)
+          - pattern: Path($BASE) / $USER_INPUT
+          - pattern: |
+              $PATH = f"...{$USER_INPUT}..."
+              open($PATH, ...)
+    message: |
+      Potential path traversal vulnerability. Validate and sanitize file paths,
+      use os.path.realpath() to resolve symbolic links, and verify the path
+      is within the expected directory.
+    languages: [python]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe: "CWE-22"
+      owasp: "A01:2021"
+
+  - id: python-unsafe-file-permissions
+    patterns:
+      - pattern-either:
+          - pattern: os.chmod($PATH, 0o777)
+          - pattern: os.chmod($PATH, 0o666)
+          - pattern: Path($PATH).chmod(0o777)
+    message: |
+      Overly permissive file permissions. Use restrictive permissions
+      (0o600 for files, 0o700 for directories) for sensitive data.
+    languages: [python]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe: "CWE-732"
+
+  - id: python-temp-file-race
+    patterns:
+      - pattern: |
+          $TEMP = tempfile.mktemp(...)
+          ...
+          open($TEMP, ...)
+    message: |
+      Race condition with mktemp(). Use tempfile.NamedTemporaryFile() or
+      tempfile.mkstemp() which atomically create the file.
+    languages: [python]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe: "CWE-367"
+
+  # ==========================================================================
+  # CRYPTOGRAPHY
+  # ==========================================================================
+
+  - id: python-weak-cipher-mode
+    patterns:
+      - pattern-either:
+          - pattern: AES.new($KEY, AES.MODE_ECB)
+          - pattern: Cipher(algorithms.$ALGO($KEY), modes.ECB())
+    message: |
+      ECB mode is insecure for most use cases. Use GCM or CBC with HMAC
+      for authenticated encryption.
+    languages: [python]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: "CWE-327"
+      owasp: "A02:2021"
+
+  - id: python-insufficient-key-size
+    patterns:
+      - pattern-either:
+          - pattern: RSA.generate(1024)
+          - pattern: rsa.generate_private_key(..., key_size=1024, ...)
+          - pattern: rsa.generate_private_key(..., key_size=2048, ...)
+    message: |
+      Insufficient RSA key size. Use at least 3072 bits for new keys
+      (4096 recommended for long-term security).
+    languages: [python]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe: "CWE-326"
+
+  - id: python-hardcoded-iv
+    patterns:
+      - pattern-either:
+          - pattern: AES.new($KEY, $MODE, iv=b"...")
+          - pattern: Cipher(..., modes.CBC(b"..."))
+          - pattern: Cipher(..., modes.GCM(b"..."))
+    message: |
+      Hardcoded IV/nonce detected. Generate a unique random IV for each
+      encryption operation using os.urandom() or secrets module.
+    languages: [python]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: "CWE-329"
+
+  # ==========================================================================
+  # INPUT VALIDATION
+  # ==========================================================================
+
+  - id: python-regex-dos
+    patterns:
+      - pattern-either:
+          - pattern-regex: 're\.compile\([^)]*\([^)]*\+\)[^)]*\+[^)]*\)'
+          - pattern-regex: 're\.match\([^,]*\([^)]*\+\)[^)]*\+[^)]*,'
+    message: |
+      Potential ReDoS (Regular Expression Denial of Service) vulnerability.
+      Avoid nested quantifiers in regex patterns. Use atomic groups or
+      possessive quantifiers, or validate input length first.
+    languages: [python]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe: "CWE-1333"
+      owasp: "A05:2021"
+
+  - id: python-eval-usage
+    patterns:
+      - pattern-either:
+          - pattern: eval(...)
+          - pattern: exec(...)
+          - pattern: compile($CODE, $FILE, "exec")
+    message: |
+      Use of eval/exec detected. This can lead to code injection.
+      Use ast.literal_eval() for parsing literals or safer alternatives.
+    languages: [python]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: "CWE-94"
+      owasp: "A03:2021"
+
+  - id: python-dangerous-assert
+    patterns:
+      - pattern-either:
+          - pattern: assert $USER_INPUT == ...
+          - pattern: assert ... == $USER_INPUT
+    message: |
+      Assert statements can be disabled with python -O. Do not use asserts
+      for security checks. Use explicit if statements with proper error handling.
+    languages: [python]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe: "CWE-617"
+
+  # ==========================================================================
+  # ERROR HANDLING
+  # ==========================================================================
+
+  - id: python-broad-exception
+    patterns:
+      - pattern-either:
+          - pattern: |
+              except:
+                  pass
+          - pattern: |
+              except Exception:
+                  pass
+          - pattern: |
+              except BaseException:
+                  pass
+    message: |
+      Broad exception catch that silently passes. This can hide security issues.
+      Catch specific exceptions and log errors appropriately.
+    languages: [python]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe: "CWE-390"
+
+  - id: python-exception-chaining-missing
+    patterns:
+      - pattern: |
+          except $E:
+              raise $NEW_EXCEPTION(...)
+      - pattern-not: |
+          except $E:
+              raise $NEW_EXCEPTION(...) from $E
+    message: |
+      Exception raised without chaining. Use 'raise ... from e' to preserve
+      the original exception context for debugging.
+    languages: [python]
+    severity: INFO
+    metadata:
+      category: best-practice
+
+  # ==========================================================================
+  # SECRETS AND CONFIGURATION
+  # ==========================================================================
+
+  - id: python-hardcoded-database-url
+    patterns:
+      - pattern-regex: '(postgresql|mysql|mongodb|redis)://[^/]+:[^@]+@'
+    message: |
+      Hardcoded database credentials detected. Use environment variables
+      or secure secrets management for connection strings.
+    languages: [python]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: "CWE-798"
+      owasp: "A07:2021"
+
+  - id: python-aws-credentials-hardcoded
+    patterns:
+      - pattern-regex: 'AKIA[0-9A-Z]{16}'
+    message: |
+      Hardcoded AWS access key detected. Use IAM roles, environment variables,
+      or AWS Secrets Manager instead.
+    languages: [python]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: "CWE-798"
+      owasp: "A07:2021"
+
+  - id: python-debug-enabled
+    patterns:
+      - pattern-either:
+          - pattern: DEBUG = True
+          - pattern: app.debug = True
+          - pattern: FLASK_DEBUG = True
+          - pattern: |
+              if __name__ == "__main__":
+                  app.run(debug=True)
+    message: |
+      Debug mode enabled. Ensure debug mode is disabled in production to
+      prevent information disclosure.
+    languages: [python]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe: "CWE-489"

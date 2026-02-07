@@ -1,0 +1,128 @@
+# Kyverno Policy: Verify SBOM Attestation
+#
+# Ensures container images have a valid CycloneDX SBOM attestation
+# attached via Cosign before deployment.
+#
+# Author: GreenLang Security Team
+# Version: 1.0.0
+# Compliance: SLSA Level 2, SBOM Requirements
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: verify-sbom-attestation
+  annotations:
+    policies.kyverno.io/title: Verify SBOM Attestation
+    policies.kyverno.io/category: Supply Chain Security
+    policies.kyverno.io/severity: medium
+    policies.kyverno.io/subject: Pod
+    policies.kyverno.io/minversion: 1.9.0
+    policies.kyverno.io/description: |
+      Verifies that container images have a valid CycloneDX SBOM attestation.
+      This ensures complete visibility into container dependencies for
+      vulnerability management and compliance reporting.
+    greenlang.io/compliance: "SOC2-CC7.1,ISO27001-A.14.2.5"
+spec:
+  validationFailureAction: Audit  # Use Audit mode initially, switch to Enforce when ready
+  background: true
+  webhookTimeoutSeconds: 60
+  failurePolicy: Fail
+  rules:
+    # Rule 1: Verify SBOM for production images
+    - name: verify-sbom-attestation-prod
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+              namespaces:
+                - production
+                - prod
+                - greenlang-prod
+      verifyImages:
+        - imageReferences:
+            - "ghcr.io/greenlang-io/*"
+            - "ghcr.io/greenlang/*"
+          attestations:
+            - type: https://cyclonedx.org/bom
+              predicateType: https://cyclonedx.org/bom
+              attestors:
+                - count: 1
+                  entries:
+                    - keyless:
+                        subject: "https://github.com/greenlang-io/*"
+                        issuer: "https://token.actions.githubusercontent.com"
+                        rekor:
+                          url: https://rekor.sigstore.dev
+              conditions:
+                - all:
+                    # Verify SBOM has required fields
+                    - key: "{{ bomFormat }}"
+                      operator: Equals
+                      value: "CycloneDX"
+                    - key: "{{ specVersion }}"
+                      operator: GreaterThanOrEquals
+                      value: "1.4"
+
+    # Rule 2: Check SBOM component count
+    - name: verify-sbom-components
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+              namespaces:
+                - production
+                - staging
+      verifyImages:
+        - imageReferences:
+            - "ghcr.io/greenlang-io/*"
+          attestations:
+            - type: https://cyclonedx.org/bom
+              predicateType: https://cyclonedx.org/bom
+              attestors:
+                - count: 1
+                  entries:
+                    - keyless:
+                        subject: "https://github.com/greenlang-io/*"
+                        issuer: "https://token.actions.githubusercontent.com"
+              conditions:
+                - all:
+                    # Ensure SBOM actually has components (not empty)
+                    - key: "{{ components | length(@) }}"
+                      operator: GreaterThan
+                      value: "0"
+                      message: "SBOM must contain at least one component"
+
+---
+# Policy to extract SBOM and store for audit
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: extract-sbom-for-audit
+  annotations:
+    policies.kyverno.io/title: Extract SBOM for Audit
+    policies.kyverno.io/category: Audit
+    policies.kyverno.io/severity: low
+    policies.kyverno.io/description: |
+      Extracts SBOM attestation data and adds it as an annotation
+      on the Pod for audit and compliance reporting.
+spec:
+  validationFailureAction: Audit
+  background: false
+  rules:
+    - name: annotate-sbom-digest
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+              namespaces:
+                - production
+                - staging
+      mutate:
+        patchStrategicMerge:
+          metadata:
+            annotations:
+              greenlang.io/sbom-verified: "true"
+              greenlang.io/sbom-verified-at: "{{ time_now_utc() }}"

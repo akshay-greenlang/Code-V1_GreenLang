@@ -1,0 +1,56 @@
+# =============================================================================
+# GreenLang Agent Factory v1.0 - Kustomization
+# =============================================================================
+# Use: kubectl apply -k deployment/kubernetes/agent-factory/
+# PRD: INFRA-010
+# =============================================================================
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+metadata:
+  name: agent-factory
+  annotations:
+    description: "GreenLang Agent Factory v1.0 Deployment"
+    prd: INFRA-010
+
+# Namespace for all resources
+namespace: greenlang-agent-factory
+
+# Common labels applied to all resources
+commonLabels:
+  app.kubernetes.io/managed-by: kustomize
+  app.kubernetes.io/part-of: greenlang
+  app.kubernetes.io/version: "1.0.0"
+
+# Common annotations
+commonAnnotations:
+  prd: INFRA-010
+
+# Resources to include (order matters: namespace first, then RBAC, config, services, deployments)
+resources:
+  - namespace.yaml
+  - rbac.yaml
+  - configmap.yaml
+  - networkpolicy.yaml
+  - service.yaml
+  - deployment-lifecycle-mgr.yaml
+  - deployment-queue-worker.yaml
+  - deployment-hub.yaml
+  - hpa.yaml
+
+# Image transformations (update tags easily)
+images:
+  - name: greenlang/agent-factory-lifecycle
+    newTag: latest
+  - name: greenlang/agent-factory-worker
+    newTag: latest
+  - name: greenlang/agent-factory-hub
+    newTag: latest
+
+# Config transformations
+configMapGenerator:
+  - name: agent-factory-deployment-info
+    literals:
+      - DEPLOYMENT_VERSION=1.0.0
+      - DEPLOYMENT_DATE=2026-02-05

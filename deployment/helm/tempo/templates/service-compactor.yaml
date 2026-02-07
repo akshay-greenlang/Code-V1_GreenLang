@@ -1,0 +1,28 @@
+{{/*
+# =============================================================================
+# GreenLang Tempo - Compactor Service
+# GreenLang Climate OS | OBS-003
+# =============================================================================
+# ClusterIP service for the compactor component. Exposes HTTP metrics endpoint
+# for Prometheus scraping.
+# Only deployed when mode=distributed.
+# =============================================================================
+*/}}
+{{- if eq .Values.tempo.mode "distributed" }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "tempo.fullname" . }}-compactor
+  namespace: {{ include "tempo.namespace" . }}
+  labels:
+    {{- include "tempo.compactorLabels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  selector:
+    {{- include "tempo.compactorSelectorLabels" . | nindent 4 }}
+  ports:
+    - name: http-metrics
+      port: {{ .Values.tempo.server.http_listen_port | default 3200 }}
+      targetPort: http-metrics
+      protocol: TCP
+{{- end }}

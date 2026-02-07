@@ -1,0 +1,403 @@
+# ============================================================================
+# GreenLang Security Services ServiceMonitor
+# ============================================================================
+# Combined Prometheus ServiceMonitor for security-related services:
+#   - audit-service: Audit logging and compliance tracking
+#   - encryption-service: Data encryption operations
+#   - secrets-service: Secrets management
+#   - pii-service: PII detection and redaction
+#
+# Created: 2026-02-06
+# Team: Monitoring & Observability
+# PRD: OBS-001 - Prometheus Metrics Collection
+# ============================================================================
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: security-services
+  namespace: monitoring
+  labels:
+    app: security-services
+    app.kubernetes.io/name: security-services
+    app.kubernetes.io/component: security
+    app.kubernetes.io/part-of: greenlang
+    release: prometheus
+    team: security
+    tier: security
+  annotations:
+    description: "Combined ServiceMonitor for GreenLang security services"
+    prometheus.io/docs: "https://docs.greenlang.ai/observability/security-metrics"
+    security.greenlang.io/classification: "internal"
+spec:
+  # Job label for Prometheus
+  jobLabel: security-services
+
+  # Selector for security services
+  selector:
+    matchExpressions:
+      - key: app.kubernetes.io/component
+        operator: In
+        values:
+          - audit
+          - encryption
+          - secrets
+          - pii
+      - key: monitoring
+        operator: NotIn
+        values: ["disabled"]
+
+  # Target namespaces
+  namespaceSelector:
+    matchNames:
+      - greenlang
+      - greenlang-security
+      - greenlang-prod
+      - greenlang-staging
+      - greenlang-dev
+
+  # Endpoint configuration
+  endpoints:
+    - port: metrics
+      interval: 15s
+      scrapeTimeout: 10s
+      path: /metrics
+      scheme: http
+      honorLabels: true
+
+      # Relabelings for target labels
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_service_name]
+          targetLabel: service
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod
+        - sourceLabels: [__meta_kubernetes_pod_node_name]
+          targetLabel: node
+        - sourceLabels: [__meta_kubernetes_pod_label_app_kubernetes_io_component]
+          targetLabel: security_component
+        - sourceLabels: []
+          targetLabel: tier
+          replacement: "security"
+
+      # Metric relabelings
+      metricRelabelings:
+        # Keep audit service metrics
+        - sourceLabels: [__name__]
+          regex: '(gl_audit_|gl_compliance_).*'
+          action: keep
+
+        # Keep encryption service metrics
+        - sourceLabels: [__name__]
+          regex: '(gl_encryption_|gl_decrypt_|gl_kms_).*'
+          action: keep
+
+        # Keep secrets service metrics
+        - sourceLabels: [__name__]
+          regex: '(gl_secrets_|gl_vault_|gl_secret_rotation_).*'
+          action: keep
+
+        # Keep PII service metrics
+        - sourceLabels: [__name__]
+          regex: '(gl_pii_|gl_redaction_|gl_masking_).*'
+          action: keep
+
+        # Keep security event metrics
+        - sourceLabels: [__name__]
+          regex: 'gl_security_.*'
+          action: keep
+
+        # Keep standard HTTP metrics
+        - sourceLabels: [__name__]
+          regex: 'http_request_(duration_seconds|total).*'
+          action: keep
+
+        # Keep process metrics
+        - sourceLabels: [__name__]
+          regex: 'process_.*'
+          action: keep
+
+        # Add environment label
+        - sourceLabels: [namespace]
+          regex: '.*-prod'
+          targetLabel: environment
+          replacement: 'production'
+        - sourceLabels: [namespace]
+          regex: '.*-staging'
+          targetLabel: environment
+          replacement: 'staging'
+        - sourceLabels: [namespace]
+          regex: '.*-dev'
+          targetLabel: environment
+          replacement: 'development'
+
+        # SECURITY: Drop metrics that might expose sensitive paths
+        - sourceLabels: [__name__]
+          regex: '.*_(secret_value|key_material|plaintext).*'
+          action: drop
+
+---
+# ============================================================================
+# Audit Service ServiceMonitor (Dedicated)
+# ============================================================================
+# Dedicated monitoring for the Audit Service.
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: audit-service
+  namespace: monitoring
+  labels:
+    app: audit-service
+    app.kubernetes.io/name: audit-service
+    app.kubernetes.io/component: audit
+    app.kubernetes.io/part-of: greenlang
+    release: prometheus
+    team: security
+  annotations:
+    description: "ServiceMonitor for GreenLang Audit Service"
+spec:
+  jobLabel: audit-service
+
+  selector:
+    matchLabels:
+      app: audit-service
+
+  namespaceSelector:
+    matchNames:
+      - greenlang
+      - greenlang-security
+
+  endpoints:
+    - port: metrics
+      interval: 15s
+      scrapeTimeout: 10s
+      path: /metrics
+      scheme: http
+      honorLabels: true
+
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_service_name]
+          targetLabel: service
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace
+        - sourceLabels: []
+          targetLabel: component
+          replacement: "audit"
+
+      metricRelabelings:
+        # Keep audit specific metrics
+        - sourceLabels: [__name__]
+          regex: 'gl_audit_.*'
+          action: keep
+
+        # Keep audit log metrics
+        - sourceLabels: [__name__]
+          regex: 'gl_audit_(events_total|events_failed|write_latency_seconds).*'
+          action: keep
+
+        # Keep compliance metrics
+        - sourceLabels: [__name__]
+          regex: 'gl_compliance_.*'
+          action: keep
+
+---
+# ============================================================================
+# Encryption Service ServiceMonitor (Dedicated)
+# ============================================================================
+# Dedicated monitoring for the Encryption Service.
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: encryption-service
+  namespace: monitoring
+  labels:
+    app: encryption-service
+    app.kubernetes.io/name: encryption-service
+    app.kubernetes.io/component: encryption
+    app.kubernetes.io/part-of: greenlang
+    release: prometheus
+    team: security
+  annotations:
+    description: "ServiceMonitor for GreenLang Encryption Service"
+spec:
+  jobLabel: encryption-service
+
+  selector:
+    matchLabels:
+      app: encryption-service
+
+  namespaceSelector:
+    matchNames:
+      - greenlang
+      - greenlang-security
+
+  endpoints:
+    - port: metrics
+      interval: 15s
+      scrapeTimeout: 10s
+      path: /metrics
+      scheme: http
+      honorLabels: true
+
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_service_name]
+          targetLabel: service
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace
+        - sourceLabels: []
+          targetLabel: component
+          replacement: "encryption"
+
+      metricRelabelings:
+        # Keep encryption specific metrics
+        - sourceLabels: [__name__]
+          regex: 'gl_encryption_.*'
+          action: keep
+
+        # Keep KMS metrics
+        - sourceLabels: [__name__]
+          regex: 'gl_kms_.*'
+          action: keep
+
+        # Keep key rotation metrics
+        - sourceLabels: [__name__]
+          regex: 'gl_key_rotation_.*'
+          action: keep
+
+---
+# ============================================================================
+# Secrets Service ServiceMonitor (Dedicated)
+# ============================================================================
+# Dedicated monitoring for the Secrets Management Service.
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: secrets-service
+  namespace: monitoring
+  labels:
+    app: secrets-service
+    app.kubernetes.io/name: secrets-service
+    app.kubernetes.io/component: secrets
+    app.kubernetes.io/part-of: greenlang
+    release: prometheus
+    team: security
+  annotations:
+    description: "ServiceMonitor for GreenLang Secrets Service"
+spec:
+  jobLabel: secrets-service
+
+  selector:
+    matchLabels:
+      app: secrets-service
+
+  namespaceSelector:
+    matchNames:
+      - greenlang
+      - greenlang-security
+
+  endpoints:
+    - port: metrics
+      interval: 15s
+      scrapeTimeout: 10s
+      path: /metrics
+      scheme: http
+      honorLabels: true
+
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_service_name]
+          targetLabel: service
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace
+        - sourceLabels: []
+          targetLabel: component
+          replacement: "secrets"
+
+      metricRelabelings:
+        # Keep secrets specific metrics
+        - sourceLabels: [__name__]
+          regex: 'gl_secrets_.*'
+          action: keep
+
+        # Keep vault integration metrics
+        - sourceLabels: [__name__]
+          regex: 'gl_vault_.*'
+          action: keep
+
+        # Keep rotation metrics
+        - sourceLabels: [__name__]
+          regex: 'gl_secret_rotation_.*'
+          action: keep
+
+---
+# ============================================================================
+# PII Service ServiceMonitor (Dedicated)
+# ============================================================================
+# Dedicated monitoring for the PII Detection Service.
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: pii-service
+  namespace: monitoring
+  labels:
+    app: pii-service
+    app.kubernetes.io/name: pii-service
+    app.kubernetes.io/component: pii
+    app.kubernetes.io/part-of: greenlang
+    release: prometheus
+    team: security
+  annotations:
+    description: "ServiceMonitor for GreenLang PII Detection Service"
+spec:
+  jobLabel: pii-service
+
+  selector:
+    matchLabels:
+      app: pii-service
+
+  namespaceSelector:
+    matchNames:
+      - greenlang
+      - greenlang-security
+
+  endpoints:
+    - port: metrics
+      interval: 15s
+      scrapeTimeout: 10s
+      path: /metrics
+      scheme: http
+      honorLabels: true
+
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_service_name]
+          targetLabel: service
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace
+        - sourceLabels: []
+          targetLabel: component
+          replacement: "pii"
+
+      metricRelabelings:
+        # Keep PII detection metrics
+        - sourceLabels: [__name__]
+          regex: 'gl_pii_.*'
+          action: keep
+
+        # Keep redaction metrics
+        - sourceLabels: [__name__]
+          regex: 'gl_redaction_.*'
+          action: keep
+
+        # Keep masking metrics
+        - sourceLabels: [__name__]
+          regex: 'gl_masking_.*'
+          action: keep
+
+        # Keep detection latency
+        - sourceLabels: [__name__]
+          regex: 'gl_pii_detection_latency_seconds.*'
+          action: keep

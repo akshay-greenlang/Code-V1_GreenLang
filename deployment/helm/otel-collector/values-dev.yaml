@@ -1,0 +1,197 @@
+# =============================================================================
+# GreenLang OpenTelemetry Collector - Development Values
+# GreenLang Climate OS | OBS-003
+# =============================================================================
+# Lightweight development configuration:
+#   - Single replica (no HA)
+#   - Minimal resources (256Mi / 250m CPU)
+#   - No tail sampling (probabilistic 100% for full visibility)
+#   - Debug exporter enabled for troubleshooting
+#   - HPA and PDB disabled
+#   - Relaxed network policies
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# Global Configuration
+# ---------------------------------------------------------------------------
+global:
+  environment: dev
+  clusterName: greenlang-dev
+  awsRegion: eu-west-1
+
+# ---------------------------------------------------------------------------
+# OpenTelemetry Collector
+# ---------------------------------------------------------------------------
+otelCollector:
+  replicas: 1
+
+  resources:
+    requests:
+      cpu: 250m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+  config:
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:4317
+            max_recv_msg_size_mib: 4
+          http:
+            endpoint: 0.0.0.0:4318
+
+      jaeger:
+        protocols:
+          grpc:
+            endpoint: "0.0.0.0:14250"
+          thrift_http:
+            endpoint: "0.0.0.0:14268"
+
+    processors:
+      memory_limiter:
+        check_interval: 5s
+        limit_mib: 384
+        spike_limit_mib: 128
+
+      resource:
+        attributes:
+          - key: service.environment
+            value: "${ENVIRONMENT}"
+            action: upsert
+          - key: service.cluster
+            value: "greenlang-${ENVIRONMENT}"
+            action: upsert
+          - key: service.platform
+            value: greenlang-climate-os
+            action: insert
+
+      attributes/redact:
+        actions:
+          - key: http.request.header.authorization
+            action: delete
+          - key: http.request.header.cookie
+            action: delete
+          - key: db.statement
+            action: hash
+          - key: http.request.body
+            action: delete
+
+      filter/health:
+        error_mode: ignore
+        traces:
+          span:
+            - 'attributes["http.target"] == "/health"'
+            - 'attributes["http.target"] == "/ready"'
+            - 'attributes["http.target"] == "/metrics"'
+
+      # Dev uses simple probabilistic sampling (keep everything)
+      probabilistic_sampler:
+        sampling_percentage: 100
+
+      batch:
+        timeout: 5s
+        send_batch_size: 256
+        send_batch_max_size: 512
+
+    exporters:
+      otlp/tempo:
+        endpoint: tempo-distributor.monitoring.svc.cluster.local:4317
+        tls:
+          insecure: true
+        retry_on_failure:
+          enabled: true
+          initial_interval: 5s
+          max_interval: 30s
+          max_elapsed_time: 120s
+
+      prometheus:
+        endpoint: 0.0.0.0:8889
+        namespace: gl_otel
+        resource_to_telemetry_conversion:
+          enabled: true
+
+      loki:
+        endpoint: http://loki-gateway.monitoring.svc.cluster.local:3100/loki/api/v1/push
+        labels:
+          attributes:
+            service.name: service
+            severity: level
+
+      # Debug exporter enabled for dev troubleshooting
+      debug:
+        verbosity: detailed
+        sampling_initial: 5
+        sampling_thereafter: 200
+
+    extensions:
+      health_check:
+        endpoint: "0.0.0.0:13133"
+      pprof:
+        endpoint: "0.0.0.0:1777"
+      zpages:
+        endpoint: "0.0.0.0:55679"
+
+    service:
+      extensions: [health_check, pprof, zpages]
+
+      pipelines:
+        traces:
+          receivers: [otlp, jaeger]
+          processors: [memory_limiter, resource, attributes/redact, filter/health, probabilistic_sampler, batch]
+          exporters: [otlp/tempo, debug]
+
+        metrics:
+          receivers: [otlp]
+          processors: [memory_limiter, resource, batch]
+          exporters: [prometheus]
+
+        logs:
+          receivers: [otlp]
+          processors: [memory_limiter, resource, batch]
+          exporters: [loki, debug]
+
+      telemetry:
+        logs:
+          level: debug
+          encoding: console
+        metrics:
+          level: detailed
+          address: 0.0.0.0:8888
+
+# ---------------------------------------------------------------------------
+# HPA - Disabled for dev
+# ---------------------------------------------------------------------------
+hpa:
+  enabled: false
+
+# ---------------------------------------------------------------------------
+# PDB - Disabled for dev
+# ---------------------------------------------------------------------------
+pdb:
+  enabled: false
+
+# ---------------------------------------------------------------------------
+# Network Policy - Disabled for dev (easier debugging)
+# ---------------------------------------------------------------------------
+networkPolicy:
+  enabled: false
+
+# ---------------------------------------------------------------------------
+# Service Monitor
+# ---------------------------------------------------------------------------
+serviceMonitor:
+  enabled: true
+  interval: 60s
+
+# ---------------------------------------------------------------------------
+# Affinity - None for single replica
+# ---------------------------------------------------------------------------
+affinity: {}
+
+# ---------------------------------------------------------------------------
+# Topology Spread - None for single replica
+# ---------------------------------------------------------------------------
+topologySpreadConstraints: []

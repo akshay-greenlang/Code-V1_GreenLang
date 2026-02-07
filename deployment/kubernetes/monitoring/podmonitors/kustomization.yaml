@@ -1,0 +1,38 @@
+# ============================================================================
+# PodMonitors Kustomization
+# ============================================================================
+# Kustomize configuration for all GreenLang PodMonitors.
+# Provides automatic pod discovery for metrics collection.
+#
+# Created: 2026-02-06
+# Team: Monitoring & Observability
+# PRD: OBS-001 - Prometheus Metrics Collection
+#
+# Usage:
+#   kubectl apply -k deployment/kubernetes/monitoring/podmonitors/
+#
+# ============================================================================
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Namespace for all resources
+namespace: monitoring
+
+# Common labels applied to all resources
+commonLabels:
+  app.kubernetes.io/part-of: greenlang
+  app.kubernetes.io/managed-by: kustomize
+  prometheus.io/monitored: "true"
+  release: prometheus
+  monitoring-type: podmonitor
+
+# Common annotations
+commonAnnotations:
+  prometheus.io/docs: "https://docs.greenlang.ai/observability/pod-monitoring"
+  greenlang.io/prd: "OBS-001"
+  greenlang.io/team: "platform"
+
+# PodMonitor resources
+resources:
+  - greenlang-pods.yaml

@@ -1,0 +1,275 @@
+# =============================================================================
+# GreenLang Agent Factory v1.0 - Task Queue Worker Deployment
+# =============================================================================
+# Component: Task Queue Workers
+# Purpose: Distributed task queue workers for agent execution requests.
+#          Consumes from Redis Streams with priority-based scheduling.
+# Scaling: 3 base replicas, HPA scales to 20 based on queue depth and CPU.
+# PRD: INFRA-010 / TR-002
+# =============================================================================
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agent-factory-worker
+  namespace: greenlang-agent-factory
+  labels:
+    app: agent-factory-worker
+    app.kubernetes.io/name: agent-factory
+    app.kubernetes.io/component: queue-worker
+    app.kubernetes.io/part-of: greenlang
+    app.kubernetes.io/version: "1.0.0"
+  annotations:
+    deployment.kubernetes.io/revision: "1"
+    description: "Agent Factory Task Queue Workers - distributed agent execution"
+    prd: INFRA-010
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 2
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: agent-factory-worker
+      app.kubernetes.io/component: queue-worker
+  template:
+    metadata:
+      labels:
+        app: agent-factory-worker
+        app.kubernetes.io/name: agent-factory
+        app.kubernetes.io/component: queue-worker
+        app.kubernetes.io/part-of: greenlang
+        app.kubernetes.io/version: "1.0.0"
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: agent-factory-sa
+      automountServiceAccountToken: true
+
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+
+      # Long grace period for in-flight task completion
+      terminationGracePeriodSeconds: 300
+
+      initContainers:
+        - name: wait-for-redis
+          image: busybox:1.36
+          command: ['sh', '-c', 'until nc -z greenlang-redis.redis.svc.cluster.local 6379; do echo waiting for redis; sleep 2; done']
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1000
+            capabilities:
+              drop:
+                - ALL
+        - name: wait-for-lifecycle
+          image: busybox:1.36
+          command: ['sh', '-c', 'until nc -z agent-factory-lifecycle.greenlang-agent-factory.svc.cluster.local 8080; do echo waiting for lifecycle manager; sleep 2; done']
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1000
+            capabilities:
+              drop:
+                - ALL
+
+      containers:
+        - name: queue-worker
+          image: greenlang/agent-factory-worker:latest
+          imagePullPolicy: Always
+
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+            - name: metrics
+              containerPort: 9090
+              protocol: TCP
+
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: agent-factory-secrets
+                  key: REDIS_URL
+                  optional: false
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: agent-factory-secrets
+                  key: DATABASE_URL
+                  optional: false
+            - name: WORKER_CONCURRENCY
+              value: "10"
+            - name: WORKER_PREFETCH_COUNT
+              value: "4"
+            - name: LOG_LEVEL
+              valueFrom:
+                configMapKeyRef:
+                  name: agent-factory-config
+                  key: LOG_LEVEL
+            - name: OTEL_ENDPOINT
+              valueFrom:
+                configMapKeyRef:
+                  name: agent-factory-config
+                  key: OTEL_ENDPOINT
+            - name: LIFECYCLE_URL
+              value: "http://agent-factory-lifecycle.greenlang-agent-factory.svc.cluster.local:8080"
+            - name: TASK_TIMEOUT
+              value: "3600"
+            - name: HEARTBEAT_INTERVAL
+              value: "30"
+            - name: MAX_RETRIES
+              value: "3"
+            - name: VISIBILITY_TIMEOUT
+              value: "300"
+
+          envFrom:
+            - configMapRef:
+                name: agent-factory-config
+
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "512Mi"
+            limits:
+              cpu: "1000m"
+              memory: "1Gi"
+
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+            successThreshold: 1
+
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+            successThreshold: 1
+
+          startupProbe:
+            httpGet:
+              path: /healthz
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 30
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1000
+            capabilities:
+              drop:
+                - ALL
+
+          volumeMounts:
+            - name: config
+              mountPath: /app/config
+              readOnly: true
+            - name: tmp
+              mountPath: /tmp
+            - name: worker-data
+              mountPath: /app/data
+            - name: task-results
+              mountPath: /app/results
+
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - /bin/sh
+                  - -c
+                  - |
+                    echo "Worker shutting down - completing current tasks"
+                    touch /tmp/shutdown
+                    for i in $(seq 1 60); do
+                      if [ -f /tmp/tasks_complete ]; then
+                        echo "All tasks completed"
+                        break
+                      fi
+                      sleep 5
+                    done
+
+      volumes:
+        - name: config
+          configMap:
+            name: agent-factory-config
+        - name: tmp
+          emptyDir:
+            sizeLimit: 200Mi
+        - name: worker-data
+          emptyDir:
+            sizeLimit: 2Gi
+        - name: task-results
+          emptyDir:
+            sizeLimit: 1Gi
+
+      topologySpreadConstraints:
+        - maxSkew: 2
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: agent-factory-worker
+              app.kubernetes.io/component: queue-worker
+
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: agent-factory-worker
+                    app.kubernetes.io/component: queue-worker
+                topologyKey: kubernetes.io/hostname
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 80
+              preference:
+                matchExpressions:
+                  - key: node-type
+                    operator: In
+                    values:
+                      - worker
+                      - compute

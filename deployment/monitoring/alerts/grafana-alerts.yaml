@@ -1,0 +1,443 @@
+# ============================================================================
+# Grafana Health Alert Rules
+# ============================================================================
+# PrometheusRules for Grafana self-monitoring and health.
+# Monitors server availability, database connectivity, dashboard performance,
+# API errors, alerting pipeline, rendering, authentication, and cache.
+#
+# Created: 2026-02-07
+# Team: Monitoring & Observability
+# PRD: OBS-002 - Grafana Dashboards
+#
+# Alert Groups:
+#   - grafana.availability: Server and database uptime
+#   - grafana.performance: Dashboard load times, API errors
+#   - grafana.resources: Memory, connection pool, cache
+#   - grafana.alerting: Alert evaluation pipeline health
+#   - grafana.operational: Rendering, login, dashboard sprawl
+# ============================================================================
+
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: grafana-health-alerts
+  namespace: monitoring
+  labels:
+    app: grafana
+    component: alerting
+    prometheus: main
+    role: alert-rules
+    app.kubernetes.io/name: grafana
+    app.kubernetes.io/component: alerts
+    app.kubernetes.io/part-of: greenlang
+    release: prometheus
+  annotations:
+    description: "Grafana self-monitoring and health alert rules"
+    runbook_base_url: "https://runbooks.greenlang.ai/grafana"
+spec:
+  groups:
+    # =========================================================================
+    # AVAILABILITY ALERTS
+    # =========================================================================
+    - name: grafana.availability
+      interval: 30s
+      rules:
+        # ---------------------------------------------------------------------
+        # GrafanaDown - Server completely unreachable
+        # ---------------------------------------------------------------------
+        - alert: GrafanaDown
+          expr: up{job="grafana"} == 0
+          for: 2m
+          labels:
+            severity: critical
+            team: platform
+            service: grafana
+            component: server
+            category: availability
+          annotations:
+            summary: "Grafana instance is down ({{ $labels.instance }})"
+            description: |
+              Grafana instance {{ $labels.instance }} has been unreachable for more
+              than 2 minutes. The Prometheus scrape target is returning down status.
+
+              Instance: {{ $labels.instance }}
+              Job: {{ $labels.job }}
+
+              Impact: Dashboards, alerting, and all visualization capabilities
+              are unavailable. Engineers cannot view metrics, logs, or traces.
+              Grafana-managed alert rules will stop evaluating.
+
+              Immediate action required.
+            runbook_url: "https://runbooks.greenlang.ai/grafana/grafana-down"
+            dashboard_url: "https://grafana.greenlang.io/d/grafana-health"
+
+        # ---------------------------------------------------------------------
+        # GrafanaBackendDBDown - PostgreSQL backend unreachable
+        # ---------------------------------------------------------------------
+        - alert: GrafanaBackendDBDown
+          expr: grafana_database_conn_open == 0
+          for: 1m
+          labels:
+            severity: critical
+            team: platform
+            service: grafana
+            component: database
+            category: availability
+          annotations:
+            summary: "Grafana cannot connect to PostgreSQL backend"
+            description: |
+              Grafana has zero open database connections. The PostgreSQL backend
+              database is unreachable or all connections have been closed.
+
+              Instance: {{ $labels.instance }}
+              Open connections: 0
+
+              Impact: Grafana cannot persist dashboard changes, user preferences,
+              or alert state. This is a data-loss risk. Immediate action required.
+            runbook_url: "https://runbooks.greenlang.ai/grafana/grafana-down"
+            dashboard_url: "https://grafana.greenlang.io/d/grafana-health"
+
+    # =========================================================================
+    # PERFORMANCE ALERTS
+    # =========================================================================
+    - name: grafana.performance
+      interval: 30s
+      rules:
+        # ---------------------------------------------------------------------
+        # GrafanaDashboardLoadSlow - P95 dashboard load time high
+        # ---------------------------------------------------------------------
+        - alert: GrafanaDashboardLoadSlow
+          expr: |
+            histogram_quantile(0.95,
+              rate(grafana_api_dashboard_get_milliseconds_bucket[5m])
+            ) > 3000
+          for: 5m
+          labels:
+            severity: warning
+            team: platform
+            service: grafana
+            component: dashboards
+            category: performance
+          annotations:
+            summary: "P95 dashboard load time exceeds 3 seconds"
+            description: |
+              The 95th percentile dashboard load time has exceeded 3 seconds
+              for more than 5 minutes.
+
+              Instance: {{ $labels.instance }}
+              Current P95: {{ $value | printf "%.0f" }}ms
+
+              Impact: Users experience slow dashboard rendering, which degrades
+              the incident response workflow and delays time-to-insight.
+
+              Common causes: complex queries, too many panels per dashboard,
+              slow datasource responses, high concurrent user load.
+            runbook_url: "https://runbooks.greenlang.ai/grafana/grafana-dashboard-slow"
+            dashboard_url: "https://grafana.greenlang.io/d/grafana-health"
+
+        # ---------------------------------------------------------------------
+        # GrafanaAPIErrors - Elevated HTTP 5xx error rate
+        # ---------------------------------------------------------------------
+        - alert: GrafanaAPIErrors
+          expr: rate(grafana_http_request_total{status_code=~"5.."}[5m]) > 0.1
+          for: 5m
+          labels:
+            severity: warning
+            team: platform
+            service: grafana
+            component: api
+            category: performance
+          annotations:
+            summary: "Grafana API error rate elevated ({{ $labels.instance }})"
+            description: |
+              Grafana API is returning HTTP 5xx errors at a rate exceeding 0.1
+              requests per second for more than 5 minutes.
+
+              Instance: {{ $labels.instance }}
+              Handler: {{ $labels.handler }}
+              Status code pattern: 5xx
+              Current rate: {{ $value | printf "%.3f" }}/s
+
+              Impact: API consumers (SDKs, provisioning scripts, alerting
+              pipelines) are experiencing failures. Dashboard saves, user
+              operations, and programmatic access are degraded.
+
+              Common causes: database connectivity, plugin errors, resource
+              exhaustion, upstream datasource failures.
+            runbook_url: "https://runbooks.greenlang.ai/grafana/grafana-api-errors"
+            dashboard_url: "https://grafana.greenlang.io/d/grafana-health"
+
+    # =========================================================================
+    # RESOURCE ALERTS
+    # =========================================================================
+    - name: grafana.resources
+      interval: 30s
+      rules:
+        # ---------------------------------------------------------------------
+        # GrafanaHighMemory - Memory approaching OOM threshold
+        # ---------------------------------------------------------------------
+        - alert: GrafanaHighMemory
+          expr: process_resident_memory_bytes{job="grafana"} > 1.5e9
+          for: 10m
+          labels:
+            severity: warning
+            team: platform
+            service: grafana
+            component: server
+            category: resources
+          annotations:
+            summary: "Grafana using >1.5GB memory ({{ $labels.instance }})"
+            description: |
+              Grafana instance {{ $labels.instance }} is consuming more than
+              1.5GB of resident memory for more than 10 minutes.
+
+              Instance: {{ $labels.instance }}
+              Current memory: {{ $value | humanize1024 }}B
+              Limit: 2Gi (production)
+
+              Impact: If memory continues to grow, the container will be
+              OOMKilled, causing a Grafana outage. Dashboard access and
+              alert evaluation will be interrupted.
+
+              Common causes: too many concurrent dashboard viewers, complex
+              queries with large result sets, plugin memory leaks, dashboard
+              rendering backlog, excessive number of dashboards loaded.
+            runbook_url: "https://runbooks.greenlang.ai/grafana/grafana-high-memory"
+            dashboard_url: "https://grafana.greenlang.io/d/grafana-health"
+
+        # ---------------------------------------------------------------------
+        # GrafanaDBConnectionPoolExhausted - DB pool saturation
+        # ---------------------------------------------------------------------
+        - alert: GrafanaDBConnectionPoolExhausted
+          expr: grafana_database_conn_open / grafana_database_conn_max > 0.8
+          for: 5m
+          labels:
+            severity: warning
+            team: platform
+            service: grafana
+            component: database
+            category: resources
+          annotations:
+            summary: "Grafana DB connection pool >80% utilized ({{ $labels.instance }})"
+            description: |
+              Grafana database connection pool utilization has exceeded 80%
+              for more than 5 minutes.
+
+              Instance: {{ $labels.instance }}
+              Open connections: {{ with printf "grafana_database_conn_open{instance='%s'}" $labels.instance | query }}{{ . | first | value }}{{ end }}
+              Max connections: {{ with printf "grafana_database_conn_max{instance='%s'}" $labels.instance | query }}{{ . | first | value }}{{ end }}
+              Utilization: {{ $value | printf "%.1f" }}%
+
+              Impact: When the pool is fully exhausted, new API requests
+              will fail with database connection errors. Dashboard saves,
+              user authentication, and alert state persistence will fail.
+
+              Common causes: slow database queries, high concurrent user
+              load, PostgreSQL connection limits reached, network latency.
+            runbook_url: "https://runbooks.greenlang.ai/grafana/grafana-db-pool"
+            dashboard_url: "https://grafana.greenlang.io/d/grafana-health"
+
+        # ---------------------------------------------------------------------
+        # GrafanaCacheHitRateLow - Cache efficiency degraded
+        # ---------------------------------------------------------------------
+        - alert: GrafanaCacheHitRateLow
+          expr: |
+            grafana_remote_cache_hit_total
+            / (grafana_remote_cache_hit_total + grafana_remote_cache_miss_total)
+            < 0.5
+          for: 15m
+          labels:
+            severity: info
+            team: platform
+            service: grafana
+            component: cache
+            category: resources
+          annotations:
+            summary: "Grafana cache hit rate below 50% ({{ $labels.instance }})"
+            description: |
+              Grafana remote cache (Redis) hit rate has dropped below 50%
+              for more than 15 minutes.
+
+              Instance: {{ $labels.instance }}
+              Current hit rate: {{ $value | printf "%.1f" }}%
+
+              Impact: Low cache hit rate increases load on the PostgreSQL
+              backend database and increases dashboard load times. Users
+              may experience slower page loads and API responses.
+
+              Common causes: Redis eviction due to memory pressure, cache
+              key configuration changes, cold start after deployment,
+              significant change in access patterns.
+            runbook_url: "https://runbooks.greenlang.ai/grafana/grafana-cache"
+            dashboard_url: "https://grafana.greenlang.io/d/grafana-health"
+
+    # =========================================================================
+    # ALERTING PIPELINE ALERTS
+    # =========================================================================
+    - name: grafana.alerting
+      interval: 30s
+      rules:
+        # ---------------------------------------------------------------------
+        # GrafanaAlertingQueueFull - Alert evaluation backlog
+        # ---------------------------------------------------------------------
+        - alert: GrafanaAlertingQueueFull
+          expr: grafana_alerting_queue_capacity > 0.9
+          for: 2m
+          labels:
+            severity: critical
+            team: platform
+            service: grafana
+            component: alerting
+            category: alerting
+          annotations:
+            summary: "Grafana alerting queue near capacity ({{ $labels.instance }})"
+            description: |
+              Grafana alerting evaluation queue utilization has exceeded 90%
+              for more than 2 minutes.
+
+              Instance: {{ $labels.instance }}
+              Queue utilization: {{ $value | printf "%.1f" }}%
+
+              Impact: Alert rules are not being evaluated on schedule. New
+              alerts may not fire, and existing alerts may not resolve. This
+              is a critical gap in the alerting pipeline that could delay
+              incident detection.
+
+              Common causes: too many alert rules, slow datasource queries
+              during evaluation, resource contention on the Grafana pod,
+              database lock contention.
+            runbook_url: "https://runbooks.greenlang.ai/grafana/grafana-alerting-queue"
+            dashboard_url: "https://grafana.greenlang.io/d/grafana-health"
+
+    # =========================================================================
+    # OPERATIONAL ALERTS
+    # =========================================================================
+    - name: grafana.operational
+      interval: 30s
+      rules:
+        # ---------------------------------------------------------------------
+        # GrafanaDataSourceUnreachable - Datasource connectivity failure
+        # ---------------------------------------------------------------------
+        - alert: GrafanaDataSourceUnreachable
+          expr: |
+            increase(grafana_datasource_request_total{status="error"}[5m]) > 0
+          for: 5m
+          labels:
+            severity: warning
+            team: platform
+            service: grafana
+            component: datasources
+            category: connectivity
+          annotations:
+            summary: "Grafana cannot reach data source {{ $labels.datasource }}"
+            description: |
+              Grafana datasource {{ $labels.datasource }} is returning errors
+              for more than 5 minutes.
+
+              Instance: {{ $labels.instance }}
+              Datasource: {{ $labels.datasource }}
+              Plugin: {{ $labels.plugin_id }}
+
+              Impact: Dashboards using this datasource will show "No data"
+              or error panels. Alert rules querying this datasource will
+              fail to evaluate, potentially missing critical alerts.
+
+              Common causes: datasource endpoint down, network policy
+              blocking, credentials expired, TLS certificate mismatch.
+            runbook_url: "https://runbooks.greenlang.ai/grafana/grafana-datasource"
+            dashboard_url: "https://grafana.greenlang.io/d/grafana-health"
+
+        # ---------------------------------------------------------------------
+        # GrafanaRenderingFailed - Image rendering failures
+        # ---------------------------------------------------------------------
+        - alert: GrafanaRenderingFailed
+          expr: rate(grafana_rendering_request_total{status="failure"}[5m]) > 0
+          for: 5m
+          labels:
+            severity: warning
+            team: platform
+            service: grafana
+            component: rendering
+            category: operational
+          annotations:
+            summary: "Grafana image rendering failures detected ({{ $labels.instance }})"
+            description: |
+              Grafana image rendering is failing for more than 5 minutes.
+
+              Instance: {{ $labels.instance }}
+              Failure rate: {{ $value | printf "%.3f" }}/s
+
+              Impact: Alert notification screenshots will not be attached
+              to Slack/email notifications. PDF report generation will fail.
+              Shared dashboard snapshots with embedded images will be broken.
+
+              Common causes: rendering plugin not installed or crashed,
+              Chromium process OOM, insufficient rendering resources,
+              network policy blocking rendering service.
+            runbook_url: "https://runbooks.greenlang.ai/grafana/grafana-rendering"
+            dashboard_url: "https://grafana.greenlang.io/d/grafana-health"
+
+        # ---------------------------------------------------------------------
+        # GrafanaHighLoginFailureRate - Authentication failures
+        # ---------------------------------------------------------------------
+        - alert: GrafanaHighLoginFailureRate
+          expr: |
+            rate(grafana_api_login_post_total{status_code!="200"}[5m])
+            / rate(grafana_api_login_post_total[5m])
+            > 0.3
+          for: 5m
+          labels:
+            severity: warning
+            team: platform
+            service: grafana
+            component: authentication
+            category: security
+          annotations:
+            summary: "High login failure rate >30% ({{ $labels.instance }})"
+            description: |
+              More than 30% of Grafana login attempts are failing for more
+              than 5 minutes.
+
+              Instance: {{ $labels.instance }}
+              Failure rate: {{ $value | printf "%.1f" }}%
+
+              Impact: Legitimate users may be unable to access Grafana.
+              A high failure rate may also indicate a brute-force attack
+              or credential stuffing attempt against the Grafana login.
+
+              Common causes: OAuth/LDAP provider down, SSO configuration
+              change, expired service account credentials, brute-force
+              attack, password policy change affecting existing users.
+            runbook_url: "https://runbooks.greenlang.ai/grafana/grafana-login-failures"
+            dashboard_url: "https://grafana.greenlang.io/d/grafana-health"
+
+        # ---------------------------------------------------------------------
+        # GrafanaTooManyDashboards - Dashboard sprawl
+        # ---------------------------------------------------------------------
+        - alert: GrafanaTooManyDashboards
+          expr: grafana_stat_total_dashboards > 200
+          for: 1h
+          labels:
+            severity: info
+            team: platform
+            service: grafana
+            component: dashboards
+            category: operational
+          annotations:
+            summary: "Dashboard sprawl detected (>200 dashboards)"
+            description: |
+              The total number of dashboards in Grafana has exceeded 200.
+
+              Instance: {{ $labels.instance }}
+              Total dashboards: {{ $value | printf "%.0f" }}
+
+              Impact: Dashboard sprawl increases Grafana startup time,
+              memory usage, and makes it harder for users to find relevant
+              dashboards. Search performance degrades and the dashboard
+              provisioning sidecar takes longer to sync.
+
+              Recommended actions: audit unused dashboards, archive old
+              dashboards, enforce folder organization, implement dashboard
+              naming conventions, use dashboard tags for discoverability.
+            runbook_url: "https://runbooks.greenlang.ai/grafana/grafana-dashboard-sprawl"
+            dashboard_url: "https://grafana.greenlang.io/d/grafana-usage"

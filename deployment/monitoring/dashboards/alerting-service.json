@@ -1,0 +1,813 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      },
+      {
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${datasource}"
+        },
+        "enable": true,
+        "expr": "ALERTS{alertname=~\"(AlertingServiceDown|NotificationDeliveryFailing|PagerDutyIntegrationDown|OpsgenieIntegrationDown|SlackIntegrationDown|HighMTTA|AlertNotAcknowledged|EscalationTriggered|AlertFatigueHigh|NotificationRateLimited|OnCallLookupFailing|HighAlertVolume).*\", alertstate=\"firing\"}",
+        "iconColor": "red",
+        "name": "Alerting Service Alerts",
+        "step": "60s"
+      }
+    ]
+  },
+  "description": "GreenLang Unified Alerting & Notification Platform - Alert routing, notification delivery, escalation, MTTA/MTTR analytics. PRD: OBS-004",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [
+    {
+      "asDropdown": false,
+      "icon": "external link",
+      "includeVars": true,
+      "keepTime": true,
+      "tags": ["greenlang"],
+      "targetBlank": true,
+      "title": "GreenLang Dashboards",
+      "type": "dashboards"
+    }
+  ],
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "id": 1,
+      "title": "Overview",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "description": "Total active (firing) alerts by severity",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 5 },
+              { "color": "orange", "value": 15 },
+              { "color": "red", "value": 30 }
+            ]
+          },
+          "mappings": [],
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "critical" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "warning" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "info" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }]
+          }
+        ]
+      },
+      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 1 },
+      "id": 2,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "expr": "sum by (severity) (gl_alert_active_total{job=\"alerting-service\"})",
+          "legendFormat": "{{severity}}"
+        }
+      ],
+      "title": "Active Alerts by Severity",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "description": "Rate of notifications sent per minute, broken down by channel",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisLabel": "notifications/min",
+            "drawStyle": "line",
+            "fillOpacity": 15,
+            "lineWidth": 2,
+            "pointSize": 5,
+            "stacking": { "mode": "none" }
+          },
+          "unit": "cpm"
+        }
+      },
+      "gridPos": { "h": 6, "w": 9, "x": 6, "y": 1 },
+      "id": 3,
+      "targets": [
+        {
+          "expr": "sum by (channel) (rate(gl_alert_notifications_total{job=\"alerting-service\"}[5m])) * 60",
+          "legendFormat": "{{channel}}"
+        }
+      ],
+      "title": "Notifications Sent/min by Channel",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "description": "Notification delivery success rate per channel over the last 15 minutes",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "orange", "value": 0.9 },
+              { "color": "yellow", "value": 0.95 },
+              { "color": "green", "value": 0.99 }
+            ]
+          },
+          "max": 1,
+          "min": 0,
+          "unit": "percentunit"
+        }
+      },
+      "gridPos": { "h": 6, "w": 9, "x": 15, "y": 1 },
+      "id": 4,
+      "options": {
+        "orientation": "horizontal",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true
+      },
+      "targets": [
+        {
+          "expr": "1 - (sum by (channel) (rate(gl_alert_notifications_total{job=\"alerting-service\", status=\"failed\"}[15m])) / sum by (channel) (rate(gl_alert_notifications_total{job=\"alerting-service\"}[15m])))",
+          "legendFormat": "{{channel}}"
+        }
+      ],
+      "title": "Notification Success Rate by Channel",
+      "type": "gauge"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "description": "Notification delivery latency percentiles (P50, P95, P99) per channel",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisLabel": "latency",
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineWidth": 2,
+            "pointSize": 5,
+            "stacking": { "mode": "none" }
+          },
+          "unit": "s"
+        }
+      },
+      "gridPos": { "h": 6, "w": 12, "x": 0, "y": 7 },
+      "id": 5,
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.50, sum by (le, channel) (rate(gl_alert_notification_duration_seconds_bucket{job=\"alerting-service\"}[5m])))",
+          "legendFormat": "P50 {{channel}}"
+        },
+        {
+          "expr": "histogram_quantile(0.95, sum by (le, channel) (rate(gl_alert_notification_duration_seconds_bucket{job=\"alerting-service\"}[5m])))",
+          "legendFormat": "P95 {{channel}}"
+        },
+        {
+          "expr": "histogram_quantile(0.99, sum by (le, channel) (rate(gl_alert_notification_duration_seconds_bucket{job=\"alerting-service\"}[5m])))",
+          "legendFormat": "P99 {{channel}}"
+        }
+      ],
+      "title": "Notification Latency P50/P95/P99",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 13 },
+      "id": 6,
+      "title": "Response Metrics (MTTA / MTTR)",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "description": "Mean Time To Acknowledge by team (lower is better)",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 300 },
+              { "color": "orange", "value": 600 },
+              { "color": "red", "value": 900 }
+            ]
+          },
+          "unit": "s"
+        }
+      },
+      "gridPos": { "h": 7, "w": 12, "x": 0, "y": 14 },
+      "id": 7,
+      "options": {
+        "orientation": "horizontal",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }
+      },
+      "targets": [
+        {
+          "expr": "gl_alert_mtta_seconds{job=\"alerting-service\"}",
+          "legendFormat": "{{team}}"
+        }
+      ],
+      "title": "MTTA by Team",
+      "type": "barchart"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "description": "Mean Time To Resolve by team (lower is better)",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 1800 },
+              { "color": "orange", "value": 3600 },
+              { "color": "red", "value": 7200 }
+            ]
+          },
+          "unit": "s"
+        }
+      },
+      "gridPos": { "h": 7, "w": 12, "x": 12, "y": 14 },
+      "id": 8,
+      "options": {
+        "orientation": "horizontal",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }
+      },
+      "targets": [
+        {
+          "expr": "gl_alert_mttr_seconds{job=\"alerting-service\"}",
+          "legendFormat": "{{team}}"
+        }
+      ],
+      "title": "MTTR by Team",
+      "type": "barchart"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "description": "Alert fatigue score per team (0-100, higher means more fatigued)",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 40 },
+              { "color": "orange", "value": 60 },
+              { "color": "red", "value": 80 }
+            ]
+          },
+          "max": 100,
+          "min": 0,
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 7, "w": 12, "x": 12, "y": 7 },
+      "id": 9,
+      "options": {
+        "orientation": "horizontal",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "showThresholdLabels": true,
+        "showThresholdMarkers": true
+      },
+      "targets": [
+        {
+          "expr": "gl_alert_fatigue_score{job=\"alerting-service\"}",
+          "legendFormat": "{{team}}"
+        }
+      ],
+      "title": "Alert Fatigue Score by Team",
+      "type": "gauge"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "description": "Rate of escalation events per hour",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisLabel": "escalations/hr",
+            "drawStyle": "bars",
+            "fillOpacity": 50,
+            "lineWidth": 1,
+            "pointSize": 5,
+            "stacking": { "mode": "normal" }
+          },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 7, "w": 12, "x": 0, "y": 21 },
+      "id": 10,
+      "targets": [
+        {
+          "expr": "sum by (from_level, to_level) (rate(gl_alert_escalations_total{job=\"alerting-service\"}[1h])) * 3600",
+          "legendFormat": "L{{from_level}} -> L{{to_level}}"
+        }
+      ],
+      "title": "Escalation Events/Hour",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "description": "Rate of alert deduplication (how many duplicate alerts were suppressed)",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "steps": [
+              { "color": "blue", "value": null },
+              { "color": "green", "value": 0.5 },
+              { "color": "yellow", "value": 0.8 }
+            ]
+          },
+          "unit": "percentunit"
+        }
+      },
+      "gridPos": { "h": 7, "w": 12, "x": 12, "y": 21 },
+      "id": 11,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(gl_alert_dedup_total{job=\"alerting-service\", result=\"deduplicated\"}[5m])) / sum(rate(gl_alert_dedup_total{job=\"alerting-service\"}[5m]))",
+          "legendFormat": "Dedup Rate"
+        }
+      ],
+      "title": "Deduplication Rate",
+      "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 28 },
+      "id": 12,
+      "title": "Alert Details",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "description": "Top 10 alertnames by fire count in the selected time range",
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "filterable": true }
+        }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 29 },
+      "id": 13,
+      "options": {
+        "showHeader": true,
+        "sortBy": [{ "desc": true, "displayName": "Value" }]
+      },
+      "targets": [
+        {
+          "expr": "topk(10, sum by (alertname) (increase(gl_alert_fired_total{job=\"alerting-service\"}[$__range])))",
+          "format": "table",
+          "instant": true,
+          "legendFormat": ""
+        }
+      ],
+      "title": "Top 10 Noisiest Alerts",
+      "type": "table"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "description": "Alert lifecycle transitions over time (firing -> acknowledged -> resolved)",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "fillOpacity": 80,
+            "lineWidth": 0
+          }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "firing" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "acknowledged" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "resolved" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }]
+          }
+        ]
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 29 },
+      "id": 14,
+      "targets": [
+        {
+          "expr": "sum by (status) (gl_alert_active_total{job=\"alerting-service\"})",
+          "legendFormat": "{{status}}"
+        }
+      ],
+      "title": "Alert Lifecycle Flow",
+      "type": "state-timeline"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "description": "On-call lookup latency from PagerDuty and Opsgenie schedule APIs",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisLabel": "latency",
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineWidth": 2,
+            "pointSize": 5,
+            "stacking": { "mode": "none" }
+          },
+          "unit": "s"
+        }
+      },
+      "gridPos": { "h": 7, "w": 12, "x": 0, "y": 37 },
+      "id": 15,
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum by (le, provider) (rate(gl_alert_oncall_lookup_duration_seconds_bucket{job=\"alerting-service\"}[5m])))",
+          "legendFormat": "P95 {{provider}}"
+        },
+        {
+          "expr": "histogram_quantile(0.50, sum by (le, provider) (rate(gl_alert_oncall_lookup_duration_seconds_bucket{job=\"alerting-service\"}[5m])))",
+          "legendFormat": "P50 {{provider}}"
+        }
+      ],
+      "title": "On-Call Lookup Latency",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 44 },
+      "id": 16,
+      "title": "Channel Health & Operations",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "description": "Health status of each notification channel (1 = healthy, 0 = unhealthy)",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "green", "value": 1 }
+            ]
+          },
+          "mappings": [
+            { "options": { "0": { "text": "DOWN" } }, "type": "value" },
+            { "options": { "1": { "text": "UP" } }, "type": "value" }
+          ]
+        }
+      },
+      "gridPos": { "h": 7, "w": 12, "x": 12, "y": 37 },
+      "id": 17,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "horizontal",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "expr": "gl_alert_channel_health{job=\"alerting-service\"}",
+          "legendFormat": "{{channel}}"
+        }
+      ],
+      "title": "Channel Health Status",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "description": "Alert distribution by source (Prometheus, Alertmanager, custom)",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" }
+        }
+      },
+      "gridPos": { "h": 7, "w": 6, "x": 0, "y": 45 },
+      "id": 18,
+      "options": {
+        "displayLabels": ["percent"],
+        "legend": { "displayMode": "table", "placement": "right" },
+        "pieType": "donut",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "tooltip": { "mode": "single" }
+      },
+      "targets": [
+        {
+          "expr": "sum by (source) (gl_alert_active_total{job=\"alerting-service\"})",
+          "legendFormat": "{{source}}"
+        }
+      ],
+      "title": "Alerts by Source",
+      "type": "piechart"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "description": "Alert distribution by service name",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "fillOpacity": 50,
+            "stacking": { "mode": "none" }
+          },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 7, "w": 6, "x": 6, "y": 45 },
+      "id": 19,
+      "options": {
+        "orientation": "horizontal",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }
+      },
+      "targets": [
+        {
+          "expr": "sum by (service) (gl_alert_active_total{job=\"alerting-service\"})",
+          "legendFormat": "{{service}}"
+        }
+      ],
+      "title": "Alerts by Service",
+      "type": "barchart"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "description": "Notification delivery failures per channel over time",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisLabel": "failures/min",
+            "drawStyle": "line",
+            "fillOpacity": 20,
+            "lineWidth": 2,
+            "pointSize": 5,
+            "stacking": { "mode": "none" }
+          },
+          "unit": "cpm"
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byRegexp", "options": ".*pagerduty.*" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }]
+          },
+          {
+            "matcher": { "id": "byRegexp", "options": ".*opsgenie.*" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }]
+          },
+          {
+            "matcher": { "id": "byRegexp", "options": ".*slack.*" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "purple", "mode": "fixed" } }]
+          }
+        ]
+      },
+      "gridPos": { "h": 7, "w": 12, "x": 12, "y": 45 },
+      "id": 20,
+      "targets": [
+        {
+          "expr": "sum by (channel) (rate(gl_alert_notifications_total{job=\"alerting-service\", status=\"failed\"}[5m])) * 60",
+          "legendFormat": "{{channel}}"
+        }
+      ],
+      "title": "Notification Delivery Failures",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "description": "Rate limiting events when notification channels are throttled",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisLabel": "rate limited/min",
+            "drawStyle": "line",
+            "fillOpacity": 15,
+            "lineWidth": 2,
+            "pointSize": 5,
+            "stacking": { "mode": "none" }
+          },
+          "unit": "cpm"
+        }
+      },
+      "gridPos": { "h": 7, "w": 12, "x": 0, "y": 52 },
+      "id": 21,
+      "targets": [
+        {
+          "expr": "sum by (channel) (rate(gl_alert_rate_limited_total{job=\"alerting-service\"}[5m])) * 60",
+          "legendFormat": "{{channel}}"
+        }
+      ],
+      "title": "Rate Limiting Events",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "description": "Total alert volume trend over time (fired alerts per hour)",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "fixedColor": "blue", "mode": "fixed" },
+          "custom": {
+            "axisLabel": "alerts/hr",
+            "drawStyle": "line",
+            "fillOpacity": 25,
+            "lineWidth": 2,
+            "pointSize": 5,
+            "stacking": { "mode": "none" }
+          },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 7, "w": 12, "x": 12, "y": 52 },
+      "id": 22,
+      "targets": [
+        {
+          "expr": "sum(rate(gl_alert_fired_total{job=\"alerting-service\"}[1h])) * 3600",
+          "legendFormat": "Alert Volume"
+        }
+      ],
+      "title": "Alert Volume Trend",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 59 },
+      "id": 23,
+      "title": "Trends & Analytics",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "description": "Distribution of alert resolution times",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "fillOpacity": 50,
+            "lineWidth": 1,
+            "stacking": { "mode": "none" }
+          },
+          "unit": "s"
+        }
+      },
+      "gridPos": { "h": 7, "w": 12, "x": 0, "y": 60 },
+      "id": 24,
+      "targets": [
+        {
+          "expr": "sum by (le) (increase(gl_alert_resolution_duration_seconds_bucket{job=\"alerting-service\"}[$__range]))",
+          "format": "heatmap",
+          "legendFormat": "{{le}}"
+        }
+      ],
+      "title": "Resolution Time Distribution",
+      "type": "histogram"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "description": "Weekly trend of MTTA and MTTR across all teams",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisLabel": "seconds",
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineWidth": 2,
+            "pointSize": 5,
+            "stacking": { "mode": "none" }
+          },
+          "unit": "s"
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byRegexp", "options": ".*MTTA.*" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }]
+          },
+          {
+            "matcher": { "id": "byRegexp", "options": ".*MTTR.*" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }]
+          }
+        ]
+      },
+      "gridPos": { "h": 7, "w": 12, "x": 12, "y": 60 },
+      "id": 25,
+      "targets": [
+        {
+          "expr": "avg(avg_over_time(gl_alert_mtta_seconds{job=\"alerting-service\"}[7d]))",
+          "legendFormat": "Avg MTTA (7d)"
+        },
+        {
+          "expr": "avg(avg_over_time(gl_alert_mttr_seconds{job=\"alerting-service\"}[7d]))",
+          "legendFormat": "Avg MTTR (7d)"
+        },
+        {
+          "expr": "quantile(0.95, avg_over_time(gl_alert_mtta_seconds{job=\"alerting-service\"}[7d]))",
+          "legendFormat": "P95 MTTA (7d)"
+        },
+        {
+          "expr": "quantile(0.95, avg_over_time(gl_alert_mttr_seconds{job=\"alerting-service\"}[7d]))",
+          "legendFormat": "P95 MTTR (7d)"
+        }
+      ],
+      "title": "Weekly MTTA/MTTR Trend",
+      "type": "timeseries"
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "tags": ["greenlang", "alerting", "obs-004", "notifications"],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "selected": false,
+          "text": "thanos",
+          "value": "thanos"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": "Datasource",
+        "multi": false,
+        "name": "datasource",
+        "options": [],
+        "query": "prometheus",
+        "refresh": 1,
+        "type": "datasource"
+      },
+      {
+        "current": {},
+        "datasource": { "type": "prometheus", "uid": "${datasource}" },
+        "definition": "label_values(gl_alert_active_total{job=\"alerting-service\"}, team)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Team",
+        "multi": true,
+        "name": "team",
+        "query": "label_values(gl_alert_active_total{job=\"alerting-service\"}, team)",
+        "refresh": 2,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": {},
+        "datasource": { "type": "prometheus", "uid": "${datasource}" },
+        "definition": "label_values(gl_alert_active_total{job=\"alerting-service\"}, severity)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Severity",
+        "multi": true,
+        "name": "severity",
+        "query": "label_values(gl_alert_active_total{job=\"alerting-service\"}, severity)",
+        "refresh": 2,
+        "sort": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": { "from": "now-6h", "to": "now" },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "GreenLang Alerting Service",
+  "uid": "alerting-service",
+  "version": 1
+}

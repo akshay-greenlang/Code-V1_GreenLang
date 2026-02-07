@@ -1,0 +1,178 @@
+# =============================================================================
+# GreenLang Agent Factory v1.0 - ConfigMaps
+# =============================================================================
+# Configuration for factory settings, task queue, resilience, and metering.
+# PRD: INFRA-010
+# =============================================================================
+
+---
+# =============================================================================
+# Main Agent Factory Configuration
+# =============================================================================
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: agent-factory-config
+  namespace: greenlang-agent-factory
+  labels:
+    app.kubernetes.io/name: agent-factory
+    app.kubernetes.io/component: configuration
+    app.kubernetes.io/part-of: greenlang
+  annotations:
+    description: "Agent Factory v1.0 global configuration"
+    prd: INFRA-010
+data:
+  # Logging
+  LOG_LEVEL: "info"
+  LOG_FORMAT: "json"
+
+  # Environment
+  ENVIRONMENT: "production"
+
+  # Metrics
+  METRICS_PORT: "9090"
+  METRICS_PATH: "/metrics"
+
+  # Tracing
+  TRACING_ENABLED: "true"
+  TRACING_SAMPLE_RATE: "0.1"
+  OTEL_ENDPOINT: "http://otel-collector.monitoring.svc.cluster.local:4317"
+  OTEL_SERVICE_NAME: "agent-factory"
+
+  # S3 configuration
+  S3_BUCKET: "greenlang-agent-packages-production"
+  S3_REGION: "us-east-1"
+  S3_PREFIX: "packages/"
+
+  # Factory settings
+  factory.yaml: |
+    factory:
+      version: "1.0.0"
+      environment: production
+
+      lifecycle:
+        health_check_interval_seconds: 10
+        drain_timeout_seconds: 60
+        max_restart_attempts: 5
+        warmup_timeout_seconds: 120
+        state_transition_lock_ttl_seconds: 10
+        shutdown_grace_period_seconds: 60
+
+      hub:
+        max_package_size_mb: 50
+        package_cache_size_mb: 500
+        index_refresh_interval_seconds: 300
+        s3_bucket: greenlang-agent-packages-production
+        s3_region: us-east-1
+
+      versioning:
+        enforce_semver: true
+        canary_steps: [5, 10, 25, 50, 100]
+        canary_step_duration_minutes: 15
+        error_rate_rollback_threshold: 0.05
+        p99_rollback_multiplier: 2.0
+        min_canary_requests: 200
+
+      sandbox:
+        enabled: true
+        cpu_limit_cores: 4
+        memory_limit_mb: 2048
+        max_execution_time_seconds: 600
+        temp_dir_size_mb: 1024
+        network_isolation: true
+
+  # Queue configuration
+  queue.yaml: |
+    queue:
+      backend: redis_streams
+      consumer_group: agent-factory-workers
+
+      priorities:
+        critical: 0
+        high: 1
+        normal: 2
+        low: 3
+        background: 4
+
+      settings:
+        max_queue_depth: 100000
+        worker_pool_size: 20
+        max_retries: 3
+        visibility_timeout_seconds: 300
+        task_ttl_default_seconds: 3600
+        task_ttl_max_seconds: 86400
+        dlq_retention_hours: 168
+        deduplication_window_hours: 24
+        batch_submit_max_size: 100
+        heartbeat_interval_seconds: 30
+
+      dead_letter:
+        enabled: true
+        max_retries: 3
+        retry_backoff_base_seconds: 5
+        retry_backoff_max_seconds: 300
+        retention_hours: 168
+
+      scheduler:
+        enabled: true
+        poll_interval_seconds: 5
+        max_scheduled_tasks: 10000
+
+  # Resilience configuration
+  resilience.yaml: |
+    resilience:
+      circuit_breaker:
+        failure_rate_threshold_percent: 50
+        slow_call_duration_seconds: 5
+        wait_in_open_seconds: 60
+        half_open_test_requests: 3
+        sliding_window_size: 60
+        minimum_calls: 10
+
+      bulkhead:
+        max_concurrent_per_agent: 50
+        max_wait_duration_seconds: 10
+
+      retry:
+        max_attempts: 3
+        backoff_base_seconds: 1
+        backoff_max_seconds: 30
+        jitter_max_ms: 500
+
+      timeout:
+        default_seconds: 60
+        max_seconds: 600
+
+      fallback:
+        enabled: true
+        max_chain_depth: 3
+
+  # Metering configuration
+  metering.yaml: |
+    metering:
+      cost_tracking:
+        enabled: true
+        compute_cost_per_cpu_second_usd: 0.000012
+        llm_cost_per_1k_tokens_usd: 0.015
+        storage_cost_per_gb_month_usd: 0.023
+        network_cost_per_gb_usd: 0.09
+
+      budgets:
+        default_daily_budget_usd: 200.00
+        alert_threshold_percent: 80
+        hard_limit_enabled: false
+
+      quotas:
+        max_concurrent_executions: 100
+        max_daily_executions: 50000
+
+      retention:
+        metrics_retention_days: 365
+        billing_events_retention_days: 730
+        cost_aggregation_interval_minutes: 5
+
+      anomaly_detection:
+        enabled: true
+        daily_cost_multiplier_threshold: 3.0
+        lookback_days: 30

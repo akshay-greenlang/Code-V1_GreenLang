@@ -1,0 +1,473 @@
+# ============================================================================
+# Alertmanager Health Alert Rules
+# ============================================================================
+# PrometheusRules for Alertmanager cluster health and operation.
+# Monitors cluster availability, configuration sync, and notification delivery.
+#
+# Created: 2026-02-06
+# Team: Monitoring & Observability
+# PRD: OBS-001 - Prometheus Metrics Collection
+#
+# Alert Groups:
+#   - alertmanager.cluster: Cluster health and membership
+#   - alertmanager.config: Configuration synchronization
+#   - alertmanager.notifications: Alert notification delivery
+#   - alertmanager.silences: Silence management
+# ============================================================================
+
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: alertmanager-health-alerts
+  namespace: monitoring
+  labels:
+    app: alertmanager
+    component: alerting
+    prometheus: main
+    role: alert-rules
+    app.kubernetes.io/name: alertmanager
+    app.kubernetes.io/component: alerts
+    app.kubernetes.io/part-of: greenlang
+    release: prometheus
+  annotations:
+    description: "Alertmanager cluster health and notification alert rules"
+    runbook_base_url: "https://runbooks.greenlang.ai/alertmanager"
+spec:
+  groups:
+    # =========================================================================
+    # CLUSTER HEALTH ALERTS
+    # =========================================================================
+    - name: alertmanager.cluster
+      interval: 30s
+      rules:
+        # ---------------------------------------------------------------------
+        # AlertmanagerClusterDown - Cluster has insufficient members
+        # ---------------------------------------------------------------------
+        - alert: AlertmanagerClusterDown
+          expr: count(up{job="alertmanager"}) < 2
+          for: 5m
+          labels:
+            severity: critical
+            team: platform
+            component: alertmanager
+            category: availability
+          annotations:
+            summary: "Alertmanager cluster has fewer than 2 healthy members"
+            description: |
+              Only {{ $value | printf "%.0f" }} Alertmanager instance(s) are healthy.
+              The cluster requires at least 2 members for high availability.
+
+              Impact: CRITICAL - Alert deduplication may not work correctly.
+              If the remaining instance fails, all alerts will be lost.
+            runbook_url: "https://runbooks.greenlang.ai/alertmanager/cluster-down"
+            dashboard_url: "https://grafana.greenlang.ai/d/alertmanager-overview"
+
+        # ---------------------------------------------------------------------
+        # AlertmanagerClusterCrashlooping - Cluster member crashlooping
+        # ---------------------------------------------------------------------
+        - alert: AlertmanagerClusterCrashlooping
+          expr: |
+            increase(alertmanager_cluster_members[10m]) > 2
+          for: 5m
+          labels:
+            severity: warning
+            team: platform
+            component: alertmanager
+            category: availability
+          annotations:
+            summary: "Alertmanager cluster membership is unstable"
+            description: |
+              Alertmanager cluster membership has changed {{ $value | printf "%.0f" }}
+              times in the last 10 minutes.
+
+              This may indicate cluster members are crashlooping or network issues
+              are causing split-brain scenarios.
+            runbook_url: "https://runbooks.greenlang.ai/alertmanager/cluster-unstable"
+
+        # ---------------------------------------------------------------------
+        # AlertmanagerDown - All Alertmanagers down
+        # ---------------------------------------------------------------------
+        - alert: AlertmanagerDown
+          expr: |
+            absent(up{job="alertmanager"} == 1)
+          for: 5m
+          labels:
+            severity: critical
+            team: platform
+            component: alertmanager
+            category: availability
+          annotations:
+            summary: "No Alertmanager instances are running"
+            description: |
+              All Alertmanager instances are down.
+
+              Impact: CRITICAL - No alerts are being processed or delivered.
+              All monitoring alerts are lost until Alertmanager is restored.
+            runbook_url: "https://runbooks.greenlang.ai/alertmanager/all-down"
+            dashboard_url: "https://grafana.greenlang.ai/d/alertmanager-overview"
+
+        # ---------------------------------------------------------------------
+        # AlertmanagerClusterMembersInconsistent - Member count mismatch
+        # ---------------------------------------------------------------------
+        - alert: AlertmanagerClusterMembersInconsistent
+          expr: |
+            count(alertmanager_cluster_members) by (job)
+            != count(up{job="alertmanager"}) by (job)
+          for: 5m
+          labels:
+            severity: warning
+            team: platform
+            component: alertmanager
+            category: cluster
+          annotations:
+            summary: "Alertmanager cluster member count is inconsistent"
+            description: |
+              The number of cluster members reported does not match the number
+              of running Alertmanager instances.
+
+              This may indicate gossip protocol issues or network partitions.
+            runbook_url: "https://runbooks.greenlang.ai/alertmanager/member-inconsistent"
+
+    # =========================================================================
+    # CONFIGURATION ALERTS
+    # =========================================================================
+    - name: alertmanager.config
+      interval: 30s
+      rules:
+        # ---------------------------------------------------------------------
+        # AlertmanagerConfigInconsistent - Config hash mismatch
+        # ---------------------------------------------------------------------
+        - alert: AlertmanagerConfigInconsistent
+          expr: |
+            count(count by (alertmanager) (alertmanager_config_hash)) > 1
+          for: 5m
+          labels:
+            severity: warning
+            team: platform
+            component: alertmanager
+            category: configuration
+          annotations:
+            summary: "Alertmanager configurations are not consistent"
+            description: |
+              Alertmanager cluster members have different configuration hashes.
+              Number of distinct configurations: {{ $value }}
+
+              Impact: Alert routing behavior may be inconsistent across instances.
+              Alerts may be routed differently depending on which instance receives them.
+            runbook_url: "https://runbooks.greenlang.ai/alertmanager/config-inconsistent"
+            dashboard_url: "https://grafana.greenlang.ai/d/alertmanager-overview"
+
+        # ---------------------------------------------------------------------
+        # AlertmanagerConfigReloadFailed - Config reload failure
+        # ---------------------------------------------------------------------
+        - alert: AlertmanagerConfigReloadFailed
+          expr: alertmanager_config_last_reload_successful != 1
+          for: 1m
+          labels:
+            severity: critical
+            team: platform
+            component: alertmanager
+            category: configuration
+          annotations:
+            summary: "Alertmanager config reload failed"
+            description: |
+              Alertmanager instance {{ $labels.instance }} failed to reload its configuration.
+
+              Impact: Configuration changes are not applied. Alertmanager is running
+              with a stale configuration.
+            runbook_url: "https://runbooks.greenlang.ai/alertmanager/config-reload-failed"
+
+        # ---------------------------------------------------------------------
+        # AlertmanagerTemplateParseError - Template parsing error
+        # ---------------------------------------------------------------------
+        - alert: AlertmanagerTemplateParseError
+          expr: |
+            alertmanager_notification_latency_seconds_count{result="error"} > 0
+            and
+            rate(alertmanager_notification_latency_seconds_count{result="error"}[5m]) > 0
+          for: 5m
+          labels:
+            severity: warning
+            team: platform
+            component: alertmanager
+            category: configuration
+          annotations:
+            summary: "Alertmanager template errors detected"
+            description: |
+              Alertmanager is experiencing template parsing or rendering errors
+              for integration: {{ $labels.integration }}
+
+              Check notification templates for syntax errors.
+            runbook_url: "https://runbooks.greenlang.ai/alertmanager/template-error"
+
+    # =========================================================================
+    # NOTIFICATION ALERTS
+    # =========================================================================
+    - name: alertmanager.notifications
+      interval: 30s
+      rules:
+        # ---------------------------------------------------------------------
+        # AlertmanagerNotificationsFailing - Notification delivery failures
+        # ---------------------------------------------------------------------
+        - alert: AlertmanagerNotificationsFailing
+          expr: |
+            rate(alertmanager_notifications_failed_total[5m]) > 0
+          for: 5m
+          labels:
+            severity: critical
+            team: platform
+            component: alertmanager
+            category: notifications
+          annotations:
+            summary: "Alertmanager notifications are failing"
+            description: |
+              Alertmanager has {{ $value | printf "%.2f" }} notification failures/second.
+              Integration: {{ $labels.integration }}
+
+              Impact: CRITICAL - Alerts are not being delivered to on-call responders.
+              Check integration credentials and endpoint availability.
+            runbook_url: "https://runbooks.greenlang.ai/alertmanager/notifications-failing"
+            dashboard_url: "https://grafana.greenlang.ai/d/alertmanager-overview"
+
+        # ---------------------------------------------------------------------
+        # AlertmanagerNotificationsDropped - Notifications being dropped
+        # ---------------------------------------------------------------------
+        - alert: AlertmanagerNotificationsDropped
+          expr: |
+            rate(alertmanager_notifications_dropped_total[5m]) > 0
+          for: 5m
+          labels:
+            severity: warning
+            team: platform
+            component: alertmanager
+            category: notifications
+          annotations:
+            summary: "Alertmanager is dropping notifications"
+            description: |
+              Alertmanager is dropping {{ $value | printf "%.2f" }} notifications/second.
+
+              This may indicate queue overflow or rate limiting by the notification
+              receiver.
+            runbook_url: "https://runbooks.greenlang.ai/alertmanager/notifications-dropped"
+
+        # ---------------------------------------------------------------------
+        # AlertmanagerNotificationLatencyHigh - Slow notification delivery
+        # ---------------------------------------------------------------------
+        - alert: AlertmanagerNotificationLatencyHigh
+          expr: |
+            histogram_quantile(0.99,
+              rate(alertmanager_notification_latency_seconds_bucket[5m])
+            ) > 10
+          for: 5m
+          labels:
+            severity: warning
+            team: platform
+            component: alertmanager
+            category: performance
+          annotations:
+            summary: "Alertmanager notification latency is high (P99 > 10s)"
+            description: |
+              Alertmanager P99 notification latency is {{ $value | printf "%.2f" }} seconds.
+              Integration: {{ $labels.integration }}
+
+              Impact: Alert notifications are delayed. On-call responders may receive
+              alerts later than expected.
+            runbook_url: "https://runbooks.greenlang.ai/alertmanager/notification-latency"
+
+        # ---------------------------------------------------------------------
+        # AlertmanagerQueueCapacity - Alert queue filling up
+        # ---------------------------------------------------------------------
+        - alert: AlertmanagerQueueCapacity
+          expr: |
+            alertmanager_alerts_queue_length / alertmanager_alerts_queue_capacity > 0.8
+          for: 5m
+          labels:
+            severity: warning
+            team: platform
+            component: alertmanager
+            category: capacity
+          annotations:
+            summary: "Alertmanager alert queue is filling up (>80%)"
+            description: |
+              Alertmanager alert queue is {{ $value | printf "%.1f" | mul 100 }}% full.
+
+              Impact: If the queue fills up, new alerts may be dropped.
+            runbook_url: "https://runbooks.greenlang.ai/alertmanager/queue-capacity"
+
+        # ---------------------------------------------------------------------
+        # AlertmanagerIntegrationDown - Specific integration failing
+        # ---------------------------------------------------------------------
+        - alert: AlertmanagerSlackIntegrationDown
+          expr: |
+            rate(alertmanager_notifications_failed_total{integration="slack"}[15m]) > 0
+            and
+            sum(rate(alertmanager_notifications_failed_total{integration="slack"}[15m]))
+            / sum(rate(alertmanager_notifications_total{integration="slack"}[15m])) > 0.1
+          for: 10m
+          labels:
+            severity: critical
+            team: platform
+            component: alertmanager
+            category: notifications
+          annotations:
+            summary: "Alertmanager Slack integration is failing (>10% error rate)"
+            description: |
+              More than 10% of Slack notifications are failing.
+
+              Check Slack webhook configuration and Slack API status.
+            runbook_url: "https://runbooks.greenlang.ai/alertmanager/slack-integration-down"
+
+        - alert: AlertmanagerPagerDutyIntegrationDown
+          expr: |
+            rate(alertmanager_notifications_failed_total{integration="pagerduty"}[15m]) > 0
+            and
+            sum(rate(alertmanager_notifications_failed_total{integration="pagerduty"}[15m]))
+            / sum(rate(alertmanager_notifications_total{integration="pagerduty"}[15m])) > 0.1
+          for: 5m
+          labels:
+            severity: critical
+            team: platform
+            component: alertmanager
+            category: notifications
+          annotations:
+            summary: "Alertmanager PagerDuty integration is failing (>10% error rate)"
+            description: |
+              More than 10% of PagerDuty notifications are failing.
+
+              Impact: CRITICAL - On-call pages may not be delivered.
+              Check PagerDuty API key and service configuration.
+            runbook_url: "https://runbooks.greenlang.ai/alertmanager/pagerduty-integration-down"
+
+    # =========================================================================
+    # SILENCE MANAGEMENT ALERTS
+    # =========================================================================
+    - name: alertmanager.silences
+      interval: 60s
+      rules:
+        # ---------------------------------------------------------------------
+        # AlertmanagerSilenceExpiring - Silence about to expire
+        # ---------------------------------------------------------------------
+        - alert: AlertmanagerSilenceExpiring
+          expr: |
+            alertmanager_silences{state="active"} > 0
+            and
+            max(alertmanager_silence_expiration_seconds{state="active"}) - time() < 3600
+          for: 30m
+          labels:
+            severity: info
+            team: platform
+            component: alertmanager
+            category: silences
+          annotations:
+            summary: "Alertmanager silence expiring within 1 hour"
+            description: |
+              One or more active silences will expire within the next hour.
+              Active silences: {{ $value | printf "%.0f" }}
+
+              Review if silences need to be extended or if underlying issues
+              have been resolved.
+            runbook_url: "https://runbooks.greenlang.ai/alertmanager/silence-expiring"
+            dashboard_url: "https://grafana.greenlang.ai/d/alertmanager-silences"
+
+        # ---------------------------------------------------------------------
+        # AlertmanagerTooManySilences - Excessive active silences
+        # ---------------------------------------------------------------------
+        - alert: AlertmanagerTooManySilences
+          expr: |
+            alertmanager_silences{state="active"} > 50
+          for: 5m
+          labels:
+            severity: warning
+            team: platform
+            component: alertmanager
+            category: silences
+          annotations:
+            summary: "Too many active silences (>50)"
+            description: |
+              There are {{ $value | printf "%.0f" }} active silences in Alertmanager.
+
+              This may indicate:
+              - Unresolved issues being silenced long-term
+              - Misconfigured alert rules generating false positives
+              - Silences not being cleaned up after issue resolution
+
+              Review and clean up unnecessary silences.
+            runbook_url: "https://runbooks.greenlang.ai/alertmanager/too-many-silences"
+
+        # ---------------------------------------------------------------------
+        # AlertmanagerLongRunningSilence - Silence active for too long
+        # ---------------------------------------------------------------------
+        - alert: AlertmanagerLongRunningSilence
+          expr: |
+            (time() - alertmanager_silence_start_timestamp_seconds{state="active"}) > 604800
+          for: 1h
+          labels:
+            severity: warning
+            team: platform
+            component: alertmanager
+            category: silences
+          annotations:
+            summary: "Silence has been active for more than 7 days"
+            description: |
+              A silence has been active for more than 7 days.
+
+              Long-running silences often indicate underlying issues that
+              should be fixed rather than silenced indefinitely.
+
+              Review the silenced alerts and address root causes.
+            runbook_url: "https://runbooks.greenlang.ai/alertmanager/long-running-silence"
+
+    # =========================================================================
+    # GENERAL HEALTH ALERTS
+    # =========================================================================
+    - name: alertmanager.health
+      interval: 30s
+      rules:
+        # ---------------------------------------------------------------------
+        # AlertmanagerHighMemoryUsage - Memory usage high
+        # ---------------------------------------------------------------------
+        - alert: AlertmanagerHighMemoryUsage
+          expr: |
+            process_resident_memory_bytes{job="alertmanager"}
+            / on(instance) container_spec_memory_limit_bytes{container="alertmanager"} > 0.8
+          for: 5m
+          labels:
+            severity: warning
+            team: platform
+            component: alertmanager
+            category: performance
+          annotations:
+            summary: "Alertmanager memory usage is high (>80%)"
+            description: |
+              Alertmanager is using more than 80% of its memory limit.
+              Instance: {{ $labels.instance }}
+
+              Impact: Alertmanager may be OOM-killed if memory usage continues to grow.
+            runbook_url: "https://runbooks.greenlang.ai/alertmanager/high-memory"
+
+        # ---------------------------------------------------------------------
+        # AlertmanagerAlertsNotFiring - No alerts for extended period
+        # ---------------------------------------------------------------------
+        - alert: AlertmanagerAlertsNotFiring
+          expr: |
+            sum(alertmanager_alerts) == 0
+            and
+            sum(up{job="prometheus"}) > 0
+          for: 1h
+          labels:
+            severity: info
+            team: platform
+            component: alertmanager
+            category: monitoring
+          annotations:
+            summary: "No alerts firing for over 1 hour"
+            description: |
+              No alerts have been firing for over 1 hour while Prometheus is healthy.
+
+              This could indicate:
+              - All systems are healthy (good!)
+              - Alert rules are misconfigured
+              - Alertmanager is not receiving alerts from Prometheus
+
+              Verify that the Watchdog alert is firing as expected.
+            runbook_url: "https://runbooks.greenlang.ai/alertmanager/no-alerts"

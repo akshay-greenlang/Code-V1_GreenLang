@@ -1,0 +1,79 @@
+# ============================================================================
+# ServiceMonitors Kustomization
+# ============================================================================
+# Kustomize configuration for all GreenLang ServiceMonitors and PodMonitors.
+# Consolidates monitoring resources with common labels and annotations.
+#
+# Created: 2026-02-06
+# Team: Monitoring & Observability
+# PRD: OBS-001 - Prometheus Metrics Collection
+#
+# Usage:
+#   kubectl apply -k deployment/kubernetes/monitoring/servicemonitors/
+#
+# ============================================================================
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Namespace for all resources
+namespace: monitoring
+
+# Common labels applied to all resources
+commonLabels:
+  app.kubernetes.io/part-of: greenlang
+  app.kubernetes.io/managed-by: kustomize
+  prometheus.io/monitored: "true"
+  release: prometheus
+
+# Common annotations
+commonAnnotations:
+  prometheus.io/docs: "https://docs.greenlang.ai/observability"
+  greenlang.io/prd: "OBS-001"
+  greenlang.io/team: "platform"
+
+# ServiceMonitor resources
+resources:
+  # Core Application Services
+  - greenlang-api.yaml
+  - agent-factory.yaml
+  - auth-service.yaml
+
+  # Infrastructure Services
+  - postgresql.yaml
+  - redis.yaml
+  - kong.yaml
+  - infrastructure-services.yaml
+
+  # Security Services
+  - security-services.yaml
+
+  # PodMonitors (from podmonitors directory)
+  - ../podmonitors/greenlang-pods.yaml
+
+# Labels selector configuration
+# These labels will be added to the selector for all ServiceMonitors
+# Uncomment if needed for specific selector requirements
+# labelSelector:
+#   matchLabels:
+#     monitoring: enabled
+
+# ConfigMap generators (if needed for additional configuration)
+# configMapGenerator:
+#   - name: servicemonitor-config
+#     literals:
+#       - SCRAPE_INTERVAL=15s
+#       - SCRAPE_TIMEOUT=10s
+
+# Patches for environment-specific overrides
+# patches:
+#   - path: patches/production-intervals.yaml
+#     target:
+#       kind: ServiceMonitor
+
+# Images (if using container-based exporters)
+# images:
+#   - name: postgres_exporter
+#     newTag: v0.15.0
+#   - name: redis_exporter
+#     newTag: v1.58.0

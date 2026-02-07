@@ -1,0 +1,57 @@
+# =============================================================================
+# GreenLang OTel Collector - ServiceMonitor
+# GreenLang Climate OS | OBS-003
+# =============================================================================
+# Prometheus ServiceMonitor for scraping OTel Collector internal metrics
+# and pipeline metrics endpoints.
+#
+# Two endpoints are scraped:
+#   - Port 8888 (metrics): Collector-internal metrics such as
+#       otelcol_receiver_accepted_spans, otelcol_exporter_sent_spans,
+#       otelcol_processor_dropped_spans, otelcol_process_memory_rss, etc.
+#   - Port 8889 (prom-export): Application metrics forwarded through the
+#       OTel metrics pipeline and re-exposed via the Prometheus exporter.
+#
+# The "release: prometheus" label ensures the Prometheus Operator picks up
+# this ServiceMonitor.
+# =============================================================================
+
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: otel-collector
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: otel-collector
+    app.kubernetes.io/component: gateway
+    app.kubernetes.io/part-of: greenlang-observability
+    release: prometheus
+    greenlang.io/obs: "003"
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: otel-collector
+      app.kubernetes.io/component: gateway
+  namespaceSelector:
+    matchNames:
+      - monitoring
+  endpoints:
+    # Collector internal metrics (receivers, processors, exporters, runtime)
+    - port: metrics
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s
+      honorLabels: true
+      metricRelabelings:
+        # Keep only otelcol_* and go_* and process_* metrics to reduce cardinality
+        - sourceLabels: [__name__]
+          regex: "(otelcol_.*|go_.*|process_.*)"
+          action: keep
+
+    # Pipeline metrics (application metrics forwarded through OTel)
+    - port: prom-export
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s
+      honorLabels: true

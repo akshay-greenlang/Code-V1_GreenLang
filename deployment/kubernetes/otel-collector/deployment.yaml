@@ -1,0 +1,215 @@
+# =============================================================================
+# GreenLang OTel Collector - Deployment
+# GreenLang Climate OS | OBS-003
+# =============================================================================
+# Deploys the OpenTelemetry Collector in gateway mode as a Kubernetes
+# Deployment with 2 replicas for high availability. The gateway receives
+# all telemetry signals (traces, metrics, logs) from application pods and
+# routes them to the appropriate backends (Tempo, Prometheus, Loki).
+#
+# Ports:
+#   4317  - OTLP gRPC receiver
+#   4318  - OTLP HTTP receiver
+#   14250 - Jaeger gRPC receiver
+#   14268 - Jaeger thrift HTTP receiver
+#   8888  - Collector internal metrics (Prometheus scrape target)
+#   8889  - Prometheus exporter (pipeline metrics)
+#   13133 - Health check endpoint (liveness/readiness probes)
+#
+# Security:
+#   - Runs as non-root user (UID 10001)
+#   - Read-only root filesystem
+#   - Drops all Linux capabilities
+#   - No privilege escalation
+# =============================================================================
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: otel-collector
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: otel-collector
+    app.kubernetes.io/component: gateway
+    app.kubernetes.io/part-of: greenlang-observability
+    app.kubernetes.io/version: "0.96.0"
+    app.kubernetes.io/managed-by: kubectl
+    greenlang.io/obs: "003"
+  annotations:
+    description: "OpenTelemetry Collector gateway for GreenLang distributed tracing"
+spec:
+  replicas: 2
+  revisionHistoryLimit: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: otel-collector
+      app.kubernetes.io/component: gateway
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: otel-collector
+        app.kubernetes.io/component: gateway
+        app.kubernetes.io/part-of: greenlang-observability
+        app.kubernetes.io/version: "0.96.0"
+        greenlang.io/obs: "003"
+      annotations:
+        # Trigger rolling restart when config changes
+        checksum/config: "{{ include (print .Template.BasePath \"/configmap.yaml\") . | sha256sum }}"
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8888"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: otel-collector
+      automountServiceAccountToken: false
+
+      # Security context - pod level
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+
+      # Schedule on system/monitoring nodes, spread across AZs
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app.kubernetes.io/name
+                      operator: In
+                      values:
+                        - otel-collector
+                topologyKey: topology.kubernetes.io/zone
+
+      # Tolerate monitoring node taints
+      tolerations:
+        - key: "dedicated"
+          operator: "Equal"
+          value: "monitoring"
+          effect: "NoSchedule"
+
+      terminationGracePeriodSeconds: 30
+
+      containers:
+        - name: otel-collector
+          image: otel/opentelemetry-collector-contrib:0.96.0
+          imagePullPolicy: IfNotPresent
+
+          args:
+            - "--config=/etc/otel-collector/otel-collector-config.yaml"
+
+          env:
+            - name: ENVIRONMENT
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: GOMAXPROCS
+              value: "2"
+            - name: GOMEMLIMIT
+              value: "900MiB"
+
+          ports:
+            - name: otlp-grpc
+              containerPort: 4317
+              protocol: TCP
+            - name: otlp-http
+              containerPort: 4318
+              protocol: TCP
+            - name: jaeger-grpc
+              containerPort: 14250
+              protocol: TCP
+            - name: jaeger-http
+              containerPort: 14268
+              protocol: TCP
+            - name: metrics
+              containerPort: 8888
+              protocol: TCP
+            - name: prom-export
+              containerPort: 8889
+              protocol: TCP
+            - name: health
+              containerPort: 13133
+              protocol: TCP
+
+          # Resource requests and limits
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "1Gi"
+            limits:
+              cpu: "2000m"
+              memory: "2Gi"
+
+          # Liveness probe - collector health check endpoint
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 13133
+            initialDelaySeconds: 15
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+          # Readiness probe - collector ready to receive traffic
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 13133
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+            successThreshold: 1
+            failureThreshold: 3
+
+          # Startup probe - give collector time to initialize
+          startupProbe:
+            httpGet:
+              path: /
+              port: 13133
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            failureThreshold: 12
+
+          # Container security context
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 10001
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+
+          # Volume mounts
+          volumeMounts:
+            - name: config
+              mountPath: /etc/otel-collector
+              readOnly: true
+            - name: tmp
+              mountPath: /tmp
+
+      volumes:
+        - name: config
+          configMap:
+            name: otel-collector-config
+        - name: tmp
+          emptyDir:
+            sizeLimit: 128Mi

@@ -1,0 +1,184 @@
+{{- /*
+GreenLang Grafana - Datasources Provisioning ConfigMap
+GreenLang Climate OS | OBS-002
+*/ -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "grafana.fullname" . }}-datasources
+  namespace: {{ include "grafana.namespace" . }}
+  labels:
+    {{- include "grafana.labels" . | nindent 4 }}
+    grafana_datasource: "1"
+data:
+  datasources.yaml: |
+    apiVersion: 1
+    deleteDatasources: []
+    datasources:
+    {{- if .Values.grafana.datasources.thanos.enabled }}
+    - name: Thanos
+      type: prometheus
+      uid: thanos
+      access: proxy
+      url: {{ .Values.grafana.datasources.thanos.url }}
+      isDefault: {{ .Values.grafana.datasources.thanos.isDefault }}
+      jsonData:
+        httpMethod: POST
+        timeInterval: {{ .Values.grafana.datasources.thanos.timeInterval | quote }}
+        queryTimeout: {{ .Values.grafana.datasources.thanos.queryTimeout | quote }}
+        prometheusType: Thanos
+      editable: false
+    {{- end }}
+    {{- if .Values.grafana.datasources.prometheus.enabled }}
+    - name: Prometheus
+      type: prometheus
+      uid: prometheus
+      access: proxy
+      url: {{ .Values.grafana.datasources.prometheus.url }}
+      isDefault: {{ .Values.grafana.datasources.prometheus.isDefault }}
+      jsonData:
+        httpMethod: POST
+        timeInterval: {{ .Values.grafana.datasources.prometheus.timeInterval | quote }}
+        queryTimeout: {{ .Values.grafana.datasources.prometheus.queryTimeout | quote }}
+        prometheusType: Prometheus
+      editable: false
+    {{- end }}
+    {{- if .Values.grafana.datasources.loki.enabled }}
+    - name: Loki
+      type: loki
+      uid: loki
+      access: proxy
+      url: {{ .Values.grafana.datasources.loki.url }}
+      jsonData:
+        maxLines: {{ .Values.grafana.datasources.loki.maxLines }}
+        derivedFields:
+          {{- if .Values.grafana.datasources.tempo.enabled }}
+          - datasourceUid: tempo
+            matcherRegex: "trace_id=(\\w+)"
+            name: TraceID
+            url: "$${__value.raw}"
+          - datasourceUid: tempo
+            matcherRegex: "\"traceID\":\"(\\w+)\""
+            name: TraceID (JSON)
+            url: "$${__value.raw}"
+          {{- else }}
+          - datasourceUid: jaeger
+            matcherRegex: "trace_id=(\\w+)"
+            name: TraceID
+            url: "$${__value.raw}"
+          {{- end }}
+      editable: false
+    {{- end }}
+    {{- if .Values.grafana.datasources.jaeger.enabled }}
+    - name: Jaeger
+      type: jaeger
+      uid: jaeger
+      access: proxy
+      url: {{ .Values.grafana.datasources.jaeger.url }}
+      jsonData:
+        tracesToMetrics:
+          datasourceUid: thanos
+          spanStartTimeShift: "-1h"
+          spanEndTimeShift: "1h"
+        tracesToLogs:
+          datasourceUid: loki
+          filterByTraceID: true
+          filterBySpanID: true
+      editable: false
+    {{- end }}
+    {{- if .Values.grafana.datasources.alertmanager.enabled }}
+    - name: Alertmanager
+      type: alertmanager
+      uid: alertmanager
+      access: proxy
+      url: {{ .Values.grafana.datasources.alertmanager.url }}
+      jsonData:
+        implementation: prometheus
+        handleGrafanaManagedAlerts: true
+      editable: false
+    {{- end }}
+    {{- if .Values.grafana.datasources.postgresql.enabled }}
+    - name: PostgreSQL
+      type: postgres
+      uid: postgresql
+      access: proxy
+      url: {{ .Values.grafana.datasources.postgresql.host }}:{{ .Values.grafana.datasources.postgresql.port }}
+      database: {{ .Values.grafana.datasources.postgresql.database }}
+      user: {{ .Values.grafana.datasources.postgresql.user }}
+      jsonData:
+        sslmode: {{ .Values.grafana.datasources.postgresql.sslMode }}
+        maxOpenConns: 10
+        maxIdleConns: 5
+        connMaxLifetime: 14400
+        postgresVersion: 1500
+        timescaledb: {{ .Values.grafana.datasources.postgresql.timescaledb }}
+      secureJsonData:
+        password: "$__file{/etc/grafana/secrets/datasource-postgres-password}"
+      editable: false
+    {{- end }}
+    {{- if .Values.grafana.datasources.cloudwatch.enabled }}
+    - name: CloudWatch
+      type: cloudwatch
+      uid: cloudwatch
+      access: proxy
+      jsonData:
+        authType: default
+        defaultRegion: {{ .Values.grafana.datasources.cloudwatch.defaultRegion }}
+        {{- if .Values.grafana.datasources.cloudwatch.assumeRoleArn }}
+        assumeRoleArn: {{ .Values.grafana.datasources.cloudwatch.assumeRoleArn }}
+        {{- end }}
+      editable: false
+    {{- end }}
+    {{- if .Values.grafana.datasources.tempo.enabled }}
+    - name: {{ .Values.grafana.datasources.tempo.name | default "Tempo" }}
+      type: tempo
+      uid: tempo
+      access: {{ .Values.grafana.datasources.tempo.access | default "proxy" }}
+      url: {{ .Values.grafana.datasources.tempo.url }}
+      isDefault: {{ .Values.grafana.datasources.tempo.isDefault | default false }}
+      jsonData:
+        tracesToLogs:
+          datasourceUid: {{ .Values.grafana.datasources.tempo.jsonData.tracesToLogs.datasourceUid }}
+          spanStartTimeShift: {{ .Values.grafana.datasources.tempo.jsonData.tracesToLogs.spanStartTimeShift | quote }}
+          spanEndTimeShift: {{ .Values.grafana.datasources.tempo.jsonData.tracesToLogs.spanEndTimeShift | quote }}
+          tags:
+            {{- range .Values.grafana.datasources.tempo.jsonData.tracesToLogs.tags }}
+            - key: {{ .key }}
+              value: {{ .value }}
+            {{- end }}
+          filterByTraceID: {{ .Values.grafana.datasources.tempo.jsonData.tracesToLogs.filterByTraceID }}
+          filterBySpanID: {{ .Values.grafana.datasources.tempo.jsonData.tracesToLogs.filterBySpanID }}
+          mapTagNamesEnabled: {{ .Values.grafana.datasources.tempo.jsonData.tracesToLogs.mapTagNamesEnabled }}
+          mappedTags:
+            {{- range .Values.grafana.datasources.tempo.jsonData.tracesToLogs.mappedTags }}
+            - key: {{ .key }}
+              value: {{ .value }}
+            {{- end }}
+        tracesToMetrics:
+          datasourceUid: {{ .Values.grafana.datasources.tempo.jsonData.tracesToMetrics.datasourceUid }}
+          spanStartTimeShift: {{ .Values.grafana.datasources.tempo.jsonData.tracesToMetrics.spanStartTimeShift | quote }}
+          spanEndTimeShift: {{ .Values.grafana.datasources.tempo.jsonData.tracesToMetrics.spanEndTimeShift | quote }}
+          tags:
+            {{- range .Values.grafana.datasources.tempo.jsonData.tracesToMetrics.tags }}
+            - key: {{ .key }}
+              value: {{ .value }}
+            {{- end }}
+          queries:
+            {{- range .Values.grafana.datasources.tempo.jsonData.tracesToMetrics.queries }}
+            - name: {{ .name | quote }}
+              query: {{ .query | quote }}
+            {{- end }}
+        serviceMap:
+          datasourceUid: {{ .Values.grafana.datasources.tempo.jsonData.serviceMap.datasourceUid }}
+        nodeGraph:
+          enabled: {{ .Values.grafana.datasources.tempo.jsonData.nodeGraph.enabled }}
+        search:
+          hide: {{ .Values.grafana.datasources.tempo.jsonData.search.hide }}
+        traceQuery:
+          timeShiftEnabled: {{ .Values.grafana.datasources.tempo.jsonData.traceQuery.timeShiftEnabled }}
+          spanStartTimeShift: {{ .Values.grafana.datasources.tempo.jsonData.traceQuery.spanStartTimeShift | quote }}
+          spanEndTimeShift: {{ .Values.grafana.datasources.tempo.jsonData.traceQuery.spanEndTimeShift | quote }}
+        lokiSearch:
+          datasourceUid: {{ .Values.grafana.datasources.tempo.jsonData.lokiSearch.datasourceUid }}
+      editable: false
+    {{- end }}

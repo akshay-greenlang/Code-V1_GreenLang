@@ -1,0 +1,512 @@
+# ============================================================================
+# Thanos Health Alert Rules
+# ============================================================================
+# PrometheusRules for Thanos long-term storage components.
+# Monitors Compactor, Query, Store Gateway, Sidecar, and Ruler health.
+#
+# Created: 2026-02-06
+# Team: Monitoring & Observability
+# PRD: OBS-001 - Prometheus Metrics Collection
+#
+# Alert Groups:
+#   - thanos.compactor: Compaction and downsampling health
+#   - thanos.query: Query layer health and performance
+#   - thanos.store: Store Gateway and S3 operations
+#   - thanos.sidecar: Prometheus sidecar health
+#   - thanos.ruler: Rule evaluation health
+# ============================================================================
+
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: thanos-health-alerts
+  namespace: monitoring
+  labels:
+    app: thanos
+    component: alerting
+    prometheus: main
+    role: alert-rules
+    app.kubernetes.io/name: thanos
+    app.kubernetes.io/component: alerts
+    app.kubernetes.io/part-of: greenlang
+    release: prometheus
+  annotations:
+    description: "Thanos component health and performance alert rules"
+    runbook_base_url: "https://runbooks.greenlang.ai/thanos"
+spec:
+  groups:
+    # =========================================================================
+    # COMPACTOR ALERTS
+    # =========================================================================
+    - name: thanos.compactor
+      interval: 30s
+      rules:
+        # ---------------------------------------------------------------------
+        # ThanosCompactorMultipleRunning - Multiple compactors (split-brain)
+        # ---------------------------------------------------------------------
+        - alert: ThanosCompactorMultipleRunning
+          expr: sum(up{job=~".*thanos-compactor.*"}) > 1
+          for: 5m
+          labels:
+            severity: critical
+            team: platform
+            component: thanos-compactor
+            category: availability
+          annotations:
+            summary: "Multiple Thanos Compactors running"
+            description: |
+              {{ $value | printf "%.0f" }} Thanos Compactor instances are running.
+              Only ONE compactor should run at a time to avoid data corruption.
+
+              Impact: CRITICAL - Running multiple compactors can cause block overlaps
+              and data corruption. Immediate action required.
+            runbook_url: "https://runbooks.greenlang.ai/thanos/multiple-compactors"
+            dashboard_url: "https://grafana.greenlang.ai/d/thanos-compactor"
+
+        # ---------------------------------------------------------------------
+        # ThanosCompactorHalted - Compactor has halted
+        # ---------------------------------------------------------------------
+        - alert: ThanosCompactorHalted
+          expr: thanos_compact_halted == 1
+          for: 5m
+          labels:
+            severity: critical
+            team: platform
+            component: thanos-compactor
+            category: availability
+          annotations:
+            summary: "Thanos Compactor has halted"
+            description: |
+              Thanos Compactor has halted and is not processing blocks.
+
+              This usually indicates:
+              - Overlapping blocks that cannot be resolved
+              - S3 permission issues
+              - Corrupted block metadata
+
+              Impact: No new compaction or downsampling. Storage costs will increase.
+            runbook_url: "https://runbooks.greenlang.ai/thanos/compactor-halted"
+            dashboard_url: "https://grafana.greenlang.ai/d/thanos-compactor"
+
+        # ---------------------------------------------------------------------
+        # ThanosCompactorHighCompactionFailures - Compaction errors
+        # ---------------------------------------------------------------------
+        - alert: ThanosCompactorHighCompactionFailures
+          expr: |
+            rate(thanos_compact_group_compactions_failures_total[5m]) > 0
+          for: 10m
+          labels:
+            severity: warning
+            team: platform
+            component: thanos-compactor
+            category: performance
+          annotations:
+            summary: "Thanos Compactor experiencing compaction failures"
+            description: |
+              Thanos Compactor has {{ $value | printf "%.2f" }} compaction failures/second.
+              Group: {{ $labels.group }}
+
+              Check compactor logs for detailed error messages.
+            runbook_url: "https://runbooks.greenlang.ai/thanos/compaction-failures"
+
+        # ---------------------------------------------------------------------
+        # ThanosCompactorBucketHighOperationFailures - S3 operation failures
+        # ---------------------------------------------------------------------
+        - alert: ThanosCompactorBucketHighOperationFailures
+          expr: |
+            rate(thanos_objstore_bucket_operation_failures_total{component="compactor"}[5m]) > 0
+          for: 5m
+          labels:
+            severity: warning
+            team: platform
+            component: thanos-compactor
+            category: storage
+          annotations:
+            summary: "Thanos Compactor bucket operations failing"
+            description: |
+              Thanos Compactor has {{ $value | printf "%.2f" }} S3 operation failures/second.
+              Operation: {{ $labels.operation }}
+              Bucket: {{ $labels.bucket }}
+
+              Check S3 permissions and bucket configuration.
+            runbook_url: "https://runbooks.greenlang.ai/thanos/bucket-operation-failures"
+
+        # ---------------------------------------------------------------------
+        # ThanosCompactorNotRunning - Compactor is down
+        # ---------------------------------------------------------------------
+        - alert: ThanosCompactorNotRunning
+          expr: |
+            absent(up{job=~".*thanos-compactor.*"} == 1)
+          for: 5m
+          labels:
+            severity: critical
+            team: platform
+            component: thanos-compactor
+            category: availability
+          annotations:
+            summary: "Thanos Compactor is not running"
+            description: |
+              No Thanos Compactor instances are running.
+
+              Impact: No compaction or downsampling. Long-term storage efficiency
+              is degraded and storage costs will increase.
+            runbook_url: "https://runbooks.greenlang.ai/thanos/compactor-not-running"
+
+    # =========================================================================
+    # QUERY ALERTS
+    # =========================================================================
+    - name: thanos.query
+      interval: 30s
+      rules:
+        # ---------------------------------------------------------------------
+        # ThanosQueryHighDNSFailures - Store discovery failures
+        # ---------------------------------------------------------------------
+        - alert: ThanosQueryHighDNSFailures
+          expr: |
+            rate(thanos_query_store_apis_dns_failures_total[5m]) > 0.5
+          for: 5m
+          labels:
+            severity: warning
+            team: platform
+            component: thanos-query
+            category: networking
+          annotations:
+            summary: "Thanos Query DNS failures"
+            description: |
+              Thanos Query has {{ $value | printf "%.2f" }} DNS lookup failures/second
+              when discovering stores.
+
+              Impact: Some stores may not be queried, resulting in incomplete data.
+            runbook_url: "https://runbooks.greenlang.ai/thanos/query-dns-failures"
+            dashboard_url: "https://grafana.greenlang.ai/d/thanos-query"
+
+        # ---------------------------------------------------------------------
+        # ThanosQueryHighLatency - Query latency exceeded
+        # ---------------------------------------------------------------------
+        - alert: ThanosQueryHighLatency
+          expr: |
+            histogram_quantile(0.99, rate(thanos_query_duration_seconds_bucket[5m])) > 30
+          for: 5m
+          labels:
+            severity: warning
+            team: platform
+            component: thanos-query
+            category: performance
+          annotations:
+            summary: "Thanos Query high latency (P99 > 30s)"
+            description: |
+              Thanos Query P99 latency is {{ $value | printf "%.2f" }} seconds.
+
+              Impact: Dashboard loading and API queries are slow.
+              Consider adding more Query replicas or Store Gateways.
+            runbook_url: "https://runbooks.greenlang.ai/thanos/query-high-latency"
+            dashboard_url: "https://grafana.greenlang.ai/d/thanos-query"
+
+        # ---------------------------------------------------------------------
+        # ThanosQueryGrpcServerErrors - gRPC errors
+        # ---------------------------------------------------------------------
+        - alert: ThanosQueryGrpcServerErrors
+          expr: |
+            rate(grpc_server_handled_total{grpc_code!="OK",job=~".*thanos-query.*"}[5m]) > 0
+          for: 5m
+          labels:
+            severity: warning
+            team: platform
+            component: thanos-query
+            category: errors
+          annotations:
+            summary: "Thanos Query gRPC server errors"
+            description: |
+              Thanos Query has {{ $value | printf "%.2f" }} gRPC errors/second.
+              Code: {{ $labels.grpc_code }}
+              Method: {{ $labels.grpc_method }}
+            runbook_url: "https://runbooks.greenlang.ai/thanos/query-grpc-errors"
+
+        # ---------------------------------------------------------------------
+        # ThanosQueryInstantLatencyHigh - Instant query latency
+        # ---------------------------------------------------------------------
+        - alert: ThanosQueryInstantLatencyHigh
+          expr: |
+            histogram_quantile(0.99,
+              sum by (le) (rate(http_request_duration_seconds_bucket{handler="query", job=~".*thanos-query.*"}[5m]))
+            ) > 10
+          for: 5m
+          labels:
+            severity: warning
+            team: platform
+            component: thanos-query
+            category: performance
+          annotations:
+            summary: "Thanos Query instant query latency high (P99 > 10s)"
+            description: |
+              Thanos Query instant query P99 latency is {{ $value | printf "%.2f" }} seconds.
+            runbook_url: "https://runbooks.greenlang.ai/thanos/instant-query-slow"
+
+    # =========================================================================
+    # STORE GATEWAY ALERTS
+    # =========================================================================
+    - name: thanos.store
+      interval: 30s
+      rules:
+        # ---------------------------------------------------------------------
+        # ThanosStoreGatewayBucketOperationsFailed - S3 failures
+        # ---------------------------------------------------------------------
+        - alert: ThanosStoreGatewayBucketOperationsFailed
+          expr: |
+            rate(thanos_objstore_bucket_operation_failures_total{component="store"}[5m]) > 0
+          for: 5m
+          labels:
+            severity: warning
+            team: platform
+            component: thanos-store
+            category: storage
+          annotations:
+            summary: "Thanos Store Gateway bucket operations failing"
+            description: |
+              Thanos Store Gateway has {{ $value | printf "%.2f" }} S3 operation failures/second.
+              Operation: {{ $labels.operation }}
+              Bucket: {{ $labels.bucket }}
+
+              Impact: Historical data queries may fail or return incomplete results.
+            runbook_url: "https://runbooks.greenlang.ai/thanos/store-bucket-failures"
+            dashboard_url: "https://grafana.greenlang.ai/d/thanos-store"
+
+        # ---------------------------------------------------------------------
+        # ThanosStoreGatewayUnhealthy - Store Gateway down
+        # ---------------------------------------------------------------------
+        - alert: ThanosStoreGatewayUnhealthy
+          expr: up{job=~".*thanos-store.*"} == 0
+          for: 5m
+          labels:
+            severity: critical
+            team: platform
+            component: thanos-store
+            category: availability
+          annotations:
+            summary: "Thanos Store Gateway is unhealthy"
+            description: |
+              Thanos Store Gateway instance {{ $labels.instance }} is down.
+
+              Impact: Historical data from S3 is not queryable through this instance.
+              If all Store Gateways are down, all historical queries will fail.
+            runbook_url: "https://runbooks.greenlang.ai/thanos/store-unhealthy"
+            dashboard_url: "https://grafana.greenlang.ai/d/thanos-store"
+
+        # ---------------------------------------------------------------------
+        # ThanosStoreGatewayHighSeriesRequests - High series requests
+        # ---------------------------------------------------------------------
+        - alert: ThanosStoreGatewayHighSeriesRequests
+          expr: |
+            rate(thanos_bucket_store_series_blocks_queried_sum[5m]) > 100
+          for: 10m
+          labels:
+            severity: warning
+            team: platform
+            component: thanos-store
+            category: performance
+          annotations:
+            summary: "Thanos Store Gateway high series request rate"
+            description: |
+              Thanos Store Gateway is querying {{ $value | printf "%.2f" }} blocks/second.
+
+              This may indicate inefficient queries or missing index cache.
+            runbook_url: "https://runbooks.greenlang.ai/thanos/store-high-series"
+
+        # ---------------------------------------------------------------------
+        # ThanosStoreGatewayNoDataBlocks - No blocks available
+        # ---------------------------------------------------------------------
+        - alert: ThanosStoreGatewayNoDataBlocks
+          expr: |
+            thanos_bucket_store_blocks_loaded == 0
+            and
+            up{job=~".*thanos-store.*"} == 1
+          for: 15m
+          labels:
+            severity: warning
+            team: platform
+            component: thanos-store
+            category: data
+          annotations:
+            summary: "Thanos Store Gateway has no blocks loaded"
+            description: |
+              Thanos Store Gateway {{ $labels.instance }} has no data blocks loaded.
+
+              This may indicate S3 bucket is empty or access issues.
+            runbook_url: "https://runbooks.greenlang.ai/thanos/store-no-blocks"
+
+    # =========================================================================
+    # SIDECAR ALERTS
+    # =========================================================================
+    - name: thanos.sidecar
+      interval: 30s
+      rules:
+        # ---------------------------------------------------------------------
+        # ThanosSidecarPrometheusDown - Sidecar cannot reach Prometheus
+        # ---------------------------------------------------------------------
+        - alert: ThanosSidecarPrometheusDown
+          expr: thanos_sidecar_prometheus_up != 1
+          for: 5m
+          labels:
+            severity: critical
+            team: platform
+            component: thanos-sidecar
+            category: availability
+          annotations:
+            summary: "Thanos Sidecar cannot reach Prometheus"
+            description: |
+              Thanos Sidecar cannot connect to its Prometheus instance.
+              Instance: {{ $labels.instance }}
+
+              Impact: CRITICAL - Blocks will not be uploaded to S3.
+              Long-term storage is not receiving new data.
+            runbook_url: "https://runbooks.greenlang.ai/thanos/sidecar-prometheus-down"
+            dashboard_url: "https://grafana.greenlang.ai/d/thanos-sidecar"
+
+        # ---------------------------------------------------------------------
+        # ThanosSidecarBucketOperationsFailed - S3 upload failures
+        # ---------------------------------------------------------------------
+        - alert: ThanosSidecarBucketOperationsFailed
+          expr: |
+            rate(thanos_objstore_bucket_operation_failures_total{component="sidecar"}[5m]) > 0
+          for: 5m
+          labels:
+            severity: warning
+            team: platform
+            component: thanos-sidecar
+            category: storage
+          annotations:
+            summary: "Thanos Sidecar bucket operations failing"
+            description: |
+              Thanos Sidecar has {{ $value | printf "%.2f" }} S3 operation failures/second.
+              Operation: {{ $labels.operation }}
+
+              Impact: Blocks may not be uploaded to S3, affecting long-term storage.
+            runbook_url: "https://runbooks.greenlang.ai/thanos/sidecar-bucket-failures"
+
+        # ---------------------------------------------------------------------
+        # ThanosSidecarUnhealthy - Sidecar is down
+        # ---------------------------------------------------------------------
+        - alert: ThanosSidecarUnhealthy
+          expr: up{job=~".*thanos-sidecar.*"} == 0
+          for: 5m
+          labels:
+            severity: critical
+            team: platform
+            component: thanos-sidecar
+            category: availability
+          annotations:
+            summary: "Thanos Sidecar is unhealthy"
+            description: |
+              Thanos Sidecar instance {{ $labels.instance }} is down.
+
+              Impact: Prometheus blocks will not be uploaded to S3.
+            runbook_url: "https://runbooks.greenlang.ai/thanos/sidecar-unhealthy"
+
+        # ---------------------------------------------------------------------
+        # ThanosSidecarNoUploads - No uploads for extended period
+        # ---------------------------------------------------------------------
+        - alert: ThanosSidecarNoUploads
+          expr: |
+            (time() - thanos_objstore_bucket_last_successful_upload_time{component="sidecar"}) > 7200
+          for: 5m
+          labels:
+            severity: warning
+            team: platform
+            component: thanos-sidecar
+            category: storage
+          annotations:
+            summary: "Thanos Sidecar has not uploaded blocks for >2 hours"
+            description: |
+              Thanos Sidecar {{ $labels.instance }} has not successfully uploaded
+              a block to S3 in over 2 hours.
+
+              Last upload: {{ $value | printf "%.0f" }} seconds ago
+            runbook_url: "https://runbooks.greenlang.ai/thanos/sidecar-no-uploads"
+
+    # =========================================================================
+    # RULER ALERTS
+    # =========================================================================
+    - name: thanos.ruler
+      interval: 30s
+      rules:
+        # ---------------------------------------------------------------------
+        # ThanosRulerHighFailureRate - Rule evaluation failures
+        # ---------------------------------------------------------------------
+        - alert: ThanosRulerHighFailureRate
+          expr: |
+            rate(thanos_rule_evaluation_failures_total[5m]) > 0
+          for: 5m
+          labels:
+            severity: warning
+            team: platform
+            component: thanos-ruler
+            category: alerting
+          annotations:
+            summary: "Thanos Ruler rule evaluation failures"
+            description: |
+              Thanos Ruler has {{ $value | printf "%.2f" }} rule evaluation failures/second.
+              Rule group: {{ $labels.rule_group }}
+
+              Impact: Some recording rules or alerts may not be evaluated.
+            runbook_url: "https://runbooks.greenlang.ai/thanos/ruler-failures"
+            dashboard_url: "https://grafana.greenlang.ai/d/thanos-ruler"
+
+        # ---------------------------------------------------------------------
+        # ThanosRulerQueryHighErrors - Query errors
+        # ---------------------------------------------------------------------
+        - alert: ThanosRulerQueryHighErrors
+          expr: |
+            rate(thanos_rule_evaluation_with_warnings_total[5m]) > 0.5
+          for: 10m
+          labels:
+            severity: warning
+            team: platform
+            component: thanos-ruler
+            category: performance
+          annotations:
+            summary: "Thanos Ruler query warnings"
+            description: |
+              Thanos Ruler has {{ $value | printf "%.2f" }} query warnings/second.
+
+              This may indicate partial data or query timeouts.
+            runbook_url: "https://runbooks.greenlang.ai/thanos/ruler-query-warnings"
+
+        # ---------------------------------------------------------------------
+        # ThanosRulerUnhealthy - Ruler is down
+        # ---------------------------------------------------------------------
+        - alert: ThanosRulerUnhealthy
+          expr: up{job=~".*thanos-ruler.*"} == 0
+          for: 5m
+          labels:
+            severity: critical
+            team: platform
+            component: thanos-ruler
+            category: availability
+          annotations:
+            summary: "Thanos Ruler is unhealthy"
+            description: |
+              Thanos Ruler instance {{ $labels.instance }} is down.
+
+              Impact: Recording rules and alerts evaluated by this Ruler are not running.
+            runbook_url: "https://runbooks.greenlang.ai/thanos/ruler-unhealthy"
+
+        # ---------------------------------------------------------------------
+        # ThanosRulerAlertmanagerUnreachable - Cannot send alerts
+        # ---------------------------------------------------------------------
+        - alert: ThanosRulerAlertmanagerUnreachable
+          expr: |
+            rate(thanos_alert_sender_alerts_dropped_total[5m]) > 0
+          for: 5m
+          labels:
+            severity: critical
+            team: platform
+            component: thanos-ruler
+            category: alerting
+          annotations:
+            summary: "Thanos Ruler cannot reach Alertmanager"
+            description: |
+              Thanos Ruler is dropping {{ $value | printf "%.2f" }} alerts/second
+              because it cannot reach Alertmanager.
+
+              Impact: CRITICAL - Alerts are not being delivered.
+            runbook_url: "https://runbooks.greenlang.ai/thanos/ruler-alertmanager-unreachable"

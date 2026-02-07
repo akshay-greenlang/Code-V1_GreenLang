@@ -1,0 +1,35 @@
+# =============================================================================
+# GreenLang Auth Service - Kubernetes Service
+# =============================================================================
+# ClusterIP service exposing HTTP (8080) and metrics (9090) ports.
+# PRD: SEC-001
+# =============================================================================
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-service
+  namespace: greenlang-auth
+  labels:
+    app: auth-service
+    app.kubernetes.io/name: auth-service
+    app.kubernetes.io/component: authentication
+    app.kubernetes.io/part-of: greenlang
+  annotations:
+    description: "Auth Service - JWT authentication, token lifecycle, RBAC"
+    prd: SEC-001
+spec:
+  type: ClusterIP
+  selector:
+    app: auth-service
+    app.kubernetes.io/component: authentication
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+      protocol: TCP
+    - name: metrics
+      port: 9090
+      targetPort: 9090
+      protocol: TCP
+  sessionAffinity: None

@@ -1,0 +1,28 @@
+{{/*
+# =============================================================================
+# GreenLang Tempo - Memberlist Headless Service
+# GreenLang Climate OS | OBS-003
+# =============================================================================
+# Headless service (clusterIP: None) for memberlist gossip protocol.
+# All Tempo components labeled with tempo-gossip-member=true join the
+# gossip ring via this service's DNS SRV records.
+# =============================================================================
+*/}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "tempo.fullname" . }}-memberlist
+  namespace: {{ include "tempo.namespace" . }}
+  labels:
+    {{- include "tempo.memberlistLabels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  clusterIP: None
+  publishNotReadyAddresses: true
+  selector:
+    {{- include "tempo.memberlistSelectorLabels" . | nindent 4 }}
+  ports:
+    - name: memberlist
+      port: {{ .Values.tempo.memberlist.port | default 7946 }}
+      targetPort: memberlist
+      protocol: TCP

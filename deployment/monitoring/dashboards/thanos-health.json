@@ -1,0 +1,1165 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      },
+      {
+        "datasource": "${datasource}",
+        "enable": true,
+        "expr": "ALERTS{alertname=~\"Thanos.*\", alertstate=\"firing\"}",
+        "iconColor": "#FF4444",
+        "name": "Thanos Alerts",
+        "step": "60s",
+        "tagKeys": "alertname,severity",
+        "titleFormat": "{{ alertname }}",
+        "type": "tags"
+      }
+    ]
+  },
+  "description": "GreenLang Climate OS - Thanos long-term storage and HA query layer health monitoring. Monitors Query, Store Gateway, Compactor, and S3 operations. See runbook: docs/runbooks/thanos-health.md",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [
+    {
+      "asDropdown": true,
+      "icon": "external link",
+      "includeVars": true,
+      "keepTime": true,
+      "tags": ["observability", "greenlang"],
+      "targetBlank": true,
+      "title": "Observability Dashboards",
+      "type": "dashboards"
+    },
+    {
+      "asDropdown": false,
+      "icon": "doc",
+      "targetBlank": true,
+      "title": "Thanos Runbook",
+      "tooltip": "Open Thanos operational runbook",
+      "type": "link",
+      "url": "https://docs.greenlang.io/runbooks/thanos-health"
+    }
+  ],
+  "liveNow": false,
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "id": 1,
+      "title": "Overview",
+      "type": "row"
+    },
+    {
+      "datasource": "${datasource}",
+      "description": "Thanos Query component uptime. This is the main query endpoint for Grafana and other consumers.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "mappings": [
+            { "options": { "0": { "color": "red", "index": 0, "text": "DOWN" } }, "type": "value" },
+            { "options": { "1": { "color": "green", "index": 1, "text": "UP" } }, "type": "value" }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "green", "value": 1 }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 1 },
+      "id": 2,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "textMode": "auto"
+      },
+      "title": "Query Uptime",
+      "type": "stat",
+      "targets": [
+        {
+          "datasource": "${datasource}",
+          "expr": "avg(up{job=~\".*thanos-query.*\", cluster=~\"$cluster\"})",
+          "legendFormat": "Status",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": "${datasource}",
+      "description": "Thanos Store Gateway uptime. Provides access to historical data in S3.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "mappings": [
+            { "options": { "0": { "color": "red", "index": 0, "text": "DOWN" } }, "type": "value" },
+            { "options": { "1": { "color": "green", "index": 1, "text": "UP" } }, "type": "value" }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "green", "value": 1 }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 1 },
+      "id": 3,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "textMode": "auto"
+      },
+      "title": "Store Gateway Uptime",
+      "type": "stat",
+      "targets": [
+        {
+          "datasource": "${datasource}",
+          "expr": "avg(up{job=~\".*thanos-storegateway.*|.*thanos-store.*\", cluster=~\"$cluster\"})",
+          "legendFormat": "Status",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": "${datasource}",
+      "description": "Compactor halt status. Value 1 means HALTED - requires immediate attention. Check for overlapping blocks.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "mappings": [
+            { "options": { "0": { "color": "green", "index": 0, "text": "RUNNING" } }, "type": "value" },
+            { "options": { "1": { "color": "red", "index": 1, "text": "HALTED" } }, "type": "value" }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "red", "value": 1 }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 1 },
+      "id": 4,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "textMode": "auto"
+      },
+      "title": "Compactor Status",
+      "type": "stat",
+      "targets": [
+        {
+          "datasource": "${datasource}",
+          "expr": "max(thanos_compact_halted{cluster=~\"$cluster\"})",
+          "legendFormat": "Status",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": "${datasource}",
+      "description": "Total number of discovered store endpoints (Sidecars + Store Gateways).",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "yellow", "value": 1 },
+              { "color": "green", "value": 3 }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 1 },
+      "id": 5,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "textMode": "auto"
+      },
+      "title": "Total Stores",
+      "type": "stat",
+      "targets": [
+        {
+          "datasource": "${datasource}",
+          "expr": "sum(thanos_query_store_apis_dns_lookups_total{cluster=~\"$cluster\"}) or sum(thanos_store_nodes_grpc_connections{cluster=~\"$cluster\"})",
+          "legendFormat": "Stores",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 },
+      "id": 10,
+      "title": "Query Performance",
+      "type": "row"
+    },
+    {
+      "datasource": "${datasource}",
+      "description": "Thanos Query latency distribution. P99 target is <30s for complex queries.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisLabel": "Duration",
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 15,
+            "gradientMode": "scheme",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "showPoints": "auto",
+            "stacking": { "group": "A", "mode": "none" },
+            "thresholdsStyle": { "mode": "line" }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 15 },
+              { "color": "red", "value": 30 }
+            ]
+          },
+          "unit": "s"
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "P99" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "P95" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "P50" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }]
+          }
+        ]
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 0, "y": 6 },
+      "id": 11,
+      "options": {
+        "legend": { "calcs": ["mean", "max", "lastNotNull"], "displayMode": "table", "placement": "bottom" },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "title": "Query Latency (P50/P95/P99)",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": "${datasource}",
+          "expr": "histogram_quantile(0.50, sum(rate(http_request_duration_seconds_bucket{job=~\".*thanos-query.*\", handler=\"query\", cluster=~\"$cluster\"}[5m])) by (le))",
+          "legendFormat": "P50",
+          "refId": "A"
+        },
+        {
+          "datasource": "${datasource}",
+          "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job=~\".*thanos-query.*\", handler=\"query\", cluster=~\"$cluster\"}[5m])) by (le))",
+          "legendFormat": "P95",
+          "refId": "B"
+        },
+        {
+          "datasource": "${datasource}",
+          "expr": "histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket{job=~\".*thanos-query.*\", handler=\"query\", cluster=~\"$cluster\"}[5m])) by (le))",
+          "legendFormat": "P99",
+          "refId": "C"
+        }
+      ]
+    },
+    {
+      "datasource": "${datasource}",
+      "description": "Number of concurrent queries being executed. Monitor for capacity planning.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisLabel": "Queries",
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 15,
+            "gradientMode": "scheme",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "showPoints": "auto",
+            "stacking": { "group": "A", "mode": "none" }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 50 },
+              { "color": "red", "value": 100 }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 6, "y": 6 },
+      "id": 12,
+      "options": {
+        "legend": { "calcs": ["mean", "max", "lastNotNull"], "displayMode": "table", "placement": "bottom" },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "title": "Concurrent Queries",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": "${datasource}",
+          "expr": "sum(thanos_query_concurrent_selects{cluster=~\"$cluster\"})",
+          "legendFormat": "Active Queries",
+          "refId": "A"
+        },
+        {
+          "datasource": "${datasource}",
+          "expr": "sum(rate(http_requests_total{job=~\".*thanos-query.*\", handler=\"query\", cluster=~\"$cluster\"}[5m]))",
+          "legendFormat": "Query Rate",
+          "refId": "B"
+        }
+      ]
+    },
+    {
+      "datasource": "${datasource}",
+      "description": "Rate of Store API calls from Query to stores. High rates indicate heavy querying.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisLabel": "Calls/sec",
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 15,
+            "gradientMode": "scheme",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "showPoints": "auto",
+            "stacking": { "group": "A", "mode": "none" }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 12, "y": 6 },
+      "id": 13,
+      "options": {
+        "legend": { "calcs": ["mean", "max", "lastNotNull"], "displayMode": "table", "placement": "bottom" },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "title": "Store API Calls",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": "${datasource}",
+          "expr": "sum(rate(grpc_client_handled_total{job=~\".*thanos-query.*\", cluster=~\"$cluster\"}[5m]))",
+          "legendFormat": "gRPC Calls",
+          "refId": "A"
+        },
+        {
+          "datasource": "${datasource}",
+          "expr": "sum by (grpc_method) (rate(grpc_client_handled_total{job=~\".*thanos-query.*\", cluster=~\"$cluster\"}[5m]))",
+          "legendFormat": "{{ grpc_method }}",
+          "refId": "B"
+        }
+      ]
+    },
+    {
+      "datasource": "${datasource}",
+      "description": "Query and Store API errors. Non-zero values indicate connectivity or configuration issues.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisLabel": "Errors/sec",
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 20,
+            "gradientMode": "scheme",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "showPoints": "auto",
+            "stacking": { "group": "A", "mode": "none" },
+            "thresholdsStyle": { "mode": "area" }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 0.1 },
+              { "color": "red", "value": 1 }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byRegexp", "options": ".*Error.*|.*Failure.*" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }]
+          }
+        ]
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 18, "y": 6 },
+      "id": 14,
+      "options": {
+        "legend": { "calcs": ["mean", "max", "sum"], "displayMode": "table", "placement": "bottom" },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "title": "Query Errors",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": "${datasource}",
+          "expr": "sum(rate(grpc_client_handled_total{job=~\".*thanos-query.*\", grpc_code!=\"OK\", cluster=~\"$cluster\"}[5m]))",
+          "legendFormat": "gRPC Errors",
+          "refId": "A"
+        },
+        {
+          "datasource": "${datasource}",
+          "expr": "sum(rate(thanos_query_store_apis_dns_failures_total{cluster=~\"$cluster\"}[5m]))",
+          "legendFormat": "DNS Failures",
+          "refId": "B"
+        },
+        {
+          "datasource": "${datasource}",
+          "expr": "sum(rate(http_requests_total{job=~\".*thanos-query.*\", handler=\"query\", code=~\"5..\", cluster=~\"$cluster\"}[5m]))",
+          "legendFormat": "HTTP 5xx",
+          "refId": "C"
+        }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 14 },
+      "id": 20,
+      "title": "Store Gateway",
+      "type": "row"
+    },
+    {
+      "datasource": "${datasource}",
+      "description": "Block load and sync operations. High load rates after restart are normal.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisLabel": "Operations/sec",
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 15,
+            "gradientMode": "scheme",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "showPoints": "auto",
+            "stacking": { "group": "A", "mode": "none" }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 0, "y": 15 },
+      "id": 21,
+      "options": {
+        "legend": { "calcs": ["mean", "max", "lastNotNull"], "displayMode": "table", "placement": "bottom" },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "title": "Block Operations",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": "${datasource}",
+          "expr": "sum(rate(thanos_bucket_store_block_loads_total{cluster=~\"$cluster\"}[5m]))",
+          "legendFormat": "Block Loads",
+          "refId": "A"
+        },
+        {
+          "datasource": "${datasource}",
+          "expr": "sum(rate(thanos_bucket_store_block_drops_total{cluster=~\"$cluster\"}[5m]))",
+          "legendFormat": "Block Drops",
+          "refId": "B"
+        },
+        {
+          "datasource": "${datasource}",
+          "expr": "sum(thanos_bucket_store_blocks_loaded{cluster=~\"$cluster\"})",
+          "legendFormat": "Blocks Loaded",
+          "refId": "C"
+        }
+      ]
+    },
+    {
+      "datasource": "${datasource}",
+      "description": "S3 object store operations rate by type. Monitor for unusual spikes.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisLabel": "Operations/sec",
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 15,
+            "gradientMode": "scheme",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "showPoints": "auto",
+            "stacking": { "group": "A", "mode": "none" }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 6, "y": 15 },
+      "id": 22,
+      "options": {
+        "legend": { "calcs": ["mean", "max", "lastNotNull"], "displayMode": "table", "placement": "bottom" },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "title": "S3 Operations",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": "${datasource}",
+          "expr": "sum by (operation) (rate(thanos_objstore_bucket_operations_total{cluster=~\"$cluster\"}[5m]))",
+          "legendFormat": "{{ operation }}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": "${datasource}",
+      "description": "S3 operation failures. Non-zero indicates S3 connectivity or permission issues.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisLabel": "Failures/sec",
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 20,
+            "gradientMode": "scheme",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "showPoints": "auto",
+            "stacking": { "group": "A", "mode": "normal" },
+            "thresholdsStyle": { "mode": "area" }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 0.1 },
+              { "color": "red", "value": 1 }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byRegexp", "options": ".*" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }]
+          }
+        ]
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 12, "y": 15 },
+      "id": 23,
+      "options": {
+        "legend": { "calcs": ["mean", "max", "sum"], "displayMode": "table", "placement": "bottom" },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "title": "S3 Failures",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": "${datasource}",
+          "expr": "sum by (operation) (rate(thanos_objstore_bucket_operation_failures_total{cluster=~\"$cluster\"}[5m]))",
+          "legendFormat": "{{ operation }}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": "${datasource}",
+      "description": "Store Gateway index cache hit ratio. Higher is better - reduces S3 calls.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisLabel": "Hit Ratio",
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 15,
+            "gradientMode": "scheme",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "showPoints": "auto",
+            "stacking": { "group": "A", "mode": "none" },
+            "thresholdsStyle": { "mode": "line" }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "yellow", "value": 0.5 },
+              { "color": "green", "value": 0.8 }
+            ]
+          },
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 18, "y": 15 },
+      "id": 24,
+      "options": {
+        "legend": { "calcs": ["mean", "max", "lastNotNull"], "displayMode": "table", "placement": "bottom" },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "title": "Cache Hit Ratio",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": "${datasource}",
+          "expr": "sum(rate(thanos_store_index_cache_hits_total{cluster=~\"$cluster\"}[5m])) / sum(rate(thanos_store_index_cache_requests_total{cluster=~\"$cluster\"}[5m]))",
+          "legendFormat": "Index Cache",
+          "refId": "A"
+        },
+        {
+          "datasource": "${datasource}",
+          "expr": "sum(rate(thanos_bucket_store_series_data_fetched_total{cluster=~\"$cluster\"}[5m])) / (sum(rate(thanos_bucket_store_series_data_fetched_total{cluster=~\"$cluster\"}[5m])) + sum(rate(thanos_bucket_store_series_data_touched_total{cluster=~\"$cluster\"}[5m])))",
+          "legendFormat": "Series Cache",
+          "refId": "B"
+        }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 23 },
+      "id": 30,
+      "title": "Compactor",
+      "type": "row"
+    },
+    {
+      "datasource": "${datasource}",
+      "description": "Blocks compacted per hour. Healthy compactor should show steady activity.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisLabel": "Blocks",
+            "axisPlacement": "auto",
+            "drawStyle": "bars",
+            "fillOpacity": 50,
+            "gradientMode": "scheme",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "showPoints": "never",
+            "stacking": { "group": "A", "mode": "none" }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 0, "y": 24 },
+      "id": 31,
+      "options": {
+        "legend": { "calcs": ["sum", "mean", "lastNotNull"], "displayMode": "table", "placement": "bottom" },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "title": "Blocks Compacted",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": "${datasource}",
+          "expr": "sum(increase(thanos_compact_group_compactions_total{cluster=~\"$cluster\"}[1h]))",
+          "legendFormat": "Compacted",
+          "refId": "A"
+        },
+        {
+          "datasource": "${datasource}",
+          "expr": "sum(increase(thanos_compact_group_compaction_runs_completed_total{cluster=~\"$cluster\"}[1h]))",
+          "legendFormat": "Runs Completed",
+          "refId": "B"
+        }
+      ]
+    },
+    {
+      "datasource": "${datasource}",
+      "description": "Blocks deleted/cleaned by compactor. Includes expired and compacted source blocks.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisLabel": "Blocks",
+            "axisPlacement": "auto",
+            "drawStyle": "bars",
+            "fillOpacity": 50,
+            "gradientMode": "scheme",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "showPoints": "never",
+            "stacking": { "group": "A", "mode": "none" }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 6, "y": 24 },
+      "id": 32,
+      "options": {
+        "legend": { "calcs": ["sum", "mean", "lastNotNull"], "displayMode": "table", "placement": "bottom" },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "title": "Blocks Deleted",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": "${datasource}",
+          "expr": "sum(increase(thanos_compact_blocks_cleaned_total{cluster=~\"$cluster\"}[1h]))",
+          "legendFormat": "Cleaned",
+          "refId": "A"
+        },
+        {
+          "datasource": "${datasource}",
+          "expr": "sum(increase(thanos_compact_blocks_marked_for_deletion_total{cluster=~\"$cluster\"}[1h]))",
+          "legendFormat": "Marked for Deletion",
+          "refId": "B"
+        }
+      ]
+    },
+    {
+      "datasource": "${datasource}",
+      "description": "Compaction operation duration. Long durations may indicate large blocks or slow S3.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisLabel": "Duration",
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 15,
+            "gradientMode": "scheme",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "showPoints": "auto",
+            "stacking": { "group": "A", "mode": "none" },
+            "thresholdsStyle": { "mode": "line" }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 300 },
+              { "color": "red", "value": 600 }
+            ]
+          },
+          "unit": "s"
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "P99" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "P50" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }]
+          }
+        ]
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 12, "y": 24 },
+      "id": 33,
+      "options": {
+        "legend": { "calcs": ["mean", "max", "lastNotNull"], "displayMode": "table", "placement": "bottom" },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "title": "Compaction Duration",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": "${datasource}",
+          "expr": "histogram_quantile(0.50, sum(rate(thanos_compact_group_compaction_duration_seconds_bucket{cluster=~\"$cluster\"}[5m])) by (le))",
+          "legendFormat": "P50",
+          "refId": "A"
+        },
+        {
+          "datasource": "${datasource}",
+          "expr": "histogram_quantile(0.99, sum(rate(thanos_compact_group_compaction_duration_seconds_bucket{cluster=~\"$cluster\"}[5m])) by (le))",
+          "legendFormat": "P99",
+          "refId": "B"
+        }
+      ]
+    },
+    {
+      "datasource": "${datasource}",
+      "description": "Downsampling progress - 5m and 1h aggregates. Required for long-term query performance.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisLabel": "Operations",
+            "axisPlacement": "auto",
+            "drawStyle": "bars",
+            "fillOpacity": 50,
+            "gradientMode": "scheme",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "showPoints": "never",
+            "stacking": { "group": "A", "mode": "none" }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 18, "y": 24 },
+      "id": 34,
+      "options": {
+        "legend": { "calcs": ["sum", "mean", "lastNotNull"], "displayMode": "table", "placement": "bottom" },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "title": "Downsampling Progress",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": "${datasource}",
+          "expr": "sum(increase(thanos_compact_downsample_total{cluster=~\"$cluster\"}[1h])) by (resolution)",
+          "legendFormat": "{{ resolution }}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 32 },
+      "id": 40,
+      "title": "S3 Storage",
+      "type": "row"
+    },
+    {
+      "datasource": "${datasource}",
+      "description": "Total S3 bucket storage size for Thanos metrics. Monitor for cost planning.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisLabel": "Size",
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 15,
+            "gradientMode": "scheme",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "showPoints": "auto",
+            "stacking": { "group": "A", "mode": "none" }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null }
+            ]
+          },
+          "unit": "bytes"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 0, "y": 33 },
+      "id": 41,
+      "options": {
+        "legend": { "calcs": ["mean", "max", "lastNotNull"], "displayMode": "table", "placement": "bottom" },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "title": "Bucket Size",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": "${datasource}",
+          "expr": "sum(thanos_objstore_bucket_last_successful_upload_time{cluster=~\"$cluster\"}) * 0 + sum(thanos_bucket_store_bucket_size_bytes{cluster=~\"$cluster\"})",
+          "legendFormat": "Total Size",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": "${datasource}",
+      "description": "Rate of block uploads from Prometheus sidecars to S3. Uploads every 2 hours by default.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisLabel": "Uploads/sec",
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 15,
+            "gradientMode": "scheme",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "showPoints": "auto",
+            "stacking": { "group": "A", "mode": "none" }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 6, "y": 33 },
+      "id": 42,
+      "options": {
+        "legend": { "calcs": ["mean", "max", "lastNotNull"], "displayMode": "table", "placement": "bottom" },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "title": "Upload Rate",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": "${datasource}",
+          "expr": "sum(rate(thanos_shipper_uploads_total{cluster=~\"$cluster\"}[5m]))",
+          "legendFormat": "Uploads",
+          "refId": "A"
+        },
+        {
+          "datasource": "${datasource}",
+          "expr": "sum(increase(thanos_shipper_uploads_total{cluster=~\"$cluster\"}[1h]))",
+          "legendFormat": "Uploads (1h)",
+          "refId": "B"
+        }
+      ]
+    },
+    {
+      "datasource": "${datasource}",
+      "description": "S3 upload failures from sidecars. Non-zero indicates S3 connectivity or permission issues.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisLabel": "Failures/sec",
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 20,
+            "gradientMode": "scheme",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "showPoints": "auto",
+            "stacking": { "group": "A", "mode": "none" },
+            "thresholdsStyle": { "mode": "area" }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 0.01 },
+              { "color": "red", "value": 0.1 }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Failures" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }]
+          }
+        ]
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 12, "y": 33 },
+      "id": 43,
+      "options": {
+        "legend": { "calcs": ["mean", "max", "sum"], "displayMode": "table", "placement": "bottom" },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "title": "Upload Failures",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": "${datasource}",
+          "expr": "sum(rate(thanos_shipper_upload_failures_total{cluster=~\"$cluster\"}[5m]))",
+          "legendFormat": "Failures",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": "${datasource}",
+      "description": "Number of blocks loaded in Store Gateway. More blocks = more historical data available.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisLabel": "Blocks",
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 15,
+            "gradientMode": "scheme",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "showPoints": "auto",
+            "stacking": { "group": "A", "mode": "none" }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 18, "y": 33 },
+      "id": 44,
+      "options": {
+        "legend": { "calcs": ["mean", "max", "lastNotNull"], "displayMode": "table", "placement": "bottom" },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "title": "Bucket Objects",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": "${datasource}",
+          "expr": "sum(thanos_bucket_store_blocks_loaded{cluster=~\"$cluster\"})",
+          "legendFormat": "Blocks Loaded",
+          "refId": "A"
+        },
+        {
+          "datasource": "${datasource}",
+          "expr": "sum(thanos_bucket_store_blocks_last_loaded_total{cluster=~\"$cluster\"})",
+          "legendFormat": "Total Synced",
+          "refId": "B"
+        }
+      ]
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "style": "dark",
+  "tags": ["thanos", "observability", "obs-001", "greenlang"],
+  "templating": {
+    "list": [
+      {
+        "current": { "selected": false, "text": "Prometheus", "value": "Prometheus" },
+        "hide": 0,
+        "includeAll": false,
+        "label": "Datasource",
+        "multi": false,
+        "name": "datasource",
+        "options": [],
+        "query": "prometheus",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
+      },
+      {
+        "allValue": ".*",
+        "current": { "selected": true, "text": "All", "value": "$__all" },
+        "datasource": "${datasource}",
+        "definition": "label_values(up, cluster)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Cluster",
+        "multi": true,
+        "name": "cluster",
+        "options": [],
+        "query": "label_values(up, cluster)",
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": { "from": "now-3h", "to": "now" },
+  "timepicker": {
+    "refresh_intervals": ["5s", "10s", "30s", "1m", "5m", "15m", "30m", "1h"],
+    "time_options": ["5m", "15m", "1h", "3h", "6h", "12h", "24h", "2d", "7d"]
+  },
+  "timezone": "utc",
+  "title": "Thanos Health",
+  "uid": "thanos-health",
+  "version": 1
+}

@@ -1,0 +1,310 @@
+# ============================================================================
+# Redis ServiceMonitor
+# ============================================================================
+# Prometheus ServiceMonitor for Redis using redis_exporter.
+# Monitors Redis cluster, Sentinel, streams, and performance metrics.
+#
+# Exporter: redis_exporter
+# Scrape Path: /metrics
+# Scrape Interval: 15 seconds
+#
+# Created: 2026-02-06
+# Team: Monitoring & Observability
+# PRD: OBS-001 - Prometheus Metrics Collection
+# Related: INFRA-003 - Redis Caching Cluster
+# ============================================================================
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: redis
+  namespace: monitoring
+  labels:
+    app: redis
+    app.kubernetes.io/name: redis
+    app.kubernetes.io/component: cache
+    app.kubernetes.io/part-of: greenlang
+    release: prometheus
+    team: platform
+    tier: infrastructure
+  annotations:
+    description: "ServiceMonitor for Redis via redis_exporter"
+    prometheus.io/docs: "https://docs.greenlang.ai/observability/redis-metrics"
+spec:
+  # Job label for Prometheus
+  jobLabel: redis
+
+  # Selector for redis_exporter service
+  selector:
+    matchLabels:
+      app: redis-exporter
+    matchExpressions:
+      - key: monitoring
+        operator: NotIn
+        values: ["disabled"]
+
+  # Target namespaces
+  namespaceSelector:
+    matchNames:
+      - greenlang
+      - greenlang-cache
+      - monitoring
+      - default
+
+  # Endpoint configuration
+  endpoints:
+    - port: metrics
+      interval: 15s
+      scrapeTimeout: 10s
+      path: /metrics
+      scheme: http
+      honorLabels: true
+
+      # Relabelings for target labels
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_service_name]
+          targetLabel: service
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod
+        - sourceLabels: [__meta_kubernetes_pod_label_role]
+          targetLabel: role
+        - sourceLabels: [__meta_kubernetes_pod_label_cluster]
+          targetLabel: cluster
+        - sourceLabels: []
+          targetLabel: application
+          replacement: "redis"
+        - sourceLabels: []
+          targetLabel: component
+          replacement: "cache"
+
+      # Metric relabelings
+      metricRelabelings:
+        # Keep Redis core metrics
+        - sourceLabels: [__name__]
+          regex: 'redis_.*'
+          action: keep
+
+        # Keep up metric
+        - sourceLabels: [__name__]
+          regex: 'redis_up'
+          action: keep
+
+        # Keep cluster metrics
+        - sourceLabels: [__name__]
+          regex: 'redis_cluster_.*'
+          action: keep
+
+        # Keep Sentinel metrics
+        - sourceLabels: [__name__]
+          regex: 'redis_sentinel_.*'
+          action: keep
+
+        # Keep memory metrics
+        - sourceLabels: [__name__]
+          regex: 'redis_memory_.*'
+          action: keep
+
+        # Keep replication metrics
+        - sourceLabels: [__name__]
+          regex: 'redis_(connected_slaves|replication_backlog_bytes|master_link_up).*'
+          action: keep
+
+        # Keep connection metrics
+        - sourceLabels: [__name__]
+          regex: 'redis_(connected_clients|blocked_clients|rejected_connections_total).*'
+          action: keep
+
+        # Keep command metrics
+        - sourceLabels: [__name__]
+          regex: 'redis_commands_.*'
+          action: keep
+
+        # Keep keyspace metrics
+        - sourceLabels: [__name__]
+          regex: 'redis_keyspace_.*'
+          action: keep
+
+        # Keep stream metrics
+        - sourceLabels: [__name__]
+          regex: 'redis_stream_.*'
+          action: keep
+
+        # Keep pub/sub metrics
+        - sourceLabels: [__name__]
+          regex: 'redis_pubsub_.*'
+          action: keep
+
+        # Keep slowlog metrics
+        - sourceLabels: [__name__]
+          regex: 'redis_slowlog_.*'
+          action: keep
+
+        # Keep eviction metrics
+        - sourceLabels: [__name__]
+          regex: 'redis_evicted_keys_total'
+          action: keep
+
+        # Keep exporter metrics
+        - sourceLabels: [__name__]
+          regex: 'redis_exporter_.*'
+          action: keep
+
+---
+# ============================================================================
+# Redis Sentinel ServiceMonitor
+# ============================================================================
+# Dedicated monitoring for Redis Sentinel instances.
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: redis-sentinel
+  namespace: monitoring
+  labels:
+    app: redis-sentinel
+    app.kubernetes.io/name: redis-sentinel
+    app.kubernetes.io/component: sentinel
+    app.kubernetes.io/part-of: greenlang
+    release: prometheus
+    team: platform
+  annotations:
+    description: "ServiceMonitor for Redis Sentinel"
+spec:
+  jobLabel: redis-sentinel
+
+  selector:
+    matchLabels:
+      app: redis-sentinel
+
+  namespaceSelector:
+    matchNames:
+      - greenlang
+      - greenlang-cache
+      - monitoring
+
+  endpoints:
+    - port: metrics
+      interval: 15s
+      scrapeTimeout: 10s
+      path: /metrics
+      scheme: http
+      honorLabels: true
+
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_service_name]
+          targetLabel: service
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod
+        - sourceLabels: []
+          targetLabel: component
+          replacement: "sentinel"
+
+      metricRelabelings:
+        # Keep Sentinel specific metrics
+        - sourceLabels: [__name__]
+          regex: 'redis_sentinel_.*'
+          action: keep
+
+        # Keep sentinel master metrics
+        - sourceLabels: [__name__]
+          regex: 'redis_sentinel_master_.*'
+          action: keep
+
+        # Keep sentinel slaves metrics
+        - sourceLabels: [__name__]
+          regex: 'redis_sentinel_slaves.*'
+          action: keep
+
+        # Keep sentinel sentinels count
+        - sourceLabels: [__name__]
+          regex: 'redis_sentinel_sentinels.*'
+          action: keep
+
+        # Keep failover metrics
+        - sourceLabels: [__name__]
+          regex: 'redis_sentinel_failover_.*'
+          action: keep
+
+---
+# ============================================================================
+# Redis Cluster ServiceMonitor
+# ============================================================================
+# Dedicated monitoring for Redis Cluster mode.
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: redis-cluster
+  namespace: monitoring
+  labels:
+    app: redis-cluster
+    app.kubernetes.io/name: redis-cluster
+    app.kubernetes.io/component: cluster
+    app.kubernetes.io/part-of: greenlang
+    release: prometheus
+    team: platform
+  annotations:
+    description: "ServiceMonitor for Redis Cluster mode"
+spec:
+  jobLabel: redis-cluster
+
+  selector:
+    matchLabels:
+      app: redis-cluster
+
+  namespaceSelector:
+    matchNames:
+      - greenlang
+      - greenlang-cache
+      - monitoring
+
+  endpoints:
+    - port: metrics
+      interval: 15s
+      scrapeTimeout: 10s
+      path: /metrics
+      scheme: http
+      honorLabels: true
+
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_service_name]
+          targetLabel: service
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod
+        - sourceLabels: [__meta_kubernetes_pod_label_node_id]
+          targetLabel: node_id
+        - sourceLabels: []
+          targetLabel: component
+          replacement: "cluster"
+
+      metricRelabelings:
+        # Keep cluster specific metrics
+        - sourceLabels: [__name__]
+          regex: 'redis_cluster_.*'
+          action: keep
+
+        # Keep cluster state
+        - sourceLabels: [__name__]
+          regex: 'redis_cluster_state'
+          action: keep
+
+        # Keep slot coverage
+        - sourceLabels: [__name__]
+          regex: 'redis_cluster_slots_.*'
+          action: keep
+
+        # Keep cluster known nodes
+        - sourceLabels: [__name__]
+          regex: 'redis_cluster_known_nodes'
+          action: keep
+
+        # Keep cluster size
+        - sourceLabels: [__name__]
+          regex: 'redis_cluster_size'
+          action: keep

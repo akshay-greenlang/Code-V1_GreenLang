@@ -39,6 +39,7 @@ on:
           - trivy
           - dependencies
           - bandit
+          - semgrep
           - gitleaks
           - license
           - sbom
@@ -328,7 +329,89 @@ jobs:
           fi
 
   # ============================================================================
-  # JOB 4: Gitleaks - Secret Detection
+  # JOB 4: Semgrep - Advanced SAST Scanning
+  # ============================================================================
+  semgrep-scan:
+    name: Semgrep SAST Scan
+    runs-on: ubuntu-latest
+    if: >
+      github.event.inputs.scan_type == '' ||
+      github.event.inputs.scan_type == 'all' ||
+      github.event.inputs.scan_type == 'semgrep'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Semgrep
+        uses: returntocorp/semgrep-action@v1
+        with:
+          config: >-
+            p/python
+            p/security-audit
+            p/secrets
+            p/dockerfile
+            p/terraform
+            deployment/security/semgrep-rules/
+          generateSarif: "1"
+        env:
+          SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+
+      - name: Upload Semgrep SARIF to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        if: always() && hashFiles('semgrep.sarif') != ''
+        with:
+          sarif_file: semgrep.sarif
+          category: 'semgrep'
+
+      - name: Run Semgrep JSON output
+        run: |
+          pip install semgrep
+          semgrep scan \
+            --config p/python \
+            --config p/security-audit \
+            --config p/secrets \
+            --config deployment/security/semgrep-rules/ \
+            --json \
+            --output semgrep-results.json \
+            --exclude '.venv' \
+            --exclude 'venv' \
+            --exclude 'node_modules' \
+            --exclude '.git' \
+            || true
+
+      - name: Upload Semgrep artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: semgrep-results
+          path: |
+            semgrep.sarif
+            semgrep-results.json
+
+      - name: Check Semgrep results
+        id: semgrep-check
+        run: |
+          if [ -f semgrep-results.json ]; then
+            ERROR_COUNT=$(jq '[.results[]? | select(.extra.severity=="ERROR")] | length' semgrep-results.json 2>/dev/null || echo "0")
+            WARNING_COUNT=$(jq '[.results[]? | select(.extra.severity=="WARNING")] | length' semgrep-results.json 2>/dev/null || echo "0")
+
+            echo "error_count=$ERROR_COUNT" >> $GITHUB_OUTPUT
+            echo "warning_count=$WARNING_COUNT" >> $GITHUB_OUTPUT
+
+            echo "## Semgrep SAST Results" >> $GITHUB_STEP_SUMMARY
+            echo "- Errors: $ERROR_COUNT" >> $GITHUB_STEP_SUMMARY
+            echo "- Warnings: $WARNING_COUNT" >> $GITHUB_STEP_SUMMARY
+
+            if [ "$ERROR_COUNT" -gt "0" ]; then
+              echo "::error::BLOCKER: $ERROR_COUNT error-level findings from Semgrep"
+              jq '.results[] | select(.extra.severity=="ERROR") | {file: .path, line: .start.line, rule: .check_id, message: .extra.message}' semgrep-results.json
+              exit 1
+            fi
+          fi
+
+  # ============================================================================
+  # JOB 5: Gitleaks - Secret Detection
   # ============================================================================
   gitleaks-scan:
     name: Gitleaks Secret Scan
@@ -409,7 +492,7 @@ jobs:
           fi
 
   # ============================================================================
-  # JOB 5: License Compliance Check
+  # JOB 6: License Compliance Check
   # ============================================================================
   license-check:
     name: License Compliance
@@ -468,7 +551,7 @@ jobs:
             licenses.md
 
   # ============================================================================
-  # JOB 6: SBOM Generation (CycloneDX)
+  # JOB 7: SBOM Generation (CycloneDX)
   # ============================================================================
   sbom-generation:
     name: Generate SBOM
@@ -518,12 +601,12 @@ jobs:
           echo "- Components: $(jq '.components | length' sbom.json)" >> $GITHUB_STEP_SUMMARY
 
   # ============================================================================
-  # JOB 7: Security Gate - Final Decision
+  # JOB 8: Security Gate - Final Decision
   # ============================================================================
   security-gate:
     name: Security Gate
     runs-on: ubuntu-latest
-    needs: [trivy-scan, dependency-scan, bandit-scan, gitleaks-scan, license-check]
+    needs: [trivy-scan, dependency-scan, bandit-scan, semgrep-scan, gitleaks-scan, license-check]
     if: always()
 
     steps:
@@ -560,6 +643,13 @@ jobs:
             echo "- Bandit: PASSED" >> $GITHUB_STEP_SUMMARY
           fi
 
+          if [ "${{ needs.semgrep-scan.result }}" != "success" ]; then
+            echo "- Semgrep: FAILED" >> $GITHUB_STEP_SUMMARY
+            GATE_PASSED=false
+          else
+            echo "- Semgrep: PASSED" >> $GITHUB_STEP_SUMMARY
+          fi
+
           if [ "${{ needs.gitleaks-scan.result }}" != "success" ]; then
             echo "- Gitleaks: FAILED" >> $GITHUB_STEP_SUMMARY
             GATE_PASSED=false
@@ -592,12 +682,13 @@ jobs:
             const trivy = '${{ needs.trivy-scan.result }}' === 'success' ? 'PASSED' : 'FAILED';
             const deps = '${{ needs.dependency-scan.result }}' === 'success' ? 'PASSED' : 'FAILED';
             const bandit = '${{ needs.bandit-scan.result }}' === 'success' ? 'PASSED' : 'FAILED';
+            const semgrep = '${{ needs.semgrep-scan.result }}' === 'success' ? 'PASSED' : 'FAILED';
             const gitleaks = '${{ needs.gitleaks-scan.result }}' === 'success' ? 'PASSED' : 'FAILED';
             const license = '${{ needs.license-check.result }}' === 'success' ? 'PASSED' : 'FAILED';
 
             const allPassed = trivy === 'PASSED' && deps === 'PASSED' &&
-                             bandit === 'PASSED' && gitleaks === 'PASSED' &&
-                             license === 'PASSED';
+                             bandit === 'PASSED' && semgrep === 'PASSED' &&
+                             gitleaks === 'PASSED' && license === 'PASSED';
 
             const body = `## Security Scan Results
 
@@ -606,6 +697,7 @@ jobs:
             | Trivy (Container/FS) | ${trivy} |
             | Dependencies (Snyk/pip-audit) | ${deps} |
             | Bandit (SAST) | ${bandit} |
+            | Semgrep (Advanced SAST) | ${semgrep} |
             | Gitleaks (Secrets) | ${gitleaks} |
             | License Check | ${license} |
 

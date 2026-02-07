@@ -1,0 +1,368 @@
+# =============================================================================
+# GreenLang Tempo - Base Values (Production)
+# GreenLang Climate OS | OBS-003
+# =============================================================================
+# Production-grade Grafana Tempo configuration with distributed mode,
+# S3 storage, vParquet4 block format, metrics-generator, and full HA.
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# Global Configuration
+# ---------------------------------------------------------------------------
+global:
+  # Environment-specific values (override in values-{env}.yaml)
+  environment: prod
+  clusterName: greenlang-prod
+  awsRegion: eu-west-1
+  labels: {}
+  annotations: {}
+
+# ---------------------------------------------------------------------------
+# Name Overrides
+# ---------------------------------------------------------------------------
+nameOverride: ""
+fullnameOverride: ""
+
+# ---------------------------------------------------------------------------
+# Tempo Image
+# ---------------------------------------------------------------------------
+image:
+  registry: docker.io
+  repository: grafana/tempo
+  tag: "2.7.0"
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+
+# ---------------------------------------------------------------------------
+# Tempo Core Configuration
+# ---------------------------------------------------------------------------
+tempo:
+  # Deployment mode: "distributed" or "monolithic"
+  mode: distributed
+
+  # -------------------------------------------------------------------------
+  # Server Configuration
+  # -------------------------------------------------------------------------
+  server:
+    http_listen_port: 3200
+    grpc_listen_port: 9095
+    log_level: info
+    log_format: logfmt
+
+  # -------------------------------------------------------------------------
+  # Storage Configuration
+  # -------------------------------------------------------------------------
+  storage:
+    trace:
+      backend: s3
+      s3:
+        bucket: gl-prod-tempo-traces
+        region: eu-west-1
+        endpoint: ""
+        # IRSA handles authentication - no access_key/secret_key needed
+        forcepathstyle: false
+        insecure: false
+      wal:
+        path: /var/tempo/wal
+      block:
+        version: vParquet4
+      blocklist_poll: 5m
+      cache: none
+
+  # -------------------------------------------------------------------------
+  # Distributor Configuration
+  # -------------------------------------------------------------------------
+  distributor:
+    replicas: 3
+    resources:
+      requests:
+        cpu: 500m
+        memory: 512Mi
+      limits:
+        cpu: "1"
+        memory: 1Gi
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: "0.0.0.0:4317"
+          http:
+            endpoint: "0.0.0.0:4318"
+      jaeger:
+        protocols:
+          grpc:
+            endpoint: "0.0.0.0:14250"
+    ring:
+      kvstore:
+        store: memberlist
+    log_received_spans:
+      enabled: false
+
+  # -------------------------------------------------------------------------
+  # Ingester Configuration
+  # -------------------------------------------------------------------------
+  ingester:
+    replicas: 3
+    resources:
+      requests:
+        cpu: "1"
+        memory: 2Gi
+      limits:
+        cpu: "2"
+        memory: 4Gi
+    persistence:
+      enabled: true
+      size: 10Gi
+      storageClassName: gp3
+    max_block_duration: 5m
+    max_block_bytes: 524288000       # 500 MiB
+    flush_check_period: 10s
+    trace_idle_period: 30s
+    lifecycler:
+      ring:
+        replication_factor: 3
+        kvstore:
+          store: memberlist
+
+  # -------------------------------------------------------------------------
+  # Querier Configuration
+  # -------------------------------------------------------------------------
+  querier:
+    replicas: 2
+    resources:
+      requests:
+        cpu: 500m
+        memory: 1Gi
+      limits:
+        cpu: "1"
+        memory: 2Gi
+    max_concurrent_queries: 20
+    search:
+      query_timeout: 30s
+      prefer_self: 10
+      external_hedge_requests_at: 8s
+      external_hedge_requests_up_to: 2
+    frontend_worker:
+      match_max_concurrent: true
+
+  # -------------------------------------------------------------------------
+  # Query Frontend Configuration
+  # -------------------------------------------------------------------------
+  queryFrontend:
+    replicas: 2
+    resources:
+      requests:
+        cpu: 300m
+        memory: 512Mi
+      limits:
+        cpu: "1"
+        memory: 1Gi
+    max_retries: 2
+    search:
+      max_duration: 0s
+      default_result_limit: 20
+      max_result_limit: 100
+      concurrent_jobs: 2000
+
+  # -------------------------------------------------------------------------
+  # Compactor Configuration
+  # -------------------------------------------------------------------------
+  compactor:
+    replicas: 1
+    resources:
+      requests:
+        cpu: "1"
+        memory: 2Gi
+      limits:
+        cpu: "2"
+        memory: 4Gi
+    compaction:
+      block_retention: 720h            # 30 days
+      compacted_block_retention: 1h
+      compaction_window: 1h
+      max_block_bytes: 107374182400     # 100 GiB
+      max_compaction_objects: 6000000
+      retention_concurrency: 10
+    ring:
+      kvstore:
+        store: memberlist
+
+  # -------------------------------------------------------------------------
+  # Metrics Generator Configuration
+  # -------------------------------------------------------------------------
+  metricsGenerator:
+    enabled: true
+    replicas: 2
+    resources:
+      requests:
+        cpu: 500m
+        memory: 512Mi
+      limits:
+        cpu: "1"
+        memory: 1Gi
+    storage:
+      path: /var/tempo/generator/wal
+      remote_write:
+        - url: http://gl-prometheus-server:9090/api/v1/write
+          send_exemplars: true
+    processor:
+      span_metrics:
+        dimensions:
+          - service.name
+          - http.method
+          - http.status_code
+          - gl.tenant_id
+          - gl.agent_type
+        enable_target_info: true
+        histogram_buckets:
+          - 0.002
+          - 0.004
+          - 0.008
+          - 0.016
+          - 0.032
+          - 0.064
+          - 0.128
+          - 0.256
+          - 0.512
+          - 1.024
+          - 2.048
+          - 4.096
+          - 8.192
+          - 16.384
+      service_graphs:
+        dimensions:
+          - gl.tenant_id
+        enable_client_server_prefix: true
+        max_items: 10000
+        wait: 10s
+    ring:
+      kvstore:
+        store: memberlist
+
+  # -------------------------------------------------------------------------
+  # Overrides / Limits
+  # -------------------------------------------------------------------------
+  overrides:
+    defaults:
+      ingestion:
+        rate_limit_bytes: 15000000      # 15 MB/s
+        burst_size_bytes: 20000000      # 20 MB burst
+        max_traces_per_user: 0          # unlimited
+        max_bytes_per_trace: 5000000    # 5 MB per trace
+      search:
+        max_duration: 168h              # 7 days of search
+      global:
+        max_bytes_per_tag_values_query: 5000000
+
+  # -------------------------------------------------------------------------
+  # Memberlist Configuration
+  # -------------------------------------------------------------------------
+  memberlist:
+    port: 7946
+    join_members:
+      - "dns+{{ include \"tempo.fullname\" . }}-memberlist.{{ .Release.Namespace }}.svc.cluster.local:7946"
+
+# ---------------------------------------------------------------------------
+# Service Account
+# ---------------------------------------------------------------------------
+serviceAccount:
+  create: true
+  name: ""
+  annotations:
+    # Set via Terraform: arn:aws:iam::ACCOUNT_ID:role/greenlang-tempo-irsa
+    eks.amazonaws.com/role-arn: ""
+  labels: {}
+
+# ---------------------------------------------------------------------------
+# Ingress
+# ---------------------------------------------------------------------------
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts: []
+  tls: []
+
+# ---------------------------------------------------------------------------
+# Network Policy
+# ---------------------------------------------------------------------------
+networkPolicy:
+  enabled: true
+
+# ---------------------------------------------------------------------------
+# Service Monitor (Prometheus Operator)
+# ---------------------------------------------------------------------------
+serviceMonitor:
+  enabled: true
+  interval: 30s
+  scrapeTimeout: 10s
+  labels:
+    release: gl-prometheus
+  annotations: {}
+
+# ---------------------------------------------------------------------------
+# Pod Disruption Budgets
+# ---------------------------------------------------------------------------
+podDisruptionBudget:
+  ingester:
+    enabled: true
+    minAvailable: 2
+  distributor:
+    enabled: true
+    minAvailable: 2
+  querier:
+    enabled: false
+  queryFrontend:
+    enabled: false
+
+# ---------------------------------------------------------------------------
+# Autoscaling
+# ---------------------------------------------------------------------------
+autoscaling:
+  distributor:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: 80
+  querier:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 8
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: 80
+
+# ---------------------------------------------------------------------------
+# Pod Security Context
+# ---------------------------------------------------------------------------
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 10001
+  runAsGroup: 10001
+  fsGroup: 10001
+
+# ---------------------------------------------------------------------------
+# Container Security Context
+# ---------------------------------------------------------------------------
+containerSecurityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 10001
+  capabilities:
+    drop:
+      - ALL
+
+# ---------------------------------------------------------------------------
+# Common Labels
+# ---------------------------------------------------------------------------
+commonLabels:
+  app.kubernetes.io/part-of: greenlang
+  greenlang.io/obs: "003"
+
+# ---------------------------------------------------------------------------
+# Node Selector and Tolerations
+# ---------------------------------------------------------------------------
+nodeSelector: {}
+tolerations: []

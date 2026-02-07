@@ -1,0 +1,74 @@
+# =============================================================================
+# Istio DestinationRules for mTLS
+# SEC-004: Service Mesh mTLS Configuration
+# =============================================================================
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: default-mtls-destination
+  namespace: greenlang
+  labels:
+    greenlang.io/component: sec-004
+spec:
+  host: "*.greenlang.svc.cluster.local"
+  trafficPolicy:
+    tls:
+      mode: ISTIO_MUTUAL
+      # Minimum TLS 1.3 for mesh traffic
+      minProtocolVersion: TLSV1_3
+---
+# API Service destination rule
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: greenlang-api-mtls
+  namespace: greenlang
+  labels:
+    greenlang.io/component: sec-004
+spec:
+  host: greenlang-api.greenlang.svc.cluster.local
+  trafficPolicy:
+    tls:
+      mode: ISTIO_MUTUAL
+      minProtocolVersion: TLSV1_3
+    connectionPool:
+      tcp:
+        maxConnections: 100
+        connectTimeout: 5s
+      http:
+        h2UpgradePolicy: UPGRADE
+        maxRequestsPerConnection: 1000
+---
+# Agent Factory destination rule
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: agent-factory-mtls
+  namespace: greenlang
+  labels:
+    greenlang.io/component: sec-004
+spec:
+  host: agent-factory.greenlang.svc.cluster.local
+  trafficPolicy:
+    tls:
+      mode: ISTIO_MUTUAL
+      minProtocolVersion: TLSV1_3
+    outlierDetection:
+      consecutive5xxErrors: 5
+      interval: 30s
+      baseEjectionTime: 30s
+---
+# External services (egress)
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: external-services-tls
+  namespace: greenlang
+  labels:
+    greenlang.io/component: sec-004
+spec:
+  host: "*.amazonaws.com"
+  trafficPolicy:
+    tls:
+      mode: SIMPLE
+      minProtocolVersion: TLSV1_2

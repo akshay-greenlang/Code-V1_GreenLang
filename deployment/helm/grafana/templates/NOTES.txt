@@ -1,0 +1,78 @@
+=====================================================================
+  GreenLang Grafana - {{ .Chart.AppVersion }}
+  GreenLang Climate OS | OBS-002
+=====================================================================
+
+Grafana has been deployed successfully.
+
+Environment: {{ .Values.global.environment }}
+Replicas:    {{ .Values.grafana.replicas }}
+Database:    {{ .Values.grafana.database.type }}
+
+{{- if .Values.ingress.enabled }}
+
+Access Grafana at:
+{{- range .Values.ingress.hosts }}
+  https://{{ .host }}
+{{- end }}
+{{- else }}
+
+Access Grafana via port-forward:
+  kubectl port-forward svc/{{ include "grafana.fullname" . }} 3000:3000 -n {{ include "grafana.namespace" . }}
+  Then open: http://localhost:3000
+{{- end }}
+
+Default credentials:
+  Username: {{ .Values.grafana.security.adminUser }}
+  Password: kubectl get secret {{ .Values.grafana.security.adminPasswordSecretName }} -n {{ include "grafana.namespace" . }} -o jsonpath="{.data.{{ .Values.grafana.security.adminPasswordSecretKey }}}" | base64 -d
+
+{{- if .Values.grafana.oauth.enabled }}
+
+OAuth/SSO is enabled via: {{ .Values.grafana.oauth.name }}
+{{- end }}
+
+{{- if .Values.grafana.unifiedAlerting.ha.enabled }}
+
+Unified Alerting HA is enabled.
+  Gossip port: {{ .Values.grafana.unifiedAlerting.ha.peerPort }}
+  Headless service: {{ include "grafana.fullname" . }}-headless
+{{- end }}
+
+{{- if .Values.renderer.enabled }}
+
+Image Renderer is enabled.
+  Service: {{ include "grafana.fullname" . }}-renderer:{{ .Values.renderer.service.port }}
+{{- end }}
+
+Datasources configured:
+{{- if .Values.grafana.datasources.thanos.enabled }}
+  - Thanos (default): {{ .Values.grafana.datasources.thanos.url }}
+{{- end }}
+{{- if .Values.grafana.datasources.prometheus.enabled }}
+  - Prometheus: {{ .Values.grafana.datasources.prometheus.url }}
+{{- end }}
+{{- if .Values.grafana.datasources.loki.enabled }}
+  - Loki: {{ .Values.grafana.datasources.loki.url }}
+{{- end }}
+{{- if .Values.grafana.datasources.jaeger.enabled }}
+  - Jaeger: {{ .Values.grafana.datasources.jaeger.url }}
+{{- end }}
+{{- if .Values.grafana.datasources.alertmanager.enabled }}
+  - Alertmanager: {{ .Values.grafana.datasources.alertmanager.url }}
+{{- end }}
+{{- if .Values.grafana.datasources.postgresql.enabled }}
+  - PostgreSQL (TimescaleDB)
+{{- end }}
+{{- if .Values.grafana.datasources.cloudwatch.enabled }}
+  - CloudWatch ({{ .Values.grafana.datasources.cloudwatch.defaultRegion }})
+{{- end }}
+
+Dashboard folders:
+{{- range .Values.grafana.dashboardProviders }}
+  - {{ .folder }}
+{{- end }}
+
+=====================================================================
+  IMPORTANT: Change default passwords before production use!
+  Use External Secrets Operator or Vault for secret management.
+=====================================================================

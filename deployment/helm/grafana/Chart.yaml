@@ -1,0 +1,41 @@
+# =============================================================================
+# GreenLang Grafana - Helm Chart
+# GreenLang Climate OS | OBS-002
+# =============================================================================
+# Production-grade Grafana 11.4 deployment with HA, PostgreSQL backend,
+# Redis session cache, OAuth2/OIDC, sidecar dashboard provisioning,
+# image renderer, unified alerting, and multi-environment support.
+# =============================================================================
+
+apiVersion: v2
+name: greenlang-grafana
+description: Grafana visualization and dashboarding platform for GreenLang Climate OS
+type: application
+version: 1.0.0
+appVersion: "11.4.0"
+
+keywords:
+  - grafana
+  - dashboards
+  - visualization
+  - observability
+  - monitoring
+  - alerting
+  - greenlang
+  - obs-002
+
+maintainers:
+  - name: GreenLang Infrastructure Team
+    email: infra@greenlang.io
+
+home: https://github.com/greenlang/greenlang
+icon: https://raw.githubusercontent.com/grafana/grafana/main/public/img/grafana_icon.svg
+
+sources:
+  - https://github.com/grafana/grafana
+  - https://github.com/kiwigrid/k8s-sidecar
+
+# Annotations for chart metadata
+annotations:
+  category: Monitoring
+  licenses: Apache-2.0

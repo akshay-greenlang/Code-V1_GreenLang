@@ -1,0 +1,273 @@
+# =============================================================================
+# GreenLang OTel Collector - ConfigMap
+# GreenLang Climate OS | OBS-003
+# =============================================================================
+# OpenTelemetry Collector gateway configuration for the GreenLang platform.
+#
+# Architecture:
+#   Application pods --> OTel Collector (gateway) --> Tempo (traces)
+#                                                 --> Prometheus (metrics)
+#                                                 --> Loki (logs)
+#
+# Receivers:
+#   - OTLP gRPC (4317) and HTTP (4318) - primary ingest for all signals
+#   - Jaeger gRPC (14250) and thrift_http (14268) - backward compatibility
+#
+# Processors:
+#   - memory_limiter: prevents OOM by capping memory usage
+#   - resource: injects GreenLang environment metadata
+#   - attributes/redact: removes sensitive fields (PII, credentials)
+#   - filter/health: drops noisy health-check spans
+#   - tail_sampling: reduces trace volume via intelligent sampling
+#   - batch: batches telemetry before export for efficiency
+#
+# Exporters:
+#   - otlp/tempo: sends traces to Grafana Tempo
+#   - prometheus: exposes metrics for Prometheus scraping
+#   - loki: forwards logs to Loki
+#
+# Extensions:
+#   - health_check (13133): liveness/readiness probe target
+#   - pprof (1777): Go profiling endpoint for debugging
+#   - zpages (55679): internal diagnostic pages
+# =============================================================================
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: otel-collector-config
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: otel-collector
+    app.kubernetes.io/component: gateway
+    app.kubernetes.io/part-of: greenlang-observability
+    app.kubernetes.io/managed-by: kubectl
+    greenlang.io/obs: "003"
+  annotations:
+    description: "OpenTelemetry Collector gateway configuration for GreenLang Climate OS"
+data:
+  otel-collector-config.yaml: |
+    # -----------------------------------------------------------------
+    # Extensions
+    # -----------------------------------------------------------------
+    extensions:
+      health_check:
+        endpoint: 0.0.0.0:13133
+      pprof:
+        endpoint: 0.0.0.0:1777
+      zpages:
+        endpoint: 0.0.0.0:55679
+
+    # -----------------------------------------------------------------
+    # Receivers
+    # -----------------------------------------------------------------
+    receivers:
+      # Primary OTLP receiver - gRPC and HTTP
+      otlp:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:4317
+            max_recv_msg_size_mib: 16
+          http:
+            endpoint: 0.0.0.0:4318
+            cors:
+              allowed_origins:
+                - "https://*.greenlang.io"
+
+      # Jaeger receivers - backward compatibility with legacy instrumentation
+      jaeger:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:14250
+          thrift_http:
+            endpoint: 0.0.0.0:14268
+
+    # -----------------------------------------------------------------
+    # Processors
+    # -----------------------------------------------------------------
+    processors:
+      # Memory limiter - prevent OOM kills
+      memory_limiter:
+        check_interval: 5s
+        limit_percentage: 80
+        spike_limit_percentage: 25
+
+      # Inject GreenLang environment metadata into all signals
+      resource:
+        attributes:
+          - key: deployment.environment
+            value: "${ENVIRONMENT}"
+            action: upsert
+          - key: service.namespace
+            value: "greenlang"
+            action: upsert
+          - key: platform.name
+            value: "GreenLang Climate OS"
+            action: upsert
+
+      # Redact sensitive attributes from spans and logs
+      attributes/redact:
+        actions:
+          - key: http.request.header.authorization
+            action: delete
+          - key: http.request.header.cookie
+            action: delete
+          - key: http.request.header.x-api-key
+            action: delete
+          - key: db.statement
+            action: hash
+          - key: user.email
+            action: hash
+          - key: enduser.id
+            action: hash
+
+      # Drop health-check and readiness-probe spans (noisy, low value)
+      filter/health:
+        error_mode: ignore
+        traces:
+          span:
+            - 'attributes["http.route"] == "/api/v1/health"'
+            - 'attributes["http.route"] == "/api/v1/ready"'
+            - 'attributes["http.route"] == "/healthz"'
+            - 'attributes["http.route"] == "/readyz"'
+            - 'attributes["http.target"] == "/api/v1/health"'
+            - 'attributes["http.target"] == "/api/v1/ready"'
+
+      # Tail-based sampling to reduce trace volume while keeping
+      # high-value traces (errors, slow requests, specific services)
+      tail_sampling:
+        decision_wait: 10s
+        num_traces: 100000
+        expected_new_traces_per_sec: 500
+        policies:
+          # Always sample errors
+          - name: errors-policy
+            type: status_code
+            status_code:
+              status_codes:
+                - ERROR
+          # Always sample slow traces (> 2 seconds)
+          - name: latency-policy
+            type: latency
+            latency:
+              threshold_ms: 2000
+          # Sample 10% of remaining traces probabilistically
+          - name: probabilistic-policy
+            type: probabilistic
+            probabilistic:
+              sampling_percentage: 10
+          # Always sample compliance-related services
+          - name: compliance-services
+            type: string_attribute
+            string_attribute:
+              key: service.name
+              values:
+                - greenlang-compliance
+                - greenlang-audit
+                - greenlang-auth
+                - greenlang-encryption
+              enabled_regex_matching: false
+
+      # Batch processor - aggregate before export for efficiency
+      batch:
+        send_batch_size: 1024
+        send_batch_max_size: 2048
+        timeout: 5s
+
+    # -----------------------------------------------------------------
+    # Exporters
+    # -----------------------------------------------------------------
+    exporters:
+      # Send traces to Grafana Tempo via OTLP gRPC
+      otlp/tempo:
+        endpoint: tempo-distributor.monitoring.svc.cluster.local:4317
+        tls:
+          insecure: true
+        retry_on_failure:
+          enabled: true
+          initial_interval: 5s
+          max_interval: 30s
+          max_elapsed_time: 300s
+        sending_queue:
+          enabled: true
+          num_consumers: 10
+          queue_size: 5000
+
+      # Expose collector internal metrics for Prometheus scraping
+      prometheus:
+        endpoint: 0.0.0.0:8889
+        const_labels:
+          collector: "otel-gateway"
+        resource_to_telemetry_conversion:
+          enabled: true
+
+      # Forward logs to Loki
+      loki:
+        endpoint: http://loki-gateway.monitoring.svc.cluster.local:3100/loki/api/v1/push
+        default_labels_enabled:
+          exporter: true
+          job: true
+          instance: true
+          level: true
+
+      # Debug exporter for troubleshooting (disabled by default)
+      debug:
+        verbosity: basic
+        sampling_initial: 5
+        sampling_thereafter: 200
+
+    # -----------------------------------------------------------------
+    # Service / Pipelines
+    # -----------------------------------------------------------------
+    service:
+      extensions:
+        - health_check
+        - pprof
+        - zpages
+
+      telemetry:
+        logs:
+          level: info
+          encoding: json
+        metrics:
+          address: 0.0.0.0:8888
+
+      pipelines:
+        # Traces pipeline: receive -> filter -> sample -> redact -> batch -> export to Tempo
+        traces:
+          receivers:
+            - otlp
+            - jaeger
+          processors:
+            - memory_limiter
+            - resource
+            - filter/health
+            - tail_sampling
+            - attributes/redact
+            - batch
+          exporters:
+            - otlp/tempo
+
+        # Metrics pipeline: receive -> enrich -> batch -> expose for Prometheus
+        metrics:
+          receivers:
+            - otlp
+          processors:
+            - memory_limiter
+            - resource
+            - batch
+          exporters:
+            - prometheus
+
+        # Logs pipeline: receive -> enrich -> redact -> batch -> forward to Loki
+        logs:
+          receivers:
+            - otlp
+          processors:
+            - memory_limiter
+            - resource
+            - attributes/redact
+            - batch
+          exporters:
+            - loki

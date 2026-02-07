@@ -1,0 +1,387 @@
+# =============================================================================
+# GreenLang Climate OS - Alerting Service Prometheus Alert Rules
+# =============================================================================
+# PRD: OBS-004 Unified Alerting & Notification Platform
+# Defines alerting rules for notification delivery health, channel integration
+# status, escalation events, MTTA/MTTR targets, and alert fatigue detection.
+# =============================================================================
+
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: alerting-service-alerts
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: alerting-service
+    app.kubernetes.io/part-of: greenlang
+    prometheus: kube-prometheus
+    role: alert-rules
+    greenlang.io/component: obs-004
+spec:
+  groups:
+    # =========================================================================
+    # Group 1: Service Health Alerts
+    # =========================================================================
+    - name: alerting_service.health
+      interval: 30s
+      rules:
+        # ---------------------------------------------------------------------
+        # AlertingServiceDown
+        # Fires when no alerting service instances are running for 5 minutes.
+        # The alerting service is critical -- without it, no notifications
+        # reach on-call responders.
+        # ---------------------------------------------------------------------
+        - alert: AlertingServiceDown
+          expr: |
+            absent(up{job="alerting-service"} == 1)
+            or
+            sum(up{job="alerting-service"}) == 0
+          for: 5m
+          labels:
+            severity: critical
+            team: platform-observability
+            component: alerting-service
+            prd: OBS-004
+          annotations:
+            summary: "Alerting Service is DOWN - notifications are not being delivered"
+            description: >-
+              No Alerting Service instances are running. ALL alert notifications
+              (PagerDuty, Opsgenie, Slack, Email) are unavailable. Critical alerts
+              from Prometheus/Alertmanager will not reach on-call responders. This
+              is a P0 incident. Investigate pod status in the greenlang-alerting
+              namespace immediately.
+            runbook_url: "https://runbooks.greenlang.io/alerting-service/service-down"
+            dashboard_url: "https://grafana.greenlang.io/d/alerting-service"
+
+        # ---------------------------------------------------------------------
+        # NotificationDeliveryFailing
+        # Fires when the overall notification failure rate exceeds 10% for 5m.
+        # Indicates systemic issues with notification delivery.
+        # ---------------------------------------------------------------------
+        - alert: NotificationDeliveryFailing
+          expr: |
+            (
+              sum(rate(gl_alert_notifications_total{job="alerting-service", status="failed"}[5m]))
+              /
+              sum(rate(gl_alert_notifications_total{job="alerting-service"}[5m]))
+            ) > 0.10
+          for: 5m
+          labels:
+            severity: critical
+            team: platform-observability
+            component: alerting-service
+            prd: OBS-004
+          annotations:
+            summary: "Notification delivery failure rate exceeds 10%"
+            description: >-
+              The overall notification delivery failure rate is
+              {{ $value | humanizePercentage }} over the last 5 minutes, exceeding
+              the 10% threshold. Critical alerts may not be reaching on-call
+              responders. Check individual channel health (PagerDuty, Opsgenie,
+              Slack) and network connectivity to external APIs. Verify API keys
+              and credentials are valid.
+            runbook_url: "https://runbooks.greenlang.io/alerting-service/notification-delivery-failing"
+            dashboard_url: "https://grafana.greenlang.io/d/alerting-service"
+
+    # =========================================================================
+    # Group 2: Channel Integration Alerts
+    # =========================================================================
+    - name: alerting_service.channels
+      interval: 30s
+      rules:
+        # ---------------------------------------------------------------------
+        # PagerDutyIntegrationDown
+        # Fires when PagerDuty notification failures persist for 10 minutes.
+        # PagerDuty is the primary paging channel for critical alerts.
+        # ---------------------------------------------------------------------
+        - alert: PagerDutyIntegrationDown
+          expr: |
+            (
+              sum(rate(gl_alert_notifications_total{job="alerting-service", channel="pagerduty", status="failed"}[10m]))
+              /
+              sum(rate(gl_alert_notifications_total{job="alerting-service", channel="pagerduty"}[10m]))
+            ) > 0.5
+            or
+            (
+              sum(rate(gl_alert_notifications_total{job="alerting-service", channel="pagerduty"}[10m])) > 0
+              and
+              sum(rate(gl_alert_notifications_total{job="alerting-service", channel="pagerduty", status="sent"}[10m])) == 0
+            )
+          for: 10m
+          labels:
+            severity: critical
+            team: platform-observability
+            component: alerting-service
+            prd: OBS-004
+          annotations:
+            summary: "PagerDuty integration is failing - critical alerts not paging"
+            description: >-
+              PagerDuty notification delivery has been failing for 10 minutes.
+              Critical alerts are NOT reaching on-call responders via PagerDuty.
+              Check: (1) PagerDuty Events API v2 endpoint reachability, (2) Routing
+              key validity in alerting-service-secrets, (3) PagerDuty service status
+              at status.pagerduty.com, (4) Network egress from the alerting pod.
+            runbook_url: "https://runbooks.greenlang.io/alerting-service/pagerduty-integration-down"
+            dashboard_url: "https://grafana.greenlang.io/d/alerting-service"
+
+        # ---------------------------------------------------------------------
+        # OpsgenieIntegrationDown
+        # Fires when Opsgenie notification failures persist for 10 minutes.
+        # Opsgenie provides secondary on-call routing.
+        # ---------------------------------------------------------------------
+        - alert: OpsgenieIntegrationDown
+          expr: |
+            (
+              sum(rate(gl_alert_notifications_total{job="alerting-service", channel="opsgenie", status="failed"}[10m]))
+              /
+              sum(rate(gl_alert_notifications_total{job="alerting-service", channel="opsgenie"}[10m]))
+            ) > 0.5
+            or
+            (
+              sum(rate(gl_alert_notifications_total{job="alerting-service", channel="opsgenie"}[10m])) > 0
+              and
+              sum(rate(gl_alert_notifications_total{job="alerting-service", channel="opsgenie", status="sent"}[10m])) == 0
+            )
+          for: 10m
+          labels:
+            severity: critical
+            team: platform-observability
+            component: alerting-service
+            prd: OBS-004
+          annotations:
+            summary: "Opsgenie integration is failing - on-call routing unavailable"
+            description: >-
+              Opsgenie notification delivery has been failing for 10 minutes.
+              On-call schedule lookup and alert routing via Opsgenie are unavailable.
+              Check: (1) Opsgenie API key validity, (2) Opsgenie service status at
+              opsgenie.atlassian.com/service-health, (3) Network egress to
+              api.opsgenie.com, (4) Team and integration configuration.
+            runbook_url: "https://runbooks.greenlang.io/alerting-service/opsgenie-integration-down"
+            dashboard_url: "https://grafana.greenlang.io/d/alerting-service"
+
+        # ---------------------------------------------------------------------
+        # SlackIntegrationDown
+        # Fires when Slack notification failure rate exceeds 5% for 10 min.
+        # Slack is used for all severity levels as the primary notification hub.
+        # ---------------------------------------------------------------------
+        - alert: SlackIntegrationDown
+          expr: |
+            (
+              sum(rate(gl_alert_notifications_total{job="alerting-service", channel="slack", status="failed"}[10m]))
+              /
+              sum(rate(gl_alert_notifications_total{job="alerting-service", channel="slack"}[10m]))
+            ) > 0.05
+          for: 10m
+          labels:
+            severity: warning
+            team: platform-observability
+            component: alerting-service
+            prd: OBS-004
+          annotations:
+            summary: "Slack notification failure rate exceeds 5%"
+            description: >-
+              Slack notification delivery failure rate is
+              {{ $value | humanizePercentage }} over the last 10 minutes. Alert
+              notifications to Slack channels are being dropped. Check: (1) Slack
+              webhook URL validity, (2) Slack API status at status.slack.com,
+              (3) Webhook rate limits (Slack allows 1 message/sec per webhook),
+              (4) Network egress to hooks.slack.com.
+            runbook_url: "https://runbooks.greenlang.io/alerting-service/slack-integration-down"
+            dashboard_url: "https://grafana.greenlang.io/d/alerting-service"
+
+    # =========================================================================
+    # Group 3: Response Time and Escalation Alerts
+    # =========================================================================
+    - name: alerting_service.response
+      interval: 60s
+      rules:
+        # ---------------------------------------------------------------------
+        # HighMTTA
+        # Fires when a team's MTTA exceeds 15 minutes for 30 minutes.
+        # Indicates alerts are not being acknowledged in a timely manner.
+        # ---------------------------------------------------------------------
+        - alert: HighMTTA
+          expr: |
+            gl_alert_mtta_seconds{job="alerting-service"} > 900
+          for: 30m
+          labels:
+            severity: warning
+            team: platform-observability
+            component: alerting-service
+            prd: OBS-004
+          annotations:
+            summary: "Team {{ $labels.team }} MTTA exceeds 15 minutes"
+            description: >-
+              Team {{ $labels.team }} has a Mean Time To Acknowledge of
+              {{ $value | humanizeDuration }} over the last 30 minutes, exceeding
+              the 15-minute target. Alerts are not being acknowledged promptly.
+              Check: (1) On-call responder availability, (2) Notification delivery
+              to the team's channels, (3) Alert fatigue levels, (4) Whether the
+              team's on-call schedule is up to date.
+            runbook_url: "https://runbooks.greenlang.io/alerting-service/high-mtta"
+            dashboard_url: "https://grafana.greenlang.io/d/alerting-service"
+
+        # ---------------------------------------------------------------------
+        # AlertNotAcknowledged
+        # Fires when a critical alert has not been acknowledged for 15 min.
+        # Triggers immediate escalation awareness.
+        # ---------------------------------------------------------------------
+        - alert: AlertNotAcknowledged
+          expr: |
+            (
+              gl_alert_active_total{job="alerting-service", severity="critical", status="firing"}
+              and
+              (time() - gl_alert_fired_at_seconds{job="alerting-service", severity="critical"}) > 900
+            ) > 0
+          for: 0m
+          labels:
+            severity: warning
+            team: platform-observability
+            component: alerting-service
+            prd: OBS-004
+          annotations:
+            summary: "Critical alert unacknowledged for >15 minutes"
+            description: >-
+              One or more critical alerts have been firing for over 15 minutes
+              without acknowledgment. The alerting service will auto-escalate, but
+              this condition indicates potential on-call response gaps. Verify
+              notification delivery and on-call responder availability.
+            runbook_url: "https://runbooks.greenlang.io/alerting-service/alert-not-acknowledged"
+            dashboard_url: "https://grafana.greenlang.io/d/alerting-service"
+
+        # ---------------------------------------------------------------------
+        # EscalationTriggered
+        # Fires when any alert is escalated beyond level 0.
+        # Informational alert for visibility into escalation events.
+        # ---------------------------------------------------------------------
+        - alert: EscalationTriggered
+          expr: |
+            sum(rate(gl_alert_escalations_total{job="alerting-service"}[5m])) > 0
+          for: 0m
+          labels:
+            severity: info
+            team: platform-observability
+            component: alerting-service
+            prd: OBS-004
+          annotations:
+            summary: "Alert escalation triggered"
+            description: >-
+              An alert has been escalated to a higher response level. Escalation
+              rate is {{ $value | printf "%.2f" }}/sec. Review the escalation log
+              in the alerting service dashboard to identify which alerts were
+              escalated and whether the initial responders need support.
+            runbook_url: "https://runbooks.greenlang.io/alerting-service/escalation-triggered"
+            dashboard_url: "https://grafana.greenlang.io/d/alerting-service"
+
+    # =========================================================================
+    # Group 4: Operational Health Alerts
+    # =========================================================================
+    - name: alerting_service.operations
+      interval: 60s
+      rules:
+        # ---------------------------------------------------------------------
+        # AlertFatigueHigh
+        # Fires when alert fatigue score exceeds 80 for 1 hour.
+        # Indicates a team is receiving too many alerts and may start ignoring
+        # them, leading to missed critical incidents.
+        # ---------------------------------------------------------------------
+        - alert: AlertFatigueHigh
+          expr: |
+            gl_alert_fatigue_score{job="alerting-service"} > 80
+          for: 1h
+          labels:
+            severity: warning
+            team: platform-observability
+            component: alerting-service
+            prd: OBS-004
+          annotations:
+            summary: "Alert fatigue score >80 for team {{ $labels.team }}"
+            description: >-
+              Team {{ $labels.team }} has an alert fatigue score of
+              {{ $value | printf "%.0f" }}/100 for the last hour. High fatigue
+              scores indicate excessive alert noise, which increases the risk of
+              missed critical incidents. Review the "Top 10 Noisiest Alerts" panel
+              to identify candidates for tuning, silencing, or consolidation.
+            runbook_url: "https://runbooks.greenlang.io/alerting-service/alert-fatigue-high"
+            dashboard_url: "https://grafana.greenlang.io/d/alerting-service"
+
+        # ---------------------------------------------------------------------
+        # NotificationRateLimited
+        # Fires when notifications are being rate-limited for 5 minutes.
+        # Indicates an alert storm or misconfigured rate limits.
+        # ---------------------------------------------------------------------
+        - alert: NotificationRateLimited
+          expr: |
+            sum(rate(gl_alert_rate_limited_total{job="alerting-service"}[5m])) > 0
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-observability
+            component: alerting-service
+            prd: OBS-004
+          annotations:
+            summary: "Notifications are being rate-limited"
+            description: >-
+              The alerting service is rate-limiting notification delivery at
+              {{ $value | printf "%.2f" }}/sec. Some alert notifications may be
+              delayed or suppressed. This typically occurs during alert storms.
+              Check: (1) Whether an underlying incident is generating excessive
+              alerts, (2) Whether rate limit thresholds need adjustment, (3) The
+              deduplication rate to ensure duplicate suppression is working.
+            runbook_url: "https://runbooks.greenlang.io/alerting-service/notification-rate-limited"
+            dashboard_url: "https://grafana.greenlang.io/d/alerting-service"
+
+        # ---------------------------------------------------------------------
+        # OnCallLookupFailing
+        # Fires when on-call schedule lookup failures exceed 50%.
+        # Escalation routing depends on accurate on-call information.
+        # ---------------------------------------------------------------------
+        - alert: OnCallLookupFailing
+          expr: |
+            (
+              sum(rate(gl_alert_oncall_lookup_total{job="alerting-service", status="failed"}[10m]))
+              /
+              sum(rate(gl_alert_oncall_lookup_total{job="alerting-service"}[10m]))
+            ) > 0.5
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-observability
+            component: alerting-service
+            prd: OBS-004
+          annotations:
+            summary: "On-call schedule lookups failing >50%"
+            description: >-
+              On-call schedule lookup failure rate is
+              {{ $value | humanizePercentage }} over the last 10 minutes. The
+              alerting service cannot determine who is on-call, which affects
+              escalation routing. Check: (1) PagerDuty/Opsgenie API connectivity,
+              (2) API key validity, (3) Schedule configuration, (4) On-call cache
+              health in Redis.
+            runbook_url: "https://runbooks.greenlang.io/alerting-service/oncall-lookup-failing"
+            dashboard_url: "https://grafana.greenlang.io/d/alerting-service"
+
+        # ---------------------------------------------------------------------
+        # HighAlertVolume
+        # Fires when alert volume exceeds 100 per hour for 30 minutes.
+        # May indicate a cascading failure or configuration issue.
+        # ---------------------------------------------------------------------
+        - alert: HighAlertVolume
+          expr: |
+            sum(rate(gl_alert_fired_total{job="alerting-service"}[1h])) * 3600 > 100
+          for: 30m
+          labels:
+            severity: info
+            team: platform-observability
+            component: alerting-service
+            prd: OBS-004
+          annotations:
+            summary: "High alert volume (>100 alerts/hour for 30 minutes)"
+            description: >-
+              Alert volume is {{ $value | printf "%.0f" }} alerts/hour over the
+              last 30 minutes, exceeding the 100/hour threshold. This may indicate
+              a cascading infrastructure failure, a misconfigured alerting rule, or
+              a deployment issue generating excessive alerts. Review the "Alerts by
+              Service" and "Top 10 Noisiest Alerts" panels to identify the source.
+            runbook_url: "https://runbooks.greenlang.io/alerting-service/high-alert-volume"
+            dashboard_url: "https://grafana.greenlang.io/d/alerting-service"

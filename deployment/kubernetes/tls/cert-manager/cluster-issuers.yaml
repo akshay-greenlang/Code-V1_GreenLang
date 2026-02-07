@@ -1,0 +1,81 @@
+# =============================================================================
+# cert-manager ClusterIssuers
+# SEC-004: Certificate Management
+# =============================================================================
+
+# Let's Encrypt Production Issuer
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+  labels:
+    greenlang.io/component: sec-004
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: devops@greenlang.io
+    privateKeySecretRef:
+      name: letsencrypt-prod-account-key
+    solvers:
+      # HTTP-01 challenge for standard certificates
+      - http01:
+          ingress:
+            class: nginx
+            podTemplate:
+              spec:
+                nodeSelector:
+                  kubernetes.io/os: linux
+        selector:
+          dnsZones:
+            - greenlang.io
+      # DNS-01 challenge for wildcard certificates
+      - dns01:
+          route53:
+            region: us-east-1
+            hostedZoneID: ${AWS_ROUTE53_HOSTED_ZONE_ID}
+        selector:
+          dnsNames:
+            - "*.greenlang.io"
+            - "*.api.greenlang.io"
+
+---
+# Let's Encrypt Staging Issuer (for testing)
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-staging
+  labels:
+    greenlang.io/component: sec-004
+spec:
+  acme:
+    server: https://acme-staging-v02.api.letsencrypt.org/directory
+    email: devops@greenlang.io
+    privateKeySecretRef:
+      name: letsencrypt-staging-account-key
+    solvers:
+      - http01:
+          ingress:
+            class: nginx
+
+---
+# Self-signed issuer for internal CA
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: selfsigned-issuer
+  labels:
+    greenlang.io/component: sec-004
+spec:
+  selfSigned: {}
+
+---
+# Internal CA issuer (uses self-signed root)
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: greenlang-internal-ca
+  labels:
+    greenlang.io/component: sec-004
+spec:
+  ca:
+    secretName: greenlang-internal-ca-key-pair

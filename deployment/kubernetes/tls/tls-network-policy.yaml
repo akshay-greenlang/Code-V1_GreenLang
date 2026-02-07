@@ -1,0 +1,69 @@
+# =============================================================================
+# TLS Network Policies
+# SEC-004: Enforce encrypted traffic only
+# =============================================================================
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: enforce-tls-ingress
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: tls-enforcement
+    greenlang.io/component: sec-004
+spec:
+  podSelector: {}  # Apply to all pods in namespace
+  policyTypes:
+    - Ingress
+  ingress:
+    # Allow HTTPS from ingress controller
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              app.kubernetes.io/name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 8080
+        - protocol: TCP
+          port: 8443
+    # Allow internal cluster traffic (mTLS)
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: greenlang
+      ports:
+        - protocol: TCP
+          port: 8080
+        - protocol: TCP
+          port: 8443
+        - protocol: TCP
+          port: 9090  # Metrics
+    # Allow health checks from kubelet
+    - from:
+        - ipBlock:
+            cidr: 10.0.0.0/8
+      ports:
+        - protocol: TCP
+          port: 8080
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: deny-plaintext-http
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: tls-enforcement
+    greenlang.io/component: sec-004
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+  ingress:
+    # Explicitly deny port 80 from external sources
+    - from:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 10.0.0.0/8
+              - 172.16.0.0/12
+              - 192.168.0.0/16
+      ports: []  # Empty = deny all

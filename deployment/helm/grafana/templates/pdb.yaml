@@ -1,0 +1,18 @@
+{{- /*
+GreenLang Grafana - Pod Disruption Budget
+GreenLang Climate OS | OBS-002
+*/ -}}
+{{- if .Values.pdb.enabled }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "grafana.fullname" . }}
+  namespace: {{ include "grafana.namespace" . }}
+  labels:
+    {{- include "grafana.labels" . | nindent 4 }}
+spec:
+  minAvailable: {{ .Values.pdb.minAvailable }}
+  selector:
+    matchLabels:
+      {{- include "grafana.selectorLabels" . | nindent 6 }}
+{{- end }}

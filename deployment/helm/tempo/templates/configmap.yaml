@@ -1,0 +1,207 @@
+{{/*
+# =============================================================================
+# GreenLang Tempo - ConfigMap
+# GreenLang Climate OS | OBS-003
+# =============================================================================
+# Renders the Tempo YAML configuration from Helm values. This single ConfigMap
+# is mounted by all Tempo components; each component reads only its own section.
+# =============================================================================
+*/}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "tempo.fullname" . }}-config
+  namespace: {{ include "tempo.namespace" . }}
+  labels:
+    {{- include "tempo.labels" . | nindent 4 }}
+data:
+  tempo.yaml: |
+    # -------------------------------------------------------------------------
+    # Target (set per-component via CLI -target flag; "all" for monolithic)
+    # -------------------------------------------------------------------------
+    multitenancy_enabled: false
+
+    # -------------------------------------------------------------------------
+    # Server
+    # -------------------------------------------------------------------------
+    server:
+      http_listen_port: {{ .Values.tempo.server.http_listen_port | default 3200 }}
+      grpc_listen_port: {{ .Values.tempo.server.grpc_listen_port | default 9095 }}
+      log_level: {{ .Values.tempo.server.log_level | default "info" }}
+      log_format: {{ .Values.tempo.server.log_format | default "logfmt" }}
+
+    # -------------------------------------------------------------------------
+    # Distributor
+    # -------------------------------------------------------------------------
+    distributor:
+      receivers:
+        {{- toYaml .Values.tempo.distributor.receivers | nindent 8 }}
+      ring:
+        kvstore:
+          store: {{ .Values.tempo.distributor.ring.kvstore.store | default "memberlist" }}
+      {{- if .Values.tempo.distributor.log_received_spans }}
+      log_received_spans:
+        enabled: {{ .Values.tempo.distributor.log_received_spans.enabled | default false }}
+      {{- end }}
+
+    # -------------------------------------------------------------------------
+    # Ingester
+    # -------------------------------------------------------------------------
+    ingester:
+      max_block_duration: {{ .Values.tempo.ingester.max_block_duration | default "5m" }}
+      max_block_bytes: {{ .Values.tempo.ingester.max_block_bytes | default 524288000 }}
+      flush_check_period: {{ .Values.tempo.ingester.flush_check_period | default "10s" }}
+      trace_idle_period: {{ .Values.tempo.ingester.trace_idle_period | default "30s" }}
+      lifecycler:
+        ring:
+          replication_factor: {{ .Values.tempo.ingester.lifecycler.ring.replication_factor | default 3 }}
+          kvstore:
+            store: {{ .Values.tempo.ingester.lifecycler.ring.kvstore.store | default "memberlist" }}
+
+    # -------------------------------------------------------------------------
+    # Querier
+    # -------------------------------------------------------------------------
+    querier:
+      max_concurrent_queries: {{ .Values.tempo.querier.max_concurrent_queries | default 20 }}
+      search:
+        query_timeout: {{ .Values.tempo.querier.search.query_timeout | default "30s" }}
+        {{- if .Values.tempo.querier.search.prefer_self }}
+        prefer_self: {{ .Values.tempo.querier.search.prefer_self }}
+        {{- end }}
+        {{- if .Values.tempo.querier.search.external_hedge_requests_at }}
+        external_hedge_requests_at: {{ .Values.tempo.querier.search.external_hedge_requests_at }}
+        {{- end }}
+        {{- if .Values.tempo.querier.search.external_hedge_requests_up_to }}
+        external_hedge_requests_up_to: {{ .Values.tempo.querier.search.external_hedge_requests_up_to }}
+        {{- end }}
+      {{- if .Values.tempo.querier.frontend_worker }}
+      frontend_worker:
+        {{- toYaml .Values.tempo.querier.frontend_worker | nindent 8 }}
+      {{- end }}
+
+    # -------------------------------------------------------------------------
+    # Query Frontend
+    # -------------------------------------------------------------------------
+    query_frontend:
+      max_retries: {{ .Values.tempo.queryFrontend.max_retries | default 2 }}
+      search:
+        max_duration: {{ .Values.tempo.queryFrontend.search.max_duration | default "0s" }}
+        default_result_limit: {{ .Values.tempo.queryFrontend.search.default_result_limit | default 20 }}
+        max_result_limit: {{ .Values.tempo.queryFrontend.search.max_result_limit | default 100 }}
+        concurrent_jobs: {{ .Values.tempo.queryFrontend.search.concurrent_jobs | default 2000 }}
+
+    # -------------------------------------------------------------------------
+    # Compactor
+    # -------------------------------------------------------------------------
+    compactor:
+      compaction:
+        block_retention: {{ .Values.tempo.compactor.compaction.block_retention | default "720h" }}
+        compacted_block_retention: {{ .Values.tempo.compactor.compaction.compacted_block_retention | default "1h" }}
+        compaction_window: {{ .Values.tempo.compactor.compaction.compaction_window | default "1h" }}
+        max_block_bytes: {{ .Values.tempo.compactor.compaction.max_block_bytes | default 107374182400 }}
+        {{- if .Values.tempo.compactor.compaction.max_compaction_objects }}
+        max_compaction_objects: {{ .Values.tempo.compactor.compaction.max_compaction_objects }}
+        {{- end }}
+        {{- if .Values.tempo.compactor.compaction.retention_concurrency }}
+        retention_concurrency: {{ .Values.tempo.compactor.compaction.retention_concurrency }}
+        {{- end }}
+      ring:
+        kvstore:
+          store: {{ .Values.tempo.compactor.ring.kvstore.store | default "memberlist" }}
+
+    {{- if .Values.tempo.metricsGenerator.enabled }}
+    # -------------------------------------------------------------------------
+    # Metrics Generator
+    # -------------------------------------------------------------------------
+    metrics_generator:
+      storage:
+        path: {{ .Values.tempo.metricsGenerator.storage.path | default "/var/tempo/generator/wal" }}
+        remote_write:
+          {{- toYaml .Values.tempo.metricsGenerator.storage.remote_write | nindent 10 }}
+      processor:
+        span_metrics:
+          dimensions:
+            {{- toYaml .Values.tempo.metricsGenerator.processor.span_metrics.dimensions | nindent 12 }}
+          enable_target_info: {{ .Values.tempo.metricsGenerator.processor.span_metrics.enable_target_info | default true }}
+          {{- if .Values.tempo.metricsGenerator.processor.span_metrics.histogram_buckets }}
+          histogram_buckets:
+            {{- toYaml .Values.tempo.metricsGenerator.processor.span_metrics.histogram_buckets | nindent 12 }}
+          {{- end }}
+        service_graphs:
+          dimensions:
+            {{- toYaml .Values.tempo.metricsGenerator.processor.service_graphs.dimensions | nindent 12 }}
+          enable_client_server_prefix: {{ .Values.tempo.metricsGenerator.processor.service_graphs.enable_client_server_prefix | default true }}
+          {{- if .Values.tempo.metricsGenerator.processor.service_graphs.max_items }}
+          max_items: {{ .Values.tempo.metricsGenerator.processor.service_graphs.max_items }}
+          {{- end }}
+          {{- if .Values.tempo.metricsGenerator.processor.service_graphs.wait }}
+          wait: {{ .Values.tempo.metricsGenerator.processor.service_graphs.wait }}
+          {{- end }}
+      ring:
+        kvstore:
+          store: {{ .Values.tempo.metricsGenerator.ring.kvstore.store | default "memberlist" }}
+    {{- end }}
+
+    # -------------------------------------------------------------------------
+    # Storage
+    # -------------------------------------------------------------------------
+    storage:
+      trace:
+        {{- if eq .Values.tempo.storage.trace.backend "s3" }}
+        backend: s3
+        s3:
+          bucket: {{ .Values.tempo.storage.trace.s3.bucket }}
+          region: {{ .Values.tempo.storage.trace.s3.region | default "eu-west-1" }}
+          {{- if .Values.tempo.storage.trace.s3.endpoint }}
+          endpoint: {{ .Values.tempo.storage.trace.s3.endpoint }}
+          {{- end }}
+          forcepathstyle: {{ .Values.tempo.storage.trace.s3.forcepathstyle | default false }}
+          insecure: {{ .Values.tempo.storage.trace.s3.insecure | default false }}
+        {{- else }}
+        backend: local
+        local:
+          path: {{ .Values.tempo.storage.trace.local.path | default "/var/tempo/traces" }}
+        {{- end }}
+        wal:
+          path: {{ .Values.tempo.storage.trace.wal.path | default "/var/tempo/wal" }}
+        block:
+          version: {{ .Values.tempo.storage.trace.block.version | default "vParquet4" }}
+        blocklist_poll: {{ .Values.tempo.storage.trace.blocklist_poll | default "5m" }}
+        {{- if .Values.tempo.storage.trace.cache }}
+        cache: {{ .Values.tempo.storage.trace.cache }}
+        {{- end }}
+
+    # -------------------------------------------------------------------------
+    # Overrides
+    # -------------------------------------------------------------------------
+    overrides:
+      defaults:
+        ingestion:
+          rate_limit_bytes: {{ .Values.tempo.overrides.defaults.ingestion.rate_limit_bytes | default 15000000 }}
+          burst_size_bytes: {{ .Values.tempo.overrides.defaults.ingestion.burst_size_bytes | default 20000000 }}
+          {{- if .Values.tempo.overrides.defaults.ingestion.max_traces_per_user }}
+          max_traces_per_user: {{ .Values.tempo.overrides.defaults.ingestion.max_traces_per_user }}
+          {{- end }}
+          {{- if .Values.tempo.overrides.defaults.ingestion.max_bytes_per_trace }}
+          max_bytes_per_trace: {{ .Values.tempo.overrides.defaults.ingestion.max_bytes_per_trace }}
+          {{- end }}
+        search:
+          max_duration: {{ .Values.tempo.overrides.defaults.search.max_duration | default "168h" }}
+        {{- if .Values.tempo.overrides.defaults.global }}
+        global:
+          {{- toYaml .Values.tempo.overrides.defaults.global | nindent 10 }}
+        {{- end }}
+
+    # -------------------------------------------------------------------------
+    # Memberlist
+    # -------------------------------------------------------------------------
+    memberlist:
+      bind_port: {{ .Values.tempo.memberlist.port | default 7946 }}
+      join_members:
+        - dns+{{ include "tempo.fullname" . }}-memberlist.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.tempo.memberlist.port | default 7946 }}
+
+    # -------------------------------------------------------------------------
+    # Usage Report (opt out)
+    # -------------------------------------------------------------------------
+    usage_report:
+      reporting_enabled: false

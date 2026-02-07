@@ -1,0 +1,488 @@
+# ============================================================================
+# Prometheus Health Alert Rules
+# ============================================================================
+# PrometheusRules for Prometheus self-monitoring and health.
+# Monitors targets, configuration, storage, memory, and query performance.
+#
+# Created: 2026-02-06
+# Team: Monitoring & Observability
+# PRD: OBS-001 - Prometheus Metrics Collection
+#
+# Alert Groups:
+#   - prometheus.targets: Target scraping health
+#   - prometheus.config: Configuration and reload status
+#   - prometheus.storage: TSDB storage and compaction
+#   - prometheus.performance: Query and ingestion performance
+#   - prometheus.rules: Rule evaluation health
+# ============================================================================
+
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: prometheus-health-alerts
+  namespace: monitoring
+  labels:
+    app: prometheus
+    component: alerting
+    prometheus: main
+    role: alert-rules
+    app.kubernetes.io/name: prometheus
+    app.kubernetes.io/component: alerts
+    app.kubernetes.io/part-of: greenlang
+    release: prometheus
+  annotations:
+    description: "Prometheus self-monitoring and health alert rules"
+    runbook_base_url: "https://runbooks.greenlang.ai/prometheus"
+spec:
+  groups:
+    # =========================================================================
+    # TARGET HEALTH ALERTS
+    # =========================================================================
+    - name: prometheus.targets
+      interval: 30s
+      rules:
+        # ---------------------------------------------------------------------
+        # PrometheusTargetMissing - Critical target down
+        # ---------------------------------------------------------------------
+        - alert: PrometheusTargetMissing
+          expr: up == 0
+          for: 5m
+          labels:
+            severity: critical
+            team: platform
+            component: prometheus
+            category: availability
+          annotations:
+            summary: "Prometheus target missing ({{ $labels.instance }})"
+            description: |
+              Target {{ $labels.job }}/{{ $labels.instance }} is down and has not been
+              scraped successfully for more than 5 minutes.
+
+              Job: {{ $labels.job }}
+              Instance: {{ $labels.instance }}
+              Last scrape: Failed
+
+              Impact: Metrics from this target are not being collected. Monitoring
+              coverage is incomplete and alerts for this service may not fire.
+            runbook_url: "https://runbooks.greenlang.ai/prometheus/target-down"
+            dashboard_url: "https://grafana.greenlang.ai/d/prometheus-targets"
+
+        # ---------------------------------------------------------------------
+        # PrometheusTargetScrapingSlow - Slow scrape duration
+        # ---------------------------------------------------------------------
+        - alert: PrometheusTargetScrapingSlow
+          expr: |
+            prometheus_target_scrape_pool_sync_total > 0
+            and
+            rate(prometheus_target_scrape_pool_sync_total[5m]) < 0.1
+          for: 10m
+          labels:
+            severity: warning
+            team: platform
+            component: prometheus
+            category: performance
+          annotations:
+            summary: "Prometheus target scraping is slow"
+            description: |
+              Prometheus scrape pool sync rate is below normal.
+              Current rate: {{ $value | printf "%.4f" }} syncs/second
+
+              This may indicate network issues or overloaded targets.
+            runbook_url: "https://runbooks.greenlang.ai/prometheus/slow-scraping"
+
+        # ---------------------------------------------------------------------
+        # PrometheusTargetScrapesDuplicate - Duplicate scrapes detected
+        # ---------------------------------------------------------------------
+        - alert: PrometheusTargetScrapesDuplicate
+          expr: |
+            increase(prometheus_target_scrapes_sample_duplicate_timestamp_total[5m]) > 0
+          for: 10m
+          labels:
+            severity: warning
+            team: platform
+            component: prometheus
+            category: data-quality
+          annotations:
+            summary: "Prometheus detecting duplicate timestamps"
+            description: |
+              Prometheus is receiving samples with duplicate timestamps from targets.
+              Duplicate count: {{ $value | printf "%.0f" }} in last 5 minutes
+
+              This may indicate misconfigured exporters or clock skew issues.
+            runbook_url: "https://runbooks.greenlang.ai/prometheus/duplicate-timestamps"
+
+        # ---------------------------------------------------------------------
+        # PrometheusHighScrapeInterval - Targets not scraped on time
+        # ---------------------------------------------------------------------
+        - alert: PrometheusHighScrapeInterval
+          expr: |
+            prometheus_target_interval_length_seconds{quantile="0.99"} > 60
+          for: 5m
+          labels:
+            severity: warning
+            team: platform
+            component: prometheus
+            category: performance
+          annotations:
+            summary: "Prometheus scrape interval exceeded (P99 > 60s)"
+            description: |
+              Prometheus P99 scrape interval is {{ $value | printf "%.2f" }} seconds.
+              This exceeds the expected interval, meaning some targets are not being
+              scraped on schedule.
+            runbook_url: "https://runbooks.greenlang.ai/prometheus/high-scrape-interval"
+
+    # =========================================================================
+    # CONFIGURATION ALERTS
+    # =========================================================================
+    - name: prometheus.config
+      interval: 30s
+      rules:
+        # ---------------------------------------------------------------------
+        # PrometheusConfigReloadFailed - Config reload failure
+        # ---------------------------------------------------------------------
+        - alert: PrometheusConfigReloadFailed
+          expr: prometheus_config_last_reload_successful != 1
+          for: 1m
+          labels:
+            severity: critical
+            team: platform
+            component: prometheus
+            category: configuration
+          annotations:
+            summary: "Prometheus config reload failed"
+            description: |
+              Prometheus failed to reload its configuration.
+              Last successful reload: {{ with printf "prometheus_config_last_reload_success_timestamp_seconds{instance='%s'}" $labels.instance | query }}{{ . | first | value | printf "%.0f" }}{{ end }}
+
+              Impact: Configuration changes are not being applied. Prometheus is running
+              with a stale configuration.
+            runbook_url: "https://runbooks.greenlang.ai/prometheus/config-reload-failed"
+            dashboard_url: "https://grafana.greenlang.ai/d/prometheus-health"
+
+        # ---------------------------------------------------------------------
+        # PrometheusNotificationQueueRunningFull - Alert queue filling up
+        # ---------------------------------------------------------------------
+        - alert: PrometheusNotificationQueueRunningFull
+          expr: |
+            (
+              predict_linear(prometheus_notifications_queue_length[5m], 60 * 30)
+              > prometheus_notifications_queue_capacity
+            )
+          for: 15m
+          labels:
+            severity: warning
+            team: platform
+            component: prometheus
+            category: alerting
+          annotations:
+            summary: "Prometheus notification queue is filling up"
+            description: |
+              The Prometheus notification queue is predicted to fill up within 30 minutes.
+              Current queue length: {{ with printf "prometheus_notifications_queue_length{instance='%s'}" $labels.instance | query }}{{ . | first | value | printf "%.0f" }}{{ end }}
+
+              Impact: Alert notifications may be dropped if queue overflows.
+            runbook_url: "https://runbooks.greenlang.ai/prometheus/notification-queue-full"
+
+        # ---------------------------------------------------------------------
+        # PrometheusAlertmanagerConfigNotSynced - AM config out of sync
+        # ---------------------------------------------------------------------
+        - alert: PrometheusAlertmanagerConfigNotSynced
+          expr: |
+            count(count_values("config_hash", alertmanager_config_hash)) > 1
+          for: 5m
+          labels:
+            severity: warning
+            team: platform
+            component: alertmanager
+            category: configuration
+          annotations:
+            summary: "Alertmanager configurations not in sync"
+            description: |
+              Alertmanager cluster members have different configurations.
+              Number of distinct configurations: {{ $value }}
+
+              Impact: Alert routing may be inconsistent across Alertmanager instances.
+            runbook_url: "https://runbooks.greenlang.ai/prometheus/alertmanager-config-sync"
+
+    # =========================================================================
+    # STORAGE ALERTS
+    # =========================================================================
+    - name: prometheus.storage
+      interval: 30s
+      rules:
+        # ---------------------------------------------------------------------
+        # PrometheusTSDBCompactionsFailed - TSDB compaction failure
+        # ---------------------------------------------------------------------
+        - alert: PrometheusTSDBCompactionsFailed
+          expr: increase(prometheus_tsdb_compactions_failed_total[1h]) > 0
+          for: 5m
+          labels:
+            severity: warning
+            team: platform
+            component: prometheus
+            category: storage
+          annotations:
+            summary: "Prometheus TSDB compactions failing"
+            description: |
+              Prometheus TSDB has experienced {{ $value | printf "%.0f" }} compaction
+              failures in the last hour.
+
+              Impact: Storage efficiency is degraded. Query performance may suffer.
+            runbook_url: "https://runbooks.greenlang.ai/prometheus/tsdb-compaction-failed"
+            dashboard_url: "https://grafana.greenlang.ai/d/prometheus-health"
+
+        # ---------------------------------------------------------------------
+        # PrometheusStorageAlmostFull - Storage utilization high
+        # ---------------------------------------------------------------------
+        - alert: PrometheusStorageAlmostFull
+          expr: |
+            (
+              prometheus_tsdb_storage_blocks_bytes
+              / (prometheus_tsdb_storage_blocks_bytes + prometheus_tsdb_head_chunks_storage_size_bytes + 1)
+            ) > 0.8
+          for: 5m
+          labels:
+            severity: warning
+            team: platform
+            component: prometheus
+            category: storage
+          annotations:
+            summary: "Prometheus storage almost full (>80%)"
+            description: |
+              Prometheus storage utilization is above 80%.
+              Block storage: {{ with printf "prometheus_tsdb_storage_blocks_bytes{instance='%s'}" $labels.instance | query }}{{ . | first | value | humanize1024 }}B{{ end }}
+              Head chunks: {{ with printf "prometheus_tsdb_head_chunks_storage_size_bytes{instance='%s'}" $labels.instance | query }}{{ . | first | value | humanize1024 }}B{{ end }}
+
+              Impact: Prometheus may stop accepting new samples when storage is exhausted.
+            runbook_url: "https://runbooks.greenlang.ai/prometheus/storage-full"
+            dashboard_url: "https://grafana.greenlang.ai/d/prometheus-health"
+
+        # ---------------------------------------------------------------------
+        # PrometheusTSDBReloadsFailed - TSDB reload failure
+        # ---------------------------------------------------------------------
+        - alert: PrometheusTSDBReloadsFailed
+          expr: increase(prometheus_tsdb_reloads_failures_total[1h]) > 0
+          for: 5m
+          labels:
+            severity: warning
+            team: platform
+            component: prometheus
+            category: storage
+          annotations:
+            summary: "Prometheus TSDB reloads failing"
+            description: |
+              Prometheus TSDB has experienced {{ $value | printf "%.0f" }} reload
+              failures in the last hour.
+            runbook_url: "https://runbooks.greenlang.ai/prometheus/tsdb-reload-failed"
+
+        # ---------------------------------------------------------------------
+        # PrometheusTSDBWALCorruptions - WAL corruption detected
+        # ---------------------------------------------------------------------
+        - alert: PrometheusTSDBWALCorruptions
+          expr: increase(prometheus_tsdb_wal_corruptions_total[1h]) > 0
+          for: 1m
+          labels:
+            severity: critical
+            team: platform
+            component: prometheus
+            category: storage
+          annotations:
+            summary: "Prometheus TSDB WAL corruptions detected"
+            description: |
+              Prometheus TSDB Write-Ahead Log has {{ $value | printf "%.0f" }} corruption(s).
+
+              Impact: CRITICAL - Data loss may have occurred. Prometheus reliability compromised.
+            runbook_url: "https://runbooks.greenlang.ai/prometheus/wal-corruption"
+
+    # =========================================================================
+    # PERFORMANCE ALERTS
+    # =========================================================================
+    - name: prometheus.performance
+      interval: 30s
+      rules:
+        # ---------------------------------------------------------------------
+        # PrometheusHighMemoryUsage - Memory utilization high
+        # ---------------------------------------------------------------------
+        - alert: PrometheusHighMemoryUsage
+          expr: |
+            (
+              process_resident_memory_bytes{job="prometheus"}
+              / on(instance) container_spec_memory_limit_bytes{container="prometheus"}
+            ) > 0.8
+          for: 5m
+          labels:
+            severity: warning
+            team: platform
+            component: prometheus
+            category: performance
+          annotations:
+            summary: "Prometheus memory usage >80%"
+            description: |
+              Prometheus is using more than 80% of its memory limit.
+              Current usage: {{ $value | printf "%.1f" | mul 100 }}%
+              Resident memory: {{ with printf "process_resident_memory_bytes{job='prometheus', instance='%s'}" $labels.instance | query }}{{ . | first | value | humanize1024 }}B{{ end }}
+
+              Impact: Prometheus may be OOM-killed if memory usage continues to grow.
+            runbook_url: "https://runbooks.greenlang.ai/prometheus/high-memory"
+            dashboard_url: "https://grafana.greenlang.ai/d/prometheus-health"
+
+        # ---------------------------------------------------------------------
+        # PrometheusHighCardinality - Too many time series
+        # ---------------------------------------------------------------------
+        - alert: PrometheusHighCardinality
+          expr: prometheus_tsdb_head_series > 2000000
+          for: 5m
+          labels:
+            severity: warning
+            team: platform
+            component: prometheus
+            category: performance
+          annotations:
+            summary: "Prometheus high cardinality ({{ $value | printf \"%.0f\" }} series)"
+            description: |
+              Prometheus has {{ $value | printf "%.0f" }} active time series in the head block.
+              This exceeds the recommended limit of 2 million series.
+
+              Impact: High cardinality causes increased memory usage and slower queries.
+              Identify and fix high-cardinality metrics.
+            runbook_url: "https://runbooks.greenlang.ai/prometheus/high-cardinality"
+            dashboard_url: "https://grafana.greenlang.ai/d/prometheus-health"
+
+        # ---------------------------------------------------------------------
+        # PrometheusSlowQueries - Query latency high
+        # ---------------------------------------------------------------------
+        - alert: PrometheusSlowQueries
+          expr: |
+            histogram_quantile(0.99, rate(prometheus_engine_query_duration_seconds_bucket[5m])) > 30
+          for: 5m
+          labels:
+            severity: warning
+            team: platform
+            component: prometheus
+            category: performance
+          annotations:
+            summary: "Prometheus queries are slow (P99 > 30s)"
+            description: |
+              Prometheus query P99 latency is {{ $value | printf "%.2f" }} seconds.
+              This exceeds the 30-second threshold.
+
+              Impact: Dashboard loading and alerting may be delayed.
+            runbook_url: "https://runbooks.greenlang.ai/prometheus/slow-queries"
+            dashboard_url: "https://grafana.greenlang.ai/d/prometheus-health"
+
+        # ---------------------------------------------------------------------
+        # PrometheusHighSampleAppendFailures - Sample ingestion issues
+        # ---------------------------------------------------------------------
+        - alert: PrometheusHighSampleAppendFailures
+          expr: |
+            rate(prometheus_tsdb_head_samples_appended_total[5m]) > 0
+            and
+            rate(prometheus_tsdb_out_of_order_samples_total[5m]) /
+            rate(prometheus_tsdb_head_samples_appended_total[5m]) > 0.01
+          for: 10m
+          labels:
+            severity: warning
+            team: platform
+            component: prometheus
+            category: data-quality
+          annotations:
+            summary: "Prometheus has high out-of-order sample rate (>1%)"
+            description: |
+              More than 1% of samples are being rejected as out-of-order.
+
+              This may indicate clock skew issues with scraped targets or
+              misconfigured scrape intervals.
+            runbook_url: "https://runbooks.greenlang.ai/prometheus/out-of-order-samples"
+
+        # ---------------------------------------------------------------------
+        # PrometheusHighIngestionRate - Ingestion rate warning
+        # ---------------------------------------------------------------------
+        - alert: PrometheusHighIngestionRate
+          expr: |
+            rate(prometheus_tsdb_head_samples_appended_total[5m]) > 150000
+          for: 10m
+          labels:
+            severity: warning
+            team: platform
+            component: prometheus
+            category: performance
+          annotations:
+            summary: "Prometheus ingestion rate is very high (>150K samples/sec)"
+            description: |
+              Prometheus is ingesting {{ $value | printf "%.0f" }} samples/second.
+              This is above the warning threshold of 150,000 samples/second.
+
+              Consider increasing resources or reducing cardinality.
+            runbook_url: "https://runbooks.greenlang.ai/prometheus/high-ingestion"
+
+    # =========================================================================
+    # RULE EVALUATION ALERTS
+    # =========================================================================
+    - name: prometheus.rules
+      interval: 30s
+      rules:
+        # ---------------------------------------------------------------------
+        # PrometheusRuleEvaluationFailures - Rule evaluation failures
+        # ---------------------------------------------------------------------
+        - alert: PrometheusRuleEvaluationFailures
+          expr: increase(prometheus_rule_evaluation_failures_total[5m]) > 0
+          for: 5m
+          labels:
+            severity: warning
+            team: platform
+            component: prometheus
+            category: alerting
+          annotations:
+            summary: "Prometheus rule evaluation failures"
+            description: |
+              Prometheus has {{ $value | printf "%.0f" }} rule evaluation failures
+              in the last 5 minutes.
+
+              Rule group: {{ $labels.rule_group }}
+
+              Impact: Some alerts or recording rules may not be evaluated correctly.
+            runbook_url: "https://runbooks.greenlang.ai/prometheus/rule-evaluation-failed"
+            dashboard_url: "https://grafana.greenlang.ai/d/prometheus-health"
+
+        # ---------------------------------------------------------------------
+        # PrometheusRuleEvaluationSlow - Slow rule evaluation
+        # ---------------------------------------------------------------------
+        - alert: PrometheusRuleEvaluationSlow
+          expr: |
+            prometheus_rule_group_last_duration_seconds > prometheus_rule_group_interval_seconds
+          for: 5m
+          labels:
+            severity: warning
+            team: platform
+            component: prometheus
+            category: performance
+          annotations:
+            summary: "Prometheus rule evaluation is slow"
+            description: |
+              Rule group {{ $labels.rule_group }} is taking longer to evaluate
+              than its configured interval.
+              Evaluation duration: {{ $value | printf "%.2f" }} seconds
+
+              Impact: Rules may be skipped or evaluated inconsistently.
+            runbook_url: "https://runbooks.greenlang.ai/prometheus/slow-rule-evaluation"
+
+        # ---------------------------------------------------------------------
+        # PrometheusMissingRuleEvaluations - Missing rule evaluations
+        # ---------------------------------------------------------------------
+        - alert: PrometheusMissingRuleEvaluations
+          expr: |
+            increase(prometheus_rule_group_iterations_missed_total[5m]) > 0
+          for: 5m
+          labels:
+            severity: warning
+            team: platform
+            component: prometheus
+            category: alerting
+          annotations:
+            summary: "Prometheus missing rule evaluations"
+            description: |
+              Rule group {{ $labels.rule_group }} has missed {{ $value | printf "%.0f" }}
+              evaluations in the last 5 minutes.
+
+              Impact: Alerts may fire late or not at all.
+            runbook_url: "https://runbooks.greenlang.ai/prometheus/missing-evaluations"

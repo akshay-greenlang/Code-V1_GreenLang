@@ -1,0 +1,168 @@
+# ============================================================================
+# GreenLang Grafana - Network Policy
+# ============================================================================
+# Controls ingress and egress traffic for Grafana pods in the monitoring
+# namespace. Allows inbound traffic from Kong API gateway and Prometheus
+# for metrics scraping. Allows outbound traffic to all data sources
+# (Thanos, Loki, Jaeger, Alertmanager, PostgreSQL, Redis).
+#
+# Created: 2026-02-07
+# Team: Monitoring & Observability
+# PRD: OBS-002 - Grafana Dashboards
+# ============================================================================
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: grafana-network-policy
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: grafana
+    app.kubernetes.io/component: network-policy
+    app.kubernetes.io/part-of: greenlang
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: grafana
+  policyTypes:
+    - Ingress
+    - Egress
+
+  ingress:
+    # Allow traffic from Kong API Gateway (user access)
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kong
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: kong
+      ports:
+        - protocol: TCP
+          port: 3000
+
+    # Allow traffic from ingress-nginx
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 3000
+
+    # Allow Prometheus to scrape Grafana metrics
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: prometheus
+      ports:
+        - protocol: TCP
+          port: 3000
+
+    # Allow Grafana HA peer communication (unified alerting gossip)
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: grafana
+      ports:
+        - protocol: TCP
+          port: 9094
+
+  egress:
+    # Allow queries to Thanos Query
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: thanos-query
+      ports:
+        - protocol: TCP
+          port: 9090
+
+    # Allow queries to Prometheus
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: prometheus
+      ports:
+        - protocol: TCP
+          port: 9090
+
+    # Allow queries to Loki
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: loki
+      ports:
+        - protocol: TCP
+          port: 3100
+
+    # Allow queries to Alertmanager
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: alertmanager
+      ports:
+        - protocol: TCP
+          port: 9093
+
+    # Allow queries to Jaeger
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: jaeger
+      ports:
+        - protocol: TCP
+          port: 16686
+
+    # Allow connection to PostgreSQL (Grafana backend DB)
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: postgresql
+      ports:
+        - protocol: TCP
+          port: 5432
+
+    # Allow connection to Redis (session cache, unified alerting HA)
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: redis
+      ports:
+        - protocol: TCP
+          port: 6379
+
+    # Allow Grafana HA peer communication (unified alerting gossip)
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: grafana
+      ports:
+        - protocol: TCP
+          port: 9094
+
+    # Allow DNS resolution
+    - to: []
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+
+    # Allow connection to image renderer
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: grafana-image-renderer
+      ports:
+        - protocol: TCP
+          port: 8081
+
+    # Allow HTTPS outbound (OAuth2/OIDC, plugin downloads, CloudWatch)
+    - to: []
+      ports:
+        - protocol: TCP
+          port: 443

@@ -1,0 +1,103 @@
+===========================================================================
+  GreenLang Tempo - Distributed Tracing Backend
+  GreenLang Climate OS | OBS-003
+===========================================================================
+
+Deployment mode: {{ .Values.tempo.mode }}
+Environment:     {{ .Values.global.environment }}
+Cluster:         {{ .Values.global.clusterName }}
+Chart version:   {{ .Chart.Version }}
+App version:     {{ .Chart.AppVersion }}
+
+{{- if eq .Values.tempo.mode "distributed" }}
+
+DISTRIBUTED MODE
+---------------------------------------------------------------------------
+
+Components deployed:
+  - Distributor:       {{ .Values.tempo.distributor.replicas }} replica(s)
+  - Ingester:          {{ .Values.tempo.ingester.replicas }} replica(s)
+  - Querier:           {{ .Values.tempo.querier.replicas }} replica(s)
+  - Query Frontend:    {{ .Values.tempo.queryFrontend.replicas }} replica(s)
+  - Compactor:         {{ .Values.tempo.compactor.replicas }} replica(s)
+{{- if .Values.tempo.metricsGenerator.enabled }}
+  - Metrics Generator: {{ .Values.tempo.metricsGenerator.replicas }} replica(s)
+{{- end }}
+
+Storage backend: {{ .Values.tempo.storage.trace.backend }}
+{{- if eq .Values.tempo.storage.trace.backend "s3" }}
+S3 bucket:       {{ .Values.tempo.storage.trace.s3.bucket }}
+S3 region:       {{ .Values.tempo.storage.trace.s3.region }}
+{{- end }}
+
+Block format:    {{ .Values.tempo.storage.trace.block.version }}
+Block retention: {{ .Values.tempo.compactor.compaction.block_retention }}
+
+OTLP endpoints (send traces here):
+  - gRPC: {{ include "tempo.fullname" . }}-distributor.{{ .Release.Namespace }}.svc:4317
+  - HTTP: {{ include "tempo.fullname" . }}-distributor.{{ .Release.Namespace }}.svc:4318
+
+Jaeger endpoint:
+  - gRPC: {{ include "tempo.fullname" . }}-distributor.{{ .Release.Namespace }}.svc:14250
+
+Query frontend (configure as Grafana Tempo datasource):
+  - HTTP: http://{{ include "tempo.fullname" . }}-query-frontend.{{ .Release.Namespace }}.svc:{{ .Values.tempo.server.http_listen_port | default 3200 }}
+
+{{- else }}
+
+MONOLITHIC MODE
+---------------------------------------------------------------------------
+
+Single-binary deployment with all components.
+
+Storage backend: {{ .Values.tempo.storage.trace.backend }}
+Block format:    {{ .Values.tempo.storage.trace.block.version }}
+
+OTLP endpoints (send traces here):
+  - gRPC: {{ include "tempo.fullname" . }}.{{ .Release.Namespace }}.svc:4317
+  - HTTP: {{ include "tempo.fullname" . }}.{{ .Release.Namespace }}.svc:4318
+
+Jaeger endpoint:
+  - gRPC: {{ include "tempo.fullname" . }}.{{ .Release.Namespace }}.svc:14250
+
+Query endpoint (configure as Grafana Tempo datasource):
+  - HTTP: http://{{ include "tempo.fullname" . }}.{{ .Release.Namespace }}.svc:{{ .Values.tempo.server.http_listen_port | default 3200 }}
+
+{{- end }}
+
+---------------------------------------------------------------------------
+GRAFANA DATASOURCE CONFIGURATION
+---------------------------------------------------------------------------
+
+Add the following datasource to Grafana:
+
+  Name: Tempo
+  Type: tempo
+{{- if eq .Values.tempo.mode "distributed" }}
+  URL:  http://{{ include "tempo.fullname" . }}-query-frontend.{{ .Release.Namespace }}.svc:{{ .Values.tempo.server.http_listen_port | default 3200 }}
+{{- else }}
+  URL:  http://{{ include "tempo.fullname" . }}.{{ .Release.Namespace }}.svc:{{ .Values.tempo.server.http_listen_port | default 3200 }}
+{{- end }}
+
+To configure TraceQL and Service Graph:
+  - Enable "TraceQL" under Additional settings
+  - Set Prometheus datasource for "Service Graph" to link metrics
+
+---------------------------------------------------------------------------
+VERIFICATION
+---------------------------------------------------------------------------
+
+Check component health:
+  kubectl get pods -n {{ .Release.Namespace }} -l app.kubernetes.io/name={{ include "tempo.name" . }}
+
+Check readiness:
+{{- if eq .Values.tempo.mode "distributed" }}
+  kubectl port-forward -n {{ .Release.Namespace }} svc/{{ include "tempo.fullname" . }}-query-frontend 3200:3200
+{{- else }}
+  kubectl port-forward -n {{ .Release.Namespace }} svc/{{ include "tempo.fullname" . }} 3200:3200
+{{- end }}
+  curl http://localhost:3200/ready
+  curl http://localhost:3200/status
+  curl http://localhost:3200/metrics
+
+===========================================================================

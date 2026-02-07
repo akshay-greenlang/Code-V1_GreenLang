@@ -1,0 +1,89 @@
+# =============================================================================
+# GreenLang Alerting Service - Horizontal Pod Autoscaler
+# =============================================================================
+# HPA for alerting service: scales based on CPU and memory utilization.
+# Scales from 2 to 6 replicas. Conservative scale-down to prevent alert
+# delivery disruption during transient load fluctuations.
+# PRD: OBS-004
+# =============================================================================
+
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: alerting-service-hpa
+  namespace: greenlang-alerting
+  labels:
+    app: alerting-service
+    app.kubernetes.io/name: alerting-service
+    app.kubernetes.io/component: autoscaling
+    app.kubernetes.io/part-of: greenlang
+  annotations:
+    description: "HPA for Alerting Service based on CPU and memory utilization"
+    prd: OBS-004
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: alerting-service
+  minReplicas: 2
+  maxReplicas: 6
+  metrics:
+    # CPU-based scaling
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 60
+    # Memory-based scaling
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 75
+  behavior:
+    # Scale up: moderately aggressive for handling alert storms
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+        - type: Pods
+          value: 2
+          periodSeconds: 60
+        - type: Percent
+          value: 100
+          periodSeconds: 60
+      selectPolicy: Max
+    # Scale down: conservative to avoid dropping notifications during transient dips
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Pods
+          value: 1
+          periodSeconds: 120
+        - type: Percent
+          value: 25
+          periodSeconds: 120
+      selectPolicy: Min
+
+---
+# =============================================================================
+# Pod Disruption Budget - Alerting Service
+# =============================================================================
+
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: alerting-service-pdb
+  namespace: greenlang-alerting
+  labels:
+    app: alerting-service
+    app.kubernetes.io/name: alerting-service
+    app.kubernetes.io/component: alerting
+    app.kubernetes.io/part-of: greenlang
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: alerting-service
+      app.kubernetes.io/component: alerting

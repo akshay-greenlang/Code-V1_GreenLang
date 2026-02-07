@@ -1,0 +1,192 @@
+{{/*
+# =============================================================================
+# GreenLang OpenTelemetry Collector - Deployment
+# GreenLang Climate OS | OBS-003
+# =============================================================================
+# Gateway mode deployment with HA, security hardening, health probes,
+# and environment variable injection for config substitution.
+# =============================================================================
+*/}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "otel-collector.fullname" . }}
+  namespace: {{ include "otel-collector.namespace" . }}
+  labels:
+    {{- include "otel-collector.labels" . | nindent 4 }}
+  annotations:
+    description: "OTel Collector gateway for GreenLang telemetry"
+spec:
+  {{- if not .Values.hpa.enabled }}
+  replicas: {{ .Values.otelCollector.replicas | default 3 }}
+  {{- end }}
+  revisionHistoryLimit: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      {{- include "otel-collector.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "otel-collector.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: otel-collector
+        app.kubernetes.io/part-of: greenlang
+      annotations:
+        {{- include "otel-collector.podAnnotations" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ include "otel-collector.serviceAccountName" . }}
+      terminationGracePeriodSeconds: 60
+
+      # Pod security context
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+
+      # Pod affinity rules
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+      # Topology spread constraints
+      {{- with .Values.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+      # Node selector
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+      # Tolerations
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+      containers:
+        - name: otel-collector
+          image: "{{ .Values.otelCollector.image.repository }}:{{ .Values.otelCollector.image.tag }}"
+          imagePullPolicy: {{ .Values.otelCollector.image.pullPolicy }}
+
+          command:
+            - /otelcol-contrib
+            - --config=/etc/otel/otel-collector-config.yaml
+
+          # Container security context
+          securityContext:
+            {{- toYaml .Values.containerSecurityContext | nindent 12 }}
+
+          # Environment variables
+          env:
+            - name: ENVIRONMENT
+              value: {{ .Values.global.environment | quote }}
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: GOMAXPROCS
+              value: "2"
+            - name: GOMEMLIMIT
+              value: "1600MiB"
+
+          # Container ports
+          ports:
+            # OTLP gRPC receiver
+            - name: otlp-grpc
+              containerPort: 4317
+              protocol: TCP
+            # OTLP HTTP receiver
+            - name: otlp-http
+              containerPort: 4318
+              protocol: TCP
+            # Jaeger gRPC receiver
+            - name: jaeger-grpc
+              containerPort: 14250
+              protocol: TCP
+            # Jaeger Thrift HTTP receiver
+            - name: jaeger-http
+              containerPort: 14268
+              protocol: TCP
+            # Collector internal metrics
+            - name: metrics
+              containerPort: 8888
+              protocol: TCP
+            # Prometheus exporter
+            - name: prom-export
+              containerPort: 8889
+              protocol: TCP
+            # Health check
+            - name: health
+              containerPort: 13133
+              protocol: TCP
+
+          # Liveness probe - collector health check endpoint
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: health
+            initialDelaySeconds: 15
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+            successThreshold: 1
+
+          # Readiness probe - collector ready to receive traffic
+          readinessProbe:
+            httpGet:
+              path: /
+              port: health
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+            successThreshold: 1
+
+          # Startup probe - allow time for initial configuration
+          startupProbe:
+            httpGet:
+              path: /health
+              port: health
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 12
+
+          # Resource limits
+          resources:
+            {{- toYaml .Values.otelCollector.resources | nindent 12 }}
+
+          # Volume mounts
+          volumeMounts:
+            - name: otel-config
+              mountPath: /etc/otel
+              readOnly: true
+            - name: tmp
+              mountPath: /tmp
+
+      # Volumes
+      volumes:
+        - name: otel-config
+          configMap:
+            name: {{ include "otel-collector.configMapName" . }}
+        - name: tmp
+          emptyDir:
+            sizeLimit: 100Mi

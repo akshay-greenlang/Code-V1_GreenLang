@@ -1,0 +1,32 @@
+{{/*
+# =============================================================================
+# GreenLang Tempo - Metrics Generator Service
+# GreenLang Climate OS | OBS-003
+# =============================================================================
+# ClusterIP service for the metrics-generator component. Exposes HTTP metrics
+# and gRPC endpoints.
+# Conditional on mode=distributed AND metricsGenerator.enabled.
+# =============================================================================
+*/}}
+{{- if and (eq .Values.tempo.mode "distributed") .Values.tempo.metricsGenerator.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "tempo.fullname" . }}-metrics-generator
+  namespace: {{ include "tempo.namespace" . }}
+  labels:
+    {{- include "tempo.metricsGeneratorLabels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  selector:
+    {{- include "tempo.metricsGeneratorSelectorLabels" . | nindent 4 }}
+  ports:
+    - name: http-metrics
+      port: {{ .Values.tempo.server.http_listen_port | default 3200 }}
+      targetPort: http-metrics
+      protocol: TCP
+    - name: grpc
+      port: {{ .Values.tempo.server.grpc_listen_port | default 9095 }}
+      targetPort: grpc
+      protocol: TCP
+{{- end }}

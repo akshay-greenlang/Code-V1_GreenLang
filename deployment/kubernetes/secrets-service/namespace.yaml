@@ -1,0 +1,138 @@
+##############################################
+# GreenLang Secrets Service Namespace
+# SEC-006: External Secrets Operator Integration
+##############################################
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: secrets-service
+  labels:
+    # Standard Kubernetes labels
+    app.kubernetes.io/name: secrets-service
+    app.kubernetes.io/part-of: greenlang
+    app.kubernetes.io/component: secrets-management
+    app.kubernetes.io/managed-by: kustomize
+    # ESO labels
+    external-secrets.io/enabled: "true"
+    # Vault injection label
+    vault-injection: enabled
+    # Pod security standards
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/warn: restricted
+  annotations:
+    description: "GreenLang secrets management namespace for ESO and Vault integration"
+    security.greenlang.io/classification: "high"
+    compliance.greenlang.io/required: "true"
+
+---
+# ResourceQuota for secrets-service namespace
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: secrets-service-quota
+  namespace: secrets-service
+  labels:
+    app.kubernetes.io/name: secrets-service
+    app.kubernetes.io/part-of: greenlang
+spec:
+  hard:
+    # Limit number of secrets (prevent secret sprawl)
+    secrets: "100"
+    # Limit configmaps
+    configmaps: "50"
+    # Limit service accounts
+    count/serviceaccounts: "20"
+    # CPU and memory limits
+    requests.cpu: "4"
+    requests.memory: 8Gi
+    limits.cpu: "8"
+    limits.memory: 16Gi
+
+---
+# LimitRange for secrets-service namespace
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: secrets-service-limits
+  namespace: secrets-service
+  labels:
+    app.kubernetes.io/name: secrets-service
+    app.kubernetes.io/part-of: greenlang
+spec:
+  limits:
+    - type: Container
+      default:
+        cpu: 200m
+        memory: 256Mi
+      defaultRequest:
+        cpu: 50m
+        memory: 64Mi
+      max:
+        cpu: "2"
+        memory: 4Gi
+      min:
+        cpu: 10m
+        memory: 16Mi
+
+---
+# NetworkPolicy: Default deny all
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+  namespace: secrets-service
+  labels:
+    app.kubernetes.io/name: secrets-service
+    app.kubernetes.io/part-of: greenlang
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+
+---
+# NetworkPolicy: Allow ESO to access Vault
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-eso-vault-access
+  namespace: secrets-service
+  labels:
+    app.kubernetes.io/name: secrets-service
+    app.kubernetes.io/part-of: greenlang
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: external-secrets
+  policyTypes:
+    - Egress
+  egress:
+    # Allow access to Vault
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              app.kubernetes.io/name: vault
+      ports:
+        - protocol: TCP
+          port: 8200
+    # Allow DNS resolution
+    - to:
+        - namespaceSelector: {}
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+    # Allow access to AWS endpoints (for IRSA token exchange)
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+      ports:
+        - protocol: TCP
+          port: 443

@@ -1,0 +1,200 @@
+# =============================================================================
+# GreenLang Tempo - ServiceMonitor
+# GreenLang Climate OS | OBS-003
+# =============================================================================
+# Prometheus ServiceMonitor resources for scraping metrics from all Tempo
+# components (distributor, ingester, querier, query-frontend, compactor,
+# metrics-generator). Metrics are exposed on port 3200 at /metrics.
+#
+# Key metrics exposed:
+#   - tempo_distributor_spans_received_total
+#   - tempo_distributor_bytes_received_total
+#   - tempo_ingester_traces_created_total
+#   - tempo_ingester_bytes_received_total
+#   - tempo_ingester_flush_duration_seconds
+#   - tempo_querier_external_endpoint_hedged_roundtrips_total
+#   - tempo_query_frontend_queries_total
+#   - tempo_compactor_blocks_total
+#   - tempo_compactor_bytes_total
+#   - tempo_metrics_generator_spans_received_total
+# =============================================================================
+
+---
+# ---------------------------------------------------------------------------
+# ServiceMonitor for Tempo Distributor
+# ---------------------------------------------------------------------------
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: tempo-distributor
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: tempo
+    app.kubernetes.io/component: distributor
+    app.kubernetes.io/part-of: greenlang-observability
+    release: prometheus
+    greenlang.io/obs: "003"
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: tempo
+      app.kubernetes.io/component: distributor
+  namespaceSelector:
+    matchNames:
+      - monitoring
+  endpoints:
+    - port: http-metrics
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s
+      honorLabels: true
+
+---
+# ---------------------------------------------------------------------------
+# ServiceMonitor for Tempo Ingester
+# ---------------------------------------------------------------------------
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: tempo-ingester
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: tempo
+    app.kubernetes.io/component: ingester
+    app.kubernetes.io/part-of: greenlang-observability
+    release: prometheus
+    greenlang.io/obs: "003"
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: tempo
+      app.kubernetes.io/component: ingester
+  namespaceSelector:
+    matchNames:
+      - monitoring
+  endpoints:
+    - port: http-metrics
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s
+      honorLabels: true
+
+---
+# ---------------------------------------------------------------------------
+# ServiceMonitor for Tempo Query Frontend
+# ---------------------------------------------------------------------------
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: tempo-query-frontend
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: tempo
+    app.kubernetes.io/component: query-frontend
+    app.kubernetes.io/part-of: greenlang-observability
+    release: prometheus
+    greenlang.io/obs: "003"
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: tempo
+      app.kubernetes.io/component: query-frontend
+  namespaceSelector:
+    matchNames:
+      - monitoring
+  endpoints:
+    - port: http-metrics
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s
+      honorLabels: true
+
+---
+# ---------------------------------------------------------------------------
+# ServiceMonitor for Tempo Querier
+# ---------------------------------------------------------------------------
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: tempo-querier
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: tempo
+    app.kubernetes.io/component: querier
+    app.kubernetes.io/part-of: greenlang-observability
+    release: prometheus
+    greenlang.io/obs: "003"
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: tempo
+      app.kubernetes.io/component: querier
+  namespaceSelector:
+    matchNames:
+      - monitoring
+  endpoints:
+    - port: http-metrics
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s
+      honorLabels: true
+
+---
+# ---------------------------------------------------------------------------
+# ServiceMonitor for Tempo Compactor
+# ---------------------------------------------------------------------------
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: tempo-compactor
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: tempo
+    app.kubernetes.io/component: compactor
+    app.kubernetes.io/part-of: greenlang-observability
+    release: prometheus
+    greenlang.io/obs: "003"
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: tempo
+      app.kubernetes.io/component: compactor
+  namespaceSelector:
+    matchNames:
+      - monitoring
+  endpoints:
+    - port: http-metrics
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s
+      honorLabels: true
+
+---
+# ---------------------------------------------------------------------------
+# ServiceMonitor for Tempo Metrics Generator
+# ---------------------------------------------------------------------------
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: tempo-metrics-generator
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: tempo
+    app.kubernetes.io/component: metrics-generator
+    app.kubernetes.io/part-of: greenlang-observability
+    release: prometheus
+    greenlang.io/obs: "003"
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: tempo
+      app.kubernetes.io/component: metrics-generator
+  namespaceSelector:
+    matchNames:
+      - monitoring
+  endpoints:
+    - port: http-metrics
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s
+      honorLabels: true

@@ -1,0 +1,373 @@
+# =============================================================================
+# GreenLang Climate OS - Security Operations Prometheus Alert Rules
+# =============================================================================
+# PRD: SEC-010 Security Operations Automation
+# Defines alerting rules for incident response, threat modeling, WAF/DDoS,
+# vulnerability disclosure, compliance automation, and security training.
+# =============================================================================
+
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: security-operations-alerts
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: security-operations
+    app.kubernetes.io/part-of: greenlang
+    prometheus: kube-prometheus
+    role: alert-rules
+    greenlang.io/component: sec-010
+spec:
+  groups:
+    # =========================================================================
+    # Group 1: Incident Response Alerts
+    # =========================================================================
+    - name: secops.incident_response
+      interval: 30s
+      rules:
+        # ---------------------------------------------------------------------
+        # P0IncidentDetected - Critical
+        # Fires immediately when a P0 (critical) security incident is detected.
+        # ---------------------------------------------------------------------
+        - alert: P0IncidentDetected
+          expr: |
+            increase(gl_secops_incidents_total{severity="P0"}[5m]) > 0
+          for: 0m
+          labels:
+            severity: critical
+            team: security
+            component: incident-response
+            prd: SEC-010
+            pagerduty: "true"
+          annotations:
+            summary: "P0 Critical Security Incident Detected"
+            description: >-
+              A P0 (critical) security incident has been detected. This requires
+              immediate response per SEC-010 incident response SLA (<15 min MTTR).
+              Type: {{ $labels.incident_type }}
+              Source: {{ $labels.source }}
+              Incident response playbook should be triggered automatically.
+            runbook_url: "https://runbooks.greenlang.io/secops/p0-incident"
+            dashboard_url: "https://grafana.greenlang.io/d/security-operations"
+
+        # ---------------------------------------------------------------------
+        # HighMTTD - Warning
+        # Fires when Mean Time to Detect exceeds 5 minutes.
+        # ---------------------------------------------------------------------
+        - alert: HighMTTD
+          expr: |
+            histogram_quantile(0.5, sum(rate(gl_secops_incident_mttd_seconds_bucket[1h])) by (le)) > 300
+          for: 15m
+          labels:
+            severity: warning
+            team: security
+            component: incident-response
+            prd: SEC-010
+          annotations:
+            summary: "High Mean Time to Detect (MTTD > 5 min)"
+            description: >-
+              Mean Time to Detect security incidents is {{ $value | printf "%.0f" }}
+              seconds (P50), exceeding the 5 minute (300s) target. Review alert
+              source configurations and detection thresholds.
+            runbook_url: "https://runbooks.greenlang.io/secops/high-mttd"
+            dashboard_url: "https://grafana.greenlang.io/d/security-operations"
+
+        # ---------------------------------------------------------------------
+        # HighMTTR - Warning
+        # Fires when Mean Time to Respond exceeds 15 minutes.
+        # ---------------------------------------------------------------------
+        - alert: HighMTTR
+          expr: |
+            histogram_quantile(0.5, sum(rate(gl_secops_incident_mttr_seconds_bucket[1h])) by (le)) > 900
+          for: 15m
+          labels:
+            severity: warning
+            team: security
+            component: incident-response
+            prd: SEC-010
+          annotations:
+            summary: "High Mean Time to Respond (MTTR > 15 min)"
+            description: >-
+              Mean Time to Respond to security incidents is {{ $value | printf "%.0f" }}
+              seconds (P50), exceeding the 15 minute (900s) target. Review incident
+              response procedures, on-call coverage, and playbook effectiveness.
+            runbook_url: "https://runbooks.greenlang.io/secops/high-mttr"
+            dashboard_url: "https://grafana.greenlang.io/d/security-operations"
+
+        # ---------------------------------------------------------------------
+        # PlaybookExecutionFailed - Critical
+        # Fires when a remediation playbook fails during execution.
+        # ---------------------------------------------------------------------
+        - alert: PlaybookExecutionFailed
+          expr: |
+            increase(gl_secops_playbook_executions_total{status="failed"}[5m]) > 0
+          for: 0m
+          labels:
+            severity: critical
+            team: security
+            component: incident-response
+            prd: SEC-010
+          annotations:
+            summary: "Remediation Playbook Execution Failed"
+            description: >-
+              Automated remediation playbook '{{ $labels.playbook }}' failed during
+              execution. Manual intervention may be required to complete incident
+              response. Check playbook execution logs for error details.
+            runbook_url: "https://runbooks.greenlang.io/secops/playbook-failed"
+            dashboard_url: "https://grafana.greenlang.io/d/security-operations"
+
+    # =========================================================================
+    # Group 2: WAF/DDoS Protection Alerts
+    # =========================================================================
+    - name: secops.waf_ddos
+      interval: 30s
+      rules:
+        # ---------------------------------------------------------------------
+        # DDoSAttackDetected - Critical
+        # Fires immediately when a DDoS attack is detected.
+        # ---------------------------------------------------------------------
+        - alert: DDoSAttackDetected
+          expr: |
+            increase(gl_secops_ddos_attacks_total[1m]) > 0
+          for: 0m
+          labels:
+            severity: critical
+            team: security
+            component: waf-ddos
+            prd: SEC-010
+            pagerduty: "true"
+          annotations:
+            summary: "DDoS Attack Detected"
+            description: >-
+              A DDoS attack has been detected targeting {{ $labels.target }}.
+              Attack type: {{ $labels.attack_type }}
+              Traffic: {{ $labels.requests_per_second }} req/s
+              AWS Shield Advanced and auto-mitigation should activate automatically.
+              Monitor WAF metrics and consider enabling geo-blocking if attack persists.
+            runbook_url: "https://runbooks.greenlang.io/secops/ddos-attack"
+            dashboard_url: "https://grafana.greenlang.io/d/security-operations"
+
+        # ---------------------------------------------------------------------
+        # WAFHighBlockRate - Warning
+        # Fires when WAF is blocking more than 10% of requests.
+        # ---------------------------------------------------------------------
+        - alert: WAFHighBlockRate
+          expr: |
+            (
+              sum(rate(gl_secops_waf_blocked_total[5m]))
+              /
+              sum(rate(gl_secops_waf_requests_total[5m]))
+            ) > 0.10
+          for: 10m
+          labels:
+            severity: warning
+            team: security
+            component: waf-ddos
+            prd: SEC-010
+          annotations:
+            summary: "WAF Block Rate Exceeds 10%"
+            description: >-
+              WAF is blocking {{ $value | printf "%.1f" }}% of incoming requests,
+              which exceeds the 10% threshold. This may indicate:
+              - An ongoing attack being mitigated
+              - False positives from overly aggressive rules
+              - Misconfigured WAF rules
+              Review blocked requests and rule effectiveness.
+            runbook_url: "https://runbooks.greenlang.io/secops/waf-high-blocks"
+            dashboard_url: "https://grafana.greenlang.io/d/security-operations"
+
+    # =========================================================================
+    # Group 3: Vulnerability Disclosure Program Alerts
+    # =========================================================================
+    - name: secops.vdp
+      interval: 60s
+      rules:
+        # ---------------------------------------------------------------------
+        # VDPAcknowledgmentOverdue - Warning
+        # Fires when VDP submission is not acknowledged within 24 hours.
+        # ---------------------------------------------------------------------
+        - alert: VDPAcknowledgmentOverdue
+          expr: |
+            (
+              time() - gl_secops_vdp_oldest_unacknowledged_timestamp
+            ) > 86400
+          for: 1h
+          labels:
+            severity: warning
+            team: security
+            component: vdp
+            prd: SEC-010
+          annotations:
+            summary: "VDP Submission Acknowledgment Overdue (>24h)"
+            description: >-
+              A vulnerability disclosure submission has not been acknowledged
+              for more than 24 hours, violating the VDP SLA. Age:
+              {{ $value | humanizeDuration }}. Check the VDP queue and ensure
+              security team is processing submissions promptly.
+            runbook_url: "https://runbooks.greenlang.io/secops/vdp-overdue"
+            dashboard_url: "https://grafana.greenlang.io/d/security-operations"
+
+    # =========================================================================
+    # Group 4: DSAR/GDPR Compliance Alerts
+    # =========================================================================
+    - name: secops.dsar
+      interval: 60s
+      rules:
+        # ---------------------------------------------------------------------
+        # DSARSLABreach - Warning
+        # Fires when DSAR SLA compliance drops below 95%.
+        # ---------------------------------------------------------------------
+        - alert: DSARSLABreach
+          expr: |
+            gl_secops_dsar_sla_compliance < 0.95
+          for: 1h
+          labels:
+            severity: warning
+            team: compliance
+            component: dsar
+            prd: SEC-010
+          annotations:
+            summary: "DSAR SLA Compliance Below 95%"
+            description: >-
+              DSAR (Data Subject Access Request) SLA compliance is
+              {{ $value | printf "%.1f" }}%, below the 95% target. GDPR requires
+              response within 30 days. Review pending DSARs and escalate any
+              nearing deadline.
+            runbook_url: "https://runbooks.greenlang.io/secops/dsar-sla"
+            dashboard_url: "https://grafana.greenlang.io/d/security-operations"
+
+        # ---------------------------------------------------------------------
+        # DSAROverdue - Critical
+        # Fires when DSAR is within 5 days of 30-day deadline.
+        # ---------------------------------------------------------------------
+        - alert: DSAROverdue
+          expr: |
+            gl_secops_dsar_days_remaining < 5
+            and
+            gl_secops_dsar_status{status!~"completed|rejected|withdrawn"} == 1
+          for: 0m
+          labels:
+            severity: critical
+            team: compliance
+            component: dsar
+            prd: SEC-010
+          annotations:
+            summary: "DSAR Approaching 30-Day Deadline"
+            description: >-
+              DSAR request {{ $labels.request_number }} has only
+              {{ $value | printf "%.0f" }} days remaining before the GDPR
+              30-day deadline. Immediate action required to complete processing
+              and avoid regulatory non-compliance.
+            runbook_url: "https://runbooks.greenlang.io/secops/dsar-deadline"
+            dashboard_url: "https://grafana.greenlang.io/d/security-operations"
+
+    # =========================================================================
+    # Group 5: Security Training Alerts
+    # =========================================================================
+    - name: secops.training
+      interval: 60s
+      rules:
+        # ---------------------------------------------------------------------
+        # LowTrainingCompletion - Warning
+        # Fires when training completion rate drops below 90%.
+        # ---------------------------------------------------------------------
+        - alert: LowTrainingCompletion
+          expr: |
+            avg(gl_secops_training_completion_rate) < 0.90
+          for: 24h
+          labels:
+            severity: warning
+            team: security
+            component: training
+            prd: SEC-010
+          annotations:
+            summary: "Security Training Completion Below 90%"
+            description: >-
+              Overall security awareness training completion rate is
+              {{ $value | printf "%.1f" }}%, below the 90% target required for
+              compliance. Review overdue training assignments and send reminders
+              to employees who have not completed required courses.
+            runbook_url: "https://runbooks.greenlang.io/secops/low-training"
+            dashboard_url: "https://grafana.greenlang.io/d/security-operations"
+
+        # ---------------------------------------------------------------------
+        # HighPhishingClickRate - Warning
+        # Fires when phishing simulation click rate exceeds 10%.
+        # ---------------------------------------------------------------------
+        - alert: HighPhishingClickRate
+          expr: |
+            avg(gl_secops_phishing_click_rate) > 0.10
+          for: 1h
+          labels:
+            severity: warning
+            team: security
+            component: training
+            prd: SEC-010
+          annotations:
+            summary: "Phishing Simulation Click Rate Exceeds 10%"
+            description: >-
+              Phishing simulation click rate is {{ $value | printf "%.1f" }}%,
+              exceeding the 10% target. This indicates elevated risk of
+              successful phishing attacks. Consider:
+              - Targeting additional training to high-risk groups
+              - Increasing phishing simulation frequency
+              - Reviewing email security controls
+            runbook_url: "https://runbooks.greenlang.io/secops/high-phishing-clicks"
+            dashboard_url: "https://grafana.greenlang.io/d/security-operations"
+
+    # =========================================================================
+    # Group 6: Compliance Score Alerts
+    # =========================================================================
+    - name: secops.compliance
+      interval: 60s
+      rules:
+        # ---------------------------------------------------------------------
+        # ComplianceScoreDrop - Warning
+        # Fires when compliance score drops more than 5 points in 24 hours.
+        # ---------------------------------------------------------------------
+        - alert: ComplianceScoreDrop
+          expr: |
+            (
+              gl_secops_compliance_score offset 24h
+              - gl_secops_compliance_score
+            ) > 5
+          for: 30m
+          labels:
+            severity: warning
+            team: compliance
+            component: compliance
+            prd: SEC-010
+          annotations:
+            summary: "Compliance Score Dropped >5 Points in 24h"
+            description: >-
+              Compliance score for {{ $labels.framework }} has dropped more than
+              5 points in the last 24 hours. Current score:
+              {{ $value | printf "%.1f" }}%. Investigate recent changes that may
+              have impacted compliance posture and review control effectiveness.
+            runbook_url: "https://runbooks.greenlang.io/secops/compliance-drop"
+            dashboard_url: "https://grafana.greenlang.io/d/security-operations"
+
+        # ---------------------------------------------------------------------
+        # ComplianceScoreCritical - Critical
+        # Fires when any compliance framework score drops below 80%.
+        # ---------------------------------------------------------------------
+        - alert: ComplianceScoreCritical
+          expr: |
+            gl_secops_compliance_score < 80
+          for: 1h
+          labels:
+            severity: critical
+            team: compliance
+            component: compliance
+            prd: SEC-010
+          annotations:
+            summary: "Compliance Score Critical (<80%)"
+            description: >-
+              Compliance score for {{ $labels.framework }} is critically low at
+              {{ $value | printf "%.1f" }}%. This may impact:
+              - Regulatory compliance
+              - Customer audits
+              - Certification renewals
+              Immediate remediation required. Escalate to compliance leadership.
+            runbook_url: "https://runbooks.greenlang.io/secops/compliance-critical"
+            dashboard_url: "https://grafana.greenlang.io/d/security-operations"

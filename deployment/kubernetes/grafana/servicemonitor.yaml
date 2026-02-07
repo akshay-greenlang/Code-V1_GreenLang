@@ -1,0 +1,89 @@
+# ============================================================================
+# GreenLang Grafana - ServiceMonitor
+# ============================================================================
+# Prometheus ServiceMonitor for Grafana server metrics. Scrapes the /metrics
+# endpoint exposed by Grafana on port 3000 at 30-second intervals.
+#
+# Metrics exposed include:
+#   - grafana_http_request_total (API request counts)
+#   - grafana_api_dashboard_get_milliseconds (dashboard load times)
+#   - grafana_datasource_request_total (data source queries)
+#   - grafana_stat_active_users (active user count)
+#   - grafana_alerting_* (unified alerting metrics)
+#   - process_* (Go runtime metrics)
+#
+# Created: 2026-02-07
+# Team: Monitoring & Observability
+# PRD: OBS-002 - Grafana Dashboards
+# ============================================================================
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: grafana
+  namespace: monitoring
+  labels:
+    app: grafana
+    app.kubernetes.io/name: grafana
+    app.kubernetes.io/component: monitoring
+    app.kubernetes.io/part-of: greenlang
+    release: prometheus
+    team: platform
+  annotations:
+    description: "ServiceMonitor for Grafana server metrics"
+    prometheus.io/docs: "https://docs.greenlang.io/observability/grafana-metrics"
+spec:
+  jobLabel: grafana
+
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: grafana
+
+  namespaceSelector:
+    matchNames:
+      - monitoring
+
+  endpoints:
+    - port: http
+      interval: 30s
+      scrapeTimeout: 10s
+      path: /metrics
+      scheme: http
+      honorLabels: true
+
+      relabelings:
+        # Service name label
+        - sourceLabels: [__meta_kubernetes_service_name]
+          targetLabel: service
+        # Namespace label
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace
+        # Pod name label
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod
+        # Node label
+        - sourceLabels: [__meta_kubernetes_pod_node_name]
+          targetLabel: node
+        # Static application label
+        - sourceLabels: []
+          targetLabel: application
+          replacement: "grafana"
+        # Component label
+        - sourceLabels: []
+          targetLabel: component
+          replacement: "visualization"
+
+      metricRelabelings:
+        # Keep Grafana-specific metrics
+        - sourceLabels: [__name__]
+          regex: "(grafana_|process_|go_).*"
+          action: keep
+        # Drop high-cardinality debug metrics
+        - sourceLabels: [__name__]
+          regex: ".*_debug_.*"
+          action: drop
+        # Add environment label based on namespace
+        - sourceLabels: [namespace]
+          regex: "monitoring"
+          targetLabel: environment
+          replacement: "production"

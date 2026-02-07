@@ -1,0 +1,226 @@
+{{/*
+Auth Service - JWT Authentication Service Deployment
+Token issuance, validation, revocation, refresh rotation, RBAC enforcement,
+account lockout, and brute-force protection.
+PRD: SEC-001
+*/}}
+{{- if .Values.authService.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "greenlang-agents.fullname" . }}-auth-service
+  namespace: {{ include "greenlang-agents.namespace" . }}
+  labels:
+    {{- include "greenlang-agents.labels" . | nindent 4 }}
+    app.kubernetes.io/component: authentication
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9090"
+    prd: SEC-001
+spec:
+  replicas: {{ .Values.authService.replicaCount | default 2 }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      {{- include "greenlang-agents.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: authentication
+  template:
+    metadata:
+      labels:
+        {{- include "greenlang-agents.labels" . | nindent 8 }}
+        app.kubernetes.io/component: authentication
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+        prometheus.io/path: "/metrics"
+        checksum/config: {{ include (print $.Template.BasePath "/configmap-app.yaml") . | sha256sum }}
+    spec:
+      serviceAccountName: {{ include "greenlang-agents.serviceAccountName" . }}
+      {{- with .Values.common.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- range .Values.global.imagePullSecrets }}
+        - name: {{ . }}
+        {{- end }}
+      {{- end }}
+
+      terminationGracePeriodSeconds: {{ .Values.authService.terminationGracePeriodSeconds | default 30 }}
+
+      initContainers:
+        - name: wait-for-redis
+          image: busybox:1.36
+          command: ['sh', '-c', 'until nc -z {{ .Values.authService.redis.host | default (printf "%s-redis" .Release.Name) }} {{ .Values.authService.redis.port | default 6379 }}; do echo waiting for redis; sleep 2; done']
+          securityContext:
+            {{- toYaml .Values.common.containerSecurityContext | nindent 12 }}
+
+        - name: wait-for-postgres
+          image: busybox:1.36
+          command: ['sh', '-c', 'until nc -z {{ .Values.authService.postgres.host | default (printf "%s-postgresql" .Release.Name) }} {{ .Values.authService.postgres.port | default 5432 }}; do echo waiting for postgres; sleep 2; done']
+          securityContext:
+            {{- toYaml .Values.common.containerSecurityContext | nindent 12 }}
+
+      containers:
+        - name: auth-service
+          image: "{{ .Values.global.imageRegistry }}/{{ .Values.authService.image.repository | default "greenlang/auth-service" }}:{{ .Values.authService.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.common.image.pullPolicy | default "IfNotPresent" }}
+
+          {{- with .Values.common.containerSecurityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+
+          ports:
+            - name: http
+              containerPort: {{ .Values.authService.port | default 8080 }}
+              protocol: TCP
+            - name: metrics
+              containerPort: 9090
+              protocol: TCP
+
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: ENVIRONMENT
+              value: {{ .Values.global.environment | quote }}
+            - name: LOG_LEVEL
+              value: {{ .Values.authService.logLevel | default .Values.config.LOG_LEVEL | default "info" | quote }}
+            - name: OTEL_ENDPOINT
+              value: {{ .Values.authService.otelEndpoint | default "http://otel-collector.monitoring:4317" | quote }}
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "greenlang-agents.fullname" . }}-secrets
+                  key: REDIS_URL
+                  optional: true
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "greenlang-agents.fullname" . }}-secrets
+                  key: DATABASE_URL
+                  optional: true
+            - name: JWT_PRIVATE_KEY_PATH
+              value: "/app/keys/jwt-private.pem"
+            - name: JWT_PUBLIC_KEY_PATH
+              value: "/app/keys/jwt-public.pem"
+            - name: JWT_ISSUER
+              value: {{ .Values.authService.jwt.issuer | default "https://auth.greenlang.io" | quote }}
+            - name: JWT_AUDIENCE
+              value: {{ .Values.authService.jwt.audience | default "https://api.greenlang.io" | quote }}
+            - name: ACCESS_TOKEN_TTL
+              value: {{ .Values.authService.jwt.accessTokenTTL | default 3600 | quote }}
+            - name: REFRESH_TOKEN_TTL
+              value: {{ .Values.authService.jwt.refreshTokenTTL | default 604800 | quote }}
+            - name: MAX_FAILED_ATTEMPTS
+              value: {{ .Values.authService.security.maxFailedAttempts | default 5 | quote }}
+            - name: LOCKOUT_DURATION
+              value: {{ .Values.authService.security.lockoutDuration | default 900 | quote }}
+            - name: RATE_LIMIT_LOGIN
+              value: {{ .Values.authService.rateLimit.login | default 10 | quote }}
+
+          envFrom:
+            - configMapRef:
+                name: {{ include "greenlang-agents.fullname" . }}-config
+
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: {{ .Values.authService.livenessProbe.initialDelaySeconds | default 15 }}
+            periodSeconds: {{ .Values.authService.livenessProbe.periodSeconds | default 15 }}
+            timeoutSeconds: {{ .Values.authService.livenessProbe.timeoutSeconds | default 5 }}
+            failureThreshold: {{ .Values.authService.livenessProbe.failureThreshold | default 3 }}
+
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: http
+            initialDelaySeconds: {{ .Values.authService.readinessProbe.initialDelaySeconds | default 10 }}
+            periodSeconds: {{ .Values.authService.readinessProbe.periodSeconds | default 10 }}
+            timeoutSeconds: {{ .Values.authService.readinessProbe.timeoutSeconds | default 3 }}
+            failureThreshold: {{ .Values.authService.readinessProbe.failureThreshold | default 3 }}
+
+          startupProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            failureThreshold: 30
+
+          resources:
+            {{- toYaml (.Values.authService.resources | default .Values.common.resources) | nindent 12 }}
+
+          volumeMounts:
+            - name: config
+              mountPath: /app/config
+              readOnly: true
+            - name: jwt-keys
+              mountPath: /app/keys
+              readOnly: true
+            - name: tmp
+              mountPath: /tmp
+
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "greenlang-agents.fullname" . }}-config
+        - name: jwt-keys
+          secret:
+            secretName: {{ .Values.authService.jwtKeysSecretName | default (printf "%s-jwt-keys" (include "greenlang-agents.fullname" .)) }}
+            defaultMode: 0400
+        - name: tmp
+          emptyDir:
+            sizeLimit: 100Mi
+
+      {{- with .Values.authService.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+      {{- with .Values.authService.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- else }}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    {{- include "greenlang-agents.selectorLabels" . | nindent 20 }}
+                    app.kubernetes.io/component: authentication
+                topologyKey: kubernetes.io/hostname
+      {{- end }}
+
+      {{- with .Values.authService.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              {{- include "greenlang-agents.selectorLabels" . | nindent 14 }}
+              app.kubernetes.io/component: authentication
+{{- end }}

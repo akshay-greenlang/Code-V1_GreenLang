@@ -1,0 +1,192 @@
+# ============================================================================
+# GreenLang Agent Factory ServiceMonitor
+# ============================================================================
+# Prometheus ServiceMonitor for the Agent Factory component.
+# Monitors agent lifecycle, execution metrics, and resource utilization.
+#
+# Target Service: agent-factory
+# Scrape Path: /metrics
+# Scrape Interval: 15 seconds
+#
+# Created: 2026-02-06
+# Team: Monitoring & Observability
+# PRD: OBS-001 - Prometheus Metrics Collection
+# ============================================================================
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: agent-factory
+  namespace: monitoring
+  labels:
+    app: agent-factory
+    app.kubernetes.io/name: agent-factory
+    app.kubernetes.io/component: agent-factory
+    app.kubernetes.io/part-of: greenlang
+    release: prometheus
+    team: greenlang
+    tier: application
+  annotations:
+    description: "ServiceMonitor for GreenLang Agent Factory component"
+    prometheus.io/docs: "https://docs.greenlang.ai/observability/agent-factory-metrics"
+spec:
+  # Job label for Prometheus
+  jobLabel: agent-factory
+
+  # Selector for target services
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: agent-factory
+    matchExpressions:
+      - key: monitoring
+        operator: NotIn
+        values: ["disabled"]
+
+  # Target namespaces
+  namespaceSelector:
+    matchNames:
+      - greenlang
+      - gl-agents
+      - greenlang-prod
+      - greenlang-staging
+      - greenlang-dev
+
+  # Endpoint configuration
+  endpoints:
+    - port: metrics
+      interval: 15s
+      scrapeTimeout: 10s
+      path: /metrics
+      scheme: http
+      honorLabels: true
+
+      # Relabelings for target labels
+      relabelings:
+        # Service name label
+        - sourceLabels: [__meta_kubernetes_service_name]
+          targetLabel: service
+        # Namespace label
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace
+        # Pod name label
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod
+        # Node label
+        - sourceLabels: [__meta_kubernetes_pod_node_name]
+          targetLabel: node
+        # Static application label
+        - sourceLabels: []
+          targetLabel: application
+          replacement: "agent-factory"
+        # Component label
+        - sourceLabels: []
+          targetLabel: component
+          replacement: "agent-factory"
+        # Agent type from pod label
+        - sourceLabels: [__meta_kubernetes_pod_label_agent_type]
+          targetLabel: agent_type
+
+      # Metric relabelings - keep only gl_agent_* metrics
+      metricRelabelings:
+        # Keep GreenLang agent metrics
+        - sourceLabels: [__name__]
+          regex: 'gl_agent_.*'
+          action: keep
+
+        # Also keep standard process metrics for agent factory
+        - sourceLabels: [__name__]
+          regex: 'process_.*'
+          action: keep
+
+        # Keep Python runtime metrics
+        - sourceLabels: [__name__]
+          regex: 'python_.*'
+          action: keep
+
+        # Add environment label based on namespace
+        - sourceLabels: [namespace]
+          regex: '.*-prod'
+          targetLabel: environment
+          replacement: 'production'
+        - sourceLabels: [namespace]
+          regex: '.*-staging'
+          targetLabel: environment
+          replacement: 'staging'
+        - sourceLabels: [namespace]
+          regex: '.*-dev'
+          targetLabel: environment
+          replacement: 'development'
+
+---
+# ============================================================================
+# Agent Worker ServiceMonitor
+# ============================================================================
+# Monitors individual agent worker pods for execution metrics.
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: agent-workers
+  namespace: monitoring
+  labels:
+    app: agent-workers
+    app.kubernetes.io/name: agent-workers
+    app.kubernetes.io/component: agent-workers
+    app.kubernetes.io/part-of: greenlang
+    release: prometheus
+    team: greenlang
+  annotations:
+    description: "ServiceMonitor for GreenLang Agent Worker pods"
+spec:
+  jobLabel: agent-workers
+
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: agent-worker
+
+  namespaceSelector:
+    matchNames:
+      - greenlang
+      - gl-agents
+      - gl-fuel
+      - gl-cbam
+      - gl-building
+      - gl-eudr
+
+  endpoints:
+    - port: metrics
+      interval: 15s
+      scrapeTimeout: 10s
+      path: /metrics
+      scheme: http
+      honorLabels: true
+
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_service_name]
+          targetLabel: service
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod
+        - sourceLabels: [__meta_kubernetes_pod_label_agent_id]
+          targetLabel: agent_id
+        - sourceLabels: [__meta_kubernetes_pod_label_agent_type]
+          targetLabel: agent_type
+        - sourceLabels: [__meta_kubernetes_pod_label_agent_version]
+          targetLabel: agent_version
+
+      metricRelabelings:
+        # Keep agent execution metrics
+        - sourceLabels: [__name__]
+          regex: '(gl_agent_|gl_task_|gl_workflow_).*'
+          action: keep
+
+        # Keep resource utilization metrics
+        - sourceLabels: [__name__]
+          regex: 'process_(cpu|resident_memory|virtual_memory|open_fds).*'
+          action: keep
+
+        # Drop internal debug metrics
+        - sourceLabels: [__name__]
+          regex: '.*_internal_.*'
+          action: drop

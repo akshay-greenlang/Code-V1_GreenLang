@@ -1,0 +1,100 @@
+{{- /*
+GreenLang Grafana - Notification Channels / Contact Points ConfigMap
+GreenLang Climate OS | OBS-002
+*/ -}}
+{{- if .Values.grafana.notifiers.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "grafana.fullname" . }}-notifiers
+  namespace: {{ include "grafana.namespace" . }}
+  labels:
+    {{- include "grafana.labels" . | nindent 4 }}
+data:
+  contactpoints.yaml: |
+    apiVersion: 1
+    contactPoints:
+    {{- if .Values.grafana.notifiers.contactPoints.pagerduty.enabled }}
+    - orgId: 1
+      name: pagerduty-critical
+      receivers:
+      - uid: pagerduty-critical
+        type: pagerduty
+        disableResolveMessage: false
+        settings:
+          integrationKey: "$__file{/etc/grafana/secrets/pagerduty-integration-key}"
+          severity: critical
+          class: GreenLang
+          group: platform
+    {{- end }}
+    {{- if .Values.grafana.notifiers.contactPoints.slack.enabled }}
+    - orgId: 1
+      name: slack-critical
+      receivers:
+      - uid: slack-critical
+        type: slack
+        disableResolveMessage: false
+        settings:
+          url: "$__file{/etc/grafana/secrets/slack-webhook-critical}"
+          recipient: "#platform-alerts-critical"
+          title: |
+            [{{ "{{" }} .Status | toUpper {{ "}}" }}] {{ "{{" }} .GroupLabels.alertname {{ "}}" }}
+          text: |
+            {{ "{{" }} range .Alerts {{ "}}" }}
+            *Alert:* {{ "{{" }} .Labels.alertname {{ "}}" }}
+            *Severity:* {{ "{{" }} .Labels.severity {{ "}}" }}
+            *Description:* {{ "{{" }} .Annotations.description {{ "}}" }}
+            {{ "{{" }} end {{ "}}" }}
+    - orgId: 1
+      name: slack-warning
+      receivers:
+      - uid: slack-warning
+        type: slack
+        disableResolveMessage: false
+        settings:
+          url: "$__file{/etc/grafana/secrets/slack-webhook-warning}"
+          recipient: "#platform-alerts-warning"
+    {{- end }}
+    {{- if .Values.grafana.notifiers.contactPoints.email.enabled }}
+    - orgId: 1
+      name: email-info
+      receivers:
+      - uid: email-info
+        type: email
+        disableResolveMessage: false
+        settings:
+          addresses: {{ .Values.grafana.notifiers.contactPoints.email.addresses }}
+          singleEmail: false
+    {{- end }}
+  notificationpolicies.yaml: |
+    apiVersion: 1
+    policies:
+    - orgId: 1
+      receiver: slack-warning
+      group_by:
+        - grafana_folder
+        - alertname
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 4h
+      routes:
+      - receiver: pagerduty-critical
+        matchers:
+          - severity = critical
+        continue: true
+        group_wait: 10s
+        repeat_interval: 1h
+      - receiver: slack-critical
+        matchers:
+          - severity = critical
+        continue: true
+      - receiver: slack-warning
+        matchers:
+          - severity = warning
+        continue: true
+      - receiver: email-info
+        matchers:
+          - severity =~ "info|warning"
+        group_wait: 1m
+        repeat_interval: 12h
+{{- end }}

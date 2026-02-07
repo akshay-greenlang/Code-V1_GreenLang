@@ -1,0 +1,235 @@
+# =============================================================================
+# GreenLang Prometheus Stack - Staging Values
+# GreenLang Climate OS | OBS-001
+# =============================================================================
+# Staging configuration mirrors production but with reduced scale:
+#   - HA enabled (2 replicas)
+#   - Thanos enabled with 30-day S3 retention
+#   - Medium storage (25Gi)
+#   - Full alerting (Slack only, no PagerDuty)
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# Global Configuration
+# ---------------------------------------------------------------------------
+global:
+  environment: staging
+  clusterName: greenlang-staging
+  awsRegion: eu-west-1
+
+# ---------------------------------------------------------------------------
+# kube-prometheus-stack Overrides
+# ---------------------------------------------------------------------------
+kube-prometheus-stack:
+  # -------------------------------------------------------------------------
+  # Prometheus - HA with Thanos
+  # -------------------------------------------------------------------------
+  prometheus:
+    prometheusSpec:
+      replicas: 2
+
+      # Thanos Sidecar enabled
+      thanos:
+        image: quay.io/thanos/thanos:v0.34.1
+        objectStorageConfig:
+          existingSecret:
+            name: thanos-objstore-secret
+            key: objstore.yml
+        resources:
+          requests:
+            cpu: 50m
+            memory: 128Mi
+          limits:
+            cpu: 250m
+            memory: 512Mi
+
+      # External labels
+      externalLabels:
+        cluster: greenlang-staging
+        region: eu-west-1
+
+      # Standard retention
+      retention: 7d
+      retentionSize: 25GB
+
+      # Medium storage
+      storageSpec:
+        volumeClaimTemplate:
+          spec:
+            storageClassName: gp3
+            resources:
+              requests:
+                storage: 25Gi
+
+      # Medium resources
+      resources:
+        requests:
+          cpu: 300m
+          memory: 1Gi
+        limits:
+          cpu: 1500m
+          memory: 6Gi
+
+      # Pod anti-affinity for HA
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/name: prometheus
+                topologyKey: kubernetes.io/hostname
+
+  # -------------------------------------------------------------------------
+  # Alertmanager - HA
+  # -------------------------------------------------------------------------
+  alertmanager:
+    alertmanagerSpec:
+      replicas: 2
+
+      storage:
+        volumeClaimTemplate:
+          spec:
+            resources:
+              requests:
+                storage: 5Gi
+
+      resources:
+        requests:
+          cpu: 75m
+          memory: 192Mi
+        limits:
+          cpu: 300m
+          memory: 384Mi
+
+    # Staging routing (Slack only, no PagerDuty)
+    config:
+      global:
+        resolve_timeout: 5m
+        slack_api_url_file: /etc/alertmanager/secrets/slack-webhook
+
+      route:
+        group_by:
+          - alertname
+          - cluster
+          - namespace
+        group_wait: 30s
+        group_interval: 5m
+        repeat_interval: 4h
+        receiver: 'slack-staging'
+        routes:
+          - match:
+              severity: critical
+            receiver: 'slack-staging-critical'
+          - match:
+              severity: warning
+            receiver: 'slack-staging-warnings'
+          - match:
+              alertname: Watchdog
+            receiver: 'null'
+
+      receivers:
+        - name: 'slack-staging'
+          slack_configs:
+            - channel: '#greenlang-alerts-staging'
+              send_resolved: true
+
+        - name: 'slack-staging-critical'
+          slack_configs:
+            - channel: '#greenlang-alerts-staging'
+              send_resolved: true
+              color: 'danger'
+              title: ':rotating_light: [CRITICAL] {{ .GroupLabels.SortedPairs.Values | join " " }}'
+
+        - name: 'slack-staging-warnings'
+          slack_configs:
+            - channel: '#greenlang-alerts-staging-warning'
+              send_resolved: true
+              color: 'warning'
+
+        - name: 'null'
+
+  # -------------------------------------------------------------------------
+  # Grafana
+  # -------------------------------------------------------------------------
+  grafana:
+    persistence:
+      size: 8Gi
+
+    resources:
+      requests:
+        cpu: 75m
+        memory: 192Mi
+      limits:
+        cpu: 300m
+        memory: 384Mi
+
+    # Staging datasources (with Thanos)
+    additionalDataSources:
+      - name: Prometheus
+        type: prometheus
+        url: http://gl-prometheus-prometheus.monitoring.svc:9090
+        isDefault: true
+        access: proxy
+
+      - name: Thanos
+        type: prometheus
+        url: http://thanos-query.monitoring.svc:9090
+        access: proxy
+        jsonData:
+          timeInterval: "15s"
+
+      - name: Alertmanager
+        type: alertmanager
+        url: http://gl-prometheus-alertmanager.monitoring.svc:9093
+        access: proxy
+
+      - name: Loki
+        type: loki
+        url: http://loki-gateway.monitoring.svc:80
+        access: proxy
+
+  # -------------------------------------------------------------------------
+  # Prometheus Operator
+  # -------------------------------------------------------------------------
+  prometheusOperator:
+    resources:
+      requests:
+        cpu: 75m
+        memory: 96Mi
+      limits:
+        cpu: 150m
+        memory: 192Mi
+
+  # -------------------------------------------------------------------------
+  # Full Default Rules
+  # -------------------------------------------------------------------------
+  defaultRules:
+    rules:
+      etcd: true
+      kubeControllerManager: true
+      kubeSchedulerAlerting: true
+      kubeSchedulerRecording: true
+
+# ---------------------------------------------------------------------------
+# PushGateway - HA
+# ---------------------------------------------------------------------------
+pushgateway:
+  enabled: true
+  replicaCount: 2
+
+  persistentVolume:
+    size: 2Gi
+
+  resources:
+    requests:
+      cpu: 35m
+      memory: 48Mi
+    limits:
+      cpu: 150m
+      memory: 192Mi
+
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 1

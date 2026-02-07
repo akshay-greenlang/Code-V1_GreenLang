@@ -1,0 +1,422 @@
+# ============================================================================
+# GreenLang Infrastructure Services ServiceMonitor
+# ============================================================================
+# Combined Prometheus ServiceMonitor for infrastructure services:
+#   - feature-flags: Feature flag evaluation service
+#   - logging (Loki): Log aggregation infrastructure
+#   - agent-workers: Background agent worker processes
+#
+# Created: 2026-02-06
+# Team: Monitoring & Observability
+# PRD: OBS-001 - Prometheus Metrics Collection
+# ============================================================================
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: infrastructure-services
+  namespace: monitoring
+  labels:
+    app: infrastructure-services
+    app.kubernetes.io/name: infrastructure-services
+    app.kubernetes.io/component: infrastructure
+    app.kubernetes.io/part-of: greenlang
+    release: prometheus
+    team: platform
+    tier: infrastructure
+  annotations:
+    description: "Combined ServiceMonitor for GreenLang infrastructure services"
+    prometheus.io/docs: "https://docs.greenlang.ai/observability/infrastructure-metrics"
+spec:
+  # Job label for Prometheus
+  jobLabel: infrastructure-services
+
+  # Selector for infrastructure services
+  selector:
+    matchExpressions:
+      - key: app.kubernetes.io/component
+        operator: In
+        values:
+          - feature-flags
+          - logging
+          - agent-worker
+          - background-worker
+      - key: monitoring
+        operator: NotIn
+        values: ["disabled"]
+
+  # Target namespaces
+  namespaceSelector:
+    matchNames:
+      - greenlang
+      - greenlang-infra
+      - monitoring
+      - loki
+
+  # Endpoint configuration
+  endpoints:
+    - port: metrics
+      interval: 15s
+      scrapeTimeout: 10s
+      path: /metrics
+      scheme: http
+      honorLabels: true
+
+      # Relabelings for target labels
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_service_name]
+          targetLabel: service
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod
+        - sourceLabels: [__meta_kubernetes_pod_node_name]
+          targetLabel: node
+        - sourceLabels: [__meta_kubernetes_pod_label_app_kubernetes_io_component]
+          targetLabel: infra_component
+        - sourceLabels: []
+          targetLabel: tier
+          replacement: "infrastructure"
+
+      # Metric relabelings
+      metricRelabelings:
+        # Keep feature flag metrics
+        - sourceLabels: [__name__]
+          regex: '(gl_feature_flag_|gl_flag_).*'
+          action: keep
+
+        # Keep Loki metrics
+        - sourceLabels: [__name__]
+          regex: '(loki_|promtail_|alloy_).*'
+          action: keep
+
+        # Keep agent worker metrics
+        - sourceLabels: [__name__]
+          regex: '(gl_worker_|gl_background_|gl_queue_).*'
+          action: keep
+
+        # Keep process metrics
+        - sourceLabels: [__name__]
+          regex: 'process_.*'
+          action: keep
+
+        # Add environment label
+        - sourceLabels: [namespace]
+          regex: '.*-prod'
+          targetLabel: environment
+          replacement: 'production'
+        - sourceLabels: [namespace]
+          regex: '.*-staging'
+          targetLabel: environment
+          replacement: 'staging'
+        - sourceLabels: [namespace]
+          regex: '.*-dev'
+          targetLabel: environment
+          replacement: 'development'
+
+---
+# ============================================================================
+# Feature Flags Service ServiceMonitor (Dedicated)
+# ============================================================================
+# Dedicated monitoring for the Feature Flags service.
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: feature-flags
+  namespace: monitoring
+  labels:
+    app: feature-flags
+    app.kubernetes.io/name: feature-flags
+    app.kubernetes.io/component: feature-flags
+    app.kubernetes.io/part-of: greenlang
+    release: prometheus
+    team: platform
+  annotations:
+    description: "ServiceMonitor for GreenLang Feature Flags Service"
+    prometheus.io/docs: "https://docs.greenlang.ai/observability/feature-flags-metrics"
+spec:
+  jobLabel: feature-flags
+
+  selector:
+    matchLabels:
+      app: feature-flags
+
+  namespaceSelector:
+    matchNames:
+      - greenlang
+      - greenlang-infra
+
+  endpoints:
+    - port: metrics
+      interval: 15s
+      scrapeTimeout: 10s
+      path: /metrics
+      scheme: http
+      honorLabels: true
+
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_service_name]
+          targetLabel: service
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace
+        - sourceLabels: []
+          targetLabel: component
+          replacement: "feature-flags"
+
+      metricRelabelings:
+        # Keep feature flag evaluation metrics
+        - sourceLabels: [__name__]
+          regex: 'gl_feature_flag_.*'
+          action: keep
+
+        # Keep flag state metrics
+        - sourceLabels: [__name__]
+          regex: 'gl_flag_(evaluations_total|evaluation_latency_seconds|cache_hits_total|cache_misses_total).*'
+          action: keep
+
+        # Keep targeting metrics
+        - sourceLabels: [__name__]
+          regex: 'gl_flag_targeting_.*'
+          action: keep
+
+        # Keep kill switch metrics
+        - sourceLabels: [__name__]
+          regex: 'gl_flag_kill_switch_.*'
+          action: keep
+
+        # Keep analytics metrics
+        - sourceLabels: [__name__]
+          regex: 'gl_flag_analytics_.*'
+          action: keep
+
+---
+# ============================================================================
+# Loki ServiceMonitor
+# ============================================================================
+# Monitoring for Loki log aggregation system.
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: loki
+  namespace: monitoring
+  labels:
+    app: loki
+    app.kubernetes.io/name: loki
+    app.kubernetes.io/component: logging
+    app.kubernetes.io/part-of: greenlang
+    release: prometheus
+    team: platform
+  annotations:
+    description: "ServiceMonitor for Loki log aggregation"
+spec:
+  jobLabel: loki
+
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: loki
+
+  namespaceSelector:
+    matchNames:
+      - loki
+      - monitoring
+      - greenlang
+
+  endpoints:
+    - port: http-metrics
+      interval: 15s
+      scrapeTimeout: 10s
+      path: /metrics
+      scheme: http
+      honorLabels: true
+
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_service_name]
+          targetLabel: service
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace
+        - sourceLabels: [__meta_kubernetes_pod_label_app_kubernetes_io_component]
+          targetLabel: loki_component
+        - sourceLabels: []
+          targetLabel: component
+          replacement: "loki"
+
+      metricRelabelings:
+        # Keep Loki metrics
+        - sourceLabels: [__name__]
+          regex: 'loki_.*'
+          action: keep
+
+        # Keep ingester metrics
+        - sourceLabels: [__name__]
+          regex: 'loki_ingester_.*'
+          action: keep
+
+        # Keep distributor metrics
+        - sourceLabels: [__name__]
+          regex: 'loki_distributor_.*'
+          action: keep
+
+        # Keep querier metrics
+        - sourceLabels: [__name__]
+          regex: 'loki_querier_.*'
+          action: keep
+
+        # Keep compactor metrics
+        - sourceLabels: [__name__]
+          regex: 'loki_compactor_.*'
+          action: keep
+
+        # Keep request metrics
+        - sourceLabels: [__name__]
+          regex: 'loki_request_.*'
+          action: keep
+
+---
+# ============================================================================
+# Grafana Alloy ServiceMonitor
+# ============================================================================
+# Monitoring for Grafana Alloy (log collector).
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: alloy
+  namespace: monitoring
+  labels:
+    app: alloy
+    app.kubernetes.io/name: alloy
+    app.kubernetes.io/component: logging
+    app.kubernetes.io/part-of: greenlang
+    release: prometheus
+    team: platform
+  annotations:
+    description: "ServiceMonitor for Grafana Alloy log collector"
+spec:
+  jobLabel: alloy
+
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: alloy
+
+  namespaceSelector:
+    matchNames:
+      - monitoring
+      - loki
+      - greenlang
+
+  endpoints:
+    - port: http-metrics
+      interval: 15s
+      scrapeTimeout: 10s
+      path: /metrics
+      scheme: http
+      honorLabels: true
+
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_service_name]
+          targetLabel: service
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod
+        - sourceLabels: []
+          targetLabel: component
+          replacement: "alloy"
+
+      metricRelabelings:
+        # Keep Alloy metrics
+        - sourceLabels: [__name__]
+          regex: 'alloy_.*'
+          action: keep
+
+        # Keep log collection metrics
+        - sourceLabels: [__name__]
+          regex: 'alloy_(logs_|loki_).*'
+          action: keep
+
+        # Keep target metrics
+        - sourceLabels: [__name__]
+          regex: 'alloy_targets_.*'
+          action: keep
+
+---
+# ============================================================================
+# Background Workers ServiceMonitor
+# ============================================================================
+# Monitoring for background worker processes.
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: background-workers
+  namespace: monitoring
+  labels:
+    app: background-workers
+    app.kubernetes.io/name: background-workers
+    app.kubernetes.io/component: workers
+    app.kubernetes.io/part-of: greenlang
+    release: prometheus
+    team: platform
+  annotations:
+    description: "ServiceMonitor for GreenLang background workers"
+spec:
+  jobLabel: background-workers
+
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: background-worker
+
+  namespaceSelector:
+    matchNames:
+      - greenlang
+      - gl-agents
+      - gl-workers
+
+  endpoints:
+    - port: metrics
+      interval: 15s
+      scrapeTimeout: 10s
+      path: /metrics
+      scheme: http
+      honorLabels: true
+
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_service_name]
+          targetLabel: service
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod
+        - sourceLabels: [__meta_kubernetes_pod_label_worker_type]
+          targetLabel: worker_type
+        - sourceLabels: []
+          targetLabel: component
+          replacement: "worker"
+
+      metricRelabelings:
+        # Keep worker metrics
+        - sourceLabels: [__name__]
+          regex: 'gl_worker_.*'
+          action: keep
+
+        # Keep queue metrics
+        - sourceLabels: [__name__]
+          regex: 'gl_queue_.*'
+          action: keep
+
+        # Keep task metrics
+        - sourceLabels: [__name__]
+          regex: 'gl_task_.*'
+          action: keep
+
+        # Keep Celery metrics (if using Celery)
+        - sourceLabels: [__name__]
+          regex: 'celery_.*'
+          action: keep
+
+        # Keep process metrics
+        - sourceLabels: [__name__]
+          regex: 'process_.*'
+          action: keep

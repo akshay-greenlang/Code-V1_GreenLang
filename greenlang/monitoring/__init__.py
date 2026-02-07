@@ -18,12 +18,14 @@ This module provides:
 - Telemetry and logging (from telemetry/)
 - Observability features (from observability/)
 - Sandbox monitoring (from sandbox/)
+- PushGateway SDK for batch job metrics (OBS-001 Phase 3)
 
 Sub-modules:
 - monitoring.metrics: Core metrics collection (base directory)
 - monitoring.telemetry: Logging, metrics, health tracking
 - monitoring.observability: Observability infrastructure
 - monitoring.sandbox: Sandbox capabilities, OS isolation
+- monitoring.pushgateway: PushGateway SDK for batch jobs
 """
 
 from .metrics import (
@@ -39,6 +41,28 @@ from .health import (
     ComponentHealth,
     create_health_app,
 )
+
+# Import PushGateway SDK (if available)
+try:
+    from .pushgateway import (
+        BatchJobMetrics,
+        PushGatewayConfig,
+        PushGatewayError,
+        get_pushgateway_client,
+        clear_pushgateway_clients,
+        create_batch_job_metrics,
+        PROMETHEUS_CLIENT_AVAILABLE as PUSHGATEWAY_AVAILABLE,
+    )
+    _HAS_PUSHGATEWAY = True
+except ImportError:
+    _HAS_PUSHGATEWAY = False
+    BatchJobMetrics = None
+    PushGatewayConfig = None
+    PushGatewayError = None
+    get_pushgateway_client = None
+    clear_pushgateway_clients = None
+    create_batch_job_metrics = None
+    PUSHGATEWAY_AVAILABLE = False
 
 # Import standard metrics (if available)
 try:
@@ -88,8 +112,16 @@ __all__ = [
     "ProcessHeatMetrics",
     "BoilerOptimizerMetrics",
     "HeatRecoveryMetrics",
+    # PushGateway SDK (OBS-001 Phase 3)
+    "BatchJobMetrics",
+    "PushGatewayConfig",
+    "PushGatewayError",
+    "get_pushgateway_client",
+    "clear_pushgateway_clients",
+    "create_batch_job_metrics",
+    "PUSHGATEWAY_AVAILABLE",
 ]
 
-__version__ = "2.0.0"
+__version__ = "2.1.0"
 __standard_metrics_count__ = 71
 __min_required_metrics__ = 50

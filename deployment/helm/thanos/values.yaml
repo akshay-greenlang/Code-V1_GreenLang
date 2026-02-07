@@ -1,0 +1,281 @@
+# =============================================================================
+# GreenLang Thanos - Base Values
+# GreenLang Climate OS | OBS-001
+# =============================================================================
+# Configuration for Thanos components providing long-term metrics storage
+# with S3 backend, unified query, compaction, and downsampling.
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# Global Configuration
+# ---------------------------------------------------------------------------
+global:
+  environment: prod
+  clusterName: greenlang-prod
+  awsRegion: eu-west-1
+
+# ---------------------------------------------------------------------------
+# Thanos Configuration (Bitnami chart)
+# ---------------------------------------------------------------------------
+thanos:
+  # -------------------------------------------------------------------------
+  # Image Configuration
+  # -------------------------------------------------------------------------
+  image:
+    registry: quay.io
+    repository: thanos/thanos
+    tag: v0.34.1
+    pullPolicy: IfNotPresent
+
+  # -------------------------------------------------------------------------
+  # Object Store Configuration
+  # -------------------------------------------------------------------------
+  # S3 bucket configuration loaded from Kubernetes secret
+  objstoreConfig: ""
+  existingObjstoreSecret: thanos-objstore-secret
+  existingObjstoreSecretItems:
+    - key: objstore.yml
+      path: objstore.yml
+
+  # -------------------------------------------------------------------------
+  # Thanos Query
+  # -------------------------------------------------------------------------
+  query:
+    enabled: true
+    replicaCount: 2
+
+    # DNS discovery for Prometheus sidecars
+    dnsDiscovery:
+      enabled: true
+      sidecarsService: prometheus-thanos-discovery
+      sidecarsNamespace: monitoring
+
+    # Store endpoints
+    stores:
+      - dnssrv+_grpc._tcp.thanos-storegateway.monitoring.svc.cluster.local
+
+    # Resources
+    resources:
+      requests:
+        cpu: 250m
+        memory: 512Mi
+      limits:
+        cpu: 1000m
+        memory: 2Gi
+
+    # Pod anti-affinity for HA
+    affinity:
+      podAntiAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app.kubernetes.io/component: query
+              topologyKey: kubernetes.io/hostname
+
+    # Service configuration
+    service:
+      type: ClusterIP
+      http:
+        port: 9090
+      grpc:
+        port: 10901
+
+    # Ingress (optional - access via internal gateway)
+    ingress:
+      enabled: false
+
+    # Auto-downsampling
+    autoDownsampling: true
+
+  # -------------------------------------------------------------------------
+  # Thanos Query Frontend
+  # -------------------------------------------------------------------------
+  queryFrontend:
+    enabled: true
+    replicaCount: 2
+
+    # Caching configuration
+    config: |-
+      type: IN-MEMORY
+      config:
+        max_size: 512MB
+        max_size_items: 1000
+        validity: 5m
+
+    # Resources
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 1Gi
+
+    # Service
+    service:
+      type: ClusterIP
+      http:
+        port: 9090
+
+  # -------------------------------------------------------------------------
+  # Thanos Store Gateway
+  # -------------------------------------------------------------------------
+  storegateway:
+    enabled: true
+    replicaCount: 2
+
+    # Persistence for local cache
+    persistence:
+      enabled: true
+      size: 50Gi
+      storageClass: gp3
+
+    # Resources
+    resources:
+      requests:
+        cpu: 250m
+        memory: 1Gi
+      limits:
+        cpu: 1000m
+        memory: 4Gi
+
+    # Pod anti-affinity
+    affinity:
+      podAntiAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app.kubernetes.io/component: storegateway
+              topologyKey: kubernetes.io/hostname
+
+    # ServiceAccount with IRSA
+    serviceAccount:
+      create: true
+      annotations:
+        eks.amazonaws.com/role-arn: "" # Set via Terraform
+
+  # -------------------------------------------------------------------------
+  # Thanos Compactor
+  # -------------------------------------------------------------------------
+  compactor:
+    enabled: true
+    # Only 1 replica to avoid conflicts
+    replicaCount: 1
+
+    # Retention settings
+    retentionResolutionRaw: 30d    # Keep raw data for 30 days
+    retentionResolution5m: 120d    # Keep 5m downsampled for 120 days
+    retentionResolution1h: 730d    # Keep 1h downsampled for 2 years
+
+    # Persistence for working directory
+    persistence:
+      enabled: true
+      size: 100Gi
+      storageClass: gp3
+
+    # Resources
+    resources:
+      requests:
+        cpu: 250m
+        memory: 1Gi
+      limits:
+        cpu: 1000m
+        memory: 4Gi
+
+    # Compaction configuration
+    consistencyDelay: 30m
+    blockSyncConcurrency: 20
+    compactConcurrency: 1
+    downsamplingDisable: false
+
+    # ServiceAccount with IRSA
+    serviceAccount:
+      create: true
+      annotations:
+        eks.amazonaws.com/role-arn: "" # Set via Terraform
+
+  # -------------------------------------------------------------------------
+  # Thanos Ruler
+  # -------------------------------------------------------------------------
+  ruler:
+    enabled: true
+    replicaCount: 2
+
+    # Alertmanager endpoints
+    alertmanagers:
+      - http://gl-prometheus-alertmanager.monitoring.svc:9093
+
+    # Rules configuration (loaded from ConfigMap)
+    config: |-
+      groups: []
+
+    # Persistence
+    persistence:
+      enabled: true
+      size: 10Gi
+      storageClass: gp3
+
+    # Resources
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 1Gi
+
+    # ServiceAccount with IRSA
+    serviceAccount:
+      create: true
+      annotations:
+        eks.amazonaws.com/role-arn: "" # Set via Terraform
+
+  # -------------------------------------------------------------------------
+  # Thanos Bucket Web (disabled by default)
+  # -------------------------------------------------------------------------
+  bucketweb:
+    enabled: false
+
+  # -------------------------------------------------------------------------
+  # Thanos Receive (not used - using sidecar pattern)
+  # -------------------------------------------------------------------------
+  receive:
+    enabled: false
+
+  # -------------------------------------------------------------------------
+  # Metrics and Monitoring
+  # -------------------------------------------------------------------------
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+      namespace: monitoring
+      labels:
+        release: gl-prometheus
+      interval: 30s
+
+  # -------------------------------------------------------------------------
+  # Common Configuration
+  # -------------------------------------------------------------------------
+  commonLabels:
+    app.kubernetes.io/part-of: greenlang
+    greenlang.io/obs: "001"
+
+  # Pod security context
+  podSecurityContext:
+    enabled: true
+    fsGroup: 65534
+    runAsUser: 65534
+    runAsNonRoot: true
+
+  # Container security context
+  containerSecurityContext:
+    enabled: true
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    runAsUser: 65534

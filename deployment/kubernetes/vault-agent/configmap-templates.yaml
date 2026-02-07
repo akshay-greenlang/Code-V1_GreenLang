@@ -1,0 +1,272 @@
+##############################################
+# GreenLang Vault Agent Templates ConfigMap
+# SEC-006: Phase 4 - Vault Agent Injector Configuration
+# Centralized templates for secret injection
+##############################################
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vault-agent-templates
+  namespace: vault
+  labels:
+    app.kubernetes.io/name: vault-agent-templates
+    app.kubernetes.io/component: templates
+    app.kubernetes.io/part-of: greenlang
+  annotations:
+    description: "Vault Agent Consul Template format templates for GreenLang services"
+data:
+  # PostgreSQL Credentials Template (JSON format)
+  postgresql-json.ctmpl: |
+    {{- with secret "secret/data/greenlang/database/postgresql" -}}
+    {
+      "username": "{{ .Data.data.username }}",
+      "password": "{{ .Data.data.password }}",
+      "host": "{{ .Data.data.host }}",
+      "port": {{ .Data.data.port }},
+      "database": "{{ .Data.data.database }}",
+      "sslmode": "{{ .Data.data.sslmode | default "require" }}",
+      "connection_string": "postgresql://{{ .Data.data.username }}:{{ .Data.data.password }}@{{ .Data.data.host }}:{{ .Data.data.port }}/{{ .Data.data.database }}?sslmode={{ .Data.data.sslmode | default "require" }}"
+    }
+    {{- end -}}
+
+  # PostgreSQL Connection URL Template
+  postgresql-url.ctmpl: |
+    {{- with secret "secret/data/greenlang/database/postgresql" -}}
+    postgresql://{{ .Data.data.username }}:{{ .Data.data.password }}@{{ .Data.data.host }}:{{ .Data.data.port }}/{{ .Data.data.database }}?sslmode={{ .Data.data.sslmode | default "require" }}
+    {{- end -}}
+
+  # PostgreSQL Environment Variables Template
+  postgresql-env.ctmpl: |
+    {{- with secret "secret/data/greenlang/database/postgresql" -}}
+    PGUSER={{ .Data.data.username }}
+    PGPASSWORD={{ .Data.data.password }}
+    PGHOST={{ .Data.data.host }}
+    PGPORT={{ .Data.data.port }}
+    PGDATABASE={{ .Data.data.database }}
+    PGSSLMODE={{ .Data.data.sslmode | default "require" }}
+    DATABASE_URL=postgresql://{{ .Data.data.username }}:{{ .Data.data.password }}@{{ .Data.data.host }}:{{ .Data.data.port }}/{{ .Data.data.database }}?sslmode={{ .Data.data.sslmode | default "require" }}
+    {{- end -}}
+
+  # Dynamic PostgreSQL Credentials (from Database secrets engine)
+  postgresql-dynamic.ctmpl: |
+    {{- with secret "database/creds/greenlang-app" -}}
+    {
+      "username": "{{ .Data.username }}",
+      "password": "{{ .Data.password }}",
+      "lease_id": "{{ .LeaseID }}",
+      "lease_duration": {{ .LeaseDuration }},
+      "renewable": {{ .Renewable }}
+    }
+    {{- end -}}
+
+  # Redis Credentials Template (JSON format)
+  redis-json.ctmpl: |
+    {{- with secret "secret/data/greenlang/database/redis" -}}
+    {
+      "host": "{{ .Data.data.host }}",
+      "port": {{ .Data.data.port }},
+      "password": "{{ .Data.data.password }}",
+      "database": {{ .Data.data.database | default 0 }},
+      "ssl": {{ .Data.data.ssl | default true }},
+      "connection_string": "rediss://:{{ .Data.data.password }}@{{ .Data.data.host }}:{{ .Data.data.port }}/{{ .Data.data.database | default 0 }}"
+    }
+    {{- end -}}
+
+  # Redis URL Template
+  redis-url.ctmpl: |
+    {{- with secret "secret/data/greenlang/database/redis" -}}
+    {{- if .Data.data.ssl }}rediss{{else}}redis{{end}}://:{{ .Data.data.password }}@{{ .Data.data.host }}:{{ .Data.data.port }}/{{ .Data.data.database | default 0 }}
+    {{- end -}}
+
+  # Redis Environment Variables Template
+  redis-env.ctmpl: |
+    {{- with secret "secret/data/greenlang/database/redis" -}}
+    REDIS_HOST={{ .Data.data.host }}
+    REDIS_PORT={{ .Data.data.port }}
+    REDIS_PASSWORD={{ .Data.data.password }}
+    REDIS_DB={{ .Data.data.database | default 0 }}
+    REDIS_SSL={{ .Data.data.ssl | default true }}
+    REDIS_URL=rediss://:{{ .Data.data.password }}@{{ .Data.data.host }}:{{ .Data.data.port }}/{{ .Data.data.database | default 0 }}
+    CELERY_BROKER_URL=rediss://:{{ .Data.data.password }}@{{ .Data.data.host }}:{{ .Data.data.port }}/1
+    CELERY_RESULT_BACKEND=rediss://:{{ .Data.data.password }}@{{ .Data.data.host }}:{{ .Data.data.port }}/2
+    {{- end -}}
+
+  # API Keys Template (JSON format)
+  api-keys-json.ctmpl: |
+    {{- with secret "secret/data/greenlang/api-keys/internal" -}}
+    {
+      "internal_api_key": "{{ .Data.data.internal_api_key }}",
+      "webhook_secret": "{{ .Data.data.webhook_secret }}",
+      "admin_api_key": "{{ .Data.data.admin_api_key }}",
+      "service_mesh_token": "{{ .Data.data.service_mesh_token }}"
+    }
+    {{- end -}}
+
+  # API Keys Environment Variables Template
+  api-keys-env.ctmpl: |
+    {{- with secret "secret/data/greenlang/api-keys/internal" -}}
+    INTERNAL_API_KEY={{ .Data.data.internal_api_key }}
+    WEBHOOK_SECRET={{ .Data.data.webhook_secret }}
+    ADMIN_API_KEY={{ .Data.data.admin_api_key }}
+    SERVICE_MESH_TOKEN={{ .Data.data.service_mesh_token }}
+    {{- end -}}
+
+  # JWT Keys Template
+  jwt-keys-json.ctmpl: |
+    {{- with secret "secret/data/greenlang/auth/jwt-signing" -}}
+    {
+      "private_key": {{ .Data.data.private_key | toJSON }},
+      "public_key": {{ .Data.data.public_key | toJSON }},
+      "key_id": "{{ .Data.data.key_id }}",
+      "algorithm": "RS256",
+      "access_token_expire_minutes": {{ .Data.data.access_token_expire_minutes | default 15 }},
+      "refresh_token_expire_days": {{ .Data.data.refresh_token_expire_days | default 7 }}
+    }
+    {{- end -}}
+
+  # JWT Private Key (PEM format)
+  jwt-private-key.ctmpl: |
+    {{- with secret "secret/data/greenlang/auth/jwt-signing" -}}
+    {{ .Data.data.private_key }}
+    {{- end -}}
+
+  # JWT Public Key (PEM format)
+  jwt-public-key.ctmpl: |
+    {{- with secret "secret/data/greenlang/auth/jwt-signing" -}}
+    {{ .Data.data.public_key }}
+    {{- end -}}
+
+  # LLM API Keys Template
+  llm-keys-json.ctmpl: |
+    {{- with secret "secret/data/greenlang/agents/llm" -}}
+    {
+      "openai": {
+        "api_key": "{{ .Data.data.openai_api_key }}",
+        "org_id": "{{ .Data.data.openai_org_id }}"
+      },
+      "anthropic": {
+        "api_key": "{{ .Data.data.anthropic_api_key }}"
+      },
+      "azure_openai": {
+        "api_key": "{{ .Data.data.azure_openai_api_key }}",
+        "endpoint": "{{ .Data.data.azure_openai_endpoint }}",
+        "api_version": "{{ .Data.data.azure_openai_api_version | default "2024-02-01" }}"
+      }
+    }
+    {{- end -}}
+
+  # LLM API Keys Environment Variables
+  llm-keys-env.ctmpl: |
+    {{- with secret "secret/data/greenlang/agents/llm" -}}
+    OPENAI_API_KEY={{ .Data.data.openai_api_key }}
+    OPENAI_ORG_ID={{ .Data.data.openai_org_id }}
+    ANTHROPIC_API_KEY={{ .Data.data.anthropic_api_key }}
+    AZURE_OPENAI_API_KEY={{ .Data.data.azure_openai_api_key }}
+    AZURE_OPENAI_ENDPOINT={{ .Data.data.azure_openai_endpoint }}
+    AZURE_OPENAI_API_VERSION={{ .Data.data.azure_openai_api_version | default "2024-02-01" }}
+    {{- end -}}
+
+  # S3 Credentials Template (AWS credentials file format)
+  s3-credentials.ctmpl: |
+    {{- with secret "secret/data/greenlang/agents/s3" -}}
+    [default]
+    aws_access_key_id = {{ .Data.data.access_key }}
+    aws_secret_access_key = {{ .Data.data.secret_key }}
+    region = {{ .Data.data.region | default "us-east-1" }}
+    {{- end -}}
+
+  # S3 Credentials Template (JSON format)
+  s3-json.ctmpl: |
+    {{- with secret "secret/data/greenlang/agents/s3" -}}
+    {
+      "access_key": "{{ .Data.data.access_key }}",
+      "secret_key": "{{ .Data.data.secret_key }}",
+      "region": "{{ .Data.data.region | default "us-east-1" }}",
+      "artifacts_bucket": "{{ .Data.data.artifacts_bucket }}",
+      "models_bucket": "{{ .Data.data.models_bucket }}",
+      "logs_bucket": "{{ .Data.data.logs_bucket }}"
+    }
+    {{- end -}}
+
+  # S3 Environment Variables
+  s3-env.ctmpl: |
+    {{- with secret "secret/data/greenlang/agents/s3" -}}
+    AWS_ACCESS_KEY_ID={{ .Data.data.access_key }}
+    AWS_SECRET_ACCESS_KEY={{ .Data.data.secret_key }}
+    AWS_DEFAULT_REGION={{ .Data.data.region | default "us-east-1" }}
+    S3_BUCKET_ARTIFACTS={{ .Data.data.artifacts_bucket }}
+    S3_BUCKET_MODELS={{ .Data.data.models_bucket }}
+    S3_BUCKET_LOGS={{ .Data.data.logs_bucket }}
+    {{- end -}}
+
+  # TLS Certificate Template
+  tls-certificate.ctmpl: |
+    {{- with secret "pki_int/issue/greenlang-service" "common_name=greenlang.local" "ttl=720h" -}}
+    {{ .Data.certificate }}
+    {{- end -}}
+
+  # TLS Private Key Template
+  tls-private-key.ctmpl: |
+    {{- with secret "pki_int/issue/greenlang-service" "common_name=greenlang.local" "ttl=720h" -}}
+    {{ .Data.private_key }}
+    {{- end -}}
+
+  # TLS CA Certificate Template
+  tls-ca-certificate.ctmpl: |
+    {{- with secret "pki_int/issue/greenlang-service" "common_name=greenlang.local" "ttl=720h" -}}
+    {{ .Data.issuing_ca }}
+    {{- end -}}
+
+  # Combined Environment File Template
+  combined-env.ctmpl: |
+    # Database Configuration
+    {{- with secret "secret/data/greenlang/database/postgresql" }}
+    DATABASE_URL=postgresql://{{ .Data.data.username }}:{{ .Data.data.password }}@{{ .Data.data.host }}:{{ .Data.data.port }}/{{ .Data.data.database }}?sslmode={{ .Data.data.sslmode | default "require" }}
+    {{- end }}
+
+    # Redis Configuration
+    {{- with secret "secret/data/greenlang/database/redis" }}
+    REDIS_URL=rediss://:{{ .Data.data.password }}@{{ .Data.data.host }}:{{ .Data.data.port }}/{{ .Data.data.database | default 0 }}
+    {{- end }}
+
+    # API Keys
+    {{- with secret "secret/data/greenlang/api-keys/internal" }}
+    INTERNAL_API_KEY={{ .Data.data.internal_api_key }}
+    WEBHOOK_SECRET={{ .Data.data.webhook_secret }}
+    {{- end }}
+
+  # Vault Agent Configuration Template
+  vault-agent-config.hcl: |
+    pid_file = "/home/vault/.pid"
+
+    auto_auth {
+      method "kubernetes" {
+        mount_path = "auth/kubernetes"
+        config = {
+          role = "greenlang-app"
+        }
+      }
+
+      sink "file" {
+        config = {
+          path = "/home/vault/.token"
+        }
+      }
+    }
+
+    template_config {
+      exit_on_retry_failure = true
+      static_secret_render_interval = "30s"
+    }
+
+    vault {
+      address = "https://vault.vault.svc.cluster.local:8200"
+      ca_cert = "/vault/tls/ca.crt"
+    }
+
+    listener "tcp" {
+      address = "127.0.0.1:8100"
+      tls_disable = true
+    }

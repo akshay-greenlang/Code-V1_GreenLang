@@ -1,0 +1,219 @@
+# =============================================================================
+# GreenLang Tempo - Development Values Override
+# GreenLang Climate OS | OBS-003
+# =============================================================================
+# Minimal monolithic deployment for local/dev environments.
+# Single replica, local filesystem storage, no persistence, 7-day retention.
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# Global Configuration
+# ---------------------------------------------------------------------------
+global:
+  environment: dev
+  clusterName: greenlang-dev
+  awsRegion: eu-west-1
+
+# ---------------------------------------------------------------------------
+# Tempo Core Configuration
+# ---------------------------------------------------------------------------
+tempo:
+  # Monolithic mode - all components in a single binary
+  mode: monolithic
+
+  # -------------------------------------------------------------------------
+  # Server
+  # -------------------------------------------------------------------------
+  server:
+    log_level: debug
+
+  # -------------------------------------------------------------------------
+  # Storage - Local filesystem (no S3)
+  # -------------------------------------------------------------------------
+  storage:
+    trace:
+      backend: local
+      local:
+        path: /var/tempo/traces
+      wal:
+        path: /var/tempo/wal
+      block:
+        version: vParquet4
+      blocklist_poll: 1m
+
+  # -------------------------------------------------------------------------
+  # Distributor (embedded in monolithic)
+  # -------------------------------------------------------------------------
+  distributor:
+    replicas: 1
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 250m
+        memory: 256Mi
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: "0.0.0.0:4317"
+          http:
+            endpoint: "0.0.0.0:4318"
+      jaeger:
+        protocols:
+          grpc:
+            endpoint: "0.0.0.0:14250"
+
+  # -------------------------------------------------------------------------
+  # Ingester (embedded in monolithic)
+  # -------------------------------------------------------------------------
+  ingester:
+    replicas: 1
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 250m
+        memory: 256Mi
+    persistence:
+      enabled: false
+    max_block_duration: 5m
+    max_block_bytes: 104857600       # 100 MiB
+    flush_check_period: 30s
+    trace_idle_period: 30s
+    lifecycler:
+      ring:
+        replication_factor: 1
+        kvstore:
+          store: inmemory
+
+  # -------------------------------------------------------------------------
+  # Querier (embedded in monolithic)
+  # -------------------------------------------------------------------------
+  querier:
+    replicas: 1
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 250m
+        memory: 256Mi
+    max_concurrent_queries: 5
+    search:
+      query_timeout: 15s
+
+  # -------------------------------------------------------------------------
+  # Query Frontend (embedded in monolithic)
+  # -------------------------------------------------------------------------
+  queryFrontend:
+    replicas: 1
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 250m
+        memory: 256Mi
+
+  # -------------------------------------------------------------------------
+  # Compactor (embedded in monolithic)
+  # -------------------------------------------------------------------------
+  compactor:
+    replicas: 1
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 250m
+        memory: 256Mi
+    compaction:
+      block_retention: 168h           # 7 days
+      compacted_block_retention: 1h
+      compaction_window: 1h
+      max_block_bytes: 10737418240    # 10 GiB
+
+  # -------------------------------------------------------------------------
+  # Metrics Generator - Disabled in dev
+  # -------------------------------------------------------------------------
+  metricsGenerator:
+    enabled: false
+
+  # -------------------------------------------------------------------------
+  # Overrides / Limits
+  # -------------------------------------------------------------------------
+  overrides:
+    defaults:
+      ingestion:
+        rate_limit_bytes: 5000000      # 5 MB/s
+        burst_size_bytes: 10000000     # 10 MB burst
+      search:
+        max_duration: 24h
+
+  # -------------------------------------------------------------------------
+  # Memberlist - inmemory for single replica
+  # -------------------------------------------------------------------------
+  memberlist:
+    port: 7946
+
+  # -------------------------------------------------------------------------
+  # Monolithic-specific configuration
+  # -------------------------------------------------------------------------
+  monolithic:
+    replicas: 1
+    resources:
+      requests:
+        cpu: 250m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+    persistence:
+      enabled: false
+
+# ---------------------------------------------------------------------------
+# Service Account
+# ---------------------------------------------------------------------------
+serviceAccount:
+  create: true
+  annotations: {}
+
+# ---------------------------------------------------------------------------
+# Network Policy - Disabled in dev
+# ---------------------------------------------------------------------------
+networkPolicy:
+  enabled: false
+
+# ---------------------------------------------------------------------------
+# Service Monitor
+# ---------------------------------------------------------------------------
+serviceMonitor:
+  enabled: true
+  interval: 60s
+  labels:
+    release: gl-prometheus
+
+# ---------------------------------------------------------------------------
+# Pod Disruption Budgets - Disabled in dev
+# ---------------------------------------------------------------------------
+podDisruptionBudget:
+  ingester:
+    enabled: false
+  distributor:
+    enabled: false
+  querier:
+    enabled: false
+  queryFrontend:
+    enabled: false
+
+# ---------------------------------------------------------------------------
+# Autoscaling - Disabled in dev
+# ---------------------------------------------------------------------------
+autoscaling:
+  distributor:
+    enabled: false
+  querier:
+    enabled: false

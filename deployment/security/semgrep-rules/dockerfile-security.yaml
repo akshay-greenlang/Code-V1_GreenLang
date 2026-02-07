@@ -1,0 +1,364 @@
+# Dockerfile Security Semgrep Rules
+#
+# Container security best practices for GreenLang Docker images
+# Covers: base images, privilege escalation, secrets, security hardening
+#
+# Author: GreenLang Security Team
+# Version: 1.0.0
+# Compliance: SOC 2 CC6.1, ISO 27001 A.14.2.5
+
+rules:
+  # ==========================================================================
+  # BASE IMAGE SECURITY
+  # ==========================================================================
+
+  - id: dockerfile-latest-tag
+    patterns:
+      - pattern-regex: 'FROM\s+\S+:latest'
+    message: |
+      Using 'latest' tag for base image. Pin to a specific version for
+      reproducible builds and security scanning. Example: python:3.11-slim
+    languages: [dockerfile]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe: "CWE-829"
+
+  - id: dockerfile-no-tag
+    patterns:
+      - pattern-regex: 'FROM\s+[a-zA-Z0-9_/-]+\s*$'
+      - pattern-not-regex: 'FROM\s+[a-zA-Z0-9_/-]+:[a-zA-Z0-9._-]+\s*$'
+      - pattern-not-regex: 'FROM\s+[a-zA-Z0-9_/-]+\s+AS\s+'
+    message: |
+      Base image without version tag. Always specify a version tag for
+      reproducibility and security. Example: FROM python:3.11-slim
+    languages: [dockerfile]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe: "CWE-829"
+
+  - id: dockerfile-untrusted-registry
+    patterns:
+      - pattern-regex: 'FROM\s+(?!docker\.io|gcr\.io|ghcr\.io|mcr\.microsoft\.com|public\.ecr\.aws|quay\.io|registry\.k8s\.io)[a-zA-Z0-9.-]+/'
+    message: |
+      Base image from untrusted registry. Use official registries (Docker Hub,
+      GCR, GHCR, MCR, ECR, Quay) or your organization's private registry.
+    languages: [dockerfile]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe: "CWE-829"
+
+  - id: dockerfile-deprecated-base
+    patterns:
+      - pattern-regex: 'FROM\s+(python:2|python:3\.[0-5]|node:1[0-5]|ubuntu:1[0-8]|debian:(jessie|stretch))'
+    message: |
+      Deprecated or end-of-life base image. Use a current, supported version
+      to receive security updates.
+    languages: [dockerfile]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: "CWE-1104"
+
+  # ==========================================================================
+  # PRIVILEGE ESCALATION
+  # ==========================================================================
+
+  - id: dockerfile-missing-user
+    patterns:
+      - pattern-regex: '^(?!.*USER\s+\S+).*$'
+    message: |
+      Dockerfile does not switch to non-root user. Add USER directive to run
+      container as non-root: USER 1000:1000 or USER appuser
+    languages: [dockerfile]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe: "CWE-250"
+
+  - id: dockerfile-root-user
+    patterns:
+      - pattern-regex: 'USER\s+(root|0)'
+    message: |
+      Container runs as root user. Switch to a non-root user for better
+      security isolation.
+    languages: [dockerfile]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe: "CWE-250"
+
+  - id: dockerfile-chmod-777
+    patterns:
+      - pattern-regex: 'chmod\s+777'
+    message: |
+      Overly permissive file permissions (777). Use restrictive permissions
+      (755 for directories, 644 for files).
+    languages: [dockerfile]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe: "CWE-732"
+
+  - id: dockerfile-setuid-setgid
+    patterns:
+      - pattern-regex: 'chmod\s+[0-7]*[4-7][0-7]{3}'
+    message: |
+      SUID/SGID bit may be set. Avoid setuid/setgid unless absolutely required
+      and document the security justification.
+    languages: [dockerfile]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe: "CWE-250"
+
+  # ==========================================================================
+  # SECRETS AND CREDENTIALS
+  # ==========================================================================
+
+  - id: dockerfile-env-secret
+    patterns:
+      - pattern-regex: 'ENV\s+(PASSWORD|SECRET|API_KEY|ACCESS_KEY|TOKEN|PRIVATE_KEY|CREDENTIALS)\s*='
+    message: |
+      Secret in ENV instruction. Secrets in ENV are visible in image metadata.
+      Use build-time secrets (--mount=type=secret) or runtime environment variables.
+    languages: [dockerfile]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: "CWE-798"
+      owasp: "A07:2021"
+
+  - id: dockerfile-arg-secret
+    patterns:
+      - pattern-regex: 'ARG\s+(PASSWORD|SECRET|API_KEY|ACCESS_KEY|TOKEN|PRIVATE_KEY|CREDENTIALS)\s*='
+    message: |
+      Secret in ARG instruction with default value. ARG values are visible
+      in build history. Use --build-arg without defaults or --mount=type=secret.
+    languages: [dockerfile]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: "CWE-798"
+
+  - id: dockerfile-copy-secrets
+    patterns:
+      - pattern-regex: 'COPY\s+.*\.(pem|key|p12|pfx|jks|keystore|credentials|secrets)'
+    message: |
+      Copying secret files into image. Use Docker secrets, volume mounts,
+      or secret management services at runtime.
+    languages: [dockerfile]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: "CWE-798"
+
+  - id: dockerfile-aws-credentials
+    patterns:
+      - pattern-regex: 'COPY\s+.*\.aws/'
+      - pattern-regex: 'COPY\s+.*credentials'
+    message: |
+      AWS credentials may be copied into image. Use IAM roles, instance profiles,
+      or AWS Secrets Manager instead.
+    languages: [dockerfile]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: "CWE-798"
+
+  # ==========================================================================
+  # SECURITY HARDENING
+  # ==========================================================================
+
+  - id: dockerfile-apt-no-clean
+    patterns:
+      - pattern-regex: 'apt(-get)?\s+install[^&]*(?!.*rm\s+-rf\s+/var/lib/apt/lists)'
+    message: |
+      apt install without cleaning cache. Add 'rm -rf /var/lib/apt/lists/*'
+      to reduce image size and attack surface.
+    languages: [dockerfile]
+    severity: INFO
+    metadata:
+      category: security
+
+  - id: dockerfile-curl-insecure
+    patterns:
+      - pattern-regex: 'curl\s+(-k|--insecure)'
+    message: |
+      curl with insecure flag. Do not disable TLS verification.
+      Ensure proper certificate validation.
+    languages: [dockerfile]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: "CWE-295"
+
+  - id: dockerfile-wget-insecure
+    patterns:
+      - pattern-regex: 'wget\s+(--no-check-certificate)'
+    message: |
+      wget without certificate verification. Do not disable TLS verification.
+      Ensure proper certificate validation.
+    languages: [dockerfile]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: "CWE-295"
+
+  - id: dockerfile-pip-trusted-host
+    patterns:
+      - pattern-regex: 'pip\s+install\s+--trusted-host'
+    message: |
+      pip install with --trusted-host bypasses security. Use HTTPS and
+      proper certificate validation.
+    languages: [dockerfile]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe: "CWE-295"
+
+  - id: dockerfile-missing-healthcheck
+    patterns:
+      - pattern-regex: '^(?!.*HEALTHCHECK).*$'
+    message: |
+      Dockerfile missing HEALTHCHECK instruction. Add HEALTHCHECK for
+      container orchestration and monitoring.
+    languages: [dockerfile]
+    severity: INFO
+    metadata:
+      category: reliability
+
+  # ==========================================================================
+  # SHELL AND COMMAND INJECTION
+  # ==========================================================================
+
+  - id: dockerfile-shell-form-cmd
+    patterns:
+      - pattern-regex: 'CMD\s+[^[]'
+    message: |
+      CMD in shell form. Use exec form (JSON array) to avoid shell injection
+      and ensure proper signal handling: CMD ["python", "app.py"]
+    languages: [dockerfile]
+    severity: INFO
+    metadata:
+      category: security
+      cwe: "CWE-78"
+
+  - id: dockerfile-shell-form-entrypoint
+    patterns:
+      - pattern-regex: 'ENTRYPOINT\s+[^[]'
+    message: |
+      ENTRYPOINT in shell form. Use exec form (JSON array) to avoid shell
+      injection: ENTRYPOINT ["python", "app.py"]
+    languages: [dockerfile]
+    severity: INFO
+    metadata:
+      category: security
+      cwe: "CWE-78"
+
+  - id: dockerfile-add-remote
+    patterns:
+      - pattern-regex: 'ADD\s+https?://'
+    message: |
+      ADD with remote URL can be unpredictable. Use COPY and curl/wget with
+      checksum verification for reproducibility.
+    languages: [dockerfile]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe: "CWE-829"
+
+  - id: dockerfile-add-instead-of-copy
+    patterns:
+      - pattern-regex: 'ADD\s+[^h][^t][^t][^p]'
+      - pattern-not-regex: 'ADD\s+.*\.(tar|tar\.gz|tgz|tar\.bz2|tbz2|tar\.xz|txz)'
+    message: |
+      Use COPY instead of ADD for local files. ADD has unpredictable behavior
+      with archives and remote URLs. Use COPY for explicit copying.
+    languages: [dockerfile]
+    severity: INFO
+    metadata:
+      category: security
+
+  # ==========================================================================
+  # LAYER OPTIMIZATION
+  # ==========================================================================
+
+  - id: dockerfile-multiple-run
+    patterns:
+      - pattern-regex: 'RUN\s+[^\n]+\nRUN\s+[^\n]+'
+    message: |
+      Multiple consecutive RUN instructions. Combine into single RUN with &&
+      to reduce image layers and size.
+    languages: [dockerfile]
+    severity: INFO
+    metadata:
+      category: optimization
+
+  - id: dockerfile-copy-before-requirements
+    patterns:
+      - pattern-regex: 'COPY\s+\.\s+\.\s*\n.*pip\s+install'
+    message: |
+      Copying all files before installing dependencies breaks layer caching.
+      Copy requirements.txt first, install deps, then copy application code.
+    languages: [dockerfile]
+    severity: INFO
+    metadata:
+      category: optimization
+
+  # ==========================================================================
+  # GREENLANG SPECIFIC
+  # ==========================================================================
+
+  - id: dockerfile-greenlang-missing-nonroot
+    patterns:
+      - pattern-regex: 'greenlang'
+      - pattern-not-regex: 'USER\s+(greenlang|appuser|1000|nonroot)'
+    message: |
+      GreenLang container should run as non-root user. Add:
+      RUN adduser --disabled-password --gecos '' greenlang
+      USER greenlang
+    languages: [dockerfile]
+    severity: WARNING
+    metadata:
+      category: security
+      compliance: ["GreenLang-Container-Security"]
+
+  - id: dockerfile-greenlang-missing-labels
+    patterns:
+      - pattern-regex: 'greenlang'
+      - pattern-not-regex: 'LABEL\s+org\.opencontainers\.image\.'
+    message: |
+      GreenLang image missing OCI labels. Add standard labels for image
+      metadata and provenance tracking.
+    languages: [dockerfile]
+    severity: INFO
+    metadata:
+      category: best-practice
+      compliance: ["GreenLang-Container-Metadata"]
+
+  - id: dockerfile-python-unbuffered
+    patterns:
+      - pattern-regex: 'FROM\s+python'
+      - pattern-not-regex: 'ENV\s+PYTHONUNBUFFERED'
+    message: |
+      Python container missing PYTHONUNBUFFERED=1. Set this to ensure
+      logs are immediately visible in container output.
+    languages: [dockerfile]
+    severity: INFO
+    metadata:
+      category: best-practice
+
+  - id: dockerfile-python-no-cache-dir
+    patterns:
+      - pattern-regex: 'pip\s+install'
+      - pattern-not-regex: 'pip\s+install\s+--no-cache-dir'
+    message: |
+      pip install without --no-cache-dir. Add flag to reduce image size
+      by not caching downloaded packages.
+    languages: [dockerfile]
+    severity: INFO
+    metadata:
+      category: optimization

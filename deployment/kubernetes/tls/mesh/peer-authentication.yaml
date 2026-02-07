@@ -1,0 +1,48 @@
+# =============================================================================
+# Istio PeerAuthentication for mTLS
+# SEC-004: Service Mesh mTLS Configuration
+# =============================================================================
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: default-mtls
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: mtls-policy
+    greenlang.io/component: sec-004
+spec:
+  # Namespace-wide STRICT mTLS
+  mtls:
+    mode: STRICT
+---
+# Mesh-wide default (applied to istio-system)
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: mesh-default-mtls
+  namespace: istio-system
+  labels:
+    greenlang.io/component: sec-004
+spec:
+  mtls:
+    mode: STRICT
+---
+# Workload-specific exceptions for health probes
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: health-probe-exception
+  namespace: greenlang
+  labels:
+    greenlang.io/component: sec-004
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: greenlang-api
+  portLevelMtls:
+    # Allow plaintext for kubelet health probes
+    8080:
+      mode: PERMISSIVE
+    # Strict mTLS for all other traffic
+    8443:
+      mode: STRICT

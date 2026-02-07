@@ -1,0 +1,32 @@
+{{/*
+# =============================================================================
+# GreenLang Tempo - Ingester Service
+# GreenLang Climate OS | OBS-003
+# =============================================================================
+# ClusterIP service for the ingester component. Exposes HTTP metrics and
+# gRPC endpoints for distributor-to-ingester and querier-to-ingester comms.
+# Only deployed when mode=distributed.
+# =============================================================================
+*/}}
+{{- if eq .Values.tempo.mode "distributed" }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "tempo.fullname" . }}-ingester
+  namespace: {{ include "tempo.namespace" . }}
+  labels:
+    {{- include "tempo.ingesterLabels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  selector:
+    {{- include "tempo.ingesterSelectorLabels" . | nindent 4 }}
+  ports:
+    - name: http-metrics
+      port: {{ .Values.tempo.server.http_listen_port | default 3200 }}
+      targetPort: http-metrics
+      protocol: TCP
+    - name: grpc
+      port: {{ .Values.tempo.server.grpc_listen_port | default 9095 }}
+      targetPort: grpc
+      protocol: TCP
+{{- end }}

@@ -859,6 +859,15 @@ if FASTAPI_AVAILABLE:
             validation_errors=None
         )
 
+    # SEC-001: Apply authentication and permission protection
+    try:
+        from greenlang.infrastructure.auth_service.route_protector import (
+            protect_router,
+        )
+        protect_router(agents_router)
+    except ImportError:
+        pass  # auth_service not available
+
 else:
     # Provide stub router when FastAPI is not available
     agents_router = None

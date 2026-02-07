@@ -1,0 +1,49 @@
+# =============================================================================
+# GreenLang Prometheus Stack - Helm Chart
+# GreenLang Climate OS | OBS-001
+# =============================================================================
+# Wrapper chart for kube-prometheus-stack providing production-grade
+# Prometheus monitoring with Thanos for long-term storage and HA.
+# =============================================================================
+
+apiVersion: v2
+name: greenlang-prometheus-stack
+description: Prometheus monitoring stack for GreenLang Climate OS
+type: application
+version: 1.0.0
+appVersion: "2.50.1"
+
+keywords:
+  - prometheus
+  - monitoring
+  - observability
+  - thanos
+  - alertmanager
+  - grafana
+  - greenlang
+  - obs-001
+
+maintainers:
+  - name: GreenLang Infrastructure Team
+    email: infra@greenlang.io
+
+# Chart dependencies
+dependencies:
+  # kube-prometheus-stack includes Prometheus, Alertmanager, Grafana,
+  # kube-state-metrics, node-exporter, and Prometheus Operator
+  - name: kube-prometheus-stack
+    version: "56.21.4"
+    repository: "https://prometheus-community.github.io/helm-charts"
+    condition: prometheus.enabled
+
+  # Prometheus PushGateway for batch job metrics
+  - name: prometheus-pushgateway
+    version: "2.8.0"
+    repository: "https://prometheus-community.github.io/helm-charts"
+    condition: pushgateway.enabled
+    alias: pushgateway
+
+# Annotations for chart metadata
+annotations:
+  category: Monitoring
+  licenses: Apache-2.0

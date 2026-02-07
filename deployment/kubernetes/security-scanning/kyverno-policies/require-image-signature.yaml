@@ -1,0 +1,143 @@
+# Kyverno Policy: Require Image Signature
+#
+# Enforces that all container images deployed to the cluster are signed
+# with Cosign using keyless signing via Sigstore/Fulcio.
+#
+# Author: GreenLang Security Team
+# Version: 1.0.0
+# Compliance: SLSA Level 2, Supply Chain Security
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: require-image-signature
+  annotations:
+    policies.kyverno.io/title: Require Image Signature
+    policies.kyverno.io/category: Supply Chain Security
+    policies.kyverno.io/severity: high
+    policies.kyverno.io/subject: Pod
+    policies.kyverno.io/minversion: 1.9.0
+    policies.kyverno.io/description: |
+      Requires all container images to be signed with Cosign keyless signing.
+      Images must be signed by GitHub Actions workflows from the greenlang-io
+      organization. Unsigned images are rejected in production namespaces.
+    greenlang.io/compliance: "SLSA-L2,SOC2-CC7.1"
+spec:
+  validationFailureAction: Enforce
+  background: true
+  webhookTimeoutSeconds: 30
+  failurePolicy: Fail
+  rules:
+    # Rule 1: Verify GreenLang images in production
+    - name: verify-greenlang-images-prod
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+              namespaces:
+                - production
+                - prod
+                - greenlang-prod
+      verifyImages:
+        - imageReferences:
+            - "ghcr.io/greenlang-io/*"
+            - "ghcr.io/greenlang/*"
+          attestors:
+            - count: 1
+              entries:
+                - keyless:
+                    subject: "https://github.com/greenlang-io/*"
+                    issuer: "https://token.actions.githubusercontent.com"
+                    rekor:
+                      url: https://rekor.sigstore.dev
+                      ignoreTlog: false
+          mutateDigest: true
+          verifyDigest: true
+          required: true
+
+    # Rule 2: Verify GreenLang images in staging (audit mode)
+    - name: verify-greenlang-images-staging
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+              namespaces:
+                - staging
+                - greenlang-staging
+      verifyImages:
+        - imageReferences:
+            - "ghcr.io/greenlang-io/*"
+            - "ghcr.io/greenlang/*"
+          attestors:
+            - count: 1
+              entries:
+                - keyless:
+                    subject: "https://github.com/greenlang-io/*"
+                    issuer: "https://token.actions.githubusercontent.com"
+                    rekor:
+                      url: https://rekor.sigstore.dev
+          mutateDigest: true
+          verifyDigest: true
+          required: true
+
+    # Rule 3: Allow unsigned images in development (with warning)
+    - name: warn-unsigned-images-dev
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+              namespaces:
+                - development
+                - dev
+                - greenlang-dev
+      validate:
+        message: |
+          WARNING: Image {{ `{{request.object.spec.containers[].image}}` }} is not verified.
+          In production, only signed images from ghcr.io/greenlang-io are allowed.
+        deny:
+          conditions:
+            all: []  # Never deny in dev, just log
+
+    # Rule 4: Block images from untrusted registries in production
+    - name: block-untrusted-registries-prod
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+              namespaces:
+                - production
+                - prod
+      validate:
+        message: |
+          Only images from trusted registries are allowed in production.
+          Trusted registries: ghcr.io/greenlang-io, gcr.io/greenlang,
+          docker.io/greenlang (verified), public.ecr.aws/greenlang
+        pattern:
+          spec:
+            containers:
+              - image: "ghcr.io/greenlang-io/* | gcr.io/greenlang/* | docker.io/greenlang/* | public.ecr.aws/greenlang/*"
+            initContainers:
+              - image: "ghcr.io/greenlang-io/* | gcr.io/greenlang/* | docker.io/greenlang/* | public.ecr.aws/greenlang/*"
+
+    # Rule 5: Mutate to use image digest
+    - name: mutate-image-to-digest
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+              namespaces:
+                - production
+                - staging
+      mutate:
+        patchStrategicMerge:
+          spec:
+            containers:
+              - (name): "*"
+                # Kyverno automatically mutates to digest after verification
+            initContainers:
+              - (name): "*"
