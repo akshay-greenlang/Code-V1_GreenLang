@@ -1,0 +1,188 @@
+# =============================================================================
+# GreenLang ERP/Finance Connector - ConfigMap
+# =============================================================================
+# Configuration for ERP system connections, sync modes, batch processing,
+# currency conversion, emission factor databases, Scope 3 classification,
+# vendor/material mapping, caching, and metrics.
+# PRD: AGENT-DATA-003
+# =============================================================================
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: erp-connector-service-config
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: erp-connector-service
+    app.kubernetes.io/component: configuration
+    app.kubernetes.io/part-of: greenlang
+  annotations:
+    description: "ERP Connector configuration - ERP systems, sync modes, batch settings, emission factors, currency conversion"
+    prd: AGENT-DATA-003
+data:
+  # Environment
+  ENVIRONMENT: "production"
+
+  # Logging
+  GL_ERP_CONNECTOR_LOG_LEVEL: "INFO"
+  LOG_FORMAT: "json"
+
+  # Database (connection string via secret, schema config here)
+  GL_ERP_CONNECTOR_DB_SCHEMA: "erp_connector_service"
+  GL_ERP_CONNECTOR_DB_POOL_MIN: "2"
+  GL_ERP_CONNECTOR_DB_POOL_MAX: "10"
+
+  # Redis
+  GL_ERP_CONNECTOR_REDIS_PREFIX: "gl:erp_connector:"
+  GL_ERP_CONNECTOR_REDIS_TTL: "300"
+
+  # Cache Configuration
+  GL_ERP_CONNECTOR_CACHE_TTL_SECONDS: "300"
+  GL_ERP_CONNECTOR_CACHE_MAX_SIZE: "5000"
+  GL_ERP_CONNECTOR_VENDOR_CACHE_TTL: "600"
+  GL_ERP_CONNECTOR_MATERIAL_CACHE_TTL: "600"
+
+  # Sync Configuration
+  GL_ERP_CONNECTOR_DEFAULT_SYNC_MODE: "incremental"
+  GL_ERP_CONNECTOR_SYNC_BATCH_SIZE: "1000"
+  GL_ERP_CONNECTOR_SYNC_TIMEOUT_SECONDS: "3600"
+  GL_ERP_CONNECTOR_MAX_CONCURRENT_SYNCS: "3"
+  GL_ERP_CONNECTOR_SYNC_RETRY_MAX: "3"
+  GL_ERP_CONNECTOR_SYNC_RETRY_DELAY_SECONDS: "30"
+
+  # Currency Conversion
+  GL_ERP_CONNECTOR_BASE_CURRENCY: "USD"
+  GL_ERP_CONNECTOR_EXCHANGE_RATE_PROVIDER: "ecb"
+  GL_ERP_CONNECTOR_EXCHANGE_RATE_CACHE_TTL: "3600"
+
+  # Emission Factor Configuration
+  GL_ERP_CONNECTOR_DEFAULT_EF_DATABASE: "EEIO"
+  GL_ERP_CONNECTOR_AUTO_CLASSIFY_VENDORS: "true"
+  GL_ERP_CONNECTOR_AUTO_CLASSIFY_MATERIALS: "true"
+
+  # Metrics
+  GL_ERP_CONNECTOR_ENABLE_METRICS: "true"
+  METRICS_PORT: "8080"
+  METRICS_PATH: "/metrics"
+
+  # Tracing
+  TRACING_ENABLED: "true"
+  TRACING_SAMPLE_RATE: "0.1"
+  OTEL_ENDPOINT: "http://otel-collector.monitoring.svc.cluster.local:4317"
+  OTEL_SERVICE_NAME: "erp-connector-service"
+
+  # ERP connector service configuration file
+  erp-connector-config.yaml: |
+    erp_connector_service:
+      version: "1.0.0"
+      environment: production
+
+      erp_systems:
+        supported:
+          - sap_s4hana
+          - sap_ecc
+          - oracle_erp_cloud
+          - oracle_ebs
+          - microsoft_dynamics_365
+          - microsoft_dynamics_gp
+          - netsuite
+          - workday
+          - sage_intacct
+          - sage_x3
+          - infor_m3
+          - epicor
+          - ifs
+          - quickbooks
+          - xero
+        connection_timeout_seconds: 30
+        health_check_interval_seconds: 60
+        max_retries: 3
+
+      sync:
+        default_mode: incremental
+        batch_size: 1000
+        timeout_seconds: 3600
+        max_concurrent: 3
+        retry_max: 3
+        retry_delay_seconds: 30
+        modes:
+          - full
+          - incremental
+          - delta
+          - manual
+          - scheduled
+        query_types:
+          - spend
+          - purchase_orders
+          - purchase_order_lines
+          - inventory
+          - vendors
+          - materials
+          - gl_accounts
+          - cost_centers
+          - company_codes
+
+      currency:
+        base_currency: USD
+        provider: ecb
+        cache_ttl_seconds: 3600
+        supported_providers:
+          - ecb
+          - openexchangerates
+          - fixer
+          - manual
+
+      emission_factors:
+        default_database: EEIO
+        databases:
+          - EEIO
+          - EXIOBASE
+          - GaBi
+          - ecoinvent
+        auto_classify_vendors: true
+        auto_classify_materials: true
+        methodologies:
+          - spend_based
+          - activity_based
+          - hybrid
+          - supplier_specific
+          - average_data
+
+      scope3_categories:
+        - cat1_purchased_goods
+        - cat2_capital_goods
+        - cat3_fuel_energy
+        - cat4_upstream_transport
+        - cat5_waste
+        - cat6_business_travel
+        - cat7_employee_commuting
+        - cat8_upstream_leased
+        - cat9_downstream_transport
+        - cat10_processing
+        - cat11_use_of_products
+        - cat12_eol_treatment
+        - cat13_downstream_leased
+        - cat14_franchises
+        - cat15_investments
+
+      cache:
+        ttl_seconds: 300
+        max_size: 5000
+        vendor_cache_ttl: 600
+        material_cache_ttl: 600
+        warmup_on_startup: true
+
+      metrics:
+        enabled: true
+        prefix: gl_erp_connector
+        histogram_buckets: [0.01, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10, 30, 60, 120, 300, 600]
+
+      integration:
+        auth_enabled: true
+        audit_enabled: true
+        alerting_enabled: true
+        feature_flags_enabled: true
+        access_guard_enabled: true
+        agent_registry_enabled: true
+        unit_normalizer_enabled: true
+        citations_enabled: true

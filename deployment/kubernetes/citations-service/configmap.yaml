@@ -1,0 +1,154 @@
+# =============================================================================
+# GreenLang Citations & Evidence Agent Service - ConfigMap
+# =============================================================================
+# Configuration for citation registry, evidence packages, verification
+# engine, methodology references, regulatory mappings, caching, rate
+# limiting, and metrics.
+# PRD: AGENT-FOUND-005
+# =============================================================================
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: citations-service-config
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: citations-service
+    app.kubernetes.io/component: configuration
+    app.kubernetes.io/part-of: greenlang
+  annotations:
+    description: "Citations & Evidence Agent Service configuration - registry, evidence, verification, methodology, caching"
+    prd: AGENT-FOUND-005
+data:
+  # Environment
+  ENVIRONMENT: "production"
+
+  # Logging
+  GL_CITATIONS_LOG_LEVEL: "INFO"
+  LOG_FORMAT: "json"
+
+  # Database (connection string via secret, schema config here)
+  GL_CITATIONS_DB_SCHEMA: "citations_service"
+  GL_CITATIONS_DB_POOL_MIN: "2"
+  GL_CITATIONS_DB_POOL_MAX: "10"
+
+  # Redis
+  GL_CITATIONS_REDIS_PREFIX: "gl:citations:"
+  GL_CITATIONS_REDIS_TTL: "3600"
+
+  # Cache Configuration
+  GL_CITATIONS_CACHE_TTL_SECONDS: "3600"
+  GL_CITATIONS_CACHE_MAX_SIZE: "500"
+  GL_CITATIONS_VERIFICATION_CACHE_TTL: "1800"
+
+  # Registry Configuration
+  GL_CITATIONS_MAX_VERSIONS_PER_CITATION: "1000"
+  GL_CITATIONS_PROVENANCE_HASH_ALGORITHM: "sha256"
+  GL_CITATIONS_DEFAULT_VERIFICATION_STATUS: "unverified"
+
+  # Verification Configuration
+  GL_CITATIONS_VERIFICATION_ENABLED: "true"
+  GL_CITATIONS_AUTO_VERIFY_DOI: "true"
+  GL_CITATIONS_AUTO_VERIFY_URL: "true"
+  GL_CITATIONS_VERIFICATION_EXPIRY_DAYS: "365"
+
+  # Evidence Package Configuration
+  GL_CITATIONS_MAX_ITEMS_PER_PACKAGE: "100"
+  GL_CITATIONS_PACKAGE_HASH_ALGORITHM: "sha256"
+  GL_CITATIONS_FINALIZATION_REQUIRES_VERIFICATION: "true"
+
+  # Regulatory Mapping Configuration
+  GL_CITATIONS_SUPPORTED_FRAMEWORKS: "csrd,cbam,eu_taxonomy,sfdr,sec_climate,sb253,ghg_protocol,iso_14064,tcfd,cdp"
+
+  # Rate Limiting
+  GL_CITATIONS_RATE_LIMIT_READ: "200"
+  GL_CITATIONS_RATE_LIMIT_WRITE: "50"
+  GL_CITATIONS_RATE_LIMIT_BATCH: "10"
+  GL_CITATIONS_RATE_LIMIT_WINDOW_SECONDS: "60"
+
+  # Metrics
+  GL_CITATIONS_ENABLE_METRICS: "true"
+  METRICS_PORT: "8080"
+  METRICS_PATH: "/metrics"
+
+  # Tracing
+  TRACING_ENABLED: "true"
+  TRACING_SAMPLE_RATE: "0.1"
+  OTEL_ENDPOINT: "http://otel-collector.monitoring.svc.cluster.local:4317"
+  OTEL_SERVICE_NAME: "citations-service"
+
+  # Citations service configuration file
+  citations-config.yaml: |
+    citations_service:
+      version: "1.0.0"
+      environment: production
+
+      registry:
+        max_versions_per_citation: 1000
+        provenance_hash_algorithm: sha256
+        enable_provenance_validation: true
+        enable_supersession_tracking: true
+        enable_expiration_monitoring: true
+
+      verification:
+        enabled: true
+        auto_verify_doi: true
+        auto_verify_url: true
+        expiry_days: 365
+        methods:
+          - manual_review
+          - automated_check
+          - cross_reference
+          - url_validation
+          - doi_lookup
+          - registry_check
+
+      evidence:
+        max_items_per_package: 100
+        package_hash_algorithm: sha256
+        finalization_requires_verification: true
+        supported_evidence_types:
+          - emission_factor
+          - calculation
+          - assumption
+          - methodology
+          - data_source
+          - conversion
+          - regulatory
+          - attestation
+
+      regulatory:
+        supported_frameworks:
+          - csrd
+          - cbam
+          - eu_taxonomy
+          - sfdr
+          - sec_climate
+          - sb253
+          - ghg_protocol
+          - iso_14064
+          - tcfd
+          - cdp
+
+      cache:
+        ttl_seconds: 3600
+        max_size: 500
+        verification_cache_ttl: 1800
+        warmup_on_startup: true
+
+      rate_limiting:
+        read_per_minute: 200
+        write_per_minute: 50
+        batch_per_minute: 10
+
+      metrics:
+        enabled: true
+        prefix: gl_citations
+        histogram_buckets: [0.001, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10]
+
+      integration:
+        auth_enabled: true
+        audit_enabled: true
+        alerting_enabled: true
+        feature_flags_enabled: true
+        assumptions_service_enabled: true

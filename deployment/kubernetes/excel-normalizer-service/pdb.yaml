@@ -1,0 +1,27 @@
+# =============================================================================
+# GreenLang Excel & CSV Normalizer - Pod Disruption Budget
+# =============================================================================
+# Ensures at least 1 Excel normalizer service pod is available during
+# voluntary disruptions (node drain, cluster upgrade, etc.).
+# PRD: AGENT-DATA-002
+# =============================================================================
+
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: excel-normalizer-service-pdb
+  namespace: greenlang
+  labels:
+    app: excel-normalizer-service
+    app.kubernetes.io/name: excel-normalizer-service
+    app.kubernetes.io/component: excel-normalizer
+    app.kubernetes.io/part-of: greenlang
+  annotations:
+    description: "PDB for Excel Normalizer - minimum 1 pod available"
+    prd: AGENT-DATA-002
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: excel-normalizer-service
+      app.kubernetes.io/component: excel-normalizer

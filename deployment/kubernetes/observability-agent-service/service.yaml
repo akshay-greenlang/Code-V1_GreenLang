@@ -1,0 +1,35 @@
+# =============================================================================
+# GreenLang Observability & Telemetry Agent - Kubernetes Service
+# =============================================================================
+# ClusterIP service exposing HTTP (8080) port for Observability Agent API
+# and Prometheus metrics endpoint.
+# PRD: AGENT-FOUND-010
+# =============================================================================
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: observability-agent-service
+  namespace: greenlang
+  labels:
+    app: observability-agent-service
+    app.kubernetes.io/name: observability-agent-service
+    app.kubernetes.io/component: observability-agent
+    app.kubernetes.io/part-of: greenlang
+  annotations:
+    description: "Observability & Telemetry Agent - metrics collection, trace analysis, log correlation, alert evaluation, SLO monitoring, anomaly detection, dashboard generation"
+    prd: AGENT-FOUND-010
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8080"
+    prometheus.io/path: "/metrics"
+spec:
+  type: ClusterIP
+  selector:
+    app: observability-agent-service
+    app.kubernetes.io/component: observability-agent
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+      protocol: TCP
+  sessionAffinity: None

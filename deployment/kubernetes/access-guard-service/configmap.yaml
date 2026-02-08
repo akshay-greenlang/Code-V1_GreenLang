@@ -1,0 +1,175 @@
+# =============================================================================
+# GreenLang Access & Policy Guard Agent Service - ConfigMap
+# =============================================================================
+# Configuration for policy engine, tenant isolation, data classification,
+# rate limiting, OPA Rego evaluation, compliance reporting, caching,
+# and metrics.
+# PRD: AGENT-FOUND-006
+# =============================================================================
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: access-guard-service-config
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: access-guard-service
+    app.kubernetes.io/component: configuration
+    app.kubernetes.io/part-of: greenlang
+  annotations:
+    description: "Access & Policy Guard Agent Service configuration - policy engine, tenant isolation, classification, rate limiting, OPA"
+    prd: AGENT-FOUND-006
+data:
+  # Environment
+  ENVIRONMENT: "production"
+
+  # Logging
+  GL_ACCESS_GUARD_LOG_LEVEL: "INFO"
+  LOG_FORMAT: "json"
+
+  # Database (connection string via secret, schema config here)
+  GL_ACCESS_GUARD_DB_SCHEMA: "access_guard_service"
+  GL_ACCESS_GUARD_DB_POOL_MIN: "2"
+  GL_ACCESS_GUARD_DB_POOL_MAX: "10"
+
+  # Redis
+  GL_ACCESS_GUARD_REDIS_PREFIX: "gl:access_guard:"
+  GL_ACCESS_GUARD_REDIS_TTL: "300"
+
+  # Cache Configuration
+  GL_ACCESS_GUARD_CACHE_TTL_SECONDS: "300"
+  GL_ACCESS_GUARD_CACHE_MAX_SIZE: "1000"
+  GL_ACCESS_GUARD_POLICY_CACHE_TTL: "600"
+  GL_ACCESS_GUARD_DECISION_CACHE_TTL: "60"
+
+  # Policy Engine Configuration
+  GL_ACCESS_GUARD_DENY_WINS: "true"
+  GL_ACCESS_GUARD_DEFAULT_EFFECT: "deny"
+  GL_ACCESS_GUARD_MAX_RULES_PER_POLICY: "500"
+  GL_ACCESS_GUARD_DECISION_HASH_ALGORITHM: "sha256"
+  GL_ACCESS_GUARD_ENABLE_SIMULATION_MODE: "true"
+
+  # Tenant Isolation
+  GL_ACCESS_GUARD_ENFORCE_TENANT_ISOLATION: "true"
+  GL_ACCESS_GUARD_CROSS_TENANT_ADMIN_ONLY: "true"
+
+  # Data Classification
+  GL_ACCESS_GUARD_CLASSIFICATION_LEVELS: "public,internal,confidential,restricted,top_secret"
+  GL_ACCESS_GUARD_DEFAULT_CLASSIFICATION: "internal"
+
+  # Rate Limiting
+  GL_ACCESS_GUARD_RATE_LIMIT_ENABLED: "true"
+  GL_ACCESS_GUARD_RATE_LIMIT_VIEWER_MINUTE: "60"
+  GL_ACCESS_GUARD_RATE_LIMIT_ANALYST_MINUTE: "120"
+  GL_ACCESS_GUARD_RATE_LIMIT_ADMIN_MINUTE: "300"
+  GL_ACCESS_GUARD_RATE_LIMIT_SERVICE_MINUTE: "500"
+  GL_ACCESS_GUARD_RATE_LIMIT_AGENT_MINUTE: "200"
+
+  # OPA Configuration
+  GL_ACCESS_GUARD_OPA_ENABLED: "true"
+  GL_ACCESS_GUARD_OPA_EVALUATION_TIMEOUT_MS: "100"
+  GL_ACCESS_GUARD_OPA_CACHE_COMPILED: "true"
+
+  # Compliance Reporting
+  GL_ACCESS_GUARD_COMPLIANCE_REPORT_ENABLED: "true"
+  GL_ACCESS_GUARD_COMPLIANCE_REPORT_SCHEDULE: "0 2 * * 1"
+
+  # Metrics
+  GL_ACCESS_GUARD_ENABLE_METRICS: "true"
+  METRICS_PORT: "8080"
+  METRICS_PATH: "/metrics"
+
+  # Tracing
+  TRACING_ENABLED: "true"
+  TRACING_SAMPLE_RATE: "0.1"
+  OTEL_ENDPOINT: "http://otel-collector.monitoring.svc.cluster.local:4317"
+  OTEL_SERVICE_NAME: "access-guard-service"
+
+  # Access guard service configuration file
+  access-guard-config.yaml: |
+    access_guard_service:
+      version: "1.0.0"
+      environment: production
+
+      policy_engine:
+        deny_wins: true
+        default_effect: deny
+        max_rules_per_policy: 500
+        decision_hash_algorithm: sha256
+        enable_simulation_mode: true
+        evaluation_timeout_ms: 50
+
+      tenant_isolation:
+        enforce: true
+        cross_tenant_admin_only: true
+        log_violations: true
+        alert_on_violation: true
+
+      classification:
+        levels:
+          - public
+          - internal
+          - confidential
+          - restricted
+          - top_secret
+        default: internal
+        enforce_on_read: true
+        enforce_on_write: true
+
+      rate_limiting:
+        enabled: true
+        window_seconds: 60
+        limits_by_role:
+          viewer:
+            minute: 60
+            hour: 500
+            day: 5000
+          analyst:
+            minute: 120
+            hour: 2000
+            day: 20000
+          admin:
+            minute: 300
+            hour: 5000
+            day: 50000
+          service:
+            minute: 500
+            hour: 10000
+            day: 100000
+          agent:
+            minute: 200
+            hour: 3000
+            day: 30000
+
+      opa:
+        enabled: true
+        evaluation_timeout_ms: 100
+        cache_compiled: true
+        modules:
+          - rego-tenant-isolation
+          - rego-classification-access
+          - rego-rate-limiting
+
+      cache:
+        ttl_seconds: 300
+        max_size: 1000
+        policy_cache_ttl: 600
+        decision_cache_ttl: 60
+        warmup_on_startup: true
+
+      compliance:
+        report_enabled: true
+        report_schedule: "0 2 * * 1"
+        retention_days: 365
+
+      metrics:
+        enabled: true
+        prefix: gl_access_guard
+        histogram_buckets: [0.001, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10]
+
+      integration:
+        auth_enabled: true
+        audit_enabled: true
+        alerting_enabled: true
+        feature_flags_enabled: true
+        rbac_service_enabled: true

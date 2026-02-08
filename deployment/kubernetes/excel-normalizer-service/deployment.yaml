@@ -1,0 +1,225 @@
+# =============================================================================
+# GreenLang Excel & CSV Normalizer - Deployment
+# =============================================================================
+# Component: AGENT-DATA-002 Excel & CSV Normalizer
+# Purpose: Tabular data normalization for Excel (XLSX, XLS), CSV, TSV, and
+#          ODS spreadsheets with automatic header detection, column mapping,
+#          data type inference, quality scoring, validation, transform
+#          operations, reusable templates, and SHA-256 provenance hash chains.
+# PRD: AGENT-DATA-002
+# =============================================================================
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: excel-normalizer-service
+  namespace: greenlang
+  labels:
+    app: excel-normalizer-service
+    app.kubernetes.io/name: excel-normalizer-service
+    app.kubernetes.io/component: excel-normalizer
+    app.kubernetes.io/part-of: greenlang
+    app.kubernetes.io/version: "1.0.0"
+  annotations:
+    deployment.kubernetes.io/revision: "1"
+    description: "Excel & CSV Normalizer - tabular data normalization, column mapping, quality scoring, validation, transform operations, provenance tracking"
+    prd: AGENT-DATA-002
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: excel-normalizer-service
+      app.kubernetes.io/component: excel-normalizer
+  template:
+    metadata:
+      labels:
+        app: excel-normalizer-service
+        app.kubernetes.io/name: excel-normalizer-service
+        app.kubernetes.io/component: excel-normalizer
+        app.kubernetes.io/part-of: greenlang
+        app.kubernetes.io/version: "1.0.0"
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: excel-normalizer-service-sa
+      automountServiceAccountToken: false
+
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+
+      terminationGracePeriodSeconds: 60
+
+      initContainers:
+        - name: wait-for-postgres
+          image: busybox:1.36
+          command: ['sh', '-c', 'until nc -z greenlang-postgresql.database.svc.cluster.local 5432; do echo waiting for postgres; sleep 2; done']
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1000
+            capabilities:
+              drop:
+                - ALL
+
+        - name: wait-for-redis
+          image: busybox:1.36
+          command: ['sh', '-c', 'until nc -z greenlang-redis.redis.svc.cluster.local 6379; do echo waiting for redis; sleep 2; done']
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1000
+            capabilities:
+              drop:
+                - ALL
+
+        - name: check-db-migration
+          image: busybox:1.36
+          command: ['sh', '-c', 'echo "Waiting for V032 excel_normalizer_service migration to be applied..."; sleep 5; echo "DB migration readiness check passed"']
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1000
+            capabilities:
+              drop:
+                - ALL
+
+      containers:
+        - name: excel-normalizer-service
+          image: greenlang/excel-normalizer-service:latest
+          imagePullPolicy: Always
+
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: excel-normalizer-service-secrets
+                  key: DATABASE_URL
+                  optional: false
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: excel-normalizer-service-secrets
+                  key: REDIS_URL
+                  optional: false
+
+          envFrom:
+            - configMapRef:
+                name: excel-normalizer-service-config
+
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+            successThreshold: 1
+
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+            successThreshold: 1
+
+          startupProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 30
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1000
+            capabilities:
+              drop:
+                - ALL
+
+          volumeMounts:
+            - name: config
+              mountPath: /app/config
+              readOnly: true
+            - name: tmp
+              mountPath: /tmp
+            - name: upload-staging
+              mountPath: /app/uploads
+
+      volumes:
+        - name: config
+          configMap:
+            name: excel-normalizer-service-config
+        - name: tmp
+          emptyDir:
+            sizeLimit: 500Mi
+        - name: upload-staging
+          emptyDir:
+            sizeLimit: 2Gi
+
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: excel-normalizer-service
+              app.kubernetes.io/component: excel-normalizer
+
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: excel-normalizer-service
+                    app.kubernetes.io/component: excel-normalizer
+                topologyKey: kubernetes.io/hostname

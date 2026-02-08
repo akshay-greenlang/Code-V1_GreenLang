@@ -1,0 +1,252 @@
+# =============================================================================
+# GreenLang Observability & Telemetry Agent - ConfigMap
+# =============================================================================
+# Configuration for metrics collection, trace analysis, log correlation,
+# alert evaluation, SLO monitoring, anomaly detection, health probing,
+# and dashboard generation across all GreenLang Climate OS components.
+# PRD: AGENT-FOUND-010
+# =============================================================================
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: observability-agent-service-config
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: observability-agent-service
+    app.kubernetes.io/component: configuration
+    app.kubernetes.io/part-of: greenlang
+  annotations:
+    description: "Observability Agent configuration - metrics, traces, logs, alerts, SLOs, anomaly detection, dashboards"
+    prd: AGENT-FOUND-010
+data:
+  # Environment
+  ENVIRONMENT: "production"
+
+  # Logging
+  GL_OBSERVABILITY_AGENT_LOG_LEVEL: "INFO"
+  LOG_FORMAT: "json"
+
+  # Database (connection string via secret, schema config here)
+  GL_OBSERVABILITY_AGENT_DB_SCHEMA: "observability_agent_service"
+  GL_OBSERVABILITY_AGENT_DB_POOL_MIN: "2"
+  GL_OBSERVABILITY_AGENT_DB_POOL_MAX: "10"
+
+  # Redis
+  GL_OBSERVABILITY_AGENT_REDIS_PREFIX: "gl:observability_agent:"
+  GL_OBSERVABILITY_AGENT_REDIS_TTL: "300"
+
+  # Observability Backend URLs
+  prometheus-url: "http://prometheus-server.monitoring.svc.cluster.local:9090"
+  grafana-url: "http://grafana.monitoring.svc.cluster.local:3000"
+  tempo-url: "http://tempo.monitoring.svc.cluster.local:3200"
+  loki-url: "http://loki.monitoring.svc.cluster.local:3100"
+  alertmanager-url: "http://alertmanager.monitoring.svc.cluster.local:9093"
+
+  # Metrics Retention
+  metrics-retention-hours: "168"
+
+  # Tracing Configuration
+  max-active-spans: "10000"
+
+  # Alert Evaluation
+  alert-evaluation-interval: "30"
+
+  # Health Check Configuration
+  health-check-interval: "15"
+
+  # SLO Evaluation
+  slo-evaluation-interval: "60"
+
+  # Cache Configuration
+  GL_OBSERVABILITY_AGENT_CACHE_TTL_SECONDS: "300"
+  GL_OBSERVABILITY_AGENT_CACHE_MAX_SIZE: "5000"
+  GL_OBSERVABILITY_AGENT_METRIC_CACHE_TTL: "60"
+  GL_OBSERVABILITY_AGENT_TRACE_CACHE_TTL: "120"
+
+  # Anomaly Detection Configuration
+  GL_OBSERVABILITY_AGENT_ANOMALY_DETECTION_ENABLED: "true"
+  GL_OBSERVABILITY_AGENT_ANOMALY_SENSITIVITY: "medium"
+  GL_OBSERVABILITY_AGENT_ANOMALY_LOOKBACK_MINUTES: "60"
+  GL_OBSERVABILITY_AGENT_ANOMALY_STDDEV_THRESHOLD: "3.0"
+
+  # SLO Monitoring Configuration
+  GL_OBSERVABILITY_AGENT_SLO_BURN_RATE_FAST_WINDOW: "5m"
+  GL_OBSERVABILITY_AGENT_SLO_BURN_RATE_SLOW_WINDOW: "1h"
+  GL_OBSERVABILITY_AGENT_SLO_ERROR_BUDGET_WARNING: "0.2"
+  GL_OBSERVABILITY_AGENT_SLO_ERROR_BUDGET_CRITICAL: "0.05"
+
+  # Health Probing Configuration
+  GL_OBSERVABILITY_AGENT_HEALTH_PROBE_TIMEOUT: "5"
+  GL_OBSERVABILITY_AGENT_HEALTH_PROBE_MAX_RETRIES: "3"
+  GL_OBSERVABILITY_AGENT_HEALTH_STALE_THRESHOLD: "120"
+
+  # Dashboard Generation Configuration
+  GL_OBSERVABILITY_AGENT_DASHBOARD_AUTO_GENERATE: "true"
+  GL_OBSERVABILITY_AGENT_DASHBOARD_REFRESH_INTERVAL: "300"
+
+  # Correlation Configuration
+  GL_OBSERVABILITY_AGENT_CORRELATION_ENABLED: "true"
+  GL_OBSERVABILITY_AGENT_CORRELATION_WINDOW_SECONDS: "300"
+
+  # Metrics
+  GL_OBSERVABILITY_AGENT_ENABLE_METRICS: "true"
+  METRICS_PORT: "8080"
+  METRICS_PATH: "/metrics"
+
+  # Tracing
+  TRACING_ENABLED: "true"
+  TRACING_SAMPLE_RATE: "0.1"
+  OTEL_ENDPOINT: "http://otel-collector.monitoring.svc.cluster.local:4317"
+  OTEL_SERVICE_NAME: "observability-agent-service"
+
+  # Observability agent service configuration file
+  observability-agent-config.yaml: |
+    observability_agent_service:
+      version: "1.0.0"
+      environment: production
+
+      prometheus:
+        url: "http://prometheus-server.monitoring.svc.cluster.local:9090"
+        scrape_interval: 15s
+        evaluation_interval: 15s
+        retention_hours: 168
+        query_timeout: 30s
+
+      grafana:
+        url: "http://grafana.monitoring.svc.cluster.local:3000"
+        auto_dashboard: true
+        refresh_interval: 300
+        folder_hierarchy:
+          - platform
+          - agents
+          - infrastructure
+          - security
+          - slos
+
+      tempo:
+        url: "http://tempo.monitoring.svc.cluster.local:3200"
+        max_active_spans: 10000
+        sampling_rate: 0.1
+        search_window: 1h
+
+      loki:
+        url: "http://loki.monitoring.svc.cluster.local:3100"
+        retention_period: 720h
+        max_query_series: 5000
+
+      alertmanager:
+        url: "http://alertmanager.monitoring.svc.cluster.local:9093"
+        evaluation_interval: 30
+        notification_channels:
+          - pagerduty
+          - slack
+          - email
+
+      metrics_collection:
+        enabled: true
+        interval_seconds: 15
+        batch_size: 1000
+        targets:
+          - greenlang-agents
+          - infrastructure
+          - security-services
+          - observability-stack
+
+      trace_analysis:
+        enabled: true
+        correlation_window_seconds: 300
+        root_cause_enabled: true
+        latency_percentiles: [50, 90, 95, 99]
+        error_rate_threshold: 0.05
+
+      log_correlation:
+        enabled: true
+        trace_log_linking: true
+        structured_parsing: true
+        pii_redaction: true
+
+      alert_evaluation:
+        enabled: true
+        interval_seconds: 30
+        severity_levels:
+          - critical
+          - warning
+          - info
+        escalation_enabled: true
+
+      slo_monitoring:
+        enabled: true
+        evaluation_interval_seconds: 60
+        burn_rate:
+          fast_window: 5m
+          slow_window: 1h
+        error_budget:
+          warning_threshold: 0.2
+          critical_threshold: 0.05
+        sli_types:
+          - availability
+          - latency
+          - throughput
+          - error_rate
+          - saturation
+
+      anomaly_detection:
+        enabled: true
+        sensitivity: medium
+        lookback_minutes: 60
+        stddev_threshold: 3.0
+        algorithms:
+          - z_score
+          - isolation_forest
+          - moving_average
+
+      health_probing:
+        enabled: true
+        interval_seconds: 15
+        timeout_seconds: 5
+        max_retries: 3
+        stale_threshold_seconds: 120
+        statuses:
+          - healthy
+          - degraded
+          - unhealthy
+          - unknown
+          - maintenance
+
+      dashboard_generation:
+        auto_generate: true
+        refresh_interval_seconds: 300
+        templates:
+          - service_overview
+          - error_analysis
+          - latency_breakdown
+          - resource_utilization
+          - slo_compliance
+
+      provenance:
+        hash_algorithm: sha256
+        chain_enabled: true
+        max_chain_depth: 20
+
+      cache:
+        ttl_seconds: 300
+        max_size: 5000
+        metric_cache_ttl: 60
+        trace_cache_ttl: 120
+        warmup_on_startup: true
+
+      metrics:
+        enabled: true
+        prefix: gl_observability_agent
+        histogram_buckets: [0.001, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10, 30]
+
+      integration:
+        auth_enabled: true
+        audit_enabled: true
+        alerting_enabled: true
+        feature_flags_enabled: true
+        access_guard_enabled: true
+        agent_registry_enabled: true
+        reproducibility_enabled: true
+        qa_test_harness_enabled: true

@@ -1,0 +1,430 @@
+# =============================================================================
+# GreenLang Observability Agent - Alert Rules
+# =============================================================================
+# Component: AGENT-FOUND-010 Observability & Telemetry Agent
+# Purpose: PrometheusRule alert definitions for service health, high error
+#          rate, high latency, high span count, slow log ingestion, alert
+#          evaluation failures, degraded/unhealthy health status, SLO burn
+#          rate, error budget low/exhausted, high memory usage, high CPU
+#          usage, pod restarts, and replica mismatch.
+# =============================================================================
+
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: greenlang-observability-agent-service-alerts
+  namespace: monitoring
+  labels:
+    app: greenlang
+    component: observability-agent
+    prometheus: kube-prometheus
+    role: alert-rules
+    release: gl-kube-prometheus
+    greenlang.io/component: agent-found-010
+  annotations:
+    description: "Alert rules for GreenLang Observability & Telemetry Agent"
+    prd: AGENT-FOUND-010
+spec:
+  groups:
+    # =========================================================================
+    # Observability Agent Service Health Alerts
+    # =========================================================================
+    - name: greenlang.observability_agent.service_health
+      interval: 30s
+      rules:
+        # -------------------------------------------------------------------
+        # 1. ObsAgentHighErrorRate (warning): >5% error rate
+        # -------------------------------------------------------------------
+        - alert: ObsAgentHighErrorRate
+          expr: |
+            (
+              sum(rate(gl_obs_operation_duration_seconds_count{status="error"}[5m]))
+              / sum(rate(gl_obs_operation_duration_seconds_count[5m]))
+            ) > 0.05
+          for: 10m
+          labels:
+            severity: warning
+            team: platform-foundation
+            component: observability-agent
+            prd: AGENT-FOUND-010
+          annotations:
+            summary: "Observability Agent error rate above 5%"
+            description: |
+              The GreenLang Observability Agent (AGENT-FOUND-010) error rate is
+              {{ $value | humanizePercentage }}, exceeding the 5% threshold for 10
+              minutes. This indicates that metric recording, span creation, log
+              ingestion, or alert evaluation operations are failing at an elevated
+              rate. Investigate backend connectivity (Prometheus, Tempo, Loki) and
+              check for resource saturation.
+            runbook_url: "https://docs.greenlang.ai/runbooks/observability-agent/high-error-rate"
+            dashboard_url: "https://grafana.greenlang.io/d/obs-agent-svc"
+
+        # -------------------------------------------------------------------
+        # 2. ObsAgentHighLatency (warning): p99 > 1s
+        # -------------------------------------------------------------------
+        - alert: ObsAgentHighLatency
+          expr: |
+            histogram_quantile(0.99,
+              sum(rate(gl_obs_operation_duration_seconds_bucket[5m])) by (le)
+            ) > 1
+          for: 10m
+          labels:
+            severity: warning
+            team: platform-foundation
+            component: observability-agent
+            prd: AGENT-FOUND-010
+          annotations:
+            summary: "Observability Agent p99 latency above 1s"
+            description: |
+              The p99 operation latency for the Observability Agent is
+              {{ $value | printf "%.3f" }}s, exceeding the 1s threshold for 10
+              minutes. High latency in the observability pipeline delays metric
+              collection, trace propagation, and alert evaluation. Investigate
+              database query latency, Prometheus remote write backpressure, and
+              network connectivity to telemetry backends.
+            runbook_url: "https://docs.greenlang.ai/runbooks/observability-agent/high-latency"
+            dashboard_url: "https://grafana.greenlang.io/d/obs-agent-svc"
+
+        # -------------------------------------------------------------------
+        # 3. ObsAgentDown (critical): absent metrics for 5m
+        # -------------------------------------------------------------------
+        - alert: ObsAgentDown
+          expr: |
+            up{job="observability-agent-service"} == 0
+          for: 5m
+          labels:
+            severity: critical
+            team: platform-foundation
+            component: observability-agent
+            prd: AGENT-FOUND-010
+          annotations:
+            summary: "CRITICAL: Observability Agent service is down"
+            description: |
+              The GreenLang Observability Agent (AGENT-FOUND-010) is not responding
+              to health checks for 5 minutes. All self-monitoring capabilities are
+              disrupted including metric collection, span tracing, log ingestion,
+              alert evaluation, health checking, SLO compliance tracking, and
+              dashboard query serving. The entire observability pipeline for
+              GreenLang Climate OS is compromised.
+            runbook_url: "https://docs.greenlang.ai/runbooks/observability-agent/service-down"
+            dashboard_url: "https://grafana.greenlang.io/d/obs-agent-svc"
+
+    # =========================================================================
+    # Observability Agent Tracing & Ingestion Alerts
+    # =========================================================================
+    - name: greenlang.observability_agent.tracing
+      interval: 30s
+      rules:
+        # -------------------------------------------------------------------
+        # 4. ObsAgentHighSpanCount (warning): >8000 active spans
+        # -------------------------------------------------------------------
+        - alert: ObsAgentHighSpanCount
+          expr: |
+            gl_obs_spans_active > 8000
+          for: 10m
+          labels:
+            severity: warning
+            team: platform-foundation
+            component: observability-agent
+            prd: AGENT-FOUND-010
+          annotations:
+            summary: "Observability Agent has >8000 active spans"
+            description: |
+              The Observability Agent is tracking {{ $value | printf "%.0f" }}
+              active spans, exceeding the 8000 threshold for 10 minutes. A high
+              active span count may indicate span leaks (spans not being closed),
+              excessive parallelism, or downstream trace collector backpressure.
+              This can lead to increased memory usage and eventual OOM. Investigate
+              span lifecycle management and trace export pipeline health.
+            runbook_url: "https://docs.greenlang.ai/runbooks/observability-agent/high-span-count"
+            dashboard_url: "https://grafana.greenlang.io/d/obs-agent-svc"
+
+        # -------------------------------------------------------------------
+        # 5. ObsAgentLogIngestionSlow (warning): rate < 1/s for 5m
+        # -------------------------------------------------------------------
+        - alert: ObsAgentLogIngestionSlow
+          expr: |
+            sum(rate(gl_obs_logs_ingested_total[5m])) < 1
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-foundation
+            component: observability-agent
+            prd: AGENT-FOUND-010
+          annotations:
+            summary: "Observability Agent log ingestion rate below 1/s"
+            description: |
+              The log ingestion rate has dropped to {{ $value | printf "%.3f" }}
+              logs/second, below the minimum expected rate of 1/s for 5 minutes.
+              This indicates that the log pipeline may be stalled, Loki may be
+              unreachable, or upstream log producers have stopped emitting. Verify
+              Loki connectivity, OTel Collector status, and application log output.
+            runbook_url: "https://docs.greenlang.ai/runbooks/observability-agent/slow-log-ingestion"
+            dashboard_url: "https://grafana.greenlang.io/d/obs-agent-svc"
+
+    # =========================================================================
+    # Observability Agent Alert & Health Alerts
+    # =========================================================================
+    - name: greenlang.observability_agent.alert_health
+      interval: 30s
+      rules:
+        # -------------------------------------------------------------------
+        # 6. ObsAgentAlertEvaluationFailing (warning)
+        # -------------------------------------------------------------------
+        - alert: ObsAgentAlertEvaluationFailing
+          expr: |
+            (
+              sum(rate(gl_obs_alerts_evaluated_total{result="error"}[5m]))
+              / sum(rate(gl_obs_alerts_evaluated_total[5m]))
+            ) > 0.1
+          for: 10m
+          labels:
+            severity: warning
+            team: platform-foundation
+            component: observability-agent
+            prd: AGENT-FOUND-010
+          annotations:
+            summary: "Observability Agent alert evaluation failure rate >10%"
+            description: |
+              More than 10% of alert evaluations are failing. Current failure rate
+              is {{ $value | humanizePercentage }}. This means alert rules cannot be
+              reliably evaluated, which may cause missed alerts for critical service
+              conditions across GreenLang Climate OS. Investigate Prometheus query
+              errors, malformed alert rules, and metric availability.
+            runbook_url: "https://docs.greenlang.ai/runbooks/observability-agent/alert-evaluation-failing"
+            dashboard_url: "https://grafana.greenlang.io/d/obs-agent-svc"
+
+        # -------------------------------------------------------------------
+        # 7. ObsAgentHealthDegraded (warning): status < 1
+        # -------------------------------------------------------------------
+        - alert: ObsAgentHealthDegraded
+          expr: |
+            gl_obs_health_status < 1 and gl_obs_health_status > 0
+          for: 10m
+          labels:
+            severity: warning
+            team: platform-foundation
+            component: observability-agent
+            prd: AGENT-FOUND-010
+          annotations:
+            summary: "Observability Agent health is degraded"
+            description: |
+              The Observability Agent health status is {{ $value | printf "%.1f" }},
+              indicating degraded operation for 10 minutes. Some subsystems (metric
+              collection, tracing, log ingestion, or alert evaluation) may be
+              partially functional. Investigate which backend dependencies are
+              experiencing issues and check recent deployment changes.
+            runbook_url: "https://docs.greenlang.ai/runbooks/observability-agent/health-degraded"
+            dashboard_url: "https://grafana.greenlang.io/d/obs-agent-svc"
+
+        # -------------------------------------------------------------------
+        # 8. ObsAgentHealthUnhealthy (critical): status = 0
+        # -------------------------------------------------------------------
+        - alert: ObsAgentHealthUnhealthy
+          expr: |
+            gl_obs_health_status == 0
+          for: 5m
+          labels:
+            severity: critical
+            team: platform-foundation
+            component: observability-agent
+            prd: AGENT-FOUND-010
+          annotations:
+            summary: "CRITICAL: Observability Agent health status is unhealthy"
+            description: |
+              The Observability Agent health status is 0 (unhealthy) for 5 minutes.
+              The service is running but all core subsystems are non-functional.
+              Metric collection, span tracing, log ingestion, alert evaluation,
+              and SLO tracking are all impaired. This is a critical observability
+              gap for the entire GreenLang Climate OS platform.
+            runbook_url: "https://docs.greenlang.ai/runbooks/observability-agent/service-down"
+            dashboard_url: "https://grafana.greenlang.io/d/obs-agent-svc"
+
+    # =========================================================================
+    # Observability Agent SLO & Error Budget Alerts
+    # =========================================================================
+    - name: greenlang.observability_agent.slo
+      interval: 30s
+      rules:
+        # -------------------------------------------------------------------
+        # 9. ObsAgentSLOBurning (warning): compliance < 99.9% target
+        # -------------------------------------------------------------------
+        - alert: ObsAgentSLOBurning
+          expr: |
+            gl_obs_slo_compliance_ratio < 0.999
+          for: 15m
+          labels:
+            severity: warning
+            team: platform-foundation
+            component: observability-agent
+            prd: AGENT-FOUND-010
+          annotations:
+            summary: "Observability Agent SLO compliance below 99.9% target"
+            description: |
+              The Observability Agent SLO compliance is at
+              {{ $value | humanizePercentage }}, below the 99.9% target for 15
+              minutes. The error budget is being consumed at an elevated rate. If
+              this trend continues, the error budget will be exhausted before the
+              end of the SLO window. Investigate the root cause of increased errors
+              or latency and consider deploying fixes.
+            runbook_url: "https://docs.greenlang.ai/runbooks/observability-agent/slo-breach"
+            dashboard_url: "https://grafana.greenlang.io/d/obs-agent-svc"
+
+        # -------------------------------------------------------------------
+        # 10. ObsAgentErrorBudgetLow (warning): <10% remaining
+        # -------------------------------------------------------------------
+        - alert: ObsAgentErrorBudgetLow
+          expr: |
+            gl_obs_error_budget_remaining < 0.10
+            and
+            gl_obs_error_budget_remaining >= 0
+          for: 15m
+          labels:
+            severity: warning
+            team: platform-foundation
+            component: observability-agent
+            prd: AGENT-FOUND-010
+          annotations:
+            summary: "Observability Agent error budget below 10%"
+            description: |
+              The Observability Agent error budget remaining is
+              {{ $value | humanizePercentage }}. Less than 10% of the error budget
+              remains for the current SLO window. Further degradation will exhaust
+              the budget entirely, triggering a freeze on non-essential deployments.
+              Prioritize reliability improvements and investigate ongoing error
+              sources.
+            runbook_url: "https://docs.greenlang.ai/runbooks/observability-agent/slo-breach"
+            dashboard_url: "https://grafana.greenlang.io/d/obs-agent-svc"
+
+        # -------------------------------------------------------------------
+        # 11. ObsAgentErrorBudgetExhausted (critical): <0% remaining
+        # -------------------------------------------------------------------
+        - alert: ObsAgentErrorBudgetExhausted
+          expr: |
+            gl_obs_error_budget_remaining < 0
+          for: 5m
+          labels:
+            severity: critical
+            team: platform-foundation
+            component: observability-agent
+            prd: AGENT-FOUND-010
+          annotations:
+            summary: "CRITICAL: Observability Agent error budget exhausted"
+            description: |
+              The Observability Agent error budget is exhausted (remaining:
+              {{ $value | humanizePercentage }}). The SLO target has been breached
+              for the current window. All non-essential deployments to the
+              observability pipeline should be frozen. Only reliability fixes should
+              be deployed. A post-incident review is required to identify and
+              resolve the root cause of the SLO breach.
+            runbook_url: "https://docs.greenlang.ai/runbooks/observability-agent/slo-breach"
+            dashboard_url: "https://grafana.greenlang.io/d/obs-agent-svc"
+
+    # =========================================================================
+    # Observability Agent Infrastructure Alerts
+    # =========================================================================
+    - name: greenlang.observability_agent.infrastructure
+      interval: 30s
+      rules:
+        # -------------------------------------------------------------------
+        # 12. ObsAgentHighMemoryUsage (warning): >80%
+        # -------------------------------------------------------------------
+        - alert: ObsAgentHighMemoryUsage
+          expr: |
+            (
+              container_memory_working_set_bytes{container="observability-agent-service"}
+              / container_spec_memory_limit_bytes{container="observability-agent-service"}
+            ) > 0.80
+          for: 15m
+          labels:
+            severity: warning
+            team: platform-foundation
+            component: observability-agent
+            prd: AGENT-FOUND-010
+          annotations:
+            summary: "Observability Agent memory usage above 80%"
+            description: |
+              Observability Agent container memory usage is at
+              {{ $value | humanizePercentage }} of its limit. High memory usage may
+              be caused by large numbers of active spans, buffered metrics awaiting
+              remote write, log ingestion backlog, or in-memory alert evaluation
+              state. Consider increasing memory limits or investigating memory leaks.
+            runbook_url: "https://docs.greenlang.ai/runbooks/observability-agent/high-memory"
+            dashboard_url: "https://grafana.greenlang.io/d/obs-agent-svc"
+
+        # -------------------------------------------------------------------
+        # 13. ObsAgentHighCPUUsage (warning): >80%
+        # -------------------------------------------------------------------
+        - alert: ObsAgentHighCPUUsage
+          expr: |
+            (
+              rate(container_cpu_usage_seconds_total{container="observability-agent-service"}[5m])
+              / container_spec_cpu_quota{container="observability-agent-service"}
+              * container_spec_cpu_period{container="observability-agent-service"}
+            ) > 0.80
+          for: 15m
+          labels:
+            severity: warning
+            team: platform-foundation
+            component: observability-agent
+            prd: AGENT-FOUND-010
+          annotations:
+            summary: "Observability Agent CPU usage above 80%"
+            description: |
+              Observability Agent container CPU usage is at
+              {{ $value | humanizePercentage }} of its limit for 15 minutes. High
+              CPU usage may be caused by excessive metric cardinality, complex
+              PromQL alert evaluations, high trace throughput, or log parsing load.
+              Consider increasing CPU limits, reducing metric cardinality, or
+              optimizing alert rule expressions.
+            runbook_url: "https://docs.greenlang.ai/runbooks/observability-agent/high-cpu"
+            dashboard_url: "https://grafana.greenlang.io/d/obs-agent-svc"
+
+        # -------------------------------------------------------------------
+        # 14. ObsAgentPodRestarting (warning): >3 restarts in 1h
+        # -------------------------------------------------------------------
+        - alert: ObsAgentPodRestarting
+          expr: |
+            increase(kube_pod_container_status_restarts_total{container="observability-agent-service"}[1h]) > 3
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-foundation
+            component: observability-agent
+            prd: AGENT-FOUND-010
+          annotations:
+            summary: "Observability Agent pod restarting frequently (>3 restarts in 1h)"
+            description: |
+              The Observability Agent pod has restarted {{ $value | printf "%.0f" }}
+              times in the last hour. Frequent restarts indicate OOMKills, liveness
+              probe failures, or application crashes. Each restart causes a gap in
+              observability coverage -- metrics, traces, and logs may be lost during
+              restart cycles. Check pod events, container logs, and resource usage.
+            runbook_url: "https://docs.greenlang.ai/runbooks/observability-agent/pod-restarting"
+            dashboard_url: "https://grafana.greenlang.io/d/obs-agent-svc"
+
+        # -------------------------------------------------------------------
+        # 15. ObsAgentReplicasMismatch (warning): desired != available
+        # -------------------------------------------------------------------
+        - alert: ObsAgentReplicasMismatch
+          expr: |
+            kube_deployment_spec_replicas{deployment="observability-agent-service"}
+              !=
+            kube_deployment_status_replicas_available{deployment="observability-agent-service"}
+          for: 15m
+          labels:
+            severity: warning
+            team: platform-foundation
+            component: observability-agent
+            prd: AGENT-FOUND-010
+          annotations:
+            summary: "Observability Agent replica count mismatch"
+            description: |
+              The desired replica count for the Observability Agent deployment does
+              not match the available replica count for 15 minutes. Desired:
+              {{ with printf "kube_deployment_spec_replicas{deployment='observability-agent-service'}" }}{{ . }}{{ end }},
+              Available: {{ $value | printf "%.0f" }}. This may indicate scheduling
+              failures, insufficient cluster resources, image pull errors, or pods
+              stuck in CrashLoopBackOff. Check deployment events and node capacity.
+            runbook_url: "https://docs.greenlang.ai/runbooks/observability-agent/replicas-mismatch"
+            dashboard_url: "https://grafana.greenlang.io/d/obs-agent-svc"

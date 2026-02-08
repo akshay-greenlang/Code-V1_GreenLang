@@ -1,0 +1,408 @@
+# =============================================================================
+# GreenLang Citations & Evidence Agent Service - Alert Rules
+# =============================================================================
+# Component: AGENT-FOUND-005 Citations & Evidence Agent
+# Purpose: PrometheusRule alert definitions for service health, operation
+#          errors, verification failures, expired citations, hash integrity,
+#          evidence package size, cache, memory, pod restarts, provenance
+#          chain, audit gaps, and supersession backlog.
+# =============================================================================
+
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: greenlang-citations-service-alerts
+  namespace: monitoring
+  labels:
+    app: greenlang
+    component: citations
+    prometheus: kube-prometheus
+    role: alert-rules
+    release: gl-kube-prometheus
+    greenlang.io/component: agent-found-005
+  annotations:
+    description: "Alert rules for GreenLang Citations & Evidence Agent Service"
+    prd: AGENT-FOUND-005
+spec:
+  groups:
+    # =========================================================================
+    # Citations Service Health Alerts
+    # =========================================================================
+    - name: greenlang.citations.service_health
+      interval: 30s
+      rules:
+        # -------------------------------------------------------------------
+        # CitationsServiceDown (critical): No healthy pods for 5m
+        # -------------------------------------------------------------------
+        - alert: CitationsServiceDown
+          expr: |
+            up{job="citations-service"} == 0
+          for: 5m
+          labels:
+            severity: critical
+            team: platform-data
+            component: citations
+            prd: AGENT-FOUND-005
+          annotations:
+            summary: "CRITICAL: Citations & Evidence Agent service is down"
+            description: |
+              The GreenLang Citations & Evidence Agent Service is not responding to health checks
+              for 5 minutes. All citation lookups, evidence package generation, verification
+              operations, and regulatory mapping queries are disrupted. Downstream calculation
+              pipelines depending on citation provenance will lack audit trail linkage.
+            runbook_url: "https://docs.greenlang.ai/runbooks/citations/service-down"
+            dashboard_url: "https://grafana.greenlang.io/d/citations-service"
+
+        # -------------------------------------------------------------------
+        # CitationsHighErrorRate (warning): > 5% errors in 5m
+        # -------------------------------------------------------------------
+        - alert: CitationsHighErrorRate
+          expr: |
+            (
+              sum(rate(gl_citations_operations_total{status="error"}[5m]))
+              / sum(rate(gl_citations_operations_total[5m]))
+            ) > 0.05
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-data
+            component: citations
+            prd: AGENT-FOUND-005
+          annotations:
+            summary: "Citations service error rate above 5%"
+            description: |
+              Citation operation error rate is {{ $value | humanizePercentage }} over the last
+              5 minutes. Threshold: 5%. This may indicate database connectivity issues, invalid
+              citation data, verification failures, or permission errors. Check the citation
+              version log and application logs for common error patterns.
+            runbook_url: "https://docs.greenlang.ai/runbooks/citations/high-error-rate"
+            dashboard_url: "https://grafana.greenlang.io/d/citations-service"
+
+        # -------------------------------------------------------------------
+        # CitationsHighErrorRateCritical (critical): > 15% errors in 5m
+        # -------------------------------------------------------------------
+        - alert: CitationsHighErrorRateCritical
+          expr: |
+            (
+              sum(rate(gl_citations_operations_total{status="error"}[5m]))
+              / sum(rate(gl_citations_operations_total[5m]))
+            ) > 0.15
+          for: 5m
+          labels:
+            severity: critical
+            team: platform-data
+            component: citations
+            prd: AGENT-FOUND-005
+          annotations:
+            summary: "CRITICAL: Citations service error rate above 15%"
+            description: |
+              Citation operation error rate is {{ $value | humanizePercentage }} over the last
+              5 minutes, exceeding the critical 15% threshold. This indicates a systemic failure
+              in citation operations. Immediate investigation required. Check database health,
+              Redis connectivity, and recent deployment changes.
+            runbook_url: "https://docs.greenlang.ai/runbooks/citations/high-error-rate-critical"
+            dashboard_url: "https://grafana.greenlang.io/d/citations-service"
+
+    # =========================================================================
+    # Citations Latency Alerts
+    # =========================================================================
+    - name: greenlang.citations.latency
+      interval: 30s
+      rules:
+        # -------------------------------------------------------------------
+        # CitationsHighLatency (warning): p99 > 500ms for 10m
+        # -------------------------------------------------------------------
+        - alert: CitationsHighLatency
+          expr: |
+            histogram_quantile(0.99,
+              sum(rate(gl_citations_operation_duration_seconds_bucket[5m])) by (le)
+            ) > 0.5
+          for: 10m
+          labels:
+            severity: warning
+            team: platform-data
+            component: citations
+            prd: AGENT-FOUND-005
+          annotations:
+            summary: "Citations service p99 latency above 500ms"
+            description: |
+              The p99 citation operation latency is {{ $value | printf "%.3f" }}s, exceeding
+              the 500ms warning threshold for 10 minutes. Investigate cache miss rates, database
+              query performance, evidence package assembly overhead, and verification lookup times.
+            runbook_url: "https://docs.greenlang.ai/runbooks/citations/high-latency"
+            dashboard_url: "https://grafana.greenlang.io/d/citations-service"
+
+        # -------------------------------------------------------------------
+        # CitationsHighLatencyCritical (critical): p99 > 2s for 5m
+        # -------------------------------------------------------------------
+        - alert: CitationsHighLatencyCritical
+          expr: |
+            histogram_quantile(0.99,
+              sum(rate(gl_citations_operation_duration_seconds_bucket[5m])) by (le)
+            ) > 2.0
+          for: 5m
+          labels:
+            severity: critical
+            team: platform-data
+            component: citations
+            prd: AGENT-FOUND-005
+          annotations:
+            summary: "CRITICAL: Citations service p99 latency above 2 seconds"
+            description: |
+              The p99 citation operation latency is {{ $value | printf "%.3f" }}s, exceeding
+              the critical 2-second threshold. This will cause downstream calculation timeouts
+              and evidence package assembly failures. Immediate investigation required. Check
+              database locks, connection pool exhaustion, and large evidence package queries.
+            runbook_url: "https://docs.greenlang.ai/runbooks/citations/high-latency-critical"
+            dashboard_url: "https://grafana.greenlang.io/d/citations-service"
+
+    # =========================================================================
+    # Verification & Integrity Alerts
+    # =========================================================================
+    - name: greenlang.citations.verification
+      interval: 30s
+      rules:
+        # -------------------------------------------------------------------
+        # CitationsVerificationFailureSpike (warning): > 50% failures in 15m
+        # -------------------------------------------------------------------
+        - alert: CitationsVerificationFailureSpike
+          expr: |
+            (
+              sum(rate(gl_citations_verifications_total{status="rejected"}[15m]))
+              / sum(rate(gl_citations_verifications_total[15m]))
+            ) > 0.50
+          for: 15m
+          labels:
+            severity: warning
+            team: platform-data
+            component: citations
+            prd: AGENT-FOUND-005
+          annotations:
+            summary: "Citations verification failure rate above 50%"
+            description: |
+              Citation verification failure rate is {{ $value | humanizePercentage }} over the
+              last 15 minutes. High failure rates indicate that citations are frequently failing
+              verification checks (URL validation, DOI lookup, cross-reference). Review the
+              verification pipeline and source authority availability.
+            runbook_url: "https://docs.greenlang.ai/runbooks/citations/verification-failure-spike"
+            dashboard_url: "https://grafana.greenlang.io/d/citations-service"
+
+        # -------------------------------------------------------------------
+        # CitationsExpiredCitations (warning): > 10 expired citations for 1h
+        # -------------------------------------------------------------------
+        - alert: CitationsExpiredCitations
+          expr: |
+            gl_citations_expired_total > 10
+          for: 1h
+          labels:
+            severity: warning
+            team: platform-data
+            component: citations
+            prd: AGENT-FOUND-005
+          annotations:
+            summary: "More than 10 expired citations detected"
+            description: |
+              There are {{ $value | printf "%.0f" }} expired citations in the registry. Expired
+              citations may produce stale emission factors or outdated regulatory references in
+              downstream calculations. Review and update or supersede expired citations with
+              current versions from their source authorities.
+            runbook_url: "https://docs.greenlang.ai/runbooks/citations/expired-citations"
+            dashboard_url: "https://grafana.greenlang.io/d/citations-service"
+
+        # -------------------------------------------------------------------
+        # CitationsHashIntegrityFailure (critical): any hash mismatch
+        # -------------------------------------------------------------------
+        - alert: CitationsHashIntegrityFailure
+          expr: |
+            increase(gl_citations_hash_integrity_failures_total[5m]) > 0
+          for: 0m
+          labels:
+            severity: critical
+            team: platform-data
+            component: citations
+            prd: AGENT-FOUND-005
+          annotations:
+            summary: "CRITICAL: Citation content hash integrity failure detected"
+            description: |
+              A citation content hash integrity failure has been detected. This indicates
+              that the stored content hash does not match the computed hash of the citation
+              data, suggesting data corruption, unauthorized modification, or a serialization
+              change. Immediate investigation required to determine if data tampering occurred.
+            runbook_url: "https://docs.greenlang.ai/runbooks/citations/hash-integrity-failure"
+            dashboard_url: "https://grafana.greenlang.io/d/citations-service"
+
+        # -------------------------------------------------------------------
+        # CitationsProvenanceChainBroken (critical): any chain break
+        # -------------------------------------------------------------------
+        - alert: CitationsProvenanceChainBroken
+          expr: |
+            increase(gl_citations_provenance_chain_broken_total[5m]) > 0
+          for: 0m
+          labels:
+            severity: critical
+            team: platform-data
+            component: citations
+            prd: AGENT-FOUND-005
+          annotations:
+            summary: "CRITICAL: Citation provenance chain broken"
+            description: |
+              A break in the citation provenance hash chain has been detected. This creates
+              a gap in the audit trail that violates the zero-hallucination guarantee. The
+              provenance chain links each citation version to its predecessor via SHA-256
+              hashes. A break indicates tampering, data corruption, or migration error.
+              Immediate investigation and chain repair required.
+            runbook_url: "https://docs.greenlang.ai/runbooks/citations/provenance-chain-broken"
+            dashboard_url: "https://grafana.greenlang.io/d/citations-service"
+
+    # =========================================================================
+    # Evidence Package & Supersession Alerts
+    # =========================================================================
+    - name: greenlang.citations.evidence
+      interval: 30s
+      rules:
+        # -------------------------------------------------------------------
+        # CitationsEvidencePackageOversized (warning): > 100 items for 30m
+        # -------------------------------------------------------------------
+        - alert: CitationsEvidencePackageOversized
+          expr: |
+            gl_citations_evidence_package_items_max > 100
+          for: 30m
+          labels:
+            severity: warning
+            team: platform-data
+            component: citations
+            prd: AGENT-FOUND-005
+          annotations:
+            summary: "Evidence package exceeds 100 items"
+            description: |
+              An evidence package contains {{ $value | printf "%.0f" }} items, exceeding the
+              recommended maximum of 100. Oversized packages increase memory usage during
+              hash computation, slow down finalization, and make audit review difficult.
+              Consider splitting into multiple focused packages.
+            runbook_url: "https://docs.greenlang.ai/runbooks/citations/evidence-package-oversized"
+            dashboard_url: "https://grafana.greenlang.io/d/citations-service"
+
+        # -------------------------------------------------------------------
+        # CitationsSupersessionBacklog (warning): > 20 unprocessed for 1h
+        # -------------------------------------------------------------------
+        - alert: CitationsSupersessionBacklog
+          expr: |
+            gl_citations_supersession_pending_total > 20
+          for: 1h
+          labels:
+            severity: warning
+            team: platform-data
+            component: citations
+            prd: AGENT-FOUND-005
+          annotations:
+            summary: "Citation supersession backlog exceeds 20 pending"
+            description: |
+              There are {{ $value | printf "%.0f" }} pending citation supersessions that have
+              not been processed. Unprocessed supersessions mean outdated citations may still
+              be used in calculations. Review the supersession queue and process pending
+              updates to ensure calculations use the latest citation versions.
+            runbook_url: "https://docs.greenlang.ai/runbooks/citations/supersession-backlog"
+            dashboard_url: "https://grafana.greenlang.io/d/citations-service"
+
+    # =========================================================================
+    # Infrastructure Alerts
+    # =========================================================================
+    - name: greenlang.citations.infrastructure
+      interval: 30s
+      rules:
+        # -------------------------------------------------------------------
+        # CitationsCacheHitRateLow (warning): cache hit rate < 50% for 30m
+        # -------------------------------------------------------------------
+        - alert: CitationsCacheHitRateLow
+          expr: |
+            (
+              sum(rate(gl_citations_cache_hits_total[5m]))
+              / (sum(rate(gl_citations_cache_hits_total[5m])) + sum(rate(gl_citations_cache_misses_total[5m])))
+            ) < 0.50
+          for: 30m
+          labels:
+            severity: warning
+            team: platform-data
+            component: citations
+            prd: AGENT-FOUND-005
+          annotations:
+            summary: "Citations cache hit rate below 50%"
+            description: |
+              Citations cache hit rate is {{ $value | humanizePercentage }} over the
+              last 5 minutes. Low cache hit rates increase citation lookup latency and
+              database load. Check cache TTL settings, Redis connectivity, cache warmup
+              configuration, and whether citation access patterns have changed.
+            runbook_url: "https://docs.greenlang.ai/runbooks/citations/cache-hit-rate-low"
+            dashboard_url: "https://grafana.greenlang.io/d/citations-service"
+
+        # -------------------------------------------------------------------
+        # CitationsHighMemoryUsage (warning): memory > 85% for 15m
+        # -------------------------------------------------------------------
+        - alert: CitationsHighMemoryUsage
+          expr: |
+            (
+              container_memory_working_set_bytes{container="citations-service"}
+              / container_spec_memory_limit_bytes{container="citations-service"}
+            ) > 0.85
+          for: 15m
+          labels:
+            severity: warning
+            team: platform-data
+            component: citations
+            prd: AGENT-FOUND-005
+          annotations:
+            summary: "Citations service memory usage above 85%"
+            description: |
+              Citations service container memory usage is at {{ $value | humanizePercentage }}
+              of its limit. High memory usage may be caused by large evidence package assembly,
+              citation cache growth, or bulk verification operations. Consider increasing memory
+              limits or reducing cache max size.
+            runbook_url: "https://docs.greenlang.ai/runbooks/citations/high-memory"
+            dashboard_url: "https://grafana.greenlang.io/d/citations-service"
+
+        # -------------------------------------------------------------------
+        # CitationsPodRestarting (warning): pod restarts > 3 in 30m
+        # -------------------------------------------------------------------
+        - alert: CitationsPodRestarting
+          expr: |
+            increase(kube_pod_container_status_restarts_total{container="citations-service"}[30m]) > 3
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-data
+            component: citations
+            prd: AGENT-FOUND-005
+          annotations:
+            summary: "Citations service pod restarting frequently (>3 restarts in 30m)"
+            description: |
+              Citations service pod has restarted {{ $value | printf "%.0f" }} times in the
+              last 30 minutes. Frequent restarts indicate OOMKills, liveness probe failures,
+              or application crashes. Check pod events, container logs, and resource utilization.
+            runbook_url: "https://docs.greenlang.ai/runbooks/citations/pod-restarting"
+            dashboard_url: "https://grafana.greenlang.io/d/citations-service"
+
+        # -------------------------------------------------------------------
+        # CitationsAuditGap (critical): > 1h without audit entry
+        # -------------------------------------------------------------------
+        - alert: CitationsAuditGap
+          expr: |
+            (
+              sum(rate(gl_citations_operations_total{operation=~"create|update|delete|verify"}[5m]))
+              - sum(rate(gl_citations_version_writes_total[5m]))
+            ) > 1
+          for: 1h
+          labels:
+            severity: critical
+            team: platform-data
+            component: citations
+            prd: AGENT-FOUND-005
+          annotations:
+            summary: "CRITICAL: Audit gap detected - citation changes without version entries"
+            description: |
+              The rate of citation change operations exceeds the rate of version log writes
+              by {{ $value | printf "%.2f" }} operations/second over the last hour. This
+              indicates that citation changes are occurring without corresponding version
+              history entries, which violates compliance requirements. Investigate version
+              log write failures, database connectivity, and the audit middleware pipeline.
+            runbook_url: "https://docs.greenlang.ai/runbooks/citations/audit-gap"
+            dashboard_url: "https://grafana.greenlang.io/d/citations-service"

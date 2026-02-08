@@ -1,0 +1,438 @@
+# =============================================================================
+# GreenLang PDF & Invoice Extractor - Alert Rules
+# =============================================================================
+# Component: AGENT-DATA-001 PDF & Invoice Extractor
+# Purpose: PrometheusRule alert definitions for service health, high extraction
+#          failure rate, high latency, low OCR confidence, OCR engine failures,
+#          validation error spikes, high error rate, audit gaps, database
+#          connection failures, high memory usage, pod restarts, extraction
+#          timeout, document upload failures, queue backlog, and S3 errors.
+# =============================================================================
+
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: greenlang-pdf-extractor-service-alerts
+  namespace: monitoring
+  labels:
+    app: greenlang
+    component: pdf-extractor
+    prometheus: kube-prometheus
+    role: alert-rules
+    release: gl-kube-prometheus
+    greenlang.io/component: agent-data-001
+  annotations:
+    description: "Alert rules for GreenLang PDF & Invoice Extractor"
+    prd: AGENT-DATA-001
+spec:
+  groups:
+    # =========================================================================
+    # PDF Extractor Service Health Alerts
+    # =========================================================================
+    - name: greenlang.pdf_extractor.service_health
+      interval: 30s
+      rules:
+        # -------------------------------------------------------------------
+        # 1. PDFExtractorServiceDown (critical): No healthy pods for 5m
+        # -------------------------------------------------------------------
+        - alert: PDFExtractorServiceDown
+          expr: |
+            up{job="pdf-extractor-service"} == 0
+          for: 5m
+          labels:
+            severity: critical
+            team: platform-data
+            component: pdf-extractor
+            prd: AGENT-DATA-001
+          annotations:
+            summary: "CRITICAL: PDF Extractor service is down"
+            description: |
+              The GreenLang PDF & Invoice Extractor (AGENT-DATA-001) is not responding to health
+              checks for 5 minutes. All document upload, OCR extraction, field extraction, invoice
+              parsing, utility bill processing, and manifest extraction operations are disrupted.
+              Climate data ingestion from document sources is blocked.
+            runbook_url: "https://docs.greenlang.ai/runbooks/pdf-extractor/service-down"
+            dashboard_url: "https://grafana.greenlang.io/d/pdf-extractor-service"
+
+        # -------------------------------------------------------------------
+        # 2. PDFHighExtractionFailureRate (warning >10%, critical >25%)
+        # -------------------------------------------------------------------
+        - alert: PDFHighExtractionFailureRateWarning
+          expr: |
+            (
+              sum(rate(gl_pdf_extractor_jobs_total{status="failed"}[5m]))
+              / sum(rate(gl_pdf_extractor_jobs_total[5m]))
+            ) > 0.10
+          for: 10m
+          labels:
+            severity: warning
+            team: platform-data
+            component: pdf-extractor
+            prd: AGENT-DATA-001
+          annotations:
+            summary: "PDF extraction failure rate above 10%"
+            description: |
+              More than 10% of PDF extraction jobs are failing. Current failure rate is
+              {{ $value | humanizePercentage }}. This may indicate OCR engine issues, unsupported
+              document formats, corrupted files, or template mismatches. Review failing job logs
+              and document types.
+            runbook_url: "https://docs.greenlang.ai/runbooks/pdf-extractor/high-failure-rate"
+            dashboard_url: "https://grafana.greenlang.io/d/pdf-extractor-service"
+
+        - alert: PDFHighExtractionFailureRateCritical
+          expr: |
+            (
+              sum(rate(gl_pdf_extractor_jobs_total{status="failed"}[5m]))
+              / sum(rate(gl_pdf_extractor_jobs_total[5m]))
+            ) > 0.25
+          for: 5m
+          labels:
+            severity: critical
+            team: platform-data
+            component: pdf-extractor
+            prd: AGENT-DATA-001
+          annotations:
+            summary: "CRITICAL: PDF extraction failure rate above 25%"
+            description: |
+              More than 25% of PDF extraction jobs are failing. Current failure rate is
+              {{ $value | humanizePercentage }}. This indicates a systemic extraction issue
+              affecting document ingestion. Climate data from document sources cannot be
+              processed. Immediate investigation required.
+            runbook_url: "https://docs.greenlang.ai/runbooks/pdf-extractor/high-failure-rate-critical"
+            dashboard_url: "https://grafana.greenlang.io/d/pdf-extractor-service"
+
+    # =========================================================================
+    # PDF Extractor Latency Alerts
+    # =========================================================================
+    - name: greenlang.pdf_extractor.latency
+      interval: 30s
+      rules:
+        # -------------------------------------------------------------------
+        # 3. PDFHighExtractionLatency (warning p99>30s, critical p99>120s)
+        # -------------------------------------------------------------------
+        - alert: PDFHighExtractionLatencyWarning
+          expr: |
+            histogram_quantile(0.99,
+              sum(rate(gl_pdf_extractor_job_duration_seconds_bucket[5m])) by (le)
+            ) > 30
+          for: 10m
+          labels:
+            severity: warning
+            team: platform-data
+            component: pdf-extractor
+            prd: AGENT-DATA-001
+          annotations:
+            summary: "PDF extraction p99 latency above 30s"
+            description: |
+              The p99 extraction job latency is {{ $value | printf "%.3f" }}s, exceeding
+              the 30s warning threshold for 10 minutes. OCR-heavy documents should complete
+              within 20s at p99. Investigate slow OCR engine responses, large document pages,
+              or database write latency.
+            runbook_url: "https://docs.greenlang.ai/runbooks/pdf-extractor/high-latency"
+            dashboard_url: "https://grafana.greenlang.io/d/pdf-extractor-service"
+
+        - alert: PDFHighExtractionLatencyCritical
+          expr: |
+            histogram_quantile(0.99,
+              sum(rate(gl_pdf_extractor_job_duration_seconds_bucket[5m])) by (le)
+            ) > 120
+          for: 5m
+          labels:
+            severity: critical
+            team: platform-data
+            component: pdf-extractor
+            prd: AGENT-DATA-001
+          annotations:
+            summary: "CRITICAL: PDF extraction p99 latency above 120s"
+            description: |
+              The p99 extraction job latency is {{ $value | printf "%.3f" }}s, exceeding the
+              critical 120s threshold. This will cause widespread extraction timeouts and block
+              document ingestion pipelines. Immediate investigation required. Check OCR engine
+              health, database locks, and S3 connectivity.
+            runbook_url: "https://docs.greenlang.ai/runbooks/pdf-extractor/high-latency-critical"
+            dashboard_url: "https://grafana.greenlang.io/d/pdf-extractor-service"
+
+    # =========================================================================
+    # PDF Extractor Quality Alerts
+    # =========================================================================
+    - name: greenlang.pdf_extractor.quality
+      interval: 30s
+      rules:
+        # -------------------------------------------------------------------
+        # 4. PDFLowOCRConfidence (warning avg<0.6)
+        # -------------------------------------------------------------------
+        - alert: PDFLowOCRConfidence
+          expr: |
+            avg(gl_pdf_extractor_ocr_confidence) < 0.6
+          for: 15m
+          labels:
+            severity: warning
+            team: platform-data
+            component: pdf-extractor
+            prd: AGENT-DATA-001
+          annotations:
+            summary: "Average OCR confidence below 60%"
+            description: |
+              The average OCR confidence score is {{ $value | printf "%.2f" }}, below the 0.60
+              threshold. Low confidence indicates poor OCR quality, which may be caused by
+              low-resolution scans, skewed documents, unusual fonts, or OCR engine degradation.
+              Review recent document quality and consider engine switching.
+            runbook_url: "https://docs.greenlang.ai/runbooks/pdf-extractor/ocr-failures"
+            dashboard_url: "https://grafana.greenlang.io/d/pdf-extractor-service"
+
+        # -------------------------------------------------------------------
+        # 5. PDFOCREngineFailure (critical): OCR engine errors
+        # -------------------------------------------------------------------
+        - alert: PDFOCREngineFailure
+          expr: |
+            increase(gl_pdf_extractor_ocr_errors_total[5m]) > 10
+          for: 5m
+          labels:
+            severity: critical
+            team: platform-data
+            component: pdf-extractor
+            prd: AGENT-DATA-001
+          annotations:
+            summary: "CRITICAL: OCR engine failures detected"
+            description: |
+              {{ $value | printf "%.0f" }} OCR engine errors in the last 5 minutes. The OCR
+              engine is failing to process documents. Check engine connectivity (Tesseract binary,
+              AWS Textract API, Azure Form Recognizer, Google Document AI), API key validity,
+              and rate limits. Extraction quality is severely degraded.
+            runbook_url: "https://docs.greenlang.ai/runbooks/pdf-extractor/ocr-failures"
+            dashboard_url: "https://grafana.greenlang.io/d/pdf-extractor-service"
+
+        # -------------------------------------------------------------------
+        # 6. PDFValidationErrorSpike (warning)
+        # -------------------------------------------------------------------
+        - alert: PDFValidationErrorSpike
+          expr: |
+            (
+              sum(rate(gl_pdf_extractor_validation_results_total{severity="error"}[5m]))
+              / sum(rate(gl_pdf_extractor_validation_results_total[5m]))
+            ) > 0.20
+          for: 15m
+          labels:
+            severity: warning
+            team: platform-data
+            component: pdf-extractor
+            prd: AGENT-DATA-001
+          annotations:
+            summary: "High validation error rate (>20%)"
+            description: |
+              More than 20% of field validations are producing errors. Current error rate is
+              {{ $value | humanizePercentage }}. This indicates extracted data is failing quality
+              checks, which may affect downstream emission calculations. Review validation rules,
+              template accuracy, and document quality.
+            runbook_url: "https://docs.greenlang.ai/runbooks/pdf-extractor/ocr-failures"
+            dashboard_url: "https://grafana.greenlang.io/d/pdf-extractor-service"
+
+        # -------------------------------------------------------------------
+        # 7. PDFDocumentUploadFailure (warning)
+        # -------------------------------------------------------------------
+        - alert: PDFDocumentUploadFailure
+          expr: |
+            increase(gl_pdf_extractor_upload_errors_total[5m]) > 5
+          for: 10m
+          labels:
+            severity: warning
+            team: platform-data
+            component: pdf-extractor
+            prd: AGENT-DATA-001
+          annotations:
+            summary: "Document upload failures detected"
+            description: |
+              {{ $value | printf "%.0f" }} document upload errors in the last 5 minutes.
+              Documents cannot be uploaded for extraction. Check S3 bucket permissions, file
+              size limits, network connectivity, and disk space on upload staging volume.
+            runbook_url: "https://docs.greenlang.ai/runbooks/pdf-extractor/service-down"
+            dashboard_url: "https://grafana.greenlang.io/d/pdf-extractor-service"
+
+        # -------------------------------------------------------------------
+        # 8. PDFQueueBacklog (warning)
+        # -------------------------------------------------------------------
+        - alert: PDFQueueBacklog
+          expr: |
+            gl_pdf_extractor_pending_jobs > 50
+          for: 15m
+          labels:
+            severity: warning
+            team: platform-data
+            component: pdf-extractor
+            prd: AGENT-DATA-001
+          annotations:
+            summary: "Extraction job queue backlog growing"
+            description: |
+              {{ $value | printf "%.0f" }} extraction jobs are pending in the queue for more
+              than 15 minutes. The service is not keeping up with incoming document load.
+              Consider scaling up replicas, increasing max_concurrent_jobs, or investigating
+              slow OCR processing.
+            runbook_url: "https://docs.greenlang.ai/runbooks/pdf-extractor/service-down"
+            dashboard_url: "https://grafana.greenlang.io/d/pdf-extractor-service"
+
+    # =========================================================================
+    # Infrastructure Alerts
+    # =========================================================================
+    - name: greenlang.pdf_extractor.infrastructure
+      interval: 30s
+      rules:
+        # -------------------------------------------------------------------
+        # 9. PDFHighErrorRate (warning >5%)
+        # -------------------------------------------------------------------
+        - alert: PDFHighErrorRate
+          expr: |
+            (
+              sum(rate(gl_pdf_extractor_http_errors_total[5m]))
+              / sum(rate(gl_pdf_extractor_http_requests_total[5m]))
+            ) > 0.05
+          for: 15m
+          labels:
+            severity: warning
+            team: platform-data
+            component: pdf-extractor
+            prd: AGENT-DATA-001
+          annotations:
+            summary: "PDF Extractor HTTP error rate above 5%"
+            description: |
+              More than 5% of HTTP requests to the PDF extractor are returning errors.
+              Current error rate is {{ $value | humanizePercentage }}. This indicates
+              API-level failures affecting document uploads and extraction requests.
+            runbook_url: "https://docs.greenlang.ai/runbooks/pdf-extractor/service-down"
+            dashboard_url: "https://grafana.greenlang.io/d/pdf-extractor-service"
+
+        # -------------------------------------------------------------------
+        # 10. PDFAuditGap (critical)
+        # -------------------------------------------------------------------
+        - alert: PDFAuditGap
+          expr: |
+            (
+              sum(rate(gl_pdf_extractor_jobs_total[5m]))
+              - sum(rate(gl_pdf_extractor_audit_events_total[5m]))
+            ) > 0.5
+          for: 30m
+          labels:
+            severity: critical
+            team: platform-data
+            component: pdf-extractor
+            prd: AGENT-DATA-001
+          annotations:
+            summary: "CRITICAL: Audit gap detected - extraction operations without audit entries"
+            description: |
+              The rate of extraction operations exceeds the rate of audit event writes by
+              {{ $value | printf "%.2f" }} operations/second over the last 30 minutes. This
+              indicates that extraction jobs are occurring without corresponding audit trail
+              entries, which violates compliance requirements for traceable data ingestion.
+            runbook_url: "https://docs.greenlang.ai/runbooks/pdf-extractor/service-down"
+            dashboard_url: "https://grafana.greenlang.io/d/pdf-extractor-service"
+
+        # -------------------------------------------------------------------
+        # 11. PDFDatabaseConnectionFailure (critical)
+        # -------------------------------------------------------------------
+        - alert: PDFDatabaseConnectionFailure
+          expr: |
+            increase(gl_pdf_extractor_database_errors_total[5m]) > 5
+          for: 5m
+          labels:
+            severity: critical
+            team: platform-data
+            component: pdf-extractor
+            prd: AGENT-DATA-001
+          annotations:
+            summary: "CRITICAL: PDF Extractor database connection failures"
+            description: |
+              {{ $value | printf "%.0f" }} database errors in the last 5 minutes. The PDF
+              extractor cannot persist extraction results, document metadata, or audit events.
+              All extracted data is at risk of being lost. Check PostgreSQL connectivity,
+              connection pool status, and database health.
+            runbook_url: "https://docs.greenlang.ai/runbooks/pdf-extractor/service-down"
+            dashboard_url: "https://grafana.greenlang.io/d/pdf-extractor-service"
+
+        # -------------------------------------------------------------------
+        # 12. PDFHighMemoryUsage (warning >80%)
+        # -------------------------------------------------------------------
+        - alert: PDFHighMemoryUsage
+          expr: |
+            (
+              container_memory_working_set_bytes{container="pdf-extractor-service"}
+              / container_spec_memory_limit_bytes{container="pdf-extractor-service"}
+            ) > 0.80
+          for: 15m
+          labels:
+            severity: warning
+            team: platform-data
+            component: pdf-extractor
+            prd: AGENT-DATA-001
+          annotations:
+            summary: "PDF Extractor memory usage above 80%"
+            description: |
+              PDF extractor container memory usage is at {{ $value | humanizePercentage }}
+              of its limit. High memory usage may be caused by large document processing,
+              in-memory OCR buffers, or high concurrency of extraction jobs. Consider
+              increasing memory limits or reducing max_concurrent_jobs.
+            runbook_url: "https://docs.greenlang.ai/runbooks/pdf-extractor/service-down"
+            dashboard_url: "https://grafana.greenlang.io/d/pdf-extractor-service"
+
+        # -------------------------------------------------------------------
+        # 13. PDFPodRestarts (warning >3 in 15m)
+        # -------------------------------------------------------------------
+        - alert: PDFPodRestarts
+          expr: |
+            increase(kube_pod_container_status_restarts_total{container="pdf-extractor-service"}[15m]) > 3
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-data
+            component: pdf-extractor
+            prd: AGENT-DATA-001
+          annotations:
+            summary: "PDF Extractor pod restarting frequently (>3 restarts in 15m)"
+            description: |
+              PDF extractor pod has restarted {{ $value | printf "%.0f" }} times in the last
+              15 minutes. Frequent restarts indicate OOMKills, liveness probe failures, or
+              application crashes. Check pod events, container logs, and resource utilization.
+              In-progress extraction jobs may be lost on restart.
+            runbook_url: "https://docs.greenlang.ai/runbooks/pdf-extractor/service-down"
+            dashboard_url: "https://grafana.greenlang.io/d/pdf-extractor-service"
+
+        # -------------------------------------------------------------------
+        # 14. PDFExtractionTimeout (warning)
+        # -------------------------------------------------------------------
+        - alert: PDFExtractionTimeout
+          expr: |
+            sum(rate(gl_pdf_extractor_jobs_total{status="timeout"}[5m])) > 0.1
+          for: 15m
+          labels:
+            severity: warning
+            team: platform-data
+            component: pdf-extractor
+            prd: AGENT-DATA-001
+          annotations:
+            summary: "PDF extraction timeouts detected"
+            description: |
+              Extraction timeouts are occurring at {{ $value | printf "%.2f" }} per second over
+              the last 5 minutes. Extraction jobs are exceeding their configured timeout, which
+              may indicate very large documents, slow OCR engine responses, or resource
+              contention. Review timeout configuration and document sizes.
+            runbook_url: "https://docs.greenlang.ai/runbooks/pdf-extractor/ocr-failures"
+            dashboard_url: "https://grafana.greenlang.io/d/pdf-extractor-service"
+
+        # -------------------------------------------------------------------
+        # 15. PDFS3Error (warning)
+        # -------------------------------------------------------------------
+        - alert: PDFS3Error
+          expr: |
+            increase(gl_pdf_extractor_s3_errors_total[5m]) > 5
+          for: 10m
+          labels:
+            severity: warning
+            team: platform-data
+            component: pdf-extractor
+            prd: AGENT-DATA-001
+          annotations:
+            summary: "S3 storage errors affecting PDF extractor"
+            description: |
+              {{ $value | printf "%.0f" }} S3 errors in the last 5 minutes. Document uploads
+              and downloads from S3 are failing. Check S3 bucket accessibility, IAM permissions,
+              network connectivity, and AWS service health.
+            runbook_url: "https://docs.greenlang.ai/runbooks/pdf-extractor/service-down"
+            dashboard_url: "https://grafana.greenlang.io/d/pdf-extractor-service"

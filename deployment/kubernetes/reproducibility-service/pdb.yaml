@@ -1,0 +1,27 @@
+# =============================================================================
+# GreenLang Reproducibility Agent - Pod Disruption Budget
+# =============================================================================
+# Ensures at least 1 reproducibility service pod is available during
+# voluntary disruptions (node drain, cluster upgrade, etc.).
+# PRD: AGENT-FOUND-008
+# =============================================================================
+
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: reproducibility-service-pdb
+  namespace: greenlang
+  labels:
+    app: reproducibility-service
+    app.kubernetes.io/name: reproducibility-service
+    app.kubernetes.io/component: reproducibility
+    app.kubernetes.io/part-of: greenlang
+  annotations:
+    description: "PDB for Reproducibility Agent - minimum 1 pod available"
+    prd: AGENT-FOUND-008
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: reproducibility-service
+      app.kubernetes.io/component: reproducibility

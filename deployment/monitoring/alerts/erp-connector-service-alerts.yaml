@@ -1,0 +1,440 @@
+# =============================================================================
+# GreenLang ERP/Finance Connector - Alert Rules
+# =============================================================================
+# Component: AGENT-DATA-003 ERP/Finance Connector
+# Purpose: PrometheusRule alert definitions for service health, high sync
+#          failure rate, high latency, ERP connection failures, currency
+#          conversion failures, emission calculation errors, high error rate,
+#          audit gaps, database connection failures, high memory usage,
+#          pod restarts, sync timeout, vendor mapping gaps, and queue backlog.
+# =============================================================================
+
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: greenlang-erp-connector-service-alerts
+  namespace: monitoring
+  labels:
+    app: greenlang
+    component: erp-connector
+    prometheus: kube-prometheus
+    role: alert-rules
+    release: gl-kube-prometheus
+    greenlang.io/component: agent-data-003
+  annotations:
+    description: "Alert rules for GreenLang ERP/Finance Connector"
+    prd: AGENT-DATA-003
+spec:
+  groups:
+    # =========================================================================
+    # ERP Connector Service Health Alerts
+    # =========================================================================
+    - name: greenlang.erp_connector.service_health
+      interval: 30s
+      rules:
+        # -------------------------------------------------------------------
+        # 1. ERPConnectorServiceDown (critical): No healthy pods for 5m
+        # -------------------------------------------------------------------
+        - alert: ERPConnectorServiceDown
+          expr: |
+            up{job="erp-connector-service"} == 0
+          for: 5m
+          labels:
+            severity: critical
+            team: platform-data
+            component: erp-connector
+            prd: AGENT-DATA-003
+          annotations:
+            summary: "CRITICAL: ERP Connector service is down"
+            description: |
+              The GreenLang ERP/Finance Connector (AGENT-DATA-003) is not responding to health
+              checks for 5 minutes. All spend data sync, purchase order sync, vendor/material
+              mapping, emission calculations, and ERP connectivity operations are disrupted.
+              Scope 3 emission data from procurement sources is blocked.
+            runbook_url: "https://docs.greenlang.ai/runbooks/erp-connector/service-down"
+            dashboard_url: "https://grafana.greenlang.io/d/erp-connector-service"
+
+        # -------------------------------------------------------------------
+        # 2. ERPHighSyncFailureRate (warning >10%, critical >25%)
+        # -------------------------------------------------------------------
+        - alert: ERPHighSyncFailureRateWarning
+          expr: |
+            (
+              sum(rate(gl_erp_connector_sync_jobs_total{status="failed"}[5m]))
+              / sum(rate(gl_erp_connector_sync_jobs_total[5m]))
+            ) > 0.10
+          for: 10m
+          labels:
+            severity: warning
+            team: platform-data
+            component: erp-connector
+            prd: AGENT-DATA-003
+          annotations:
+            summary: "ERP sync failure rate above 10%"
+            description: |
+              More than 10% of ERP sync jobs are failing. Current failure rate is
+              {{ $value | humanizePercentage }}. This may indicate ERP system connectivity
+              issues, authentication failures, API rate limits, or data format changes.
+              Review failing sync job logs and ERP connection status.
+            runbook_url: "https://docs.greenlang.ai/runbooks/erp-connector/sync-failures"
+            dashboard_url: "https://grafana.greenlang.io/d/erp-connector-service"
+
+        - alert: ERPHighSyncFailureRateCritical
+          expr: |
+            (
+              sum(rate(gl_erp_connector_sync_jobs_total{status="failed"}[5m]))
+              / sum(rate(gl_erp_connector_sync_jobs_total[5m]))
+            ) > 0.25
+          for: 5m
+          labels:
+            severity: critical
+            team: platform-data
+            component: erp-connector
+            prd: AGENT-DATA-003
+          annotations:
+            summary: "CRITICAL: ERP sync failure rate above 25%"
+            description: |
+              More than 25% of ERP sync jobs are failing. Current failure rate is
+              {{ $value | humanizePercentage }}. This indicates a systemic ERP integration
+              issue affecting spend data ingestion. Scope 3 emission calculations cannot
+              be updated. Immediate investigation required.
+            runbook_url: "https://docs.greenlang.ai/runbooks/erp-connector/sync-failures"
+            dashboard_url: "https://grafana.greenlang.io/d/erp-connector-service"
+
+    # =========================================================================
+    # ERP Connector Latency Alerts
+    # =========================================================================
+    - name: greenlang.erp_connector.latency
+      interval: 30s
+      rules:
+        # -------------------------------------------------------------------
+        # 3. ERPHighSyncLatency (warning p99>300s, critical p99>900s)
+        # -------------------------------------------------------------------
+        - alert: ERPHighSyncLatencyWarning
+          expr: |
+            histogram_quantile(0.99,
+              sum(rate(gl_erp_connector_sync_duration_seconds_bucket[5m])) by (le)
+            ) > 300
+          for: 10m
+          labels:
+            severity: warning
+            team: platform-data
+            component: erp-connector
+            prd: AGENT-DATA-003
+          annotations:
+            summary: "ERP sync p99 latency above 300s"
+            description: |
+              The p99 sync job latency is {{ $value | printf "%.3f" }}s, exceeding
+              the 300s warning threshold for 10 minutes. ERP sync jobs should complete
+              within 5 minutes at p99. Investigate slow ERP API responses, large data
+              volumes, or database write latency.
+            runbook_url: "https://docs.greenlang.ai/runbooks/erp-connector/sync-failures"
+            dashboard_url: "https://grafana.greenlang.io/d/erp-connector-service"
+
+        - alert: ERPHighSyncLatencyCritical
+          expr: |
+            histogram_quantile(0.99,
+              sum(rate(gl_erp_connector_sync_duration_seconds_bucket[5m])) by (le)
+            ) > 900
+          for: 5m
+          labels:
+            severity: critical
+            team: platform-data
+            component: erp-connector
+            prd: AGENT-DATA-003
+          annotations:
+            summary: "CRITICAL: ERP sync p99 latency above 900s"
+            description: |
+              The p99 sync job latency is {{ $value | printf "%.3f" }}s, exceeding the
+              critical 900s threshold. This will cause widespread sync timeouts and block
+              spend data ingestion. Immediate investigation required. Check ERP system
+              health, network latency, and database locks.
+            runbook_url: "https://docs.greenlang.ai/runbooks/erp-connector/sync-failures"
+            dashboard_url: "https://grafana.greenlang.io/d/erp-connector-service"
+
+    # =========================================================================
+    # ERP Connector Quality Alerts
+    # =========================================================================
+    - name: greenlang.erp_connector.quality
+      interval: 30s
+      rules:
+        # -------------------------------------------------------------------
+        # 4. ERPConnectionFailure (critical): ERP system connection lost
+        # -------------------------------------------------------------------
+        - alert: ERPConnectionFailure
+          expr: |
+            gl_erp_connector_active_connections == 0
+          for: 5m
+          labels:
+            severity: critical
+            team: platform-data
+            component: erp-connector
+            prd: AGENT-DATA-003
+          annotations:
+            summary: "CRITICAL: No active ERP connections"
+            description: |
+              All ERP system connections are down. No spend data, purchase orders, or
+              inventory data can be synced from any ERP system. Check ERP system availability,
+              network connectivity, and authentication credentials.
+            runbook_url: "https://docs.greenlang.ai/runbooks/erp-connector/sync-failures"
+            dashboard_url: "https://grafana.greenlang.io/d/erp-connector-service"
+
+        # -------------------------------------------------------------------
+        # 5. ERPCurrencyConversionFailure (warning)
+        # -------------------------------------------------------------------
+        - alert: ERPCurrencyConversionFailure
+          expr: |
+            increase(gl_erp_connector_currency_conversions_total{status="failed"}[5m]) > 10
+          for: 10m
+          labels:
+            severity: warning
+            team: platform-data
+            component: erp-connector
+            prd: AGENT-DATA-003
+          annotations:
+            summary: "Currency conversion failures detected"
+            description: |
+              {{ $value | printf "%.0f" }} currency conversion failures in the last 5 minutes.
+              Spend amounts cannot be converted to USD for emission factor application.
+              Check exchange rate API connectivity and API key validity.
+            runbook_url: "https://docs.greenlang.ai/runbooks/erp-connector/sync-failures"
+            dashboard_url: "https://grafana.greenlang.io/d/erp-connector-service"
+
+        # -------------------------------------------------------------------
+        # 6. ERPEmissionCalculationErrors (warning)
+        # -------------------------------------------------------------------
+        - alert: ERPEmissionCalculationErrors
+          expr: |
+            (
+              sum(rate(gl_erp_connector_emission_calculation_errors_total[5m]))
+              / sum(rate(gl_erp_connector_emission_calculations_total[5m]))
+            ) > 0.15
+          for: 15m
+          labels:
+            severity: warning
+            team: platform-data
+            component: erp-connector
+            prd: AGENT-DATA-003
+          annotations:
+            summary: "High emission calculation error rate (>15%)"
+            description: |
+              More than 15% of emission calculations are failing. Current error rate is
+              {{ $value | humanizePercentage }}. This indicates missing vendor/material
+              emission factors, unmapped spend categories, or calculation logic errors.
+              Scope 3 emission data accuracy is degraded.
+            runbook_url: "https://docs.greenlang.ai/runbooks/erp-connector/sync-failures"
+            dashboard_url: "https://grafana.greenlang.io/d/erp-connector-service"
+
+        # -------------------------------------------------------------------
+        # 7. ERPVendorMappingGaps (warning)
+        # -------------------------------------------------------------------
+        - alert: ERPVendorMappingGaps
+          expr: |
+            (
+              sum(rate(gl_erp_connector_unmapped_vendors_total[5m]))
+              / sum(rate(gl_erp_connector_spend_records_total[5m]))
+            ) > 0.30
+          for: 30m
+          labels:
+            severity: warning
+            team: platform-data
+            component: erp-connector
+            prd: AGENT-DATA-003
+          annotations:
+            summary: "High vendor mapping gap rate (>30% unmapped)"
+            description: |
+              More than 30% of spend records have unmapped vendors. These records cannot
+              have accurate emission factors applied. Current unmapped rate is
+              {{ $value | humanizePercentage }}. Review vendor mapping table and auto-classify
+              configuration.
+            runbook_url: "https://docs.greenlang.ai/runbooks/erp-connector/sync-failures"
+            dashboard_url: "https://grafana.greenlang.io/d/erp-connector-service"
+
+        # -------------------------------------------------------------------
+        # 8. ERPSyncQueueBacklog (warning)
+        # -------------------------------------------------------------------
+        - alert: ERPSyncQueueBacklog
+          expr: |
+            gl_erp_connector_pending_sync_jobs > 20
+          for: 15m
+          labels:
+            severity: warning
+            team: platform-data
+            component: erp-connector
+            prd: AGENT-DATA-003
+          annotations:
+            summary: "ERP sync job queue backlog growing"
+            description: |
+              {{ $value | printf "%.0f" }} sync jobs are pending in the queue for more
+              than 15 minutes. The service is not keeping up with scheduled sync load.
+              Consider scaling up replicas, increasing max_concurrent_syncs, or
+              investigating slow ERP API responses.
+            runbook_url: "https://docs.greenlang.ai/runbooks/erp-connector/sync-failures"
+            dashboard_url: "https://grafana.greenlang.io/d/erp-connector-service"
+
+    # =========================================================================
+    # Infrastructure Alerts
+    # =========================================================================
+    - name: greenlang.erp_connector.infrastructure
+      interval: 30s
+      rules:
+        # -------------------------------------------------------------------
+        # 9. ERPHighErrorRate (warning >5%)
+        # -------------------------------------------------------------------
+        - alert: ERPHighErrorRate
+          expr: |
+            (
+              sum(rate(gl_erp_connector_http_errors_total[5m]))
+              / sum(rate(gl_erp_connector_http_requests_total[5m]))
+            ) > 0.05
+          for: 15m
+          labels:
+            severity: warning
+            team: platform-data
+            component: erp-connector
+            prd: AGENT-DATA-003
+          annotations:
+            summary: "ERP Connector HTTP error rate above 5%"
+            description: |
+              More than 5% of HTTP requests to the ERP connector are returning errors.
+              Current error rate is {{ $value | humanizePercentage }}. This indicates
+              API-level failures affecting sync operations and data queries.
+            runbook_url: "https://docs.greenlang.ai/runbooks/erp-connector/service-down"
+            dashboard_url: "https://grafana.greenlang.io/d/erp-connector-service"
+
+        # -------------------------------------------------------------------
+        # 10. ERPAuditGap (critical)
+        # -------------------------------------------------------------------
+        - alert: ERPAuditGap
+          expr: |
+            (
+              sum(rate(gl_erp_connector_sync_jobs_total[5m]))
+              - sum(rate(gl_erp_connector_audit_events_total[5m]))
+            ) > 0.5
+          for: 30m
+          labels:
+            severity: critical
+            team: platform-data
+            component: erp-connector
+            prd: AGENT-DATA-003
+          annotations:
+            summary: "CRITICAL: Audit gap detected - sync operations without audit entries"
+            description: |
+              The rate of sync operations exceeds the rate of audit event writes by
+              {{ $value | printf "%.2f" }} operations/second over the last 30 minutes. This
+              indicates that sync jobs are occurring without corresponding audit trail
+              entries, which violates compliance requirements for traceable data ingestion.
+            runbook_url: "https://docs.greenlang.ai/runbooks/erp-connector/service-down"
+            dashboard_url: "https://grafana.greenlang.io/d/erp-connector-service"
+
+        # -------------------------------------------------------------------
+        # 11. ERPDatabaseConnectionFailure (critical)
+        # -------------------------------------------------------------------
+        - alert: ERPDatabaseConnectionFailure
+          expr: |
+            increase(gl_erp_connector_database_errors_total[5m]) > 5
+          for: 5m
+          labels:
+            severity: critical
+            team: platform-data
+            component: erp-connector
+            prd: AGENT-DATA-003
+          annotations:
+            summary: "CRITICAL: ERP Connector database connection failures"
+            description: |
+              {{ $value | printf "%.0f" }} database errors in the last 5 minutes. The ERP
+              connector cannot persist spend records, purchase orders, vendor mappings, or
+              audit events. All synced data is at risk of being lost. Check PostgreSQL
+              connectivity, connection pool status, and database health.
+            runbook_url: "https://docs.greenlang.ai/runbooks/erp-connector/service-down"
+            dashboard_url: "https://grafana.greenlang.io/d/erp-connector-service"
+
+        # -------------------------------------------------------------------
+        # 12. ERPHighMemoryUsage (warning >80%)
+        # -------------------------------------------------------------------
+        - alert: ERPHighMemoryUsage
+          expr: |
+            (
+              container_memory_working_set_bytes{container="erp-connector-service"}
+              / container_spec_memory_limit_bytes{container="erp-connector-service"}
+            ) > 0.80
+          for: 15m
+          labels:
+            severity: warning
+            team: platform-data
+            component: erp-connector
+            prd: AGENT-DATA-003
+          annotations:
+            summary: "ERP Connector memory usage above 80%"
+            description: |
+              ERP connector container memory usage is at {{ $value | humanizePercentage }}
+              of its limit. High memory usage may be caused by large batch sync operations,
+              in-memory currency conversion caches, or high concurrency of sync jobs.
+              Consider increasing memory limits or reducing batch_size.
+            runbook_url: "https://docs.greenlang.ai/runbooks/erp-connector/service-down"
+            dashboard_url: "https://grafana.greenlang.io/d/erp-connector-service"
+
+        # -------------------------------------------------------------------
+        # 13. ERPPodRestarts (warning >3 in 15m)
+        # -------------------------------------------------------------------
+        - alert: ERPPodRestarts
+          expr: |
+            increase(kube_pod_container_status_restarts_total{container="erp-connector-service"}[15m]) > 3
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-data
+            component: erp-connector
+            prd: AGENT-DATA-003
+          annotations:
+            summary: "ERP Connector pod restarting frequently (>3 restarts in 15m)"
+            description: |
+              ERP connector pod has restarted {{ $value | printf "%.0f" }} times in the last
+              15 minutes. Frequent restarts indicate OOMKills, liveness probe failures, or
+              application crashes. Check pod events, container logs, and resource utilization.
+              In-progress sync jobs may be lost on restart.
+            runbook_url: "https://docs.greenlang.ai/runbooks/erp-connector/service-down"
+            dashboard_url: "https://grafana.greenlang.io/d/erp-connector-service"
+
+        # -------------------------------------------------------------------
+        # 14. ERPSyncTimeout (warning)
+        # -------------------------------------------------------------------
+        - alert: ERPSyncTimeout
+          expr: |
+            sum(rate(gl_erp_connector_sync_jobs_total{status="timeout"}[5m])) > 0.05
+          for: 15m
+          labels:
+            severity: warning
+            team: platform-data
+            component: erp-connector
+            prd: AGENT-DATA-003
+          annotations:
+            summary: "ERP sync timeouts detected"
+            description: |
+              Sync timeouts are occurring at {{ $value | printf "%.2f" }} per second over
+              the last 5 minutes. Sync jobs are exceeding their configured timeout, which
+              may indicate slow ERP API responses, large data volumes, or resource
+              contention. Review timeout configuration and sync batch sizes.
+            runbook_url: "https://docs.greenlang.ai/runbooks/erp-connector/sync-failures"
+            dashboard_url: "https://grafana.greenlang.io/d/erp-connector-service"
+
+        # -------------------------------------------------------------------
+        # 15. ERPConnectionError (warning)
+        # -------------------------------------------------------------------
+        - alert: ERPConnectionError
+          expr: |
+            increase(gl_erp_connector_connection_errors_total[5m]) > 5
+          for: 10m
+          labels:
+            severity: warning
+            team: platform-data
+            component: erp-connector
+            prd: AGENT-DATA-003
+          annotations:
+            summary: "ERP connection errors detected"
+            description: |
+              {{ $value | printf "%.0f" }} ERP connection errors in the last 5 minutes.
+              ERP system connectivity is degraded. Check ERP system availability, network
+              routes, firewall rules, and authentication credential validity.
+            runbook_url: "https://docs.greenlang.ai/runbooks/erp-connector/sync-failures"
+            dashboard_url: "https://grafana.greenlang.io/d/erp-connector-service"

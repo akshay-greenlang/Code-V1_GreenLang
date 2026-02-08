@@ -1,0 +1,67 @@
+# =============================================================================
+# GreenLang Observability & Telemetry Agent - Horizontal Pod Autoscaler
+# =============================================================================
+# HPA for observability agent service: scales based on CPU and memory
+# utilization. Scales from 2 to 6 replicas. Conservative scale-down to
+# prevent metric collection gaps and alert evaluation disruption during
+# transient load spikes from bulk PromQL queries, trace correlation
+# analysis, or anomaly detection workloads.
+# PRD: AGENT-FOUND-010
+# =============================================================================
+
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: observability-agent-service-hpa
+  namespace: greenlang
+  labels:
+    app: observability-agent-service
+    app.kubernetes.io/name: observability-agent-service
+    app.kubernetes.io/component: autoscaling
+    app.kubernetes.io/part-of: greenlang
+  annotations:
+    description: "HPA for Observability Agent based on CPU and memory utilization"
+    prd: AGENT-FOUND-010
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: observability-agent-service
+  minReplicas: 2
+  maxReplicas: 6
+  metrics:
+    # CPU-based scaling - target 70% utilization
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    # Memory-based scaling
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+  behavior:
+    # Scale up: moderate for handling burst metric collection and trace analysis load
+    scaleUp:
+      stabilizationWindowSeconds: 120
+      policies:
+        - type: Pods
+          value: 2
+          periodSeconds: 60
+        - type: Percent
+          value: 50
+          periodSeconds: 60
+      selectPolicy: Max
+    # Scale down: conservative to maintain observability continuity and avoid
+    # gaps in metric collection, alert evaluation, and SLO monitoring
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Pods
+          value: 1
+          periodSeconds: 120
+      selectPolicy: Min

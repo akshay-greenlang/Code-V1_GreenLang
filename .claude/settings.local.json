@@ -333,7 +333,8 @@
       "Bash(fi:*)",
       "Bash(echo.)",
       "Bash(timeout:*)",
-      "Bash(pip3 install:*)"
+      "Bash(pip3 install:*)",
+      "Bash(do wc -l \"$f\")"
     ],
     "deny": [],
     "ask": []

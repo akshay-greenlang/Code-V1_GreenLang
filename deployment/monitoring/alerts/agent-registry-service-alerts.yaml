@@ -1,0 +1,403 @@
+# =============================================================================
+# GreenLang Agent Registry & Service Catalog - Alert Rules
+# =============================================================================
+# Component: AGENT-FOUND-007 Agent Registry & Service Catalog
+# Purpose: PrometheusRule alert definitions for service health, high unhealthy
+#          rate, high query latency, health check failures, dependency cycle
+#          detection, missing dependencies, hot reload failures, cache hit rate,
+#          memory usage, pod restarts, audit gaps, no registered agents, and
+#          version conflicts.
+# =============================================================================
+
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: greenlang-agent-registry-service-alerts
+  namespace: monitoring
+  labels:
+    app: greenlang
+    component: agent-registry
+    prometheus: kube-prometheus
+    role: alert-rules
+    release: gl-kube-prometheus
+    greenlang.io/component: agent-found-007
+  annotations:
+    description: "Alert rules for GreenLang Agent Registry & Service Catalog"
+    prd: AGENT-FOUND-007
+spec:
+  groups:
+    # =========================================================================
+    # Agent Registry Service Health Alerts
+    # =========================================================================
+    - name: greenlang.agent_registry.service_health
+      interval: 30s
+      rules:
+        # -------------------------------------------------------------------
+        # 1. AgentRegistryServiceDown (critical): No healthy pods for 5m
+        # -------------------------------------------------------------------
+        - alert: AgentRegistryServiceDown
+          expr: |
+            up{job="agent-registry-service"} == 0
+          for: 5m
+          labels:
+            severity: critical
+            team: platform-foundation
+            component: agent-registry
+            prd: AGENT-FOUND-007
+          annotations:
+            summary: "CRITICAL: Agent Registry & Service Catalog is down"
+            description: |
+              The GreenLang Agent Registry & Service Catalog is not responding to health checks
+              for 5 minutes. All agent discovery, dependency resolution, health monitoring, and
+              service catalog queries are disrupted. The orchestrator and other services that depend
+              on the registry for agent lookup will not be able to discover or resolve agents.
+            runbook_url: "https://docs.greenlang.ai/runbooks/agent-registry/service-down"
+            dashboard_url: "https://grafana.greenlang.io/d/agent-registry-service"
+
+        # -------------------------------------------------------------------
+        # 2. AgentRegistryHighUnhealthyRate (warning): > 20% unhealthy in 5m
+        # -------------------------------------------------------------------
+        - alert: AgentRegistryHighUnhealthyRate
+          expr: |
+            (
+              gl_agent_registry_health_status{status="unhealthy"}
+              / gl_agent_registry_agents_total
+            ) > 0.20
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-foundation
+            component: agent-registry
+            prd: AGENT-FOUND-007
+          annotations:
+            summary: "Agent Registry unhealthy agent rate above 20%"
+            description: |
+              More than 20% of registered agents are reporting unhealthy status. Current unhealthy
+              rate is {{ $value | humanizePercentage }}. This may indicate infrastructure issues
+              affecting multiple agents, network connectivity problems, or a cascading failure.
+              Review health check results and agent logs.
+            runbook_url: "https://docs.greenlang.ai/runbooks/agent-registry/high-unhealthy-rate"
+            dashboard_url: "https://grafana.greenlang.io/d/agent-registry-service"
+
+        # -------------------------------------------------------------------
+        # 3. AgentRegistryHighUnhealthyRateCritical (critical): > 50% unhealthy
+        # -------------------------------------------------------------------
+        - alert: AgentRegistryHighUnhealthyRateCritical
+          expr: |
+            (
+              gl_agent_registry_health_status{status="unhealthy"}
+              / gl_agent_registry_agents_total
+            ) > 0.50
+          for: 5m
+          labels:
+            severity: critical
+            team: platform-foundation
+            component: agent-registry
+            prd: AGENT-FOUND-007
+          annotations:
+            summary: "CRITICAL: Agent Registry unhealthy agent rate above 50%"
+            description: |
+              More than 50% of registered agents are reporting unhealthy status. Current unhealthy
+              rate is {{ $value | humanizePercentage }}. This indicates a systemic failure affecting
+              the majority of the agent fleet. DAG execution, calculations, and compliance workflows
+              are severely impacted. Immediate investigation required.
+            runbook_url: "https://docs.greenlang.ai/runbooks/agent-registry/high-unhealthy-rate-critical"
+            dashboard_url: "https://grafana.greenlang.io/d/agent-registry-service"
+
+    # =========================================================================
+    # Agent Registry Latency Alerts
+    # =========================================================================
+    - name: greenlang.agent_registry.latency
+      interval: 30s
+      rules:
+        # -------------------------------------------------------------------
+        # 4. AgentRegistryHighQueryLatency (warning): p99 > 100ms for 10m
+        # -------------------------------------------------------------------
+        - alert: AgentRegistryHighQueryLatency
+          expr: |
+            histogram_quantile(0.99,
+              sum(rate(gl_agent_registry_query_duration_seconds_bucket[5m])) by (le)
+            ) > 0.1
+          for: 10m
+          labels:
+            severity: warning
+            team: platform-foundation
+            component: agent-registry
+            prd: AGENT-FOUND-007
+          annotations:
+            summary: "Agent Registry p99 query latency above 100ms"
+            description: |
+              The p99 registry query latency is {{ $value | printf "%.3f" }}s, exceeding the 100ms
+              warning threshold for 10 minutes. Registry queries should complete in under 50ms at p99.
+              Investigate cache miss rates, database query times, and the number of concurrent queries.
+            runbook_url: "https://docs.greenlang.ai/runbooks/agent-registry/high-latency"
+            dashboard_url: "https://grafana.greenlang.io/d/agent-registry-service"
+
+        # -------------------------------------------------------------------
+        # 5. AgentRegistryHighQueryLatencyCritical (critical): p99 > 500ms
+        # -------------------------------------------------------------------
+        - alert: AgentRegistryHighQueryLatencyCritical
+          expr: |
+            histogram_quantile(0.99,
+              sum(rate(gl_agent_registry_query_duration_seconds_bucket[5m])) by (le)
+            ) > 0.5
+          for: 5m
+          labels:
+            severity: critical
+            team: platform-foundation
+            component: agent-registry
+            prd: AGENT-FOUND-007
+          annotations:
+            summary: "CRITICAL: Agent Registry p99 query latency above 500ms"
+            description: |
+              The p99 registry query latency is {{ $value | printf "%.3f" }}s, exceeding the critical
+              500ms threshold. This will cause downstream timeouts in the orchestrator, schema compiler,
+              and other services that depend on the registry for agent discovery. Immediate investigation
+              required. Check database locks, cache exhaustion, and connection pool saturation.
+            runbook_url: "https://docs.greenlang.ai/runbooks/agent-registry/high-latency-critical"
+            dashboard_url: "https://grafana.greenlang.io/d/agent-registry-service"
+
+    # =========================================================================
+    # Health & Dependency Alerts
+    # =========================================================================
+    - name: greenlang.agent_registry.health_dependency
+      interval: 30s
+      rules:
+        # -------------------------------------------------------------------
+        # 6. AgentRegistryHealthCheckFailure (warning): health check failures
+        # -------------------------------------------------------------------
+        - alert: AgentRegistryHealthCheckFailure
+          expr: |
+            sum(rate(gl_agent_registry_health_checks_total{status="unhealthy"}[5m])) > 1
+          for: 10m
+          labels:
+            severity: warning
+            team: platform-foundation
+            component: agent-registry
+            prd: AGENT-FOUND-007
+          annotations:
+            summary: "Agent Registry health checks failing for registered agents"
+            description: |
+              Agent health checks are failing at {{ $value | printf "%.1f" }} per second over the
+              last 5 minutes. One or more registered agents are not responding to health probes.
+              Investigate which agents are failing and check their pod status, network connectivity,
+              and resource utilization.
+            runbook_url: "https://docs.greenlang.ai/runbooks/agent-registry/health-check-failure"
+            dashboard_url: "https://grafana.greenlang.io/d/agent-registry-service"
+
+        # -------------------------------------------------------------------
+        # 7. AgentRegistryDependencyCycleDetected (critical): cycle detected
+        # -------------------------------------------------------------------
+        - alert: AgentRegistryDependencyCycleDetected
+          expr: |
+            increase(gl_agent_registry_dependency_cycles_total[5m]) > 0
+          for: 0m
+          labels:
+            severity: critical
+            team: platform-foundation
+            component: agent-registry
+            prd: AGENT-FOUND-007
+          annotations:
+            summary: "CRITICAL: Dependency cycle detected in agent registry"
+            description: |
+              A dependency cycle has been detected in the agent dependency graph. {{ $value | printf "%.0f" }}
+              cycle(s) detected in the last 5 minutes. Dependency cycles prevent the orchestrator from
+              constructing valid DAGs, blocking pipeline execution. Investigate the recently added or
+              modified dependencies and resolve the circular reference.
+            runbook_url: "https://docs.greenlang.ai/runbooks/agent-registry/dependency-cycle"
+            dashboard_url: "https://grafana.greenlang.io/d/agent-registry-service"
+
+        # -------------------------------------------------------------------
+        # 8. AgentRegistryMissingDependency (warning): unresolved dependency
+        # -------------------------------------------------------------------
+        - alert: AgentRegistryMissingDependency
+          expr: |
+            sum(rate(gl_agent_registry_dependency_failures_total[5m])) > 0.1
+          for: 15m
+          labels:
+            severity: warning
+            team: platform-foundation
+            component: agent-registry
+            prd: AGENT-FOUND-007
+          annotations:
+            summary: "Agent Registry has unresolved dependencies"
+            description: |
+              Dependency resolution is failing at {{ $value | printf "%.2f" }} failures per second
+              over the last 5 minutes. One or more agents have dependencies that cannot be resolved,
+              either because the target agent is not registered, the version constraint cannot be
+              satisfied, or the target agent is disabled. Review the failing resolutions and ensure
+              all required agents are registered and enabled.
+            runbook_url: "https://docs.greenlang.ai/runbooks/agent-registry/missing-dependency"
+            dashboard_url: "https://grafana.greenlang.io/d/agent-registry-service"
+
+    # =========================================================================
+    # Infrastructure Alerts
+    # =========================================================================
+    - name: greenlang.agent_registry.infrastructure
+      interval: 30s
+      rules:
+        # -------------------------------------------------------------------
+        # 9. AgentRegistryHotReloadFailure (warning): hot reload failures
+        # -------------------------------------------------------------------
+        - alert: AgentRegistryHotReloadFailure
+          expr: |
+            increase(gl_agent_registry_hot_reload_failures_total[10m]) > 0
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-foundation
+            component: agent-registry
+            prd: AGENT-FOUND-007
+          annotations:
+            summary: "Agent Registry hot reload failures detected"
+            description: |
+              Registry hot reload has failed {{ $value | printf "%.0f" }} time(s) in the last
+              10 minutes. Hot reload failures mean the registry cache is serving stale data and
+              newly registered or updated agents are not visible to consumers. Check database
+              connectivity, cache invalidation, and the reload configuration.
+            runbook_url: "https://docs.greenlang.ai/runbooks/agent-registry/hot-reload-failure"
+            dashboard_url: "https://grafana.greenlang.io/d/agent-registry-service"
+
+        # -------------------------------------------------------------------
+        # 10. AgentRegistryCacheHitRateLow (warning): cache hit rate < 60%
+        # -------------------------------------------------------------------
+        - alert: AgentRegistryCacheHitRateLow
+          expr: |
+            (
+              sum(rate(gl_agent_registry_cache_hits_total[5m]))
+              / (sum(rate(gl_agent_registry_cache_hits_total[5m])) + sum(rate(gl_agent_registry_cache_misses_total[5m])))
+            ) < 0.60
+          for: 30m
+          labels:
+            severity: warning
+            team: platform-foundation
+            component: agent-registry
+            prd: AGENT-FOUND-007
+          annotations:
+            summary: "Agent Registry cache hit rate below 60%"
+            description: |
+              Agent Registry cache hit rate is {{ $value | humanizePercentage }} over the last
+              5 minutes. Low cache hit rates increase query latency and database load for every
+              agent lookup and dependency resolution. Check cache TTL settings, Redis connectivity,
+              hot reload schedule, and whether query patterns have changed.
+            runbook_url: "https://docs.greenlang.ai/runbooks/agent-registry/cache-hit-rate-low"
+            dashboard_url: "https://grafana.greenlang.io/d/agent-registry-service"
+
+        # -------------------------------------------------------------------
+        # 11. AgentRegistryHighMemoryUsage (warning): memory > 85%
+        # -------------------------------------------------------------------
+        - alert: AgentRegistryHighMemoryUsage
+          expr: |
+            (
+              container_memory_working_set_bytes{container="agent-registry-service"}
+              / container_spec_memory_limit_bytes{container="agent-registry-service"}
+            ) > 0.85
+          for: 15m
+          labels:
+            severity: warning
+            team: platform-foundation
+            component: agent-registry
+            prd: AGENT-FOUND-007
+          annotations:
+            summary: "Agent Registry service memory usage above 85%"
+            description: |
+              Agent Registry service container memory usage is at {{ $value | humanizePercentage }}
+              of its limit. High memory usage may be caused by large agent cache, high number of
+              registered agents/versions, dependency graph storage, or high concurrency. Consider
+              increasing memory limits or reducing cache max size.
+            runbook_url: "https://docs.greenlang.ai/runbooks/agent-registry/high-memory"
+            dashboard_url: "https://grafana.greenlang.io/d/agent-registry-service"
+
+        # -------------------------------------------------------------------
+        # 12. AgentRegistryPodRestarting (warning): pod restarts > 3 in 30m
+        # -------------------------------------------------------------------
+        - alert: AgentRegistryPodRestarting
+          expr: |
+            increase(kube_pod_container_status_restarts_total{container="agent-registry-service"}[30m]) > 3
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-foundation
+            component: agent-registry
+            prd: AGENT-FOUND-007
+          annotations:
+            summary: "Agent Registry service pod restarting frequently (>3 restarts in 30m)"
+            description: |
+              Agent Registry service pod has restarted {{ $value | printf "%.0f" }} times in the
+              last 30 minutes. Frequent restarts indicate OOMKills, liveness probe failures, or
+              application crashes. Check pod events, container logs, and resource utilization.
+              Registry queries may return stale data during restart cycles.
+            runbook_url: "https://docs.greenlang.ai/runbooks/agent-registry/pod-restarting"
+            dashboard_url: "https://grafana.greenlang.io/d/agent-registry-service"
+
+        # -------------------------------------------------------------------
+        # 13. AgentRegistryAuditGap (critical): > 30m without audit entry
+        # -------------------------------------------------------------------
+        - alert: AgentRegistryAuditGap
+          expr: |
+            (
+              sum(rate(gl_agent_registry_registrations_total[5m]))
+              + sum(rate(gl_agent_registry_deregistrations_total[5m]))
+              - sum(rate(gl_agent_registry_audit_events_total[5m]))
+            ) > 0.5
+          for: 30m
+          labels:
+            severity: critical
+            team: platform-foundation
+            component: agent-registry
+            prd: AGENT-FOUND-007
+          annotations:
+            summary: "CRITICAL: Audit gap detected - registry operations without audit entries"
+            description: |
+              The rate of registry operations (registrations + deregistrations) exceeds the rate
+              of audit event writes by {{ $value | printf "%.2f" }} operations/second over the last
+              30 minutes. This indicates that registry changes are occurring without corresponding
+              audit trail entries, which violates compliance requirements. Investigate audit write
+              failures, database connectivity, and the audit middleware.
+            runbook_url: "https://docs.greenlang.ai/runbooks/agent-registry/audit-gap"
+            dashboard_url: "https://grafana.greenlang.io/d/agent-registry-service"
+
+        # -------------------------------------------------------------------
+        # 14. AgentRegistryNoRegisteredAgents (critical): count = 0
+        # -------------------------------------------------------------------
+        - alert: AgentRegistryNoRegisteredAgents
+          expr: |
+            gl_agent_registry_agents_total == 0
+          for: 5m
+          labels:
+            severity: critical
+            team: platform-foundation
+            component: agent-registry
+            prd: AGENT-FOUND-007
+          annotations:
+            summary: "CRITICAL: Agent Registry has zero registered agents"
+            description: |
+              The agent registry reports zero registered agents. This indicates that the registry
+              has lost all agent registrations, likely due to a database connectivity failure, a
+              botched migration, or a cache corruption. The orchestrator and all services that depend
+              on agent discovery will be unable to function. Immediate investigation required.
+            runbook_url: "https://docs.greenlang.ai/runbooks/agent-registry/no-registered-agents"
+            dashboard_url: "https://grafana.greenlang.io/d/agent-registry-service"
+
+        # -------------------------------------------------------------------
+        # 15. AgentRegistryVersionConflict (warning): version conflicts
+        # -------------------------------------------------------------------
+        - alert: AgentRegistryVersionConflict
+          expr: |
+            sum(rate(gl_agent_registry_version_conflicts_total[5m])) > 0.1
+          for: 15m
+          labels:
+            severity: warning
+            team: platform-foundation
+            component: agent-registry
+            prd: AGENT-FOUND-007
+          annotations:
+            summary: "Agent Registry version conflicts detected"
+            description: |
+              Version conflicts are being detected at {{ $value | printf "%.2f" }} per second over
+              the last 5 minutes. This indicates that agents are attempting to register versions that
+              conflict with existing registrations, or that dependency version constraints cannot be
+              satisfied across the agent fleet. Review the conflicting version registrations and
+              update version constraints as needed.
+            runbook_url: "https://docs.greenlang.ai/runbooks/agent-registry/version-conflict"
+            dashboard_url: "https://grafana.greenlang.io/d/agent-registry-service"

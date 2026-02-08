@@ -1,0 +1,412 @@
+# =============================================================================
+# GreenLang Access & Policy Guard Agent Service - Alert Rules
+# =============================================================================
+# Component: AGENT-FOUND-006 Access & Policy Guard Agent
+# Purpose: PrometheusRule alert definitions for service health, high denial
+#          rate, high latency, tenant violations, rate limit spikes,
+#          classification breaches, policy conflicts, cache hit rate,
+#          memory usage, pod restarts, audit gaps, simulation drift,
+#          and OPA evaluation failures.
+# =============================================================================
+
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: greenlang-access-guard-service-alerts
+  namespace: monitoring
+  labels:
+    app: greenlang
+    component: access-guard
+    prometheus: kube-prometheus
+    role: alert-rules
+    release: gl-kube-prometheus
+    greenlang.io/component: agent-found-006
+  annotations:
+    description: "Alert rules for GreenLang Access & Policy Guard Agent Service"
+    prd: AGENT-FOUND-006
+spec:
+  groups:
+    # =========================================================================
+    # Access Guard Service Health Alerts
+    # =========================================================================
+    - name: greenlang.access_guard.service_health
+      interval: 30s
+      rules:
+        # -------------------------------------------------------------------
+        # AccessGuardServiceDown (critical): No healthy pods for 5m
+        # -------------------------------------------------------------------
+        - alert: AccessGuardServiceDown
+          expr: |
+            up{job="access-guard-service"} == 0
+          for: 5m
+          labels:
+            severity: critical
+            team: platform-security
+            component: access-guard
+            prd: AGENT-FOUND-006
+          annotations:
+            summary: "CRITICAL: Access & Policy Guard Agent service is down"
+            description: |
+              The GreenLang Access & Policy Guard Agent Service is not responding to health checks
+              for 5 minutes. All access control decisions, policy enforcement, tenant isolation,
+              rate limiting, and classification checks are disrupted. Downstream services will
+              either fail-closed (deny all) or fail-open depending on configuration.
+            runbook_url: "https://docs.greenlang.ai/runbooks/access-guard/service-down"
+            dashboard_url: "https://grafana.greenlang.io/d/access-guard-service"
+
+        # -------------------------------------------------------------------
+        # AccessGuardHighDenialRate Warning (warning): > 20% denials in 5m
+        # -------------------------------------------------------------------
+        - alert: AccessGuardHighDenialRate
+          expr: |
+            (
+              sum(rate(gl_access_guard_decisions_total{decision="deny"}[5m]))
+              / sum(rate(gl_access_guard_decisions_total[5m]))
+            ) > 0.20
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-security
+            component: access-guard
+            prd: AGENT-FOUND-006
+          annotations:
+            summary: "Access Guard denial rate above 20%"
+            description: |
+              Access decision denial rate is {{ $value | humanizePercentage }} over the last
+              5 minutes. Threshold: 20%. This may indicate misconfigured policies, legitimate
+              access attempts being blocked, or a coordinated unauthorized access attempt.
+              Review recent policy changes and denial reasons in the audit log.
+            runbook_url: "https://docs.greenlang.ai/runbooks/access-guard/high-denial-rate"
+            dashboard_url: "https://grafana.greenlang.io/d/access-guard-service"
+
+        # -------------------------------------------------------------------
+        # AccessGuardHighDenialRateCritical (critical): > 50% denials in 5m
+        # -------------------------------------------------------------------
+        - alert: AccessGuardHighDenialRateCritical
+          expr: |
+            (
+              sum(rate(gl_access_guard_decisions_total{decision="deny"}[5m]))
+              / sum(rate(gl_access_guard_decisions_total[5m]))
+            ) > 0.50
+          for: 5m
+          labels:
+            severity: critical
+            team: platform-security
+            component: access-guard
+            prd: AGENT-FOUND-006
+          annotations:
+            summary: "CRITICAL: Access Guard denial rate above 50%"
+            description: |
+              Access decision denial rate is {{ $value | humanizePercentage }} over the last
+              5 minutes, exceeding the critical 50% threshold. This indicates a systemic access
+              control failure -- either a bad policy deployment, database connectivity issue
+              affecting policy loading, or an active security incident. Immediate investigation required.
+            runbook_url: "https://docs.greenlang.ai/runbooks/access-guard/high-denial-rate-critical"
+            dashboard_url: "https://grafana.greenlang.io/d/access-guard-service"
+
+    # =========================================================================
+    # Access Guard Latency Alerts
+    # =========================================================================
+    - name: greenlang.access_guard.latency
+      interval: 30s
+      rules:
+        # -------------------------------------------------------------------
+        # AccessGuardHighLatency (warning): p99 > 100ms for 10m
+        # -------------------------------------------------------------------
+        - alert: AccessGuardHighLatency
+          expr: |
+            histogram_quantile(0.99,
+              sum(rate(gl_access_guard_evaluation_duration_seconds_bucket[5m])) by (le)
+            ) > 0.1
+          for: 10m
+          labels:
+            severity: warning
+            team: platform-security
+            component: access-guard
+            prd: AGENT-FOUND-006
+          annotations:
+            summary: "Access Guard p99 evaluation latency above 100ms"
+            description: |
+              The p99 access decision evaluation latency is {{ $value | printf "%.3f" }}s, exceeding
+              the 100ms warning threshold for 10 minutes. Access decisions should complete in under
+              50ms at p99. Investigate policy cache miss rates, OPA evaluation performance, database
+              query times, and rule count per policy.
+            runbook_url: "https://docs.greenlang.ai/runbooks/access-guard/high-latency"
+            dashboard_url: "https://grafana.greenlang.io/d/access-guard-service"
+
+        # -------------------------------------------------------------------
+        # AccessGuardHighLatencyCritical (critical): p99 > 500ms for 5m
+        # -------------------------------------------------------------------
+        - alert: AccessGuardHighLatencyCritical
+          expr: |
+            histogram_quantile(0.99,
+              sum(rate(gl_access_guard_evaluation_duration_seconds_bucket[5m])) by (le)
+            ) > 0.5
+          for: 5m
+          labels:
+            severity: critical
+            team: platform-security
+            component: access-guard
+            prd: AGENT-FOUND-006
+          annotations:
+            summary: "CRITICAL: Access Guard p99 evaluation latency above 500ms"
+            description: |
+              The p99 access decision evaluation latency is {{ $value | printf "%.3f" }}s, exceeding
+              the critical 500ms threshold. This will cause downstream request timeouts and
+              degraded user experience across all GreenLang services. Immediate investigation
+              required. Check database locks, OPA compilation errors, and policy cache exhaustion.
+            runbook_url: "https://docs.greenlang.ai/runbooks/access-guard/high-latency-critical"
+            dashboard_url: "https://grafana.greenlang.io/d/access-guard-service"
+
+    # =========================================================================
+    # Security & Compliance Alerts
+    # =========================================================================
+    - name: greenlang.access_guard.security
+      interval: 30s
+      rules:
+        # -------------------------------------------------------------------
+        # AccessGuardTenantViolation (critical): any cross-tenant attempt
+        # -------------------------------------------------------------------
+        - alert: AccessGuardTenantViolation
+          expr: |
+            increase(gl_access_guard_tenant_violations_total[5m]) > 0
+          for: 0m
+          labels:
+            severity: critical
+            team: platform-security
+            component: access-guard
+            prd: AGENT-FOUND-006
+          annotations:
+            summary: "CRITICAL: Tenant isolation violation detected"
+            description: |
+              A cross-tenant access attempt has been detected and blocked. {{ $value | printf "%.0f" }}
+              violation(s) in the last 5 minutes. This indicates that a principal attempted to
+              access resources belonging to a different tenant. Investigate the principal identity,
+              source IP, and target resource. This may indicate a security breach, misconfigured
+              service account, or application bug.
+            runbook_url: "https://docs.greenlang.ai/runbooks/access-guard/tenant-violation"
+            dashboard_url: "https://grafana.greenlang.io/d/access-guard-service"
+
+        # -------------------------------------------------------------------
+        # AccessGuardRateLimitSpike (warning): spike in rate limit hits
+        # -------------------------------------------------------------------
+        - alert: AccessGuardRateLimitSpike
+          expr: |
+            sum(rate(gl_access_guard_rate_limit_hits_total[5m])) > 10
+          for: 10m
+          labels:
+            severity: warning
+            team: platform-security
+            component: access-guard
+            prd: AGENT-FOUND-006
+          annotations:
+            summary: "Access Guard rate limit hits spiking"
+            description: |
+              Rate limit hits are at {{ $value | printf "%.1f" }} per second over the last 5 minutes.
+              This indicates that one or more principals are exceeding their request quotas.
+              Review which principals and roles are hitting limits and whether the rate limits
+              need adjustment or the traffic pattern indicates abuse.
+            runbook_url: "https://docs.greenlang.ai/runbooks/access-guard/rate-limit-spike"
+            dashboard_url: "https://grafana.greenlang.io/d/access-guard-service"
+
+        # -------------------------------------------------------------------
+        # AccessGuardClassificationBreach (critical): restricted/top_secret denied
+        # -------------------------------------------------------------------
+        - alert: AccessGuardClassificationBreach
+          expr: |
+            increase(gl_access_guard_classification_breach_total{level=~"restricted|top_secret"}[5m]) > 0
+          for: 0m
+          labels:
+            severity: critical
+            team: platform-security
+            component: access-guard
+            prd: AGENT-FOUND-006
+          annotations:
+            summary: "CRITICAL: Classification breach attempt on restricted/top_secret resource"
+            description: |
+              An unauthorized access attempt to a restricted or top_secret classified resource
+              has been detected and blocked. {{ $value | printf "%.0f" }} breach attempt(s) in the
+              last 5 minutes. This indicates that a principal without sufficient clearance attempted
+              to access highly sensitive data. Immediate security review required. Check principal
+              identity, source IP, and target resource classification.
+            runbook_url: "https://docs.greenlang.ai/runbooks/access-guard/classification-breach"
+            dashboard_url: "https://grafana.greenlang.io/d/access-guard-service"
+
+        # -------------------------------------------------------------------
+        # AccessGuardPolicyConflict (warning): multiple rules match
+        # -------------------------------------------------------------------
+        - alert: AccessGuardPolicyConflict
+          expr: |
+            sum(rate(gl_access_guard_policy_conflicts_total[5m])) > 1
+          for: 15m
+          labels:
+            severity: warning
+            team: platform-security
+            component: access-guard
+            prd: AGENT-FOUND-006
+          annotations:
+            summary: "Access Guard policy conflicts detected (multiple rules matching)"
+            description: |
+              Policy evaluation is detecting {{ $value | printf "%.1f" }} conflicts per second where
+              multiple rules with conflicting effects (allow + deny) match the same request. While
+              the deny-wins model resolves these correctly, frequent conflicts indicate policy
+              misconfiguration, overlapping rules, or overly broad rule definitions. Review the
+              conflicting rules and consolidate or refine their scope.
+            runbook_url: "https://docs.greenlang.ai/runbooks/access-guard/policy-conflict"
+            dashboard_url: "https://grafana.greenlang.io/d/access-guard-service"
+
+    # =========================================================================
+    # Infrastructure Alerts
+    # =========================================================================
+    - name: greenlang.access_guard.infrastructure
+      interval: 30s
+      rules:
+        # -------------------------------------------------------------------
+        # AccessGuardCacheHitRateLow (warning): cache hit rate < 60%
+        # -------------------------------------------------------------------
+        - alert: AccessGuardCacheHitRateLow
+          expr: |
+            (
+              sum(rate(gl_access_guard_cache_hits_total[5m]))
+              / (sum(rate(gl_access_guard_cache_hits_total[5m])) + sum(rate(gl_access_guard_cache_misses_total[5m])))
+            ) < 0.60
+          for: 30m
+          labels:
+            severity: warning
+            team: platform-security
+            component: access-guard
+            prd: AGENT-FOUND-006
+          annotations:
+            summary: "Access Guard cache hit rate below 60%"
+            description: |
+              Access Guard policy cache hit rate is {{ $value | humanizePercentage }} over the
+              last 5 minutes. Low cache hit rates increase evaluation latency and database load
+              for every access decision. Check cache TTL settings, Redis connectivity, policy
+              cache warmup configuration, and whether policy access patterns have changed.
+            runbook_url: "https://docs.greenlang.ai/runbooks/access-guard/cache-hit-rate-low"
+            dashboard_url: "https://grafana.greenlang.io/d/access-guard-service"
+
+        # -------------------------------------------------------------------
+        # AccessGuardHighMemoryUsage (warning): memory > 85%
+        # -------------------------------------------------------------------
+        - alert: AccessGuardHighMemoryUsage
+          expr: |
+            (
+              container_memory_working_set_bytes{container="access-guard-service"}
+              / container_spec_memory_limit_bytes{container="access-guard-service"}
+            ) > 0.85
+          for: 15m
+          labels:
+            severity: warning
+            team: platform-security
+            component: access-guard
+            prd: AGENT-FOUND-006
+          annotations:
+            summary: "Access Guard service memory usage above 85%"
+            description: |
+              Access Guard service container memory usage is at {{ $value | humanizePercentage }}
+              of its limit. High memory usage may be caused by large policy cache, OPA compiled
+              policy storage, decision log buffering, or high concurrency. Consider increasing
+              memory limits or reducing cache max size.
+            runbook_url: "https://docs.greenlang.ai/runbooks/access-guard/high-memory"
+            dashboard_url: "https://grafana.greenlang.io/d/access-guard-service"
+
+        # -------------------------------------------------------------------
+        # AccessGuardPodRestarting (warning): pod restarts > 3 in 30m
+        # -------------------------------------------------------------------
+        - alert: AccessGuardPodRestarting
+          expr: |
+            increase(kube_pod_container_status_restarts_total{container="access-guard-service"}[30m]) > 3
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-security
+            component: access-guard
+            prd: AGENT-FOUND-006
+          annotations:
+            summary: "Access Guard service pod restarting frequently (>3 restarts in 30m)"
+            description: |
+              Access Guard service pod has restarted {{ $value | printf "%.0f" }} times in the
+              last 30 minutes. Frequent restarts indicate OOMKills, liveness probe failures,
+              or application crashes. Check pod events, container logs, and resource utilization.
+              Access control decisions may be inconsistent during restart cycles.
+            runbook_url: "https://docs.greenlang.ai/runbooks/access-guard/pod-restarting"
+            dashboard_url: "https://grafana.greenlang.io/d/access-guard-service"
+
+        # -------------------------------------------------------------------
+        # AccessGuardAuditGap (critical): > 30m without audit entry
+        # -------------------------------------------------------------------
+        - alert: AccessGuardAuditGap
+          expr: |
+            (
+              sum(rate(gl_access_guard_decisions_total[5m]))
+              - sum(rate(gl_access_guard_audit_events_total[5m]))
+            ) > 1
+          for: 30m
+          labels:
+            severity: critical
+            team: platform-security
+            component: access-guard
+            prd: AGENT-FOUND-006
+          annotations:
+            summary: "CRITICAL: Audit gap detected - access decisions without audit entries"
+            description: |
+              The rate of access decisions exceeds the rate of audit event writes by
+              {{ $value | printf "%.2f" }} operations/second over the last 30 minutes. This
+              indicates that access decisions are occurring without corresponding audit trail
+              entries, which violates SOC 2, ISO 27001, and CSRD compliance requirements.
+              Investigate audit write failures, database connectivity, and the audit middleware.
+            runbook_url: "https://docs.greenlang.ai/runbooks/access-guard/audit-gap"
+            dashboard_url: "https://grafana.greenlang.io/d/access-guard-service"
+
+        # -------------------------------------------------------------------
+        # AccessGuardSimulationDrift (warning): simulation vs enforcement diverge
+        # -------------------------------------------------------------------
+        - alert: AccessGuardSimulationDrift
+          expr: |
+            abs(
+              sum(rate(gl_access_guard_simulation_decisions_total{decision="deny"}[15m]))
+              / sum(rate(gl_access_guard_simulation_decisions_total[15m]))
+              -
+              sum(rate(gl_access_guard_decisions_total{decision="deny"}[15m]))
+              / sum(rate(gl_access_guard_decisions_total[15m]))
+            ) > 0.10
+          for: 30m
+          labels:
+            severity: warning
+            team: platform-security
+            component: access-guard
+            prd: AGENT-FOUND-006
+          annotations:
+            summary: "Access Guard simulation mode diverging from enforcement mode"
+            description: |
+              The denial rate difference between simulation mode and enforcement mode is
+              {{ $value | humanizePercentage }}, exceeding the 10% drift threshold. This
+              indicates that pending policy changes in simulation mode would significantly
+              change access decisions if deployed. Review the simulated policies before
+              promotion to enforcement to avoid unexpected access disruption.
+            runbook_url: "https://docs.greenlang.ai/runbooks/access-guard/simulation-drift"
+            dashboard_url: "https://grafana.greenlang.io/d/access-guard-service"
+
+        # -------------------------------------------------------------------
+        # AccessGuardOPAEvaluationFailure (warning): OPA evaluation errors
+        # -------------------------------------------------------------------
+        - alert: AccessGuardOPAEvaluationFailure
+          expr: |
+            sum(rate(gl_access_guard_opa_evaluation_failures_total[5m])) > 0.1
+          for: 10m
+          labels:
+            severity: warning
+            team: platform-security
+            component: access-guard
+            prd: AGENT-FOUND-006
+          annotations:
+            summary: "Access Guard OPA Rego evaluation failures detected"
+            description: |
+              OPA Rego policy evaluation is failing at {{ $value | printf "%.2f" }} failures per
+              second over the last 5 minutes. This indicates Rego compilation errors, evaluation
+              timeouts, or malformed input data. Failing OPA evaluations may cause the policy
+              engine to fall back to static rules, potentially changing access decisions. Review
+              Rego policy source, compilation logs, and recent policy updates.
+            runbook_url: "https://docs.greenlang.ai/runbooks/access-guard/opa-evaluation-failure"
+            dashboard_url: "https://grafana.greenlang.io/d/access-guard-service"

@@ -1,0 +1,27 @@
+# =============================================================================
+# GreenLang PDF & Invoice Extractor - Pod Disruption Budget
+# =============================================================================
+# Ensures at least 1 PDF extractor service pod is available during
+# voluntary disruptions (node drain, cluster upgrade, etc.).
+# PRD: AGENT-DATA-001
+# =============================================================================
+
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: pdf-extractor-service-pdb
+  namespace: greenlang
+  labels:
+    app: pdf-extractor-service
+    app.kubernetes.io/name: pdf-extractor-service
+    app.kubernetes.io/component: pdf-extractor
+    app.kubernetes.io/part-of: greenlang
+  annotations:
+    description: "PDB for PDF Extractor - minimum 1 pod available"
+    prd: AGENT-DATA-001
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: pdf-extractor-service
+      app.kubernetes.io/component: pdf-extractor

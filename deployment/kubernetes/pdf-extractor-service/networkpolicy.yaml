@@ -1,0 +1,187 @@
+# =============================================================================
+# GreenLang PDF & Invoice Extractor - Network Policies
+# =============================================================================
+# Enforces network isolation for the PDF extractor service within the
+# greenlang namespace. Default deny all, then allow specific ingress/egress.
+# PRD: AGENT-DATA-001
+# =============================================================================
+
+---
+# =============================================================================
+# Default Deny All - Baseline policy for PDF extractor pods
+# =============================================================================
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: pdf-extractor-default-deny-all
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: pdf-extractor-service
+    app.kubernetes.io/component: network-policy
+    app.kubernetes.io/part-of: greenlang
+  annotations:
+    description: "Default deny all ingress and egress traffic for PDF extractor pods"
+    prd: AGENT-DATA-001
+spec:
+  podSelector:
+    matchLabels:
+      app: pdf-extractor-service
+      app.kubernetes.io/component: pdf-extractor
+  policyTypes:
+    - Ingress
+    - Egress
+
+---
+# =============================================================================
+# PDF Extractor Service Ingress Policy
+# =============================================================================
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: pdf-extractor-service-ingress
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: pdf-extractor-service
+    app.kubernetes.io/component: network-policy
+    app.kubernetes.io/part-of: greenlang
+  annotations:
+    description: "Allow ingress from Kong API Gateway, Prometheus, and greenlang namespace"
+    prd: AGENT-DATA-001
+spec:
+  podSelector:
+    matchLabels:
+      app: pdf-extractor-service
+      app.kubernetes.io/component: pdf-extractor
+  policyTypes:
+    - Ingress
+
+  ingress:
+    # Allow traffic from Kong API Gateway namespace
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              app.kubernetes.io/name: kong-gateway
+      ports:
+        - protocol: TCP
+          port: 8080
+
+    # Allow traffic from monitoring namespace (Prometheus scraping)
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+      ports:
+        - protocol: TCP
+          port: 8080
+
+    # Allow traffic from greenlang namespace (internal services)
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              app.kubernetes.io/part-of: greenlang
+      ports:
+        - protocol: TCP
+          port: 8080
+
+    # Allow traffic within the greenlang namespace (inter-service)
+    - from:
+        - podSelector: {}
+      ports:
+        - protocol: TCP
+          port: 8080
+
+---
+# =============================================================================
+# PDF Extractor Service Egress Policy
+# =============================================================================
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: pdf-extractor-service-egress
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: pdf-extractor-service
+    app.kubernetes.io/component: network-policy
+    app.kubernetes.io/part-of: greenlang
+  annotations:
+    description: "Allow egress to PostgreSQL, Redis, S3, OTEL collector, and DNS"
+    prd: AGENT-DATA-001
+spec:
+  podSelector:
+    matchLabels:
+      app: pdf-extractor-service
+      app.kubernetes.io/component: pdf-extractor
+  policyTypes:
+    - Egress
+
+  egress:
+    # Allow DNS resolution
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+
+    # Allow egress to PostgreSQL (within cluster)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: database
+      ports:
+        - protocol: TCP
+          port: 5432
+
+    # Allow egress to PostgreSQL via AWS RDS (VPC CIDR)
+    - to:
+        - ipBlock:
+            cidr: 10.0.0.0/8
+      ports:
+        - protocol: TCP
+          port: 5432
+
+    # Allow egress to Redis (within cluster)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: redis
+      ports:
+        - protocol: TCP
+          port: 6379
+
+    # Allow egress to Redis via AWS ElastiCache (VPC CIDR)
+    - to:
+        - ipBlock:
+            cidr: 10.0.0.0/8
+      ports:
+        - protocol: TCP
+          port: 6379
+
+    # Allow egress to S3 (HTTPS for document storage)
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+      ports:
+        - protocol: TCP
+          port: 443
+
+    # Allow egress to OTEL collector (monitoring namespace)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+      ports:
+        - protocol: TCP
+          port: 4317
+        - protocol: TCP
+          port: 4318
+
+    # Allow traffic within the greenlang namespace (other services)
+    - to:
+        - podSelector: {}

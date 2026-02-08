@@ -1,0 +1,184 @@
+# =============================================================================
+# GreenLang QA Test Harness - ConfigMap
+# =============================================================================
+# Configuration for zero-hallucination verification, determinism testing,
+# lineage completeness, golden file testing, regression detection,
+# performance benchmarking, coverage tracking, caching, and metrics.
+# PRD: AGENT-FOUND-009
+# =============================================================================
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: qa-test-harness-service-config
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: qa-test-harness-service
+    app.kubernetes.io/component: configuration
+    app.kubernetes.io/part-of: greenlang
+  annotations:
+    description: "QA Test Harness configuration - verification, testing, golden files, regression, benchmarking, coverage"
+    prd: AGENT-FOUND-009
+data:
+  # Environment
+  ENVIRONMENT: "production"
+
+  # Logging
+  GL_QA_TEST_HARNESS_LOG_LEVEL: "INFO"
+  LOG_FORMAT: "json"
+
+  # Database (connection string via secret, schema config here)
+  GL_QA_TEST_HARNESS_DB_SCHEMA: "qa_test_harness_service"
+  GL_QA_TEST_HARNESS_DB_POOL_MIN: "2"
+  GL_QA_TEST_HARNESS_DB_POOL_MAX: "10"
+
+  # Redis
+  GL_QA_TEST_HARNESS_REDIS_PREFIX: "gl:qa_test_harness:"
+  GL_QA_TEST_HARNESS_REDIS_TTL: "300"
+
+  # Cache Configuration
+  GL_QA_TEST_HARNESS_CACHE_TTL_SECONDS: "300"
+  GL_QA_TEST_HARNESS_CACHE_MAX_SIZE: "2000"
+  GL_QA_TEST_HARNESS_GOLDEN_FILE_CACHE_TTL: "600"
+  GL_QA_TEST_HARNESS_BASELINE_CACHE_TTL: "300"
+
+  # Zero Hallucination Configuration
+  GL_QA_TEST_HARNESS_HALLUCINATION_STRICT_MODE: "true"
+  GL_QA_TEST_HARNESS_HALLUCINATION_TRACE_DEPTH: "5"
+  GL_QA_TEST_HARNESS_HALLUCINATION_REFERENCE_TOLERANCE: "0.0"
+
+  # Determinism Testing Configuration
+  GL_QA_TEST_HARNESS_DETERMINISM_ITERATIONS: "5"
+  GL_QA_TEST_HARNESS_DETERMINISM_HASH_ALGORITHM: "sha256"
+  GL_QA_TEST_HARNESS_DETERMINISM_TOLERANCE: "0.0"
+
+  # Golden File Configuration
+  GL_QA_TEST_HARNESS_GOLDEN_FILE_UPDATE_ON_PASS: "false"
+  GL_QA_TEST_HARNESS_GOLDEN_FILE_TOLERANCE: "0.0"
+
+  # Regression Detection Configuration
+  GL_QA_TEST_HARNESS_REGRESSION_AUTO_UPDATE: "false"
+  GL_QA_TEST_HARNESS_REGRESSION_ALERT_ON_DETECT: "true"
+
+  # Performance Benchmarking Configuration
+  GL_QA_TEST_HARNESS_BENCHMARK_ITERATIONS: "100"
+  GL_QA_TEST_HARNESS_BENCHMARK_WARMUP: "10"
+  GL_QA_TEST_HARNESS_BENCHMARK_THRESHOLD_MS: "1000"
+
+  # Coverage Configuration
+  GL_QA_TEST_HARNESS_COVERAGE_MINIMUM_THRESHOLD: "80"
+  GL_QA_TEST_HARNESS_COVERAGE_INCLUDE_PRIVATE: "false"
+
+  # Execution Configuration
+  GL_QA_TEST_HARNESS_DEFAULT_TIMEOUT_SECONDS: "60"
+  GL_QA_TEST_HARNESS_MAX_PARALLEL_WORKERS: "8"
+  GL_QA_TEST_HARNESS_FAIL_FAST: "false"
+
+  # Metrics
+  GL_QA_TEST_HARNESS_ENABLE_METRICS: "true"
+  METRICS_PORT: "8080"
+  METRICS_PATH: "/metrics"
+
+  # Tracing
+  TRACING_ENABLED: "true"
+  TRACING_SAMPLE_RATE: "0.1"
+  OTEL_ENDPOINT: "http://otel-collector.monitoring.svc.cluster.local:4317"
+  OTEL_SERVICE_NAME: "qa-test-harness-service"
+
+  # QA test harness service configuration file
+  qa-test-harness-config.yaml: |
+    qa_test_harness_service:
+      version: "1.0.0"
+      environment: production
+
+      zero_hallucination:
+        strict_mode: true
+        trace_depth: 5
+        reference_tolerance: 0.0
+        require_source_tracing: true
+
+      determinism:
+        default_iterations: 5
+        hash_algorithm: sha256
+        tolerance: 0.0
+        seed_management: true
+
+      lineage:
+        require_sha256: true
+        max_chain_depth: 20
+        strict_completeness: true
+
+      golden_files:
+        update_on_pass: false
+        tolerance: 0.0
+        storage_path: /app/golden-files
+        max_file_size_mb: 50
+
+      regression:
+        auto_update_baseline: false
+        alert_on_regression: true
+        hash_algorithm: sha256
+
+      performance:
+        default_iterations: 100
+        warmup_iterations: 10
+        default_threshold_ms: 1000
+        collect_memory: true
+
+      coverage:
+        minimum_threshold: 80
+        include_private: false
+        track_trends: true
+
+      execution:
+        default_timeout_seconds: 60
+        max_parallel_workers: 8
+        fail_fast: false
+
+      test_categories:
+        - zero_hallucination
+        - determinism
+        - lineage
+        - golden_file
+        - regression
+        - performance
+        - coverage
+        - integration
+        - unit
+
+      severity_levels:
+        - critical
+        - high
+        - medium
+        - low
+        - info
+
+      cache:
+        ttl_seconds: 300
+        max_size: 2000
+        golden_file_cache_ttl: 600
+        baseline_cache_ttl: 300
+        warmup_on_startup: true
+
+      metrics:
+        enabled: true
+        prefix: gl_qa_test_harness
+        histogram_buckets: [0.001, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10, 30]
+
+      reports:
+        formats:
+          - json
+          - html
+          - markdown
+          - junit
+        include_trends: true
+        max_history_days: 30
+
+      integration:
+        auth_enabled: true
+        audit_enabled: true
+        alerting_enabled: true
+        feature_flags_enabled: true
+        access_guard_enabled: true
+        agent_registry_enabled: true
+        reproducibility_enabled: true

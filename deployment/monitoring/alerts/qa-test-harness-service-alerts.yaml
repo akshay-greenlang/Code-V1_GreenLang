@@ -1,0 +1,446 @@
+# =============================================================================
+# GreenLang QA Test Harness - Alert Rules
+# =============================================================================
+# Component: AGENT-FOUND-009 QA Test Harness
+# Purpose: PrometheusRule alert definitions for service health, high test
+#          failure rate, high latency, regression detection, golden file
+#          mismatches, performance threshold breaches, low coverage,
+#          zero-hallucination failures, determinism failures, high error
+#          rate, audit gaps, database connection failures, high memory
+#          usage, pod restarts, and test timeouts.
+# =============================================================================
+
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: greenlang-qa-test-harness-service-alerts
+  namespace: monitoring
+  labels:
+    app: greenlang
+    component: qa-test-harness
+    prometheus: kube-prometheus
+    role: alert-rules
+    release: gl-kube-prometheus
+    greenlang.io/component: agent-found-009
+  annotations:
+    description: "Alert rules for GreenLang QA Test Harness"
+    prd: AGENT-FOUND-009
+spec:
+  groups:
+    # =========================================================================
+    # QA Test Harness Service Health Alerts
+    # =========================================================================
+    - name: greenlang.qa_test_harness.service_health
+      interval: 30s
+      rules:
+        # -------------------------------------------------------------------
+        # 1. QATestHarnessServiceDown (critical): No healthy pods for 5m
+        # -------------------------------------------------------------------
+        - alert: QATestHarnessServiceDown
+          expr: |
+            up{job="qa-test-harness-service"} == 0
+          for: 5m
+          labels:
+            severity: critical
+            team: platform-foundation
+            component: qa-test-harness
+            prd: AGENT-FOUND-009
+          annotations:
+            summary: "CRITICAL: QA Test Harness service is down"
+            description: |
+              The GreenLang QA Test Harness (AGENT-FOUND-009) is not responding to health
+              checks for 5 minutes. All test execution, zero-hallucination verification,
+              determinism testing, golden file comparison, regression detection, performance
+              benchmarking, and coverage tracking operations are disrupted. Agent quality
+              cannot be verified.
+            runbook_url: "https://docs.greenlang.ai/runbooks/qa-test-harness/service-down"
+            dashboard_url: "https://grafana.greenlang.io/d/qa-test-harness-service"
+
+        # -------------------------------------------------------------------
+        # 2. QAHighTestFailureRate (warning >15%, critical >30%)
+        # -------------------------------------------------------------------
+        - alert: QAHighTestFailureRateWarning
+          expr: |
+            (
+              sum(rate(gl_qa_test_harness_test_runs_total{status="failed"}[5m]))
+              / sum(rate(gl_qa_test_harness_test_runs_total[5m]))
+            ) > 0.15
+          for: 10m
+          labels:
+            severity: warning
+            team: platform-foundation
+            component: qa-test-harness
+            prd: AGENT-FOUND-009
+          annotations:
+            summary: "QA test failure rate above 15%"
+            description: |
+              More than 15% of QA test runs are failing. Current failure rate is
+              {{ $value | humanizePercentage }}. This may indicate agent regressions,
+              broken golden files, or environmental issues affecting test execution.
+              Review failing test categories and severity levels.
+            runbook_url: "https://docs.greenlang.ai/runbooks/qa-test-harness/high-failure-rate"
+            dashboard_url: "https://grafana.greenlang.io/d/qa-test-harness-service"
+
+        - alert: QAHighTestFailureRateCritical
+          expr: |
+            (
+              sum(rate(gl_qa_test_harness_test_runs_total{status="failed"}[5m]))
+              / sum(rate(gl_qa_test_harness_test_runs_total[5m]))
+            ) > 0.30
+          for: 5m
+          labels:
+            severity: critical
+            team: platform-foundation
+            component: qa-test-harness
+            prd: AGENT-FOUND-009
+          annotations:
+            summary: "CRITICAL: QA test failure rate above 30%"
+            description: |
+              More than 30% of QA test runs are failing. Current failure rate is
+              {{ $value | humanizePercentage }}. This indicates a systemic quality issue
+              affecting multiple agents. Agent outputs cannot be trusted for production
+              use. Immediate investigation required.
+            runbook_url: "https://docs.greenlang.ai/runbooks/qa-test-harness/high-failure-rate-critical"
+            dashboard_url: "https://grafana.greenlang.io/d/qa-test-harness-service"
+
+    # =========================================================================
+    # QA Latency Alerts
+    # =========================================================================
+    - name: greenlang.qa_test_harness.latency
+      interval: 30s
+      rules:
+        # -------------------------------------------------------------------
+        # 3. QAHighTestLatency (warning p99>5s, critical p99>30s)
+        # -------------------------------------------------------------------
+        - alert: QAHighTestLatencyWarning
+          expr: |
+            histogram_quantile(0.99,
+              sum(rate(gl_qa_test_harness_test_duration_seconds_bucket[5m])) by (le)
+            ) > 5
+          for: 10m
+          labels:
+            severity: warning
+            team: platform-foundation
+            component: qa-test-harness
+            prd: AGENT-FOUND-009
+          annotations:
+            summary: "QA test execution p99 latency above 5s"
+            description: |
+              The p99 test execution latency is {{ $value | printf "%.3f" }}s, exceeding
+              the 5s warning threshold for 10 minutes. Tests should complete in under 3s
+              at p99. Investigate slow agent execution, database query latency, or golden
+              file I/O.
+            runbook_url: "https://docs.greenlang.ai/runbooks/qa-test-harness/high-latency"
+            dashboard_url: "https://grafana.greenlang.io/d/qa-test-harness-service"
+
+        - alert: QAHighTestLatencyCritical
+          expr: |
+            histogram_quantile(0.99,
+              sum(rate(gl_qa_test_harness_test_duration_seconds_bucket[5m])) by (le)
+            ) > 30
+          for: 5m
+          labels:
+            severity: critical
+            team: platform-foundation
+            component: qa-test-harness
+            prd: AGENT-FOUND-009
+          annotations:
+            summary: "CRITICAL: QA test execution p99 latency above 30s"
+            description: |
+              The p99 test execution latency is {{ $value | printf "%.3f" }}s, exceeding the
+              critical 30s threshold. This will cause widespread test timeouts and block
+              CI/CD pipelines that depend on QA verification. Immediate investigation
+              required. Check database locks, cache exhaustion, and agent health.
+            runbook_url: "https://docs.greenlang.ai/runbooks/qa-test-harness/high-latency-critical"
+            dashboard_url: "https://grafana.greenlang.io/d/qa-test-harness-service"
+
+    # =========================================================================
+    # QA Quality Alerts
+    # =========================================================================
+    - name: greenlang.qa_test_harness.quality
+      interval: 30s
+      rules:
+        # -------------------------------------------------------------------
+        # 4. QARegressionDetected (critical): any regression detected
+        # -------------------------------------------------------------------
+        - alert: QARegressionDetected
+          expr: |
+            increase(gl_qa_test_harness_regressions_detected_total[5m]) > 0
+          for: 0m
+          labels:
+            severity: critical
+            team: platform-foundation
+            component: qa-test-harness
+            prd: AGENT-FOUND-009
+          annotations:
+            summary: "CRITICAL: Agent regression detected"
+            description: |
+              {{ $value | printf "%.0f" }} regression(s) detected in the last 5 minutes.
+              A regression means an agent is producing different output for the same input
+              compared to its established baseline. This may indicate a broken deployment,
+              model change, or data corruption. Investigate the affected agent and consider
+              rolling back the most recent deployment.
+            runbook_url: "https://docs.greenlang.ai/runbooks/qa-test-harness/regression-detected"
+            dashboard_url: "https://grafana.greenlang.io/d/qa-test-harness-service"
+
+        # -------------------------------------------------------------------
+        # 5. QAGoldenFileMismatch (warning): golden file diff detected
+        # -------------------------------------------------------------------
+        - alert: QAGoldenFileMismatch
+          expr: |
+            increase(gl_qa_test_harness_golden_file_mismatches_total[15m]) > 3
+          for: 10m
+          labels:
+            severity: warning
+            team: platform-foundation
+            component: qa-test-harness
+            prd: AGENT-FOUND-009
+          annotations:
+            summary: "Golden file mismatches detected"
+            description: |
+              {{ $value | printf "%.0f" }} golden file mismatches in the last 15 minutes.
+              Agent outputs differ from their approved golden file snapshots. This may be
+              caused by intentional changes that require golden file updates, or unintended
+              regressions. Review the diff reports and update golden files if the changes
+              are expected.
+            runbook_url: "https://docs.greenlang.ai/runbooks/qa-test-harness/golden-file-mismatch"
+            dashboard_url: "https://grafana.greenlang.io/d/qa-test-harness-service"
+
+        # -------------------------------------------------------------------
+        # 6. QAPerformanceThresholdBreach (warning)
+        # -------------------------------------------------------------------
+        - alert: QAPerformanceThresholdBreach
+          expr: |
+            increase(gl_qa_test_harness_performance_breaches_total[15m]) > 3
+          for: 10m
+          labels:
+            severity: warning
+            team: platform-foundation
+            component: qa-test-harness
+            prd: AGENT-FOUND-009
+          annotations:
+            summary: "Performance threshold breaches detected"
+            description: |
+              {{ $value | printf "%.0f" }} performance threshold breaches in the last 15
+              minutes. Agent operations are exceeding their performance baselines. This may
+              indicate performance regression from a recent deployment, increased data volume,
+              or infrastructure degradation. Review the benchmark results and consider
+              optimizing or updating baselines.
+            runbook_url: "https://docs.greenlang.ai/runbooks/qa-test-harness/performance-breach"
+            dashboard_url: "https://grafana.greenlang.io/d/qa-test-harness-service"
+
+        # -------------------------------------------------------------------
+        # 7. QALowCoverage (warning <60%)
+        # -------------------------------------------------------------------
+        - alert: QALowCoverage
+          expr: |
+            gl_qa_test_harness_coverage_percent < 60
+          for: 30m
+          labels:
+            severity: warning
+            team: platform-foundation
+            component: qa-test-harness
+            prd: AGENT-FOUND-009
+          annotations:
+            summary: "Agent test coverage below 60%"
+            description: |
+              Test coverage for agent {{ $labels.agent_type }} is at {{ $value | printf "%.1f" }}%,
+              below the 60% minimum threshold. Low coverage means agent methods are not being
+              tested, increasing the risk of undetected bugs and regressions. Add tests for
+              uncovered methods.
+            runbook_url: "https://docs.greenlang.ai/runbooks/qa-test-harness/low-coverage"
+            dashboard_url: "https://grafana.greenlang.io/d/qa-test-harness-service"
+
+        # -------------------------------------------------------------------
+        # 8. QAZeroHallucinationFailure (critical)
+        # -------------------------------------------------------------------
+        - alert: QAZeroHallucinationFailure
+          expr: |
+            increase(gl_qa_test_harness_test_runs_total{category="zero_hallucination", status="failed"}[5m]) > 0
+          for: 0m
+          labels:
+            severity: critical
+            team: platform-foundation
+            component: qa-test-harness
+            prd: AGENT-FOUND-009
+          annotations:
+            summary: "CRITICAL: Zero-hallucination test failure detected"
+            description: |
+              {{ $value | printf "%.0f" }} zero-hallucination test failure(s) in the last 5
+              minutes. An agent produced output data that cannot be traced back to input data
+              or known reference sources. This is a critical data integrity violation for
+              climate calculations. The affected agent output should be quarantined and
+              investigated immediately.
+            runbook_url: "https://docs.greenlang.ai/runbooks/qa-test-harness/hallucination-failure"
+            dashboard_url: "https://grafana.greenlang.io/d/qa-test-harness-service"
+
+        # -------------------------------------------------------------------
+        # 9. QADeterminismFailure (critical)
+        # -------------------------------------------------------------------
+        - alert: QADeterminismFailure
+          expr: |
+            increase(gl_qa_test_harness_test_runs_total{category="determinism", status="failed"}[5m]) > 0
+          for: 0m
+          labels:
+            severity: critical
+            team: platform-foundation
+            component: qa-test-harness
+            prd: AGENT-FOUND-009
+          annotations:
+            summary: "CRITICAL: Determinism test failure detected"
+            description: |
+              {{ $value | printf "%.0f" }} determinism test failure(s) in the last 5 minutes.
+              An agent produced different outputs when executed with identical inputs. This
+              indicates non-deterministic behavior that violates GreenLang's reproducibility
+              requirements. The affected agent must be investigated for unseeded random state,
+              parallel execution ordering, or floating-point accumulation issues.
+            runbook_url: "https://docs.greenlang.ai/runbooks/qa-test-harness/determinism-failure"
+            dashboard_url: "https://grafana.greenlang.io/d/qa-test-harness-service"
+
+    # =========================================================================
+    # Infrastructure Alerts
+    # =========================================================================
+    - name: greenlang.qa_test_harness.infrastructure
+      interval: 30s
+      rules:
+        # -------------------------------------------------------------------
+        # 10. QAHighErrorRate (warning >5%)
+        # -------------------------------------------------------------------
+        - alert: QAHighErrorRate
+          expr: |
+            (
+              sum(rate(gl_qa_test_harness_test_runs_total{status="error"}[5m]))
+              / sum(rate(gl_qa_test_harness_test_runs_total[5m]))
+            ) > 0.05
+          for: 15m
+          labels:
+            severity: warning
+            team: platform-foundation
+            component: qa-test-harness
+            prd: AGENT-FOUND-009
+          annotations:
+            summary: "QA test error rate above 5%"
+            description: |
+              More than 5% of QA test runs are erroring (not failing assertions, but
+              encountering execution errors). Current error rate is {{ $value | humanizePercentage }}.
+              This indicates infrastructure issues such as agent unavailability, timeout
+              errors, or service connectivity problems rather than test failures.
+            runbook_url: "https://docs.greenlang.ai/runbooks/qa-test-harness/high-error-rate"
+            dashboard_url: "https://grafana.greenlang.io/d/qa-test-harness-service"
+
+        # -------------------------------------------------------------------
+        # 11. QAAuditGap (critical)
+        # -------------------------------------------------------------------
+        - alert: QAAuditGap
+          expr: |
+            (
+              sum(rate(gl_qa_test_harness_test_runs_total[5m]))
+              - sum(rate(gl_qa_test_harness_audit_events_total[5m]))
+            ) > 0.5
+          for: 30m
+          labels:
+            severity: critical
+            team: platform-foundation
+            component: qa-test-harness
+            prd: AGENT-FOUND-009
+          annotations:
+            summary: "CRITICAL: Audit gap detected - test operations without audit entries"
+            description: |
+              The rate of test operations exceeds the rate of audit event writes by
+              {{ $value | printf "%.2f" }} operations/second over the last 30 minutes. This
+              indicates that QA test runs are occurring without corresponding audit trail
+              entries, which violates compliance requirements for traceable quality
+              verification. Investigate audit write failures and database connectivity.
+            runbook_url: "https://docs.greenlang.ai/runbooks/qa-test-harness/audit-gap"
+            dashboard_url: "https://grafana.greenlang.io/d/qa-test-harness-service"
+
+        # -------------------------------------------------------------------
+        # 12. QADatabaseConnectionFailure (critical)
+        # -------------------------------------------------------------------
+        - alert: QADatabaseConnectionFailure
+          expr: |
+            increase(gl_qa_test_harness_database_errors_total[5m]) > 5
+          for: 5m
+          labels:
+            severity: critical
+            team: platform-foundation
+            component: qa-test-harness
+            prd: AGENT-FOUND-009
+          annotations:
+            summary: "CRITICAL: QA Test Harness database connection failures"
+            description: |
+              {{ $value | printf "%.0f" }} database errors in the last 5 minutes. The QA
+              test harness cannot persist test results, golden files, baselines, or coverage
+              data. All test data is at risk of being lost. Check PostgreSQL connectivity,
+              connection pool status, and database health.
+            runbook_url: "https://docs.greenlang.ai/runbooks/qa-test-harness/database-failure"
+            dashboard_url: "https://grafana.greenlang.io/d/qa-test-harness-service"
+
+        # -------------------------------------------------------------------
+        # 13. QAHighMemoryUsage (warning >80%)
+        # -------------------------------------------------------------------
+        - alert: QAHighMemoryUsage
+          expr: |
+            (
+              container_memory_working_set_bytes{container="qa-test-harness-service"}
+              / container_spec_memory_limit_bytes{container="qa-test-harness-service"}
+            ) > 0.80
+          for: 15m
+          labels:
+            severity: warning
+            team: platform-foundation
+            component: qa-test-harness
+            prd: AGENT-FOUND-009
+          annotations:
+            summary: "QA Test Harness memory usage above 80%"
+            description: |
+              QA test harness container memory usage is at {{ $value | humanizePercentage }}
+              of its limit. High memory usage may be caused by large golden file caches,
+              in-memory test result aggregation, or high concurrency of parallel test
+              execution. Consider increasing memory limits or reducing cache max size.
+            runbook_url: "https://docs.greenlang.ai/runbooks/qa-test-harness/high-memory"
+            dashboard_url: "https://grafana.greenlang.io/d/qa-test-harness-service"
+
+        # -------------------------------------------------------------------
+        # 14. QAPodRestarts (warning >3 in 15m)
+        # -------------------------------------------------------------------
+        - alert: QAPodRestarts
+          expr: |
+            increase(kube_pod_container_status_restarts_total{container="qa-test-harness-service"}[15m]) > 3
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-foundation
+            component: qa-test-harness
+            prd: AGENT-FOUND-009
+          annotations:
+            summary: "QA Test Harness pod restarting frequently (>3 restarts in 15m)"
+            description: |
+              QA test harness pod has restarted {{ $value | printf "%.0f" }} times in the last
+              15 minutes. Frequent restarts indicate OOMKills, liveness probe failures, or
+              application crashes. Check pod events, container logs, and resource utilization.
+              In-progress test runs and benchmarking sessions may be interrupted.
+            runbook_url: "https://docs.greenlang.ai/runbooks/qa-test-harness/pod-restarting"
+            dashboard_url: "https://grafana.greenlang.io/d/qa-test-harness-service"
+
+        # -------------------------------------------------------------------
+        # 15. QATestTimeout (warning)
+        # -------------------------------------------------------------------
+        - alert: QATestTimeout
+          expr: |
+            sum(rate(gl_qa_test_harness_test_runs_total{status="timeout"}[5m])) > 0.1
+          for: 15m
+          labels:
+            severity: warning
+            team: platform-foundation
+            component: qa-test-harness
+            prd: AGENT-FOUND-009
+          annotations:
+            summary: "QA test timeouts detected"
+            description: |
+              Test timeouts are occurring at {{ $value | printf "%.2f" }} per second over
+              the last 5 minutes. Test executions are exceeding their configured timeout,
+              which may indicate slow agent execution, database query delays, or agents
+              under test being unresponsive. Review timeout configuration and agent health.
+            runbook_url: "https://docs.greenlang.ai/runbooks/qa-test-harness/test-timeout"
+            dashboard_url: "https://grafana.greenlang.io/d/qa-test-harness-service"

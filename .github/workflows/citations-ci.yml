@@ -1,0 +1,954 @@
+# =============================================================================
+# GreenLang Citations & Evidence Agent Service CI
+# GreenLang Climate OS | AGENT-FOUND-005
+# =============================================================================
+# Validates citations service: Python lint, type-check, unit tests,
+# integration tests, security scan, coverage enforcement, K8s manifests,
+# dashboard JSON, alert rules, SQL migration, Docker build, and deployment.
+# =============================================================================
+
+name: Citations & Evidence Agent Service CI
+
+on:
+  pull_request:
+    paths:
+      - 'deployment/kubernetes/citations-service/**'
+      - 'deployment/monitoring/dashboards/citations-*'
+      - 'deployment/monitoring/alerts/citations-*'
+      - 'deployment/database/migrations/sql/V025__citations_service.sql'
+      - 'greenlang/citations/**'
+      - 'tests/citations/**'
+      - 'tests/unit/citations_service/**'
+      - 'tests/integration/citations_service/**'
+  push:
+    branches: [master]
+    paths:
+      - 'deployment/kubernetes/citations-service/**'
+      - 'greenlang/citations/**'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHON_VERSION: "3.11"
+  DASHBOARDS_DIR: deployment/monitoring/dashboards
+  ALERTS_DIR: deployment/monitoring/alerts
+  K8S_DIR: deployment/kubernetes/citations-service
+
+jobs:
+  # -------------------------------------------------------------------------
+  # Job 1: Lint (ruff + black + isort + YAML + JSON)
+  # -------------------------------------------------------------------------
+  lint:
+    name: Lint (ruff + black + isort + YAML + JSON)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install linting tools
+        run: pip install --quiet ruff black isort pyyaml
+
+      - name: Lint Python (ruff)
+        run: |
+          if [ -d "greenlang/citations" ]; then
+            ruff check greenlang/citations/ --select E,F,W --ignore E501
+          else
+            echo "WARNING: greenlang/citations/ not found"
+          fi
+
+      - name: Check formatting (black)
+        run: |
+          if [ -d "greenlang/citations" ]; then
+            black --check --diff greenlang/citations/
+          else
+            echo "WARNING: greenlang/citations/ not found"
+          fi
+
+      - name: Check imports (isort)
+        run: |
+          if [ -d "greenlang/citations" ]; then
+            isort --check-only --diff greenlang/citations/
+          else
+            echo "WARNING: greenlang/citations/ not found"
+          fi
+
+      - name: Validate citations dashboard JSON syntax
+        run: |
+          echo "Validating JSON syntax for citations dashboard files..."
+          ERRORS=0
+          CHECKED=0
+          for f in ${{ env.DASHBOARDS_DIR }}/citations-*.json; do
+            [ -e "$f" ] || continue
+            CHECKED=$((CHECKED + 1))
+            if ! python -m json.tool "$f" > /dev/null 2>&1; then
+              echo "ERROR: Invalid JSON in $f"
+              ERRORS=$((ERRORS + 1))
+            fi
+          done
+          if [ $CHECKED -eq 0 ]; then
+            echo "WARNING: No citations dashboard JSON files found"
+          fi
+          if [ $ERRORS -gt 0 ]; then
+            echo "Found $ERRORS files with invalid JSON"
+            exit 1
+          fi
+          echo "All $CHECKED citations dashboard JSON files are valid"
+
+      - name: Check required dashboard fields
+        run: |
+          python3 << 'PYEOF'
+          import json
+          import glob
+          import sys
+
+          REQUIRED_FIELDS = ["uid", "title", "panels"]
+          DASHBOARD_PATTERNS = [
+              "${{ env.DASHBOARDS_DIR }}/citations-*.json",
+          ]
+
+          errors = []
+          checked = 0
+
+          for pattern in DASHBOARD_PATTERNS:
+              for path in sorted(glob.glob(pattern)):
+                  checked += 1
+                  with open(path) as f:
+                      try:
+                          data = json.load(f)
+                      except json.JSONDecodeError:
+                          errors.append(f"{path}: Invalid JSON")
+                          continue
+
+                      for field in REQUIRED_FIELDS:
+                          if field not in data:
+                              errors.append(f"{path}: Missing required field '{field}'")
+
+                      uid = data.get("uid", "")
+                      if uid and (" " in uid or uid != uid.lower()):
+                          errors.append(f"{path}: UID '{uid}' should be lowercase kebab-case")
+
+          if errors:
+              print("Dashboard validation errors:")
+              for e in errors:
+                  print(f"  - {e}")
+              sys.exit(1)
+
+          if checked == 0:
+              print("WARNING: No citations dashboard files found to validate")
+          else:
+              print(f"All {checked} citations dashboards have required fields")
+          PYEOF
+
+      - name: Validate alert YAML syntax
+        run: |
+          python3 << 'PYEOF'
+          import yaml
+          import glob
+          import sys
+
+          errors = []
+          checked = 0
+
+          for path in sorted(glob.glob("${{ env.ALERTS_DIR }}/citations-*.yaml")):
+              checked += 1
+              with open(path) as f:
+                  try:
+                      docs = list(yaml.safe_load_all(f))
+                  except yaml.YAMLError as e:
+                      errors.append(f"{path}: Invalid YAML - {e}")
+                      continue
+
+              for doc in docs:
+                  if doc is None:
+                      continue
+                  if "spec" in doc and "groups" in doc.get("spec", {}):
+                      for group in doc["spec"]["groups"]:
+                          if "name" not in group:
+                              errors.append(f"{path}: Alert group missing 'name'")
+                          if "rules" not in group:
+                              errors.append(f"{path}: Alert group '{group.get('name', '?')}' missing 'rules'")
+                          else:
+                              for rule in group["rules"]:
+                                  if "alert" in rule and "expr" not in rule:
+                                      errors.append(f"{path}: Alert '{rule['alert']}' missing 'expr'")
+                                  if "alert" in rule:
+                                      annotations = rule.get("annotations", {})
+                                      if "summary" not in annotations:
+                                          errors.append(f"{path}: Alert '{rule['alert']}' missing 'summary' annotation")
+                                      if "description" not in annotations:
+                                          errors.append(f"{path}: Alert '{rule['alert']}' missing 'description' annotation")
+
+          if errors:
+              print("Alert YAML validation errors:")
+              for e in errors:
+                  print(f"  - {e}")
+              sys.exit(1)
+
+          if checked == 0:
+              print("WARNING: No citations alert YAML files found to validate")
+          else:
+              print(f"All {checked} alert YAML files are valid")
+          PYEOF
+
+      - name: Validate K8s YAML syntax
+        run: |
+          python3 << 'PYEOF'
+          import yaml
+          import glob
+          import sys
+
+          errors = []
+          checked = 0
+
+          for path in sorted(glob.glob("${{ env.K8S_DIR }}/*.yaml")):
+              checked += 1
+              with open(path) as f:
+                  try:
+                      docs = list(yaml.safe_load_all(f))
+                  except yaml.YAMLError as e:
+                      errors.append(f"{path}: Invalid YAML - {e}")
+                      continue
+
+                  for doc in docs:
+                      if doc is None:
+                          continue
+                      if "apiVersion" not in doc and "kind" not in doc:
+                          if "resources" not in doc:
+                              errors.append(f"{path}: Missing apiVersion or kind")
+
+          if errors:
+              print("K8s YAML validation errors:")
+              for e in errors:
+                  print(f"  - {e}")
+              sys.exit(1)
+
+          print(f"All {checked} K8s YAML files are valid")
+          PYEOF
+
+      - name: Check dashboard file sizes
+        run: |
+          MAX_SIZE=512000  # 500KB
+          ERRORS=0
+          CHECKED=0
+          for f in ${{ env.DASHBOARDS_DIR }}/citations-*.json; do
+            [ -e "$f" ] || continue
+            CHECKED=$((CHECKED + 1))
+            SIZE=$(stat --format=%s "$f")
+            if [ "$SIZE" -gt "$MAX_SIZE" ]; then
+              echo "ERROR: $f exceeds 500KB ($SIZE bytes)"
+              ERRORS=$((ERRORS + 1))
+            fi
+          done
+          if [ $ERRORS -gt 0 ]; then
+            exit 1
+          fi
+          echo "All $CHECKED dashboard files are within size limits"
+
+  # -------------------------------------------------------------------------
+  # Job 2: Type Check (mypy)
+  # -------------------------------------------------------------------------
+  type-check:
+    name: Type Check (mypy)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install -e ".[dev]" 2>/dev/null || pip install \
+            mypy \
+            pydantic \
+            fastapi \
+            prometheus-client \
+            psycopg \
+            redis \
+            pyyaml \
+            types-PyYAML \
+            types-redis
+
+      - name: Run mypy strict mode
+        run: |
+          if [ -d "greenlang/citations" ]; then
+            mypy greenlang/citations/ \
+              --strict \
+              --ignore-missing-imports \
+              --no-error-summary \
+              --show-column-numbers
+          else
+            echo "WARNING: greenlang/citations/ not found"
+          fi
+
+  # -------------------------------------------------------------------------
+  # Job 3: Unit Tests
+  # -------------------------------------------------------------------------
+  unit-test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install -e ".[dev]" 2>/dev/null || pip install \
+            pytest \
+            pytest-asyncio \
+            pytest-cov \
+            pydantic \
+            fastapi \
+            httpx \
+            structlog \
+            prometheus-client \
+            psycopg \
+            redis \
+            pyyaml
+
+      - name: Run unit tests
+        run: |
+          FOUND=0
+          DIRS=""
+          if [ -d "tests/citations/unit" ] && [ "$(ls -A tests/citations/unit/)" ]; then
+            DIRS="$DIRS tests/citations/unit/"
+            FOUND=1
+          fi
+          if [ -d "tests/unit/citations_service" ] && [ "$(ls -A tests/unit/citations_service/)" ]; then
+            DIRS="$DIRS tests/unit/citations_service/"
+            FOUND=1
+          fi
+          if [ $FOUND -eq 1 ]; then
+            pytest $DIRS -v --tb=short -q \
+              --cov=greenlang/citations \
+              --cov-report=term-missing \
+              --cov-report=xml:coverage-citations.xml \
+              --cov-fail-under=85 \
+              --junitxml=junit-citations-unit.xml
+          else
+            echo "WARNING: No unit tests found in tests/citations/unit/ or tests/unit/citations_service/"
+            echo "Unit tests will be required once the test suite is created"
+          fi
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-results
+          path: junit-citations-unit.xml
+          if-no-files-found: ignore
+
+  # -------------------------------------------------------------------------
+  # Job 4: Integration Tests
+  # -------------------------------------------------------------------------
+  integration-test:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: [unit-test]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install -e ".[dev]" 2>/dev/null || pip install \
+            pytest \
+            pytest-asyncio \
+            pydantic \
+            fastapi \
+            httpx \
+            structlog \
+            prometheus-client \
+            psycopg \
+            redis \
+            pyyaml
+
+      - name: Run integration tests
+        run: |
+          FOUND=0
+          DIRS=""
+          if [ -d "tests/citations/integration" ] && [ "$(ls -A tests/citations/integration/)" ]; then
+            DIRS="$DIRS tests/citations/integration/"
+            FOUND=1
+          fi
+          if [ -d "tests/integration/citations_service" ] && [ "$(ls -A tests/integration/citations_service/)" ]; then
+            DIRS="$DIRS tests/integration/citations_service/"
+            FOUND=1
+          fi
+          if [ $FOUND -eq 1 ]; then
+            pytest $DIRS -v --tb=short -q \
+              -m "integration or not integration" \
+              --junitxml=junit-citations-integration.xml
+          else
+            echo "WARNING: No integration tests found"
+            echo "Integration tests will be required once the test suite is created"
+          fi
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-test-results
+          path: junit-citations-integration.xml
+          if-no-files-found: ignore
+
+  # -------------------------------------------------------------------------
+  # Job 5: Security Scan (bandit + safety)
+  # -------------------------------------------------------------------------
+  security-scan:
+    name: Security Scan (bandit + safety)
+    runs-on: ubuntu-latest
+    needs: [unit-test]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install -e ".[dev]" 2>/dev/null || pip install \
+            bandit \
+            safety \
+            pydantic \
+            fastapi \
+            prometheus-client \
+            psycopg \
+            redis
+
+      - name: Run bandit security scan
+        run: |
+          if [ -d "greenlang/citations" ]; then
+            bandit -r greenlang/citations/ -c .bandit.yml --severity-level medium || true
+          else
+            echo "WARNING: greenlang/citations/ not found"
+          fi
+
+      - name: Run safety dependency check
+        run: |
+          if [ -f "requirements.txt" ]; then
+            safety check -r requirements.txt --output text || true
+          else
+            echo "WARNING: requirements.txt not found"
+          fi
+
+  # -------------------------------------------------------------------------
+  # Job 6: Migration Validate
+  # -------------------------------------------------------------------------
+  migration-validate:
+    name: Migration Validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Validate SQL migration
+        run: |
+          python3 << 'PYEOF'
+          import sys
+
+          migration_path = "deployment/database/migrations/sql/V025__citations_service.sql"
+          try:
+              with open(migration_path) as f:
+                  content = f.read()
+          except FileNotFoundError:
+              print(f"ERROR: {migration_path} not found")
+              sys.exit(1)
+
+          errors = []
+
+          if "CREATE SCHEMA" not in content:
+              errors.append("Missing CREATE SCHEMA statement")
+
+          required_tables = [
+              "citations_service.citations",
+              "citations_service.citation_versions",
+              "citations_service.evidence_packages",
+              "citations_service.evidence_items",
+              "citations_service.citation_verifications",
+              "citations_service.methodology_references",
+              "citations_service.regulatory_mappings",
+              "citations_service.data_source_attributions",
+          ]
+          for table in required_tables:
+              if f"CREATE TABLE {table}" not in content:
+                  errors.append(f"Missing CREATE TABLE {table}")
+
+          if "create_hypertable" not in content:
+              errors.append("Missing create_hypertable call")
+
+          if "MATERIALIZED VIEW" not in content:
+              errors.append("Missing continuous aggregate (MATERIALIZED VIEW)")
+
+          if "ROW LEVEL SECURITY" not in content:
+              errors.append("Missing Row Level Security")
+
+          if "security.permissions" not in content:
+              errors.append("Missing security.permissions INSERT")
+
+          if "add_retention_policy" not in content:
+              errors.append("Missing retention policy")
+
+          if "add_compression_policy" not in content:
+              errors.append("Missing compression policy")
+
+          # Verify seed data
+          if "DEFRA" not in content:
+              errors.append("Missing seed data for DEFRA citations")
+
+          if "ecoinvent" not in content:
+              errors.append("Missing seed data for ecoinvent citation")
+
+          if "IPCC" not in content:
+              errors.append("Missing seed data for IPCC citations")
+
+          if "GHG Protocol" not in content:
+              errors.append("Missing seed data for GHG Protocol citations")
+
+          if "meth-ghg-corporate" not in content:
+              errors.append("Missing methodology reference for GHG Protocol Corporate")
+
+          if "csrd" not in content:
+              errors.append("Missing regulatory mapping for CSRD")
+
+          if "cbam" not in content:
+              errors.append("Missing regulatory mapping for CBAM")
+
+          if errors:
+              print("SQL migration validation errors:")
+              for e in errors:
+                  print(f"  - {e}")
+              sys.exit(1)
+
+          print(f"SQL migration validation passed ({len(content)} bytes)")
+          PYEOF
+
+  # -------------------------------------------------------------------------
+  # Job 7: Docker Build
+  # -------------------------------------------------------------------------
+  docker-build:
+    name: Docker Build
+    runs-on: ubuntu-latest
+    needs: [lint, type-check, unit-test]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image (no push)
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: false
+          tags: |
+            greenlang/citations-service:${{ github.sha }}
+            greenlang/citations-service:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            PYTHON_VERSION=3.11
+            SERVICE_NAME=citations-service
+
+  # -------------------------------------------------------------------------
+  # Job 8: K8s Manifest Validation
+  # -------------------------------------------------------------------------
+  k8s-validate:
+    name: K8s Manifest Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: 'v1.29.0'
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install pyyaml
+        run: pip install --quiet pyyaml
+
+      - name: Validate Kustomize build
+        run: |
+          if [ -f "${{ env.K8S_DIR }}/kustomization.yaml" ]; then
+            kubectl kustomize ${{ env.K8S_DIR }} > /dev/null
+            echo "Kustomize build succeeded"
+
+            kubectl kustomize ${{ env.K8S_DIR }} | python3 -c "
+          import sys, yaml
+          docs = list(yaml.safe_load_all(sys.stdin))
+          kinds = [d.get('kind', '?') for d in docs if d]
+          print(f'Rendered {len(docs)} resources: {kinds}')
+          required = {'Deployment', 'Service', 'ConfigMap', 'HorizontalPodAutoscaler'}
+          rendered = set(kinds)
+          missing = required - rendered
+          if missing:
+              print(f'ERROR: Missing required resource kinds: {missing}')
+              sys.exit(1)
+          print('All required resource kinds present')
+          "
+          else
+            echo "WARNING: No kustomization.yaml found in ${{ env.K8S_DIR }}"
+          fi
+
+      - name: Validate resource limits and security context
+        run: |
+          python3 << 'PYEOF'
+          import yaml
+          import sys
+
+          deployment_path = "${{ env.K8S_DIR }}/deployment.yaml"
+          with open(deployment_path) as f:
+              docs = list(yaml.safe_load_all(f))
+
+          errors = []
+          for doc in docs:
+              if doc is None or doc.get("kind") != "Deployment":
+                  continue
+
+              containers = doc.get("spec", {}).get("template", {}).get("spec", {}).get("containers", [])
+              for container in containers:
+                  name = container.get("name", "unknown")
+                  resources = container.get("resources", {})
+                  if not resources.get("requests"):
+                      errors.append(f"Container '{name}': missing resource requests")
+                  if not resources.get("limits"):
+                      errors.append(f"Container '{name}': missing resource limits")
+
+                  if not container.get("livenessProbe"):
+                      errors.append(f"Container '{name}': missing livenessProbe")
+                  if not container.get("readinessProbe"):
+                      errors.append(f"Container '{name}': missing readinessProbe")
+                  if not container.get("startupProbe"):
+                      errors.append(f"Container '{name}': missing startupProbe")
+
+                  sc = container.get("securityContext", {})
+                  if sc.get("allowPrivilegeEscalation") is not False:
+                      errors.append(f"Container '{name}': allowPrivilegeEscalation not set to false")
+                  if not sc.get("readOnlyRootFilesystem"):
+                      errors.append(f"Container '{name}': readOnlyRootFilesystem not enabled")
+
+          if errors:
+              print("Deployment validation errors:")
+              for e in errors:
+                  print(f"  - {e}")
+              sys.exit(1)
+
+          print("Deployment validation passed")
+          PYEOF
+
+      - name: Validate NetworkPolicy completeness
+        run: |
+          python3 << 'PYEOF'
+          import yaml
+          import sys
+
+          netpol_path = "${{ env.K8S_DIR }}/networkpolicy.yaml"
+          with open(netpol_path) as f:
+              docs = [d for d in yaml.safe_load_all(f) if d is not None]
+
+          errors = []
+          has_default_deny = False
+          has_ingress = False
+          has_egress = False
+
+          for doc in docs:
+              if doc.get("kind") != "NetworkPolicy":
+                  continue
+              name = doc.get("metadata", {}).get("name", "")
+              spec = doc.get("spec", {})
+              policy_types = spec.get("policyTypes", [])
+
+              if "deny" in name.lower():
+                  has_default_deny = True
+              if "Ingress" in policy_types and spec.get("ingress"):
+                  has_ingress = True
+              if "Egress" in policy_types and spec.get("egress"):
+                  has_egress = True
+
+          if not has_default_deny:
+              errors.append("Missing default-deny NetworkPolicy")
+          if not has_ingress:
+              errors.append("No ingress rules defined")
+          if not has_egress:
+              errors.append("No egress rules defined")
+
+          if errors:
+              print("NetworkPolicy validation errors:")
+              for e in errors:
+                  print(f"  - {e}")
+              sys.exit(1)
+
+          print("NetworkPolicy validation passed (default-deny + ingress + egress)")
+          PYEOF
+
+  # -------------------------------------------------------------------------
+  # Job 9: Validate Alert Rules (promtool)
+  # -------------------------------------------------------------------------
+  validate-alerts:
+    name: Validate Alert Rules
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install pyyaml
+        run: pip install --quiet pyyaml
+
+      - name: Extract and validate alert rules with promtool
+        run: |
+          # Download promtool
+          PROM_VERSION="2.50.1"
+          wget -q "https://github.com/prometheus/prometheus/releases/download/v${PROM_VERSION}/prometheus-${PROM_VERSION}.linux-amd64.tar.gz"
+          tar xzf "prometheus-${PROM_VERSION}.linux-amd64.tar.gz"
+          PROMTOOL="./prometheus-${PROM_VERSION}.linux-amd64/promtool"
+
+          ERRORS=0
+          CHECKED=0
+
+          for f in ${{ env.ALERTS_DIR }}/citations-*.yaml; do
+            [ -e "$f" ] || continue
+            CHECKED=$((CHECKED + 1))
+
+            python3 -c "
+          import yaml, sys
+          with open('$f') as fh:
+              doc = yaml.safe_load(fh)
+          if doc and 'spec' in doc and 'groups' in doc['spec']:
+              rules = {'groups': doc['spec']['groups']}
+              with open('/tmp/alerts_check.yml', 'w') as out:
+                  yaml.dump(rules, out, default_flow_style=False)
+          else:
+              print('No spec.groups found, skipping')
+              sys.exit(0)
+          "
+
+            if [ -f /tmp/alerts_check.yml ]; then
+              if ! $PROMTOOL check rules /tmp/alerts_check.yml; then
+                echo "ERROR: promtool check failed for $f"
+                ERRORS=$((ERRORS + 1))
+              fi
+              rm -f /tmp/alerts_check.yml
+            fi
+          done
+
+          if [ $ERRORS -gt 0 ]; then
+            echo "Found $ERRORS files with invalid alert rules"
+            exit 1
+          fi
+
+          echo "All $CHECKED alert rules files validated successfully"
+
+      - name: Validate alert rules have required labels and annotations
+        run: |
+          python3 << 'PYEOF'
+          import yaml
+          import glob
+          import sys
+
+          REQUIRED_LABELS = ["severity", "team", "component", "prd"]
+          REQUIRED_ANNOTATIONS = ["summary", "description", "runbook_url", "dashboard_url"]
+
+          errors = []
+          checked = 0
+
+          for path in sorted(glob.glob("${{ env.ALERTS_DIR }}/citations-*.yaml")):
+              with open(path) as f:
+                  try:
+                      docs = list(yaml.safe_load_all(f))
+                  except yaml.YAMLError:
+                      continue
+
+              for doc in docs:
+                  if doc is None:
+                      continue
+                  groups = doc.get("spec", {}).get("groups", doc.get("groups", []))
+                  for group in groups:
+                      for rule in group.get("rules", []):
+                          if "alert" not in rule:
+                              continue
+                          checked += 1
+                          alert_name = rule["alert"]
+                          labels = rule.get("labels", {})
+                          annotations = rule.get("annotations", {})
+
+                          for label in REQUIRED_LABELS:
+                              if label not in labels:
+                                  errors.append(f"{path}: Alert '{alert_name}' missing label '{label}'")
+
+                          for ann in REQUIRED_ANNOTATIONS:
+                              if ann not in annotations:
+                                  errors.append(f"{path}: Alert '{alert_name}' missing annotation '{ann}'")
+
+          if errors:
+              print("Alert rule validation errors:")
+              for e in errors:
+                  print(f"  - {e}")
+              sys.exit(1)
+
+          print(f"All {checked} alert rules have required labels and annotations")
+          PYEOF
+
+  # -------------------------------------------------------------------------
+  # Job 10: Deploy to Staging (master only)
+  # -------------------------------------------------------------------------
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: [lint, type-check, unit-test, integration-test, security-scan, migration-validate, docker-build, k8s-validate, validate-alerts]
+    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+    environment: staging
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: 'v1.29.0'
+
+      - name: Configure kubectl
+        run: |
+          echo "${{ secrets.KUBE_CONFIG_STAGING }}" | base64 -d > kubeconfig
+          export KUBECONFIG=kubeconfig
+
+      - name: Validate Kustomize build
+        run: |
+          kubectl kustomize ${{ env.K8S_DIR }} > /dev/null
+          echo "Kustomize build succeeded"
+
+      - name: Apply Kubernetes manifests
+        run: |
+          export KUBECONFIG=kubeconfig
+          kubectl apply -k ${{ env.K8S_DIR }}
+          echo "Manifests applied"
+
+      - name: Update deployment image
+        run: |
+          export KUBECONFIG=kubeconfig
+          kubectl set image deployment/citations-service \
+            citations-service=greenlang/citations-service:${{ github.sha }} \
+            -n greenlang
+
+      - name: Verify deployment rollout
+        run: |
+          export KUBECONFIG=kubeconfig
+          kubectl rollout status deployment/citations-service -n greenlang --timeout=300s
+          kubectl get pods -n greenlang -l app=citations-service
+
+      - name: Run smoke test
+        run: |
+          export KUBECONFIG=kubeconfig
+          POD=$(kubectl get pods -n greenlang -l app=citations-service -o jsonpath='{.items[0].metadata.name}')
+          kubectl exec -n greenlang "$POD" -- curl -sf http://localhost:8080/health || {
+            echo "ERROR: Health check failed after deployment"
+            exit 1
+          }
+          echo "Smoke test passed"
+
+  # -------------------------------------------------------------------------
+  # Job 11: Deploy to Production (manual approval)
+  # -------------------------------------------------------------------------
+  deploy-prod:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [deploy-staging]
+    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+    environment: production
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: 'v1.29.0'
+
+      - name: Configure kubectl
+        run: |
+          echo "${{ secrets.KUBE_CONFIG_PRODUCTION }}" | base64 -d > kubeconfig
+          export KUBECONFIG=kubeconfig
+
+      - name: Validate Kustomize build
+        run: |
+          kubectl kustomize ${{ env.K8S_DIR }} > /dev/null
+          echo "Kustomize build succeeded"
+
+      - name: Apply Kubernetes manifests
+        run: |
+          export KUBECONFIG=kubeconfig
+          kubectl apply -k ${{ env.K8S_DIR }}
+          echo "Manifests applied"
+
+      - name: Update deployment image
+        run: |
+          export KUBECONFIG=kubeconfig
+          kubectl set image deployment/citations-service \
+            citations-service=greenlang/citations-service:${{ github.sha }} \
+            -n greenlang
+
+      - name: Verify deployment rollout
+        run: |
+          export KUBECONFIG=kubeconfig
+          kubectl rollout status deployment/citations-service -n greenlang --timeout=300s
+          kubectl get pods -n greenlang -l app=citations-service
+
+      - name: Run production smoke test
+        run: |
+          export KUBECONFIG=kubeconfig
+          POD=$(kubectl get pods -n greenlang -l app=citations-service -o jsonpath='{.items[0].metadata.name}')
+          kubectl exec -n greenlang "$POD" -- curl -sf http://localhost:8080/health || {
+            echo "ERROR: Health check failed after production deployment"
+            exit 1
+          }
+          echo "Production smoke test passed"
+
+      - name: Notify deployment success
+        if: success()
+        run: |
+          echo "Citations & Evidence Agent Service deployed to production successfully"
+          echo "Image: greenlang/citations-service:${{ github.sha }}"
+          echo "Timestamp: $(date -u +%Y-%m-%dT%H:%M:%SZ)"

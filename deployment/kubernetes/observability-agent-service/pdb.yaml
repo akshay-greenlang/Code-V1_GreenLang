@@ -1,0 +1,28 @@
+# =============================================================================
+# GreenLang Observability & Telemetry Agent - Pod Disruption Budget
+# =============================================================================
+# Ensures at least 1 observability agent service pod is available during
+# voluntary disruptions (node drain, cluster upgrade, etc.) to maintain
+# continuous metric collection, alert evaluation, and SLO monitoring.
+# PRD: AGENT-FOUND-010
+# =============================================================================
+
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: observability-agent-service-pdb
+  namespace: greenlang
+  labels:
+    app: observability-agent-service
+    app.kubernetes.io/name: observability-agent-service
+    app.kubernetes.io/component: observability-agent
+    app.kubernetes.io/part-of: greenlang
+  annotations:
+    description: "PDB for Observability Agent - minimum 1 pod available"
+    prd: AGENT-FOUND-010
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: observability-agent-service
+      app.kubernetes.io/component: observability-agent

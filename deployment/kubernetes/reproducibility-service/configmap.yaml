@@ -1,0 +1,171 @@
+# =============================================================================
+# GreenLang Reproducibility Agent - ConfigMap
+# =============================================================================
+# Configuration for reproducibility verification, artifact hashing, drift
+# detection, replay mode, environment fingerprinting, seed management,
+# version pinning, caching, and metrics.
+# PRD: AGENT-FOUND-008
+# =============================================================================
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: reproducibility-service-config
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: reproducibility-service
+    app.kubernetes.io/component: configuration
+    app.kubernetes.io/part-of: greenlang
+  annotations:
+    description: "Reproducibility Agent configuration - verification, hashing, drift, replay, fingerprinting, seeds, versions"
+    prd: AGENT-FOUND-008
+data:
+  # Environment
+  ENVIRONMENT: "production"
+
+  # Logging
+  GL_REPRODUCIBILITY_LOG_LEVEL: "INFO"
+  LOG_FORMAT: "json"
+
+  # Database (connection string via secret, schema config here)
+  GL_REPRODUCIBILITY_DB_SCHEMA: "reproducibility_service"
+  GL_REPRODUCIBILITY_DB_POOL_MIN: "2"
+  GL_REPRODUCIBILITY_DB_POOL_MAX: "10"
+
+  # Redis
+  GL_REPRODUCIBILITY_REDIS_PREFIX: "gl:reproducibility:"
+  GL_REPRODUCIBILITY_REDIS_TTL: "300"
+
+  # Cache Configuration
+  GL_REPRODUCIBILITY_CACHE_TTL_SECONDS: "300"
+  GL_REPRODUCIBILITY_CACHE_MAX_SIZE: "2000"
+  GL_REPRODUCIBILITY_HASH_CACHE_TTL: "600"
+  GL_REPRODUCIBILITY_FINGERPRINT_CACHE_TTL: "600"
+  GL_REPRODUCIBILITY_BASELINE_CACHE_TTL: "300"
+
+  # Verification Configuration
+  GL_REPRODUCIBILITY_DEFAULT_ABSOLUTE_TOLERANCE: "1e-9"
+  GL_REPRODUCIBILITY_DEFAULT_RELATIVE_TOLERANCE: "1e-6"
+  GL_REPRODUCIBILITY_DEFAULT_HASH_ALGORITHM: "sha256"
+  GL_REPRODUCIBILITY_NORMALIZATION_ENABLED: "true"
+  GL_REPRODUCIBILITY_FLOATING_POINT_PRECISION: "15"
+
+  # Drift Detection Configuration
+  GL_REPRODUCIBILITY_DRIFT_ENABLED: "true"
+  GL_REPRODUCIBILITY_DRIFT_MINOR_THRESHOLD: "0.001"
+  GL_REPRODUCIBILITY_DRIFT_MODERATE_THRESHOLD: "0.01"
+  GL_REPRODUCIBILITY_DRIFT_CRITICAL_THRESHOLD: "0.05"
+  GL_REPRODUCIBILITY_DRIFT_FIELD_LEVEL_COMPARISON: "true"
+
+  # Replay Configuration
+  GL_REPRODUCIBILITY_REPLAY_ENABLED: "true"
+  GL_REPRODUCIBILITY_REPLAY_TIMEOUT_SECONDS: "600"
+  GL_REPRODUCIBILITY_REPLAY_MATCH_ENVIRONMENT: "true"
+  GL_REPRODUCIBILITY_REPLAY_MATCH_SEEDS: "true"
+  GL_REPRODUCIBILITY_REPLAY_MATCH_VERSIONS: "true"
+
+  # Environment Fingerprinting
+  GL_REPRODUCIBILITY_FINGERPRINT_CAPTURE_DEPS: "true"
+  GL_REPRODUCIBILITY_FINGERPRINT_CAPTURE_HARDWARE: "true"
+  GL_REPRODUCIBILITY_FINGERPRINT_REDACT_SECRETS: "true"
+
+  # Seed Management
+  GL_REPRODUCIBILITY_DEFAULT_GLOBAL_SEED: "42"
+  GL_REPRODUCIBILITY_SEED_FRAMEWORKS: "python,numpy,torch"
+
+  # Metrics
+  GL_REPRODUCIBILITY_ENABLE_METRICS: "true"
+  METRICS_PORT: "8080"
+  METRICS_PATH: "/metrics"
+
+  # Tracing
+  TRACING_ENABLED: "true"
+  TRACING_SAMPLE_RATE: "0.1"
+  OTEL_ENDPOINT: "http://otel-collector.monitoring.svc.cluster.local:4317"
+  OTEL_SERVICE_NAME: "reproducibility-service"
+
+  # Reproducibility service configuration file
+  reproducibility-config.yaml: |
+    reproducibility_service:
+      version: "1.0.0"
+      environment: production
+
+      verification:
+        default_absolute_tolerance: 1e-9
+        default_relative_tolerance: 1e-6
+        default_hash_algorithm: sha256
+        normalization_enabled: true
+        floating_point_precision: 15
+        supported_algorithms:
+          - sha256
+          - sha384
+          - sha512
+          - blake2b
+          - blake3
+
+      drift_detection:
+        enabled: true
+        thresholds:
+          minor: 0.001
+          moderate: 0.01
+          critical: 0.05
+        field_level_comparison: true
+
+      replay:
+        enabled: true
+        timeout_seconds: 600
+        match_environment: true
+        match_seeds: true
+        match_versions: true
+
+      environment_fingerprinting:
+        capture_dependencies: true
+        capture_hardware: true
+        redact_secrets: true
+        excluded_env_vars:
+          - DATABASE_URL
+          - REDIS_URL
+          - SECRET_KEY
+          - API_KEY
+          - AWS_SECRET_ACCESS_KEY
+
+      seed_management:
+        default_global_seed: 42
+        frameworks:
+          - python
+          - numpy
+          - torch
+          - tensorflow
+
+      non_determinism_sources:
+        - floating_point
+        - random_state
+        - parallel_execution
+        - system_time
+        - external_api
+        - file_system
+        - network
+        - memory_allocation
+        - gpu_computation
+        - hash_ordering
+
+      cache:
+        ttl_seconds: 300
+        max_size: 2000
+        hash_cache_ttl: 600
+        fingerprint_cache_ttl: 600
+        baseline_cache_ttl: 300
+        warmup_on_startup: true
+
+      metrics:
+        enabled: true
+        prefix: gl_reproducibility
+        histogram_buckets: [0.001, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10]
+
+      integration:
+        auth_enabled: true
+        audit_enabled: true
+        alerting_enabled: true
+        feature_flags_enabled: true
+        access_guard_enabled: true
+        agent_registry_enabled: true

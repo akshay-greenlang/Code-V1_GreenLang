@@ -1,0 +1,185 @@
+# =============================================================================
+# GreenLang PDF & Invoice Extractor - ConfigMap
+# =============================================================================
+# Configuration for OCR engine selection, confidence thresholds, batch
+# processing, template management, field extraction, validation rules,
+# caching, and metrics.
+# PRD: AGENT-DATA-001
+# =============================================================================
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pdf-extractor-service-config
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: pdf-extractor-service
+    app.kubernetes.io/component: configuration
+    app.kubernetes.io/part-of: greenlang
+  annotations:
+    description: "PDF Extractor configuration - OCR engines, confidence thresholds, batch settings, templates, validation"
+    prd: AGENT-DATA-001
+data:
+  # Environment
+  ENVIRONMENT: "production"
+
+  # Logging
+  GL_PDF_EXTRACTOR_LOG_LEVEL: "INFO"
+  LOG_FORMAT: "json"
+
+  # Database (connection string via secret, schema config here)
+  GL_PDF_EXTRACTOR_DB_SCHEMA: "pdf_extractor_service"
+  GL_PDF_EXTRACTOR_DB_POOL_MIN: "2"
+  GL_PDF_EXTRACTOR_DB_POOL_MAX: "10"
+
+  # Redis
+  GL_PDF_EXTRACTOR_REDIS_PREFIX: "gl:pdf_extractor:"
+  GL_PDF_EXTRACTOR_REDIS_TTL: "300"
+
+  # Cache Configuration
+  GL_PDF_EXTRACTOR_CACHE_TTL_SECONDS: "300"
+  GL_PDF_EXTRACTOR_CACHE_MAX_SIZE: "2000"
+  GL_PDF_EXTRACTOR_TEMPLATE_CACHE_TTL: "600"
+
+  # OCR Engine Configuration
+  GL_PDF_EXTRACTOR_DEFAULT_OCR_ENGINE: "tesseract"
+  GL_PDF_EXTRACTOR_FALLBACK_OCR_ENGINE: "native_pdf"
+  GL_PDF_EXTRACTOR_OCR_TIMEOUT_SECONDS: "120"
+  GL_PDF_EXTRACTOR_OCR_MAX_RETRIES: "3"
+
+  # Confidence Thresholds
+  GL_PDF_EXTRACTOR_CONFIDENCE_THRESHOLD: "0.7"
+  GL_PDF_EXTRACTOR_HIGH_CONFIDENCE_THRESHOLD: "0.9"
+  GL_PDF_EXTRACTOR_LOW_CONFIDENCE_THRESHOLD: "0.5"
+  GL_PDF_EXTRACTOR_AUTO_VALIDATE_ABOVE: "0.95"
+
+  # Batch Processing Configuration
+  GL_PDF_EXTRACTOR_BATCH_SIZE: "10"
+  GL_PDF_EXTRACTOR_MAX_CONCURRENT_JOBS: "5"
+  GL_PDF_EXTRACTOR_MAX_FILE_SIZE_MB: "100"
+  GL_PDF_EXTRACTOR_MAX_PAGES_PER_DOCUMENT: "500"
+
+  # Field Extraction Configuration
+  GL_PDF_EXTRACTOR_EXTRACTION_TIMEOUT_SECONDS: "300"
+  GL_PDF_EXTRACTOR_MAX_FIELDS_PER_DOCUMENT: "1000"
+
+  # Metrics
+  GL_PDF_EXTRACTOR_ENABLE_METRICS: "true"
+  METRICS_PORT: "8080"
+  METRICS_PATH: "/metrics"
+
+  # Tracing
+  TRACING_ENABLED: "true"
+  TRACING_SAMPLE_RATE: "0.1"
+  OTEL_ENDPOINT: "http://otel-collector.monitoring.svc.cluster.local:4317"
+  OTEL_SERVICE_NAME: "pdf-extractor-service"
+
+  # PDF extractor service configuration file
+  pdf-extractor-config.yaml: |
+    pdf_extractor_service:
+      version: "1.0.0"
+      environment: production
+
+      ocr:
+        default_engine: tesseract
+        fallback_engine: native_pdf
+        timeout_seconds: 120
+        max_retries: 3
+        engines:
+          tesseract:
+            enabled: true
+            language: eng
+            psm: 3
+            oem: 3
+          textract:
+            enabled: false
+            region: us-east-1
+          azure_form_recognizer:
+            enabled: false
+            model: prebuilt-invoice
+          google_document_ai:
+            enabled: false
+            processor_id: ""
+          easyocr:
+            enabled: false
+            languages: ["en"]
+          paddleocr:
+            enabled: false
+            language: en
+
+      confidence:
+        threshold: 0.7
+        high_confidence: 0.9
+        low_confidence: 0.5
+        auto_validate_above: 0.95
+
+      batch:
+        batch_size: 10
+        max_concurrent_jobs: 5
+        max_file_size_mb: 100
+        max_pages_per_document: 500
+
+      extraction:
+        timeout_seconds: 300
+        max_fields_per_document: 1000
+        supported_formats:
+          - pdf
+          - png
+          - jpg
+          - tiff
+          - bmp
+
+      document_types:
+        - invoice
+        - utility_bill
+        - shipping_manifest
+        - receipt
+        - purchase_order
+        - bill_of_lading
+        - certificate
+        - report
+        - contract
+        - form
+
+      validation:
+        cross_field_rules: true
+        severity_levels:
+          - error
+          - warning
+          - info
+        invoice_required_fields:
+          - vendor_name
+          - invoice_number
+          - invoice_date
+          - total_amount
+        utility_bill_required_fields:
+          - provider
+          - account_number
+          - service_period
+          - total_consumption
+        manifest_required_fields:
+          - shipper
+          - consignee
+          - cargo_description
+          - weight
+
+      cache:
+        ttl_seconds: 300
+        max_size: 2000
+        template_cache_ttl: 600
+        warmup_on_startup: true
+
+      metrics:
+        enabled: true
+        prefix: gl_pdf_extractor
+        histogram_buckets: [0.01, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10, 30, 60, 120]
+
+      integration:
+        auth_enabled: true
+        audit_enabled: true
+        alerting_enabled: true
+        feature_flags_enabled: true
+        access_guard_enabled: true
+        agent_registry_enabled: true
+        unit_normalizer_enabled: true
+        citations_enabled: true

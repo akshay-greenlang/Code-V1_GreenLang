@@ -1,0 +1,65 @@
+# =============================================================================
+# GreenLang QA Test Harness - Horizontal Pod Autoscaler
+# =============================================================================
+# HPA for QA test harness service: scales based on CPU and memory utilization.
+# Scales from 2 to 10 replicas. Conservative scale-down to prevent
+# test execution disruption during transient load spikes from bulk
+# test suite runs or performance benchmarking sessions.
+# PRD: AGENT-FOUND-009
+# =============================================================================
+
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: qa-test-harness-service-hpa
+  namespace: greenlang
+  labels:
+    app: qa-test-harness-service
+    app.kubernetes.io/name: qa-test-harness-service
+    app.kubernetes.io/component: autoscaling
+    app.kubernetes.io/part-of: greenlang
+  annotations:
+    description: "HPA for QA Test Harness based on CPU and memory utilization"
+    prd: AGENT-FOUND-009
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: qa-test-harness-service
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+    # CPU-based scaling
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 75
+    # Memory-based scaling
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+  behavior:
+    # Scale up: moderate for handling burst test execution and benchmarking load
+    scaleUp:
+      stabilizationWindowSeconds: 120
+      policies:
+        - type: Pods
+          value: 2
+          periodSeconds: 60
+        - type: Percent
+          value: 50
+          periodSeconds: 60
+      selectPolicy: Max
+    # Scale down: conservative to maintain test execution continuity
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Pods
+          value: 1
+          periodSeconds: 120
+      selectPolicy: Min

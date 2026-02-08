@@ -1,0 +1,439 @@
+# =============================================================================
+# GreenLang Excel & CSV Normalizer - Alert Rules
+# =============================================================================
+# Component: AGENT-DATA-002 Excel & CSV Normalizer
+# Purpose: PrometheusRule alert definitions for service health, high
+#          normalization failure rate, high latency, low mapping confidence,
+#          column mapping failures, validation error spikes, high error rate,
+#          audit gaps, database connection failures, high memory usage, pod
+#          restarts, normalization timeout, file upload failures, queue backlog,
+#          and S3 errors.
+# =============================================================================
+
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: greenlang-excel-normalizer-service-alerts
+  namespace: monitoring
+  labels:
+    app: greenlang
+    component: excel-normalizer
+    prometheus: kube-prometheus
+    role: alert-rules
+    release: gl-kube-prometheus
+    greenlang.io/component: agent-data-002
+  annotations:
+    description: "Alert rules for GreenLang Excel & CSV Normalizer"
+    prd: AGENT-DATA-002
+spec:
+  groups:
+    # =========================================================================
+    # Excel Normalizer Service Health Alerts
+    # =========================================================================
+    - name: greenlang.excel_normalizer.service_health
+      interval: 30s
+      rules:
+        # -------------------------------------------------------------------
+        # 1. ExcelNormalizerServiceDown (critical): No healthy pods for 5m
+        # -------------------------------------------------------------------
+        - alert: ExcelNormalizerServiceDown
+          expr: |
+            up{job="excel-normalizer-service"} == 0
+          for: 5m
+          labels:
+            severity: critical
+            team: platform-data
+            component: excel-normalizer
+            prd: AGENT-DATA-002
+          annotations:
+            summary: "CRITICAL: Excel Normalizer service is down"
+            description: |
+              The GreenLang Excel & CSV Normalizer (AGENT-DATA-002) is not responding to health
+              checks for 5 minutes. All spreadsheet upload, column mapping, normalization, quality
+              assessment, and validation operations are disrupted. Climate data ingestion from
+              tabular sources is blocked.
+            runbook_url: "https://docs.greenlang.ai/runbooks/excel-normalizer/service-down"
+            dashboard_url: "https://grafana.greenlang.io/d/excel-normalizer-service"
+
+        # -------------------------------------------------------------------
+        # 2. ExcelHighNormalizationFailureRate (warning >10%, critical >25%)
+        # -------------------------------------------------------------------
+        - alert: ExcelHighNormalizationFailureRateWarning
+          expr: |
+            (
+              sum(rate(gl_excel_normalizer_jobs_total{status="failed"}[5m]))
+              / sum(rate(gl_excel_normalizer_jobs_total[5m]))
+            ) > 0.10
+          for: 10m
+          labels:
+            severity: warning
+            team: platform-data
+            component: excel-normalizer
+            prd: AGENT-DATA-002
+          annotations:
+            summary: "Excel normalization failure rate above 10%"
+            description: |
+              More than 10% of Excel normalization jobs are failing. Current failure rate is
+              {{ $value | humanizePercentage }}. This may indicate encoding issues, unsupported
+              file formats, corrupt spreadsheets, or column mapping failures. Review failing
+              job logs and file formats.
+            runbook_url: "https://docs.greenlang.ai/runbooks/excel-normalizer/high-failure-rate"
+            dashboard_url: "https://grafana.greenlang.io/d/excel-normalizer-service"
+
+        - alert: ExcelHighNormalizationFailureRateCritical
+          expr: |
+            (
+              sum(rate(gl_excel_normalizer_jobs_total{status="failed"}[5m]))
+              / sum(rate(gl_excel_normalizer_jobs_total[5m]))
+            ) > 0.25
+          for: 5m
+          labels:
+            severity: critical
+            team: platform-data
+            component: excel-normalizer
+            prd: AGENT-DATA-002
+          annotations:
+            summary: "CRITICAL: Excel normalization failure rate above 25%"
+            description: |
+              More than 25% of Excel normalization jobs are failing. Current failure rate is
+              {{ $value | humanizePercentage }}. This indicates a systemic normalization issue
+              affecting tabular data ingestion. Climate data from spreadsheet sources cannot be
+              processed. Immediate investigation required.
+            runbook_url: "https://docs.greenlang.ai/runbooks/excel-normalizer/high-failure-rate-critical"
+            dashboard_url: "https://grafana.greenlang.io/d/excel-normalizer-service"
+
+    # =========================================================================
+    # Excel Normalizer Latency Alerts
+    # =========================================================================
+    - name: greenlang.excel_normalizer.latency
+      interval: 30s
+      rules:
+        # -------------------------------------------------------------------
+        # 3. ExcelHighNormalizationLatency (warning p99>30s, critical p99>120s)
+        # -------------------------------------------------------------------
+        - alert: ExcelHighNormalizationLatencyWarning
+          expr: |
+            histogram_quantile(0.99,
+              sum(rate(gl_excel_normalizer_job_duration_seconds_bucket[5m])) by (le)
+            ) > 30
+          for: 10m
+          labels:
+            severity: warning
+            team: platform-data
+            component: excel-normalizer
+            prd: AGENT-DATA-002
+          annotations:
+            summary: "Excel normalization p99 latency above 30s"
+            description: |
+              The p99 normalization job latency is {{ $value | printf "%.3f" }}s, exceeding
+              the 30s warning threshold for 10 minutes. Spreadsheet normalization should complete
+              within 20s at p99. Investigate large files, complex column mappings, or database
+              write latency.
+            runbook_url: "https://docs.greenlang.ai/runbooks/excel-normalizer/high-latency"
+            dashboard_url: "https://grafana.greenlang.io/d/excel-normalizer-service"
+
+        - alert: ExcelHighNormalizationLatencyCritical
+          expr: |
+            histogram_quantile(0.99,
+              sum(rate(gl_excel_normalizer_job_duration_seconds_bucket[5m])) by (le)
+            ) > 120
+          for: 5m
+          labels:
+            severity: critical
+            team: platform-data
+            component: excel-normalizer
+            prd: AGENT-DATA-002
+          annotations:
+            summary: "CRITICAL: Excel normalization p99 latency above 120s"
+            description: |
+              The p99 normalization job latency is {{ $value | printf "%.3f" }}s, exceeding the
+              critical 120s threshold. This will cause widespread normalization timeouts and block
+              tabular data ingestion pipelines. Immediate investigation required. Check file sizes,
+              database locks, and memory pressure.
+            runbook_url: "https://docs.greenlang.ai/runbooks/excel-normalizer/high-latency-critical"
+            dashboard_url: "https://grafana.greenlang.io/d/excel-normalizer-service"
+
+    # =========================================================================
+    # Excel Normalizer Quality Alerts
+    # =========================================================================
+    - name: greenlang.excel_normalizer.quality
+      interval: 30s
+      rules:
+        # -------------------------------------------------------------------
+        # 4. ExcelLowMappingConfidence (warning avg<0.6)
+        # -------------------------------------------------------------------
+        - alert: ExcelLowMappingConfidence
+          expr: |
+            avg(gl_excel_normalizer_mapping_confidence) < 0.6
+          for: 15m
+          labels:
+            severity: warning
+            team: platform-data
+            component: excel-normalizer
+            prd: AGENT-DATA-002
+          annotations:
+            summary: "Average column mapping confidence below 60%"
+            description: |
+              The average column mapping confidence score is {{ $value | printf "%.2f" }}, below
+              the 0.60 threshold. Low confidence indicates poor column header matching, which may
+              be caused by non-standard headers, foreign language columns, or missing synonyms.
+              Review mapping templates and synonym dictionaries.
+            runbook_url: "https://docs.greenlang.ai/runbooks/excel-normalizer/parsing-failures"
+            dashboard_url: "https://grafana.greenlang.io/d/excel-normalizer-service"
+
+        # -------------------------------------------------------------------
+        # 5. ExcelColumnMappingFailure (critical): Mapping errors
+        # -------------------------------------------------------------------
+        - alert: ExcelColumnMappingFailure
+          expr: |
+            increase(gl_excel_normalizer_mapping_errors_total[5m]) > 10
+          for: 5m
+          labels:
+            severity: critical
+            team: platform-data
+            component: excel-normalizer
+            prd: AGENT-DATA-002
+          annotations:
+            summary: "CRITICAL: Column mapping failures detected"
+            description: |
+              {{ $value | printf "%.0f" }} column mapping errors in the last 5 minutes. The
+              normalizer is failing to map spreadsheet columns to canonical fields. Check synonym
+              dictionaries, template configurations, and input file header formats. Normalization
+              quality is severely degraded.
+            runbook_url: "https://docs.greenlang.ai/runbooks/excel-normalizer/parsing-failures"
+            dashboard_url: "https://grafana.greenlang.io/d/excel-normalizer-service"
+
+        # -------------------------------------------------------------------
+        # 6. ExcelValidationErrorSpike (warning)
+        # -------------------------------------------------------------------
+        - alert: ExcelValidationErrorSpike
+          expr: |
+            (
+              sum(rate(gl_excel_normalizer_validation_results_total{severity="error"}[5m]))
+              / sum(rate(gl_excel_normalizer_validation_results_total[5m]))
+            ) > 0.20
+          for: 15m
+          labels:
+            severity: warning
+            team: platform-data
+            component: excel-normalizer
+            prd: AGENT-DATA-002
+          annotations:
+            summary: "High validation error rate (>20%)"
+            description: |
+              More than 20% of field validations are producing errors. Current error rate is
+              {{ $value | humanizePercentage }}. This indicates normalized data is failing quality
+              checks, which may affect downstream emission calculations. Review validation rules,
+              column mappings, and data quality.
+            runbook_url: "https://docs.greenlang.ai/runbooks/excel-normalizer/parsing-failures"
+            dashboard_url: "https://grafana.greenlang.io/d/excel-normalizer-service"
+
+        # -------------------------------------------------------------------
+        # 7. ExcelFileUploadFailure (warning)
+        # -------------------------------------------------------------------
+        - alert: ExcelFileUploadFailure
+          expr: |
+            increase(gl_excel_normalizer_upload_errors_total[5m]) > 5
+          for: 10m
+          labels:
+            severity: warning
+            team: platform-data
+            component: excel-normalizer
+            prd: AGENT-DATA-002
+          annotations:
+            summary: "Spreadsheet upload failures detected"
+            description: |
+              {{ $value | printf "%.0f" }} spreadsheet upload errors in the last 5 minutes.
+              Files cannot be uploaded for normalization. Check S3 bucket permissions, file
+              size limits, network connectivity, and disk space on upload staging volume.
+            runbook_url: "https://docs.greenlang.ai/runbooks/excel-normalizer/service-down"
+            dashboard_url: "https://grafana.greenlang.io/d/excel-normalizer-service"
+
+        # -------------------------------------------------------------------
+        # 8. ExcelQueueBacklog (warning)
+        # -------------------------------------------------------------------
+        - alert: ExcelQueueBacklog
+          expr: |
+            gl_excel_normalizer_pending_jobs > 50
+          for: 15m
+          labels:
+            severity: warning
+            team: platform-data
+            component: excel-normalizer
+            prd: AGENT-DATA-002
+          annotations:
+            summary: "Normalization job queue backlog growing"
+            description: |
+              {{ $value | printf "%.0f" }} normalization jobs are pending in the queue for more
+              than 15 minutes. The service is not keeping up with incoming spreadsheet load.
+              Consider scaling up replicas, increasing max_concurrent_jobs, or investigating
+              slow normalization processing.
+            runbook_url: "https://docs.greenlang.ai/runbooks/excel-normalizer/service-down"
+            dashboard_url: "https://grafana.greenlang.io/d/excel-normalizer-service"
+
+    # =========================================================================
+    # Infrastructure Alerts
+    # =========================================================================
+    - name: greenlang.excel_normalizer.infrastructure
+      interval: 30s
+      rules:
+        # -------------------------------------------------------------------
+        # 9. ExcelHighErrorRate (warning >5%)
+        # -------------------------------------------------------------------
+        - alert: ExcelHighErrorRate
+          expr: |
+            (
+              sum(rate(gl_excel_normalizer_http_errors_total[5m]))
+              / sum(rate(gl_excel_normalizer_http_requests_total[5m]))
+            ) > 0.05
+          for: 15m
+          labels:
+            severity: warning
+            team: platform-data
+            component: excel-normalizer
+            prd: AGENT-DATA-002
+          annotations:
+            summary: "Excel Normalizer HTTP error rate above 5%"
+            description: |
+              More than 5% of HTTP requests to the Excel normalizer are returning errors.
+              Current error rate is {{ $value | humanizePercentage }}. This indicates
+              API-level failures affecting file uploads and normalization requests.
+            runbook_url: "https://docs.greenlang.ai/runbooks/excel-normalizer/service-down"
+            dashboard_url: "https://grafana.greenlang.io/d/excel-normalizer-service"
+
+        # -------------------------------------------------------------------
+        # 10. ExcelAuditGap (critical)
+        # -------------------------------------------------------------------
+        - alert: ExcelAuditGap
+          expr: |
+            (
+              sum(rate(gl_excel_normalizer_jobs_total[5m]))
+              - sum(rate(gl_excel_normalizer_audit_events_total[5m]))
+            ) > 0.5
+          for: 30m
+          labels:
+            severity: critical
+            team: platform-data
+            component: excel-normalizer
+            prd: AGENT-DATA-002
+          annotations:
+            summary: "CRITICAL: Audit gap detected - normalization operations without audit entries"
+            description: |
+              The rate of normalization operations exceeds the rate of audit event writes by
+              {{ $value | printf "%.2f" }} operations/second over the last 30 minutes. This
+              indicates that normalization jobs are occurring without corresponding audit trail
+              entries, which violates compliance requirements for traceable data ingestion.
+            runbook_url: "https://docs.greenlang.ai/runbooks/excel-normalizer/service-down"
+            dashboard_url: "https://grafana.greenlang.io/d/excel-normalizer-service"
+
+        # -------------------------------------------------------------------
+        # 11. ExcelDatabaseConnectionFailure (critical)
+        # -------------------------------------------------------------------
+        - alert: ExcelDatabaseConnectionFailure
+          expr: |
+            increase(gl_excel_normalizer_database_errors_total[5m]) > 5
+          for: 5m
+          labels:
+            severity: critical
+            team: platform-data
+            component: excel-normalizer
+            prd: AGENT-DATA-002
+          annotations:
+            summary: "CRITICAL: Excel Normalizer database connection failures"
+            description: |
+              {{ $value | printf "%.0f" }} database errors in the last 5 minutes. The Excel
+              normalizer cannot persist normalization results, file metadata, or audit events.
+              All normalized data is at risk of being lost. Check PostgreSQL connectivity,
+              connection pool status, and database health.
+            runbook_url: "https://docs.greenlang.ai/runbooks/excel-normalizer/service-down"
+            dashboard_url: "https://grafana.greenlang.io/d/excel-normalizer-service"
+
+        # -------------------------------------------------------------------
+        # 12. ExcelHighMemoryUsage (warning >80%)
+        # -------------------------------------------------------------------
+        - alert: ExcelHighMemoryUsage
+          expr: |
+            (
+              container_memory_working_set_bytes{container="excel-normalizer-service"}
+              / container_spec_memory_limit_bytes{container="excel-normalizer-service"}
+            ) > 0.80
+          for: 15m
+          labels:
+            severity: warning
+            team: platform-data
+            component: excel-normalizer
+            prd: AGENT-DATA-002
+          annotations:
+            summary: "Excel Normalizer memory usage above 80%"
+            description: |
+              Excel normalizer container memory usage is at {{ $value | humanizePercentage }}
+              of its limit. High memory usage may be caused by large spreadsheet processing,
+              in-memory dataframe buffers, or high concurrency of normalization jobs. Consider
+              increasing memory limits or reducing max_concurrent_jobs.
+            runbook_url: "https://docs.greenlang.ai/runbooks/excel-normalizer/service-down"
+            dashboard_url: "https://grafana.greenlang.io/d/excel-normalizer-service"
+
+        # -------------------------------------------------------------------
+        # 13. ExcelPodRestarts (warning >3 in 15m)
+        # -------------------------------------------------------------------
+        - alert: ExcelPodRestarts
+          expr: |
+            increase(kube_pod_container_status_restarts_total{container="excel-normalizer-service"}[15m]) > 3
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-data
+            component: excel-normalizer
+            prd: AGENT-DATA-002
+          annotations:
+            summary: "Excel Normalizer pod restarting frequently (>3 restarts in 15m)"
+            description: |
+              Excel normalizer pod has restarted {{ $value | printf "%.0f" }} times in the last
+              15 minutes. Frequent restarts indicate OOMKills, liveness probe failures, or
+              application crashes. Check pod events, container logs, and resource utilization.
+              In-progress normalization jobs may be lost on restart.
+            runbook_url: "https://docs.greenlang.ai/runbooks/excel-normalizer/service-down"
+            dashboard_url: "https://grafana.greenlang.io/d/excel-normalizer-service"
+
+        # -------------------------------------------------------------------
+        # 14. ExcelNormalizationTimeout (warning)
+        # -------------------------------------------------------------------
+        - alert: ExcelNormalizationTimeout
+          expr: |
+            sum(rate(gl_excel_normalizer_jobs_total{status="timeout"}[5m])) > 0.1
+          for: 15m
+          labels:
+            severity: warning
+            team: platform-data
+            component: excel-normalizer
+            prd: AGENT-DATA-002
+          annotations:
+            summary: "Excel normalization timeouts detected"
+            description: |
+              Normalization timeouts are occurring at {{ $value | printf "%.2f" }} per second over
+              the last 5 minutes. Normalization jobs are exceeding their configured timeout, which
+              may indicate very large spreadsheets, complex transforms, or resource contention.
+              Review timeout configuration and file sizes.
+            runbook_url: "https://docs.greenlang.ai/runbooks/excel-normalizer/parsing-failures"
+            dashboard_url: "https://grafana.greenlang.io/d/excel-normalizer-service"
+
+        # -------------------------------------------------------------------
+        # 15. ExcelS3Error (warning)
+        # -------------------------------------------------------------------
+        - alert: ExcelS3Error
+          expr: |
+            increase(gl_excel_normalizer_s3_errors_total[5m]) > 5
+          for: 10m
+          labels:
+            severity: warning
+            team: platform-data
+            component: excel-normalizer
+            prd: AGENT-DATA-002
+          annotations:
+            summary: "S3 storage errors affecting Excel normalizer"
+            description: |
+              {{ $value | printf "%.0f" }} S3 errors in the last 5 minutes. Spreadsheet uploads
+              and downloads from S3 are failing. Check S3 bucket accessibility, IAM permissions,
+              network connectivity, and AWS service health.
+            runbook_url: "https://docs.greenlang.ai/runbooks/excel-normalizer/service-down"
+            dashboard_url: "https://grafana.greenlang.io/d/excel-normalizer-service"

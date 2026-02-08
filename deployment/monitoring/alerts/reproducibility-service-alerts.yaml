@@ -1,0 +1,454 @@
+# =============================================================================
+# GreenLang Reproducibility Agent - Alert Rules
+# =============================================================================
+# Component: AGENT-FOUND-008 Reproducibility Agent
+# Purpose: PrometheusRule alert definitions for service health, high failure
+#          rate, high latency, hash mismatches, drift detection (critical and
+#          moderate), replay failures, non-determinism detection, environment
+#          mismatches, high cache miss rate, audit gaps, database connection
+#          failures, high memory usage, pod restarts, and verification timeouts.
+# =============================================================================
+
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: greenlang-reproducibility-service-alerts
+  namespace: monitoring
+  labels:
+    app: greenlang
+    component: reproducibility
+    prometheus: kube-prometheus
+    role: alert-rules
+    release: gl-kube-prometheus
+    greenlang.io/component: agent-found-008
+  annotations:
+    description: "Alert rules for GreenLang Reproducibility Agent"
+    prd: AGENT-FOUND-008
+spec:
+  groups:
+    # =========================================================================
+    # Reproducibility Service Health Alerts
+    # =========================================================================
+    - name: greenlang.reproducibility.service_health
+      interval: 30s
+      rules:
+        # -------------------------------------------------------------------
+        # 1. ReproducibilityServiceDown (critical): No healthy pods for 5m
+        # -------------------------------------------------------------------
+        - alert: ReproducibilityServiceDown
+          expr: |
+            up{job="reproducibility-service"} == 0
+          for: 5m
+          labels:
+            severity: critical
+            team: platform-foundation
+            component: reproducibility
+            prd: AGENT-FOUND-008
+          annotations:
+            summary: "CRITICAL: Reproducibility Agent is down"
+            description: |
+              The GreenLang Reproducibility Agent is not responding to health checks
+              for 5 minutes. All determinism verification, artifact hashing, drift
+              detection, and replay operations are disrupted. Executions cannot be
+              verified for reproducibility, and drift baselines cannot be checked.
+            runbook_url: "https://docs.greenlang.ai/runbooks/reproducibility/service-down"
+            dashboard_url: "https://grafana.greenlang.io/d/reproducibility-service"
+
+        # -------------------------------------------------------------------
+        # 2. ReproducibilityHighFailureRate (warning >10%, critical >25%)
+        # -------------------------------------------------------------------
+        - alert: ReproducibilityHighFailureRateWarning
+          expr: |
+            (
+              sum(rate(gl_reproducibility_verifications_total{status="fail"}[5m]))
+              / sum(rate(gl_reproducibility_verifications_total[5m]))
+            ) > 0.10
+          for: 10m
+          labels:
+            severity: warning
+            team: platform-foundation
+            component: reproducibility
+            prd: AGENT-FOUND-008
+          annotations:
+            summary: "Reproducibility verification failure rate above 10%"
+            description: |
+              More than 10% of reproducibility verifications are failing. Current failure
+              rate is {{ $value | humanizePercentage }}. This may indicate environmental
+              drift, version mismatches, or non-deterministic execution in one or more agents.
+              Review verification details and non-determinism sources.
+            runbook_url: "https://docs.greenlang.ai/runbooks/reproducibility/high-failure-rate"
+            dashboard_url: "https://grafana.greenlang.io/d/reproducibility-service"
+
+        - alert: ReproducibilityHighFailureRateCritical
+          expr: |
+            (
+              sum(rate(gl_reproducibility_verifications_total{status="fail"}[5m]))
+              / sum(rate(gl_reproducibility_verifications_total[5m]))
+            ) > 0.25
+          for: 5m
+          labels:
+            severity: critical
+            team: platform-foundation
+            component: reproducibility
+            prd: AGENT-FOUND-008
+          annotations:
+            summary: "CRITICAL: Reproducibility verification failure rate above 25%"
+            description: |
+              More than 25% of reproducibility verifications are failing. Current failure
+              rate is {{ $value | humanizePercentage }}. This indicates a systemic issue
+              affecting execution reproducibility across the platform. Calculation results
+              cannot be trusted. Immediate investigation required.
+            runbook_url: "https://docs.greenlang.ai/runbooks/reproducibility/high-failure-rate-critical"
+            dashboard_url: "https://grafana.greenlang.io/d/reproducibility-service"
+
+    # =========================================================================
+    # Reproducibility Latency Alerts
+    # =========================================================================
+    - name: greenlang.reproducibility.latency
+      interval: 30s
+      rules:
+        # -------------------------------------------------------------------
+        # 3. ReproducibilityHighLatency (warning p99>2s, critical p99>5s)
+        # -------------------------------------------------------------------
+        - alert: ReproducibilityHighLatencyWarning
+          expr: |
+            histogram_quantile(0.99,
+              sum(rate(gl_reproducibility_verification_duration_seconds_bucket[5m])) by (le)
+            ) > 2
+          for: 10m
+          labels:
+            severity: warning
+            team: platform-foundation
+            component: reproducibility
+            prd: AGENT-FOUND-008
+          annotations:
+            summary: "Reproducibility verification p99 latency above 2s"
+            description: |
+              The p99 verification latency is {{ $value | printf "%.3f" }}s, exceeding the
+              2s warning threshold for 10 minutes. Verification should complete in under 1s
+              at p99. Investigate hash computation time, database query latency, and the
+              complexity of verification checks.
+            runbook_url: "https://docs.greenlang.ai/runbooks/reproducibility/high-latency"
+            dashboard_url: "https://grafana.greenlang.io/d/reproducibility-service"
+
+        - alert: ReproducibilityHighLatencyCritical
+          expr: |
+            histogram_quantile(0.99,
+              sum(rate(gl_reproducibility_verification_duration_seconds_bucket[5m])) by (le)
+            ) > 5
+          for: 5m
+          labels:
+            severity: critical
+            team: platform-foundation
+            component: reproducibility
+            prd: AGENT-FOUND-008
+          annotations:
+            summary: "CRITICAL: Reproducibility verification p99 latency above 5s"
+            description: |
+              The p99 verification latency is {{ $value | printf "%.3f" }}s, exceeding the
+              critical 5s threshold. This will cause downstream timeouts in the orchestrator
+              and other agents that depend on verification results. Immediate investigation
+              required. Check database locks, cache exhaustion, and connection pool saturation.
+            runbook_url: "https://docs.greenlang.ai/runbooks/reproducibility/high-latency-critical"
+            dashboard_url: "https://grafana.greenlang.io/d/reproducibility-service"
+
+    # =========================================================================
+    # Reproducibility Data Integrity Alerts
+    # =========================================================================
+    - name: greenlang.reproducibility.data_integrity
+      interval: 30s
+      rules:
+        # -------------------------------------------------------------------
+        # 4. ReproducibilityHashMismatch (critical): any hash mismatch
+        # -------------------------------------------------------------------
+        - alert: ReproducibilityHashMismatch
+          expr: |
+            increase(gl_reproducibility_hash_mismatches_total[5m]) > 0
+          for: 0m
+          labels:
+            severity: critical
+            team: platform-foundation
+            component: reproducibility
+            prd: AGENT-FOUND-008
+          annotations:
+            summary: "CRITICAL: Artifact hash mismatch detected"
+            description: |
+              {{ $value | printf "%.0f" }} artifact hash mismatch(es) detected in the last
+              5 minutes. An artifact hash mismatch means the output of an execution differs
+              from a previous run with identical inputs, indicating non-deterministic behavior.
+              This is a critical data integrity issue for climate calculations. Investigate
+              the affected execution and identify the source of non-determinism.
+            runbook_url: "https://docs.greenlang.ai/runbooks/reproducibility/hash-mismatch"
+            dashboard_url: "https://grafana.greenlang.io/d/reproducibility-service"
+
+        # -------------------------------------------------------------------
+        # 5. ReproducibilityDriftCritical (critical): severity=critical
+        # -------------------------------------------------------------------
+        - alert: ReproducibilityDriftCritical
+          expr: |
+            increase(gl_reproducibility_drift_detections_total{severity="critical"}[5m]) > 0
+          for: 0m
+          labels:
+            severity: critical
+            team: platform-foundation
+            component: reproducibility
+            prd: AGENT-FOUND-008
+          annotations:
+            summary: "CRITICAL: Critical drift detected in execution output"
+            description: |
+              {{ $value | printf "%.0f" }} critical drift detection(s) in the last 5 minutes.
+              Critical drift means execution output has deviated significantly from the
+              established baseline (>5% drift). Climate calculation results may be unreliable.
+              Investigate the affected baseline, execution parameters, and environmental changes.
+            runbook_url: "https://docs.greenlang.ai/runbooks/reproducibility/drift-detection"
+            dashboard_url: "https://grafana.greenlang.io/d/reproducibility-service"
+
+        # -------------------------------------------------------------------
+        # 6. ReproducibilityDriftModerate (warning): severity=moderate
+        # -------------------------------------------------------------------
+        - alert: ReproducibilityDriftModerate
+          expr: |
+            increase(gl_reproducibility_drift_detections_total{severity="moderate"}[15m]) > 3
+          for: 10m
+          labels:
+            severity: warning
+            team: platform-foundation
+            component: reproducibility
+            prd: AGENT-FOUND-008
+          annotations:
+            summary: "Moderate drift detected in execution output"
+            description: |
+              {{ $value | printf "%.0f" }} moderate drift detections in the last 15 minutes.
+              Moderate drift (1-5%) indicates gradual output deviation from baselines. This
+              may be caused by updated emission factors, model version changes, or accumulated
+              floating-point drift. Review the affected baselines and consider updating them
+              if the drift is expected.
+            runbook_url: "https://docs.greenlang.ai/runbooks/reproducibility/drift-detection"
+            dashboard_url: "https://grafana.greenlang.io/d/reproducibility-service"
+
+    # =========================================================================
+    # Replay & Non-Determinism Alerts
+    # =========================================================================
+    - name: greenlang.reproducibility.replay
+      interval: 30s
+      rules:
+        # -------------------------------------------------------------------
+        # 7. ReproducibilityReplayFailure (warning): replay failures
+        # -------------------------------------------------------------------
+        - alert: ReproducibilityReplayFailure
+          expr: |
+            (
+              sum(rate(gl_reproducibility_replay_sessions_total{status="failed"}[5m]))
+              / sum(rate(gl_reproducibility_replay_sessions_total[5m]))
+            ) > 0.20
+          for: 15m
+          labels:
+            severity: warning
+            team: platform-foundation
+            component: reproducibility
+            prd: AGENT-FOUND-008
+          annotations:
+            summary: "Reproducibility replay failure rate above 20%"
+            description: |
+              More than 20% of replay sessions are failing. Current failure rate is
+              {{ $value | humanizePercentage }}. Failed replays mean executions cannot be
+              reproduced, which may indicate environmental differences, seed mismatches,
+              or version changes since the original execution. Review replay details
+              for specific failure reasons.
+            runbook_url: "https://docs.greenlang.ai/runbooks/reproducibility/replay-failure"
+            dashboard_url: "https://grafana.greenlang.io/d/reproducibility-service"
+
+        # -------------------------------------------------------------------
+        # 8. ReproducibilityNonDeterminismDetected (warning)
+        # -------------------------------------------------------------------
+        - alert: ReproducibilityNonDeterminismDetected
+          expr: |
+            sum(rate(gl_reproducibility_non_determinism_total[5m])) > 0.5
+          for: 15m
+          labels:
+            severity: warning
+            team: platform-foundation
+            component: reproducibility
+            prd: AGENT-FOUND-008
+          annotations:
+            summary: "Non-determinism detected in execution pipeline"
+            description: |
+              Non-deterministic behavior is being detected at {{ $value | printf "%.2f" }}
+              occurrences per second over the last 5 minutes. Common sources include
+              floating-point accumulation order, unseeded random number generators, parallel
+              execution scheduling, system time dependencies, and hash ordering. Review the
+              non-determinism source breakdown in the dashboard.
+            runbook_url: "https://docs.greenlang.ai/runbooks/reproducibility/non-determinism"
+            dashboard_url: "https://grafana.greenlang.io/d/reproducibility-service"
+
+        # -------------------------------------------------------------------
+        # 9. ReproducibilityEnvironmentMismatch (warning)
+        # -------------------------------------------------------------------
+        - alert: ReproducibilityEnvironmentMismatch
+          expr: |
+            sum(rate(gl_reproducibility_environment_mismatches_total[5m])) > 0.1
+          for: 15m
+          labels:
+            severity: warning
+            team: platform-foundation
+            component: reproducibility
+            prd: AGENT-FOUND-008
+          annotations:
+            summary: "Environment mismatches detected during verification"
+            description: |
+              Environment fingerprint mismatches are being detected at {{ $value | printf "%.2f" }}
+              per second. This means executions are running in different environments than their
+              original runs (different Python version, dependency versions, or platform). This
+              may cause non-reproducible results. Review the environment comparison details
+              and ensure consistent deployment environments.
+            runbook_url: "https://docs.greenlang.ai/runbooks/reproducibility/environment-mismatch"
+            dashboard_url: "https://grafana.greenlang.io/d/reproducibility-service"
+
+    # =========================================================================
+    # Infrastructure Alerts
+    # =========================================================================
+    - name: greenlang.reproducibility.infrastructure
+      interval: 30s
+      rules:
+        # -------------------------------------------------------------------
+        # 10. ReproducibilityHighCacheMissRate (warning >50%)
+        # -------------------------------------------------------------------
+        - alert: ReproducibilityHighCacheMissRate
+          expr: |
+            (
+              sum(rate(gl_reproducibility_cache_misses_total[5m]))
+              / (sum(rate(gl_reproducibility_cache_hits_total[5m])) + sum(rate(gl_reproducibility_cache_misses_total[5m])))
+            ) > 0.50
+          for: 30m
+          labels:
+            severity: warning
+            team: platform-foundation
+            component: reproducibility
+            prd: AGENT-FOUND-008
+          annotations:
+            summary: "Reproducibility cache miss rate above 50%"
+            description: |
+              Cache miss rate is {{ $value | humanizePercentage }} over the last 5 minutes.
+              High cache miss rates increase hash computation latency and database load.
+              Check cache TTL settings, Redis connectivity, and whether the working set
+              has exceeded the cache capacity.
+            runbook_url: "https://docs.greenlang.ai/runbooks/reproducibility/cache-miss-rate"
+            dashboard_url: "https://grafana.greenlang.io/d/reproducibility-service"
+
+        # -------------------------------------------------------------------
+        # 11. ReproducibilityAuditGap (critical)
+        # -------------------------------------------------------------------
+        - alert: ReproducibilityAuditGap
+          expr: |
+            (
+              sum(rate(gl_reproducibility_verifications_total[5m]))
+              - sum(rate(gl_reproducibility_audit_events_total[5m]))
+            ) > 0.5
+          for: 30m
+          labels:
+            severity: critical
+            team: platform-foundation
+            component: reproducibility
+            prd: AGENT-FOUND-008
+          annotations:
+            summary: "CRITICAL: Audit gap detected - verification operations without audit entries"
+            description: |
+              The rate of verification operations exceeds the rate of audit event writes by
+              {{ $value | printf "%.2f" }} operations/second over the last 30 minutes. This
+              indicates that reproducibility checks are occurring without corresponding audit
+              trail entries, which violates compliance requirements for traceable climate
+              calculations. Investigate audit write failures and database connectivity.
+            runbook_url: "https://docs.greenlang.ai/runbooks/reproducibility/audit-gap"
+            dashboard_url: "https://grafana.greenlang.io/d/reproducibility-service"
+
+        # -------------------------------------------------------------------
+        # 12. ReproducibilityDatabaseConnectionFailure (critical)
+        # -------------------------------------------------------------------
+        - alert: ReproducibilityDatabaseConnectionFailure
+          expr: |
+            increase(gl_reproducibility_database_errors_total[5m]) > 5
+          for: 5m
+          labels:
+            severity: critical
+            team: platform-foundation
+            component: reproducibility
+            prd: AGENT-FOUND-008
+          annotations:
+            summary: "CRITICAL: Reproducibility service database connection failures"
+            description: |
+              {{ $value | printf "%.0f" }} database errors in the last 5 minutes. The
+              reproducibility service cannot persist verification results, artifact hashes,
+              or drift detections. All reproducibility data is at risk of being lost.
+              Check PostgreSQL connectivity, connection pool status, and database health.
+            runbook_url: "https://docs.greenlang.ai/runbooks/reproducibility/database-failure"
+            dashboard_url: "https://grafana.greenlang.io/d/reproducibility-service"
+
+        # -------------------------------------------------------------------
+        # 13. ReproducibilityHighMemoryUsage (warning >80%)
+        # -------------------------------------------------------------------
+        - alert: ReproducibilityHighMemoryUsage
+          expr: |
+            (
+              container_memory_working_set_bytes{container="reproducibility-service"}
+              / container_spec_memory_limit_bytes{container="reproducibility-service"}
+            ) > 0.80
+          for: 15m
+          labels:
+            severity: warning
+            team: platform-foundation
+            component: reproducibility
+            prd: AGENT-FOUND-008
+          annotations:
+            summary: "Reproducibility service memory usage above 80%"
+            description: |
+              Reproducibility service container memory usage is at {{ $value | humanizePercentage }}
+              of its limit. High memory usage may be caused by large artifact hash caches,
+              in-memory fingerprint comparisons, or high concurrency of verification runs.
+              Consider increasing memory limits or reducing cache max size.
+            runbook_url: "https://docs.greenlang.ai/runbooks/reproducibility/high-memory"
+            dashboard_url: "https://grafana.greenlang.io/d/reproducibility-service"
+
+        # -------------------------------------------------------------------
+        # 14. ReproducibilityPodRestarts (warning >3 in 15m)
+        # -------------------------------------------------------------------
+        - alert: ReproducibilityPodRestarts
+          expr: |
+            increase(kube_pod_container_status_restarts_total{container="reproducibility-service"}[15m]) > 3
+          for: 5m
+          labels:
+            severity: warning
+            team: platform-foundation
+            component: reproducibility
+            prd: AGENT-FOUND-008
+          annotations:
+            summary: "Reproducibility service pod restarting frequently (>3 restarts in 15m)"
+            description: |
+              Reproducibility service pod has restarted {{ $value | printf "%.0f" }} times in
+              the last 15 minutes. Frequent restarts indicate OOMKills, liveness probe failures,
+              or application crashes. Check pod events, container logs, and resource utilization.
+              In-progress verifications and replay sessions may be interrupted.
+            runbook_url: "https://docs.greenlang.ai/runbooks/reproducibility/pod-restarting"
+            dashboard_url: "https://grafana.greenlang.io/d/reproducibility-service"
+
+        # -------------------------------------------------------------------
+        # 15. ReproducibilityVerificationTimeout (warning)
+        # -------------------------------------------------------------------
+        - alert: ReproducibilityVerificationTimeout
+          expr: |
+            sum(rate(gl_reproducibility_verification_timeouts_total[5m])) > 0.1
+          for: 15m
+          labels:
+            severity: warning
+            team: platform-foundation
+            component: reproducibility
+            prd: AGENT-FOUND-008
+          annotations:
+            summary: "Reproducibility verification timeouts detected"
+            description: |
+              Verification timeouts are occurring at {{ $value | printf "%.2f" }} per second
+              over the last 5 minutes. Verification operations are exceeding their configured
+              timeout, which may indicate slow hash computations, database query delays,
+              or large artifact sizes. Review timeout configuration and consider increasing
+              timeouts or optimizing hash computation.
+            runbook_url: "https://docs.greenlang.ai/runbooks/reproducibility/verification-timeout"
+            dashboard_url: "https://grafana.greenlang.io/d/reproducibility-service"

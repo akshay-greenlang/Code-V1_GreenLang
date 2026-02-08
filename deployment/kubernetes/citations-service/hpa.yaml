@@ -1,0 +1,87 @@
+# =============================================================================
+# GreenLang Citations & Evidence Agent Service - Horizontal Pod Autoscaler
+# =============================================================================
+# HPA for citations service: scales based on CPU and memory utilization.
+# Scales from 2 to 8 replicas. Conservative scale-down to prevent
+# citation resolution disruption during transient load spikes from
+# batch verification or evidence package finalization requests.
+# PRD: AGENT-FOUND-005
+# =============================================================================
+
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: citations-service-hpa
+  namespace: greenlang
+  labels:
+    app: citations-service
+    app.kubernetes.io/name: citations-service
+    app.kubernetes.io/component: autoscaling
+    app.kubernetes.io/part-of: greenlang
+  annotations:
+    description: "HPA for Citations & Evidence Agent Service based on CPU and memory utilization"
+    prd: AGENT-FOUND-005
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: citations-service
+  minReplicas: 2
+  maxReplicas: 8
+  metrics:
+    # CPU-based scaling
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    # Memory-based scaling
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+  behavior:
+    # Scale up: moderate for handling batch citation operations
+    scaleUp:
+      stabilizationWindowSeconds: 120
+      policies:
+        - type: Pods
+          value: 2
+          periodSeconds: 60
+        - type: Percent
+          value: 50
+          periodSeconds: 60
+      selectPolicy: Max
+    # Scale down: conservative to maintain citation resolution continuity
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Pods
+          value: 1
+          periodSeconds: 120
+      selectPolicy: Min
+
+---
+# =============================================================================
+# Pod Disruption Budget - Citations & Evidence Agent Service
+# =============================================================================
+
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: citations-service-pdb
+  namespace: greenlang
+  labels:
+    app: citations-service
+    app.kubernetes.io/name: citations-service
+    app.kubernetes.io/component: citations
+    app.kubernetes.io/part-of: greenlang
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: citations-service
+      app.kubernetes.io/component: citations

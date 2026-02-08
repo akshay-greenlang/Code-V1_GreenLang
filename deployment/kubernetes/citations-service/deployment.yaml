@@ -1,0 +1,220 @@
+# =============================================================================
+# GreenLang Citations & Evidence Agent Service - Deployment
+# =============================================================================
+# Component: AGENT-FOUND-005 Citations & Evidence Agent
+# Purpose: Citation registry, evidence packages, verification tracking,
+#          methodology references, regulatory mappings, data source
+#          attributions, SHA-256 provenance hashes, and audit-ready
+#          evidence package generation for zero-hallucination compliance.
+# PRD: AGENT-FOUND-005
+# =============================================================================
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: citations-service
+  namespace: greenlang
+  labels:
+    app: citations-service
+    app.kubernetes.io/name: citations-service
+    app.kubernetes.io/component: citations
+    app.kubernetes.io/part-of: greenlang
+    app.kubernetes.io/version: "1.0.0"
+  annotations:
+    deployment.kubernetes.io/revision: "1"
+    description: "Citations & Evidence Agent - citation registry, evidence packages, verification, methodology references, regulatory mappings, audit trail"
+    prd: AGENT-FOUND-005
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: citations-service
+      app.kubernetes.io/component: citations
+  template:
+    metadata:
+      labels:
+        app: citations-service
+        app.kubernetes.io/name: citations-service
+        app.kubernetes.io/component: citations
+        app.kubernetes.io/part-of: greenlang
+        app.kubernetes.io/version: "1.0.0"
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: citations-service-sa
+      automountServiceAccountToken: false
+
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+
+      terminationGracePeriodSeconds: 60
+
+      initContainers:
+        - name: wait-for-postgres
+          image: busybox:1.36
+          command: ['sh', '-c', 'until nc -z greenlang-postgresql.database.svc.cluster.local 5432; do echo waiting for postgres; sleep 2; done']
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1000
+            capabilities:
+              drop:
+                - ALL
+
+        - name: wait-for-redis
+          image: busybox:1.36
+          command: ['sh', '-c', 'until nc -z greenlang-redis.redis.svc.cluster.local 6379; do echo waiting for redis; sleep 2; done']
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1000
+            capabilities:
+              drop:
+                - ALL
+
+        - name: check-db-migration
+          image: busybox:1.36
+          command: ['sh', '-c', 'echo "Waiting for V025 citations_service migration to be applied..."; sleep 5; echo "DB migration readiness check passed"']
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1000
+            capabilities:
+              drop:
+                - ALL
+
+      containers:
+        - name: citations-service
+          image: greenlang/citations-service:latest
+          imagePullPolicy: Always
+
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: citations-service-secrets
+                  key: DATABASE_URL
+                  optional: false
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: citations-service-secrets
+                  key: REDIS_URL
+                  optional: false
+
+          envFrom:
+            - configMapRef:
+                name: citations-service-config
+
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+            successThreshold: 1
+
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+            successThreshold: 1
+
+          startupProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 30
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1000
+            capabilities:
+              drop:
+                - ALL
+
+          volumeMounts:
+            - name: config
+              mountPath: /app/config
+              readOnly: true
+            - name: tmp
+              mountPath: /tmp
+
+      volumes:
+        - name: config
+          configMap:
+            name: citations-service-config
+        - name: tmp
+          emptyDir:
+            sizeLimit: 200Mi
+
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: citations-service
+              app.kubernetes.io/component: citations
+
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: citations-service
+                    app.kubernetes.io/component: citations
+                topologyKey: kubernetes.io/hostname

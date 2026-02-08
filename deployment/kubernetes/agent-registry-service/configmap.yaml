@@ -1,0 +1,140 @@
+# =============================================================================
+# GreenLang Agent Registry & Service Catalog - ConfigMap
+# =============================================================================
+# Configuration for agent registry, version management, capability definitions,
+# dependency resolution, health monitoring, service catalog, caching,
+# and metrics.
+# PRD: AGENT-FOUND-007
+# =============================================================================
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: agent-registry-service-config
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: agent-registry-service
+    app.kubernetes.io/component: configuration
+    app.kubernetes.io/part-of: greenlang
+  annotations:
+    description: "Agent Registry & Service Catalog configuration - registry, versioning, capabilities, dependencies, health, catalog"
+    prd: AGENT-FOUND-007
+data:
+  # Environment
+  ENVIRONMENT: "production"
+
+  # Logging
+  GL_AGENT_REGISTRY_LOG_LEVEL: "INFO"
+  LOG_FORMAT: "json"
+
+  # Database (connection string via secret, schema config here)
+  GL_AGENT_REGISTRY_DB_SCHEMA: "agent_registry_service"
+  GL_AGENT_REGISTRY_DB_POOL_MIN: "2"
+  GL_AGENT_REGISTRY_DB_POOL_MAX: "10"
+
+  # Redis
+  GL_AGENT_REGISTRY_REDIS_PREFIX: "gl:agent_registry:"
+  GL_AGENT_REGISTRY_REDIS_TTL: "300"
+
+  # Cache Configuration
+  GL_AGENT_REGISTRY_CACHE_TTL_SECONDS: "300"
+  GL_AGENT_REGISTRY_CACHE_MAX_SIZE: "2000"
+  GL_AGENT_REGISTRY_AGENT_CACHE_TTL: "600"
+  GL_AGENT_REGISTRY_CAPABILITY_CACHE_TTL: "600"
+  GL_AGENT_REGISTRY_DEPENDENCY_CACHE_TTL: "300"
+
+  # Registry Configuration
+  GL_AGENT_REGISTRY_HOT_RELOAD_ENABLED: "true"
+  GL_AGENT_REGISTRY_HOT_RELOAD_INTERVAL_SECONDS: "30"
+  GL_AGENT_REGISTRY_MAX_VERSIONS_PER_AGENT: "50"
+  GL_AGENT_REGISTRY_MAX_CAPABILITIES_PER_AGENT: "100"
+  GL_AGENT_REGISTRY_MAX_DEPENDENCIES_PER_AGENT: "20"
+
+  # Health Monitoring Configuration
+  GL_AGENT_REGISTRY_HEALTH_CHECK_ENABLED: "true"
+  GL_AGENT_REGISTRY_HEALTH_CHECK_INTERVAL_SECONDS: "60"
+  GL_AGENT_REGISTRY_HEALTH_CHECK_TIMEOUT_MS: "5000"
+  GL_AGENT_REGISTRY_HEALTH_CHECK_RETENTION_DAYS: "30"
+
+  # Dependency Resolution
+  GL_AGENT_REGISTRY_CYCLE_DETECTION_ENABLED: "true"
+  GL_AGENT_REGISTRY_VERSION_MATCHING: "semver"
+  GL_AGENT_REGISTRY_RESOLVE_OPTIONAL_DEPS: "true"
+
+  # Service Catalog
+  GL_AGENT_REGISTRY_CATALOG_ENABLED: "true"
+  GL_AGENT_REGISTRY_CATALOG_AUTO_PUBLISH: "false"
+
+  # Metrics
+  GL_AGENT_REGISTRY_ENABLE_METRICS: "true"
+  METRICS_PORT: "8080"
+  METRICS_PATH: "/metrics"
+
+  # Tracing
+  TRACING_ENABLED: "true"
+  TRACING_SAMPLE_RATE: "0.1"
+  OTEL_ENDPOINT: "http://otel-collector.monitoring.svc.cluster.local:4317"
+  OTEL_SERVICE_NAME: "agent-registry-service"
+
+  # Agent registry service configuration file
+  agent-registry-config.yaml: |
+    agent_registry_service:
+      version: "1.0.0"
+      environment: production
+
+      registry:
+        hot_reload_enabled: true
+        hot_reload_interval_seconds: 30
+        max_versions_per_agent: 50
+        max_capabilities_per_agent: 100
+        max_dependencies_per_agent: 20
+        provenance_hash_algorithm: sha256
+
+      health_monitoring:
+        enabled: true
+        check_interval_seconds: 60
+        timeout_ms: 5000
+        retention_days: 30
+        probe_types:
+          - liveness
+          - readiness
+          - startup
+          - deep
+
+      dependency_resolution:
+        cycle_detection: true
+        version_matching: semver
+        resolve_optional: true
+        max_depth: 10
+
+      service_catalog:
+        enabled: true
+        auto_publish: false
+        categories:
+          - foundation
+          - domain
+          - orchestration
+          - security
+          - integration
+          - reporting
+          - utility
+
+      cache:
+        ttl_seconds: 300
+        max_size: 2000
+        agent_cache_ttl: 600
+        capability_cache_ttl: 600
+        dependency_cache_ttl: 300
+        warmup_on_startup: true
+
+      metrics:
+        enabled: true
+        prefix: gl_agent_registry
+        histogram_buckets: [0.001, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10]
+
+      integration:
+        auth_enabled: true
+        audit_enabled: true
+        alerting_enabled: true
+        feature_flags_enabled: true
+        access_guard_enabled: true

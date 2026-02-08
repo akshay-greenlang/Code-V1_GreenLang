@@ -1,0 +1,50 @@
+# =============================================================================
+# GreenLang Citations & Evidence Agent Service - Prometheus ServiceMonitor
+# =============================================================================
+# Configures Prometheus to scrape metrics from the citations service.
+# Scrape interval: 15s, port 8080, path /metrics.
+# PRD: AGENT-FOUND-005
+# =============================================================================
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: citations-service
+  namespace: monitoring
+  labels:
+    app: citations-service
+    app.kubernetes.io/name: citations-service
+    app.kubernetes.io/component: citations
+    app.kubernetes.io/part-of: greenlang
+    prometheus: kube-prometheus
+    release: gl-kube-prometheus
+    greenlang.io/component: agent-found-005
+  annotations:
+    description: "ServiceMonitor for GreenLang Citations & Evidence Agent Service"
+    prd: AGENT-FOUND-005
+spec:
+  jobLabel: citations-service
+  namespaceSelector:
+    matchNames:
+      - greenlang
+  selector:
+    matchLabels:
+      app: citations-service
+      app.kubernetes.io/component: citations
+  endpoints:
+    - port: http
+      interval: 15s
+      scrapeTimeout: 10s
+      path: /metrics
+      scheme: http
+      metricRelabelings:
+        # Drop high-cardinality internal Go metrics
+        - sourceLabels: [__name__]
+          regex: "go_gc_.*"
+          action: drop
+        # Add service label
+        - targetLabel: service
+          replacement: citations-service
+        # Add component label
+        - targetLabel: component
+          replacement: agent-found-005
