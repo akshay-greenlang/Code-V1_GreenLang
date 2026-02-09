@@ -1,0 +1,62 @@
+# =============================================================================
+# GreenLang Deforestation Satellite Connector Service - Prometheus ServiceMonitor
+# =============================================================================
+# ServiceMonitor for Prometheus Operator to scrape /metrics from the
+# Deforestation Satellite Connector Service every 30 seconds. Includes metric
+# relabelings for consistent labeling across the GreenLang observability stack.
+# PRD: AGENT-DATA-007
+# =============================================================================
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: deforestation-satellite-service-monitor
+  namespace: greenlang
+  labels:
+    app: deforestation-satellite-service
+    app.kubernetes.io/name: deforestation-satellite-service
+    app.kubernetes.io/component: data-intake
+    app.kubernetes.io/part-of: greenlang
+    agent-id: GL-DATA-GEO-003
+    component: data-intake
+    release: prometheus
+  annotations:
+    description: "Prometheus ServiceMonitor for Deforestation Satellite Connector Service metrics"
+    prd: AGENT-DATA-007
+spec:
+  selector:
+    matchLabels:
+      app: deforestation-satellite-service
+      component: data-intake
+      agent-id: GL-DATA-GEO-003
+  namespaceSelector:
+    matchNames:
+      - greenlang
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s
+      honorLabels: true
+      metricRelabelings:
+        # Add consistent component label
+        - sourceLabels: [__name__]
+          regex: "gl_deforestation_sat_(.*)"
+          targetLabel: component
+          replacement: "deforestation-satellite-service"
+        # Add PRD label for correlation
+        - sourceLabels: [__name__]
+          regex: "gl_deforestation_sat_(.*)"
+          targetLabel: prd
+          replacement: "AGENT-DATA-007"
+        # Drop high-cardinality debug metrics in production
+        - sourceLabels: [__name__]
+          regex: "gl_deforestation_sat_debug_.*"
+          action: drop
+      relabelings:
+        # Add pod name label
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod
+        # Add node name label
+        - sourceLabels: [__meta_kubernetes_pod_node_name]
+          targetLabel: node

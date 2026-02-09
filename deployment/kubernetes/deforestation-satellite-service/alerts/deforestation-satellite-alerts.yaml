@@ -1,0 +1,424 @@
+# =============================================================================
+# GreenLang Deforestation Satellite Connector Service - Prometheus Alert Rules
+# =============================================================================
+# Component: AGENT-DATA-007 Deforestation Satellite Connector (GL-DATA-GEO-003)
+# Purpose: Alert rules for deforestation satellite connector monitoring, covering
+#          error rates, scene acquisition latency, pipeline performance, change
+#          detection, compliance reporting, alert volume, baseline checks,
+#          classification errors, and service availability.
+# PRD: AGENT-DATA-007
+# =============================================================================
+
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: deforestation-satellite-alerts
+  namespace: greenlang
+  labels:
+    app: deforestation-satellite-service
+    app.kubernetes.io/name: deforestation-satellite-alerts
+    app.kubernetes.io/component: deforestation-satellite
+    app.kubernetes.io/part-of: greenlang
+    prometheus: kube-prometheus
+    release: gl-kube-prometheus
+    greenlang.io/component: agent-data-007
+    component: data-intake
+  annotations:
+    description: "PrometheusRule alert definitions for Deforestation Satellite Connector Service"
+    prd: AGENT-DATA-007
+spec:
+  groups:
+    # =========================================================================
+    # Error Rate Alerts
+    # =========================================================================
+    - name: deforestation-satellite.errors
+      interval: 30s
+      rules:
+        # Rule 1: High error rate (errors > 5% of total operations)
+        - alert: DeforestationSatelliteHighErrorRate
+          expr: |
+            (
+              sum(rate(gl_deforestation_sat_processing_errors_total[5m]))
+              /
+              (sum(rate(gl_deforestation_sat_scenes_acquired_total[5m])) + sum(rate(gl_deforestation_sat_pipeline_runs_total[5m])) + sum(rate(gl_deforestation_sat_change_detections_total[5m])))
+            ) > 0.05
+          for: 5m
+          labels:
+            severity: critical
+            component: data-intake
+            service: deforestation-satellite-service
+            team: agent-data
+          annotations:
+            summary: "Deforestation Satellite Connector error rate exceeds 5%"
+            description: >-
+              The Deforestation Satellite Connector Service is experiencing an
+              error rate of {{ $value | humanizePercentage }} (threshold: 5%)
+              over the last 5 minutes. This indicates systemic failures in
+              satellite scene processing, change detection, or pipeline execution.
+              Investigate engine-level errors, upstream satellite API connectivity,
+              and resource availability immediately.
+            dashboard_url: "https://grafana.greenlang.io/d/deforestation-satellite-service"
+            runbook_url: "https://runbooks.greenlang.io/agent-data/deforestation-satellite/high-error-rate"
+
+    # =========================================================================
+    # Scene Acquisition Alerts
+    # =========================================================================
+    - name: deforestation-satellite.acquisition
+      interval: 30s
+      rules:
+        # Rule 2: Slow scene acquisition (p99 > 60s)
+        - alert: DeforestationSatelliteSceneAcquisitionSlow
+          expr: |
+            histogram_quantile(0.99, sum(rate(gl_deforestation_sat_acquisition_duration_seconds_bucket[5m])) by (le)) > 60
+          for: 10m
+          labels:
+            severity: warning
+            component: data-intake
+            service: deforestation-satellite-service
+            team: agent-data
+          annotations:
+            summary: "Deforestation Satellite scene acquisition p99 exceeds 60s"
+            description: >-
+              The 99th percentile scene acquisition duration for the Deforestation
+              Satellite Connector is {{ $value | humanizeDuration }} (threshold: 60s).
+              Slow acquisitions delay the entire deforestation monitoring pipeline
+              and may cause compliance report generation to miss SLO deadlines.
+              Investigate satellite API response times, network latency, and
+              scene download bandwidth.
+            dashboard_url: "https://grafana.greenlang.io/d/deforestation-satellite-service"
+            runbook_url: "https://runbooks.greenlang.io/agent-data/deforestation-satellite/slow-acquisition"
+
+        # Rule 3: No scenes acquired in 1 hour
+        - alert: DeforestationSatelliteNoScenesAcquired
+          expr: |
+            increase(gl_deforestation_sat_scenes_acquired_total[1h]) == 0
+          for: 1h
+          labels:
+            severity: warning
+            component: data-intake
+            service: deforestation-satellite-service
+            team: agent-data
+          annotations:
+            summary: "No satellite scenes acquired in the past hour"
+            description: >-
+              The Deforestation Satellite Connector has not acquired any new
+              satellite scenes in the past hour. This may indicate upstream
+              satellite data provider outages (Sentinel-2, Landsat, Planet),
+              authentication failures, API rate limiting, or network connectivity
+              issues. Verify satellite API credentials, provider status pages,
+              and monitoring job configurations.
+            dashboard_url: "https://grafana.greenlang.io/d/deforestation-satellite-service"
+            runbook_url: "https://runbooks.greenlang.io/agent-data/deforestation-satellite/no-scenes"
+
+    # =========================================================================
+    # Pipeline Performance Alerts
+    # =========================================================================
+    - name: deforestation-satellite.pipeline
+      interval: 30s
+      rules:
+        # Rule 4: Pipeline failures > 3 in 15 minutes
+        - alert: DeforestationSatellitePipelineFailures
+          expr: |
+            increase(gl_deforestation_sat_pipeline_runs_total{status="failed"}[15m]) > 3
+          for: 1m
+          labels:
+            severity: critical
+            component: data-intake
+            service: deforestation-satellite-service
+            team: agent-data
+          annotations:
+            summary: "Deforestation Satellite pipeline failures exceed threshold"
+            description: >-
+              The Deforestation Satellite Connector has experienced
+              {{ $value | humanize }} pipeline failures in the last 15 minutes
+              (threshold: 3). Multiple pipeline failures indicate a systemic
+              issue that is preventing satellite scene processing from completing.
+              Investigate pipeline stage logs, input data integrity, compute
+              resource limits, and dependency service health.
+            dashboard_url: "https://grafana.greenlang.io/d/deforestation-satellite-service"
+            runbook_url: "https://runbooks.greenlang.io/agent-data/deforestation-satellite/pipeline-failures"
+
+        # Rule 5: Pipeline duration > 300s
+        - alert: DeforestationSatellitePipelineSlow
+          expr: |
+            histogram_quantile(0.95, sum(rate(gl_deforestation_sat_pipeline_duration_seconds_bucket[5m])) by (le)) > 300
+          for: 10m
+          labels:
+            severity: warning
+            component: data-intake
+            service: deforestation-satellite-service
+            team: agent-data
+          annotations:
+            summary: "Deforestation Satellite pipeline p95 duration exceeds 300s"
+            description: >-
+              The 95th percentile pipeline duration for the Deforestation Satellite
+              Connector is {{ $value | humanizeDuration }} (threshold: 300s / 5 min).
+              Slow pipelines delay deforestation change detection results and
+              may cause compliance reporting deadlines to be missed. Investigate
+              which pipeline stage is the bottleneck, check for large scene
+              payloads, and verify compute resource allocation.
+            dashboard_url: "https://grafana.greenlang.io/d/deforestation-satellite-service"
+            runbook_url: "https://runbooks.greenlang.io/agent-data/deforestation-satellite/slow-pipeline"
+
+    # =========================================================================
+    # Alert & Detection Alerts
+    # =========================================================================
+    - name: deforestation-satellite.detections
+      interval: 30s
+      rules:
+        # Rule 6: Critical severity alerts detected (notify)
+        - alert: DeforestationSatelliteCriticalAlerts
+          expr: |
+            increase(gl_deforestation_sat_alerts_processed_total{severity="critical"}[15m]) > 0
+          for: 1m
+          labels:
+            severity: info
+            component: data-intake
+            service: deforestation-satellite-service
+            team: agent-data
+          annotations:
+            summary: "Critical deforestation alerts detected"
+            description: >-
+              The Deforestation Satellite Connector has detected
+              {{ $value | humanize }} critical-severity deforestation alerts in
+              the last 15 minutes. Critical alerts indicate large-scale or
+              high-confidence deforestation events that may require immediate
+              stakeholder notification, regulatory reporting, or supply chain
+              intervention. Review alert details in the dashboard.
+            dashboard_url: "https://grafana.greenlang.io/d/deforestation-satellite-service"
+            runbook_url: "https://runbooks.greenlang.io/agent-data/deforestation-satellite/critical-alerts"
+
+        # Rule 7: Post-cutoff high-confidence alerts (EUDR critical)
+        - alert: DeforestationSatellitePostCutoffAlerts
+          expr: |
+            increase(gl_deforestation_sat_alerts_processed_total{post_cutoff="true", confidence="high"}[1h]) > 0
+          for: 1m
+          labels:
+            severity: critical
+            component: data-intake
+            service: deforestation-satellite-service
+            team: agent-data
+          annotations:
+            summary: "Post-cutoff high-confidence deforestation alerts detected"
+            description: >-
+              The Deforestation Satellite Connector has detected
+              {{ $value | humanize }} post-cutoff high-confidence deforestation
+              alerts in the last hour. Post-cutoff deforestation events are
+              critical for EUDR compliance - any commodity sourced from land
+              deforested after the regulatory cutoff date is non-compliant.
+              Immediate review and supply chain action required. Notify
+              compliance team and affected commodity operators.
+            dashboard_url: "https://grafana.greenlang.io/d/deforestation-satellite-service"
+            runbook_url: "https://runbooks.greenlang.io/agent-data/deforestation-satellite/post-cutoff-alerts"
+
+        # Rule 9: High clear-cut detection rate (> 10 in 1h)
+        - alert: DeforestationSatelliteHighClearCutRate
+          expr: |
+            increase(gl_deforestation_sat_change_detections_total{change_type="clear_cut"}[1h]) > 10
+          for: 1m
+          labels:
+            severity: critical
+            component: data-intake
+            service: deforestation-satellite-service
+            team: agent-data
+          annotations:
+            summary: "High clear-cut deforestation detection rate"
+            description: >-
+              The Deforestation Satellite Connector has detected
+              {{ $value | humanize }} clear-cut deforestation events in the last
+              hour (threshold: 10). An elevated clear-cut rate indicates active
+              large-scale deforestation in monitored regions. This requires
+              immediate investigation to determine affected supply chains,
+              compliance implications, and whether regulatory authorities need
+              to be notified. Cross-reference with EUDR commodity traceability.
+            dashboard_url: "https://grafana.greenlang.io/d/deforestation-satellite-service"
+            runbook_url: "https://runbooks.greenlang.io/agent-data/deforestation-satellite/high-clear-cut"
+
+        # Rule 13: High alert volume (> 100/min for 5m)
+        - alert: DeforestationSatelliteHighAlertVolume
+          expr: |
+            sum(rate(gl_deforestation_sat_alerts_processed_total[5m])) * 60 > 100
+          for: 5m
+          labels:
+            severity: warning
+            component: data-intake
+            service: deforestation-satellite-service
+            team: agent-data
+          annotations:
+            summary: "Deforestation alert volume exceeds 100/min"
+            description: >-
+              The Deforestation Satellite Connector is processing alerts at
+              {{ $value | humanize }} alerts/min (threshold: 100/min) for the
+              last 5 minutes. An unusually high alert volume may indicate a
+              mass deforestation event, false positive surge from cloud cover
+              misclassification, or a data quality issue in upstream satellite
+              imagery. Investigate alert source distribution, confidence levels,
+              and recent scene quality metrics.
+            dashboard_url: "https://grafana.greenlang.io/d/deforestation-satellite-service"
+            runbook_url: "https://runbooks.greenlang.io/agent-data/deforestation-satellite/high-alert-volume"
+
+    # =========================================================================
+    # Compliance & Baseline Alerts
+    # =========================================================================
+    - name: deforestation-satellite.compliance
+      interval: 60s
+      rules:
+        # Rule 8: Non-compliant reports detected
+        - alert: DeforestationSatelliteNonCompliantReports
+          expr: |
+            increase(gl_deforestation_sat_compliance_reports_total{status="non_compliant"}[1h]) > 0
+          for: 1m
+          labels:
+            severity: warning
+            component: data-intake
+            service: deforestation-satellite-service
+            team: agent-data
+          annotations:
+            summary: "Non-compliant deforestation reports generated"
+            description: >-
+              The Deforestation Satellite Connector has generated
+              {{ $value | humanize }} non-compliant reports in the last hour.
+              Non-compliant reports indicate that monitored land parcels have
+              been identified with deforestation activity that violates EUDR
+              or other regulatory cutoff dates. Affected commodity supply chains
+              must be reviewed and corrective actions initiated. Notify the
+              compliance and legal teams.
+            dashboard_url: "https://grafana.greenlang.io/d/deforestation-satellite-service"
+            runbook_url: "https://runbooks.greenlang.io/agent-data/deforestation-satellite/non-compliant"
+
+        # Rule 11: Baseline check failures > 5%
+        - alert: DeforestationSatelliteBaselineCheckFailures
+          expr: |
+            (
+              sum(rate(gl_deforestation_sat_baseline_checks_total{status="error"}[15m]))
+              /
+              sum(rate(gl_deforestation_sat_baseline_checks_total[15m]))
+            ) > 0.05
+          for: 15m
+          labels:
+            severity: warning
+            component: data-intake
+            service: deforestation-satellite-service
+            team: agent-data
+          annotations:
+            summary: "Deforestation baseline check error rate exceeds 5%"
+            description: >-
+              The Deforestation Satellite Connector baseline check error rate is
+              {{ $value | humanizePercentage }} (threshold: 5%). Baseline checks
+              compare current satellite imagery against historical forest
+              baselines. A high failure rate may indicate corrupted baseline
+              data, missing reference imagery, CRS mismatch, or data provider
+              issues. Investigate baseline data integrity and reference dataset
+              availability.
+            dashboard_url: "https://grafana.greenlang.io/d/deforestation-satellite-service"
+            runbook_url: "https://runbooks.greenlang.io/agent-data/deforestation-satellite/baseline-failures"
+
+    # =========================================================================
+    # Classification & Engine Alerts
+    # =========================================================================
+    - name: deforestation-satellite.classification
+      interval: 30s
+      rules:
+        # Rule 12: Classification errors > 3 in 15 minutes
+        - alert: DeforestationSatelliteClassificationErrors
+          expr: |
+            increase(gl_deforestation_sat_processing_errors_total{engine="classification"}[15m]) > 3
+          for: 1m
+          labels:
+            severity: warning
+            component: data-intake
+            service: deforestation-satellite-service
+            team: agent-data
+          annotations:
+            summary: "Deforestation classification engine errors exceed threshold"
+            description: >-
+              The Deforestation Satellite Connector classification engine has
+              experienced {{ $value | humanize }} errors in the last 15 minutes
+              (threshold: 3). Classification errors prevent accurate land cover
+              type determination (forest/non-forest), which is essential for
+              change detection. Investigate model inference failures, input image
+              quality, and classification model version compatibility.
+            dashboard_url: "https://grafana.greenlang.io/d/deforestation-satellite-service"
+            runbook_url: "https://runbooks.greenlang.io/agent-data/deforestation-satellite/classification-errors"
+
+    # =========================================================================
+    # Service Health & Monitoring Alerts
+    # =========================================================================
+    - name: deforestation-satellite.health
+      interval: 30s
+      rules:
+        # Rule 10: No active monitoring jobs for 24 hours
+        - alert: DeforestationSatelliteNoActiveJobs
+          expr: |
+            sum(gl_deforestation_sat_active_monitoring_jobs) == 0
+          for: 24h
+          labels:
+            severity: warning
+            component: data-intake
+            service: deforestation-satellite-service
+            team: agent-data
+          annotations:
+            summary: "No active deforestation monitoring jobs for 24 hours"
+            description: >-
+              The Deforestation Satellite Connector has had zero active monitoring
+              jobs for the past 24 hours. This means no regions are being actively
+              monitored for deforestation, which creates a gap in compliance
+              coverage and may result in missed deforestation events. Verify
+              monitoring job configurations, scheduler health, and whether jobs
+              were intentionally paused or erroneously terminated.
+            dashboard_url: "https://grafana.greenlang.io/d/deforestation-satellite-service"
+            runbook_url: "https://runbooks.greenlang.io/agent-data/deforestation-satellite/no-active-jobs"
+
+        # Rule 14: Service is down
+        - alert: DeforestationSatelliteServiceDown
+          expr: |
+            up{job="deforestation-satellite-service"} == 0
+          for: 5m
+          labels:
+            severity: critical
+            component: data-intake
+            service: deforestation-satellite-service
+            team: agent-data
+          annotations:
+            summary: "Deforestation Satellite Connector Service is down"
+            description: >-
+              The Deforestation Satellite Connector Service (instance:
+              {{ $labels.instance }}) has been unreachable for more than 5
+              minutes. The Prometheus scrape target is returning up=0. This
+              means all satellite scene acquisition, change detection, alert
+              processing, and compliance reporting are halted. Immediate
+              investigation required: check pod status, node health, resource
+              limits, and recent deployment events.
+            dashboard_url: "https://grafana.greenlang.io/d/deforestation-satellite-service"
+            runbook_url: "https://runbooks.greenlang.io/agent-data/deforestation-satellite/service-down"
+
+        # Rule 15: Forest area monitored drops > 10% in 1 hour
+        - alert: DeforestationSatelliteForestAreaDrop
+          expr: |
+            (
+              (
+                sum(gl_deforestation_sat_forest_area_monitored_ha offset 1h)
+                - sum(gl_deforestation_sat_forest_area_monitored_ha)
+              )
+              /
+              sum(gl_deforestation_sat_forest_area_monitored_ha offset 1h)
+            ) > 0.10
+          for: 5m
+          labels:
+            severity: warning
+            component: data-intake
+            service: deforestation-satellite-service
+            team: agent-data
+          annotations:
+            summary: "Monitored forest area dropped by more than 10% in 1 hour"
+            description: >-
+              The total forest area under satellite monitoring has decreased by
+              more than 10% in the last hour (current drop:
+              {{ $value | humanizePercentage }}). A sudden drop in monitored
+              area may indicate monitoring job failures, region configuration
+              errors, satellite coverage gaps, or accidental job termination.
+              This creates gaps in deforestation surveillance and compliance
+              coverage. Investigate monitoring job status and region
+              configurations immediately.
+            dashboard_url: "https://grafana.greenlang.io/d/deforestation-satellite-service"
+            runbook_url: "https://runbooks.greenlang.io/agent-data/deforestation-satellite/forest-area-drop"

@@ -1,0 +1,426 @@
+# =============================================================================
+# GreenLang Data Gateway Service - Prometheus Alert Rules
+# =============================================================================
+# Component: AGENT-DATA-004 Data Gateway Agent (GL-DATA-GW-001)
+# Purpose: Alert rules for data gateway service monitoring, covering
+#          error rates, query latency, cache performance, source health,
+#          connection pools, circuit breakers, and service availability.
+# PRD: AGENT-DATA-004
+# =============================================================================
+
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: data-gateway-alerts
+  namespace: greenlang
+  labels:
+    app: data-gateway-service
+    app.kubernetes.io/name: data-gateway-alerts
+    app.kubernetes.io/component: data-gateway
+    app.kubernetes.io/part-of: greenlang
+    prometheus: kube-prometheus
+    release: gl-kube-prometheus
+    greenlang.io/component: agent-data-004
+  annotations:
+    description: "PrometheusRule alert definitions for Data Gateway Service"
+    prd: AGENT-DATA-004
+spec:
+  groups:
+    # =========================================================================
+    # Error Rate Alerts
+    # =========================================================================
+    - name: data-gateway.errors
+      interval: 30s
+      rules:
+        # Rule 1: Warning-level error rate
+        - alert: DataGatewayHighErrorRate
+          expr: |
+            sum(rate(gl_data_gateway_processing_errors_total[5m])) > 0.1
+          for: 5m
+          labels:
+            severity: warning
+            component: data-gateway
+            service: data-gateway-service
+            team: agent-data
+          annotations:
+            summary: "Data Gateway error rate is elevated"
+            description: >-
+              The Data Gateway Service is experiencing an elevated error
+              rate of {{ $value | humanize }} errors/sec (threshold: 0.1/sec).
+              This may indicate issues with upstream data source connectivity,
+              schema translation failures, or query routing errors. Investigate
+              recent deployments or upstream service health.
+            dashboard_url: "https://grafana.greenlang.io/d/data-gateway-service"
+            runbook_url: "https://runbooks.greenlang.io/agent-data/data-gateway/high-error-rate"
+
+        # Rule 2: Critical-level error rate
+        - alert: DataGatewayCriticalErrorRate
+          expr: |
+            sum(rate(gl_data_gateway_processing_errors_total[5m])) > 0.5
+          for: 2m
+          labels:
+            severity: critical
+            component: data-gateway
+            service: data-gateway-service
+            team: agent-data
+          annotations:
+            summary: "Data Gateway error rate is critically high"
+            description: >-
+              The Data Gateway Service is experiencing a critical error
+              rate of {{ $value | humanize }} errors/sec (threshold: 0.5/sec).
+              This is severely impacting data query operations across all
+              downstream consumers. Immediate investigation required. Check
+              database connectivity, Redis availability, and upstream data
+              source API status.
+            dashboard_url: "https://grafana.greenlang.io/d/data-gateway-service"
+            runbook_url: "https://runbooks.greenlang.io/agent-data/data-gateway/critical-error-rate"
+
+    # =========================================================================
+    # Query Latency Alerts
+    # =========================================================================
+    - name: data-gateway.latency
+      interval: 30s
+      rules:
+        # Rule 3: Warning-level query latency
+        - alert: DataGatewayQueryLatencyHigh
+          expr: |
+            histogram_quantile(0.95, sum(rate(gl_data_gateway_query_duration_seconds_bucket[5m])) by (le)) > 5
+          for: 5m
+          labels:
+            severity: warning
+            component: data-gateway
+            service: data-gateway-service
+            team: agent-data
+          annotations:
+            summary: "Data Gateway p95 query latency exceeds 5s"
+            description: >-
+              The 95th percentile query duration for the Data Gateway Service
+              is {{ $value | humanizeDuration }} (threshold: 5s). This indicates
+              degraded performance that may delay downstream agent processing.
+              Check data source response times, connection pool utilization,
+              and cache hit rates.
+            dashboard_url: "https://grafana.greenlang.io/d/data-gateway-service"
+            runbook_url: "https://runbooks.greenlang.io/agent-data/data-gateway/high-latency"
+
+        # Rule 4: Critical-level query latency
+        - alert: DataGatewayQueryLatencyCritical
+          expr: |
+            histogram_quantile(0.95, sum(rate(gl_data_gateway_query_duration_seconds_bucket[5m])) by (le)) > 15
+          for: 3m
+          labels:
+            severity: critical
+            component: data-gateway
+            service: data-gateway-service
+            team: agent-data
+          annotations:
+            summary: "Data Gateway p95 query latency exceeds 15s"
+            description: >-
+              The 95th percentile query duration for the Data Gateway Service
+              is {{ $value | humanizeDuration }} (threshold: 15s). This is
+              critically degraded and likely causing request timeouts across
+              all downstream consumers. Immediate investigation required.
+              Possible causes: connection pool exhaustion, data source
+              degradation, or large multi-source aggregation queries.
+            dashboard_url: "https://grafana.greenlang.io/d/data-gateway-service"
+            runbook_url: "https://runbooks.greenlang.io/agent-data/data-gateway/critical-latency"
+
+    # =========================================================================
+    # Cache Performance Alerts
+    # =========================================================================
+    - name: data-gateway.cache
+      interval: 60s
+      rules:
+        # Rule 5: Warning-level cache hit rate
+        - alert: DataGatewayCacheHitRateLow
+          expr: |
+            (
+              sum(rate(gl_data_gateway_cache_hits_total[15m]))
+              /
+              (sum(rate(gl_data_gateway_cache_hits_total[15m])) + sum(rate(gl_data_gateway_cache_misses_total[15m])))
+            ) < 0.50
+          for: 15m
+          labels:
+            severity: warning
+            component: data-gateway
+            service: data-gateway-service
+            team: agent-data
+          annotations:
+            summary: "Data Gateway cache hit rate below 50%"
+            description: >-
+              The Data Gateway Service cache hit rate is
+              {{ $value | humanizePercentage }} (threshold: 50%). A low cache
+              hit rate increases load on upstream data sources and degrades
+              query latency. Investigate cache TTL configuration, query
+              pattern changes, or recent cache invalidation events.
+            dashboard_url: "https://grafana.greenlang.io/d/data-gateway-service"
+            runbook_url: "https://runbooks.greenlang.io/agent-data/data-gateway/low-cache-hit-rate"
+
+        # Rule 6: Critical-level cache hit rate
+        - alert: DataGatewayCacheHitRateCritical
+          expr: |
+            (
+              sum(rate(gl_data_gateway_cache_hits_total[10m]))
+              /
+              (sum(rate(gl_data_gateway_cache_hits_total[10m])) + sum(rate(gl_data_gateway_cache_misses_total[10m])))
+            ) < 0.20
+          for: 10m
+          labels:
+            severity: critical
+            component: data-gateway
+            service: data-gateway-service
+            team: agent-data
+          annotations:
+            summary: "Data Gateway cache hit rate critically low below 20%"
+            description: >-
+              The Data Gateway Service cache hit rate is
+              {{ $value | humanizePercentage }} (threshold: 20%). This
+              critically low cache hit rate is causing excessive load on
+              upstream data sources and significantly degrading query
+              performance. Immediate investigation required: check Redis
+              connectivity, cache eviction policies, and memory pressure.
+            dashboard_url: "https://grafana.greenlang.io/d/data-gateway-service"
+            runbook_url: "https://runbooks.greenlang.io/agent-data/data-gateway/critical-cache-hit-rate"
+
+    # =========================================================================
+    # Source Health Alerts
+    # =========================================================================
+    - name: data-gateway.source-health
+      interval: 30s
+      rules:
+        # Rule 7: Any source unhealthy
+        - alert: DataGatewaySourceUnhealthy
+          expr: |
+            count(gl_data_gateway_source_health{status="unhealthy"}) > 0
+          for: 5m
+          labels:
+            severity: warning
+            component: data-gateway
+            service: data-gateway-service
+            team: agent-data
+          annotations:
+            summary: "Data Gateway has unhealthy data source(s)"
+            description: >-
+              The Data Gateway Service has {{ $value }} data source(s) reporting
+              unhealthy status for more than 5 minutes. Queries to affected
+              sources will be routed through failover paths or return degraded
+              results. Investigate the health of upstream data sources and
+              network connectivity.
+            dashboard_url: "https://grafana.greenlang.io/d/data-gateway-service"
+            runbook_url: "https://runbooks.greenlang.io/agent-data/data-gateway/source-unhealthy"
+
+        # Rule 8: All sources down
+        - alert: DataGatewayAllSourcesDown
+          expr: |
+            count(gl_data_gateway_source_health{status="healthy"}) == 0
+          for: 2m
+          labels:
+            severity: critical
+            component: data-gateway
+            service: data-gateway-service
+            team: agent-data
+          annotations:
+            summary: "Data Gateway has no healthy data sources - all sources down"
+            description: >-
+              All data sources connected to the Data Gateway Service are
+              reporting unhealthy status. The gateway cannot serve any queries.
+              This is a total data availability outage. Immediate investigation
+              required: check network connectivity, upstream service health,
+              database availability, and recent infrastructure changes.
+            dashboard_url: "https://grafana.greenlang.io/d/data-gateway-service"
+            runbook_url: "https://runbooks.greenlang.io/agent-data/data-gateway/all-sources-down"
+
+    # =========================================================================
+    # Query Load Alerts
+    # =========================================================================
+    - name: data-gateway.query-load
+      interval: 30s
+      rules:
+        # Rule 9: High active queries
+        - alert: DataGatewayHighActiveQueries
+          expr: |
+            sum(gl_data_gateway_active_queries) > 50
+          for: 5m
+          labels:
+            severity: warning
+            component: data-gateway
+            service: data-gateway-service
+            team: agent-data
+          annotations:
+            summary: "Data Gateway active query count exceeds 50"
+            description: >-
+              The Data Gateway Service has {{ $value }} active concurrent
+              queries (threshold: 50). A sustained high active query count
+              indicates query queuing and potential resource exhaustion.
+              Consider scaling the service, optimizing slow queries, or
+              enabling more aggressive caching.
+            dashboard_url: "https://grafana.greenlang.io/d/data-gateway-service"
+            runbook_url: "https://runbooks.greenlang.io/agent-data/data-gateway/high-active-queries"
+
+        # Rule 10: Connection pool exhaustion
+        - alert: DataGatewayConnectionPoolExhausted
+          expr: |
+            (
+              gl_data_gateway_connection_pool_size
+              /
+              gl_data_gateway_connection_pool_max
+            ) > 0.95
+          for: 10m
+          labels:
+            severity: warning
+            component: data-gateway
+            service: data-gateway-service
+            team: agent-data
+          annotations:
+            summary: "Data Gateway connection pool near exhaustion"
+            description: >-
+              The Data Gateway Service connection pool for source
+              {{ $labels.source }} is at {{ $value | humanizePercentage }} of
+              its maximum capacity (threshold: 95%) for more than 10 minutes.
+              Connection pool exhaustion will cause query failures. Consider
+              increasing pool size, reducing connection hold times, or
+              investigating connection leaks.
+            dashboard_url: "https://grafana.greenlang.io/d/data-gateway-service"
+            runbook_url: "https://runbooks.greenlang.io/agent-data/data-gateway/connection-pool-exhausted"
+
+    # =========================================================================
+    # Circuit Breaker Alerts
+    # =========================================================================
+    - name: data-gateway.circuit-breaker
+      interval: 30s
+      rules:
+        # Rule 11: Circuit breaker open
+        - alert: DataGatewayCircuitBreakerOpen
+          expr: |
+            gl_data_gateway_circuit_breaker_state{state="open"} == 1
+          for: 5m
+          labels:
+            severity: warning
+            component: data-gateway
+            service: data-gateway-service
+            team: agent-data
+          annotations:
+            summary: "Data Gateway circuit breaker is open for a data source"
+            description: >-
+              The circuit breaker for data source {{ $labels.source }} in the
+              Data Gateway Service has been in the open state for more than
+              5 minutes. All queries to this source are being short-circuited
+              with fallback responses. The circuit breaker opened due to
+              excessive failures. Investigate the root cause of upstream
+              failures before manually resetting.
+            dashboard_url: "https://grafana.greenlang.io/d/data-gateway-service"
+            runbook_url: "https://runbooks.greenlang.io/agent-data/data-gateway/circuit-breaker-open"
+
+    # =========================================================================
+    # Activity Monitoring Alerts
+    # =========================================================================
+    - name: data-gateway.activity
+      interval: 300s
+      rules:
+        # Rule 12: No queries in 24 hours during business hours
+        - alert: DataGatewayNoQueries24h
+          expr: |
+            (
+              increase(gl_data_gateway_queries_total[24h]) == 0
+            )
+            and on()
+            (
+              hour() >= 8 and hour() <= 18
+              and day_of_week() >= 1 and day_of_week() <= 5
+            )
+          for: 1h
+          labels:
+            severity: info
+            component: data-gateway
+            service: data-gateway-service
+            team: agent-data
+          annotations:
+            summary: "No queries processed by Data Gateway in the past 24 hours"
+            description: >-
+              The Data Gateway Service has not processed any queries in the
+              past 24 hours during business hours. This may indicate that
+              no downstream agents are issuing data requests, or that the
+              service is unreachable. Verify service discovery, DNS resolution,
+              and that consuming agents are operational.
+            dashboard_url: "https://grafana.greenlang.io/d/data-gateway-service"
+            runbook_url: "https://runbooks.greenlang.io/agent-data/data-gateway/no-queries"
+
+        # Rule 13: High aggregation errors
+        - alert: DataGatewayHighAggregationErrors
+          expr: |
+            (
+              sum(rate(gl_data_gateway_aggregation_operations_total{status="error"}[10m]))
+              /
+              sum(rate(gl_data_gateway_aggregation_operations_total[10m]))
+            ) > 0.10
+          for: 10m
+          labels:
+            severity: warning
+            component: data-gateway
+            service: data-gateway-service
+            team: agent-data
+          annotations:
+            summary: "Data Gateway aggregation error rate exceeds 10%"
+            description: >-
+              The Data Gateway Service aggregation error rate is
+              {{ $value | humanizePercentage }} (threshold: 10%). Multi-source
+              aggregation operations are failing at an elevated rate, which
+              may produce incomplete or inconsistent results for downstream
+              consumers. Investigate schema compatibility between sources and
+              data type mismatches.
+            dashboard_url: "https://grafana.greenlang.io/d/data-gateway-service"
+            runbook_url: "https://runbooks.greenlang.io/agent-data/data-gateway/high-aggregation-errors"
+
+    # =========================================================================
+    # Service Health Alerts
+    # =========================================================================
+    - name: data-gateway.health
+      interval: 30s
+      rules:
+        # Rule 14: Service is down
+        - alert: DataGatewayServiceDown
+          expr: |
+            up{job="data-gateway-service"} == 0
+          for: 5m
+          labels:
+            severity: critical
+            component: data-gateway
+            service: data-gateway-service
+            team: agent-data
+          annotations:
+            summary: "Data Gateway Service is down"
+            description: >-
+              The Data Gateway Service (instance: {{ $labels.instance }})
+              has been unreachable for more than 5 minutes. The Prometheus
+              scrape target is returning up=0. This means all data query
+              routing and aggregation operations are halted. Immediate
+              investigation required: check pod status, node health, and
+              recent deployment events.
+            dashboard_url: "https://grafana.greenlang.io/d/data-gateway-service"
+            runbook_url: "https://runbooks.greenlang.io/agent-data/data-gateway/service-down"
+
+        # Rule 15: Service high memory usage
+        - alert: DataGatewayServiceHighMemory
+          expr: |
+            (
+              container_memory_working_set_bytes{container="data-gateway", namespace="greenlang"}
+              /
+              container_spec_memory_limit_bytes{container="data-gateway", namespace="greenlang"}
+            ) > 0.80
+          for: 10m
+          labels:
+            severity: warning
+            component: data-gateway
+            service: data-gateway-service
+            team: agent-data
+          annotations:
+            summary: "Data Gateway Service memory usage exceeds 80% of limit"
+            description: >-
+              The Data Gateway Service container (pod: {{ $labels.pod }})
+              is using {{ $value | humanizePercentage }} of its memory limit
+              (threshold: 80%). If memory usage continues to increase, the
+              container will be OOM-killed. Investigate potential memory leaks,
+              large response caching, unbounded connection pools, or query
+              result accumulation.
+              Current limit: {{ with printf "container_spec_memory_limit_bytes{container='data-gateway', namespace='greenlang', pod='%s'}" $labels.pod | query }}{{ . | first | value | humanize1024 }}B{{ end }}.
+            dashboard_url: "https://grafana.greenlang.io/d/data-gateway-service"
+            runbook_url: "https://runbooks.greenlang.io/agent-data/data-gateway/high-memory"

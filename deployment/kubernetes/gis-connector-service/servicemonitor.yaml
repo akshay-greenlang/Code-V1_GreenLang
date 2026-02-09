@@ -1,0 +1,59 @@
+# =============================================================================
+# GreenLang GIS/Mapping Connector Service - Prometheus ServiceMonitor
+# =============================================================================
+# ServiceMonitor for Prometheus Operator to scrape /metrics from the GIS/Mapping
+# Connector Service every 30 seconds. Includes metric relabelings for
+# consistent labeling across the GreenLang observability stack.
+# PRD: AGENT-DATA-006
+# =============================================================================
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: gis-connector-service-monitor
+  namespace: greenlang
+  labels:
+    app: gis-connector-service
+    app.kubernetes.io/name: gis-connector-service
+    app.kubernetes.io/component: agent-data-006
+    app.kubernetes.io/part-of: greenlang
+    release: prometheus
+  annotations:
+    description: "Prometheus ServiceMonitor for GIS/Mapping Connector Service metrics"
+    prd: AGENT-DATA-006
+spec:
+  selector:
+    matchLabels:
+      app: gis-connector-service
+      app.kubernetes.io/component: agent-data-006
+  namespaceSelector:
+    matchNames:
+      - greenlang
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s
+      honorLabels: true
+      metricRelabelings:
+        # Add consistent component label
+        - sourceLabels: [__name__]
+          regex: "gl_gis_connector_(.*)"
+          targetLabel: component
+          replacement: "gis-connector-service"
+        # Add PRD label for correlation
+        - sourceLabels: [__name__]
+          regex: "gl_gis_connector_(.*)"
+          targetLabel: prd
+          replacement: "AGENT-DATA-006"
+        # Drop high-cardinality debug metrics in production
+        - sourceLabels: [__name__]
+          regex: "gl_gis_connector_debug_.*"
+          action: drop
+      relabelings:
+        # Add pod name label
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod
+        # Add node name label
+        - sourceLabels: [__meta_kubernetes_pod_node_name]
+          targetLabel: node

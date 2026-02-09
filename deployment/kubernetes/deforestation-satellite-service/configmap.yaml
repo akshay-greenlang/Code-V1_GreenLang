@@ -1,0 +1,218 @@
+# =============================================================================
+# GreenLang Deforestation Satellite Connector Service - ConfigMap
+# =============================================================================
+# Configuration for deforestation satellite operations: EUDR cutoff date,
+# satellite source defaults, NDVI thresholds, cloud cover limits, alert
+# settings, batch processing, worker pools, and mock mode.
+# PRD: AGENT-DATA-007
+# =============================================================================
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: deforestation-satellite-service-config
+  namespace: greenlang
+  labels:
+    app: deforestation-satellite-service
+    app.kubernetes.io/name: deforestation-satellite-service
+    app.kubernetes.io/component: data-intake
+    app.kubernetes.io/part-of: greenlang
+    agent-id: GL-DATA-GEO-003
+    component: data-intake
+  annotations:
+    description: "Deforestation Satellite Connector Service configuration - EUDR, NDVI, satellite, alerts, batch, workers"
+    prd: AGENT-DATA-007
+data:
+  # Environment
+  ENVIRONMENT: "production"
+
+  # Logging
+  GL_DEFORESTATION_SAT_LOG_LEVEL: "INFO"
+  LOG_FORMAT: "json"
+
+  # Database (connection string via secret, schema config here)
+  GL_DEFORESTATION_SAT_DB_SCHEMA: "deforestation_satellite_service"
+  GL_DEFORESTATION_SAT_DB_POOL_MIN: "2"
+  GL_DEFORESTATION_SAT_DB_POOL_MAX: "10"
+
+  # Redis
+  GL_DEFORESTATION_SAT_REDIS_PREFIX: "gl:deforestation_sat:"
+  GL_DEFORESTATION_SAT_REDIS_TTL: "300"
+
+  # EUDR Compliance
+  GL_DEFORESTATION_SAT_EUDR_CUTOFF_DATE: "2020-12-31"
+
+  # Default Satellite Source
+  GL_DEFORESTATION_SAT_DEFAULT_SATELLITE: "sentinel2"
+
+  # Cloud Cover Threshold (percentage)
+  GL_DEFORESTATION_SAT_MAX_CLOUD_COVER: "30"
+
+  # NDVI Thresholds
+  GL_DEFORESTATION_SAT_NDVI_FOREST_THRESHOLD: "0.6"
+  GL_DEFORESTATION_SAT_NDVI_DEGRADATION_THRESHOLD: "0.4"
+  GL_DEFORESTATION_SAT_NDVI_DEFORESTATION_THRESHOLD: "0.2"
+  GL_DEFORESTATION_SAT_NDVI_BARE_SOIL_THRESHOLD: "0.1"
+  GL_DEFORESTATION_SAT_NDVI_CHANGE_SIGNIFICANT: "0.15"
+
+  # Alert Settings
+  GL_DEFORESTATION_SAT_ALERT_ENABLED: "true"
+  GL_DEFORESTATION_SAT_ALERT_COOLDOWN_HOURS: "24"
+  GL_DEFORESTATION_SAT_ALERT_MIN_AREA_HA: "0.5"
+  GL_DEFORESTATION_SAT_ALERT_SEVERITY_HIGH_THRESHOLD_HA: "10.0"
+  GL_DEFORESTATION_SAT_ALERT_SEVERITY_CRITICAL_THRESHOLD_HA: "50.0"
+
+  # Batch Processing
+  GL_DEFORESTATION_SAT_BATCH_SIZE: "100"
+  GL_DEFORESTATION_SAT_BATCH_TIMEOUT_SECONDS: "300"
+  GL_DEFORESTATION_SAT_BATCH_MAX_RETRIES: "3"
+  GL_DEFORESTATION_SAT_BATCH_RETRY_DELAY_SECONDS: "30"
+
+  # Worker Pool
+  GL_DEFORESTATION_SAT_WORKER_COUNT: "4"
+  GL_DEFORESTATION_SAT_WORKER_MAX_CONCURRENT: "8"
+  GL_DEFORESTATION_SAT_WORKER_QUEUE_SIZE: "1000"
+
+  # Connection Pool
+  GL_DEFORESTATION_SAT_POOL_MIN_SIZE: "2"
+  GL_DEFORESTATION_SAT_POOL_MAX_SIZE: "10"
+  GL_DEFORESTATION_SAT_POOL_MAX_IDLE_SECONDS: "300"
+
+  # Mock Mode (for development)
+  GL_DEFORESTATION_SAT_USE_MOCK: "true"
+
+  # Retention
+  GL_DEFORESTATION_SAT_RETENTION_DAYS: "365"
+
+  # Metrics
+  GL_DEFORESTATION_SAT_ENABLE_METRICS: "true"
+  METRICS_PORT: "8000"
+  METRICS_PATH: "/metrics"
+
+  # Tracing
+  TRACING_ENABLED: "true"
+  TRACING_SAMPLE_RATE: "0.1"
+  OTEL_ENDPOINT: "http://otel-collector.monitoring.svc.cluster.local:4317"
+  OTEL_SERVICE_NAME: "deforestation-satellite-service"
+
+  # Deforestation satellite service configuration file
+  deforestation-satellite-config.yaml: |
+    deforestation_satellite_service:
+      version: "1.0.0"
+      environment: production
+
+      eudr_compliance:
+        cutoff_date: "2020-12-31"
+        regulation: "EU/2023/1115"
+        verification_required: true
+        geolocation_precision_meters: 10
+
+      satellite_sources:
+        default: sentinel2
+        supported:
+          - name: sentinel2
+            provider: copernicus
+            resolution_meters: 10
+            revisit_days: 5
+            bands: ["B02", "B03", "B04", "B08", "B11", "B12"]
+            enabled: true
+          - name: landsat8
+            provider: usgs
+            resolution_meters: 30
+            revisit_days: 16
+            bands: ["B2", "B3", "B4", "B5", "B6", "B7"]
+            enabled: true
+          - name: planet
+            provider: planet_labs
+            resolution_meters: 3
+            revisit_days: 1
+            bands: ["blue", "green", "red", "nir"]
+            enabled: false
+
+      ndvi_analysis:
+        forest_threshold: 0.6
+        degradation_threshold: 0.4
+        deforestation_threshold: 0.2
+        bare_soil_threshold: 0.1
+        significant_change: 0.15
+        temporal_window_days: 90
+        minimum_clear_observations: 3
+
+      cloud_masking:
+        max_cloud_cover_percent: 30
+        algorithm: "s2cloudless"
+        shadow_detection: true
+        cirrus_detection: true
+
+      alert_configuration:
+        enabled: true
+        cooldown_hours: 24
+        min_area_hectares: 0.5
+        severity_thresholds:
+          low: 0.5
+          medium: 5.0
+          high: 10.0
+          critical: 50.0
+        notification_channels:
+          - email
+          - webhook
+          - slack
+
+      batch_processing:
+        batch_size: 100
+        timeout_seconds: 300
+        max_retries: 3
+        retry_delay_seconds: 30
+        parallel_tiles: 4
+
+      worker_pool:
+        count: 4
+        max_concurrent: 8
+        queue_size: 1000
+        heartbeat_interval_seconds: 30
+
+      caching:
+        enabled: true
+        default_ttl_seconds: 300
+        max_size_mb: 256
+        strategies:
+          - name: ndvi_result
+            ttl_seconds: 3600
+            invalidation: "on_new_imagery"
+          - name: deforestation_alert
+            ttl_seconds: 86400
+            invalidation: "on_verification"
+          - name: satellite_metadata
+            ttl_seconds: 600
+            invalidation: "periodic"
+          - name: compliance_check
+            ttl_seconds: 1800
+            invalidation: "on_write"
+
+      rate_limiting:
+        enabled: true
+        requests_per_minute: 600
+        requests_per_hour: 10000
+        burst_size: 50
+        satellite_api_per_minute: 30
+
+      retention:
+        satellite_imagery_days: 365
+        ndvi_analysis_days: 730
+        alert_history_days: 365
+        audit_trail_days: 2555
+
+      metrics:
+        enabled: true
+        prefix: gl_deforestation_sat
+        histogram_buckets: [0.01, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10, 30, 60, 120, 300]
+
+      integration:
+        auth_enabled: true
+        audit_enabled: true
+        alerting_enabled: true
+        feature_flags_enabled: true
+        access_guard_enabled: true
+        agent_registry_enabled: true
+        gis_connector_enabled: true
+        citations_enabled: true

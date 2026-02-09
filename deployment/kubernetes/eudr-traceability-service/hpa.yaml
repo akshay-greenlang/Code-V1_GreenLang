@@ -1,0 +1,65 @@
+# =============================================================================
+# GreenLang EUDR Traceability Connector - Horizontal Pod Autoscaler
+# =============================================================================
+# HPA for EUDR traceability service: scales based on CPU and memory utilization.
+# Scales from 2 to 8 replicas. Conservative scale-down to prevent
+# disruption during batch geolocation verification, due diligence statement
+# generation, and EU Information System submission operations.
+# PRD: AGENT-DATA-005
+# =============================================================================
+
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: eudr-traceability-service-hpa
+  namespace: greenlang
+  labels:
+    app: eudr-traceability-service
+    app.kubernetes.io/name: eudr-traceability-service
+    app.kubernetes.io/component: autoscaling
+    app.kubernetes.io/part-of: greenlang
+  annotations:
+    description: "HPA for EUDR Traceability Connector based on CPU and memory utilization"
+    prd: AGENT-DATA-005
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: eudr-traceability-service
+  minReplicas: 2
+  maxReplicas: 8
+  metrics:
+    # CPU-based scaling
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    # Memory-based scaling
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+  behavior:
+    # Scale up: moderate for handling burst geolocation verification and DDS generation load
+    scaleUp:
+      stabilizationWindowSeconds: 120
+      policies:
+        - type: Pods
+          value: 2
+          periodSeconds: 60
+        - type: Percent
+          value: 50
+          periodSeconds: 60
+      selectPolicy: Max
+    # Scale down: conservative to maintain EU submission job continuity
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Pods
+          value: 1
+          periodSeconds: 120
+      selectPolicy: Min

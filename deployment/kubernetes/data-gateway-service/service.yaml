@@ -1,0 +1,35 @@
+# =============================================================================
+# GreenLang Data Gateway Service - Kubernetes Service
+# =============================================================================
+# ClusterIP service exposing HTTP port 80 -> 8000 for Data Gateway
+# Service API and metrics.
+# PRD: AGENT-DATA-004
+# =============================================================================
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: data-gateway-service
+  namespace: greenlang
+  labels:
+    app: data-gateway-service
+    app.kubernetes.io/name: data-gateway-service
+    app.kubernetes.io/component: agent-data-004
+    app.kubernetes.io/part-of: greenlang
+  annotations:
+    description: "Data Gateway Service - unified API gateway for data agent routing, aggregation, caching, query complexity analysis, circuit breaker, batch operations"
+    prd: AGENT-DATA-004
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8000"
+    prometheus.io/path: "/metrics"
+spec:
+  type: ClusterIP
+  selector:
+    app: data-gateway-service
+    app.kubernetes.io/component: agent-data-004
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8000
+      protocol: TCP
+  sessionAffinity: None

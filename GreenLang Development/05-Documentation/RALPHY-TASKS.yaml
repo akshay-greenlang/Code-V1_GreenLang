@@ -175,8 +175,8 @@ year_1_2026:
         priority: "P0"
         effort: "2 weeks"
 
-      - id: "AGENT-DATA-004"
-        task: "Build GL-DATA-REG-004 EUDR Traceability Connector"
+      - id: "AGENT-DATA-005"
+        task: "Build GL-DATA-REG-005 EUDR Traceability Connector"
         priority: "P0"
         effort: "2 weeks"
 

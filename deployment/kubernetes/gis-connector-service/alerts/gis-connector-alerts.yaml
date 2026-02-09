@@ -1,0 +1,454 @@
+# =============================================================================
+# GreenLang GIS/Mapping Connector Service - Prometheus Alert Rules
+# =============================================================================
+# Component: AGENT-DATA-006 GIS/Mapping Connector (GL-DATA-GEO-001)
+# Purpose: Alert rules for GIS connector service monitoring, covering
+#          error rates, parse latency, spatial query performance, cache
+#          efficiency, geocoding, CRS transformations, layer management,
+#          format conversion, memory usage, and service availability.
+# PRD: AGENT-DATA-006
+# =============================================================================
+
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: gis-connector-alerts
+  namespace: greenlang
+  labels:
+    app: gis-connector-service
+    app.kubernetes.io/name: gis-connector-alerts
+    app.kubernetes.io/component: gis-connector
+    app.kubernetes.io/part-of: greenlang
+    prometheus: kube-prometheus
+    release: gl-kube-prometheus
+    greenlang.io/component: agent-data-006
+  annotations:
+    description: "PrometheusRule alert definitions for GIS/Mapping Connector Service"
+    prd: AGENT-DATA-006
+spec:
+  groups:
+    # =========================================================================
+    # Error Rate Alerts
+    # =========================================================================
+    - name: gis-connector.errors
+      interval: 30s
+      rules:
+        # Rule 1: Warning-level error rate
+        - alert: GISHighErrorRate
+          expr: |
+            sum(rate(gl_gis_connector_errors_total[5m])) > 0.1
+          for: 5m
+          labels:
+            severity: warning
+            component: gis-connector
+            service: gis-connector-service
+            team: agent-data
+          annotations:
+            summary: "GIS Connector error rate is elevated"
+            description: >-
+              The GIS/Mapping Connector Service is experiencing an elevated error
+              rate of {{ $value | humanize }} errors/sec (threshold: 0.1/sec).
+              This may indicate issues with geospatial format parsing, invalid
+              geometries, CRS transformation failures, or upstream data source
+              connectivity. Investigate recent file uploads, format compatibility,
+              and projection configurations.
+            dashboard_url: "https://grafana.greenlang.io/d/gis-connector-service"
+            runbook_url: "https://runbooks.greenlang.io/agent-data/gis-connector/high-error-rate"
+
+        # Rule 2: Critical-level error rate
+        - alert: GISCriticalErrorRate
+          expr: |
+            sum(rate(gl_gis_connector_errors_total[5m])) > 0.5
+          for: 2m
+          labels:
+            severity: critical
+            component: gis-connector
+            service: gis-connector-service
+            team: agent-data
+          annotations:
+            summary: "GIS Connector error rate is critically high"
+            description: >-
+              The GIS/Mapping Connector Service is experiencing a critical error
+              rate of {{ $value | humanize }} errors/sec (threshold: 0.5/sec).
+              This is severely impacting geospatial data processing across all
+              downstream consumers. Immediate investigation required. Check
+              database connectivity, GDAL/OGR library health, memory availability,
+              and upstream data source API status.
+            dashboard_url: "https://grafana.greenlang.io/d/gis-connector-service"
+            runbook_url: "https://runbooks.greenlang.io/agent-data/gis-connector/critical-error-rate"
+
+    # =========================================================================
+    # Parse Latency Alerts
+    # =========================================================================
+    - name: gis-connector.parse-latency
+      interval: 30s
+      rules:
+        # Rule 3: Warning-level parse latency
+        - alert: GISParseLatencyHigh
+          expr: |
+            histogram_quantile(0.95, sum(rate(gl_gis_connector_parse_duration_seconds_bucket[5m])) by (le)) > 5
+          for: 5m
+          labels:
+            severity: warning
+            component: gis-connector
+            service: gis-connector-service
+            team: agent-data
+          annotations:
+            summary: "GIS Connector p95 parse latency exceeds 5s"
+            description: >-
+              The 95th percentile parse duration for the GIS/Mapping Connector
+              Service is {{ $value | humanizeDuration }} (threshold: 5s). This
+              indicates degraded format parsing performance that may delay
+              downstream geospatial processing pipelines. Check file sizes,
+              format complexity, and available compute resources.
+            dashboard_url: "https://grafana.greenlang.io/d/gis-connector-service"
+            runbook_url: "https://runbooks.greenlang.io/agent-data/gis-connector/high-parse-latency"
+
+        # Rule 4: Critical-level parse latency
+        - alert: GISParseLatencyCritical
+          expr: |
+            histogram_quantile(0.95, sum(rate(gl_gis_connector_parse_duration_seconds_bucket[5m])) by (le)) > 15
+          for: 3m
+          labels:
+            severity: critical
+            component: gis-connector
+            service: gis-connector-service
+            team: agent-data
+          annotations:
+            summary: "GIS Connector p95 parse latency exceeds 15s"
+            description: >-
+              The 95th percentile parse duration for the GIS/Mapping Connector
+              Service is {{ $value | humanizeDuration }} (threshold: 15s). This
+              is critically degraded and likely causing request timeouts across
+              all downstream geospatial consumers. Immediate investigation required.
+              Possible causes: extremely large files, corrupted geometries, memory
+              pressure, or GDAL/OGR library issues.
+            dashboard_url: "https://grafana.greenlang.io/d/gis-connector-service"
+            runbook_url: "https://runbooks.greenlang.io/agent-data/gis-connector/critical-parse-latency"
+
+    # =========================================================================
+    # Spatial Query Alerts
+    # =========================================================================
+    - name: gis-connector.spatial-query
+      interval: 30s
+      rules:
+        # Rule 5: Slow spatial queries
+        - alert: GISSpatialQuerySlow
+          expr: |
+            histogram_quantile(0.95, sum(rate(gl_gis_connector_spatial_query_duration_seconds_bucket[5m])) by (le)) > 10
+          for: 5m
+          labels:
+            severity: warning
+            component: gis-connector
+            service: gis-connector-service
+            team: agent-data
+          annotations:
+            summary: "GIS Connector p95 spatial query latency exceeds 10s"
+            description: >-
+              The 95th percentile spatial query duration for the GIS/Mapping
+              Connector Service is {{ $value | humanizeDuration }} (threshold: 10s).
+              Spatial queries (intersect, within, contains, nearest, buffer) are
+              taking longer than expected. Investigate spatial index health,
+              dataset sizes, query complexity, and available memory for
+              in-memory spatial operations.
+            dashboard_url: "https://grafana.greenlang.io/d/gis-connector-service"
+            runbook_url: "https://runbooks.greenlang.io/agent-data/gis-connector/slow-spatial-query"
+
+    # =========================================================================
+    # Cache Performance Alerts
+    # =========================================================================
+    - name: gis-connector.cache
+      interval: 60s
+      rules:
+        # Rule 6: Low cache hit rate
+        - alert: GISCacheHitRateLow
+          expr: |
+            (
+              sum(rate(gl_gis_connector_cache_hits_total[15m]))
+              /
+              (sum(rate(gl_gis_connector_cache_hits_total[15m])) + sum(rate(gl_gis_connector_cache_misses_total[15m])))
+            ) < 0.50
+          for: 15m
+          labels:
+            severity: warning
+            component: gis-connector
+            service: gis-connector-service
+            team: agent-data
+          annotations:
+            summary: "GIS Connector cache hit rate below 50%"
+            description: >-
+              The GIS/Mapping Connector Service cache hit rate is
+              {{ $value | humanizePercentage }} (threshold: 50%). A low cache
+              hit rate increases load on geospatial parsing and spatial query
+              engines, degrading overall performance. Investigate cache TTL
+              configuration, query pattern changes, dataset churn rate, or
+              recent cache invalidation events.
+            dashboard_url: "https://grafana.greenlang.io/d/gis-connector-service"
+            runbook_url: "https://runbooks.greenlang.io/agent-data/gis-connector/low-cache-hit-rate"
+
+    # =========================================================================
+    # Activity Monitoring Alerts
+    # =========================================================================
+    - name: gis-connector.activity
+      interval: 300s
+      rules:
+        # Rule 7: No operations in 24 hours during business hours
+        - alert: GISNoOperations24h
+          expr: |
+            (
+              increase(gl_gis_connector_operations_total[24h]) == 0
+            )
+            and on()
+            (
+              hour() >= 8 and hour() <= 18
+              and day_of_week() >= 1 and day_of_week() <= 5
+            )
+          for: 1h
+          labels:
+            severity: info
+            component: gis-connector
+            service: gis-connector-service
+            team: agent-data
+          annotations:
+            summary: "No GIS operations processed in the past 24 hours"
+            description: >-
+              The GIS/Mapping Connector Service has not processed any geospatial
+              operations in the past 24 hours during business hours. This may
+              indicate that no downstream agents are requesting geospatial data,
+              or that the service is unreachable. Verify service discovery, DNS
+              resolution, and that consuming agents are operational.
+            dashboard_url: "https://grafana.greenlang.io/d/gis-connector-service"
+            runbook_url: "https://runbooks.greenlang.io/agent-data/gis-connector/no-operations"
+
+    # =========================================================================
+    # Layer & Feature Alerts
+    # =========================================================================
+    - name: gis-connector.layers
+      interval: 60s
+      rules:
+        # Rule 8: High feature count per layer
+        - alert: GISHighFeatureCount
+          expr: |
+            gl_gis_connector_layer_features > 100000
+          for: 10m
+          labels:
+            severity: warning
+            component: gis-connector
+            service: gis-connector-service
+            team: agent-data
+          annotations:
+            summary: "GIS layer has more than 100K features"
+            description: >-
+              The geospatial layer {{ $labels.layer_name }} in the GIS/Mapping
+              Connector Service contains {{ $value | humanize }} features
+              (threshold: 100,000). Layers with very high feature counts can
+              cause memory pressure, slow spatial queries, and degraded parse
+              performance. Consider partitioning the layer, applying spatial
+              filters, or using simplified geometries for downstream consumers.
+            dashboard_url: "https://grafana.greenlang.io/d/gis-connector-service"
+            runbook_url: "https://runbooks.greenlang.io/agent-data/gis-connector/high-feature-count"
+
+        # Rule 12: Layer stuck in processing state
+        - alert: GISLayerProcessingStuck
+          expr: |
+            (
+              gl_gis_connector_layer_processing_duration_seconds > 1800
+            )
+            and
+            (
+              gl_gis_connector_layers_total{status="processing"} > 0
+            )
+          for: 15m
+          labels:
+            severity: warning
+            component: gis-connector
+            service: gis-connector-service
+            team: agent-data
+          annotations:
+            summary: "GIS layer stuck in processing state for over 30 minutes"
+            description: >-
+              A geospatial layer in the GIS/Mapping Connector Service has been
+              in the processing state for more than 30 minutes ({{ $value | humanizeDuration }}).
+              This may indicate a hung processing job, extremely large dataset,
+              corrupted input file, or resource exhaustion. Investigate the
+              specific layer processing logs and consider restarting the
+              processing pipeline.
+            dashboard_url: "https://grafana.greenlang.io/d/gis-connector-service"
+            runbook_url: "https://runbooks.greenlang.io/agent-data/gis-connector/layer-processing-stuck"
+
+    # =========================================================================
+    # Format Conversion & CRS Alerts
+    # =========================================================================
+    - name: gis-connector.conversion
+      interval: 30s
+      rules:
+        # Rule 9: Format conversion errors
+        - alert: GISFormatConversionErrors
+          expr: |
+            (
+              sum(rate(gl_gis_connector_errors_total{error_type="format_invalid"}[10m]))
+              /
+              sum(rate(gl_gis_connector_parse_total[10m]))
+            ) > 0.05
+          for: 10m
+          labels:
+            severity: warning
+            component: gis-connector
+            service: gis-connector-service
+            team: agent-data
+          annotations:
+            summary: "GIS format conversion error rate exceeds 5%"
+            description: >-
+              The GIS/Mapping Connector Service format conversion error rate is
+              {{ $value | humanizePercentage }} (threshold: 5%). A high proportion
+              of geospatial files are failing format validation or conversion.
+              Investigate whether upstream data sources are sending malformed
+              files, unsupported format versions, or corrupted geometries.
+            dashboard_url: "https://grafana.greenlang.io/d/gis-connector-service"
+            runbook_url: "https://runbooks.greenlang.io/agent-data/gis-connector/format-conversion-errors"
+
+        # Rule 10: CRS transformation errors
+        - alert: GISCRSTransformErrors
+          expr: |
+            (
+              sum(rate(gl_gis_connector_crs_transformations_total{status="error"}[10m]))
+              /
+              sum(rate(gl_gis_connector_crs_transformations_total[10m]))
+            ) > 0.05
+          for: 10m
+          labels:
+            severity: warning
+            component: gis-connector
+            service: gis-connector-service
+            team: agent-data
+          annotations:
+            summary: "GIS CRS transformation error rate exceeds 5%"
+            description: >-
+              The GIS/Mapping Connector Service CRS transformation error rate is
+              {{ $value | humanizePercentage }} (threshold: 5%). Coordinate
+              reference system transformations are failing at an elevated rate.
+              This may indicate unsupported EPSG codes, missing projection
+              definitions, datum transformation errors, or out-of-bounds
+              coordinates. Check PROJ library configuration and input data CRS
+              metadata.
+            dashboard_url: "https://grafana.greenlang.io/d/gis-connector-service"
+            runbook_url: "https://runbooks.greenlang.io/agent-data/gis-connector/crs-transform-errors"
+
+    # =========================================================================
+    # Geocoding Alerts
+    # =========================================================================
+    - name: gis-connector.geocoding
+      interval: 30s
+      rules:
+        # Rule 11: High geocoding failure rate
+        - alert: GISGeocodingFailures
+          expr: |
+            (
+              sum(rate(gl_gis_connector_geocoding_requests_total{status="failure"}[10m]))
+              /
+              sum(rate(gl_gis_connector_geocoding_requests_total[10m]))
+            ) > 0.10
+          for: 10m
+          labels:
+            severity: warning
+            component: gis-connector
+            service: gis-connector-service
+            team: agent-data
+          annotations:
+            summary: "GIS geocoding failure rate exceeds 10%"
+            description: >-
+              The GIS/Mapping Connector Service geocoding failure rate is
+              {{ $value | humanizePercentage }} (threshold: 10%). A high
+              proportion of geocoding requests are failing. This may indicate
+              issues with the upstream geocoding provider, rate limiting,
+              malformed address inputs, or network connectivity problems.
+              Investigate geocoding provider API status and request patterns.
+            dashboard_url: "https://grafana.greenlang.io/d/gis-connector-service"
+            runbook_url: "https://runbooks.greenlang.io/agent-data/gis-connector/geocoding-failures"
+
+    # =========================================================================
+    # Service Health Alerts
+    # =========================================================================
+    - name: gis-connector.health
+      interval: 30s
+      rules:
+        # Rule 13: High memory usage
+        - alert: GISHighMemoryUsage
+          expr: |
+            (
+              container_memory_working_set_bytes{container="gis-connector", namespace="greenlang"}
+              /
+              container_spec_memory_limit_bytes{container="gis-connector", namespace="greenlang"}
+            ) > 0.80
+          for: 10m
+          labels:
+            severity: warning
+            component: gis-connector
+            service: gis-connector-service
+            team: agent-data
+          annotations:
+            summary: "GIS Connector Service memory usage exceeds 80% of limit"
+            description: >-
+              The GIS/Mapping Connector Service container (pod: {{ $labels.pod }})
+              is using {{ $value | humanizePercentage }} of its memory limit
+              (threshold: 80%). If memory usage continues to increase, the
+              container will be OOM-killed. Investigate potential memory leaks,
+              large geospatial datasets held in memory, spatial index bloat,
+              or unbounded feature collections.
+              Current limit: {{ with printf "container_spec_memory_limit_bytes{container='gis-connector', namespace='greenlang', pod='%s'}" $labels.pod | query }}{{ . | first | value | humanize1024 }}B{{ end }}.
+            dashboard_url: "https://grafana.greenlang.io/d/gis-connector-service"
+            runbook_url: "https://runbooks.greenlang.io/agent-data/gis-connector/high-memory"
+
+        # Rule 14: Service is down
+        - alert: GISServiceDown
+          expr: |
+            up{job="gis-connector-service"} == 0
+          for: 5m
+          labels:
+            severity: critical
+            component: gis-connector
+            service: gis-connector-service
+            team: agent-data
+          annotations:
+            summary: "GIS Connector Service is down"
+            description: >-
+              The GIS/Mapping Connector Service (instance: {{ $labels.instance }})
+              has been unreachable for more than 5 minutes. The Prometheus
+              scrape target is returning up=0. This means all geospatial
+              format parsing, spatial queries, geocoding, and CRS transformation
+              operations are halted. Immediate investigation required: check
+              pod status, node health, and recent deployment events.
+            dashboard_url: "https://grafana.greenlang.io/d/gis-connector-service"
+            runbook_url: "https://runbooks.greenlang.io/agent-data/gis-connector/service-down"
+
+    # =========================================================================
+    # Data Volume Alerts
+    # =========================================================================
+    - name: gis-connector.data-volume
+      interval: 30s
+      rules:
+        # Rule 15: Data volume spike
+        - alert: GISDataVolumeSpike
+          expr: |
+            (
+              sum(rate(gl_gis_connector_data_bytes_total[5m]))
+              /
+              sum(avg_over_time(rate(gl_gis_connector_data_bytes_total[5m])[1h:5m]))
+            ) > 2
+          for: 5m
+          labels:
+            severity: warning
+            component: gis-connector
+            service: gis-connector-service
+            team: agent-data
+          annotations:
+            summary: "GIS Connector data volume spike detected (>2x average)"
+            description: >-
+              The GIS/Mapping Connector Service is processing geospatial data
+              at {{ $value | humanize }}x the recent average rate (threshold: 2x).
+              A sudden spike in data volume may indicate a bulk upload, automated
+              batch job, or unexpected data source behavior. Monitor memory usage,
+              parse latency, and queue depth to ensure the service can handle the
+              increased load without degradation.
+            dashboard_url: "https://grafana.greenlang.io/d/gis-connector-service"
+            runbook_url: "https://runbooks.greenlang.io/agent-data/gis-connector/data-volume-spike"

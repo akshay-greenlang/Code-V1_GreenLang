@@ -1,0 +1,202 @@
+# =============================================================================
+# GreenLang Data Gateway Service - ConfigMap
+# =============================================================================
+# Configuration for data gateway operations: query routing, caching strategies,
+# circuit breaker thresholds, batch processing, source aggregation, complexity
+# analysis, retry policies, and metrics.
+# PRD: AGENT-DATA-004
+# =============================================================================
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: data-gateway-service-config
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: data-gateway-service
+    app.kubernetes.io/component: configuration
+    app.kubernetes.io/part-of: greenlang
+  annotations:
+    description: "Data Gateway Service configuration - routing, caching, circuit breaker, batch settings, source aggregation, retention"
+    prd: AGENT-DATA-004
+data:
+  # Environment
+  ENVIRONMENT: "production"
+
+  # Logging
+  GL_DATA_GATEWAY_LOG_LEVEL: "INFO"
+  LOG_FORMAT: "json"
+
+  # Database (connection string via secret, schema config here)
+  GL_DATA_GATEWAY_DB_SCHEMA: "data_gateway_service"
+  GL_DATA_GATEWAY_DB_POOL_MIN: "2"
+  GL_DATA_GATEWAY_DB_POOL_MAX: "10"
+
+  # Redis
+  GL_DATA_GATEWAY_REDIS_PREFIX: "gl:data_gateway:"
+  GL_DATA_GATEWAY_REDIS_TTL: "300"
+
+  # Data Gateway Configuration
+  GL_DATA_GATEWAY_CACHE_DEFAULT_TTL: "300"
+  GL_DATA_GATEWAY_CACHE_MAX_SIZE_MB: "256"
+  GL_DATA_GATEWAY_MAX_QUERY_COMPLEXITY: "100"
+  GL_DATA_GATEWAY_MAX_SOURCES_PER_QUERY: "10"
+  GL_DATA_GATEWAY_QUERY_TIMEOUT_SECONDS: "30"
+  GL_DATA_GATEWAY_HEALTH_CHECK_INTERVAL: "60"
+  GL_DATA_GATEWAY_CIRCUIT_BREAKER_THRESHOLD: "5"
+  GL_DATA_GATEWAY_RETRY_MAX_ATTEMPTS: "3"
+  GL_DATA_GATEWAY_BATCH_MAX_SIZE: "50"
+  GL_DATA_GATEWAY_RETENTION_DAYS: "90"
+  GL_DATA_GATEWAY_ENABLE_GRAPHQL: "false"
+  GL_DATA_GATEWAY_ENABLE_CACHE_WARMING: "true"
+
+  # Metrics
+  GL_DATA_GATEWAY_ENABLE_METRICS: "true"
+  METRICS_PORT: "8000"
+  METRICS_PATH: "/metrics"
+
+  # Tracing
+  TRACING_ENABLED: "true"
+  TRACING_SAMPLE_RATE: "0.1"
+  OTEL_ENDPOINT: "http://otel-collector.monitoring.svc.cluster.local:4317"
+  OTEL_SERVICE_NAME: "data-gateway-service"
+
+  # Data gateway service configuration file
+  data-gateway-config.yaml: |
+    data_gateway_service:
+      version: "1.0.0"
+      environment: production
+
+      source_types:
+        - name: pdf_extractor
+          service: pdf-extractor-service
+          port: 8000
+          health_path: /health
+          enabled: true
+          timeout_seconds: 30
+          priority: 1
+        - name: excel_normalizer
+          service: excel-normalizer-service
+          port: 8000
+          health_path: /health
+          enabled: true
+          timeout_seconds: 30
+          priority: 2
+        - name: erp_connector
+          service: erp-connector-service
+          port: 8000
+          health_path: /health
+          enabled: true
+          timeout_seconds: 30
+          priority: 3
+        - name: eudr_traceability
+          service: eudr-traceability-service
+          port: 8000
+          health_path: /health
+          enabled: true
+          timeout_seconds: 30
+          priority: 4
+
+      operations:
+        query:
+          max_complexity: 100
+          max_sources_per_query: 10
+          timeout_seconds: 30
+          enable_parallel: true
+          enable_dedup: true
+        aggregate:
+          max_sources: 10
+          merge_strategy: "deep_merge"
+          conflict_resolution: "latest_wins"
+          timeout_seconds: 60
+        batch:
+          max_size: 50
+          timeout_seconds: 300
+          concurrent_max: 5
+          retry_failed: true
+        transform:
+          enable_field_mapping: true
+          enable_unit_conversion: true
+          enable_schema_validation: true
+
+      caching:
+        enabled: true
+        default_ttl_seconds: 300
+        max_size_mb: 256
+        strategies:
+          - name: query_result
+            ttl_seconds: 300
+            invalidation: "on_write"
+          - name: source_health
+            ttl_seconds: 60
+            invalidation: "periodic"
+          - name: schema_metadata
+            ttl_seconds: 600
+            invalidation: "on_change"
+          - name: aggregation_result
+            ttl_seconds: 180
+            invalidation: "on_write"
+        warming:
+          enabled: true
+          startup: true
+          interval_seconds: 300
+          targets:
+            - source_health
+            - schema_metadata
+
+      circuit_breaker:
+        enabled: true
+        threshold: 5
+        timeout_seconds: 30
+        half_open_max_calls: 3
+        reset_timeout_seconds: 60
+        per_source: true
+
+      retry:
+        enabled: true
+        max_attempts: 3
+        initial_delay_ms: 100
+        max_delay_ms: 5000
+        backoff_multiplier: 2.0
+        retryable_status_codes:
+          - 429
+          - 502
+          - 503
+          - 504
+
+      rate_limiting:
+        enabled: true
+        requests_per_minute: 600
+        requests_per_hour: 10000
+        burst_size: 50
+
+      query_complexity:
+        enabled: true
+        max_score: 100
+        weights:
+          source_count: 10
+          field_count: 1
+          filter_count: 5
+          aggregation: 15
+          join: 20
+          sort: 3
+
+      retention:
+        query_logs_days: 90
+        cache_metrics_days: 30
+        audit_trail_days: 365
+
+      metrics:
+        enabled: true
+        prefix: gl_data_gateway
+        histogram_buckets: [0.01, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10, 30, 60, 120]
+
+      integration:
+        auth_enabled: true
+        audit_enabled: true
+        alerting_enabled: true
+        feature_flags_enabled: true
+        access_guard_enabled: true
+        agent_registry_enabled: true
+        unit_normalizer_enabled: true
+        citations_enabled: true

@@ -1,0 +1,424 @@
+# =============================================================================
+# GreenLang EUDR Traceability Connector - Prometheus Alert Rules
+# =============================================================================
+# Component: AGENT-DATA-005 EUDR Traceability Connector
+# Purpose: Alert rules for EUDR traceability service monitoring, covering
+#          error rates, latency, compliance failures, risk assessment,
+#          EU submission health, and service availability.
+# PRD: AGENT-DATA-005
+# =============================================================================
+
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: eudr-traceability-alerts
+  namespace: greenlang
+  labels:
+    app: eudr-traceability-service
+    app.kubernetes.io/name: eudr-traceability-alerts
+    app.kubernetes.io/component: eudr-traceability
+    app.kubernetes.io/part-of: greenlang
+    prometheus: kube-prometheus
+    release: gl-kube-prometheus
+    greenlang.io/component: agent-data-005
+  annotations:
+    description: "PrometheusRule alert definitions for EUDR Traceability Connector"
+    prd: AGENT-DATA-005
+spec:
+  groups:
+    # =========================================================================
+    # Error Rate Alerts
+    # =========================================================================
+    - name: eudr-traceability.errors
+      interval: 30s
+      rules:
+        # Rule 1: Warning-level error rate
+        - alert: EUDRHighErrorRate
+          expr: |
+            sum(rate(gl_eudr_errors_total[5m])) > 0.1
+          for: 5m
+          labels:
+            severity: warning
+            component: eudr-traceability
+            service: eudr-traceability-service
+            team: agent-data
+          annotations:
+            summary: "EUDR Traceability Connector error rate is elevated"
+            description: >-
+              The EUDR Traceability Connector is experiencing an elevated error
+              rate of {{ $value | humanize }} errors/sec (threshold: 0.1/sec).
+              This may indicate issues with geolocation verification, DDS
+              generation, or EU Information System connectivity. Investigate
+              recent deployments or upstream service health.
+            dashboard_url: "https://grafana.greenlang.io/d/eudr-traceability-service"
+            runbook_url: "https://runbooks.greenlang.io/agent-data/eudr-traceability/high-error-rate"
+
+        # Rule 2: Critical-level error rate
+        - alert: EUDRCriticalErrorRate
+          expr: |
+            sum(rate(gl_eudr_errors_total[5m])) > 0.5
+          for: 2m
+          labels:
+            severity: critical
+            component: eudr-traceability
+            service: eudr-traceability-service
+            team: agent-data
+          annotations:
+            summary: "EUDR Traceability Connector error rate is critically high"
+            description: >-
+              The EUDR Traceability Connector is experiencing a critical error
+              rate of {{ $value | humanize }} errors/sec (threshold: 0.5/sec).
+              This is severely impacting EUDR compliance operations. Immediate
+              investigation required. Check database connectivity, Redis
+              availability, and EU Information System API status.
+            dashboard_url: "https://grafana.greenlang.io/d/eudr-traceability-service"
+            runbook_url: "https://runbooks.greenlang.io/agent-data/eudr-traceability/critical-error-rate"
+
+    # =========================================================================
+    # Latency Alerts
+    # =========================================================================
+    - name: eudr-traceability.latency
+      interval: 30s
+      rules:
+        # Rule 3: Warning-level processing latency
+        - alert: EUDRProcessingLatencyHigh
+          expr: |
+            histogram_quantile(0.95, sum(rate(gl_eudr_processing_duration_seconds_bucket[5m])) by (le)) > 5
+          for: 5m
+          labels:
+            severity: warning
+            component: eudr-traceability
+            service: eudr-traceability-service
+            team: agent-data
+          annotations:
+            summary: "EUDR Traceability Connector p95 latency exceeds 5s"
+            description: >-
+              The 95th percentile processing duration for the EUDR Traceability
+              Connector is {{ $value | humanizeDuration }} (threshold: 5s).
+              This indicates degraded performance that may delay compliance
+              checks, DDS generation, or risk assessments. Check database
+              query performance and external API response times.
+            dashboard_url: "https://grafana.greenlang.io/d/eudr-traceability-service"
+            runbook_url: "https://runbooks.greenlang.io/agent-data/eudr-traceability/high-latency"
+
+        # Rule 4: Critical-level processing latency
+        - alert: EUDRProcessingLatencyCritical
+          expr: |
+            histogram_quantile(0.95, sum(rate(gl_eudr_processing_duration_seconds_bucket[5m])) by (le)) > 15
+          for: 3m
+          labels:
+            severity: critical
+            component: eudr-traceability
+            service: eudr-traceability-service
+            team: agent-data
+          annotations:
+            summary: "EUDR Traceability Connector p95 latency exceeds 15s"
+            description: >-
+              The 95th percentile processing duration for the EUDR Traceability
+              Connector is {{ $value | humanizeDuration }} (threshold: 15s).
+              This is critically degraded and likely causing request timeouts.
+              Immediate investigation required. Possible causes: database
+              connection pool exhaustion, large GeoJSON polygon processing,
+              or EU Information System API degradation.
+            dashboard_url: "https://grafana.greenlang.io/d/eudr-traceability-service"
+            runbook_url: "https://runbooks.greenlang.io/agent-data/eudr-traceability/critical-latency"
+
+    # =========================================================================
+    # Verification Backlog Alerts
+    # =========================================================================
+    - name: eudr-traceability.verifications
+      interval: 60s
+      rules:
+        # Rule 5: Warning-level pending verifications
+        - alert: EUDRPendingVerificationsHigh
+          expr: |
+            gl_eudr_pending_verifications > 100
+          for: 10m
+          labels:
+            severity: warning
+            component: eudr-traceability
+            service: eudr-traceability-service
+            team: agent-data
+          annotations:
+            summary: "EUDR pending verifications backlog is high"
+            description: >-
+              There are {{ $value }} pending verifications in the EUDR
+              Traceability Connector queue (threshold: 100). A growing backlog
+              may indicate insufficient processing capacity or upstream issues
+              with geolocation data providers. Consider scaling the service or
+              investigating processing bottlenecks.
+            dashboard_url: "https://grafana.greenlang.io/d/eudr-traceability-service"
+            runbook_url: "https://runbooks.greenlang.io/agent-data/eudr-traceability/verification-backlog"
+
+        # Rule 6: Critical-level pending verifications
+        - alert: EUDRPendingVerificationsCritical
+          expr: |
+            gl_eudr_pending_verifications > 500
+          for: 5m
+          labels:
+            severity: critical
+            component: eudr-traceability
+            service: eudr-traceability-service
+            team: agent-data
+          annotations:
+            summary: "EUDR pending verifications backlog is critically high"
+            description: >-
+              There are {{ $value }} pending verifications in the EUDR
+              Traceability Connector queue (threshold: 500). This critical
+              backlog risks EUDR compliance deadline violations. Immediate
+              action required: scale the service, check for processing failures,
+              and verify database write throughput.
+            dashboard_url: "https://grafana.greenlang.io/d/eudr-traceability-service"
+            runbook_url: "https://runbooks.greenlang.io/agent-data/eudr-traceability/critical-verification-backlog"
+
+    # =========================================================================
+    # EU Submission Alerts
+    # =========================================================================
+    - name: eudr-traceability.submissions
+      interval: 30s
+      rules:
+        # Rule 7: EU submission failures
+        - alert: EUDRSubmissionFailures
+          expr: |
+            sum(rate(gl_eudr_eu_submissions_total{status="error"}[1h])) > 0
+          for: 15m
+          labels:
+            severity: warning
+            component: eudr-traceability
+            service: eudr-traceability-service
+            team: agent-data
+          annotations:
+            summary: "EUDR EU Information System submissions are failing"
+            description: >-
+              The EUDR Traceability Connector has recorded submission failures
+              to the EU Information System at a rate of {{ $value | humanize }}/sec
+              over the past hour. Failed submissions may cause regulatory
+              non-compliance. Check EU IS API connectivity, authentication
+              tokens, and submission payload validation.
+            dashboard_url: "https://grafana.greenlang.io/d/eudr-traceability-service"
+            runbook_url: "https://runbooks.greenlang.io/agent-data/eudr-traceability/submission-failures"
+
+        # Rule 8: EU submission backlog
+        - alert: EUDRSubmissionBacklog
+          expr: |
+            sum(gl_eudr_eu_submissions_total{status="pending"}) - sum(gl_eudr_eu_submissions_total{status="success"}) - sum(gl_eudr_eu_submissions_total{status="error"}) > 50
+              or
+            gl_eudr_pending_submissions > 50
+          for: 15m
+          labels:
+            severity: warning
+            component: eudr-traceability
+            service: eudr-traceability-service
+            team: agent-data
+          annotations:
+            summary: "EUDR EU Information System submission backlog is growing"
+            description: >-
+              More than 50 submissions to the EU Information System are pending
+              processing. This backlog may indicate connectivity issues with the
+              EU IS API, rate limiting, or insufficient processing throughput.
+              Monitor the trend and consider increasing submission concurrency.
+            dashboard_url: "https://grafana.greenlang.io/d/eudr-traceability-service"
+            runbook_url: "https://runbooks.greenlang.io/agent-data/eudr-traceability/submission-backlog"
+
+    # =========================================================================
+    # Risk Assessment Alerts
+    # =========================================================================
+    - name: eudr-traceability.risk
+      interval: 60s
+      rules:
+        # Rule 9: High proportion of high-risk plots
+        - alert: EUDRHighRiskPlotsAlert
+          expr: |
+            (
+              sum(gl_eudr_risk_assessments_total{risk_level="high"})
+              /
+              sum(gl_eudr_risk_assessments_total)
+            ) > 0.20
+          for: 15m
+          labels:
+            severity: warning
+            component: eudr-traceability
+            service: eudr-traceability-service
+            team: agent-data
+          annotations:
+            summary: "More than 20% of EUDR risk assessments are high-risk"
+            description: >-
+              {{ $value | humanizePercentage }} of all EUDR risk assessments are
+              classified as high-risk (threshold: 20%). This elevated proportion
+              may indicate supply chain issues, new high-risk geographic regions,
+              or changes in risk assessment criteria. Review the risk assessment
+              pipeline and consider enhanced due diligence measures.
+            dashboard_url: "https://grafana.greenlang.io/d/eudr-traceability-service"
+            runbook_url: "https://runbooks.greenlang.io/agent-data/eudr-traceability/high-risk-plots"
+
+    # =========================================================================
+    # Compliance Rate Alerts
+    # =========================================================================
+    - name: eudr-traceability.compliance
+      interval: 30s
+      rules:
+        # Rule 10: Warning-level compliance failure rate
+        - alert: EUDRComplianceFailureRate
+          expr: |
+            (
+              sum(rate(gl_eudr_compliance_checks_total{result="fail"}[15m]))
+              /
+              sum(rate(gl_eudr_compliance_checks_total[15m]))
+            ) > 0.10
+          for: 10m
+          labels:
+            severity: warning
+            component: eudr-traceability
+            service: eudr-traceability-service
+            team: agent-data
+          annotations:
+            summary: "EUDR compliance failure rate exceeds 10%"
+            description: >-
+              The EUDR compliance check failure rate is
+              {{ $value | humanizePercentage }} (threshold: 10%). This elevated
+              failure rate indicates supply chain data quality issues or
+              non-compliant commodity sourcing patterns. Review failed checks
+              by article and commodity type to identify root causes.
+            dashboard_url: "https://grafana.greenlang.io/d/eudr-traceability-service"
+            runbook_url: "https://runbooks.greenlang.io/agent-data/eudr-traceability/compliance-failure-rate"
+
+        # Rule 11: Critical-level compliance failure rate
+        - alert: EUDRComplianceCriticalRate
+          expr: |
+            (
+              sum(rate(gl_eudr_compliance_checks_total{result="fail"}[15m]))
+              /
+              sum(rate(gl_eudr_compliance_checks_total[15m]))
+            ) > 0.25
+          for: 5m
+          labels:
+            severity: critical
+            component: eudr-traceability
+            service: eudr-traceability-service
+            team: agent-data
+          annotations:
+            summary: "EUDR compliance failure rate exceeds 25% - critical"
+            description: >-
+              The EUDR compliance check failure rate is
+              {{ $value | humanizePercentage }} (threshold: 25%). This critically
+              high failure rate represents a significant regulatory risk.
+              Immediate action required: halt new commodity imports if necessary,
+              escalate to compliance team, and investigate systemic data quality
+              or supply chain issues.
+            dashboard_url: "https://grafana.greenlang.io/d/eudr-traceability-service"
+            runbook_url: "https://runbooks.greenlang.io/agent-data/eudr-traceability/critical-compliance-rate"
+
+    # =========================================================================
+    # Activity Monitoring Alerts
+    # =========================================================================
+    - name: eudr-traceability.activity
+      interval: 300s
+      rules:
+        # Rule 12: No new plots registered in 24 hours (business hours)
+        - alert: EUDRNoNewPlots24h
+          expr: |
+            (
+              increase(gl_eudr_plots_registered_total[24h]) == 0
+            )
+            and on()
+            (
+              hour() >= 8 and hour() <= 18
+              and day_of_week() >= 1 and day_of_week() <= 5
+            )
+          for: 1h
+          labels:
+            severity: info
+            component: eudr-traceability
+            service: eudr-traceability-service
+            team: agent-data
+          annotations:
+            summary: "No new EUDR plots registered in the past 24 hours"
+            description: >-
+              No new geolocation plots have been registered in the EUDR
+              Traceability Connector during the past 24 hours (during business
+              hours). This may be expected during low-activity periods, but
+              could also indicate ingestion pipeline issues or upstream data
+              feed disruptions. Verify data source connectivity.
+            dashboard_url: "https://grafana.greenlang.io/d/eudr-traceability-service"
+            runbook_url: "https://runbooks.greenlang.io/agent-data/eudr-traceability/no-new-plots"
+
+        # Rule 13: No new DDS generated in 24 hours (business hours)
+        - alert: EUDRNoDDS24h
+          expr: |
+            (
+              increase(gl_eudr_dds_generated_total[24h]) == 0
+            )
+            and on()
+            (
+              hour() >= 8 and hour() <= 18
+              and day_of_week() >= 1 and day_of_week() <= 5
+            )
+          for: 1h
+          labels:
+            severity: warning
+            component: eudr-traceability
+            service: eudr-traceability-service
+            team: agent-data
+          annotations:
+            summary: "No new EUDR Due Diligence Statements generated in 24 hours"
+            description: >-
+              No new Due Diligence Statements (DDS) have been generated by the
+              EUDR Traceability Connector in the past 24 hours (during business
+              hours). DDS generation is a critical compliance requirement. Check
+              if the DDS generation pipeline is blocked, if there are validation
+              errors, or if upstream plot/risk data is unavailable.
+            dashboard_url: "https://grafana.greenlang.io/d/eudr-traceability-service"
+            runbook_url: "https://runbooks.greenlang.io/agent-data/eudr-traceability/no-new-dds"
+
+    # =========================================================================
+    # Service Health Alerts
+    # =========================================================================
+    - name: eudr-traceability.health
+      interval: 30s
+      rules:
+        # Rule 14: Service is down
+        - alert: EUDRServiceDown
+          expr: |
+            up{job="eudr-traceability-service"} == 0
+          for: 5m
+          labels:
+            severity: critical
+            component: eudr-traceability
+            service: eudr-traceability-service
+            team: agent-data
+          annotations:
+            summary: "EUDR Traceability Connector service is down"
+            description: >-
+              The EUDR Traceability Connector service (instance: {{ $labels.instance }})
+              has been unreachable for more than 5 minutes. The Prometheus scrape
+              target is returning up=0. This means all EUDR compliance operations
+              are halted. Immediate investigation required: check pod status,
+              node health, and recent deployment events.
+            dashboard_url: "https://grafana.greenlang.io/d/eudr-traceability-service"
+            runbook_url: "https://runbooks.greenlang.io/agent-data/eudr-traceability/service-down"
+
+        # Rule 15: Service high memory usage
+        - alert: EUDRServiceHighMemory
+          expr: |
+            (
+              container_memory_working_set_bytes{container="eudr-traceability", namespace="greenlang"}
+              /
+              container_spec_memory_limit_bytes{container="eudr-traceability", namespace="greenlang"}
+            ) > 0.80
+          for: 10m
+          labels:
+            severity: warning
+            component: eudr-traceability
+            service: eudr-traceability-service
+            team: agent-data
+          annotations:
+            summary: "EUDR Traceability Connector memory usage exceeds 80% of limit"
+            description: >-
+              The EUDR Traceability Connector container (pod: {{ $labels.pod }})
+              is using {{ $value | humanizePercentage }} of its memory limit
+              (threshold: 80%). If memory usage continues to increase, the
+              container will be OOM-killed. Investigate potential memory leaks,
+              large GeoJSON polygon caching, or unbounded query result sets.
+              Current limit: {{ with printf "container_spec_memory_limit_bytes{container='eudr-traceability', namespace='greenlang', pod='%s'}" $labels.pod | query }}{{ . | first | value | humanize1024 }}B{{ end }}.
+            dashboard_url: "https://grafana.greenlang.io/d/eudr-traceability-service"
+            runbook_url: "https://runbooks.greenlang.io/agent-data/eudr-traceability/high-memory"

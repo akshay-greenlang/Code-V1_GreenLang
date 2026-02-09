@@ -1,0 +1,27 @@
+# =============================================================================
+# GreenLang Data Gateway Service - PodDisruptionBudget
+# =============================================================================
+# Ensures at least 1 pod is always available during voluntary disruptions
+# (node drains, cluster upgrades, etc.) to maintain data gateway availability.
+# PRD: AGENT-DATA-004
+# =============================================================================
+
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: data-gateway-service-pdb
+  namespace: greenlang
+  labels:
+    app: data-gateway-service
+    app.kubernetes.io/name: data-gateway-service
+    app.kubernetes.io/component: agent-data-004
+    app.kubernetes.io/part-of: greenlang
+  annotations:
+    description: "PodDisruptionBudget for Data Gateway Service - ensures minimum availability during disruptions"
+    prd: AGENT-DATA-004
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: data-gateway-service
+      app.kubernetes.io/component: agent-data-004

@@ -1,0 +1,35 @@
+# =============================================================================
+# GreenLang GIS/Mapping Connector Service - Kubernetes Service
+# =============================================================================
+# ClusterIP service exposing HTTP port 80 -> 8000 for GIS/Mapping Connector
+# Service API and metrics.
+# PRD: AGENT-DATA-006
+# =============================================================================
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: gis-connector-service
+  namespace: greenlang
+  labels:
+    app: gis-connector-service
+    app.kubernetes.io/name: gis-connector-service
+    app.kubernetes.io/component: agent-data-006
+    app.kubernetes.io/part-of: greenlang
+  annotations:
+    description: "GIS/Mapping Connector Service - geospatial data ingestion, CRS transformation, spatial analysis, map layers, feature extraction, geocoding"
+    prd: AGENT-DATA-006
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8000"
+    prometheus.io/path: "/metrics"
+spec:
+  type: ClusterIP
+  selector:
+    app: gis-connector-service
+    app.kubernetes.io/component: agent-data-006
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8000
+      protocol: TCP
+  sessionAffinity: None

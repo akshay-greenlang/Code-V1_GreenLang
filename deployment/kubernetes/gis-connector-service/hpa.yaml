@@ -1,0 +1,65 @@
+# =============================================================================
+# GreenLang GIS/Mapping Connector Service - Horizontal Pod Autoscaler
+# =============================================================================
+# HPA for GIS connector service: scales based on CPU and memory utilization.
+# Scales from 2 to 8 replicas. Conservative scale-down to prevent disruption
+# during active spatial analysis, geocoding batch operations, CRS
+# transformations, and raster processing cycles.
+# PRD: AGENT-DATA-006
+# =============================================================================
+
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: gis-connector-service-hpa
+  namespace: greenlang
+  labels:
+    app: gis-connector-service
+    app.kubernetes.io/name: gis-connector-service
+    app.kubernetes.io/component: agent-data-006
+    app.kubernetes.io/part-of: greenlang
+  annotations:
+    description: "HPA for GIS/Mapping Connector Service based on CPU and memory utilization"
+    prd: AGENT-DATA-006
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: gis-connector-service
+  minReplicas: 2
+  maxReplicas: 8
+  metrics:
+    # CPU-based scaling
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    # Memory-based scaling
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+  behavior:
+    # Scale up: moderate for handling burst geospatial processing and geocoding load
+    scaleUp:
+      stabilizationWindowSeconds: 120
+      policies:
+        - type: Pods
+          value: 2
+          periodSeconds: 60
+        - type: Percent
+          value: 50
+          periodSeconds: 60
+      selectPolicy: Max
+    # Scale down: conservative to maintain active spatial analysis and batch job continuity
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Pods
+          value: 1
+          periodSeconds: 120
+      selectPolicy: Min

@@ -1,0 +1,27 @@
+# =============================================================================
+# GreenLang EUDR Traceability Connector - Pod Disruption Budget
+# =============================================================================
+# Ensures at least 1 EUDR traceability service pod is available during
+# voluntary disruptions (node drain, cluster upgrade, etc.).
+# PRD: AGENT-DATA-005
+# =============================================================================
+
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: eudr-traceability-service-pdb
+  namespace: greenlang
+  labels:
+    app: eudr-traceability-service
+    app.kubernetes.io/name: eudr-traceability-service
+    app.kubernetes.io/component: eudr-traceability
+    app.kubernetes.io/part-of: greenlang
+  annotations:
+    description: "PDB for EUDR Traceability Connector - minimum 1 pod available"
+    prd: AGENT-DATA-005
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: eudr-traceability-service
+      app.kubernetes.io/component: eudr-traceability

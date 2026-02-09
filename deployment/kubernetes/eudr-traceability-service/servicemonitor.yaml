@@ -1,0 +1,50 @@
+# =============================================================================
+# GreenLang EUDR Traceability Connector - Prometheus ServiceMonitor
+# =============================================================================
+# Configures Prometheus to scrape metrics from the EUDR traceability service.
+# Scrape interval: 30s, port 8000, path /metrics.
+# PRD: AGENT-DATA-005
+# =============================================================================
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: eudr-traceability-service
+  namespace: monitoring
+  labels:
+    app: eudr-traceability-service
+    app.kubernetes.io/name: eudr-traceability-service
+    app.kubernetes.io/component: eudr-traceability
+    app.kubernetes.io/part-of: greenlang
+    prometheus: kube-prometheus
+    release: gl-kube-prometheus
+    greenlang.io/component: agent-data-005
+  annotations:
+    description: "ServiceMonitor for GreenLang EUDR Traceability Connector"
+    prd: AGENT-DATA-005
+spec:
+  jobLabel: eudr-traceability-service
+  namespaceSelector:
+    matchNames:
+      - greenlang
+  selector:
+    matchLabels:
+      app: eudr-traceability-service
+      app.kubernetes.io/component: eudr-traceability
+  endpoints:
+    - port: http
+      interval: 30s
+      scrapeTimeout: 10s
+      path: /metrics
+      scheme: http
+      metricRelabelings:
+        # Drop high-cardinality internal Go metrics
+        - sourceLabels: [__name__]
+          regex: "go_gc_.*"
+          action: drop
+        # Add service label
+        - targetLabel: service
+          replacement: eudr-traceability-service
+        # Add component label
+        - targetLabel: component
+          replacement: agent-data-005

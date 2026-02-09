@@ -1,0 +1,27 @@
+# =============================================================================
+# GreenLang GIS/Mapping Connector Service - PodDisruptionBudget
+# =============================================================================
+# Ensures at least 1 pod is always available during voluntary disruptions
+# (node drains, cluster upgrades, etc.) to maintain GIS connector availability.
+# PRD: AGENT-DATA-006
+# =============================================================================
+
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: gis-connector-service-pdb
+  namespace: greenlang
+  labels:
+    app: gis-connector-service
+    app.kubernetes.io/name: gis-connector-service
+    app.kubernetes.io/component: agent-data-006
+    app.kubernetes.io/part-of: greenlang
+  annotations:
+    description: "PodDisruptionBudget for GIS/Mapping Connector Service - ensures minimum availability during disruptions"
+    prd: AGENT-DATA-006
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: gis-connector-service
+      app.kubernetes.io/component: agent-data-006

@@ -1,0 +1,282 @@
+# =============================================================================
+# GreenLang GIS/Mapping Connector Service - ConfigMap
+# =============================================================================
+# Configuration for GIS/mapping operations: CRS defaults, coordinate precision,
+# feature limits, spatial analysis thresholds, geocoding settings, map layer
+# management, file format handling, caching, and metrics.
+# PRD: AGENT-DATA-006
+# =============================================================================
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gis-connector-service-config
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: gis-connector-service
+    app.kubernetes.io/component: agent-data-006
+    app.kubernetes.io/part-of: greenlang
+  annotations:
+    description: "GIS/Mapping Connector Service configuration - CRS, coordinates, spatial analysis, geocoding, map layers, feature limits, retention"
+    prd: AGENT-DATA-006
+data:
+  # Environment
+  ENVIRONMENT: "production"
+
+  # Logging
+  GL_GIS_CONNECTOR_LOG_LEVEL: "INFO"
+  LOG_FORMAT: "json"
+
+  # Database (connection string via secret, schema config here)
+  GL_GIS_CONNECTOR_DB_SCHEMA: "gis_connector_service"
+  GL_GIS_CONNECTOR_DB_POOL_MIN: "2"
+  GL_GIS_CONNECTOR_DB_POOL_MAX: "10"
+
+  # Redis
+  GL_GIS_CONNECTOR_REDIS_PREFIX: "gl:gis_connector:"
+  GL_GIS_CONNECTOR_REDIS_TTL: "300"
+
+  # GIS Connector Configuration
+  GL_GIS_CONNECTOR_DEFAULT_CRS: "EPSG:4326"
+  GL_GIS_CONNECTOR_MAX_FEATURES: "100000"
+  GL_GIS_CONNECTOR_COORDINATE_PRECISION: "6"
+  GL_GIS_CONNECTOR_MAX_FILE_SIZE_MB: "500"
+  GL_GIS_CONNECTOR_SIMPLIFICATION_TOLERANCE: "0.0001"
+  GL_GIS_CONNECTOR_BUFFER_DISTANCE_METERS: "100"
+  GL_GIS_CONNECTOR_GEOCODING_RATE_LIMIT: "50"
+  GL_GIS_CONNECTOR_GEOCODING_TIMEOUT_SECONDS: "10"
+  GL_GIS_CONNECTOR_SPATIAL_INDEX_TYPE: "rtree"
+  GL_GIS_CONNECTOR_MAX_GEOMETRY_VERTICES: "1000000"
+  GL_GIS_CONNECTOR_ENABLE_TOPOLOGY_VALIDATION: "true"
+  GL_GIS_CONNECTOR_ENABLE_AREA_CALCULATION: "true"
+  GL_GIS_CONNECTOR_ENABLE_DISTANCE_CALCULATION: "true"
+  GL_GIS_CONNECTOR_RETENTION_DAYS: "90"
+
+  # Supported formats
+  GL_GIS_CONNECTOR_SUPPORTED_VECTOR_FORMATS: "geojson,shapefile,geopackage,kml,wkt,wkb,topojson"
+  GL_GIS_CONNECTOR_SUPPORTED_RASTER_FORMATS: "geotiff,netcdf,hdf5,png,jpeg"
+
+  # Metrics
+  GL_GIS_CONNECTOR_ENABLE_METRICS: "true"
+  METRICS_PORT: "8000"
+  METRICS_PATH: "/metrics"
+
+  # Tracing
+  TRACING_ENABLED: "true"
+  TRACING_SAMPLE_RATE: "0.1"
+  OTEL_ENDPOINT: "http://otel-collector.monitoring.svc.cluster.local:4317"
+  OTEL_SERVICE_NAME: "gis-connector-service"
+
+  # GIS connector service configuration file
+  gis-connector-config.yaml: |
+    gis_connector_service:
+      version: "1.0.0"
+      environment: production
+
+      coordinate_reference_systems:
+        default: "EPSG:4326"
+        supported:
+          - code: "EPSG:4326"
+            name: "WGS 84"
+            type: "geographic"
+            description: "World Geodetic System 1984 - GPS standard"
+          - code: "EPSG:3857"
+            name: "Web Mercator"
+            type: "projected"
+            description: "Pseudo-Mercator used by web mapping platforms"
+          - code: "EPSG:32632"
+            name: "UTM Zone 32N"
+            type: "projected"
+            description: "Universal Transverse Mercator Zone 32 North"
+          - code: "EPSG:32633"
+            name: "UTM Zone 33N"
+            type: "projected"
+            description: "Universal Transverse Mercator Zone 33 North"
+          - code: "EPSG:2154"
+            name: "RGF93 / Lambert-93"
+            type: "projected"
+            description: "French official projected CRS"
+          - code: "EPSG:27700"
+            name: "OSGB 1936 / British National Grid"
+            type: "projected"
+            description: "British National Grid"
+        auto_detect: true
+        transform_on_ingest: true
+
+      feature_processing:
+        max_features: 100000
+        max_geometry_vertices: 1000000
+        coordinate_precision: 6
+        simplification:
+          enabled: true
+          tolerance: 0.0001
+          preserve_topology: true
+        validation:
+          enabled: true
+          fix_invalid_geometries: true
+          remove_duplicates: true
+          check_self_intersections: true
+        topology:
+          enabled: true
+          snap_tolerance: 0.000001
+          validate_on_ingest: true
+
+      spatial_analysis:
+        buffer:
+          default_distance_meters: 100
+          max_distance_meters: 50000
+          segments: 32
+        intersection:
+          enabled: true
+          max_geometries: 1000
+        union:
+          enabled: true
+          max_geometries: 1000
+        area_calculation:
+          enabled: true
+          unit: "square_meters"
+          geodesic: true
+        distance_calculation:
+          enabled: true
+          unit: "meters"
+          geodesic: true
+        centroid:
+          enabled: true
+          weighted: false
+        convex_hull:
+          enabled: true
+          max_points: 100000
+
+      geocoding:
+        enabled: true
+        providers:
+          - name: nominatim
+            type: openstreetmap
+            enabled: true
+            rate_limit_per_second: 1
+            priority: 1
+          - name: mapbox
+            type: mapbox
+            enabled: false
+            rate_limit_per_second: 50
+            priority: 2
+          - name: google
+            type: google_maps
+            enabled: false
+            rate_limit_per_second: 50
+            priority: 3
+          - name: arcgis
+            type: arcgis
+            enabled: false
+            rate_limit_per_second: 20
+            priority: 4
+        timeout_seconds: 10
+        cache_ttl_seconds: 86400
+        batch_size: 100
+        retry_on_failure: true
+        max_retries: 3
+
+      map_layers:
+        max_layers_per_project: 50
+        supported_types:
+          - vector
+          - raster
+          - heatmap
+          - cluster
+          - tile
+        tile_settings:
+          min_zoom: 0
+          max_zoom: 22
+          tile_size: 256
+          format: "png"
+        styling:
+          enabled: true
+          default_fill_color: "#3388ff"
+          default_stroke_color: "#2255aa"
+          default_stroke_width: 2
+          default_opacity: 0.65
+
+      file_formats:
+        vector:
+          geojson:
+            enabled: true
+            max_size_mb: 500
+            streaming: true
+          shapefile:
+            enabled: true
+            max_size_mb: 500
+            encoding: "utf-8"
+            require_prj: true
+          geopackage:
+            enabled: true
+            max_size_mb: 1000
+          kml:
+            enabled: true
+            max_size_mb: 200
+          topojson:
+            enabled: true
+            max_size_mb: 500
+            quantization: 10000
+        raster:
+          geotiff:
+            enabled: true
+            max_size_mb: 2000
+            compression: "lzw"
+          netcdf:
+            enabled: true
+            max_size_mb: 5000
+          hdf5:
+            enabled: true
+            max_size_mb: 5000
+
+      spatial_index:
+        type: "rtree"
+        enabled: true
+        rebuild_on_update: true
+        cache_size_mb: 128
+
+      caching:
+        enabled: true
+        default_ttl_seconds: 300
+        max_size_mb: 256
+        strategies:
+          - name: geocoding_result
+            ttl_seconds: 86400
+            invalidation: "on_expiry"
+          - name: spatial_query
+            ttl_seconds: 300
+            invalidation: "on_write"
+          - name: tile_cache
+            ttl_seconds: 3600
+            invalidation: "on_change"
+          - name: crs_transform
+            ttl_seconds: 600
+            invalidation: "periodic"
+
+      rate_limiting:
+        enabled: true
+        requests_per_minute: 600
+        requests_per_hour: 10000
+        burst_size: 50
+        geocoding_per_minute: 50
+
+      retention:
+        spatial_data_days: 365
+        geocoding_cache_days: 90
+        query_logs_days: 90
+        audit_trail_days: 365
+
+      metrics:
+        enabled: true
+        prefix: gl_gis_connector
+        histogram_buckets: [0.01, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10, 30, 60, 120]
+
+      integration:
+        auth_enabled: true
+        audit_enabled: true
+        alerting_enabled: true
+        feature_flags_enabled: true
+        access_guard_enabled: true
+        agent_registry_enabled: true
+        unit_normalizer_enabled: true
+        citations_enabled: true

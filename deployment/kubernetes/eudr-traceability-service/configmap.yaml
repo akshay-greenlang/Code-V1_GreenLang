@@ -1,0 +1,149 @@
+# =============================================================================
+# GreenLang EUDR Traceability Connector - ConfigMap
+# =============================================================================
+# Configuration for EUDR traceability operations: geolocation precision,
+# deforestation cutoff dates, batch processing, EU Information System
+# connectivity, commodity classification, retention policies, and metrics.
+# PRD: AGENT-DATA-005
+# =============================================================================
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: eudr-traceability-service-config
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: eudr-traceability-service
+    app.kubernetes.io/component: configuration
+    app.kubernetes.io/part-of: greenlang
+  annotations:
+    description: "EUDR Traceability Connector configuration - geolocation, deforestation cutoff, batch settings, EU system integration, retention"
+    prd: AGENT-DATA-005
+data:
+  # Environment
+  ENVIRONMENT: "production"
+
+  # Logging
+  GL_EUDR_TRACEABILITY_LOG_LEVEL: "INFO"
+  LOG_FORMAT: "json"
+
+  # Database (connection string via secret, schema config here)
+  GL_EUDR_TRACEABILITY_DB_SCHEMA: "eudr_traceability_service"
+  GL_EUDR_TRACEABILITY_DB_POOL_MIN: "2"
+  GL_EUDR_TRACEABILITY_DB_POOL_MAX: "10"
+
+  # Redis
+  GL_EUDR_TRACEABILITY_REDIS_PREFIX: "gl:eudr_traceability:"
+  GL_EUDR_TRACEABILITY_REDIS_TTL: "300"
+
+  # EUDR-specific Configuration
+  GL_EUDR_TRACEABILITY_BATCH_MAX_SIZE: "1000"
+  GL_EUDR_TRACEABILITY_COORDINATE_PRECISION: "6"
+  GL_EUDR_TRACEABILITY_EU_SYSTEM_SANDBOX: "true"
+  GL_EUDR_TRACEABILITY_RETENTION_YEARS: "5"
+  GL_EUDR_TRACEABILITY_DEFORESTATION_CUTOFF_DATE: "2020-12-31"
+
+  # Cache Configuration
+  GL_EUDR_TRACEABILITY_CACHE_TTL_SECONDS: "300"
+  GL_EUDR_TRACEABILITY_CACHE_MAX_SIZE: "5000"
+  GL_EUDR_TRACEABILITY_COMMODITY_CACHE_TTL: "600"
+  GL_EUDR_TRACEABILITY_GEOLOCATION_CACHE_TTL: "900"
+
+  # Metrics
+  GL_EUDR_TRACEABILITY_ENABLE_METRICS: "true"
+  METRICS_PORT: "8000"
+  METRICS_PATH: "/metrics"
+
+  # Tracing
+  TRACING_ENABLED: "true"
+  TRACING_SAMPLE_RATE: "0.1"
+  OTEL_ENDPOINT: "http://otel-collector.monitoring.svc.cluster.local:4317"
+  OTEL_SERVICE_NAME: "eudr-traceability-service"
+
+  # EUDR traceability service configuration file
+  eudr-traceability-config.yaml: |
+    eudr_traceability_service:
+      version: "1.0.0"
+      environment: production
+
+      regulation:
+        name: "EU Deforestation Regulation"
+        regulation_id: "EU 2023/1115"
+        deforestation_cutoff_date: "2020-12-31"
+        enforcement_date: "2024-12-30"
+        retention_years: 5
+
+      geolocation:
+        coordinate_precision: 6
+        coordinate_system: "WGS84"
+        polygon_simplification_tolerance: 0.0001
+        max_polygon_vertices: 10000
+        supported_formats:
+          - geojson
+          - wkt
+          - shapefile
+          - kml
+
+      commodities:
+        regulated:
+          - cattle
+          - cocoa
+          - coffee
+          - oil_palm
+          - rubber
+          - soya
+          - wood
+        derived_products: true
+        cn_code_mapping: true
+
+      due_diligence:
+        risk_assessment_enabled: true
+        risk_levels:
+          - low
+          - standard
+          - high
+        statement_formats:
+          - json
+          - pdf
+          - xml
+        auto_submit_low_risk: false
+
+      eu_information_system:
+        sandbox_mode: true
+        sandbox_url: "https://eudr-sandbox.europa.eu/api/v1"
+        production_url: "https://eudr.europa.eu/api/v1"
+        submission_timeout_seconds: 120
+        retry_max: 3
+        retry_delay_seconds: 30
+
+      supply_chain:
+        max_chain_depth: 20
+        traceability_required: true
+        chain_verification: true
+
+      batch:
+        max_size: 1000
+        timeout_seconds: 3600
+        concurrent_max: 3
+
+      cache:
+        ttl_seconds: 300
+        max_size: 5000
+        commodity_cache_ttl: 600
+        geolocation_cache_ttl: 900
+        warmup_on_startup: true
+
+      metrics:
+        enabled: true
+        prefix: gl_eudr_traceability
+        histogram_buckets: [0.01, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10, 30, 60, 120, 300, 600]
+
+      integration:
+        auth_enabled: true
+        audit_enabled: true
+        alerting_enabled: true
+        feature_flags_enabled: true
+        access_guard_enabled: true
+        agent_registry_enabled: true
+        unit_normalizer_enabled: true
+        citations_enabled: true
