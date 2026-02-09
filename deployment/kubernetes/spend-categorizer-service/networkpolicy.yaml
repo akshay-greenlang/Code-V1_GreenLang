@@ -1,0 +1,94 @@
+---
+# AGENT-DATA-009: GL-DATA-SUP-002 Spend Data Categorizer - NetworkPolicy
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: spend-categorizer-service
+  namespace: greenlang
+  labels:
+    app: spend-categorizer-service
+    agent-id: GL-DATA-SUP-002
+    component: data-intake
+spec:
+  podSelector:
+    matchLabels:
+      app: spend-categorizer-service
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Allow from Kong API Gateway
+    - from:
+        - podSelector:
+            matchLabels:
+              app: kong-gateway
+      ports:
+        - port: 8000
+          protocol: TCP
+    # Allow from Prometheus scraping
+    - from:
+        - podSelector:
+            matchLabels:
+              app: prometheus
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+      ports:
+        - port: 8000
+          protocol: TCP
+    # Allow from other GreenLang services
+    - from:
+        - podSelector:
+            matchLabels:
+              tier: agent-data
+        - podSelector:
+            matchLabels:
+              tier: agent-foundation
+      ports:
+        - port: 8000
+          protocol: TCP
+  egress:
+    # PostgreSQL
+    - to:
+        - podSelector:
+            matchLabels:
+              app: postgres-service
+      ports:
+        - port: 5432
+          protocol: TCP
+    # Redis
+    - to:
+        - podSelector:
+            matchLabels:
+              app: redis-service
+      ports:
+        - port: 6379
+          protocol: TCP
+    # DNS
+    - to: []
+      ports:
+        - port: 53
+          protocol: UDP
+        - port: 53
+          protocol: TCP
+    # OpenTelemetry Collector
+    - to:
+        - podSelector:
+            matchLabels:
+              app: otel-collector
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+      ports:
+        - port: 4317
+          protocol: TCP
+        - port: 4318
+          protocol: TCP
+    # Other GreenLang services (ERP connector, Excel normalizer)
+    - to:
+        - podSelector:
+            matchLabels:
+              tier: agent-data
+      ports:
+        - port: 8000
+          protocol: TCP

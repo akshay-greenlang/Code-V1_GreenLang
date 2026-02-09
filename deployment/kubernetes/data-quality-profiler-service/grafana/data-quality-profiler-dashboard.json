@@ -1,0 +1,108 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "title": "Datasets Profiled (rate/min)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 0 },
+      "targets": [{ "expr": "rate(gl_dq_datasets_profiled_total[5m]) * 60", "legendFormat": "{{source}}" }]
+    },
+    {
+      "title": "Assessments Completed (rate/min)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 6, "y": 0 },
+      "targets": [{ "expr": "rate(gl_dq_assessments_completed_total[5m]) * 60", "legendFormat": "{{quality_level}}" }]
+    },
+    {
+      "title": "Rules Evaluated (rate/min)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 12, "y": 0 },
+      "targets": [{ "expr": "rate(gl_dq_rules_evaluated_total[5m]) * 60", "legendFormat": "{{result}}" }]
+    },
+    {
+      "title": "Anomalies Detected (rate/min)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 18, "y": 0 },
+      "targets": [{ "expr": "rate(gl_dq_anomalies_detected_total[5m]) * 60", "legendFormat": "{{method}}" }]
+    },
+    {
+      "title": "Overall Quality Score Distribution",
+      "type": "histogram",
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 6 },
+      "targets": [{ "expr": "gl_dq_overall_quality_score_bucket", "legendFormat": "{{le}}" }]
+    },
+    {
+      "title": "Processing Duration (p95)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 6 },
+      "targets": [{ "expr": "histogram_quantile(0.95, rate(gl_dq_processing_duration_seconds_bucket[5m]))", "legendFormat": "{{operation}}" }]
+    },
+    {
+      "title": "Active Profiles / Total Issues",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 6 },
+      "targets": [
+        { "expr": "gl_dq_active_profiles", "legendFormat": "Active Profiles" },
+        { "expr": "gl_dq_total_issues_found", "legendFormat": "Total Issues" }
+      ]
+    },
+    {
+      "title": "Processing Errors (rate/min)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 12 },
+      "targets": [{ "expr": "rate(gl_dq_processing_errors_total[5m]) * 60", "legendFormat": "{{error_type}}" }]
+    },
+    {
+      "title": "Gates Evaluated (rate/min)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 12 },
+      "targets": [{ "expr": "rate(gl_dq_gates_evaluated_total[5m]) * 60", "legendFormat": "{{outcome}}" }]
+    },
+    {
+      "title": "Freshness Checks (rate/min)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 12 },
+      "targets": [{ "expr": "rate(gl_dq_freshness_checks_total[5m]) * 60", "legendFormat": "{{status}}" }]
+    },
+    {
+      "title": "Columns Profiled by Type",
+      "type": "piechart",
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 18 },
+      "targets": [{ "expr": "sum by (data_type) (gl_dq_columns_profiled_total)", "legendFormat": "{{data_type}}" }]
+    },
+    {
+      "title": "Avg Quality Score",
+      "type": "gauge",
+      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 18 },
+      "targets": [{ "expr": "histogram_quantile(0.5, rate(gl_dq_overall_quality_score_bucket[1h]))" }],
+      "fieldConfig": { "defaults": { "min": 0, "max": 1, "thresholds": { "steps": [
+        { "value": 0, "color": "red" },
+        { "value": 0.5, "color": "yellow" },
+        { "value": 0.8, "color": "green" }
+      ]}}}
+    },
+    {
+      "title": "Pod Resource Usage",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 18 },
+      "targets": [
+        { "expr": "container_memory_working_set_bytes{pod=~\"data-quality-profiler.*\"} / 1024 / 1024", "legendFormat": "Memory (MB)" },
+        { "expr": "rate(container_cpu_usage_seconds_total{pod=~\"data-quality-profiler.*\"}[5m]) * 1000", "legendFormat": "CPU (millicores)" }
+      ]
+    }
+  ],
+  "schemaVersion": 39,
+  "style": "dark",
+  "tags": ["greenlang", "data-quality-profiler", "agent-data-010", "quality"],
+  "templating": { "list": [] },
+  "time": { "from": "now-6h", "to": "now" },
+  "title": "Data Quality Profiler - GL-DATA-X-013",
+  "uid": "data-quality-profiler-overview",
+  "version": 1
+}

@@ -1,0 +1,100 @@
+# =============================================================================
+# GreenLang Supplier Questionnaire Service - NetworkPolicy
+# =============================================================================
+# Restricts network access to/from supplier questionnaire service.
+# Allows: ingress from Kong API gateway, Prometheus scraping, internal agents.
+# Allows: egress to PostgreSQL, Redis, SMTP, and DNS.
+# PRD: AGENT-DATA-008
+# =============================================================================
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: supplier-questionnaire-service-netpol
+  namespace: greenlang
+  labels:
+    app: supplier-questionnaire-service
+    app.kubernetes.io/name: supplier-questionnaire-service
+    app.kubernetes.io/component: agent-data-008
+    app.kubernetes.io/part-of: greenlang
+  annotations:
+    description: "NetworkPolicy for Supplier Questionnaire Service - restricts ingress/egress"
+    prd: AGENT-DATA-008
+spec:
+  podSelector:
+    matchLabels:
+      app: supplier-questionnaire-service
+      app.kubernetes.io/component: agent-data-008
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Allow from Kong API gateway
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kong
+        - podSelector:
+            matchLabels:
+              app: kong
+      ports:
+        - port: 8000
+          protocol: TCP
+    # Allow Prometheus scraping
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: prometheus
+      ports:
+        - port: 8000
+          protocol: TCP
+    # Allow from internal greenlang services
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/part-of: greenlang
+      ports:
+        - port: 8000
+          protocol: TCP
+  egress:
+    # PostgreSQL
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: database
+      ports:
+        - port: 5432
+          protocol: TCP
+    # Redis
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: redis
+      ports:
+        - port: 6379
+          protocol: TCP
+    # SMTP for email distribution
+    - to: []
+      ports:
+        - port: 587
+          protocol: TCP
+        - port: 465
+          protocol: TCP
+    # DNS resolution
+    - to: []
+      ports:
+        - port: 53
+          protocol: UDP
+        - port: 53
+          protocol: TCP
+    # OTel Collector
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+      ports:
+        - port: 4317
+          protocol: TCP

@@ -1,0 +1,16 @@
+---
+# AGENT-DATA-009: GL-DATA-SUP-002 Spend Data Categorizer - PDB
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: spend-categorizer-service
+  namespace: greenlang
+  labels:
+    app: spend-categorizer-service
+    agent-id: GL-DATA-SUP-002
+    component: data-intake
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: spend-categorizer-service

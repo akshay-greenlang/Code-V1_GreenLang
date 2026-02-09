@@ -1,0 +1,115 @@
+---
+# AGENT-DATA-011: GL-DATA-X-014 Duplicate Detection Agent - Alert Rules
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: duplicate-detector-alerts
+  namespace: greenlang
+  labels:
+    app: duplicate-detector-service
+    agent-id: GL-DATA-X-014
+    component: duplicate-detection
+    release: prometheus
+spec:
+  groups:
+    - name: duplicate-detector.rules
+      rules:
+        # Alert 1: High error rate
+        - alert: DuplicateDetectorHighErrorRate
+          expr: |
+            rate(gl_dd_processing_errors_total[5m]) > 0.1
+          for: 5m
+          labels:
+            severity: warning
+            service: duplicate-detector-service
+            agent_id: GL-DATA-X-014
+          annotations:
+            summary: "Duplicate Detector high error rate"
+            description: "Error rate {{ $value | humanize }}/s for duplicate-detector-service over last 5 minutes."
+            runbook_url: "https://docs.greenlang.io/runbooks/duplicate-detector/high-error-rate"
+
+        # Alert 2: Job failures
+        - alert: DuplicateDetectorJobFailures
+          expr: |
+            increase(gl_dd_jobs_processed_total{status="failed"}[1h]) > 3
+          for: 5m
+          labels:
+            severity: critical
+            service: duplicate-detector-service
+          annotations:
+            summary: "Multiple dedup job failures"
+            description: "{{ $value }} dedup jobs failed in the last hour."
+
+        # Alert 3: Processing latency high
+        - alert: DuplicateDetectorHighLatency
+          expr: |
+            histogram_quantile(0.95, rate(gl_dd_processing_duration_seconds_bucket[5m])) > 30
+          for: 10m
+          labels:
+            severity: warning
+            service: duplicate-detector-service
+          annotations:
+            summary: "Duplicate Detector p95 latency > 30s"
+            description: "Processing p95 latency {{ $value | humanizeDuration }} exceeds 30s threshold."
+
+        # Alert 4: High merge conflict rate
+        - alert: DuplicateDetectorHighConflictRate
+          expr: |
+            rate(gl_dd_merge_conflicts_total[1h]) / rate(gl_dd_merges_completed_total[1h]) > 0.5
+          for: 15m
+          labels:
+            severity: warning
+            service: duplicate-detector-service
+          annotations:
+            summary: "High merge conflict rate (>50%)"
+            description: "{{ $value | humanizePercentage }} of merges have conflicts."
+
+        # Alert 5: Comparison backlog
+        - alert: DuplicateDetectorComparisonBacklog
+          expr: |
+            rate(gl_dd_comparisons_performed_total[5m]) < 1 and gl_dd_active_jobs > 0
+          for: 10m
+          labels:
+            severity: warning
+            service: duplicate-detector-service
+          annotations:
+            summary: "Comparison throughput stalled"
+            description: "Active jobs but comparisons near zero. Possible blocking or performance issue."
+
+        # Alert 6: Low match quality
+        - alert: DuplicateDetectorLowMatchQuality
+          expr: |
+            histogram_quantile(0.5, rate(gl_dd_similarity_score_bucket[1h])) < 0.3
+          for: 15m
+          labels:
+            severity: warning
+            service: duplicate-detector-service
+          annotations:
+            summary: "Low median similarity scores"
+            description: "Median similarity score {{ $value }} is below 0.3. Check matching configuration."
+
+        # Alert 7: Pod not ready
+        - alert: DuplicateDetectorPodNotReady
+          expr: |
+            kube_deployment_status_replicas_ready{deployment="duplicate-detector-service", namespace="greenlang"}
+            < kube_deployment_spec_replicas{deployment="duplicate-detector-service", namespace="greenlang"}
+          for: 5m
+          labels:
+            severity: critical
+            service: duplicate-detector-service
+          annotations:
+            summary: "Duplicate Detector pods not ready"
+            description: "{{ $value }} pods not ready out of desired replicas."
+
+        # Alert 8: Memory usage high
+        - alert: DuplicateDetectorHighMemory
+          expr: |
+            container_memory_working_set_bytes{pod=~"duplicate-detector.*", namespace="greenlang"}
+            / container_spec_memory_limit_bytes{pod=~"duplicate-detector.*", namespace="greenlang"} > 0.85
+          for: 10m
+          labels:
+            severity: warning
+            service: duplicate-detector-service
+          annotations:
+            summary: "Duplicate Detector memory usage > 85%"
+            description: "Pod {{ $labels.pod }} using {{ $value | humanizePercentage }} of memory limit."

@@ -1,0 +1,196 @@
+---
+# AGENT-DATA-009: GL-DATA-SUP-002 Spend Data Categorizer - ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: spend-categorizer-config
+  namespace: greenlang
+  labels:
+    app: spend-categorizer-service
+    agent-id: GL-DATA-SUP-002
+    component: data-intake
+data:
+  GL_SPEND_CAT_LOG_LEVEL: "INFO"
+  GL_SPEND_CAT_DEFAULT_CURRENCY: "USD"
+  GL_SPEND_CAT_DEFAULT_TAXONOMY: "unspsc"
+  GL_SPEND_CAT_EEIO_VERSION: "2024"
+  GL_SPEND_CAT_EXIOBASE_VERSION: "3.8.2"
+  GL_SPEND_CAT_DEFRA_VERSION: "2025"
+  GL_SPEND_CAT_MIN_CONFIDENCE: "0.3"
+  GL_SPEND_CAT_BATCH_SIZE: "1000"
+  GL_SPEND_CAT_MAX_RECORDS: "100000"
+  GL_SPEND_CAT_DEDUP_THRESHOLD: "0.85"
+  GL_SPEND_CAT_VENDOR_NORMALIZATION: "true"
+  GL_SPEND_CAT_CACHE_TTL: "3600"
+  GL_SPEND_CAT_ENABLE_EXIOBASE: "true"
+  GL_SPEND_CAT_ENABLE_DEFRA: "true"
+  GL_SPEND_CAT_RATE_LIMIT_RPM: "120"
+  GL_SPEND_CAT_ENABLE_PROVENANCE: "true"
+  GL_SPEND_CAT_PROVENANCE_HASH_ALGORITHM: "sha256"
+
+  # Service configuration YAML
+  service-config.yaml: |
+    service:
+      name: spend-categorizer-service
+      agent_id: GL-DATA-SUP-002
+      version: "1.0.0"
+
+    classification:
+      default_taxonomy: unspsc
+      supported_taxonomies:
+        - unspsc
+        - naics
+        - eclass
+        - isic
+        - sic
+        - cpv
+        - hs_cn
+      min_confidence: 0.3
+      high_confidence_threshold: 0.8
+      medium_confidence_threshold: 0.5
+
+    scope3_mapping:
+      categories:
+        - number: 1
+          name: "Purchased Goods and Services"
+          upstream: true
+        - number: 2
+          name: "Capital Goods"
+          upstream: true
+        - number: 3
+          name: "Fuel and Energy Related Activities"
+          upstream: true
+        - number: 4
+          name: "Upstream Transportation and Distribution"
+          upstream: true
+        - number: 5
+          name: "Waste Generated in Operations"
+          upstream: true
+        - number: 6
+          name: "Business Travel"
+          upstream: true
+        - number: 7
+          name: "Employee Commuting"
+          upstream: true
+        - number: 8
+          name: "Upstream Leased Assets"
+          upstream: true
+        - number: 9
+          name: "Downstream Transportation and Distribution"
+          upstream: false
+        - number: 10
+          name: "Processing of Sold Products"
+          upstream: false
+        - number: 11
+          name: "Use of Sold Products"
+          upstream: false
+        - number: 12
+          name: "End-of-Life Treatment of Sold Products"
+          upstream: false
+        - number: 13
+          name: "Downstream Leased Assets"
+          upstream: false
+        - number: 14
+          name: "Franchises"
+          upstream: false
+        - number: 15
+          name: "Investments"
+          upstream: false
+
+    emission_factors:
+      sources:
+        - name: epa_eeio
+          version: "2024"
+          description: "US EPA Environmentally-Extended Input-Output Model"
+          unit: "kgCO2e/USD"
+          priority: 3
+        - name: exiobase
+          version: "3.8.2"
+          description: "EXIOBASE Multi-Regional Input-Output Database"
+          unit: "kgCO2e/EUR"
+          priority: 2
+        - name: defra
+          version: "2025"
+          description: "UK DEFRA Conversion Factors"
+          unit: "kgCO2e/unit"
+          priority: 2
+        - name: ecoinvent
+          version: "3.10"
+          description: "Ecoinvent LCA Database"
+          unit: "kgCO2e/unit"
+          priority: 1
+        - name: custom
+          description: "Organization-specific factors"
+          priority: 0
+      selection_hierarchy:
+        - custom
+        - supplier_specific
+        - exiobase  # regional
+        - defra     # national
+        - epa_eeio  # global
+
+    analytics:
+      pareto_threshold: 0.8
+      hotspot_top_n: 10
+      trend_periods: 4
+      timeframes:
+        - monthly
+        - quarterly
+        - annual
+
+    ingestion:
+      batch_size: 1000
+      max_records_per_batch: 100000
+      supported_currencies: 150
+      dedup_threshold: 0.85
+      vendor_normalization: true
+      vendor_suffixes:
+        - "Inc"
+        - "Inc."
+        - "LLC"
+        - "Ltd"
+        - "Ltd."
+        - "Corp"
+        - "Corp."
+        - "Co"
+        - "Co."
+        - "GmbH"
+        - "AG"
+        - "SA"
+        - "S.A."
+        - "SAS"
+        - "BV"
+        - "NV"
+        - "Pty"
+        - "Pty Ltd"
+        - "PLC"
+        - "LLP"
+
+    rules:
+      match_types:
+        - exact
+        - contains
+        - regex
+        - fuzzy
+        - starts_with
+        - ends_with
+      default_priority: 100
+      max_rules_per_tenant: 10000
+
+    reporting:
+      formats:
+        - json
+        - csv
+        - markdown
+        - html
+        - text
+      default_format: markdown
+
+    caching:
+      emission_factor_ttl: 3600
+      taxonomy_code_ttl: 7200
+      analytics_ttl: 1800
+
+    rate_limiting:
+      requests_per_minute: 120
+      burst_size: 20

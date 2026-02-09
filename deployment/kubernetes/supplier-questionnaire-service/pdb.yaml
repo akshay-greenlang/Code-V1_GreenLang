@@ -1,0 +1,28 @@
+# =============================================================================
+# GreenLang Supplier Questionnaire Service - PodDisruptionBudget
+# =============================================================================
+# Ensures at least 1 pod is always available during voluntary disruptions
+# (node drains, cluster upgrades, etc.) to maintain questionnaire service
+# availability.
+# PRD: AGENT-DATA-008
+# =============================================================================
+
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: supplier-questionnaire-service-pdb
+  namespace: greenlang
+  labels:
+    app: supplier-questionnaire-service
+    app.kubernetes.io/name: supplier-questionnaire-service
+    app.kubernetes.io/component: agent-data-008
+    app.kubernetes.io/part-of: greenlang
+  annotations:
+    description: "PodDisruptionBudget for Supplier Questionnaire Service - ensures minimum availability during disruptions"
+    prd: AGENT-DATA-008
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: supplier-questionnaire-service
+      app.kubernetes.io/component: agent-data-008

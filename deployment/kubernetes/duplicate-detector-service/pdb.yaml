@@ -1,0 +1,16 @@
+---
+# AGENT-DATA-011: GL-DATA-X-014 Duplicate Detection Agent - PDB
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: duplicate-detector-service
+  namespace: greenlang
+  labels:
+    app: duplicate-detector-service
+    agent-id: GL-DATA-X-014
+    component: duplicate-detection
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: duplicate-detector-service

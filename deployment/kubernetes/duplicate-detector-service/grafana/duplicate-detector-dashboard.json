@@ -1,0 +1,108 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "title": "Jobs Processed (rate/min)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 0 },
+      "targets": [{ "expr": "rate(gl_dd_jobs_processed_total[5m]) * 60", "legendFormat": "{{status}}" }]
+    },
+    {
+      "title": "Records Fingerprinted (rate/min)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 6, "y": 0 },
+      "targets": [{ "expr": "rate(gl_dd_records_fingerprinted_total[5m]) * 60", "legendFormat": "{{algorithm}}" }]
+    },
+    {
+      "title": "Comparisons Performed (rate/min)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 12, "y": 0 },
+      "targets": [{ "expr": "rate(gl_dd_comparisons_performed_total[5m]) * 60", "legendFormat": "{{algorithm}}" }]
+    },
+    {
+      "title": "Matches Found (rate/min)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 18, "y": 0 },
+      "targets": [{ "expr": "rate(gl_dd_matches_found_total[5m]) * 60", "legendFormat": "{{classification}}" }]
+    },
+    {
+      "title": "Similarity Score Distribution",
+      "type": "histogram",
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 6 },
+      "targets": [{ "expr": "gl_dd_similarity_score_bucket", "legendFormat": "{{le}}" }]
+    },
+    {
+      "title": "Processing Duration (p95)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 6 },
+      "targets": [{ "expr": "histogram_quantile(0.95, rate(gl_dd_processing_duration_seconds_bucket[5m]))", "legendFormat": "{{operation}}" }]
+    },
+    {
+      "title": "Active Jobs / Clusters Formed",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 6 },
+      "targets": [
+        { "expr": "gl_dd_active_jobs", "legendFormat": "Active Jobs" },
+        { "expr": "increase(gl_dd_clusters_formed_total[1h])", "legendFormat": "Clusters (1h)" }
+      ]
+    },
+    {
+      "title": "Processing Errors (rate/min)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 12 },
+      "targets": [{ "expr": "rate(gl_dd_processing_errors_total[5m]) * 60", "legendFormat": "{{error_type}}" }]
+    },
+    {
+      "title": "Blocks Created (rate/min)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 12 },
+      "targets": [{ "expr": "rate(gl_dd_blocks_created_total[5m]) * 60", "legendFormat": "{{strategy}}" }]
+    },
+    {
+      "title": "Merges Completed (rate/min)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 12 },
+      "targets": [{ "expr": "rate(gl_dd_merges_completed_total[5m]) * 60", "legendFormat": "{{strategy}}" }]
+    },
+    {
+      "title": "Merge Conflicts by Resolution",
+      "type": "piechart",
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 18 },
+      "targets": [{ "expr": "sum by (resolution) (gl_dd_merge_conflicts_total)", "legendFormat": "{{resolution}}" }]
+    },
+    {
+      "title": "Avg Similarity Score",
+      "type": "gauge",
+      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 18 },
+      "targets": [{ "expr": "histogram_quantile(0.5, rate(gl_dd_similarity_score_bucket[1h]))" }],
+      "fieldConfig": { "defaults": { "min": 0, "max": 1, "thresholds": { "steps": [
+        { "value": 0, "color": "red" },
+        { "value": 0.5, "color": "yellow" },
+        { "value": 0.8, "color": "green" }
+      ]}}}
+    },
+    {
+      "title": "Pod Resource Usage",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 18 },
+      "targets": [
+        { "expr": "container_memory_working_set_bytes{pod=~\"duplicate-detector.*\"} / 1024 / 1024", "legendFormat": "Memory (MB)" },
+        { "expr": "rate(container_cpu_usage_seconds_total{pod=~\"duplicate-detector.*\"}[5m]) * 1000", "legendFormat": "CPU (millicores)" }
+      ]
+    }
+  ],
+  "schemaVersion": 39,
+  "style": "dark",
+  "tags": ["greenlang", "duplicate-detector", "agent-data-011", "deduplication"],
+  "templating": { "list": [] },
+  "time": { "from": "now-6h", "to": "now" },
+  "title": "Duplicate Detection Agent - GL-DATA-X-014",
+  "uid": "duplicate-detector-overview",
+  "version": 1
+}

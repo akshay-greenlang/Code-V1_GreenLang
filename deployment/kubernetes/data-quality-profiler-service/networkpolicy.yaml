@@ -1,0 +1,96 @@
+---
+# AGENT-DATA-010: GL-DATA-X-013 Data Quality Profiler - NetworkPolicy
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: data-quality-profiler-netpol
+  namespace: greenlang
+  labels:
+    app: data-quality-profiler-service
+    agent-id: GL-DATA-X-013
+    component: data-quality
+spec:
+  podSelector:
+    matchLabels:
+      app: data-quality-profiler-service
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Allow from Kong API Gateway
+    - from:
+        - podSelector:
+            matchLabels:
+              app: kong-gateway
+      ports:
+        - port: 8000
+          protocol: TCP
+    # Allow from Prometheus scraping
+    - from:
+        - podSelector:
+            matchLabels:
+              app: prometheus
+      ports:
+        - port: 8000
+          protocol: TCP
+    # Allow from other GreenLang agents
+    - from:
+        - podSelector:
+            matchLabels:
+              component: data-intake
+        - podSelector:
+            matchLabels:
+              component: data-quality
+        - podSelector:
+            matchLabels:
+              component: foundation
+      ports:
+        - port: 8000
+          protocol: TCP
+  egress:
+    # Allow to PostgreSQL
+    - to:
+        - podSelector:
+            matchLabels:
+              app: postgres-service
+      ports:
+        - port: 5432
+          protocol: TCP
+    # Allow to Redis
+    - to:
+        - podSelector:
+            matchLabels:
+              app: redis-service
+      ports:
+        - port: 6379
+          protocol: TCP
+    # Allow DNS
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - port: 53
+          protocol: UDP
+        - port: 53
+          protocol: TCP
+    # Allow to OTel Collector
+    - to:
+        - podSelector:
+            matchLabels:
+              app: otel-collector
+      ports:
+        - port: 4317
+          protocol: TCP
+    # Allow to other GreenLang agents
+    - to:
+        - podSelector:
+            matchLabels:
+              component: data-intake
+        - podSelector:
+            matchLabels:
+              component: data-quality
+        - podSelector:
+            matchLabels:
+              component: foundation
+      ports:
+        - port: 8000
+          protocol: TCP

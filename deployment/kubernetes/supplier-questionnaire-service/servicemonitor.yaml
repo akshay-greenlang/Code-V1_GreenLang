@@ -1,0 +1,42 @@
+# =============================================================================
+# GreenLang Supplier Questionnaire Service - ServiceMonitor
+# =============================================================================
+# Prometheus ServiceMonitor for scraping supplier questionnaire service metrics.
+# Scrapes 12 Prometheus metrics: templates, distributions, responses,
+# validations, scores, follow-ups, response rate, processing duration,
+# active campaigns, pending responses, errors, data quality.
+# PRD: AGENT-DATA-008
+# =============================================================================
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: supplier-questionnaire-service-monitor
+  namespace: greenlang
+  labels:
+    app: supplier-questionnaire-service
+    app.kubernetes.io/name: supplier-questionnaire-service
+    app.kubernetes.io/component: agent-data-008
+    app.kubernetes.io/part-of: greenlang
+    release: prometheus
+  annotations:
+    description: "ServiceMonitor for Supplier Questionnaire Service - scrapes 12 Prometheus metrics"
+    prd: AGENT-DATA-008
+spec:
+  selector:
+    matchLabels:
+      app: supplier-questionnaire-service
+      app.kubernetes.io/component: agent-data-008
+  namespaceSelector:
+    matchNames:
+      - greenlang
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s
+      honorLabels: true
+      metricRelabelings:
+        - sourceLabels: [__name__]
+          regex: "gl_supplier_quest_.*"
+          action: keep

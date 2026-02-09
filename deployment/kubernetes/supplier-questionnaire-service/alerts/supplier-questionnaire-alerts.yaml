@@ -1,0 +1,143 @@
+# =============================================================================
+# GreenLang Supplier Questionnaire Service - PrometheusRule Alerts
+# =============================================================================
+# Alert rules for monitoring the Supplier Questionnaire Processor service.
+# Covers: high error rate, low response rate, scoring failures, distribution
+# failures, validation failures, follow-up overdue, high latency, and
+# campaign health.
+# PRD: AGENT-DATA-008
+# =============================================================================
+
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: supplier-questionnaire-service-alerts
+  namespace: greenlang
+  labels:
+    app: supplier-questionnaire-service
+    app.kubernetes.io/name: supplier-questionnaire-service
+    app.kubernetes.io/component: agent-data-008
+    app.kubernetes.io/part-of: greenlang
+    release: prometheus
+  annotations:
+    description: "Alert rules for Supplier Questionnaire Service"
+    prd: AGENT-DATA-008
+spec:
+  groups:
+    - name: supplier-questionnaire-service.rules
+      interval: 30s
+      rules:
+        # High processing error rate (>5% over 5 minutes)
+        - alert: SupplierQuestionnaireHighErrorRate
+          expr: |
+            (
+              rate(gl_supplier_quest_processing_errors_total[5m])
+              /
+              (rate(gl_supplier_quest_responses_total[5m]) + rate(gl_supplier_quest_distributions_total[5m]) + 0.001)
+            ) > 0.05
+          for: 5m
+          labels:
+            severity: warning
+            service: supplier-questionnaire-service
+            component: agent-data-008
+          annotations:
+            summary: "High error rate in Supplier Questionnaire Service"
+            description: "Error rate is {{ $value | humanizePercentage }} over the last 5 minutes"
+            runbook_url: "https://wiki.greenlang.io/runbooks/supplier-questionnaire/high-error-rate"
+
+        # Distribution failures (>10 in 15 minutes)
+        - alert: SupplierQuestionnaireDistributionFailures
+          expr: |
+            increase(gl_supplier_quest_distributions_total{status="failed"}[15m]) > 10
+          for: 5m
+          labels:
+            severity: warning
+            service: supplier-questionnaire-service
+            component: agent-data-008
+          annotations:
+            summary: "Multiple questionnaire distribution failures"
+            description: "{{ $value }} distribution failures in the last 15 minutes"
+            runbook_url: "https://wiki.greenlang.io/runbooks/supplier-questionnaire/distribution-failures"
+
+        # Validation failure spike (>20% fail rate)
+        - alert: SupplierQuestionnaireHighValidationFailureRate
+          expr: |
+            (
+              rate(gl_supplier_quest_validations_total{result="fail"}[15m])
+              /
+              (rate(gl_supplier_quest_validations_total[15m]) + 0.001)
+            ) > 0.20
+          for: 10m
+          labels:
+            severity: warning
+            service: supplier-questionnaire-service
+            component: agent-data-008
+          annotations:
+            summary: "High validation failure rate"
+            description: "{{ $value | humanizePercentage }} of validations are failing"
+
+        # Scoring engine errors
+        - alert: SupplierQuestionnaireScoringErrors
+          expr: |
+            increase(gl_supplier_quest_processing_errors_total{engine="scoring"}[15m]) > 5
+          for: 5m
+          labels:
+            severity: warning
+            service: supplier-questionnaire-service
+            component: agent-data-008
+          annotations:
+            summary: "Scoring engine errors detected"
+            description: "{{ $value }} scoring errors in the last 15 minutes"
+
+        # High processing latency (p95 > 10s)
+        - alert: SupplierQuestionnaireHighLatency
+          expr: |
+            histogram_quantile(0.95, rate(gl_supplier_quest_processing_duration_seconds_bucket[5m])) > 10
+          for: 5m
+          labels:
+            severity: warning
+            service: supplier-questionnaire-service
+            component: agent-data-008
+          annotations:
+            summary: "High processing latency in Supplier Questionnaire Service"
+            description: "P95 latency is {{ $value }}s (threshold: 10s)"
+
+        # Low response rate (< 20% after 30 days for any campaign)
+        - alert: SupplierQuestionnaireLowResponseRate
+          expr: |
+            gl_supplier_quest_response_rate < 0.20
+          for: 24h
+          labels:
+            severity: info
+            service: supplier-questionnaire-service
+            component: agent-data-008
+          annotations:
+            summary: "Low questionnaire response rate"
+            description: "Campaign {{ $labels.campaign_id }} has {{ $value | humanizePercentage }} response rate"
+
+        # Many pending responses (> 500)
+        - alert: SupplierQuestionnaireHighPendingResponses
+          expr: |
+            gl_supplier_quest_pending_responses > 500
+          for: 1h
+          labels:
+            severity: info
+            service: supplier-questionnaire-service
+            component: agent-data-008
+          annotations:
+            summary: "High number of pending responses"
+            description: "{{ $value }} responses are pending processing"
+
+        # Service unavailable (no successful health checks in 5m)
+        - alert: SupplierQuestionnaireServiceDown
+          expr: |
+            up{job="supplier-questionnaire-service"} == 0
+          for: 5m
+          labels:
+            severity: critical
+            service: supplier-questionnaire-service
+            component: agent-data-008
+          annotations:
+            summary: "Supplier Questionnaire Service is down"
+            description: "The service has been unreachable for 5 minutes"
+            runbook_url: "https://wiki.greenlang.io/runbooks/supplier-questionnaire/service-down"

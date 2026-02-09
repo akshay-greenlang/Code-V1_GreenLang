@@ -1,0 +1,29 @@
+---
+# AGENT-DATA-011: GL-DATA-X-014 Duplicate Detection Agent - ServiceMonitor
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: duplicate-detector-service
+  namespace: greenlang
+  labels:
+    app: duplicate-detector-service
+    agent-id: GL-DATA-X-014
+    component: duplicate-detection
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: duplicate-detector-service
+  namespaceSelector:
+    matchNames:
+      - greenlang
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s
+      honorLabels: true
+      metricRelabelings:
+        - sourceLabels: [__name__]
+          regex: "gl_dd_.*"
+          action: keep

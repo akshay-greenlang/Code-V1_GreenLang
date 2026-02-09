@@ -1,0 +1,158 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "description": "AGENT-DATA-008: Supplier Questionnaire Processor Service - GL-DATA-SUP-001",
+  "editable": true,
+  "gnetId": null,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "title": "Service Overview",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "collapsed": false
+    },
+    {
+      "title": "Templates Created",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 4, "x": 0, "y": 1 },
+      "targets": [{ "expr": "sum(gl_supplier_quest_templates_total)", "legendFormat": "Total" }],
+      "fieldConfig": { "defaults": { "thresholds": { "steps": [{ "color": "green", "value": null }] } } }
+    },
+    {
+      "title": "Distributions Sent",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 4, "x": 4, "y": 1 },
+      "targets": [{ "expr": "sum(gl_supplier_quest_distributions_total{status='sent'})", "legendFormat": "Sent" }],
+      "fieldConfig": { "defaults": { "thresholds": { "steps": [{ "color": "blue", "value": null }] } } }
+    },
+    {
+      "title": "Responses Collected",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 4, "x": 8, "y": 1 },
+      "targets": [{ "expr": "sum(gl_supplier_quest_responses_total{status='submitted'})", "legendFormat": "Submitted" }],
+      "fieldConfig": { "defaults": { "thresholds": { "steps": [{ "color": "green", "value": null }] } } }
+    },
+    {
+      "title": "Active Campaigns",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 4, "x": 12, "y": 1 },
+      "targets": [{ "expr": "gl_supplier_quest_active_campaigns", "legendFormat": "Active" }],
+      "fieldConfig": { "defaults": { "thresholds": { "steps": [{ "color": "yellow", "value": null }, { "color": "orange", "value": 10 }] } } }
+    },
+    {
+      "title": "Pending Responses",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 4, "x": 16, "y": 1 },
+      "targets": [{ "expr": "gl_supplier_quest_pending_responses", "legendFormat": "Pending" }],
+      "fieldConfig": { "defaults": { "thresholds": { "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 100 }, { "color": "red", "value": 500 }] } } }
+    },
+    {
+      "title": "Error Rate",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 4, "x": 20, "y": 1 },
+      "targets": [{ "expr": "rate(gl_supplier_quest_processing_errors_total[5m])", "legendFormat": "Errors/s" }],
+      "fieldConfig": { "defaults": { "unit": "ops", "thresholds": { "steps": [{ "color": "green", "value": null }, { "color": "red", "value": 0.1 }] } } }
+    },
+    {
+      "title": "Distribution & Response Pipeline",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 },
+      "collapsed": false
+    },
+    {
+      "title": "Distributions by Channel",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 6 },
+      "targets": [{ "expr": "rate(gl_supplier_quest_distributions_total[5m])", "legendFormat": "{{channel}} - {{status}}" }],
+      "fieldConfig": { "defaults": { "unit": "ops" } }
+    },
+    {
+      "title": "Responses by Status",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 6 },
+      "targets": [{ "expr": "rate(gl_supplier_quest_responses_total[5m])", "legendFormat": "{{channel}} - {{status}}" }],
+      "fieldConfig": { "defaults": { "unit": "ops" } }
+    },
+    {
+      "title": "Scoring & Validation",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 14 },
+      "collapsed": false
+    },
+    {
+      "title": "Validations by Level & Result",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 15 },
+      "targets": [{ "expr": "rate(gl_supplier_quest_validations_total[5m])", "legendFormat": "{{level}} - {{result}}" }],
+      "fieldConfig": { "defaults": { "unit": "ops" } }
+    },
+    {
+      "title": "Scores by Framework & Tier",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 15 },
+      "targets": [{ "expr": "rate(gl_supplier_quest_scores_total[5m])", "legendFormat": "{{framework}} - {{tier}}" }],
+      "fieldConfig": { "defaults": { "unit": "ops" } }
+    },
+    {
+      "title": "Data Quality Score Distribution",
+      "type": "histogram",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 23 },
+      "targets": [{ "expr": "gl_supplier_quest_data_quality_score_bucket", "legendFormat": "{{framework}}" }]
+    },
+    {
+      "title": "Follow-ups by Type & Status",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 23 },
+      "targets": [{ "expr": "rate(gl_supplier_quest_followups_total[5m])", "legendFormat": "{{type}} - {{status}}" }],
+      "fieldConfig": { "defaults": { "unit": "ops" } }
+    },
+    {
+      "title": "Performance",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 31 },
+      "collapsed": false
+    },
+    {
+      "title": "Processing Duration (p50/p95/p99)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 32 },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, rate(gl_supplier_quest_processing_duration_seconds_bucket[5m]))", "legendFormat": "p50 {{operation}}" },
+        { "expr": "histogram_quantile(0.95, rate(gl_supplier_quest_processing_duration_seconds_bucket[5m]))", "legendFormat": "p95 {{operation}}" },
+        { "expr": "histogram_quantile(0.99, rate(gl_supplier_quest_processing_duration_seconds_bucket[5m]))", "legendFormat": "p99 {{operation}}" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "s" } }
+    },
+    {
+      "title": "Errors by Engine & Type",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 32 },
+      "targets": [{ "expr": "rate(gl_supplier_quest_processing_errors_total[5m])", "legendFormat": "{{engine}} - {{error_type}}" }],
+      "fieldConfig": { "defaults": { "unit": "ops" } }
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "tags": ["greenlang", "agent-data-008", "supplier-questionnaire", "GL-DATA-SUP-001"],
+  "templating": { "list": [] },
+  "time": { "from": "now-6h", "to": "now" },
+  "timepicker": {},
+  "timezone": "utc",
+  "title": "GreenLang Supplier Questionnaire Service",
+  "uid": "gl-supplier-questionnaire",
+  "version": 1
+}

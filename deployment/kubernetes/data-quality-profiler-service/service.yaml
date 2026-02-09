@@ -1,0 +1,21 @@
+---
+# AGENT-DATA-010: GL-DATA-X-013 Data Quality Profiler - Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: data-quality-profiler-service
+  namespace: greenlang
+  labels:
+    app: data-quality-profiler-service
+    agent-id: GL-DATA-X-013
+    component: data-quality
+spec:
+  type: ClusterIP
+  selector:
+    matchLabels:
+      app: data-quality-profiler-service
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8000
+      protocol: TCP

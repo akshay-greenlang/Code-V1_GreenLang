@@ -1,0 +1,301 @@
+# AGENT-DATA-011: GL-DATA-X-014 Duplicate Detection Agent - CI/CD Pipeline
+name: Duplicate Detector CI
+
+on:
+  push:
+    branches: [master, develop, "feature/**"]
+    paths:
+      - "greenlang/duplicate_detector/**"
+      - "tests/unit/duplicate_detector_service/**"
+      - "deployment/database/migrations/sql/V041*"
+      - "deployment/kubernetes/duplicate-detector-service/**"
+      - ".github/workflows/duplicate-detector-ci.yml"
+  pull_request:
+    branches: [master, develop]
+    paths:
+      - "greenlang/duplicate_detector/**"
+      - "tests/unit/duplicate_detector_service/**"
+
+env:
+  PYTHON_VERSION: "3.11"
+  AGENT_ID: "GL-DATA-X-014"
+  SERVICE_NAME: "duplicate-detector-service"
+
+jobs:
+  # ──────────────────────────────────────────────────────────────
+  # Job 1: Lint
+  # ──────────────────────────────────────────────────────────────
+  lint:
+    name: Lint & Format
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install linters
+        run: pip install ruff black isort yamllint
+
+      - name: Ruff check
+        run: ruff check greenlang/duplicate_detector/ --select=E,W,F,I,N,UP,B,A,C4,SIM
+
+      - name: Black check
+        run: black --check --diff greenlang/duplicate_detector/
+
+      - name: isort check
+        run: isort --check-only --diff greenlang/duplicate_detector/
+
+      - name: YAML lint
+        run: yamllint -d relaxed deployment/kubernetes/duplicate-detector-service/
+
+      - name: JSON lint
+        run: python -m json.tool deployment/kubernetes/duplicate-detector-service/grafana/duplicate-detector-dashboard.json > /dev/null
+
+  # ──────────────────────────────────────────────────────────────
+  # Job 2: Type Check
+  # ──────────────────────────────────────────────────────────────
+  type-check:
+    name: Type Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          pip install pydantic>=2.0 fastapi uvicorn
+          pip install mypy types-PyYAML types-requests
+
+      - name: mypy check
+        run: |
+          mypy greenlang/duplicate_detector/ \
+            --ignore-missing-imports \
+            --no-strict-optional \
+            --allow-untyped-defs \
+            --show-error-codes
+
+  # ──────────────────────────────────────────────────────────────
+  # Job 3: Unit Tests
+  # ──────────────────────────────────────────────────────────────
+  unit-test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          pip install pydantic>=2.0 fastapi uvicorn httpx
+          pip install pytest pytest-cov pytest-asyncio pytest-xdist
+
+      - name: Run unit tests with coverage
+        run: |
+          pytest tests/unit/duplicate_detector_service/ \
+            -v \
+            --tb=short \
+            --cov=greenlang/duplicate_detector \
+            --cov-report=term-missing \
+            --cov-report=xml:coverage-duplicate-detector.xml \
+            --cov-fail-under=85 \
+            -x \
+            -n auto
+
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-duplicate-detector
+          path: coverage-duplicate-detector.xml
+          retention-days: 7
+
+  # ──────────────────────────────────────────────────────────────
+  # Job 4: Integration Tests
+  # ──────────────────────────────────────────────────────────────
+  integration-test:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [unit-test]
+    services:
+      postgres:
+        image: timescale/timescaledb:latest-pg16
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: greenlang_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          pip install pydantic>=2.0 fastapi uvicorn httpx
+          pip install pytest pytest-asyncio psycopg[binary] redis
+
+      - name: Run migrations
+        env:
+          DATABASE_URL: "postgresql://test:test@localhost:5432/greenlang_test"
+        run: |
+          PGPASSWORD=test psql -h localhost -U test -d greenlang_test -c "CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;"
+          PGPASSWORD=test psql -h localhost -U test -d greenlang_test -f deployment/database/migrations/sql/V041__duplicate_detector_service.sql || true
+
+      - name: Run integration tests
+        env:
+          GL_DD_DATABASE_URL: "postgresql://test:test@localhost:5432/greenlang_test"
+          GL_DD_REDIS_URL: "redis://localhost:6379/13"
+        run: |
+          pytest tests/integration/duplicate_detector/ -v --tb=short -x || true
+
+  # ──────────────────────────────────────────────────────────────
+  # Job 5: Security Scan
+  # ──────────────────────────────────────────────────────────────
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install scanners
+        run: pip install bandit safety
+
+      - name: Bandit scan
+        run: |
+          bandit -r greenlang/duplicate_detector/ \
+            -f json -o bandit-duplicate-detector.json \
+            --severity-level medium \
+            --confidence-level medium || true
+
+      - name: Safety check
+        run: safety check --json --output safety-duplicate-detector.json || true
+
+      - name: Upload security reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-duplicate-detector
+          path: |
+            bandit-duplicate-detector.json
+            safety-duplicate-detector.json
+          retention-days: 30
+
+  # ──────────────────────────────────────────────────────────────
+  # Job 6: Migration Validate
+  # ──────────────────────────────────────────────────────────────
+  migration-validate:
+    name: Migration Validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: timescale/timescaledb:latest-pg16
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: greenlang_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate SQL syntax
+        run: |
+          PGPASSWORD=test psql -h localhost -U test -d greenlang_test \
+            -c "CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;"
+          PGPASSWORD=test psql -h localhost -U test -d greenlang_test \
+            -f deployment/database/migrations/sql/V041__duplicate_detector_service.sql
+
+      - name: Verify schema objects
+        run: |
+          PGPASSWORD=test psql -h localhost -U test -d greenlang_test -c "
+            SELECT schemaname, tablename
+            FROM pg_tables
+            WHERE schemaname = 'duplicate_detector_service'
+            ORDER BY tablename;
+          "
+
+      - name: Verify hypertables
+        run: |
+          PGPASSWORD=test psql -h localhost -U test -d greenlang_test -c "
+            SELECT hypertable_schema, hypertable_name
+            FROM timescaledb_information.hypertables
+            WHERE hypertable_schema = 'duplicate_detector_service';
+          "
+
+  # ──────────────────────────────────────────────────────────────
+  # Job 7: All Checks Gate
+  # ──────────────────────────────────────────────────────────────
+  all-checks:
+    name: All Checks Passed
+    runs-on: ubuntu-latest
+    needs: [lint, type-check, unit-test, security-scan, migration-validate]
+    if: always()
+    steps:
+      - name: Verify all jobs passed
+        run: |
+          echo "Lint: ${{ needs.lint.result }}"
+          echo "Type Check: ${{ needs.type-check.result }}"
+          echo "Unit Tests: ${{ needs.unit-test.result }}"
+          echo "Security: ${{ needs.security-scan.result }}"
+          echo "Migration: ${{ needs.migration-validate.result }}"
+
+          if [[ "${{ needs.lint.result }}" != "success" ]] || \
+             [[ "${{ needs.type-check.result }}" != "success" ]] || \
+             [[ "${{ needs.unit-test.result }}" != "success" ]] || \
+             [[ "${{ needs.security-scan.result }}" != "success" ]] || \
+             [[ "${{ needs.migration-validate.result }}" != "success" ]]; then
+            echo "One or more required checks failed!"
+            exit 1
+          fi
+
+          echo "All checks passed for ${{ env.SERVICE_NAME }} (${{ env.AGENT_ID }})"

@@ -1,0 +1,21 @@
+---
+# AGENT-DATA-011: GL-DATA-X-014 Duplicate Detection Agent - Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: duplicate-detector-service
+  namespace: greenlang
+  labels:
+    app: duplicate-detector-service
+    agent-id: GL-DATA-X-014
+    component: duplicate-detection
+spec:
+  type: ClusterIP
+  selector:
+    matchLabels:
+      app: duplicate-detector-service
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8000
+      protocol: TCP

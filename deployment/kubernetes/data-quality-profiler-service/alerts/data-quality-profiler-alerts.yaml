@@ -1,0 +1,115 @@
+---
+# AGENT-DATA-010: GL-DATA-X-013 Data Quality Profiler - Alert Rules
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: data-quality-profiler-alerts
+  namespace: greenlang
+  labels:
+    app: data-quality-profiler-service
+    agent-id: GL-DATA-X-013
+    component: data-quality
+    release: prometheus
+spec:
+  groups:
+    - name: data-quality-profiler.rules
+      rules:
+        # Alert 1: High error rate
+        - alert: DataQualityProfilerHighErrorRate
+          expr: |
+            rate(gl_dq_processing_errors_total[5m]) > 0.1
+          for: 5m
+          labels:
+            severity: warning
+            service: data-quality-profiler-service
+            agent_id: GL-DATA-X-013
+          annotations:
+            summary: "Data Quality Profiler high error rate"
+            description: "Error rate {{ $value | humanize }}/s for data-quality-profiler-service over last 5 minutes."
+            runbook_url: "https://docs.greenlang.io/runbooks/data-quality-profiler/high-error-rate"
+
+        # Alert 2: Low overall quality scores
+        - alert: DataQualityProfilerLowQualityScores
+          expr: |
+            histogram_quantile(0.5, rate(gl_dq_overall_quality_score_bucket[1h])) < 0.5
+          for: 15m
+          labels:
+            severity: warning
+            service: data-quality-profiler-service
+          annotations:
+            summary: "Median data quality score below 50%"
+            description: "Median quality score {{ $value | humanizePercentage }} is below 50% threshold."
+
+        # Alert 3: Processing latency high
+        - alert: DataQualityProfilerHighLatency
+          expr: |
+            histogram_quantile(0.95, rate(gl_dq_processing_duration_seconds_bucket[5m])) > 10
+          for: 10m
+          labels:
+            severity: warning
+            service: data-quality-profiler-service
+          annotations:
+            summary: "Data Quality Profiler p95 latency > 10s"
+            description: "Processing p95 latency {{ $value | humanizeDuration }} exceeds 10s threshold."
+
+        # Alert 4: High anomaly detection rate
+        - alert: DataQualityProfilerHighAnomalyRate
+          expr: |
+            rate(gl_dq_anomalies_detected_total[1h]) > 10
+          for: 15m
+          labels:
+            severity: warning
+            service: data-quality-profiler-service
+          annotations:
+            summary: "High anomaly detection rate"
+            description: "{{ $value | humanize }} anomalies/s detected in the last hour."
+
+        # Alert 5: Quality gate failures
+        - alert: DataQualityProfilerGateFailures
+          expr: |
+            increase(gl_dq_gates_evaluated_total{outcome="fail"}[1h]) > 5
+          for: 5m
+          labels:
+            severity: critical
+            service: data-quality-profiler-service
+          annotations:
+            summary: "Multiple quality gate failures"
+            description: "{{ $value }} quality gate failures in the last hour."
+
+        # Alert 6: Freshness SLA breaches
+        - alert: DataQualityProfilerFreshnessSLABreach
+          expr: |
+            rate(gl_dq_freshness_checks_total{status="stale"}[1h]) > 0.5
+          for: 10m
+          labels:
+            severity: warning
+            service: data-quality-profiler-service
+          annotations:
+            summary: "High freshness SLA breach rate"
+            description: "Freshness SLA breaches at {{ $value | humanize }}/s. Check data pipeline timeliness."
+
+        # Alert 7: Pod not ready
+        - alert: DataQualityProfilerPodNotReady
+          expr: |
+            kube_deployment_status_replicas_ready{deployment="data-quality-profiler-service", namespace="greenlang"}
+            < kube_deployment_spec_replicas{deployment="data-quality-profiler-service", namespace="greenlang"}
+          for: 5m
+          labels:
+            severity: critical
+            service: data-quality-profiler-service
+          annotations:
+            summary: "Data Quality Profiler pods not ready"
+            description: "{{ $value }} pods not ready out of desired replicas."
+
+        # Alert 8: Memory usage high
+        - alert: DataQualityProfilerHighMemory
+          expr: |
+            container_memory_working_set_bytes{pod=~"data-quality-profiler.*", namespace="greenlang"}
+            / container_spec_memory_limit_bytes{pod=~"data-quality-profiler.*", namespace="greenlang"} > 0.85
+          for: 10m
+          labels:
+            severity: warning
+            service: data-quality-profiler-service
+          annotations:
+            summary: "Data Quality Profiler memory usage > 85%"
+            description: "Pod {{ $labels.pod }} using {{ $value | humanizePercentage }} of memory limit."

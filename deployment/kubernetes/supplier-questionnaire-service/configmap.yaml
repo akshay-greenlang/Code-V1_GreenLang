@@ -1,0 +1,284 @@
+# =============================================================================
+# GreenLang Supplier Questionnaire Service - ConfigMap
+# =============================================================================
+# Configuration for supplier questionnaire operations: framework defaults,
+# scoring thresholds, reminder schedules, distribution settings, validation
+# rules, analytics, caching, and metrics.
+# PRD: AGENT-DATA-008
+# =============================================================================
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: supplier-questionnaire-service-config
+  namespace: greenlang
+  labels:
+    app.kubernetes.io/name: supplier-questionnaire-service
+    app.kubernetes.io/component: agent-data-008
+    app.kubernetes.io/part-of: greenlang
+  annotations:
+    description: "Supplier Questionnaire Service configuration - frameworks, scoring, reminders, distribution, validation, analytics"
+    prd: AGENT-DATA-008
+data:
+  # Environment
+  ENVIRONMENT: "production"
+
+  # Logging
+  GL_SUPPLIER_QUEST_LOG_LEVEL: "INFO"
+  LOG_FORMAT: "json"
+
+  # Database
+  GL_SUPPLIER_QUEST_DB_SCHEMA: "supplier_questionnaire_service"
+  GL_SUPPLIER_QUEST_POOL_MIN_SIZE: "2"
+  GL_SUPPLIER_QUEST_POOL_MAX_SIZE: "10"
+
+  # Redis
+  GL_SUPPLIER_QUEST_REDIS_PREFIX: "gl:supplier_quest:"
+  GL_SUPPLIER_QUEST_CACHE_TTL_SECONDS: "1800"
+
+  # Framework defaults
+  GL_SUPPLIER_QUEST_DEFAULT_FRAMEWORK: "custom"
+  GL_SUPPLIER_QUEST_DEFAULT_LANGUAGE: "en"
+
+  # Distribution settings
+  GL_SUPPLIER_QUEST_DEFAULT_DEADLINE_DAYS: "60"
+  GL_SUPPLIER_QUEST_BATCH_SIZE: "100"
+  GL_SUPPLIER_QUEST_WORKER_COUNT: "4"
+
+  # Reminder schedule
+  GL_SUPPLIER_QUEST_MAX_REMINDERS: "4"
+  GL_SUPPLIER_QUEST_REMINDER_GENTLE_DAYS: "7"
+  GL_SUPPLIER_QUEST_REMINDER_FIRM_DAYS: "3"
+  GL_SUPPLIER_QUEST_REMINDER_URGENT_DAYS: "1"
+
+  # Validation
+  GL_SUPPLIER_QUEST_MIN_COMPLETION_PCT: "80.0"
+
+  # Scoring thresholds
+  GL_SUPPLIER_QUEST_SCORE_LEADER_THRESHOLD: "80"
+  GL_SUPPLIER_QUEST_SCORE_ADVANCED_THRESHOLD: "60"
+  GL_SUPPLIER_QUEST_SCORE_DEVELOPING_THRESHOLD: "40"
+  GL_SUPPLIER_QUEST_SCORE_LAGGING_THRESHOLD: "20"
+
+  # Retention
+  GL_SUPPLIER_QUEST_RETENTION_DAYS: "1095"
+
+  # Metrics
+  GL_SUPPLIER_QUEST_ENABLE_METRICS: "true"
+  METRICS_PORT: "8000"
+  METRICS_PATH: "/metrics"
+
+  # Tracing
+  TRACING_ENABLED: "true"
+  TRACING_SAMPLE_RATE: "0.1"
+  OTEL_ENDPOINT: "http://otel-collector.monitoring.svc.cluster.local:4317"
+  OTEL_SERVICE_NAME: "supplier-questionnaire-service"
+
+  # Service configuration file
+  supplier-questionnaire-config.yaml: |
+    supplier_questionnaire_service:
+      version: "1.0.0"
+      environment: production
+
+      frameworks:
+        supported:
+          - id: cdp_climate
+            name: "CDP Climate Change"
+            modules: 11
+            scoring: "grade"
+            grades: ["A", "A-", "B", "B-", "C", "C-", "D", "D-"]
+          - id: cdp_water
+            name: "CDP Water Security"
+            modules: 8
+            scoring: "grade"
+            grades: ["A", "A-", "B", "B-", "C", "C-", "D", "D-"]
+          - id: cdp_forests
+            name: "CDP Forests"
+            modules: 6
+            scoring: "grade"
+            grades: ["A", "A-", "B", "B-", "C", "C-", "D", "D-"]
+          - id: ecovadis
+            name: "EcoVadis"
+            themes: 4
+            scoring: "numeric"
+            range: [0, 100]
+            themes_list: ["Environment", "Labor & Human Rights", "Ethics", "Sustainable Procurement"]
+          - id: djsi
+            name: "Dow Jones Sustainability Index"
+            dimensions: 3
+            scoring: "numeric"
+            range: [0, 100]
+            dimensions_list: ["Environmental", "Social", "Governance"]
+          - id: gri
+            name: "GRI Standards"
+            scoring: "compliance"
+          - id: tcfd
+            name: "TCFD"
+            pillars: 4
+            scoring: "compliance"
+            pillars_list: ["Governance", "Strategy", "Risk Management", "Metrics & Targets"]
+          - id: csrd_esrs
+            name: "CSRD/ESRS"
+            scoring: "materiality"
+          - id: csddd
+            name: "CSDDD"
+            scoring: "compliance"
+          - id: sbti
+            name: "SBTi"
+            scoring: "compliance"
+          - id: custom
+            name: "Custom"
+            scoring: "weighted"
+
+      question_types:
+        - text
+        - numeric
+        - single_choice
+        - multi_choice
+        - date
+        - file_upload
+        - scale
+        - boolean
+
+      distribution:
+        channels:
+          - email
+          - portal_link
+          - api_push
+          - bulk_upload
+          - manual
+        max_batch_size: 1000
+        portal_token_expiry_days: 90
+
+      scoring:
+        performance_tiers:
+          leader:
+            min_score: 80
+            label: "Leader"
+          advanced:
+            min_score: 60
+            label: "Advanced"
+          developing:
+            min_score: 40
+            label: "Developing"
+          lagging:
+            min_score: 20
+            label: "Lagging"
+          non_compliant:
+            min_score: 0
+            label: "Non-Compliant"
+        cdp_grade_thresholds:
+          A: 90
+          A_MINUS: 80
+          B: 70
+          B_MINUS: 60
+          C: 50
+          C_MINUS: 40
+          D: 25
+          D_MINUS: 0
+
+      validation:
+        levels:
+          - structural
+          - completeness
+          - consistency
+          - framework
+          - data_quality
+        min_data_quality_score: 50
+
+      follow_up:
+        reminder_types:
+          - type: gentle
+            days_before_deadline: 7
+            template: "reminder_gentle"
+          - type: firm
+            days_before_deadline: 3
+            template: "reminder_firm"
+          - type: urgent
+            days_before_deadline: 1
+            template: "reminder_urgent"
+          - type: final
+            days_before_deadline: 0
+            template: "reminder_final"
+        escalation_levels:
+          - level: 1
+            role: "supplier_contact"
+          - level: 2
+            role: "procurement_manager"
+          - level: 3
+            role: "category_lead"
+          - level: 4
+            role: "procurement_director"
+          - level: 5
+            role: "vp_supply_chain"
+
+      languages:
+        - code: en
+          name: English
+        - code: de
+          name: German
+        - code: fr
+          name: French
+        - code: es
+          name: Spanish
+        - code: it
+          name: Italian
+        - code: pt
+          name: Portuguese
+        - code: nl
+          name: Dutch
+        - code: zh
+          name: Chinese
+        - code: ja
+          name: Japanese
+        - code: ko
+          name: Korean
+        - code: ar
+          name: Arabic
+        - code: hi
+          name: Hindi
+
+      caching:
+        enabled: true
+        default_ttl_seconds: 1800
+        strategies:
+          - name: template_cache
+            ttl_seconds: 3600
+            invalidation: "on_write"
+          - name: score_cache
+            ttl_seconds: 1800
+            invalidation: "on_write"
+          - name: analytics_cache
+            ttl_seconds: 300
+            invalidation: "periodic"
+          - name: benchmark_cache
+            ttl_seconds: 86400
+            invalidation: "daily"
+
+      rate_limiting:
+        enabled: true
+        requests_per_minute: 600
+        requests_per_hour: 10000
+        burst_size: 50
+        distribution_per_minute: 100
+
+      retention:
+        response_data_days: 1095
+        analytics_data_days: 730
+        audit_trail_days: 1095
+        event_data_days: 90
+
+      metrics:
+        enabled: true
+        prefix: gl_supplier_quest
+        histogram_buckets: [0.01, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10, 30, 60, 120]
+
+      integration:
+        auth_enabled: true
+        audit_enabled: true
+        alerting_enabled: true
+        feature_flags_enabled: true
+        access_guard_enabled: true
+        agent_registry_enabled: true
+        citations_enabled: true
+        erp_connector_enabled: true

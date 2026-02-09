@@ -1,0 +1,114 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "title": "Spend Records Ingested (rate/min)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 0 },
+      "targets": [{ "expr": "rate(gl_spend_cat_records_ingested_total[5m]) * 60", "legendFormat": "{{source}}" }]
+    },
+    {
+      "title": "Records Classified (rate/min)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 6, "y": 0 },
+      "targets": [{ "expr": "rate(gl_spend_cat_records_classified_total[5m]) * 60", "legendFormat": "{{taxonomy}}" }]
+    },
+    {
+      "title": "Scope 3 Mappings (rate/min)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 12, "y": 0 },
+      "targets": [{ "expr": "rate(gl_spend_cat_scope3_mapped_total[5m]) * 60", "legendFormat": "{{category}}" }]
+    },
+    {
+      "title": "Emissions Calculated (rate/min)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 18, "y": 0 },
+      "targets": [{ "expr": "rate(gl_spend_cat_emissions_calculated_total[5m]) * 60", "legendFormat": "{{source}}" }]
+    },
+    {
+      "title": "Classification Confidence Distribution",
+      "type": "histogram",
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 6 },
+      "targets": [{ "expr": "gl_spend_cat_classification_confidence_bucket", "legendFormat": "{{le}}" }]
+    },
+    {
+      "title": "Processing Duration (p95)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 6 },
+      "targets": [{ "expr": "histogram_quantile(0.95, rate(gl_spend_cat_processing_duration_seconds_bucket[5m]))", "legendFormat": "{{operation}}" }]
+    },
+    {
+      "title": "Active Batches / Total Spend",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 6 },
+      "targets": [
+        { "expr": "gl_spend_cat_active_batches", "legendFormat": "Active Batches" },
+        { "expr": "gl_spend_cat_total_spend_usd", "legendFormat": "Total Spend (USD)" }
+      ]
+    },
+    {
+      "title": "Processing Errors (rate/min)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 12 },
+      "targets": [{ "expr": "rate(gl_spend_cat_processing_errors_total[5m]) * 60", "legendFormat": "{{error_type}}" }]
+    },
+    {
+      "title": "Emission Factor Lookups (rate/min)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 12 },
+      "targets": [{ "expr": "rate(gl_spend_cat_emission_factor_lookups_total[5m]) * 60", "legendFormat": "{{source}}" }]
+    },
+    {
+      "title": "Rules Evaluated (rate/min)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 12 },
+      "targets": [{ "expr": "rate(gl_spend_cat_rules_evaluated_total[5m]) * 60", "legendFormat": "{{result}}" }]
+    },
+    {
+      "title": "Reports Generated",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 18 },
+      "targets": [{ "expr": "gl_spend_cat_reports_generated_total", "legendFormat": "{{format}}" }]
+    },
+    {
+      "title": "Scope 3 Category Distribution (by spend)",
+      "type": "piechart",
+      "gridPos": { "h": 6, "w": 8, "x": 6, "y": 18 },
+      "targets": [{ "expr": "sum by (category) (gl_spend_cat_scope3_mapped_total)", "legendFormat": "Cat {{category}}" }]
+    },
+    {
+      "title": "Avg Classification Confidence",
+      "type": "gauge",
+      "gridPos": { "h": 4, "w": 5, "x": 14, "y": 18 },
+      "targets": [{ "expr": "histogram_quantile(0.5, rate(gl_spend_cat_classification_confidence_bucket[1h]))" }],
+      "fieldConfig": { "defaults": { "min": 0, "max": 1, "thresholds": { "steps": [
+        { "value": 0, "color": "red" },
+        { "value": 0.5, "color": "yellow" },
+        { "value": 0.8, "color": "green" }
+      ]}}}
+    },
+    {
+      "title": "Pod Resource Usage",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 5, "x": 19, "y": 18 },
+      "targets": [
+        { "expr": "container_memory_working_set_bytes{pod=~\"spend-categorizer.*\"} / 1024 / 1024", "legendFormat": "Memory (MB)" },
+        { "expr": "rate(container_cpu_usage_seconds_total{pod=~\"spend-categorizer.*\"}[5m]) * 1000", "legendFormat": "CPU (millicores)" }
+      ]
+    }
+  ],
+  "schemaVersion": 39,
+  "style": "dark",
+  "tags": ["greenlang", "spend-categorizer", "agent-data-009", "scope3"],
+  "templating": { "list": [] },
+  "time": { "from": "now-6h", "to": "now" },
+  "title": "Spend Data Categorizer - GL-DATA-SUP-002",
+  "uid": "spend-categorizer-overview",
+  "version": 1
+}

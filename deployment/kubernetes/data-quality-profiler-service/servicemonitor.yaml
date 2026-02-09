@@ -1,0 +1,29 @@
+---
+# AGENT-DATA-010: GL-DATA-X-013 Data Quality Profiler - ServiceMonitor
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: data-quality-profiler-service
+  namespace: greenlang
+  labels:
+    app: data-quality-profiler-service
+    agent-id: GL-DATA-X-013
+    component: data-quality
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: data-quality-profiler-service
+  namespaceSelector:
+    matchNames:
+      - greenlang
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s
+      honorLabels: true
+      metricRelabelings:
+        - sourceLabels: [__name__]
+          regex: "gl_dq_.*"
+          action: keep

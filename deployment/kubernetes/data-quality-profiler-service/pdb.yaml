@@ -1,0 +1,16 @@
+---
+# AGENT-DATA-010: GL-DATA-X-013 Data Quality Profiler - PDB
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: data-quality-profiler-pdb
+  namespace: greenlang
+  labels:
+    app: data-quality-profiler-service
+    agent-id: GL-DATA-X-013
+    component: data-quality
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: data-quality-profiler-service

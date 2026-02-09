@@ -1,0 +1,116 @@
+---
+# AGENT-DATA-009: GL-DATA-SUP-002 Spend Data Categorizer - Alert Rules
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: spend-categorizer-alerts
+  namespace: greenlang
+  labels:
+    app: spend-categorizer-service
+    agent-id: GL-DATA-SUP-002
+    component: data-intake
+    release: prometheus
+spec:
+  groups:
+    - name: spend-categorizer.rules
+      rules:
+        # Alert 1: High error rate
+        - alert: SpendCategorizerHighErrorRate
+          expr: |
+            rate(gl_spend_cat_processing_errors_total[5m]) > 0.1
+          for: 5m
+          labels:
+            severity: warning
+            service: spend-categorizer-service
+            agent_id: GL-DATA-SUP-002
+          annotations:
+            summary: "Spend Categorizer high error rate"
+            description: "Error rate {{ $value | humanize }}/s for spend-categorizer-service over last 5 minutes."
+            runbook_url: "https://docs.greenlang.io/runbooks/spend-categorizer/high-error-rate"
+
+        # Alert 2: Low classification confidence
+        - alert: SpendCategorizerLowConfidence
+          expr: |
+            histogram_quantile(0.5, rate(gl_spend_cat_classification_confidence_bucket[1h])) < 0.4
+          for: 15m
+          labels:
+            severity: warning
+            service: spend-categorizer-service
+          annotations:
+            summary: "Spend classification confidence below threshold"
+            description: "Median classification confidence {{ $value | humanizePercentage }} is below 40% threshold."
+
+        # Alert 3: Processing latency high
+        - alert: SpendCategorizerHighLatency
+          expr: |
+            histogram_quantile(0.95, rate(gl_spend_cat_processing_duration_seconds_bucket[5m])) > 5
+          for: 10m
+          labels:
+            severity: warning
+            service: spend-categorizer-service
+          annotations:
+            summary: "Spend Categorizer p95 latency > 5s"
+            description: "Processing p95 latency {{ $value | humanizeDuration }} exceeds 5s threshold."
+
+        # Alert 4: Ingestion batch failures
+        - alert: SpendCategorizerBatchFailures
+          expr: |
+            increase(gl_spend_cat_processing_errors_total{error_type="batch_failure"}[1h]) > 5
+          for: 5m
+          labels:
+            severity: critical
+            service: spend-categorizer-service
+          annotations:
+            summary: "Multiple spend ingestion batch failures"
+            description: "{{ $value }} batch failures in the last hour."
+
+        # Alert 5: No records processed
+        - alert: SpendCategorizerNoRecordsProcessed
+          expr: |
+            rate(gl_spend_cat_records_ingested_total[30m]) == 0
+            and gl_spend_cat_active_batches > 0
+          for: 15m
+          labels:
+            severity: warning
+            service: spend-categorizer-service
+          annotations:
+            summary: "Active batches but no records being processed"
+            description: "Active batches detected but no records ingested in 30 minutes."
+
+        # Alert 6: Emission factor lookup failures
+        - alert: SpendCategorizerFactorLookupErrors
+          expr: |
+            rate(gl_spend_cat_processing_errors_total{error_type="factor_not_found"}[15m]) > 0.5
+          for: 10m
+          labels:
+            severity: warning
+            service: spend-categorizer-service
+          annotations:
+            summary: "High emission factor lookup failure rate"
+            description: "Factor lookup failures at {{ $value | humanize }}/s. Check emission factor database."
+
+        # Alert 7: Pod not ready
+        - alert: SpendCategorizerPodNotReady
+          expr: |
+            kube_deployment_status_replicas_ready{deployment="spend-categorizer-service", namespace="greenlang"}
+            < kube_deployment_spec_replicas{deployment="spend-categorizer-service", namespace="greenlang"}
+          for: 5m
+          labels:
+            severity: critical
+            service: spend-categorizer-service
+          annotations:
+            summary: "Spend Categorizer pods not ready"
+            description: "{{ $value }} pods not ready out of desired replicas."
+
+        # Alert 8: Memory usage high
+        - alert: SpendCategorizerHighMemory
+          expr: |
+            container_memory_working_set_bytes{pod=~"spend-categorizer.*", namespace="greenlang"}
+            / container_spec_memory_limit_bytes{pod=~"spend-categorizer.*", namespace="greenlang"} > 0.85
+          for: 10m
+          labels:
+            severity: warning
+            service: spend-categorizer-service
+          annotations:
+            summary: "Spend Categorizer memory usage > 85%"
+            description: "Pod {{ $labels.pod }} using {{ $value | humanizePercentage }} of memory limit."
