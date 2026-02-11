@@ -19,7 +19,7 @@ tiktoken==0.6.0
 
 # LangChain Framework - Pinned for stability
 langchain==0.1.9
-langchain-core==0.1.27
+langchain-core==1.2.11
 langchain-community==0.4.1
 
 # Sentence Transformers - Vector embeddings
