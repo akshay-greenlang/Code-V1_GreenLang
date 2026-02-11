@@ -59,7 +59,7 @@ python-dateutil==2.8.2
 pytz==2024.1
 
 # Security
-cryptography==41.0.7
+cryptography==46.0.5
 pyjwt==2.8.0
 passlib[bcrypt]==1.7.4
 
