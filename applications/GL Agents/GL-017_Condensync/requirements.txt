@@ -75,7 +75,7 @@ tenacity==8.2.3                     # Retry logic with backoff
 # -----------------------------------------------------------------------------
 python-jose[cryptography]==3.3.0    # JWT handling
 passlib[bcrypt]==1.7.4              # Password hashing
-cryptography==42.0.2                # Cryptographic primitives
+cryptography==46.0.5                # Cryptographic primitives
 
 # =============================================================================
 # Development Dependencies (install with: pip install -r requirements-dev.txt)
